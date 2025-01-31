@@ -1,0 +1,32 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.220.1/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-read --allow-write main.ts",
+    "test": "deno test --allow-read",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "install": "deno install --allow-read --allow-write -n auronia main.ts"
+  },
+  "fmt": {
+    "files": {
+      "include": ["src/", "tests/"]
+    },
+    "options": {
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "singleQuote": true
+    }
+  },
+  "lint": {
+    "files": {
+      "include": ["src/", "tests/"]
+    }
+  },
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "lib": ["deno.window"]
+  }
+} 
