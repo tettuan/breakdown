@@ -62,3 +62,7 @@ yarn-error.log*
 .cursorrules
 .cursor/*
 .cursor/
+
+# vscode
+.vscode/
+.vscode/*

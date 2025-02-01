@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["project", "task_type", "profibited", "guidelines"],
+  "properties": {
+    "project": {
+      "$ref": "./project.schema.json"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "architecture_design",
+        "coding",
+        "testing",
+        "documentation"
+      ],
+      "description": "タスクの種類（1つのみ選択可能）"
+    },
+    "profibited": {
+      "type": "object",
+      "required": ["editing"],
+      "properties": {
+        "editing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "guidelines": {
+      "type": "object",
+      "required": ["coding", "naming"],
+      "properties": {
+        "coding": {
+          "type": "string",
+          "description": "コーディングガイドライン"
+        },
+        "naming": {
+          "type": "string",
+          "description": "命名規則ガイドライン"
+        }
+      }
+    }
+  }
+} 
