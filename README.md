@@ -1,5 +1,8 @@
 # auronia
-Development documentation tools for automated AI development, using TypeScript and JSON.
+Development instruction language tool for automated AI development using TypeScript and JSON.
+
+> **Note**: This project is experimental and not yet in a fully functional state.
+
 
 ## Overview
 
@@ -23,3 +26,14 @@ The library is designed to work with AI development agents like Cursor and VSCod
 ## Purpose
 
 The goal is to bridge the gap between human-written specifications and AI-interpretable instructions by providing a standardized way to express development requirements that both humans and AI can work with effectively.
+
+## Processing Overview
+
+This library does not generate documentation based on rules by itself. Instead, it assists AI in generating documentation by providing a structured format that AI can easily interpret and work with.
+
+## Future Prospects
+
+This tool itself does not generate anything - it only optimizes for interpretation. As AI development progresses, some components may be integrated into IDEs, and the role of programming languages is likely to evolve.
+
+Within this outlook, we aim to consistently build systems and release applications through natural language interaction with AI. The goal is to establish a workflow where development can be driven primarily through natural language specifications that both humans and AI can understand.
+
