@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["order", "stepType", "definitionOfDone"],
+  "properties": {
+    "order": {
+      "type": "integer",
+      "description": "Order of the step in the sequence"
+    },
+    "stepType": {
+      "type": "string",
+      "enum": [
+        "Execute Command",
+        "Check Logs",
+        "Write Application Code",
+        "Write Test Code",
+        "Write TDD Test Code",
+        "Git Commit",
+        "Git Commit All",
+        "Git Push"
+      ],
+      "description": "Type of the step"
+    },
+    "command": {
+      "type": "string",
+      "description": "Command to execute (if applicable)"
+    },
+    "definitionOfDone": {
+      "type": "string",
+      "description": "Definition of done for this step"
+    }
+  }
+} 

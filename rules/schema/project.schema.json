@@ -1,37 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["id", "name", "issues"],
+  "required": ["gitHubProjectNumber", "projectName", "summary", "issues"],
   "properties": {
-    "id": {
+    "gitHubProjectNumber": {
       "type": "integer",
-      "description": "プロジェクトの一意のID、GitHubのProject ID"
+      "description": "GitHub project number"
     },
-    "name": {
+    "projectName": {
       "type": "string",
-      "description": "プロジェクト名、GitHubのProject Name"
+      "description": "Name of the project"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Project summary"
     },
     "issues": {
-      "type": "object",
-      "required": ["id", "title", "description", "status"],
-      "properties": {
-        "id": {
-          "type": "integer",
-          "description": "課題の一意のID、GitHubのIssue ID"
-        },
-        "title": {
-          "type": "string",
-          "description": "課題のタイトル、GitHubのIssue Title"
-        },
-        "description": {
-          "type": "string",
-          "description": "課題の詳細説明、GitHubのIssue Description"
-        },
-        "status": {
-          "type": "string",
-          "description": "課題の状態",
-          "enum": ["open", "in_progress", "resolved", "closed"]
-        }
+      "type": "array",
+      "items": {
+        "$ref": "issue.schema.json"
       }
     }
   }
