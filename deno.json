@@ -1,13 +1,14 @@
 {
   "imports": {
-    "std/": "https://deno.land/std@0.220.1/"
+    "std/": "https://deno.land/std@0.208.0/"
   },
   "tasks": {
     "dev": "deno run --allow-read --allow-write main.ts",
     "test": "deno test --allow-read",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "install": "deno install --allow-read --allow-write -n auronia main.ts"
+    "install": "deno install --allow-read --allow-write -n auronia main.ts",
+    "start": "deno run --allow-read --allow-write cli.ts"
   },
   "fmt": {
     "files": {
