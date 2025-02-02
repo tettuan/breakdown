@@ -66,3 +66,7 @@ yarn-error.log*
 # vscode
 .vscode/
 .vscode/*
+
+# breakdown
+./breakdown
+./breakdown/*
