@@ -38,4 +38,18 @@ if (import.meta.main) {
     .version("0.1.0");
 
   await command.parse(Deno.args);
+}
+
+export async function toJSON(subcommand: string, content: string, outputPath: string): Promise<ConversionResult> {
+  if (!["project", "issue", "task"].includes(subcommand)) {
+    throw new Error(`Invalid subcommand: ${subcommand}`);
+  }
+  // ... 既存の処理 ...
+}
+
+export async function toMarkdown(subcommand: string, content: string, outputPath: string): Promise<ConversionResult> {
+  if (!["project", "issue", "task"].includes(subcommand)) {
+    throw new Error(`Invalid subcommand: ${subcommand}`);
+  }
+  // ... 既存の処理 ...
 } 
