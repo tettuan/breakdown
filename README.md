@@ -154,5 +154,38 @@ breakdown to issue <issue_summary.md>  -o <issue-dir>
 breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
+# Setup
+
+1. Set up Deno
+2. CLI Deno installation (recommended)
+   1. Install to system
+   2. Install to local AI agent project only
+
+## CLI
+
+**Not Prepared yet**
+
+### 2-1. Install to system
+
+```
+deno install --name=breakdown https://deno.land/x/breakdown.ts
+```
+
+### 2-2. Install to local AI agent project only
+
+```
+deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+```
+
+If you prefer not to install, you can run it directly as follows.  
+However, it is recommended to place the executable in a directory included in your `PATH` for the AI agent to run it properly.
+
+```
+deno run --allow-read --allow-net https://deno.land/x/my_tool.ts
+```
+
+
+
+
 # Documents
 https://tettuan.github.io/breakdown/

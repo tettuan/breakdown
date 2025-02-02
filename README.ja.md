@@ -157,5 +157,38 @@ breakdown to issue <issue_summary.md>  -o <issue-dir>
 breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
+# セットアップ
+以下の手順によって、使えるように準備します。
+
+1. 最初にDenoをセットアップします
+2. 次に CLI で使えるよう Deno installation を行います（推奨）
+   1. システムへインストールする
+   2. AI開発用のレポジトリにのみインストールする
+
+## CLI
+
+**まだ準備中**
+
+### 2-1. システムへインストールする
+
+```
+deno install --name=breakdown https://deno.land/x/breakdown.ts
+```
+
+### 2-2. AI開発用のレポジトリにのみインストールする
+
+```
+deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+```
+
+もしインストールせずに使いたい場合は、以下のように実行できます。
+AI開発エージェントが利用する場合には冗長なので、PATHの通った場所へインストールすることをお勧めします。
+
+```
+deno run --allow-read --allow-net https://deno.land/x/my_tool.ts
+```
+
+
+
 # Documents
 https://tettuan.github.io/breakdown/
