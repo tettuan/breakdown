@@ -1,10 +1,10 @@
 {
-  "name": "auronia",
+  "name": "breakdown",
   "description": "Markdown to JSON converter for AI development",
   "version": "0.1.0",
   "entry": "./mod.ts",
   "stable": true,
-  "repository": "https://github.com/YOUR_USERNAME/auronia",
+  "repository": "https://github.com/YOUR_USERNAME/breakdown",
   "files": [
     "README.md",
     "mod.ts",
@@ -12,7 +12,7 @@
     "LICENSE"
   ],
   "check": false,
-  "homepage": "https://github.com/YOUR_USERNAME/auronia",
+  "homepage": "https://github.com/YOUR_USERNAME/breakdown",
   "ignore": [
     "tests/",
     ".git"

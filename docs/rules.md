@@ -1,8 +1,8 @@
-# Auronia Rules Documentation
+# breakdown Rules Documentation
 
 ## Overview
 
-This document describes the rules and conventions used by Auronia for converting Markdown to JSON.
+This document describes the rules and conventions used by breakdown for converting Markdown to JSON.
 
 ## Node Types
 

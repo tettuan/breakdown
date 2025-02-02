@@ -7,7 +7,7 @@
     "test": "deno test --allow-read",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "install": "deno install --allow-read --allow-write -n auronia main.ts",
+    "install": "deno install --allow-read --allow-write -n breakdown main.ts",
     "start": "deno run --allow-read --allow-write cli.ts"
   },
   "fmt": {
