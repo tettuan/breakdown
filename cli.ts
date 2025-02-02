@@ -1,5 +1,6 @@
 import { parse } from "https://deno.land/std/flags/mod.ts";
 import { toJSON, toMarkdown } from "./lib/mod.ts";
+import { Command } from "https://deno.land/std@0.131.0/flags/mod.ts";
 
 async function main() {
   const args = parse(Deno.args);
@@ -32,5 +33,9 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main();
+  const command = new Command()
+    .name("breakdown")
+    .version("0.1.0");
+
+  await command.parse(Deno.args);
 } 
