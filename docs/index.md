@@ -25,7 +25,7 @@ BreakDownは、MarkdownドキュメントをJSON形式に変換し、AIシステ
 
 ### 処理フロー
 
-<div class="mermaid">
+```mermaid
 sequenceDiagram
   participant Developer as アプリ開発者
   participant CursorCline as Cursor/Cline
@@ -37,13 +37,13 @@ sequenceDiagram
   CursorCline->>Developer: JSON指示書を取得
   Developer->>AI: JSON指示書をAI開発エージェントに送信
   AI->>AI: JSON指示書に基づき開発
-</div>
+```
 
 ## スキーマ定義
 
 プロジェクト、イシュー、タスクの関係は以下の通りです：
 
-<div class="mermaid">
+```mermaid
 erDiagram
   Project ||--|{ Issue : has
   Project {
@@ -79,7 +79,7 @@ erDiagram
     string command
     string DefinitionOfDone
   }
-</div>
+```
 
 ## タスクプロパティ
 
@@ -107,7 +107,7 @@ erDiagram
 
 ## タスクの状態遷移
 
-<div class="mermaid">
+```mermaid
 stateDiagram-v2
 direction LR
   state Result <<choice>>
@@ -121,7 +121,7 @@ direction LR
   Done --> [*]
   Error --> [*]
   Crash --> [*]
-</div>
+```
 
 ## ルール
 

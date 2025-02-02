@@ -154,6 +154,7 @@ breakdown to issue <issue_summary.md>  -o <issue-dir>
 breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
+
 # Setup
 
 1. Set up Deno
@@ -183,9 +184,6 @@ However, it is recommended to place the executable in a directory included in yo
 ```
 deno run --allow-read --allow-net https://deno.land/x/my_tool.ts
 ```
-
-
-
 
 # Documents
 https://tettuan.github.io/breakdown/
