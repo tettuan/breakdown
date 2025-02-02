@@ -185,7 +185,7 @@ deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
 AI開発エージェントが利用する場合には冗長なので、PATHの通った場所へインストールすることをお勧めします。
 
 ```
-deno run --allow-read --allow-net https://deno.land/x/my_tool.ts
+deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
 ```
 
 
