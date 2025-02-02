@@ -29,14 +29,18 @@ BreakDownは、MarkdownドキュメントをJSON形式に変換し、AIシステ
 sequenceDiagram
   participant Developer as アプリ開発者
   participant CursorCline as Cursor/Cline
-  participant AI as AI開発エージェント
+  participant AI as AIエンジン
 
   Developer->>Developer: プロジェクト概要や要望をMarkdownで記載し保存
   Developer->>CursorCline: `breakdown project <markdown.md>` 実行
   CursorCline->>CursorCline: コマンド実行
+  CursorCline->>AI: マッピング依頼
+  AI->>CursorCline: JSONへ変換
   CursorCline->>Developer: JSON指示書を取得
-  Developer->>AI: JSON指示書をAI開発エージェントに送信
+  Developer->>CursorCline: JSON指示書をAI開発エージェントに送信
+  CursorCline->>AI: JSON指示書で開発指示
   AI->>AI: JSON指示書に基づき開発
+  AI->>CursorCline: 成果物
 ```
 
 ## スキーマ定義

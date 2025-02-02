@@ -52,4 +52,21 @@ Deno.test("toJSON - should reject invalid type at compile time", () => {
 Deno.test("toJSON - should accept valid type", async () => {
   const result = await toJSON("project", "test content", "test_output");
   assertEquals(result.success, true);
+});
+
+Deno.test("should create initial directory structure", async () => {
+  const dirs = [
+    "breakdown/prompts/issue",
+    "breakdown/prompts/task",
+    "breakdown/prompts/samples/issues",
+    "breakdown/prompts/samples/tasks",
+    "breakdown/schemas",
+    "breakdown/projects",
+    "breakdown/issues",
+    "breakdown/tasks",
+  ];
+
+  for (const dir of dirs) {
+    await Deno.mkdir(dir, { recursive: true });
+  }
 }); 
