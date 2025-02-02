@@ -1,12 +1,13 @@
 import type { ConversionResult } from "../mod.ts";
 
-// JSON to Markdown conversion
+// Convert free text to structured Markdown
+// Takes a type (project/issue/task) and converts the input text into a formatted Markdown document
 export async function toMarkdown(
   type: "project" | "issue" | "task",
   input: string,
   output: string
 ): Promise<ConversionResult> {
-  // 無効なコマンドの検証を先に行う
+  // Validate command type first
   if (type !== "project" && type !== "issue" && type !== "task") {
     throw new Error("Invalid subcommand");
   }
@@ -33,6 +34,7 @@ export async function toMarkdown(
   }
 }
 
+// Helper functions to convert specific types of text to Markdown format
 async function convertToProjectMarkdown(input: string, _output: string): Promise<string> {
   const data = JSON.parse(input);
   return `# ${data.title}\n\n${data.overview || ""}`;
