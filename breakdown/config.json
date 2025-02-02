@@ -1,0 +1,10 @@
+{
+  "working_directory": {
+    "root": ".agent/breakdown",
+    "Interims": {
+      "projects": "projects",
+      "issues": "issues",
+      "tasks": "tasks"
+    }
+  }
+} 
