@@ -6,28 +6,29 @@
     "dev": "deno run --allow-read --allow-write main.ts",
     "test": "deno test --allow-read",
     "fmt": "deno fmt",
-    "lint": "deno lint",
-    "install": "deno install --allow-read --allow-write -n auronia main.ts",
-    "start": "deno run --allow-read --allow-write cli.ts"
+    "lint": "deno lint"
   },
   "fmt": {
     "files": {
-      "include": ["src/", "tests/"]
+      "include": ["src/"]
     },
     "options": {
-      "lineWidth": 100,
+      "useTabs": false,
+      "lineWidth": 80,
       "indentWidth": 2,
-      "singleQuote": true
+      "singleQuote": true,
+      "proseWrap": "always"
     }
   },
   "lint": {
     "files": {
-      "include": ["src/", "tests/"]
+      "include": ["src/"]
+    },
+    "rules": {
+      "tags": ["recommended"]
     }
   },
   "compilerOptions": {
-    "strict": true,
-    "allowJs": true,
-    "lib": ["deno.window"]
+    "strict": true
   }
 } 

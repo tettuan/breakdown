@@ -15,10 +15,10 @@ async function main() {
 
   if (args.help) {
     console.log(`
-auronia - Markdown to JSON converter for AI development
+breakdown - Markdown to JSON converter for AI development
 
 Usage:
-  auronia [options] [file]
+  breakdown [options] [file]
 
 Options:
   -h, --help            Show this help message
@@ -27,15 +27,15 @@ Options:
   -o, --output <file>   Output JSON file (default: STDOUT)
 
 Examples:
-  auronia input.md
-  auronia -i input.md -o output.json
-  cat input.md | auronia > output.json
+  breakdown input.md
+  breakdown -i input.md -o output.json
+  cat input.md | breakdown > output.json
 `);
     Deno.exit(0);
   }
 
   if (args.version) {
-    console.log("auronia v0.1.0");
+    console.log("breakdown v0.1.0");
     Deno.exit(0);
   }
 
