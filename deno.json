@@ -29,6 +29,7 @@
     }
   },
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "lib": ["deno.window"]
   }
 } 

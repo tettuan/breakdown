@@ -140,7 +140,7 @@ IssueからTask化。
 
 ```
 echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown summary <project_summary.md> -o <issue_markdown_dir>
+breakdown summary issue <project_summary.md> -o <issue_markdown_dir>
 （複数のIssue Markdownを編集）
 breakdown to issue <written_issue_1.md>  -o <issue-dir>
 breakdown to task <issue_1.json>  -o <tasks-dir>
