@@ -42,7 +42,8 @@ async function transformMarkdown({ layerType, inputFile, outputDir }: TransformO
     // 4. Replace placeholders
     const prompt = promptTemplate
       .replace("{input_markdown}", inputMarkdown)
-      .replace("{output_schema}", schema);
+      .replace("{output_schema}", schema)
+      .replace("{output_directory}", outputDir);
 
     // 5. Write to output file
     await ensureDir(outputDir);
@@ -64,44 +65,119 @@ async function transformMarkdown({ layerType, inputFile, outputDir }: TransformO
   }
 }
 
+// Add new command type
+type Command = "to" | "init";
+
+// Add initialization function
+async function initializeWorkspace(baseDir: string) {
+  const dirs = [
+    ".agent/breakdown",
+    ".agent/breakdown/issues",
+    ".agent/breakdown/tasks",
+    ".agent/breakdown/projects"
+  ];
+
+  // Create directories
+  for (const dir of dirs) {
+    const fullPath = join(baseDir, dir);
+    await ensureDir(fullPath);
+  }
+
+  // Read default config from breakdown/config.json
+  const scriptDir = dirname(fromFileUrl(import.meta.url));
+  const defaultConfigPath = resolve(scriptDir, "..", "breakdown", "config.json");
+  const defaultConfig = JSON.parse(await Deno.readTextFile(defaultConfigPath));
+
+  // Use default config values directly
+  const config: Config = {
+    working_directory: {
+      root: defaultConfig.working_directory.root,  // Use default root path
+      Interims: {
+        projects: defaultConfig.working_directory.Interims.projects,
+        issues: defaultConfig.working_directory.Interims.issues,
+        tasks: defaultConfig.working_directory.Interims.tasks,
+      }
+    }
+  };
+
+  const configPath = join(baseDir, ".agent/breakdown/config.json");
+  await Deno.writeTextFile(configPath, JSON.stringify(config, null, 2));
+}
+
 async function main() {
   const args = parse(Deno.args);
-  
-  if (args._[0] === "to" && args._[1]) {
-    try {
-      const layerType = args._[1] as string;
-      // Fix: Get the last argument as input file if multiple are provided
-      const inputFile = args._[args._.length - 1] as string;
-      
-      if (!inputFile) {
-        console.error("Error: Input file path is required");
-        Deno.exit(1);
-      }
+  const command = args._[0] as Command;
 
-      // Validate the input file exists
+  switch (command) {
+    case "init": {
+      const targetDir = args._[1] || Deno.cwd();
       try {
-        const resolvedInputPath = resolve(Deno.cwd(), inputFile);
-        await Deno.stat(resolvedInputPath);
-      } catch {
-        console.error(`Error: Input file not found: ${inputFile}`);
+        await initializeWorkspace(targetDir);
+        console.log("✅ Workspace initialized successfully");
+      } catch (error) {
+        console.error("Error initializing workspace:", error.message);
         Deno.exit(1);
       }
-
-      const outputDir = args.o || args.output || `./.agent/breakdown/${layerType}s`;
-
-      await transformMarkdown({
-        layerType,
-        inputFile,
-        outputDir,
-      });
-    } catch (error) {
-      console.error("Error:", error.message);
-      Deno.exit(1);
+      break;
     }
-  } else {
-    console.log(`
+
+    case "to": {
+      if (args._[1] && args._[args._.length - 1]) {
+        try {
+          const layerType = args._[1] as string;
+          const inputFile = args._[args._.length - 1] as string;
+          
+          if (!inputFile) {
+            console.error("Error: Input file path is required");
+            Deno.exit(1);
+          }
+
+          // Validate the input file exists
+          try {
+            const resolvedInputPath = resolve(Deno.cwd(), inputFile);
+            await Deno.stat(resolvedInputPath);
+          } catch {
+            console.error(`Error: Input file not found: ${inputFile}`);
+            Deno.exit(1);
+          }
+
+          // Get output directory from -o or --output flag
+          const outputDirectory = args.o || args.output;
+
+          if (!outputDirectory) {
+            throw new Error('Output directory (-o or --output) is required');
+          }
+
+          // Ensure output directory exists
+          try {
+            await ensureDir(outputDirectory);
+          } catch (error) {
+            console.error(`Error creating output directory: ${error.message}`);
+            Deno.exit(1);
+          }
+
+          await transformMarkdown({
+            layerType,
+            inputFile,
+            outputDir: outputDirectory,
+          });
+        } catch (error) {
+          console.error("Error:", error.message);
+          Deno.exit(1);
+        }
+      } else {
+        console.error("Error: Invalid command usage");
+        Deno.exit(1);
+      }
+      break;
+    }
+
+    default:
+      console.log(`
 Breakdown ${VERSION}
-Usage: breakdown to <layer_type> <input_file.md> [-o output_dir]
+Usage: 
+  breakdown init [directory]     Initialize workspace
+  breakdown to <layer_type> <input_file.md> [-o output_dir]
 
 Options:
   -o, --output    Output directory (default: ./.agent/breakdown/<layer_type>s)
@@ -110,7 +186,7 @@ Layer Types:
   - issue
   - task
   - project
-    `);
+      `);
   }
 }
 
