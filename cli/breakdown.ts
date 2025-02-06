@@ -1,21 +1,11 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-env
 
-import { parse } from "https://deno.land/std/flags/mod.ts";
-import { join, resolve, dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
-import { ensureDir } from "https://deno.land/std/fs/mod.ts";
+import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
+import { join, resolve, dirname, fromFileUrl } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { Config } from "../breakdown/config/config.ts";
 import { Workspace } from "../breakdown/core/workspace.ts";
-
-interface Config {
-  working_directory: {
-    root: string;
-    Interims: {
-      projects: string;
-      issues: string;
-      tasks: string;
-    };
-  };
-}
+import { WorkspaceStructure } from "../breakdown/config/types.ts";
 
 // Add version number from Deno
 const VERSION = "0.1.0";

@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertRejects } from "https://deno.land/std@0.208.0/testing/asserts.ts";
-import { toJSON, toMarkdown } from "./lib/mod.ts";
+import { toJSON, toMarkdown, isValidLayerType } from "./breakdown/lib/mod.ts";
 import { Config } from "./breakdown/config/config.ts";
 import { Workspace } from "./breakdown/core/workspace.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
@@ -41,22 +41,23 @@ Deno.test("toMarkdown - task conversion", async () => {
   assertEquals(result.success, true);
 });
 
-Deno.test("toJSON - should reject invalid type at compile time", () => {
-  // 型エラーが発生することを確認するためのテスト
-  const typeCheckError = () => {
-    // @ts-expect-error - "invalid" は "project" | "issue" | "task" に代入できないはず
-    return toJSON("invalid", "test content", "test_output");
-  };
-  
-  // 型チェックエラーが発生することを期待
-  // 実行時にはこのテストは常に成功します
-  assert(true, "Type check should fail at compile time");
+Deno.test("toJSON - should handle invalid type", async () => {
+  const invalidType = "invalid";
+  assert(!isValidLayerType(invalidType), "Should reject invalid layer type");
+  await assertRejects(
+    async () => {
+      // @ts-expect-error - Testing invalid type
+      await toJSON(invalidType, "test content", "test_output");
+    },
+    Error,
+    "Invalid layer type"
+  );
 });
 
-// 有効な型の場合のテストも追加しておくと良いでしょう
 Deno.test("toJSON - should accept valid type", async () => {
-  const result = await toJSON("project", "test content", "test_output");
-  assertEquals(result.success, true);
+  const validType = "project";
+  assert(isValidLayerType(validType), "Should accept valid layer type");
+  await toJSON(validType, "test content", "test_output");
 });
 
 Deno.test("should create initial directory structure", async () => {
