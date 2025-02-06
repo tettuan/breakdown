@@ -1,10 +1,10 @@
 import { assert, assertEquals, assertRejects } from "https://deno.land/std@0.208.0/testing/asserts.ts";
-import { toJSON, toMarkdown, isValidLayerType } from "./breakdown/lib/mod.ts";
-import { Config } from "./breakdown/config/config.ts";
-import { Workspace } from "./breakdown/core/workspace.ts";
+import { toJSON, toMarkdown, isValidLayerType } from "../breakdown/lib/mod.ts";
+import { Config } from "../breakdown/config/config.ts";
+import { Workspace } from "../breakdown/core/workspace.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { WorkspaceStructure } from "./breakdown/config/types.ts";
+import { WorkspaceStructure } from "../breakdown/config/types.ts";
 
 // モックデータ
 const mockInput = "test_input.md";
@@ -90,7 +90,7 @@ Deno.test("should create initial directory structure", async () => {
     // ディレクトリ構造の検証
     const structure = configContent.workspace_structure as WorkspaceStructure;
     for (const [_, dirPath] of Object.entries(structure.directories)) {
-      const fullPath = join(testDir, structure.root, dirPath);
+      const fullPath = join(testDir, structure.root as string, dirPath as string);
       const dirExists = await exists(fullPath);
       assertEquals(dirExists, true, `Directory ${dirPath} should exist`);
     }
@@ -104,9 +104,8 @@ function setupTestDirectory(structure: WorkspaceStructure) {
   const dirPath = typeof structure.root === 'string' ? structure.root : '';
   const fullPath = join(testDir, dirPath);
   
-  // Create directories based on workspace structure
   for (const [_, path] of Object.entries(structure.directories)) {
-    const directoryPath = join(fullPath, path);
+    const directoryPath = join(fullPath, path as string);
     Deno.mkdirSync(directoryPath, { recursive: true });
   }
   
