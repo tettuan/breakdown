@@ -84,7 +84,7 @@ breakdown to task <issue.json|written_task.md>  -o <tasks-dir>
 
 出力先には、いずれもディレクトリを指定します。
 GitHubのProjectとIssueの番号が必要です。 
-例えば `breakdown to project create_edinet_api.md -o agent/cursor/projects` と -o へ指定すると、 `agent/cursor/projects/18-edinet-api.json` のように、ファイルが生成されます。
+例えば `breakdown to project create_edinet_api.md -o agent/cursor/projects` と -o へ指定すると、 `agent/cursor/projects/18-edinet-api.json` のように、ファイルが生成されます。指定がなければデフォルト設定が用いられます。
 
 ## summary Markdown
 

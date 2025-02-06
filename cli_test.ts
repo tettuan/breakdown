@@ -1,5 +1,10 @@
 import { assert, assertEquals, assertRejects } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { toJSON, toMarkdown } from "./lib/mod.ts";
+import { Config } from "./breakdown/config/config.ts";
+import { Workspace } from "./breakdown/core/workspace.ts";
+import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { WorkspaceStructure } from "./breakdown/config/types.ts";
 
 // モックデータ
 const mockInput = "test_input.md";
@@ -55,18 +60,54 @@ Deno.test("toJSON - should accept valid type", async () => {
 });
 
 Deno.test("should create initial directory structure", async () => {
-  const dirs = [
-    "breakdown/prompts/issue",
-    "breakdown/prompts/task",
-    "breakdown/prompts/samples/issues",
-    "breakdown/prompts/samples/tasks",
-    "breakdown/schemas",
-    "breakdown/projects",
-    "breakdown/issues",
-    "breakdown/tasks",
-  ];
+  const testDir = await Deno.makeTempDir();
+  try {
+    const config = Config.getInstance();
+    const workspace = new Workspace(config);
+    
+    await config.initialize({
+      workingDir: testDir,
+    });
 
-  for (const dir of dirs) {
-    await Deno.mkdir(dir, { recursive: true });
+    await workspace.initialize(testDir);
+
+    // 設定ファイルの検証
+    const configPath = join(testDir, ".agent/breakdown/config.json");
+    const configExists = await exists(configPath);
+    assertEquals(configExists, true, "Config file should exist");
+
+    const configContent = JSON.parse(await Deno.readTextFile(configPath));
+    
+    // 新しい設定構造の検証
+    console.log('Expected:', testDir);
+    console.log('Actual:', configContent.working_directory);
+    assertEquals(configContent.working_directory, testDir);
+    assertEquals(typeof configContent.workspace_structure, "object");
+    assertEquals(typeof configContent.workspace_structure.root, "string");
+    assertEquals(typeof configContent.workspace_structure.directories, "object");
+    
+    // ディレクトリ構造の検証
+    const structure = configContent.workspace_structure as WorkspaceStructure;
+    for (const [_, dirPath] of Object.entries(structure.directories)) {
+      const fullPath = join(testDir, structure.root, dirPath);
+      const dirExists = await exists(fullPath);
+      assertEquals(dirExists, true, `Directory ${dirPath} should exist`);
+    }
+  } finally {
+    await Deno.remove(testDir, { recursive: true });
   }
-}); 
+});
+
+function setupTestDirectory(structure: WorkspaceStructure) {
+  const testDir = Deno.makeTempDirSync();
+  const dirPath = typeof structure.root === 'string' ? structure.root : '';
+  const fullPath = join(testDir, dirPath);
+  
+  // Create directories based on workspace structure
+  for (const [_, path] of Object.entries(structure.directories)) {
+    const directoryPath = join(fullPath, path);
+    Deno.mkdirSync(directoryPath, { recursive: true });
+  }
+  
+  return testDir;
+} 

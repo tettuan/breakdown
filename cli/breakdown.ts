@@ -3,6 +3,8 @@
 import { parse } from "https://deno.land/std/flags/mod.ts";
 import { join, resolve, dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "https://deno.land/std/fs/mod.ts";
+import { Config } from "../breakdown/config/config.ts";
+import { Workspace } from "../breakdown/core/workspace.ts";
 
 interface Config {
   working_directory: {
@@ -68,51 +70,27 @@ async function transformMarkdown({ layerType, inputFile, outputDir }: TransformO
 // Add new command type
 type Command = "to" | "init";
 
-// Add initialization function
-async function initializeWorkspace(baseDir: string) {
-  const dirs = [
-    ".agent/breakdown",
-    ".agent/breakdown/issues",
-    ".agent/breakdown/tasks",
-    ".agent/breakdown/projects"
-  ];
-
-  // Create directories
-  for (const dir of dirs) {
-    const fullPath = join(baseDir, dir);
-    await ensureDir(fullPath);
-  }
-
-  // Read default config from breakdown/config.json
-  const scriptDir = dirname(fromFileUrl(import.meta.url));
-  const defaultConfigPath = resolve(scriptDir, "..", "breakdown", "config.json");
-  const defaultConfig = JSON.parse(await Deno.readTextFile(defaultConfigPath));
-
-  // Use default config values directly
-  const config: Config = {
-    working_directory: {
-      root: defaultConfig.working_directory.root,  // Use default root path
-      Interims: {
-        projects: defaultConfig.working_directory.Interims.projects,
-        issues: defaultConfig.working_directory.Interims.issues,
-        tasks: defaultConfig.working_directory.Interims.tasks,
-      }
-    }
-  };
-
-  const configPath = join(baseDir, ".agent/breakdown/config.json");
-  await Deno.writeTextFile(configPath, JSON.stringify(config, null, 2));
-}
-
 async function main() {
-  const args = parse(Deno.args);
+  const config = Config.getInstance();
+  const workspace = new Workspace(config);
+  
+  // コマンドライン引数のパース
+  const { args, options } = parse(Deno.args);
+  
+  // 設定の初期化
+  await config.initialize({
+    outputDir: options.o || options.output,
+    workingDir: options.w || options.workingDir,
+    configPath: options.config
+  });
+
   const command = args._[0] as Command;
 
   switch (command) {
     case "init": {
       const targetDir = args._[1] || Deno.cwd();
       try {
-        await initializeWorkspace(targetDir);
+        await workspace.initialize(targetDir);
         console.log("✅ Workspace initialized successfully");
       } catch (error) {
         console.error("Error initializing workspace:", error.message);
@@ -142,7 +120,7 @@ async function main() {
           }
 
           // Get output directory from -o or --output flag
-          const outputDirectory = args.o || args.output;
+          const outputDirectory = options.o || options.output;
 
           if (!outputDirectory) {
             throw new Error('Output directory (-o or --output) is required');
