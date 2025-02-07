@@ -62,6 +62,7 @@ sequenceDiagram
 
 - to : MarkdownファイルをもとにJSON化します
 - summary : 概略からMarkdownファイルを作成します
+- defect : エラー情報から要求のMarkdownファイルを作成します
 
 ## to JSON
 **プロジェクトの概要を作る**
@@ -117,11 +118,49 @@ breakdown summary <project_summary.md> -o <issue_markdown_dir>
 ```
 echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ```
-Issueのサマリーから書き起こすこともできます。この場合は、複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
+
+Issueのサマリーから書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
 
 ```
 breakdown summary <issue_summary.md> -o <task_markdown_dir>
 ```
+
+
+## defect Markdown
+**プロジェクト**
+プロジェクトの不具合情報を解析します。`<error_logs>` はTerminalから得たものを貼り付けたり、logsから探した情報を用います。
+
+```
+tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
+```
+
+**Issue**
+Issueの修正を書き起こします。
+
+```
+tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
+```
+
+Projectの修正概要から書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
+
+```
+breakdown defect <project_defect.md> -o <issue_defect_dir>
+```
+
+
+**タスク**
+タスクの修正を書き起こします。
+
+```
+tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
+```
+
+Issueの修正概要から書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
+
+```
+breakdown defect <issue_defect.md> -o <task_defect_dir>
+```
+
 
 # ユースケースパターン
 
@@ -152,8 +191,8 @@ breakdown to task <issue_2.json>  -o <tasks-dir>
 IssueからTask化。
 
 ```
-echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
-breakdown to issue <issue_summary.md>  -o <issue-dir>
+deno test --allow-read --allow-write --allow-run | breakdown defect issue -o <issue_defect.md>
+breakdown to issue <issue_defect.md>  -o <issue-dir>
 breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
@@ -164,6 +203,18 @@ breakdown to task <issue.json>  -o <tasks-dir>
 2. 次に CLI で使えるよう Deno installation を行います（推奨）
    1. システムへインストールする
    2. AI開発用のレポジトリにのみインストールする
+
+
+## 4. 実行エラーの修正案を作る
+Terminalのエラー情報から修正すべき課題を設定する。
+
+```
+echo "<summary>" | breakdown summary project -o <project_summary.md>
+breakdown to project <written_project_summary.md>  -o <project-dir>
+breakdown to issue <project_summary.json>  -o <issue-dir>
+breakdown to task <issue.json>  -o <tasks-dir>
+```
+
 
 ## CLI
 
