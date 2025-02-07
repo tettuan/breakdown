@@ -105,10 +105,11 @@ Issueを書き起こします。
 echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
 ```
 
-Projectのサマリーから書き起こすこともできます。この場合は、複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
+Projectのサマリーから書き起こすこともできます。ProjectからIssueへと粒度の異なる分解を行うため、明示的に入力ファイルの種類を指定します。
+分解すると出力が複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
 
 ```
-breakdown summary <project_summary.md> -o <issue_markdown_dir>
+breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
 ```
 
 
@@ -119,10 +120,11 @@ breakdown summary <project_summary.md> -o <issue_markdown_dir>
 echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ```
 
-Issueのサマリーから書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
+Issueのサマリーから書き起こすこともできます。Issueからタスクへと粒度の異なる分解を行うため、明示的に入力ファイルの種類を指定します。
+分解すると出力が複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
 
 ```
-breakdown summary <issue_summary.md> -o <task_markdown_dir>
+breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ```
 
 
@@ -141,10 +143,11 @@ Issueの修正を書き起こします。
 tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
 ```
 
-Projectの修正概要から書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
+Projectの修正概要から書き起こすこともできます。ProjectからIssueへと粒度の異なる分解を行うため、明示的に入力ファイルの種類を指定します。
+分解すると出力が複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
 
 ```
-breakdown defect <project_defect.md> -o <issue_defect_dir>
+breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
 ```
 
 
@@ -155,10 +158,11 @@ breakdown defect <project_defect.md> -o <issue_defect_dir>
 tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
 ```
 
-Issueの修正概要から書き起こすこともできます。この場合は、複数ファイル出力になる可能性があるため、出力先をディレクトリで指定します。
+Issueの修正概要から書き起こすこともできます。Issueからタスクへと粒度の異なる分解を行うため、明示的に入力ファイルの種類を指定します。
+分解すると出力が複数ファイルになる可能性があるため、出力先をディレクトリで指定します。
 
 ```
-breakdown defect <issue_defect.md> -o <task_defect_dir>
+breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
 ```
 
 
