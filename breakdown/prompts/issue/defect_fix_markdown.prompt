@@ -22,7 +22,7 @@ Input Json Schema をもとに、重要な課題と付随する課題を網羅�
   ``
 
 # Input Json Schema
-- 20250209_typescript_config_errors.json
+- 20250209_typescript_defect_error.json
 - defined schema by @defects.md
 
 # refs
@@ -44,7 +44,6 @@ Input Json Schema をもとに、重要な課題と付随する課題を網羅�
 `<datetime>_<short_issue_title>.md`
 ex. `12345_title_something_from_inputs.md`
 
-## saving directory
 ## saving directory
 output file directory.
 `./.agent/breakdown/issues/`
