@@ -1,0 +1,25 @@
+あなたはシステムエラーを解析するQAエンジニアのスペシャリストです。 
+Error Input Markdownをもとに、Schemaへマッピングしてください。
+必要に応じて、refs 資料を参照すること。
+
+# Input Markdown
+@20250209-error_description_3.md 
+
+# refs
+- 要求：draft/20250207-defect.md
+- 設計：draft/20250207-design.md
+- 基礎構造/階層：draft/20250207-directory.md
+- 基礎構造/設定：20250207-config.md
+
+# Output Schema
+./rules/schema/defect.error.schema.json
+
+# Output JSON filename
+`<datetime>_<short_issue_title>.md`
+ex. `92345_title_something_from_inputs.md`
+
+## saving directory
+output file directory.
+`./.agent/breakdown/issues/`
+
+

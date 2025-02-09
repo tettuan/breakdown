@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["errorSummary", "requirementAnalysis", "errorDetails"],
+  "properties": {
+    "errorSummary": {
+      "type": "object",
+      "required": ["triggerCommand", "previousChanges", "reason"],
+      "properties": {
+        "triggerCommand": { "type": "string" },
+        "previousChanges": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "requirementAnalysis": {
+      "type": "object",
+      "required": ["requirementFiles", "designFiles", "summary"],
+      "properties": {
+        "requirementFiles": { "type": "array", "items": { "type": "string" } },
+        "designFiles": { "type": "array", "items": { "type": "string" } },
+        "summary": { "type": "string" }
+      }
+    },
+    "errorDetails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fileName", "line", "errorContent", "errorAnalysis", "errorResponse"],
+        "properties": {
+          "fileName": { "type": "string" },
+          "line": { "type": "integer" },
+          "errorContent": {
+            "type": "object",
+            "required": ["message", "errorType", "errorSource"],
+            "properties": {
+              "message": { "type": "string" },
+              "errorType": { "type": "string", "enum": ["code", "data", "syntax"] },
+              "errorSource": { "type": "string", "enum": ["typescript", "deno", "application"] }
+            }
+          },
+          "errorAnalysis": {
+            "type": "object",
+            "required": ["occurrenceCount", "relatedFiles", "triggersOtherErrors"],
+            "properties": {
+              "occurrenceCount": { "type": "integer" },
+              "relatedFiles": { "type": "array", "items": { "type": "string" } },
+              "triggersOtherErrors": { "type": "boolean" }
+            }
+          },
+          "errorResponse": {
+            "type": "object",
+            "required": ["requirementJudgment", "designJudgment", "dependencyJudgment", "priority"],
+            "properties": {
+              "requirementJudgment": { "type": "string" },
+              "designJudgment": { "type": "string" },
+              "dependencyJudgment": { "type": "string" },
+              "priority": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
