@@ -20,6 +20,7 @@ Issue fix files are JSON documents that describe a single issue, its analysis, a
 | solution | Yes | object | Proposed solution and tasks |
 | references | Yes | array | Related files and documents |
 | scope | Yes | string | Issue scope: "minimal" or "comprehensive" |
+| mingoal | Yes | object | Minimal functionality, test, and proof requirements |
 
 ### Gap Analysis
 
@@ -102,6 +103,37 @@ Links to related files:
 | type | Yes | enum | Reference type: requirement/design/test/code/mingoal |
 | path | Yes | string | Path to reference file |
 
+### Minimum Goal
+
+Defines the minimal functionality and its verification:
+
+| Property | Required | Type | Description |
+|----------|----------|------|-------------|
+| function | Yes | object | Target functionality definition |
+| test | Yes | object | Test requirements |
+| proof | Yes | object | Solution verification |
+
+#### Function Definition
+
+| Property | Required | Type | Description |
+|----------|----------|------|-------------|
+| description | Yes | string | Description of minimal functionality |
+| requirements | Yes | string[] | Specific requirements list |
+
+#### Test Definition
+
+| Property | Required | Type | Description |
+|----------|----------|------|-------------|
+| description | Yes | string | What needs to be tested |
+| criteria | Yes | string[] | Test success criteria |
+
+#### Proof Definition
+
+| Property | Required | Type | Description |
+|----------|----------|------|-------------|
+| description | Yes | string | How to prove solution works |
+| verificationMethod | Yes | enum | Method: test/demo/review |
+
 ## Example Usage
 
 ```json
@@ -112,7 +144,6 @@ Links to related files:
     "ideal": "TypeScript path aliases should resolve correctly for all imports",
     "current": "Path aliases fail to resolve in specific test files",
     "impact": "Prevents running tests and blocks CI pipeline",
-    "minGoalLink": "docs/mingoal.md#path-resolution"
   },
   "errorSummary": {
     "command": "deno test",
@@ -160,7 +191,27 @@ Links to related files:
       "path": "docs/mingoal.md"
     }
   ],
-  "scope": "minimal"
+  "scope": "minimal",
+  "mingoal": {
+    "function": {
+      "description": "TypeScript path alias resolution in test files",
+      "requirements": [
+        "Must resolve all import aliases in test files",
+        "Must maintain compatibility with Deno import maps"
+      ]
+    },
+    "test": {
+      "description": "Verify path alias resolution in test environment",
+      "criteria": [
+        "All test files can import using aliases",
+        "No TS2307 errors in test execution"
+      ]
+    },
+    "proof": {
+      "description": "Run test suite with path aliases",
+      "verificationMethod": "test"
+    }
+  }
 }
 ```
 

@@ -162,6 +162,61 @@
           }
         }
       }
+    },
+    "mingoal": {
+      "type": "object",
+      "required": ["function", "test", "proof"],
+      "properties": {
+        "function": {
+          "type": "object",
+          "required": ["description", "requirements"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of the minimal functionality to be implemented"
+            },
+            "requirements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of specific requirements for this function"
+            }
+          }
+        },
+        "test": {
+          "type": "object",
+          "required": ["description", "criteria"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of what needs to be tested"
+            },
+            "criteria": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of test criteria that must be met"
+            }
+          }
+        },
+        "proof": {
+          "type": "object",
+          "required": ["description", "verificationMethod"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of how to prove the solution works"
+            },
+            "verificationMethod": {
+              "type": "string",
+              "enum": ["test", "demo", "review"],
+              "description": "Method to verify the solution"
+            }
+          }
+        }
+      }
     }
   }
 } 
