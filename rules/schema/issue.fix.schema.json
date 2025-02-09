@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["issueId", "title", "errorSummary", "analysis", "solution", "references"],
+  "properties": {
+    "issueId": {
+      "type": "string",
+      "description": "Unique identifier for the issue fix",
+      "pattern": "^\\d{8}-[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Brief description of the issue"
+    },
+    "errorSummary": {
+      "type": "object",
+      "required": ["command", "previousChanges", "reason"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Command that triggered the error"
+        },
+        "previousChanges": {
+          "type": "string",
+          "description": "Code changes made before the error occurred"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Overall reason for the error"
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "required": ["requirements", "design", "errors"],
+      "properties": {
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Paths to requirement files"
+          }
+        },
+        "design": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Paths to design files"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "line", "message", "type", "source", "analysis", "priority"],
+            "properties": {
+              "file": {
+                "type": "string",
+                "description": "File where the error occurred"
+              },
+              "line": {
+                "type": "integer",
+                "description": "Line number of the error"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["code", "data", "syntax"],
+                "description": "Type of error"
+              },
+              "source": {
+                "type": "string",
+                "enum": ["typescript", "deno", "application"],
+                "description": "Source of the error"
+              },
+              "analysis": {
+                "type": "object",
+                "required": ["occurrenceCount", "relatedFiles", "triggersOtherErrors"],
+                "properties": {
+                  "occurrenceCount": {
+                    "type": "integer",
+                    "description": "Number of times this error has occurred"
+                  },
+                  "relatedFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Files related to this error"
+                  },
+                  "triggersOtherErrors": {
+                    "type": "boolean",
+                    "description": "Whether this error triggers other errors"
+                  }
+                }
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Priority level of the error (1-5)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "solution": {
+      "type": "object",
+      "required": ["approach", "tasks"],
+      "properties": {
+        "approach": {
+          "type": "string",
+          "description": "Overall approach to fixing the issue"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "type", "status"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task identifier"
+              },
+              "description": {
+                "type": "string",
+                "description": "Task description"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["code", "test", "config", "docs"],
+                "description": "Type of task"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["pending", "in-progress", "completed"],
+                "description": "Current status of the task"
+              }
+            }
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["requirement", "design", "test", "code"],
+            "description": "Type of reference"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path to the reference file"
+          }
+        }
+      }
+    }
+  }
+} 
