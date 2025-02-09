@@ -16,3 +16,14 @@
 |Git Commit| Commit current changes with git messages. | `git commit` |
 |Git Commit All | Commit all changes, including those that have not been staged yet. | `git add . ; git commit` |
 |Git Push|| `git push` |
+
+
+各ステップの実行結果を記録するように、result 定義を行う
+- 実行した結果得られたメッセージ
+- 実行結果を評価して、 success/error を判定する
+
+ex.) 
+- step_result
+  - code (optional) :
+  - message:
+  - judgment

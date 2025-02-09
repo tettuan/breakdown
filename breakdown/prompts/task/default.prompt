@@ -29,13 +29,16 @@
   - 次のステップが使いやすいように加工するステップ
   - 結果の記録ステップ
     - タスクファイルのステータスを更新するステップ
-    - テスト実行結果をタスクファイルへ記すステップ
+    - テスト実行結果をlogsから読み取り、タスクファイルへ記すステップ
 
 # 出力形式
 タスクは、タスクのSchemaに従って生成する
 - ref. `./docs/definitions.md`, `./docs/index.md`
 - フォーマット `./rules/schema/task.schema.json` 構造に従う。
 - タスクが属するIssueを記録する
+- 実行コマンドは `>`と `2>`を用いる表記とし、タスクやステップ固有のlogファイルを出力すること
+  - ./logs/tasks/<uniq-hash-or-timestamp>_<short_name>.log
+  - 結果判定に利用すること
 
 # Outputs
 - ディレクトリ: `./.agent/breakdown/tasks/`
