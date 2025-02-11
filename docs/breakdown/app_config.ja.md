@@ -9,7 +9,7 @@ deno install -f --root ./deno --global cli/breakdown.ts
 ./deno/bin/breakdown to project
 ```
 
-アプrケーションの設定ファイル
+アプリケーションの設定ファイル
 `/breakdown/config/config.ts` 
 を読み込む。
 
@@ -32,4 +32,8 @@ deno install -f --root ./deno --global cli/breakdown.ts
   - ある場合は、すでに存在することを伝えるメッセージを表示する
 
 
+## 設定を読み込み後のチェック処理
+### WorkingDirの存在が確認できない場合
+- すべての処理を中断し、エラーメッセージを表示して終了する
+  - メッセージ： breakdown init を実行し、作業フォルダを作成してください。
 

@@ -32,7 +32,7 @@ Deno.test("CLI errors when file input is missing", async () => {
 
   const { stderr } = await process.output();
   const error = new TextDecoder().decode(stderr).trim();
-  assertEquals(error, "Input file is required. Use --from or -f option.");
+  assertEquals(error, "Input file is required. Use --from/-f option or --new/-n for new file");
 });
 
 Deno.test("CLI outputs file path with --from option", async () => {
@@ -138,4 +138,35 @@ Deno.test("CLI auto-completes both input and output paths", async () => {
   const { stdout } = await process.output();
   const output = new TextDecoder().decode(stdout).trim();
   assertEquals(output, "./.agent/breakdown/issues/project_summary.md --> ./.agent/breakdown/issues/issue_summary.md");
+});
+
+Deno.test("CLI generates default filename with --new flag", async () => {
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "--new"],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  
+  const pattern = /^\.\/\.agent\/breakdown\/issues\/\d{8}_[0-9a-f]{8}\.md$/;
+  assertEquals(pattern.test(output), true);
+});
+
+Deno.test("CLI errors when working directory does not exist", async () => {
+  const config = getConfig();
+  try {
+    await Deno.remove(config.working_dir, { recursive: true });
+  } catch {
+    // ディレクトリが存在しない場合は無視
+  }
+
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "project", "--new"],
+    stderr: "piped",
+  });
+
+  const { stderr } = await process.output();
+  const error = new TextDecoder().decode(stderr).trim();
+  assertEquals(error, "breakdown init を実行し、作業フォルダを作成してください");
 }); 
