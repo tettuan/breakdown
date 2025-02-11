@@ -67,3 +67,4 @@ Input Json Schema をもとに、「整理ステップ」に従って整理し�
 # Output Markdown
 `./.agent/breakdown/issues/<yyyymmdd>-<short_issue_summary>.md`
 - `yyyymmdd` is today
+- use ````` for outside of markdown

@@ -3,7 +3,7 @@ Issue Fix Input Markdownをもとに、Schemaへマッピングしてくださ�
 必要に応じて、refs 資料を参照すること。
 
 # Input Markdown
-@20250209_defect_fix_plan.md
+@20240320-defect-deps-resolution.md
 
 # refs
 - 要求：draft/20250207-defect.md

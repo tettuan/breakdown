@@ -4,7 +4,7 @@
 「分解ステップ」に従って処理し、「出力形式」に従って「Outputs」へ書き出すこと。
 
 # 入力
-- 課題ファイル：@20250209-type_definition_and_error_handling_issues.md
+- 課題ファイル：@20240320-defect-deps-resolution.md
 
 # 分解ステップ
 1. Issueで与えられた課題を分解する
