@@ -29,3 +29,22 @@ to
 ```bash
 deno test -A
 ```
+
+# 入力値
+以下のコマンドを実行したときに、 "Result Output2" が出力される。
+```bash
+./deno/bin/breakdown to project
+./deno/bin/breakdown to issue
+./deno/bin/breakdown summary issue
+./deno/bin/breakdown defect issue
+./deno/bin/breakdown to task
+```
+
+## Result Output2
+```
+to-project
+to-issue
+summary-issue
+defect-issue
+to-task
+```

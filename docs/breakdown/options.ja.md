@@ -7,15 +7,24 @@
 
 ## 引数
 ```bash
-./deno/bin/breakdown `$1`
+./deno/bin/breakdown `$1` `$2`
 ```
 
 ### $1
 オプションの名称を `DemonstrativeType` とする。
 
-### DemonstrativeTypeの値
+#### DemonstrativeTypeの値
 - 許可された値のみが有効
 - 文字型
 - いずれか
   - "to", "summary", "defect"
+
+### $2
+オプションの名称を `LayerType` とする。
+
+#### LayerTypeの値
+- 許可された値のみが有効
+- 文字型
+- いずれか
+  - "project", "issue", "task"
 
