@@ -1,5 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
+import { getConfig } from "../breakdown/config/config.ts";
+
 type DemonstrativeType = "to" | "summary" | "defect";
 type LayerType = "project" | "issue" | "task";
 
@@ -9,6 +11,11 @@ function isValidDemonstrativeType(type: string): type is DemonstrativeType {
 
 function isValidLayerType(type: string): type is LayerType {
   return ["project", "issue", "task"].includes(type);
+}
+
+function formatOutput(demonstrative: string, layer: string): string {
+  const config = getConfig();
+  return `${demonstrative}${config.output_format}${layer}`;
 }
 
 if (import.meta.main) {
@@ -31,6 +38,6 @@ if (import.meta.main) {
       console.error("Invalid second argument. Must be one of: project, issue, task");
       Deno.exit(1);
     }
-    console.log(`${demonstrative}-${layer}`);
+    console.log(formatOutput(demonstrative, layer));
   }
 } 

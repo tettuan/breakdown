@@ -1,4 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import { getConfig, setConfig } from "../breakdown/config/config.ts";
 
 Deno.test("CLI outputs 'to' when given single valid argument", async () => {
   const process = new Deno.Command(Deno.execPath(), {
@@ -22,7 +23,7 @@ Deno.test("CLI errors on invalid first argument", async () => {
   assertEquals(error, "Invalid first argument. Must be one of: to, summary, defect");
 });
 
-Deno.test("CLI combines valid demonstrative and layer types", async () => {
+Deno.test("CLI combines valid demonstrative and layer types with default separator", async () => {
   const testCases = [
     ["to", "project", "to-project"],
     ["to", "issue", "to-issue"],
