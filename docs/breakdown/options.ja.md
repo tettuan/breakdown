@@ -57,6 +57,7 @@
 -　`<output_file>` 部分を取得する。
   - ex. `--destination ./.agent/breakdown/issues/issue_summary.md`
 - 「Path の自動補完」がなされる。
+- 「出力ファイル名の自動作成」がなされる。
 
 ### Path の自動補完
 FromFile と DestinationFile は、Pathの自動補完がされる。
@@ -85,3 +86,17 @@ Inputfile とする。
   ```
   のとき、-oは `./.agent/breakdown/issues/issue_summary.md` へ補完される
 
+
+### 出力ファイル名の自動作成
+`-o`か`--destination` パラメータが存在する、かつファイル名が空白の場合のみ行う。
+
+実行例：
+```bash
+./deno/bin/breakdown to issue -o 
+```
+
+- DestinationFile が指定されていないとき、ファイル名を生成する
+- Pathは、「Path の自動補完」に従う
+- ファイル名のみ生成する
+  - <yyyymmdd>_<ランダムなハッシュ値>.md
+  ex. 20250211_e81d0bd.md 

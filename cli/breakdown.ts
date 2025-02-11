@@ -126,7 +126,11 @@ if (import.meta.main) {
 
       const fromFile = flags.new ? autoCompletePath(undefined, layer) :
                       flags.from ? autoCompletePath(flags.from, layer) : null;
-      const destFile = flags.destination ? autoCompletePath(flags.destination, demonstrative) : null;
+      
+      // destination が存在するが値が空の場合は自動生成
+      const destFile = flags.hasOwnProperty('destination') ? 
+                      autoCompletePath(flags.destination || undefined, demonstrative) : 
+                      null;
 
       if (destFile) {
         console.log(`${fromFile} --> ${destFile}`);

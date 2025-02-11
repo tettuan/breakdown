@@ -183,6 +183,22 @@ Deno.test({
         const error = new TextDecoder().decode(stderr).trim();
         assertEquals(error, "breakdown init を実行し、作業フォルダを作成してください");
       });
+
+      await t.step("CLI auto-generates filename when -o is empty", async () => {
+        await setupTestEnv();
+        const process = new Deno.Command(Deno.execPath(), {
+          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "input.md", "-o"],
+          stdout: "piped",
+          env: commonEnv
+        });
+
+        const { stdout } = await process.output();
+        const output = new TextDecoder().decode(stdout).trim();
+        
+        // パターンを実際の出力形式に合わせる
+        const pattern = /^\.\/\.agent_test\/breakdown\/issues\/input\.md --> \.\/\.agent_test\/breakdown\/issues\/\d{8}_[0-9a-f]{8}\.md$/;
+        assertEquals(pattern.test(output), true);
+      });
     } finally {
       try {
         await cleanupTestFiles();
