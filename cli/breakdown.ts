@@ -2,7 +2,7 @@
 
 import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
 import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { getConfig } from "../breakdown/config/config.ts";
+import { getConfig, setConfig } from "../breakdown/config/config.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
 
@@ -65,6 +65,14 @@ async function checkWorkingDir(): Promise<boolean> {
   return await exists(config.working_dir);
 }
 
+// テストモードの検出
+if (Deno.env.get("BREAKDOWN_TEST") === "true") {
+  const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
+  if (testDir) {
+    setConfig({ working_dir: testDir });
+  }
+}
+
 if (import.meta.main) {
   try {
     const flags = parse(Deno.args, {
@@ -89,6 +97,10 @@ if (import.meta.main) {
       if (type === "init") {
         await initWorkspace();
       } else {
+        if (!await checkWorkingDir()) {
+          console.error("breakdown init を実行し、作業フォルダを作成してください");
+          Deno.exit(1);
+        }
         console.log(type);
       }
     } else if (args.length === 2) {
@@ -102,13 +114,13 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      if (demonstrative !== "init" && !await checkWorkingDir()) {
-        console.error("breakdown init を実行し、作業フォルダを作成してください");
+      if (!flags.from && !flags.new) {
+        console.error("Input file is required. Use --from/-f option or --new/-n for new file");
         Deno.exit(1);
       }
 
-      if (!flags.from && !flags.new) {
-        console.error("Input file is required. Use --from/-f option or --new/-n for new file");
+      if (demonstrative !== "init" && !await checkWorkingDir()) {
+        console.error("breakdown init を実行し、作業フォルダを作成してください");
         Deno.exit(1);
       }
 

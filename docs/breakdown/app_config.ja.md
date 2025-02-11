@@ -36,4 +36,4 @@ deno install -f --root ./deno --global cli/breakdown.ts
 ### WorkingDirの存在が確認できない場合
 - すべての処理を中断し、エラーメッセージを表示して終了する
   - メッセージ： breakdown init を実行し、作業フォルダを作成してください。
-
+- なお、すでに存在しているディレクトリは保持したままで、削除しない。
