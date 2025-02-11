@@ -3,6 +3,7 @@
 import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
 import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { getConfig } from "../breakdown/config/config.ts";
+import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -13,6 +14,19 @@ function isValidDemonstrativeType(type: string): type is DemonstrativeType {
 
 function isValidLayerType(type: string): type is LayerType {
   return ["project", "issue", "task"].includes(type);
+}
+
+function normalizePath(path: string): string {
+  return path.startsWith("./") ? path : "./" + path;
+}
+
+function autoCompletePath(filePath: string, demonstrative: string): string {
+  if (filePath.includes("/")) {
+    return normalizePath(filePath);
+  }
+  const config = getConfig();
+  const dirType = demonstrative === "to" ? "issue" : demonstrative;
+  return normalizePath(join(config.working_dir, dirType + "s", filePath).replace(/\\/g, "/"));
 }
 
 async function initWorkspace(): Promise<void> {
@@ -37,8 +51,6 @@ if (import.meta.main) {
       },
     });
 
-    const fromFile = flags.from;
-    const destFile = flags.destination;
     const args = flags._;
 
     if (args.length === 1) {
@@ -63,10 +75,15 @@ if (import.meta.main) {
         console.error("Invalid second argument. Must be one of: project, issue, task");
         Deno.exit(1);
       }
+
+      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : null;
+      const destFile = flags.destination ? autoCompletePath(flags.destination, demonstrative) : null;
+
       if (!fromFile) {
         console.error("Input file is required. Use --from or -f option.");
         Deno.exit(1);
       }
+
       if (destFile) {
         console.log(`${fromFile} --> ${destFile}`);
       } else {

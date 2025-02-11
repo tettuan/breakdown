@@ -48,8 +48,12 @@ export interface AppConfig {
   working_dir: string;
 }
 
+function normalizePath(path: string): string {
+  return path.startsWith("./") ? path : "./" + path;
+}
+
 let config: AppConfig = {
-  working_dir: "./.agent_test/breakdown"
+  working_dir: normalizePath(".agent/breakdown")
 };
 
 export function getConfig(): AppConfig {
@@ -57,6 +61,9 @@ export function getConfig(): AppConfig {
 }
 
 export function setConfig(newConfig: Partial<AppConfig>): void {
+  if (newConfig.working_dir) {
+    newConfig.working_dir = normalizePath(newConfig.working_dir);
+  }
   config = { ...config, ...newConfig };
 }
 

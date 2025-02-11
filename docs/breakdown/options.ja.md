@@ -42,7 +42,7 @@
 #### FromFile の値
 -　`<file>` 部分を取得する。
   - ex. `--from ./.agent/breakdown/issues/issue_summary.md`
-
+- 「Path の自動補完」がなされる。
 
 ### --destination `<output_file>`
 オプションの名称を DestinationFile とする。
@@ -56,3 +56,32 @@
 #### DestinationFile の値
 -　`<output_file>` 部分を取得する。
   - ex. `--destination ./.agent/breakdown/issues/issue_summary.md`
+- 「Path の自動補完」がなされる。
+
+### Path の自動補完
+FromFile と DestinationFile は、Pathの自動補完がされる。
+
+DestinationFile と DestinationFile は同じ自動補完なので、以下は両者を
+Inputfile とする。
+
+- Inputfile が path 情報を含む場合、何も補完しない。渡された値をそのまま利用する。
+  - ex. `--destination ./.agent/breakdown/issues/issue_summary.md`
+- Inputfile が path 情報を含まない場合、PATHの補完処理を、ルールに従って行う。
+  - ex. `--destination issue_summary.md`
+- 補完処理のルール
+  - 設定の working_directory を先頭に用いる
+  - 次に、DemonstrativeType を用いる
+  - 最後に、Inputfile を続ける
+  - つまり `<working_directory>/<DemonstrativeType>/issue_summary.md` 
+  - ex. 
+  working_directory 設定は `./.agent/breakdown` とする。
+  ```bash
+  ./deno/bin/breakdown to issue -f issue_summary.md
+  ```
+  のとき、-fは `./.agent/breakdown/issues/issue_summary.md` へ補完される
+  - ex2. 
+  ```bash
+  ./deno/bin/breakdown to issue -o issue_summary.md
+  ```
+  のとき、-oは `./.agent/breakdown/issues/issue_summary.md` へ補完される
+

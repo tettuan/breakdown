@@ -116,4 +116,26 @@ Deno.test("CLI errors on invalid layer type", async () => {
   const { stderr } = await process.output();
   const error = new TextDecoder().decode(stderr).trim();
   assertEquals(error, "Invalid second argument. Must be one of: project, issue, task");
+});
+
+Deno.test("CLI auto-completes input file path", async () => {
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "project_summary.md"],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  assertEquals(output, "./.agent/breakdown/issues/project_summary.md");
+});
+
+Deno.test("CLI auto-completes both input and output paths", async () => {
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "project_summary.md", "-o", "issue_summary.md"],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  assertEquals(output, "./.agent/breakdown/issues/project_summary.md --> ./.agent/breakdown/issues/issue_summary.md");
 }); 
