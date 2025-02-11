@@ -1,4 +1,4 @@
-import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { ensureDir } from "https://deno.land/std/fs/mod.ts";
 import { getConfig, setConfig } from "../breakdown/config/config.ts";
 
 const TEST_DIR = "./.agent_test/breakdown";
