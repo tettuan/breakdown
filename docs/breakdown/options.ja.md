@@ -7,7 +7,7 @@
 
 ## 引数
 ```bash
-./deno/bin/breakdown `$1` `$2`
+./deno/bin/breakdown `$1` `$2` --from `<file>`
 ```
 
 ### $1
@@ -29,3 +29,16 @@
 - いずれか
   - "project", "issue", "task"
 
+
+###  --from `<file>`
+オプションの名称を FromFile とする。
+エイリアスで `-f` を用いる。
+以下は同じ処理になる。
+````bash
+./deno/bin/breakdown --from `<file>`
+./deno/bin/breakdown -f `<file>`
+````
+
+#### FromFile の値
+-　`<file>` 部分を取得する。
+  - ex. `--from ./.agent/breakdown/issues/issue_summary.md`

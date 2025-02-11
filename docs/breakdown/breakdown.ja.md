@@ -49,7 +49,19 @@ defect-issue
 to-task
 ```
 
+# ファイル指定の入力
+以下のコマンドを実行したときに、 "Result Output3" が出力される。
+```bash
+./deno/bin/breakdown to project -f ./.agent/breakdown/issues/issue_summary.md
+```
+
+## Result Output3
+```
+./.agent/breakdown/issues/issue_summary.md
+```
+
 # 設定の読み込み
 次のファイルを読み込むこと。
 アプリケーション設定： `/docs/breakdown/app_config.ja.md`
+
 

@@ -2,6 +2,7 @@
 
 import { getConfig } from "../breakdown/config/config.ts";
 import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -32,10 +33,22 @@ async function initWorkspace(): Promise<void> {
 }
 
 if (import.meta.main) {
-  const args = Deno.args;
   try {
+    const flags = parse(Deno.args, {
+      string: ["from", "f"],
+      alias: { f: "from" },
+    });
+
+    const fromFile = flags.from;
+    const args = flags._;
+
+    if (fromFile) {
+      console.log(fromFile);
+      Deno.exit(0);
+    }
+
     if (args.length === 1) {
-      const type = args[0];
+      const type = args[0] as string;
       if (!isValidDemonstrativeType(type)) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
         Deno.exit(1);
@@ -47,7 +60,7 @@ if (import.meta.main) {
         console.log(type);
       }
     } else if (args.length === 2) {
-      const [demonstrative, layer] = args;
+      const [demonstrative, layer] = args as [string, string];
       if (!isValidDemonstrativeType(demonstrative)) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
         Deno.exit(1);
