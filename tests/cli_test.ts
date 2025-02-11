@@ -1,7 +1,8 @@
-import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/assert/assert_equals.ts";
 import { getConfig, setConfig } from "../breakdown/config/config.ts";
 import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
+import { parseArgs } from "../cli/args.ts";
 
 Deno.test({
   name: "CLI Test Suite",
@@ -207,4 +208,56 @@ Deno.test({
       }
     }
   }
+});
+
+// 基本的な引数解析のテスト
+Deno.test("CLI Arguments Parser", async (t) => {
+  await t.step("should return error for empty args", () => {
+    const args: string[] = [];
+    const result = parseArgs(args);
+    assertEquals(result.error, "No arguments provided");
+  });
+
+  await t.step("should handle 'to' command", () => {
+    const args = ["to"];
+    const result = parseArgs(args);
+    assertEquals(result.demonstrativeType, "to");
+    assertEquals(result.error, undefined);
+  });
+
+  await t.step("should validate DemonstrativeType", () => {
+    const args = ["invalid", "project"];
+    const result = parseArgs(args);
+    assertEquals(result.error, "Invalid DemonstrativeType");
+  });
+
+  await t.step("should handle 'to project' command", () => {
+    const args = ["to", "project"];
+    const result = parseArgs(args);
+    assertEquals(result.demonstrativeType, "to");
+    assertEquals(result.layerType, "project");
+    assertEquals(result.error, undefined);
+  });
+
+  await t.step("should validate LayerType", () => {
+    const args = ["to", "invalid"];
+    const result = parseArgs(args);
+    assertEquals(result.error, "Invalid LayerType");
+  });
+
+  await t.step("should allow init without LayerType", () => {
+    const args = ["init"];
+    const result = parseArgs(args);
+    assertEquals(result.demonstrativeType, "init");
+    assertEquals(result.layerType, undefined);
+    assertEquals(result.error, undefined);
+  });
+
+  await t.step("should ignore LayerType for init command", () => {
+    const args = ["init", "project"];
+    const result = parseArgs(args);
+    assertEquals(result.demonstrativeType, "init");
+    assertEquals(result.layerType, undefined);
+    assertEquals(result.error, undefined);
+  });
 }); 

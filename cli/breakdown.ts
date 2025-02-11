@@ -5,6 +5,7 @@ import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { getConfig, setConfig } from "../breakdown/config/config.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
+import { parseArgs } from "./args.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -73,6 +74,7 @@ if (Deno.env.get("BREAKDOWN_TEST") === "true") {
   }
 }
 
+// メイン処理
 if (import.meta.main) {
   try {
     const flags = parse(Deno.args, {
@@ -87,6 +89,7 @@ if (import.meta.main) {
 
     const args = flags._;
 
+    // 基本的なコマンド処理
     if (args.length === 1) {
       const type = args[0] as string;
       if (!isValidDemonstrativeType(type)) {
@@ -103,7 +106,9 @@ if (import.meta.main) {
         }
         console.log(type);
       }
-    } else if (args.length === 2) {
+    } 
+    // 2つの引数がある場合の処理
+    else if (args.length === 2) {
       const [demonstrative, layer] = args as [string, string];
       if (!isValidDemonstrativeType(demonstrative)) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
@@ -142,4 +147,9 @@ if (import.meta.main) {
     console.error("Error:", error.message);
     Deno.exit(1);
   }
-} 
+}
+
+const process = new Deno.Command(Deno.execPath(), {
+  args: ["run", "-A", "cli/breakdown.ts", "to"],
+  stdout: "piped",
+}); 
