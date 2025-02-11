@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run -A
 
-import { getConfig } from "../breakdown/config/config.ts";
-import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
+import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { getConfig } from "../breakdown/config/config.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -13,11 +13,6 @@ function isValidDemonstrativeType(type: string): type is DemonstrativeType {
 
 function isValidLayerType(type: string): type is LayerType {
   return ["project", "issue", "task"].includes(type);
-}
-
-function formatOutput(demonstrative: string, layer: string): string {
-  const config = getConfig();
-  return `${demonstrative}${config.output_format}${layer}`;
 }
 
 async function initWorkspace(): Promise<void> {
@@ -65,15 +60,15 @@ if (import.meta.main) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
         Deno.exit(1);
       }
-      if (demonstrative === "init") {
-        await initWorkspace();
-        Deno.exit(0);
-      }
       if (!isValidLayerType(layer)) {
         console.error("Invalid second argument. Must be one of: project, issue, task");
         Deno.exit(1);
       }
-      console.log(formatOutput(demonstrative, layer));
+      if (!fromFile) {
+        console.error("Input file is required. Use --from or -f option.");
+        Deno.exit(1);
+      }
+      console.log(fromFile);
     }
   } catch (error) {
     console.error("Error:", error.message);

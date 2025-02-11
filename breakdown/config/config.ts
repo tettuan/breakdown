@@ -46,12 +46,10 @@ import { ConfigLoadError } from "./errors.ts";
 
 export interface AppConfig {
   working_dir: string;
-  output_format: string;
 }
 
 let config: AppConfig = {
-  working_dir: "./agent/breakdown",
-  output_format: "="
+  working_dir: "./.agent_test/breakdown"
 };
 
 export function getConfig(): AppConfig {
