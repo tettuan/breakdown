@@ -42,11 +42,11 @@ deno test -A
 
 ## Result Output2
 ```
-to-project
-to-issue
-summary-issue
-defect-issue
-to-task
+入力値がないというエラーメッセージ
+入力値がないというエラーメッセージ
+入力値がないというエラーメッセージ
+入力値がないというエラーメッセージ
+入力値がないというエラーメッセージ
 ```
 
 # ファイル指定の入力

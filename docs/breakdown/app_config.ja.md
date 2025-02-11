@@ -31,29 +31,5 @@ deno install -f --root ./deno --global cli/breakdown.ts
     - 作成したことを伝えるメッセージを表示する
   - ある場合は、すでに存在することを伝えるメッセージを表示する
 
-### 設定ファイルから読み込んだ値を用いる例
-
-#### 入力値
-設定に `{"output_format": "-"}` が記載されている。
-以下のコマンドを実行したときに、 "Result Output Config-a" が出力される。
-```bash
-./deno/bin/breakdown to project
-```
-
-##### Result Output Config-a
-```
-to-project
-```
-
-設定を変えて `{"output_format": "="}` が記載されている。
-以下のコマンドを実行したときに、 "Result Output Config-b" が出力される。
-```bash
-./deno/bin/breakdown to project
-```
-
-##### Result Output Config-b
-```
-to=project
-```
 
 

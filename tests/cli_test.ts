@@ -24,25 +24,39 @@ Deno.test("CLI errors on invalid first argument", async () => {
   assertEquals(error, "Invalid first argument. Must be one of: to, summary, defect, init");
 });
 
-Deno.test("CLI combines valid demonstrative and layer types with configured separator", async () => {
-  const testCases = [
-    ["to", "project"],
-    ["to", "issue"],
-    ["summary", "issue"],
-    ["defect", "issue"],
-    ["to", "task"],
-  ];
+Deno.test("CLI errors when file input is missing", async () => {
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "project"],
+    stderr: "piped",
+  });
 
-  for (const [demonstrative, layer] of testCases) {
-    const process = new Deno.Command(Deno.execPath(), {
-      args: ["run", "-A", "cli/breakdown.ts", demonstrative, layer],
-      stdout: "piped",
-    });
+  const { stderr } = await process.output();
+  const error = new TextDecoder().decode(stderr).trim();
+  assertEquals(error, "Input file is required. Use --from or -f option.");
+});
 
-    const { stdout } = await process.output();
-    const output = new TextDecoder().decode(stdout).trim();
-    assertEquals(output, `${demonstrative}${getConfig().output_format}${layer}`);
-  }
+Deno.test("CLI outputs file path with --from option", async () => {
+  const testFile = "./.agent/breakdown/issues/issue_summary.md";
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "project", "--from", testFile],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  assertEquals(output, testFile);
+});
+
+Deno.test("CLI outputs file path with -f alias", async () => {
+  const testFile = "./.agent/breakdown/issues/issue_summary.md";
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "project", "-f", testFile],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  assertEquals(output, testFile);
 });
 
 Deno.test("CLI creates working directory on init", async () => {
@@ -89,28 +103,4 @@ Deno.test("CLI errors on invalid layer type", async () => {
   const { stderr } = await process.output();
   const error = new TextDecoder().decode(stderr).trim();
   assertEquals(error, "Invalid second argument. Must be one of: project, issue, task");
-});
-
-Deno.test("CLI outputs file path with --from option", async () => {
-  const testFile = "./.agent/breakdown/issues/issue_summary.md";
-  const process = new Deno.Command(Deno.execPath(), {
-    args: ["run", "-A", "cli/breakdown.ts", "--from", testFile],
-    stdout: "piped",
-  });
-
-  const { stdout } = await process.output();
-  const output = new TextDecoder().decode(stdout).trim();
-  assertEquals(output, testFile);
-});
-
-Deno.test("CLI outputs file path with -f alias", async () => {
-  const testFile = "./.agent/breakdown/issues/issue_summary.md";
-  const process = new Deno.Command(Deno.execPath(), {
-    args: ["run", "-A", "cli/breakdown.ts", "-f", testFile],
-    stdout: "piped",
-  });
-
-  const { stdout } = await process.output();
-  const output = new TextDecoder().decode(stdout).trim();
-  assertEquals(output, testFile);
 }); 
