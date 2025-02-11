@@ -49,7 +49,7 @@ deno test -A
 入力値がないというエラーメッセージ
 ```
 
-# ファイル指定の入力
+# 入力ファイル指定の入力
 以下のコマンドを実行したときに、 "Result Output3" が出力される。
 ```bash
 ./deno/bin/breakdown to project -f ./.agent/breakdown/issues/issue_summary.md
@@ -58,6 +58,17 @@ deno test -A
 ## Result Output3
 ```
 ./.agent/breakdown/issues/issue_summary.md
+```
+
+# 出力ファイル指定の入力
+以下のコマンドを実行したときに、 "Result Output4" が出力される。
+```bash
+./deno/bin/breakdown to issue -f ./.agent/breakdown/issues/project_summary.md -o ./.agent/breakdown/issues/issue_summary.md
+```
+
+## Result Output4
+```
+./.agent/breakdown/issues/project_summary.md --> ./.agent/breakdown/issues/issue_summary.md
 ```
 
 # 設定の読み込み

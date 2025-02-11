@@ -30,17 +30,16 @@ async function initWorkspace(): Promise<void> {
 if (import.meta.main) {
   try {
     const flags = parse(Deno.args, {
-      string: ["from", "f"],
-      alias: { f: "from" },
+      string: ["from", "f", "destination", "o"],
+      alias: { 
+        f: "from",
+        o: "destination"
+      },
     });
 
     const fromFile = flags.from;
+    const destFile = flags.destination;
     const args = flags._;
-
-    if (fromFile) {
-      console.log(fromFile);
-      Deno.exit(0);
-    }
 
     if (args.length === 1) {
       const type = args[0] as string;
@@ -68,7 +67,11 @@ if (import.meta.main) {
         console.error("Input file is required. Use --from or -f option.");
         Deno.exit(1);
       }
-      console.log(fromFile);
+      if (destFile) {
+        console.log(`${fromFile} --> ${destFile}`);
+      } else {
+        console.log(fromFile);
+      }
     }
   } catch (error) {
     console.error("Error:", error.message);

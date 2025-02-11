@@ -7,7 +7,7 @@
 
 ## 引数
 ```bash
-./deno/bin/breakdown `$1` `$2` --from `<file>`
+./deno/bin/breakdown `$1` `$2` --from `<file>` --destination `<output_file>`
 ```
 
 ### $1
@@ -42,3 +42,17 @@
 #### FromFile の値
 -　`<file>` 部分を取得する。
   - ex. `--from ./.agent/breakdown/issues/issue_summary.md`
+
+
+### --destination `<output_file>`
+オプションの名称を DestinationFile とする。
+エイリアスで `-o` を用いる。
+以下は同じ処理になる。
+````bash
+./deno/bin/breakdown --destination `<output_file>`
+./deno/bin/breakdown -o `<output_file>`
+````
+
+#### DestinationFile の値
+-　`<output_file>` 部分を取得する。
+  - ex. `--destination ./.agent/breakdown/issues/issue_summary.md`

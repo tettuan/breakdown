@@ -59,6 +59,19 @@ Deno.test("CLI outputs file path with -f alias", async () => {
   assertEquals(output, testFile);
 });
 
+Deno.test("CLI outputs file conversion with destination", async () => {
+  const inputFile = "./.agent/breakdown/issues/project_summary.md";
+  const outputFile = "./.agent/breakdown/issues/issue_summary.md";
+  const process = new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", inputFile, "-o", outputFile],
+    stdout: "piped",
+  });
+
+  const { stdout } = await process.output();
+  const output = new TextDecoder().decode(stdout).trim();
+  assertEquals(output, `${inputFile} --> ${outputFile}`);
+});
+
 Deno.test("CLI creates working directory on init", async () => {
   const config = getConfig();
   try {
