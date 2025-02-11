@@ -44,20 +44,22 @@ import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { BreakdownConfig, ConfigOptions, WorkspaceStructure } from "./types.ts";
 import { ConfigLoadError } from "./errors.ts";
 
-export interface OutputConfig {
+export interface AppConfig {
+  working_dir: string;
   output_format: string;
 }
 
-let config: OutputConfig = {
+let config: AppConfig = {
+  working_dir: "./agent/breakdown",
   output_format: "="
 };
 
-export function getConfig(): OutputConfig {
+export function getConfig(): AppConfig {
   return config;
 }
 
-export function setConfig(newConfig: OutputConfig): void {
-  config = newConfig;
+export function setConfig(newConfig: Partial<AppConfig>): void {
+  config = { ...config, ...newConfig };
 }
 
 export class Config {
