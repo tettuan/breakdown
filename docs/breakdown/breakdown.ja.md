@@ -48,3 +48,8 @@ summary-issue
 defect-issue
 to-task
 ```
+
+# 設定の読み込み
+次のファイルを読み込むこと。
+アプリケーション設定： `/docs/breakdown/app_config.ja.md`
+

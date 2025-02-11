@@ -1,0 +1,59 @@
+# アプリケーション設定の読み込み
+## 実行概要
+```bash
+deno install -f --root ./deno --global cli/breakdown.ts 
+```
+でインストールしたあと、
+以下のコマンドを実行すると
+```bash
+./deno/bin/breakdown to project
+```
+
+アプrケーションの設定ファイル
+`/breakdown/config/config.ts` 
+を読み込む。
+
+読み込んだ設定ファイルの内容を用いて、アプリケーションの挙動が変わるようにする。
+
+
+## WorkingDirの設定
+設定に `{"working_dir": "./agent/breakdown"}` が記載されている。
+このとき、次のコマンド
+```bash
+./deno/bin/breakdown init
+```
+が実行されると、
+次の「作業スペース作成処理」が行われる。
+
+### 作業スペース作成処理
+- `working_dir` の存在を確認する
+  - ない場合は、作成する
+    - 作成したことを伝えるメッセージを表示する
+  - ある場合は、すでに存在することを伝えるメッセージを表示する
+
+### 設定ファイルから読み込んだ値を用いる例
+
+#### 入力値
+設定に `{"output_format": "-"}` が記載されている。
+以下のコマンドを実行したときに、 "Result Output Config-a" が出力される。
+```bash
+./deno/bin/breakdown to project
+```
+
+##### Result Output Config-a
+```
+to-project
+```
+
+設定を変えて `{"output_format": "="}` が記載されている。
+以下のコマンドを実行したときに、 "Result Output Config-b" が出力される。
+```bash
+./deno/bin/breakdown to project
+```
+
+##### Result Output Config-b
+```
+to=project
+```
+
+
