@@ -6,7 +6,7 @@ deno install -f --root ./deno --global cli/breakdown.ts
 でインストールしたあと、
 以下のコマンドを実行すると
 ```bash
-./deno/bin/breakdown to project
+./.deno/bin/breakdown to project
 ```
 
 アプリケーションの設定ファイル
@@ -20,7 +20,7 @@ deno install -f --root ./deno --global cli/breakdown.ts
 設定に `{"working_dir": "./agent/breakdown"}` が記載されている。
 このとき、次のコマンド
 ```bash
-./deno/bin/breakdown init
+./.deno/bin/breakdown init
 ```
 が実行されると、
 次の「作業スペース作成処理」が行われる。

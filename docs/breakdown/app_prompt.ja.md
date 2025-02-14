@@ -22,7 +22,7 @@ app_configの設定ファイルに記載する。
 
 ex.
 ```bash
-./deno/bin/breakdown to issue -f ./.agent/breakdown/project/project_summary.md -o 
+./.deno/bin/breakdown to issue -f ./.agent/breakdown/project/project_summary.md -o 
 ```
 のとき、
 - dir : <app_prompt.base_dir>/to/issue

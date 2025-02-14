@@ -2,12 +2,12 @@
 # breakdown 引数
 ## 基本コマンド
 ```bash
-./deno/bin/breakdown
+./.deno/bin/breakdown
 ```
 
 ## 引数
 ```bash
-./deno/bin/breakdown `$1` `$2` --from `<file>` --destination `<output_file>`
+./.deno/bin/breakdown `$1` `$2` --from `<file>` --destination `<output_file>`
 ```
 
 ### $1
@@ -35,8 +35,8 @@
 エイリアスで `-f` を用いる。
 以下は同じ処理になる。
 ````bash
-./deno/bin/breakdown --from `<file>`
-./deno/bin/breakdown -f `<file>`
+./.deno/bin/breakdown --from `<file>`
+./.deno/bin/breakdown -f `<file>`
 ````
 
 #### FromFile の値
@@ -49,8 +49,8 @@
 エイリアスで `-o` を用いる。
 以下は同じ処理になる。
 ````bash
-./deno/bin/breakdown --destination `<output_file>`
-./deno/bin/breakdown -o `<output_file>`
+./.deno/bin/breakdown --destination `<output_file>`
+./.deno/bin/breakdown -o `<output_file>`
 ````
 
 #### DestinationFile の値
@@ -77,12 +77,12 @@ Inputfile とする。
   - ex. 
   working_directory 設定は `./.agent/breakdown` とする。
   ```bash
-  ./deno/bin/breakdown to issue -f issue_summary.md
+  ./.deno/bin/breakdown to issue -f issue_summary.md
   ```
   のとき、-fは `./.agent/breakdown/issues/issue_summary.md` へ補完される
   - ex2. 
   ```bash
-  ./deno/bin/breakdown to issue -o issue_summary.md
+  ./.deno/bin/breakdown to issue -o issue_summary.md
   ```
   のとき、-oは `./.agent/breakdown/issues/issue_summary.md` へ補完される
 
@@ -92,7 +92,7 @@ Inputfile とする。
 
 実行例：
 ```bash
-./deno/bin/breakdown to issue -o 
+./.deno/bin/breakdown to issue -o 
 ```
 
 - DestinationFile が指定されていないとき、ファイル名を生成する
