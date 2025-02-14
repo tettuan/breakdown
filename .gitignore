@@ -68,5 +68,8 @@ yarn-error.log*
 .vscode/*
 
 # breakdown
-./breakdown
-./breakdown/*
+/.breakdown
+/.agent/
+
+/examples/
+/examples/*

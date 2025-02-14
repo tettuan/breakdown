@@ -23,7 +23,15 @@
     },
     "command": {
       "type": "string",
-      "description": "Command to execute (if applicable)"
+      "description": "Command to execute (if applicable) with `>>` and `2>>` for log file"
+    },
+    "result": {
+      "type": "string",
+      "description": "The results of the execution are written to a log, and after analyzing the log, the item to update and save the analysis results."
+    },
+    "validation": {
+      "type": "string",
+      "description": "the way to validate the result of the command execution satisfy the definitionOfDone"
     },
     "definitionOfDone": {
       "type": "string",

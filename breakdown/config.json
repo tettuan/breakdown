@@ -1,10 +1,12 @@
 {
-  "working_directory": {
+  "working_directory": ".",
+  "output_directory": "./breakdown",
+  "workspace_structure": {
     "root": ".agent/breakdown",
-    "Interims": {
-      "projects": "projects",
+    "directories": {
       "issues": "issues",
-      "tasks": "tasks"
+      "tasks": "tasks",
+      "projects": "projects"
     }
   }
 } 

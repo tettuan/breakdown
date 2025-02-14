@@ -1,67 +1,155 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env
+#!/usr/bin/env -S deno run -A
 
-import { parse } from "https://deno.land/std/flags/mod.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
-import { copy, ensureDir } from "https://deno.land/std/fs/mod.ts";
+import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
+import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { getConfig, setConfig } from "../breakdown/config/config.ts";
+import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
+import { parseArgs } from "./args.ts";
 
-interface Config {
-  working_directory: {
-    root: string;
-    Interims: {
-      projects: string;
-      issues: string;
-      tasks: string;
-    };
-  };
+type DemonstrativeType = "to" | "summary" | "defect" | "init";
+type LayerType = "project" | "issue" | "task";
+
+function isValidDemonstrativeType(type: string): type is DemonstrativeType {
+  return ["to", "summary", "defect", "init"].includes(type);
 }
 
-async function initBreakdown(targetDir: string) {
-  // configファイルのパスを取得
-  const configPath = join(targetDir, "breakdown", "config.json");
+function isValidLayerType(type: string): type is LayerType {
+  return ["project", "issue", "task"].includes(type);
+}
 
+function normalizePath(path: string): string {
+  return path.startsWith("./") ? path : "./" + path;
+}
+
+function generateDefaultFilename(): string {
+  const date = new Date();
+  const dateStr = date.getFullYear().toString() +
+    (date.getMonth() + 1).toString().padStart(2, '0') +
+    date.getDate().toString().padStart(2, '0');
+  
+  const randomBytes = new Uint8Array(4);
+  crypto.getRandomValues(randomBytes);
+  const hash = Array.from(randomBytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return `${dateStr}_${hash}.md`;
+}
+
+function autoCompletePath(filePath: string | undefined, demonstrative: string): string {
+  if (!filePath) {
+    filePath = generateDefaultFilename();
+  }
+  if (filePath.includes("/")) {
+    return normalizePath(filePath);
+  }
+  const config = getConfig();
+  const dirType = demonstrative === "to" ? "issue" : demonstrative;
+  return normalizePath(join(config.working_dir, dirType + "s", filePath).replace(/\\/g, "/"));
+}
+
+async function initWorkspace(): Promise<void> {
+  const config = getConfig();
+  const dirExists = await exists(config.working_dir);
+  
+  if (dirExists) {
+    console.log(`Working directory already exists: ${config.working_dir}`);
+  } else {
+    await ensureDir(config.working_dir);
+    console.log(`Created working directory: ${config.working_dir}`);
+  }
+}
+
+async function checkWorkingDir(): Promise<boolean> {
+  const config = getConfig();
+  return await exists(config.working_dir);
+}
+
+// テストモードの検出
+if (Deno.env.get("BREAKDOWN_TEST") === "true") {
+  const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
+  if (testDir) {
+    setConfig({ working_dir: testDir });
+  }
+}
+
+// メイン処理
+if (import.meta.main) {
   try {
-    // configファイルを読み込む
-    const configText = await Deno.readTextFile(configPath);
-    const config = JSON.parse(configText) as Config;
+    const flags = parse(Deno.args, {
+      string: ["from", "f", "destination", "o"],
+      boolean: ["new", "n"],
+      alias: { 
+        f: "from",
+        o: "destination",
+        n: "new"
+      },
+    });
 
-    // working_directory.rootのパスを取得
-    const workingDir = join(targetDir, config.working_directory.root);
+    const args = flags._;
 
-    // working_dirとその中のInterimsディレクトリを作成
-    await ensureDir(workingDir);
-    await ensureDir(join(workingDir, config.working_directory.Interims.projects));
-    await ensureDir(join(workingDir, config.working_directory.Interims.issues));
-    await ensureDir(join(workingDir, config.working_directory.Interims.tasks));
+    // 基本的なコマンド処理
+    if (args.length === 1) {
+      const type = args[0] as string;
+      if (!isValidDemonstrativeType(type)) {
+        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
+        Deno.exit(1);
+      }
+      
+      if (type === "init") {
+        await initWorkspace();
+      } else {
+        if (!await checkWorkingDir()) {
+          console.error("breakdown init を実行し、作業フォルダを作成してください");
+          Deno.exit(1);
+        }
+        console.log(type);
+      }
+    } 
+    // 2つの引数がある場合の処理
+    else if (args.length === 2) {
+      const [demonstrative, layer] = args as [string, string];
+      if (!isValidDemonstrativeType(demonstrative)) {
+        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
+        Deno.exit(1);
+      }
+      if (!isValidLayerType(layer)) {
+        console.error("Invalid second argument. Must be one of: project, issue, task");
+        Deno.exit(1);
+      }
 
-    // config.jsonをworking_directory.rootにコピー
-    const destConfigPath = join(workingDir, "config.json");
-    await copy(configPath, destConfigPath, { overwrite: true });
+      if (!flags.from && !flags.new) {
+        console.error("Input file is required. Use --from/-f option or --new/-n for new file");
+        Deno.exit(1);
+      }
 
-    console.log(`Breakdown initialized successfully in ${workingDir}`);
+      if (demonstrative !== "init" && !await checkWorkingDir()) {
+        console.error("breakdown init を実行し、作業フォルダを作成してください");
+        Deno.exit(1);
+      }
 
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      console.error("Error: breakdown/config.json not found");
-      Deno.exit(1);
+      const fromFile = flags.new ? autoCompletePath(undefined, layer) :
+                      flags.from ? autoCompletePath(flags.from, layer) : null;
+      
+      // destination が存在するが値が空の場合は自動生成
+      const destFile = flags.hasOwnProperty('destination') ? 
+                      autoCompletePath(flags.destination || undefined, demonstrative) : 
+                      null;
+
+      if (destFile) {
+        console.log(`${fromFile} --> ${destFile}`);
+      } else {
+        console.log(fromFile);
+      }
     }
+  } catch (error) {
     console.error("Error:", error.message);
     Deno.exit(1);
   }
 }
 
-async function main() {
-  const args = parse(Deno.args);
-  const [command, dir] = args._;
-
-  if (command !== "init" || !dir) {
-    console.log("Usage: breakdown init <directory>");
-    Deno.exit(1);
-  }
-
-  const targetDir = dir === "." ? Deno.cwd() : String(dir);
-  await initBreakdown(targetDir);
-}
-
-if (import.meta.main) {
-  main();
-} 
+const process = new Deno.Command(Deno.execPath(), {
+  args: ["run", "-A", "cli/breakdown.ts", "to"],
+  stdout: "piped",
+}); 
