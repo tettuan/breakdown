@@ -5,14 +5,16 @@ export class ConfigError extends Error {
   }
 }
 
-export class ConfigLoadError extends ConfigError {
-  override cause?: Error;
-
+export class ConfigLoadError extends Error {
   constructor(path: string, cause?: unknown) {
-    super(`Failed to load config from: ${path}`);
+    super(`Failed to load config from ${path}${cause ? `: ${cause}` : ''}`);
     this.name = 'ConfigLoadError';
-    if (cause instanceof Error) {
-      this.cause = cause;
-    }
+  }
+}
+
+export class ConfigValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConfigValidationError';
   }
 } 

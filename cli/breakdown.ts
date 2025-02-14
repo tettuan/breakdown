@@ -1,11 +1,13 @@
 #!/usr/bin/env -S deno run -A
 
-import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
-import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { getConfig, setConfig } from "../breakdown/config/config.ts";
-import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
-import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
+import { parse } from "https://deno.land/std@0.210.0/flags/mod.ts";
+import { exists } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { getConfig, initializeConfig, setConfig } from "../breakdown/config/config.ts";
+import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
+import { crypto } from "https://deno.land/std@0.210.0/crypto/mod.ts";
 import { parseArgs } from "./args.ts";
+import { loadPrompt } from "../breakdown/prompts/loader.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -49,15 +51,33 @@ function autoCompletePath(filePath: string | undefined, demonstrative: string): 
   return normalizePath(join(config.working_dir, dirType + "s", filePath).replace(/\\/g, "/"));
 }
 
+function getPromptPath(
+  demonstrativeType: string,
+  layerType: string,
+  fromFile: string
+): string {
+  const config = getConfig();
+  const baseDir = config.app_prompt?.base_dir || "./breakdown/prompts/";
+  const fromType = fromFile.includes("project") ? "project" :
+                  fromFile.includes("issue") ? "issue" :
+                  fromFile.includes("task") ? "task" : layerType;
+  
+  return normalizePath(join(baseDir, demonstrativeType, layerType, `f_${fromType}.md`));
+}
+
 async function initWorkspace(): Promise<void> {
   const config = getConfig();
-  const dirExists = await exists(config.working_dir);
-  
-  if (dirExists) {
-    console.log(`Working directory already exists: ${config.working_dir}`);
-  } else {
-    await ensureDir(config.working_dir);
-    console.log(`Created working directory: ${config.working_dir}`);
+  try {
+    const dirExists = await exists(config.working_dir);
+    if (dirExists) {
+      console.log(`Working directory already exists: ${config.working_dir}`);
+    } else {
+      await ensureDir(config.working_dir);
+      console.log(`Created working directory: ${config.working_dir}`);
+    }
+  } catch (error) {
+    console.error(`Failed to initialize workspace: ${error.message}`);
+    Deno.exit(1);
   }
 }
 
@@ -66,28 +86,48 @@ async function checkWorkingDir(): Promise<boolean> {
   return await exists(config.working_dir);
 }
 
-// テストモードの検出
-if (Deno.env.get("BREAKDOWN_TEST") === "true") {
-  const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
-  if (testDir) {
-    setConfig({ working_dir: testDir });
+async function processWithPrompt(
+  demonstrativeType: string,
+  layerType: string,
+  fromFile: string,
+  destFile?: string
+): Promise<void> {
+  try {
+    const promptPath = getPromptPath(demonstrativeType, layerType, fromFile);
+    
+    if (destFile) {
+      console.log(`${fromFile} --> ${promptPath} --> ${destFile}`);
+    } else {
+      console.log(`${fromFile} --> ${promptPath}`);
+    }
+  } catch (error) {
+    console.error(`Error processing prompt: ${error.message}`);
+    Deno.exit(1);
   }
 }
 
 // メイン処理
 if (import.meta.main) {
   try {
+    await initializeConfig().catch(() => {});
+
     const flags = parse(Deno.args, {
       string: ["from", "f", "destination", "o"],
-      boolean: ["new", "n"],
       alias: { 
         f: "from",
-        o: "destination",
-        n: "new"
+        o: "destination"
       },
     });
 
     const args = flags._;
+
+    // テストモード時の設定
+    if (Deno.env.get("BREAKDOWN_TEST") === "true") {
+      const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
+      if (testDir) {
+        setConfig({ working_dir: testDir });
+      }
+    }
 
     // 基本的なコマンド処理
     if (args.length === 1) {
@@ -119,8 +159,8 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      if (!flags.from && !flags.new) {
-        console.error("Input file is required. Use --from/-f option or --new/-n for new file");
+      if (!flags.from) {
+        console.error("Input file is required. Use --from/-f option");
         Deno.exit(1);
       }
 
@@ -129,19 +169,18 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      const fromFile = flags.new ? autoCompletePath(undefined, layer) :
-                      flags.from ? autoCompletePath(flags.from, layer) : null;
+      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : null;
       
-      // destination が存在するが値が空の場合は自動生成
       const destFile = flags.hasOwnProperty('destination') ? 
                       autoCompletePath(flags.destination || undefined, demonstrative) : 
                       null;
 
-      if (destFile) {
-        console.log(`${fromFile} --> ${destFile}`);
-      } else {
-        console.log(fromFile);
+      if (!fromFile) {
+        console.error("Input file is required");
+        Deno.exit(1);
       }
+
+      await processWithPrompt(demonstrative, layer, fromFile, destFile);
     }
   } catch (error) {
     console.error("Error:", error.message);
