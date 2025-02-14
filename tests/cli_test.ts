@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/assert_equals.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { getConfig, setConfig } from "../breakdown/config/config.ts";
 import { ensureDir, exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
