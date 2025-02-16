@@ -93,12 +93,26 @@ async function processWithPrompt(
   destFile?: string
 ): Promise<void> {
   try {
-    // fromFileからtypeを抽出する処理を復活
     const fromType = fromFile.includes("project") ? "project" :
                     fromFile.includes("issue") ? "issue" :
                     fromFile.includes("task") ? "task" : layerType;
     
-    const prompt = await loadPrompt(demonstrativeType, layerType, fromType);
+    // 入力ファイルの内容を読み込む
+    let inputMarkdown = "";
+    try {
+      inputMarkdown = await Deno.readTextFile(fromFile);
+    } catch (error) {
+      console.error(`Error reading input file: ${error.message}`);
+      Deno.exit(1);
+    }
+
+    const variables = {
+      input_markdown_file: fromFile,
+      input_markdown: inputMarkdown,
+      destination_path: destFile || "",
+    };
+    
+    const prompt = await loadPrompt(demonstrativeType, layerType, fromType, variables);
     console.log(prompt);
   } catch (error) {
     console.error(`Error processing prompt: ${error.message}`);
