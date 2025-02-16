@@ -93,11 +93,13 @@ async function processWithPrompt(
   destFile?: string
 ): Promise<void> {
   try {
+    const config = getConfig();
+
     const fromType = fromFile.includes("project") ? "project" :
                     fromFile.includes("issue") ? "issue" :
                     fromFile.includes("task") ? "task" : layerType;
     
-    // 入力ファイルの内容を読み込む
+    // 入力ファイルの読み込み
     let inputMarkdown = "";
     try {
       inputMarkdown = await Deno.readTextFile(fromFile);
@@ -110,7 +112,7 @@ async function processWithPrompt(
       input_markdown: inputMarkdown,
       destination_path: destFile || "",
     };
-    
+
     const prompt = await loadPrompt(demonstrativeType, layerType, fromType, variables);
     console.log(prompt);
   } catch (error) {
@@ -133,14 +135,6 @@ if (import.meta.main) {
     });
 
     const args = flags._;
-
-    // テストモード時の設定
-    if (Deno.env.get("BREAKDOWN_TEST") === "true") {
-      const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
-      if (testDir) {
-        setConfig({ working_dir: testDir });
-      }
-    }
 
     // 基本的なコマンド処理
     if (args.length === 1) {
@@ -182,7 +176,7 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : null;
+      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : undefined;
       
       const destFile = flags.hasOwnProperty('destination') ? 
                       autoCompletePath(flags.destination || undefined, demonstrative) : 
