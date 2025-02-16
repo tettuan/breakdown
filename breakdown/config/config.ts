@@ -92,14 +92,17 @@ export async function initializeConfig(options: ConfigOptions = {}): Promise<voi
   const defaultWorkingDir = "./.agent/breakdown";
   
   try {
-    const configPath = options.configPath || "/breakdown/config/config.ts";
+    const configPath = options.configPath || 
+                      Deno.env.get("BREAKDOWN_CONFIG") || 
+                      "/breakdown/config/config.ts";
+    
     const configData = await loadConfigFile(configPath);
     
     setConfig({
-      working_dir: options.workingDir || configData.working_dir || defaultWorkingDir
+      working_dir: options.workingDir || configData.working_dir || defaultWorkingDir,
+      app_prompt: configData.app_prompt
     });
-  } catch {
-    // エラーメッセージを出力せず、デフォルト値を設定
+  } catch (error: unknown) {
     setConfig({
       working_dir: defaultWorkingDir
     });
