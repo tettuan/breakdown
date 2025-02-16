@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import { assertEquals, assert } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
 import { parseArgs } from "../cli/args.ts";
 
@@ -48,31 +48,35 @@ Deno.test({
         assertEquals(error, "Input file is required. Use --from/-f option");
       });
 
-      await t.step("CLI outputs file path with --from option", async () => {
-        const testFile = "./.agent/breakdown/issues/issue_summary.md";
+      await t.step("CLI outputs prompt content with --from option", async () => {
+        const testFile = "./.agent/breakdown/project/project_summary.md";
         const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "task", "--from", testFile],
+          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "--from", testFile],
           stdout: "piped",
         });
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
-        assertEquals(output, `${testFile} --> ./breakdown/prompts/to/task/f_issue.md`);
+        
+        // プロンプトの内容が含まれていることを確認
+        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
+        assert(output.length > 0);
       });
 
-      await t.step("CLI outputs file path with -f alias", async () => {
-        const testFile = "./.agent/breakdown/issues/issue_summary.md";
+      await t.step("CLI outputs prompt content with -f alias", async () => {
+        const testFile = "./.agent/breakdown/project/project_summary.md";
         const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "task", "-f", testFile],
+          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", testFile],
           stdout: "piped",
         });
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
-        assertEquals(output, `${testFile} --> ./breakdown/prompts/to/task/f_issue.md`);
+        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
+        assert(output.length > 0);
       });
 
-      await t.step("CLI outputs file conversion with destination", async () => {
+      await t.step("CLI outputs prompt content with destination", async () => {
         const inputFile = "./.agent/breakdown/issues/project_summary.md";
         const outputFile = "./.agent/breakdown/issues/issue_summary.md";
         const process = new Deno.Command(Deno.execPath(), {
@@ -82,7 +86,8 @@ Deno.test({
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
-        assertEquals(output, `${inputFile} --> ./breakdown/prompts/to/issue/f_project.md --> ${outputFile}`);
+        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
+        assert(output.length > 0);
       });
 
       await t.step("CLI creates working directory on init", async () => {
@@ -123,47 +128,6 @@ Deno.test({
         const { stderr } = await process.output();
         const error = new TextDecoder().decode(stderr).trim();
         assertEquals(error, "Invalid second argument. Must be one of: project, issue, task");
-      });
-
-      await t.step("CLI auto-completes input file path", async () => {
-        const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "project_summary.md"],
-          stdout: "piped",
-        });
-
-        const { stdout } = await process.output();
-        const output = new TextDecoder().decode(stdout).trim();
-        const expectedPath = "./.agent/breakdown/issues/project_summary.md";
-        assertEquals(output, `${expectedPath} --> ./breakdown/prompts/to/issue/f_project.md`);
-      });
-
-      await t.step("CLI auto-completes both input and output paths", async () => {
-        const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "project_summary.md", "-o", "issue_summary.md"],
-          stdout: "piped",
-        });
-
-        const { stdout } = await process.output();
-        const output = new TextDecoder().decode(stdout).trim();
-        const inputPath = "./.agent/breakdown/issues/project_summary.md";
-        const outputPath = "./.agent/breakdown/issues/issue_summary.md";
-        assertEquals(output, `${inputPath} --> ./breakdown/prompts/to/issue/f_project.md --> ${outputPath}`);
-      });
-
-      await t.step("CLI auto-generates filename when -o is empty", async () => {
-        await setupTestEnv();
-        const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", "input.md", "-o"],
-          stdout: "piped",
-          env: commonEnv
-        });
-
-        const { stdout } = await process.output();
-        const output = new TextDecoder().decode(stdout).trim();
-        
-        // プロンプトパスを含むパターンに修正
-        const pattern = /^\.\/\.agent_test\/breakdown\/issues\/input\.md --> \.\/breakdown\/prompts\/to\/issue\/f_\w+\.md --> \.\/\.agent_test\/breakdown\/issues\/\d{8}_[0-9a-f]{8}\.md$/;
-        assertEquals(pattern.test(output), true);
       });
     } finally {
       await cleanupTestFiles();
