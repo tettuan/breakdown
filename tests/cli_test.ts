@@ -1,6 +1,8 @@
 import { assertEquals, assert } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
 import { parseArgs } from "../cli/args.ts";
+import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 
 Deno.test({
   name: "CLI Test Suite",
@@ -77,7 +79,10 @@ Deno.test({
       });
 
       await t.step("CLI outputs prompt content with destination", async () => {
-        const inputFile = "./.agent/breakdown/issues/project_summary.md";
+        const testDir = await setupTestEnv();
+        await setupTestFiles(testDir);
+
+        const inputFile = "./.agent/breakdown/project/project_summary.md";
         const outputFile = "./.agent/breakdown/issues/issue_summary.md";
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", inputFile, "-o", outputFile],
@@ -86,8 +91,13 @@ Deno.test({
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
-        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
-        assert(output.length > 0);
+        
+        // 期待値を新しいプロンプト形式に合わせる
+        assert(output.includes("# Input"));
+        assert(output.includes("# Source"));
+        assert(output.includes("# Output"));
+        assert(output.includes(inputFile));
+        assert(output.includes(outputFile));
       });
 
       await t.step("CLI creates working directory on init", async () => {
@@ -185,4 +195,17 @@ Deno.test("CLI Arguments Parser", async (t) => {
     assertEquals(result.layerType, undefined);
     assertEquals(result.error, undefined);
   });
-}); 
+});
+
+// テスト用のファイルとディレクトリを準備
+async function setupTestFiles(testDir: string): Promise<void> {
+  const inputDir = join(testDir, "project");
+  const outputDir = join(testDir, "issues");
+  await ensureDir(inputDir);
+  await ensureDir(outputDir);
+
+  // テスト用の入力ファイルを作成
+  const inputFile = join(inputDir, "project_summary.md");
+  await Deno.writeTextFile(inputFile, `# Test Project
+This is a test project summary.`);
+} 

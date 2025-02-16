@@ -9,7 +9,16 @@ async function setupTestPrompts(): Promise<void> {
   await ensureDir(baseDir);
   await Deno.writeTextFile(
     `${baseDir}/f_project.md`,
-    "プロジェクトからIssueへの変換プロンプト"
+    `プロジェクトからIssueへの変換プロンプト
+
+# Input
+{input_markdown}
+
+# Source
+{input_markdown_file}
+
+# Output
+{destination_path}`
   );
 }
 
@@ -31,8 +40,16 @@ Deno.test("Prompt Loader", async (t) => {
 
   await t.step("loads from-type specific prompt", async () => {
     const prompt = await loadPrompt("to", "issue", "project");
-    assertEquals(typeof prompt, "string");
-    assertEquals(prompt, "プロジェクトからIssueへの変換プロンプト");
+    assertEquals(prompt, `プロジェクトからIssueへの変換プロンプト
+
+# Input
+{input_markdown}
+
+# Source
+{input_markdown_file}
+
+# Output
+{destination_path}`);
   });
 
   await t.step("throws error for non-existent prompt", async () => {
@@ -41,5 +58,18 @@ Deno.test("Prompt Loader", async (t) => {
       Error,
       "Prompt file not found"
     );
+  });
+
+  await t.step("replaces template variables in prompt", async () => {
+    const variables = {
+      input_markdown_file: "test.md",
+      input_markdown: "# Test Content",
+      destination_path: "./output/",
+    };
+    
+    const prompt = await loadPrompt("to", "issue", "project", variables);
+    assertEquals(prompt.includes("test.md"), true);
+    assertEquals(prompt.includes("# Test Content"), true);
+    assertEquals(prompt.includes("./output/"), true);
   });
 }); 
