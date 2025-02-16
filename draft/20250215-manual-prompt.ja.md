@@ -25,7 +25,7 @@ grep -r "<キーワードを正規表現のOR条件で繋げる>" */*.ts
 # 仕様変更の把握
 追加対応分をGitの差分から確認します。
 ```bash
-git diff docs/
+git diff $(git merge-base HEAD develop) docs/ 
 ```
 
 その後、差分内容をもとに、今回実装するスコープを定めます。
