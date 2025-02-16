@@ -102,8 +102,7 @@ async function processWithPrompt(
     try {
       inputMarkdown = await Deno.readTextFile(fromFile);
     } catch (error) {
-      console.error(`Error reading input file: ${error.message}`);
-      Deno.exit(1);
+      throw new Error(`Failed to read input file: ${fromFile} - ${error.message}`);
     }
 
     const variables = {

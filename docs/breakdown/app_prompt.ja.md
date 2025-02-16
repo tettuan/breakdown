@@ -32,18 +32,42 @@ ex.
 - 自動補完・自動命名された後に行う
 
 ## 出力形式
-すべての出力において、プロンプトの内容を表示します：
+すべての出力において、プロンプトの内容を表示します。
+表示時に「置換処理」を行ったうえで出力します。
 
-ex.
+ex.：
 入力プロンプトの内容： ```prompt
 # example prompt 
 this is a propmt contents.
+{input_markdown_file}
+{input_markdown}
+
+# destination path
+{destination_path}
 ```
 
 出力： ```
 # example prompt 
 this is a propmt contents.
+./.agent/breakdown/issues/12345_something.md
+# input markdown
+this is a input markdown contents.
+
+# destination path
+./.agent/breakdown/tasks/
 ```
+### 置換処理
+CLIオプションの値と、自動補完処理されたファイルを用いる。
+
+#### {input_markdown_file}
+- CLI の -f で渡されたファイルのPATH
+  - 自動補完されたディレクトリ情報を含む
+####  {input_markdown}
+- CLI の -f で渡されたファイルの内容
+####  {destination_path}
+- CLI の -o で渡されたPATH
+- または、自動補完された出力先
+
 
 # プロンプトの配置
 - プロンプトの特定は、コマンドラインオプションの種類・値の組み合わせで決まる
