@@ -6,7 +6,7 @@
 
 # インストール
 ```bash
-deno install -f --root ./deno --global cli/breakdown.ts
+deno install -f --root ./.deno --global --allow-all --no-prompt cli/breakdown.ts
 ```
 
 # 基本実装
@@ -17,7 +17,7 @@ deno install -f --root ./deno --global cli/breakdown.ts
 ```
 
 ## 引数
-次のファイルを読み込むこと。
+次のファイルの内容に従って構築する。
 `@/docs/breakdown/options.ja.md`
 
 ## Result Output
@@ -49,30 +49,29 @@ deno test -A
 入力値がないというエラーメッセージ
 ```
 
+# 設定の読み込み
+次のファイルの内容に従って構築する。
+アプリケーション設定： `/docs/breakdown/app_config.ja.md`
+
+# プロンプトの読み込み
+引数に応じてプロンプトを読み替える。詳しくは、次のファイルの内容に従って構築する。
+`@/docs/breakdown/app_prompt.ja.md`
+
 # 入力ファイル指定の入力
 以下のコマンドを実行したときに、 "Result Output3" が出力される。
 ```bash
-./.deno/bin/breakdown to project -f ./.agent/breakdown/issues/issue_summary.md
+./.deno/bin/breakdown to task -f ./.agent/breakdown/issues/issue_summary.md
 ```
 
 ## Result Output3
-```
-./.agent/breakdown/issues/issue_summary.md
-```
+特定したプロンプトの内容を表示
 
 # 出力ファイル指定の入力
 以下のコマンドを実行したときに、 "Result Output4" が出力される。
 ```bash
-./.deno/bin/breakdown to issue -f ./.agent/breakdown/issues/project_summary.md -o ./.agent/breakdown/issues/issue_summary.md
+./.deno/bin/breakdown to issue -f ./.agent/breakdown/issue/project_summary.md -o ./.agent/breakdown/issues/issue_summary.md
 ```
 
 ## Result Output4
-```
-./.agent/breakdown/issues/project_summary.md --> ./.agent/breakdown/issues/issue_summary.md
-```
-
-# 設定の読み込み
-次のファイルを読み込むこと。
-アプリケーション設定： `/docs/breakdown/app_config.ja.md`
-
+特定したプロンプトの内容を表示
 

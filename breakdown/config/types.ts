@@ -10,6 +10,10 @@ export interface BreakdownConfig {
   working_directory: string;
   output_directory: string;
   workspace_structure: WorkspaceStructure;
+  working_dir?: string;
+  app_prompt?: {
+    base_dir: string;
+  };
 }
 
 export interface ConfigOptions {

@@ -5,7 +5,7 @@ Please analyze the following markdown and create an issue in JSON format.
 {input_markdown}
 
 # Output Schema
-{output_schema}
+{schema_file}
 
 # Output JSON filename
 `<github_project_number>-<github_issue_number>_<short_issue_title>.md`

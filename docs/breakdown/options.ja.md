@@ -1,5 +1,4 @@
-
-# breakdown 引数
+# breakdown 引数の仕様
 ## 基本コマンド
 ```bash
 ./.deno/bin/breakdown

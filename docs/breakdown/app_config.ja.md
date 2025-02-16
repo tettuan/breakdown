@@ -17,7 +17,7 @@ deno install -f --root ./deno --global cli/breakdown.ts
 
 
 ## WorkingDirの設定
-設定に `{"working_dir": "./agent/breakdown"}` が記載されている。
+設定に `{"working_dir": "./.agent/breakdown"}` が記載されている。
 このとき、次のコマンド
 ```bash
 ./.deno/bin/breakdown init

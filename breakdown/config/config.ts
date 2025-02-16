@@ -46,6 +46,9 @@ import { ConfigLoadError } from "./errors.ts";
 
 export interface AppConfig {
   working_dir: string;
+  app_prompt?: {
+    base_dir: string;
+  };
 }
 
 function normalizePath(path: string): string {
@@ -53,7 +56,10 @@ function normalizePath(path: string): string {
 }
 
 let config: AppConfig = {
-  working_dir: normalizePath(".agent/breakdown")
+  working_dir: normalizePath(".agent/breakdown"),
+  app_prompt: {
+    base_dir: "./breakdown/prompts/"
+  }
 };
 
 export function getConfig(): AppConfig {
@@ -65,6 +71,39 @@ export function setConfig(newConfig: Partial<AppConfig>): void {
     newConfig.working_dir = normalizePath(newConfig.working_dir);
   }
   config = { ...config, ...newConfig };
+}
+
+async function loadConfigFile(path: string): Promise<Partial<BreakdownConfig>> {
+  try {
+    if (await exists(path)) {
+      const content = await Deno.readTextFile(path);
+      return JSON.parse(content);
+    }
+    throw new ConfigLoadError(path);
+  } catch (error) {
+    if (error instanceof ConfigLoadError) {
+      throw error;
+    }
+    throw new ConfigLoadError(path, error);
+  }
+}
+
+export async function initializeConfig(options: ConfigOptions = {}): Promise<void> {
+  const defaultWorkingDir = "./.agent/breakdown";
+  
+  try {
+    const configPath = options.configPath || "/breakdown/config/config.ts";
+    const configData = await loadConfigFile(configPath);
+    
+    setConfig({
+      working_dir: options.workingDir || configData.working_dir || defaultWorkingDir
+    });
+  } catch {
+    // エラーメッセージを出力せず、デフォルト値を設定
+    setConfig({
+      working_dir: defaultWorkingDir
+    });
+  }
 }
 
 export class Config {
@@ -84,6 +123,10 @@ export class Config {
           tasks: "tasks",
           projects: "projects"
         }
+      },
+      working_dir: "./.agent/breakdown",
+      app_prompt: {
+        base_dir: "./breakdown/prompts/"
       }
     };
   }
@@ -103,7 +146,9 @@ export class Config {
       root: this.config.root,
       working_directory: workingDir,
       output_directory: outputDir,
-      workspace_structure: this.config.workspace_structure
+      workspace_structure: this.config.workspace_structure,
+      working_dir: this.config.working_dir,
+      app_prompt: this.config.app_prompt
     };
 
     try {
