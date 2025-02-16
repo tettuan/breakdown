@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["gitHubProjectNumber", "projectName", "summary", "issues"],
+  "properties": {
+    "gitHubProjectNumber": {
+      "type": "integer",
+      "description": "GitHub project number"
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Project summary"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "issue.schema.json"
+      }
+    }
+  }
+}

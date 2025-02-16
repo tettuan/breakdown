@@ -6,5 +6,8 @@
 # Source
 {input_markdown_file}
 
+# Output Schema
+{schema_file}
+
 # Output
 {destination_path}

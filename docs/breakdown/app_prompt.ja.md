@@ -17,8 +17,8 @@ app_configの設定ファイルに記載する。
 
 ## 実行時にプロンプトを特定する手順
 * `--from` オプションの値から <from_layer_type> を特定する
-  * fromファイルについて、DemonstrativeType のいずれかを特定する
-  * path, filename を調べて、DemonstrativeType が後方一致したら特定完了
+  * fromファイルについて、LayerType のいずれかを特定する
+  * path, filename を調べて、LayerType が後方一致したら特定完了
 
 ex.
 ```bash
@@ -42,6 +42,9 @@ this is a propmt contents.
 {input_markdown_file}
 {input_markdown}
 
+# schema
+{schema_file}
+
 # destination path
 {destination_path}
 ```
@@ -52,6 +55,9 @@ this is a propmt contents.
 ./.agent/breakdown/issues/12345_something.md
 # input markdown
 this is a input markdown contents.
+
+# schema
+./rules/schema/task/base.schema.json
 
 # destination path
 ./.agent/breakdown/tasks/

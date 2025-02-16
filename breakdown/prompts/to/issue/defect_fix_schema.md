@@ -13,7 +13,7 @@ Issue Fix Input Markdownをもとに、Schemaへマッピングしてくださ�
 - min goal: ./docs/mingoal.md
 
 # Output Schema
-./rules/schema/issue.fix.schema.json
+./rules/schema/to/issue/fix.schema.json
 
 # Output JSON filename
 `<datetime>_<short_issue_title>.json`
