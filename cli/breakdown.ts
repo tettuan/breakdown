@@ -93,13 +93,13 @@ async function processWithPrompt(
   destFile?: string
 ): Promise<void> {
   try {
-    const promptPath = getPromptPath(demonstrativeType, layerType, fromFile);
+    // fromFileからtypeを抽出する処理を復活
+    const fromType = fromFile.includes("project") ? "project" :
+                    fromFile.includes("issue") ? "issue" :
+                    fromFile.includes("task") ? "task" : layerType;
     
-    if (destFile) {
-      console.log(`${fromFile} --> ${promptPath} --> ${destFile}`);
-    } else {
-      console.log(`${fromFile} --> ${promptPath}`);
-    }
+    const prompt = await loadPrompt(demonstrativeType, layerType, fromType);
+    console.log(prompt);
   } catch (error) {
     console.error(`Error processing prompt: ${error.message}`);
     Deno.exit(1);

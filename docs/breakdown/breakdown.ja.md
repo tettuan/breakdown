@@ -64,9 +64,7 @@ deno test -A
 ```
 
 ## Result Output3
-```
-./.agent/breakdown/issues/issue_summary.md --> ./breakdown/prompts/to/task/f_issue.md
-```
+特定したプロンプトの内容を表示
 
 # 出力ファイル指定の入力
 以下のコマンドを実行したときに、 "Result Output4" が出力される。
@@ -75,7 +73,5 @@ deno test -A
 ```
 
 ## Result Output4
-```
-./.agent/breakdown/issues/project_summary.md --> ./breakdown/prompts/to/issue/f_project.md --> ./.agent/breakdown/issues/issue_summary.md
-```
+特定したプロンプトの内容を表示
 

@@ -32,11 +32,18 @@ ex.
 - 自動補完・自動命名された後に行う
 
 ## 出力形式
-すべての出力において、プロンプトファイルのパスを表示します：
-- 入力ファイルのみ: input --> prompt
-- 出力先指定あり: input --> prompt --> output
+すべての出力において、プロンプトの内容を表示します：
 
-./.agent/breakdown/issues/project_summary.md --> ./breakdown/prompts/to/issue/f_project.md --> ./.agent/breakdown/issues/issue_summary.md
+ex.
+入力プロンプトの内容： ```prompt
+# example prompt 
+this is a propmt contents.
+```
+
+出力： ```
+# example prompt 
+this is a propmt contents.
+```
 
 # プロンプトの配置
 - プロンプトの特定は、コマンドラインオプションの種類・値の組み合わせで決まる
