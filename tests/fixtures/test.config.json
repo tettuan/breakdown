@@ -1,0 +1,6 @@
+{
+  "working_dir": "./.agent_test/breakdown",
+  "app_prompt": {
+    "base_dir": "./tests/fixtures/prompts"
+  }
+} 

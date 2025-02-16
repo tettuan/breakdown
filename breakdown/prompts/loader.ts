@@ -13,6 +13,18 @@ function resolveSchemaPath(demonstrativeType: string, layerType: string): string
   return `./rules/schema/${demonstrativeType}/${layerType}/base.schema.json`;
 }
 
+async function resolvePromptPath(baseDir: string, demonstrativeType: string, layerType: string, fromType?: string): Promise<string> {
+  const promptPath = fromType 
+    ? join(baseDir, demonstrativeType, layerType, `f_${fromType}.md`)
+    : join(baseDir, demonstrativeType, layerType, "default.md");
+
+  if (!await exists(promptPath)) {
+    throw new Error(`Prompt file not found: ${promptPath}`);
+  }
+
+  return promptPath;
+}
+
 export async function loadPrompt(
   demonstrativeType: string,
   layerType: string,
@@ -23,30 +35,19 @@ export async function loadPrompt(
   const baseDir = config.app_prompt?.base_dir || "./breakdown/prompts/";
   
   const schemaPath = resolveSchemaPath(demonstrativeType, layerType);
+  const promptPath = await resolvePromptPath(baseDir, demonstrativeType, layerType, fromType);
   
   const allVariables = {
     ...variables,
     schema_file: schemaPath
   };
 
-  const promptPath = fromType 
-    ? join(baseDir, demonstrativeType, layerType, `f_${fromType}.md`)
-    : join(baseDir, demonstrativeType, layerType, "default.md");
-
-  if (!await exists(promptPath)) {
-    throw new Error(`Prompt file not found: ${promptPath}`);
-  }
-
-  let content = await Deno.readTextFile(promptPath);
+  const content = await Deno.readTextFile(promptPath);
   if (!content.trim()) {
     throw new Error(`Prompt file is empty: ${promptPath}`);
   }
 
-  if (allVariables) {
-    content = replaceVariables(content, allVariables);
-  }
-
-  return content;
+  return replaceVariables(content, allVariables);
 }
 
 export function replaceVariables(content: string, variables: PromptVariables): string {

@@ -1,11 +1,52 @@
 import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { getConfig, setConfig } from "../breakdown/config/config.ts";
+import { getConfig, setConfig, initializeConfig } from "../breakdown/config/config.ts";
+import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
 
 const TEST_DIR = "./.agent_test/breakdown";
+const TEST_CONFIG_PATH = "./tests/fixtures/test.config.json";
+
+async function setupTestPrompts(): Promise<void> {
+  // プロンプトファイルの作成
+  const promptDir = "./tests/fixtures/prompts/to/issue";
+  await ensureDir(promptDir);
+  
+  await Deno.writeTextFile(
+    join(promptDir, "f_project.md"),
+    `## Input
+{input_markdown}
+
+## Source
+{input_markdown_file}
+
+## Schema
+{schema_file}
+
+## Output
+{destination_path}`
+  );
+
+  // テスト用の入力ファイルも作成
+  const projectDir = join(TEST_DIR, "project");
+  await ensureDir(projectDir);
+  
+  await Deno.writeTextFile(
+    join(projectDir, "project_summary.md"),
+    "# Test Project\nThis is a test project."
+  );
+}
 
 export async function setupTestEnv(): Promise<string> {
   await ensureDir(TEST_DIR);
-  setConfig({ working_dir: TEST_DIR });
+  await setupTestPrompts();
+  
+  // 環境変数で設定ファイルのパスを指定
+  Deno.env.set("BREAKDOWN_CONFIG", TEST_CONFIG_PATH);
+  
+  // 設定を初期化
+  await initializeConfig({
+    configPath: TEST_CONFIG_PATH
+  });
+  
   return TEST_DIR;
 }
 

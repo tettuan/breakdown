@@ -3,6 +3,7 @@ import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWo
 import { parseArgs } from "../cli/args.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
+import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 
 Deno.test({
   name: "CLI Test Suite",
@@ -11,8 +12,9 @@ Deno.test({
   async fn(t) {
     const testDir = await setupTestEnv();
     const commonEnv = {
-      "BREAKDOWN_TEST": "true",
-      "BREAKDOWN_TEST_DIR": testDir
+      // BREAKDOWN_TEST と BREAKDOWN_TEST_DIR を削除
+      // "BREAKDOWN_TEST": "true",
+      // "BREAKDOWN_TEST_DIR": testDir
     };
 
     try {
@@ -55,14 +57,16 @@ Deno.test({
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "--from", testFile],
           stdout: "piped",
+          env: commonEnv
         });
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
         
-        // プロンプトの内容が含まれていることを確認
-        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
-        assert(output.length > 0);
+        assert(output.includes("## Input"));
+        assert(output.includes("## Source"));
+        assert(output.includes(testFile));
+        assert(output.includes("./rules/schema/to/issue/base.schema.json"));
       });
 
       await t.step("CLI outputs prompt content with -f alias", async () => {
@@ -70,32 +74,32 @@ Deno.test({
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", testFile],
           stdout: "piped",
-        });
-
-        const { stdout } = await process.output();
-        const output = new TextDecoder().decode(stdout).trim();
-        assert(output.includes("プロジェクトからIssueへの変換プロンプト"));
-        assert(output.length > 0);
-      });
-
-      await t.step("CLI outputs prompt content with destination", async () => {
-        const testDir = await setupTestEnv();
-        await setupTestFiles(testDir);
-
-        const inputFile = "./.agent/breakdown/project/project_summary.md";
-        const outputFile = "./.agent/breakdown/issues/issue_summary.md";
-        const process = new Deno.Command(Deno.execPath(), {
-          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", inputFile, "-o", outputFile],
-          stdout: "piped",
+          env: commonEnv
         });
 
         const { stdout } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
         
-        // 期待値を新しいプロンプト形式に合わせる
-        assert(output.includes("# Input"));
-        assert(output.includes("# Source"));
-        assert(output.includes("# Output"));
+        assert(output.includes("## Input"));
+        assert(output.includes("## Source"));
+        assert(output.includes(testFile));
+      });
+
+      await t.step("CLI outputs prompt content with destination", async () => {
+        const inputFile = "./.agent/breakdown/project/project_summary.md";
+        const outputFile = "./.agent/breakdown/issues/issue_summary.md";
+        const process = new Deno.Command(Deno.execPath(), {
+          args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", inputFile, "-o", outputFile],
+          stdout: "piped",
+          env: commonEnv
+        });
+
+        const { stdout } = await process.output();
+        const output = new TextDecoder().decode(stdout).trim();
+        
+        assert(output.includes("## Input"));
+        assert(output.includes("## Source"));
+        assert(output.includes("## Output"));
         assert(output.includes(inputFile));
         assert(output.includes(outputFile));
       });
