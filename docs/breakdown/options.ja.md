@@ -6,7 +6,10 @@
 
 ## 引数
 ```bash
-./.deno/bin/breakdown `$1` `$2` --from `<file>` --destination `<output_file>`
+./.deno/bin/breakdown `$1` `$2` \
+  --from `<file>` \
+  --destination `<output_file>` \
+  --input `<from_layer_type>` \
 ```
 
 ### $1
@@ -99,3 +102,29 @@ Inputfile とする。
 - ファイル名のみ生成する
   - <yyyymmdd>_<ランダムなハッシュ値>.md
   ex. 20250211_e81d0bd.md 
+
+### --input `<from_layer_type>`
+オプションの名称を FromLayerType とする。
+エイリアスで `-i` を用いる。
+以下は同じ処理になる。
+````bash
+./.deno/bin/breakdown --input `<from_layer_type>`
+./.deno/bin/breakdown -i `<from_layer_type>`
+````
+
+#### FromLayerType の値
+-　`<from_layer_type>` 部分を取得する。
+  - ex. `--input project_summary`, `--i error`
+- 「FromLayerTypeの特定処理」がなされる。
+
+##### FromLayerTypeの特定処理
+- `<from_layer_type>` を入力値とする。
+- FromLayerType が取りうる値は以下の値のみである。
+  - "project", "issue", "task"
+- 以下のルールで `<from_layer_type>` をチェックし、FromLayerType を選択する。上から夕羽扇的に一致させる。UP/low case問わない。
+  - project : 次のワードのいずれかに一致する
+    - project, pj, prj 
+  - issue : 次のワードのいずれかに一致する
+    - issue, story
+  - task : 次のワードのいずれかに一致する
+    - task, todo, chore, style, fix, error, bug

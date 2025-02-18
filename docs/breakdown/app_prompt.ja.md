@@ -16,7 +16,8 @@ app_configの設定ファイルに記載する。
 - filename : f_<from_layer_type>.md
 
 ## 実行時にプロンプトを特定する手順
-* `--from` オプションの値から <from_layer_type> を特定する
+* `--input` オプションの結果を用いる。
+* `--input` の指定がないとき、 `--from` オプションの値から <from_layer_type> を特定する
   * fromファイルについて、LayerType のいずれかを特定する
   * path, filename を調べて、LayerType が後方一致したら特定完了
 
