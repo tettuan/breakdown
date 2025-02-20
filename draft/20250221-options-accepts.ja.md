@@ -14,7 +14,7 @@ LayerType
 | to                          | ✓       | ✓      | ✓    |
 | summary                     | ✓       | ✓      | ✓    |
 | defect                      | ✓       | ✓      | ✓    |
-| init                        | x       | x      | x    |
+| init                        | -       | -      | -    |
 
 各セルの意味：
 - `to`: 上位レイヤーから下位レイヤーへの分解
@@ -31,11 +31,28 @@ LayerType
 
 
 ## --from(-f) オプション
-入力ファイル -> 出力
+入力ファイル による差異
 
-| DemonstrativeType \ Input LayerType | project | issue | task |
-|------------------------------|---------|--------|------|
-| to                          | -> issue | -> task | -> sub task |
-| summary                     | -> project | -> issue | -> task |
-| defect                      | -> project | -> issue | -> task |
-| init                        | x       | x      | x    |
+| DemonstrativeType | LayerType (出力) | FromLayerType(-i,-f) | 説明 |
+|------------------|-----------------|---------------|------|
+| to              | issue          | project       | projectからissueへの分解 |
+| to              | task           | issue         | issueからtaskへの分解 |
+| to              | task           | task         | taskからsub taskへの分解 |
+| summary         | project        | project         | projectの要点整理 |
+| summary         | issue          | issue          | issueの要点整理 |
+| summary         | task          | task          | issueの要点整理 |
+| defect          | project          | project         | projectの問題分析 |
+| defect          | issue          | issue         | issueの問題分析 |
+| defect          | task           | task          | taskの問題分析 |
+
+
+使用例：
+- `breakdown to issue -f project.md`: projectからissueへの分解
+- `breakdown to task -f issue.md`: issueからtaskへの分解
+- `breakdown summary project -f project.md`: projectの要点整理
+- `breakdown defect issue -f issue-defect-claims.md`: issueのエラー分析
+
+注意：
+- LayerTypeは常に出力の層を指定
+- `-i`オプションで入力の層を指定（FromLayerType）
+- `-f`オプションで入力ファイルを指定、-iがない時にFromLayerType判定にも利用
