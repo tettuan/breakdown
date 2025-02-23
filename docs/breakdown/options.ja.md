@@ -112,6 +112,11 @@ Inputfile とする。
 ./.deno/bin/breakdown -i `<from_layer_type>`
 ````
 
+#### 優先順位
+- `--input`（または`-i`）オプションが指定された場合、FromLayerTypeの特定に使用される
+- `--from`（または`-f`）オプションは常にファイルパスの指定に使用される
+- FromLayerTypeの特定には`--input`オプションが優先的に使用され、指定がない場合のみ`--from`オプションのファイル名から推測される
+
 #### FromLayerType の値
 -　`<from_layer_type>` 部分を取得する。
   - ex. `--input project_summary`, `--i error`
