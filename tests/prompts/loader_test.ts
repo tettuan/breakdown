@@ -1,5 +1,37 @@
 /// <reference lib="deno.ns" />
 
+/**
+ * プロンプトローダーのテスト
+ * 
+ * 目的:
+ * - --input オプションによるプロンプト選択の検証
+ * - ファイルパスからのレイヤータイプ推論の検証
+ * - プロンプト選択の優先順位の検証
+ * 
+ * 関連する仕様:
+ * - docs/breakdown/options.ja.md: --input オプションの仕様
+ * - docs/breakdown/app_prompt.ja.md: プロンプト選択の仕様
+ * 
+ * 実装の考慮点:
+ * 1. プロンプト選択の優先順位
+ *    - --input オプションが最優先
+ *    - ファイルパスからの推論が次点
+ *    - デフォルトプロンプトが最後
+ * 
+ * 2. レイヤータイプのエイリアス
+ *    - project: pj, prj
+ *    - issue: story
+ *    - task: todo, bug, etc
+ * 
+ * 3. ファイルパスからの推論
+ *    - ディレクトリ名とファイル名の両方を考慮
+ *    - 複数マッチ時は最初に見つかったものを優先
+ * 
+ * 関連コミット:
+ * - feat: add --input option (24671fe)
+ * - test: add prompt file selection tests
+ */
+
 import { 
   assertEquals, 
   assertRejects,
