@@ -160,7 +160,7 @@ Deno.test("CLI Arguments Parser", async (t) => {
   await t.step("should handle 'to' command", () => {
     const args = ["to"];
     const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "to");
+    assertEquals(result.command, "to");
     assertEquals(result.error, undefined);
   });
 
@@ -173,7 +173,7 @@ Deno.test("CLI Arguments Parser", async (t) => {
   await t.step("should handle 'to project' command", () => {
     const args = ["to", "project"];
     const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "to");
+    assertEquals(result.command, "to");
     assertEquals(result.layerType, "project");
     assertEquals(result.error, undefined);
   });
@@ -187,7 +187,7 @@ Deno.test("CLI Arguments Parser", async (t) => {
   await t.step("should allow init without LayerType", () => {
     const args = ["init"];
     const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "init");
+    assertEquals(result.command, "init");
     assertEquals(result.layerType, undefined);
     assertEquals(result.error, undefined);
   });
@@ -195,9 +195,49 @@ Deno.test("CLI Arguments Parser", async (t) => {
   await t.step("should ignore LayerType for init command", () => {
     const args = ["init", "project"];
     const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "init");
+    assertEquals(result.command, "init");
     assertEquals(result.layerType, undefined);
     assertEquals(result.error, undefined);
+  });
+
+  await t.step("should handle input option with valid layer type", () => {
+    const result = parseArgs(["to", "issue", "--input", "project"]);
+    assertEquals(result.error, undefined);
+    assertEquals(result.inputLayerType, "project");
+  });
+
+  await t.step("should handle input option with alias", () => {
+    const result = parseArgs(["to", "issue", "-i", "project"]);
+    assertEquals(result.error, undefined);
+    assertEquals(result.inputLayerType, "project");
+  });
+
+  await t.step("should validate input layer type", () => {
+    const result = parseArgs(["to", "issue", "--input", "invalid"]);
+    assertEquals(result.error, "Invalid input layer type");
+  });
+
+  await t.step("should prioritize --input over --from for layer type", () => {
+    const result = parseArgs([
+      "to", 
+      "issue", 
+      "--from", "./.agent/breakdown/task/task_list.md",
+      "--input", "project"
+    ]);
+    assertEquals(result.error, undefined);
+    assertEquals(result.fromFile, "./.agent/breakdown/task/task_list.md");
+    assertEquals(result.inputLayerType, "project");  // --input takes precedence
+  });
+
+  await t.step("should infer layer type from --from when --input is not provided", () => {
+    const result = parseArgs([
+      "to", 
+      "issue", 
+      "--from", "./.agent/breakdown/project/project_summary.md"
+    ]);
+    assertEquals(result.error, undefined);
+    assertEquals(result.fromFile, "./.agent/breakdown/project/project_summary.md");
+    assertEquals(result.inputLayerType, "project");  // Inferred from file path
   });
 });
 
