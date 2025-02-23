@@ -5,6 +5,18 @@
 ```
 
 ## 引数
+
+### 設定やヘルプやバージョン確認:
+```bash
+./.deno/bin/breakdown `$1`
+```
+
+#### $1
+オプションの名称を `AppParams` とする。
+
+- `init` : 初期設定を行う。
+
+### ユースケース:
 ```bash
 ./.deno/bin/breakdown `$1` `$2` \
   --from `<file>` \
@@ -12,19 +24,19 @@
   --input `<from_layer_type>` \
 ```
 
-### $1
+#### $1
 オプションの名称を `DemonstrativeType` とする。
 
-#### DemonstrativeTypeの値
+##### DemonstrativeTypeの値
 - 許可された値のみが有効
 - 文字型
 - いずれか
   - "to", "summary", "defect", "init"
 
-### $2
+#### $2
 オプションの名称を `LayerType` とする。
 
-#### LayerTypeの値
+##### LayerTypeの値
 - DemonstrativeType が "init" の場合は、引数の値が無視される
 - 許可された値のみが有効
 - 文字型
@@ -32,7 +44,7 @@
   - "project", "issue", "task"
 
 
-###  --from `<file>`
+####  --from `<file>`
 オプションの名称を FromFile とする。
 エイリアスで `-f` を用いる。
 以下は同じ処理になる。
@@ -41,12 +53,12 @@
 ./.deno/bin/breakdown -f `<file>`
 ````
 
-#### FromFile の値
+##### FromFile の値
 -　`<file>` 部分を取得する。
   - ex. `--from ./.agent/breakdown/issues/issue_summary.md`
 - 「Path の自動補完」がなされる。
 
-### --destination `<output_file>`
+#### --destination `<output_file>`
 オプションの名称を DestinationFile とする。
 エイリアスで `-o` を用いる。
 以下は同じ処理になる。
@@ -55,13 +67,13 @@
 ./.deno/bin/breakdown -o `<output_file>`
 ````
 
-#### DestinationFile の値
+##### DestinationFile の値
 -　`<output_file>` 部分を取得する。
   - ex. `--destination ./.agent/breakdown/issues/issue_summary.md`
 - 「Path の自動補完」がなされる。
 - 「出力ファイル名の自動作成」がなされる。
 
-### Path の自動補完
+#### Path の自動補完
 FromFile と DestinationFile は、Pathの自動補完がされる。
 
 DestinationFile と DestinationFile は同じ自動補完なので、以下は両者を
@@ -89,7 +101,7 @@ Inputfile とする。
   のとき、-oは `./.agent/breakdown/issues/issue_summary.md` へ補完される
 
 
-### 出力ファイル名の自動作成
+#### 出力ファイル名の自動作成
 `-o`か`--destination` パラメータが存在する、かつファイル名が空白の場合のみ行う。
 
 実行例：
@@ -103,7 +115,7 @@ Inputfile とする。
   - <yyyymmdd>_<ランダムなハッシュ値>.md
   ex. 20250211_e81d0bd.md 
 
-### --input `<from_layer_type>`
+#### --input `<from_layer_type>`
 オプションの名称を FromLayerType とする。
 エイリアスで `-i` を用いる。
 以下は同じ処理になる。
@@ -112,17 +124,17 @@ Inputfile とする。
 ./.deno/bin/breakdown -i `<from_layer_type>`
 ````
 
-#### 優先順位
+##### 優先順位
 - `--input`（または`-i`）オプションが指定された場合、FromLayerTypeの特定に使用される
 - `--from`（または`-f`）オプションは常にファイルパスの指定に使用される
 - FromLayerTypeの特定には`--input`オプションが優先的に使用され、指定がない場合のみ`--from`オプションのファイル名から推測される
 
-#### FromLayerType の値
+##### FromLayerType の値
 -　`<from_layer_type>` 部分を取得する。
   - ex. `--input project_summary`, `--i error`
 - 「FromLayerTypeの特定処理」がなされる。
 
-##### FromLayerTypeの特定処理
+###### FromLayerTypeの特定処理
 - `<from_layer_type>` を入力値とする。
 - FromLayerType が取りうる値は以下の値のみである。
   - "project", "issue", "task"

@@ -1,5 +1,5 @@
 export interface Args {
-  command?: string;
+  command: string;
   layerType?: string;
   fromFile?: string;
   destinationFile?: string;
@@ -36,25 +36,71 @@ function inferLayerTypeFromPath(path: string): string | undefined {
   return undefined;
 }
 
-export function parseArgs(args: string[]): Args {
-  if (args.length === 0) {
-    return { error: "No arguments provided" };
+// Error messages
+export const ERROR_MESSAGES = {
+  NO_ARGS: "No arguments provided",
+  INVALID_DEMONSTRATIVE: "Invalid DemonstrativeType",
+  INVALID_LAYER: "Invalid LayerType",
+  LAYER_REQUIRED: "LayerType is required",
+  INVALID_INPUT: "Invalid input layer type"
+} as const;
+
+function generateDestinationFile(empty: boolean): string | undefined {
+  if (!empty) return undefined;
+  
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const hash = Math.random().toString(16).slice(2, 8);
+  return `${date}_${hash}.md`;
+}
+
+function validateInitCommand(args: string[]): Args {
+  return {
+    command: "init"
+  };
+}
+
+function validateUseCaseCommand(args: string[]): Args {
+  const result: Args = {
+    command: args[0]
+  };
+
+  // コマンドのバリデーション
+  if (!VALID_DEMONSTRATIVE_TYPES.includes(result.command)) {
+    return { command: result.command, error: ERROR_MESSAGES.INVALID_DEMONSTRATIVE };
   }
 
-  const result: Args = {};
-
-  const demonstrativeType = args[0];
-  if (!VALID_DEMONSTRATIVE_TYPES.includes(demonstrativeType)) {
-    return { error: "Invalid DemonstrativeType" };
+  // LayerType は必須
+  if (args.length <= 1) {
+    return { command: result.command, error: ERROR_MESSAGES.LAYER_REQUIRED };
   }
-  result.command = demonstrativeType;
 
-  if (args.length > 1 && demonstrativeType !== "init") {
-    const layerType = args[1];
-    if (!VALID_LAYER_TYPES.includes(layerType)) {
-      return { error: "Invalid LayerType" };
-    }
-    result.layerType = layerType;
+  // LayerType の検証
+  const layerType = args[1];
+  if (!VALID_LAYER_TYPES.includes(layerType)) {
+    return { command: result.command, error: ERROR_MESSAGES.INVALID_LAYER };
+  }
+  result.layerType = layerType;
+
+  // オプション処理
+  const options = parseOptions(args);
+  if (options.error) {
+    return { command: result.command, error: options.error };
+  }
+
+  return { ...result, ...options };
+}
+
+function parseOptions(args: string[]): Partial<Args> {
+  const result: Partial<Args> = {};
+
+  // Handle destination file option
+  const destIndex = args.indexOf("--destination");
+  const destAliasIndex = args.indexOf("-o");
+  const destArgIndex = destIndex !== -1 ? destIndex : destAliasIndex;
+  
+  if (destArgIndex !== -1) {
+    const hasValue = args.length > destArgIndex + 1 && !args[destArgIndex + 1].startsWith("-");
+    result.destinationFile = hasValue ? args[destArgIndex + 1] : generateDestinationFile(true);
   }
 
   // Handle from file option
@@ -74,7 +120,7 @@ export function parseArgs(args: string[]): Args {
   if (inputArgIndex !== -1 && args.length > inputArgIndex + 1) {
     const inputType = validateInputLayerType(args[inputArgIndex + 1]);
     if (!inputType) {
-      return { error: "Invalid input layer type" };
+      return { error: ERROR_MESSAGES.INVALID_INPUT };
     }
     result.inputLayerType = inputType;
   } else if (result.fromFile) {
@@ -86,4 +132,18 @@ export function parseArgs(args: string[]): Args {
   }
 
   return result;
+}
+
+export function parseArgs(args: string[]): Args {
+  if (args.length === 0) {
+    return { command: "", error: ERROR_MESSAGES.NO_ARGS };
+  }
+
+  // init コマンドの場合は別処理
+  if (args[0] === "init") {
+    return validateInitCommand(args);
+  }
+
+  // その他のユースケース
+  return validateUseCaseCommand(args);
 } 

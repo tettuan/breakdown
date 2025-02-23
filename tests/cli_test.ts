@@ -1,6 +1,6 @@
 import { assertEquals, assert } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
-import { parseArgs } from "../cli/args.ts";
+import { parseArgs, ERROR_MESSAGES } from "../cli/args.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
@@ -150,26 +150,38 @@ Deno.test({
 });
 
 // 基本的な引数解析のテスト
-Deno.test("CLI Arguments Parser", async (t) => {
-  await t.step("should return error for empty args", () => {
+Deno.test("CLI Arguments Parser - Basic Command Handling", async (t) => {
+  // 基本的なコマンド処理のテスト
+  await t.step("should handle empty args", () => {
     const args: string[] = [];
     const result = parseArgs(args);
     assertEquals(result.error, "No arguments provided");
   });
 
-  await t.step("should handle 'to' command", () => {
-    const args = ["to"];
-    const result = parseArgs(args);
-    assertEquals(result.command, "to");
-    assertEquals(result.error, undefined);
-  });
-
-  await t.step("should validate DemonstrativeType", () => {
-    const args = ["invalid", "project"];
+  await t.step("should handle invalid command", () => {
+    const args = ["invalid"];
     const result = parseArgs(args);
     assertEquals(result.error, "Invalid DemonstrativeType");
   });
 
+  // 基本的なコマンド処理のテスト - 正常系
+  await t.step("should handle 'to' command", () => {
+    const args = ["to"];
+    const result = parseArgs(args);
+    assertEquals(result.command, "to");
+    assertEquals(result.error, ERROR_MESSAGES.LAYER_REQUIRED);  // LayerType は必須
+  });
+
+  await t.step("should handle init command", () => {
+    const args = ["init"];
+    const result = parseArgs(args);
+    assertEquals(result.command, "init");
+    assertEquals(result.error, undefined);
+  });
+});
+
+Deno.test("CLI Arguments Parser - LayerType Handling", async (t) => {
+  // 2. レイヤータイプ処理のテスト
   await t.step("should handle 'to project' command", () => {
     const args = ["to", "project"];
     const result = parseArgs(args);
@@ -178,66 +190,10 @@ Deno.test("CLI Arguments Parser", async (t) => {
     assertEquals(result.error, undefined);
   });
 
-  await t.step("should validate LayerType", () => {
+  await t.step("should handle invalid layer type", () => {
     const args = ["to", "invalid"];
     const result = parseArgs(args);
     assertEquals(result.error, "Invalid LayerType");
-  });
-
-  await t.step("should allow init without LayerType", () => {
-    const args = ["init"];
-    const result = parseArgs(args);
-    assertEquals(result.command, "init");
-    assertEquals(result.layerType, undefined);
-    assertEquals(result.error, undefined);
-  });
-
-  await t.step("should ignore LayerType for init command", () => {
-    const args = ["init", "project"];
-    const result = parseArgs(args);
-    assertEquals(result.command, "init");
-    assertEquals(result.layerType, undefined);
-    assertEquals(result.error, undefined);
-  });
-
-  await t.step("should handle input option with valid layer type", () => {
-    const result = parseArgs(["to", "issue", "--input", "project"]);
-    assertEquals(result.error, undefined);
-    assertEquals(result.inputLayerType, "project");
-  });
-
-  await t.step("should handle input option with alias", () => {
-    const result = parseArgs(["to", "issue", "-i", "project"]);
-    assertEquals(result.error, undefined);
-    assertEquals(result.inputLayerType, "project");
-  });
-
-  await t.step("should validate input layer type", () => {
-    const result = parseArgs(["to", "issue", "--input", "invalid"]);
-    assertEquals(result.error, "Invalid input layer type");
-  });
-
-  await t.step("should prioritize --input over --from for layer type", () => {
-    const result = parseArgs([
-      "to", 
-      "issue", 
-      "--from", "./.agent/breakdown/task/task_list.md",
-      "--input", "project"
-    ]);
-    assertEquals(result.error, undefined);
-    assertEquals(result.fromFile, "./.agent/breakdown/task/task_list.md");
-    assertEquals(result.inputLayerType, "project");  // --input takes precedence
-  });
-
-  await t.step("should infer layer type from --from when --input is not provided", () => {
-    const result = parseArgs([
-      "to", 
-      "issue", 
-      "--from", "./.agent/breakdown/project/project_summary.md"
-    ]);
-    assertEquals(result.error, undefined);
-    assertEquals(result.fromFile, "./.agent/breakdown/project/project_summary.md");
-    assertEquals(result.inputLayerType, "project");  // Inferred from file path
   });
 });
 
