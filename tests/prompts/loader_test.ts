@@ -8,23 +8,36 @@ import {
 import { loadPrompt, replaceVariables } from "../../breakdown/prompts/loader.ts";
 import { setConfig } from "../../breakdown/config/config.ts";
 import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { Args } from "../../cli/args.ts";
+import { PromptLoader } from "../../cli/prompts/loader.ts";
+
+interface Prompt {
+  path: string;
+  content: string;
+}
 
 // テスト用のプロンプトファイルを作成
 async function setupTestPrompts(): Promise<void> {
-  // issue用のプロンプトファイル作成
+  // 既存のプロンプトファイル作成に加えて
   const issueDir = "./breakdown/prompts/to/issue";
   await ensureDir(issueDir);
+  
+  // project からの変換プロンプト
   await Deno.writeTextFile(
     `${issueDir}/f_project.md`,
     `プロジェクトからIssueへの変換プロンプト\n\n# Input\n{input_markdown}\n\n# Source\n{input_markdown_file}\n\n# Schema\n{schema_file}\n\n# Output\n{destination_path}`
   );
 
-  // task用のプロンプトファイル作成
-  const taskDir = "./breakdown/prompts/to/task";
-  await ensureDir(taskDir);
+  // task からの変換プロンプト
   await Deno.writeTextFile(
-    `${taskDir}/f_project.md`,
-    `プロジェクトからTaskへの変換プロンプト\n\n# Input\n{input_markdown}\n\n# Source\n{input_markdown_file}\n\n# Schema\n{schema_file}\n\n# Output\n{destination_path}`
+    `${issueDir}/f_task.md`,
+    `タスクからIssueへの変換プロンプト\n\n# Input\n{input_markdown}\n\n# Source\n{input_markdown_file}\n\n# Schema\n{schema_file}\n\n# Output\n{destination_path}`
+  );
+
+  // story からの変換プロンプト (issue のエイリアス)
+  await Deno.writeTextFile(
+    `${issueDir}/f_issue.md`,
+    `ストーリーからIssueへの変換プロンプト\n\n# Input\n{input_markdown}\n\n# Source\n{input_markdown_file}\n\n# Schema\n{schema_file}\n\n# Output\n{destination_path}`
   );
 }
 
@@ -95,5 +108,155 @@ Deno.test("Prompt Loader", async (t) => {
     
     const result = await loadPrompt(demonstrativeType, layerType, "project", variables);
     assertStringIncludes(result, "./rules/schema/to/task/base.schema.json");
+  });
+
+  await t.step("resolves prompt with --input option priority", async () => {
+    const args: Args = {
+      command: "to",
+      layerType: "issue",
+      fromFile: "./.agent/breakdown/tasks/error_report.md",  // task と推論される
+      inputLayerType: "project"  // --input で指定された値が優先
+    };
+    const loader = new PromptLoader();
+    const prompt = await loader.load(args);
+    assertEquals(prompt.path, "./breakdown/prompts/to/issue/f_project.md");
+  });
+
+  await t.step("resolves prompt from file path when --input is not specified", async () => {
+    const args: Args = {
+      command: "to",
+      layerType: "issue",
+      fromFile: "./.agent/breakdown/project/project_summary.md"  // project と推論
+    };
+    const loader = new PromptLoader();
+    const prompt = await loader.load(args);
+    assertEquals(prompt.path, "./breakdown/prompts/to/issue/f_project.md");
+  });
+
+  await t.step("resolves prompt with layer type aliases", async () => {
+    const testCases = [
+      { input: "pj", expected: "project" },
+      { input: "story", expected: "issue" },
+      { input: "bug", expected: "task" }
+    ];
+
+    for (const { input, expected } of testCases) {
+      const args: Args = {
+        command: "to",
+        layerType: "issue",
+        inputLayerType: input
+      };
+      const loader = new PromptLoader();
+      const prompt = await loader.load(args);
+      assertEquals(prompt.path, `./breakdown/prompts/to/issue/f_${expected}.md`);
+    }
+  });
+
+  await t.step("resolves prompt file with --input option", async () => {
+    // プロジェクトからイシューへの変換プロンプト
+    const args: Args = {
+      command: "to",
+      layerType: "issue",
+      inputLayerType: "project"
+    };
+    const loader = new PromptLoader();
+    const prompt = await loader.load(args);
+    assertEquals(prompt.path, "./breakdown/prompts/to/issue/f_project.md");
+    assertStringIncludes(prompt.content, "プロジェクトからIssueへの変換プロンプト");
+  });
+
+  await t.step("resolves prompt file with --input alias", async () => {
+    // pj エイリアスを使用
+    const args: Args = {
+      command: "to",
+      layerType: "issue",
+      inputLayerType: "pj"
+    };
+    const loader = new PromptLoader();
+    const prompt = await loader.load(args);
+    assertEquals(prompt.path, "./breakdown/prompts/to/issue/f_project.md");
+    assertStringIncludes(prompt.content, "プロジェクトからIssueへの変換プロンプト");
+  });
+
+  await t.step("resolves prompt file with --input overriding file path", async () => {
+    // --input が --from より優先される
+    const args: Args = {
+      command: "to",
+      layerType: "issue",
+      fromFile: "./.agent/breakdown/tasks/error_report.md",  // task と推論される
+      inputLayerType: "project"  // project が優先される
+    };
+    const loader = new PromptLoader();
+    const prompt = await loader.load(args);
+    assertEquals(prompt.path, "./breakdown/prompts/to/issue/f_project.md");
+    assertStringIncludes(prompt.content, "プロジェクトからIssueへの変換プロンプト");
+  });
+});
+
+Deno.test("Prompt File Selection", async (t) => {
+  await setupTestPrompts();
+
+  await t.step("selects different prompts based on --input value", async () => {
+    const testCases = [
+      {
+        input: "project",
+        expectedPath: "./breakdown/prompts/to/issue/f_project.md",
+        expectedContent: "プロジェクトからIssueへの変換プロンプト"
+      },
+      {
+        input: "task",
+        expectedPath: "./breakdown/prompts/to/issue/f_task.md",
+        expectedContent: "タスクからIssueへの変換プロンプト"
+      },
+      {
+        input: "story",  // issue のエイリアス
+        expectedPath: "./breakdown/prompts/to/issue/f_issue.md",
+        expectedContent: "ストーリーからIssueへの変換プロンプト"
+      }
+    ];
+
+    for (const { input, expectedPath, expectedContent } of testCases) {
+      const args: Args = {
+        command: "to",
+        layerType: "issue",
+        inputLayerType: input
+      };
+      const loader = new PromptLoader();
+      const prompt = await loader.load(args);
+      assertEquals(prompt.path, expectedPath);
+      assertStringIncludes(prompt.content, expectedContent);
+    }
+  });
+
+  await t.step("selects different prompts based on file path inference", async () => {
+    const testCases = [
+      {
+        filePath: "./.agent/breakdown/project/project_summary.md",
+        expectedPath: "./breakdown/prompts/to/issue/f_project.md",
+        expectedContent: "プロジェクトからIssueへの変換プロンプト"
+      },
+      {
+        filePath: "./.agent/breakdown/tasks/task_list.md",
+        expectedPath: "./breakdown/prompts/to/issue/f_task.md",
+        expectedContent: "タスクからIssueへの変換プロンプト"
+      },
+      {
+        filePath: "./.agent/breakdown/stories/story_123.md",
+        expectedPath: "./breakdown/prompts/to/issue/f_issue.md",
+        expectedContent: "ストーリーからIssueへの変換プロンプト"
+      }
+    ];
+
+    for (const { filePath, expectedPath, expectedContent } of testCases) {
+      const args: Args = {
+        command: "to",
+        layerType: "issue",
+        fromFile: filePath
+      };
+      const loader = new PromptLoader();
+      const prompt = await loader.load(args);
+      assertEquals(prompt.path, expectedPath);
+      assertStringIncludes(prompt.content, expectedContent);
+    }
   });
 }); 

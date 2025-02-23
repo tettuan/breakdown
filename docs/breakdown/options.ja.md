@@ -145,3 +145,7 @@ Inputfile とする。
     - issue, story
   - task : 次のワードのいずれかに一致する
     - task, todo, chore, style, fix, error, bug
+
+##### 用途
+* 入力内容の種類判定
+* prompt file pathの特定
