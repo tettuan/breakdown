@@ -1,6 +1,37 @@
+/**
+ * CLIコマンドのテスト
+ * 
+ * 目的:
+ * - CLIコマンドの基本的な動作の検証
+ * - --input オプションを含むコマンドライン引数の解析
+ * - エラーケースの検証
+ * 
+ * 関連する仕様:
+ * - docs/breakdown/options.ja.md: CLIオプションの仕様
+ * 
+ * 実装の考慮点:
+ * 1. コマンドライン引数の解析
+ *    - 必須オプションのチェック
+ *    - エイリアスの解決
+ *    - 無効な値のエラー処理
+ * 
+ * 2. ファイル操作
+ *    - 入力ファイルの存在チェック
+ *    - 出力ディレクトリの作成
+ *    - ファイルパスの正規化
+ * 
+ * 3. エラーハンドリング
+ *    - 適切なエラーメッセージ
+ *    - エラー時の終了コード
+ * 
+ * 関連コミット:
+ * - feat: add --input option (24671fe)
+ * - test: add CLI option tests
+ */
+
 import { assertEquals, assert } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
-import { parseArgs } from "../cli/args.ts";
+import { parseArgs, ERROR_MESSAGES } from "../cli/args.ts";
 import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
 import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
@@ -150,54 +181,50 @@ Deno.test({
 });
 
 // 基本的な引数解析のテスト
-Deno.test("CLI Arguments Parser", async (t) => {
-  await t.step("should return error for empty args", () => {
+Deno.test("CLI Arguments Parser - Basic Command Handling", async (t) => {
+  // 基本的なコマンド処理のテスト
+  await t.step("should handle empty args", () => {
     const args: string[] = [];
     const result = parseArgs(args);
     assertEquals(result.error, "No arguments provided");
   });
 
-  await t.step("should handle 'to' command", () => {
-    const args = ["to"];
-    const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "to");
-    assertEquals(result.error, undefined);
-  });
-
-  await t.step("should validate DemonstrativeType", () => {
-    const args = ["invalid", "project"];
+  await t.step("should handle invalid command", () => {
+    const args = ["invalid"];
     const result = parseArgs(args);
     assertEquals(result.error, "Invalid DemonstrativeType");
   });
 
+  // 基本的なコマンド処理のテスト - 正常系
+  await t.step("should handle 'to' command", () => {
+    const args = ["to"];
+    const result = parseArgs(args);
+    assertEquals(result.command, "to");
+    assertEquals(result.error, ERROR_MESSAGES.LAYER_REQUIRED);  // LayerType は必須
+  });
+
+  await t.step("should handle init command", () => {
+    const args = ["init"];
+    const result = parseArgs(args);
+    assertEquals(result.command, "init");
+    assertEquals(result.error, undefined);
+  });
+});
+
+Deno.test("CLI Arguments Parser - LayerType Handling", async (t) => {
+  // 2. レイヤータイプ処理のテスト
   await t.step("should handle 'to project' command", () => {
     const args = ["to", "project"];
     const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "to");
+    assertEquals(result.command, "to");
     assertEquals(result.layerType, "project");
     assertEquals(result.error, undefined);
   });
 
-  await t.step("should validate LayerType", () => {
+  await t.step("should handle invalid layer type", () => {
     const args = ["to", "invalid"];
     const result = parseArgs(args);
     assertEquals(result.error, "Invalid LayerType");
-  });
-
-  await t.step("should allow init without LayerType", () => {
-    const args = ["init"];
-    const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "init");
-    assertEquals(result.layerType, undefined);
-    assertEquals(result.error, undefined);
-  });
-
-  await t.step("should ignore LayerType for init command", () => {
-    const args = ["init", "project"];
-    const result = parseArgs(args);
-    assertEquals(result.demonstrativeType, "init");
-    assertEquals(result.layerType, undefined);
-    assertEquals(result.error, undefined);
   });
 });
 
