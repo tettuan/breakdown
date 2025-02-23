@@ -16,17 +16,26 @@ app_configの設定ファイルに記載する。
 - filename : f_<from_layer_type>.md
 
 ## 実行時にプロンプトを特定する手順
-* `--from` オプションの値から <from_layer_type> を特定する
-  * fromファイルについて、LayerType のいずれかを特定する
-  * path, filename を調べて、LayerType が後方一致したら特定完了
+* options.ja.md に基づいて <from_layer_type> が決定される。この結果を受け取る。
 
-ex.
+ex 1.
 ```bash
 ./.deno/bin/breakdown to issue -f ./.agent/breakdown/project/project_summary.md -o 
 ```
 のとき、
 - dir : <app_prompt.base_dir>/to/issue
 - filename : f_project.md
+
+ex 2.
+`-i` が明示的に指定されているケース。
+```bash
+./.deno/bin/breakdown to issue -f ./.agent/breakdown/project/project_summary.md -o \
+-i issue
+```
+のとき、
+- dir : <app_prompt.base_dir>/to/issue
+- filename : f_issue.md
+
 
 ### コマンドのオプションが省略された場合
 - 自動補完・自動命名された後に行う
