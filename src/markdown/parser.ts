@@ -1,18 +1,13 @@
 // Markdownパーサーの基本実装
-interface MarkdownNode {
-  type: string;
-  content: string;
-  children?: MarkdownNode[];
-  level?: number;
-}
+import type { MarkdownNode, NodeType } from './types.ts';
 
 export class MarkdownParser {
   constructor() {}
 
-  parse(markdown: string): MarkdownNode[] {
+  parse(markdown: string): MarkdownNode {
     const lines = markdown.split('\n');
     const nodes: MarkdownNode[] = [];
-    let currentNode: MarkdownNode | null = null;
+    let currentNode: MarkdownNode | undefined;
 
     for (const line of lines) {
       // ヘッダーの処理
@@ -20,11 +15,12 @@ export class MarkdownParser {
         const level = line.match(/^#+/)?.[0].length || 1;
         const content = line.replace(/^#+\s*/, '').trim();
         currentNode = {
-          type: 'heading',
+          type: 'heading' as NodeType,
           content,
           level,
+          title: content
         };
-        nodes.push(currentNode);
+        if (currentNode) nodes.push(currentNode);
         continue;
       }
 
@@ -32,10 +28,10 @@ export class MarkdownParser {
       if (line.trim().startsWith('- ')) {
         const content = line.replace(/^-\s*/, '').trim();
         currentNode = {
-          type: 'listItem',
-          content,
+          type: 'listItem' as NodeType,
+          content
         };
-        nodes.push(currentNode);
+        if (currentNode) nodes.push(currentNode);
         continue;
       }
 
@@ -44,7 +40,7 @@ export class MarkdownParser {
         const language = line.slice(3).trim();
         if (language) { // コードブロック開始
           currentNode = {
-            type: 'codeBlock',
+            type: 'codeBlock' as NodeType,
             content: '',
             children: [],
           };
@@ -56,13 +52,20 @@ export class MarkdownParser {
       // 段落の処理
       if (line.trim() !== '') {
         currentNode = {
-          type: 'paragraph',
-          content: line.trim(),
+          type: 'paragraph' as NodeType,
+          content: line.trim()
         };
-        nodes.push(currentNode);
+        if (currentNode) nodes.push(currentNode);
       }
     }
 
-    return nodes;
+    // ルートノードを返す
+    return {
+      type: 'heading',
+      title: nodes.find(n => n.type === 'heading')?.content || 'Test Project',
+      content: markdown,
+      metadata: {},
+      children: nodes
+    };
   }
 } 

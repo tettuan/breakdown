@@ -1,4 +1,5 @@
-import { Args } from "../../cli/args.ts";
+/// <reference lib="deno.ns" />
+import { Args } from "../types.ts";
 
 export interface Prompt {
   path: string;

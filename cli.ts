@@ -1,9 +1,9 @@
-import { parse } from "https://deno.land/std/flags/mod.ts";
+import { parseArgs } from "@std/cli/parse_args";
 import { toJSON, toMarkdown } from "./lib/mod.ts";
-import { Command } from "https://deno.land/std@0.131.0/flags/mod.ts";
+import { Command } from "@cliffy/command/mod.ts";
 
 async function main() {
-  const args = parse(Deno.args);
+  const args = parseArgs(Deno.args);
   const command = args._[0];
   const subCommand = args._[1];
   const input = args._[2];

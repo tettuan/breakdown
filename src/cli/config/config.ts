@@ -1,5 +1,5 @@
-import { exists } from "https://deno.land/std/fs/mod.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
+import { exists } from "@std/fs/exists";
+import { join } from "@std/path/join";
 import { BreakdownConfig, ConfigOptions } from "./types.ts";
 
 export class Config {

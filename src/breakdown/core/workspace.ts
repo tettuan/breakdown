@@ -1,5 +1,5 @@
-import { ensureDir } from "https://deno.land/std/fs/mod.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
+import { ensureDir } from "@std/fs/ensure_dir";
+import { join } from "@std/path/join";
 import { Config } from "../config/config.ts";
 import { WorkspaceStructure } from "../config/types.ts";
 

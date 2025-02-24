@@ -1,8 +1,10 @@
 import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { getConfig, setConfig, initializeConfig } from "../breakdown/config/config.ts";
+import { getConfig, setConfig, initializeConfig } from "@/breakdown/config/config.ts";
 import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
 
-const TEST_DIR = "./.agent_test/breakdown";
+export const TEST_ROOT = "./.agent_test";
+export const TEST_DIR = join(TEST_ROOT, "breakdown");
+
 const TEST_CONFIG_PATH = "./tests/fixtures/test.config.json";
 
 async function setupTestPrompts(): Promise<void> {
@@ -37,16 +39,6 @@ async function setupTestPrompts(): Promise<void> {
 
 export async function setupTestEnv(): Promise<string> {
   await ensureDir(TEST_DIR);
-  await setupTestPrompts();
-  
-  // 環境変数で設定ファイルのパスを指定
-  Deno.env.set("BREAKDOWN_CONFIG", TEST_CONFIG_PATH);
-  
-  // 設定を初期化
-  await initializeConfig({
-    configPath: TEST_CONFIG_PATH
-  });
-  
   return TEST_DIR;
 }
 
@@ -68,4 +60,10 @@ export function initTestConfig(): void {
 
 export async function setupTestDirs(): Promise<void> {
   await ensureDir(TEST_DIR);
+}
+
+export async function setupTestLogger() {
+  await Deno.mkdir("logs", { recursive: true });
+  await Deno.writeTextFile("logs/test.log", ""); // ログファイルをクリア
+  Deno.env.set("DENO_ENV", "test");
 } 

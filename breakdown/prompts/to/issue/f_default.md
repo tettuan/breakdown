@@ -1,0 +1,1 @@
+Default issue prompt template

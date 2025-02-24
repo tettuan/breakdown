@@ -1,13 +1,4 @@
-プロジェクトからTaskへの変換プロンプト
-
-# Input
-{input_markdown}
-
-# Source
-{input_markdown_file}
+Project to task prompt
 
 # Schema
 {schema_file}
-
-# Output
-{destination_path}

@@ -8,4 +8,4 @@
 {schema_file}
 
 # Output
-{destination_path}
+{destination_path} 

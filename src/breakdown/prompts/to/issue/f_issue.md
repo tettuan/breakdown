@@ -1,3 +1,5 @@
+ストーリーからIssueへの変換プロンプト
+
 # Input
 {input_markdown}
 

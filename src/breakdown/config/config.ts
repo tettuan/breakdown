@@ -39,8 +39,8 @@
  * 4. Initialize workspace structure based on final config
  */
 
-import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { exists } from "@std/fs/exists";
+import { join } from "@std/path/join";
 import { BreakdownConfig, ConfigOptions, WorkspaceStructure } from "./types.ts";
 import { ConfigLoadError } from "./errors.ts";
 
@@ -63,6 +63,17 @@ let config: AppConfig = {
 };
 
 export function getConfig(): AppConfig {
+  const testDir = Deno.env.get("BREAKDOWN_TEST_DIR");
+  const promptDir = Deno.env.get("BREAKDOWN_PROMPT_DIR");
+  
+  if (testDir) {
+    return {
+      working_dir: testDir,
+      app_prompt: {
+        base_dir: promptDir || "./tests/fixtures/prompts/"
+      }
+    };
+  }
   return config;
 }
 
@@ -109,9 +120,18 @@ export async function initializeConfig(options: ConfigOptions = {}): Promise<voi
   }
 }
 
-export class Config {
+export interface IConfig {
+  config: BreakdownConfig;
+  workingDirectory: string;
+  outputDirectory: string;
+  workspaceStructure: WorkspaceStructure;
+  loadConfigFile(path?: string): Promise<Partial<BreakdownConfig>>;
+  initialize(options: { workingDir?: string }): Promise<void>;
+}
+
+export class Config implements IConfig {
   private static instance: Config;
-  private config: BreakdownConfig;
+  public config: BreakdownConfig;
   private static readonly DEFAULT_CONFIG_PATH = "breakdown/config.json";
 
   private constructor() {
@@ -193,18 +213,21 @@ export class Config {
     }
   }
 
-  private async loadConfigFile(path: string): Promise<Partial<BreakdownConfig>> {
+  public async loadConfigFile(path?: string): Promise<Partial<BreakdownConfig>> {
     try {
-      if (await exists(path)) {
-        const content = await Deno.readTextFile(path);
-        return JSON.parse(content);
+      if (path) {
+        if (await exists(path)) {
+          const content = await Deno.readTextFile(path);
+          return JSON.parse(content);
+        }
+        throw new ConfigLoadError(path);
       }
-      throw new ConfigLoadError(path);
+      throw new ConfigLoadError(Config.DEFAULT_CONFIG_PATH);
     } catch (error) {
       if (error instanceof ConfigLoadError) {
         throw error;
       }
-      throw new ConfigLoadError(path, error);
+      throw new ConfigLoadError(Config.DEFAULT_CONFIG_PATH, error);
     }
   }
 
@@ -219,4 +242,6 @@ export class Config {
   public get workspaceStructure(): WorkspaceStructure {
     return this.config.workspace_structure;
   }
-} 
+}
+
+export type { BreakdownConfig, WorkspaceStructure } from "./types.ts"; 

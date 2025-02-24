@@ -1,6 +1,10 @@
+export type NodeType = 'heading' | 'paragraph' | 'list' | 'listItem' | 'codeBlock';
+
 export interface MarkdownNode {
-  type: string;
+  type: NodeType;
   content: string;
+  metadata?: Record<string, unknown>;
+  title?: string;
   children?: MarkdownNode[];
-  level?: number;
+  level?: number;  // ヘッダーレベル用
 } 

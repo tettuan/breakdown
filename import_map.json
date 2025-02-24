@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@/": "./src/",
+    "@/cli/": "./src/cli/",
+    "@/breakdown/": "./src/breakdown/"
+  }
+} 

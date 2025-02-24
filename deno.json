@@ -1,16 +1,20 @@
 {
   "imports": {
-    "std/": "https://deno.land/std@0.208.0/"
+    "@/": "./src/",
+    "@std/fs": "jsr:@std/fs@^0.218.2",
+    "@std/path": "jsr:@std/path@^0.218.2",
+    "@std/io": "jsr:@std/io@^0.218.2",
+    "@std/cli": "jsr:@std/cli@^0.218.2",
+    "@std/console": "jsr:@std/console@^0.218.2",
+    "@cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/"
   },
   "tasks": {
-    "dev": "deno run --allow-read --allow-write main.ts",
-    "test": "deno test --allow-read",
-    "fmt": "deno fmt",
-    "lint": "deno lint"
+    "dev": "deno run --watch main.ts",
+    "test": "deno test -A"
   },
   "fmt": {
     "files": {
-      "include": ["src/"]
+      "include": ["src/", "tests/"]
     },
     "options": {
       "useTabs": false,
@@ -29,7 +33,7 @@
     }
   },
   "compilerOptions": {
-    "strict": true,
-    "lib": ["deno.window"]
+    "lib": ["deno.window", "deno.ns"],
+    "strict": true
   }
 } 
