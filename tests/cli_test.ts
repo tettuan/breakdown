@@ -85,10 +85,11 @@ Deno.test({
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "--from", testFile],
           stdout: "piped",
+          stderr: "piped",
           env: commonEnv
         });
 
-        const { stdout } = await process.output();
+        const { stdout, stderr } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
         
         assert(output.includes("## Input"));
@@ -102,10 +103,11 @@ Deno.test({
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", testFile],
           stdout: "piped",
+          stderr: "piped",
           env: commonEnv
         });
 
-        const { stdout } = await process.output();
+        const { stdout, stderr } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
         
         assert(output.includes("## Input"));
@@ -119,10 +121,11 @@ Deno.test({
         const process = new Deno.Command(Deno.execPath(), {
           args: ["run", "-A", "cli/breakdown.ts", "to", "issue", "-f", inputFile, "-o", outputFile],
           stdout: "piped",
+          stderr: "piped",
           env: commonEnv
         });
 
-        const { stdout } = await process.output();
+        const { stdout, stderr } = await process.output();
         const output = new TextDecoder().decode(stdout).trim();
         
         assert(output.includes("## Input"));
