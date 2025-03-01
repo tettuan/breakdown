@@ -37,11 +37,11 @@ import {
   assertRejects,
   assertStringIncludes 
 } from "../../deps.ts";
-import { loadPrompt, replaceVariables } from "../../breakdown/prompts/loader.ts";
-import { setConfig } from "../../breakdown/config/config.ts";
+import { loadPrompt, replaceVariables } from "$lib/prompts/loader.ts";
+import { setConfig } from "$lib/config/config.ts";
 import { ensureDir } from "../../deps.ts";
-import { Args } from "../../cli/args.ts";
-import { PromptLoader } from "../../cli/prompts/loader.ts";
+import { Args } from "$lib/cli/args.ts";
+import { PromptLoader } from "$lib/cli/prompts/loader.ts";
 
 interface Prompt {
   path: string;

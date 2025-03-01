@@ -25,6 +25,6 @@ export interface ConversionResult {
   error?: string;
 }
 
-export * from "./types/mod.ts";
+export * from "$lib/types/mod.ts";
 export * from "./lib/to.ts";
 export * from "./lib/summary.ts"; 

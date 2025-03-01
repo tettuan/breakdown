@@ -1,5 +1,5 @@
 import { ensureDir, join } from "../deps.ts";
-import { getConfig, setConfig, initializeConfig } from "../breakdown/config/config.ts";
+import { getConfig, setConfig, initializeConfig } from "$lib/config/config.ts";
 
 const TEST_DIR = "./.agent_test/breakdown";
 const TEST_CONFIG_PATH = "./tests/fixtures/test.config.json";

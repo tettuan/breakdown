@@ -1,6 +1,6 @@
 import { assertEquals, exists, join } from "../deps.ts";
-import { Config } from "../breakdown/config/config.ts";
-import { Workspace } from "../breakdown/core/workspace.ts";
+import { Config } from "$lib/config/config.ts";
+import { Workspace } from "$lib/core/workspace.ts";
 
 Deno.test("breakdown init creates correct directory structure", async () => {
   const testDir = await Deno.makeTempDir();
