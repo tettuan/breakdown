@@ -1,5 +1,5 @@
 import { exists, join } from "../../deps.ts";
-import { getConfig } from "../config/config.ts";
+import { getConfig } from "$lib/config/config.ts";
 
 interface PromptVariables {
   input_markdown_file?: string;

@@ -1,6 +1,6 @@
 import { ensureDir, join } from "../../deps.ts";
-import { Config } from "../config/config.ts";
-import { WorkspaceStructure } from "../config/types.ts";
+import { Config } from "$lib/config/config.ts";
+import { WorkspaceStructure } from "$lib/config/types.ts";
 
 export class Workspace {
   private config: Config;

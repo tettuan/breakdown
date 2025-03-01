@@ -31,7 +31,7 @@
 
 import { assertEquals, assert, join, ensureDir, exists } from "../deps.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
-import { parseArgs, ERROR_MESSAGES } from "../cli/args.ts";
+import { parseArgs, ERROR_MESSAGES } from "$lib/cli/args.ts";
 
 Deno.test({
   name: "CLI Test Suite",

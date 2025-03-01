@@ -5,12 +5,14 @@
     ".": "./mod.ts"
   },
   "imports": {
-    "$std/": "https://deno.land/std@0.210.0/"
+    "$std/": "https://deno.land/std@0.210.0/",
+    "$lib/": "./lib/"
   },
   "tasks": {
     "test": "deno test -A",
     "check": "deno check **/*.ts",
-    "run": "deno run -A cli/breakdown.ts"
+    "run": "deno run -A cli.ts",
+    "build-resources": "deno run -A scripts/build-resources.ts"
   },
   "fmt": {
     "indentWidth": 2,
@@ -19,7 +21,7 @@
   },
   "lint": {
     "files": {
-      "include": ["src/"]
+      "include": ["lib/", "tests/"]
     },
     "rules": {
       "tags": ["recommended"]

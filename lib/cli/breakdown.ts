@@ -1,10 +1,9 @@
 #!/usr/bin/env -S deno run -A
 
-import { exists, ensureDir, join, parse } from "../deps.ts";
-import { getConfig, initializeConfig, setConfig } from "../breakdown/config/config.ts";
-import { crypto } from "../deps.ts";
+import { exists, ensureDir, join, parse, crypto } from "../../deps.ts";
+import { getConfig, initializeConfig, setConfig } from "$lib/config/config.ts";
 import { parseArgs } from "./args.ts";
-import { loadPrompt } from "../breakdown/prompts/loader.ts";
+import { loadPrompt } from "$lib/prompts/loader.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
