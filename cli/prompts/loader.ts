@@ -1,4 +1,5 @@
 import { Args } from "../../cli/args.ts";
+import { exists, join } from "../../deps.ts";
 
 export interface Prompt {
   path: string;

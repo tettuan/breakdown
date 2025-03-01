@@ -36,10 +36,10 @@ import {
   assertEquals, 
   assertRejects,
   assertStringIncludes 
-} from "https://deno.land/std@0.210.0/testing/asserts.ts";
+} from "../../deps.ts";
 import { loadPrompt, replaceVariables } from "../../breakdown/prompts/loader.ts";
 import { setConfig } from "../../breakdown/config/config.ts";
-import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { ensureDir } from "../../deps.ts";
 import { Args } from "../../cli/args.ts";
 import { PromptLoader } from "../../cli/prompts/loader.ts";
 

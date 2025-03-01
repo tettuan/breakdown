@@ -1,11 +1,8 @@
 #!/usr/bin/env -S deno run -A
 
-import { parse } from "https://deno.land/std@0.210.0/flags/mod.ts";
-import { exists } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { exists, ensureDir, join, parse } from "../deps.ts";
 import { getConfig, initializeConfig, setConfig } from "../breakdown/config/config.ts";
-import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
-import { crypto } from "https://deno.land/std@0.210.0/crypto/mod.ts";
+import { crypto } from "../deps.ts";
 import { parseArgs } from "./args.ts";
 import { loadPrompt } from "../breakdown/prompts/loader.ts";
 

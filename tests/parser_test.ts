@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { MarkdownParser } from '../src/markdown/parser.ts';
 
 Deno.test('MarkdownParser - heading parsing', () => {

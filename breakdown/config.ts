@@ -1,5 +1,4 @@
-import { exists } from "https://deno.land/std/fs/mod.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
+import { exists, join } from "./deps.ts";
 
 export interface BreakdownConfig {
   working_directory: string;

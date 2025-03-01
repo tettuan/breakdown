@@ -1,6 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/testing/asserts.ts";
-import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { assertEquals, exists, join } from "../deps.ts";
 import { Config } from "../breakdown/config/config.ts";
 import { Workspace } from "../breakdown/core/workspace.ts";
 

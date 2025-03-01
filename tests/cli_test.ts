@@ -29,12 +29,9 @@
  * - test: add CLI option tests
  */
 
-import { assertEquals, assert } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import { assertEquals, assert, join, ensureDir, exists } from "../deps.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
 import { parseArgs, ERROR_MESSAGES } from "../cli/args.ts";
-import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
 
 Deno.test({
   name: "CLI Test Suite",

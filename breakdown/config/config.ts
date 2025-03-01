@@ -39,8 +39,7 @@
  * 4. Initialize workspace structure based on final config
  */
 
-import { exists } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { join } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { exists, join } from "../../deps.ts";
 import { BreakdownConfig, ConfigOptions, WorkspaceStructure } from "./types.ts";
 import { ConfigLoadError } from "./errors.ts";
 

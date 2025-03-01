@@ -1,24 +1,21 @@
 {
+  "name": "breakdown",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./mod.ts"
+  },
   "imports": {
-    "std/": "https://deno.land/std@0.208.0/"
+    "$std/": "https://deno.land/std@0.210.0/"
   },
   "tasks": {
-    "dev": "deno run --allow-read --allow-write main.ts",
-    "test": "deno test --allow-read",
-    "fmt": "deno fmt",
-    "lint": "deno lint"
+    "test": "deno test -A",
+    "check": "deno check **/*.ts",
+    "run": "deno run -A cli/breakdown.ts"
   },
   "fmt": {
-    "files": {
-      "include": ["src/"]
-    },
-    "options": {
-      "useTabs": false,
-      "lineWidth": 80,
-      "indentWidth": 2,
-      "singleQuote": true,
-      "proseWrap": "always"
-    }
+    "indentWidth": 2,
+    "singleQuote": false,
+    "lineWidth": 100
   },
   "lint": {
     "files": {

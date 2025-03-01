@@ -1,6 +1,5 @@
-import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
+import { ensureDir, join } from "../deps.ts";
 import { getConfig, setConfig, initializeConfig } from "../breakdown/config/config.ts";
-import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
 
 const TEST_DIR = "./.agent_test/breakdown";
 const TEST_CONFIG_PATH = "./tests/fixtures/test.config.json";
