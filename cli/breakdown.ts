@@ -121,12 +121,11 @@ async function processWithPrompt(
   }
 }
 
-// メイン処理
-if (import.meta.main) {
+export async function runBreakdown(args: string[]): Promise<void> {
   try {
     await initializeConfig().catch(() => {});
 
-    const flags = parse(Deno.args, {
+    const flags = parse(args, {
       string: ["from", "f", "destination", "o"],
       alias: { 
         f: "from",
@@ -193,6 +192,11 @@ if (import.meta.main) {
     console.error("Error:", error.message);
     Deno.exit(1);
   }
+}
+
+// メイン処理
+if (import.meta.main) {
+  runBreakdown(Deno.args);
 }
 
 const process = new Deno.Command(Deno.execPath(), {
