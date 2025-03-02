@@ -131,7 +131,7 @@ Inputfile とする。
 
 ##### FromLayerType の値
 -　`<from_layer_type>` 部分を取得する。
-  - ex. `--input project_summary`, `--i error`
+  - ex. `--input project_summary` -> project_summary , `--i error` -> error
 - 「FromLayerTypeの特定処理」がなされる。
 
 ###### FromLayerTypeの特定処理
