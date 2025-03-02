@@ -1,4 +1,6 @@
-# Overview
+# プロジェクト構造スキーマ
+
+## 概要
 ```mermaid
 graph TD
   A[Sequence of Tasks] -->|Contains| B[Task 1]
@@ -14,9 +16,7 @@ graph TD
   E -->|Step| E2[Step 2]
 ```
 
-
-
-# Project Break Down
+## プロジェクト分解構造
 ```mermaid
 erDiagram
   Project ||--|{ Issue : has
@@ -55,9 +55,8 @@ erDiagram
   }
 ```
 
-
-# Attributes
-## TaskProperteis
+## 属性
+### TaskProperties
 ```mermaid
 ---
 title: TaskProperty
@@ -78,10 +77,9 @@ classDiagram
 
   %% Relationship between TaskProperty and TaskPropertyNames
   TaskProperty <|-- TaskPropertyNames : has
-
 ```
 
-## Steps
+### Steps
 ```mermaid
 ---
 title: Steps
@@ -106,27 +104,4 @@ classDiagram
 
   %% Relationship between Steps and stepType
   Steps <|-- stepType : has
-
-```
-
-
-# Properties
-## TaskState
-```mermaid
----
-title: TaskState
----
-stateDiagram-v2
-direction LR
-  state Result <<choice>>
-
-  [*] --> ToDo
-  ToDo --> Doing
-  Doing --> Result
-  Result --> Error: Result False
-  Result --> Crash: Stop
-  Result --> Done: Result True
-  Done --> [*]
-  Error --> [*]
-  Crash --> [*]
-```
+``` 

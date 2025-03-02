@@ -1,4 +1,6 @@
-# Error Analysis Overview
+# エラー分析スキーマ
+
+## 概要
 
 ```mermaid
 graph TD
@@ -21,7 +23,7 @@ graph TD
     E -->|Has| E4[Error Response]
 ```
 
-# Structure
+## 構造
 
 ```mermaid
 erDiagram
@@ -63,7 +65,7 @@ erDiagram
     }
 ```
 
-# Error Types
+## エラータイプ
 
 ```mermaid
 classDiagram
@@ -82,7 +84,7 @@ classDiagram
     }
 ```
 
-# Error Analysis States
+## エラー分析の状態
 
 ```mermaid
 stateDiagram-v2
@@ -93,34 +95,34 @@ stateDiagram-v2
     PriorityAssignment --> [*]
 ```
 
-# Attributes
+## 属性
 
-## Error Content
-- **message**: Actual error message text
+### エラーコンテンツ
+- **message**: 実際のエラーメッセージテキスト
 - **errorType**: 
-  - `code`: Logic or implementation errors
-  - `data`: Data structure or format errors
-  - `syntax`: Language syntax errors
+  - `code`: ロジックまたは実装エラー
+  - `data`: データ構造またはフォーマットエラー
+  - `syntax`: 言語構文エラー
 - **errorSource**:
-  - `typescript`: TypeScript compiler errors
-  - `deno`: Deno runtime errors
-  - `application`: Application-specific errors
+  - `typescript`: TypeScriptコンパイラエラー
+  - `deno`: Denoランタイムエラー
+  - `application`: アプリケーション固有のエラー
 
-## Error Analysis
-- **occurrenceCount**: Total number of times this error occurred
-- **relatedFiles**: List of files involved in the error chain
-- **triggersOtherErrors**: Whether this error causes other cascading errors
+### エラー分析
+- **occurrenceCount**: このエラーが発生した合計回数
+- **relatedFiles**: エラーチェーンに関連するファイルのリスト
+- **triggersOtherErrors**: このエラーが他のカスケードエラーを引き起こすかどうか
 
-## Error Response
-- **requirementJudgment**: Decision on whether to modify code or update requirements
-- **designJudgment**: Decision on whether to modify code or update design
-- **dependencyJudgment**: Decision on whether to fix this error directly or address dependencies first
-- **priority**: Integer priority ranking (1-5)
-  - `5 (Critical)`: Blocks system operation or causes data corruption
-  - `4 (High)`: Severely impacts core functionality
-  - `3 (Medium)`: Affects non-critical features or has workarounds
-  - `2 (Low)`: Minor issues with minimal impact
-  - `1 (Trivial)`: Cosmetic issues or enhancement requests
+### エラー対応
+- **requirementJudgment**: コードを修正するか要件を更新するかの判断
+- **designJudgment**: コードを修正するか設計を更新するかの判断
+- **dependencyJudgment**: このエラーを直接修正するか依存関係を先に対処するかの判断
+- **priority**: 整数の優先順位ランキング（1-5）
+  - `5（重大）`: システム操作をブロックするかデータ破損を引き起こす
+  - `4（高）`: コア機能に深刻な影響を与える
+  - `3（中）`: 重要でない機能に影響するか回避策がある
+  - `2（低）`: 影響が最小限の軽微な問題
+  - `1（些細）`: 見た目の問題や機能強化要求
 
 ```mermaid
 classDiagram
@@ -132,4 +134,4 @@ classDiagram
         2: Low
         1: Trivial
     }
-```
+``` 
