@@ -1,6 +1,7 @@
 import { ensureDir, join, exists } from "../deps.ts";
 import { getConfig, setConfig, initializeConfig } from "$lib/config/config.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import { checkpoint, startSection, endSection, logObject } from "../utils/debug-logger.ts";
 
 // Define test directory constant
 export const TEST_DIR = ".agent_test/breakdown";
@@ -177,37 +178,90 @@ export async function removeTestDirs() {
   }
 }
 
-// Helper function to run breakdown command
-export async function runCommand(args: string[]): Promise<{code: number, stdout: string, stderr: string}> {
-  const command = new Deno.Command("breakdown", {
-    args: args,
-    stdout: "piped",
-    stderr: "piped",
-  });
+// Modify the runCommand function to handle all CLI commands
+export async function runCommand(args: string[]): Promise<{ code: number, stdout: string; stderr: string }> {
+  // Add debug logging
+  startSection("runCommand");
+  checkpoint("Running command", args);
   
+  let command: Deno.Command;
+  
+  // Check if the first argument is a CLI command
+  const cliCommands = ["breakdown", "to", "summary", "defect", "init"];
+  
+  if (cliCommands.includes(args[0]) || args[0].startsWith("deno")) {
+    // If it's a CLI command or already a deno command, convert it to 'deno run -A cli.ts'
+    let denoArgs: string[];
+    
+    if (args[0] === "breakdown") {
+      // Replace 'breakdown' with 'deno run -A cli.ts'
+      denoArgs = ["run", "-A", "cli.ts", ...args.slice(1)];
+    } else if (args[0].startsWith("deno")) {
+      // Already a deno command, use as is
+      denoArgs = args;
+    } else {
+      // Other CLI commands like 'to', 'summary', etc.
+      denoArgs = ["run", "-A", "cli.ts", ...args];
+    }
+    
+    checkpoint("Converting command to", denoArgs);
+    command = new Deno.Command("deno", {
+      args: denoArgs,
+      stdout: "piped",
+      stderr: "piped",
+    });
+  } else {
+    // For other commands, use as is
+    const [cmd, ...cmdArgs] = args;
+    command = new Deno.Command(cmd, {
+      args: cmdArgs,
+      stdout: "piped",
+      stderr: "piped",
+    });
+  }
+  
+  checkpoint("Command created, awaiting output", "");
   const { code, stdout, stderr } = await command.output();
   
-  return {
-    code,
-    stdout: new TextDecoder().decode(stdout),
-    stderr: new TextDecoder().decode(stderr)
-  };
+  const output = new TextDecoder().decode(stdout);
+  const error = new TextDecoder().decode(stderr);
+  
+  checkpoint("Command output received", { output, error });
+  endSection("runCommand");
+  
+  return { code, stdout: output, stderr: error };
 }
 
 // Helper function to ensure test directory structure
-export async function setupTestEnvironment() {
-  await ensureDir(TEST_DIR);
-  await ensureDir(`${TEST_DIR}/projects`);
-  await ensureDir(`${TEST_DIR}/issues`);
-  await ensureDir(`${TEST_DIR}/tasks`);
+export async function setupTestEnvironment(): Promise<void> {
+  checkpoint("Setting up test environment", "");
   
-  // Create config file if it doesn't exist
-  const configFile = `${TEST_DIR}/config.json`;
-  if (!await exists(configFile)) {
-    await Deno.writeTextFile(configFile, JSON.stringify({
-      working_dir: TEST_DIR
-    }));
-  }
+  // 環境変数の設定状態を確認
+  const envVars = {
+    LOG_LEVEL: Deno.env.get("LOG_LEVEL"),
+    TEST_DIR: Deno.env.get("TEST_DIR"),
+    // 他の関連する環境変数
+  };
+  checkpoint("Environment variables", envVars);
+  
+  // テストディレクトリの作成
+  await ensureDir(TEST_DIR);
+  await ensureDir(path.join(TEST_DIR, "projects"));
+  await ensureDir(path.join(TEST_DIR, "issues"));
+  await ensureDir(path.join(TEST_DIR, "tasks"));
+  
+  // ディレクトリ作成の確認
+  const dirs = {
+    testDir: await exists(TEST_DIR),
+    projectsDir: await exists(path.join(TEST_DIR, "projects")),
+    issuesDir: await exists(path.join(TEST_DIR, "issues")),
+    tasksDir: await exists(path.join(TEST_DIR, "tasks")),
+  };
+  checkpoint("Test directories created", dirs);
+  
+  // 作業ディレクトリの作成
+  await ensureDir(".agent/breakdown");
+  checkpoint("Working directory created", await exists(".agent/breakdown"));
 }
 
 /**
@@ -263,4 +317,115 @@ export async function setupTestEnvironment() {
  * 4. モック関数を使用して外部依存を最小限に抑え、テストの信頼性を確保
  * 5. 境界条件とエラーケースを重点的にテスト
  * 6. 日本語を含む国際化対応も検証
- */ 
+ */
+
+/**
+ * テスト用のプロンプトファイルとスキーマファイルを作成する
+ */
+export async function setupTestPromptAndSchemaFiles(): Promise<void> {
+  startSection("setupTestPromptAndSchemaFiles");
+  
+  // プロンプトファイルのディレクトリ構造を作成
+  const promptDirs = [
+    "breakdown/prompts/to/project",
+    "breakdown/prompts/to/issue",
+    "breakdown/prompts/to/task",
+    "breakdown/prompts/summary/project",
+    "breakdown/prompts/summary/issue",
+    "breakdown/prompts/defect/project"
+  ];
+  
+  // スキーマファイルのディレクトリ構造を作成
+  const schemaDirs = [
+    "breakdown/schemas/to/project",
+    "breakdown/schemas/to/issue",
+    "breakdown/schemas/to/task",
+    "breakdown/schemas/summary/project",
+    "breakdown/schemas/summary/issue",
+    "breakdown/schemas/defect/project"
+  ];
+  
+  // ディレクトリを作成
+  for (const dir of [...promptDirs, ...schemaDirs]) {
+    await ensureDir(dir);
+    checkpoint(`Created directory: ${dir}`, "");
+  }
+  
+  // プロンプトファイルを作成
+  const promptFiles = [
+    { path: "breakdown/prompts/to/project/default.md", content: "# Project Prompt\n{input_markdown}\n" },
+    { path: "breakdown/prompts/to/issue/default.md", content: "# Issue Prompt\n{input_markdown}\n" },
+    { path: "breakdown/prompts/to/task/default.md", content: "# Task Prompt\n{input_markdown}\n" },
+    { path: "breakdown/prompts/to/project/f_issue.md", content: "# Project from Issue\n{input_markdown}\n" },
+    { path: "breakdown/prompts/to/issue/f_project.md", content: "# Issue from Project\n{input_markdown}\n" },
+    { path: "breakdown/prompts/to/task/f_issue.md", content: "# Task from Issue\n{input_markdown}\n" }
+  ];
+  
+  // スキーマファイルを作成
+  const schemaFiles = [
+    { 
+      path: "breakdown/schemas/to/project/default.json", 
+      content: JSON.stringify({
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" }
+        },
+        required: ["title", "description"]
+      })
+    },
+    { 
+      path: "breakdown/schemas/to/issue/default.json", 
+      content: JSON.stringify({
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" }
+        },
+        required: ["title", "description"]
+      })
+    },
+    { 
+      path: "breakdown/schemas/to/task/default.json", 
+      content: JSON.stringify({
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" }
+        },
+        required: ["title", "description"]
+      })
+    }
+  ];
+  
+  // ファイルを作成
+  for (const file of [...promptFiles, ...schemaFiles]) {
+    try {
+      await Deno.writeTextFile(file.path, file.content);
+      checkpoint(`Created file: ${file.path}`, "");
+    } catch (error) {
+      checkpoint(`Error creating file: ${file.path}`, error);
+    }
+  }
+  
+  // 日本語ファイル名のプロンプトとスキーマも作成
+  const japanesePromptFile = "breakdown/prompts/to/project/日本語.md";
+  const japaneseSchemaFile = "breakdown/schemas/to/project/日本語.json";
+  
+  try {
+    await Deno.writeTextFile(japanesePromptFile, "# 日本語プロンプト\n{input_markdown}\n");
+    await Deno.writeTextFile(japaneseSchemaFile, JSON.stringify({
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        description: { type: "string" }
+      },
+      required: ["title", "description"]
+    }));
+    checkpoint(`Created Japanese files`, "");
+  } catch (error) {
+    checkpoint(`Error creating Japanese files`, error);
+  }
+  
+  endSection("setupTestPromptAndSchemaFiles");
+} 

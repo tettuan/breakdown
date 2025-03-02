@@ -1,2 +1,2 @@
-# Issue Prompt
+# Project Prompt
 {input_markdown}

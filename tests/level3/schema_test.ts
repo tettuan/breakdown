@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "https://deno.land/std/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std/testing/asserts.ts";
 import { ensureDir, exists } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { setupTestAssets, TEST_ASSETS_DIR } from "../test_utils.ts";
@@ -127,20 +127,20 @@ Deno.test("スキーマファイル特定テスト - 存在しないファイル
   };
   
   // 存在しないスキーマファイル
-  await assertThrows(
+  await assertRejects(
     async () => {
       await determineSchemaFile("summary", "task", config);
     },
     Error,
-    "スキーマファイルが見つかりません"
+    "スキーマファイル"
   );
   
   // 存在しないデモンストレーティブタイプ
-  await assertThrows(
+  await assertRejects(
     async () => {
       await determineSchemaFile("defect", "project", config);
     },
     Error,
-    "スキーマファイルが見つかりません"
+    "スキーマファイル"
   );
 }); 

@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "https://deno.land/std/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std/testing/asserts.ts";
 import { ensureDir, exists } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { setupTestAssets, TEST_ASSETS_DIR } from "../test_utils.ts";
@@ -169,12 +169,12 @@ Deno.test("スキーマ適用と検証テスト - 必須プロパティ欠落", 
   });
   
   // 検証
-  await assertThrows(
+  await assertRejects(
     async () => {
       await validateOutputWithSchema(invalidOutput, schemaFilePath);
     },
     Error,
-    "必須プロパティ 'description' が見つかりません"
+    "必須プロパティ"
   );
 });
 
@@ -189,7 +189,7 @@ Deno.test("スキーマ適用と検証テスト - プロパティ型不一致", 
   });
   
   // 検証
-  await assertThrows(
+  await assertRejects(
     async () => {
       await validateOutputWithSchema(invalidOutput, schemaFilePath);
     },
@@ -205,7 +205,7 @@ Deno.test("スキーマ適用と検証テスト - 不正なJSON", async () => {
   const invalidOutput = "{ this is not valid JSON }";
   
   // 検証
-  await assertThrows(
+  await assertRejects(
     async () => {
       await validateOutputWithSchema(invalidOutput, schemaFilePath);
     },

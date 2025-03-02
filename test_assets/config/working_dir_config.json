@@ -1,0 +1,9 @@
+{
+  "working_dir": ".agent_test/breakdown_custom",
+  "app_prompt": {
+    "base_dir": "./breakdown/prompts/"
+  },
+  "app_schema": {
+    "base_dir": "./rules/schema/"
+  }
+}

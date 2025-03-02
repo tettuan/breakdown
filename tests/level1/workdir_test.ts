@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertThrows } from "https://deno.land/std/testing/asserts.ts";
+import { assertEquals, assertExists, assertRejects } from "https://deno.land/std/testing/asserts.ts";
 import { exists } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { 
@@ -57,7 +57,7 @@ Deno.test({
 Deno.test("作業ディレクトリ確認テスト - 存在しない場合", async () => {
   const config = { working_dir: TEST_WORKING_DIR };
   
-  await assertThrows(
+  await assertRejects(
     async () => {
       await checkWorkingDir(config);
     },

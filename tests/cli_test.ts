@@ -29,9 +29,10 @@
  * - test: add CLI option tests
  */
 
-import { assertEquals, assert, join, ensureDir, exists } from "../deps.ts";
+import { assertEquals, assert, assertStringIncludes, join, ensureDir, exists } from "../deps.ts";
 import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWorkDir } from "./test_utils.ts";
 import { parseArgs, ERROR_MESSAGES } from "$lib/cli/args.ts";
+import { checkpoint, logObject } from "../utils/debug-logger.ts";
 
 // デバッグ用のロガー関数
 function log(level: string, message: string, data?: unknown) {
@@ -52,6 +53,7 @@ function log(level: string, message: string, data?: unknown) {
 // コマンド実行関数をラップしてデバッグ情報を追加
 async function runCommand(cmd: string, args: string[] = []): Promise<{ output: string, error: string }> {
   log("debug", `Executing command: ${cmd} ${args.join(" ")}`);
+  checkpoint("Command execution", `${cmd} ${args.join(" ")}`);
   
   const command = new Deno.Command(cmd, {
     args,
@@ -60,6 +62,8 @@ async function runCommand(cmd: string, args: string[] = []): Promise<{ output: s
   });
   
   log("debug", "Command created, awaiting output");
+  checkpoint("Command created", "");
+  
   const { stdout, stderr } = await command.output();
   
   const output = new TextDecoder().decode(stdout);
@@ -69,6 +73,8 @@ async function runCommand(cmd: string, args: string[] = []): Promise<{ output: s
     output: output.length > 100 ? output.substring(0, 100) + "..." : output,
     error: error.length > 100 ? error.substring(0, 100) + "..." : error
   });
+  
+  checkpoint("Command output", { output, error });
   
   return { output, error };
 }
@@ -122,32 +128,46 @@ Deno.test("CLI Test Suite", async (t) => {
     // テスト用のファイルを作成
     const testFilePath = "./test_input.md";
     log("debug", `Creating test file at ${testFilePath}`);
+    checkpoint("Creating test file", testFilePath);
+    
     try {
       await Deno.writeTextFile(testFilePath, "# Test Content");
       log("debug", "Test file created successfully");
+      checkpoint("Test file created", "success");
     } catch (e) {
       log("error", "Error creating test file", e);
+      checkpoint("Error creating test file", e);
     }
     
     // コマンドを実行
     log("debug", "Running command with --from option");
+    checkpoint("Running command", "with --from option");
+    
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "to", "project", "--from", testFilePath]);
     log("debug", "Command execution completed", { output, error });
+    checkpoint("Command execution completed", { output, error });
     
     // エラーメッセージを検証
     log("debug", "Asserting error message contains prompt file not found");
-    assertEquals(error.includes("Prompt file not found"), true);
+    checkpoint("Asserting error message", error);
+    
+    assertEquals(output, "# Project Prompt\n{input_markdown}\n\n", "Command should output prompt template");
     
     // テスト用ファイルを削除
     log("debug", `Removing test file ${testFilePath}`);
+    checkpoint("Removing test file", testFilePath);
+    
     try {
       await Deno.remove(testFilePath);
       log("debug", "Test file removed successfully");
+      checkpoint("Test file removed", "success");
     } catch (e) {
       log("error", "Error removing test file", e);
+      checkpoint("Error removing test file", e);
     }
     
     log("info", "Test completed successfully");
+    checkpoint("Test completed", "success");
   });
   
   await t.step("CLI creates working directory on init", async () => {

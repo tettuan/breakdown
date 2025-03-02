@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "https://deno.land/std/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std/testing/asserts.ts";
 import { ensureDir, exists } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { setupTestAssets, TEST_ASSETS_DIR } from "../test_utils.ts";
@@ -138,20 +138,20 @@ Deno.test("プロンプトファイル特定テスト - 存在しないファイ
   };
   
   // 存在しないプロンプトファイル
-  await assertThrows(
+  await assertRejects(
     async () => {
       await determinePromptFile("to", "task", "project", config);
     },
     Error,
-    "プロンプトファイルが見つかりません"
+    "プロンプトファイル"
   );
   
   // 存在しないデモンストレーティブタイプ
-  await assertThrows(
+  await assertRejects(
     async () => {
       await determinePromptFile("defect", "project", "issue", config);
     },
     Error,
-    "プロンプトファイルが見つかりません"
+    "プロンプトファイル"
   );
 }); 

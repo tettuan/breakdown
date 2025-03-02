@@ -1,2 +1,2 @@
-# Issue Prompt
+# Task Prompt
 {input_markdown}
