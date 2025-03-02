@@ -6,13 +6,12 @@
   },
   "imports": {
     "$std/": "https://deno.land/std@0.210.0/",
+    "$deps/": "./deps/",
     "$lib/": "./lib/"
   },
   "tasks": {
     "test": "deno test -A",
-    "check": "deno check **/*.ts",
-    "run": "deno run -A cli.ts",
-    "build-resources": "deno run -A scripts/build-resources.ts"
+    "check": "deno check **/*.ts"
   },
   "fmt": {
     "indentWidth": 2,
