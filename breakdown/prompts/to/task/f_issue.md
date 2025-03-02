@@ -1,13 +1,2 @@
-プロジェクトからTaskへの変換プロンプト
-
-# Input
+# Task from Issue
 {input_markdown}
-
-# Source
-{input_markdown_file}
-
-# Schema
-{schema_file}
-
-# Output
-{destination_path}

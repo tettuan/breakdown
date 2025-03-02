@@ -1,55 +1,111 @@
-import { parse } from "https://deno.land/std/flags/mod.ts";
-import { toJSON, toMarkdown } from "./lib/mod.ts";
-import { Command } from "https://deno.land/std@0.131.0/flags/mod.ts";
+/**
+ * Breakdown CLI
+ * 
+ * Command-line interface for the Breakdown tool.
+ * See docs/breakdown/breakdown.ja.md for specifications.
+ */
 
+import { parse } from "./deps.ts";
+import { Config } from "./lib/config/config.ts";
+import { exists, ensureDir } from "./deps.ts";
+import { loadPrompt } from "./lib/prompts/loader.ts";
+
+// Main CLI function
 async function main() {
   const args = parse(Deno.args);
-  const command = args._[0];
-  const subCommand = args._[1];
-  const input = args._[2];
-  const output = args.o || args.output;
-
-  if (!command || !subCommand || !input || !output) {
-    console.error("Usage: breakdown <to|summary> <project|issue|task> <input> -o <output>");
-    Deno.exit(1);
-  }
-
-  try {
-    switch (command) {
-      case "to":
-        await toJSON(subCommand, input, output);
-        break;
-      case "summary":
-        await toMarkdown(subCommand, input, output);
-        break;
-      default:
-        console.error("Unknown command:", command);
+  
+  // Handle command line arguments according to options.ja.md
+  const demonstrativeType = args._[0] as string;
+  const layerType = args._[1] as string;
+  
+  // Handle from file option
+  const fromFile = args.from || args.f;
+  
+  // Handle destination option
+  const destinationFile = args.destination || args.o;
+  
+  // Handle input option
+  const fromLayerType = args.input || args.i;
+  
+  // Process command based on demonstrativeType
+  switch (demonstrativeType) {
+    case "init":
+      // Initialize workspace
+      const workingDir = ".agent/breakdown";
+      
+      if (await exists(workingDir)) {
+        console.log(`Working directory already exists: ${workingDir}`);
+      } else {
+        await ensureDir(workingDir);
+        await ensureDir(`${workingDir}/projects`);
+        await ensureDir(`${workingDir}/issues`);
+        await ensureDir(`${workingDir}/tasks`);
+        console.log(`Created working directory: ${workingDir}`);
+      }
+      break;
+    case "to":
+      // Basic command output for single argument
+      if (!layerType && !fromFile) {
+        console.log(demonstrativeType);
+        return;
+      }
+      
+      // Validate layerType
+      if (layerType && !["project", "issue", "task"].includes(layerType)) {
+        console.error("Invalid second argument. Must be one of: project, issue, task");
         Deno.exit(1);
-    }
-  } catch (error) {
-    console.error("Error:", error.message);
-    Deno.exit(1);
+      }
+      
+      // Check if input file is provided
+      if (layerType && !fromFile) {
+        console.error("Input file is required. Use --from/-f option");
+        Deno.exit(1);
+      }
+      
+      // Load appropriate prompt and process
+      if (fromFile) {
+        try {
+          const prompt = await loadPrompt(demonstrativeType, layerType, fromLayerType);
+          console.log(prompt);
+        } catch (error) {
+          console.error(error.message);
+          Deno.exit(1);
+        }
+      }
+      break;
+    case "summary":
+    case "defect":
+      // Validate layerType
+      if (layerType && !["project", "issue", "task"].includes(layerType)) {
+        console.error("Invalid second argument. Must be one of: project, issue, task");
+        Deno.exit(1);
+      }
+      
+      // Check if input file is provided
+      if (!fromFile) {
+        console.error("Input file is required. Use --from/-f option");
+        Deno.exit(1);
+      }
+      
+      // Load appropriate prompt and process
+      try {
+        const prompt = await loadPrompt(demonstrativeType, layerType, fromLayerType);
+        console.log(prompt);
+      } catch (error) {
+        console.error(error.message);
+        Deno.exit(1);
+      }
+      break;
+    default:
+      console.error("Invalid first argument. Must be one of: to, summary, defect, init");
+      Deno.exit(1);
   }
 }
 
+// Run the CLI
 if (import.meta.main) {
-  const command = new Command()
-    .name("breakdown")
-    .version("0.1.0");
-
-  await command.parse(Deno.args);
-}
-
-export async function toJSON(subcommand: string, content: string, outputPath: string): Promise<ConversionResult> {
-  if (!["project", "issue", "task"].includes(subcommand)) {
-    throw new Error(`Invalid subcommand: ${subcommand}`);
-  }
-  // ... 既存の処理 ...
-}
-
-export async function toMarkdown(subcommand: string, content: string, outputPath: string): Promise<ConversionResult> {
-  if (!["project", "issue", "task"].includes(subcommand)) {
-    throw new Error(`Invalid subcommand: ${subcommand}`);
-  }
-  // ... 既存の処理 ...
+  main().catch(err => {
+    console.error(err);
+    Deno.exit(1);
+  });
 } 

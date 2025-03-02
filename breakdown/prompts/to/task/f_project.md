@@ -1,13 +1,12 @@
-プロジェクトからTaskへの変換プロンプト
+# Task Template from Project
 
-# Input
+This is a template for creating tasks directly from project information.
+
+{input_markdown_file}
 {input_markdown}
 
-# Source
-{input_markdown_file}
-
-# Schema
+# schema
 {schema_file}
 
-# Output
-{destination_path}
+# destination path
+{destination_path} 

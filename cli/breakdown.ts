@@ -1,13 +1,10 @@
 #!/usr/bin/env -S deno run -A
 
-import { parse } from "https://deno.land/std@0.210.0/flags/mod.ts";
-import { exists } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { getConfig, initializeConfig, setConfig } from "../breakdown/config/config.ts";
-import { join } from "https://deno.land/std@0.210.0/path/mod.ts";
-import { crypto } from "https://deno.land/std@0.210.0/crypto/mod.ts";
-import { parseArgs } from "./args.ts";
-import { loadPrompt } from "../breakdown/prompts/loader.ts";
+import { exists, ensureDir, join, parse } from "../deps.ts";
+import { getConfig, initializeConfig, setConfig } from "$lib/config/config.ts";
+import { crypto } from "../deps.ts";
+import { parseArgs } from "$lib/cli/args.ts";
+import { loadPrompt } from "$lib/prompts/loader.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -76,7 +73,11 @@ async function initWorkspace(): Promise<void> {
       console.log(`Created working directory: ${config.working_dir}`);
     }
   } catch (error) {
-    console.error(`Failed to initialize workspace: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Failed to initialize workspace: ${error.message}`);
+    } else {
+      console.error(`Failed to initialize workspace: ${String(error)}`);
+    }
     Deno.exit(1);
   }
 }
@@ -121,12 +122,11 @@ async function processWithPrompt(
   }
 }
 
-// メイン処理
-if (import.meta.main) {
+export async function runBreakdown(args: string[]): Promise<void> {
   try {
     await initializeConfig().catch(() => {});
 
-    const flags = parse(Deno.args, {
+    const parsedFlags: { [key: string]: unknown; _: string[] } = parse(args, {
       string: ["from", "f", "destination", "o"],
       alias: { 
         f: "from",
@@ -134,11 +134,11 @@ if (import.meta.main) {
       },
     });
 
-    const args = flags._;
+    const commandArgs = parsedFlags._;
 
     // 基本的なコマンド処理
-    if (args.length === 1) {
-      const type = args[0] as string;
+    if (commandArgs.length === 1) {
+      const type = commandArgs[0] as string;
       if (!isValidDemonstrativeType(type)) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
         Deno.exit(1);
@@ -155,8 +155,8 @@ if (import.meta.main) {
       }
     } 
     // 2つの引数がある場合の処理
-    else if (args.length === 2) {
-      const [demonstrative, layer] = args as [string, string];
+    else if (commandArgs.length === 2) {
+      const [demonstrative, layer] = commandArgs as [string, string];
       if (!isValidDemonstrativeType(demonstrative)) {
         console.error("Invalid first argument. Must be one of: to, summary, defect, init");
         Deno.exit(1);
@@ -166,7 +166,7 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      if (!flags.from) {
+      if (!parsedFlags.from) {
         console.error("Input file is required. Use --from/-f option");
         Deno.exit(1);
       }
@@ -176,11 +176,11 @@ if (import.meta.main) {
         Deno.exit(1);
       }
 
-      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : undefined;
+      const fromFile = parsedFlags.from ? autoCompletePath(parsedFlags.from as string, layer) : undefined;
       
-      const destFile = flags.hasOwnProperty('destination') ? 
-                      autoCompletePath(flags.destination || undefined, demonstrative) : 
-                      null;
+      const destFile = parsedFlags.hasOwnProperty('destination') ? 
+                      autoCompletePath(parsedFlags.destination as string | undefined, demonstrative) : 
+                      undefined;
 
       if (!fromFile) {
         console.error("Input file is required");
@@ -193,6 +193,11 @@ if (import.meta.main) {
     console.error("Error:", error.message);
     Deno.exit(1);
   }
+}
+
+// メイン処理
+if (import.meta.main) {
+  runBreakdown(Deno.args);
 }
 
 const process = new Deno.Command(Deno.execPath(), {
