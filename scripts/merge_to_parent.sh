@@ -11,7 +11,7 @@ current_branch=$(git rev-parse --abbrev-ref HEAD)
 echo "現在のブランチ: $current_branch"
 
 # 親ブランチを特定
-parent_branch=$(./script/find_parent_branch.sh)
+parent_branch=$(./scripts/find_parent_branch.sh)
 
 # 親ブランチが特定できなかった場合
 if [[ -z "$parent_branch" ]]; then
