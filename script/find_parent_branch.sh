@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # このスクリプトは現在のブランチが派生された元のブランチを特定します
 # 使用方法: ./find_parent_branch.sh
