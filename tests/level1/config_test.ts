@@ -11,7 +11,10 @@ async function loadConfig(configPath: string) {
     if (error instanceof Deno.errors.NotFound) {
       return getDefaultConfig();
     }
-    throw new Error(`設定ファイルの読み込みに失敗しました: ${error.message}`);
+    if (error instanceof Error) {
+      throw new Error(`設定ファイルの読み込みに失敗しました: ${error.message}`);
+    }
+    throw new Error(`設定ファイルの読み込みに失敗しました: ${String(error)}`);
   }
 }
 

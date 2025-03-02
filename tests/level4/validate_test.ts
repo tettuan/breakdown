@@ -2,6 +2,7 @@ import { assertEquals, assertThrows } from "https://deno.land/std/testing/assert
 import { ensureDir, exists } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { setupTestAssets, TEST_ASSETS_DIR } from "../test_utils.ts";
+import { checkpoint, startSection, endSection, logObject } from "../../utils/debug-logger.ts";
 
 /**
  * スキーマ適用と検証テスト [ID:VALIDATE] - レベル4: 変数置換と出力処理
@@ -28,16 +29,28 @@ async function validateOutputWithSchema(
   output: string,
   schemaFilePath: string
 ): Promise<boolean> {
+  startSection("validateOutputWithSchema");
+  checkpoint("入力", { output, schemaFilePath });
+  
   // スキーマファイルを読み込む
   const schemaText = await Deno.readTextFile(schemaFilePath);
+  checkpoint("スキーマテキスト", schemaText);
+  
   const schema = JSON.parse(schemaText);
+  logObject(schema, "パース済みスキーマ");
   
   // 出力をJSONとして解析
   let outputJson;
   try {
     outputJson = JSON.parse(output);
+    logObject(outputJson, "パース済み出力");
   } catch (e) {
-    throw new Error(`出力がJSONとして解析できません: ${e.message}`);
+    // エラーの型をチェックして安全にアクセス
+    checkpoint("JSONパースエラー", e);
+    if (e instanceof Error) {
+      throw new Error(`出力がJSONとして解析できません: ${e.message}`);
+    }
+    throw new Error(`出力がJSONとして解析できません: ${String(e)}`);
   }
   
   // スキーマに基づいて検証
@@ -60,24 +73,33 @@ async function validateOutputWithSchema(
     // プロパティの型検証
     if (schema.properties) {
       for (const [prop, propSchema] of Object.entries(schema.properties)) {
+        checkpoint(`プロパティ検証`, { prop, propSchema });
+        
         if (prop in outputJson) {
           const value = outputJson[prop];
-          const type = propSchema.type;
+          checkpoint(`プロパティ値`, { prop, value });
           
-          if (type === "string" && typeof value !== "string") {
-            throw new Error(`プロパティ '${prop}' は文字列である必要があります`);
-          } else if (type === "number" && typeof value !== "number") {
-            throw new Error(`プロパティ '${prop}' は数値である必要があります`);
-          } else if (type === "array" && !Array.isArray(value)) {
-            throw new Error(`プロパティ '${prop}' は配列である必要があります`);
-          } else if (type === "object" && (typeof value !== "object" || Array.isArray(value))) {
-            throw new Error(`プロパティ '${prop}' はオブジェクトである必要があります`);
+          // propSchemaの型チェックを追加
+          if (typeof propSchema === 'object' && propSchema !== null && 'type' in propSchema) {
+            const type = (propSchema as { type: string }).type;
+            checkpoint(`プロパティタイプ`, { prop, type });
+            
+            if (type === "string" && typeof value !== "string") {
+              throw new Error(`プロパティ '${prop}' は文字列である必要があります`);
+            } else if (type === "number" && typeof value !== "number") {
+              throw new Error(`プロパティ '${prop}' は数値である必要があります`);
+            } else if (type === "array" && !Array.isArray(value)) {
+              throw new Error(`プロパティ '${prop}' は配列である必要があります`);
+            } else if (type === "object" && (typeof value !== "object" || Array.isArray(value))) {
+              throw new Error(`プロパティ '${prop}' はオブジェクトである必要があります`);
+            }
           }
         }
       }
     }
   }
   
+  endSection("validateOutputWithSchema");
   return true;
 }
 
