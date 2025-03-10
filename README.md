@@ -222,6 +222,13 @@ breakdown to task <issue.json>  -o <tasks-dir>
 deno install --name=breakdown https://deno.land/x/breakdown.ts
 ```
 
+compile to local directory.
+```
+deno compile --allow-read --allow-write --allow-env \    
+   --output ./.deno/bin/breakdown \                  
+   main.ts   
+```
+
 ### 2-2. Install Only to AI Development Repository
 
 ```
