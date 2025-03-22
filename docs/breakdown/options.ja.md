@@ -1,4 +1,43 @@
 # breakdown 引数の仕様
+
+## パラメータ処理の実装
+https://jsr.io/@tettuan/breakdownparams を使用します。
+
+```ts
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.8";
+
+const parser = new ParamsParser();
+
+// Parse arguments
+const result = parser.parse(Deno.args);
+
+// Handle different result types
+switch (result.type) {
+  case 'no-params':
+    if (result.help) {
+      console.log('Show help message');
+    }
+    if (result.version) {
+      console.log('Show version');
+    }
+    break;
+
+  case 'single':
+    if (result.command === 'init') {
+      console.log('Initialize project');
+    }
+    break;
+
+  case 'double':
+    console.log(`Demonstrative: ${result.demonstrativeType}`);
+    console.log(`Layer: ${result.layerType}`);
+    if (result.options.fromFile) {
+      console.log(`From file: ${result.options.fromFile}`);
+    }
+    break;
+}
+```
+
 ## 基本コマンド
 ```bash
 ./.deno/bin/breakdown

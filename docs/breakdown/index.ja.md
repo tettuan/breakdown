@@ -7,6 +7,29 @@
 
 Breakdown は Deno で実装された OSS ツールで、プロジェクト管理のための階層的なタスク分解をサポートします。この仕様書は、ツールの設計、機能、使用方法を明確に定義することを目的としています。
 
+## 使用するJSRパッケージ
+
+Breakdown は以下のJSRパッケージを使用して実装されています：
+
+1. [@tettuan/breakdownconfig](https://jsr.io/@tettuan/breakdownconfig) - 設定管理
+   - アプリケーションとユーザー設定の管理
+   - 作業ディレクトリの設定
+   - プロンプトとスキーマのディレクトリ設定
+
+2. [@tettuan/breakdownlogger](https://jsr.io/@tettuan/breakdownlogger) - ロギング機能
+   - デバッグ情報の出力
+   - エラー処理とログ記録
+
+3. [@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) - パラメータ処理
+   - コマンドライン引数の解析
+   - オプションの処理
+   - パラメータのバリデーション
+
+4. [@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt) - プロンプト処理
+   - プロンプトファイルの読み込み
+   - 変数置換
+   - プロンプトの生成
+
 ## 仕様の概略
 
 Breakdown ツールは、プロジェクト、イシュー、タスクという3つの階層でタスク管理を行います。コマンドラインインターフェースを通じて、これらの階層間の変換や要約、欠陥分析などの機能を提供します。
