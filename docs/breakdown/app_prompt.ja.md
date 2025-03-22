@@ -37,8 +37,7 @@ app_configの設定ファイルに記載する。
 ```
 
 ## プロンプトファイルの命名規則
-- dir : <app_prompt.base_dir>/<DemonstrativeType>/<LayerType>
-- filename : f_<from_layer_type>.md
+`./path.ja.md` を参照
 
 ## 実行時にプロンプトを特定する手順
 * options.ja.md に基づいて <from_layer_type> が決定される。この結果を受け取る。

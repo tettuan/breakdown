@@ -16,23 +16,24 @@ Breakdown は以下のJSRパッケージを使用して実装されています�
    - 作業ディレクトリの設定
    - プロンプトとスキーマのディレクトリ設定
 
-2. [@tettuan/breakdownlogger](https://jsr.io/@tettuan/breakdownlogger) - ロギング機能
-   - デバッグ情報の出力
-   - エラー処理とログ記録
-
-3. [@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) - パラメータ処理
+2. [@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) - パラメータ処理
    - コマンドライン引数の解析
    - オプションの処理
    - パラメータのバリデーション
 
-4. [@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt) - プロンプト処理
+3. [@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt) - プロンプト処理
    - プロンプトファイルの読み込み
    - 変数置換
    - プロンプトの生成
 
+4. [@tettuan/breakdownlogger](https://jsr.io/@tettuan/breakdownlogger) - ロギング機能
+   - デバッグ情報の出力
+   - エラー処理とログ記録
+
+
 ## 仕様の概略
 
-Breakdown ツールは、プロジェクト、イシュー、タスクという3つの階層でタスク管理を行います。コマンドラインインターフェースを通じて、これらの階層間の変換や要約、欠陥分析などの機能を提供します。
+Breakdown ツールは、プロジェクト、イシュー、タスクという3つの階層でタスク管理を行います。コマンドラインインターフェース(CLI)を通じて、これらの階層間の変換や要約、欠陥分析などの機能を提供します。
 
 設定ファイルやプロンプト、スキーマを利用して柔軟な動作を実現し、作業ディレクトリ内でのファイル管理を行います。
 

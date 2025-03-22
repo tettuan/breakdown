@@ -12,9 +12,7 @@ app_configの設定ファイルに記載する。
 ```
 
 ## アプリケーションSchemaファイルの命名規則
-- dir : <app_schema.base_dir>/<DemonstrativeType>/<LayerType>
-- filename : `base.schema.md`
-  - デフォルト値を `base.schema.md` で固定
+`./path.ja.md` を参照
 
 ex.
 ```bash
