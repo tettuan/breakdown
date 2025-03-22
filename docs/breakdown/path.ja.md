@@ -33,10 +33,19 @@ PATHは2つの前提が揃うと決まる。
 - dir : {demonstrativeType}/{layerType}
 - filename : f_{fromLayerType}.md
 
+プロンプトファイル例： `lib/prompts/to/issue/f_issue.md`
+
+### fromLayerType が空白時
+fromLayerType が指定されていない時、 fromFile から fromLayerType に相当する値を判定する。
+ex. 
+fromLayerType が空白で fromFile が `something/created/123_issue_file.md` のとき、 fromFile に `issue` を含むため、fromLayerType の代わりに fromFile から `issue` を特定する。fromLayerType が取りうる値は project, issue, task なので、fromFile を3つのワードでスキャンすることによって実現できる。
+
 ## Schema
 - dir : {demonstrativeType}/{layerType}
 - filename : `base.schema.md`
   - デフォルト値を `base.schema.md` で固定
+
+Schemaファイル例： `lib/schema/to/issue/base.schema.md`
 
 ## Inputファイル
 パラメータの値に応じてPATH処理が分かれる。
