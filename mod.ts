@@ -7,12 +7,8 @@
 // Export main functionality
 export { runBreakdown } from "./lib/cli/breakdown.ts";
 
-// Export types
-export type { Config } from "./lib/config/config.ts";
+// Export core functionality
 export { Workspace } from "./lib/core/workspace.ts";
-
-// Config exports
-export type { BreakdownConfig, ConfigOptions } from "$lib/config/types.ts";
 
 export interface ConversionResult {
   success: boolean;
