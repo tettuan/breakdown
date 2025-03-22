@@ -4,8 +4,11 @@
  * This is the main entry point for the library.
  */
 
-// Export core functionality
-export { Config } from "./lib/config/config.ts";
+// Export main functionality
+export { runBreakdown } from "./lib/cli/breakdown.ts";
+
+// Export types
+export type { Config } from "./lib/config/config.ts";
 export { Workspace } from "./lib/core/workspace.ts";
 export { loadPrompt } from "./lib/prompts/loader.ts";
 

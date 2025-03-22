@@ -4,6 +4,7 @@ import { exists, ensureDir, join, parse, crypto } from "../../deps.ts";
 import { getConfig, initializeConfig, setConfig } from "$lib/config/config.ts";
 import { parseArgs } from "./args.ts";
 import { loadPrompt } from "$lib/prompts/loader.ts";
+import { Config } from "../config/config.ts";
 
 type DemonstrativeType = "to" | "summary" | "defect" | "init";
 type LayerType = "project" | "issue" | "task";
@@ -118,76 +119,8 @@ async function processWithPrompt(
 }
 
 export async function runBreakdown(args: string[]): Promise<void> {
-  try {
-    await initializeConfig().catch(() => {});
-
-    const flags = parse(args, {
-      string: ["from", "f", "destination", "o"],
-      alias: { 
-        f: "from",
-        o: "destination"
-      },
-    });
-
-    const args = flags._;
-
-    // 基本的なコマンド処理
-    if (args.length === 1) {
-      const type = args[0] as string;
-      if (!isValidDemonstrativeType(type)) {
-        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
-        Deno.exit(1);
-      }
-      
-      if (type === "init") {
-        await initWorkspace();
-      } else {
-        if (!await checkWorkingDir()) {
-          console.error("breakdown init を実行し、作業フォルダを作成してください");
-          Deno.exit(1);
-        }
-        console.log(type);
-      }
-    } 
-    // 2つの引数がある場合の処理
-    else if (args.length === 2) {
-      const [demonstrative, layer] = args as [string, string];
-      if (!isValidDemonstrativeType(demonstrative)) {
-        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
-        Deno.exit(1);
-      }
-      if (!isValidLayerType(layer)) {
-        console.error("Invalid second argument. Must be one of: project, issue, task");
-        Deno.exit(1);
-      }
-
-      if (!flags.from) {
-        console.error("Input file is required. Use --from/-f option");
-        Deno.exit(1);
-      }
-
-      if (demonstrative !== "init" && !await checkWorkingDir()) {
-        console.error("breakdown init を実行し、作業フォルダを作成してください");
-        Deno.exit(1);
-      }
-
-      const fromFile = flags.from ? autoCompletePath(flags.from, layer) : undefined;
-      
-      const destFile = flags.hasOwnProperty('destination') ? 
-                      autoCompletePath(flags.destination || undefined, demonstrative) : 
-                      null;
-
-      if (!fromFile) {
-        console.error("Input file is required");
-        Deno.exit(1);
-      }
-
-      await processWithPrompt(demonstrative, layer, fromFile, destFile);
-    }
-  } catch (error) {
-    console.error("Error:", error.message);
-    Deno.exit(1);
-  }
+  // This function will be replaced with @tettuan/breakdownparams
+  throw new Error("Not implemented: Use @tettuan/breakdownparams instead");
 }
 
 // メイン処理
