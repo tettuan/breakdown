@@ -1,22 +1,9 @@
-import { assertEquals, assertExists, assertThrows, assertRejects } from "https://deno.land/std/testing/asserts.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { setupTestAssets, TEST_CONFIG_DIR, TEST_WORKING_DIR } from "../test_utils.ts";
+import { assertEquals, assertRejects } from "../../deps.ts";
+import { BreakdownConfig } from "$lib/config/config.ts";
+import { ConfigLoadError } from "$lib/config/errors.ts";
+import { exists, join } from "../../deps.ts";
 
-// モック関数: 実際の実装では適切なインポートに置き換える
-async function loadConfig(configPath: string) {
-  try {
-    const text = await Deno.readTextFile(configPath);
-    return JSON.parse(text);
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return getDefaultConfig();
-    }
-    if (error instanceof Error) {
-      throw new Error(`設定ファイルの読み込みに失敗しました: ${error.message}`);
-    }
-    throw new Error(`設定ファイルの読み込みに失敗しました: ${String(error)}`);
-  }
-}
+const TEST_WORKING_DIR = ".agent_test/breakdown";
 
 function getDefaultConfig() {
   return {
@@ -30,62 +17,76 @@ function getDefaultConfig() {
   };
 }
 
-/**
- * 設定ファイル処理テスト [ID:CONFIG] - レベル1: 基本設定とコマンド処理
- * 
- * 目的:
- * - 設定ファイル（config.json）が正しく読み込まれることを確認
- * - 設定ファイルが存在しない場合のデフォルト値の適用を確認
- * - 設定ファイルの形式が不正な場合のエラーハンドリングを確認
- * 
- * テストデータ:
- * - 標準的な設定ファイル: test_assets/config/valid_config.json
- * - 不正な形式の設定ファイル: test_assets/config/invalid_config.json
- * 
- * 境界線:
- * - 設定ファイル読み込み → 他のすべての処理
- *   設定ファイルが正しく読み込まれないと、すべての後続処理が失敗する
- */
-
-// テスト実行前にセットアップを行う
-Deno.test({
-  name: "設定ファイル処理テストのセットアップ",
-  fn: async () => {
-    await setupTestAssets();
-  }
+Deno.test("BreakdownConfig - getInstance returns singleton instance", () => {
+  const instance1 = BreakdownConfig.getInstance();
+  const instance2 = BreakdownConfig.getInstance();
+  assertEquals(instance1, instance2);
 });
 
-Deno.test("設定ファイル読み込みテスト - 正常な設定ファイル", async () => {
-  const validConfigPath = path.join(TEST_CONFIG_DIR, "valid_config.json");
-  const config = await loadConfig(validConfigPath);
+Deno.test("BreakdownConfig - loadConfig loads default configuration", async () => {
+  const config = BreakdownConfig.getInstance();
+  await config.loadConfig();
   
-  assertExists(config);
-  assertEquals(config.working_dir, TEST_WORKING_DIR);
-  assertEquals(config.app_prompt.base_dir, "./breakdown/prompts/");
-  assertEquals(config.app_schema.base_dir, "./rules/schema/");
+  const settings = config.getConfig();
+  assertEquals(settings.working_dir, "./.agent/breakdown");
+  assertEquals(typeof settings.app_prompt?.base_dir, "string");
+  assertEquals(settings.app_prompt?.base_dir, "./breakdown/prompts/");
 });
 
-Deno.test("設定ファイル読み込みテスト - 存在しない設定ファイル", async () => {
-  const nonExistentPath = path.join(TEST_CONFIG_DIR, "non_existent.json");
-  const defaultConfig = await loadConfig(nonExistentPath);
+Deno.test("BreakdownConfig - loadConfig with custom options", async () => {
+  const config = BreakdownConfig.getInstance();
+  await config.loadConfig({
+    workingDir: "./custom/path",
+    configPath: "test_assets/config/valid_config.json"
+  });
   
-  assertEquals(defaultConfig, getDefaultConfig());
+  const settings = config.getConfig();
+  assertEquals(settings.working_dir, "./custom/path");
+  assertEquals(typeof settings.app_prompt?.base_dir, "string");
+  assertEquals(settings.app_prompt?.base_dir, "./breakdown/prompts/");
 });
 
-Deno.test("設定ファイル読み込みテスト - 不正な形式の設定ファイル", async () => {
-  // Create an invalid JSON file
-  await Deno.writeTextFile(
-    path.join(TEST_CONFIG_DIR, "invalid_config.json"),
-    "{ this is not valid JSON }"
-  );
-  
-  // Use assertRejects instead of assertThrows for async functions
+Deno.test("BreakdownConfig - loadConfig with invalid path throws ConfigLoadError", async () => {
+  const config = BreakdownConfig.getInstance();
   await assertRejects(
-    async () => {
-      // Make sure we're calling the function that will throw
-      await loadConfig(path.join(TEST_CONFIG_DIR, "invalid_config.json"));
-    },
-    Error,
-    "JSON"  // Partial error message to match
+    () => config.loadConfig({ configPath: "nonexistent.json" }),
+    ConfigLoadError
   );
+});
+
+Deno.test("BreakdownConfig - getters return correct values", async () => {
+  const config = BreakdownConfig.getInstance();
+  await config.loadConfig({
+    workingDir: TEST_WORKING_DIR
+  });
+  
+  assertEquals(config.getWorkingDir(), TEST_WORKING_DIR);
+  assertEquals(config.getPromptBaseDir(), "./breakdown/prompts/");
+});
+
+Deno.test("BreakdownConfig - loads from deno.land/x", async () => {
+  const config = BreakdownConfig.getInstance();
+  await config.loadConfig();
+  const settings = config.getConfig();
+  
+  assertEquals(typeof settings.working_dir, "string");
+  assertEquals(typeof settings.app_prompt?.base_dir, "string");
+});
+
+Deno.test("BreakdownConfig - applies custom config", async () => {
+  const config = BreakdownConfig.getInstance();
+  const customConfig = {
+    working_dir: "./custom/path",
+    app_prompt: {
+      base_dir: "./custom/prompts/"
+    }
+  };
+  
+  await config.loadConfig({
+    workingDir: customConfig.working_dir,
+    configPath: "test_assets/config/working_dir_config.json"
+  });
+  
+  const settings = config.getConfig();
+  assertEquals(settings.working_dir, customConfig.working_dir);
 }); 

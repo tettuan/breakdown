@@ -237,12 +237,13 @@ export async function setupTestEnvironment(): Promise<void> {
   checkpoint("Setting up test environment", "");
   
   // 環境変数の設定状態を確認
-  const envVars = {
-    LOG_LEVEL: Deno.env.get("LOG_LEVEL"),
-    TEST_DIR: Deno.env.get("TEST_DIR"),
-    // 他の関連する環境変数
+  const env = {
+    DENO_DIR: Deno.env.get("DENO_DIR"),
+    HOME: Deno.env.get("HOME"),
+    PATH: Deno.env.get("PATH"),
+    // ... existing code ...
   };
-  checkpoint("Environment variables", envVars);
+  checkpoint("Environment variables", env);
   
   // テストディレクトリの作成
   await ensureDir(TEST_DIR);

@@ -322,11 +322,12 @@ Deno.test({
       }
       
       // 環境変数の確認
-      checkpoint("Environment variables", {
+      const env = {
         DENO_DIR: Deno.env.get("DENO_DIR"),
+        HOME: Deno.env.get("HOME"),
         PATH: Deno.env.get("PATH"),
-        LOG_LEVEL: Deno.env.get("LOG_LEVEL")
-      });
+      };
+      checkpoint("Environment variables", env);
       
       // コマンド実行前の詳細情報
       checkpoint("Command execution details", {

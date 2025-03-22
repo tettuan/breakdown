@@ -7,7 +7,8 @@
   "imports": {
     "$std/": "https://deno.land/std@0.210.0/",
     "$deps/": "./deps/",
-    "$lib/": "./lib/"
+    "$lib/": "./lib/",
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.0"
   },
   "tasks": {
     "test": "deno test -A",

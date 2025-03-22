@@ -40,80 +40,17 @@
  */
 
 import { exists, join } from "../../deps.ts";
-import { BreakdownConfig, ConfigOptions, WorkspaceStructure } from "./types.ts";
+import { BreakdownConfig as IBreakdownConfig, ConfigOptions, WorkspaceStructure } from "./types.ts";
 import { ConfigLoadError } from "./errors.ts";
 
-export interface AppConfig {
-  working_dir: string;
-  app_prompt?: {
-    base_dir: string;
-  };
-}
+export class BreakdownConfig {
+  protected static instance: BreakdownConfig;
+  private config: IBreakdownConfig;
+  protected static readonly DEFAULT_CONFIG_PATH = "breakdown/config.json";
+  protected static readonly DEFAULT_WORKING_DIR = "./.agent/breakdown";
+  protected static readonly DEFAULT_PROMPT_BASE_DIR = "./breakdown/prompts/";
 
-function normalizePath(path: string): string {
-  return path.startsWith("./") ? path : "./" + path;
-}
-
-let config: AppConfig = {
-  working_dir: normalizePath(".agent/breakdown"),
-  app_prompt: {
-    base_dir: "./breakdown/prompts/"
-  }
-};
-
-export function getConfig(): AppConfig {
-  return config;
-}
-
-export function setConfig(newConfig: Partial<AppConfig>): void {
-  if (newConfig.working_dir) {
-    newConfig.working_dir = normalizePath(newConfig.working_dir);
-  }
-  config = { ...config, ...newConfig };
-}
-
-async function loadConfigFile(path: string): Promise<Partial<BreakdownConfig>> {
-  try {
-    if (await exists(path)) {
-      const content = await Deno.readTextFile(path);
-      return JSON.parse(content);
-    }
-    throw new ConfigLoadError(path);
-  } catch (error) {
-    if (error instanceof ConfigLoadError) {
-      throw error;
-    }
-    throw new ConfigLoadError(path, error);
-  }
-}
-
-export async function initializeConfig(options: ConfigOptions = {}): Promise<void> {
-  const defaultWorkingDir = "./.agent/breakdown";
-  
-  try {
-    const configPath = options.configPath || 
-                      Deno.env.get("BREAKDOWN_CONFIG") || 
-                      "/breakdown/config/config.ts";
-    
-    const configData = await loadConfigFile(configPath);
-    
-    setConfig({
-      working_dir: options.workingDir || configData.working_dir || defaultWorkingDir,
-      app_prompt: configData.app_prompt
-    });
-  } catch (error: unknown) {
-    setConfig({
-      working_dir: defaultWorkingDir
-    });
-  }
-}
-
-export class Config {
-  private static instance: Config;
-  private config: BreakdownConfig;
-  private static readonly DEFAULT_CONFIG_PATH = "breakdown/config.json";
-
-  private constructor() {
+  protected constructor() {
     this.config = {
       root: ".agent",
       working_directory: "",
@@ -126,96 +63,107 @@ export class Config {
           projects: "projects"
         }
       },
-      working_dir: "./.agent/breakdown",
+      working_dir: BreakdownConfig.DEFAULT_WORKING_DIR,
       app_prompt: {
-        base_dir: "./breakdown/prompts/"
+        base_dir: BreakdownConfig.DEFAULT_PROMPT_BASE_DIR
       }
     };
   }
 
-  public static getInstance(): Config {
-    if (!Config.instance) {
-      Config.instance = new Config();
+  public static getInstance(): BreakdownConfig {
+    if (!BreakdownConfig.instance) {
+      BreakdownConfig.instance = new BreakdownConfig();
     }
-    return Config.instance;
+    return BreakdownConfig.instance;
   }
 
-  public async initialize(options: ConfigOptions = {}): Promise<void> {
-    const workingDir = options.workingDir || Deno.cwd();
-    const outputDir = options.outputDir || join(workingDir, this.config.root, "breakdown");
-
-    this.config = {
-      root: this.config.root,
-      working_directory: workingDir,
-      output_directory: outputDir,
-      workspace_structure: this.config.workspace_structure,
-      working_dir: this.config.working_dir,
-      app_prompt: this.config.app_prompt
-    };
-
+  public async loadConfig(options: ConfigOptions = {}): Promise<void> {
     try {
-      // 1. デフォルト設定ファイルの読み込み
-      const defaultConfig = await this.loadConfigFile(Config.DEFAULT_CONFIG_PATH);
-      this.config = { ...this.config, ...defaultConfig };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.debug(`Using fallback configuration: ${error.message}`);
+      const configPath = options.configPath || 
+                        Deno.env.get("BREAKDOWN_CONFIG") || 
+                        BreakdownConfig.DEFAULT_CONFIG_PATH;
+      
+      let configData: Partial<IBreakdownConfig> = {};
+      
+      if (options.configPath) {
+        // 明示的に設定ファイルが指定された場合は、存在しない場合はエラー
+        configData = await this.loadConfigFile(configPath, true);
       } else {
-        console.debug("Using fallback configuration: Unknown error");
-      }
-    }
-
-    // 2. 指定された設定ファイルの読み込み
-    if (options?.configPath) {
-      try {
-        const customConfig = await this.loadConfigFile(options.configPath);
-        // 既存の workspace_structure は保持
-        const structure = this.config.workspace_structure;
-        this.config = { 
-          ...this.config, 
-          ...customConfig,
-          workspace_structure: structure 
-        };
-      } catch (error) {
-        if (error instanceof ConfigLoadError) {
-          console.debug(`Custom config not loaded: ${error.message}`);
+        try {
+          configData = await this.loadConfigFile(configPath, false);
+        } catch (error) {
+          if (!(error instanceof ConfigLoadError)) {
+            throw error;
+          }
+          // デフォルトの設定ファイルが存在しない場合は警告を表示
+          console.warn(`Config file not found at ${configPath}, using defaults`);
         }
       }
-    }
+      
+      const workingDir = options.workingDir || 
+                        configData.working_dir || 
+                        BreakdownConfig.DEFAULT_WORKING_DIR;
+      const promptBaseDir = configData.app_prompt?.base_dir || 
+                          BreakdownConfig.DEFAULT_PROMPT_BASE_DIR;
 
-    // 3. CLIオプションでの上書き（最優先）
-    if (options?.workingDir) {
-      this.config.working_directory = options.workingDir;
-    }
-    if (options?.outputDir) {
-      this.config.output_directory = options.outputDir;
-    }
-  }
-
-  private async loadConfigFile(path: string): Promise<Partial<BreakdownConfig>> {
-    try {
-      if (await exists(path)) {
-        const content = await Deno.readTextFile(path);
-        return JSON.parse(content);
-      }
-      throw new ConfigLoadError(path);
+      this.config = {
+        ...this.config,
+        working_dir: workingDir,
+        app_prompt: {
+          base_dir: promptBaseDir
+        }
+      };
     } catch (error) {
       if (error instanceof ConfigLoadError) {
         throw error;
       }
-      throw new ConfigLoadError(path, error);
+      console.error("Error loading config:", error);
+      // デフォルト設定を維持
+      console.warn("Using default configuration");
     }
   }
 
-  public get workingDirectory(): string {
-    return this.config.working_directory;
+  private async loadConfigFile(path: string, required = false): Promise<Partial<IBreakdownConfig>> {
+    try {
+      if (await exists(path)) {
+        const content = await Deno.readTextFile(path);
+        try {
+          return JSON.parse(content);
+        } catch (error) {
+          throw new ConfigLoadError(`Failed to parse config from ${path}`, error);
+        }
+      }
+      if (required) {
+        throw new ConfigLoadError(`Config file not found: ${path}`);
+      }
+      throw new ConfigLoadError(`Failed to load config from ${path}`);
+    } catch (error) {
+      if (error instanceof ConfigLoadError) {
+        throw error;
+      }
+      throw new ConfigLoadError(`Failed to read config from ${path}`, error);
+    }
   }
 
-  public get outputDirectory(): string {
-    return this.config.output_directory;
+  public getConfig(): IBreakdownConfig {
+    return { ...this.config };
   }
 
-  public get workspaceStructure(): WorkspaceStructure {
-    return this.config.workspace_structure;
+  public getWorkingDir(): string {
+    return this.config.working_dir || BreakdownConfig.DEFAULT_WORKING_DIR;
+  }
+
+  public getPromptBaseDir(): string {
+    return this.config.app_prompt?.base_dir || BreakdownConfig.DEFAULT_PROMPT_BASE_DIR;
+  }
+}
+
+// 後方互換性のための既存のConfig APIを維持
+export class Config extends BreakdownConfig {
+  static override getInstance(): Config {
+    if (!BreakdownConfig.instance) {
+      BreakdownConfig.instance = new Config();
+    }
+    return BreakdownConfig.instance as Config;
   }
 } 

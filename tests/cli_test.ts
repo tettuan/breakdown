@@ -34,220 +34,121 @@ import { setupTestEnv, cleanupTestFiles, initTestConfig, setupTestDirs, removeWo
 import { parseArgs, ERROR_MESSAGES } from "$lib/cli/args.ts";
 import { checkpoint, logObject } from "../utils/debug-logger.ts";
 
-// デバッグ用のロガー関数
-function log(level: string, message: string, data?: unknown) {
-  const LOG_LEVEL = Deno.env.get("LOG_LEVEL") || "info";
-  
-  const levels = {
-    debug: 0,
-    info: 1,
-    warn: 2,
-    error: 3
-  };
-  
-  if (levels[level as keyof typeof levels] >= levels[LOG_LEVEL as keyof typeof levels]) {
-    console.log(`[${level.toUpperCase()}] ${message}`, data ? JSON.stringify(data, null, 2) : "");
-  }
-}
-
 // コマンド実行関数をラップしてデバッグ情報を追加
 async function runCommand(cmd: string, args: string[] = []): Promise<{ output: string, error: string }> {
-  log("debug", `Executing command: ${cmd} ${args.join(" ")}`);
-  checkpoint("Command execution", `${cmd} ${args.join(" ")}`);
-  
   const command = new Deno.Command(cmd, {
     args,
     stdout: "piped",
     stderr: "piped",
   });
   
-  log("debug", "Command created, awaiting output");
-  checkpoint("Command created", "");
-  
   const { stdout, stderr } = await command.output();
   
   const output = new TextDecoder().decode(stdout);
   const error = new TextDecoder().decode(stderr);
-  
-  log("debug", "Command output received", { 
-    output: output.length > 100 ? output.substring(0, 100) + "..." : output,
-    error: error.length > 100 ? error.substring(0, 100) + "..." : error
-  });
-  
-  checkpoint("Command output", { output, error });
   
   return { output, error };
 }
 
 Deno.test("CLI Test Suite", async (t) => {
   await t.step("CLI outputs 'to' when given single valid argument", async () => {
-    log("info", "Starting test: CLI outputs 'to' when given single valid argument");
-    
     // コマンドを実行
-    log("debug", "Running 'breakdown to' command");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "to"]);
-    log("debug", "Command execution completed", { output, error });
     
     // 出力を検証
-    log("debug", "Asserting output equals 'to'");
     assertEquals(output.trim(), "to");
-    log("info", "Test completed successfully");
   });
   
   await t.step("CLI errors on invalid first argument", async () => {
-    log("info", "Starting test: CLI errors on invalid first argument");
-    
     // コマンドを実行
-    log("debug", "Running 'breakdown invalid' command");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "invalid"]);
-    log("debug", "Command execution completed", { output, error });
     
     // エラー出力を検証
-    log("debug", "Asserting error output");
     assertEquals(error.trim(), "Invalid first argument. Must be one of: to, summary, defect, init");
-    log("info", "Test completed successfully");
   });
   
   await t.step("CLI errors when file input is missing", async () => {
-    log("info", "Starting test: CLI errors when file input is missing");
-    
     // コマンドを実行
-    log("debug", "Running 'breakdown to project' command");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "to", "project"]);
-    log("debug", "Command execution completed", { output, error });
     
     // エラー出力を検証
-    log("debug", "Asserting error output");
     assertEquals(error.trim(), "Input file is required. Use --from/-f option");
-    log("info", "Test completed successfully");
   });
   
   await t.step("CLI outputs prompt content with --from option", async () => {
-    log("info", "Starting test: CLI outputs prompt content with --from option");
-    
     // テスト用のファイルを作成
     const testFilePath = "./test_input.md";
-    log("debug", `Creating test file at ${testFilePath}`);
-    checkpoint("Creating test file", testFilePath);
     
     try {
       await Deno.writeTextFile(testFilePath, "# Test Content");
-      log("debug", "Test file created successfully");
-      checkpoint("Test file created", "success");
     } catch (e) {
-      log("error", "Error creating test file", e);
-      checkpoint("Error creating test file", e);
+      console.error("Error creating test file", e);
     }
     
     // コマンドを実行
-    log("debug", "Running command with --from option");
-    checkpoint("Running command", "with --from option");
-    
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "to", "project", "--from", testFilePath]);
-    log("debug", "Command execution completed", { output, error });
-    checkpoint("Command execution completed", { output, error });
     
     // エラーメッセージを検証
-    log("debug", "Asserting error message contains prompt file not found");
-    checkpoint("Asserting error message", error);
-    
     assertEquals(output, "# Project Prompt\n{input_markdown}\n\n", "Command should output prompt template");
     
     // テスト用ファイルを削除
-    log("debug", `Removing test file ${testFilePath}`);
-    checkpoint("Removing test file", testFilePath);
-    
     try {
       await Deno.remove(testFilePath);
-      log("debug", "Test file removed successfully");
-      checkpoint("Test file removed", "success");
     } catch (e) {
-      log("error", "Error removing test file", e);
-      checkpoint("Error removing test file", e);
+      console.error("Error removing test file", e);
     }
-    
-    log("info", "Test completed successfully");
-    checkpoint("Test completed", "success");
   });
   
   await t.step("CLI creates working directory on init", async () => {
-    log("info", "Starting test: CLI creates working directory on init");
-    
     // テスト前にディレクトリの状態を確認
     const dirExistsBefore = await exists(".agent/breakdown");
-    log("debug", "Directory exists before test", { dirExistsBefore });
     
     // テスト前にディレクトリを削除
     if (dirExistsBefore) {
-      log("debug", "Removing existing directory");
       try {
         await Deno.remove(".agent/breakdown", { recursive: true });
-        log("debug", "Directory removed successfully");
       } catch (e) {
-        log("error", "Error removing directory", e);
+        console.error("Error removing directory", e);
       }
     }
     
     // コマンドを実行
-    log("debug", "Running 'breakdown init' command");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "init"]);
-    log("debug", "Command execution completed", { output, error });
     
     // 出力を検証
-    log("debug", "Asserting output message");
     assertEquals(output.trim(), "Created working directory: .agent/breakdown");
     
     // ディレクトリの存在を確認
     const dirExistsAfter = await exists(".agent/breakdown");
-    log("debug", "Directory exists after test", { dirExistsAfter });
     assertEquals(dirExistsAfter, true);
-    
-    log("info", "Test completed successfully");
   });
   
   await t.step("CLI reports existing directory on init", async () => {
-    log("info", "Starting test: CLI reports existing directory on init");
-    
     // テスト前にディレクトリの状態を確認
     const dirExistsBefore = await exists(".agent/breakdown");
-    log("debug", "Directory exists before test", { dirExistsBefore });
     
     // ディレクトリが存在しない場合は作成
     if (!dirExistsBefore) {
-      log("debug", "Creating directory for test");
       try {
         await Deno.mkdir(".agent/breakdown", { recursive: true });
-        log("debug", "Directory created successfully");
       } catch (e) {
-        log("error", "Error creating directory", e);
+        console.error("Error creating directory", e);
       }
     }
     
     // コマンドを実行
-    log("debug", "Running 'breakdown init' command");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "init"]);
-    log("debug", "Command execution completed", { output, error });
     
     // 出力を検証
-    log("debug", "Asserting output message");
     assertEquals(output.trim(), "Working directory already exists: .agent/breakdown");
-    
-    log("info", "Test completed successfully");
   });
   
   await t.step("CLI errors on invalid layer type", async () => {
-    log("info", "Starting test: CLI errors on invalid layer type");
-    
     // コマンドを実行
-    log("debug", "Running command with invalid layer type");
     const { output, error } = await runCommand("deno", ["run", "-A", "cli.ts", "to", "invalid", "--from", "test.md"]);
-    log("debug", "Command execution completed", { output, error });
     
     // エラー出力を検証
-    log("debug", "Asserting error output");
     assertEquals(error.trim(), "Invalid second argument. Must be one of: project, issue, task");
-    
-    log("info", "Test completed successfully");
   });
 });
 
