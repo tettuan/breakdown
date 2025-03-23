@@ -83,27 +83,148 @@ tests/
 - テストデータとヘルパー関数を共有可能
 - テストの依存関係が物理的な構造として表現される
 
-## テスト階層構造と実行順序
+## テストリソース管理
 
-### 0. 基盤テスト（Foundation）
-- アプリケーションの実行基盤となる機能のテスト
-- 他の全てのテストの前提条件を検証
-- この層のテストが失敗した場合、他のテストは実行不可
+### テストデータ管理（fixtures/）
+1. データの種類と配置
+   - 設定ファイル（config/）
+     - アプリケーション設定のサンプル: `app.sample.yml`
+     - ユーザー設定のサンプル: `user.sample.yml`
+     - エラーケース用設定: `error_*.yml`
+   - プロンプト（prompts/）
+     - 各レイヤー・タイプごとのサンプル
+     - 変数置換テスト用のテンプレート
+   - プロジェクト（projects/）
+     - 変換元データのサンプル
+     - 期待される変換結果
 
-### 1. コア機能テスト（Core Features）
-- 基盤テストの成功を前提とする機能テスト
-- 各機能間の依存関係に従ってテストを実行
-- 下位の機能から順次テストを実施
+2. 命名規則
+   - 正常系: `{target}_{case}.{ext}`
+     例: `project_basic.md`, `issue_with_subtasks.md`
+   - エラー系: `error_{type}_{case}.{ext}`
+     例: `error_invalid_config.yml`, `error_missing_required.md`
+   - テンプレート: `template_{type}.{ext}`
+     例: `template_project.md`, `template_issue.md`
 
-### 2. 連携テスト（Integration）
-- コア機能間の相互作用を検証
-- 依存関係チェーンに沿った機能連携の確認
-- エラーの伝播経路の検証
+3. バージョン管理方針
+   - すべてのテストデータをGitで管理
+   - バイナリデータは除外（.gitignoreで管理）
+   - テストデータの更新は変更履歴を残す
+   - 大きな変更の場合はPRで管理
 
-### 3. シナリオテスト（Scenarios）
-- 実際のユースケースに基づくテスト
-- 全ての依存関係が満たされた状態での検証
-- エンドユーザーの視点からの機能確認
+### テストヘルパー（helpers/）
+1. セットアップ（setup.ts）
+   ```typescript
+   // 基本的なセットアップ機能
+   export function setupTestEnvironment(options?: TestOptions): TestEnvironment;
+   export function cleanupTestEnvironment(env: TestEnvironment): Promise<void>;
+   
+   // 特定のテスト用セットアップ
+   export function setupConfigTest(): ConfigTestEnvironment;
+   export function setupPromptTest(): PromptTestEnvironment;
+   ```
+
+2. カスタムアサーション（assertions.ts）
+   ```typescript
+   // 設定検証用アサーション
+   export function assertValidConfig(config: unknown): void;
+   export function assertConfigEquals(actual: unknown, expected: unknown): void;
+   
+   // プロンプト検証用アサーション
+   export function assertValidPrompt(prompt: unknown): void;
+   export function assertPromptContains(prompt: string, expected: string): void;
+   
+   // パス処理検証用アサーション
+   export function assertValidPath(path: string): void;
+   export function assertPathResolution(actual: string, expected: string): void;
+   ```
+
+3. 共通ユーティリティ
+   - テスト用一時ディレクトリの作成・削除
+   - テストデータのロード・保存
+   - モック/スタブの生成ヘルパー
+
+## CI/CDでのテスト実行
+
+### GitHub Actions設定
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        
+      - name: Foundation Tests
+        run: deno test tests/0_foundation/
+        
+      - name: Core Tests
+        if: success()
+        run: deno test tests/1_core/
+        
+      - name: Integration Tests
+        if: success()
+        run: deno test tests/2_integration/
+        
+      - name: Scenario Tests
+        if: success()
+        run: deno test tests/3_scenarios/
+```
+
+### テスト実行制御
+1. 実行順序
+   - 基盤テスト → コア機能テスト → 連携テスト → シナリオテスト
+   - 各段階で失敗した場合、以降のテストはスキップ
+   - テスト結果は各段階でGitHub Actionsに記録
+
+2. 環境変数
+   ```bash
+   # テストモード設定
+   TEST_MODE=unit|integration|e2e
+   
+   # ログレベル設定
+   LOG_LEVEL=debug|info|error
+   
+   # テストタイムアウト設定
+   TEST_TIMEOUT=5000  # ミリ秒
+   ```
+
+3. レポーティング
+   - テスト結果はGitHub Actionsで確認可能
+   - テストカバレッジレポートを生成
+   - 失敗したテストの詳細ログを保存
+
+### ローカルでのテスト実行
+1. 全テストの実行
+   ```bash
+   deno test --allow-all
+   ```
+
+2. 特定階層のテスト実行
+   ```bash
+   # 基盤テストのみ実行
+   deno test tests/0_foundation/
+   
+   # コア機能テストのみ実行
+   deno test tests/1_core/
+   ```
+
+3. 特定のテストファイル実行
+   ```bash
+   # 設定テストのみ実行
+   deno test tests/0_foundation/config_test.ts
+   ```
+
+4. デバッグモードでの実行
+   ```bash
+   LOG_LEVEL=debug deno test --allow-all
+   ```
 
 ## テスト項目一覧
 
