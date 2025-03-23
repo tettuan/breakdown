@@ -1,0 +1,6 @@
+# Basic logger configuration
+log_level: "INFO"
+handlers:
+  console:
+    type: "console"
+    format: "[{level}] {message}" 

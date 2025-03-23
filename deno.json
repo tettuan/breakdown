@@ -1,6 +1,6 @@
 {
   "name": "breakdown",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "exports": {
     ".": "./mod.ts"
   },
@@ -8,10 +8,16 @@
     "$std/": "https://deno.land/std@0.210.0/",
     "$deps/": "./deps/",
     "$lib/": "./lib/",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.0"
+    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.0.6",
+    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^0.1.8",
+    "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^0.1.0",
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.0",
+    "@tettuan/breakdownparser": "jsr:@tettuan/breakdownparser@^0.1.0",
+    "@tettuan/breakdownworkspace": "jsr:@tettuan/breakdownworkspace@^0.1.0"
   },
   "tasks": {
-    "test": "deno test -A",
+    "test": "deno test --allow-env --allow-write --allow-read",
+    "test:watch": "deno test --watch --allow-env --allow-write --allow-read",
     "check": "deno check **/*.ts"
   },
   "fmt": {

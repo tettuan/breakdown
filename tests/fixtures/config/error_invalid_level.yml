@@ -1,0 +1,6 @@
+# Invalid log level configuration
+log_level: "INVALID_LEVEL"
+handlers:
+  console:
+    type: "console"
+    format: "[{level}] {message}" 
