@@ -7,7 +7,7 @@ BreakDownは、TypeScriptとJSONを使ったAI自動開発のための開発指�
 - [概要](#概要)
 - [使用方法](usage.ja.md)
 - [スキーマ定義](schema/index.md)
-- [開発者向け情報](development/index.md)
+- [開発者向け情報](breakdown/index.ja.md)
 
 ## 概要
 
@@ -19,7 +19,7 @@ BreakDownは、MarkdownドキュメントをJSON形式に変換し、AIシステ
 - AI自動開発のための構造化フォーマット
 - AIシステムのための学習しやすい構文
 - CursorとClineのAI開発エージェントに最適化
-- Claude-3.5-sonnetおよび他のAIモデルとの互換性
+- Claude-3.7-sonnetおよび他のAIモデルとの互換性
 
 ### 処理フロー
 
