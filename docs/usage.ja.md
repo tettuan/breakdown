@@ -4,22 +4,22 @@
 
 ## インストール
 
-### システム全体へのインストール
+### システムにインストール
 
-```bash
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add @tettuan/breakdown
 ```
 
-### プロジェクト固有のインストール
+### AI開発リポジトリにのみインストール
 
-```bash
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add --root ./tools @tettuan/breakdown
 ```
 
-### 手動実行（インストールなし）
+インストールせずに使用する場合：
 
-```bash
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+```
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
 ## 基本コマンド

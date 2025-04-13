@@ -202,24 +202,12 @@ Follow these steps to get started:
    1. Install to system
    2. Install only to AI development repository
 
-## 4. Create Fix Proposals for Execution Errors
-Set up issues to fix based on Terminal error information.
-
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown to project <written_project_summary.md>  -o <project-dir>
-breakdown to issue <project_summary.json>  -o <issue-dir>
-breakdown to task <issue.json>  -o <tasks-dir>
-```
-
 ## CLI
-
-**Still in preparation**
 
 ### 2-1. Install to System
 
 ```
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+deno add @tettuan/breakdown
 ```
 
 compile to local directory.
@@ -232,15 +220,15 @@ deno compile --allow-read --allow-write --allow-env \
 ### 2-2. Install Only to AI Development Repository
 
 ```
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+deno add --root ./tools @tettuan/breakdown
 ```
 
 If you want to use it without installation, you can run it as follows:
 Since this is verbose for AI development agents, it's recommended to install it in a location in your PATH.
 
 ```
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
 # Documents
-https://tettuan.github.io/breakdown/
+https://jsr.io/@tettuan/breakdown

@@ -201,48 +201,40 @@ breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
 # セットアップ
-以下の手順によって、使えるように準備します。
+以下の手順で開始します：
 
-1. 最初にDenoをセットアップします
-2. 次に CLI で使えるよう Deno installation を行います（推奨）
-   1. システムへインストールする
-   2. AI開発用のレポジトリにのみインストールする
-
-
-## 4. 実行エラーの修正案を作る
-Terminalのエラー情報から修正すべき課題を設定する。
-
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown to project <written_project_summary.md>  -o <project-dir>
-breakdown to issue <project_summary.json>  -o <issue-dir>
-breakdown to task <issue.json>  -o <tasks-dir>
-```
-
+1. まず、Denoをセットアップします
+2. 次に、CLI使用のためのDenoインストールを設定します（推奨）
+   1. システムにインストール
+   2. AI開発リポジトリにのみインストール
 
 ## CLI
 
-**まだ準備中**
-
-### 2-1. システムへインストールする
+### 2-1. システムにインストール
 
 ```
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+deno add @tettuan/breakdown
 ```
 
-### 2-2. AI開発用のレポジトリにのみインストールする
-
+ローカルディレクトリにコンパイル：
 ```
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
-```
-
-もしインストールせずに使いたい場合は、以下のように実行できます。
-AI開発エージェントが利用する場合には冗長なので、PATHの通った場所へインストールすることをお勧めします。
-
-```
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+deno compile --allow-read --allow-write --allow-env \    
+   --output ./.deno/bin/breakdown \                  
+   main.ts   
 ```
 
+### 2-2. AI開発リポジトリにのみインストール
 
-# Documents
-https://tettuan.github.io/breakdown/
+```
+deno add --root ./tools @tettuan/breakdown
+```
+
+インストールせずに使用する場合は、以下のように実行できます：
+これはAI開発エージェントにとって冗長なため、PATHの場所にインストールすることをお勧めします。
+
+```
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
+```
+
+# ドキュメント
+https://jsr.io/@tettuan/breakdown

@@ -4,22 +4,22 @@ This document outlines the various use cases and command patterns for using the 
 
 ## Installation
 
-### System-wide Installation
+### Install to System
 
-```bash
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add @tettuan/breakdown
 ```
 
-### Project-specific Installation
+### Install Only to AI Development Repository
 
-```bash
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add --root ./tools @tettuan/breakdown
 ```
 
-### Manual Execution (without installation)
+If you want to use it without installation:
 
-```bash
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+```
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
 ## Basic Commands
