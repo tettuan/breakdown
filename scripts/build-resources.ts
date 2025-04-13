@@ -1,8 +1,13 @@
 /**
  * Build Resources Script
  * 
- * This script reads the resource files (prompts and schemas) from the assets directory
+ * This script reads the resource files (prompts) from the assets directory
  * and generates TypeScript files with the resources embedded as strings.
+ * 
+ * SPEC-DIFF: Schema Processing Removal
+ * - Schema definitions have been moved to a separate repository: https://github.com/tettuan/breakdownschema
+ * - This library only handles file path resolution for schemas, not their content
+ * - Schema-related code in this script should be removed in future updates
  */
 
 import { ensureDir, exists } from "$std/fs/mod.ts";
@@ -12,8 +17,10 @@ import { join, dirname } from "$std/path/mod.ts";
 const ASSETS_DIR = "./assets";
 const LIB_DIR = "./lib";
 const PROMPTS_DIR = join(ASSETS_DIR, "prompts");
+// SPEC-DIFF: To be removed - Schema directory references
 const SCHEMAS_DIR = join(ASSETS_DIR, "schemas");
 const PROMPTS_OUTPUT = join(LIB_DIR, "prompts", "templates.ts");
+// SPEC-DIFF: To be removed - Schema output reference
 const SCHEMAS_OUTPUT = join(LIB_DIR, "schemas", "definitions.ts");
 
 // Generate templates.ts
@@ -68,7 +75,8 @@ export const PROMPTS = {
   console.log(`Generated prompt templates: ${PROMPTS_OUTPUT}`);
 }
 
-// Generate definitions.ts
+// SPEC-DIFF: To be removed - Schema generation function
+// This functionality should be moved to the breakdownschema repository
 async function generateSchemaDefinitions() {
   if (!await exists(SCHEMAS_DIR)) {
     console.error(`Schemas directory not found: ${SCHEMAS_DIR}`);
@@ -128,6 +136,7 @@ export const SCHEMAS = {
 async function main() {
   try {
     await generatePromptTemplates();
+    // SPEC-DIFF: To be removed - Schema generation call
     await generateSchemaDefinitions();
     console.log("Resource build completed successfully");
   } catch (error) {
