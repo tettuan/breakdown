@@ -79,11 +79,9 @@ cleanupTestFile(path: string): void
 
 // Markdown helpers
 createTestMarkdown(type: 'project'|'issue'|'task'): string
-validateMarkdownStructure(content: string): boolean
 
 // JSON helpers
 createTestJson(type: 'project'|'issue'|'task'): object
-validateJsonStructure(content: object): boolean
 ```
 
 ## Common Test Patterns
