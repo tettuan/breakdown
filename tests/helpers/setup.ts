@@ -1,106 +1,80 @@
-import { exists } from "$std/fs/exists.ts";
-import { ensureDir } from "$std/fs/ensure_dir.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { exists } from "$std/fs/mod.ts";
 import { join } from "$std/path/mod.ts";
-import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 
-/**
- * Test environment configuration
- */
 export interface TestEnvironment {
-  testDir: string;
-  fixturesDir: string;
   workingDir: string;
   logger: BreakdownLogger;
 }
 
 /**
- * Test environment setup options
+ * Sets up test environment with logging and directory structure
  */
-export interface TestOptions {
-  workingDir?: string;
-  logLevel?: LogLevel;
-}
+export async function setupTestEnvironment(options: {
+  workingDir: string;
+}): Promise<TestEnvironment> {
+  const logger = new BreakdownLogger();
+  logger.debug("Setting up test environment", { workingDir: options.workingDir });
 
-/**
- * Default test environment configuration
- */
-const DEFAULT_TEST_ENV: Omit<TestEnvironment, "logger"> = {
-  testDir: ".test",
-  fixturesDir: "tests/fixtures",
-  workingDir: ".test/working",
-};
+  // Clean up existing test directory
+  try {
+    await Deno.remove(options.workingDir, { recursive: true });
+  } catch {
+    // Ignore if directory doesn't exist
+  }
 
-/**
- * Sets up the test environment
- * Creates necessary directories and initializes logger
- */
-export async function setupTestEnvironment(options: TestOptions = {}): Promise<TestEnvironment> {
-  const env: TestEnvironment = {
-    ...DEFAULT_TEST_ENV,
-    workingDir: options.workingDir || DEFAULT_TEST_ENV.workingDir,
-    logger: new BreakdownLogger({
-      initialLevel: options.logLevel || LogLevel.ERROR,
-    }),
+  // Create test directory
+  await Deno.mkdir(options.workingDir, { recursive: true });
+  logger.debug("Created test directory", { dir: options.workingDir });
+
+  return {
+    workingDir: options.workingDir,
+    logger,
   };
-
-  // Create test directories
-  await ensureDir(env.testDir);
-  await ensureDir(env.workingDir);
-  await ensureDir(env.fixturesDir);
-
-  env.logger.debug("Test environment setup completed", env);
-  return env;
 }
 
 /**
- * Cleans up the test environment
- * Removes test directories and closes logger
+ * Cleans up test environment
  */
 export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void> {
+  const logger = env.logger;
+  logger.debug("Cleaning up test environment", { workingDir: env.workingDir });
+
   try {
-    await Deno.remove(env.testDir, { recursive: true });
-    env.logger.debug("Test environment cleanup completed");
+    await Deno.remove(env.workingDir, { recursive: true });
+    logger.debug("Removed test directory", { dir: env.workingDir });
   } catch (error) {
-    env.logger.error("Error during cleanup:", error);
+    logger.debug("Error cleaning up test directory", { error: String(error) });
   }
 }
 
 /**
- * Sets up test prompt and schema files
+ * Runs a command and returns the result
  */
-export async function setupTestPromptAndSchemaFiles(testDir: string): Promise<void> {
-  const promptDir = join(testDir, "prompts");
-  const schemaDir = join(testDir, "schemas");
-  
-  await ensureDir(promptDir);
-  await ensureDir(schemaDir);
-  
-  // Create sample prompt file
-  await Deno.writeTextFile(
-    join(promptDir, "sample.md"),
-    "# Sample Prompt\n\n## Description\nThis is a sample prompt for testing."
-  );
-  
-  // Create sample schema file
-  await Deno.writeTextFile(
-    join(schemaDir, "sample.yml"),
-    "type: object\nproperties:\n  name:\n    type: string"
-  );
-}
-
-/**
- * Runs a command and returns its output
- */
-export async function runCommand(args: string[]): Promise<{ output: string; error: string }> {
-  const command = new Deno.Command("deno", {
-    args,
+export async function runCommand(args: string[], stdin?: string): Promise<{
+  success: boolean;
+  output: string;
+  error: string;
+}> {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: args,
     stdout: "piped",
     stderr: "piped",
+    stdin: stdin ? "piped" : undefined,
   });
+
+  const process = command.spawn();
   
-  const { stdout, stderr } = await command.output();
+  if (stdin) {
+    const writer = process.stdin.getWriter();
+    await writer.write(new TextEncoder().encode(stdin));
+    await writer.close();
+  }
+
+  const { success, stdout, stderr } = await process.output();
   
   return {
+    success,
     output: new TextDecoder().decode(stdout),
     error: new TextDecoder().decode(stderr),
   };
