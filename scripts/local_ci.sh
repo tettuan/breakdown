@@ -11,6 +11,17 @@ disable_debug() {
     set +x
 }
 
+# Function to handle errors
+handle_error() {
+    local test_file=$1
+    local error_message=$2
+    echo "Error: $error_message in $test_file"
+    if [ "${DEBUG:-false}" = "true" ]; then
+        enable_debug
+    fi
+    exit 1
+}
+
 # Handle DEBUG environment variable
 if [ "${DEBUG:-false}" = "true" ]; then
     echo "Debug mode enabled via DEBUG environment variable"
@@ -19,81 +30,62 @@ else
     disable_debug
 fi
 
-# Remove old lockfile
+# Remove old lockfile and regenerate
 echo "Removing old deno.lock..."
 rm -f deno.lock
 
-# Regenerate deno.lock
 echo "Regenerating deno.lock..."
 if ! deno cache --reload mod.ts; then
-    echo "Error: Failed to regenerate deno.lock"
-    enable_debug
-    exit 1
+    handle_error "mod.ts" "Failed to regenerate deno.lock"
 fi
 
 # Function to run a single test file
 run_single_test() {
     local test_file=$1
     echo "Running test: $test_file"
-    if ! deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
-        echo "Error: Test failed: $test_file"
-        enable_debug
-        exit 1
+    if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+        handle_error "$test_file" "Test failed"
     fi
-    echo "Test passed: $test_file"
+    echo "✓ Test passed: $test_file"
 }
 
-# Run all tests together
-run_all_tests() {
-    echo "Running all tests together..."
-    if ! deno test --allow-env --allow-write --allow-read --allow-run; then
-        echo "Error: All tests run failed"
-        enable_debug
-        exit 1
-    fi
-    echo "All tests passed successfully."
+# Function to process tests in a directory
+process_test_directory() {
+    local dir=$1
+    echo "Processing tests in directory: $dir"
+    
+    # First process direct test files
+    for test_file in "$dir"/*_test.ts; do
+        if [ -f "$test_file" ]; then
+            run_single_test "$test_file"
+        fi
+    done
+    
+    # Then process subdirectories
+    for subdir in "$dir"/*/ ; do
+        if [ -d "$subdir" ]; then
+            process_test_directory "$subdir"
+        fi
+    done
 }
 
-# Run lint and fmt checks
-run_checks() {
-    echo "Running format check..."
-    if ! deno fmt --check; then
-        echo "Error: Format check failed"
-        enable_debug
-        exit 1
-    fi
+# Main execution flow
+echo "Starting test execution..."
 
-    echo "Running lint..."
-    if ! deno lint; then
-        echo "Error: Lint check failed"
-        enable_debug
-        exit 1
-    fi
-}
-
-# Run tests one by one in directory order
-echo "Running tests one by one..."
-
-# First run tests in the main tests directory
-for test_file in tests/*_test.ts; do
-    if [ -f "$test_file" ]; then
-        run_single_test "$test_file"
-    fi
-done
-
-# Then run tests in the integration directory
-for test_file in tests/integration/*_test.ts; do
-    if [ -f "$test_file" ]; then
-        run_single_test "$test_file"
-    fi
-done
-
-# If all individual tests pass, run all tests together
-echo "All individual tests passed. Running all tests together..."
-run_all_tests
+# Process all tests hierarchically
+process_test_directory "tests"
 
 # If all tests pass, run lint and fmt checks
 echo "All tests passed. Running lint and fmt checks..."
-run_checks
 
-echo "Local checks completed successfully." 
+echo "Running format check..."
+if ! deno fmt --check; then
+    handle_error "format" "Format check failed"
+fi
+
+echo "Running lint..."
+if ! deno lint; then
+    handle_error "lint" "Lint check failed"
+fi
+
+echo "✓ Local checks completed successfully." 
