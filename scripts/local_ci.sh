@@ -55,13 +55,20 @@
 
 # Function to enable debug mode
 enable_debug() {
-    echo "Enabling debug mode..."
+    echo "
+===============================================================================
+>>> SWITCHING TO DEBUG MODE <<<
+==============================================================================="
     set -x
 }
 
 # Function to disable debug mode
 disable_debug() {
     set +x
+    echo "
+===============================================================================
+>>> DEBUG MODE DISABLED <<<
+==============================================================================="
 }
 
 # Function to handle errors
@@ -71,16 +78,26 @@ handle_error() {
     local is_debug=$3
 
     if [ "$is_debug" = "true" ]; then
-        echo "Error: $error_message in $test_file"
-        echo "Note: Remaining tests have been interrupted due to this failure."
-        echo "Tests are executed sequentially to maintain dependency order and consistency."
-        echo "Please:"
-        echo "  1. Fix errors one at a time, starting with this test"
-        echo "  2. Run tests for the fixed component before moving to the next error"
-        echo "  3. If root cause is unclear, consider adding more test cases"
+        echo "
+===============================================================================
+>>> ERROR IN DEBUG MODE <<<
+===============================================================================
+Error: $error_message in $test_file
+Note: Remaining tests have been interrupted due to this failure.
+Tests are executed sequentially to maintain dependency order and consistency.
+
+Please:
+  1. Fix errors one at a time, starting with this test
+  2. Run tests for the fixed component before moving to the next error
+  3. If root cause is unclear, consider adding more test cases
+==============================================================================="
     else
-        echo "Error: $error_message in $test_file"
-        echo "Retrying with debug mode..."
+        echo "
+===============================================================================
+>>> ERROR DETECTED - RETRYING IN DEBUG MODE <<<
+===============================================================================
+Error: $error_message in $test_file
+Retrying with debug mode..."
         if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
             handle_error "$test_file" "Test failed in debug mode" "true"
         fi
@@ -90,7 +107,10 @@ handle_error() {
 
 # Handle DEBUG environment variable
 if [ "${DEBUG:-false}" = "true" ]; then
-    echo "Debug mode enabled via DEBUG environment variable"
+    echo "
+===============================================================================
+>>> DEBUG MODE ENABLED VIA ENVIRONMENT VARIABLE <<<
+==============================================================================="
     enable_debug
 else
     disable_debug
@@ -111,7 +131,10 @@ run_single_test() {
     local is_debug=${2:-false}
     
     if [ "$is_debug" = "true" ]; then
-        echo "Running test in debug mode: $test_file"
+        echo "
+===============================================================================
+>>> RUNNING TEST IN DEBUG MODE: $test_file <<<
+==============================================================================="
         if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
             handle_error "$test_file" "Test failed" "true"
         fi
