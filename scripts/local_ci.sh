@@ -1,5 +1,41 @@
 #!/bin/bash
 
+# ============================================================================
+# local_ci.sh
+#
+# Purpose:
+#   - Run all Deno tests in the project with strict permissions and debug logging.
+#   - Ensure all tests pass before running formatting and lint checks.
+#   - Mimics the CI flow locally to catch issues before commit, push, or merge.
+#
+# Intent:
+#   - Enforce Deno's security model by explicitly specifying required permissions.
+#   - Provide clear debug output for troubleshooting test failures.
+#   - Automatically regenerate the lockfile to ensure dependency consistency.
+#   - Recursively discover and run all *_test.ts files in the tests/ directory.
+#   - Only proceed to lint and format checks if all tests pass.
+#   - Exit immediately on any error, with helpful debug output if DEBUG=true.
+#
+# Usage:
+#   bash scripts/local_ci.sh
+#   # or, with debug output:
+#   DEBUG=true bash scripts/local_ci.sh
+#
+# Maintenance:
+#   - If you encounter an error:
+#       1. Run with DEBUG=true to get detailed output:
+#            DEBUG=true bash scripts/local_ci.sh
+#       2. Review the error message and the failing test file.
+#       3. Fix the test or the application code as needed, following the order:
+#            Initial loading → Use case entry → Conversion → Output → Integration → Edge case
+#       4. Re-run this script until all checks pass.
+#   - The script expects Deno test files to be named *_test.ts and located under tests/.
+#   - Permissions are set as per Deno best practices: all flags precede the test file(s).
+#   - For more details, see project rules and documentation.
+#
+# This script is working as intended and follows Deno and project conventions.
+# ============================================================================
+
 # Function to enable debug mode
 enable_debug() {
     echo "Enabling debug mode..."
