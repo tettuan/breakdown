@@ -1,11 +1,8 @@
-import { assertEquals } from "$std/testing/asserts.ts";
-import { join } from "$std/path/mod.ts";
-import { exists } from "$std/fs/mod.ts";
+import { assertEquals } from "jsr:@std/assert";
+import { join } from "jsr:@std/path/join";
+import { exists } from "jsr:@std/fs/exists";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import {
-  assertDirectoryExists,
-  assertFileExists,
-} from "$test/helpers/assertions.ts";
+import { assertDirectoryExists, assertFileExists } from "$test/helpers/assertions.ts";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,
@@ -18,7 +15,7 @@ Deno.test("setup - environment initialization", async () => {
     // Verify working directory was created
     const exists = await Deno.stat(env.workingDir).then(
       () => true,
-      () => false
+      () => false,
     );
     assertEquals(exists, true, "Working directory should be created");
 
@@ -44,7 +41,7 @@ Deno.test("setup - cleanup", async () => {
     assertEquals(
       await exists(join(testDir, "test.txt")),
       true,
-      "Test file should exist"
+      "Test file should exist",
     );
 
     // Clean up
@@ -54,7 +51,7 @@ Deno.test("setup - cleanup", async () => {
     assertEquals(
       await exists(env.workingDir),
       false,
-      "Working directory should be removed"
+      "Working directory should be removed",
     );
   } finally {
     // Ensure cleanup even if test fails
@@ -64,4 +61,4 @@ Deno.test("setup - cleanup", async () => {
       // Ignore cleanup errors in finally block
     }
   }
-}); 
+});
