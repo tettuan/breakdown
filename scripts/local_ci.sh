@@ -40,6 +40,12 @@ run_tests() {
   fi
 }
 
+# Function to run type check
+run_type_check() {
+  log "info" "Running type check..."
+  deno task check
+}
+
 # Function to check formatting
 check_fmt() {
   log "info" "Checking formatting..."
@@ -65,9 +71,14 @@ main() {
 
   log "info" "Starting local CI checks..."
 
-  # Run in order: build, test, format, lint
+  # Run in order: build, type check, test, format, lint
   if ! build_resources; then
     error "Resource build failed"
+    exit_code=1
+  fi
+
+  if ! run_type_check; then
+    error "Type check failed"
     exit_code=1
   fi
 
