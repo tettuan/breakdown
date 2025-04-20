@@ -1,7 +1,7 @@
-import { assertEquals, assertMatch } from "$std/testing/asserts.ts";
+import { assertEquals, assertMatch } from "jsr:@std/testing@^0.224.0/asserts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { setupTestEnvironment, cleanupTestEnvironment } from "../../helpers/setup.ts";
-import { normalizePath, autoCompletePath, generateDefaultFilename } from "$lib/path/path.ts";
+import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
+import { autoCompletePath, generateDefaultFilename, normalizePath } from "$lib/path/path.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";
 
 const logger = new BreakdownLogger();
@@ -43,7 +43,7 @@ Deno.test("path - generateDefaultFilename format", () => {
   logger.debug("Testing default filename generation");
   const filename = generateDefaultFilename();
   logger.debug("Generated filename", { filename });
-  
+
   // Check format: YYYYMMDD_hash.md
   const pattern = /^\d{8}_[a-f0-9]{8}\.md$/;
   assertMatch(filename, pattern, `Filename ${filename} does not match expected pattern`);
@@ -57,4 +57,4 @@ Deno.test("path - autoCompletePath with invalid input", () => {
   const result = autoCompletePath(input, demonstrative);
   logger.debug("Path completion with invalid input result", { input, demonstrative, result });
   assertMatch(result, /\.md$/);
-}); 
+});
