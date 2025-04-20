@@ -29,9 +29,7 @@
     "lineWidth": 100
   },
   "lint": {
-    "files": {
-      "include": ["lib/", "tests/"]
-    },
+    "include": ["lib/", "tests/"],
     "rules": {
       "tags": ["recommended"]
     }
