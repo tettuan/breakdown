@@ -1,13 +1,8 @@
 import { assertEquals } from "jsr:@std/assert";
 import { join } from "jsr:@std/path/join";
 import { exists } from "jsr:@std/fs/exists";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { assertDirectoryExists, assertFileExists } from "$test/helpers/assertions.ts";
-import {
-  cleanupTestEnvironment,
-  setupTestEnvironment,
-  type TestEnvironment,
-} from "$test/helpers/setup.ts";
+import { assertDirectoryExists } from "$test/helpers/assertions.ts";
+import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 
 Deno.test("setup - environment initialization", async () => {
   const env = await setupTestEnvironment({ workingDir: "./tmp/test/setup" });

@@ -1,173 +1,140 @@
-# Testing Guide for Breakdown
+# Test Specifications
 
-This document outlines the testing requirements, environment setup, and test patterns for the Breakdown tool.
-
-## Test Environment Setup
-
-### Prerequisites
-
-```bash
-deno test --allow-read --allow-write --allow-run
-```
-
-### Test Directory Structure
+## Test Directory Structure
 
 ```
 tests/
-├── 1_core/           # Core functionality tests
-├── 2_integration/    # Integration tests
-└── 3_e2e/           # End-to-end tests
+├── 0_foundation/     # Foundation functionality tests
+│   ├── config_test.ts    # Configuration related
+│   └── logger_test.ts    # Logging related
+├── 1_core/          # Core functionality tests
+│   ├── command/         # Command processing
+│   ├── prompt/          # Prompt processing
+│   └── params_test.ts   # Parameter processing
+├── 2_integration/   # Integration tests
+│   └── flow_test.ts     # Process flow
+├── 3_scenarios/     # Scenario tests
+│   └── commands_test.ts # Command execution
+├── fixtures/        # Test data
+├── helpers/         # Test helpers
+└── prompts/         # Prompt tests
 ```
 
-## Test Categories
+## Test Execution Procedures
 
-### 1. Core Tests
+### Basic Test Execution
 
-Core tests validate the fundamental parsing and processing capabilities:
+```bash
+deno test --allow-env --allow-write --allow-read
+```
 
-- Markdown parsing
-- JSON conversion
-- Data validation
+### Testing with Debug Output
+
+```bash
+LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
+```
+
+### Running Specific Test Files
+
+```bash
+deno test <test_file.ts> --allow-env --allow-write --allow-read
+```
+
+## Test Coverage Requirements
+
+### 0_foundation/
+
+- Configuration file loading
+- Log level control
+- Working directory management
+
+### 1_core/
+
+- Command line argument parsing
+- Prompt generation and validation
+- Parameter validation
+
+### 2_integration/
+
+- Command execution flow
+- File input/output
 - Error handling
 
-### 2. Integration Tests
+### 3_scenarios/
 
-Integration tests verify the interaction between components:
-
-- Command processing
-- File I/O operations
-- Format conversions
-- Error propagation
-
-### 3. End-to-End Tests
-
-E2E tests validate complete workflows:
-
-- Project creation flow
-- Issue generation flow
-- Task breakdown flow
-- Error handling flow
-
-## Test Requirements
-
-### Coverage Requirements
-
-- Core functionality: 95% coverage
-- Integration points: 90% coverage
-- E2E workflows: 85% coverage
-
-### Performance Requirements
-
-- Parser tests: < 100ms for standard input
-- File operations: < 500ms for standard files
-- Full workflow: < 2s for complete process
-
-### Error Handling Requirements
-
-- All error conditions must be tested
-- Error messages must be validated
-- Recovery processes must be verified
+- Actual use cases
+- Edge cases
+- Error recovery
 
 ## Test Helpers
 
-### Available Test Utilities
+### setup.ts
+
+- Test environment initialization
+- Temporary directory creation
+- Test data preparation
+
+### assertions.ts
+
+- Prompt validation
+- File content validation
+- Error state validation
+
+## Debug Output
+
+### Usage in Test Code
 
 ```typescript
-// File operations
-createTestFile(content: string): string
-cleanupTestFile(path: string): void
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-// Markdown helpers
-createTestMarkdown(type: 'project'|'issue'|'task'): string
-
-// JSON helpers
-createTestJson(type: 'project'|'issue'|'task'): object
+const logger = new BreakdownLogger();
+logger.debug("Test execution started", { testName: "example" });
 ```
 
-## Common Test Patterns
+### Log Levels
 
-### 1. Parser Testing
+- `debug`: Detailed debug information
+- `info`: Important process start/end
+- `warn`: Warnings (recoverable errors)
+- `error`: Errors (process interruption)
 
-```typescript
-Deno.test("Parser Test Pattern", async () => {
-  // Setup
-  const input = createTestMarkdown('project');
-  
-  // Execute
-  const result = await parseMarkdown(input);
-  
-  // Validate
-  assert(validateJsonStructure(result));
-});
-```
+## Error Handling and Debugging
 
-### 2. Error Handling Testing
+### Investigation Steps When Errors Occur
 
-```typescript
-Deno.test("Error Handling Pattern", async () => {
-  // Setup invalid input
-  const invalidInput = "# Invalid\n* [x] incomplete";
-  
-  // Execute and catch error
-  try {
-    await parseMarkdown(invalidInput);
-    assert(false, "Should have thrown error");
-  } catch (e) {
-    assert(e instanceof ParseError);
-    assert(e.message.includes("Invalid markdown structure"));
-  }
-});
-```
+1. Check debug logs
+2. Verify test environment state
+3. Run related test cases
+4. Document error reproduction steps
 
-### 3. Performance Testing
+### Handling Test Failures
 
-```typescript
-Deno.test("Performance Test Pattern", async () => {
-  const start = performance.now();
-  
-  // Execute operation
-  await parseMarkdown(largeInput);
-  
-  const duration = performance.now() - start;
-  assert(duration < 100, "Parser should complete within 100ms");
-});
-```
+1. Check error messages
+2. Re-run in debug mode
+3. Review related implementations
+4. Evaluate pre-processing failures
+5. Fix and retest
 
-## Test Execution
+### Pre-processing Failure Evaluation
 
-### Running Tests Locally
+- If a test fails due to pre-processing that isn't the test's main purpose, separate pre-processing
+  tests are needed
+- Pre-processing tests should be positioned earlier in execution order via local_ci.sh
+- Examples of pre-processing:
+  - Configuration validation test fails due to config file loading failure
+    - Create a test for config file loading
+- Examples that are not pre-processing:
+  - Configuration validation test fails due to mismatched configuration values
+- Pre-processing of tests should utilize confirmed processes that have been implemented prior to the
+  relevant test. It is important that tests in subsequent processes are not implemented
+  independently.
 
-```bash
-# Run all tests
-deno test --allow-read --allow-write
+# Skeleton Code Construction Order (Test-Driven)
 
-# Run specific test category
-deno test tests/1_core/
-
-# Run with coverage
-deno test --coverage
-```
-
-### CI/CD Integration
-
-Tests are automatically run in the CI pipeline:
-- On pull requests
-- On main branch commits
-- During release preparation
-
-## Test Maintenance
-
-### Adding New Tests
-
-1. Identify the appropriate test category
-2. Create test file following naming convention
-3. Implement test using provided helpers
-4. Verify coverage requirements
-5. Update documentation if needed
-
-### Updating Existing Tests
-
-1. Maintain backward compatibility
-2. Update performance benchmarks
-3. Verify coverage requirements
-4. Update related documentation 
+- Create test files following the "Test Directory Structure"
+- Skeleton creation: First describe test items as test targets (without writing test content yet)
+- Include failing test descriptions in the skeleton
+- Add comments that:
+  - Document what you would want to know when reading someone else's code
+  - Describe test intentions, purposes, and reasons for testing
+  - Clearly specify what the test is targeting

@@ -3,4 +3,4 @@ log_level: "INFO"
 handlers:
   console:
     type: "console"
-    format: "[{level}] {message}" 
+    format: "[{level}] {message}"

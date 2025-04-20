@@ -1,5 +1,5 @@
 import { assertEquals, assertMatch, assertThrows } from "https://deno.land/std/testing/asserts.ts";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 import { autoCompletePath, normalizePath } from "$lib/path/path.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";

@@ -1,6 +1,7 @@
 # モジュール構成
 
 ## プロジェクト構造
+
 ```
 lib/
 ├── deps.ts         # 依存関係の一元管理
@@ -29,6 +30,7 @@ tests/          # テストディレクトリ
 ## 依存関係管理
 
 ### deps.tsの使用
+
 依存関係は`deps.ts`で一元管理します。これにより、バージョン管理とインポートの一貫性を保ちます。
 
 ```typescript
@@ -40,6 +42,7 @@ export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 ```
 
 ### deno.jsonでの依存関係管理
+
 ```jsonc
 {
   "name": "@tettuan/breakdown",
@@ -62,6 +65,7 @@ export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 ## インターフェース定義
 
 ### Command
+
 ```typescript
 interface Command {
   /**
@@ -79,6 +83,7 @@ interface Command {
 ```
 
 ### ProjectPrompt
+
 ```typescript
 class ProjectPrompt {
   #config: Config;
@@ -94,6 +99,7 @@ class ProjectPrompt {
 ```
 
 ### PathResolver
+
 ```typescript
 interface PathResolver {
   /**
@@ -108,6 +114,7 @@ interface PathResolver {
 ## エラー処理
 
 ### BreakdownError
+
 ```typescript
 class BreakdownError extends Error {
   readonly code: string;
@@ -121,6 +128,7 @@ class BreakdownError extends Error {
 ```
 
 ### ValidationError
+
 ```typescript
 class ValidationError extends BreakdownError {
   constructor(message: string) {
@@ -132,6 +140,7 @@ class ValidationError extends BreakdownError {
 ## 型定義
 
 ### Config
+
 ```typescript
 interface Config {
   from: string | URL;
@@ -146,6 +155,7 @@ interface Config {
 ## ドキュメント
 
 ### JSDoc
+
 すべてのパブリックAPIには適切なJSDocを付与します：
 
 ```typescript
@@ -163,14 +173,17 @@ export async function convert(input: string): Promise<Prompt> {
 ## パッケージ公開
 
 ### JSRへの公開
+
 パッケージの公開は以下の手順で行います：
 
 1. バージョンの更新
+
 ```bash
 deno run -A scripts/bump_version.ts
 ```
 
 2. 公開前のチェック
+
 ```bash
 deno check **/*.ts
 deno test
@@ -178,19 +191,22 @@ deno lint
 ```
 
 3. JSRへの公開
+
 ```bash
 deno publish
 ```
 
 ### バージョニング
+
 - セマンティックバージョニングを採用
 - パブリックAPIの変更は`MAJOR`バージョンを更新
 - 後方互換性のある機能追加は`MINOR`バージョンを更新
-- バグ修正は`PATCH`バージョンを更新 
+- バグ修正は`PATCH`バージョンを更新
 
 ## モジュール設計原則
 
 ### エントリーポイント
+
 各機能モジュールは`mod.ts`をエントリーポイントとして持ち、以下の原則に従います：
 
 ```typescript
@@ -201,13 +217,16 @@ export * from "./parser.ts";
 ```
 
 ### 依存関係の方向
+
 ```
 deps.ts ← mod.ts ← cli/ ← core/ ← utils/
 ```
+
 - 依存の方向は一方向のみ
 - 循環参照を防ぐため、必要に応じてインターフェースを活用
 
 ### テスト構造
+
 ```typescript
 // tests/core/parser/parser_test.ts
 import { assertEquals } from "jsr:@std/assert@1";
@@ -226,6 +245,7 @@ describe("Parser", () => {
 ## コーディング規約
 
 ### インポート規則
+
 ```typescript
 // 推奨: 明示的なインポート
 import { Parser } from "./parser.ts";
@@ -236,6 +256,7 @@ import * as parser from "./parser.ts";
 ```
 
 ### 型安全性
+
 ```typescript
 // 推奨: 厳密な型定義
 interface ParseOptions {
@@ -251,6 +272,7 @@ const options = {
 ```
 
 ### エラーハンドリング
+
 ```typescript
 // 推奨: 具体的なエラー型の使用
 try {
@@ -267,6 +289,7 @@ try {
 ```
 
 ### 非同期処理
+
 ```typescript
 // 推奨: async/awaitの一貫した使用
 async function processFiles(files: string[]): Promise<Result[]> {
@@ -275,4 +298,4 @@ async function processFiles(files: string[]): Promise<Result[]> {
     return await processContent(content);
   }));
 }
-``` 
+```

@@ -1,32 +1,15 @@
-import { assertEquals, assertExists, assertRejects } from "jsr:@std/assert";
-import { exists } from "jsr:@std/fs/exists";
+import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { join } from "jsr:@std/path/join";
+import { exists } from "jsr:@std/fs/exists";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  assertCommandOutput,
-  assertDirectoryExists,
-  assertFileExists,
-} from "$test/helpers/assertions.ts";
-import {
   cleanupTestEnvironment,
-  runCommand,
   setupTestEnvironment,
   type TestEnvironment,
 } from "$test/helpers/setup.ts";
 import { Workspace } from "../../../lib/workspace/workspace.ts";
 
 const logger = new BreakdownLogger();
-
-type CommandResult = {
-  success: boolean;
-  output: string;
-  error: string;
-};
-
-function assertCommandSuccess(result: CommandResult) {
-  assertEquals(result.success, true, `Command failed: ${result.error}`);
-  assertCommandOutput(result, { error: "" });
-}
 
 interface TestOptions extends TestEnvironment {
   debug?: boolean;

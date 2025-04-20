@@ -1,4 +1,4 @@
-import { exists, join } from "../../deps.ts";
+import { exists } from "../../deps.ts";
 import { BreakdownConfig, ConfigOptions } from "./types.ts";
 
 export class Config {
@@ -48,4 +48,4 @@ export class Config {
   }
 
   // 他のゲッターメソッド...
-} 
+}

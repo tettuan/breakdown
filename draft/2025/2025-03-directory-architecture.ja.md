@@ -48,7 +48,8 @@ Breakdown の仕様書を詳細に分析した結果、以下の重要な点が�
 
 ### rules/ ディレクトリの役割
 
-`rules/` ディレクトリは、プロンプトが使用するスキーマの置き場所として機能しています。スキーマは以下の階層構造になっています：
+`rules/`
+ディレクトリは、プロンプトが使用するスキーマの置き場所として機能しています。スキーマは以下の階層構造になっています：
 
 ```
 rules/
@@ -67,7 +68,8 @@ rules/
         └── task/
 ```
 
-各ディレクトリには、対応するコマンドとレイヤーのスキーマファイル（例: `base.schema.json`）が含まれています。
+各ディレクトリには、対応するコマンドとレイヤーのスキーマファイル（例:
+`base.schema.json`）が含まれています。
 
 ## Deno.land/x での配布とリソースファイルの扱い
 
@@ -75,7 +77,8 @@ Deno.land/x へ登録する際のリソースファイル（プロンプトや�
 
 ### リソースファイルの読み込み方法
 
-Deno では、TypeScript/JavaScript ファイルはコンパイルされますが、JSON や Markdown などのリソースファイルは通常、実行時にファイルシステムから読み込まれます。
+Deno では、TypeScript/JavaScript ファイルはコンパイルされますが、JSON や Markdown
+などのリソースファイルは通常、実行時にファイルシステムから読み込まれます。
 
 #### 現在の実装
 
@@ -83,7 +86,13 @@ Deno では、TypeScript/JavaScript ファイルはコンパイルされます�
 
 ```typescript
 // プロンプトの読み込み
-const promptPath = join(getConfig().workingDirectory, "prompts", demonstrativeType, layerType, "f_project.md");
+const promptPath = join(
+  getConfig().workingDirectory,
+  "prompts",
+  demonstrativeType,
+  layerType,
+  "f_project.md",
+);
 const content = await Deno.readTextFile(promptPath);
 ```
 
@@ -245,7 +254,8 @@ async function loadPrompt(type, layer) {
 
 ## 結論
 
-Deno.land/x に対応したディレクトリ構造を設計することで、Breakdown プロジェクトは以下の利点を得ることができます：
+Deno.land/x に対応したディレクトリ構造を設計することで、Breakdown
+プロジェクトは以下の利点を得ることができます：
 
 1. **標準的な Deno プロジェクト構造への準拠**
    - Deno コミュニティの期待に応える
@@ -263,4 +273,5 @@ Deno.land/x に対応したディレクトリ構造を設計することで、Br
    - テストファイルの命名規則の統一
    - テストリソースの効率的な管理
 
-この設計により、Breakdown プロジェクトは Deno.land/x での配布に適した構造となり、ユーザーと開発者の両方にとって使いやすいプロジェクトになります。 
+この設計により、Breakdown プロジェクトは Deno.land/x
+での配布に適した構造となり、ユーザーと開発者の両方にとって使いやすいプロジェクトになります。

@@ -1,17 +1,18 @@
 /**
  * Build Resources Script
- * 
+ *
  * This script reads the resource files (prompts) from the assets directory
  * and generates TypeScript files with the resources embedded as strings.
- * 
+ *
  * SPEC-DIFF: Schema Processing Removal
  * - Schema definitions have been moved to a separate repository: https://github.com/tettuan/breakdownschema
  * - This library only handles file path resolution for schemas, not their content
  * - Schema-related code in this script should be removed in future updates
  */
 
-import { ensureDir, exists } from "$std/fs/mod.ts";
-import { join, dirname } from "$std/path/mod.ts";
+import { ensureDir, exists } from "@std/fs";
+import { dirname } from "@std/path/dirname";
+import { join } from "@std/path/join";
 
 // Paths
 const ASSETS_DIR = "./assets";
@@ -51,7 +52,7 @@ export const PROMPTS = {
         if (layerEntry.isDirectory) {
           const layerType = layerEntry.name;
           const promptFile = join(commandDir, layerType, "base.md");
-          
+
           if (await exists(promptFile)) {
             const content = await Deno.readTextFile(promptFile);
             // Escape backticks and format the string
@@ -69,7 +70,7 @@ export const PROMPTS = {
 
   // Ensure the output directory exists
   await ensureDir(dirname(PROMPTS_OUTPUT));
-  
+
   // Write the output file
   await Deno.writeTextFile(PROMPTS_OUTPUT, output);
   console.log(`Generated prompt templates: ${PROMPTS_OUTPUT}`);
@@ -104,7 +105,7 @@ export const SCHEMAS = {
         if (layerEntry.isDirectory) {
           const layerType = layerEntry.name;
           const schemaFile = join(commandDir, layerType, "base.schema.json");
-          
+
           if (await exists(schemaFile)) {
             const content = await Deno.readTextFile(schemaFile);
             // Parse and stringify to ensure valid JSON
@@ -112,7 +113,7 @@ export const SCHEMAS = {
             const jsonString = JSON.stringify(schema, null, 2)
               .replace(/`/g, "\\`")
               .replace(/\$/g, "\\$");
-            
+
             output += `    ${layerType}: \`${jsonString}\`,\n`;
           }
         }
@@ -126,7 +127,7 @@ export const SCHEMAS = {
 
   // Ensure the output directory exists
   await ensureDir(dirname(SCHEMAS_OUTPUT));
-  
+
   // Write the output file
   await Deno.writeTextFile(SCHEMAS_OUTPUT, output);
   console.log(`Generated schema definitions: ${SCHEMAS_OUTPUT}`);
@@ -148,4 +149,4 @@ async function main() {
 // Run the script
 if (import.meta.main) {
   await main();
-} 
+}

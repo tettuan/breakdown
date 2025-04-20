@@ -3,6 +3,7 @@
 ## 依存関係管理
 
 ### deps.tsの使用
+
 ```typescript
 // deps.ts
 export * as path from "jsr:@std/path@1";
@@ -12,6 +13,7 @@ export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 ```
 
 ### バージョン管理
+
 ```jsonc
 // deno.json
 {
@@ -37,6 +39,7 @@ export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 ## パス操作
 
 ### URL APIの使用
+
 ```typescript
 // 非推奨
 import { join } from "jsr:@std/path@1";
@@ -48,6 +51,7 @@ const filePath = fileUrl.pathname;
 ```
 
 ### パスの正規化
+
 ```typescript
 // 非推奨
 const path = "./dir/../file.txt";
@@ -58,15 +62,21 @@ const normalizedPath = url.pathname;
 ```
 
 ### URLPattern APIの活用
+
 ```typescript
 const pattern = new URLPattern({ pathname: "/api/:version/*" });
 const match = pattern.exec("https://example.com/api/v1/users");
 console.log(match.pathname.groups.version); // "v1"
 ```
 
+## 仕様に従う場合のPATH
+
+仕様定義を優先する。相対パスが要求なら相対パスを使う。
+
 ## ファイルシステム操作
 
 ### ファイル読み込み
+
 ```typescript
 // 推奨
 try {
@@ -81,6 +91,7 @@ try {
 ```
 
 ### ファイル書き込み
+
 ```typescript
 // 推奨
 try {
@@ -98,6 +109,7 @@ try {
 ## エラー処理
 
 ### Denoビルトインエラー
+
 ```typescript
 // エラー型の活用
 class FileSystemError extends Error {
@@ -122,6 +134,7 @@ try {
 ## テスト
 
 ### テストの構造化
+
 ```typescript
 // test_util.ts
 export function createTestContext() {
@@ -150,6 +163,7 @@ Deno.test({
 ```
 
 ### テストステップ
+
 ```typescript
 Deno.test("complex test", async (t) => {
   await t.step("step 1", async () => {
@@ -165,6 +179,7 @@ Deno.test("complex test", async (t) => {
 ## セキュリティ
 
 ### 権限の最小化
+
 ```jsonc
 // deno.json
 {
@@ -176,6 +191,7 @@ Deno.test("complex test", async (t) => {
 ```
 
 ### 環境変数
+
 ```typescript
 // 推奨
 const env = Deno.env.get("ENV_NAME");
@@ -187,6 +203,7 @@ if (env === undefined) {
 ## パフォーマンス
 
 ### 非同期処理
+
 ```typescript
 // 推奨: Promise.allの活用
 const [file1, file2] = await Promise.all([
@@ -203,6 +220,7 @@ for await (const entry of Deno.readDir("./")) {
 ```
 
 ### リソース管理
+
 ```typescript
 // 推奨: リソースのクリーンアップ
 const file = await Deno.open("file.txt");
@@ -216,6 +234,7 @@ try {
 ## パッケージ公開
 
 ### JSR設定
+
 ```jsonc
 // deno.json
 {
@@ -233,6 +252,7 @@ try {
 ```
 
 ### ドキュメント
+
 ```typescript
 /**
  * Breakdown core functionality.
@@ -247,4 +267,4 @@ try {
 export async function convert(input: string): Promise<Prompt> {
   // 実装
 }
-``` 
+```

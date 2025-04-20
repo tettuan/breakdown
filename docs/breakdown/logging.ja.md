@@ -2,7 +2,11 @@
 
 ## 基本方針
 
+https://jsr.io/@tettuan/breakdownlogger を使用します。README
+https://github.com/tettuan/breakdownlogger を読み把握すること。
+
 ### テストコードのみでの使用
+
 - アプリケーションコードでは`BreakdownLogger`を使用しない
 - テストコードでのみ`BreakdownLogger`を使用可能
 - デバッグ情報の出力は開発時のみ
@@ -10,11 +14,13 @@
 ## ログレベル
 
 ### 環境変数による制御
+
 ```bash
 LOG_LEVEL=<level> deno test ...
 ```
 
 ### レベル定義
+
 1. `debug`: 詳細なデバッグ情報
    - 変数の値
    - 処理の開始/終了
@@ -38,6 +44,7 @@ LOG_LEVEL=<level> deno test ...
 ## 出力フォーマット
 
 ### JSON形式
+
 ```json
 {
   "timestamp": "2025-04-13T12:34:56.789Z",
@@ -51,6 +58,7 @@ LOG_LEVEL=<level> deno test ...
 ```
 
 ### フィールド定義
+
 - `timestamp`: ISO 8601形式のタイムスタンプ
 - `level`: ログレベル
 - `message`: ログメッセージ
@@ -59,6 +67,7 @@ LOG_LEVEL=<level> deno test ...
 ## デバッグ方法
 
 ### テストケース別のデバッグ
+
 ```typescript
 // テストファイル内
 const logger = new BreakdownLogger();
@@ -71,6 +80,7 @@ Deno.test("テストケース", () => {
 ```
 
 ### エラー調査
+
 1. `LOG_LEVEL=debug`での実行
 2. ログ出力の確認
 3. エラー箇所の特定
@@ -79,10 +89,12 @@ Deno.test("テストケース", () => {
 ## ログ出力の制御
 
 ### 出力先
+
 - デフォルト: 標準エラー出力
 - ファイル出力は非サポート
 
 ### フィルタリング
+
 - レベルによるフィルタリング
 - 特定のテストケースのみの出力
-- データフィールドの制限 
+- データフィールドの制限

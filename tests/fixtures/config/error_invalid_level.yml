@@ -3,4 +3,4 @@ log_level: "INVALID_LEVEL"
 handlers:
   console:
     type: "console"
-    format: "[{level}] {message}" 
+    format: "[{level}] {message}"

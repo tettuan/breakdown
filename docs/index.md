@@ -10,8 +10,8 @@ BreakDownは、TypeScriptとJSONを使ったAI自動開発のための開発指�
 
 ## 概要
 
-BreakDownは、MarkdownドキュメントをJSON Schema形式に変換し、AIシステムが解釈しやすい形式にする変換ツールです。
-主な特徴：
+BreakDownは、MarkdownドキュメントをJSON
+Schema形式に変換し、AIシステムが解釈しやすい形式にする変換ツールです。 主な特徴：
 
 - AI解釈用に最適化されたMarkdownからJSONへの変換
 - DenoランタイムによるTypeScript実装
@@ -41,9 +41,7 @@ sequenceDiagram
 ```
 
 # JSON Schema形式
-- Schema定義は、別のドキュメントがあります。
-  https://github.com/tettuan/breakdownschema
+
+- Schema定義は、別のドキュメントがあります。 https://github.com/tettuan/breakdownschema
 - このライブラリでは、Schemaの中身を扱うことはありません。
 - パラメータからSchemaのファイルPATHを特定するだけです。
-
-

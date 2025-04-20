@@ -29,21 +29,25 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```bash
 breakdown init
 ```
+
 This command creates the necessary working directory structure as specified in your configuration.
 
 ### Convert Markdown to JSON
 
 **Create Project Overview**
+
 ```bash
 breakdown to project <written_project_summary.md> -o <project-dir>
 ```
 
 **Create Issues**
+
 ```bash
 breakdown to issue <project_summary.json|written_issue.md> -o <issue-dir>
 ```
 
 **Create Tasks**
+
 ```bash
 breakdown to task <issue.json|written_task.md> -o <tasks-dir>
 ```
@@ -51,16 +55,19 @@ breakdown to task <issue.json|written_task.md> -o <tasks-dir>
 ### Generate Markdown Summaries
 
 **Project Summary**
+
 ```bash
 echo "<summary>" | breakdown summary project -o <project_summary.md>
 ```
 
 **Issue Summary**
+
 ```bash
 echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
 ```
 
 **Task Summary**
+
 ```bash
 echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ```
@@ -68,11 +75,13 @@ echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ### Generate Markdown from Existing Documents
 
 **Generate Issues from Project**
+
 ```bash
 breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
 ```
 
 **Generate Tasks from Issue**
+
 ```bash
 breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ```
@@ -80,26 +89,31 @@ breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ### Handle Defects and Errors
 
 **Project Defect Analysis**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
 **Issue Defect Analysis**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
 ```
 
 **Task Defect Analysis**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
 ```
 
 **Generate Issue Fixes from Project Defects**
+
 ```bash
 breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
 ```
 
 **Generate Task Fixes from Issue Defects**
+
 ```bash
 breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
 ```
@@ -200,12 +214,14 @@ The tool automatically completes paths based on your configuration:
 ### Automatic Filename Generation
 
 When output is specified without a filename:
+
 - A filename is generated in the format: `<yyyymmdd>_<random_hash>.md`
 - Example: `20250211_e81d0bd.md`
 
 ## Configuration
 
 The tool reads configuration from `/breakdown/config/config.ts` which includes:
+
 - Working directory settings
 - Prompt file locations
 - Schema file locations
@@ -216,4 +232,4 @@ Initialize your working directory with:
 breakdown init
 ```
 
-This creates the necessary directory structure based on your configuration. 
+This creates the necessary directory structure based on your configuration.

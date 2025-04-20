@@ -4,4 +4,4 @@ handlers:
   console:
     type: "console"
     format: "[{timestamp}] [{level}] {message}"
-    include_data: true 
+    include_data: true

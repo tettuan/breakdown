@@ -1,18 +1,19 @@
-import { assert, assertExists } from "$std/testing/asserts.ts";
-import { exists } from "$std/fs/exists.ts";
-import { join } from "$std/path/mod.ts";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
+const logger = new BreakdownLogger();
 
 /**
  * Asserts that a configuration object is valid
  */
 export function assertValidConfig(config: unknown): void {
-  assert(config !== null && typeof config === "object", "Config must be an object");
-  const conf = config as Record<string, unknown>;
-  
-  // Check required fields
-  assertExists(conf.working_dir, "Config must have working_dir");
-  assertExists(conf.prompt_dir, "Config must have prompt_dir");
-  assertExists(conf.schema_dir, "Config must have schema_dir");
+  logger.debug("Validating config", { config });
+  assertExists(config, "Config should not be null or undefined");
+
+  const configObj = config as Record<string, unknown>;
+  assertExists(configObj.working_dir, "Config should have working_dir");
+  assertExists(configObj.app_prompt, "Config should have app_prompt");
+  assertExists(configObj.app_schema, "Config should have app_schema");
 }
 
 /**
@@ -21,7 +22,9 @@ export function assertValidConfig(config: unknown): void {
 export function assertConfigEquals(actual: unknown, expected: unknown): void {
   assert(
     JSON.stringify(actual) === JSON.stringify(expected),
-    `Configs are not equal:\nActual: ${JSON.stringify(actual)}\nExpected: ${JSON.stringify(expected)}`
+    `Configs are not equal:\nActual: ${JSON.stringify(actual)}\nExpected: ${
+      JSON.stringify(expected)
+    }`,
   );
 }
 
@@ -30,7 +33,8 @@ export function assertConfigEquals(actual: unknown, expected: unknown): void {
  */
 export function assertValidPrompt(prompt: unknown): void {
   assert(typeof prompt === "string", "Prompt must be a string");
-  assert(prompt.length > 0, "Prompt cannot be empty");
+  const promptStr = prompt as string;
+  assert(promptStr.length > 0, "Prompt cannot be empty");
 }
 
 /**
@@ -39,48 +43,62 @@ export function assertValidPrompt(prompt: unknown): void {
 export function assertPromptContains(prompt: string, expected: string): void {
   assert(
     prompt.includes(expected),
-    `Prompt does not contain expected content:\nPrompt: ${prompt}\nExpected: ${expected}`
-  );
-}
-
-/**
- * Asserts that a path exists
- */
-export async function assertFileExists(filePath: string): Promise<void> {
-  assert(
-    await exists(filePath),
-    `File does not exist: ${filePath}`
+    `Prompt does not contain expected content:\nPrompt: ${prompt}\nExpected: ${expected}`,
   );
 }
 
 /**
  * Asserts that a directory exists
  */
-export async function assertDirectoryExists(dirPath: string): Promise<void> {
-  assert(
-    await exists(dirPath),
-    `Directory does not exist: ${dirPath}`
+export async function assertDirectoryExists(path: string): Promise<void> {
+  logger.debug("Checking directory exists", { path });
+  const exists = await Deno.stat(path).then(
+    (stat) => stat.isDirectory,
+    () => false,
   );
+  assertEquals(exists, true, `Directory does not exist: ${path}`);
 }
 
 /**
- * Asserts that a command output matches expectations
+ * Asserts that a file exists
+ */
+export async function assertFileExists(path: string): Promise<void> {
+  logger.debug("Checking file exists", { path });
+  const exists = await Deno.stat(path).then(
+    (stat) => stat.isFile,
+    () => false,
+  );
+  assertEquals(exists, true, `File does not exist: ${path}`);
+}
+
+/**
+ * Asserts that a command was successful
+ */
+export function assertCommandSuccess(result: { output: string; error: string }): void {
+  logger.debug("Checking command success", { result });
+  assertEquals(result.error, "", "Command should not have error output");
+}
+
+/**
+ * Asserts that command output matches expected values
  */
 export function assertCommandOutput(
-  actual: { output: string; error: string },
-  expected: { output?: string; error?: string }
+  result: { output: string; error: string },
+  expected: { output?: string; error?: string },
 ): void {
+  logger.debug("Checking command output", { result, expected });
+
   if (expected.output !== undefined) {
     assert(
-      actual.output.includes(expected.output),
-      `Command output does not match:\nActual: ${actual.output}\nExpected to include: ${expected.output}`
+      result.output.includes(expected.output),
+      `Command output does not contain expected: ${expected.output}\nActual output: ${result.output}`,
     );
   }
-  
+
   if (expected.error !== undefined) {
     assert(
-      actual.error.includes(expected.error),
-      `Command error does not match:\nActual: ${actual.error}\nExpected to include: ${expected.error}`
+      result.error.includes(expected.error),
+      `Command error does not contain expected: ${expected.error}\nActual error: ${result.error}`,
     );
   }
-} 
+}

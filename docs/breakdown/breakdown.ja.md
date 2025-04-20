@@ -1,15 +1,19 @@
 # 定義
+
 ```bash
 ./.deno/bin/breakdown
 ```
+
 は、「インストール」されたCLIのコマンド名である。
 
 # インストール
+
 ```bash
 deno install -f --root ./.deno --global --allow-all --no-prompt cli/breakdown.ts
 ```
 
 # 使用するJSRパッケージ
+
 アプリケーションは以下のJSRパッケージを使用します：
 
 1. [@tettuan/breakdownconfig](https://jsr.io/@tettuan/breakdownconfig) - 設定管理
@@ -21,7 +25,7 @@ deno install -f --root ./.deno --global --allow-all --no-prompt cli/breakdown.ts
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
 import { Logger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.8";
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.3";
+import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.8";
 
 // Initialize components
 const config = new BreakdownConfig();
@@ -33,27 +37,25 @@ const promptManager = new PromptManager();
 async function main() {
   // Load configuration
   await config.loadConfig();
-  
+
   // Parse command line arguments
   const params = parser.parse(Deno.args);
-  
+
   // Process based on parameters
   switch (params.type) {
-    case 'init':
+    case "init":
       // Initialize workspace
       break;
-    case 'to':
+    case "to":
       // Handle conversion
       const prompt = await promptManager.loadPrompt({
         demonstrativeType: params.demonstrativeType,
         layerType: params.layerType,
         fromLayerType: params.fromLayerType,
-        variables: params.variables
+        variables: params.variables,
       });
       break;
-    // ... other cases
+      // ... other cases
   }
 }
 ```
-
-

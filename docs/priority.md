@@ -1,3 +1,3 @@
 # Soliving Specification Conflicts
-- ask owner with description. make description into tmp/ dir.
 
+- ask owner with description. make description into tmp/ dir.

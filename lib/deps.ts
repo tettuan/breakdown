@@ -1,25 +1,34 @@
-// Re-export from main deps.ts
-// Using explicit imports and exports to ensure everything is properly re-exported
-import { 
-  exists, 
-  join, 
-  dirname, 
-  ensureDir, 
-  parse, 
-  assertEquals, 
-  assert, 
-  assertStringIncludes, 
-  assertRejects 
-} from "../deps.ts";
+/**
+ * External dependencies for the Breakdown tool.
+ * This file centralizes all external dependencies and re-exports them.
+ */
 
-export { 
-  exists, 
-  join, 
-  dirname, 
-  ensureDir, 
-  parse, 
-  assertEquals, 
-  assert, 
-  assertStringIncludes, 
-  assertRejects 
-}; 
+// Standard Deno modules with aliasing
+export { ensureDir, exists } from "@std/fs";
+
+export { dirname, fromFileUrl, join } from "@std/path";
+
+export { parse as parseFlags } from "@std/flags";
+
+// JSR packages
+export {
+  type AppConfig,
+  BreakdownConfig,
+  type MergedConfig,
+  type UserConfig,
+} from "jsr:@tettuan/breakdownconfig@1.0.10";
+
+export {
+  type ParamsParser,
+  ParamsParser as BreakdownParams,
+  type ParamsResult,
+} from "jsr:@tettuan/breakdownparams@0.1.8";
+
+export {
+  type PromptManager,
+  PromptManager as BreakdownPrompt,
+  type PromptParams,
+  type PromptResult,
+} from "jsr:@tettuan/breakdownprompt@^0.1.8";
+
+export { BreakdownLogger, type LogLevel } from "jsr:@tettuan/breakdownlogger@0.1.10";

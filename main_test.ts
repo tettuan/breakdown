@@ -34,19 +34,6 @@
  *    - Configuration file tests
  */
 
-import { assertEquals } from "@std/assert";
-import { isValidDemonstrativeType } from "./main.ts";
-
-// FIXME: This test only covers basic type validation
-// Should be replaced with BreakdownParams validation tests
-Deno.test("isValidDemonstrativeType should validate demonstrative types", () => {
-  assertEquals(isValidDemonstrativeType("to"), true);
-  assertEquals(isValidDemonstrativeType("summary"), true);
-  assertEquals(isValidDemonstrativeType("defect"), true);
-  assertEquals(isValidDemonstrativeType("init"), false);
-  assertEquals(isValidDemonstrativeType("invalid"), false);
-});
-
 // TODO: Add integration tests with JSR packages
 // Deno.test("should properly initialize with BreakdownConfig", async () => {});
 

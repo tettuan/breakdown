@@ -3,18 +3,20 @@
 以下の「指示」を実行しなさい。
 
 # 指示
+
 1. 「入力された要求」を「分解手順」と「変換手順」に従って、細分化しなさい。
-2.  細分化された内容を、示されたファイル・ディレクトリーへ保存するとともに、標準出力へも出力しなさい。
+2. 細分化された内容を、示されたファイル・ディレクトリーへ保存するとともに、標準出力へも出力しなさい。
 
 ## 分解手順
+
 - 切り口を用いて分解します。まず、適切な切り口を選びます。
   - BPMN, 5W2H, 業務プロセス分解, ユーザーストーリー, シナリオ
 - 要求の程度をMoSCoW分析に沿って、Must/Should/Could/Wouldに分けます。
 - 要求から生じる課題の種類をグルーピングして、類似した課題を近くに並べます。
 - グルーピングされた課題のMoSCoW集中度を考慮し、重要度の高い課題グループから順番に並べます。
 
-
 ## 変換手順
+
 **Schema定義項目は絶対です。項目追加は禁止です。**
 
 - 「分解手順」に従って分解された課題グループを、「JSON Schema」 定義と照らし合わせます。
@@ -26,18 +28,24 @@
   - 入力がファイルでない場合は、ファイルとして保存したうえで、参照元項目にファイルのPathをセットします。
 
 ## GitHub 情報
+
 - GitHubのProjectIDやIssue Numberが、入力ファイルや入力内容にあればセットします。
 
 # 入力と、出力に必要な情報
+
 ## 入力された要求
+
 {input_markdown}
 
 ## 出力時に適用する JSON Schema
+
 {schema_file}
 
 ## 出力するJSONファイル名
-`<github_project_number>-<github_issue_number>_<short_issue_title>.md`
-ex. `9_2345_title_something_from_inputs.md`
+
+`<github_project_number>-<github_issue_number>_<short_issue_title>.md` ex.
+`9_2345_title_something_from_inputs.md`
 
 ### 出力先のディレクトリ
+
 - {destination_path}
