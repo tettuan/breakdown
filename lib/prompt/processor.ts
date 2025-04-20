@@ -146,11 +146,12 @@ export async function processWithPrompt(
 
           if (features) {
             for (let i = 0; i < features.length; i++) {
-              const issueContent = `# Feature ${
-                i + 1
-              }\n\nConverted from project file: ${fromFile}\n\nFeature: ${
-                features[i].replace("- ", "")
-              }`;
+              const issueContent = `# Feature ${i + 1}
+
+Converted from project file: ${fromFile}
+
+Feature: ${features[i].replace("- ", "")}
+`;
               const issueFile = join(dirname(absoluteIssuesDir), `issue_${i + 1}.md`);
               logger.debug("Writing issue file", {
                 issueFile,
