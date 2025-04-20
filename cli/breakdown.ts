@@ -1,10 +1,11 @@
-import { VERSION } from "../version.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
-import { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^0.1.8";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { type OptionParams, ParamsParser } from "@tettuan/breakdownparams";
+import { VERSION } from "../version.ts";
 import { initWorkspace } from "../lib/commands/mod.ts";
 
 const logger = new BreakdownLogger();
+const settings = new BreakdownConfig();
 
 const HELP_TEXT = `
 Breakdown - AI Development Instruction Tool
@@ -13,29 +14,19 @@ Usage:
   breakdown <command> [options]
 
 Commands:
-  to      Convert between different formats
-  summary Generate summary from input
-  defect  Analyze error logs
-  init    Initialize working directory
-  help    Show this help message
-  version Show version information
+  init        Initialize a new workspace
+  convert     Convert between different layer types
 
 Options:
-  --from, -f        Input file path
-  --destination, -o Output file or directory path
-  --config          Configuration file path
+  --help      Show this help message
+  --version   Show version information
 `;
 
 const VERSION_TEXT = `Breakdown v${VERSION}\nCopyright (c) 2024\nLicense: MIT`;
 
-interface OptionParams {
-  workingDir: string;
-  fromFile?: string;
-  destinationFile?: string;
-  fromLayerType?: string;
-  layerType?: string;
-  help?: boolean;
-  version?: boolean;
+// Extend the OptionParams type to include workingDir
+interface ExtendedOptionParams extends OptionParams {
+  workingDir?: string;
 }
 
 export async function runBreakdown(args: string[]): Promise<void> {
@@ -46,12 +37,11 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
   try {
     // Initialize configuration
-    const config = new BreakdownConfig();
-    await config.loadConfig();
-    const settings = await config.getConfig();
+    await settings.loadConfig();
+    const settingsConfig = await settings.getConfig();
 
     // Parse command parameters and execute command
-    const params = new BreakdownParams();
+    const params = new ParamsParser();
     const parsedParams = await params.parse(args);
 
     switch (parsedParams.type) {
@@ -65,7 +55,8 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
       case "single":
         if (parsedParams.command === "init") {
-          const workingDir = parsedParams.options?.workingDir || settings.working_dir || ".";
+          const options = parsedParams.options as ExtendedOptionParams;
+          const workingDir = options?.workingDir || settingsConfig.working_dir || ".";
           await initWorkspace(workingDir);
         }
         break;
