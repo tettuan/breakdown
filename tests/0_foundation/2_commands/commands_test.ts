@@ -32,7 +32,7 @@ import {
   setupTestEnvironment,
   type TestEnvironment,
 } from "$test/helpers/setup.ts";
-import { displayHelp, displayVersion, initWorkspace } from "../../lib/commands/mod.ts";
+import { displayHelp, displayVersion, initWorkspace } from "../../../lib/commands/mod.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;

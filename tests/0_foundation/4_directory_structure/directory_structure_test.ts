@@ -30,8 +30,8 @@ import {
   cleanupTestEnvironment,
   setupTestEnvironment,
   type TestEnvironment,
-} from "../helpers/setup.ts";
-import { initWorkspace } from "../../lib/commands/mod.ts";
+} from "$test/helpers/setup.ts";
+import { initWorkspace } from "../../../lib/commands/mod.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
