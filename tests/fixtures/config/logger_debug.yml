@@ -1,0 +1,7 @@
+# Debug mode logger configuration
+log_level: "DEBUG"
+handlers:
+  console:
+    type: "console"
+    format: "[{timestamp}] [{level}] {message}"
+    include_data: true

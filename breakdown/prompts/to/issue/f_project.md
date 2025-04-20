@@ -1,13 +1,8 @@
-プロジェクトからIssueへの変換プロンプト
+# Project to Issue Template
 
-# Input
 {input_markdown}
 
-# Source
-{input_markdown_file}
+## Generated Issues
 
-# Schema
-{schema_file}
-
-# Output
-{destination_path}
+- Issue 1: First feature
+- Issue 2: Second feature

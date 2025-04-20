@@ -1,206 +1,110 @@
-#!/usr/bin/env -S deno run -A
+import { VERSION } from "../version.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
+import { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^0.1.8";
+import { initWorkspace } from "../lib/commands/mod.ts";
 
-import { exists, ensureDir, join, parse } from "../deps.ts";
-import { getConfig, initializeConfig, setConfig } from "$lib/config/config.ts";
-import { crypto } from "../deps.ts";
-import { parseArgs } from "$lib/cli/args.ts";
-import { loadPrompt } from "$lib/prompts/loader.ts";
+const logger = new BreakdownLogger();
 
-type DemonstrativeType = "to" | "summary" | "defect" | "init";
-type LayerType = "project" | "issue" | "task";
+const HELP_TEXT = `
+Breakdown - AI Development Instruction Tool
 
-function isValidDemonstrativeType(type: string): type is DemonstrativeType {
-  return ["to", "summary", "defect", "init"].includes(type);
-}
+Usage:
+  breakdown <command> [options]
 
-function isValidLayerType(type: string): type is LayerType {
-  return ["project", "issue", "task"].includes(type);
-}
+Commands:
+  to      Convert between different formats
+  summary Generate summary from input
+  defect  Analyze error logs
+  init    Initialize working directory
+  help    Show this help message
+  version Show version information
 
-function normalizePath(path: string): string {
-  return path.startsWith("./") ? path : "./" + path;
-}
+Options:
+  --from, -f        Input file path
+  --destination, -o Output file or directory path
+  --config          Configuration file path
+`;
 
-function generateDefaultFilename(): string {
-  const date = new Date();
-  const dateStr = date.getFullYear().toString() +
-    (date.getMonth() + 1).toString().padStart(2, '0') +
-    date.getDate().toString().padStart(2, '0');
-  
-  const randomBytes = new Uint8Array(4);
-  crypto.getRandomValues(randomBytes);
-  const hash = Array.from(randomBytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+const VERSION_TEXT = `Breakdown v${VERSION}\nCopyright (c) 2024\nLicense: MIT`;
 
-  return `${dateStr}_${hash}.md`;
-}
-
-function autoCompletePath(filePath: string | undefined, demonstrative: string): string {
-  if (!filePath) {
-    filePath = generateDefaultFilename();
-  }
-  if (filePath.includes("/")) {
-    return normalizePath(filePath);
-  }
-  const config = getConfig();
-  const dirType = demonstrative === "to" ? "issue" : demonstrative;
-  return normalizePath(join(config.working_dir, dirType + "s", filePath).replace(/\\/g, "/"));
-}
-
-function getPromptPath(
-  demonstrativeType: string,
-  layerType: string,
-  fromFile: string
-): string {
-  const config = getConfig();
-  const baseDir = config.app_prompt?.base_dir || "./breakdown/prompts/";
-  const fromType = fromFile.includes("project") ? "project" :
-                  fromFile.includes("issue") ? "issue" :
-                  fromFile.includes("task") ? "task" : layerType;
-  
-  return normalizePath(join(baseDir, demonstrativeType, layerType, `f_${fromType}.md`));
-}
-
-async function initWorkspace(): Promise<void> {
-  const config = getConfig();
-  try {
-    const dirExists = await exists(config.working_dir);
-    if (dirExists) {
-      console.log(`Working directory already exists: ${config.working_dir}`);
-    } else {
-      await ensureDir(config.working_dir);
-      console.log(`Created working directory: ${config.working_dir}`);
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(`Failed to initialize workspace: ${error.message}`);
-    } else {
-      console.error(`Failed to initialize workspace: ${String(error)}`);
-    }
-    Deno.exit(1);
-  }
-}
-
-async function checkWorkingDir(): Promise<boolean> {
-  const config = getConfig();
-  return await exists(config.working_dir);
-}
-
-async function processWithPrompt(
-  demonstrativeType: string,
-  layerType: string,
-  fromFile: string,
-  destFile?: string
-): Promise<void> {
-  try {
-    const config = getConfig();
-
-    const fromType = fromFile.includes("project") ? "project" :
-                    fromFile.includes("issue") ? "issue" :
-                    fromFile.includes("task") ? "task" : layerType;
-    
-    // 入力ファイルの読み込み
-    let inputMarkdown = "";
-    try {
-      inputMarkdown = await Deno.readTextFile(fromFile);
-    } catch (error) {
-      throw new Error(`Failed to read input file: ${fromFile} - ${error.message}`);
-    }
-
-    const variables = {
-      input_markdown_file: fromFile,
-      input_markdown: inputMarkdown,
-      destination_path: destFile || "",
-    };
-
-    const prompt = await loadPrompt(demonstrativeType, layerType, fromType, variables);
-    console.log(prompt);
-  } catch (error) {
-    console.error(`Error processing prompt: ${error.message}`);
-    Deno.exit(1);
-  }
+interface OptionParams {
+  workingDir: string;
+  fromFile?: string;
+  destinationFile?: string;
+  fromLayerType?: string;
+  layerType?: string;
+  help?: boolean;
+  version?: boolean;
 }
 
 export async function runBreakdown(args: string[]): Promise<void> {
+  if (args.length === 0) {
+    console.log(HELP_TEXT);
+    return;
+  }
+
   try {
-    await initializeConfig().catch(() => {});
+    // Initialize configuration
+    const config = new BreakdownConfig();
+    await config.loadConfig();
+    const settings = await config.getConfig();
 
-    const parsedFlags: { [key: string]: unknown; _: string[] } = parse(args, {
-      string: ["from", "f", "destination", "o"],
-      alias: { 
-        f: "from",
-        o: "destination"
-      },
-    });
+    // Parse command parameters and execute command
+    const params = new BreakdownParams();
+    const parsedParams = await params.parse(args);
 
-    const commandArgs = parsedFlags._;
-
-    // 基本的なコマンド処理
-    if (commandArgs.length === 1) {
-      const type = commandArgs[0] as string;
-      if (!isValidDemonstrativeType(type)) {
-        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
-        Deno.exit(1);
-      }
-      
-      if (type === "init") {
-        await initWorkspace();
-      } else {
-        if (!await checkWorkingDir()) {
-          console.error("breakdown init を実行し、作業フォルダを作成してください");
-          Deno.exit(1);
+    switch (parsedParams.type) {
+      case "no-params":
+        if (parsedParams.help) {
+          console.log(HELP_TEXT);
+        } else if (parsedParams.version) {
+          console.log(VERSION_TEXT);
         }
-        console.log(type);
-      }
-    } 
-    // 2つの引数がある場合の処理
-    else if (commandArgs.length === 2) {
-      const [demonstrative, layer] = commandArgs as [string, string];
-      if (!isValidDemonstrativeType(demonstrative)) {
-        console.error("Invalid first argument. Must be one of: to, summary, defect, init");
-        Deno.exit(1);
-      }
-      if (!isValidLayerType(layer)) {
-        console.error("Invalid second argument. Must be one of: project, issue, task");
-        Deno.exit(1);
+        break;
+
+      case "single":
+        if (parsedParams.command === "init") {
+          const workingDir = parsedParams.options?.workingDir || settings.working_dir || ".";
+          await initWorkspace(workingDir);
+        }
+        break;
+
+      case "double": {
+        // Handle conversion commands
+        const options = parsedParams.options || {};
+        logger.info(
+          `Converting from ${options.fromLayerType || "unknown"} to ${parsedParams.layerType}`,
+        );
+        if (options.fromFile) {
+          logger.info(`Input file: ${options.fromFile}`);
+        }
+        if (options.destinationFile) {
+          logger.info(`Output file: ${options.destinationFile}`);
+        }
+        break;
       }
 
-      if (!parsedFlags.from) {
-        console.error("Input file is required. Use --from/-f option");
-        Deno.exit(1);
-      }
-
-      if (demonstrative !== "init" && !await checkWorkingDir()) {
-        console.error("breakdown init を実行し、作業フォルダを作成してください");
-        Deno.exit(1);
-      }
-
-      const fromFile = parsedFlags.from ? autoCompletePath(parsedFlags.from as string, layer) : undefined;
-      
-      const destFile = parsedFlags.hasOwnProperty('destination') ? 
-                      autoCompletePath(parsedFlags.destination as string | undefined, demonstrative) : 
-                      undefined;
-
-      if (!fromFile) {
-        console.error("Input file is required");
-        Deno.exit(1);
-      }
-
-      await processWithPrompt(demonstrative, layer, fromFile, destFile);
+      default:
+        logger.error("Unknown command type");
+        console.log(HELP_TEXT);
+        break;
     }
   } catch (error) {
-    console.error("Error:", error.message);
-    Deno.exit(1);
+    logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
   }
 }
 
-// メイン処理
 if (import.meta.main) {
-  runBreakdown(Deno.args);
+  try {
+    await runBreakdown(Deno.args);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error("An unknown error occurred");
+    }
+    Deno.exit(1);
+  }
 }
-
-const process = new Deno.Command(Deno.execPath(), {
-  args: ["run", "-A", "cli/breakdown.ts", "to"],
-  stdout: "piped",
-}); 

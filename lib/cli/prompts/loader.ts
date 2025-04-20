@@ -1,5 +1,5 @@
-import { Args } from "$lib/cli/args.ts";
-import { exists, join } from "../../deps.ts";
+import { ParsedArgs } from "$lib/cli/args.ts";
+import { join } from "../../deps.ts";
 
 export interface Prompt {
   path: string;
@@ -7,12 +7,14 @@ export interface Prompt {
 }
 
 export class PromptLoader {
-  async load(args: Args): Promise<Prompt> {
+  async load(args: ParsedArgs): Promise<Prompt> {
     // プロンプトのベースディレクトリを取得
     const baseDir = "./breakdown/prompts";
 
     // プロンプトのディレクトリを構築
-    const promptDir = `${baseDir}/${args.command}/${args.layerType}`;
+    const command = args.command || "default";
+    const layerType = args.layerType || "default";
+    const promptDir = join(baseDir, command, layerType);
 
     // 入力レイヤータイプを決定
     let fromLayerType = "default";
@@ -25,14 +27,14 @@ export class PromptLoader {
     }
 
     // プロンプトファイルのパスを構築
-    const promptPath = `${promptDir}/f_${fromLayerType}.md`;
+    const promptPath = join(promptDir, `f_${fromLayerType}.md`);
 
     // プロンプトファイルを読み込み
     const content = await this.readPromptFile(promptPath);
 
     return {
       path: promptPath,
-      content
+      content,
     };
   }
 
@@ -40,7 +42,7 @@ export class PromptLoader {
     const ALIASES = {
       project: ["project", "pj", "prj"],
       issue: ["issue", "story"],
-      task: ["task", "todo", "chore", "style", "fix", "error", "bug"]
+      task: ["task", "todo", "chore", "style", "fix", "error", "bug"],
     };
 
     const lowercaseInput = input.toLowerCase();
@@ -56,7 +58,7 @@ export class PromptLoader {
     const PATTERNS = {
       project: /project|pj|prj/i,
       issue: /issue|story/i,
-      task: /task|todo|chore|style|fix|error|bug/i
+      task: /task|todo|chore|style|fix|error|bug/i,
     };
 
     for (const [type, pattern] of Object.entries(PATTERNS)) {
@@ -75,4 +77,4 @@ export class PromptLoader {
       return "default prompt content";
     }
   }
-} 
+}

@@ -1,19 +1,21 @@
 # ブレークダウン
+
 TypeScriptとJSONを使ったAI自動開発のための開発指示言語ツール。
 
 > 注***： このプロジェクトは実験的なもので、まだ完全に機能する状態ではありません。
 
-
 ## 概要
 
-BreakDownは、TypeScriptとDeno with AI composerを使って、MarkdownドキュメントをJSON形式に変換し、AIシステムが解釈しやすいようにするツール＆スキーマのセットです。
+BreakDownは、TypeScriptとDeno with AI
+composerを使って、MarkdownドキュメントをJSON形式に変換し、AIシステムが解釈しやすいようにするツール＆スキーマのセットです。
 
-実行すると、Markdownで書かれた開発要件が、AIの開発指示書として機能する構造化されたJSONに変換されます。
+実行すると、Markdownで書かれた開発要件が、JSONに変換するためのプロンプトとして示されます。示されたプロンプトには事前に定義されたJSONが示されています。JSONはAIの開発指示書として機能する構造化された定義です。
+結果、示されたプロンプトが、要件を構造化されたJSONへと変換します。
 
 BreakDown構文を学習することで、AIシステムはこれらのJSON構造を解釈し、開発要件や仕様を事前に理解することを期待できます。
 結果、指示する内容の簡素化が図られ、簡潔に指示を出すことができるよう期待しています。
 
-このライブラリは、CursorやVSCodeのClineのようなAI開発エージェントで動作するように設計されています。この設計は、特にCursorとClineに最適化されています。作者が主に使用しているツールであるためです。基礎となるAIモデルはClaude-3.5-sonnetを想定しています。構文と構造は、他のAIモデルでも容易に解釈できるように設計されています。
+このライブラリは、CursorやVSCodeのClineのようなAI開発エージェントで動作するように設計されています。この設計は、特にCursorとClineに最適化されています。作者が主に使用しているツールであるためです。基礎となるAIモデルはClaude-3.7-sonnetを想定しています。構文と構造は、他のAIモデルでも容易に解釈できるように設計されています。
 
 ## 主な想定機能
 
@@ -47,9 +49,7 @@ sequenceDiagram
 
     Developer->>AI: JSON指示書をAI開発エージェントに送信
     AI->>AI: JSON指示書に基づき開発
-
 ```
-
 
 ## 将来の展望
 
@@ -65,6 +65,7 @@ sequenceDiagram
 - defect : エラー情報から要求のMarkdownファイルを作成します
 
 ## to JSON
+
 **プロジェクトの概要を作る**
 
 ```
@@ -83,14 +84,15 @@ breakdown to issue <project_summary.json|written_issue.md>  -o <issue-dir>
 breakdown to task <issue.json|written_task.md>  -o <tasks-dir>
 ```
 
-出力先には、いずれもディレクトリを指定します。
-GitHubのProjectとIssueの番号が必要です。 
-例えば `breakdown to project create_edinet_api.md -o agent/cursor/projects` と -o へ指定すると、 `agent/cursor/projects/18-edinet-api.json` のように、ファイルが生成されます。指定がなければデフォルト設定が用いられます。
+出力先には、いずれもディレクトリを指定します。 GitHubのProjectとIssueの番号が必要です。 例えば
+`breakdown to project create_edinet_api.md -o agent/cursor/projects` と -o へ指定すると、
+`agent/cursor/projects/18-edinet-api.json`
+のように、ファイルが生成されます。指定がなければデフォルト設定が用いられます。
 
 ## summary Markdown
 
-**プロジェクト**
-プロジェクトの概要を書き起こします。`<summary>` はAIから得たものを貼り付けたり、自分で書き起こした文章を用います。
+**プロジェクト** プロジェクトの概要を書き起こします。`<summary>`
+はAIから得たものを貼り付けたり、自分で書き起こした文章を用います。
 
 GitHubへの登録を行います。
 
@@ -98,8 +100,7 @@ GitHubへの登録を行います。
 echo "<summary>" | breakdown summary project -o <project_summary.md>
 ```
 
-**Issue**
-Issueを書き起こします。
+**Issue** Issueを書き起こします。
 
 ```
 echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
@@ -112,9 +113,7 @@ Projectのサマリーから書き起こすこともできます。Projectから
 breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
 ```
 
-
-**タスク**
-タスクを書き起こします。
+**タスク** タスクを書き起こします。
 
 ```
 echo "<task summary>" | breakdown summary task -o <task_summary.md>
@@ -127,17 +126,16 @@ Issueのサマリーから書き起こすこともできます。Issueからタ�
 breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ```
 
-
 ## defect Markdown
-**プロジェクト**
-プロジェクトの不具合情報を解析します。`<error_logs>` はTerminalから得たものを貼り付けたり、logsから探した情報を用います。
+
+**プロジェクト** プロジェクトの不具合情報を解析します。`<error_logs>`
+はTerminalから得たものを貼り付けたり、logsから探した情報を用います。
 
 ```
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
-**Issue**
-Issueの修正を書き起こします。
+**Issue** Issueの修正を書き起こします。
 
 ```
 tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
@@ -150,9 +148,7 @@ Projectの修正概要から書き起こすこともできます。Projectから
 breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
 ```
 
-
-**タスク**
-タスクの修正を書き起こします。
+**タスク** タスクの修正を書き起こします。
 
 ```
 tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
@@ -165,10 +161,10 @@ Issueの修正概要から書き起こすこともできます。Issueからタ�
 breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
 ```
 
-
 # ユースケースパターン
 
 ## 1. プロジェクトを概要で書き、あとはお任せ
+
 生成したMDからIssue化。IssueからTask化。
 
 ```
@@ -179,6 +175,7 @@ breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
 ## 2. プロジェクト概要からIssueの細分化作成まで実施
+
 IssueからTask化。
 
 ```
@@ -192,6 +189,7 @@ breakdown to task <issue_2.json>  -o <tasks-dir>
 ```
 
 ## 3. 細かい課題をタスク処理
+
 IssueからTask化。
 
 ```
@@ -201,48 +199,43 @@ breakdown to task <issue.json>  -o <tasks-dir>
 ```
 
 # セットアップ
-以下の手順によって、使えるように準備します。
 
-1. 最初にDenoをセットアップします
-2. 次に CLI で使えるよう Deno installation を行います（推奨）
-   1. システムへインストールする
-   2. AI開発用のレポジトリにのみインストールする
+以下の手順で開始します：
 
-
-## 4. 実行エラーの修正案を作る
-Terminalのエラー情報から修正すべき課題を設定する。
-
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown to project <written_project_summary.md>  -o <project-dir>
-breakdown to issue <project_summary.json>  -o <issue-dir>
-breakdown to task <issue.json>  -o <tasks-dir>
-```
-
+1. まず、Denoをセットアップします
+2. 次に、CLI使用のためのDenoインストールを設定します（推奨）
+   1. システムにインストール
+   2. AI開発リポジトリにのみインストール
 
 ## CLI
 
-**まだ準備中**
-
-### 2-1. システムへインストールする
+### 2-1. システムにインストール
 
 ```
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+deno add @tettuan/breakdown
 ```
 
-### 2-2. AI開発用のレポジトリにのみインストールする
+ローカルディレクトリにコンパイル：
 
 ```
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+deno compile --allow-read --allow-write --allow-env \    
+   --output ./.deno/bin/breakdown \                  
+   main.ts
 ```
 
-もしインストールせずに使いたい場合は、以下のように実行できます。
-AI開発エージェントが利用する場合には冗長なので、PATHの通った場所へインストールすることをお勧めします。
+### 2-2. AI開発リポジトリにのみインストール
 
 ```
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+deno add --root ./tools @tettuan/breakdown
 ```
 
+インストールせずに使用する場合は、以下のように実行できます：
+これはAI開発エージェントにとって冗長なため、PATHの場所にインストールすることをお勧めします。
 
-# Documents
-https://tettuan.github.io/breakdown/
+```
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
+```
+
+# ドキュメント
+
+https://jsr.io/@tettuan/breakdown

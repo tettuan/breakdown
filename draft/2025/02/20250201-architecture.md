@@ -1,4 +1,3 @@
-
 ```mermaid
 graph TD
   A[Markdownファイル] --> B[AIによる処理]
@@ -19,5 +18,4 @@ graph TD
   
   classDef important fill:#f9f,stroke:#333,stroke-width:4px;
   class A,B,C,D,E,F important;
-
 ```

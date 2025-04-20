@@ -1,12 +1,44 @@
-// Standard library dependencies managed through deno.json imports
-// Re-export as needed
-export { exists, ensureDir } from "$std/fs/mod.ts";
-export { join, dirname } from "$std/path/mod.ts";
-export { parse } from "$std/flags/mod.ts";
-export { assertEquals, assert, assertStringIncludes, assertRejects } from "$std/testing/asserts.ts";
+/**
+ * Dependencies for the Breakdown tool
+ *
+ * Re-exports all required dependencies with proper versioning and structure
+ * as specified in import_policy.ja.md
+ */
+
+// JSR packages (direct imports as they're already mapped in deno.json)
+export * from "@tettuan/breakdownconfig";
+export * from "@tettuan/breakdownlogger";
+export * from "@tettuan/breakdownparams";
+export * from "@tettuan/breakdownprompt";
+
+// JSR standard library
+export { ensureDir, exists, walk } from "jsr:@std/fs";
+export { dirname, join, resolve } from "jsr:@std/path";
+export { parse } from "jsr:@std/flags";
+export {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "https://deno.land/std@0.220.1/assert/mod.ts";
+
+// Third-party dependencies
+export { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+
+// TODO: Add required JSR package imports as specified in breakdown.ja.md:
+// - @tettuan/breakdownconfig
+// - @tettuan/breakdownlogger
+// - @tettuan/breakdownparams
+// - @tettuan/breakdownprompt
+
+// Third-party dependencies are managed through JSR imports in deno.json
+// See import_policy.ja.md for import guidelines
 
 // Remove the incorrect Command import
 // export { Command } from "https://deno.land/std@0.210.0/cli/mod.ts";
 
+// TODO: Add proper error types as specified in deno.ja.md
+// TODO: Add proper test utilities as specified in testing.ja.md
+
 // Third-party dependencies
-// (Add as needed) 
+// (Add as needed)

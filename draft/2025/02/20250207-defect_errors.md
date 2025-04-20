@@ -3,26 +3,31 @@
 ## Error Occurrence: 2024-02-07 15:30 JST
 
 ### Context
+
 - Implementation of type definitions and import map configuration
 - First test run of setup configuration
 
 ### Error Analysis
 
 #### 1. Import Map Configuration Conflict
+
 ```
 Warning "importMap" field is ignored when "imports" or "scopes" are specified in the config file.
 at file:///Users/tettuan/github/breakdown/deno.json
 ```
 
 **原因**:
+
 - deno.json内で imports と importMap が重複して定義されている
 - 両方の設定が競合している
 
 **修正方針**:
+
 - deno.jsonからimportsセクションを削除
 - import_map.jsonに一元化
 
 #### 2. Type Import Issues
+
 ```typescript
 TS6137 [ERROR]: Cannot import type declaration files
 import { CommandType, LayerType } from "@types/command.ts";
@@ -30,10 +35,12 @@ import { BreakdownError } from "@types/error.ts";
 ```
 
 **原因**:
+
 - @types/へのパス解決が正しく機能していない
 - 型定義ファイルの直接importに関する制限
 
 **修正方針**:
+
 1. import pathの修正:
    ```typescript
    // Before
@@ -47,21 +54,25 @@ import { BreakdownError } from "@types/error.ts";
    - 相対パスでの型定義の参照
 
 #### 3. Compiler Option Issue
+
 ```
 Unsupported compiler options in "deno.json"
   The following options were ignored: allowJs
 ```
 
 **原因**:
+
 - Denoでサポートされていないコンパイラオプションの使用
 
 **修正方針**:
+
 - allowJsオプションの削除
 - Denoの標準的なコンパイラオプションのみを使用
 
 ### Required Changes
 
 1. deno.jsonの修正:
+
 ```json
 {
   "importMap": "./import_map.json",
@@ -77,6 +88,7 @@ Unsupported compiler options in "deno.json"
 ```
 
 2. import_map.jsonの修正:
+
 ```json
 {
   "imports": {
@@ -86,23 +98,27 @@ Unsupported compiler options in "deno.json"
 ```
 
 3. テストファイルのimport修正:
+
 ```typescript
 import { CommandType, LayerType } from "@breakdown/types/command.ts";
 import { BreakdownError } from "@breakdown/types/error.ts";
 ```
 
 ### Next Steps
+
 1. 設定ファイルの修正を適用
 2. 型定義のimportパスを全体的に見直し
 3. テストの再実行による検証
 4. 成功確認後、次のタスクへ進行
 
 ### Impact
+
 - 型システムの整合性に影響
 - プロジェクト全体の依存関係管理に影響
 - テストの実行環境に影響
 
 ### Learning Points
+
 - Denoの設定ファイル構造の理解
 - 型定義ファイルのimport制約の把握
 - コンパイラオプションの適切な設定方法
@@ -110,6 +126,7 @@ import { BreakdownError } from "@breakdown/types/error.ts";
 ## Error Occurrence: 2024-02-07 15:45 JST
 
 ### Context
+
 - 前回のエラー修正後の設定変更適用
 - import_map.jsonの簡素化
 - deno.jsonからの重複設定削除
@@ -118,17 +135,21 @@ import { BreakdownError } from "@breakdown/types/error.ts";
 ### Error Analysis
 
 #### Import Path Resolution Issue
+
 ```
 error: Relative import path "std/testing/asserts.ts" not prefixed with / or ./ or ../ and not in import map
 at file:///Users/tettuan/github/breakdown/tests/parser_test.ts:1:30
 ```
 
 **原因**:
+
 - 標準ライブラリのimportパスが正しく解決できていない
 - import_map.jsonの簡素化により、std/へのマッピングが失われた
 
 **修正方針**:
+
 1. import_map.jsonに標準ライブラリのマッピングを追加:
+
 ```json
 {
   "imports": {
@@ -139,6 +160,7 @@ at file:///Users/tettuan/github/breakdown/tests/parser_test.ts:1:30
 ```
 
 2. または、直接URLを使用するように修正:
+
 ```typescript
 import { assert } from "https://deno.land/std@0.220.1/testing/asserts.ts";
 ```
@@ -146,6 +168,7 @@ import { assert } from "https://deno.land/std@0.220.1/testing/asserts.ts";
 ### Required Changes
 
 1. import_map.jsonの再修正:
+
 ```json
 {
   "imports": {
@@ -156,28 +179,33 @@ import { assert } from "https://deno.land/std@0.220.1/testing/asserts.ts";
 ```
 
 ### Next Steps
+
 1. import_map.jsonの修正を適用
 2. テストの再実行による検証
 3. 他のテストファイルでも同様の問題がないか確認
 
 ### Impact
+
 - テストファイルの実行に影響
 - 標準ライブラリの参照方法に影響
 
 ### Learning Points
+
 - import mapの簡素化と必要なマッピングのバランス
 - 標準ライブラリの参照方法の統一性
-- テスト環境の依存関係管理 
+- テスト環境の依存関係管理
 
 ## Error Occurrence: 2024-02-07 16:00 JST
 
 ### Context
+
 - 前回のimport map修正後のテスト実行
 - 標準ライブラリのimportパス解決の修正を試みた段階
 
 ### Error Analysis
 
 #### Test Failure in Default Directory Resolution
+
 ```
 CLI uses correct default directory for each layer type => ./tests/cli_test.ts:138:6
 error: AssertionError: Values are not equal.
@@ -187,6 +215,7 @@ error: AssertionError: Values are not equal.
 ```
 
 **実施した変更**:
+
 1. import mapの修正
    ```json
    {
@@ -200,11 +229,13 @@ error: AssertionError: Values are not equal.
 3. deps.tsの再構成
 
 **意図**:
+
 - 標準ライブラリのimport解決を修正
 - 型定義の参照方法を統一
 - テストの実行環境を整備
 
 **失敗の原因**:
+
 1. 表層的な問題解決に終始
    - importパスの問題のみに注目
    - 実際のテスト失敗の本質を見逃す
@@ -213,6 +244,7 @@ error: AssertionError: Values are not equal.
    - 実際のテスト内容との乖離
 
 **不足した考慮**:
+
 1. テストケースの詳細分析
    - テストが期待する動作の理解
    - デフォルトディレクトリ設定の仕様確認
@@ -224,6 +256,7 @@ error: AssertionError: Values are not equal.
    - 期待値との差異の本質的理解
 
 ### Required Actions
+
 1. テストケースの再確認
    ```typescript
    // tests/cli_test.ts の該当部分を確認
@@ -239,19 +272,22 @@ error: AssertionError: Values are not equal.
    - テストケースとの整合性確保
 
 ### Learning Points
+
 1. 問題の本質を見極める重要性
 2. テストケースの意図を深く理解する必要性
-3. 表層的な修正に終始しない姿勢 
+3. 表層的な修正に終始しない姿勢
 
 ## Solution Strategy (Revised): 2024-02-07 16:45 JST
 
 ### Objective Review
+
 1. デフォルトディレクトリ解決の実装
 2. 型安全性の確保
 3. テストケースとの整合性確保
 4. 循環参照の解消
 
 ### Architecture Decision
+
 1. 依存方向の明確化
    ```
    types/command.ts (型定義)
@@ -264,6 +300,7 @@ error: AssertionError: Values are not equal.
    ```
 
 2. 型定義の分離と責務
+
 ```typescript
 // src/types/command.ts
 // 1. 基本型定義
@@ -283,6 +320,7 @@ export interface CommandOptions {
 ```
 
 3. 定数実装の型付け
+
 ```typescript
 // src/constants.ts
 import type { DirectoryConfig } from "./types/command.ts";
@@ -291,11 +329,12 @@ import type { DirectoryConfig } from "./types/command.ts";
 export const DEFAULT_DIRS: DirectoryConfig = {
   project: "./.agent/breakdown/projects",
   issue: "./.agent/breakdown/issues",
-  task: "./.agent/breakdown/tasks"
+  task: "./.agent/breakdown/tasks",
 } as const;
 ```
 
 4. ユーティリティの堅牢化
+
 ```typescript
 // src/utils/path.ts
 import { DEFAULT_DIRS } from "../constants.ts";
@@ -309,6 +348,7 @@ export function resolveDefaultDirectory(layerType: LayerType): string {
 ```
 
 ### Implementation Benefits
+
 1. 型定義の一元管理
    - command.tsに全ての型定義を集約
    - 型の整合性を静的に保証
@@ -326,6 +366,7 @@ export function resolveDefaultDirectory(layerType: LayerType): string {
    - 実行時チェックの最小化
 
 ### Verification Strategy
+
 1. 型チェック
    ```bash
    deno check src/**/*.ts
@@ -344,6 +385,7 @@ export function resolveDefaultDirectory(layerType: LayerType): string {
 ## Error Occurrence: 2024-02-07 16:30 JST
 
 ### Context
+
 - デフォルトディレクトリ解決機能の実装中
 - 循環参照を避けるための型定義修正後
 - command.tsへのDEFAULT_DIRS importを追加した直後
@@ -351,6 +393,7 @@ export function resolveDefaultDirectory(layerType: LayerType): string {
 ### Error Analysis
 
 #### Parser Error in Type Definition
+
 ```
 error: The module's source code could not be parsed: Expected '{', got 'interface' at file:///Users/tettuan/github/breakdown/src/types/command.ts:37:8
   export interface DirectoryConfig {
@@ -358,20 +401,25 @@ error: The module's source code could not be parsed: Expected '{', got 'interfac
 ```
 
 **直前の変更**:
+
 1. command.tsへのDEFAULT_DIRS import追加
 2. 型定義の循環参照解消のための修正
 
 **問題の本質**:
+
 - 型定義ファイル(command.ts)と定数ファイル(constants.ts)間の循環参照
 - 型チェックの前段階でのパース失敗
 
 **根本原因**:
+
 1. 型定義と実装の依存関係が逆転
    - 型定義が実装(DEFAULT_DIRS)に依存
    - 実装が型定義(LayerType)に依存
 
 ### Required Fix
+
 1. 依存関係の整理:
+
 ```typescript
 // src/types/command.ts
 export type LayerType = "project" | "issue" | "task";
@@ -389,13 +437,15 @@ export const DEFAULT_DIRS: DirectoryConfig = {
 ```
 
 ### Learning Points
+
 1. 型定義と実装の依存方向を明確に
 2. 循環参照を作らない型設計の重要性
-3. 型チェック以前のパースエラーへの注意 
+3. 型チェック以前のパースエラーへの注意
 
 ## Error Occurrence: 2024-02-07 17:00 JST
 
 ### Context
+
 - デフォルトディレクトリ解決機能の実装
 - 循環参照解消のための型定義修正
 - 型定義と実装の依存関係の整理
@@ -403,6 +453,7 @@ export const DEFAULT_DIRS: DirectoryConfig = {
 ### Error Analysis
 
 #### Parser Error in Type Definition (Recurring)
+
 ```
 error: The module's source code could not be parsed: Expected '{', got 'interface' at file:///Users/tettuan/github/breakdown/src/types/command.ts:14:8
   export interface DirectoryConfig {
@@ -410,6 +461,7 @@ error: The module's source code could not be parsed: Expected '{', got 'interfac
 ```
 
 **因果関係の分析**:
+
 1. 発生の連鎖
    - command.tsでの型定義
    - constants.tsでの型の参照
@@ -417,6 +469,7 @@ error: The module's source code could not be parsed: Expected '{', got 'interfac
    - パーサーの解析失敗
 
 2. 依存関係の循環
+
 ```mermaid
 graph TD
     A[command.ts] -->|型定義| B[constants.ts]
@@ -425,6 +478,7 @@ graph TD
 ```
 
 **問題の本質**:
+
 1. 型定義と実装の境界が不明確
    - 型定義ファイルが実装に依存
    - 実装が型定義に依存
@@ -435,7 +489,9 @@ graph TD
    - パーサーの処理順序との不整合
 
 ### Required Actions
+
 1. 型定義の完全分離
+
 ```typescript
 // src/types/command.ts
 export type LayerType = "project" | "issue" | "task";
@@ -455,18 +511,21 @@ export type ValidateDefaultDirs = typeof DEFAULT_DIRS extends DirectoryConfig ? 
    - 検証 → 型定義（禁止）
 
 ### Impact
+
 - 型システムの整合性
 - ビルドプロセスの安定性
 - コードの保守性
 
 ### Learning Points
+
 1. 型定義と実装の責務分離
 2. 循環参照の早期検出
-3. モジュール設計の重要性 
+3. モジュール設計の重要性
 
 ## Error Occurrence: 2024-02-07 17:15 JST
 
 ### Context
+
 - 型定義の循環参照解消を試みた直後
 - 前回の修正で解消されるはずだった問題が継続
 - 同一のパースエラーが再発
@@ -474,6 +533,7 @@ export type ValidateDefaultDirs = typeof DEFAULT_DIRS extends DirectoryConfig ? 
 ### Deep Dive Analysis
 
 #### 1. 前回の修正内容の検証
+
 ```typescript
 // 修正前
 import { DEFAULT_DIRS } from "../constants.ts";
@@ -486,6 +546,7 @@ export type ValidateDefaultDirs = typeof DEFAULT_DIRS extends DirectoryConfig ? 
 ```
 
 #### 2. 実際の状態
+
 ```typescript
 // command.tsの実際の状態
 // ValidateDefaultDirsが削除されていない
@@ -493,6 +554,7 @@ export type ValidateDefaultDirs = typeof DEFAULT_DIRS extends DirectoryConfig ? 
 ```
 
 **根本的な問題**:
+
 1. ファイルシステムの状態
    - 修正が正しく保存されていない可能性
    - エディタのバッファと実ファイルの不一致
@@ -509,13 +571,16 @@ export type ValidateDefaultDirs = typeof DEFAULT_DIRS extends DirectoryConfig ? 
    - モジュール解決の順序性
 
 ### Required Investigation
+
 1. ファイルシステムの確認
+
 ```bash
 cat src/types/command.ts  # 実際のファイル内容を確認
 deno cache --reload  # キャッシュのクリア
 ```
 
 2. 依存関係の完全なトレース
+
 ```mermaid
 graph TD
     A[command.ts] -->|型定義| B[constants.ts]
@@ -524,11 +589,13 @@ graph TD
 ```
 
 3. モジュール解決の検証
+
 ```bash
 deno info src/types/command.ts  # 依存関係の可視化
 ```
 
 ### Immediate Actions
+
 1. ファイルの完全なクリーンアップ
    - 全ての循環参照コードの確実な削除
    - ファイル保存の確認
@@ -545,16 +612,18 @@ deno info src/types/command.ts  # 依存関係の可視化
    - 型定義の独立性確保
 
 ### Learning Points
+
 1. 修正の確実な適用確認の重要性
 2. キャッシュと実ファイルの整合性
 3. エラーの再発を重要なシグナルとして扱う
-4. 依存関係の完全な把握の必要性 
+4. 依存関係の完全な把握の必要性
 
 ## Error Investigation Results: 2024-02-07 17:45 JST
 
 ### Environment Analysis
 
 #### 1. Version Information
+
 ```
 deno 1.40.2 (release, aarch64-apple-darwin)
 v8 12.1.285.27
@@ -562,15 +631,18 @@ typescript 5.3.3
 ```
 
 #### 2. Minimal Test Results
+
 ```typescript
 // test-env/minimal.ts
 export interface Test {
   prop: string;
 }
 ```
+
 結果: 最小構成では正常にパース可能
 
 #### 3. File System Analysis
+
 - エンコーディング: UTF-8
 - ファイルタイプ: text/plain
 - 改行コード: LF (Unix)
@@ -591,18 +663,21 @@ export interface Test {
    - 型定義ファイル間の参照関係
 
 ### Next Investigation Steps
+
 1. プロジェクト構造の詳細分析
 2. 型定義ファイル間の依存関係マッピング
 3. ビルドプロセスの詳細トレース
 
 ### Required Actions
+
 1. プロジェクト依存グラフの可視化
 2. 型定義ファイルの相互参照チェック
-3. ビルドプロセスのステップバイステップ確認 
+3. ビルドプロセスのステップバイステップ確認
 
 ## Architecture Investigation: 2024-02-07 18:00 JST
 
 ### Project Structure Analysis
+
 ```bash
 $ tree src/
 src/
@@ -621,32 +696,36 @@ src/
 ### Architectural Boundaries
 
 #### 1. Library Interface
+
 ```typescript
 // src/mod.ts (Public API)
-export type { 
+export type {
+  CommandOptions, // コマンド実行オプション
+  DirectoryConfig, // ユーザー定義可能な設定型
   LayerType,
-  DirectoryConfig,     // ユーザー定義可能な設定型
-  CommandOptions       // コマンド実行オプション
 } from "./types/command.ts";
 
-export { 
-  resolveDefaultDirectory,  // パス解決ユーティリティ
-  DEFAULT_DIRS             // デフォルト設定（上書き可能）
+export {
+  DEFAULT_DIRS, // デフォルト設定（上書き可能）
+  resolveDefaultDirectory, // パス解決ユーティリティ
 } from "./constants.ts";
 ```
 
 #### 2. Configuration Layers
+
 1. デフォルト設定（ライブラリ提供）
+
 ```typescript
 // src/constants.ts
 export const DEFAULT_DIRS: DirectoryConfig = {
   project: "./.agent/breakdown/projects",
   issue: "./.agent/breakdown/issues",
-  task: "./.agent/breakdown/tasks"
+  task: "./.agent/breakdown/tasks",
 } as const;
 ```
 
 2. ユーザー設定（拡張可能）
+
 ```typescript
 // Example: User Configuration
 import type { DirectoryConfig } from "breakdown";
@@ -654,13 +733,14 @@ import type { DirectoryConfig } from "breakdown";
 const userConfig: DirectoryConfig = {
   project: "./custom/projects",
   issue: "./custom/issues",
-  task: "./custom/tasks"
+  task: "./custom/tasks",
 };
 ```
 
 ### Dependency Analysis
 
 #### 1. Current State
+
 ```mermaid
 graph TD
     A[mod.ts] -->|re-exports| B[types/command.ts]
@@ -671,6 +751,7 @@ graph TD
 ```
 
 #### 2. Proposed Structure
+
 ```mermaid
 graph TD
     A[mod.ts] -->|public api| B[types/index.ts]
@@ -701,6 +782,7 @@ graph TD
 ### Required Restructuring
 
 1. ディレクトリ構造の整理
+
 ```bash
 src/
 ├── mod.ts
@@ -711,6 +793,7 @@ src/
 ```
 
 2. 型定義の分離
+
 ```typescript
 // src/types/config.ts
 export interface PublicConfig {
@@ -725,6 +808,7 @@ export interface InternalConfig extends Required<PublicConfig> {
 ```
 
 3. デフォルト値の分離
+
 ```typescript
 // src/defaults/directories.ts
 export const DEFAULT_DIRS: DirectoryConfig = {
@@ -739,7 +823,8 @@ export const INTERNAL_CONFIG: InternalConfig = {
 ```
 
 ### Next Steps
+
 1. ディレクトリ構造の再編成
 2. 型定義ファイルの責務分離
 3. 設定の階層化実装
-4. パブリックAPIの整理 
+4. パブリックAPIの整理

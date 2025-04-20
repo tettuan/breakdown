@@ -3,6 +3,7 @@
 This directory contains prompt templates used by the breakdown tool.
 
 ## Directory Structure
+
 ```
 prompts/
 ├── issue/
@@ -19,7 +20,8 @@ prompts/
 ```
 
 ## Usage
+
 1. Issue breakdown prompts are in `issue/` directory
 2. Task breakdown prompts are in `task/` directory
 3. Sample files are provided in `samples/` directory
-4. Custom prompts can be added to respective directories 
+4. Custom prompts can be added to respective directories

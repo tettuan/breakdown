@@ -9,4 +9,4 @@ export interface ConfigOptions {
   configPath?: string;
   workingDir?: string;
   outputDir?: string;
-} 
+}

@@ -4,22 +4,22 @@
 
 ## インストール
 
-### システム全体へのインストール
+### システムにインストール
 
-```bash
-deno install --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add @tettuan/breakdown
 ```
 
-### プロジェクト固有のインストール
+### AI開発リポジトリにのみインストール
 
-```bash
-deno install --root ./tools --name=breakdown https://deno.land/x/breakdown.ts
+```
+deno add --root ./tools @tettuan/breakdown
 ```
 
-### 手動実行（インストールなし）
+インストールせずに使用する場合：
 
-```bash
-deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
+```
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
 ## 基本コマンド
@@ -29,21 +29,25 @@ deno run --allow-read --allow-net https://deno.land/x/breakdown.ts
 ```bash
 breakdown init
 ```
+
 このコマンドは、設定で指定された必要な作業ディレクトリ構造を作成します。
 
 ### MarkdownからJSONへの変換
 
 **プロジェクト概要の作成**
+
 ```bash
 breakdown to project <written_project_summary.md> -o <project-dir>
 ```
 
 **イシューの作成**
+
 ```bash
 breakdown to issue <project_summary.json|written_issue.md> -o <issue-dir>
 ```
 
 **タスクの作成**
+
 ```bash
 breakdown to task <issue.json|written_task.md> -o <tasks-dir>
 ```
@@ -51,16 +55,19 @@ breakdown to task <issue.json|written_task.md> -o <tasks-dir>
 ### Markdownサマリーの生成
 
 **プロジェクトサマリー**
+
 ```bash
 echo "<summary>" | breakdown summary project -o <project_summary.md>
 ```
 
 **イシューサマリー**
+
 ```bash
 echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
 ```
 
 **タスクサマリー**
+
 ```bash
 echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ```
@@ -68,11 +75,13 @@ echo "<task summary>" | breakdown summary task -o <task_summary.md>
 ### 既存ドキュメントからのMarkdown生成
 
 **プロジェクトからイシューを生成**
+
 ```bash
 breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
 ```
 
 **イシューからタスクを生成**
+
 ```bash
 breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ```
@@ -80,26 +89,31 @@ breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
 ### 不具合とエラーの処理
 
 **プロジェクト不具合分析**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
 **イシュー不具合分析**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
 ```
 
 **タスク不具合分析**
+
 ```bash
 tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
 ```
 
 **プロジェクト不具合からイシュー修正を生成**
+
 ```bash
 breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
 ```
 
 **イシュー不具合からタスク修正を生成**
+
 ```bash
 breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
 ```
@@ -200,12 +214,14 @@ breakdown to task <issue.json> -o <tasks-dir>
 ### 自動ファイル名生成
 
 ファイル名なしで出力が指定された場合：
+
 - `<yyyymmdd>_<ランダムハッシュ>.md` 形式でファイル名が生成
 - 例：`20250211_e81d0bd.md`
 
 ## 設定
 
 ツールは `/breakdown/config/config.ts` から設定を読み込みます。これには以下が含まれます：
+
 - 作業ディレクトリ設定
 - プロンプトファイルの場所
 - スキーマファイルの場所
@@ -216,4 +232,4 @@ breakdown to task <issue.json> -o <tasks-dir>
 breakdown init
 ```
 
-これにより、設定に基づいて必要なディレクトリ構造が作成されます。 
+これにより、設定に基づいて必要なディレクトリ構造が作成されます。

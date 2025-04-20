@@ -1,1 +1,9 @@
-{"type":"object","required":["title","description"],"properties":{"title":{"type":"string"},"description":{"type":"string"},"acceptance_criteria":{"type":"array"}}}
+{
+  "type": "object",
+  "required": ["title", "description"],
+  "properties": {
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "acceptance_criteria": { "type": "array" }
+  }
+}
