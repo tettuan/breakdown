@@ -22,7 +22,7 @@ export async function isDirectory(path: string): Promise<boolean> {
 /**
  * Normalizes a path by converting it to a proper file URL and back
  * @param path The path to normalize
- * @returns Normalized path starting with ./
+ * @returns Normalized path starting with ./ or ../ as appropriate
  * @throws Error if path is empty
  */
 export function normalizePath(path: string): string {
@@ -35,9 +35,14 @@ export function normalizePath(path: string): string {
   // Convert Windows backslashes to forward slashes
   path = path.replace(/\\/g, "/");
 
-  // Handle invalid URL schemes (but not file:// URLs)
+  // Preserve relative path prefixes
+  const parentDirMatches = path.match(/^(\.\.\/)+/);
+  const parentDirPrefix = parentDirMatches ? parentDirMatches[0] : "";
+  const isCurrentDir = path.startsWith("./");
+
+  // Handle invalid URL schemes (but not file:// URLs) by preserving them
   if (path.includes("://") && !path.startsWith("file://")) {
-    throw new Error("Invalid URL scheme in path");
+    return path.startsWith("./") ? path : `./${path}`;
   }
 
   try {
@@ -60,8 +65,14 @@ export function normalizePath(path: string): string {
     path = path.replace(/^\.\//, "");
   }
 
-  // Ensure path starts with ./
-  return path.startsWith("./") ? path : `./${path}`;
+  // Restore relative path prefixes or add ./ if needed
+  if (parentDirPrefix) {
+    return path.startsWith(parentDirPrefix) ? path : `${parentDirPrefix}${path}`;
+  } else if (isCurrentDir) {
+    return path.startsWith("./") ? path : `./${path}`;
+  } else {
+    return path.startsWith("./") ? path : `./${path}`;
+  }
 }
 
 /**
@@ -273,7 +284,10 @@ export class PathResolver {
     }
 
     // If destinationFile has path hierarchy and extension
-    if ((destinationFile.includes("/") || destinationFile.includes("\\")) && destinationFile.includes(".")) {
+    if (
+      (destinationFile.includes("/") || destinationFile.includes("\\")) &&
+      destinationFile.includes(".")
+    ) {
       return destinationFile;
     }
 
