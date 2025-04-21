@@ -1,0 +1,2 @@
+#!/bin/bash
+exec deno run -A "/Users/tettuan/github/breakdown/cli/breakdown.ts" "$@"

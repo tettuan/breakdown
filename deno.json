@@ -26,7 +26,8 @@
   "fmt": {
     "indentWidth": 2,
     "singleQuote": false,
-    "lineWidth": 100
+    "lineWidth": 100,
+    "exclude": ["examples/"]
   },
   "lint": {
     "include": ["lib/", "tests/"],

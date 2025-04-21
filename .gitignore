@@ -71,9 +71,6 @@ yarn-error.log*
 /.breakdown
 /.agent/
 
-/examples/
-/examples/*
-
 /tmp/*
 /tmp
 
