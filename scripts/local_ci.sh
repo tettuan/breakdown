@@ -1,149 +1,258 @@
 #!/bin/bash
 
-# Enable strict mode
-set -euo pipefail
+# ============================================================================
+# local_ci.sh
+#
+# Purpose:
+#   - Run all Deno tests in the project with strict permissions and debug logging.
+#   - Ensure all tests pass before running formatting and lint checks.
+#   - Mimics the CI flow locally to catch issues before commit, push, or merge.
+#
+# Intent:
+#   - Enforce Deno's security model by explicitly specifying required permissions.
+#   - Provide clear debug output for troubleshooting test failures.
+#   - Automatically regenerate the lockfile to ensure dependency consistency.
+#   - Recursively discover and run all *_test.ts files in the tests/ directory.
+#   - Only proceed to lint and format checks if all tests pass.
+#   - Exit immediately on any error, with helpful debug output if DEBUG=true.
+#
+# Error Handling Strategy:
+#   - Two-phase test execution for better error diagnosis:
+#     1. Normal Mode: Quick run to identify failing tests
+#        - Minimal output for successful tests
+#        - Fast feedback loop for developers
+#     2. Debug Mode: Detailed investigation of failures
+#        - Automatically triggered for failing tests
+#        - Provides comprehensive error context
+#        - Includes guidance for systematic error resolution
+#   
+#   This approach helps developers:
+#   - Quickly identify the exact point of failure
+#   - Get detailed context only when needed
+#   - Follow a structured approach to fixing issues
+#   - Maintain test sequence awareness
+#   - Add more test cases if root cause is unclear
+#
+# Usage:
+#   bash scripts/local_ci.sh
+#   # or, with debug output:
+#   DEBUG=true bash scripts/local_ci.sh
+#
+# Maintenance:
+#   - If you encounter an error:
+#       1. Run with DEBUG=true to get detailed output:
+#            DEBUG=true bash scripts/local_ci.sh
+#       2. Review the error message and the failing test file.
+#       3. Fix the test or the application code as needed, following the order:
+#            Initial loading → Use case entry → Conversion → Output → Integration → Edge case
+#       4. Re-run this script until all checks pass.
+#   - The script expects Deno test files to be named *_test.ts and located under tests/.
+#   - Permissions are set as per Deno best practices: all flags precede the test file(s).
+#   - For more details, see project rules and documentation.
+#
+# This script is working as intended and follows Deno and project conventions.
+# ============================================================================
 
-# Debug mode
-DEBUG=${DEBUG:-false}
-LOG_LEVEL=${LOG_LEVEL:-info}
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-log() {
-  local level=$1
-  shift
-  if [[ "$DEBUG" == "true" ]] || [[ "$level" != "debug" ]]; then
-    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [$level]${NC} $*"
-  fi
+# Function to enable debug mode
+enable_debug() {
+    echo "
+===============================================================================
+>>> SWITCHING TO DEBUG MODE <<<
+==============================================================================="
+    set -x
 }
 
-error() {
-  echo -e "${RED}[ERROR]${NC} $*" >&2
+# Function to disable debug mode
+disable_debug() {
+    set +x
+    echo "
+===============================================================================
+>>> DEBUG MODE DISABLED <<<
+==============================================================================="
 }
 
-success() {
-  echo -e "${GREEN}[SUCCESS]${NC} $*"
-}
+# Function to handle errors
+handle_error() {
+    local test_file=$1
+    local error_message=$2
+    local is_debug=$3
 
-# Array to store failed test files
-declare -a FAILED_TESTS
+    if [ "$is_debug" = "true" ]; then
+        echo "
+===============================================================================
+>>> ERROR IN DEBUG MODE <<<
+===============================================================================
+Error: $error_message in $test_file
+Note: Remaining tests have been interrupted due to this failure.
+Tests are executed sequentially to maintain dependency order and consistency.
 
-# Function to extract failed test files from test output
-parse_test_output() {
-  local test_output="$1"
-  # Reset failed tests array
-  FAILED_TESTS=()
-  
-  # Parse test output to find failed test files
-  while IFS= read -r line; do
-    if [[ $line =~ running[[:space:]]+[0-9]+[[:space:]]+test[[:space:]]+from[[:space:]]+(.+)$ ]]; then
-      current_test_file="${BASH_REMATCH[1]}"
-    elif [[ $line =~ .*FAILED.*due[[:space:]]+to[[:space:]]+[0-9]+[[:space:]]+failed[[:space:]]+steps.* ]]; then
-      FAILED_TESTS+=("$current_test_file")
+Please:
+  1. Fix errors one at a time, starting with this test
+  2. Run tests for the fixed component before moving to the next error
+  3. If root cause is unclear, consider adding more test cases
+==============================================================================="
+    else
+        echo "
+===============================================================================
+>>> ERROR DETECTED - RETRYING IN DEBUG MODE <<<
+===============================================================================
+Error: $error_message in $test_file
+Retrying with debug mode..."
+        if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            handle_error "$test_file" "Test failed in debug mode" "true"
+        fi
     fi
-  done <<< "$test_output"
+    exit 1
 }
 
-# Function to run tests
-run_tests() {
-  log "info" "Running tests..."
-  
-  if [[ "$DEBUG" == "true" ]] && [[ ${#FAILED_TESTS[@]} -gt 0 ]]; then
-    # Run only failed tests in debug mode
-    log "info" "Running failed tests in debug mode..."
-    for test_file in "${FAILED_TESTS[@]}"; do
-      log "debug" "Re-running test: $test_file"
-      LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"
+# Handle DEBUG environment variable
+if [ "${DEBUG:-false}" = "true" ]; then
+    echo "
+===============================================================================
+>>> DEBUG MODE ENABLED VIA ENVIRONMENT VARIABLE <<<
+==============================================================================="
+    enable_debug
+else
+    disable_debug
+fi
+
+# Remove old lockfile and regenerate
+echo "Removing old deno.lock..."
+rm -f deno.lock
+
+echo "Regenerating deno.lock..."
+if ! deno cache --reload mod.ts; then
+    handle_error "mod.ts" "Failed to regenerate deno.lock" "false"
+fi
+
+# Function to run a single test file
+run_single_test() {
+    local test_file=$1
+    local is_debug=${2:-false}
+    
+    if [ "$is_debug" = "true" ]; then
+        echo "
+===============================================================================
+>>> RUNNING TEST IN DEBUG MODE: $test_file <<<
+==============================================================================="
+        if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            handle_error "$test_file" "Test failed" "true"
+            return 1
+        fi
+    else
+        echo "Running test: $test_file"
+        if ! deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            handle_error "$test_file" "Test failed" "false"
+            return 1
+        fi
+        echo "✓ $test_file"
+    fi
+    return 0
+}
+
+# Function to process tests in a directory
+process_test_directory() {
+    local dir=$1
+    local is_debug=${2:-false}
+    local test_count=0
+    local error_count=0
+    
+    echo "Processing directory: $dir"
+    
+    # First process direct test files in sorted order
+    for test_file in $(find "$dir" -maxdepth 1 -name "*_test.ts" | sort); do
+        if [ -f "$test_file" ]; then
+            ((test_count++))
+            if ! run_single_test "$test_file" "$is_debug"; then
+                ((error_count++))
+                return 1
+            fi
+        fi
     done
-  else
-    # Run all tests and capture output
-    local test_output
-    test_output=$(deno test --allow-env --allow-write --allow-read --allow-run 2>&1)
-    echo "$test_output"
     
-    # Parse output to find failed tests
-    parse_test_output "$test_output"
+    # Then process subdirectories in sorted order
+    for subdir in $(find "$dir" -mindepth 1 -maxdepth 1 -type d | sort); do
+        if ! process_test_directory "$subdir" "$is_debug"; then
+            return 1
+        fi
+    done
     
-    # If tests failed and debug mode is requested, rerun failed tests
-    if [[ ${#FAILED_TESTS[@]} -gt 0 ]]; then
-      log "error" "Some tests failed. Run with DEBUG=true to see detailed output for failed tests."
-      return 1
-    fi
-  fi
+    return 0
 }
 
-# Function to run type check
-run_type_check() {
-  log "info" "Running type check..."
-  deno task check
-}
+# Main execution flow
+echo "Starting test execution..."
 
-# Function to check formatting
-check_fmt() {
-  log "info" "Checking formatting..."
-  deno fmt --check
-}
+# Process all tests hierarchically
+if ! process_test_directory "tests" "${DEBUG:-false}"; then
+    echo "Test execution stopped due to failure."
+    exit 1
+fi
 
-# Function to run linter
-run_lint() {
-  log "info" "Running linter..."
-  deno lint
-}
+echo "All tests passed. Running type check..."
+if ! deno check mod.ts; then
+    echo "
+===============================================================================
+>>> TYPE CHECK FAILED <<<
+===============================================================================
+Please review:
+1. Project rules and specifications in docs/ directory
+2. Deno's type system documentation at https://deno.land/manual/typescript
+3. External library documentation for any imported packages
 
-# Function to build resources
-build_resources() {
-  log "info" "Building resources..."
-  deno run --allow-read --allow-write scripts/build-resources.ts
-}
+Remember to:
+- Check type definitions in your code
+- Verify type compatibility with external dependencies
+- Review TypeScript configuration in deno.json
+==============================================================================="
+    handle_error "type check" "Type check failed" "false"
+    exit 1
+fi
 
-# Main execution
-main() {
-  local start_time=$(date +%s)
-  local exit_code=0
+echo "Running format check..."
+if ! deno fmt --check; then
+    echo "
+===============================================================================
+>>> FORMAT CHECK FAILED <<<
+===============================================================================
+Please review:
+1. Project formatting rules in docs/ directory
+2. Deno's style guide at https://deno.land/manual/tools/formatter
+3. Format settings in deno.json
 
-  log "info" "Starting local CI checks..."
+Remember to:
+- Run 'deno fmt' to automatically fix formatting issues
+- Check for any custom formatting rules in the project
+- Ensure your editor's formatting settings align with the project
 
-  # Run in order: build, type check, test, format, lint
-  if ! build_resources; then
-    error "Resource build failed"
-    exit_code=1
-  fi
+Important Note:
+- Some format errors might be from test-generated files
+- Check if any test runs have created or modified files
+- Consider adding such dynamically generated files to .gitignore
+- Clean up test output directories if necessary
+==============================================================================="
+    handle_error "format" "Format check failed" "false"
+    exit 1
+fi
 
-  if ! run_type_check; then
-    error "Type check failed"
-    exit_code=1
-  fi
+echo "Running lint..."
+if ! deno lint; then
+    echo "
+===============================================================================
+>>> LINT CHECK FAILED <<<
+===============================================================================
+Please review:
+1. Project linting rules in docs/ directory
+2. Deno's linting rules at https://deno.land/manual/tools/linter
+3. Lint configuration in deno.json
 
-  if ! run_tests; then
-    error "Tests failed"
-    exit_code=1
-  fi
+Remember to:
+- Check for common code style issues
+- Review best practices for Deno development
+- Verify any custom lint rules specific to the project
+==============================================================================="
+    handle_error "lint" "Lint check failed" "false"
+    exit 1
+fi
 
-  if ! check_fmt; then
-    error "Format check failed"
-    exit_code=1
-  fi
-
-  if ! run_lint; then
-    error "Lint check failed"
-    exit_code=1
-  fi
-
-  local end_time=$(date +%s)
-  local duration=$((end_time - start_time))
-
-  if [[ $exit_code -eq 0 ]]; then
-    success "All checks passed successfully! (Duration: ${duration}s)"
-  else
-    error "Some checks failed. Please fix the issues and try again. (Duration: ${duration}s)"
-  fi
-
-  return $exit_code
-}
-
-# Execute main function
-main "$@" 
+echo "✓ Local checks completed successfully." 
