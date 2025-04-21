@@ -71,8 +71,12 @@ tests/
 │   │   └── init_test.ts   # Application initialization
 │   ├── 1_config/          # Configuration (depends on env)
 │   │   └── config_test.ts # Configuration management
-│   └── 2_logger/          # Logging (depends on config)
-│       └── logger_test.ts # Logger functionality
+│   ├── 2_commands/        # Command parameter parsing and execution
+│   │   └── commands_test.ts # Command functionality tests
+│   ├── 3_logger/          # Logging functionality
+│   │   └── logger_test.ts # Logger functionality tests
+│   └── 4_directory_structure/ # Directory structure management
+│       └── directory_structure_test.ts # Directory creation and validation
 │
 ├── 1_core/                # Core functionality
 │   ├── 0_path/           # Path handling (most fundamental)
@@ -81,25 +85,19 @@ tests/
 │   │   └── prompt_path_test.ts
 │   ├── 1_io/             # I/O operations (depends on path)
 │   │   └── stdin_test.ts
-│   ├── 2_command/        # Command processing (depends on path and I/O)
-│   │   ├── basic_commands_test.ts
-│   │   ├── error_handling_test.ts
-│   │   └── log_level_test.ts
+│   ├── 2_config/         # Configuration management (depends on path and I/O)
+│   │   └── working_dir_test.ts
 │   └── 3_prompt/         # Prompt handling (depends on all above)
 │       ├── selection_test.ts
 │       └── prompt_processor_test.ts
 │
 ├── 2_integration/         # Integration tests
-│   ├── 0_flow/           # Basic workflow integration
-│   │   └── flow_test.ts
-│   ├── 1_command/        # Command integration tests
-│   └── 2_prompt/         # Prompt integration tests
+│   └── 0_flow/           # Basic workflow integration
+│       └── flow_test.ts
 │
 ├── 3_scenarios/          # End-to-end scenarios
-│   ├── 0_basic/         # Basic usage scenarios
-│   │   └── commands_test.ts
-│   ├── 1_workflow/      # Complex workflow scenarios
-│   └── 2_error/         # Error handling scenarios
+│   └── 0_basic/         # Basic usage scenarios
+│       └── commands_test.ts
 │
 ├── helpers/             # Test utilities
 │   ├── setup.ts        # Environment setup
@@ -116,7 +114,9 @@ Foundation tests establish the basic environment and configuration:
 
 - `0_env/`: Most basic setup and initialization
 - `1_config/`: Configuration management (depends on environment)
-- `2_logger/`: Logging functionality (depends on configuration)
+- `2_commands/`: Command parameter parsing and execution (depends on config)
+- `3_logger/`: Logging functionality (depends on commands)
+- `4_directory_structure/`: Directory structure management (depends on all above)
 
 #### 1_core/
 
@@ -124,7 +124,7 @@ Core functionality tests follow a dependency-based hierarchy:
 
 - `0_path/`: Most fundamental path handling and utilities
 - `1_io/`: I/O operations that depend on proper path handling
-- `2_command/`: Command processing depending on path and I/O
+- `2_config/`: Configuration management (depends on path and I/O)
 - `3_prompt/`: Prompt handling depending on all previous components
 
 #### 2_integration/
@@ -132,16 +132,12 @@ Core functionality tests follow a dependency-based hierarchy:
 Integration tests verify component interactions:
 
 - `0_flow/`: Basic workflow integration tests
-- `1_command/`: Command integration across components
-- `2_prompt/`: Prompt system integration tests
 
 #### 3_scenarios/
 
 End-to-end scenario tests for real-world use cases:
 
 - `0_basic/`: Basic usage scenario tests
-- `1_workflow/`: Complex workflow scenario tests
-- `2_error/`: Error handling scenario tests
 
 ### Numbering Convention
 
