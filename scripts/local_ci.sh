@@ -29,14 +29,50 @@ success() {
   echo -e "${GREEN}[SUCCESS]${NC} $*"
 }
 
+# Array to store failed test files
+declare -a FAILED_TESTS
+
+# Function to extract failed test files from test output
+parse_test_output() {
+  local test_output="$1"
+  # Reset failed tests array
+  FAILED_TESTS=()
+  
+  # Parse test output to find failed test files
+  while IFS= read -r line; do
+    if [[ $line =~ running[[:space:]]+[0-9]+[[:space:]]+test[[:space:]]+from[[:space:]]+(.+)$ ]]; then
+      current_test_file="${BASH_REMATCH[1]}"
+    elif [[ $line =~ .*FAILED.*due[[:space:]]+to[[:space:]]+[0-9]+[[:space:]]+failed[[:space:]]+steps.* ]]; then
+      FAILED_TESTS+=("$current_test_file")
+    fi
+  done <<< "$test_output"
+}
+
 # Function to run tests
 run_tests() {
   log "info" "Running tests..."
   
-  if [[ "$DEBUG" == "true" ]]; then
-    LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run
+  if [[ "$DEBUG" == "true" ]] && [[ ${#FAILED_TESTS[@]} -gt 0 ]]; then
+    # Run only failed tests in debug mode
+    log "info" "Running failed tests in debug mode..."
+    for test_file in "${FAILED_TESTS[@]}"; do
+      log "debug" "Re-running test: $test_file"
+      LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"
+    done
   else
-    deno test --allow-env --allow-write --allow-read --allow-run
+    # Run all tests and capture output
+    local test_output
+    test_output=$(deno test --allow-env --allow-write --allow-read --allow-run 2>&1)
+    echo "$test_output"
+    
+    # Parse output to find failed tests
+    parse_test_output "$test_output"
+    
+    # If tests failed and debug mode is requested, rerun failed tests
+    if [[ ${#FAILED_TESTS[@]} -gt 0 ]]; then
+      log "error" "Some tests failed. Run with DEBUG=true to see detailed output for failed tests."
+      return 1
+    fi
   fi
 }
 
