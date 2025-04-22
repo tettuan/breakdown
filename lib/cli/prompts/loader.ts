@@ -12,15 +12,16 @@ export class PromptLoader {
     const baseDir = "./breakdown/prompts";
 
     // プロンプトのディレクトリを構築
-    const command = args.command || "default";
-    const layerType = args.layerType || "default";
-    const promptDir = join(baseDir, command, layerType);
+    const demonstrative = args.demonstrative || "default";
+    const layer = args.layer || "default";
+    const promptDir = join(baseDir, demonstrative, layer);
 
     // 入力レイヤータイプを決定
     let fromLayerType = "default";
-    if (args.inputLayerType) {
-      // --input オプションが指定されている場合は最優先
-      fromLayerType = this.resolveLayerTypeAlias(args.inputLayerType);
+    if (args.fromProject) {
+      fromLayerType = "project";
+    } else if (args.fromIssue) {
+      fromLayerType = "issue";
     } else if (args.fromFile) {
       // ファイルパスからの推論
       fromLayerType = this.inferLayerTypeFromPath(args.fromFile) || "default";

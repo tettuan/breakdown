@@ -66,6 +66,70 @@ deno test <test_file.ts> --allow-env --allow-write --allow-read
 - エッジケース
 - エラー回復
 
+## CLI テスト要件
+
+### テストの配置
+
+```
+tests/
+└── 1_core/
+    └── cli/           # CLIテスト専用ディレクトリ
+        ├── args_test.ts     # 引数解析テスト
+        ├── commands_test.ts # コマンド実行テスト
+        └── io_test.ts      # 入出力テスト
+```
+
+### テスト項目
+
+1. コマンドライン引数
+   - 基本コマンドの認識
+   - オプションの解析
+   - 引数の組み合わせ
+   - 無効な引数のエラー処理
+
+2. コマンド実行
+   - 各コマンドの正常系テスト
+   - エラー条件でのテスト
+   - オプション指定時の動作
+   - コマンドの実行結果
+
+3. 入出力処理
+   - 標準入力からの読み込み
+   - 標準出力への書き込み
+   - エラー出力の制御
+   - ログレベルの動作確認
+
+### テスト方法
+
+```typescript
+// コマンドライン引数のテスト例
+Deno.test("CLI argument parsing - init command", async () => {
+  const result = await runCommand(["init", "--config", "custom.json"]);
+  assertCommandSuccess(result);
+  // 期待される出力の検証
+});
+
+// エラー処理のテスト例
+Deno.test("CLI error handling - invalid command", async () => {
+  const result = await runCommand(["invalid"]);
+  assertEquals(result.error.includes("Unknown command"), true);
+});
+```
+
+### テストヘルパー関数
+
+- `runCommand()`: コマンド実行のラッパー
+- `assertCommandSuccess()`: コマンド成功の検証
+- `assertCommandOutput()`: 出力内容の検証
+- `mockStdin()`: 標準入力のモック
+
+### 統合テストでの確認項目
+
+1. エンドツーエンドのワークフロー
+2. 実際のファイルシステムとの連携
+3. 設定ファイルの読み込み
+4. エラー回復とリトライ
+
 ## テストヘルパー
 
 ### setup.ts

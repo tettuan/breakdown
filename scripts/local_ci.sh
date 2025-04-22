@@ -161,13 +161,13 @@ run_single_test() {
 ===============================================================================
 >>> RUNNING TEST IN DEBUG MODE: $test_file <<<
 ==============================================================================="
-        if ! error_output=$(LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read "$test_file" 2>&1); then
+        if ! error_output=$(LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "true"
             return 1
         fi
     else
         echo "Running test: $test_file"
-        if ! error_output=$(deno test --allow-env --allow-write --allow-read "$test_file" 2>&1); then
+        if ! error_output=$(deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "false"
             return 1
         fi

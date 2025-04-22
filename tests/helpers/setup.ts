@@ -7,6 +7,12 @@ export interface TestEnvironment {
   originalLogLevel?: string;
 }
 
+export interface CommandResult {
+  success: boolean;
+  output: string;
+  error: string;
+}
+
 /**
  * Sets up test environment with logging and directory structure
  * Following docs/breakdown/testing.ja.md specifications:
@@ -120,64 +126,44 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
 /**
  * Runs a command and returns the result
  */
-export async function runCommand(args: string[], stdin?: string): Promise<{
-  success: boolean;
-  output: string;
-  error: string;
-}> {
-  const timeout = parseInt(Deno.env.get("TEST_TIMEOUT") || "5000");
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+export async function runCommand(args: string[], stdin?: string): Promise<CommandResult> {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["run", "--allow-all", "cli/breakdown.ts", ...args],
+    stdout: "piped",
+    stderr: "piped",
+    stdin: stdin ? "piped" : undefined,
+  });
 
   try {
-    const command = new Deno.Command(Deno.execPath(), {
-      args: [
-        "run",
-        "--allow-read",
-        "--allow-write",
-        "--allow-env",
-        "--allow-run",
-        "--allow-net",
-        join(Deno.cwd(), "cli/breakdown.ts"),
-        ...args,
-      ],
-      stdout: "piped",
-      stderr: "piped",
-      stdin: stdin ? "piped" : undefined,
-      cwd: Deno.cwd(),
-      env: {
-        ...Deno.env.toObject(),
-        NO_COLOR: "1", // Disable color output for consistent test results
-        DENO_DIR: join(Deno.cwd(), ".deno"), // Use local deno directory
-      },
-      signal: controller.signal,
-    });
-
-    const childProcess = command.spawn();
-
+    let process;
     if (stdin) {
-      const writer = childProcess.stdin.getWriter();
+      process = command.spawn();
+      const writer = process.stdin.getWriter();
       await writer.write(new TextEncoder().encode(stdin));
       await writer.close();
-    }
-
-    const { success, stdout, stderr } = await childProcess.output();
-    clearTimeout(timeoutId);
-
-    return {
-      success,
-      output: new TextDecoder().decode(stdout).trim(),
-      error: new TextDecoder().decode(stderr).trim(),
-    };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof DOMException && error.name === "AbortError") {
+      const { code, stdout, stderr } = await process.output();
+      const output = new TextDecoder().decode(stdout);
+      const error = new TextDecoder().decode(stderr);
       return {
-        success: false,
-        output: "",
-        error: `Command timed out after ${timeout}ms`,
+        success: code === 0,
+        output: output.trim(),
+        error: error.trim(),
+      };
+    } else {
+      const { code, stdout, stderr } = await command.output();
+      const output = new TextDecoder().decode(stdout);
+      const error = new TextDecoder().decode(stderr);
+      return {
+        success: code === 0,
+        output: output.trim(),
+        error: error.trim(),
       };
     }
-    throw error;
+  } catch (err: unknown) {
+    return {
+      success: false,
+      output: "",
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }

@@ -2,11 +2,12 @@
 
 ## パラメータ処理の実装
 
-https://jsr.io/@tettuan/breakdownparams を使用します。README
-https://github.com/tettuan/breakdownparams を読み把握すること。
+https://jsr.io/@tettuan/breakdownparams を使用します。最新版はJSRを確認すること。 README
+https://github.com/tettuan/breakdownparams を読み把握すること。 オプション詳細は
+https://github.com/tettuan/breakdownparams/blob/HEAD/docs/options.md に記載があります。
 
 ```ts
-import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.8";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.10";
 
 const parser = new ParamsParser();
 

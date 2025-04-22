@@ -23,9 +23,9 @@ Deno.test({
     const workspace = new Workspace({ workingDir: options.workingDir });
     await workspace.initialize();
 
-    // Verify directories are created
-    assertEquals(await exists(join(options.workingDir, "prompts")), true);
-    assertEquals(await exists(join(options.workingDir, "schemas")), true);
+    // Verify directories are created under the breakdown subdirectory
+    assertEquals(await exists(join(options.workingDir, "breakdown", "prompts")), true);
+    assertEquals(await exists(join(options.workingDir, "breakdown", "schemas")), true);
 
     await cleanupTestEnvironment(options);
   },
@@ -41,7 +41,7 @@ Deno.test({
       await workspace.initialize();
 
       // Modify a file to check if it's preserved
-      const configFile = join(env.workingDir, "prompts", "app.yml");
+      const configFile = join(env.workingDir, "breakdown", "prompts", "app.yml");
       await Deno.writeTextFile(configFile, "modified: true");
 
       // Initialize again
@@ -68,9 +68,9 @@ Deno.test({
     const workspace = new Workspace({ workingDir: customDir });
     await workspace.initialize();
 
-    // Verify directories are created in custom location
-    assertEquals(await exists(join(customDir, "prompts")), true);
-    assertEquals(await exists(join(customDir, "schemas")), true);
+    // Verify directories are created in custom location under breakdown
+    assertEquals(await exists(join(customDir, "breakdown", "prompts")), true);
+    assertEquals(await exists(join(customDir, "breakdown", "schemas")), true);
 
     await cleanupTestEnvironment(options);
   },
@@ -127,8 +127,10 @@ Deno.test({
     const options: TestOptions = { workingDir: "tmp/test/init-error", logger };
     await setupTestEnvironment(options);
 
-    // Create a file where we expect a directory
-    await Deno.writeTextFile(join(options.workingDir, "prompts"), "");
+    // Create a file that will block directory creation
+    const targetDir = join(options.workingDir, "breakdown", "prompts");
+    await Deno.remove(targetDir, { recursive: true });
+    await Deno.writeTextFile(targetDir, "");
 
     await assertRejects(
       async () => {
@@ -136,7 +138,7 @@ Deno.test({
         await workspace.initialize();
       },
       Error,
-      "Failed to create workspace directories",
+      "Failed to create directory structure",
     );
 
     await cleanupTestEnvironment(options);

@@ -1,5 +1,4 @@
-import { join } from "jsr:@std/path/join";
-import { ensureDir } from "@std/fs";
+import { join } from "@std/path";
 import { exists } from "@std/fs";
 import {
   WorkspaceConfig,
@@ -8,12 +7,7 @@ import {
   WorkspacePaths,
   WorkspaceStructure,
 } from "./types.ts";
-import {
-  WorkspaceConfigError,
-  WorkspaceError,
-  WorkspaceInitError,
-  WorkspacePathError,
-} from "./errors.ts";
+import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./errors.ts";
 
 /**
  * Workspace class for managing directory structure and configuration
@@ -26,38 +20,114 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
-    this.promptsDir = options.promptsDir || join(this.workingDir, "prompts");
-    this.schemaDir = options.schemaDir || join(this.workingDir, "schemas");
+    const breakdownDir = join(this.workingDir, "breakdown");
+    this.promptsDir = options.promptsDir || join(breakdownDir, "prompts");
+    this.schemaDir = options.schemaDir || join(breakdownDir, "schemas");
   }
 
   /**
-   * Initialize the workspace
+   * Initialize the workspace by creating required directories and validating configuration
    */
   public async initialize(): Promise<void> {
+    // First create the required directories
+    await this.ensureDirectories();
+
+    // Then validate the configuration
+    await this.validateConfig();
+  }
+
+  /**
+   * Test if a directory is writable by attempting to create and remove a test file
+   * @throws {Error} If directory is not writable
+   */
+  private async testDirectoryWritable(dir: string): Promise<void> {
+    const testFile = join(dir, ".write_test");
     try {
-      await this.ensureDirectories();
-      await this.validateConfig();
-    } catch (error) {
-      if (error instanceof WorkspaceError) {
-        throw error;
+      await Deno.writeTextFile(testFile, "test");
+      await Deno.remove(testFile);
+    } catch (error: unknown) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new WorkspaceInitError(
+          `Permission denied: Cannot create directory structure in ${join(dir, "breakdown")}`,
+        );
       }
-      throw new WorkspaceInitError(
-        `Failed to initialize workspace: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw error;
     }
   }
 
   /**
    * Ensure required directories exist
+   * @throws {WorkspaceInitError} If directory creation fails
+   * @throws {Error} If permission denied
    */
   public async ensureDirectories(): Promise<void> {
+    // First check if parent directory exists and is writable
+    const parentDir = this.workingDir;
     try {
-      await ensureDir(this.workingDir);
-      await ensureDir(this.promptsDir);
-      await ensureDir(this.schemaDir);
-    } catch (error) {
+      const parentStat = await Deno.stat(parentDir);
+      if (!parentStat.isDirectory) {
+        throw new WorkspaceInitError(`${parentDir} exists but is not a directory`);
+      }
+
+      // Test write permission on parent directory
+      await this.testDirectoryWritable(parentDir);
+    } catch (error: unknown) {
+      if (error instanceof Deno.errors.NotFound) {
+        // Parent directory doesn't exist, try to create it
+        try {
+          await Deno.mkdir(parentDir, { recursive: true });
+          // Test write permission after creation
+          await this.testDirectoryWritable(parentDir);
+        } catch (mkdirError: unknown) {
+          if (mkdirError instanceof Deno.errors.PermissionDenied) {
+            throw new WorkspaceInitError(`Permission denied: Cannot create directory ${parentDir}`);
+          }
+          throw new WorkspaceInitError(
+            `Failed to create working directory: ${
+              mkdirError instanceof Error ? mkdirError.message : String(mkdirError)
+            }`,
+          );
+        }
+      } else if (error instanceof Error) {
+        throw new WorkspaceInitError(error.message);
+      } else {
+        throw new WorkspaceInitError(String(error));
+      }
+    }
+
+    // Create the breakdown directory structure
+    const breakdownDir = join(this.workingDir, "breakdown");
+    const subdirs = [
+      "projects",
+      "issues",
+      "tasks",
+      "temp",
+      "config",
+      "prompts",
+      "schemas",
+    ];
+
+    try {
+      // Create breakdown directory first
+      await Deno.mkdir(breakdownDir, { recursive: true });
+      // Test write permission on breakdown directory
+      await this.testDirectoryWritable(breakdownDir);
+
+      // Create all subdirectories
+      for (const dir of subdirs) {
+        const dirPath = join(breakdownDir, dir);
+        await Deno.mkdir(dirPath, { recursive: true });
+        // Test write permission on each subdirectory
+        await this.testDirectoryWritable(dirPath);
+      }
+    } catch (error: unknown) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new WorkspaceInitError(
+          `Permission denied: Cannot create directory structure in ${breakdownDir}`,
+        );
+      }
       throw new WorkspaceInitError(
-        `Failed to create workspace directories: ${
+        `Failed to create directory structure: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -70,7 +140,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   public getConfig(): Promise<WorkspaceConfig> {
     if (!this.config) {
       this.config = {
-        working_dir: this.workingDir,
+        working_dir: join(this.workingDir, "breakdown"),
         app_prompt: {
           base_dir: this.promptsDir,
         },
@@ -86,6 +156,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * Validate workspace configuration
    */
   public async validateConfig(): Promise<void> {
+    // Get config first
     const config = await this.getConfig();
     const requiredDirs = [
       config.working_dir,
@@ -93,6 +164,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       config.app_schema.base_dir,
     ];
 
+    // Check if directories exist
     for (const dir of requiredDirs) {
       if (!(await exists(dir))) {
         throw new WorkspaceConfigError(`Required directory does not exist: ${dir}`);

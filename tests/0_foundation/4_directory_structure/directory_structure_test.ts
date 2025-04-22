@@ -32,6 +32,8 @@ import {
   type TestEnvironment,
 } from "$test/helpers/setup.ts";
 import { initWorkspace } from "../../../lib/commands/mod.ts";
+import { Workspace } from "../../../lib/workspace/workspace.ts";
+import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
@@ -125,15 +127,31 @@ Deno.test("directory - edge cases - directory operations", async () => {
   // Note: This test might not work on all systems due to permission handling
   if (Deno.build.os !== "windows") {
     const restrictedPath = join(TEST_ENV.workingDir, "restricted");
-    await Deno.mkdir(restrictedPath, { mode: 0o444 });
+    await Deno.mkdir(restrictedPath, { recursive: true });
 
-    await assertRejects(
-      async () => {
-        await initWorkspace(restrictedPath);
-      },
-      Error,
-      "Permission denied",
-    );
+    try {
+      // Set restrictive permissions (read-only)
+      await Deno.chmod(restrictedPath, 0o444);
+
+      // Try to create workspace in read-only directory
+      await assertRejects(
+        async () => {
+          const workspace = new Workspace({ workingDir: restrictedPath });
+          await workspace.initialize();
+        },
+        WorkspaceInitError,
+        `Permission denied: Cannot create directory structure in ${
+          join(restrictedPath, "breakdown")
+        }`,
+      );
+    } finally {
+      // Restore permissions to allow cleanup
+      try {
+        await Deno.chmod(restrictedPath, 0o755);
+      } catch (error) {
+        logger.error("Failed to restore permissions", { error });
+      }
+    }
   }
 
   // Case 3: Create when directories already exist
@@ -148,4 +166,20 @@ Deno.test("directory - edge cases - directory operations", async () => {
     () => false,
   );
   assertEquals(exists, true, "Should handle existing directories gracefully");
+});
+
+Deno.test("should throw permission denied error when creating workspace in read-only directory", async () => {
+  const readOnlyDir = await Deno.makeTempDir();
+  await Deno.chmod(readOnlyDir, 0o444);
+
+  try {
+    await assertRejects(
+      () => new Workspace({ workingDir: readOnlyDir }).ensureDirectories(),
+      WorkspaceInitError,
+      `Permission denied: Cannot create directory structure in ${join(readOnlyDir, "breakdown")}`,
+    );
+  } finally {
+    await Deno.chmod(readOnlyDir, 0o755);
+    await Deno.remove(readOnlyDir, { recursive: true });
+  }
 });

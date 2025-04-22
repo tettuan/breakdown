@@ -17,7 +17,7 @@ import { assertRejects } from "jsr:@std/assert@^0.224.0/assert-rejects";
 import { afterEach, beforeEach, describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { loadPrompt } from "../../../lib/prompt/loader.ts";
-import { DemonstrativeType } from "../../../lib/types/mod.ts";
+import { DemonstrativeType, LayerType } from "../../../lib/types/mod.ts";
 
 describe("Prompt Selection", () => {
   let testDir: string;
@@ -26,17 +26,17 @@ describe("Prompt Selection", () => {
     testDir = await Deno.makeTempDir();
 
     // Create test prompt files
-    const projectPromptDir = join(testDir, "to", "issue");
+    const projectPromptDir = join(testDir, "to", "issues");
     await Deno.mkdir(projectPromptDir, { recursive: true });
     await Deno.writeTextFile(
-      join(projectPromptDir, "f_project.md"),
+      join(projectPromptDir, "f_projects.md"),
       "# Project Summary\nOutput directory: ./.agent/breakdown/issues/",
     );
 
-    const issuePromptDir = join(testDir, "to", "task");
+    const issuePromptDir = join(testDir, "to", "tasks");
     await Deno.mkdir(issuePromptDir, { recursive: true });
     await Deno.writeTextFile(
-      join(issuePromptDir, "f_issue.md"),
+      join(issuePromptDir, "f_issues.md"),
       "# Issue 1\nOutput directory: ./.agent/breakdown/tasks/",
     );
   });
@@ -49,8 +49,8 @@ describe("Prompt Selection", () => {
     it("should load project to issue prompt", async () => {
       const result = await loadPrompt({
         demonstrativeType: "to",
-        layerType: "issue",
-        fromLayerType: "project",
+        layerType: "issues" as LayerType,
+        fromLayerType: "projects" as LayerType,
         variables: {},
       }, testDir);
 
@@ -61,8 +61,8 @@ describe("Prompt Selection", () => {
     it("should load issue to task prompt", async () => {
       const result = await loadPrompt({
         demonstrativeType: "to",
-        layerType: "task",
-        fromLayerType: "issue",
+        layerType: "tasks" as LayerType,
+        fromLayerType: "issues" as LayerType,
         variables: {},
       }, testDir);
 
@@ -75,8 +75,8 @@ describe("Prompt Selection", () => {
         () =>
           loadPrompt({
             demonstrativeType: "no-params" as DemonstrativeType,
-            layerType: "issue",
-            fromLayerType: "project",
+            layerType: "issues" as LayerType,
+            fromLayerType: "projects" as LayerType,
             variables: {},
           }, testDir),
         Error,

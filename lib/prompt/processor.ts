@@ -8,6 +8,7 @@ import { dirname } from "jsr:@std/path@^0.224.0/dirname";
 import { resolveLayerPath } from "../path/path_utils.ts";
 import { basename } from "jsr:@std/path@^0.224.0/basename";
 import { loadPrompt } from "./loader.ts";
+import { ProgressBar, Spinner } from "../io/stdin.ts";
 
 // Define valid demonstrative types at runtime
 const VALID_DEMONSTRATIVE_TYPES = ["to", "summary", "defect"] as const;
@@ -34,6 +35,7 @@ export async function processWithPrompt(
   layer: LayerType,
   fromFile: string,
   destFile: string,
+  options: { quiet?: boolean } = {},
 ): Promise<void> {
   // Runtime type check using the constant array
   if (
@@ -53,16 +55,21 @@ export async function processWithPrompt(
 
   const promptManager = new PromptManager(logger);
 
+  // Use options.quiet when creating progress indicators
+  const total = 100; // Set an appropriate total based on your processing steps
+  const _progressBar = new ProgressBar(logger, total, 40, { quiet: options.quiet });
+  const _spinner = new Spinner(logger, { quiet: options.quiet });
+
   // Read the input file content
   const inputContent = await Deno.readTextFile(fromFile);
 
   // Determine the fromLayerType based on the content
   const fromLayerType = inputContent.includes("Feature")
-    ? "project"
+    ? "projects"
     : inputContent.includes("Issue")
-    ? "issue"
+    ? "issues"
     : inputContent.includes("Task")
-    ? "task"
+    ? "tasks"
     : layer;
 
   // Sanitize file paths for prompt variables - use only filenames
@@ -126,11 +133,11 @@ export async function processWithPrompt(
     // Process according to demonstrative type
     switch (demonstrative) {
       case "to": {
-        if (layer === "issue") {
+        if (layer === "issues") {
           logger.debug("Converting project to issues");
 
           // Resolve paths using the utility function
-          const issuesDir = resolveLayerPath(fromFile, "issue", workingDir);
+          const issuesDir = resolveLayerPath(fromFile, "issues" as LayerType, workingDir);
           const absoluteIssuesDir = join(workingDir, issuesDir);
           await ensureDir(dirname(absoluteIssuesDir));
 

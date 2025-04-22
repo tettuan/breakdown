@@ -8,6 +8,9 @@
  */
 
 import { readAll } from "jsr:@std/io@0.224.9/read-all";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
+const logger = new BreakdownLogger();
 
 /**
  * Error thrown when stdin reading fails
@@ -59,6 +62,7 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
       throw new StdinError("No input provided via stdin");
     }
 
+    logger.debug("Read from stdin", { size: input.length });
     return content;
   } catch (error) {
     if (error instanceof StdinError) {
@@ -67,8 +71,10 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
     if (error instanceof Error && error.name === "AbortError") {
       throw new StdinError("Stdin reading timed out");
     }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to read from stdin:", errorMessage);
     throw new StdinError(
-      `Failed to read from stdin: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to read from stdin: ${errorMessage}`,
     );
   }
 }
@@ -83,5 +89,100 @@ export async function hasStdinContent(): Promise<boolean> {
     return input.length > 0;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Write output to stdout
+ */
+export function writeStdout(content: string): void {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(content);
+    Deno.stdout.writeSync(data);
+    logger.debug("Wrote to stdout", { size: content.length });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to write to stdout:", errorMessage);
+    throw new Error(`Failed to write to stdout: ${errorMessage}`);
+  }
+}
+
+/**
+ * Progress indicator with percentage
+ */
+export class ProgressBar {
+  private enabled: boolean = true;
+  private progress: number;
+  private logger: BreakdownLogger;
+  private total: number;
+  private width: number;
+
+  constructor(logger: BreakdownLogger, total: number, width = 40, options?: { quiet?: boolean }) {
+    this.logger = logger;
+    this.enabled = !(options?.quiet);
+    this.progress = 0;
+    this.total = total;
+    this.width = width;
+  }
+
+  update(current: number): void {
+    if (!this.enabled) return;
+
+    this.progress = current;
+    const percentage = Math.round((current / this.total) * 100);
+    const filled = Math.round((current / this.total) * this.width);
+    const bar = "=".repeat(filled) + "-".repeat(this.width - filled);
+
+    writeStdout(`\r[${bar}] ${percentage}%`);
+
+    if (current === this.total) {
+      writeStdout("\n");
+    }
+  }
+
+  private disable(): void {
+    this.enabled = false;
+  }
+}
+
+/**
+ * Spinner for indeterminate progress
+ */
+export class Spinner {
+  private enabled: boolean = true;
+  private frames: string[];
+  private currentFrame: number;
+  private interval: number | null;
+  private logger: BreakdownLogger;
+
+  constructor(logger: BreakdownLogger, options?: { quiet?: boolean }) {
+    this.logger = logger;
+    this.enabled = !(options?.quiet);
+    this.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    this.currentFrame = 0;
+    this.interval = null;
+  }
+
+  start(): void {
+    if (!this.enabled) return;
+
+    this.interval = setInterval(() => {
+      this.currentFrame = (this.currentFrame + 1) % this.frames.length;
+      writeStdout(`\r${this.frames[this.currentFrame]} Processing...`);
+    }, 80);
+  }
+
+  stop(): void {
+    if (!this.enabled) return;
+
+    if (this.interval) {
+      clearInterval(this.interval);
+      writeStdout("\n");
+    }
+  }
+
+  private disable(): void {
+    this.enabled = false;
   }
 }

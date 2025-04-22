@@ -1,47 +1,10 @@
 /**
- * Path utilities for handling file paths and directory structures
- * Uses URL API for robust path handling as per Deno best practices
- *
- * This module provides utilities for:
- * - Path normalization
- * - Working directory validation
- * - Layer path resolution
- * - Directory structure creation
- *
- * SPECIFICATION DISCREPANCIES AND REQUIRED CHANGES
- *
- * 1. Path Resolution:
- *    - URL-based path resolution needs implementation per path.ja.md
- *    - Path normalization rules need documentation and implementation
- *    - Path completion rules need specification
- *    - Path validation needs enhancement
- *
- * 2. Directory Structure:
- *    - Directory naming conventions need documentation
- *    - Required file checks need implementation
- *    - Directory permissions need specification
- *    - Directory structure validation needs enhancement
- *
- * 3. Layer Path Resolution:
- *    - Layer type validation needs improvement
- *    - Layer path completion rules need documentation
- *    - Layer directory structure needs specification
- *    - Layer path validation needs enhancement
- *
- * 4. Error Handling:
- *    - Error message language consistency needed
- *    - Error recovery procedures need documentation
- *    - Error types need specification
- *    - Validation error handling needs improvement
- *
- * 5. Configuration Integration:
- *    - Config-based path resolution needs implementation
- *    - Environment variable handling needs completion
- *    - Working directory configuration needs enhancement
- *    - Path configuration validation needs improvement
+ * Path utilities for managing workspace directory structure and file paths.
+ * Provides functionality for path normalization, directory structure validation,
+ * and layer-specific path resolution.
  *
  * TODO:
- * 1. Implement URL-based path resolution
+ * 1. Add path validation rules
  * 2. Document path normalization rules
  * 3. Add directory structure validation
  * 4. Improve error handling
@@ -50,23 +13,29 @@
  * 7. Document naming conventions
  */
 
+import { ensureDir, exists } from "jsr:@std/fs";
 import { join, normalize, relative } from "jsr:@std/path";
-import { exists } from "jsr:@std/fs";
 
 /**
- * Structure of the working directory
+ * Represents the structure of the working directory.
+ * Contains paths for different components of the workspace.
  */
 export interface WorkingDirStructure {
-  projects: boolean;
-  issues: boolean;
-  tasks: boolean;
-  temp: boolean;
+  /** Root directory for all projects */
+  projects: string;
+  /** Directory containing issue tracking data */
+  issues: string;
+  /** Directory for task management */
+  tasks: string;
+  /** Temporary directory for workspace operations */
+  temp: string;
 }
 
 /**
- * Layer types for path resolution
+ * Defines the different types of layers in the workspace.
+ * Each layer represents a different aspect of the project structure.
  */
-export type LayerType = "project" | "issue" | "task";
+export type LayerType = "projects" | "issues" | "tasks" | "temp";
 
 /**
  * Normalizes a file path
@@ -94,58 +63,98 @@ export function normalizePath(path: string): string {
 }
 
 /**
- * Validates the working directory structure
- * @throws {Error} If working directory is invalid or inaccessible
+ * Validates that the given directory has the required workspace structure.
+ * @param workingDir - The directory to validate
+ * @returns A WorkingDirStructure object with paths if valid, throws error if invalid
+ * @throws {Error} If the directory structure is invalid
  */
-export async function validateWorkingDir(workingDir: string): Promise<WorkingDirStructure> {
-  if (!workingDir) {
-    throw new Error("Working directory is required");
-  }
-
+export async function validateWorkingDir(
+  workingDir: string,
+): Promise<WorkingDirStructure> {
   try {
     const structure: WorkingDirStructure = {
-      projects: false,
-      issues: false,
-      tasks: false,
-      temp: false,
+      projects: "",
+      issues: "",
+      tasks: "",
+      temp: "",
     };
 
-    // Check each required directory
+    // Check each required directory exists
     for (const dir of Object.keys(structure)) {
       const dirPath = join(workingDir, dir);
-      structure[dir as keyof WorkingDirStructure] = await exists(dirPath) &&
-        (await Deno.stat(dirPath)).isDirectory;
+      if (await exists(dirPath) && (await Deno.stat(dirPath)).isDirectory) {
+        structure[dir as keyof WorkingDirStructure] = dirPath;
+      } else {
+        throw new Error(`Required directory '${dir}' is missing or invalid`);
+      }
     }
 
     return structure;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to validate working directory: ${message}`);
+    throw new Error(
+      `Invalid working directory structure: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 }
 
 /**
- * Creates the required directory structure
- * @throws {Error} If directory creation fails
+ * Create working directory structure
+ * @param workingDir - Working directory path
+ * @param structure - Working directory structure
+ * @throws {Error} If directory creation fails or permission denied
  */
-export async function createWorkingDirStructure(workingDir: string): Promise<void> {
-  if (!workingDir) {
-    throw new Error("Working directory is required");
-  }
-
+export async function createWorkingDirStructure(
+  workingDir: string,
+  structure: WorkingDirStructure,
+): Promise<void> {
   try {
-    // Create parent directory
-    await Deno.mkdir(workingDir, { recursive: true });
-
-    // Create required directories
-    const dirs = ["projects", "issues", "tasks", "temp"];
-    for (const dir of dirs) {
-      const dirPath = join(workingDir, dir);
-      await Deno.mkdir(dirPath, { recursive: true });
+    // Check write permissions first
+    try {
+      const testFile = join(workingDir, ".permission_test");
+      await Deno.writeTextFile(testFile, "");
+      await Deno.remove(testFile);
+    } catch (error) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        throw new Error("Permission denied");
+      }
+      // If the directory doesn't exist yet, we'll try to create it
+      if (!(error instanceof Deno.errors.NotFound)) {
+        throw error;
+      }
     }
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to create directory structure: ${message}`);
+
+    // Create base directory
+    await ensureDir(workingDir);
+
+    // Create breakdown directory
+    const breakdownDir = join(workingDir, "breakdown");
+    await ensureDir(breakdownDir);
+
+    // Create subdirectories under breakdown
+    for (const [key, _] of Object.entries(structure)) {
+      const dirPath = join(breakdownDir, key);
+      try {
+        await ensureDir(dirPath);
+      } catch (error) {
+        if (error instanceof Deno.errors.PermissionDenied) {
+          throw new Error("Permission denied");
+        }
+        throw error;
+      }
+    }
+  } catch (error) {
+    // If it's already a permission denied error, preserve it
+    if (error instanceof Error && error.message.includes("Permission denied")) {
+      throw error;
+    }
+    // Otherwise wrap it in a generic error
+    throw new Error(
+      `Failed to create working directory structure: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 }
 
@@ -167,9 +176,10 @@ export function resolveLayerPath(
 
   try {
     const layerDirs = {
-      project: "projects",
-      issue: "issues",
-      task: "tasks",
+      projects: "projects",
+      issues: "issues",
+      tasks: "tasks",
+      temp: "temp",
     };
 
     const layerDir = layerDirs[layer];

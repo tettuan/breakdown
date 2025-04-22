@@ -5,27 +5,28 @@
 
 import { ensureDir, join } from "$deps/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { ArgumentError } from "../cli/args.ts";
 
 const logger = new BreakdownLogger();
 
+export interface CommandResult {
+  success: boolean;
+  output: string;
+  error: string;
+}
+
 /**
  * Initialize the workspace directory structure.
- * Creates a 'breakdown' directory under the specified working directory,
- * then creates all necessary subdirectories within it.
- * @param workingDir - The base directory where the 'breakdown' directory will be created
  */
-export async function initWorkspace(workingDir: string): Promise<void> {
+export async function initWorkspace(workingDir: string): Promise<CommandResult> {
   try {
-    // Ensure the working directory exists
     await ensureDir(workingDir);
     logger.debug(`Ensured working directory exists: ${workingDir}`);
 
-    // Create the breakdown directory
     const breakdownDir = join(workingDir, "breakdown");
     await ensureDir(breakdownDir);
     logger.debug(`Created breakdown directory: ${breakdownDir}`);
 
-    // List of required subdirectories
     const subdirs = [
       "projects",
       "issues",
@@ -36,7 +37,6 @@ export async function initWorkspace(workingDir: string): Promise<void> {
       "schema",
     ];
 
-    // Create each subdirectory under breakdown/
     for (const dir of subdirs) {
       const fullPath = join(breakdownDir, dir);
       try {
@@ -48,24 +48,96 @@ export async function initWorkspace(workingDir: string): Promise<void> {
         } else {
           const errorMessage = error instanceof Error ? error.message : String(error);
           logger.error(`Failed to create directory ${dir}:`, errorMessage);
-          throw new Error(`Failed to create directory ${dir}: ${errorMessage}`);
+          return {
+            success: false,
+            output: "",
+            error: `Failed to create directory ${dir}: ${errorMessage}`,
+          };
         }
       }
     }
 
     logger.info("Workspace initialization completed successfully");
+    return {
+      success: true,
+      output: "Workspace initialized successfully",
+      error: "",
+    };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Failed to initialize workspace:", errorMessage);
-    throw new Error(`Failed to initialize workspace: ${errorMessage}`);
+    return {
+      success: false,
+      output: "",
+      error: `Failed to initialize workspace: ${errorMessage}`,
+    };
+  }
+}
+
+/**
+ * Convert a file from one layer type to another
+ */
+export async function convertFile(
+  fromFile: string,
+  toFile: string,
+  _format: string,
+  force = false,
+): Promise<CommandResult> {
+  try {
+    // Ensure source file exists
+    try {
+      await Deno.stat(fromFile);
+    } catch {
+      throw new ArgumentError(`Source file not found: ${fromFile}`);
+    }
+
+    // Read source file
+    const content = await Deno.readTextFile(fromFile);
+    logger.debug("Read source file", { file: fromFile, size: content.length });
+
+    // Check if destination file exists and force flag is not set
+    try {
+      await Deno.stat(toFile);
+      if (!force) {
+        throw new ArgumentError(
+          `Destination file already exists: ${toFile}. Use --force to overwrite.`,
+        );
+      }
+    } catch (error) {
+      if (!(error instanceof Deno.errors.NotFound)) {
+        throw error;
+      }
+    }
+
+    // Ensure destination directory exists
+    const destDir = toFile.substring(0, toFile.lastIndexOf("/"));
+    await ensureDir(destDir);
+
+    // Write converted content
+    await Deno.writeTextFile(toFile, content); // TODO: Implement actual conversion
+    logger.debug("Wrote destination file", { file: toFile });
+
+    return {
+      success: true,
+      output: `Converted ${fromFile} to ${toFile}`,
+      error: "",
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to convert file:", errorMessage);
+    return {
+      success: false,
+      output: "",
+      error: errorMessage,
+    };
   }
 }
 
 /**
  * Display help information
  */
-export function displayHelp(): void {
-  console.log(`
+export function displayHelp(): CommandResult {
+  const helpText = `
 Breakdown - A tool for hierarchical task breakdown
 
 Usage:
@@ -89,12 +161,30 @@ Examples:
   breakdown init
   breakdown to project --from input.md
   breakdown summary issue --from issue.md
-  `);
+  `;
+
+  return {
+    success: true,
+    output: helpText,
+    error: "",
+  };
 }
 
 /**
  * Display version information
  */
-export function displayVersion(): void {
-  console.log("Breakdown v0.1.0");
+export function displayVersion(): CommandResult {
+  return {
+    success: true,
+    output: "Breakdown v0.1.0",
+    error: "",
+  };
+}
+
+export async function convertToIssue(
+  _fromFile: string,
+  _toFile: string,
+  _force = false,
+): Promise<void> {
+  // ... existing code ...
 }

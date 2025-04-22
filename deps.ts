@@ -12,15 +12,16 @@ export * from "@tettuan/breakdownparams";
 export * from "@tettuan/breakdownprompt";
 
 // JSR standard library
-export { ensureDir, exists, walk } from "jsr:@std/fs";
-export { dirname, join, resolve } from "jsr:@std/path";
-export { parse } from "jsr:@std/flags";
+export { ensureDir, exists, walk } from "@std/fs";
+export { dirname, join, resolve } from "@std/path";
+export { parse } from "@std/flags";
 export {
   assert,
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "https://deno.land/std@0.220.1/assert/mod.ts";
+  assertThrows,
+} from "@std/assert";
 
 // Third-party dependencies
 export { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";

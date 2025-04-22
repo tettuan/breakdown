@@ -49,12 +49,12 @@ Deno.test("core functionality - JSR package integration", async () => {
 
     // Test BreakdownPrompt integration
     const promptResult = await runCommand([
-      "run",
-      "main.ts",
       "to",
-      "issue",
+      "project",
       "--from",
       "input.md",
+      "--destination",
+      "output.md",
     ]);
     logger.debug("Prompt integration result", { promptResult });
     assertCommandOutput(promptResult, { error: "" });

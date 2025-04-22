@@ -12,7 +12,7 @@
 
 import { assertRejects } from "@std/assert";
 import { dirname, ensureDir, join } from "$deps/mod.ts";
-import { DemonstrativeType } from "$lib/types/mod.ts";
+import { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 import { processWithPrompt } from "$lib/prompt/processor.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 
@@ -108,7 +108,7 @@ Deno.test("processWithPrompt", async (t) => {
     await t.step("should convert project to issue", async () => {
       await processWithPrompt(
         "to" as DemonstrativeType,
-        "issue",
+        "issues" as LayerType,
         fromFile,
         destFile,
       );
@@ -119,7 +119,7 @@ Deno.test("processWithPrompt", async (t) => {
         () =>
           processWithPrompt(
             "invalid" as DemonstrativeType,
-            "issue",
+            "issues" as LayerType,
             fromFile,
             destFile,
           ),
