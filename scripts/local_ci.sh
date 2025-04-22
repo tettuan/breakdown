@@ -71,11 +71,36 @@ disable_debug() {
 ==============================================================================="
 }
 
+# Function to handle permission errors
+handle_permission_error() {
+    local test_file=$1
+    local error_message=$2
+
+    if [[ $error_message == *"Requires run access"* ]]; then
+        echo "
+===============================================================================
+>>> PERMISSION ERROR DETECTED - RETRYING WITH --allow-run <<<
+===============================================================================
+Error: Missing run permission in $test_file
+Adding --allow-run flag and retrying..."
+        if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            handle_error "$test_file" "Test failed even with --allow-run permission" "true"
+        fi
+        return 0
+    fi
+    return 1
+}
+
 # Function to handle errors
 handle_error() {
     local test_file=$1
     local error_message=$2
     local is_debug=$3
+
+    # Try to handle permission errors first
+    if handle_permission_error "$test_file" "$error_message"; then
+        return 0
+    fi
 
     if [ "$is_debug" = "true" ]; then
         echo "
@@ -129,20 +154,21 @@ fi
 run_single_test() {
     local test_file=$1
     local is_debug=${2:-false}
+    local error_output
     
     if [ "$is_debug" = "true" ]; then
         echo "
 ===============================================================================
 >>> RUNNING TEST IN DEBUG MODE: $test_file <<<
 ==============================================================================="
-        if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
-            handle_error "$test_file" "Test failed" "true"
+        if ! error_output=$(LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read "$test_file" 2>&1); then
+            handle_error "$test_file" "$error_output" "true"
             return 1
         fi
     else
         echo "Running test: $test_file"
-        if ! deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
-            handle_error "$test_file" "Test failed" "false"
+        if ! error_output=$(deno test --allow-env --allow-write --allow-read "$test_file" 2>&1); then
+            handle_error "$test_file" "$error_output" "false"
             return 1
         fi
         echo "✓ $test_file"
