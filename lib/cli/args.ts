@@ -20,9 +20,13 @@ export class ArgumentError extends Error {
  */
 export interface CommandOptions {
   from?: string;
+  fromFile?: string;
+  fromProject?: string;
+  fromIssue?: string;
   destination?: string;
   input?: string;
   workingDir?: string;
+  quiet?: boolean;
   debug: boolean;
 }
 

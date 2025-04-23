@@ -1,4 +1,4 @@
-import { ParsedArgs } from "./args.ts";
+import { CommandOptions } from "./args.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { processWithPrompt } from "../prompt/processor.ts";
 import { join } from "jsr:@std/path";
@@ -9,7 +9,7 @@ const logger = new BreakdownLogger();
 export async function executeCommand(
   command: string,
   subcommands: string[],
-  args: ParsedArgs,
+  args: CommandOptions,
 ): Promise<{ success: boolean; output: string; error: string }> {
   let output = "";
   let error = "";
