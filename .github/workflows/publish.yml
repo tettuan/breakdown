@@ -24,6 +24,14 @@ jobs:
       - name: Run tests
         run: deno test --allow-env --allow-write --allow-read --allow-run
 
+      # Run format check
+      - name: Check formatting
+        run: deno fmt --check
+
+      # Run lint check
+      - name: Run linter
+        run: deno lint
+
       # Publish to JSR
       - name: Publish to JSR
         run: npx jsr publish
