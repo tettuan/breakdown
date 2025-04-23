@@ -11,7 +11,7 @@ import {
 import { VERSION } from "../version.ts";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { DemonstrativeType, LayerType } from "../lib/types/mod.ts";
-import { LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 
 const logger = new BreakdownLogger();
