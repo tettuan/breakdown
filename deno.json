@@ -1,5 +1,5 @@
 {
-  "name": "@tettuan/breakdownprompt",
+  "name": "@tettuan/breakdown",
   "version": "0.1.0",
   "exports": {
     ".": "./mod.ts"
