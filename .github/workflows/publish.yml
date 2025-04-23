@@ -22,7 +22,7 @@ jobs:
 
       # Run tests before publishing
       - name: Run tests
-        run: scripts/local_ci.sh
+        run: deno test --allow-env --allow-write --allow-read --allow-run
 
       # Publish to JSR
       - name: Publish to JSR
