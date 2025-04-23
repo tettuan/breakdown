@@ -1,20 +1,19 @@
 #!/bin/bash
 
-# このスクリプトは、プロジェクトから詳細なイシューを作成し、それらをタスクに分解するプロセスを示します。
+# このスクリプトは、プロジェクト概要から詳細な課題を作成する例を示します。
 #
 # ユースケース：
-# - プロジェクトの要件が複雑で、イシューレベルでの詳細な検討が必要な場合
-# - 複数のステークホルダーがイシューの内容を確認・編集する必要がある場合
-# - イシューの優先順位や依存関係を手動で調整したい場合
+# - プロジェクト概要から課題を作成し、各課題を詳細化する
+# - プロジェクトマネージャーが課題の詳細を手動で編集する
+# - 課題の詳細から実装タスクを自動生成する
 #
 # 前提条件：
 # - scripts/install_breakdown.sh を実行してbreakdownコマンドがインストールされていること
-# - プロジェクトの概要が既に存在していること
+# - プロジェクトの概要がある程度まとまっていること
 #
 # 期待される出力：
 # - プロジェクト概要のMarkdown
-# - 複数のイシューMarkdown（手動編集可能な形式）
-# - イシューのJSON形式の仕様
+# - 課題の詳細なMarkdown
 # - 実装タスクの一覧（JSON）
 
 # スクリプトのディレクトリを取得
@@ -22,47 +21,60 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BREAKDOWN_CMD="${HOME}/.deno/bin/breakdown"
 
-# 作業ディレクトリの初期化
-# 必要なディレクトリ構造を作成
-"${BREAKDOWN_CMD}" init
+# 作業ディレクトリの作成
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+# エラーハンドリング関数
+handle_error() {
+    echo -e "\033[1;31mエラー: 処理中にエラーが発生しました\033[0m"
+    echo "ユースケース: プロジェクト概要から詳細な課題の作成"
+    echo "実行コマンド: $FAILED_COMMAND"
+    echo "エラー内容: $1"
+    exit 1
+}
+
+# エラーハンドリングの設定
+trap 'handle_error "${BASH_COMMAND}"' ERR
+
+echo "=== プロジェクト概要から詳細な課題の作成 ==="
 
 # プロジェクト概要のMarkdownを作成
-# サンプルのプロジェクト概要を作成
+SUMMARY_FILE="${WORK_DIR}/project_summary.md"
 echo "
-# データ分析基盤構築プロジェクト
+# プロジェクト概要
 ## 目的
-社内の各種データを統合し、分析可能な形で提供する基盤の構築
+ユーザーのタスク管理を効率化するためのCLIツール
 
-## 要件
-- データ収集パイプラインの構築
-- データウェアハウスの設計と実装
-- 分析用APIの提供
-- セキュリティ要件の実装
+## 主な機能
+- タスクの追加、編集、削除
+- タスクの優先順位付け
+- 締め切り管理
+- タグによる分類
 
-## 制約条件
-- クラウドネイティブアーキテクチャの採用
-- GDPR準拠のデータ取り扱い
-" | "${BREAKDOWN_CMD}" summary project -o project_summary.md
+## 技術スタック
+- Deno
+- TypeScript
+" > "${SUMMARY_FILE}"
 
-# プロジェクトからイシューのMarkdownを生成
-# 各機能要件をイシューレベルに分解し、編集可能なMarkdown形式で出力
-"${BREAKDOWN_CMD}" summary issue --from-project project_summary.md -o issue_markdown_dir/
+# プロジェクト概要をJSONに変換
+"${BREAKDOWN_CMD}" summary project --input project -o "${WORK_DIR}/project_summary.md"
 
-echo "
-# ここで、生成されたイシューのMarkdownファイルを手動で編集します
-# - 優先順位の調整
-# - 依存関係の明確化
-# - 詳細な要件の追加
-# - セキュリティ要件の詳細化
-# などを行います
-"
+# Markdownをプロジェクト用JSONに変換
+mkdir -p "${WORK_DIR}/project-dir"
+"${BREAKDOWN_CMD}" to project -f "${WORK_DIR}/project_summary.md" -o "${WORK_DIR}/project-dir/project_summary.json"
 
-# 編集後のイシューをJSONに変換
-# 編集済みの各イシューをAIが解釈可能なJSON形式に変換
-"${BREAKDOWN_CMD}" to issue issue_markdown_dir/issue_1.md -o issue-dir/
-"${BREAKDOWN_CMD}" to issue issue_markdown_dir/issue_2.md -o issue-dir/
+# プロジェクトからイシューを生成
+mkdir -p "${WORK_DIR}/issue-dir"
+"${BREAKDOWN_CMD}" to issue -f "${WORK_DIR}/project-dir/project_summary.json" -o "${WORK_DIR}/issue-dir/issue.json"
 
-# 各イシューからタスクを生成
-# 詳細化されたイシューを元に、具体的な実装タスクを生成
-"${BREAKDOWN_CMD}" to task issue-dir/issue_1.json -o tasks-dir/
-"${BREAKDOWN_CMD}" to task issue-dir/issue_2.json -o tasks-dir/ 
+# イシューからタスクを生成
+mkdir -p "${WORK_DIR}/tasks-dir"
+"${BREAKDOWN_CMD}" to task -f "${WORK_DIR}/issue-dir/issue.json" -o "${WORK_DIR}/tasks-dir/tasks.json"
+
+echo "✓ 全ての処理が完了しました"
+echo "作業ディレクトリ: ${WORK_DIR}"
+echo "- プロジェクトサマリー: ${WORK_DIR}/project_summary.md"
+echo "- プロジェクト: ${WORK_DIR}/project-dir/project_summary.json"
+echo "- 課題: ${WORK_DIR}/issue-dir/issue.json"
+echo "- タスク: ${WORK_DIR}/tasks-dir/tasks.json" 

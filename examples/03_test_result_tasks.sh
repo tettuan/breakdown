@@ -1,48 +1,70 @@
 #!/bin/bash
 
-# このスクリプトは、テスト結果から不具合を特定し、修正タスクを生成するプロセスを示します。
+# このスクリプトは、テスト結果からタスクを生成する例を示します。
 #
 # ユースケース：
-# - CI/CDパイプラインでテストが失敗した際の自動タスク生成
-# - テスト駆動開発（TDD）でのタスク管理
-# - 品質保証（QA）プロセスでの不具合管理
+# - テスト結果から必要なタスクを自動生成する
+# - テスト失敗の修正タスクを作成する
+# - テストカバレッジ改善のタスクを作成する
 #
 # 前提条件：
 # - scripts/install_breakdown.sh を実行してbreakdownコマンドがインストールされていること
-# - Denoのテスト環境が設定されていること
-# - テスト対象のコードが存在すること
+# - テストが実行可能な状態であること
 #
 # 期待される出力：
-# - テスト結果に基づく不具合のMarkdown
-# - 不具合のJSON形式の仕様
+# - テスト結果のサマリー
 # - 修正タスクの一覧（JSON）
+# - カバレッジ改善タスクの一覧（JSON）
 
 # スクリプトのディレクトリを取得
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BREAKDOWN_CMD="${HOME}/.deno/bin/breakdown"
 
-# 作業ディレクトリの初期化
-# 必要なディレクトリ構造を作成
-# テストを実行し、その出力から不具合情報を生成
-# テスト結果をbreakdown defectコマンドにパイプして、不具合情報を構造化
-echo "テストを実行し、結果を不具合情報として構造化します..."
-deno test --allow-read --allow-write --allow-run | "${BREAKDOWN_CMD}" defect issue -o issue_defect.md
+# 作業ディレクトリの作成
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
 
-# 不具合情報をイシューとしてJSONに変換
-# AIが解釈可能な形式に変換し、修正計画の立案に使用
-echo "不具合情報をイシューに変換します..."
-"${BREAKDOWN_CMD}" to issue issue_defect.md -o issue-dir/
+# エラーハンドリング関数
+handle_error() {
+    echo -e "\033[1;31mエラー: 処理中にエラーが発生しました\033[0m"
+    echo "ユースケース: テスト結果からのタスク生成"
+    echo "実行コマンド: $FAILED_COMMAND"
+    echo "エラー内容: $1"
+    exit 1
+}
 
-# イシューから具体的な修正タスクを生成
-# 各不具合に対する修正タスクを自動生成
-echo "修正タスクを生成します..."
-"${BREAKDOWN_CMD}" to task issue-dir/issue.json -o tasks-dir/
+# エラーハンドリングの設定
+trap 'handle_error "${BASH_COMMAND}"' ERR
 
+echo "=== テスト結果からのタスク生成 ==="
+
+# テスト結果の例を作成
+TEST_RESULT_FILE="${WORK_DIR}/test_results.txt"
 echo "
-生成されたタスクには以下の情報が含まれます：
-- テストケースの失敗内容
-- 想定される原因
-- 修正の優先順位
-- 必要なリソースの見積もり
-" 
+Running tests...
+FAIL: test_user_authentication
+  Expected: User authenticated
+  Actual: Authentication failed
+  at test/auth/user_test.ts:42
+
+FAIL: test_password_validation
+  Expected: Password meets requirements
+  Actual: Password too short
+  at test/auth/password_test.ts:23
+
+Coverage Summary:
+  auth/user.ts: 65%
+  auth/password.ts: 78%
+  database/user.ts: 45%
+" > "${TEST_RESULT_FILE}"
+
+# テスト結果からタスクを生成
+mkdir -p "${WORK_DIR}/tasks-dir"
+"${BREAKDOWN_CMD}" defect task -f "${TEST_RESULT_FILE}" -o "${WORK_DIR}/tasks-dir/tasks.json"
+
+echo "✓ 全ての処理が完了しました"
+echo "作業ディレクトリ: ${WORK_DIR}"
+echo "- テスト結果: ${WORK_DIR}/test_results.txt"
+echo "- 生成されたタスク: ${WORK_DIR}/tasks-dir/tasks.json"
+exit 0 

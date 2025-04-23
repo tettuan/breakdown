@@ -2,101 +2,92 @@
 
 このドキュメントでは、Breakdownツールの主なCLI利用例を紹介します。
 
-## 重要な注意点
+## インストール
 
-このexamplesディレクトリは、Breakdownライブラリの開発者向けのサンプルコードです。
-実際のユーザー向けのインストール方法とは異なりますので、注意してください。
+### システムへのインストール
 
-### 開発者向けインストール（このexamplesの実行用）
 ```bash
-# このリポジトリをクローンした後、以下を実行
-./examples/00_install_breakdown.sh
-
-# これは内部で以下のコマンドを実行します：
-# deno install --force --global --allow-read --allow-write --allow-run --name breakdown cli/breakdown.ts
-
-# インストール先: ~/.deno/bin/breakdown
-# PATHが通っていない場合は、以下を ~/.bashrc または ~/.zshrc に追加
-export PATH="${HOME}/.deno/bin:${PATH}"
+deno add @tettuan/breakdown
 ```
 
-### ユーザー向けインストール（実際の利用時）
-```bash
-# JSRからインストール
-deno install --global --allow-read --allow-write --allow-run --name breakdown jsr:@tettuan/breakdown
+### AI開発リポジトリにのみインストール
 
-# インストール先は同じく ~/.deno/bin/breakdown
+```bash
+deno add --root ./tools @tettuan/breakdown
+```
+
+インストールせずに使用する場合：
+
+```bash
+deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
 ## 基本的な使用例
 
-以下のサンプルは、開発者がBreakdownライブラリの機能を確認・テストするためのものです。
-実際のユーザーは、JSRからインストールした後、これらの例を参考に独自のスクリプトを作成してください。
+以下のサンプルは、Breakdownライブラリの主な機能を示すものです。
+各スクリプトは独立して実行可能で、実際の使用シナリオを模擬しています。
 
-### 1. プロジェクト概要から実装までの一連の流れ
+### 1. 未整理の情報からプロジェクト実装までの流れ
 
 ```bash
 ./examples/01_project_to_implementation.sh
 ```
 
 このスクリプトは以下を実行します：
-- プロジェクト概要のMarkdown作成
-- プロジェクト用JSONへの変換
-- イシューの生成
-- タスクの生成
+- 未整理の情報からプロジェクトサマリーを生成
+- プロジェクトへの分解
+- 課題への分解
+- タスクへの分解
 
-### 2. プロジェクトからの詳細なイシュー作成
+### 2. タスク群から課題の作成
 
 ```bash
 ./examples/02_detailed_issue_creation.sh
 ```
 
 このスクリプトは以下を実行します：
-- プロジェクト概要からイシューのMarkdownを生成
-- イシューの手動編集（この部分は実際には手動で行います）
-- 編集済みイシューのJSON変換
-- タスクの生成
+- タスク群から課題を生成
+- 生成された課題の確認と編集（手動）
+- 課題からタスクを生成
 
-### 3. テスト結果からのタスク生成
+### 3. エラーログからの修正タスク生成
 
 ```bash
 ./examples/03_test_result_tasks.sh
 ```
 
 このスクリプトは以下を実行します：
-- テスト実行と結果の取得
-- テスト結果からの不具合情報生成
-- イシューへの変換
-- 修正タスクの生成
+- エラーログから不具合情報を生成
+- 不具合情報から課題を生成
+- 課題から修正タスクを生成
 
-### 4. 実行エラーの修正提案作成
+### 4. 改善要望からの修正タスク生成
 
 ```bash
 ./examples/04_error_fix_proposal.sh
 ```
 
 このスクリプトは以下を実行します：
-- エラーログの分析
-- プロジェクトレベルの不具合情報生成
-- イシューレベルの不具合情報生成
-- 修正タスクの生成
+- 改善要望から直接修正タスクを生成
 
-## 全てのサンプルを実行
+## コマンドパターン
 
-全てのサンプルスクリプトを順番に実行するには：
+### 基本コマンド
 
-```bash
-./scripts/run_examples.sh
-```
+| Command \ Layer | Project | Issue | Task |
+| --------------- | ------- | ----- | ---- |
+| to | breakdown to project <written_project_summary.md> -o <project_dir> | breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
+| summary | echo "<messy_something>" \| breakdown summary project -o <project_summary.md> | breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
+| defect | tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | breakdown defect issue --from <bug_report.md> -o <issue_defect_dir> | breakdown defect task --from <improvement_request.md> -o <task_defect_dir> |
 
-## コマンドオプション
+### コマンドオプション
 
 主なオプション：
-- `--from` または `-f`: 入力ファイルの指定
-- `--destination` または `-o`: 出力ファイルまたはディレクトリの指定
-- `--input` または `-i`: 入力レイヤータイプの指定
+- `--from` または `-f`: 入力ファイルを指定
+- `--destination` または `-o`: 出力ファイルまたはディレクトリを指定
+- `--input` または `-i`: 入力レイヤータイプを指定
 
-## 自動ファイル名生成
+### 自動ファイル名生成
 
 出力時にファイル名を指定しない場合：
 - `<yyyymmdd>_<random_hash>.md` 形式でファイル名が生成されます

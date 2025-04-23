@@ -3,8 +3,9 @@
  * @module
  */
 
-import { ensureDir, join } from "$deps/mod.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { ensureDir } from "jsr:@std/fs@^0.224.0";
+import { join } from "jsr:@std/path@^0.224.0";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { ArgumentError } from "../cli/args.ts";
 
 const logger = new BreakdownLogger();
