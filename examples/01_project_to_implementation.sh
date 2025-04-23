@@ -20,11 +20,12 @@
 # スクリプトのディレクトリを取得
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-BREAKDOWN_CMD="${HOME}/.deno/bin/breakdown"
+BREAKDOWN_CMD="${PROJECT_ROOT}/.deno/bin/breakdown"
 
 # 作業ディレクトリの作成
-WORK_DIR="$(mktemp -d)"
-trap 'rm -rf "$WORK_DIR"' EXIT
+WORK_DIR="${PROJECT_ROOT}/tmp/work_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "${WORK_DIR}"
+trap 'rm -rf "${WORK_DIR}"' EXIT
 
 # 作業ディレクトリの初期化
 # 必要なディレクトリ構造を作成

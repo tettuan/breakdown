@@ -7,12 +7,11 @@
 # ./examples/00_install_breakdown.sh
 #
 # インストール先：
-# - 実行コマンド: ~/.deno/bin/breakdown
+# - 実行コマンド: .deno/bin/breakdown (プロジェクトルート配下)
 #
 # 注意：
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存のインストールがある場合は上書きされます
-# - ~/.deno/bin が PATH に含まれている必要があります
 
 # エラーハンドリング関数
 handle_error() {
@@ -35,21 +34,33 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # プロジェクトルートディレクトリに移動
 cd "${PROJECT_ROOT}" || handle_error "プロジェクトルートディレクトリへの移動に失敗しました"
 
+# .deno/bin ディレクトリの作成
+mkdir -p "${PROJECT_ROOT}/.deno/bin"
+
+# 一時的なインストールディレクトリを作成
+TEMP_DENO_ROOT="${PROJECT_ROOT}/tmp/deno_install"
+mkdir -p "${TEMP_DENO_ROOT}"
+export DENO_INSTALL_ROOT="${TEMP_DENO_ROOT}"
+
 # JSRからインストール
-FAILED_COMMAND="deno install -f --global --allow-env --allow-read --allow-write -n breakdown cli/breakdown.ts"
+FAILED_COMMAND="deno install --allow-env --allow-read --allow-write -f -n breakdown --global cli/breakdown.ts"
 $FAILED_COMMAND || handle_error "breakdownコマンドのインストールに失敗しました"
+
+# バイナリをプロジェクトディレクトリに移動
+mv "${TEMP_DENO_ROOT}/bin/breakdown" "${PROJECT_ROOT}/.deno/bin/" || handle_error "バイナリの移動に失敗しました"
+
+# 一時ディレクトリの削除
+rm -rf "${TEMP_DENO_ROOT}"
+
+# PATHの確認と設定
+if ! echo "${PATH}" | tr ':' '\n' | grep -q "${PROJECT_ROOT}/.deno/bin"; then
+    export PATH="${PROJECT_ROOT}/.deno/bin:${PATH}"
+    echo "✓ PATH が設定されました: ${PROJECT_ROOT}/.deno/bin"
+fi
 
 echo "✓ インストールが完了しました。"
 echo "ソースコード: ${PROJECT_ROOT}/cli/breakdown.ts"
-echo "実行コマンド: ${HOME}/.deno/bin/breakdown"
-
-# PATHの確認
-if ! echo "${PATH}" | tr ':' '\n' | grep -q "${HOME}/.deno/bin"; then
-    echo -e "\033[1;33m警告: ${HOME}/.deno/bin が PATH に含まれていません\033[0m"
-    echo "以下のコマンドを ~/.bashrc または ~/.zshrc に追加することを推奨します："
-    echo "export PATH=\"${HOME}/.deno/bin:\${PATH}\""
-    echo
-fi
+echo "実行コマンド: ${PROJECT_ROOT}/.deno/bin/breakdown"
 
 echo "✓ スクリプトは正常に完了しました"
 exit 0 
