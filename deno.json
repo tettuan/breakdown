@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdown",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": {
     ".": "./mod.ts"
   },
@@ -33,16 +33,25 @@
     "indentWidth": 2,
     "singleQuote": false,
     "lineWidth": 100,
-    "exclude": ["examples/"]
+    "exclude": [
+      "examples/"
+    ]
   },
   "lint": {
-    "include": ["lib/", "tests/"],
+    "include": [
+      "lib/",
+      "tests/"
+    ],
     "rules": {
-      "tags": ["recommended"]
+      "tags": [
+        "recommended"
+      ]
     }
   },
   "compilerOptions": {
     "strict": true,
-    "lib": ["deno.window"]
+    "lib": [
+      "deno.window"
+    ]
   }
 }
