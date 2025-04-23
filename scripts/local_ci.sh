@@ -150,6 +150,39 @@ if ! deno cache --reload mod.ts; then
     handle_error "mod.ts" "Failed to regenerate deno.lock" "false"
 fi
 
+# Comprehensive type checking
+echo "Running comprehensive type checks..."
+
+# Check main entry points
+echo "Checking entry points..."
+for entry_point in mod.ts cli.ts main.ts; do
+    if [ -f "$entry_point" ]; then
+        if ! deno check "$entry_point"; then
+            handle_error "$entry_point" "Type check failed" "false"
+        fi
+    fi
+done
+
+# Check all TypeScript files in lib directory
+echo "Checking library files..."
+find lib -name "*.ts" -not -name "*.test.ts" | while read -r file; do
+    if ! deno check "$file"; then
+        handle_error "$file" "Type check failed" "false"
+    fi
+done
+
+# Try JSR type check with --allow-dirty if available
+echo "Running JSR type check..."
+if ! npx jsr publish --dry-run --allow-dirty; then
+    echo "Warning: JSR type check with --allow-dirty failed, falling back to deno check"
+    # Fallback: Check all TypeScript files
+    find . -name "*.ts" -not -path "./node_modules/*" -not -name "*.test.ts" | while read -r file; do
+        if ! deno check "$file"; then
+            handle_error "$file" "Type check failed" "false"
+        fi
+    done
+fi
+
 # Function to run a single test file
 run_single_test() {
     local test_file=$1
