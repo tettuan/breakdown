@@ -1,73 +1,40 @@
 #!/bin/bash
 
-# このスクリプトは、プロジェクト概要から実装までの一連の流れを示します。
-# 
-# ユースケース：
-# - 新規プロジェクトを開始する際に、プロジェクト概要から実装タスクまでを一気に生成
-# - プロジェクトマネージャーが最初のプロジェクト概要を書いた後の自動分解フロー
-# - トップダウンアプローチでプロジェクトを分解する際に使用
+# このスクリプトは、プロジェクトの概要から実装への変換を行います。
 #
-# 前提条件：
-# - scripts/install_breakdown.sh を実行してbreakdownコマンドがインストールされていること
-# - プロジェクトの概要がある程度まとまっていること
+# 実行方法：
+# ./examples/01_project_to_implementation.sh
 #
-# 期待される出力：
-# - プロジェクト概要のMarkdown
-# - プロジェクトのJSON形式の仕様
-# - イシューの一覧（JSON）
-# - 実装タスクの一覧（JSON）
+# 注意：
+# - プロジェクトのルートディレクトリから実行することを想定しています
+# - 既存のファイルがある場合は上書きされます
 
-# スクリプトのディレクトリを取得
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-BREAKDOWN_CMD="${PROJECT_ROOT}/.deno/bin/breakdown"
+# エラーハンドリング関数
+handle_error() {
+    echo -e "\033[1;31mエラー: 変換中にエラーが発生しました\033[0m"
+    echo "ユースケース: プロジェクトから実装への変換"
+    echo "実行コマンド: $FAILED_COMMAND"
+    echo "エラー内容: $1"
+    exit 1
+}
 
-# 作業ディレクトリの作成
-WORK_DIR="${PROJECT_ROOT}/tmp/work_$(date +%Y%m%d_%H%M%S)"
-mkdir -p "${WORK_DIR}"
-trap 'rm -rf "${WORK_DIR}"' EXIT
+# エラーハンドリングの設定
+trap 'handle_error "${BASH_COMMAND}"' ERR
 
-# 作業ディレクトリの初期化
-# 必要なディレクトリ構造を作成
-"${BREAKDOWN_CMD}" init
+# カレントディレクトリを作業ディレクトリとして使用
+WORK_DIR="$(pwd)"
 
-# プロジェクト概要のMarkdownを作成
-# ここでは例として標準入力からプロジェクト概要を入力
-# 実際の使用時は、エディタで直接project_summary.mdを作成することを推奨
-SUMMARY_FILE="${WORK_DIR}/project_summary.md"
-echo "
-# プロジェクト概要
-## 目的
-ユーザーのタスク管理を効率化するためのCLIツール
+# プロジェクトサマリーからプロジェクトへの変換
+FAILED_COMMAND="breakdown to project -f ${WORK_DIR}/project-dir/project_summary.json -o ${WORK_DIR}/project-dir/project_summary.json"
+$FAILED_COMMAND || handle_error "プロジェクトへの変換に失敗しました"
 
-## 主な機能
-- タスクの追加、編集、削除
-- タスクの優先順位付け
-- 締め切り管理
-- タグによる分類
+# プロジェクトから課題への変換
+FAILED_COMMAND="breakdown to issue -f ${WORK_DIR}/project-dir/project_summary.json -o ${WORK_DIR}/issue-dir/issue.json"
+$FAILED_COMMAND || handle_error "課題への変換に失敗しました"
 
-## 技術スタック
-- Deno
-- TypeScript
-" > "${SUMMARY_FILE}"
-
-# プロジェクト概要をJSONに変換
-"${BREAKDOWN_CMD}" summary project --input project -o "${WORK_DIR}/project_summary.md"
-
-# Markdownをプロジェクト用JSONに変換
-# AIが解釈しやすい形式に変換し、プロジェクトの構造化データを生成
-mkdir -p "${WORK_DIR}/project-dir"
-"${BREAKDOWN_CMD}" to project -f "${WORK_DIR}/project_summary.md" -o "${WORK_DIR}/project-dir/project_summary.json"
-
-# プロジェクトからイシューを生成
-# プロジェクトの各機能や要件をイシューレベルに分解
-mkdir -p "${WORK_DIR}/issue-dir"
-"${BREAKDOWN_CMD}" to issue -f "${WORK_DIR}/project-dir/project_summary.json" -o "${WORK_DIR}/issue-dir/issue.json"
-
-# イシューからタスクを生成
-# 各イシューを実装可能な粒度のタスクに分解
-mkdir -p "${WORK_DIR}/tasks-dir"
-"${BREAKDOWN_CMD}" to task -f "${WORK_DIR}/issue-dir/issue.json" -o "${WORK_DIR}/tasks-dir/tasks.json"
+# 課題からタスクへの変換
+FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/issue-dir/issue.json -o ${WORK_DIR}/tasks-dir/tasks.json"
+$FAILED_COMMAND || handle_error "タスクへの変換に失敗しました"
 
 echo "✓ 全ての処理が完了しました"
 echo "作業ディレクトリ: ${WORK_DIR}"

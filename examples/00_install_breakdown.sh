@@ -4,10 +4,13 @@
 # examples/配下の他のスクリプトを実行する前に、まず最初に実行する必要があります。
 #
 # 実行方法：
-# ./examples/00_install_breakdown.sh
+# ./examples/00_install_breakdown.sh [working_dir]
 #
 # インストール先：
 # - 実行コマンド: .deno/bin/breakdown (プロジェクトルート配下)
+#
+# 引数：
+# - working_dir: 作業ディレクトリのパス（オプション、デフォルト: .agent/breakdown）
 #
 # 注意：
 # - プロジェクトのルートディレクトリから実行することを想定しています
@@ -61,6 +64,15 @@ fi
 echo "✓ インストールが完了しました。"
 echo "ソースコード: ${PROJECT_ROOT}/cli/breakdown.ts"
 echo "実行コマンド: ${PROJECT_ROOT}/.deno/bin/breakdown"
+
+# ユーザー設定ファイルの作成
+WORKING_DIR="${1:-.agent/breakdown}"
+FAILED_COMMAND="./scripts/create_user_config.sh ${WORKING_DIR}"
+$FAILED_COMMAND || handle_error "ユーザー設定ファイルの作成に失敗しました"
+
+# プロンプトのコピー
+FAILED_COMMAND="./scripts/copy_prompt_fixtures.sh ${WORKING_DIR}"
+$FAILED_COMMAND || handle_error "プロンプトのコピーに失敗しました"
 
 echo "✓ スクリプトは正常に完了しました"
 exit 0 

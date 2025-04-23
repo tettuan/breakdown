@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # このスクリプトは、examples/配下の全ての実行ファイルを順次実行し、
-# エラーが発生しないことを確認します。
+# エラーが発生した時点で実行を停止します。
 #
 # 実行方法：
 # ./scripts/run_examples.sh
@@ -37,6 +37,7 @@ print_success() {
 
 print_error() {
     echo -e "\033[1;31m✗ $1\033[0m"
+    exit 1
 }
 
 # テスト用の一時ディレクトリを準備
@@ -48,10 +49,25 @@ prepare_test_dir() {
     print_success "テストディレクトリを作成: ${TEST_DIR}"
 }
 
+# サンプルファイルの作成
+create_example_files() {
+    print_header "サンプルファイルの作成"
+    "${PROJECT_ROOT}/scripts/create_example_files.sh" > /dev/null || print_error "サンプルファイルの作成に失敗しました"
+    print_success "サンプルファイルを作成しました"
+}
+
+# 設定ファイルのコピー
+copy_config() {
+    print_header "設定ファイルのコピー"
+    mkdir -p "${TEST_DIR}/breakdown/config"
+    cp "${PROJECT_ROOT}/breakdown/config/app.yml" "${TEST_DIR}/breakdown/config/" || print_error "設定ファイルのコピーに失敗しました"
+    print_success "設定ファイルをコピーしました"
+}
+
 # 実行権限の付与
 set_executable() {
     print_header "実行権限の付与"
-    chmod +x "${EXAMPLES_DIR}"/*.sh
+    chmod +x "${EXAMPLES_DIR}"/*.sh || print_error "実行権限の付与に失敗しました"
     print_success "実行権限を付与しました"
 }
 
@@ -67,40 +83,39 @@ run_example() {
     mkdir -p "${TEST_SUBDIR}"
     cd "${TEST_SUBDIR}"
     
+    # サンプルファイルと設定ファイルをコピー
+    cp -r "${TEST_DIR}/project-dir" .
+    cp -r "${TEST_DIR}/issue-dir" .
+    cp -r "${TEST_DIR}/tasks-dir" .
+    cp -r "${TEST_DIR}/test_results.txt" .
+    cp -r "${TEST_DIR}/error.log" .
+    cp -r "${TEST_DIR}/breakdown" .
+    
     # スクリプトを実行
     if "${script}"; then
         print_success "${script_name} の実行に成功しました"
-        return 0
     else
         print_error "${script_name} の実行に失敗しました"
-        return 1
     fi
 }
 
 # メイン処理
 main() {
-    local exit_status=0
-    
     prepare_test_dir
+    create_example_files
+    copy_config
     set_executable
+    
+    # サンプルファイルを作業ディレクトリにコピー
+    cp -r "${PROJECT_ROOT}/tmp/work_"*/* "${TEST_DIR}/" || print_error "サンプルファイルのコピーに失敗しました"
     
     # 全てのサンプルスクリプトを順番に実行
     for script in "${EXAMPLES_DIR}"/*.sh; do
-        if ! run_example "${script}"; then
-            exit_status=1
-        fi
+        run_example "${script}"
         echo # 空行を挿入
     done
     
-    # 結果の表示
-    echo
-    if [ ${exit_status} -eq 0 ]; then
-        print_success "全てのサンプルスクリプトが正常に実行されました"
-    else
-        print_error "一部のサンプルスクリプトの実行に失敗しました"
-    fi
-    
-    return ${exit_status}
+    print_success "全てのサンプルスクリプトが正常に実行されました"
 }
 
 # スクリプトの実行
