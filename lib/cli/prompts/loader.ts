@@ -1,4 +1,4 @@
-import { ParsedArgs } from "$lib/cli/args.ts";
+import { CommandOptions } from "$lib/cli/args.ts";
 import { join } from "../../deps.ts";
 
 export interface Prompt {
@@ -7,7 +7,7 @@ export interface Prompt {
 }
 
 export class PromptLoader {
-  async load(args: ParsedArgs): Promise<Prompt> {
+  async load(args: CommandOptions): Promise<Prompt> {
     // プロンプトのベースディレクトリを取得
     const baseDir = "./breakdown/prompts";
 

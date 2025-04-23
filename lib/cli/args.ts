@@ -28,6 +28,8 @@ export interface CommandOptions {
   workingDir?: string;
   quiet?: boolean;
   debug: boolean;
+  demonstrative?: string;
+  layer?: string;
 }
 
 // Valid command line options and their aliases
