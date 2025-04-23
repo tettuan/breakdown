@@ -18,6 +18,12 @@
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^0.1.8",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10"
   },
+  "publish": {
+    "exclude": [
+      "**/日本語.*",
+      "**/*.ja.*"
+    ]
+  },
   "tasks": {
     "test": "deno test --allow-env --allow-write --allow-read --allow-run",
     "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",

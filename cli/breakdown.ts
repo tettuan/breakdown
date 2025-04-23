@@ -1,5 +1,5 @@
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.10";
 import {
   type DoubleParamsResult,
   type NoParamsResult,
@@ -7,7 +7,7 @@ import {
   ParamsParser,
   type ParamsResult,
   type SingleParamResult,
-} from "jsr:@tettuan/breakdownparams";
+} from "jsr:@tettuan/breakdownparams@^0.1.10";
 import { VERSION } from "../version.ts";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { DemonstrativeType, LayerType } from "../lib/types/mod.ts";
