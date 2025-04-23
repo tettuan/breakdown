@@ -32,165 +32,129 @@ breakdown init
 
 このコマンドは、設定で指定された必要な作業ディレクトリ構造を作成します。
 
-### MarkdownからJSONへの変換
 
-**プロジェクト概要の作成**
+### Markdownの加工コマンド
+
+以下の組み合わせになります。
+
+| Command \ Layer | コマンドの説明 | Project | Issue | Task |
+|----------------|----------------|---------|--------|------|
+| to | 入力されたMarkdownを次のレイヤー形式に変換するコマンド | プロジェクトへ分解<br>breakdown to project <written_project_summary.md> -o <project_dir> | プロジェクトから課題へ分解<br>breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | 課題からタスクへ分解<br>breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
+| summary | 新規のMarkdownを生成、または指定レイヤーのMarkdownを生成するコマンド | プロジェクト概要をMarkdown形式で生成<br>echo "<messy_something>" \| breakdown summary project -o <project_summary.md> | イシュー概要をMarkdown形式で生成<br>breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | タスク概要をMarkdown形式で生成<br>breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
+| defect | エラーログや不具合情報から修正を生成するコマンド | 不具合情報からプロジェクト情報を生成<br>tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | 不具合情報から課題を生成<br>breakdown defect issue --from <bug_report.md> -o <issue_defect_dir> | 不具合情報からタスクを生成<br>breakdown defect task --from <improvement_request.md> -o <task_defect_dir> |
+
+
+### プロジェクトへの分解
 
 ```bash
-breakdown to project <written_project_summary.md> -o <project-dir>
+breakdown to project <written_project_summary.md> -o <project_dir>
 ```
 
-**イシューの作成**
+### 課題への分解
 
 ```bash
-breakdown to issue <project_summary.json|written_issue.md> -o <issue-dir>
+breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
 ```
 
-**タスクの作成**
+### タスクへの分解
 
 ```bash
-breakdown to task <issue.json|written_task.md> -o <tasks-dir>
+breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 ```
 
 ### Markdownサマリーの生成
 
 **プロジェクトサマリー**
-
+未整理の情報からプロジェクト概要を生成：
 ```bash
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 ```
 
 **イシューサマリー**
-
+タスク群から課題を生成：
 ```bash
-echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
 ```
 
 **タスクサマリー**
-
+未整理のタスク情報から整理されたタスクを生成：
 ```bash
-echo "<task summary>" | breakdown summary task -o <task_summary.md>
+breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
 ```
 
-### 既存ドキュメントからのMarkdown生成
+### 不具合情報からの修正生成
 
-**プロジェクトからイシューを生成**
-
-```bash
-breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
-```
-
-**イシューからタスクを生成**
-
-```bash
-breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
-```
-
-### 不具合とエラーの処理
-
-**プロジェクト不具合分析**
-
+**プロジェクトレベルの不具合分析**
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
-**イシュー不具合分析**
-
+**課題レベルの不具合分析**
 ```bash
-tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
+breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 ```
 
-**タスク不具合分析**
-
+**タスクレベルの不具合分析**
 ```bash
-tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
-```
-
-**プロジェクト不具合からイシュー修正を生成**
-
-```bash
-breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
-```
-
-**イシュー不具合からタスク修正を生成**
-
-```bash
-breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
 ## 一般的なユースケースパターン
 
-### 1. プロジェクト概要から完全実装まで
+### 1. 未整理の情報からプロジェクト実装までの流れ
 
-プロジェクト概要を書き、残りをAIに任せる：
+未整理の情報からプロジェクトを構築し、課題とタスクに分解：
 
 ```bash
-# プロジェクトサマリーの作成
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+# 未整理の情報からプロジェクトサマリーを生成
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 
-# JSON形式に変換
-breakdown to project <project_summary.md> -o <project-dir>
+# プロジェクトへ分解
+breakdown to project <project_summary.md> -o <project_dir>
 
-# プロジェクトからイシューを生成
-breakdown to issue <project_summary.json> -o <issue-dir>
+# 課題へ分解
+breakdown to issue <project_summary.md> -o <issue_dir>
 
-# イシューからタスクを生成
-breakdown to task <issue.json> -o <tasks-dir>
+# タスクへ分解
+breakdown to task <issue.md> -o <tasks_dir>
 ```
 
-### 2. プロジェクトから詳細イシューの作成
+### 2. タスク群から課題の作成
 
-プロジェクト概要から詳細イシューを作成し、タスクを生成：
+複数の未整理タスクから課題を生成し、再度タスクに分解：
 
 ```bash
-# プロジェクトサマリーの作成
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+# タスク群から課題を生成
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
 
-# プロジェクトからイシューMarkdownを生成
-breakdown summary issue <project_summary.md> -o <issue_markdown_dir>
+# 生成された課題を編集（必要に応じて）
 
-# 複数のイシューMarkdownを手動で編集
-
-# 各イシューをJSONに変換
-breakdown to issue <written_issue_1.md> -o <issue-dir>
-breakdown to issue <written_issue_2.md> -o <issue-dir>
-
-# 各イシューからタスクを生成
-breakdown to task <issue_1.json> -o <tasks-dir>
-breakdown to task <issue_2.json> -o <tasks-dir>
+# 課題からタスクを生成
+breakdown to task <issue.md> -o <tasks_dir>
 ```
 
-### 3. テスト結果から詳細タスクを処理
+### 3. 不具合情報からの修正タスク生成
 
-テスト結果に基づいてイシューからタスクを生成：
-
-```bash
-# テスト出力をキャプチャしてイシュー不具合を作成
-deno test --allow-read --allow-write --allow-run | breakdown defect issue -o <issue_defect.md>
-
-# 不具合をJSONイシューに変換
-breakdown to issue <issue_defect.md> -o <issue-dir>
-
-# イシューからタスクを生成
-breakdown to task <issue.json> -o <tasks-dir>
-```
-
-### 4. 実行エラーの修正案を作成
-
-ターミナルのエラー情報に基づいて修正すべきイシューを設定：
+エラーログや不具合レポートから修正タスクを生成：
 
 ```bash
-# エラーログをキャプチャしてプロジェクト不具合を作成
+# エラーログから不具合情報を生成
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 
-# プロジェクト不具合からイシュー不具合を生成
-breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
+# 不具合情報から課題を生成
+breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
 
-# イシュー不具合をJSONに変換
-breakdown to issue <issue_defect.md> -o <issue-dir>
+# 課題から修正タスクを生成
+breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+```
 
-# イシューからタスクを生成
-breakdown to task <issue.json> -o <tasks-dir>
+### 4. 改善要望からの修正提案作成
+
+改善要望から直接タスクレベルの修正を生成：
+
+```bash
+# 改善要望から修正タスクを生成
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
 ## コマンドオプションリファレンス

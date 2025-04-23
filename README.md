@@ -6,250 +6,203 @@ A development instruction language tool for AI-assisted development using TypeSc
 
 ## Overview
 
-Breakdown is a tool & schema set that uses TypeScript and Deno with AI composer to convert Markdown
-documents into JSON format to make them easier for AI systems to interpret.
+Breakdown is a tool & schema set that uses TypeScript and Deno with AI composer to convert Markdown documents and make them easier for AI systems to interpret.
 
-When executed, development requirements written in Markdown are converted into structured JSON that
-functions as development instructions for AI systems.
+When executed, development requirements written in Markdown are presented as prompts for conversion. These prompts include predefined JSON schemas that serve as structured definitions for the conversion.
+As a result, the prompts convert requirements into structured information.
+The output format can be specified in the prompt, allowing for various formats such as Markdown/JSON/YAML.
 
-By learning the Breakdown syntax, AI systems are expected to interpret these JSON structures and
-understand development requirements and specifications in advance. As a result, we expect to
-simplify the content of instructions and enable concise direction.
+By reading the BreakdownSchema syntax as documentation, AI systems are expected to interpret these JSON structures and appropriately understand development requirements and specifications. As a result, we expect to simplify the content of instructions and enable concise direction.
 
-This library is designed to work with AI development agents like Cursor and VSCode's Cline. This
-design is specifically optimized for Cursor and Cline, as these are the primary tools used by the
-author. The underlying AI model is assumed to be Claude-3.5-sonnet. The syntax and structure are
-designed to be easily interpreted by other AI models as well.
+This library is designed to work with AI development agents like Cursor. This design is specifically optimized for Cursor, as it is the primary tool used by the author. The underlying AI model is assumed to be Claude-3.7-sonnet. The syntax and structure are designed to be easily interpreted by other AI models as well.
 
 ## Main Expected Features
 
-- Markdown to JSON conversion optimized for AI interpretation
-- TypeScript implementation with Deno runtime
-- Structured format for AI-assisted development
-- Easy-to-learn syntax for AI systems
-- Optimized for Cursor and Cline AI development agents
-- Compatibility with Claude-3.5-sonnet and other AI models
+- Optimized Markdown conversion prompts
+- JSON schema syntax for AI systems
 
 ## Purpose
 
-The goal is to bridge the gap between human-written specifications and AI-interpretable instructions
-by providing a standardized way to express development requirements that both humans and AI can work
-with effectively.
+To bridge the gap between human-written specifications and AI-interpretable instructions by providing a standardized way to express development requirements.
 
 ## Process Overview
 
-This library doesn't generate documents based on rules by itself. It supports AI document generation
-by providing a structured format that's easy for AI to interpret and work with.
+This tool itself doesn't generate documents based on rules. It supports AI document generation by providing structured formats along with prompts that are easy for AI to interpret and work with.
 
 ```mermaid
 sequenceDiagram
     participant Developer as App Developer
-    participant CursorCline as Cursor/Cline
-    participant AI as AI Development Agent
+    participant Cursor as Cursor
+    participant AI as AI
 
     Developer->>Developer: Write and save project overview and requirements in Markdown
 
-    Developer->>CursorCline: Execute `breakdown project <markdown.md>`
-    CursorCline->>CursorCline: Execute command
+    Developer->>Cursor: Execute `breakdown project <markdown.md>`
+    Cursor->>Cursor: Execute command
 
-    CursorCline->>Developer: Get JSON instructions
+    Cursor->>Cursor: Get conversion prompt
+    Cursor->>AI: Request conversion
+    AI->>AI: Execute conversion
+    AI->>Cursor: Return converted requirements
+    Cursor->>Developer: Converted requirement file
 
-    Developer->>AI: Send JSON instructions to AI development agent
-    AI->>AI: Develop based on JSON instructions
+    Developer->>Cursor: Send requirements with development instructions
+    Cursor->>AI: Develop based on instructions
+    AI->>Cursor: Generate code
+    Cursor->>Developer: Development artifacts
 ```
 
 ## Future Prospects
 
-This tool itself doesn't generate any development output. It only optimizes interpretation. As AI
-development progresses, the interpretation domain will also evolve through IDE improvements and
-programming languages becoming optimized for AI development.
+This tool itself doesn't generate any development output. It only optimizes interpretation. As AI development progresses, the interpretation domain will also evolve through IDE improvements and programming languages becoming optimized for AI development.
 
-Within these prospects, I aim to consistently perform system building and application releases using
-natural language alone.
+With this in mind, we aim to consistently perform system building and application releases using natural language alone.
 
 # Usage
 
-- to: Converts Markdown files to JSON
-- summary: Creates Markdown files from summaries
-- defect: Creates requirement Markdown files from error information
+Breakdown tool has the following main commands:
 
-## to JSON
+| Command | Description | Project | Issue | Task |
+|---------|-------------|---------|--------|------|
+| to | Command to convert input Markdown to next layer format | Breakdown to project | Breakdown from project to issues | Breakdown from issues to tasks |
+| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project overview | Generate issue overview | Generate task overview |
+| defect | Command to generate fixes from error logs and defect information | Generate project information from defect info | Generate issues from defect info | Generate tasks from defect info |
 
-**Create Project Overview**
+## Project Breakdown
 
-```
-breakdown to project <written_project_summary.md>  -o <project-dir>
-```
-
-**Create Issues**
-
-```
-breakdown to issue <project_summary.json|written_issue.md>  -o <issue-dir>
+```bash
+breakdown to project <written_project_summary.md> -o <project_dir>
 ```
 
-**Create Tasks**
+## Issue Breakdown
 
-```
-breakdown to task <issue.json|written_task.md>  -o <tasks-dir>
-```
-
-For all outputs, specify a directory. GitHub Project and Issue numbers are required. For example, if
-you specify `-o agent/cursor/projects` like
-`breakdown to project create_edinet_api.md -o agent/cursor/projects`, a file like
-`agent/cursor/projects/18-edinet-api.json` will be generated. If not specified, default settings
-will be used.
-
-## summary Markdown
-
-**Project** Write out project overview. For `<summary>`, use text obtained from AI or write your own
-description.
-
-Register to GitHub.
-
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+```bash
+breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
 ```
 
-**Issue** Write out issues.
+## Task Breakdown
 
-```
-echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
-```
-
-You can also write from the project summary. Since this involves breaking down from Project to Issue
-with different granularity, you need to explicitly specify the input file type. When breaking down,
-multiple output files may be generated, so specify an output directory.
-
-```
-breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
+```bash
+breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 ```
 
-**Task** Write out tasks.
+## Markdown Summary Generation
 
-```
-echo "<task summary>" | breakdown summary task -o <task_summary.md>
-```
-
-You can also write from the issue summary. Since this involves breaking down from Issue to Task with
-different granularity, you need to explicitly specify the input file type. When breaking down,
-multiple output files may be generated, so specify an output directory.
-
-```
-breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
+**Project Summary**
+Generate project overview from unorganized information:
+```bash
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 ```
 
-## defect Markdown
-
-**Project** Analyze project defect information. For `<error_logs>`, use information obtained from
-Terminal or found in logs.
-
+**Issue Summary**
+Generate issues from task groups:
+```bash
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
 ```
+
+**Task Summary**
+Generate organized tasks from unorganized task information:
+```bash
+breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
+```
+
+## Fix Generation from Defect Information
+
+**Project Level Defect Analysis**
+```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
-**Issue** Write out issue fixes.
-
-```
-tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
-```
-
-You can also write from the project fix overview. Since this involves breaking down from Project to
-Issue with different granularity, you need to explicitly specify the input file type. When breaking
-down, multiple output files may be generated, so specify an output directory.
-
-```
-breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
+**Issue Level Defect Analysis**
+```bash
+breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 ```
 
-**Task** Write out task fixes.
-
-```
-tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
-```
-
-You can also write from the issue fix overview. Since this involves breaking down from Issue to Task
-with different granularity, you need to explicitly specify the input file type. When breaking down,
-multiple output files may be generated, so specify an output directory.
-
-```
-breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
+**Task Level Defect Analysis**
+```bash
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
-# Use Case Patterns
+# Common Use Case Patterns
 
-## 1. Write Project Overview and Leave the Rest to AI
+## 1. Flow from Unorganized Information to Project Implementation
 
-Generate Issues from MD, then Tasks from Issues.
+Build a project from unorganized information and break it down into issues and tasks:
 
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown to project <written_project_summary.md>  -o <project-dir>
-breakdown to issue <project_summary.json>  -o <issue-dir>
-breakdown to task <issue.json>  -o <tasks-dir>
-```
+```bash
+# Generate project summary from unorganized information
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 
-## 2. Create Detailed Issues from Project Overview
+# Breakdown to project
+breakdown to project <project_summary.md> -o <project_dir>
 
-Generate Tasks from Issues.
+# Breakdown to issues
+breakdown to issue <project_summary.md> -o <issue_dir>
 
-```
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-breakdown summary issue <project_summary.md> -o <issue_markdown_dir>
-(Edit multiple Issue Markdowns)
-breakdown to issue <written_issue_1.md>  -o <issue-dir>
-breakdown to task <issue_1.json>  -o <tasks-dir>
-breakdown to issue <written_issue_2.md>  -o <issue-dir>
-breakdown to task <issue_2.json>  -o <tasks-dir>
+# Breakdown to tasks
+breakdown to task <issue.md> -o <tasks_dir>
 ```
 
-## 3. Process Detailed Tasks
+## 2. Creating Issues from Task Groups
 
-Generate Tasks from Issues.
+Generate issues from multiple unorganized tasks and break them down into tasks again:
 
+```bash
+# Generate issues from task groups
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+
+# Edit generated issues (if needed)
+
+# Generate tasks from issues
+breakdown to task <issue.md> -o <tasks_dir>
 ```
-deno test --allow-read --allow-write --allow-run | breakdown defect issue -o <issue_defect.md>
-breakdown to issue <issue_defect.md>  -o <issue-dir>
-breakdown to task <issue.json>  -o <tasks-dir>
+
+## 3. Fix Task Generation from Defect Information
+
+Generate fix tasks from error logs and defect reports:
+
+```bash
+# Generate defect information from error logs
+tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
+
+# Generate issues from defect information
+breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
+
+# Generate fix tasks from issues
+breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+```
+
+## 4. Creating Fix Proposals from Improvement Requests
+
+Generate task-level fixes directly from improvement requests:
+
+```bash
+# Generate fix tasks from improvement request
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
 # Setup
 
-Follow these steps to get started:
+## Installation
 
-1. First, set up Deno
-2. Then set up Deno installation for CLI use (recommended)
-   1. Install to system
-   2. Install only to AI development repository
+### System Installation
 
-## CLI
-
-### 2-1. Install to System
-
-```
+```bash
 deno add @tettuan/breakdown
 ```
 
-compile to local directory.
+### AI Development Repository Installation Only
 
-```
-deno compile --allow-read --allow-write --allow-env \    
-   --output ./.deno/bin/breakdown \                  
-   main.ts
-```
-
-### 2-2. Install Only to AI Development Repository
-
-```
+```bash
 deno add --root ./tools @tettuan/breakdown
 ```
 
-If you want to use it without installation, you can run it as follows: Since this is verbose for AI
-development agents, it's recommended to install it in a location in your PATH.
+If you want to use without installation:
 
-```
+```bash
 deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ```
 
-# Documents
+# Documentation
 
 https://jsr.io/@tettuan/breakdown
