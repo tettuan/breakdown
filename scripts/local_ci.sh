@@ -235,6 +235,26 @@ Remember to:
     exit 1
 fi
 
+echo "Running JSR type check..."
+if ! npx jsr publish --dry-run; then
+    echo "
+===============================================================================
+>>> JSR TYPE CHECK FAILED <<<
+===============================================================================
+Please review:
+1. Version constraints in import statements
+2. Package name format in deno.json
+3. File paths and naming conventions for JSR compatibility
+
+Remember to:
+- Add version constraints to all JSR imports
+- Check for invalid characters in file paths
+- Review JSR publishing requirements at https://jsr.io/docs/publishing
+==============================================================================="
+    handle_error "JSR type check" "JSR type check failed" "false"
+    exit 1
+fi
+
 echo "Running format check..."
 if ! deno fmt --check; then
     echo "
