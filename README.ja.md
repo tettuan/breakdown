@@ -191,6 +191,12 @@ breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 
 ## インストール
 
+### CLIとしてインストール
+
+```bash
+deno install --allow-read --allow-write --allow-env --allow-run -n breakdown jsr:@tettuan/breakdown/cli
+```
+
 ### システムにインストール
 
 ```bash
@@ -200,7 +206,7 @@ deno add @tettuan/breakdown
 ### AI開発リポジトリにのみインストール
 
 ```bash
-deno add --root ./tools @tettuan/breakdown
+deno add --root ./.agent/breakdon/bin @tettuan/breakdown
 ```
 
 インストールせずに使用する場合：

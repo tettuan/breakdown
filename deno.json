@@ -34,7 +34,9 @@
     "singleQuote": false,
     "lineWidth": 100,
     "exclude": [
-      "examples/"
+      "examples/",
+      "**/*.md",
+      "**/*.markdown"
     ]
   },
   "lint": {
