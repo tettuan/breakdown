@@ -165,6 +165,19 @@ breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 - `--from` または `-f`: 入力ファイルを指定
 - `--destination` または `-o`: 出力ファイルまたはディレクトリを指定
 - `--input` または `-i`: 入力レイヤータイプを指定
+- `--adaptation` または `-a`: プロンプトの種類を指定（例: strict, a）
+
+### プロンプトの種類
+
+プロンプトの種類は `--adaptation` オプションで指定できます：
+
+```bash
+# 例: strictモードでのタスク生成
+breakdown to task issue.md -o tasks_dir -a strict
+
+# 例: aモードでのタスクサマリー生成
+breakdown summary task --from unorganized_tasks.md -o task_markdown_dir -a a
+```
 
 ### パスの自動補完
 
