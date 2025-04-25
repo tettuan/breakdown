@@ -40,8 +40,12 @@ path を解釈するための仕様である。 PATHは2つの前提が揃うと
 
 - dir : {demonstrativeType}/{layerType}
 - filename : f_{fromLayerType}.md
+  - adaptation オプション(-a, --adaptation)が指定された場合:
+    - filename : f_{fromLayerType}_{adaptation}.md
 
-プロンプトファイル例： `lib/prompts/to/issue/f_issue.md`
+プロンプトファイル例：
+- 通常時: `lib/prompts/to/issue/f_issue.md`
+- adaptation指定時: `lib/prompts/to/issue/f_issue_strict.md`
 
 ### fromLayerType が空白時
 

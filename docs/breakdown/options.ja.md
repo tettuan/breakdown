@@ -80,6 +80,7 @@ ex.
   --from `<file>` \
   --destination `<output_file>` \
   --input `<from_layer_type>` \
+  --adaptation `<adaptation_type>` \
 ```
 
 ex.
@@ -89,4 +90,12 @@ ex.
   --from project.md \
   --destination issue_details \
   --input project \
+  --adaptation strict \
 ```
+
+### オプション一覧
+
+- `-f, --from <file>`: 入力ファイルを指定
+- `-o, --destination <output_file>`: 出力先を指定
+- `-i, --input <from_layer_type>`: 入力レイヤーの種類を指定
+- `-a, --adaptation <adaptation_type>`: プロンプトの種類を指定（例: strict, a など）
