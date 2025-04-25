@@ -37,6 +37,12 @@ breakdown <demonstrative> [layer] [options]
   - ディレクトリの場合: 自動的にファイル名を生成
   - ファイルの場合: 指定されたファイル名で出力
 
+### プロンプト制御
+
+- `--adaptation <type>`, `-a <type>`: プロンプトの種類を指定
+  - 例: `strict`, `a` など
+  - プロンプトファイル名に影響: `f_{fromLayerType}_{adaptation}.md`
+
 ## 標準入出力
 
 ### 標準入力からの読み込み

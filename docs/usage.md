@@ -200,6 +200,19 @@ breakdown to task <issue.json> -o <tasks-dir>
 - `--from` or `-f`: Specify input file
 - `--destination` or `-o`: Specify output file or directory
 - `--input` or `-i`: Specify input layer type
+- `--adaptation` or `-a`: Specify prompt type (e.g., strict, a)
+
+### Prompt Types
+
+You can specify different prompt types using the `--adaptation` option:
+
+```bash
+# Example: Generate tasks in strict mode
+breakdown to task issue.md -o tasks_dir -a strict
+
+# Example: Generate task summary in 'a' mode
+breakdown summary task --from unorganized_tasks.md -o task_markdown_dir -a a
+```
 
 ### Path Auto-completion
 
