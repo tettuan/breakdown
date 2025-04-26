@@ -1,42 +1,29 @@
 # Breakdown
 
-A development instruction language tool for AI-assisted development using TypeScript and JSON.
-
-> Note: This project is experimental and not yet fully functional.
+A tool for creating development instructions for AI-assisted development using TypeScript and JSON Schema.
 
 ## Overview
 
-Breakdown is a tool & schema set that uses TypeScript and Deno with AI composer to convert Markdown
-documents and make them easier for AI systems to interpret.
+BreakDown is a tool & schema set that uses TypeScript and Deno with AI composer to convert Markdown documents, making them easier for AI systems to interpret.
 
-When executed, development requirements written in Markdown are presented as prompts for conversion.
-These prompts include predefined JSON schemas that serve as structured definitions for the
-conversion. As a result, the prompts convert requirements into structured information. The output
-format can be specified in the prompt, allowing for various formats such as Markdown/JSON/YAML.
+When executed, development requirements written in Markdown are presented as prompts for conversion. These prompts include predefined JSON schemas that serve as structured definitions for the conversion. As a result, the prompts convert requirements into structured information. The output format can be specified in the prompt, allowing for various formats such as Markdown/JSON/YAML.
 
-By reading the BreakdownSchema syntax as documentation, AI systems are expected to interpret these
-JSON structures and appropriately understand development requirements and specifications. As a
-result, we expect to simplify the content of instructions and enable concise direction.
+By reading the BreakdownSchema syntax as documentation, AI systems are expected to interpret these JSON structures and appropriately understand development requirements and specifications. As a result, we expect to simplify the content of instructions and enable concise direction.
 
-This library is designed to work with AI development agents like Cursor. This design is specifically
-optimized for Cursor, as it is the primary tool used by the author. The underlying AI model is
-assumed to be Claude-3.7-sonnet. The syntax and structure are designed to be easily interpreted by
-other AI models as well.
+This library is designed to work with AI development agents like Cursor. This design is specifically optimized for Cursor, as it is the primary tool used by the author. The underlying AI model is assumed to be Claude-3.7-sonnet. The syntax and structure are designed to be easily interpreted by other AI models as well.
 
-## Main Expected Features
+## Main Features
 
 - Optimized Markdown conversion prompts
 - JSON schema syntax for AI systems
 
 ## Purpose
 
-To bridge the gap between human-written specifications and AI-interpretable instructions by
-providing a standardized way to express development requirements.
+To bridge the gap between human-written specifications and AI-interpretable instructions by providing a standardized way to express development requirements.
 
 ## Process Overview
 
-This tool itself doesn't generate documents based on rules. It supports AI document generation by
-providing structured formats along with prompts that are easy for AI to interpret and work with.
+This tool itself does not generate documents based on rules. It supports AI document generation by providing structured formats along with prompts that are easy for AI to interpret and work with.
 
 ```mermaid
 sequenceDiagram
@@ -63,22 +50,19 @@ sequenceDiagram
 
 ## Future Prospects
 
-This tool itself doesn't generate any development output. It only optimizes interpretation. As AI
-development progresses, the interpretation domain will also evolve through IDE improvements and
-programming languages becoming optimized for AI development.
+This tool itself does not generate any development output. It only optimizes interpretation. As AI development progresses, the interpretation domain will also evolve through IDE improvements and programming languages becoming optimized for AI development.
 
-With this in mind, we aim to consistently perform system building and application releases using
-natural language alone.
+At the same time, it is expected that the requirements organization phase will continue to greatly influence the efficiency of system and application construction. The need to consistently break down requirements using natural language will likely remain.
 
 # Usage
 
 Breakdown tool has the following main commands:
 
-| Command | Description                                                               | Project                                       | Issue                            | Task                            |
-| ------- | ------------------------------------------------------------------------- | --------------------------------------------- | -------------------------------- | ------------------------------- |
-| to      | Command to convert input Markdown to next layer format                    | Breakdown to project                          | Breakdown from project to issues | Breakdown from issues to tasks  |
-| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project overview                     | Generate issue overview          | Generate task overview          |
-| defect  | Command to generate fixes from error logs and defect information          | Generate project information from defect info | Generate issues from defect info | Generate tasks from defect info |
+| Command | Description                                                               | Project                              | Issue                      | Task                       |
+| ------- | ------------------------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------------- |
+| to      | Command to convert input Markdown to next layer format                    | Breakdown to project                 | Breakdown from project to issues | Breakdown from issues to tasks  |
+| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project overview            | Generate issue overview    | Generate task overview     |
+| defect  | Command to generate fixes from error logs and defect information          | Generate project information from defect info | Generate issues from defect info   | Generate tasks from defect info |
 
 ## Project Breakdown
 
@@ -118,22 +102,6 @@ breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_mark
 breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
 ```
 
-### Adaptation Option Usage
-
-You can use the `--adaptation` (or `-a`) option to select a specific prompt adaptation pattern. This is useful when you want to switch between different prompt types for the same command.
-
-**Long form:**
-```bash
-breakdown summary task --from <unorganized_tasks.md> --adaptation strict -o <task_markdown_dir>
-```
-
-**Short form:**
-```bash
-breakdown summary task --from <unorganized_tasks.md> -a a -o <task_markdown_dir>
-```
-
-See also: [examples/05_adaptation_option.sh](./examples/05_adaptation_option.sh)
-
 ## Fix Generation from Defect Information
 
 **Project Level Defect Analysis**
@@ -154,7 +122,7 @@ breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
-# Common Use Case Patterns
+# Use Case Patterns
 
 ## 1. Flow from Unorganized Information to Project Implementation
 
@@ -216,6 +184,12 @@ breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 
 ## Installation
 
+### CLI Installation
+
+```bash
+deno install --allow-read --allow-write --allow-env --allow-run -n breakdown jsr:@tettuan/breakdown/cli
+```
+
 ### System Installation
 
 ```bash
@@ -225,7 +199,7 @@ deno add @tettuan/breakdown
 ### AI Development Repository Installation Only
 
 ```bash
-deno add --root ./tools @tettuan/breakdown
+deno add --root ./.agent/breakdon/bin @tettuan/breakdown
 ```
 
 If you want to use without installation:
