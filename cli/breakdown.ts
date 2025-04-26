@@ -1,17 +1,7 @@
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.10";
-import {
-  type DoubleParamsResult,
-  type NoParamsResult,
-  type OptionParams,
-  ParamsParser,
-  type ParamsResult,
-  type SingleParamResult,
-} from "jsr:@tettuan/breakdownparams@^0.1.11";
-import { VERSION } from "../version.ts";
+import { type OptionParams } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { initWorkspace } from "../lib/commands/mod.ts";
-import { DemonstrativeType, LayerType } from "../lib/types/mod.ts";
-import { LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 
 const logger = new BreakdownLogger();
@@ -40,7 +30,12 @@ Options:
   -i, --input <type>    Input layer type (project|issue|task)
 `;
 
-// Extend the OptionParams type to include workingDir
+/**
+ * Extended options for Breakdown CLI commands.
+ *
+ * This interface extends OptionParams to include additional CLI-specific options
+ * such as file paths, help/version flags, and debug mode.
+ */
 export interface ExtendedOptionParams extends OptionParams {
   fromFile?: string;
   destinationFile?: string;
@@ -50,7 +45,6 @@ export interface ExtendedOptionParams extends OptionParams {
   noDebug?: boolean;
 }
 
-// Helper function to normalize layer type
 function normalizeLayerType(type: string): string | undefined {
   const projectAliases = ["project", "pj", "prj"];
   const issueAliases = ["issue", "story"];
@@ -62,17 +56,10 @@ function normalizeLayerType(type: string): string | undefined {
   return undefined;
 }
 
-// Helper function to check if params has options
-function hasOptions(params: ParamsResult): params is SingleParamResult | DoubleParamsResult {
-  return params.type === "single" || params.type === "double";
-}
-
-// Helper function to get the command from args
 function getCommand(args: string[]): string | undefined {
   return args.length > 0 && !args[0].startsWith("--") ? args[0] : undefined;
 }
 
-// Helper function to check for duplicate options
 function checkDuplicateOptions(args: string[]): void {
   const seenOptions = new Map<string, string>();
   for (let i = 0; i < args.length; i++) {
@@ -90,69 +77,35 @@ function checkDuplicateOptions(args: string[]): void {
   }
 }
 
-// Helper function to write to stdout
 function writeStdout(message: string): void {
   Deno.stdout.writeSync(new TextEncoder().encode(message + "\n"));
 }
 
-// Helper function to write to stderr
 function writeStderr(message: string): void {
   Deno.stderr.writeSync(new TextEncoder().encode(message + "\n"));
 }
 
-// Helper function to handle errors
-function handleError(message: string): never {
-  writeStderr(message);
-  Deno.exit(1);
-}
-
-// Helper function to handle errors in test mode
 function handleTestError(message: string): void {
   logger.error(message);
   writeStderr(message);
   writeStdout(HELP_TEXT);
 }
 
-// Helper function to validate command options
-function validateCommandOptions(command: string, options: ExtendedOptionParams): void {
-  if (options.noDebug) {
-    logger.setLogLevel(LogLevel.INFO);
-  }
-
-  logger.debug("Validating command options", { command, options });
-
-  // For single parameter commands (init)
-  if (command === "init") {
-    const invalidOptions = Object.keys(options).filter((key) =>
-      !["help", "version", "noDebug"].includes(key)
-    );
-    if (invalidOptions.length > 0) {
-      throw new Error(`Invalid options for init command: ${invalidOptions.join(", ")}`);
-    }
-    return;
-  }
-
-  // For double parameter commands
-  if (options.inputLayerType) {
-    const normalizedType = normalizeLayerType(options.inputLayerType);
-    if (!normalizedType) {
-      throw new Error(`Invalid input layer type: ${options.inputLayerType}`);
-    }
-  }
-
-  // Validate file paths are provided when required
-  if (command === "to" || command === "summary" || command === "defect") {
-    if (!options.fromFile && !options.inputLayerType) {
-      throw new Error("Either --from or --input option is required");
-    }
-  }
-
-  // Validate mutually exclusive options
-  if (options.fromFile && options.inputLayerType) {
-    throw new Error("Cannot use --from and --input together");
-  }
-}
-
+/**
+ * Entry point for the Breakdown CLI.
+ *
+ * This function processes command-line arguments and executes the appropriate Breakdown command.
+ * It handles workspace initialization, Markdown conversion, summary generation, and defect analysis
+ * according to the provided arguments. This is the main function invoked when using Breakdown as a CLI tool.
+ *
+ * @param {string[]} args - The command-line arguments (excluding the Deno executable and script name).
+ *
+ * @example
+ * // Run Breakdown CLI with arguments
+ * await runBreakdown(["to", "project", "--from", "input.md", "-o", "output_dir"]);
+ *
+ * @returns {Promise<void>} Resolves when the command completes.
+ */
 export async function runBreakdown(args: string[]): Promise<void> {
   logger.debug("Running breakdown command", { args });
 

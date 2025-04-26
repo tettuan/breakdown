@@ -10,6 +10,13 @@ import { ArgumentError } from "../cli/args.ts";
 
 const logger = new BreakdownLogger();
 
+/**
+ * The result of a command execution in the Breakdown CLI.
+ *
+ * @property success Indicates if the command was successful.
+ * @property output The output message or result of the command.
+ * @property error The error message, if the command failed.
+ */
 export interface CommandResult {
   success: boolean;
   output: string;
@@ -182,6 +189,14 @@ export function displayVersion(): CommandResult {
   };
 }
 
+/**
+ * Convert a file to an issue layer (stub for future implementation).
+ *
+ * @param _fromFile The source file path.
+ * @param _toFile The destination file path.
+ * @param _force Whether to overwrite the destination file if it exists.
+ * @returns {Promise<void>} Resolves when the conversion is complete.
+ */
 export async function convertToIssue(
   _fromFile: string,
   _toFile: string,
