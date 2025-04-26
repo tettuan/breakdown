@@ -7,7 +7,7 @@ import {
   ParamsParser,
   type ParamsResult,
   type SingleParamResult,
-} from "jsr:@tettuan/breakdownparams@^0.1.10";
+} from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { VERSION } from "../version.ts";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { DemonstrativeType, LayerType } from "../lib/types/mod.ts";

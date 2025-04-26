@@ -8,6 +8,7 @@ interface LoadPromptParams {
   layerType: LayerType;
   fromLayerType: LayerType;
   variables: Record<string, string>;
+  adaptation?: string;
 }
 
 interface LoadPromptResult {
@@ -27,12 +28,17 @@ export async function loadPrompt(
 ): Promise<LoadPromptResult> {
   const logger = new BreakdownLogger();
 
+  // Construct the prompt filename based on adaptation option
+  const promptFilename = params.adaptation
+    ? `f_${params.fromLayerType}_${params.adaptation}.md`
+    : `f_${params.fromLayerType}.md`;
+
   // First try to load from the workspace prompts directory
   const workspacePromptPath = join(
     baseDir,
     params.demonstrativeType,
     params.layerType,
-    `f_${params.fromLayerType}.md`,
+    promptFilename,
   );
 
   logger.debug("Attempting to load prompt", {
@@ -41,11 +47,30 @@ export async function loadPrompt(
     params,
   });
 
-  const promptPath = workspacePromptPath;
-  const promptExists = await exists(workspacePromptPath);
+  // Try to load the adapted prompt first, fall back to default if it doesn't exist
+  let promptPath = workspacePromptPath;
+  let promptExists = await exists(workspacePromptPath);
+
+  // If adapted prompt doesn't exist and adaptation was specified, try the default prompt
+  if (!promptExists && params.adaptation) {
+    const defaultPromptPath = join(
+      baseDir,
+      params.demonstrativeType,
+      params.layerType,
+      `f_${params.fromLayerType}.md`,
+    );
+    const defaultPromptExists = await exists(defaultPromptPath);
+    if (defaultPromptExists) {
+      promptPath = defaultPromptPath;
+      promptExists = true;
+      logger.debug("Falling back to default prompt", {
+        defaultPath: defaultPromptPath,
+      });
+    }
+  }
 
   logger.debug("Prompt file existence check", {
-    path: workspacePromptPath,
+    path: promptPath,
     exists: promptExists,
   });
 

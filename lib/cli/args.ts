@@ -30,6 +30,7 @@ export interface CommandOptions {
   debug: boolean;
   demonstrative?: string;
   layer?: string;
+  adaptation?: string;
 }
 
 // Valid command line options and their aliases
@@ -39,6 +40,7 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--input", "-i"],
   ["--debug", "-d"],
   ["--no-debug", "-n"],
+  ["--adaptation", "-a"],
 ]);
 
 // Input layer types that can be used with --input
@@ -106,6 +108,13 @@ export function parseArgs(args: string[]): CommandOptions {
       case "--no-debug":
         options.debug = false;
         break;
+      case "--adaptation":
+      case "-a":
+        if (options.adaptation) {
+          throw new Error("Duplicate option: --adaptation is used multiple times");
+        }
+        options.adaptation = args[++i];
+        break;
       default:
         throw new Error(`Invalid option: ${arg}`);
     }
@@ -134,6 +143,8 @@ function getCanonicalOptionName(option: string): string | undefined {
     "--debug": "--debug",
     "-d": "--debug",
     "--no-debug": "--no-debug",
+    "--adaptation": "--adaptation",
+    "-a": "--adaptation",
   };
   return optionMap[option];
 }
@@ -216,6 +227,14 @@ export function validateCommandOptions(args: string[]): CommandOptions {
         break;
       case "--no-debug":
         options.debug = false;
+        break;
+      case "--adaptation":
+      case "-a":
+        if (options.adaptation) {
+          throw new Error("Duplicate option: --adaptation is used multiple times");
+        }
+        options.adaptation = value;
+        i++;
         break;
       default:
         throw new Error(`Unknown option: ${arg}`);

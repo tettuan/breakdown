@@ -22,7 +22,7 @@ export {
   type ParamsParser,
   ParamsParser as BreakdownParams,
   type ParamsResult,
-} from "jsr:@tettuan/breakdownparams@0.1.8";
+} from "jsr:@tettuan/breakdownparams@0.1.11";
 
 export {
   type PromptManager,

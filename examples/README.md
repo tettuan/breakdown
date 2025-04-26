@@ -70,6 +70,16 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 このスクリプトは以下を実行します：
 - 改善要望から直接修正タスクを生成
 
+### 5. プロンプト適応オプションの利用例
+
+```bash
+./examples/05_adaptation_option.sh
+```
+
+このスクリプトは以下を実行します：
+- `--adaptation` または `-a` オプションを使ってプロンプトの種類パターンを切り替え
+- 長い形式（--adaptation strict）と短い形式（-a a）の両方の例を含みます
+
 ## コマンドパターン
 
 ### 基本コマンド

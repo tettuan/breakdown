@@ -118,6 +118,22 @@ breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_mark
 breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
 ```
 
+### Adaptation Option Usage
+
+You can use the `--adaptation` (or `-a`) option to select a specific prompt adaptation pattern. This is useful when you want to switch between different prompt types for the same command.
+
+**Long form:**
+```bash
+breakdown summary task --from <unorganized_tasks.md> --adaptation strict -o <task_markdown_dir>
+```
+
+**Short form:**
+```bash
+breakdown summary task --from <unorganized_tasks.md> -a a -o <task_markdown_dir>
+```
+
+See also: [examples/05_adaptation_option.sh](./examples/05_adaptation_option.sh)
+
 ## Fix Generation from Defect Information
 
 **Project Level Defect Analysis**

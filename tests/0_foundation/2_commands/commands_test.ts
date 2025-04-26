@@ -33,6 +33,7 @@ import {
   type TestEnvironment,
 } from "$test/helpers/setup.ts";
 import { displayHelp, displayVersion, initWorkspace } from "../../../lib/commands/mod.ts";
+import { validateCommandOptions } from "../../../lib/cli/args.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
@@ -112,6 +113,31 @@ Deno.test("parseParams - init command", () => {
   const singleResult = result as SingleParamResult;
   assertEquals(singleResult.command, "init");
   logger.debug("Init command parsing test complete", { result: singleResult });
+});
+
+// Group 3: Command Options Tests
+Deno.test("parseParams - adaptation option (long form)", () => {
+  logger.debug("Testing adaptation option parsing", {
+    purpose: "Verify --adaptation flag recognition",
+    step: "Command options",
+    args: ["summary", "task", "--from", "input.md", "--adaptation", "strict"],
+  });
+  const args = ["summary", "task", "--from", "input.md", "--adaptation", "strict"];
+  const options = validateCommandOptions(args.slice(2)); // Skip command and subcommand
+  assertEquals(options.adaptation, "strict");
+  logger.debug("Adaptation option parsing test complete", { options });
+});
+
+Deno.test("parseParams - adaptation option (short form)", () => {
+  logger.debug("Testing adaptation short option parsing", {
+    purpose: "Verify -a flag recognition",
+    step: "Command options",
+    args: ["summary", "task", "--from", "input.md", "-a", "a"],
+  });
+  const args = ["summary", "task", "--from", "input.md", "-a", "a"];
+  const options = validateCommandOptions(args.slice(2)); // Skip command and subcommand
+  assertEquals(options.adaptation, "a");
+  logger.debug("Adaptation short option parsing test complete", { options });
 });
 
 Deno.test("Command Module Tests", async (t) => {
