@@ -17,23 +17,22 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Check version consistency
+      - name: Get latest tag version
+        id: get_tag
+        run: |
+          TAG_VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Check deno.json version matches latest tag
         run: |
           deno run --allow-read --unstable <<'EOF'
-          // Read deno.json version
           const denoJson = JSON.parse(await Deno.readTextFile('deno.json'));
           const denoVersion = denoJson.version;
-
-          // Read version.ts version
-          const versionTs = await Deno.readTextFile('version.ts');
-          const match = versionTs.match(/VERSION = "([^"]+)"/);
-          if (!match) throw new Error('version.ts: VERSION not found');
-          const versionTsVersion = match[1];
-
-          if (denoVersion !== versionTsVersion) {
-            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n version.ts: ${versionTsVersion}`);
+          const tagVersion = Deno.env.get('TAG_VERSION');
+          if (denoVersion !== tagVersion) {
+            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n git tag: ${tagVersion}`);
             Deno.exit(1);
           } else {
-            console.log(`All local versions match: ${denoVersion}`);
+            console.log(`deno.json and git tag version match: ${denoVersion}`);
           }
           EOF

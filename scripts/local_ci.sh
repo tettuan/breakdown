@@ -273,17 +273,6 @@ if ! deno cache --reload mod.ts; then
     handle_error "mod.ts" "Failed to regenerate deno.lock" "false"
 fi
 
-# Version consistency check (deno.json vs version.ts)
-echo "Checking version consistency between deno.json and version.ts..."
-denoj_version=$(jq -r .version < deno.json)
-versionts_version=$(grep 'VERSION = ' version.ts | sed -E 's/.*VERSION = "([^"]+)".*/\1/')
-if [ "$denoj_version" != "$versionts_version" ]; then
-  echo "\n===============================================================================\n>>> VERSION CONSISTENCY CHECK FAILED <<<\n===============================================================================\nVersion mismatch!\n  deno.json: $denoj_version\n  version.ts: $versionts_version\nPlease ensure both files have the same version before proceeding.\n===============================================================================\n"
-  exit 1
-else
-  echo "Version consistency check passed: $denoj_version"
-fi
-
 # Comprehensive type checking
 echo "Running comprehensive type checks..."
 
