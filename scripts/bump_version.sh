@@ -11,7 +11,7 @@ latest_commit=$(git rev-parse HEAD)
 
 # Check GitHub Actions status for all workflows
 echo "Checking GitHub Actions status..."
-for workflow in "test.yml" "publish.yml"; do
+for workflow in "test.yml" "version-check.yml"; do
     echo "Checking $workflow..."
     gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null
 
