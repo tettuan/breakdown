@@ -24,7 +24,8 @@
       "README.md",
       "LICENSE",
       "mod.ts",
-      "lib/"
+      "lib/",
+      "cli/"
     ],
     "exclude": [
       "**/日本語.*",
