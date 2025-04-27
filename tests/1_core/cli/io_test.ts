@@ -15,6 +15,25 @@
  * - Requires 1_core/cli/commands_test.ts to pass first
  */
 
+// ============================================================================
+// Test Design Note:
+//
+// This test is designed to simulate real CLI usage, including reading a config
+// file as the actual CLI would. To ensure isolation and avoid polluting actual
+// user files or configs, all test artifacts (test files, config, outputs) are
+// created in a temporary test directory (TEST_DIR) and cleaned up after the test.
+//
+// The config file is created in TEST_DIR/.agent/breakdown/config/app.yml before
+// running CLI commands, and the working directory is changed to TEST_DIR so that
+// the CLI finds the config as it would in a real use case. All CLI commands use
+// only relative paths within TEST_DIR.
+//
+// This test is NOT for confirming config loading logic itself, but for verifying
+// CLI I/O behavior in a realistic, isolated environment. This approach ensures
+// the test is robust, does not affect real files, and accurately reflects actual
+// CLI usage patterns.
+// ============================================================================
+
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
@@ -43,6 +62,17 @@ Deno.test("CLI I/O Handling", async (t) => {
       join(TEST_DIR, "test.md"),
       "# Test Project\n- Task 1\n- Task 2",
     );
+
+    // Create minimal config file for CLI
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`
+    );
+
+    // Change working directory to test dir
+    Deno.chdir(TEST_DIR);
   });
 
   await t.step("pipe input through stdin", async () => {
@@ -50,7 +80,7 @@ Deno.test("CLI I/O Handling", async (t) => {
       purpose: "Verify processing of piped input data",
     });
     const input = "# Test Project\n- Task 1\n- Task 2";
-    const outputFile = join(TEST_DIR, "stdin_output.md");
+    const outputFile = "stdin_output.md";
     const result = await runCommand(
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
@@ -66,9 +96,9 @@ Deno.test("CLI I/O Handling", async (t) => {
       "to",
       "project",
       "--from",
-      join(TEST_DIR, "nonexistent.md"),
+      "nonexistent.md",
       "--destination",
-      join(TEST_DIR, "output.md"),
+      "output.md",
     ]);
     // Check for error message in either output or error field
     const hasError = result.output.includes("File not found") ||
