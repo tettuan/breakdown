@@ -29,48 +29,39 @@ latest_jsr_version=$(curl -s https://jsr.io/@tettuan/breakdown/meta.json | jq -r
 if [ -z "$latest_jsr_version" ]; then
     echo "Warning: Could not determine latest version from JSR, using local version"
     # Read current version from deno.json
-    latest_jsr_version=$(deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);")
+    current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
+
+    # Get latest version from git tags (strip 'v')
+    latest_tag_version=$(git tag --list "v*" | sed 's/^v//' | sort -V | tail -n 1)
+
+    # Compare versions
+    if [ "$(printf '%s\n%s\n' "$current_version" "$latest_tag_version" | sort -V | tail -n 1)" = "$current_version" ] && [ "$current_version" != "$latest_tag_version" ]; then
+        echo "Warning: deno.json version ($current_version) is ahead of latest tag ($latest_tag_version). No version bump needed."
+        exit 0
+    fi
+    if [ "$current_version" = "$latest_tag_version" ]; then
+        # Split version into major.minor.patch
+        IFS='.' read -r major minor patch <<< "$current_version"
+        # Increment patch version
+        new_patch=$((patch + 1))
+        new_version="$major.$minor.$new_patch"
+    else
+        new_version="$current_version"
+    fi
+else
+    echo "Latest version: $latest_jsr_version"
+    new_version="$latest_jsr_version"
 fi
-
-echo "Latest version: $latest_jsr_version"
-
-# Get all GitHub tags
-echo "Checking GitHub tags..."
-git fetch --tags
-all_tags=$(git tag -l "v*" | sort -V)
-
-# Get all JSR versions
-jsr_versions=$(curl -s https://jsr.io/@tettuan/breakdown/meta.json | jq -r '.versions | keys[]')
-
-# Remove tags newer than latest version, but keep JSR published versions
-for tag in $all_tags; do
-    tag_version=${tag#v}
-    # Check if this version exists in JSR
-    if echo "$jsr_versions" | grep -q "^$tag_version$"; then
-        echo "Keeping tag $tag (published on JSR)"
-        continue
-    fi
-    if [ "$(printf '%s\n%s\n' "$tag_version" "$latest_jsr_version" | sort -V | tail -n 1)" = "$tag_version" ]; then
-        echo "Removing tag $tag (newer than version $latest_jsr_version and not published on JSR)"
-        git tag -d "$tag"
-        git push origin ":refs/tags/$tag"
-    fi
-done
-
-# Split version into major.minor.patch
-IFS='.' read -r major minor patch <<< "$latest_jsr_version"
-
-# Increment patch version
-new_patch=$((patch + 1))
-new_version="$major.$minor.$new_patch"
 
 echo "New version: $new_version"
 
 # Update only the version in deno.json
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
-# Create and push tag
-git tag "v$new_version"
-git push origin "v$new_version"
+git add deno.json
+git commit -m "chore: bump version to $new_version"
+git push
 
-echo "Version bumped to $new_version and tag v$new_version created" 
+echo "\nVersion bumped to $new_version and committed.\n"
+echo "Please wait for GitHub Actions (test.yml and version-check.yml) to pass, then tag the release with:"
+echo "  git tag v$new_version && git push origin v$new_version" 
