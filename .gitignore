@@ -70,6 +70,7 @@ yarn-error.log*
 # breakdown
 /.breakdown
 /.agent/
+/.agent/*
 
 /tmp/*
 /tmp
