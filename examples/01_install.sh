@@ -3,6 +3,10 @@
 # このスクリプトは、breakdownコマンドをインストールします。
 # examples/配下の他のスクリプトを実行する前に、まず最初に実行する必要があります。
 #
+# 注意: このスクリプトはローカル開発用です。
+# - リリースされていないローカルのcli/breakdown.tsを使用します
+# - 一般ユーザーは代わりに `deno install -A -n breakdown jsr:@tettuan/breakdown/cli` を使用してください
+#
 # 実行方法：
 # ./examples/01_install.sh
 #
@@ -12,6 +16,7 @@
 # 注意：
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存のファイルがある場合は上書きされます
+# - 作業環境の初期化は02_init.shで行います
 
 set -e
 
@@ -30,51 +35,10 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
 fi
 
 echo "✓ インストールが完了しました。"
-echo "ソースコード: $(pwd)/cli/breakdown.ts"
 echo "実行コマンド: $(which breakdown)"
-
-# Create base configuration
-echo "=== ユーザー設定ファイルの作成 ==="
-
-# Create all necessary directories
-CONFIG_DIR=".agent/breakdown"
-mkdir -p "$CONFIG_DIR/config"
-mkdir -p "$CONFIG_DIR/app_prompt"
-mkdir -p "$CONFIG_DIR/app_schema"
-
-# Create base configuration file
-cat > "$CONFIG_DIR/config/app.yml" << 'EOL'
-working_dir: "./.agent/breakdown"
-app_prompt:
-  base_dir: "./.agent/breakdown/app_prompt"
-app_schema:
-  base_dir: "./.agent/breakdown/app_schema"
-EOL
-
-echo "✓ 設定ファイルを作成しました: $(pwd)/$CONFIG_DIR/config/app.yml"
-echo "✓ 作業ディレクトリを作成しました: $CONFIG_DIR"
-echo "✓ プロンプトディレクトリを作成しました: $CONFIG_DIR/app_prompt"
-echo "✓ スキーマディレクトリを作成しました: $CONFIG_DIR/app_schema"
-echo "✓ スクリプトは正常に完了しました"
-
-# Create sample prompts if prompts directory exists
-echo "=== プロンプトのコピー ==="
-if [ -d "prompts" ]; then
-    cp -r prompts/* "$CONFIG_DIR/app_prompt/"
-    echo "✓ プロンプトをコピーしました: $CONFIG_DIR/app_prompt"
-else
-    echo "⚠️ プロンプトディレクトリが見つかりません: prompts/"
-    # Create minimal prompt structure
-    mkdir -p "$CONFIG_DIR/app_prompt/to/project"
-    cat > "$CONFIG_DIR/app_prompt/to/project/default.md" << 'EOL'
-# Project Conversion Prompt
-Convert the given input into a structured project format.
-EOL
-    echo "✓ 基本プロンプトを作成しました: $CONFIG_DIR/app_prompt/to/project/default.md"
-fi
-
-echo "✓ スクリプトは正常に完了しました"
+echo ""
+echo "次のステップ:"
+echo "作業環境の初期化を行うには ./examples/02_init.sh を実行してください。"
 
 # Export PATH for subsequent scripts
-export PATH="$INSTALL_DIR:$PATH"
-echo "✓ スクリプトは正常に完了しました" 
+export PATH="$INSTALL_DIR:$PATH" 
