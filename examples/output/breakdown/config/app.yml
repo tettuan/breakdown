@@ -1,5 +1,0 @@
-working_dir: examples/output/breakdown
-app_prompt:
-  base_dir: lib/breakdown/prompts
-app_schema:
-  base_dir: lib/breakdown/schema 

@@ -3,7 +3,7 @@
 # このスクリプトは、テスト結果からタスクを生成します。
 #
 # 実行方法：
-# ./examples/03_test_result_tasks.sh
+# ./examples/06_test_result_tasks.sh
 #
 # 注意：
 # - プロジェクトのルートディレクトリから実行することを想定しています
@@ -25,6 +25,36 @@ echo "=== テスト結果からのタスク生成 ==="
 
 # カレントディレクトリを作業ディレクトリとして使用
 WORK_DIR="$(pwd)"
+
+# Create necessary directories
+mkdir -p "${WORK_DIR}/tasks-dir"
+
+# Create sample test results
+cat > "${WORK_DIR}/test_results.txt" << 'EOL'
+Running tests...
+1) Project initialization test
+   × Failed: Config directory not created
+   Expected: Directory ".agent/breakdown/config" to exist
+   Actual: Directory not found
+
+2) Task breakdown test
+   × Failed: Invalid output format
+   Expected: JSON output to match schema
+   Actual: Missing required fields: priority, assignee
+
+3) AI integration test
+   ✓ Passed
+   
+4) YAML configuration test
+   × Failed: Parse error in user config
+   Expected: Valid YAML syntax
+   Actual: Line 5: Invalid indentation
+
+Summary:
+Total tests: 4
+Passed: 1
+Failed: 3
+EOL
 
 # タスクへの変換
 FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/test_results.txt -o ${WORK_DIR}/tasks-dir/tasks.json"

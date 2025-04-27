@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# このスクリプトは、プロジェクトの概要から実装への変換を行います。
+# このスクリプトは、プロジェクトの概要から詳細な課題を作成します。
 #
 # 実行方法：
-# ./examples/01_project_to_implementation.sh
+# ./examples/05_detailed_issue_creation.sh
 #
 # 注意：
 # - プロジェクトのルートディレクトリから実行することを想定しています
@@ -11,8 +11,8 @@
 
 # エラーハンドリング関数
 handle_error() {
-    echo -e "\033[1;31mエラー: 変換中にエラーが発生しました\033[0m"
-    echo "ユースケース: プロジェクトから実装への変換"
+    echo -e "\033[1;31mエラー: 課題作成中にエラーが発生しました\033[0m"
+    echo "ユースケース: プロジェクト概要から詳細な課題の作成"
     echo "実行コマンド: $FAILED_COMMAND"
     echo "エラー内容: $1"
     exit 1
@@ -21,12 +21,47 @@ handle_error() {
 # エラーハンドリングの設定
 trap 'handle_error "${BASH_COMMAND}"' ERR
 
+echo "=== プロジェクト概要から詳細な課題の作成 ==="
+
 # カレントディレクトリを作業ディレクトリとして使用
 WORK_DIR="$(pwd)"
 
-# プロジェクトサマリーからプロジェクトへの変換
-FAILED_COMMAND="breakdown to project -f ${WORK_DIR}/project-dir/project_summary.json -o ${WORK_DIR}/project-dir/project_summary.json"
-$FAILED_COMMAND || handle_error "プロジェクトへの変換に失敗しました"
+# Create necessary directories
+mkdir -p "${WORK_DIR}/project-dir"
+mkdir -p "${WORK_DIR}/issue-dir"
+mkdir -p "${WORK_DIR}/tasks-dir"
+
+# Create sample project summary in JSON format
+cat > "${WORK_DIR}/project-dir/project_summary.json" << 'EOL'
+{
+  "project": {
+    "name": "Breakdown CLI Tool",
+    "description": "A command-line tool for breaking down projects into manageable tasks",
+    "features": [
+      {
+        "name": "Project Initialization",
+        "priority": "high",
+        "status": "in_progress"
+      },
+      {
+        "name": "Task Breakdown",
+        "priority": "high",
+        "status": "planned"
+      },
+      {
+        "name": "AI Integration",
+        "priority": "medium",
+        "status": "planned"
+      }
+    ],
+    "technical_requirements": [
+      "Deno runtime",
+      "TypeScript support",
+      "YAML configuration"
+    ]
+  }
+}
+EOL
 
 # プロジェクトから課題への変換
 FAILED_COMMAND="breakdown to issue -f ${WORK_DIR}/project-dir/project_summary.json -o ${WORK_DIR}/issue-dir/issue.json"
