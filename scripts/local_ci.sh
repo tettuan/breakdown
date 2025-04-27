@@ -377,13 +377,6 @@ process_test_directory() {
             return 1
         fi
     done
-
-    # Run all tests with all permissions after each directory passes
-    if [ $test_count -gt 0 ]; then
-        if ! run_all_tests "$is_debug"; then
-            return 1
-        fi
-    fi
     
     return 0
 }
@@ -394,6 +387,13 @@ echo "Starting test execution..."
 # Process all tests hierarchically
 if ! process_test_directory "tests" "${DEBUG:-false}"; then
     echo "Test execution stopped due to failure."
+    exit 1
+fi
+
+# ここで全テスト通過後にまとめて全テスト実行
+echo "All individual tests passed. Running all tests with all permissions..."
+if ! run_all_tests "${DEBUG:-false}"; then
+    echo "Test execution stopped due to failure in all-permissions test."
     exit 1
 fi
 
