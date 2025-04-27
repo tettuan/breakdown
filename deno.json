@@ -20,6 +20,12 @@
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10"
   },
   "publish": {
+    "include": [
+      "README.md",
+      "LICENSE",
+      "mod.ts",
+      "lib/"
+    ],
     "exclude": [
       "**/日本語.*",
       "**/*.ja.*"
