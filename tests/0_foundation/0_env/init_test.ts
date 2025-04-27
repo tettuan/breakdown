@@ -1,7 +1,7 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects, assert } from "jsr:@std/assert";
 import { join } from "jsr:@std/path/join";
-import { exists } from "jsr:@std/fs/exists";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { exists, ensureDir } from "jsr:@std/fs";
+import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,
@@ -18,7 +18,7 @@ interface TestOptions extends TestEnvironment {
 Deno.test({
   name: "init - new environment",
   async fn() {
-    const options: TestOptions = { workingDir: "tmp/test/init", logger };
+    const options: TestOptions = { workingDir: "tmp/test/init", logger, logLevel: LogLevel.DEBUG };
     await setupTestEnvironment(options);
     const workspace = new Workspace({ workingDir: options.workingDir });
     await workspace.initialize();
@@ -62,7 +62,7 @@ Deno.test({
 Deno.test({
   name: "init - with custom working directory",
   async fn() {
-    const options: TestOptions = { workingDir: "tmp/test/init-custom", logger };
+    const options: TestOptions = { workingDir: "tmp/test/init-custom", logger, logLevel: LogLevel.DEBUG };
     await setupTestEnvironment(options);
     const customDir = join(options.workingDir, "custom");
     const workspace = new Workspace({ workingDir: customDir });
@@ -83,6 +83,7 @@ Deno.test({
       workingDir: "tmp/test/init-debug",
       debug: true,
       logger,
+      logLevel: LogLevel.DEBUG,
     };
 
     // Set debug log level
@@ -101,7 +102,11 @@ Deno.test({
       try {
         await setupTestEnvironment(options);
         const workspace = new Workspace({ workingDir: options.workingDir });
+        
+        // Add debug log before initialization
+        logger.debug("Starting workspace initialization");
         await workspace.initialize();
+        logger.debug("Workspace initialization completed");
 
         // Check if we got debug output
         const debugLogs = logs.filter((log) => log.includes("[DEBUG]"));
@@ -124,11 +129,12 @@ Deno.test({
 Deno.test({
   name: "init - error handling",
   async fn() {
-    const options: TestOptions = { workingDir: "tmp/test/init-error", logger };
+    const options: TestOptions = { workingDir: "tmp/test/init-error", logger, logLevel: LogLevel.DEBUG };
     await setupTestEnvironment(options);
 
     // Create a file that will block directory creation
     const targetDir = join(options.workingDir, "breakdown", "prompts");
+    await ensureDir(targetDir);  // Ensure directory exists before removing
     await Deno.remove(targetDir, { recursive: true });
     await Deno.writeTextFile(targetDir, "");
 
@@ -138,8 +144,102 @@ Deno.test({
         await workspace.initialize();
       },
       Error,
-      "Failed to create directory structure",
+      "Ensure path exists",
     );
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+Deno.test({
+  name: "init - config file auto-generation",
+  async fn() {
+    const options: TestOptions = { workingDir: "tmp/test/init-config", logger, logLevel: LogLevel.DEBUG };
+    logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    logger.debug("[TEST] setupTestEnvironment complete");
+    const workspace = new Workspace({ workingDir: options.workingDir });
+    logger.debug("[TEST] Workspace instance created");
+    await workspace.initialize();
+    logger.debug("[TEST] Workspace initialized");
+
+    // config/app.yml が生成されているか
+    const configFile = join(options.workingDir, "breakdown", "config", "app.yml");
+    logger.debug("[TEST] Checking config file existence", { configFile });
+    const existsConfig = await exists(configFile);
+    logger.debug("[TEST] Config file exists?", { existsConfig });
+    assertEquals(existsConfig, true);
+
+    // 雛形内容の検証（例: working_dir, app_prompt, app_schema のデフォルト値）
+    const content = await Deno.readTextFile(configFile);
+    logger.debug("[TEST] Config file content", { content });
+    // 雛形の主要キーが含まれているか
+    assert(content.includes("working_dir"));
+    assert(content.includes("app_prompt"));
+    assert(content.includes("app_schema"));
+
+    await cleanupTestEnvironment(options);
+    logger.debug("[TEST] cleanupTestEnvironment complete");
+  },
+});
+
+Deno.test({
+  name: "init - custom prompt/schema base_dir",
+  async fn() {
+    const options: TestOptions = { workingDir: "tmp/test/init-custom-base", logger, logLevel: LogLevel.DEBUG };
+    logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    logger.debug("[TEST] setupTestEnvironment complete");
+
+    // 事前にカスタムapp.ymlを作成
+    const configDir = join(options.workingDir, "breakdown", "config");
+    await ensureDir(configDir);
+    const customConfig = `\nworking_dir: ${options.workingDir}\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`;
+    await Deno.writeTextFile(join(configDir, "app.yml"), customConfig);
+    logger.debug("[TEST] Custom app.yml written", { configDir });
+
+    const workspace = new Workspace({ workingDir: options.workingDir });
+    logger.debug("[TEST] Workspace instance created");
+    await workspace.initialize();
+    logger.debug("[TEST] Workspace initialized");
+
+    // カスタムディレクトリが作成されているか
+    const customPrompts = join(options.workingDir, "breakdown", "custom_prompts");
+    const customSchemas = join(options.workingDir, "breakdown", "custom_schemas");
+    logger.debug("[TEST] Checking custom prompts dir existence", { customPrompts });
+    logger.debug("[TEST] Checking custom schemas dir existence", { customSchemas });
+    const existsPrompts = await exists(customPrompts);
+    const existsSchemas = await exists(customSchemas);
+    logger.debug("[TEST] Custom prompts exists?", { existsPrompts });
+    logger.debug("[TEST] Custom schemas exists?", { existsSchemas });
+    assertEquals(existsPrompts, true);
+    assertEquals(existsSchemas, true);
+
+    await cleanupTestEnvironment(options);
+    logger.debug("[TEST] cleanupTestEnvironment complete");
+  },
+});
+
+Deno.test({
+  name: "init - preserve existing app.yml",
+  async fn() {
+    const options: TestOptions = { workingDir: "tmp/test/init-preserve-config", logger, logLevel: LogLevel.DEBUG };
+    logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    logger.debug("[TEST] setupTestEnvironment complete");
+
+    const configDir = join(options.workingDir, "breakdown", "config");
+    await ensureDir(configDir);
+    const originalContent = "custom: true";
+    const configFile = join(configDir, "app.yml");
+    await Deno.writeTextFile(configFile, originalContent);
+
+    const workspace = new Workspace({ workingDir: options.workingDir });
+    await workspace.initialize();
+
+    // 上書きされていないか
+    const content = await Deno.readTextFile(configFile);
+    assertEquals(content, originalContent);
 
     await cleanupTestEnvironment(options);
   },
