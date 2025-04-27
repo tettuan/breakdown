@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 5
+          fetch-depth: 0
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -27,7 +27,7 @@ jobs:
 
       - name: Check deno.json version matches latest tag
         run: |
-          deno run --allow-read --allow-env --unstable - <<'EOF'
+          deno run --allow-read --allow-env - <<'EOF'
           const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
           let denoVersion = denoJson.version;
           let tagVersion = Deno.env.get("TAG_VERSION");
