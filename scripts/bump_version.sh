@@ -34,17 +34,17 @@ if [ -z "$latest_jsr_version" ]; then
     # Read current version from deno.json
     current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
 
-    # If deno.json is behind the latest tag, update to the tag version and push, then exit
+    # If deno.json is behind the latest tag, update to the tag version and push, then exit (neutralize for version-check)
     if [ "$(printf '%s\n%s\n' "$current_version" "$latest_tag_version" | sort -V | head -n 1)" = "$current_version" ] && [ "$current_version" != "$latest_tag_version" ]; then
         echo "deno.json version ($current_version) is behind latest tag ($latest_tag_version). Updating deno.json to $latest_tag_version."
         deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$latest_tag_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
         git add deno.json
         git commit -m "fix: update deno.json version to match latest tag ($latest_tag_version)"
         git push
-        echo "\ndenon.json updated to $latest_tag_version and pushed. Please re-run this script to bump version if needed.\n"
+        echo "\ndenon.json updated to $latest_tag_version and pushed. This will make version-check succeed.\n"
         exit 0
     fi
-    # If deno.json is equal to the tag, bump patch. If deno.json is ahead, do nothing.
+    # If deno.json matches the tag, bump patch
     if [ "$current_version" = "$latest_tag_version" ]; then
         IFS='.' read -r major minor patch <<< "$current_version"
         new_patch=$((patch + 1))
