@@ -36,4 +36,4 @@ jobs:
           } else {
             console.log(`All local versions match: ${denoVersion}`);
           }
-          EOF 
+          EOF
