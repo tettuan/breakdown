@@ -1,7 +1,7 @@
 # Test Configuration for Breakdown
 test_env:
   working_dir: .agent/breakdown/test
-  debug: true  # Enable debug mode by default for tests
+  debug: true # Enable debug mode by default for tests
 
 directories:
   prompts: lib/breakdown/prompts
@@ -9,9 +9,9 @@ directories:
   fixtures: tests/fixtures
 
 logging:
-  level: debug  # Set default log level to debug
+  level: debug # Set default log level to debug
   use_logger: "@tettuan/breakdownlogger"
-  capture_output: true  # Enable output capture for tests
+  capture_output: true # Enable output capture for tests
 
 test_execution:
   # Run tests in order based on directory numbering
@@ -20,7 +20,7 @@ test_execution:
     - 1_core
     - 2_integration
     - 3_scenarios
-  
+
   # Default test permissions
   permissions:
     - allow-env
@@ -30,4 +30,4 @@ test_execution:
 
 cleanup:
   remove_temp_files: true
-  preserve_logs: true  # Keep logs for debugging
+  preserve_logs: true # Keep logs for debugging
