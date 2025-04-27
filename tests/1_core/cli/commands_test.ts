@@ -42,12 +42,23 @@ Deno.test("CLI Command Execution", async (t) => {
       join(TEST_DIR, "test.md"),
       "# Test Content\n\nBasic test content",
     );
+
+    // Create minimal config file for CLI
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`
+    );
+
+    // Change working directory to test dir
+    Deno.chdir(TEST_DIR);
   });
 
   await t.step("command parameter validation", async () => {
     logger.debug("Testing command parameter validation");
-    const testFile = join(TEST_DIR, "test.md");
-    const outputFile = join(TEST_DIR, "output.md");
+    const testFile = "test.md";
+    const outputFile = "output.md";
 
     // Test basic parameter processing
     const args = [

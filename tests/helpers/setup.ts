@@ -96,8 +96,9 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
  * Runs a command and returns the result
  */
 export async function runCommand(args: string[], stdin?: string): Promise<CommandResult> {
+  const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--allow-all", "cli/breakdown.ts", ...args],
+    args: ["run", "--allow-all", breakdownPath, ...args],
     stdout: "piped",
     stderr: "piped",
     stdin: stdin ? "piped" : undefined,

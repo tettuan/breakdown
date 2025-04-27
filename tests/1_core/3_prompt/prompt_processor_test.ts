@@ -96,6 +96,7 @@ Deno.test("processWithPrompt", async (t) => {
   // Create test files in the working directory
   const fromFile = join(workingDir, "test_input.md");
   const destFile = join(workingDir, "test_output.md");
+  const testPromptsDir = join(workingDir, "tests", "fixtures", "prompts");
 
   try {
     // Create test input file
@@ -105,12 +106,20 @@ Deno.test("processWithPrompt", async (t) => {
       "# Project Title\n- Feature 1: First feature\n- Feature 2: Second feature",
     );
 
+    // Create test prompt directory and template
+    await ensureDir(join(testPromptsDir, "to", "issues"));
+    await Deno.writeTextFile(
+      join(testPromptsDir, "to", "issues", "f_projects.md"),
+      "Test prompt template for converting project to issues",
+    );
+
     await t.step("should convert project to issue", async () => {
       await processWithPrompt(
         "to" as DemonstrativeType,
         "issues" as LayerType,
         fromFile,
         destFile,
+        { testBaseDir: testPromptsDir },
       );
     });
 
@@ -122,6 +131,7 @@ Deno.test("processWithPrompt", async (t) => {
             "issues" as LayerType,
             fromFile,
             destFile,
+            { testBaseDir: testPromptsDir },
           ),
         Error,
         "Unsupported demonstrative type",

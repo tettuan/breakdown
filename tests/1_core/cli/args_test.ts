@@ -43,6 +43,17 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       join(TEST_DIR, "test.md"),
       "# Test Project\n- Task 1\n- Task 2",
     );
+
+    // Create minimal config file for CLI
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`
+    );
+
+    // Change working directory to test dir
+    Deno.chdir(TEST_DIR);
   });
 
   // Complex Option Combinations
@@ -50,9 +61,9 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     logger.debug("Testing multiple options");
     const args = [
       "--from",
-      join(TEST_DIR, "test.md"),
+      join("test.md"),
       "--destination",
-      join(TEST_DIR, "result.md"),
+      join("result.md"),
     ];
     logger.debug("Testing multiple options", {
       purpose: "Verify handling of multiple command line options",
@@ -72,7 +83,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "--input",
       "project",
       "--destination",
-      join(TEST_DIR, "result.md"),
+      join("result.md"),
     ];
     logger.debug("Testing source options with input", {
       purpose: "Verify handling of input option",
@@ -155,9 +166,9 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     logger.debug("Testing short form options");
     const args = [
       "-f",
-      join(TEST_DIR, "test.md"),
+      join("test.md"),
       "-o",
-      join(TEST_DIR, "result.md"),
+      join("result.md"),
     ];
     logger.debug("Testing short form options", {
       purpose: "Verify handling of short form options",

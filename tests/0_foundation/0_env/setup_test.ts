@@ -8,16 +8,23 @@ Deno.test("setup - environment initialization", async () => {
   const env = await setupTestEnvironment({ workingDir: "./tmp/test/setup" });
   try {
     // Verify working directory was created
-    const exists = await Deno.stat(env.workingDir).then(
+    const workingDirExists = await Deno.stat(env.workingDir).then(
       () => true,
       () => false,
     );
-    assertEquals(exists, true, "Working directory should be created");
+    assertEquals(workingDirExists, true, "Working directory should be created");
 
     // Verify directory structure
-    await assertDirectoryExists(join(env.workingDir, "breakdown"));
-    await assertDirectoryExists(join(env.workingDir, "breakdown", "prompts"));
-    await assertDirectoryExists(join(env.workingDir, "breakdown", "schema"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "prompts"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schema"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "config"));
+
+    // Verify config file exists
+    const configFileExists = await exists(
+      join(env.workingDir, ".agent", "breakdown", "config", "app.yml"),
+    );
+    assertEquals(configFileExists, true, "Config file should exist");
   } finally {
     await cleanupTestEnvironment(env);
   }

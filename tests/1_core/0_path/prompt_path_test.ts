@@ -17,7 +17,7 @@ Deno.test("prompt path - layer type resolution", () => {
   const projectPath = getPromptPath("to", "project", "path/to/project.md");
   assertMatch(
     projectPath,
-    /\.\/breakdown\/prompts\/to\/project\/f_project\.md$/,
+    /prompts\/to\/project\/f_project\.md$/,
     "Should resolve project prompt path",
   );
 
@@ -25,7 +25,7 @@ Deno.test("prompt path - layer type resolution", () => {
   const issuePath = getPromptPath("to", "issue", "path/to/issue.md");
   assertMatch(
     issuePath,
-    /\.\/breakdown\/prompts\/to\/issue\/f_issue\.md$/,
+    /prompts\/to\/issue\/f_issue\.md$/,
     "Should resolve issue prompt path",
   );
 
@@ -33,7 +33,7 @@ Deno.test("prompt path - layer type resolution", () => {
   const taskPath = getPromptPath("to", "task", "path/to/task.md");
   assertMatch(
     taskPath,
-    /\.\/breakdown\/prompts\/to\/task\/f_task\.md$/,
+    /prompts\/to\/task\/f_task\.md$/,
     "Should resolve task prompt path",
   );
 });
@@ -46,7 +46,7 @@ Deno.test("prompt path - demonstrative type handling", () => {
   const toPath = getPromptPath("to", "project", "path/to/file.md");
   assertMatch(
     toPath,
-    /\.\/breakdown\/prompts\/to\/project\/f_project\.md$/,
+    /\.agent\/breakdown\/prompts\/to\/project\/f_project\.md$/,
     "Should handle 'to' demonstrative",
   );
 
@@ -54,7 +54,7 @@ Deno.test("prompt path - demonstrative type handling", () => {
   const summaryPath = getPromptPath("summary", "project", "path/to/file.md");
   assertMatch(
     summaryPath,
-    /\.\/breakdown\/prompts\/summary\/project\/f_project\.md$/,
+    /\.agent\/breakdown\/prompts\/summary\/project\/f_project\.md$/,
     "Should handle 'summary' demonstrative",
   );
 
@@ -62,7 +62,7 @@ Deno.test("prompt path - demonstrative type handling", () => {
   const defectPath = getPromptPath("defect", "project", "path/to/file.md");
   assertMatch(
     defectPath,
-    /\.\/breakdown\/prompts\/defect\/project\/f_project\.md$/,
+    /\.agent\/breakdown\/prompts\/defect\/project\/f_project\.md$/,
     "Should handle 'defect' demonstrative",
   );
 });
@@ -75,7 +75,7 @@ Deno.test("prompt path - from file type inference", () => {
   const projectInfer = getPromptPath("to", "issue", "path/to/project/file.md");
   assertMatch(
     projectInfer,
-    /\.\/breakdown\/prompts\/to\/issue\/f_project\.md$/,
+    /\.agent\/breakdown\/prompts\/to\/issue\/f_project\.md$/,
     "Should infer project type from path",
   );
 
@@ -83,7 +83,7 @@ Deno.test("prompt path - from file type inference", () => {
   const issueInfer = getPromptPath("to", "task", "path/to/issue/file.md");
   assertMatch(
     issueInfer,
-    /\.\/breakdown\/prompts\/to\/task\/f_issue\.md$/,
+    /\.agent\/breakdown\/prompts\/to\/task\/f_issue\.md$/,
     "Should infer issue type from path",
   );
 
@@ -91,7 +91,7 @@ Deno.test("prompt path - from file type inference", () => {
   const taskInfer = getPromptPath("to", "project", "path/to/task/file.md");
   assertMatch(
     taskInfer,
-    /\.\/breakdown\/prompts\/to\/project\/f_task\.md$/,
+    /\.agent\/breakdown\/prompts\/to\/project\/f_task\.md$/,
     "Should infer task type from path",
   );
 
@@ -99,7 +99,7 @@ Deno.test("prompt path - from file type inference", () => {
   const fallback = getPromptPath("to", "issue", "path/to/unknown/file.md");
   assertMatch(
     fallback,
-    /\.\/breakdown\/prompts\/to\/issue\/f_issue\.md$/,
+    /\.agent\/breakdown\/prompts\/to\/issue\/f_issue\.md$/,
     "Should fallback to layer type when inference fails",
   );
 });

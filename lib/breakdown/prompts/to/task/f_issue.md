@@ -1,17 +1,30 @@
-プロジェクトからTaskへの変換プロンプト
+# Task Creation Prompt
 
-# Input
+This prompt helps convert issues into actionable tasks.
 
-{input_markdown}
+## Input
+The input is an issue containing:
+- Issue title
+- Description
+- Acceptance criteria
+- Dependencies
+- Priority level
+- Estimated effort
 
-# Source
+## Output
+The output should be a structured JSON file with:
+- Task title
+- Description
+- Steps to complete
+- Dependencies
+- Priority
+- Time estimate
+- Technical requirements
 
-{input_markdown_file}
-
-# Schema
-
-{schema_file}
-
-# Output
-
-{destination_path}
+## Instructions
+1. Break down the issue into smaller tasks
+2. Define clear steps for each task
+3. Identify task dependencies
+4. Set task priorities
+5. Estimate time for each task
+6. List technical requirements

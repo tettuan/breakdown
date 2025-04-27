@@ -13,7 +13,7 @@ import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.8";
 
 // プロンプトマネージャーの初期化
 const promptManager = new PromptManager({
-  baseDir: "./breakdown/prompts/", // baseDir is the correct property name
+  baseDir: "./.agent/breakdown/prompts/", // baseDir is the correct property name
   debug: false, // optional: デバッグモードの設定
 });
 
@@ -40,7 +40,7 @@ app_configの設定ファイルに記載します。
 ```json
 {
   "app_prompt": {
-    "baseDir": "./breakdown/prompts/",
+    "baseDir": "./.agent/breakdown/prompts/",
     "debug": false
   }
 }
@@ -65,7 +65,7 @@ LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
 
 ```ts
 const promptManager = new PromptManager({
-  baseDir: "./breakdown/prompts/",
+  baseDir: "./.agent/breakdown/prompts/",
   debug: true,
 });
 ```

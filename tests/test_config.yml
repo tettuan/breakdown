@@ -1,1 +1,33 @@
-invalid: yaml: content
+# Test Configuration for Breakdown
+test_env:
+  working_dir: .agent/breakdown/test
+  debug: true  # Enable debug mode by default for tests
+
+directories:
+  prompts: lib/breakdown/prompts
+  schema: lib/breakdown/schema
+  fixtures: tests/fixtures
+
+logging:
+  level: debug  # Set default log level to debug
+  use_logger: "@tettuan/breakdownlogger"
+  capture_output: true  # Enable output capture for tests
+
+test_execution:
+  # Run tests in order based on directory numbering
+  order:
+    - 0_foundation
+    - 1_core
+    - 2_integration
+    - 3_scenarios
+  
+  # Default test permissions
+  permissions:
+    - allow-env
+    - allow-write
+    - allow-read
+    - allow-run
+
+cleanup:
+  remove_temp_files: true
+  preserve_logs: true  # Keep logs for debugging
