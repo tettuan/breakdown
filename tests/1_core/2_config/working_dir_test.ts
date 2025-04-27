@@ -94,7 +94,7 @@ Deno.test({
       expectedDir: ".agent/breakdown",
     });
 
-    const configPath = join(TEST_ENV.workingDir, "breakdown", "config");
+    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configPath, { recursive: true });
 
     logger.debug("Creating config file", {
@@ -138,7 +138,7 @@ Deno.test({
     });
 
     // Create config directory and file first
-    const configPath = join(TEST_ENV.workingDir, "breakdown", "config");
+    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configPath, { recursive: true });
     const configFile = join(configPath, "app.yml");
     await Deno.writeTextFile(
@@ -153,7 +153,7 @@ app_schema:
     );
 
     // Create the required directories
-    const workingDir = ".agent/breakdown";
+    const workingDir = join(TEST_ENV.workingDir, ".agent", "breakdown");
     const requiredDirs = [
       "projects", // For project-related outputs
       "issues", // For issue-related outputs
@@ -174,7 +174,7 @@ app_schema:
     const settings = await config.getConfig();
 
     for (const dir of requiredDirs) {
-      const dirPath = join(settings.working_dir, dir);
+      const dirPath = join(TEST_ENV.workingDir, settings.working_dir, dir);
       logger.debug("Checking directory", {
         step: "Directory verification",
         dir: dirPath,
@@ -199,27 +199,21 @@ Deno.test({
       purpose: "Verify custom working directory",
       step: "Normal pattern",
       state: "Starting",
-      customDir: customWorkingDir,
+      customWorkingDir,
     });
 
-    const configPath = join(TEST_ENV.workingDir, "breakdown", "config");
+    // Create config directory and file
+    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configPath, { recursive: true });
-
-    logger.debug("Creating custom config", {
-      step: "File creation",
-      configPath,
-      customDir: customWorkingDir,
-    });
-
     const configFile = join(configPath, "app.yml");
     await Deno.writeTextFile(
       configFile,
       `
-working_dir: ${customWorkingDir}
+working_dir: ${customWorkingDir}/.agent/breakdown
 app_prompt:
-  base_dir: lib/breakdown/prompts
+  base_dir: custom/prompts
 app_schema:
-  base_dir: lib/breakdown/schema
+  base_dir: custom/schema
 `,
     );
 
@@ -227,12 +221,12 @@ app_schema:
     await config.loadConfig();
     const settings = await config.getConfig();
 
-    logger.debug("Custom configuration loaded", {
+    logger.debug("Configuration loaded", {
       step: "Verification",
       actualWorkingDir: settings.working_dir,
-      expectedDir: customWorkingDir,
+      expectedDir: `${customWorkingDir}/.agent/breakdown`,
     });
-    assertEquals(settings.working_dir, customWorkingDir);
+    assertEquals(settings.working_dir, `${customWorkingDir}/.agent/breakdown`);
   },
 });
 
@@ -287,7 +281,7 @@ Deno.test({
     );
 
     // Also test with a file that exists in the config path
-    const configPath = join(TEST_ENV.workingDir, "breakdown", "config");
+    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configPath, { recursive: true });
     const invalidConfigFile = join(configPath, "invalid.txt");
     await Deno.writeTextFile(invalidConfigFile, "test");

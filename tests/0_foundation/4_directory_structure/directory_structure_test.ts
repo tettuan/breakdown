@@ -137,7 +137,7 @@ Deno.test("directory - edge cases - directory operations", async () => {
       await assertRejects(
         async () => {
           const workspace = new Workspace({ workingDir: restrictedPath });
-          await workspace.initialize();
+          await workspace.ensureDirectories();
         },
         WorkspaceInitError,
         `Permission denied: Cannot create directory structure in ${

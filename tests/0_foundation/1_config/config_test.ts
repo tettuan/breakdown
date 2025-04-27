@@ -33,15 +33,17 @@ Deno.test({
 
 // Basic configuration tests
 Deno.test("config - default settings", async () => {
-  const env = await setupTestEnvironment({ workingDir: "./tmp/test/config" });
+  const env = await setupTestEnvironment({ 
+    workingDir: "./tmp/test/config",
+    skipDefaultConfig: true 
+  });
   try {
-    // Create default config file
-    const configDir = join(env.workingDir, "breakdown", "config");
+    // Create config file in the correct location
+    const configDir = join(env.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `
-working_dir: .agent/breakdown
+      `working_dir: .agent/breakdown
 app_prompt:
   base_dir: lib/breakdown/prompts
 app_schema:
@@ -63,15 +65,17 @@ app_schema:
 
 // Working directory tests
 Deno.test("config - custom working directory", async () => {
-  const env = await setupTestEnvironment({ workingDir: "./tmp/test/config-custom" });
+  const env = await setupTestEnvironment({ 
+    workingDir: "./tmp/test/config-custom",
+    skipDefaultConfig: true 
+  });
   try {
-    // Create config file with custom working directory
-    const configDir = join(env.workingDir, "breakdown", "config");
+    // Create config file in the correct location
+    const configDir = join(env.workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `
-working_dir: ./tmp/test/config-custom
+      `working_dir: ./tmp/test/config-custom
 app_prompt:
   base_dir: lib/breakdown/prompts
 app_schema:
@@ -108,15 +112,17 @@ Deno.test("config - invalid configuration handling", async () => {
 Deno.test({
   name: "config - basic functionality",
   async fn() {
-    const env = await setupTestEnvironment({ workingDir: "./tmp/test/config-basic" });
+    const env = await setupTestEnvironment({ 
+      workingDir: "./tmp/test/config-basic",
+      skipDefaultConfig: true 
+    });
     try {
-      // Create config file
-      const configDir = join(env.workingDir, "breakdown", "config");
+      // Create config file in the correct location
+      const configDir = join(env.workingDir, ".agent", "breakdown", "config");
       await Deno.mkdir(configDir, { recursive: true });
       await Deno.writeTextFile(
         join(configDir, "app.yml"),
-        `
-working_dir: ./tmp/test/config-basic
+        `working_dir: ./tmp/test/config-basic
 app_prompt:
   base_dir: lib/breakdown/prompts
 app_schema:

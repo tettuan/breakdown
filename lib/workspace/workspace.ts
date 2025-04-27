@@ -8,6 +8,17 @@ import {
   WorkspaceStructure,
 } from "./types.ts";
 import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./errors.ts";
+import { parse, stringify } from "jsr:@std/yaml@1.0.6";
+import { ensureDir } from "@std/fs";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+
+const DEFAULT_CONFIG = {
+  working_dir: "breakdown",
+  app_prompt: { base_dir: "prompts" },
+  app_schema: { base_dir: "schemas" },
+};
+
+const logger = new BreakdownLogger();
 
 /**
  * Workspace class for managing directory structure and configuration
@@ -20,7 +31,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
-    const breakdownDir = join(this.workingDir, "breakdown");
+    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
     this.promptsDir = options.promptsDir || join(breakdownDir, "prompts");
     this.schemaDir = options.schemaDir || join(breakdownDir, "schemas");
   }
@@ -29,10 +40,40 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * Initialize the workspace by creating required directories and validating configuration
    */
   public async initialize(): Promise<void> {
-    // First create the required directories
-    await this.ensureDirectories();
-
-    // Then validate the configuration
+    // 1. Ensure .agent/breakdown/config/app.yml exists
+    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
+    const configDir = join(breakdownDir, "config");
+    const configFile = join(configDir, "app.yml");
+    let config: any;
+    if (!(await exists(configFile))) {
+      await ensureDir(configDir);
+      config = { ...DEFAULT_CONFIG, working_dir: breakdownDir };
+      const configYaml = stringify(config);
+      await Deno.writeTextFile(configFile, configYaml);
+    } else {
+      const configText = await Deno.readTextFile(configFile);
+      config = parse(configText);
+    }
+    this.config = config;
+    logger.debug("[DEBUG] Workspace.initialize config", { config });
+    // 2. Use config values for directory creation
+    const promptBase = (config?.app_prompt?.base_dir || "prompts").toString().trim();
+    const schemaBase = (config?.app_schema?.base_dir || "schemas").toString().trim();
+    // 3. Create required directories
+    const subdirs = [
+      "projects",
+      "issues",
+      "tasks",
+      "temp",
+      "config",
+      promptBase,
+      schemaBase,
+    ];
+    await ensureDir(breakdownDir);
+    for (const dir of subdirs) {
+      await ensureDir(join(breakdownDir, dir));
+    }
+    // 4. Validate config (check dirs exist)
     await this.validateConfig();
   }
 
@@ -96,7 +137,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     }
 
     // Create the breakdown directory structure
-    const breakdownDir = join(this.workingDir, "breakdown");
+    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
     const subdirs = [
       "projects",
       "issues",
@@ -140,7 +181,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   public getConfig(): Promise<WorkspaceConfig> {
     if (!this.config) {
       this.config = {
-        working_dir: join(this.workingDir, "breakdown"),
+        working_dir: join(this.workingDir, ".agent", "breakdown"),
         app_prompt: {
           base_dir: this.promptsDir,
         },
@@ -158,13 +199,17 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   public async validateConfig(): Promise<void> {
     // Get config first
     const config = await this.getConfig();
+    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
+    // Check for existence of the correct absolute paths
     const requiredDirs = [
-      config.working_dir,
-      config.app_prompt.base_dir,
-      config.app_schema.base_dir,
+      breakdownDir,
     ];
-
-    // Check if directories exist
+    if (config.app_prompt && config.app_prompt.base_dir) {
+      requiredDirs.push(join(breakdownDir, config.app_prompt.base_dir));
+    }
+    if (config.app_schema && config.app_schema.base_dir) {
+      requiredDirs.push(join(breakdownDir, config.app_schema.base_dir));
+    }
     for (const dir of requiredDirs) {
       if (!(await exists(dir))) {
         throw new WorkspaceConfigError(`Required directory does not exist: ${dir}`);

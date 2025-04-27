@@ -20,12 +20,16 @@ Deno.test({
   async fn() {
     const options: TestOptions = { workingDir: "tmp/test/init", logger, logLevel: LogLevel.DEBUG };
     await setupTestEnvironment(options);
+    
+    // Ensure parent directories exist
+    await ensureDir(join(options.workingDir, ".agent", "breakdown"));
+    
     const workspace = new Workspace({ workingDir: options.workingDir });
     await workspace.initialize();
 
     // Verify directories are created under the breakdown subdirectory
-    assertEquals(await exists(join(options.workingDir, "breakdown", "prompts")), true);
-    assertEquals(await exists(join(options.workingDir, "breakdown", "schemas")), true);
+    assertEquals(await exists(join(options.workingDir, ".agent", "breakdown", "prompts")), true);
+    assertEquals(await exists(join(options.workingDir, ".agent", "breakdown", "schema")), true);
 
     await cleanupTestEnvironment(options);
   },
@@ -41,7 +45,7 @@ Deno.test({
       await workspace.initialize();
 
       // Modify a file to check if it's preserved
-      const configFile = join(env.workingDir, "breakdown", "prompts", "app.yml");
+      const configFile = join(env.workingDir, ".agent", "breakdown", "prompts", "app.yml");
       await Deno.writeTextFile(configFile, "modified: true");
 
       // Initialize again
@@ -69,8 +73,8 @@ Deno.test({
     await workspace.initialize();
 
     // Verify directories are created in custom location under breakdown
-    assertEquals(await exists(join(customDir, "breakdown", "prompts")), true);
-    assertEquals(await exists(join(customDir, "breakdown", "schemas")), true);
+    assertEquals(await exists(join(customDir, ".agent", "breakdown", "prompts")), true);
+    assertEquals(await exists(join(customDir, ".agent", "breakdown", "schemas")), true);
 
     await cleanupTestEnvironment(options);
   },
@@ -133,7 +137,7 @@ Deno.test({
     await setupTestEnvironment(options);
 
     // Create a file that will block directory creation
-    const targetDir = join(options.workingDir, "breakdown", "prompts");
+    const targetDir = join(options.workingDir, ".agent", "breakdown", "prompts");
     await ensureDir(targetDir);  // Ensure directory exists before removing
     await Deno.remove(targetDir, { recursive: true });
     await Deno.writeTextFile(targetDir, "");
@@ -164,7 +168,7 @@ Deno.test({
     logger.debug("[TEST] Workspace initialized");
 
     // config/app.yml が生成されているか
-    const configFile = join(options.workingDir, "breakdown", "config", "app.yml");
+    const configFile = join(options.workingDir, ".agent", "breakdown", "config", "app.yml");
     logger.debug("[TEST] Checking config file existence", { configFile });
     const existsConfig = await exists(configFile);
     logger.debug("[TEST] Config file exists?", { existsConfig });
@@ -192,9 +196,9 @@ Deno.test({
     logger.debug("[TEST] setupTestEnvironment complete");
 
     // 事前にカスタムapp.ymlを作成
-    const configDir = join(options.workingDir, "breakdown", "config");
+    const configDir = join(options.workingDir, ".agent", "breakdown", "config");
     await ensureDir(configDir);
-    const customConfig = `\nworking_dir: ${options.workingDir}\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`;
+    const customConfig = `\nworking_dir: ${options.workingDir}/.agent/breakdown\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`;
     await Deno.writeTextFile(join(configDir, "app.yml"), customConfig);
     logger.debug("[TEST] Custom app.yml written", { configDir });
 
@@ -204,8 +208,8 @@ Deno.test({
     logger.debug("[TEST] Workspace initialized");
 
     // カスタムディレクトリが作成されているか
-    const customPrompts = join(options.workingDir, "breakdown", "custom_prompts");
-    const customSchemas = join(options.workingDir, "breakdown", "custom_schemas");
+    const customPrompts = join(options.workingDir, ".agent", "breakdown", "custom_prompts");
+    const customSchemas = join(options.workingDir, ".agent", "breakdown", "custom_schemas");
     logger.debug("[TEST] Checking custom prompts dir existence", { customPrompts });
     logger.debug("[TEST] Checking custom schemas dir existence", { customSchemas });
     const existsPrompts = await exists(customPrompts);
@@ -228,7 +232,7 @@ Deno.test({
     await setupTestEnvironment(options);
     logger.debug("[TEST] setupTestEnvironment complete");
 
-    const configDir = join(options.workingDir, "breakdown", "config");
+    const configDir = join(options.workingDir, ".agent", "breakdown", "config");
     await ensureDir(configDir);
     const originalContent = "custom: true";
     const configFile = join(configDir, "app.yml");

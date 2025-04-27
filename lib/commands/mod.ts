@@ -7,8 +7,17 @@ import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { ArgumentError } from "../cli/args.ts";
+import { parse, stringify } from "jsr:@std/yaml@1.0.6";
+import { exists } from "jsr:@std/fs@^0.224.0";
 
 const logger = new BreakdownLogger();
+
+const DEFAULT_CONFIG_YAML = `working_dir: .agent/breakdown
+app_prompt:
+  base_dir: prompts
+app_schema:
+  base_dir: schema
+`;
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -26,25 +35,49 @@ export interface CommandResult {
 /**
  * Initialize the workspace directory structure.
  */
-export async function initWorkspace(workingDir: string): Promise<CommandResult> {
+export async function initWorkspace(workingDir?: string): Promise<CommandResult> {
   try {
-    await ensureDir(workingDir);
-    logger.debug(`Ensured working directory exists: ${workingDir}`);
-
-    const breakdownDir = join(workingDir, "breakdown");
+    // If workingDir ends with 'breakdown', use it directly. Otherwise, append 'breakdown'.
+    let breakdownDir: string;
+    if (workingDir && workingDir.split(/[\\/]/).pop() === "breakdown") {
+      breakdownDir = workingDir;
+    } else {
+      const baseDir = workingDir || ".agent";
+      breakdownDir = join(baseDir, "breakdown");
+    }
     await ensureDir(breakdownDir);
-    logger.debug(`Created breakdown directory: ${breakdownDir}`);
+    logger.debug(`Ensured breakdown directory exists: ${breakdownDir}`);
 
+    // 2. config dir and file (under breakdownDir)
+    const configDir = join(breakdownDir, "config");
+    const configFile = join(configDir, "app.yml");
+    if (!(await exists(configFile))) {
+      await ensureDir(configDir);
+      const configYaml = `working_dir: ${breakdownDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+      console.log("[DEBUG] Writing config file:", configFile);
+      console.log("[DEBUG] Config YAML content:\n" + configYaml);
+      await Deno.writeTextFile(configFile, configYaml);
+      logger.debug(`Created default config: ${configFile}`);
+    } else {
+      logger.debug(`Config already exists: ${configFile}`);
+    }
+
+    // 3. Read config
+    const configText = await Deno.readTextFile(configFile);
+    const config = parse(configText) as Record<string, any>;
+    const promptBase = config?.app_prompt?.base_dir || "prompts";
+    const schemaBase = config?.app_schema?.base_dir || "schema";
+
+    // 4. Create required subdirectories under breakdownDir
     const subdirs = [
       "projects",
       "issues",
       "tasks",
       "temp",
       "config",
-      "prompts",
-      "schema",
+      promptBase,
+      schemaBase,
     ];
-
     for (const dir of subdirs) {
       const fullPath = join(breakdownDir, dir);
       try {

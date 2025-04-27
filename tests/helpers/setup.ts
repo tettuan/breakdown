@@ -1,9 +1,17 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
-import { exists, join } from "$deps/mod.ts";
+import { join } from "jsr:@std/path/join";
+import { exists } from "jsr:@std/fs/exists";
+
+export interface TestEnvironmentOptions {
+  workingDir?: string;
+  logLevel?: LogLevel;
+  skipDefaultConfig?: boolean;
+}
 
 export interface TestEnvironment {
   workingDir: string;
   logger: BreakdownLogger;
+  logLevel: LogLevel;
   originalLogLevel?: string;
 }
 
@@ -20,84 +28,45 @@ export interface CommandResult {
  * - Defaults to "info" if not specified
  * - Supports debug, info, warn, and error levels
  */
-export async function setupTestEnvironment(options: {
-  workingDir: string;
-}): Promise<TestEnvironment> {
-  // Store original log level
-  const originalLogLevel = Deno.env.get("LOG_LEVEL");
+export async function setupTestEnvironment(options: TestEnvironmentOptions = {}): Promise<TestEnvironment> {
+  const workingDir = options.workingDir || "./tmp/test";
+  const logLevel = options.logLevel || LogLevel.DEBUG;
 
-  // Initialize logger with environment-controlled log level
-  // Default to "info" unless explicitly set to "debug"
-  const logLevel = Deno.env.get("LOG_LEVEL") === "debug" ? LogLevel.DEBUG : LogLevel.INFO;
-  const logger = new BreakdownLogger({ initialLevel: logLevel });
+  // Create test directories
+  await Deno.mkdir(workingDir, { recursive: true });
 
-  // Only output setup logs if in debug mode
-  if (logLevel === LogLevel.DEBUG) {
-    logger.debug("Setting up test environment", { workingDir: options.workingDir, logLevel });
+  // Create .agent/breakdown/config directory
+  const configDir = join(workingDir, ".agent", "breakdown", "config");
+  await Deno.mkdir(configDir, { recursive: true });
+
+  // Create breakdown/prompts and breakdown/schema directories
+  const breakdownDir = join(workingDir, ".agent", "breakdown");
+  await Deno.mkdir(join(breakdownDir, "prompts"), { recursive: true });
+  await Deno.mkdir(join(breakdownDir, "schema"), { recursive: true });
+
+  // Create default app.yml if it doesn't exist
+  const appConfigPath = join(configDir, "app.yml");
+  if (!options.skipDefaultConfig) {
+    await Deno.writeTextFile(
+      appConfigPath,
+      `working_dir: ${workingDir}/.agent/breakdown
+app_prompt:
+  base_dir: prompts
+app_schema:
+  base_dir: schema
+`
+    );
   }
 
-  // Clean up existing test directory
-  try {
-    if (await exists(options.workingDir)) {
-      await Deno.remove(options.workingDir, { recursive: true });
-      if (logLevel === LogLevel.DEBUG) {
-        logger.debug("Removed existing test directory", { dir: options.workingDir });
-      }
-    }
-  } catch (error) {
-    if (logLevel === LogLevel.DEBUG) {
-      logger.debug("Error removing existing directory", { error: String(error) });
-    }
-  }
+  // Set up logger
+  const logger = new BreakdownLogger();
+  logger.setLogLevel(logLevel);
 
-  // Create test directory and required subdirectories
-  const requiredDirs = [
-    options.workingDir,
-    join(options.workingDir, "breakdown"),
-    join(options.workingDir, "breakdown", "projects"),
-    join(options.workingDir, "breakdown", "issues"),
-    join(options.workingDir, "breakdown", "tasks"),
-    join(options.workingDir, "breakdown", "temp"),
-    join(options.workingDir, "breakdown", "config"),
-    join(options.workingDir, "breakdown", "prompts"),
-    join(options.workingDir, "breakdown", "schema"),
-    "tmp/test/commands-init/breakdown",
-    "tmp/test/commands-custom/custom",
-    "tmp/test/commands-project/output",
-    "tmp/test/commands-issue",
-    "tmp/test/config/breakdown/config",
-    "tmp/test/config-custom/breakdown/config",
-    "tmp/test_path_resolver/project",
-    "tmp/test_path_resolver/issue",
-    "tmp/test/setup/breakdown",
-    "tmp/test/init-custom/custom/breakdown",
-    "tmp/test_prompt_processor/invalid/type",
-    "tmp/test/logger",
-  ];
-
-  for (const dir of requiredDirs) {
-    try {
-      await Deno.mkdir(dir, { recursive: true });
-      // Verify directory was created
-      const exists = await Deno.stat(dir).then(
-        (stat) => stat.isDirectory,
-        () => false,
-      );
-      if (!exists) {
-        throw new Error(`Failed to create directory: ${dir}`);
-      }
-      if (logLevel === LogLevel.DEBUG) {
-        logger.debug("Created directory", { dir });
-      }
-    } catch (error) {
-      if (logLevel === LogLevel.DEBUG) {
-        logger.debug("Error creating directory", { dir, error: String(error) });
-      }
-      throw error;
-    }
-  }
-
-  return { workingDir: options.workingDir, logger, originalLogLevel };
+  return {
+    workingDir,
+    logLevel,
+    logger,
+  };
 }
 
 /**

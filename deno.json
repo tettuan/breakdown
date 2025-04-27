@@ -13,7 +13,7 @@
     "@std/fs": "jsr:@std/fs@^0.224.0",
     "@std/flags": "jsr:@std/flags@^0.224.0",
     "@std/path": "jsr:@std/path@^0.224.0",
-    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.0.10",
+    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.0.11",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^0.1.11",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^0.1.8",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10"

@@ -326,6 +326,31 @@ run_single_test() {
     return 0
 }
 
+# Function to run all tests with all permissions
+run_all_tests() {
+    local is_debug=${1:-false}
+    local error_output
+    
+    if [ "$is_debug" = "true" ]; then
+        echo "
+===============================================================================
+>>> RUNNING ALL TESTS IN DEBUG MODE WITH ALL PERMISSIONS <<<
+==============================================================================="
+        if ! error_output=$(LOG_LEVEL=debug deno test -A 2>&1); then
+            handle_error "all tests" "$error_output" "true"
+            return 1
+        fi
+    else
+        echo "Running all tests with all permissions..."
+        if ! error_output=$(deno test -A 2>&1); then
+            handle_error "all tests" "$error_output" "false"
+            return 1
+        fi
+        echo "✓ All tests passed with all permissions"
+    fi
+    return 0
+}
+
 # Function to process tests in a directory
 process_test_directory() {
     local dir=$1
@@ -352,6 +377,13 @@ process_test_directory() {
             return 1
         fi
     done
+
+    # Run all tests with all permissions after each directory passes
+    if [ $test_count -gt 0 ]; then
+        if ! run_all_tests "$is_debug"; then
+            return 1
+        fi
+    fi
     
     return 0
 }

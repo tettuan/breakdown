@@ -20,7 +20,7 @@ const settings = config.getConfig();
 
 設定は以下の階層で管理されます：
 
-1. アプリケーション設定（`breakdown/config/app.yml`）
+1. アプリケーション設定（`.agent/breakdown/config/app.yml`）
 2. ユーザー設定（アプリケーション設定の階層化に存在）
 
 ## アプリケーション設定項目
