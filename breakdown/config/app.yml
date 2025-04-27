@@ -1,5 +1,0 @@
-working_dir: .agent/breakdown
-app_prompt:
-  base_dir: .agent/breakdown/app_prompt
-app_schema:
-  base_dir: lib/breakdown/schema

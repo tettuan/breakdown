@@ -1,3 +1,0 @@
-# Issue Template
-
-{input}

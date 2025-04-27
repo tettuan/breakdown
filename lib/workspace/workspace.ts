@@ -44,7 +44,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
     const configDir = join(breakdownDir, "config");
     const configFile = join(configDir, "app.yml");
-    let config: any;
+    let config: WorkspaceConfig;
     if (!(await exists(configFile))) {
       await ensureDir(configDir);
       config = { ...DEFAULT_CONFIG, working_dir: breakdownDir };
@@ -52,7 +52,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       await Deno.writeTextFile(configFile, configYaml);
     } else {
       const configText = await Deno.readTextFile(configFile);
-      config = parse(configText);
+      config = parse(configText) as WorkspaceConfig;
     }
     this.config = config;
     logger.debug("[DEBUG] Workspace.initialize config", { config });

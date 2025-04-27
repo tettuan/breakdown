@@ -7,17 +7,10 @@ import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { ArgumentError } from "../cli/args.ts";
-import { parse, stringify } from "jsr:@std/yaml@1.0.6";
+import { parse } from "jsr:@std/yaml@1.0.6";
 import { exists } from "jsr:@std/fs@^0.224.0";
 
 const logger = new BreakdownLogger();
-
-const DEFAULT_CONFIG_YAML = `working_dir: .agent/breakdown
-app_prompt:
-  base_dir: prompts
-app_schema:
-  base_dir: schema
-`;
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -30,6 +23,19 @@ export interface CommandResult {
   success: boolean;
   output: string;
   error: string;
+}
+
+/**
+ * app.yml の構造に合わせた型定義
+ */
+interface AppConfig {
+  working_dir: string;
+  app_prompt?: {
+    base_dir?: string;
+  };
+  app_schema?: {
+    base_dir?: string;
+  };
 }
 
 /**
@@ -53,7 +59,8 @@ export async function initWorkspace(workingDir?: string): Promise<CommandResult>
     const configFile = join(configDir, "app.yml");
     if (!(await exists(configFile))) {
       await ensureDir(configDir);
-      const configYaml = `working_dir: ${breakdownDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+      const configYaml =
+        `working_dir: ${breakdownDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
       console.log("[DEBUG] Writing config file:", configFile);
       console.log("[DEBUG] Config YAML content:\n" + configYaml);
       await Deno.writeTextFile(configFile, configYaml);
@@ -64,7 +71,7 @@ export async function initWorkspace(workingDir?: string): Promise<CommandResult>
 
     // 3. Read config
     const configText = await Deno.readTextFile(configFile);
-    const config = parse(configText) as Record<string, any>;
+    const config = parse(configText) as AppConfig;
     const promptBase = config?.app_prompt?.base_dir || "prompts";
     const schemaBase = config?.app_schema?.base_dir || "schema";
 

@@ -47,7 +47,8 @@ export async function processWithPrompt(
   const config = getConfig();
   const workingDir = config.working_dir || ".";
   // Use testBaseDir for tests, otherwise use config.app_prompt.base_dir
-  const baseDir = options.testBaseDir || config.app_prompt?.base_dir || join(workingDir, "breakdown", "prompts");
+  const baseDir = options.testBaseDir || config.app_prompt?.base_dir ||
+    join(workingDir, "breakdown", "prompts");
   const logger = new BreakdownLogger();
   logger.debug(`Processing with prompt: ${demonstrative} ${layer} ${fromFile} ${destFile}`);
 
