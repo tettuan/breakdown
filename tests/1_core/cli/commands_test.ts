@@ -48,7 +48,7 @@ Deno.test("CLI Command Execution", async (t) => {
     await ensureDir(configDir);
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
     // Change working directory to test dir

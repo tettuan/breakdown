@@ -33,9 +33,9 @@ Deno.test({
 
 // Basic configuration tests
 Deno.test("config - default settings", async () => {
-  const env = await setupTestEnvironment({ 
+  const env = await setupTestEnvironment({
     workingDir: "./tmp/test/config",
-    skipDefaultConfig: true 
+    skipDefaultConfig: true,
   });
   try {
     // Create config file in the correct location
@@ -65,9 +65,9 @@ app_schema:
 
 // Working directory tests
 Deno.test("config - custom working directory", async () => {
-  const env = await setupTestEnvironment({ 
+  const env = await setupTestEnvironment({
     workingDir: "./tmp/test/config-custom",
-    skipDefaultConfig: true 
+    skipDefaultConfig: true,
   });
   try {
     // Create config file in the correct location
@@ -112,9 +112,9 @@ Deno.test("config - invalid configuration handling", async () => {
 Deno.test({
   name: "config - basic functionality",
   async fn() {
-    const env = await setupTestEnvironment({ 
+    const env = await setupTestEnvironment({
       workingDir: "./tmp/test/config-basic",
-      skipDefaultConfig: true 
+      skipDefaultConfig: true,
     });
     try {
       // Create config file in the correct location

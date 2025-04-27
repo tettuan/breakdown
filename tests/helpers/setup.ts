@@ -1,6 +1,5 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { join } from "jsr:@std/path/join";
-import { exists } from "jsr:@std/fs/exists";
 
 export interface TestEnvironmentOptions {
   workingDir?: string;
@@ -28,7 +27,9 @@ export interface CommandResult {
  * - Defaults to "info" if not specified
  * - Supports debug, info, warn, and error levels
  */
-export async function setupTestEnvironment(options: TestEnvironmentOptions = {}): Promise<TestEnvironment> {
+export async function setupTestEnvironment(
+  options: TestEnvironmentOptions = {},
+): Promise<TestEnvironment> {
   const workingDir = options.workingDir || "./tmp/test";
   const logLevel = options.logLevel || LogLevel.DEBUG;
 
@@ -54,7 +55,7 @@ app_prompt:
   base_dir: prompts
 app_schema:
   base_dir: schema
-`
+`,
     );
   }
 
