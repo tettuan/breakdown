@@ -34,6 +34,7 @@ import {
 } from "$test/helpers/setup.ts";
 import { displayHelp, displayVersion, initWorkspace } from "../../../lib/commands/mod.ts";
 import { validateCommandOptions } from "../../../lib/cli/args.ts";
+import { VERSION } from "../../../lib/version.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
@@ -182,8 +183,10 @@ Deno.test("Command Module Tests", async (t) => {
     displayHelp();
   });
 
-  await t.step("displayVersion should not throw", () => {
-    displayVersion();
+  await t.step("displayVersion should not throw and output correct version", () => {
+    const result = displayVersion();
+    assertEquals(result.success, true);
+    assertEquals(result.output, `Breakdown v${VERSION}`);
   });
 
   // Cleanup: Remove test directory

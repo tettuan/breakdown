@@ -9,6 +9,7 @@ import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { ArgumentError } from "../cli/args.ts";
 import { parse } from "jsr:@std/yaml@1.0.6";
 import { exists } from "jsr:@std/fs@^0.224.0";
+import { VERSION } from "../version.ts";
 
 const logger = new BreakdownLogger();
 
@@ -224,7 +225,7 @@ Examples:
 export function displayVersion(): CommandResult {
   return {
     success: true,
-    output: "Breakdown v0.1.0",
+    output: `Breakdown v${VERSION}`,
     error: "",
   };
 }

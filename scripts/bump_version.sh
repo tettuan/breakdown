@@ -36,10 +36,13 @@ if [ "$check_failed" = true ]; then
         if [ "$current_version" != "$latest_tag_version" ]; then
             echo "version-check failed: updating deno.json version ($current_version) to match latest tag ($latest_tag_version)."
             deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$latest_tag_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
-            git add deno.json
-            git commit -m "fix: update deno.json version to match latest tag ($latest_tag_version) for version-check"
+            # Update lib/version.ts to match new version
+            echo -e "// This file is auto-generated. Do not edit manually.\n// The version is synchronized with deno.json.\n\n/**\n * The current version of Breakdown CLI, synchronized with deno.json.\n * @module\n */\nexport const VERSION = \"$latest_tag_version\";\n" > lib/version.ts
+            deno fmt lib/version.ts
+            git add deno.json lib/version.ts
+            git commit -m "fix: update deno.json and lib/version.ts version to match latest tag ($latest_tag_version) for version-check"
             git push
-            echo "\ndenon.json updated to $latest_tag_version and pushed. Please re-run this script after CI passes.\n"
+            echo "\ndenon.json and lib/version.ts updated to $latest_tag_version and pushed. Please re-run this script after CI passes.\n"
             exit 0
         fi
     fi
@@ -54,7 +57,10 @@ new_patch=$((patch + 1))
 new_version="$major.$minor.$new_patch"
 echo "Bumping deno.json version from $current_version to $new_version."
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
-git add deno.json
+# Update lib/version.ts to match new version
+echo -e "// This file is auto-generated. Do not edit manually.\n// The version is synchronized with deno.json.\n\n/**\n * The current version of Breakdown CLI, synchronized with deno.json.\n * @module\n */\nexport const VERSION = \"$new_version\";\n" > lib/version.ts
+deno fmt lib/version.ts
+git add deno.json lib/version.ts
 git commit -m "chore: bump version to $new_version"
 git push
 git tag v$new_version
