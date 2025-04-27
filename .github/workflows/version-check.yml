@@ -29,8 +29,11 @@ jobs:
         run: |
           deno run --allow-read --unstable <<'EOF'
           const denoJson = JSON.parse(await Deno.readTextFile('deno.json'));
-          const denoVersion = denoJson.version;
-          const tagVersion = Deno.env.get('TAG_VERSION');
+          let denoVersion = denoJson.version;
+          let tagVersion = Deno.env.get('TAG_VERSION');
+          // Remove leading 'v' if present in either version string
+          denoVersion = denoVersion.replace(/^v/, '');
+          tagVersion = tagVersion.replace(/^v/, '');
           if (denoVersion !== tagVersion) {
             console.error(`Version mismatch!\n deno.json: ${denoVersion}\n git tag: ${tagVersion}`);
             Deno.exit(1);
