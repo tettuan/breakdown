@@ -69,13 +69,6 @@ echo "New version: $new_version"
 # Update only the version in deno.json
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 
-# Update version in version.ts
-deno eval "const content = await Deno.readTextFile('version.ts'); const updated = content.replace(/export const VERSION = \"[^\"]+\";/, 'export const VERSION = \"$new_version\";'); await Deno.writeTextFile('version.ts', updated);"
-
-# Commit the version change
-git add deno.json version.ts
-git commit -m "chore: bump version to $new_version"
-
 # Create and push tag
 git tag "v$new_version"
 git push origin "v$new_version"
