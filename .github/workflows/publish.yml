@@ -2,8 +2,8 @@ name: Publish
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'
 
 jobs:
   publish:
@@ -19,6 +19,32 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v2.x
+
+      # Extract version from tag
+      - name: Get tag version
+        id: get_tag
+        run: |
+          echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      # Fetch latest JSR version
+      - name: Get latest JSR version
+        id: get_jsr
+        run: |
+          LATEST_JSR_VERSION=$(curl -s https://jsr.io/@tettuan/breakdown/meta.json | jq -r '.versions | keys | .[-1]')
+          echo "LATEST_JSR_VERSION=$LATEST_JSR_VERSION" >> $GITHUB_ENV
+
+      # Compare versions and skip if tag is not newer
+      - name: Check if tag version is newer than JSR
+        id: check_version
+        run: |
+          if [ -z "$LATEST_JSR_VERSION" ]; then
+            echo "No JSR version found, proceeding with publish.";
+            exit 0;
+          fi
+          if [ "$(printf '%s\n%s\n' "$LATEST_JSR_VERSION" "$TAG_VERSION" | sort -V | tail -n1)" != "$TAG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) is not newer than JSR latest ($LATEST_JSR_VERSION). Skipping publish.";
+            exit 78;
+          fi
 
       # Run tests before publishing
       - name: Run tests
