@@ -28,25 +28,27 @@ latest_jsr_version=$(curl -s https://jsr.io/@tettuan/breakdown/meta.json | jq -r
 
 if [ -z "$latest_jsr_version" ]; then
     echo "Warning: Could not determine latest version from JSR, using local version"
-    # Read current version from deno.json
-    current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
-
     # Get latest version from git tags (strip 'v')
     latest_tag_version=$(git tag --list "v*" | sed 's/^v//' | sort -V | tail -n 1)
 
-    # Compare versions
-    if [ "$(printf '%s\n%s\n' "$current_version" "$latest_tag_version" | sort -V | tail -n 1)" = "$current_version" ] && [ "$current_version" != "$latest_tag_version" ]; then
-        echo "Warning: deno.json version ($current_version) is ahead of latest tag ($latest_tag_version). No version bump needed."
-        exit 0
-    fi
-    if [ "$current_version" = "$latest_tag_version" ]; then
-        # Split version into major.minor.patch
-        IFS='.' read -r major minor patch <<< "$current_version"
-        # Increment patch version
+    # Read current version from deno.json
+    current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
+
+    # If deno.json is behind the latest tag, bump from the tag
+    if [ "$(printf '%s\n%s\n' "$current_version" "$latest_tag_version" | sort -V | head -n 1)" = "$current_version" ] && [ "$current_version" != "$latest_tag_version" ]; then
+        IFS='.' read -r major minor patch <<< "$latest_tag_version"
         new_patch=$((patch + 1))
         new_version="$major.$minor.$new_patch"
+        echo "deno.json version ($current_version) is behind latest tag ($latest_tag_version). Bumping to $new_version."
     else
-        new_version="$current_version"
+        # If deno.json is ahead or equal, keep current logic
+        if [ "$current_version" = "$latest_tag_version" ]; then
+            IFS='.' read -r major minor patch <<< "$current_version"
+            new_patch=$((patch + 1))
+            new_version="$major.$minor.$new_patch"
+        else
+            new_version="$current_version"
+        fi
     fi
 else
     echo "Latest version: $latest_jsr_version"
