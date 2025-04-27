@@ -171,7 +171,7 @@ To auto-fix formatting issues:
   $ deno fmt
 
 Remember to:
-- Format checks are applied only to TypeScript and JavaScript files
+- Format checks are applied to all supported files (TypeScript, JavaScript, Markdown, YAML, etc.)
 - Check for any custom formatting rules in the project
 - Ensure your editor's formatting settings align with the project
 
@@ -271,6 +271,17 @@ rm -f deno.lock
 echo "Regenerating deno.lock..."
 if ! deno cache --reload mod.ts; then
     handle_error "mod.ts" "Failed to regenerate deno.lock" "false"
+fi
+
+# Version consistency check (deno.json vs version.ts)
+echo "Checking version consistency between deno.json and version.ts..."
+denoj_version=$(jq -r .version < deno.json)
+versionts_version=$(grep 'VERSION = ' version.ts | sed -E 's/.*VERSION = "([^"]+)".*/\1/')
+if [ "$denoj_version" != "$versionts_version" ]; then
+  echo "\n===============================================================================\n>>> VERSION CONSISTENCY CHECK FAILED <<<\n===============================================================================\nVersion mismatch!\n  deno.json: $denoj_version\n  version.ts: $versionts_version\nPlease ensure both files have the same version before proceeding.\n===============================================================================\n"
+  exit 1
+else
+  echo "Version consistency check passed: $denoj_version"
 fi
 
 # Comprehensive type checking
@@ -408,7 +419,7 @@ if ! error_output=$(npx jsr publish --dry-run --allow-dirty 2>&1); then
 fi
 
 echo "Running format check..."
-if ! deno fmt --check "**/*.ts" "**/*.js" "**/*.jsx" "**/*.tsx"; then
+if ! deno fmt --check; then
     echo "
 ===============================================================================
 >>> FORMAT CHECK FAILED <<<
@@ -422,13 +433,13 @@ To auto-fix formatting issues:
   $ deno fmt
 
 Remember to:
-- Format checks are applied only to TypeScript and JavaScript files
+- Format checks are applied to all supported files (TypeScript, JavaScript, Markdown, YAML, etc.)
 - Check for any custom formatting rules in the project
 - Ensure your editor's formatting settings align with the project
 
-Error details: $(deno fmt --check "**/*.ts" "**/*.js" "**/*.jsx" "**/*.tsx" 2>&1)
+Error details: $(deno fmt --check 2>&1)
 ==============================================================================="
-    handle_format_error "$(deno fmt --check "**/*.ts" "**/*.js" "**/*.jsx" "**/*.tsx" 2>&1)"
+    handle_format_error "$(deno fmt --check 2>&1)"
 fi
 
 echo "Running lint..."
