@@ -27,17 +27,18 @@ jobs:
 
       - name: Check deno.json version matches latest tag
         run: |
-          deno run --allow-read --unstable <<'EOF'
-          const denoJson = JSON.parse(await Deno.readTextFile('deno.json'));
+          echo '
+          const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
           let denoVersion = denoJson.version;
-          let tagVersion = Deno.env.get('TAG_VERSION');
-          // Remove leading 'v' if present in either version string
-          denoVersion = denoVersion.replace(/^v/, '');
-          tagVersion = tagVersion.replace(/^v/, '');
+          let tagVersion = Deno.env.get("TAG_VERSION");
+          // Remove leading "v" if present in either version string
+          denoVersion = denoVersion.replace(/^v/, "");
+          tagVersion = tagVersion.replace(/^v/, "");
           if (denoVersion !== tagVersion) {
-            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n git tag: ${tagVersion}`);
+            console.error(`Version mismatch!\\n deno.json: ${denoVersion}\\n git tag: ${tagVersion}`);
             Deno.exit(1);
           } else {
             console.log(`deno.json and git tag version match: ${denoVersion}`);
           }
-          EOF
+          ' > check_version.mjs
+          deno run --allow-read check_version.mjs
