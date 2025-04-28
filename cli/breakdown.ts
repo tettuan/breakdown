@@ -218,7 +218,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
           (result.layerType as any) || "task",
           parsedArgs.from,
           parsedArgs.destination,
-          { adaptation, promptBaseDir }
+          { adaptation, promptBaseDir },
         );
         writeStdout(`Summary generated to ${parsedArgs.destination}`);
       } catch (err) {

@@ -160,7 +160,7 @@ app_prompt:
   base_dir: prompts
 app_schema:
   base_dir: schema
-`
+`,
     );
     // Copy deno.json into testDir
     await Deno.copyFile("deno.json", join(testDir, "deno.json"));
@@ -171,20 +171,31 @@ app_schema:
     logger.debug("CLI test: outFile", { outFile });
     logger.debug("CLI test: promptsDir", { promptsDir });
     // Run CLI with adaptation
-    const result = await runCommand([
-      "summary", "task",
-      "--from", fromFile,
-      "--adaptation", "strict",
-      "-o", outFile,
-      "--prompt-dir", join(testDir, "prompts")
-    ], undefined, testDir);
+    const result = await runCommand(
+      [
+        "summary",
+        "task",
+        "--from",
+        fromFile,
+        "--adaptation",
+        "strict",
+        "-o",
+        outFile,
+        "--prompt-dir",
+        join(testDir, "prompts"),
+      ],
+      undefined,
+      testDir,
+    );
     logger.debug("CLI test: runCommand result", { result });
     logger.debug("CLI test: checking file existence", { outFile });
     await assertFileExists(outFile);
     const content = await Deno.readTextFile(outFile);
     logger.debug("CLI test: output file content", { content });
     if (!content.includes("Strictバリアント")) {
-      throw new Error(`Output file does not contain expected adaptation content.\nActual: ${content}`);
+      throw new Error(
+        `Output file does not contain expected adaptation content.\nActual: ${content}`,
+      );
     }
   });
 });

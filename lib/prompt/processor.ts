@@ -35,7 +35,8 @@ export async function processWithPrompt(
   layer: LayerType,
   fromFile: string,
   destFile: string,
-  options: { quiet?: boolean; testBaseDir?: string; adaptation?: string; promptBaseDir?: string } = {},
+  options: { quiet?: boolean; testBaseDir?: string; adaptation?: string; promptBaseDir?: string } =
+    {},
 ): Promise<void> {
   // Runtime type check using the constant array
   if (
@@ -122,7 +123,9 @@ export async function processWithPrompt(
       });
       logger.debug("PromptManager.generatePrompt result", { result });
     } catch (err) {
-      logger.error("Error in promptManager.generatePrompt", { error: err instanceof Error ? err.message : String(err) });
+      logger.error("Error in promptManager.generatePrompt", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       throw err;
     }
 
@@ -143,7 +146,9 @@ export async function processWithPrompt(
         await Deno.rename(tempFile, destFile);
         logger.debug("Renamed output file to destination", { destFile });
       } catch (err) {
-        logger.error("Error writing or renaming output file", { error: err instanceof Error ? err.message : String(err) });
+        logger.error("Error writing or renaming output file", {
+          error: err instanceof Error ? err.message : String(err),
+        });
         throw err;
       }
     }

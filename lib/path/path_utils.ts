@@ -13,8 +13,8 @@
  * 7. Document naming conventions
  */
 
-import { ensureDir, exists } from "jsr:@std/fs";
-import { join, normalize, relative } from "jsr:@std/path";
+import { ensureDir, exists } from "jsr:@std/fs@^0.224.0";
+import { join, normalize, relative } from "jsr:@std/path@^0.224.0";
 
 /**
  * Represents the structure of the working directory.

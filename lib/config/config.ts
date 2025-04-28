@@ -1,5 +1,5 @@
-import { ensureDir } from "jsr:@std/fs";
-import { normalize } from "jsr:@std/path";
+import { ensureDir } from "jsr:@std/fs@^0.224.0";
+import { normalize } from "jsr:@std/path@^0.224.0";
 import { Config, DEFAULT_CONFIG, PartialConfig } from "./types.ts";
 import { InvalidConfigError, InvalidDirectoryError, MissingConfigError } from "./errors.impl.ts";
 
