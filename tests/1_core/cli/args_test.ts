@@ -168,7 +168,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "-f",
       join("test.md"),
       "-o",
-      join("result.md"),
+      join("result_short.md"),
     ];
     logger.debug("Testing short form options", {
       purpose: "Verify handling of short form options",

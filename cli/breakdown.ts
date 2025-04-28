@@ -3,6 +3,8 @@ import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.10";
 import { type OptionParams } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
+import { readAll } from "jsr:@std/io@0.224.0/read-all";
 
 const logger = new BreakdownLogger();
 const settings = new BreakdownConfig();
@@ -86,7 +88,6 @@ function writeStderr(message: string): void {
 }
 
 function handleTestError(message: string): void {
-  logger.error(message);
   writeStderr(message);
   writeStdout(HELP_TEXT);
 }
@@ -107,99 +108,107 @@ function handleTestError(message: string): void {
  * @returns {Promise<void>} Resolves when the command completes.
  */
 export async function runBreakdown(args: string[]): Promise<void> {
-  logger.debug("Running breakdown command", { args });
-
   if (args.length === 0) {
     writeStdout(HELP_TEXT);
     return;
   }
 
-  try {
-    // Get command first - do this before param parsing
-    const command = getCommand(args);
-    logger.debug("Command extracted", { command });
+  const parser = new ParamsParser();
+  const result = parser.parse(args);
 
-    if (!command) {
-      handleTestError("No command specified");
+  // Handle error from ParamsParser
+  if ("error" in result && result.error) {
+    writeStderr(result.error);
+    writeStdout(result.error);
+    Deno.exit(1);
+  }
+
+  // Handle help/version flags
+  if (result.type === "no-params") {
+    if (result.help) {
+      writeStdout(HELP_TEXT);
       return;
     }
-
-    // Initialize configuration
-    await settings.loadConfig();
-    const settingsConfig = await settings.getConfig();
-    logger.debug("Configuration loaded");
-
-    // Check for duplicate options first
-    try {
-      logger.debug("Checking for duplicate options");
-      checkDuplicateOptions(args);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.debug("Duplicate options error", { error: errorMessage });
-      handleTestError(errorMessage);
+    if (result.version) {
+      // Use displayVersion from commands/mod.ts
+      const { displayVersion } = await import("../lib/commands/mod.ts");
+      const versionResult = displayVersion();
+      writeStdout(versionResult.output);
       return;
     }
-
-    // Parse command parameters and execute command
-    let options: CommandOptions = {
-      debug: false,
-    };
-    try {
-      // Parse options first
-      options = validateArgs(args.slice(1));
-      logger.debug("Parameters parsed", { parsedParams: options });
-
-      // Set logger level based on options
-      if (options.debug) {
-        logger.setLogLevel(LogLevel.DEBUG);
-      }
-
-      // Execute command based on type
-      switch (command) {
-        case "init":
-          await initWorkspace(options.workingDir || settingsConfig.working_dir || ".");
-          break;
-        case "to":
-        case "summary":
-        case "defect": {
-          // Get layer type from args
-          const layerType = args[1];
-          if (!layerType || !normalizeLayerType(layerType)) {
-            handleTestError(`Invalid layer type: ${layerType}`);
-            return;
-          }
-
-          if (!options.from && !options.input) {
-            handleTestError("Either --from or --input option is required");
-            return;
-          }
-          if (options.from && options.from !== "-") {
-            try {
-              await Deno.stat(options.from);
-            } catch {
-              handleTestError(`File not found: ${options.from}`);
-              return;
-            }
-          }
-          // Handle command execution...
-          break;
-        }
-        default:
-          handleTestError(`Unknown command type: ${command}`);
-          return;
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.debug("Command execution error", { error: errorMessage });
-      handleTestError(errorMessage);
-      return;
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.debug("Breakdown execution error", { error: errorMessage });
-    handleTestError(errorMessage);
+    // If no command, show help
+    writeStdout(HELP_TEXT);
     return;
   }
+
+  // Single command (e.g., init)
+  if (result.type === "single") {
+    if (result.command === "init") {
+      await initWorkspace(".");
+      return;
+    }
+    // Add more single commands as needed
+  }
+
+  // Double command (e.g., to, summary, defect)
+  if (result.type === "double") {
+    // Only load config for non-init commands
+    await settings.loadConfig();
+    const settingsConfig = await settings.getConfig();
+    // Validate CLI arguments using validateArgs (from lib/cli/args.ts)
+    let parsedArgs: CommandOptions;
+    try {
+      parsedArgs = validateArgs(args.slice(1)); // skip the command itself (e.g., 'to')
+    } catch (err) {
+      if (err instanceof Error) {
+        writeStderr(err.message);
+      } else {
+        writeStderr("Unknown argument error");
+      }
+      Deno.exit(1);
+    }
+    // Minimal implementation: call convertFile for 'to' command
+    if (result.demonstrativeType === "to" && parsedArgs.from && parsedArgs.destination) {
+      const { convertFile } = await import("../lib/commands/mod.ts");
+      if (parsedArgs.from === "-") {
+        // Read from stdin and write to destination
+        const decoder = new TextDecoder();
+        const input = await readAll(Deno.stdin);
+        const content = decoder.decode(input);
+        try {
+          // Ensure destination directory exists
+          const destDir = parsedArgs.destination.substring(
+            0,
+            parsedArgs.destination.lastIndexOf("/"),
+          );
+          if (destDir) {
+            const { ensureDir } = await import("jsr:@std/fs@^0.224.0");
+            await ensureDir(destDir);
+          }
+          await Deno.writeTextFile(parsedArgs.destination, content);
+          writeStdout(`Converted stdin to ${parsedArgs.destination}`);
+        } catch (error) {
+          writeStderr(error instanceof Error ? error.message : String(error));
+        }
+        return;
+      } else {
+        const convResult = await convertFile(
+          parsedArgs.from,
+          parsedArgs.destination,
+          result.layerType || "project",
+        );
+        if (convResult.success) {
+          writeStdout(convResult.output);
+        } else {
+          writeStderr(convResult.error);
+        }
+        return;
+      }
+    }
+  }
+
+  // Fallback: show help
+  writeStdout(HELP_TEXT);
 }
 
 if (import.meta.main) {

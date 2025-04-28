@@ -42,41 +42,36 @@ interface AppConfig {
 /**
  * Initialize the workspace directory structure.
  */
-export async function initWorkspace(workingDir?: string): Promise<CommandResult> {
+export async function initWorkspace(_workingDir?: string): Promise<CommandResult> {
   try {
-    // If workingDir ends with 'breakdown', use it directly. Otherwise, append 'breakdown'.
-    let breakdownDir: string;
-    if (workingDir && workingDir.split(/[\\/]/).pop() === "breakdown") {
-      breakdownDir = workingDir;
-    } else {
-      const baseDir = workingDir || ".agent";
-      breakdownDir = join(baseDir, "breakdown");
-    }
+    // Always use ./.agent/breakdown as the root for config and subdirs
+    const projectRoot = Deno.cwd();
+    const breakdownDir = join(projectRoot, ".agent", "breakdown");
     await ensureDir(breakdownDir);
-    logger.debug(`Ensured breakdown directory exists: ${breakdownDir}`);
 
-    // 2. config dir and file (under breakdownDir)
+    // Config dir and file (under .agent/breakdown)
     const configDir = join(breakdownDir, "config");
     const configFile = join(configDir, "app.yml");
     if (!(await exists(configFile))) {
       await ensureDir(configDir);
+      // working_dir value is always .agent/breakdown (relative to project root)
       const configYaml =
-        `working_dir: ${breakdownDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+        `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
       console.log("[DEBUG] Writing config file:", configFile);
       console.log("[DEBUG] Config YAML content:\n" + configYaml);
       await Deno.writeTextFile(configFile, configYaml);
-      logger.debug(`Created default config: ${configFile}`);
     } else {
-      logger.debug(`Config already exists: ${configFile}`);
+      // Config already exists, do not overwrite
     }
 
-    // 3. Read config
+    // Read config
     const configText = await Deno.readTextFile(configFile);
     const config = parse(configText) as AppConfig;
     const promptBase = config?.app_prompt?.base_dir || "prompts";
     const schemaBase = config?.app_schema?.base_dir || "schema";
+    logger.debug("Configuration loaded", { config });
 
-    // 4. Create required subdirectories under breakdownDir
+    // Create required subdirectories under .agent/breakdown
     const subdirs = [
       "projects",
       "issues",
@@ -90,13 +85,9 @@ export async function initWorkspace(workingDir?: string): Promise<CommandResult>
       const fullPath = join(breakdownDir, dir);
       try {
         await ensureDir(fullPath);
-        logger.debug(`Created directory: ${fullPath}`);
       } catch (error) {
-        if (error instanceof Deno.errors.AlreadyExists) {
-          logger.debug(`Directory already exists: ${fullPath}`);
-        } else {
+        if (!(error instanceof Deno.errors.AlreadyExists)) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          logger.error(`Failed to create directory ${dir}:`, errorMessage);
           return {
             success: false,
             output: "",
@@ -106,7 +97,6 @@ export async function initWorkspace(workingDir?: string): Promise<CommandResult>
       }
     }
 
-    logger.info("Workspace initialization completed successfully");
     return {
       success: true,
       output: "Workspace initialized successfully",
@@ -114,7 +104,6 @@ export async function initWorkspace(workingDir?: string): Promise<CommandResult>
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("Failed to initialize workspace:", errorMessage);
     return {
       success: false,
       output: "",
@@ -137,7 +126,7 @@ export async function convertFile(
     try {
       await Deno.stat(fromFile);
     } catch {
-      throw new ArgumentError(`Source file not found: ${fromFile}`);
+      throw new ArgumentError(`File not found: ${fromFile}`);
     }
 
     // Read source file
