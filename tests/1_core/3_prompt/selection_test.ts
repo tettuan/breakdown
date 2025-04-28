@@ -134,3 +134,57 @@ describe("Prompt Selection", () => {
     });
   });
 });
+
+describe("CLI integration: adaptation option", () => {
+  it("should generate output file using the correct adaptation prompt via CLI", async () => {
+    const { runCommand } = await import("../../helpers/setup.ts");
+    const { assertFileExists } = await import("../../helpers/assertions.ts");
+    const { join } = await import("jsr:@std/path/join");
+    const testDir = await Deno.makeTempDir();
+    const promptsDir = join(testDir, "prompts", "summary", "task");
+    await Deno.mkdir(promptsDir, { recursive: true });
+    const fromFile = join(testDir, "input.md");
+    const outFile = join(testDir, "output.md");
+    // Create prompt variants
+    await Deno.writeTextFile(join(promptsDir, "f_task_strict.md"), "# Strictバリアント");
+    await Deno.writeTextFile(join(promptsDir, "f_task.md"), "# デフォルト");
+    // Create input file
+    await Deno.writeTextFile(fromFile, "dummy");
+    // Create required config file for CLI
+    const configDir = join(testDir, ".agent", "breakdown", "config");
+    await Deno.mkdir(configDir, { recursive: true });
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${testDir}/.agent/breakdown
+app_prompt:
+  base_dir: prompts
+app_schema:
+  base_dir: schema
+`
+    );
+    // Copy deno.json into testDir
+    await Deno.copyFile("deno.json", join(testDir, "deno.json"));
+    const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+    const logger = new BreakdownLogger();
+    logger.debug("CLI test: testDir", { testDir });
+    logger.debug("CLI test: fromFile", { fromFile });
+    logger.debug("CLI test: outFile", { outFile });
+    logger.debug("CLI test: promptsDir", { promptsDir });
+    // Run CLI with adaptation
+    const result = await runCommand([
+      "summary", "task",
+      "--from", fromFile,
+      "--adaptation", "strict",
+      "-o", outFile,
+      "--prompt-dir", join(testDir, "prompts")
+    ], undefined, testDir);
+    logger.debug("CLI test: runCommand result", { result });
+    logger.debug("CLI test: checking file existence", { outFile });
+    await assertFileExists(outFile);
+    const content = await Deno.readTextFile(outFile);
+    logger.debug("CLI test: output file content", { content });
+    if (!content.includes("Strictバリアント")) {
+      throw new Error(`Output file does not contain expected adaptation content.\nActual: ${content}`);
+    }
+  });
+});

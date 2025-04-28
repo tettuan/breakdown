@@ -1,0 +1,28 @@
+{
+  "project": {
+    "name": "Breakdown CLI Tool",
+    "description": "A command-line tool for breaking down projects into manageable tasks",
+    "features": [
+      {
+        "name": "Project Initialization",
+        "priority": "high",
+        "status": "in_progress"
+      },
+      {
+        "name": "Task Breakdown",
+        "priority": "high",
+        "status": "planned"
+      },
+      {
+        "name": "AI Integration",
+        "priority": "medium",
+        "status": "planned"
+      }
+    ],
+    "technical_requirements": [
+      "Deno runtime",
+      "TypeScript support",
+      "YAML configuration"
+    ]
+  }
+}

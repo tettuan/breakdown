@@ -202,8 +202,29 @@ export async function runBreakdown(args: string[]): Promise<void> {
         } else {
           writeStderr(convResult.error);
         }
-        return;
       }
+      return;
+    }
+    // Add summary command handling with adaptation and prompt-dir
+    if (result.demonstrativeType === "summary" && parsedArgs.from && parsedArgs.destination) {
+      const { processWithPrompt } = await import("../lib/prompt/processor.ts");
+      // Use parsedArgs.promptDir if present
+      const promptBaseDir = parsedArgs.promptDir;
+      const adaptationIdx = args.findIndex((a) => a === "--adaptation" || a === "-a");
+      const adaptation = adaptationIdx !== -1 ? args[adaptationIdx + 1] : parsedArgs.adaptation;
+      try {
+        await processWithPrompt(
+          result.demonstrativeType,
+          (result.layerType as any) || "task",
+          parsedArgs.from,
+          parsedArgs.destination,
+          { adaptation, promptBaseDir }
+        );
+        writeStdout(`Summary generated to ${parsedArgs.destination}`);
+      } catch (err) {
+        writeStderr(err instanceof Error ? err.message : String(err));
+      }
+      return;
     }
   }
 

@@ -35,7 +35,7 @@ export async function processWithPrompt(
   layer: LayerType,
   fromFile: string,
   destFile: string,
-  options: { quiet?: boolean; testBaseDir?: string } = {},
+  options: { quiet?: boolean; testBaseDir?: string; adaptation?: string; promptBaseDir?: string } = {},
 ): Promise<void> {
   // Runtime type check using the constant array
   if (
@@ -46,8 +46,8 @@ export async function processWithPrompt(
 
   const config = getConfig();
   const workingDir = config.working_dir || ".";
-  // Use testBaseDir for tests, otherwise use config.app_prompt.base_dir
-  const baseDir = options.testBaseDir || config.app_prompt?.base_dir ||
+  // Use promptBaseDir if provided, then testBaseDir, then config.app_prompt.base_dir
+  const baseDir = options.promptBaseDir || options.testBaseDir || config.app_prompt?.base_dir ||
     join(workingDir, "breakdown", "prompts");
   const logger = new BreakdownLogger();
   logger.debug(`Processing with prompt: ${demonstrative} ${layer} ${fromFile} ${destFile}`);
@@ -88,6 +88,7 @@ export async function processWithPrompt(
       input_markdown: inputContent,
       destination_path: sanitizedDestFile,
     },
+    adaptation: options.adaptation,
   }, baseDir);
 
   if (!loadResult.success) {
@@ -112,13 +113,21 @@ export async function processWithPrompt(
     await Deno.writeTextFile(tempTemplatePath, loadResult.content);
 
     // Generate prompt using the temporary template file
-    const result = await promptManager.generatePrompt(tempTemplatePath, {
-      input_markdown_file: sanitizedFromFile,
-      input_markdown: inputContent,
-      destination_path: sanitizedDestFile,
-    });
+    let result;
+    try {
+      result = await promptManager.generatePrompt(tempTemplatePath, {
+        input_markdown_file: sanitizedFromFile,
+        input_markdown: inputContent,
+        destination_path: sanitizedDestFile,
+      });
+      logger.debug("PromptManager.generatePrompt result", { result });
+    } catch (err) {
+      logger.error("Error in promptManager.generatePrompt", { error: err instanceof Error ? err.message : String(err) });
+      throw err;
+    }
 
     if (!result.success) {
+      logger.error("Prompt generation failed", { result });
       throw new Error("Failed to generate prompt");
     }
 
@@ -127,9 +136,16 @@ export async function processWithPrompt(
       const tempDir = dirname(destFile);
       const tempFile = join(tempDir, basename(destFile));
       await ensureDir(tempDir);
-      await Deno.writeTextFile(tempFile, result.prompt);
-      // Move the file to its final destination
-      await Deno.rename(tempFile, destFile);
+      logger.debug("Writing output file", { tempFile, destFile });
+      try {
+        await Deno.writeTextFile(tempFile, result.prompt);
+        logger.debug("Wrote output file", { tempFile });
+        await Deno.rename(tempFile, destFile);
+        logger.debug("Renamed output file to destination", { destFile });
+      } catch (err) {
+        logger.error("Error writing or renaming output file", { error: err instanceof Error ? err.message : String(err) });
+        throw err;
+      }
     }
 
     // Process according to demonstrative type

@@ -31,6 +31,7 @@ export interface CommandOptions {
   demonstrative?: string;
   layer?: string;
   adaptation?: string;
+  promptDir?: string;
 }
 
 // Valid command line options and their aliases
@@ -41,6 +42,7 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--debug", "-d"],
   ["--no-debug", "-n"],
   ["--adaptation", "-a"],
+  ["--prompt-dir", ""],
 ]);
 
 // Input layer types that can be used with --input
@@ -115,6 +117,12 @@ export function parseArgs(args: string[]): CommandOptions {
         }
         options.adaptation = args[++i];
         break;
+      case "--prompt-dir":
+        if (options.promptDir) {
+          throw new Error("Duplicate option: --prompt-dir is used multiple times");
+        }
+        options.promptDir = args[++i];
+        break;
       default:
         throw new Error(`Invalid option: ${arg}`);
     }
@@ -145,6 +153,7 @@ function getCanonicalOptionName(option: string): string | undefined {
     "--no-debug": "--no-debug",
     "--adaptation": "--adaptation",
     "-a": "--adaptation",
+    "--prompt-dir": "--prompt-dir",
   };
   return optionMap[option];
 }
@@ -234,6 +243,13 @@ export function validateCommandOptions(args: string[]): CommandOptions {
           throw new Error("Duplicate option: --adaptation is used multiple times");
         }
         options.adaptation = value;
+        i++;
+        break;
+      case "--prompt-dir":
+        if (options.promptDir) {
+          throw new Error("Duplicate option: --prompt-dir is used multiple times");
+        }
+        options.promptDir = value;
         i++;
         break;
       default:

@@ -1,0 +1,23 @@
+Running tests...
+1) Project initialization test
+   × Failed: Config directory not created
+   Expected: Directory ".agent/breakdown/config" to exist
+   Actual: Directory not found
+
+2) Task breakdown test
+   × Failed: Invalid output format
+   Expected: JSON output to match schema
+   Actual: Missing required fields: priority, assignee
+
+3) AI integration test
+   ✓ Passed
+   
+4) YAML configuration test
+   × Failed: Parse error in user config
+   Expected: Valid YAML syntax
+   Actual: Line 5: Invalid indentation
+
+Summary:
+Total tests: 4
+Passed: 1
+Failed: 3
