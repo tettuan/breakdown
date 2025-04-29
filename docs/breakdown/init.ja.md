@@ -33,11 +33,11 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
 - `.agent/breakdown/config/app.yml` を自動生成（既存の場合は上書きしない）
 - 雛形例:
   ```yaml
-  working_dir: .agent/breakdown
+  working_dir: .agent/breakdown # use for output and tmporary
   app_prompt:
-    base_dir: prompts
+    base_dir: .agent/breakdown/prompts # use for prompts. when init, command copy prompt files from app default to this dir.
   app_schema:
-    base_dir: schema
+    base_dir: .agent/breakdown/schema # use for JSON schema. when init, command copy schema files from app default to this dir.
   ```
 - `app_prompt.base_dir` や `app_schema.base_dir` をカスタマイズした場合、指定ディレクトリも作成
 

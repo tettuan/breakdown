@@ -1,47 +1,62 @@
 # BreakDown Documentation
 
-BreakDownは、TypeScriptとJSONを使ったAI自動開発のための開発指示言語ツールです。
+BreakDown is a development instruction language tool for AI-automated development using TypeScript and JSON.
 
-## 目次
+## Table of Contents
 
-- [概要](#概要)
-- [使用方法](usage.ja.md)
-- [開発者向け情報](breakdown/index.ja.md)
+- [Overview](#overview)
+- [Usage](usage.md)
+- [Developer Information](breakdown/index.md)
 
-## 概要
+## Overview
 
-BreakDownは、MarkdownドキュメントをJSON
-Schema形式に変換し、AIシステムが解釈しやすい形式にする変換ツールです。 主な特徴：
+BreakDown is a tool that converts Markdown documents based on JSON Schema. Essentially, it's a tool that selects appropriate prompts, generates prompts with specified inputs and outputs. 
+Since the execution result is a prompt, AI development tools perform the conversion process following the JSON Schema.
 
-- AI解釈用に最適化されたMarkdownからJSONへの変換
-- DenoランタイムによるTypeScript実装
-- AI自動開発のための構造化フォーマット
-- AIシステムのための学習しやすい構文
-- CursorとClineのAI開発エージェントに最適化
-- Claude-3.7-sonnetおよび他のAIモデルとの互換性
+Key Features:
 
-### 処理フロー
+- Prompts that receive unorganized information and output it in an organized manner
+- TypeScript implementation using Deno runtime
+- Structured format for AI-automated development
+- Easy-to-learn syntax for AI systems
+- Optimized for AI development agents like Cursor
+- Designed for use with Claude-3.7-sonnet and other AI models
+
+### Process Flow
+
+**Using Breakdown**
 
 ```mermaid
 sequenceDiagram
-  participant Developer as アプリ開発者
+  participant Developer as Application Developer
   participant CursorCline as Cursor/Cline
-  participant AI as AIエンジン
+  participant AI as AI Engine
 
-  Developer->>Developer: プロジェクト概要や要望をMarkdownで記載し保存
-  Developer->>CursorCline: `breakdown project <markdown.md>` 実行
-  CursorCline->>CursorCline: コマンド実行
-  CursorCline->>AI: マッピング依頼
-  AI->>CursorCline: JSONへ変換
-  CursorCline->>Developer: JSON指示書を取得
-  Developer->>CursorCline: JSON指示書をAI開発エージェントに送信
-  CursorCline->>AI: JSON指示書で開発指示
-  AI->>AI: JSON指示書に基づき開発
-  AI->>CursorCline: 成果物
+  Developer->>Developer: Write and save project overview or requirements in Markdown
+  Developer->>CursorCline: Execute `breakdown project <markdown.md>`
+  CursorCline->>CursorCline: Execute command (receive prompt)
+  CursorCline->>AI: Process prompt
+  AI->>CursorCline: Convert to optimized information
+  CursorCline->>Developer: Save optimized information
 ```
 
-# JSON Schema形式
+**Using Results Obtained from Breakdown**
 
-- Schema定義は、別のドキュメントがあります。 https://github.com/tettuan/breakdownschema
-- このライブラリでは、Schemaの中身を扱うことはありません。
-- パラメータからSchemaのファイルPATHを特定するだけです。
+```mermaid
+sequenceDiagram
+  participant Developer as Application Developer
+  participant CursorCline as Cursor/Cline
+  participant AI as AI Engine
+
+  Developer->>CursorCline: Development instructions with optimized information
+  CursorCline->>AI: Optimized information and instructions
+  AI->>AI: Development
+  AI->>CursorCline: Deliverables
+```
+
+# JSON Schema Format
+
+- Schema JSON files exist within this project
+- Schema definitions are documented in a separate project: https://github.com/tettuan/breakdownschema
+- This project does not handle (parse) the contents of the Schema
+- It only identifies the Schema file PATH from parameters 

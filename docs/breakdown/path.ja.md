@@ -38,14 +38,14 @@ path を解釈するための仕様である。 PATHは2つの前提が揃うと
 
 ## プロンプト
 
-- dir : {demonstrativeType}/{layerType}
+- dir : {app_prompt.base_dir}/{demonstrativeType}/{layerType}
 - filename : f_{fromLayerType}.md
   - adaptation オプション(-a, --adaptation)が指定された場合:
     - filename : f_{fromLayerType}_{adaptation}.md
 
 プロンプトファイル例：
-- 通常時: `lib/prompts/to/issue/f_issue.md`
-- adaptation指定時: `lib/prompts/to/issue/f_issue_strict.md`
+- 通常時: `lib/breakdown/prompts/to/issue/f_issue.md`
+- adaptation指定時: `lib/breakdown/prompts/to/issue/f_issue_strict.md`
 
 ### fromLayerType が空白時
 
@@ -57,11 +57,11 @@ fromLayerType が空白で fromFile が `something/created/123_issue_file.md` �
 
 ## Schema
 
-- dir : {demonstrativeType}/{layerType}
+- dir : {app_schema.base_dir}/{demonstrativeType}/{layerType}
 - filename : `base.schema.md`
   - デフォルト値を `base.schema.md` で固定
 
-Schemaファイル例： `lib/schema/to/issue/base.schema.md`
+Schemaファイル例： `lib/breakdown/schema/to/issue/base.schema.md`
 
 ## Inputファイル
 

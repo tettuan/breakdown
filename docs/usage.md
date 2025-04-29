@@ -32,165 +32,130 @@ breakdown init
 
 This command creates the necessary working directory structure as specified in your configuration.
 
-### Convert Markdown to JSON
+### Markdown Processing Commands
 
-**Create Project Overview**
+The following combinations are available:
 
-```bash
-breakdown to project <written_project_summary.md> -o <project-dir>
-```
+| Command \ Layer | Command Description | Project | Issue | Task |
+| --------------- | ------------------ | ------- | ----- | ---- |
+| to | Command to convert input Markdown to next layer format | Break down into project<br>breakdown to project <written_project_summary.md> -o <project_dir> | Break down project into issues<br>breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | Break down issues into tasks<br>breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
+| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project summary in Markdown format<br>echo "<messy_something>" \| breakdown summary project -o <project_summary.md> | Generate issue summary in Markdown format<br>breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | Generate task summary in Markdown format<br>breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
+| defect | Command to generate fixes from error logs or defect information | Generate project information from defect info<br>tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | Generate issues from defect info<br>breakdown defect issue --from <bug_report.md> -o <issue_defect_dir> | Generate tasks from defect info<br>breakdown defect task --from <improvement_request.md> -o <task_defect_dir> |
 
-**Create Issues**
-
-```bash
-breakdown to issue <project_summary.json|written_issue.md> -o <issue-dir>
-```
-
-**Create Tasks**
+### Breaking Down into Projects
 
 ```bash
-breakdown to task <issue.json|written_task.md> -o <tasks-dir>
+breakdown to project <written_project_summary.md> -o <project_dir>
 ```
 
-### Generate Markdown Summaries
-
-**Project Summary**
+### Breaking Down into Issues
 
 ```bash
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
 ```
 
-**Issue Summary**
+### Breaking Down into Tasks
 
 ```bash
-echo "<issue summary>" | breakdown summary issue -o <issue_summary.md>
+breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 ```
 
-**Task Summary**
+### Generating Markdown Summaries
+
+**Project Summary** Generate project overview from unorganized information:
 
 ```bash
-echo "<task summary>" | breakdown summary task -o <task_summary.md>
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 ```
 
-### Generate Markdown from Existing Documents
-
-**Generate Issues from Project**
+**Issue Summary** Generate issues from a collection of tasks:
 
 ```bash
-breakdown summary issue --from-project <project_summary.md> -o <issue_markdown_dir>
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
 ```
 
-**Generate Tasks from Issue**
+**Task Summary** Generate organized tasks from unorganized task information:
 
 ```bash
-breakdown summary task --from-issue <issue_summary.md> -o <task_markdown_dir>
+breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
 ```
 
-### Handle Defects and Errors
+### Generating Fixes from Defect Information
 
-**Project Defect Analysis**
+**Project Level Defect Analysis**
 
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 ```
 
-**Issue Defect Analysis**
+**Issue Level Defect Analysis**
 
 ```bash
-tail -100 "<error_log_file>" | breakdown defect issue -o <issue_defect.md>
+breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 ```
 
-**Task Defect Analysis**
+**Task Level Defect Analysis**
 
 ```bash
-tail -100 "<error_log_file>" | breakdown defect task -o <task_defect.md>
-```
-
-**Generate Issue Fixes from Project Defects**
-
-```bash
-breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
-```
-
-**Generate Task Fixes from Issue Defects**
-
-```bash
-breakdown defect task --from-issue <issue_defect.md> -o <task_defect_dir>
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
 ## Common Use Case Patterns
 
-### 1. Project Overview to Complete Implementation
+### 1. Flow from Unorganized Information to Project Implementation
 
-Write a project overview and let AI handle the rest:
+Build a project from unorganized information and break it down into issues and tasks:
 
 ```bash
-# Create project summary
-echo "<summary>" | breakdown summary project -o <project_summary.md>
+# Generate project summary from unorganized information
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 
-# Convert to JSON format
-breakdown to project <project_summary.md> -o <project-dir>
+# Break down into project
+breakdown to project <project_summary.md> -o <project_dir>
 
-# Generate issues from project
-breakdown to issue <project_summary.json> -o <issue-dir>
+# Break down into issues
+breakdown to issue <project_summary.md> -o <issue_dir>
+
+# Break down into tasks
+breakdown to task <issue.md> -o <tasks_dir>
+```
+
+### 2. Creating Issues from Task Collections
+
+Generate issues from multiple unorganized tasks and break them down into tasks again:
+
+```bash
+# Generate issues from task collection
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+
+# Edit generated issues (if necessary)
 
 # Generate tasks from issues
-breakdown to task <issue.json> -o <tasks-dir>
+breakdown to task <issue.md> -o <tasks_dir>
 ```
 
-### 2. Detailed Issue Creation from Project
+### 3. Generating Fix Tasks from Defect Information
 
-Create detailed issues from a project overview, then generate tasks:
-
-```bash
-# Create project summary
-echo "<summary>" | breakdown summary project -o <project_summary.md>
-
-# Generate issue markdowns from project
-breakdown summary issue <project_summary.md> -o <issue_markdown_dir>
-
-# Edit multiple Issue Markdowns manually
-
-# Convert each issue to JSON
-breakdown to issue <written_issue_1.md> -o <issue-dir>
-breakdown to issue <written_issue_2.md> -o <issue-dir>
-
-# Generate tasks from each issue
-breakdown to task <issue_1.json> -o <tasks-dir>
-breakdown to task <issue_2.json> -o <tasks-dir>
-```
-
-### 3. Process Detailed Tasks from Test Results
-
-Generate tasks from issues based on test results:
+Generate fix tasks from error logs or defect reports:
 
 ```bash
-# Capture test output and create issue defect
-deno test --allow-read --allow-write --allow-run | breakdown defect issue -o <issue_defect.md>
-
-# Convert defect to JSON issue
-breakdown to issue <issue_defect.md> -o <issue-dir>
-
-# Generate tasks from issue
-breakdown to task <issue.json> -o <tasks-dir>
-```
-
-### 4. Create Fix Proposals for Execution Errors
-
-Set up issues to fix based on Terminal error information:
-
-```bash
-# Capture error logs and create project defect
+# Generate defect information from error logs
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 
-# Generate issue defects from project defect
-breakdown defect issue --from-project <project_defect.md> -o <issue_defect_dir>
+# Generate issues from defect information
+breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
 
-# Convert issue defects to JSON
-breakdown to issue <issue_defect.md> -o <issue-dir>
+# Generate fix tasks from issues
+breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+```
 
-# Generate tasks from issues
-breakdown to task <issue.json> -o <tasks-dir>
+### 4. Creating Fix Proposals from Improvement Requests
+
+Generate task-level fixes directly from improvement requests:
+
+```bash
+# Generate fix tasks from improvement requests
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
 ## Command Options Reference
@@ -204,7 +169,7 @@ breakdown to task <issue.json> -o <tasks-dir>
 
 ### Prompt Types
 
-You can specify different prompt types using the `--adaptation` option:
+Prompt types can be specified using the `--adaptation` option:
 
 ```bash
 # Example: Generate tasks in strict mode
@@ -216,7 +181,7 @@ breakdown summary task --from unorganized_tasks.md -o task_markdown_dir -a a
 
 ### Path Auto-completion
 
-The tool automatically completes paths based on your configuration:
+The tool automatically completes paths based on configuration:
 
 - If a path is provided, it's used as-is
 - If only a filename is provided, it's completed using:
@@ -233,13 +198,13 @@ When output is specified without a filename:
 
 ## Configuration
 
-The tool reads configuration from `/breakdown/config/config.ts` which includes:
+Configuration is loaded from `./agent/breakdown/config/app.yml` which includes:
 
 - Working directory settings
 - Prompt file locations
 - Schema file locations
 
-Initialize your working directory with:
+To initialize your working directory:
 
 ```bash
 breakdown init
