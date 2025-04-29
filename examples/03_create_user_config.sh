@@ -23,9 +23,9 @@ cat > "${USER_CONFIG_PATH}" << 'EOL'
 # User configuration for breakdown
 working_dir: "./.agent/breakdown/examples"
 app_prompt:
-  base_dir: "./prompts/user"
+  base_dir: "./.agent/breakdown/prompts/user"
 app_schema:
-  base_dir: "./schema/user"
+  base_dir: "./.agent/breakdown/schema/user"
 EOL
 
 echo "Created user configuration at: ${USER_CONFIG_PATH}"

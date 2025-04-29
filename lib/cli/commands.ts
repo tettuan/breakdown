@@ -65,14 +65,14 @@ export async function executeCommand(
         logger.debug(`Ensured destination directory exists for ${destFile}`);
 
         switch (targetType) {
-          case "issues":
-            await processWithPrompt("to", "issues", fromFile, destFile, { quiet: args.quiet });
-            output = `Successfully converted ${fromFile} to issues at ${destFile}`;
+          case "issue":
+            await processWithPrompt("to", "issue", fromFile, destFile, { quiet: args.quiet });
+            output = `Successfully converted ${fromFile} to issue at ${destFile}`;
             logger.info(output);
             break;
-          case "tasks":
-            await processWithPrompt("to", "tasks", fromFile, destFile, { quiet: args.quiet });
-            output = `Successfully converted ${fromFile} to tasks at ${destFile}`;
+          case "task":
+            await processWithPrompt("to", "task", fromFile, destFile, { quiet: args.quiet });
+            output = `Successfully converted ${fromFile} to task at ${destFile}`;
             logger.info(output);
             break;
           default:
@@ -112,7 +112,7 @@ export async function executeCommand(
         logger.debug(`Ensured destination directory exists for ${destFile}`);
 
         switch (targetType) {
-          case "tasks": {
+          case "task": {
             const content = await Deno.readTextFile(fromFile);
             const tasks = content.match(/\[[ x]\]/g) || [];
             const completed = tasks.filter((t) => t === "[x]").length;

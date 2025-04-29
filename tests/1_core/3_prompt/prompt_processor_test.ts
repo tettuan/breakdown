@@ -107,16 +107,16 @@ Deno.test("processWithPrompt", async (t) => {
     );
 
     // Create test prompt directory and template
-    await ensureDir(join(testPromptsDir, "to", "issues"));
+    await ensureDir(join(testPromptsDir, "to", "issue"));
     await Deno.writeTextFile(
-      join(testPromptsDir, "to", "issues", "f_projects.md"),
+      join(testPromptsDir, "to", "issue", "f_issue.md"),
       "Test prompt template for converting project to issues",
     );
 
     await t.step("should convert project to issue", async () => {
       await processWithPrompt(
         "to" as DemonstrativeType,
-        "issues" as LayerType,
+        "issue" as LayerType,
         fromFile,
         destFile,
         { testBaseDir: testPromptsDir },
@@ -128,7 +128,7 @@ Deno.test("processWithPrompt", async (t) => {
         () =>
           processWithPrompt(
             "invalid" as DemonstrativeType,
-            "issues" as LayerType,
+            "issue" as LayerType,
             fromFile,
             destFile,
             { testBaseDir: testPromptsDir },

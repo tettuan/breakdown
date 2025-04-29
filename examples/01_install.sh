@@ -23,7 +23,7 @@ set -e
 echo "=== breakdownコマンドのインストール ==="
 
 # Install breakdown globally
-deno install -A --unstable --global cli/breakdown.ts
+deno install -A -f --global --config deno.json cli/breakdown.ts
 
 # Get the installation directory
 INSTALL_DIR=$(dirname $(which breakdown))

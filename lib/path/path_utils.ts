@@ -22,11 +22,11 @@ import { join, normalize, relative } from "jsr:@std/path@^0.224.0";
  */
 export interface WorkingDirStructure {
   /** Root directory for all projects */
-  projects: string;
+  project: string;
   /** Directory containing issue tracking data */
-  issues: string;
+  issue: string;
   /** Directory for task management */
-  tasks: string;
+  task: string;
   /** Temporary directory for workspace operations */
   temp: string;
 }
@@ -35,7 +35,7 @@ export interface WorkingDirStructure {
  * Defines the different types of layers in the workspace.
  * Each layer represents a different aspect of the project structure.
  */
-export type LayerType = "projects" | "issues" | "tasks" | "temp";
+export type LayerType = "project" | "issue" | "task" | "temp";
 
 /**
  * Normalizes a file path
@@ -73,9 +73,9 @@ export async function validateWorkingDir(
 ): Promise<WorkingDirStructure> {
   try {
     const structure: WorkingDirStructure = {
-      projects: "",
-      issues: "",
-      tasks: "",
+      project: "",
+      issue: "",
+      task: "",
       temp: "",
     };
 
@@ -176,9 +176,9 @@ export function resolveLayerPath(
 
   try {
     const layerDirs = {
-      projects: "projects",
-      issues: "issues",
-      tasks: "tasks",
+      project: "project",
+      issue: "issue",
+      task: "task",
       temp: "temp",
     };
 

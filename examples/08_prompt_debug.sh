@@ -10,7 +10,7 @@ export LOG_LEVEL=debug
 echo "=== Testing prompt file paths with different adaptation options ==="
 
 # Create test directories if they don't exist
-mkdir -p examples/output/breakdown/{prompts,tasks}
+mkdir -p tmp/examples/breakdown/{prompts,tasks}
 
 # List current prompt files
 echo "\nPrompt files in lib/breakdown/prompts:"
@@ -24,8 +24,8 @@ echo "\n=== Defect Task Prompts ==="
 ls -R lib/breakdown/prompts/defect/task/ 2>/dev/null || echo "No defect task prompts found"
 
 echo "\nWorkspace prompt files:"
-echo "=== Custom Prompts in examples/output/breakdown/prompts ==="
-ls -R examples/output/breakdown/prompts 2>/dev/null || echo "No custom prompts found"
+echo "=== Custom Prompts in tmp/examples/breakdown/prompts ==="
+ls -R tmp/examples/breakdown/prompts 2>/dev/null || echo "No custom prompts found"
 
 # Test with different adaptation options
 echo "\n=== Testing with --adaptation strict ==="
@@ -33,15 +33,15 @@ echo "Expected prompt file: lib/breakdown/prompts/summary/task/f_task_strict.md"
 breakdown summary task \
   --from examples/fixtures/unorganized_tasks.md \
   --adaptation strict \
-  -o examples/output/breakdown/tasks/strict_tasks.md
+  -o tmp/examples/breakdown/tasks/strict_tasks.md
 
 echo "\n=== Testing with -a a ==="
 echo "Expected prompt file: lib/breakdown/prompts/summary/task/f_task_a.md"
 breakdown summary task \
   --from examples/fixtures/unorganized_tasks.md \
   -a a \
-  -o examples/output/breakdown/tasks/simple_tasks.md
+  -o tmp/examples/breakdown/tasks/simple_tasks.md
 
 # Show results
 echo "\nGenerated task files:"
-ls -l examples/output/breakdown/tasks/ 
+ls -l tmp/examples/breakdown/tasks/ 

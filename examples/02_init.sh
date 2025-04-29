@@ -43,20 +43,20 @@ if [ ! -f "${WORK_DIR}/${BREAKDOWN_DIR}/config/app.yml" ]; then
 fi
 
 # プロンプトディレクトリの確認
-if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/app_prompt" ]; then
-    echo "❌ プロンプトディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/app_prompt"
+if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/prompts" ]; then
+    echo "❌ プロンプトディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/prompts"
     exit 1
 fi
 
 # スキーマディレクトリの確認
-if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/app_schema" ]; then
-    echo "❌ スキーマディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/app_schema"
+if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/schema" ]; then
+    echo "❌ スキーマディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/schema"
     exit 1
 fi
 
 echo "✓ 初期化が完了しました"
 echo "作業ディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}"
 echo "設定ファイル: ${WORK_DIR}/${BREAKDOWN_DIR}/config/app.yml"
-echo "プロンプトディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/app_prompt"
-echo "スキーマディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/app_schema"
+echo "プロンプトディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/prompts"
+echo "スキーマディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/schema"
 exit 0 

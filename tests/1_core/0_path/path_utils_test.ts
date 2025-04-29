@@ -34,18 +34,18 @@ const env = {
 
 // Default structure used in tests
 const DEFAULT_STRUCTURE: WorkingDirStructure = {
-  projects: join(env.workingDir, "projects"),
-  issues: join(env.workingDir, "issues"),
-  tasks: join(env.workingDir, "tasks"),
+  project: join(env.workingDir, "project"),
+  issue: join(env.workingDir, "issue"),
+  task: join(env.workingDir, "task"),
   temp: join(env.workingDir, "temp"),
 };
 
 // Helper function to create test directories
 async function createTestDirectories(workingDir: string): Promise<void> {
   await Deno.mkdir(workingDir, { recursive: true });
-  await Deno.mkdir(join(workingDir, "projects"), { recursive: true });
-  await Deno.mkdir(join(workingDir, "issues"), { recursive: true });
-  await Deno.mkdir(join(workingDir, "tasks"), { recursive: true });
+  await Deno.mkdir(join(workingDir, "project"), { recursive: true });
+  await Deno.mkdir(join(workingDir, "issue"), { recursive: true });
+  await Deno.mkdir(join(workingDir, "task"), { recursive: true });
   await Deno.mkdir(join(workingDir, "temp"), { recursive: true });
 }
 
@@ -67,17 +67,17 @@ Deno.test({
       // Test working directory validation
       const result = await validateWorkingDir(env.workingDir);
       assertEquals(result, {
-        projects: join(env.workingDir, "projects"),
-        issues: join(env.workingDir, "issues"),
-        tasks: join(env.workingDir, "tasks"),
+        project: join(env.workingDir, "project"),
+        issue: join(env.workingDir, "issue"),
+        task: join(env.workingDir, "task"),
         temp: join(env.workingDir, "temp"),
       }, "Should validate directory structure");
 
       // Test layer path resolution
       const testFile = "test.md";
       assertEquals(
-        resolveLayerPath(testFile, "projects" as LayerType, env.workingDir),
-        join(env.workingDir, "projects", testFile),
+        resolveLayerPath(testFile, "project" as LayerType, env.workingDir),
+        join(env.workingDir, "project", testFile),
         "Should resolve project layer path correctly",
       );
 
@@ -126,7 +126,7 @@ Deno.test("path utils - working directory validation", async () => {
     await assertRejects(
       () => validateWorkingDir(env.workingDir),
       Error,
-      "Required directory 'projects' is missing or invalid",
+      "Required directory 'project' is missing or invalid",
       "Should reject when directories don't exist",
     );
 
@@ -134,19 +134,19 @@ Deno.test("path utils - working directory validation", async () => {
     await createTestDirectories(env.workingDir);
     const fullResult = await validateWorkingDir(env.workingDir);
     assertEquals(fullResult, {
-      projects: join(env.workingDir, "projects"),
-      issues: join(env.workingDir, "issues"),
-      tasks: join(env.workingDir, "tasks"),
+      project: join(env.workingDir, "project"),
+      issue: join(env.workingDir, "issue"),
+      task: join(env.workingDir, "task"),
       temp: join(env.workingDir, "temp"),
     }, "All directories should exist after creation");
 
     // Test partial structure
-    await Deno.remove(join(env.workingDir, "projects"), { recursive: true });
+    await Deno.remove(join(env.workingDir, "project"), { recursive: true });
     await assertRejects(
       () => validateWorkingDir(env.workingDir),
       Error,
-      "Required directory 'projects' is missing or invalid",
-      "Should reject when projects directory is missing",
+      "Required directory 'project' is missing or invalid",
+      "Should reject when project directory is missing",
     );
   } finally {
     await cleanupTestEnvironment(env);
@@ -159,15 +159,11 @@ Deno.test("path utils - layer path resolution", async () => {
     await createTestDirectories(env.workingDir);
 
     const testFile = "test.md";
-    const layers: LayerType[] = ["projects", "issues", "tasks"];
+    const layers: LayerType[] = ["project", "issue", "task"];
 
     for (const layer of layers) {
       const resolvedPath = resolveLayerPath(testFile, layer, env.workingDir);
-      const expectedDir = layer === "projects"
-        ? "projects"
-        : layer === "issues"
-        ? "issues"
-        : "tasks";
+      const expectedDir = layer === "project" ? "project" : layer === "issue" ? "issue" : "task";
       assertEquals(
         resolvedPath,
         join(env.workingDir, expectedDir, testFile),
@@ -187,7 +183,7 @@ Deno.test("path utils - directory structure creation", async () => {
     await createWorkingDirStructure(env.workingDir, DEFAULT_STRUCTURE);
 
     // Verify all directories exist
-    const dirs = ["projects", "issues", "tasks", "temp"];
+    const dirs = ["project", "issue", "task", "temp"];
     for (const dir of dirs) {
       const dirExists = await exists(join(env.workingDir, "breakdown", dir), { isDirectory: true });
       assertEquals(dirExists, true, `Directory ${dir} should exist`);
@@ -199,7 +195,7 @@ Deno.test("path utils - directory structure creation", async () => {
     // Test with non-existent parent directory
     const newDir = join(env.workingDir, "subdir");
     await createWorkingDirStructure(newDir, DEFAULT_STRUCTURE);
-    const dirExists = await exists(join(newDir, "breakdown", "projects"), { isDirectory: true });
+    const dirExists = await exists(join(newDir, "breakdown", "project"), { isDirectory: true });
     assertEquals(dirExists, true, "Should create directories in new parent");
   } finally {
     await cleanupTestEnvironment(env);
@@ -215,9 +211,9 @@ Deno.test("path utils - working directory structure", async () => {
     // Verify directory structure
     const result = await validateWorkingDir(env.workingDir);
     assertEquals(result, {
-      projects: join(env.workingDir, "projects"),
-      issues: join(env.workingDir, "issues"),
-      tasks: join(env.workingDir, "tasks"),
+      project: join(env.workingDir, "project"),
+      issue: join(env.workingDir, "issue"),
+      task: join(env.workingDir, "task"),
       temp: join(env.workingDir, "temp"),
     }, "All directories should exist after creation");
   } finally {

@@ -25,14 +25,15 @@ echo "=== プロジェクト概要から詳細な課題の作成 ==="
 
 # カレントディレクトリを作業ディレクトリとして使用
 WORK_DIR="$(pwd)"
+BREAKDOWN_DIR=".agent/breakdown"
 
 # Create necessary directories
-mkdir -p "${WORK_DIR}/project-dir"
-mkdir -p "${WORK_DIR}/issue-dir"
-mkdir -p "${WORK_DIR}/tasks-dir"
+mkdir -p "${WORK_DIR}/tmp/examples/project"
+mkdir -p "${WORK_DIR}/tmp/examples/issue"
+mkdir -p "${WORK_DIR}/tmp/examples/tasks"
 
 # Create sample project summary in JSON format
-cat > "${WORK_DIR}/project-dir/project_summary.json" << 'EOL'
+cat > "${WORK_DIR}/tmp/examples/project/project_summary.json" << 'EOL'
 {
   "project": {
     "name": "Breakdown CLI Tool",
@@ -64,17 +65,17 @@ cat > "${WORK_DIR}/project-dir/project_summary.json" << 'EOL'
 EOL
 
 # プロジェクトから課題への変換
-FAILED_COMMAND="breakdown to issue -f ${WORK_DIR}/project-dir/project_summary.json -o ${WORK_DIR}/issue-dir/issue.json"
+FAILED_COMMAND="breakdown to issue -f ${WORK_DIR}/tmp/examples/project/project_summary.json -o ${WORK_DIR}/tmp/examples/issue/issue.json"
 $FAILED_COMMAND || handle_error "課題への変換に失敗しました"
 
 # 課題からタスクへの変換
-FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/issue-dir/issue.json -o ${WORK_DIR}/tasks-dir/tasks.json"
+FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/tmp/examples/issue/issue.json -o ${WORK_DIR}/tmp/examples/tasks/tasks.json"
 $FAILED_COMMAND || handle_error "タスクへの変換に失敗しました"
 
 echo "✓ 全ての処理が完了しました"
 echo "作業ディレクトリ: ${WORK_DIR}"
 echo "- プロジェクトサマリー: ${WORK_DIR}/project_summary.md"
-echo "- プロジェクト: ${WORK_DIR}/project-dir/project_summary.json"
-echo "- 課題: ${WORK_DIR}/issue-dir/issue.json"
-echo "- タスク: ${WORK_DIR}/tasks-dir/tasks.json"
+echo "- プロジェクト: ${WORK_DIR}/tmp/examples/project/project_summary.json"
+echo "- 課題: ${WORK_DIR}/tmp/examples/issue/issue.json"
+echo "- タスク: ${WORK_DIR}/tmp/examples/tasks/tasks.json"
 exit 0 

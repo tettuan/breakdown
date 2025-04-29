@@ -15,9 +15,9 @@ export type DemonstrativeType = "to" | "summary" | "defect" | "init";
 
 /**
  * Type representing the available layer types for Breakdown.
- * - "projects": Project layer
- * - "issues": Issue layer
- * - "tasks": Task layer
+ * - "project": Project layer
+ * - "issue": Issue layer
+ * - "task": Task layer
  * - "temp": Temporary layer (for intermediate or temporary data)
  */
-export type LayerType = "projects" | "issues" | "tasks" | "temp";
+export type LayerType = "project" | "issue" | "task" | "temp";

@@ -8,7 +8,7 @@
  */
 
 import { readAll } from "jsr:@std/io@0.224.9/read-all";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 
 const logger = new BreakdownLogger();
 

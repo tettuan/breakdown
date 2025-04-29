@@ -3,7 +3,7 @@ import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.8";
 import { getConfig } from "../config/config.ts";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
-import { ensureDir } from "@std/fs";
+import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { dirname } from "jsr:@std/path@^0.224.0/dirname";
 import { resolveLayerPath } from "../path/path_utils.ts";
 import { basename } from "jsr:@std/path@^0.224.0/basename";
@@ -49,7 +49,7 @@ export async function processWithPrompt(
   const workingDir = config.working_dir || ".";
   // Use promptBaseDir if provided, then testBaseDir, then config.app_prompt.base_dir
   const baseDir = options.promptBaseDir || options.testBaseDir || config.app_prompt?.base_dir ||
-    join(workingDir, "breakdown", "prompts");
+    "lib/breakdown/prompts";
   const logger = new BreakdownLogger();
   logger.debug(`Processing with prompt: ${demonstrative} ${layer} ${fromFile} ${destFile}`);
 
@@ -66,14 +66,8 @@ export async function processWithPrompt(
   // Read the input file content
   const inputContent = await Deno.readTextFile(fromFile);
 
-  // Determine the fromLayerType based on the content
-  const fromLayerType = inputContent.includes("Feature")
-    ? "projects"
-    : inputContent.includes("Issue")
-    ? "issues"
-    : inputContent.includes("Task")
-    ? "tasks"
-    : layer;
+  // Determine the fromLayerType based on the content and layer type
+  const fromLayerType = layer;
 
   // Sanitize file paths for prompt variables - use only filenames
   const sanitizedFromFile = sanitizePathForPrompt(fromFile);
@@ -156,11 +150,11 @@ export async function processWithPrompt(
     // Process according to demonstrative type
     switch (demonstrative) {
       case "to": {
-        if (layer === "issues") {
+        if (layer === "issue") {
           logger.debug("Converting project to issues");
 
           // Resolve paths using the utility function
-          const issuesDir = resolveLayerPath(fromFile, "issues" as LayerType, workingDir);
+          const issuesDir = resolveLayerPath(fromFile, "issue" as LayerType, workingDir);
           const absoluteIssuesDir = join(workingDir, issuesDir);
           await ensureDir(dirname(absoluteIssuesDir));
 

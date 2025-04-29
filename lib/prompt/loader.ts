@@ -1,6 +1,6 @@
 import { DemonstrativeType, LayerType } from "../types/mod.ts";
 import { join } from "jsr:@std/path@^0.224.0/join";
-import { exists } from "@std/fs";
+import { exists } from "jsr:@std/fs@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 
 interface LoadPromptParams {

@@ -27,10 +27,10 @@ echo "=== テスト結果からのタスク生成 ==="
 WORK_DIR="$(pwd)"
 
 # Create necessary directories
-mkdir -p "${WORK_DIR}/tasks-dir"
+mkdir -p "${WORK_DIR}/tmp/examples/test_results"
 
 # Create sample test results
-cat > "${WORK_DIR}/test_results.txt" << 'EOL'
+cat > "${WORK_DIR}/tmp/examples/test_results/test_results.txt" << 'EOL'
 Running tests...
 1) Project initialization test
    × Failed: Config directory not created
@@ -57,11 +57,11 @@ Failed: 3
 EOL
 
 # タスクへの変換
-FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/test_results.txt -o ${WORK_DIR}/tasks-dir/tasks.json"
+FAILED_COMMAND="breakdown to task -f ${WORK_DIR}/tmp/examples/test_results/test_results.txt -o ${WORK_DIR}/tmp/examples/test_results/tasks.json"
 $FAILED_COMMAND || handle_error "タスクへの変換に失敗しました"
 
 echo "✓ 全ての処理が完了しました"
 echo "作業ディレクトリ: ${WORK_DIR}"
-echo "- テスト結果: ${WORK_DIR}/test_results.txt"
-echo "- 生成されたタスク: ${WORK_DIR}/tasks-dir/tasks.json"
+echo "- テスト結果: ${WORK_DIR}/tmp/examples/test_results/test_results.txt"
+echo "- 生成されたタスク: ${WORK_DIR}/tmp/examples/test_results/tasks.json"
 exit 0 
