@@ -25,41 +25,47 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ## 構成
 
 ### 前準備
-1. `01_install.sh` - Breakdownのインストール
-2. `02_init.sh` - プロジェクトの初期化
-3. `03_create_user_config.sh` - ユーザー設定の作成
+1. `01_install.sh` - Breakdownのインストール案内
+2. `02_compile.sh` - バイナリ生成
+3. `03_init.sh` - プロジェクトの初期化
+4. `04_create_user_config.sh` - ユーザー設定の作成
 
 ### 使用例
-4. `04_project_to_implementation.sh` - プロジェクト実装への変換
-5. `05_detailed_issue_creation.sh` - 詳細な課題の作成
-6. `06_test_result_tasks.sh` - テスト結果からのタスク生成
-7. `07_adaptation_option.sh` - プロンプト適応オプションの使用
-8. `08_prompt_debug.sh` - プロンプトのデバッグ
-9. `09_clean.sh` - 生成されたファイルのクリーンアップ
+5. `05_project_to_implementation.sh` - プロジェクト実装への変換
+6. `06_detailed_issue_creation.sh` - 詳細な課題の作成
+7. `07_test_result_tasks.sh` - テスト結果からのタスク生成
+8. `08_adaptation_option.sh` - プロンプト適応オプションの使用
+9. `09_prompt_debug.sh` - プロンプトのデバッグ
+10. `10_clean.sh` - 生成されたファイルのクリーンアップ
 
 ## 前準備の詳細
 
-### 1. インストール
+### 1. インストール案内
 ```bash
 ./examples/01_install.sh
 ```
-このスクリプトは以下を実行します：
-- Denoのインストール確認
-- Breakdownのインストール
-- インストールの検証
+このスクリプトは以下を案内します：
+- Breakdown CLIの推奨利用方法（deno task, バイナリ, グローバルインストール）
 
-### 2. 初期化
+### 2. バイナリ生成
 ```bash
-./examples/02_init.sh
+./examples/02_compile.sh
+```
+このスクリプトは以下を実行します：
+- breakdown CLIのバイナリを ./.deno/bin/breakdown に生成
+
+### 3. 初期化
+```bash
+./examples/03_init.sh
 ```
 このスクリプトは以下を実行します：
 - プロジェクト構造の初期化
 - 必要なディレクトリの作成
 - 基本設定の配置
 
-### 3. ユーザー設定
+### 4. ユーザー設定
 ```bash
-./examples/03_create_user_config.sh
+./examples/04_create_user_config.sh
 ```
 このスクリプトは以下を実行します：
 - `./.agent/breakdown/config/user.yml` の作成
@@ -68,9 +74,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 使用例の詳細
 
-### 4. プロジェクト実装への変換
+### 5. プロジェクト実装への変換
 ```bash
-./examples/04_project_to_implementation.sh
+./examples/05_project_to_implementation.sh
 ```
 このスクリプトは以下を実行します：
 - 未整理の情報からプロジェクトサマリーを生成
@@ -78,44 +84,44 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 課題への分解
 - タスクへの分解
 
-### 5. 詳細な課題の作成
+### 6. 詳細な課題の作成
 ```bash
-./examples/05_detailed_issue_creation.sh
+./examples/06_detailed_issue_creation.sh
 ```
 このスクリプトは以下を実行します：
 - タスク群から課題を生成
 - 生成された課題の確認と編集（手動）
 - 課題からタスクを生成
 
-### 6. テスト結果からのタスク生成
+### 7. テスト結果からのタスク生成
 ```bash
-./examples/06_test_result_tasks.sh
+./examples/07_test_result_tasks.sh
 ```
 このスクリプトは以下を実行します：
 - テスト結果からタスクを生成
 - タスクの優先順位付け
 - タスクの整理と出力
 
-### 7. プロンプト適応オプション
+### 8. プロンプト適応オプション
 ```bash
-./examples/07_adaptation_option.sh
+./examples/08_adaptation_option.sh
 ```
 このスクリプトは以下を実行します：
 - `--adaptation` または `-a` オプションを使ってプロンプトの種類パターンを切り替え
 - 長い形式（--adaptation strict）と短い形式（-a a）の両方の例を含みます
 
-### 8. プロンプトデバッグ
+### 9. プロンプトデバッグ
 ```bash
-./examples/08_prompt_debug.sh
+./examples/09_prompt_debug.sh
 ```
 このスクリプトは以下を実行します：
 - プロンプトの動作確認
 - デバッグ情報の出力
 - プロンプトの調整例
 
-### 9. クリーンアップ
+### 10. クリーンアップ
 ```bash
-./examples/09_clean.sh
+./examples/10_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
