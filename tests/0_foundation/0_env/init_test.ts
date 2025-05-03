@@ -6,7 +6,6 @@ import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10"
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,
-  type TestEnvironment,
   type TestEnvironmentOptions,
 } from "$test/helpers/setup.ts";
 import { Workspace } from "../../../lib/workspace/workspace.ts";
@@ -15,7 +14,7 @@ import { stringify } from "jsr:@std/yaml@^1.0.6";
 
 const logger = new BreakdownLogger();
 
-interface TestOptions extends Omit<TestEnvironmentOptions, 'workingDir' | 'logLevel'> {
+interface TestOptions extends Omit<TestEnvironmentOptions, "workingDir" | "logLevel"> {
   logger: BreakdownLogger;
   workingDir: string;
   logLevel: LogLevel;

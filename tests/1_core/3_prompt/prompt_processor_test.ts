@@ -12,7 +12,6 @@
 
 import { assertRejects } from "@std/assert";
 import { dirname, ensureDir, join } from "$deps/mod.ts";
-import { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 import { processWithPrompt } from "$lib/prompt/processor.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
@@ -77,13 +76,13 @@ async function setupTestFiles(workingDir: string) {
     properties: {
       input_markdown_file: { type: "string" },
       input_markdown: { type: "string" },
-      destination_path: { type: "string" }
-    }
+      destination_path: { type: "string" },
+    },
   };
   await Deno.writeTextFile(
     join(schemaDir, "implementation.json"),
     JSON.stringify(schema, null, 2),
-    { mode: 0o666 }
+    { mode: 0o666 },
   );
 
   const promptTemplate = `# {input_markdown_file}
@@ -95,7 +94,7 @@ Output to: {destination_path}`;
   await Deno.writeTextFile(
     join(testPromptsDir, "to", "issue", "f_project.md"),
     promptTemplate,
-    { mode: 0o666 }
+    { mode: 0o666 },
   );
   logger.debug("Created test prompt template", {
     path: join(testPromptsDir, "to", "issue", "f_project.md"),
@@ -153,7 +152,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         relFromFile,
         relDestFile,
         "",
-        logger
+        logger,
       );
       logger.debug("[TEST] After processWithPrompt", { result });
       if (!result.success) {
@@ -176,11 +175,11 @@ Deno.test("Prompt Processing Integration", async (t) => {
             relFromFile,
             relDestFile,
             "",
-            logger
+            logger,
           );
         },
         Error,
-        "Unsupported demonstrative type: invalid"
+        "Unsupported demonstrative type: invalid",
       );
     });
 
@@ -193,7 +192,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         relFromFile,
         relDestFile,
         "",
-        logger
+        logger,
       );
       assertEquals(result.success, false);
       assertEquals(result.content, "Invalid layer type: nonexistent");
@@ -208,7 +207,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         relative(workingDir, join(workingDir, "project", "nonexistent.md")),
         relDestFile,
         "",
-        logger
+        logger,
       );
       assertEquals(result.success, false);
       assertEquals(result.content.includes("No such file"), true);
@@ -230,28 +229,28 @@ function setupPathTestCases(): TestPaths[] {
   return [
     {
       input: "path/to/file.md",
-      expected: "path/to/file.md"
+      expected: "path/to/file.md",
     },
     {
       input: "/absolute/path/file.md",
-      expected: "absolute/path/file.md"
+      expected: "absolute/path/file.md",
     },
     {
       input: "path/../file.md",
-      expected: "file.md"
+      expected: "file.md",
     },
     {
       input: "path/with spaces/file.md",
-      expected: "path/with_spaces/file.md"
+      expected: "path/with_spaces/file.md",
     },
     {
       input: "path/with@special#chars/file.md",
-      expected: "path/with_special_chars/file.md"
-    }
+      expected: "path/with_special_chars/file.md",
+    },
   ];
 }
 
-Deno.test("sanitizePathForPrompt handles various path formats correctly", async () => {
+Deno.test("sanitizePathForPrompt handles various path formats correctly", () => {
   const testCases = setupPathTestCases();
 
   for (const { input, expected } of testCases) {
@@ -286,7 +285,7 @@ Deno.test("processWithPrompt should generate prompt text", async () => {
     relInputFile,
     "",
     "",
-    logger
+    logger,
   );
 
   // Restore working directory
@@ -329,7 +328,7 @@ Deno.test("processWithPrompt should handle file operations when destFile is prov
     relInputFile,
     relOutputFile,
     "",
-    logger
+    logger,
   );
 
   // Restore working directory
@@ -368,7 +367,7 @@ Deno.test("processWithPrompt should handle path sanitization", async () => {
     relInputFile,
     "",
     "",
-    logger
+    logger,
   );
 
   // Restore working directory

@@ -230,8 +230,8 @@ export class PathResolver {
       const dirPath = join(this.workingDir, dir);
       try {
         await Deno.mkdir(dirPath, { recursive: true });
-      } catch (error) {
-        throw error;
+      } catch (_error) {
+        throw _error;
       }
     }
   }
@@ -269,7 +269,7 @@ export class PathResolver {
       if (stat.isDirectory) {
         return join(destinationFile, this.generateDefaultFilename());
       }
-    } catch (error) {
+    } catch (_error) {
       // Path doesn't exist, continue with other checks
     }
 

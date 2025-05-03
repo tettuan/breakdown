@@ -9,7 +9,6 @@
 
 import { assertEquals, assertRejects } from "jsr:@std/assert@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0/join";
-import { dirname } from "jsr:@std/path@^0.224.0/dirname";
 import { exists } from "jsr:@std/fs@^0.224.0";
 import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
@@ -109,7 +108,11 @@ Deno.test("Prompt Setup", async (t) => {
       assertEquals(templateExists, true, "Prompt template file should be created");
 
       const content = await Deno.readTextFile(promptPath);
-      assertEquals(content.includes("{{input_markdown_file}}"), true, "Template should contain variable placeholders");
+      assertEquals(
+        content.includes("{{input_markdown_file}}"),
+        true,
+        "Template should contain variable placeholders",
+      );
     });
 
     await t.step("should handle directory creation errors", async () => {
@@ -124,7 +127,7 @@ Deno.test("Prompt Setup", async (t) => {
         () => setupPromptFiles(env.workingDir),
         Error,
         "Permission denied",
-        "Should throw error when directory creation is blocked"
+        "Should throw error when directory creation is blocked",
       );
     });
 
@@ -140,12 +143,11 @@ Deno.test("Prompt Setup", async (t) => {
         () => setupPromptFiles(readOnlyDir),
         Error,
         "Permission denied",
-        "Should throw error when writing to read-only directory"
+        "Should throw error when writing to read-only directory",
       );
     });
-
   } finally {
     logger.debug("Cleaning up test environment");
     await cleanupTestEnvironment(env);
   }
-}); 
+});

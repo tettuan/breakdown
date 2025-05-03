@@ -27,53 +27,53 @@ function setupPathTestCases(): PathTestCase[] {
     {
       input: "path/to/file.md",
       expected: "path/to/file.md",
-      description: "Should keep valid relative paths unchanged"
+      description: "Should keep valid relative paths unchanged",
     },
     {
       input: "/absolute/path/file.md",
       expected: "absolute/path/file.md",
-      description: "Should remove leading slash from absolute paths"
+      description: "Should remove leading slash from absolute paths",
     },
     {
       input: "path/../file.md",
       expected: "file.md",
-      description: "Should resolve directory traversal"
+      description: "Should resolve directory traversal",
     },
     {
       input: "path/../../file.md",
       expected: "file.md",
-      description: "Should handle multiple directory traversals"
+      description: "Should handle multiple directory traversals",
     },
     {
       input: "path/with spaces/file.md",
       expected: "path/with_spaces/file.md",
-      description: "Should replace spaces with underscores"
+      description: "Should replace spaces with underscores",
     },
     {
       input: "path/with@special#chars/file.md",
       expected: "path/with_special_chars/file.md",
-      description: "Should replace special characters with underscores"
+      description: "Should replace special characters with underscores",
     },
     {
       input: "./current/dir/file.md",
       expected: "current/dir/file.md",
-      description: "Should handle current directory notation"
+      description: "Should handle current directory notation",
     },
     {
       input: "path//with///multiple////slashes.md",
       expected: "path/with/multiple/slashes.md",
-      description: "Should normalize multiple slashes"
+      description: "Should normalize multiple slashes",
     },
     {
       input: "path/with/trailing/slash/",
       expected: "path/with/trailing/slash",
-      description: "Should remove trailing slash"
+      description: "Should remove trailing slash",
     },
     {
       input: "path/with/日本語/file.md",
       expected: "path/with/_/file.md",
-      description: "Should handle non-ASCII characters"
-    }
+      description: "Should handle non-ASCII characters",
+    },
   ];
 }
 
@@ -85,14 +85,14 @@ Deno.test("Path Sanitization", async (t) => {
     await t.step(testCase.description, () => {
       logger.debug("Testing path sanitization", {
         input: testCase.input,
-        expected: testCase.expected
+        expected: testCase.expected,
       });
 
       const result = sanitizePathForPrompt(testCase.input);
       assertEquals(
         result,
         testCase.expected,
-        `Failed to sanitize path correctly.\nInput: ${testCase.input}\nExpected: ${testCase.expected}\nGot: ${result}`
+        `Failed to sanitize path correctly.\nInput: ${testCase.input}\nExpected: ${testCase.expected}\nGot: ${result}`,
       );
     });
   }
@@ -115,7 +115,7 @@ Deno.test("Path Sanitization", async (t) => {
     assertEquals(
       result,
       expected,
-      "Should correctly resolve complex directory traversal"
+      "Should correctly resolve complex directory traversal",
     );
   });
 
@@ -125,7 +125,7 @@ Deno.test("Path Sanitization", async (t) => {
     assertEquals(
       result,
       input,
-      "Should preserve multiple dots in filename"
+      "Should preserve multiple dots in filename",
     );
   });
 
@@ -136,7 +136,7 @@ Deno.test("Path Sanitization", async (t) => {
     assertEquals(
       result,
       expected,
-      "Should convert backslashes to forward slashes"
+      "Should convert backslashes to forward slashes",
     );
   });
-}); 
+});

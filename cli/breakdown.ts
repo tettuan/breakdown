@@ -221,7 +221,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
           parsedArgs.destination,
           "",
           undefined,
-          adaptation
+          adaptation,
         );
         writeStdout(`Summary generated to ${parsedArgs.destination}`);
       } catch (err) {

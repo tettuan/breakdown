@@ -1,7 +1,5 @@
 import { CommandOptions } from "./args.ts";
 import { processWithPrompt } from "../prompt/processor.ts";
-import { join } from "jsr:@std/path";
-import { ensureDir } from "jsr:@std/fs";
 import { Config } from "./config/config.ts";
 
 export async function executeCommand(

@@ -1,13 +1,7 @@
-import { DemonstrativeType, LayerType } from "../types/mod.ts";
 import { PromptManager } from "../deps.ts";
-import { getConfig } from "../config/config.ts";
-import { join, normalize, resolve } from "jsr:@std/path@^0.224.0";
-import { ensureDir, exists } from "jsr:@std/fs@^0.224.0";
-import { dirname } from "jsr:@std/path@^0.224.0/dirname";
-import { determineLayerType } from "../path/path_utils.ts";
+import { join, normalize } from "jsr:@std/path@^0.224.0";
+import { exists } from "jsr:@std/fs@^0.224.0";
 import { basename } from "jsr:@std/path@^0.224.0/basename";
-import { ProgressBar, Spinner } from "../io/stdin.ts";
-import { normalize as normalizePath } from "jsr:@std/path@^0.224.0/normalize";
 
 // Define valid demonstrative types at runtime
 const VALID_DEMONSTRATIVE_TYPES = ["to", "summary", "defect"] as const;
@@ -34,9 +28,9 @@ export function sanitizePathForPrompt(path: string): string {
 
   // Split path into segments and process each segment
   const parts = sanitizedPath.split("/");
-  const sanitizedParts = parts.map(part => {
+  const sanitizedParts = parts.map((part) => {
     // Replace any non-ASCII segment with a single underscore
-    if (/[^\x00-\x7F]/.test(part)) {
+    if (/[^\p{ASCII}]/u.test(part)) {
       return "_";
     }
     // Replace spaces and special characters with underscores
@@ -92,7 +86,7 @@ export async function loadPrompt(
   destinationPath: string,
   fromLayerType: string,
   logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
-  adaptation?: string
+  adaptation?: string,
 ): Promise<{ success: boolean; content: string }> {
   try {
     // Validate inputs
@@ -100,7 +94,7 @@ export async function loadPrompt(
       throw new Error("Invalid input parameters");
     }
     // demonstrativeTypeバリデーション
-    if (!VALID_DEMONSTRATIVE_TYPES.includes(demonstrativeType as any)) {
+    if (!((VALID_DEMONSTRATIVE_TYPES as readonly string[]).includes(demonstrativeType))) {
       return Promise.reject(new Error(`Unsupported demonstrative type: ${demonstrativeType}`));
     }
     // layerバリデーション
@@ -131,11 +125,21 @@ export async function loadPrompt(
 
     // Construct the prompt file name based on fromLayerType and adaptation
     const promptFileName = `f_${sanitizedFromLayerType}${adaptation ? `_${adaptation}` : ""}.md`;
-    const promptPath = join(absoluteBaseDir, sanitizedDemonstrativeType, sanitizedLayer, promptFileName);
-    
+    const promptPath = join(
+      absoluteBaseDir,
+      sanitizedDemonstrativeType,
+      sanitizedLayer,
+      promptFileName,
+    );
+
     // If the adapted prompt doesn't exist, try the default prompt
     if (adaptation && !await exists(promptPath)) {
-      const defaultPromptPath = join(absoluteBaseDir, sanitizedDemonstrativeType, sanitizedLayer, `f_${sanitizedFromLayerType}.md`);
+      const defaultPromptPath = join(
+        absoluteBaseDir,
+        sanitizedDemonstrativeType,
+        sanitizedLayer,
+        `f_${sanitizedFromLayerType}.md`,
+      );
       if (!await exists(defaultPromptPath)) {
         throw new Error("Prompt loading failed: template not found");
       }
@@ -143,7 +147,15 @@ export async function loadPrompt(
         adaptation,
         defaultPath: defaultPromptPath,
       });
-      return await loadPrompt(baseDir, demonstrativeType, layer, fromFile, destinationPath, fromLayerType, logger);
+      return await loadPrompt(
+        baseDir,
+        demonstrativeType,
+        layer,
+        fromFile,
+        destinationPath,
+        fromLayerType,
+        logger,
+      );
     }
 
     // Check if the prompt template exists
@@ -166,7 +178,11 @@ export async function loadPrompt(
       content = await Deno.readTextFile(promptPath);
       if (logger) logger.debug("[DEBUG] Template file read success", { length: content.length });
     } catch (e) {
-      if (logger) logger.error("[DEBUG] Direct readTextFile/stat error", { error: e instanceof Error ? e.message : String(e) });
+      if (logger) {
+        logger.error("[DEBUG] Direct readTextFile/stat error", {
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
     }
 
     // Initialize BreakdownPrompt
@@ -181,7 +197,7 @@ export async function loadPrompt(
         input_markdown_file: absoluteFromFile ? basename(absoluteFromFile) : "",
         destination_path: destinationPath ? sanitizePathForPrompt(destinationPath) : "output.md",
         fromLayerType,
-      }
+      },
     );
 
     if (!result.success) {

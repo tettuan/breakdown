@@ -22,7 +22,7 @@ import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { processWithPrompt } from "../../../lib/prompt/processor.ts";
 import { DemonstrativeType, LayerType } from "../../../lib/types/mod.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { exists, ensureDir } from "jsr:@std/fs@^0.224.0";
+import { ensureDir } from "jsr:@std/fs@^0.224.0";
 
 const logger = new BreakdownLogger();
 
@@ -61,10 +61,13 @@ describe("Prompt Selection", () => {
       properties: {
         input_markdown_file: { type: "string" },
         input_markdown: { type: "string" },
-        destination_path: { type: "string" }
-      }
+        destination_path: { type: "string" },
+      },
     };
-    await Deno.writeTextFile(join(schemaDir, "implementation.json"), JSON.stringify(schema, null, 2));
+    await Deno.writeTextFile(
+      join(schemaDir, "implementation.json"),
+      JSON.stringify(schema, null, 2),
+    );
     logger.debug("Created schema file", { schemaDir });
 
     // Create test prompt files
@@ -118,7 +121,11 @@ describe("Prompt Selection", () => {
 
   describe("processWithPrompt", () => {
     it("should process project to issue prompt", async () => {
-      logger.debug("Testing project to issue prompt processing", { inputFile: join(testDir, "input", "project.md"), outputFile: join(outputDir, "issue.md"), promptDir: join(testDir, "prompts", "to", "issue") });
+      logger.debug("Testing project to issue prompt processing", {
+        inputFile: join(testDir, "input", "project.md"),
+        outputFile: join(outputDir, "issue.md"),
+        promptDir: join(testDir, "prompts", "to", "issue"),
+      });
       const inputFile = join(testDir, "input", "project.md");
       const outputFile = join(outputDir, "issue.md");
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
@@ -143,7 +150,11 @@ describe("Prompt Selection", () => {
         );
         logger.debug("processWithPrompt success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", { error: e instanceof Error ? e.message : String(e), inputFile, outputFile });
+        logger.error("processWithPrompt error", {
+          error: e instanceof Error ? e.message : String(e),
+          inputFile,
+          outputFile,
+        });
         throw e;
       }
       assertEquals(result.success, true);
@@ -151,7 +162,11 @@ describe("Prompt Selection", () => {
     });
 
     it("should process issue to task prompt", async () => {
-      logger.debug("Testing issue to task prompt processing", { inputFile: join(testDir, "input", "issue.md"), outputFile: join(outputDir, "task.md"), promptDir: join(testDir, "prompts", "to", "task") });
+      logger.debug("Testing issue to task prompt processing", {
+        inputFile: join(testDir, "input", "issue.md"),
+        outputFile: join(outputDir, "task.md"),
+        promptDir: join(testDir, "prompts", "to", "task"),
+      });
       const inputFile = join(testDir, "input", "issue.md");
       const outputFile = join(outputDir, "task.md");
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
@@ -170,7 +185,11 @@ describe("Prompt Selection", () => {
         );
         logger.debug("processWithPrompt success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", { error: e instanceof Error ? e.message : String(e), inputFile, outputFile });
+        logger.error("processWithPrompt error", {
+          error: e instanceof Error ? e.message : String(e),
+          inputFile,
+          outputFile,
+        });
         throw e;
       }
       assertEquals(result.success, true);
@@ -178,7 +197,11 @@ describe("Prompt Selection", () => {
     });
 
     it("should process project to issue prompt with strict adaptation", async () => {
-      logger.debug("Testing project to issue prompt with strict adaptation", { inputFile: join(testDir, "input", "project.md"), outputFile: join(outputDir, "issue_strict.md"), promptDir: join(testDir, "prompts", "to", "issue") });
+      logger.debug("Testing project to issue prompt with strict adaptation", {
+        inputFile: join(testDir, "input", "project.md"),
+        outputFile: join(outputDir, "issue_strict.md"),
+        promptDir: join(testDir, "prompts", "to", "issue"),
+      });
       const inputFile = join(testDir, "input", "project.md");
       const outputFile = join(outputDir, "issue_strict.md");
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
@@ -194,11 +217,15 @@ describe("Prompt Selection", () => {
           relOutputFile,
           "",
           loggerAdapter,
-          "strict"
+          "strict",
         );
         logger.debug("processWithPrompt success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", { error: e instanceof Error ? e.message : String(e), inputFile, outputFile });
+        logger.error("processWithPrompt error", {
+          error: e instanceof Error ? e.message : String(e),
+          inputFile,
+          outputFile,
+        });
         throw e;
       }
       assertEquals(result.success, true);
@@ -206,7 +233,11 @@ describe("Prompt Selection", () => {
     });
 
     it("should process issue to task prompt with 'a' adaptation", async () => {
-      logger.debug("Testing issue to task prompt with 'a' adaptation", { inputFile: join(testDir, "input", "issue.md"), outputFile: join(outputDir, "task_a.md"), promptDir: join(testDir, "prompts", "to", "task") });
+      logger.debug("Testing issue to task prompt with 'a' adaptation", {
+        inputFile: join(testDir, "input", "issue.md"),
+        outputFile: join(outputDir, "task_a.md"),
+        promptDir: join(testDir, "prompts", "to", "task"),
+      });
       const inputFile = join(testDir, "input", "issue.md");
       const outputFile = join(outputDir, "task_a.md");
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
@@ -222,11 +253,15 @@ describe("Prompt Selection", () => {
           relOutputFile,
           "",
           loggerAdapter,
-          "a"
+          "a",
         );
         logger.debug("processWithPrompt success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", { error: e instanceof Error ? e.message : String(e), inputFile, outputFile });
+        logger.error("processWithPrompt error", {
+          error: e instanceof Error ? e.message : String(e),
+          inputFile,
+          outputFile,
+        });
         throw e;
       }
       assertEquals(result.success, true);
@@ -234,7 +269,11 @@ describe("Prompt Selection", () => {
     });
 
     it("should fall back to default prompt if adaptation variant doesn't exist", async () => {
-      logger.debug("Testing fallback to default prompt", { inputFile: join(testDir, "input", "issue.md"), outputFile: join(outputDir, "task_fallback.md"), promptDir: join(testDir, "prompts", "to", "task") });
+      logger.debug("Testing fallback to default prompt", {
+        inputFile: join(testDir, "input", "issue.md"),
+        outputFile: join(outputDir, "task_fallback.md"),
+        promptDir: join(testDir, "prompts", "to", "task"),
+      });
       const inputFile = join(testDir, "input", "issue.md");
       const outputFile = join(outputDir, "task_fallback.md");
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
@@ -250,11 +289,15 @@ describe("Prompt Selection", () => {
           relOutputFile,
           "",
           loggerAdapter,
-          "nonexistent"
+          "nonexistent",
         );
         logger.debug("processWithPrompt success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", { error: e instanceof Error ? e.message : String(e), inputFile, outputFile });
+        logger.error("processWithPrompt error", {
+          error: e instanceof Error ? e.message : String(e),
+          inputFile,
+          outputFile,
+        });
         throw e;
       }
       assertEquals(result.success, true);
@@ -294,7 +337,10 @@ describe("CLI integration: adaptation option", () => {
       const promptsDir = join(testDir, "prompts", "to", "task");
       await ensureDir(promptsDir);
       // プロンプトテンプレート作成
-      await Deno.writeTextFile(join(promptsDir, "f_issue_a.md"), "# Issue 1 (Alternative)\nOutput directory: {destination_path}");
+      await Deno.writeTextFile(
+        join(promptsDir, "f_issue_a.md"),
+        "# Issue 1 (Alternative)\nOutput directory: {destination_path}",
+      );
       // 入力ファイル作成
       const inputDir = join(testDir, "input");
       await ensureDir(inputDir);
@@ -316,7 +362,7 @@ describe("CLI integration: adaptation option", () => {
         relOutputFile,
         "",
         loggerAdapter,
-        "a"
+        "a",
       );
       assertEquals(result.success, true);
       assertEquals(result.content.includes("# Issue 1 (Alternative)"), true);
@@ -325,40 +371,3 @@ describe("CLI integration: adaptation option", () => {
     }
   });
 });
-
-async function setupPromptFiles(workingDir: string): Promise<SetupResult> {
-  logger.debug("Setting up prompt files", { workingDir });
-
-  const inputContent = "# Project Title\n- Feature 1: First feature\n- Feature 2: Second feature";
-  const testPromptsDir = join(workingDir, "prompts");
-  const promptPath = join(testPromptsDir, "to", "issue", "f_project.md");
-  const schemaDir = join(testPromptsDir, "schema");
-  const schemaPath = join(schemaDir, "implementation.json");
-
-  // Create test prompt directory and template
-  await ensureDir(join(testPromptsDir, "to", "issue"));
-  await ensureDir(schemaDir);
-  
-  const promptTemplate = `# {{input_markdown_file}}
-
-Content:
-{{input_markdown}}
-
-Output to: {{destination_path}}`;
-  await Deno.writeTextFile(promptPath, promptTemplate);
-  logger.debug("Created test prompt template", { promptPath });
-
-  // Create schema file
-  const schema = {
-    type: "object",
-    properties: {
-      input_markdown_file: { type: "string" },
-      input_markdown: { type: "string" },
-      destination_path: { type: "string" }
-    }
-  };
-  await Deno.writeTextFile(schemaPath, JSON.stringify(schema, null, 2));
-  logger.debug("Created schema file", { schemaPath });
-
-  return { inputContent, testPromptsDir, promptPath };
-}

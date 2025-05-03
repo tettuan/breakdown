@@ -74,11 +74,15 @@ Deno.test("CLI Command Execution", async (t) => {
       outputFile,
     ];
 
-    const result = await runCommand([
-      "to",
-      "project",
-      ...args,
-    ], undefined, absTestDir);
+    const result = await runCommand(
+      [
+        "to",
+        "project",
+        ...args,
+      ],
+      undefined,
+      absTestDir,
+    );
     assertCommandSuccess(result);
 
     // Verify the command was processed correctly

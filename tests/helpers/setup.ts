@@ -65,7 +65,7 @@ app_prompt:
 app_schema:
   base_dir: ${workingDir}/.agent/breakdown/schema
 `,
-        { mode: 0o666 }
+        { mode: 0o666 },
       );
     }
   } else {
