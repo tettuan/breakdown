@@ -198,7 +198,7 @@ breakdown summary task --from unorganized_tasks.md -o task_markdown_dir -a a
 
 ## 設定
 
-ツールは `/breakdown/config/config.ts` から設定を読み込みます。これには以下が含まれます：
+`./agent/breakdown/config/app.yml` から設定を読み込みます。これには以下が含まれます：
 
 - 作業ディレクトリ設定
 - プロンプトファイルの場所

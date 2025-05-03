@@ -4,23 +4,71 @@
 
 ```
 tests/
-├── 0_foundation/     # 基盤機能のテスト
-│   ├── config_test.ts    # 設定関連
-│   └── logger_test.ts    # ロギング関連
-├── 1_core/          # コア機能のテスト
-│   ├── command/         # コマンド処理
-│   ├── prompt/          # プロンプト処理
-│   └── params_test.ts   # パラメータ処理
-├── 2_integration/   # 統合テスト
-│   └── flow_test.ts     # 処理フロー
-├── 3_scenarios/     # シナリオテスト
-│   └── commands_test.ts # コマンド実行
-├── fixtures/        # テストデータ
-├── helpers/         # テストヘルパー
-└── prompts/         # プロンプトテスト
+├── 0_foundation/           # 基盤機能のテスト
+│   ├── 0_env/             # 環境・初期化
+│   ├── 1_config/          # 設定管理
+│   │   └── config_test.ts
+│   ├── 2_commands/        # コマンドパラメータ解析・実行
+│   ├── 3_logger/          # ロギング
+│   │   ├── logger_test.ts
+│   │   └── logger_level_test.ts
+│   └── 4_directory_structure/ # ディレクトリ構造管理
+├── 1_core/                # コア機能のテスト
+│   ├── 0_path/           # パス処理
+│   │   ├── path_utils_test.ts
+│   │   ├── path_resolver_test.ts
+│   │   ├── prompt_path_test.ts
+│   │   ├── url_path_test.ts
+│   │   └── path_test.ts
+│   ├── 1_io/             # I/O処理
+│   │   └── stdin_test.ts
+│   ├── 2_config/         # 設定管理
+│   │   └── working_dir_test.ts
+│   ├── 3_prompt/         # プロンプト処理
+│   │   ├── prompt_processor_test.ts
+│   │   ├── selection_test.ts
+│   │   ├── prompt_setup_test.ts
+│   │   └── prompt_path_sanitize_test.ts
+│   └── cli/              # CLIテスト
+│       ├── args_test.ts
+│       ├── commands_test.ts
+│       └── io_test.ts
+├── 2_integration/         # 統合テスト
+│   └── 0_flow/           # フロー統合
+│       └── flow_test.ts
+├── 3_scenarios/           # シナリオテスト
+│   └── 0_basic/          # 基本シナリオ
+│       └── commands_test.ts
+├── fixtures/              # テストデータ
+│   ├── prompts/
+│   ├── schemas/
+│   ├── config/
+│   └── projects/
+├── helpers/               # テストヘルパー
+│   ├── setup.ts
+│   ├── test_utils.ts
+│   └── assertions.ts
+├── tmp/                   # 一時ファイル
+├── test_config.yml
+├── params_test.ts
+└── README.md
 ```
 
 ## テスト実行手順
+
+### 推奨: 一括テスト・CIフローのローカル実行
+
+プロジェクト全体のテスト・フォーマット・Lintチェックを一括で実行するには、以下のスクリプトを利用してください。
+
+```bash
+bash scripts/local_ci.sh
+```
+
+- CIと同等のフローをローカルで再現します。
+- すべての *_test.ts を順に実行し、テスト通過後にフォーマット・Lintチェックを行います。
+- エラー時は `DEBUG=true bash scripts/local_ci.sh` で詳細なデバッグ出力が得られます。
+- テストは依存順（番号順）で実行されます。
+- コミット・プッシュ・マージ前に必ずこのスクリプトで全チェックを通過させてください。
 
 ### 基本的なテスト実行
 
@@ -73,7 +121,7 @@ deno test <test_file.ts> --allow-env --allow-write --allow-read
 ```
 tests/
 └── 1_core/
-    └── cli/           # CLIテスト専用ディレクトリ
+    └── 1_cli/           # CLIテスト専用ディレクトリ
         ├── args_test.ts     # 引数解析テスト
         ├── commands_test.ts # コマンド実行テスト
         └── io_test.ts      # 入出力テスト

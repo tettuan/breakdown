@@ -74,6 +74,7 @@ const promptManager = new PromptManager({
 
 - `./path.ja.md` を経て作成された情報を受け取り、引き渡します
 - 各引数の型定義は以下の通りです：
+- path チェックが行われるため、オプションを渡す前に絶対PATHのうち現在ディレクトリを削除し相対化します。なお、`../` は使えません。
 
 ```ts
 interface PromptManagerOptions {
