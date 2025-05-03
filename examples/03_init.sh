@@ -62,5 +62,26 @@ echo "設定ファイル: ${WORK_DIR}/${BREAKDOWN_DIR}/config/app.yml"
 echo "プロンプトディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/prompts"
 echo "スキーマディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/schema"
 
+# サンプル入力ファイルの自動生成
+TMP_EXAMPLES_DIR="$PWD/examples/tmp/examples"
+mkdir -p "$TMP_EXAMPLES_DIR/project"
+mkdir -p "$TMP_EXAMPLES_DIR/issue"
+mkdir -p "$TMP_EXAMPLES_DIR/tasks"
+mkdir -p "$TMP_EXAMPLES_DIR/test_results"
+
+cat > "$TMP_EXAMPLES_DIR/project/project_summary.md" <<EOF
+# サンプルプロジェクトサマリー
+- 概要: これはサンプルプロジェクトサマリーです。
+EOF
+
+cat > "$TMP_EXAMPLES_DIR/issue/issue.md" <<EOF
+# サンプル課題
+- 詳細: これはサンプル課題です。
+EOF
+
+cat > "$TMP_EXAMPLES_DIR/test_results/test_results.txt" <<EOF
+テスト結果: すべて成功
+EOF
+
 popd > /dev/null
 exit 0 

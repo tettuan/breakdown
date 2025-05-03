@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "breakdown": "deno run -A ../cli/breakdown.ts"
+  }
+} 

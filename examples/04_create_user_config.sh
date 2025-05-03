@@ -29,6 +29,11 @@ app_schema:
   base_dir: "./.agent/breakdown/schema/user"
 EOL
 
+# Copy default prompt template to user prompt base_dir
+target_prompt_dir=".agent/breakdown/prompts/user/to/project"
+mkdir -p "$target_prompt_dir"
+cp ../lib/breakdown/prompts/to/project/f_project.md "$target_prompt_dir/"
+
 echo "Created user configuration at: ${USER_CONFIG_PATH}"
 echo "Contents of user configuration:"
 cat "${USER_CONFIG_PATH}"
