@@ -112,7 +112,7 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
 export async function convertFile(
   fromFile: string,
   toFile: string,
-  _format: string,
+  format: string,
   force = false,
 ): Promise<CommandResult> {
   try {
@@ -123,33 +123,42 @@ export async function convertFile(
       throw new ArgumentError(`File not found: ${fromFile}`);
     }
 
-    // Read source file
-    const content = await Deno.readTextFile(fromFile);
+    // Use BREAKDOWN_PROMPT_BASE env var if set
+    const promptBaseDir = Deno.env.get("BREAKDOWN_PROMPT_BASE") || "";
+    // If in test mode, pass a logger to processWithPrompt
+    let logger = undefined;
+    if (promptBaseDir) {
+      const { BreakdownLogger, LogLevel } = await import("jsr:@tettuan/breakdownlogger@^0.1.10");
+      const testLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+      logger = {
+        debug: (...args: unknown[]) => testLogger.debug(String(args[0]), args[1]),
+        error: (...args: unknown[]) => testLogger.error(String(args[0]), args[1]),
+      };
+    }
+    // Prompt変換処理
+    const { processWithPrompt } = await import("../prompt/processor.ts");
+    const result = await processWithPrompt(
+      promptBaseDir,
+      "to",
+      format,
+      fromFile,
+      toFile,
+      "",
+      logger,
+    );
 
-    // Check if destination file exists and force flag is not set
-    try {
-      await Deno.stat(toFile);
-      if (!force) {
-        throw new ArgumentError(
-          `Destination file already exists: ${toFile}. Use --force to overwrite.`,
-        );
-      }
-    } catch (error) {
-      if (!(error instanceof Deno.errors.NotFound)) {
-        throw error;
-      }
+    if (!result.success) {
+      return {
+        success: false,
+        output: "",
+        error: result.content,
+      };
     }
 
-    // Ensure destination directory exists
-    const destDir = toFile.substring(0, toFile.lastIndexOf("/"));
-    await ensureDir(destDir);
-
-    // Write converted content
-    await Deno.writeTextFile(toFile, content); // TODO: Implement actual conversion
-
+    // 変換結果をoutputに返す（ファイル書き込みは行わない）
     return {
       success: true,
-      output: `Converted ${fromFile} to ${toFile}`,
+      output: result.content,
       error: "",
     };
   } catch (error) {

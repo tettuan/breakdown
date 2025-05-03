@@ -1,41 +1,24 @@
 # アプリケーションプロンプト
 
-実行時に、アプリケーションが利用するプロンプトを特定し、利用する。
-渡された引数やオプションから、どのプロンプトを用いるか判別する。
+---
 
-## プロンプト処理の実装
+**BreakdownPromptの利用**
+BreakdownPromptはBreakdownアプリケーションの中核的なモジュールであり、AI開発支援のためのプロンプト生成を担います。ユーザーの入力やプロジェクトの状態に応じて、最適なプロンプトを自動的に選択・生成し、AIエージェントが理解しやすい指示文を提供します。
 
-https://jsr.io/@tettuan/breakdownprompt を使用します。 README
-https://github.com/tettuan/breakdownprompt を読み把握すること。
+**公式ドキュメント**
+最新の使い方や型定義、APIの詳細は https://jsr.io/@tettuan/breakdownprompt およびGitHubリポジトリのREADMEを参照してください。常に公式ドキュメントを確認することで、最新の仕様や推奨される利用方法を把握できます。
 
-```ts
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.8";
+**役割・責務**
+BreakdownPromptの責務は「特定されたプロンプトファイルに対する変数置換・スキーマ参照・プロンプト生成」に限定されます。どのプロンプトファイルを使うかの特定やパス解決は path.ja.md や app_factory.ja.md の責務、設定値の管理は app_config.ja.md の責務です。
 
-// プロンプトマネージャーの初期化
-const promptManager = new PromptManager({
-  baseDir: "./.agent/breakdown/prompts/", // baseDir is the correct property name
-  debug: false, // optional: デバッグモードの設定
-});
+**スコープ**
+本モジュールはプロンプトファイルの内容をもとに、与えられた変数やスキーマ情報を埋め込んだプロンプトを生成することに特化します。ファイル特定・パス解決・設定管理は他モジュールが担い、AIによる変換やMarkdown解析、スキーマ検証も対象外です。
 
-// プロンプトの読み込みと変数置換
-const prompt = await promptManager.loadPrompt({
-  demonstrativeType: "to",
-  layerType: "issue",
-  fromLayerType: "project",
-  variables: {
-    input_markdown_file: "./.agent/breakdown/project/project_summary.md",
-    input_markdown: "# Project Summary\nThis is a test project.",
-    destination_path: "./.agent/breakdown/issues/",
-  },
-});
+**処理概要**
+コマンドライン引数や設定ファイルから必要なパラメータを取得し、プロンプトファイルの選択・変数置換・スキーマ情報の埋め込みを経て、最終的なプロンプトを生成・出力します。エラー時は適切なフィードバックも行います。
 
-// プロンプトの取得
-const promptText = prompt.toString();
-```
-
-## プロンプトファイルの設定
-
-app_configの設定ファイルに記載します。
+**設定例**
+app_configファイルで baseDir や debug オプションを指定することで、プロンプトの格納ディレクトリやデバッグモードの有効化など、柔軟な運用が可能です。
 
 ```json
 {
@@ -46,48 +29,9 @@ app_configの設定ファイルに記載します。
 }
 ```
 
-## プロンプトファイルの命名規則と構造
+**デバッグ方法**
+デバッグ時はLOG_LEVEL=debugの環境変数を設定するか、コード内でdebug:trueを指定することで、詳細なログ出力や挙動の確認が可能です。問題発生時の原因特定に役立ちます。
 
-- `./path.ja.md` を参照してください
-- 実行時にプロンプトを特定する手順も`./path.ja.md` を参照してください
+---
 
-## デバッグ方法
-
-プロンプトのデバッグが必要な場合は以下の方法を使用できます：
-
-1. 環境変数での設定:
-
-```bash
-LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
-```
-
-2. コード内での設定:
-
-```ts
-const promptManager = new PromptManager({
-  baseDir: "./.agent/breakdown/prompts/",
-  debug: true,
-});
-```
-
-## BreakdownPrompt の引数
-
-- `./path.ja.md` を経て作成された情報を受け取り、引き渡します
-- 各引数の型定義は以下の通りです：
-- path チェックが行われるため、オプションを渡す前に絶対PATHのうち現在ディレクトリを削除し相対化します。なお、`../` は使えません。
-
-```ts
-interface PromptManagerOptions {
-  baseDir: string;
-  debug?: boolean;
-}
-
-interface LoadPromptOptions {
-  demonstrativeType: string;
-  layerType: string;
-  fromLayerType: string;
-  variables: Record<string, string>;
-}
-```
-
-// 追記: destination_path（destinationPath）はテンプレート埋め込み用の値であり、プロンプトを受け取った結果を書き込む必要はありません。ファイル出力は必須ではありません。
+詳細なパスや変数の扱い、命名規則などは path.ja.md を参照してください。

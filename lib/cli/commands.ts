@@ -46,19 +46,22 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
+        let promptResult;
         switch (targetType) {
           case "issue":
-            await processWithPrompt("", "to", "issue", fromFile, destFile, "");
-            output = `Successfully converted ${fromFile} to issue at ${destFile}`;
+            promptResult = await processWithPrompt("", "to", "issue", fromFile, destFile, "");
             break;
           case "task":
-            await processWithPrompt("", "to", "task", fromFile, destFile, "");
-            output = `Successfully converted ${fromFile} to task at ${destFile}`;
+            promptResult = await processWithPrompt("", "to", "task", fromFile, destFile, "");
             break;
           default:
             error = `Unknown conversion target type: ${targetType}`;
             return { success: false, output, error };
         }
+        if (!promptResult.success) {
+          return { success: false, output: "", error: promptResult.content };
+        }
+        output = promptResult.content;
         break;
       }
       case "analyze": {
@@ -81,25 +84,19 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
+        let promptResult;
         switch (targetType) {
-          case "task": {
-            const content = await Deno.readTextFile(fromFile);
-            const tasks = content.match(/\[[ x]\]/g) || [];
-            const completed = tasks.filter((t) => t === "[x]").length;
-            const analysis = {
-              total: tasks.length,
-              completed,
-              remaining: tasks.length - completed,
-              progress: tasks.length > 0 ? (completed / tasks.length) * 100 : 0,
-            };
-            await Deno.writeTextFile(destFile, JSON.stringify(analysis, null, 2));
-            output = `Successfully analyzed tasks from ${fromFile}. Results saved to ${destFile}`;
+          case "task":
+            promptResult = await processWithPrompt("", "summary", "task", fromFile, destFile, "");
             break;
-          }
           default:
             error = `Unknown analysis target type: ${targetType}`;
             return { success: false, output, error };
         }
+        if (!promptResult.success) {
+          return { success: false, output: "", error: promptResult.content };
+        }
+        output = promptResult.content;
         break;
       }
       case "init": {

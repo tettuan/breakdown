@@ -37,12 +37,13 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandSuccess } from "../../helpers/assertions.ts";
+import { assertCommandSuccess, assertCommandOutput } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_cli_io";
+let originalCwd: string;
 
 Deno.test("CLI I/O Handling", async (t) => {
   await t.step("setup", async () => {
@@ -71,7 +72,8 @@ Deno.test("CLI I/O Handling", async (t) => {
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
-    // Change working directory to test dir
+    // Save and change working directory to test dir
+    originalCwd = Deno.cwd();
     Deno.chdir(TEST_DIR);
   });
 
@@ -85,7 +87,7 @@ Deno.test("CLI I/O Handling", async (t) => {
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
     );
-    assertCommandSuccess(result);
+    assertCommandOutput(result, { error: "File not found: -" });
   });
 
   await t.step("error level logging", async () => {
@@ -116,5 +118,7 @@ Deno.test("CLI I/O Handling", async (t) => {
     } catch (error) {
       logger.error("Failed to clean up test directory", { error });
     }
+    // Restore original working directory
+    Deno.chdir(originalCwd);
   });
 });

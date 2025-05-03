@@ -35,25 +35,25 @@ Breakdown tool has the following main commands:
 | summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project overview            | Generate issue overview    | Generate task overview     |
 | defect  | Command to generate fixes from error logs and defect information          | Generate project information from defect info | Generate issues from defect info   | Generate tasks from defect info |
 
-## Project Breakdown
+### Project Breakdown
 
 ```bash
 breakdown to project <written_project_summary.md> -o <project_dir>
 ```
 
-## Issue Breakdown
+### Issue Breakdown
 
 ```bash
 breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
 ```
 
-## Task Breakdown
+### Task Breakdown
 
 ```bash
 breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 ```
 
-## Markdown Summary Generation
+### Markdown Summary Generation
 
 **Project Summary** Generate project overview from unorganized information:
 
@@ -73,7 +73,7 @@ breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_mark
 breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
 ```
 
-## Fix Generation from Defect Information
+### Fix Generation from Defect Information
 
 **Project Level Defect Analysis**
 
@@ -88,6 +88,39 @@ breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 ```
 
 **Task Level Defect Analysis**
+
+```bash
+breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+```
+
+## Use Case Patterns
+
+### 1. From Unorganized Information to Project Implementation
+
+```bash
+echo "<messy_something>" | breakdown summary project -o <project_summary.md>
+breakdown to project <project_summary.md> -o <project_dir>
+breakdown to issue <project_summary.md> -o <issue_dir>
+breakdown to task <issue.md> -o <tasks_dir>
+```
+
+### 2. Creating Issues from Task Groups
+
+```bash
+breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+# Edit generated issues if needed
+breakdown to task <issue.md> -o <tasks_dir>
+```
+
+### 3. Fix Task Generation from Defect Information
+
+```bash
+tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
+breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
+breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+```
+
+### 4. Creating Fix Proposals from Improvement Requests
 
 ```bash
 breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
@@ -143,19 +176,6 @@ deno uninstall --root .deno breakdown
 
 ---
 
-### Install only for a specific project (local install)
-
-If you want to use the breakdown command only within a specific project, you can install it under `.deno/bin` using the `--root` option:
-
-```bash
-deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
-```
-- You can run it with `.deno/bin/breakdown`.
-- Add `.deno/bin` to your `PATH` if needed.
-- This CLI is only available within that project.
-
----
-
 ### As a library
 
 If you want to use it directly from TypeScript/JavaScript, add it as a dependency:
@@ -172,29 +192,40 @@ deno add @tettuan/breakdown
 - Deno 1.40 or later is recommended.
 - See the "Usage" section below for details.
 
-## Example Directory Structure after Initialization
+### Local Install in Project Directory
 
-When you run the `breakdown init` command, the following directories and files are generated in your project (default settings):
+If you want to use the breakdown command only within a specific project, you can install it under `.deno/bin` using the `--root` option:
 
+```bash
+deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
-.agent/
-└── breakdown/
-    ├── config/
-    │   └── app.yml         # Application config file
-    ├── prompts/            # Prompt files directory
-    └── schema/             # JSON schema directory
+- You can run it with `.deno/bin/breakdown`.
+- Add `.deno/bin` to your `PATH` if needed.
+- This CLI is only available within that project.
+
+---
+
+### Compile and Install CLI via JSR (Local Binary)
+
+You can also compile the Breakdown CLI as a standalone binary using JSR and place it in your project directory (e.g., ./.deno/bin/breakdown):
+
+```bash
+mkdir -p .deno/bin
+# Compile the CLI from JSR and output to .deno/bin/breakdown
+
+deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli
 ```
+- The resulting binary will be available at `./.deno/bin/breakdown`.
+- You can run it with:
+  ```bash
+  ./.deno/bin/breakdown --help
+  ```
+- This binary does not require Deno to be installed on the target environment.
 
-- For rules on config, prompt, and schema placement, see [app_config.ja.md](docs/breakdown/app_config.ja.md).
-- For detailed path and filename specifications, see [path.ja.md](docs/breakdown/path.ja.md).
+> **Note:**
+> If you want to always generate the binary from your local source, use the local path (e.g., `cli/breakdown.ts`) instead of the JSR URL.
 
-## Links to Specifications and Detailed Documentation
-
-- [Breakdown Specification Index](docs/breakdown/index.ja.md)
-- [CLI Interface Specification](docs/breakdown/cli.ja.md)
-- [Application Config & Working Directory Specification](docs/breakdown/app_config.ja.md)
-- [Path & Filename Specification](docs/breakdown/path.ja.md)
-- [Module & Directory Structure](docs/breakdown/module.ja.md)
+---
 
 # Documentation
 

@@ -7,6 +7,21 @@ import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { readAll } from "jsr:@std/io@0.224.0/read-all";
 
 const logger = new BreakdownLogger();
+function getLogLevelFromEnv(): LogLevel {
+  switch ((Deno.env.get("LOG_LEVEL") || "").toLowerCase()) {
+    case "debug":
+      return LogLevel.DEBUG;
+    case "info":
+      return LogLevel.INFO;
+    case "warn":
+      return LogLevel.WARN;
+    case "error":
+      return LogLevel.ERROR;
+    default:
+      return LogLevel.ERROR;
+  }
+}
+logger.setLogLevel(getLogLevelFromEnv());
 const settings = new BreakdownConfig();
 
 const HELP_TEXT = `
@@ -167,53 +182,29 @@ export async function runBreakdown(args: string[]): Promise<void> {
       }
       Deno.exit(1);
     }
-    // Minimal implementation: call convertFile for 'to' command
+    // call convertFile for 'to' command
     if (result.demonstrativeType === "to" && parsedArgs.from && parsedArgs.destination) {
       const { convertFile } = await import("../lib/commands/mod.ts");
-      if (parsedArgs.from === "-") {
-        // Read from stdin and write to destination
-        const decoder = new TextDecoder();
-        const input = await readAll(Deno.stdin);
-        const content = decoder.decode(input);
-        try {
-          // Ensure destination directory exists
-          const destDir = parsedArgs.destination.substring(
-            0,
-            parsedArgs.destination.lastIndexOf("/"),
-          );
-          if (destDir) {
-            const { ensureDir } = await import("jsr:@std/fs@^0.224.0");
-            await ensureDir(destDir);
-          }
-          await Deno.writeTextFile(parsedArgs.destination, content);
-          writeStdout(`Converted stdin to ${parsedArgs.destination}`);
-        } catch (error) {
-          writeStderr(error instanceof Error ? error.message : String(error));
-        }
-        return;
+      const convResult = await convertFile(
+        parsedArgs.from,
+        parsedArgs.destination,
+        result.layerType || "project",
+      );
+      if (convResult.success) {
+        writeStdout(convResult.output);
       } else {
-        const convResult = await convertFile(
-          parsedArgs.from,
-          parsedArgs.destination,
-          result.layerType || "project",
-        );
-        if (convResult.success) {
-          writeStdout(convResult.output);
-        } else {
-          writeStderr(convResult.error);
-        }
+        writeStderr(convResult.error);
       }
       return;
     }
-    // Add summary command handling with adaptation and prompt-dir
+    // summary command handling
     if (result.demonstrativeType === "summary" && parsedArgs.from && parsedArgs.destination) {
       const { processWithPrompt } = await import("../lib/prompt/processor.ts");
-      // Use parsedArgs.promptDir if present
       const promptBaseDir = parsedArgs.promptDir;
       const adaptationIdx = args.findIndex((a) => a === "--adaptation" || a === "-a");
       const adaptation = adaptationIdx !== -1 ? args[adaptationIdx + 1] : parsedArgs.adaptation;
       try {
-        await processWithPrompt(
+        const summaryResult = await processWithPrompt(
           promptBaseDir || "",
           result.demonstrativeType,
           (result.layerType as any) || "task",
@@ -223,7 +214,11 @@ export async function runBreakdown(args: string[]): Promise<void> {
           undefined,
           adaptation,
         );
-        writeStdout(`Summary generated to ${parsedArgs.destination}`);
+        if (summaryResult.success) {
+          writeStdout(summaryResult.content);
+        } else {
+          writeStderr(summaryResult.content);
+        }
       } catch (err) {
         writeStderr(err instanceof Error ? err.message : String(err));
       }

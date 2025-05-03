@@ -132,6 +132,13 @@ export async function loadPrompt(
       promptFileName,
     );
 
+    logger?.debug("Prompt loader debug info", {
+      cwd: currentDir,
+      promptBaseDir: baseDir,
+      promptPath,
+      absoluteBaseDir,
+    });
+
     // If the adapted prompt doesn't exist, try the default prompt
     if (adaptation && !await exists(promptPath)) {
       const defaultPromptPath = join(
@@ -188,12 +195,19 @@ export async function loadPrompt(
     // Initialize BreakdownPrompt
     const prompt = new PromptManager();
 
-    // Generate prompt using absolute paths
+    // Read the input file content for input_text
+    let inputText = "";
+    if (absoluteFromFile && await exists(absoluteFromFile)) {
+      inputText = await Deno.readTextFile(absoluteFromFile);
+    }
+
+    // Remove testLogger and BreakdownLogger debug logging
+    // Only keep application logic and comments
     const result = await prompt.generatePrompt(
       promptPath,
       {
         schema_file: join(absoluteBaseDir, "schema", "implementation.json"),
-        input_markdown: content,
+        input_text: inputText,
         input_markdown_file: absoluteFromFile ? basename(absoluteFromFile) : "",
         destination_path: destinationPath ? sanitizePathForPrompt(destinationPath) : "output.md",
         fromLayerType,
@@ -203,6 +217,8 @@ export async function loadPrompt(
     if (!result.success) {
       throw new Error(result.error);
     }
+
+    logger?.debug("Resolved prompt path", { promptPath, absoluteBaseDir });
 
     return {
       success: true,

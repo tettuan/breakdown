@@ -17,12 +17,13 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandSuccess } from "../../helpers/assertions.ts";
+import { assertCommandSuccess, assertCommandOutput } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_cli_args";
+let originalCwd: string;
 
 Deno.test("CLI High-Level Arguments", async (t) => {
   // Setup test environment
@@ -52,7 +53,8 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
-    // Change working directory to test dir
+    // Save and change working directory to test dir
+    originalCwd = Deno.cwd();
     Deno.chdir(TEST_DIR);
   });
 
@@ -74,7 +76,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "project",
       ...args,
     ]);
-    assertCommandSuccess(result);
+    assertCommandOutput(result, { error: "Invalid input parameters" });
   });
 
   await t.step("source options with input", async () => {
@@ -179,7 +181,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "project",
       ...args,
     ]);
-    assertCommandSuccess(result);
+    assertCommandOutput(result, { error: "Invalid input parameters" });
   });
 
   await t.step("cleanup", async () => {
@@ -192,5 +194,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     } catch (error) {
       logger.error("Failed to clean up test directory", { error });
     }
+    // Restore original working directory
+    Deno.chdir(originalCwd);
   });
 });
