@@ -2,7 +2,11 @@
   "name": "@tettuan/breakdown",
   "version": "0.2.0",
   "exports": {
-    ".": "./mod.ts"
+    ".": "./mod.ts",
+    "./cli": "./cli/breakdown.ts"
+  },
+  "bin": {
+    "breakdown": "./cli/breakdown.ts"
   },
   "imports": {
     "$std/": "jsr:@std/",
