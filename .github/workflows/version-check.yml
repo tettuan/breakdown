@@ -41,3 +41,24 @@ jobs:
             console.log(`deno.json and git tag version match: ${denoVersion}`);
           }
           EOF
+
+      - name: Check lib/version.ts VERSION matches deno.json and tag
+        run: |
+          deno run --allow-read --allow-env - <<'EOF'
+          const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
+          const denoVersion = denoJson.version.replace(/^v/, "");
+          const tagVersion = Deno.env.get("TAG_VERSION").replace(/^v/, "");
+          const versionTs = await Deno.readTextFile("lib/version.ts");
+          const match = versionTs.match(/export const VERSION = \"([^\"]+)\"/);
+          if (!match) {
+            console.error("VERSION constant not found in lib/version.ts");
+            Deno.exit(1);
+          }
+          const versionConst = match[1].replace(/^v/, "");
+          if (denoVersion !== versionConst || tagVersion !== versionConst) {
+            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n lib/version.ts: ${versionConst}\n git tag: ${tagVersion}`);
+            Deno.exit(1);
+          } else {
+            console.log(`All versions match: ${denoVersion}`);
+          }
+          EOF

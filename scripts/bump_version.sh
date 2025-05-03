@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Usage: ./scripts/bump_version.sh [major|minor|patch]
+# Bumps the version in deno.json and lib/version.ts.
+# Default is patch if no argument is given.
+
 # Check if there are any uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
     echo "Error: You have uncommitted changes. Please commit or stash them first."
@@ -50,11 +54,31 @@ if [ "$check_failed" = true ]; then
     exit 1
 fi
 
-# If both checks succeed, bump version
+# Version bump logic
+bump_type=${1:-patch}
 current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
 IFS='.' read -r major minor patch <<< "$current_version"
-new_patch=$((patch + 1))
-new_version="$major.$minor.$new_patch"
+
+case "$bump_type" in
+  major)
+    major=$((major + 1))
+    minor=0
+    patch=0
+    ;;
+  minor)
+    minor=$((minor + 1))
+    patch=0
+    ;;
+  patch)
+    patch=$((patch + 1))
+    ;;
+  *)
+    echo "Unknown version bump type: $bump_type. Use 'major', 'minor', or 'patch'."
+    exit 1
+    ;;
+esac
+
+new_version="$major.$minor.$patch"
 echo "Bumping deno.json version from $current_version to $new_version."
 deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
 # Update lib/version.ts to match new version
