@@ -10,15 +10,12 @@ import {
 import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./errors.ts";
 import { parse, stringify } from "jsr:@std/yaml@1.0.6";
 import { ensureDir } from "@std/fs";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 
 const DEFAULT_CONFIG = {
   working_dir: "breakdown",
   app_prompt: { base_dir: "prompts" },
   app_schema: { base_dir: "schemas" },
 };
-
-const logger = new BreakdownLogger();
 
 /**
  * Workspace class for managing directory structure and configuration
@@ -45,6 +42,18 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     const configDir = join(breakdownDir, "config");
     const configFile = join(configDir, "app.yml");
     let config: WorkspaceConfig;
+
+    // Check if any required paths exist as files
+    const dirsToCheck = [breakdownDir, configDir];
+    for (const dir of dirsToCheck) {
+      if (await exists(dir)) {
+        const stat = await Deno.stat(dir);
+        if (!stat.isDirectory) {
+          throw new WorkspaceInitError(`Path exists but is not a directory: ${dir}`);
+        }
+      }
+    }
+
     if (!(await exists(configFile))) {
       await ensureDir(configDir);
       config = { ...DEFAULT_CONFIG, working_dir: breakdownDir };
@@ -55,10 +64,11 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       config = parse(configText) as WorkspaceConfig;
     }
     this.config = config;
-    logger.debug("[DEBUG] Workspace.initialize config", { config });
+
     // 2. Use config values for directory creation
     const promptBase = (config?.app_prompt?.base_dir || "prompts").toString().trim();
     const schemaBase = (config?.app_schema?.base_dir || "schemas").toString().trim();
+
     // 3. Create required directories
     const subdirs = [
       "projects",
@@ -69,10 +79,23 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       promptBase,
       schemaBase,
     ];
+
+    // Check if any subdirectories exist as files
+    for (const dir of subdirs) {
+      const dirPath = join(breakdownDir, dir);
+      if (await exists(dirPath)) {
+        const stat = await Deno.stat(dirPath);
+        if (!stat.isDirectory) {
+          throw new WorkspaceInitError(`Path exists but is not a directory: ${dirPath}`);
+        }
+      }
+    }
+
     await ensureDir(breakdownDir);
     for (const dir of subdirs) {
       await ensureDir(join(breakdownDir, dir));
     }
+
     // 4. Validate config (check dirs exist)
     await this.validateConfig();
   }

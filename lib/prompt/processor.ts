@@ -1,230 +1,260 @@
 import { DemonstrativeType, LayerType } from "../types/mod.ts";
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@^0.1.8";
+import { PromptManager } from "../deps.ts";
 import { getConfig } from "../config/config.ts";
-import { join } from "jsr:@std/path@^0.224.0/join";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
-import { ensureDir } from "jsr:@std/fs@^0.224.0";
+import { join, normalize, resolve } from "jsr:@std/path@^0.224.0";
+import { ensureDir, exists } from "jsr:@std/fs@^0.224.0";
 import { dirname } from "jsr:@std/path@^0.224.0/dirname";
-import { resolveLayerPath } from "../path/path_utils.ts";
+import { determineLayerType } from "../path/path_utils.ts";
 import { basename } from "jsr:@std/path@^0.224.0/basename";
-import { loadPrompt } from "./loader.ts";
 import { ProgressBar, Spinner } from "../io/stdin.ts";
+import { normalize as normalizePath } from "jsr:@std/path@^0.224.0/normalize";
 
 // Define valid demonstrative types at runtime
 const VALID_DEMONSTRATIVE_TYPES = ["to", "summary", "defect"] as const;
 
 /**
- * Sanitize a path for use in prompt variables
- * Ensures the path meets the PromptManager's validation rules:
- * - Only contains alphanumeric characters, forward slashes, hyphens, underscores, and dots
- * - No directory traversal (..)
- * - No absolute paths (starting with / or \)
+ * Sanitize a path for use in prompt processing
+ * @param path The path to sanitize
+ * @returns The sanitized path
  */
-function sanitizePathForPrompt(path: string): string {
-  // Get just the filename without directory
-  const filename = basename(path);
-  // Replace any invalid characters with underscores
-  return filename.replace(/[^a-zA-Z0-9\-_\.]/g, "_");
+export function sanitizePathForPrompt(path: string): string {
+  // Handle null or undefined input
+  if (!path) {
+    return "";
+  }
+
+  // Remove any absolute path indicators and normalize slashes
+  let sanitizedPath = path.replace(/\\/g, "/").replace(/^[\/\\]/, "");
+
+  // Normalize multiple slashes
+  sanitizedPath = sanitizedPath.replace(/\/+/g, "/");
+
+  // Remove trailing slash
+  sanitizedPath = sanitizedPath.replace(/\/$/, "");
+
+  // Split path into segments and process each segment
+  const parts = sanitizedPath.split("/");
+  const sanitizedParts = parts.map(part => {
+    // Replace any non-ASCII segment with a single underscore
+    if (/[^\x00-\x7F]/.test(part)) {
+      return "_";
+    }
+    // Replace spaces and special characters with underscores
+    return part.replace(/[^a-zA-Z0-9\-_\.]/g, "_");
+  });
+
+  // Handle directory traversal
+  const stack: string[] = [];
+  for (const part of sanitizedParts) {
+    if (part === "." || part === "") {
+      continue;
+    } else if (part === "..") {
+      stack.pop();
+    } else {
+      stack.push(part);
+    }
+  }
+
+  return stack.join("/");
 }
 
 /**
- * Process a file with a prompt
+ * Ensure a path is absolute and normalized
+ * @param path The path to resolve
+ * @param baseDir The base directory to resolve relative paths against
+ * @returns The absolute path
  */
-export async function processWithPrompt(
-  demonstrative: DemonstrativeType,
-  layer: LayerType,
+function ensureAbsolutePath(path: string, baseDir: string): string {
+  if (path.startsWith("/")) {
+    return normalize(path);
+  }
+  return normalize(join(baseDir, path));
+}
+
+/**
+ * Load a prompt file and replace variables using BreakdownPrompt
+ * @param baseDir Base directory for prompts
+ * @param demonstrativeType The type of demonstrative
+ * @param layer The layer type
+ * @param fromFile The source file
+ * @param destinationPath The destination path
+ * @param fromLayerType The input layer type (project/issue/task)
+ * @param logger Optional logger instance (for test/debug only)
+ * @param adaptation Optional adaptation variant
+ * @returns The loaded prompt content with variables replaced
+ * @throws {Error} When prompt loading or processing fails
+ */
+export async function loadPrompt(
+  baseDir: string,
+  demonstrativeType: string,
+  layer: string,
   fromFile: string,
-  destFile: string,
-  options: { quiet?: boolean; testBaseDir?: string; adaptation?: string; promptBaseDir?: string } =
-    {},
-): Promise<void> {
-  // Runtime type check using the constant array
-  if (
-    !VALID_DEMONSTRATIVE_TYPES.includes(demonstrative as typeof VALID_DEMONSTRATIVE_TYPES[number])
-  ) {
-    throw new Error(`Unsupported demonstrative type: ${demonstrative}`);
-  }
-
-  const config = getConfig();
-  const workingDir = config.working_dir || ".";
-  // Use promptBaseDir if provided, then testBaseDir, then config.app_prompt.base_dir
-  const baseDir = options.promptBaseDir || options.testBaseDir || config.app_prompt?.base_dir ||
-    "lib/breakdown/prompts";
-  const logger = new BreakdownLogger();
-  logger.debug(`Processing with prompt: ${demonstrative} ${layer} ${fromFile} ${destFile}`);
-
-  // Ensure destination directory exists
-  await ensureDir(dirname(destFile));
-
-  const promptManager = new PromptManager(logger);
-
-  // Use options.quiet when creating progress indicators
-  const total = 100; // Set an appropriate total based on your processing steps
-  const _progressBar = new ProgressBar(logger, total, 40, { quiet: options.quiet });
-  const _spinner = new Spinner(logger, { quiet: options.quiet });
-
-  // Read the input file content
-  const inputContent = await Deno.readTextFile(fromFile);
-
-  // Determine the fromLayerType based on the content and layer type
-  const fromLayerType = layer;
-
-  // Sanitize file paths for prompt variables - use only filenames
-  const sanitizedFromFile = sanitizePathForPrompt(fromFile);
-  const sanitizedDestFile = destFile ? sanitizePathForPrompt(destFile) : "";
-
-  // Load and process the prompt template using the loader
-  const loadResult = await loadPrompt({
-    demonstrativeType: demonstrative,
-    layerType: layer,
-    fromLayerType,
-    variables: {
-      input_markdown_file: sanitizedFromFile,
-      input_markdown: inputContent,
-      destination_path: sanitizedDestFile,
-    },
-    adaptation: options.adaptation,
-  }, baseDir);
-
-  if (!loadResult.success) {
-    throw new Error("Failed to load prompt template");
-  }
-
-  logger.debug("Generating prompt with variables", {
-    fromFile,
-    sanitizedFromFile,
-    destFile,
-    sanitizedDestFile,
-    workingDir,
-  });
-
-  // Create a temporary template file in the workspace's temp directory
-  const tempTemplateDir = join(workingDir, "breakdown", "temp", "templates");
-  await ensureDir(tempTemplateDir);
-  const tempTemplatePath = join(tempTemplateDir, `template_${Date.now()}.md`);
-
+  destinationPath: string,
+  fromLayerType: string,
+  logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
+  adaptation?: string
+): Promise<{ success: boolean; content: string }> {
   try {
-    // Write the template content to the temporary file
-    await Deno.writeTextFile(tempTemplatePath, loadResult.content);
-
-    // Generate prompt using the temporary template file
-    let result;
-    try {
-      result = await promptManager.generatePrompt(tempTemplatePath, {
-        input_markdown_file: sanitizedFromFile,
-        input_markdown: inputContent,
-        destination_path: sanitizedDestFile,
-      });
-      logger.debug("PromptManager.generatePrompt result", { result });
-    } catch (err) {
-      logger.error("Error in promptManager.generatePrompt", {
-        error: err instanceof Error ? err.message : String(err),
-      });
-      throw err;
+    // Validate inputs
+    if (!baseDir || !demonstrativeType || !layer) {
+      throw new Error("Invalid input parameters");
     }
+    // demonstrativeTypeバリデーション
+    if (!VALID_DEMONSTRATIVE_TYPES.includes(demonstrativeType as any)) {
+      return Promise.reject(new Error(`Unsupported demonstrative type: ${demonstrativeType}`));
+    }
+    // layerバリデーション
+    const validLayers = ["project", "issue", "task"];
+    if (!validLayers.includes(layer)) {
+      return {
+        success: false,
+        content: `Invalid layer type: ${layer}`,
+      };
+    }
+
+    logger?.debug("Loading prompt", {
+      baseDir,
+      demonstrativeType,
+      layer,
+      fromFile,
+      destinationPath,
+      fromLayerType,
+      adaptation,
+    });
+
+    // Ensure absolute paths
+    const currentDir = Deno.cwd();
+    const absoluteBaseDir = ensureAbsolutePath(baseDir, currentDir);
+    const sanitizedDemonstrativeType = sanitizePathForPrompt(demonstrativeType);
+    const sanitizedLayer = sanitizePathForPrompt(layer);
+    const sanitizedFromLayerType = sanitizePathForPrompt(fromLayerType);
+
+    // Construct the prompt file name based on fromLayerType and adaptation
+    const promptFileName = `f_${sanitizedFromLayerType}${adaptation ? `_${adaptation}` : ""}.md`;
+    const promptPath = join(absoluteBaseDir, sanitizedDemonstrativeType, sanitizedLayer, promptFileName);
+    
+    // If the adapted prompt doesn't exist, try the default prompt
+    if (adaptation && !await exists(promptPath)) {
+      const defaultPromptPath = join(absoluteBaseDir, sanitizedDemonstrativeType, sanitizedLayer, `f_${sanitizedFromLayerType}.md`);
+      if (!await exists(defaultPromptPath)) {
+        throw new Error("Prompt loading failed: template not found");
+      }
+      logger?.debug("Adaptation prompt not found, falling back to default", {
+        adaptation,
+        defaultPath: defaultPromptPath,
+      });
+      return await loadPrompt(baseDir, demonstrativeType, layer, fromFile, destinationPath, fromLayerType, logger);
+    }
+
+    // Check if the prompt template exists
+    if (!await exists(promptPath)) {
+      throw new Error("Prompt loading failed: template not found");
+    }
+
+    // Check if the input file exists and ensure absolute path
+    const absoluteFromFile = fromFile ? ensureAbsolutePath(fromFile, currentDir) : "";
+    if (absoluteFromFile && !await exists(absoluteFromFile)) {
+      throw new Error("No such file: " + fromFile);
+    }
+
+    // Debug: print template path and permissions before calling generatePrompt
+    if (logger) logger.debug("[DEBUG] About to read template file", { promptPath });
+    let content = "";
+    try {
+      const stat = await Deno.stat(promptPath);
+      if (logger) logger.debug("[DEBUG] Template file stat", { stat });
+      content = await Deno.readTextFile(promptPath);
+      if (logger) logger.debug("[DEBUG] Template file read success", { length: content.length });
+    } catch (e) {
+      if (logger) logger.error("[DEBUG] Direct readTextFile/stat error", { error: e instanceof Error ? e.message : String(e) });
+    }
+
+    // Initialize BreakdownPrompt
+    const prompt = new PromptManager();
+
+    // Generate prompt using absolute paths
+    const result = await prompt.generatePrompt(
+      promptPath,
+      {
+        schema_file: join(absoluteBaseDir, "schema", "implementation.json"),
+        input_markdown: content,
+        input_markdown_file: absoluteFromFile ? basename(absoluteFromFile) : "",
+        destination_path: destinationPath ? sanitizePathForPrompt(destinationPath) : "output.md",
+        fromLayerType,
+      }
+    );
 
     if (!result.success) {
-      logger.error("Prompt generation failed", { result });
-      throw new Error("Failed to generate prompt");
+      throw new Error(result.error);
     }
 
-    if (destFile) {
-      // Create a temporary file in the same directory as destFile
-      const tempDir = dirname(destFile);
-      const tempFile = join(tempDir, basename(destFile));
-      await ensureDir(tempDir);
-      logger.debug("Writing output file", { tempFile, destFile });
-      try {
-        await Deno.writeTextFile(tempFile, result.prompt);
-        logger.debug("Wrote output file", { tempFile });
-        await Deno.rename(tempFile, destFile);
-        logger.debug("Renamed output file to destination", { destFile });
-      } catch (err) {
-        logger.error("Error writing or renaming output file", {
-          error: err instanceof Error ? err.message : String(err),
-        });
-        throw err;
-      }
-    }
+    return {
+      success: true,
+      content: result.prompt || "",
+    };
+  } catch (error) {
+    logger?.error("Failed to generate prompt:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    return {
+      success: false,
+      content: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
 
-    // Process according to demonstrative type
-    switch (demonstrative) {
-      case "to": {
-        if (layer === "issue") {
-          logger.debug("Converting project to issues");
-
-          // Resolve paths using the utility function
-          const issuesDir = resolveLayerPath(fromFile, "issue" as LayerType, workingDir);
-          const absoluteIssuesDir = join(workingDir, issuesDir);
-          await ensureDir(dirname(absoluteIssuesDir));
-
-          logger.debug("Path resolution", {
-            fromFile,
-            workingDir,
-            issuesDir,
-            absoluteIssuesDir,
-          });
-
-          const features = inputContent.match(/- Feature \d+/g);
-          logger.debug("Found features", { features });
-
-          if (features) {
-            for (let i = 0; i < features.length; i++) {
-              const issueContent = `# Feature ${i + 1}
-
-Converted from project file: ${fromFile}
-
-Feature: ${features[i].replace("- ", "")}
-`;
-              const issueFile = join(dirname(absoluteIssuesDir), `issue_${i + 1}.md`);
-              logger.debug("Writing issue file", {
-                issueFile,
-                issueContent,
-              });
-
-              try {
-                await Deno.writeTextFile(issueFile, issueContent);
-                const writtenContent = await Deno.readTextFile(issueFile);
-                logger.debug("Written content", { writtenContent });
-              } catch (error) {
-                logger.error("Error writing file", {
-                  error: error instanceof Error ? error.message : String(error),
-                });
-                throw new Error(
-                  `Failed to write issue file: ${
-                    error instanceof Error ? error.message : String(error)
-                  }`,
-                );
-              }
-            }
-          } else {
-            throw new Error("No features found in the input file");
-          }
-        }
-        break;
-      }
-      case "summary": {
-        logger.debug("Generating summary");
-        // Extract and display priority from input file
-        logger.debug("Summary input content", { inputContent });
-        const priorityMatch = inputContent.match(/Priority: \w+/);
-        logger.debug("Found priority", { priorityMatch });
-        if (priorityMatch) {
-          logger.info(priorityMatch[0]);
-        }
-        break;
-      }
-      case "defect": {
-        logger.debug("Analyzing defects");
-        break;
-      }
-    }
-  } finally {
-    // Clean up the temporary template file
-    try {
-      await Deno.remove(tempTemplatePath);
-    } catch (error) {
-      logger.warn(`Failed to clean up temporary template file: ${error}`);
+/**
+ * Process a file with a prompt template
+ *
+ * According to the specification, this function:
+ * - Selects the appropriate prompt template based on parameters
+ * - Substitutes variables in the template
+ * - Embeds schema reference information
+ * - Returns the generated prompt string (never writes to a file)
+ *
+ * @param baseDir Base directory for prompts
+ * @param demonstrativeType The type of demonstrative
+ * @param layer The layer type
+ * @param fromFile The source file
+ * @param destinationPath The destination path (used as a variable, not for writing)
+ * @param fromLayerType The input layer type (project/issue/task)
+ * @param logger Optional logger instance (for test/debug only)
+ * @param adaptation Optional adaptation variant
+ * @returns The processed prompt content (never written to a file)
+ */
+export async function processWithPrompt(
+  baseDir: string,
+  demonstrativeType: string,
+  layer: string,
+  fromFile: string,
+  destinationPath: string,
+  fromLayerType: string,
+  logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
+  adaptation?: string,
+): Promise<{ success: boolean; content: string }> {
+  // fromLayerTypeが未指定の場合は推論
+  let resolvedFromLayerType = fromLayerType;
+  if (!resolvedFromLayerType) {
+    if (fromFile.includes("project")) {
+      resolvedFromLayerType = "project";
+    } else if (fromFile.includes("issue")) {
+      resolvedFromLayerType = "issue";
+    } else if (fromFile.includes("task")) {
+      resolvedFromLayerType = "task";
+    } else {
+      resolvedFromLayerType = layer;
     }
   }
+  const result = await loadPrompt(
+    baseDir,
+    demonstrativeType,
+    layer,
+    fromFile,
+    destinationPath,
+    resolvedFromLayerType,
+    logger,
+    adaptation,
+  );
+
+  return result;
 }

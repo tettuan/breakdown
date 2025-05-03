@@ -8,9 +8,6 @@
  */
 
 import { readAll } from "jsr:@std/io@0.224.9/read-all";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
-
-const logger = new BreakdownLogger();
 
 /**
  * Error thrown when stdin reading fails
@@ -62,7 +59,6 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
       throw new StdinError("No input provided via stdin");
     }
 
-    logger.debug("Read from stdin", { size: input.length });
     return content;
   } catch (error) {
     if (error instanceof StdinError) {
@@ -72,7 +68,6 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
       throw new StdinError("Stdin reading timed out");
     }
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("Failed to read from stdin:", errorMessage);
     throw new StdinError(
       `Failed to read from stdin: ${errorMessage}`,
     );
@@ -100,10 +95,8 @@ export function writeStdout(content: string): void {
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
     Deno.stdout.writeSync(data);
-    logger.debug("Wrote to stdout", { size: content.length });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("Failed to write to stdout:", errorMessage);
     throw new Error(`Failed to write to stdout: ${errorMessage}`);
   }
 }
@@ -114,12 +107,10 @@ export function writeStdout(content: string): void {
 export class ProgressBar {
   private enabled: boolean = true;
   private progress: number;
-  private logger: BreakdownLogger;
   private total: number;
   private width: number;
 
-  constructor(logger: BreakdownLogger, total: number, width = 40, options?: { quiet?: boolean }) {
-    this.logger = logger;
+  constructor(total: number, width = 40, options?: { quiet?: boolean }) {
     this.enabled = !(options?.quiet);
     this.progress = 0;
     this.total = total;
@@ -154,10 +145,8 @@ export class Spinner {
   private frames: string[];
   private currentFrame: number;
   private interval: number | null;
-  private logger: BreakdownLogger;
 
-  constructor(logger: BreakdownLogger, options?: { quiet?: boolean }) {
-    this.logger = logger;
+  constructor(options?: { quiet?: boolean }) {
     this.enabled = !(options?.quiet);
     this.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     this.currentFrame = 0;

@@ -1,9 +1,6 @@
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { crypto } from "jsr:@std/crypto@^0.224.0";
 import { getConfig } from "$lib/config/config.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-
-const logger = new BreakdownLogger();
 
 /**
  * Checks if a path points to a directory
@@ -29,8 +26,6 @@ export function normalizePath(path: string): string {
   if (!path) {
     throw new Error("Path is required");
   }
-
-  logger.debug("Normalizing path", { path });
 
   // Convert Windows backslashes to forward slashes
   path = path.replace(/\\/g, "/");
@@ -61,7 +56,6 @@ export function normalizePath(path: string): string {
     }
   } catch (_error) {
     // If URL parsing fails, use simple normalization
-    logger.debug("URL parsing failed, using fallback", { path, error: _error });
     path = path.replace(/^\.\//, "");
   }
 
@@ -223,9 +217,10 @@ export class PathResolver {
       return decodeURIComponent(url.pathname).replace(/^\//, "");
     } catch (_error) {
       // If URL parsing fails, use simple normalization
-      logger.debug("URL parsing failed, using fallback", { path, error: _error });
-      return path.replace(/^\.\//, "");
+      path = path.replace(/^\.\//, "");
     }
+
+    return path;
   }
 
   async validateDirectoryStructure(): Promise<void> {
@@ -236,7 +231,6 @@ export class PathResolver {
       try {
         await Deno.mkdir(dirPath, { recursive: true });
       } catch (error) {
-        logger.error("Failed to create directory", { dir: dirPath, error });
         throw error;
       }
     }
@@ -268,19 +262,15 @@ export class PathResolver {
     }
 
     const fullPath = join(this.workingDir, destinationFile);
-    logger.debug("Checking path", { fullPath });
 
     // First check if the path exists and is a directory
     try {
       const stat = await Deno.stat(fullPath);
-      logger.debug("Path stat", { isDirectory: stat.isDirectory });
       if (stat.isDirectory) {
-        logger.debug("Path is a directory", { fullPath });
         return join(destinationFile, this.generateDefaultFilename());
       }
     } catch (error) {
       // Path doesn't exist, continue with other checks
-      logger.debug("Path check error", { error: String(error) });
     }
 
     // If destinationFile has path hierarchy and extension

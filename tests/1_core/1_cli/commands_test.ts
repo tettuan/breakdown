@@ -13,6 +13,10 @@
  * Dependencies:
  * - Requires 0_foundation/2_commands/commands_test.ts to pass first
  * - Requires 1_core/cli/args_test.ts to pass first
+ *
+ * NOTE:
+ * - メインコード（アプリケーション本体）にはデバッグ出力（DEBUGログ等）を含めない方針とする。
+ * - テストでは、コマンド実行後の副作用（ファイル生成や内容）を検証することで、正しい動作を確認する。
  */
 
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
@@ -24,6 +28,7 @@ import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_cli";
+let absTestDir: string;
 
 Deno.test("CLI Command Execution", async (t) => {
   await t.step("setup", async () => {
@@ -36,10 +41,11 @@ Deno.test("CLI Command Execution", async (t) => {
       // Ignore errors if directory doesn't exist
     }
     await ensureDir(TEST_DIR);
+    absTestDir = await Deno.realPath(TEST_DIR);
 
-    // Create test file with minimal content
+    // Create test file with minimal content (絶対パスで)
     await Deno.writeTextFile(
-      join(TEST_DIR, "test.md"),
+      join(absTestDir, "test.md"),
       "# Test Content\n\nBasic test content",
     );
 
@@ -51,14 +57,14 @@ Deno.test("CLI Command Execution", async (t) => {
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
-    // Change working directory to test dir
-    Deno.chdir(TEST_DIR);
+    // 事前にinitコマンドでapp.ymlを生成
+    await runCommand(["init"], undefined, absTestDir);
   });
 
   await t.step("command parameter validation", async () => {
     logger.debug("Testing command parameter validation");
-    const testFile = "test.md";
-    const outputFile = "output.md";
+    const testFile = join(absTestDir, "test.md");
+    const outputFile = join(absTestDir, "output.md");
 
     // Test basic parameter processing
     const args = [
@@ -72,7 +78,7 @@ Deno.test("CLI Command Execution", async (t) => {
       "to",
       "project",
       ...args,
-    ]);
+    ], undefined, absTestDir);
     assertCommandSuccess(result);
 
     // Verify the command was processed correctly
@@ -83,17 +89,17 @@ Deno.test("CLI Command Execution", async (t) => {
     logger.debug("Testing configuration integration");
 
     // Test configuration loading
-    const result = await runCommand(["init"]);
+    const result = await runCommand(["init"], undefined, absTestDir);
     assertCommandSuccess(result);
 
-    // Verify configuration was processed
-    const configLoadedPattern =
-      /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[DEBUG\] Configuration loaded/;
-    assertEquals(
-      configLoadedPattern.test(result.output),
-      true,
-      "Should show configuration loaded debug message",
-    );
+    // 構成ファイルが作成されていることを検証
+    const configPath = join(absTestDir, ".agent", "breakdown", "config", "app.yml");
+    const configExists = await Deno.stat(configPath).then(() => true, () => false);
+    assertEquals(configExists, true, "Config file should exist after init");
+
+    // 必要なら内容も検証
+    const configContent = await Deno.readTextFile(configPath);
+    assertEquals(configContent.includes("working_dir:"), true, "Config should contain working_dir");
   });
 
   await t.step("cleanup", async () => {

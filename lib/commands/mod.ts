@@ -5,13 +5,10 @@
 
 import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { ArgumentError } from "../cli/args.ts";
 import { parse } from "jsr:@std/yaml@1.0.6";
 import { exists } from "jsr:@std/fs@^0.224.0";
 import { VERSION } from "../version.ts";
-
-const logger = new BreakdownLogger();
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -57,8 +54,6 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
       // working_dir value is always .agent/breakdown (relative to project root)
       const configYaml =
         `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
-      console.log("[DEBUG] Writing config file:", configFile);
-      console.log("[DEBUG] Config YAML content:\n" + configYaml);
       await Deno.writeTextFile(configFile, configYaml);
     } else {
       // Config already exists, do not overwrite
@@ -69,7 +64,6 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
     const config = parse(configText) as AppConfig;
     const promptBase = config?.app_prompt?.base_dir || "prompts";
     const schemaBase = config?.app_schema?.base_dir || "schema";
-    logger.debug("Configuration loaded", { config });
 
     // Create required subdirectories under .agent/breakdown
     const subdirs = [
@@ -131,7 +125,6 @@ export async function convertFile(
 
     // Read source file
     const content = await Deno.readTextFile(fromFile);
-    logger.debug("Read source file", { file: fromFile, size: content.length });
 
     // Check if destination file exists and force flag is not set
     try {
@@ -153,7 +146,6 @@ export async function convertFile(
 
     // Write converted content
     await Deno.writeTextFile(toFile, content); // TODO: Implement actual conversion
-    logger.debug("Wrote destination file", { file: toFile });
 
     return {
       success: true,
@@ -162,7 +154,6 @@ export async function convertFile(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("Failed to convert file:", errorMessage);
     return {
       success: false,
       output: "",

@@ -119,7 +119,10 @@ Deno.test("path utils - normalization", async () => {
 });
 
 Deno.test("path utils - working directory validation", async () => {
-  const env = await setupTestEnvironment(getTestEnvOptions("path-utils-validation"));
+  const env = await setupTestEnvironment({
+    ...getTestEnvOptions("path-utils-validation"),
+    skipDirectorySetup: true,
+  });
 
   try {
     // Test empty directory

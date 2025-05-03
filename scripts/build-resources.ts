@@ -73,7 +73,6 @@ export const PROMPTS = {
 
   // Write the output file
   await Deno.writeTextFile(PROMPTS_OUTPUT, output);
-  console.log(`Generated prompt templates: ${PROMPTS_OUTPUT}`);
 }
 
 // SPEC-DIFF: To be removed - Schema generation function
@@ -141,7 +140,6 @@ export const schemas = {
 
   // Write the output file
   await Deno.writeTextFile(SCHEMAS_OUTPUT, output);
-  console.log(`Generated schema definitions: ${SCHEMAS_OUTPUT}`);
 }
 
 // Main function
@@ -150,10 +148,8 @@ async function main() {
     await generatePromptTemplates();
     // SPEC-DIFF: To be removed - Schema generation call
     await generateSchemaDefinitions();
-    console.log("Resource build completed successfully");
   } catch (error) {
-    console.error("Error building resources:", error);
-    Deno.exit(1);
+    throw error;
   }
 }
 

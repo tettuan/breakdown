@@ -199,3 +199,29 @@ export function resolveLayerPath(
     throw new Error(`Failed to resolve layer path: ${message}`);
   }
 }
+
+/**
+ * Determines the layer type from a file path
+ * @param filePath The file path to analyze
+ * @returns The determined layer type
+ * @throws {Error} If the layer type cannot be determined
+ */
+export function determineLayerType(filePath: string): LayerType {
+  if (!filePath) {
+    throw new Error("File path is required");
+  }
+
+  // Check for layer type in the path
+  if (filePath.includes("/project/") || filePath.includes("\\project\\")) {
+    return "project";
+  } else if (filePath.includes("/issue/") || filePath.includes("\\issue\\")) {
+    return "issue";
+  } else if (filePath.includes("/task/") || filePath.includes("\\task\\")) {
+    return "task";
+  } else if (filePath.includes("/temp/") || filePath.includes("\\temp\\")) {
+    return "temp";
+  }
+
+  // If no layer type is found in the path, throw an error
+  throw new Error(`Could not determine layer type from path: ${filePath}`);
+}

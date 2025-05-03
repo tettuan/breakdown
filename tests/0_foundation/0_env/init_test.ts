@@ -1,7 +1,8 @@
 import { assert, assertEquals, assertRejects } from "jsr:@std/assert";
-import { join } from "jsr:@std/path/join";
-import { ensureDir, exists } from "jsr:@std/fs";
-import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
+import { join } from "jsr:@std/path@^0.224.0/join";
+import { exists } from "@std/fs";
+import { ensureDir } from "@std/fs";
+import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,
@@ -9,10 +10,15 @@ import {
   type TestEnvironmentOptions,
 } from "$test/helpers/setup.ts";
 import { Workspace } from "../../../lib/workspace/workspace.ts";
+import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
+import { stringify } from "jsr:@std/yaml@^1.0.6";
 
 const logger = new BreakdownLogger();
 
-interface TestOptions extends TestEnvironment {
+interface TestOptions extends Omit<TestEnvironmentOptions, 'workingDir' | 'logLevel'> {
+  logger: BreakdownLogger;
+  workingDir: string;
+  logLevel: LogLevel;
   debug?: boolean;
 }
 
@@ -133,23 +139,48 @@ Deno.test({
       workingDir: "tmp/test/init-error",
       logger,
       logLevel: LogLevel.DEBUG,
+      skipDirectorySetup: true,
     };
     await setupTestEnvironment(options);
 
+    // Create the .agent/breakdown directory structure but leave out prompts
+    const breakdownDir = join(options.workingDir, ".agent", "breakdown");
+    await Deno.mkdir(breakdownDir, { recursive: true });
+
     // Create a file that will block directory creation
-    const targetDir = join(options.workingDir, ".agent", "breakdown", "prompts");
-    await ensureDir(targetDir); // Ensure directory exists before removing
-    await Deno.remove(targetDir, { recursive: true });
+    const targetDir = join(breakdownDir, "prompts");
     await Deno.writeTextFile(targetDir, "");
+
+    // Create config directory and file
+    const configDir = join(breakdownDir, "config");
+    await Deno.mkdir(configDir, { recursive: true });
+    const configFile = join(configDir, "app.yml");
+    const config = {
+      working_dir: options.workingDir,
+      app_prompt: {
+        base_dir: "prompts",
+      },
+      app_schema: {
+        base_dir: "schemas",
+      },
+    };
+    await Deno.writeTextFile(configFile, stringify(config));
 
     await assertRejects(
       async () => {
         const workspace = new Workspace({ workingDir: options.workingDir });
         await workspace.initialize();
       },
-      Error,
-      "Ensure path exists",
+      WorkspaceInitError,
+      "Path exists but is not a directory",
     );
+
+    // Clean up the file before cleanup
+    try {
+      await Deno.remove(targetDir);
+    } catch (_error) {
+      // Ignore error if file doesn't exist
+    }
 
     await cleanupTestEnvironment(options);
   },

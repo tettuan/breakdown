@@ -214,11 +214,14 @@ export async function runBreakdown(args: string[]): Promise<void> {
       const adaptation = adaptationIdx !== -1 ? args[adaptationIdx + 1] : parsedArgs.adaptation;
       try {
         await processWithPrompt(
+          promptBaseDir || "",
           result.demonstrativeType,
           (result.layerType as any) || "task",
           parsedArgs.from,
           parsedArgs.destination,
-          { adaptation, promptBaseDir },
+          "",
+          undefined,
+          adaptation
         );
         writeStdout(`Summary generated to ${parsedArgs.destination}`);
       } catch (err) {

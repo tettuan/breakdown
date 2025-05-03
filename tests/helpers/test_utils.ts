@@ -1,10 +1,15 @@
 import { join } from "jsr:@std/path/join";
 
 /**
+ * Base directory for all test files
+ */
+export const TEST_BASE_DIR = "./tmp/test";
+
+/**
  * Gets test environment options for a specific test module
  */
 export function getTestEnvOptions(testModule: string) {
   return {
-    workingDir: join("./tmp/test", testModule),
+    workingDir: join(TEST_BASE_DIR, testModule),
   };
 }

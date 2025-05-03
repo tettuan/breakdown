@@ -5,6 +5,7 @@ export interface TestEnvironmentOptions {
   workingDir?: string;
   logLevel?: LogLevel;
   skipDefaultConfig?: boolean;
+  skipDirectorySetup?: boolean;
 }
 
 export interface TestEnvironment {
@@ -33,30 +34,43 @@ export async function setupTestEnvironment(
   const workingDir = options.workingDir || "./tmp/test";
   const logLevel = options.logLevel || LogLevel.DEBUG;
 
-  // Create test directories
-  await Deno.mkdir(workingDir, { recursive: true });
+  // Create test directories only if not skipped
+  if (!options.skipDirectorySetup) {
+    // Create test directories with proper permissions
+    await Deno.mkdir(workingDir, { recursive: true, mode: 0o777 });
 
-  // Create .agent/breakdown/config directory
-  const configDir = join(workingDir, ".agent", "breakdown", "config");
-  await Deno.mkdir(configDir, { recursive: true });
+    // Create .agent/breakdown/config directory
+    const configDir = join(workingDir, ".agent", "breakdown", "config");
+    await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
 
-  // Create breakdown/prompts and breakdown/schema directories
-  const breakdownDir = join(workingDir, ".agent", "breakdown");
-  await Deno.mkdir(join(breakdownDir, "prompts"), { recursive: true });
-  await Deno.mkdir(join(breakdownDir, "schema"), { recursive: true });
+    // Create breakdown/prompts and breakdown/schema directories
+    const breakdownDir = join(workingDir, ".agent", "breakdown");
+    await Deno.mkdir(join(breakdownDir, "prompts"), { recursive: true, mode: 0o777 });
+    await Deno.mkdir(join(breakdownDir, "schema"), { recursive: true, mode: 0o777 });
 
-  // Create default app.yml if it doesn't exist
-  const appConfigPath = join(configDir, "app.yml");
-  if (!options.skipDefaultConfig) {
-    await Deno.writeTextFile(
-      appConfigPath,
-      `working_dir: ${workingDir}/.agent/breakdown
+    // Create layer directories
+    await Deno.mkdir(join(workingDir, "project"), { recursive: true, mode: 0o777 });
+    await Deno.mkdir(join(workingDir, "issue"), { recursive: true, mode: 0o777 });
+    await Deno.mkdir(join(workingDir, "task"), { recursive: true, mode: 0o777 });
+    await Deno.mkdir(join(workingDir, "temp"), { recursive: true, mode: 0o777 });
+
+    // Create default app.yml if it doesn't exist
+    if (!options.skipDefaultConfig) {
+      const appConfigPath = join(configDir, "app.yml");
+      await Deno.writeTextFile(
+        appConfigPath,
+        `working_dir: ${workingDir}
 app_prompt:
-  base_dir: prompts
+  base_dir: ${workingDir}/.agent/breakdown/prompts
 app_schema:
-  base_dir: schema
+  base_dir: ${workingDir}/.agent/breakdown/schema
 `,
-    );
+        { mode: 0o666 }
+      );
+    }
+  } else {
+    // Only create the base working directory
+    await Deno.mkdir(workingDir, { recursive: true, mode: 0o777 });
   }
 
   // Set up logger
@@ -68,6 +82,28 @@ app_schema:
     logLevel,
     logger,
   };
+}
+
+/**
+ * Recursively restores write permissions to a directory and its contents
+ * @param path The path to restore permissions for
+ */
+async function restoreWritePermissions(path: string): Promise<void> {
+  try {
+    const info = await Deno.stat(path);
+    if (info.isDirectory) {
+      await Deno.chmod(path, 0o755); // rwxr-xr-x
+      for await (const entry of Deno.readDir(path)) {
+        await restoreWritePermissions(join(path, entry.name));
+      }
+    } else {
+      await Deno.chmod(path, 0o644); // rw-r--r--
+    }
+  } catch (error) {
+    if (!(error instanceof Deno.errors.NotFound)) {
+      console.error(`Error restoring permissions for ${path}:`, error);
+    }
+  }
 }
 
 /**
@@ -84,6 +120,9 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
 
     // Clean up test directory
     try {
+      // First restore write permissions to all files and directories
+      await restoreWritePermissions(env.workingDir);
+      // Then remove the directory
       await Deno.remove(env.workingDir, { recursive: true });
     } catch (error) {
       console.error("Error cleaning up test directory:", error);

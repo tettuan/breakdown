@@ -24,11 +24,6 @@ export {
   type ParamsResult,
 } from "jsr:@tettuan/breakdownparams@0.1.11";
 
-export {
-  type PromptManager,
-  PromptManager as BreakdownPrompt,
-  type PromptParams,
-  type PromptResult,
-} from "jsr:@tettuan/breakdownprompt@^0.1.8";
+export * from "jsr:@tettuan/breakdownprompt@1.1.2";
 
 export { BreakdownLogger, type LogLevel } from "jsr:@tettuan/breakdownlogger@0.1.10";
