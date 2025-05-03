@@ -66,6 +66,8 @@ docs/breakdown/path.ja.md の「Inputファイル」セクションに従う
 
 docs/breakdown/path.ja.md の「Outputファイル」セクションに従う
 
+> destinationFile（destinationPath）は、テンプレートに埋め込むための値であり、プロンプトを受け取った結果を書き込む必要は一切ありません。ファイル出力は必須ではなく、必要に応じて利用者が判断します。
+
 1. destinationFileがPATH階層を持つファイルの場合：そのパスをそのまま使用
 2. destinationFileがファイル名のみの場合：layerType + destinationFile
 3. destinationFileがディレクトリの場合：

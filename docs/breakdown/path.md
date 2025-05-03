@@ -111,6 +111,8 @@ Returns empty PATH and filename.
 
 ## Output Files
 
+> Note: destinationFile (destinationPath) is a value for embedding in templates only. There is no requirement to write the result to a file; actual file output is optional and up to the user.
+
 PATH processing varies according to parameter values.
 
 ```yaml

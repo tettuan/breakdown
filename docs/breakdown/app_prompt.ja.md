@@ -89,3 +89,5 @@ interface LoadPromptOptions {
   variables: Record<string, string>;
 }
 ```
+
+// 追記: destination_path（destinationPath）はテンプレート埋め込み用の値であり、プロンプトを受け取った結果を書き込む必要はありません。ファイル出力は必須ではありません。

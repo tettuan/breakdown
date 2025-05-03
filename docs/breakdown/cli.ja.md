@@ -36,6 +36,8 @@ breakdown <demonstrative> [layer] [options]
 - `--destination <path>`, `-o <path>`: 出力先の指定
   - ディレクトリの場合: 自動的にファイル名を生成
   - ファイルの場合: 指定されたファイル名で出力
+  
+  > destinationPathはテンプレート埋め込み用の値であり、必ずしもファイル出力を伴いません。
 
 ### プロンプト制御
 
