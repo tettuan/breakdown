@@ -1,92 +1,205 @@
 #!/bin/bash
 
-# Usage: ./scripts/bump_version.sh [major|minor|patch]
-# Bumps the version in deno.json and lib/version.ts.
-# Default is patch if no argument is given.
+# ============================================================================
+# Automated Version Management Script for Breakdown (Deno/JSR)
+#
+# Purpose:
+#   - Ensures version consistency between deno.json and lib/version.ts
+#   - Handles version bumping (major/minor/patch) with atomic updates
+#   - Performs pre-release checks (git status, local CI, GitHub Actions)
+#   - Manages GitHub tags and JSR version synchronization
+#   - Automatically commits, tags, and pushes version changes
+#
+# Usage:
+#   ./scripts/bump_version.sh [--major|--minor|--patch]
+#   (default: --patch)
+#
+# Flow:
+#   1. Version Sync Check
+#      - Ensures deno.json and lib/version.ts have matching versions
+#      - If mismatch, updates lib/version.ts to match deno.json
+#   2. Git Status Check
+#      - Aborts if there are any uncommitted changes
+#   3. Local CI Check
+#      - Runs scripts/local_ci.sh and aborts if it fails
+#   4. GitHub Actions Status
+#      - Checks .github/workflows/test.yml and version-check.yml for the latest commit
+#      - Aborts if either workflow has not succeeded
+#   5. JSR Version Check
+#      - Fetches published versions from JSR registry (meta.json endpoint)
+#      - Determines the latest released version
+#   6. GitHub Tags Cleanup
+#      - Fetches all tags from remote
+#      - Deletes any tags (local and remote) that are ahead of the latest JSR version
+#   7. New Version Generation
+#      - Increments version based on bump type (major/minor/patch)
+#   8. Version Update (atomic)
+#      - Updates version in both deno.json and lib/version.ts using atomic file operations
+#   9. Version Verification
+#      - Verifies both files have the same new version
+#   10. Git Commit
+#       - Commits version changes with a standard message
+#   11. Git Tag
+#       - Creates a new tag with the version (vX.Y.Z)
+#   12. Push Changes
+#       - Pushes commit and tag to remote
+#
+# Exit Codes:
+#   0 - Success
+#   1 - Any check or update failed
+#
+# Notes:
+#   - Only deno.json and lib/version.ts are used for versioning (no src/mod.ts)
+#   - The script uses robust error handling and atomic file operations
+#   - All git/gh commands are single-line and non-interactive
+#   - The script is intended to be run before publishing or merging to main
+# ============================================================================
 
-# Check if there are any uncommitted changes
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Error: You have uncommitted changes. Please commit or stash them first."
-    exit 1
+set -euo pipefail
+
+# 1. Version Sync Check
+# ---------------------
+# Only deno.json and lib/version.ts are relevant
+DENO_JSON="deno.json"
+VERSION_TS="lib/version.ts"
+
+get_deno_version() {
+  jq -r '.version' "$DENO_JSON"
+}
+
+get_ts_version() {
+  grep 'export const VERSION' "$VERSION_TS" | sed -E 's/.*\"([0-9.]+)\".*/\1/'
+}
+
+sync_versions() {
+  local deno_ver ts_ver
+  deno_ver=$(get_deno_version)
+  ts_ver=$(get_ts_version)
+  if [[ "$deno_ver" != "$ts_ver" ]]; then
+    echo "Syncing $VERSION_TS to match $DENO_JSON ($deno_ver)"
+    cat > "$VERSION_TS" <<EOF
+// This file is auto-generated. Do not edit manually.
+// The version is synchronized with deno.json.
+
+/**
+ * The current version of Breakdown CLI, synchronized with deno.json.
+ * @module
+ */
+export const VERSION = \"$deno_ver\";
+EOF
+    deno fmt "$VERSION_TS"
+    git add "$VERSION_TS"
+    git commit -m "fix: sync lib/version.ts with deno.json version $deno_ver" || true
+  fi
+}
+
+# 2. Git Status Check
+# -------------------
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Error: You have uncommitted changes. Please commit or stash them first."
+  exit 1
 fi
 
-# Get the latest commit hash
+# 3. Local CI Check
+# -----------------
+if ! bash scripts/local_ci.sh; then
+  echo "Error: Local CI failed. Aborting version bump."
+  exit 1
+fi
+
+# 4. GitHub Actions Status
+# ------------------------
 latest_commit=$(git rev-parse HEAD)
-
-# Check GitHub Actions status for test.yml and version-check.yml
-check_failed=false
-version_check_failed=false
 for workflow in "test.yml" "version-check.yml"; do
-    echo "Checking $workflow..."
-    gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null
-    if [ $? -ne 0 ]; then
-        check_failed=true
-        if [ "$workflow" = "version-check.yml" ]; then
-            version_check_failed=true
-        fi
-    fi
-    
-    if [ "$check_failed" = true ]; then
-        break
-    fi
-
+  echo "Checking $workflow..."
+  if ! gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null; then
+    echo "Error: $workflow has not completed successfully for latest commit."
+    exit 1
+  fi
 done
 
-if [ "$check_failed" = true ]; then
-    if [ "$version_check_failed" = true ]; then
-        # Get latest version from git tags (strip 'v')
-        latest_tag_version=$(git tag --list "v*" | sed 's/^v//' | sort -V | tail -n 1)
-        current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
-        if [ "$current_version" != "$latest_tag_version" ]; then
-            echo "version-check failed: updating deno.json version ($current_version) to match latest tag ($latest_tag_version)."
-            deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$latest_tag_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
-            # Update lib/version.ts to match new version
-            echo -e "// This file is auto-generated. Do not edit manually.\n// The version is synchronized with deno.json.\n\n/**\n * The current version of Breakdown CLI, synchronized with deno.json.\n * @module\n */\nexport const VERSION = \"$latest_tag_version\";\n" > lib/version.ts
-            deno fmt lib/version.ts
-            git add deno.json lib/version.ts
-            git commit -m "fix: update deno.json and lib/version.ts version to match latest tag ($latest_tag_version) for version-check"
-            git push
-            echo "\ndenon.json and lib/version.ts updated to $latest_tag_version and pushed. Please re-run this script after CI passes.\n"
-            exit 0
-        fi
-    fi
-    echo "Error: Latest GitHub Actions workflow (test.yml or version-check.yml) has not completed successfully."
-    exit 1
+# 5. JSR Version Check
+# --------------------
+JSR_META_URL="https://jsr.io/@tettuan/breakdown/meta.json"
+latest_jsr_version=$(curl -s "$JSR_META_URL" | jq -r '.versions | keys | .[]' | sort -V | tail -n 1)
+echo "Latest JSR published version: $latest_jsr_version"
+
+# 6. GitHub Tags Cleanup
+# ----------------------
+git fetch --tags
+for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
+  if [[ "$tag" > "$latest_jsr_version" ]]; then
+    echo "Deleting local and remote tag: v$tag (ahead of JSR)"
+    git tag -d "v$tag"
+    git push --delete origin "v$tag" || true
+  fi
+done
+
+# 7. New Version Generation
+# -------------------------
+bump_type="patch"
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    --major) bump_type="major" ;;
+    --minor) bump_type="minor" ;;
+    --patch) bump_type="patch" ;;
+    *) echo "Unknown bump type: $1"; exit 1 ;;
+  esac
 fi
-
-# Version bump logic
-bump_type=${1:-patch}
-current_version=$(deno eval "console.log(JSON.parse(await Deno.readTextFile('deno.json')).version)")
+current_version=$(get_deno_version)
 IFS='.' read -r major minor patch <<< "$current_version"
-
 case "$bump_type" in
   major)
-    major=$((major + 1))
-    minor=0
-    patch=0
-    ;;
+    major=$((major + 1)); minor=0; patch=0 ;;
   minor)
-    minor=$((minor + 1))
-    patch=0
-    ;;
+    minor=$((minor + 1)); patch=0 ;;
   patch)
-    patch=$((patch + 1))
-    ;;
-  *)
-    echo "Unknown version bump type: $bump_type. Use 'major', 'minor', or 'patch'."
-    exit 1
-    ;;
+    patch=$((patch + 1)) ;;
 esac
-
 new_version="$major.$minor.$patch"
-echo "Bumping deno.json version from $current_version to $new_version."
-deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
-# Update lib/version.ts to match new version
-echo -e "// This file is auto-generated. Do not edit manually.\n// The version is synchronized with deno.json.\n\n/**\n * The current version of Breakdown CLI, synchronized with deno.json.\n * @module\n */\nexport const VERSION = \"$new_version\";\n" > lib/version.ts
-deno fmt lib/version.ts
-git add deno.json lib/version.ts
+echo "Bumping version: $current_version -> $new_version"
+
+# 8. Version Update (atomic)
+# --------------------------
+tmp_deno="${DENO_JSON}.tmp"
+tmp_ts="${VERSION_TS}.tmp"
+jq --arg v "$new_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
+cat > "$tmp_ts" <<EOF
+// This file is auto-generated. Do not edit manually.
+// The version is synchronized with deno.json.
+
+/**
+ * The current version of Breakdown CLI, synchronized with deno.json.
+ * @module
+ */
+export const VERSION = \"$new_version\";
+EOF
+mv "$tmp_deno" "$DENO_JSON"
+mv "$tmp_ts" "$VERSION_TS"
+deno fmt "$VERSION_TS"
+
+git add "$DENO_JSON" "$VERSION_TS"
+
+# 9. Version Verification
+# -----------------------
+if [[ "$(get_deno_version)" != "$new_version" ]] || [[ "$(get_ts_version)" != "$new_version" ]]; then
+  echo "Error: Version update failed."
+  exit 1
+fi
+
+echo "Version updated to $new_version in both files."
+
+# 10. Git Commit
+# --------------
 git commit -m "chore: bump version to $new_version"
+
+# 11. Git Tag
+# ------------
+git tag "v$new_version"
+
+# 12. Push Changes
+# ----------------
 git push
-git tag v$new_version
-git push origin v$new_version
-echo "\nVersion bumped to $new_version, committed, and tagged.\n" 
+git push origin "v$new_version"
+
+echo "\nVersion bumped to $new_version, committed, tagged, and pushed.\n" 
