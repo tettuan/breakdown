@@ -25,36 +25,7 @@ To bridge the gap between human-written specifications and AI-interpretable inst
 
 This tool itself does not generate documents based on rules. It supports AI document generation by providing structured formats along with prompts that are easy for AI to interpret and work with.
 
-```mermaid
-sequenceDiagram
-    participant Developer as App Developer
-    participant Cursor as Cursor
-    participant AI as AI
-
-    Developer->>Developer: Write and save project overview and requirements in Markdown
-
-    Developer->>Cursor: Execute `breakdown project <markdown.md>`
-    Cursor->>Cursor: Execute command
-
-    Cursor->>Cursor: Get conversion prompt
-    Cursor->>AI: Request conversion
-    AI->>AI: Execute conversion
-    AI->>Cursor: Return converted requirements
-    Cursor->>Developer: Converted requirement file
-
-    Developer->>Cursor: Send requirements with development instructions
-    Cursor->>AI: Develop based on instructions
-    AI->>Cursor: Generate code
-    Cursor->>Developer: Development artifacts
-```
-
-## Future Prospects
-
-This tool itself does not generate any development output. It only optimizes interpretation. As AI development progresses, the interpretation domain will also evolve through IDE improvements and programming languages becoming optimized for AI development.
-
-At the same time, it is expected that the requirements organization phase will continue to greatly influence the efficiency of system and application construction. The need to consistently break down requirements using natural language will likely remain.
-
-# Usage
+## Usage
 
 Breakdown tool has the following main commands:
 
@@ -122,91 +93,108 @@ breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
 breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 ```
 
-# Use Case Patterns
-
-## 1. Flow from Unorganized Information to Project Implementation
-
-Build a project from unorganized information and break it down into issues and tasks:
-
-```bash
-# Generate project summary from unorganized information
-echo "<messy_something>" | breakdown summary project -o <project_summary.md>
-
-# Breakdown to project
-breakdown to project <project_summary.md> -o <project_dir>
-
-# Breakdown to issues
-breakdown to issue <project_summary.md> -o <issue_dir>
-
-# Breakdown to tasks
-breakdown to task <issue.md> -o <tasks_dir>
-```
-
-## 2. Creating Issues from Task Groups
-
-Generate issues from multiple unorganized tasks and break them down into tasks again:
-
-```bash
-# Generate issues from task groups
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
-
-# Edit generated issues (if needed)
-
-# Generate tasks from issues
-breakdown to task <issue.md> -o <tasks_dir>
-```
-
-## 3. Fix Task Generation from Defect Information
-
-Generate fix tasks from error logs and defect reports:
-
-```bash
-# Generate defect information from error logs
-tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
-
-# Generate issues from defect information
-breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
-
-# Generate fix tasks from issues
-breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
-```
-
-## 4. Creating Fix Proposals from Improvement Requests
-
-Generate task-level fixes directly from improvement requests:
-
-```bash
-# Generate fix tasks from improvement request
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
-```
-
 # Setup
 
 ## Installation
 
-### CLI Installation
+### Recommended: Install as CLI
+
+Breakdown is primarily intended for use as a CLI tool.  
+You can install it using the official Deno/JSR method as follows:
 
 ```bash
-deno install --allow-read --allow-write --allow-env --allow-run -n breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
+```
+- `-A`: Allow all permissions (recommended)
+- `-f`: Overwrite existing command
+- `--global`: Global installation
+- `breakdown`: Command name
+
+> **Note:**  
+> You do not need to specify subpaths like `jsr:@tettuan/breakdown/cli`.  
+> Thanks to the JSR `bin` setting, `jsr:@tettuan/breakdown` alone works as a CLI.
+
+---
+
+### Update
+
+To update to the latest version, simply run the same install command again:
+
+```bash
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 
-### System Installation
+---
+
+### Uninstall
+
+#### For global installation
+
+```bash
+deno uninstall breakdown
+```
+
+#### For local (project) installation
+
+```bash
+deno uninstall --root .deno breakdown
+```
+- Use `--root .deno` to uninstall from the `.deno/bin` directory in your project.
+
+---
+
+### Install only for a specific project (local install)
+
+If you want to use the breakdown command only within a specific project, you can install it under `.deno/bin` using the `--root` option:
+
+```bash
+deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
+```
+- You can run it with `.deno/bin/breakdown`.
+- Add `.deno/bin` to your `PATH` if needed.
+- This CLI is only available within that project.
+
+---
+
+### As a library
+
+If you want to use it directly from TypeScript/JavaScript, add it as a dependency:
 
 ```bash
 deno add @tettuan/breakdown
 ```
 
-### AI Development Repository Installation Only
+---
 
-```bash
-deno add --root ./.agent/breakdon/bin @tettuan/breakdown
+### Notes
+
+- The breakdown command automatically uses `cli/breakdown.ts` as the entry point via the `bin` setting in `deno.json`.
+- Deno 1.40 or later is recommended.
+- See the "Usage" section below for details.
+
+## Example Directory Structure after Initialization
+
+When you run the `breakdown init` command, the following directories and files are generated in your project (default settings):
+
+```
+.agent/
+└── breakdown/
+    ├── config/
+    │   └── app.yml         # Application config file
+    ├── prompts/            # Prompt files directory
+    └── schema/             # JSON schema directory
 ```
 
-If you want to use without installation:
+- For rules on config, prompt, and schema placement, see [app_config.ja.md](docs/breakdown/app_config.ja.md).
+- For detailed path and filename specifications, see [path.ja.md](docs/breakdown/path.ja.md).
 
-```bash
-deno run --allow-read --allow-net jsr:@tettuan/breakdown
-```
+## Links to Specifications and Detailed Documentation
+
+- [Breakdown Specification Index](docs/breakdown/index.ja.md)
+- [CLI Interface Specification](docs/breakdown/cli.ja.md)
+- [Application Config & Working Directory Specification](docs/breakdown/app_config.ja.md)
+- [Path & Filename Specification](docs/breakdown/path.ja.md)
+- [Module & Directory Structure](docs/breakdown/module.ja.md)
 
 # Documentation
 

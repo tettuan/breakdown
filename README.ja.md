@@ -190,30 +190,105 @@ breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 
 ## インストール
 
-### CLIとしてインストール
+### 推奨: CLIとしてインストール
+
+BreakdownはCLIツールとしての利用が主目的です。  
+**Deno公式/JSR標準の方法**で、以下のコマンドでインストールできます。
 
 ```bash
-deno install --allow-read --allow-write --allow-env --allow-run -n breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
+```
+- `-A` : すべての権限を許可（推奨）
+- `-f` : 既存のコマンドを上書き
+- `--global` : グローバルインストール
+- `breakdown` : コマンド名
+
+> **Note:**  
+> 旧バージョンや `jsr:@tettuan/breakdown/cli` のようなサブパス指定は不要です。  
+> JSRの `bin` 設定により、`jsr:@tettuan/breakdown` だけでCLIとして動作します。
+
+---
+
+### アップデート
+
+新しいバージョンが公開された場合も、同じコマンドで上書きインストールできます。
+
+```bash
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 
-### システムにインストール
+---
+
+### アンインストール
+
+#### グローバルインストールの場合
+
+```bash
+deno uninstall breakdown
+```
+
+#### プロジェクト配下（ローカルインストール）の場合
+
+```bash
+deno uninstall --root .deno breakdown
+```
+
+- `--root .deno` で、プロジェクト内の `.deno/bin` からアンインストールされます。
+
+---
+
+### ライブラリとして使う場合
+
+TypeScript/JavaScriptから直接importして使う場合は、  
+`deno add` で依存に追加できます。
 
 ```bash
 deno add @tettuan/breakdown
 ```
 
-### AI開発リポジトリにのみインストール
+---
+
+### 注意事項
+
+- breakdownコマンドは、`deno.json`の`bin`設定により自動的に`cli/breakdown.ts`をエントリーポイントとして動作します。
+- Deno 1.40以降を推奨します。
+- 詳細な使い方は下記「Usage」セクションを参照してください。
+
+### プロジェクト配下にローカルインストールしたい場合
+
+特定のプロジェクト内だけでbreakdownコマンドを使いたい場合は、`--root` オプションで `.deno/bin` 配下にインストールできます。
 
 ```bash
-deno add --root ./.agent/breakdon/bin @tettuan/breakdown
+deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
-
-インストールせずに使用する場合：
-
-```bash
-deno run --allow-read --allow-net jsr:@tettuan/breakdown
-```
+- `.deno/bin/breakdown` で実行できます。
+- 必要に応じて `.deno/bin` を `PATH` に追加してください。
+- この方法でインストールしたCLIは、そのプロジェクト内でのみ有効です。
 
 # ドキュメント
 
 https://jsr.io/@tettuan/breakdown
+
+## 初期化後のディレクトリ構成例
+
+`breakdown init` コマンドを実行すると、プロジェクト配下に以下のようなディレクトリ・ファイルが生成されます（デフォルト設定の場合）:
+
+```
+.agent/
+└── breakdown/
+    ├── config/
+    │   └── app.yml         # アプリケーション設定ファイル
+    ├── prompts/            # プロンプトファイル格納ディレクトリ
+    └── schema/             # JSONスキーマ格納ディレクトリ
+```
+
+- 設定ファイルやプロンプト、スキーマの配置ルールは [app_config.ja.md](docs/breakdown/app_config.ja.md) を参照してください。
+- パスやファイル名の詳細な仕様は [path.ja.md](docs/breakdown/path.ja.md) を参照してください。
+
+## 仕様・詳細ドキュメントへのリンク
+
+- [Breakdown 仕様書インデックス](docs/breakdown/index.ja.md)
+- [CLIインターフェース仕様](docs/breakdown/cli.ja.md)
+- [アプリケーション設定・作業ディレクトリ仕様](docs/breakdown/app_config.ja.md)
+- [パス・ファイル名仕様](docs/breakdown/path.ja.md)
+- [モジュール構成・ディレクトリ構成](docs/breakdown/module.ja.md)
