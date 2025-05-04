@@ -111,7 +111,7 @@ Error: $error_message in $test_file
 Note: Remaining tests have been interrupted due to this failure.
 Tests are executed sequentially to maintain dependency order and consistency.
 
-Please:
+Please: Run the test after modifying the test
   1. Fix errors one at a time, starting with this test
   2. Run tests for the fixed component before moving to the next error
   3. If root cause is unclear, consider adding more test cases
@@ -220,7 +220,7 @@ This is likely a bug in the CI script. Please:
 2. As a temporary workaround, commit your changes
 
 Technical details:
-- Command used: npx jsr publish --dry-run --allow-dirty
+- Command used: deno publish --dry-run --allow-dirty
 - Error: $error_output
 ==============================================================================="
         exit 1
@@ -288,15 +288,20 @@ done
 
 # Check all TypeScript files in lib directory
 echo "Checking library files..."
-find lib -name "*.ts" -not -name "*.test.ts" | while read -r file; do
-    if ! deno check "$file"; then
-        handle_error "$file" "Type check failed" "false"
-    fi
-done
+ts_files=$(find lib -name "*.ts" -not -name "*.test.ts")
+if ! deno check $ts_files; then
+    echo "Batch type check failed. Running individual checks for debug..."
+    for file in $ts_files; do
+        if ! deno check "$file"; then
+            echo "[DEBUG] Type check failed for $file"
+        fi
+    done
+    handle_error "lib/*.ts" "Type check failed (see above for details)" "false"
+fi
 
 # Try JSR type check with --allow-dirty if available
 echo "Running JSR type check..."
-if ! error_output=$(npx jsr publish --dry-run --allow-dirty 2>&1); then
+if ! error_output=$(deno publish --dry-run --allow-dirty 2>&1); then
     handle_jsr_error "$error_output"
 fi
 
@@ -403,7 +408,7 @@ if ! deno check mod.ts; then
 fi
 
 echo "Running JSR type check..."
-if ! error_output=$(npx jsr publish --dry-run --allow-dirty 2>&1); then
+if ! error_output=$(deno publish --dry-run --allow-dirty 2>&1); then
     handle_jsr_error "$error_output"
 fi
 
