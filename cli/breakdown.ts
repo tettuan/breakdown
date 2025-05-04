@@ -1,3 +1,4 @@
+console.log("[CLI] Deno.cwd():", Deno.cwd());
 import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.10";
 import { type OptionParams } from "jsr:@tettuan/breakdownparams@^0.1.11";
@@ -5,6 +6,7 @@ import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { readAll } from "jsr:@std/io@0.224.0/read-all";
+import { CliError, CliErrorCode } from "../lib/cli/errors.ts";
 
 const logger = new BreakdownLogger();
 function getLogLevelFromEnv(): LogLevel {
@@ -175,7 +177,9 @@ export async function runBreakdown(args: string[]): Promise<void> {
     try {
       parsedArgs = validateArgs(args.slice(1)); // skip the command itself (e.g., 'to')
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof CliError) {
+        writeStderr(`[${err.code}] ${err.message}`);
+      } else if (err instanceof Error) {
         writeStderr(err.message);
       } else {
         writeStderr("Unknown argument error");
@@ -220,7 +224,13 @@ export async function runBreakdown(args: string[]): Promise<void> {
           writeStderr(summaryResult.content);
         }
       } catch (err) {
-        writeStderr(err instanceof Error ? err.message : String(err));
+        if (err instanceof CliError) {
+          writeStderr(`[${err.code}] ${err.message}`);
+        } else if (err instanceof Error) {
+          writeStderr(err.message);
+        } else {
+          writeStderr("Unknown summary error");
+        }
       }
       return;
     }
@@ -234,7 +244,9 @@ if (import.meta.main) {
   try {
     await runBreakdown(Deno.args);
   } catch (error: unknown) {
-    if (error instanceof Error) {
+    if (error instanceof CliError) {
+      writeStderr(`[${error.code}] ${error.message}`);
+    } else if (error instanceof Error) {
       writeStderr(error.message);
     } else {
       writeStderr("An unknown error occurred");

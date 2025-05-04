@@ -19,11 +19,11 @@
  * - テストでは、コマンド実行後の副作用（ファイル生成や内容）を検証することで、正しい動作を確認する。
  */
 
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandSuccess, assertCommandOutput } from "../../helpers/assertions.ts";
+import { assertCommandOutput, assertCommandSuccess } from "../../helpers/assertions.ts";
 import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
@@ -61,19 +61,71 @@ Deno.test("CLI Command Execution", async (t) => {
     await runCommand(["init"], undefined, absTestDir);
   });
 
-  await t.step("command parameter validation", async () => {
-    logger.debug("Testing command parameter validation");
+  await t.step("Parameter error: Invalid input parameters", async () => {
+    logger.debug("[DEBUG] Parameter error test (before runCommand)");
+    // Set config with valid baseDir
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+    );
+    const result = await runCommand(
+      [
+        "to",
+        "project",
+        // --from, --destination omitted
+      ],
+      undefined,
+      absTestDir,
+    );
+    logger.debug("[DEBUG] Parameter error test result", result);
+    // Expect no error, and help text in output
+    assertEquals(result.error, "");
+    assert(result.output.includes("Usage:"), "Should show help text when options are missing");
+  });
+
+  await t.step("Invalid option: should return error", async () => {
+    logger.debug("[DEBUG] Invalid option test (before runCommand)");
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+    );
+    const result = await runCommand(
+      [
+        "to",
+        "project",
+        "--unknown",
+        "value",
+      ],
+      undefined,
+      absTestDir,
+    );
+    logger.debug("[DEBUG] Invalid option test result", result);
+    assert(result.error !== "", "Should return error for invalid option");
+    assert(
+      result.error.toLowerCase().includes("unknown option") ||
+        result.error.toLowerCase().includes("invalid option"),
+      "Error should mention unknown or invalid option",
+    );
+  });
+
+  await t.step("Template not found: Prompt loading failed", async () => {
+    logger.debug("[DEBUG] Template not found test (before runCommand)");
+    // Set config with valid baseDir
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+    );
     const testFile = join(absTestDir, "test.md");
     const outputFile = join(absTestDir, "output.md");
-
-    // Test basic parameter processing
     const args = [
       "--from",
       testFile,
       "--destination",
       outputFile,
     ];
-
     const result = await runCommand(
       [
         "to",
@@ -83,10 +135,8 @@ Deno.test("CLI Command Execution", async (t) => {
       undefined,
       absTestDir,
     );
-    assertCommandOutput(result, { error: "Invalid input parameters" });
-
-    // Verify the command was processed correctly
-    // assertEquals(result.error === "", true, "Should not have error output");
+    logger.debug("[DEBUG] Template not found test result", result);
+    assertCommandOutput(result, { error: "Prompt loading failed: template not found" });
   });
 
   await t.step("configuration integration", async () => {

@@ -17,7 +17,7 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandSuccess, assertCommandOutput } from "../../helpers/assertions.ts";
+import { assertCommandOutput, assertCommandSuccess } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
@@ -76,7 +76,9 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "project",
       ...args,
     ]);
-    assertCommandOutput(result, { error: "Invalid input parameters" });
+    logger.debug("[DEBUG] Command result before assertion", { result });
+    assertCommandOutput(result, { error: "Prompt loading failed: template not found" });
+    logger.debug("[DEBUG] Assertion completed for multiple options");
   });
 
   await t.step("source options with input", async () => {
@@ -181,7 +183,9 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "project",
       ...args,
     ]);
-    assertCommandOutput(result, { error: "Invalid input parameters" });
+    logger.debug("[DEBUG] Command result before assertion", { result });
+    assertCommandOutput(result, { error: "Prompt loading failed: template not found" });
+    logger.debug("[DEBUG] Assertion completed for short form options");
   });
 
   await t.step("cleanup", async () => {

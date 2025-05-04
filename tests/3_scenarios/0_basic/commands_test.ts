@@ -42,7 +42,10 @@ Deno.test("core functionality - JSR package integration", async () => {
     stderr: "piped",
   });
   const { stdout, stderr } = await lsCommand.output();
-  logger.debug("ls -l tests/fixtures/prompts/to/project/ output", { output: new TextDecoder().decode(stdout), error: new TextDecoder().decode(stderr) });
+  logger.debug("ls -l tests/fixtures/prompts/to/project/ output", {
+    output: new TextDecoder().decode(stdout),
+    error: new TextDecoder().decode(stderr),
+  });
 
   // Debug: Check if the source prompt template exists before copying
   const srcPromptPath = "tests/fixtures/prompts/to/project/f_project.md";
@@ -50,11 +53,16 @@ Deno.test("core functionality - JSR package integration", async () => {
     const stat = await Deno.stat(srcPromptPath);
     logger.debug("Source prompt template stat before copy", { srcPromptPath, stat });
   } catch (e) {
-    logger.error("Source prompt template does NOT exist before copy", { srcPromptPath, error: e instanceof Error ? e.message : String(e) });
+    logger.error("Source prompt template does NOT exist before copy", {
+      srcPromptPath,
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 
   // Copy prompt templates into the test working directory
-  logger.debug("Copying prompt templates to test working directory", { dest: `${env.workingDir}/prompts/to/project/f_project.md` });
+  logger.debug("Copying prompt templates to test working directory", {
+    dest: `${env.workingDir}/prompts/to/project/f_project.md`,
+  });
   await Deno.mkdir(`${env.workingDir}/prompts/to/project`, { recursive: true });
   await Deno.copyFile(srcPromptPath, `${env.workingDir}/prompts/to/project/f_project.md`);
 
@@ -65,7 +73,10 @@ Deno.test("core functionality - JSR package integration", async () => {
   logger.debug("Test environment info", envInfo);
 
   // 入力ファイルを作業ディレクトリにコピー
-  logger.debug("Copying input file", { src: "tests/fixtures/input.md", dest: `${env.workingDir}/input.md` });
+  logger.debug("Copying input file", {
+    src: "tests/fixtures/input.md",
+    dest: `${env.workingDir}/input.md`,
+  });
   await Deno.copyFile("tests/fixtures/input.md", `${env.workingDir}/input.md`);
 
   try {
@@ -80,14 +91,18 @@ Deno.test("core functionality - JSR package integration", async () => {
     assertCommandOutput(paramsResult, { error: "" });
 
     // Test BreakdownPrompt integration
-    const promptResult = await runCommand([
-      "to",
-      "project",
-      "--from",
-      "input.md",
-      "--destination",
-      "output.md",
-    ], undefined, env.workingDir);
+    const promptResult = await runCommand(
+      [
+        "to",
+        "project",
+        "--from",
+        "input.md",
+        "--destination",
+        "output.md",
+      ],
+      undefined,
+      env.workingDir,
+    );
     logger.debug("Prompt integration result (raw)", { promptResult });
     logger.debug("Prompt output for assertion", { output: promptResult.output });
     // Check for unreplaced variables

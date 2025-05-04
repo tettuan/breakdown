@@ -113,7 +113,7 @@ export async function convertFile(
   fromFile: string,
   toFile: string,
   format: string,
-  force = false,
+  _force = false,
 ): Promise<CommandResult> {
   try {
     // Ensure source file exists

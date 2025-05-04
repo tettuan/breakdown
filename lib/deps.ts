@@ -4,7 +4,7 @@
  */
 
 // Standard Deno modules with aliasing
-export { ensureDir, exists } from "@std/fs";
+export { ensureDir, exists } from "jsr:@std/fs@0.224.0";
 
 export { dirname, fromFileUrl, join } from "@std/path";
 

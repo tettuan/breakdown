@@ -5,6 +5,8 @@
  * Validates option combinations and enforces rules for input/output options.
  */
 
+import { CliError, CliErrorCode } from "../cli/errors.ts";
+
 /**
  * Error thrown when command line arguments are invalid
  */
@@ -75,18 +77,24 @@ export function parseArgs(args: string[]): CommandOptions {
     const canonicalName = getCanonicalOptionName(option);
 
     if (!canonicalName) {
-      throw new Error(`Invalid option: ${arg}`);
+      throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
     }
 
     if (seenOptions.has(canonicalName)) {
-      throw new Error(`Duplicate option: ${arg} is used multiple times`);
+      throw new CliError(
+        CliErrorCode.DUPLICATE_OPTION,
+        `Duplicate option: ${arg} is used multiple times`,
+      );
     }
     seenOptions.add(canonicalName);
 
     switch (canonicalName) {
       case "--from":
         if (options.input) {
-          throw new Error("Cannot use --from and --input together");
+          throw new CliError(
+            CliErrorCode.CONFLICTING_OPTIONS,
+            "Cannot use --from and --input together",
+          );
         }
         options.from = args[++i];
         break;
@@ -95,11 +103,17 @@ export function parseArgs(args: string[]): CommandOptions {
         break;
       case "--input": {
         if (options.from) {
-          throw new Error("Cannot use --from and --input together");
+          throw new CliError(
+            CliErrorCode.CONFLICTING_OPTIONS,
+            "Cannot use --from and --input together",
+          );
         }
         const inputType = args[++i];
         if (!isValidInputType(inputType)) {
-          throw new Error("Invalid input layer type");
+          throw new CliError(
+            CliErrorCode.INVALID_INPUT_TYPE,
+            `Invalid input layer type: ${inputType}`,
+          );
         }
         options.input = inputType;
         break;
@@ -113,28 +127,40 @@ export function parseArgs(args: string[]): CommandOptions {
       case "--adaptation":
       case "-a":
         if (options.adaptation) {
-          throw new Error("Duplicate option: --adaptation is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --adaptation is used multiple times",
+          );
         }
         options.adaptation = args[++i];
         break;
       case "--prompt-dir":
         if (options.promptDir) {
-          throw new Error("Duplicate option: --prompt-dir is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --prompt-dir is used multiple times",
+          );
         }
         options.promptDir = args[++i];
         break;
       default:
-        throw new Error(`Invalid option: ${arg}`);
+        throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
     }
   }
 
   // Validate required options
   if (!options.from && !options.input) {
-    throw new Error("Either --from or --input must be specified");
+    throw new CliError(
+      CliErrorCode.MISSING_REQUIRED,
+      "Invalid input parameters: missing --from or --input",
+    );
   }
 
   if (options.from && !options.destination) {
-    throw new Error("--destination is required when using --from");
+    throw new CliError(
+      CliErrorCode.MISSING_REQUIRED,
+      "Invalid input parameters: missing --destination for --from",
+    );
   }
 
   return options;
@@ -201,10 +227,16 @@ export function validateCommandOptions(args: string[]): CommandOptions {
       case "--from":
       case "-f":
         if (options.from) {
-          throw new Error("Duplicate option: --from is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --from is used multiple times",
+          );
         }
         if (options.input) {
-          throw new Error("Cannot use --from and --input together");
+          throw new CliError(
+            CliErrorCode.CONFLICTING_OPTIONS,
+            "Cannot use --from and --input together",
+          );
         }
         options.from = value;
         i++;
@@ -212,7 +244,10 @@ export function validateCommandOptions(args: string[]): CommandOptions {
       case "--destination":
       case "-o":
         if (options.destination) {
-          throw new Error("Duplicate option: --destination is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --destination is used multiple times",
+          );
         }
         options.destination = value;
         i++;
@@ -220,13 +255,19 @@ export function validateCommandOptions(args: string[]): CommandOptions {
       case "--input":
       case "-i":
         if (options.input) {
-          throw new Error("Duplicate option: --input is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --input is used multiple times",
+          );
         }
         if (options.from) {
-          throw new Error("Cannot use --from and --input together");
+          throw new CliError(
+            CliErrorCode.CONFLICTING_OPTIONS,
+            "Cannot use --from and --input together",
+          );
         }
-        if (!["project", "issue", "task"].includes(value)) {
-          throw new Error("Invalid input layer type");
+        if (!isValidInputType(value)) {
+          throw new CliError(CliErrorCode.INVALID_INPUT_TYPE, `Invalid input layer type: ${value}`);
         }
         options.input = value;
         i++;
@@ -240,20 +281,26 @@ export function validateCommandOptions(args: string[]): CommandOptions {
       case "--adaptation":
       case "-a":
         if (options.adaptation) {
-          throw new Error("Duplicate option: --adaptation is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --adaptation is used multiple times",
+          );
         }
         options.adaptation = value;
         i++;
         break;
       case "--prompt-dir":
         if (options.promptDir) {
-          throw new Error("Duplicate option: --prompt-dir is used multiple times");
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --prompt-dir is used multiple times",
+          );
         }
         options.promptDir = value;
         i++;
         break;
       default:
-        throw new Error(`Unknown option: ${arg}`);
+        throw new CliError(CliErrorCode.INVALID_OPTION, `Unknown option: ${arg}`);
     }
   }
 

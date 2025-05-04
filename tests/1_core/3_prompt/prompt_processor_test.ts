@@ -380,3 +380,28 @@ Deno.test("processWithPrompt should handle path sanitization", async () => {
 
   await cleanupTestEnvironment(env);
 });
+
+Deno.test("processWithPrompt allows empty baseDir and uses default", async () => {
+  // Setup: create a temp working directory and minimal input file
+  const testDirRaw = await Deno.makeTempDir();
+  const testDir = await Deno.realPath(testDirRaw);
+  const inputFile = join(testDir, "input.md");
+  await Deno.writeTextFile(inputFile, "# Dummy input\n");
+  // Call with baseDir = ""
+  const result = await processWithPrompt(
+    "", // baseDir empty
+    "to",
+    "project",
+    inputFile,
+    join(testDir, "output.md"),
+    "project",
+    logger,
+  );
+  // Assert: error is about missing template, not about baseDir
+  if (result.success) {
+    throw new Error("Expected failure due to missing template, but got success");
+  }
+  if (!result.content.includes("template not found")) {
+    throw new Error(`Expected error about template not found, got: ${result.content}`);
+  }
+});

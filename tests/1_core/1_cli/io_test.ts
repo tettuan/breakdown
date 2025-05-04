@@ -37,7 +37,7 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandSuccess, assertCommandOutput } from "../../helpers/assertions.ts";
+import { assertCommandOutput } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 

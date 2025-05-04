@@ -1,7 +1,8 @@
 import { PromptManager } from "../deps.ts";
-import { join, normalize } from "jsr:@std/path@^0.224.0";
-import { exists } from "jsr:@std/fs@^0.224.0";
-import { basename } from "jsr:@std/path@^0.224.0/basename";
+import { join, normalize } from "@std/path";
+import { exists } from "@std/fs";
+import { basename } from "@std/path/basename";
+import { CliError, CliErrorCode } from "../cli/errors.ts";
 
 // Define valid demonstrative types at runtime
 const VALID_DEMONSTRATIVE_TYPES = ["to", "summary", "defect"] as const;
@@ -90,12 +91,17 @@ export async function loadPrompt(
 ): Promise<{ success: boolean; content: string }> {
   try {
     // Validate inputs
-    if (!baseDir || !demonstrativeType || !layer) {
-      throw new Error("Invalid input parameters");
+    if (!demonstrativeType || !layer) {
+      throw new CliError(CliErrorCode.INVALID_PARAMETERS, "Invalid input parameters");
     }
     // demonstrativeTypeバリデーション
     if (!((VALID_DEMONSTRATIVE_TYPES as readonly string[]).includes(demonstrativeType))) {
-      return Promise.reject(new Error(`Unsupported demonstrative type: ${demonstrativeType}`));
+      return Promise.reject(
+        new CliError(
+          CliErrorCode.INVALID_PARAMETERS,
+          `Unsupported demonstrative type: ${demonstrativeType}`,
+        ),
+      );
     }
     // layerバリデーション
     const validLayers = ["project", "issue", "task"];
@@ -148,7 +154,10 @@ export async function loadPrompt(
         `f_${sanitizedFromLayerType}.md`,
       );
       if (!await exists(defaultPromptPath)) {
-        throw new Error("Prompt loading failed: template not found");
+        throw new CliError(
+          CliErrorCode.INVALID_PARAMETERS,
+          `Prompt loading failed: template not found (baseDir='${baseDir}', demonstrativeType='${demonstrativeType}', layer='${layer}', adaptation='${adaptation}')`,
+        );
       }
       logger?.debug("Adaptation prompt not found, falling back to default", {
         adaptation,
@@ -167,13 +176,16 @@ export async function loadPrompt(
 
     // Check if the prompt template exists
     if (!await exists(promptPath)) {
-      throw new Error("Prompt loading failed: template not found");
+      throw new CliError(
+        CliErrorCode.INVALID_PARAMETERS,
+        `Prompt loading failed: template not found (promptPath='${promptPath}')`,
+      );
     }
 
     // Check if the input file exists and ensure absolute path
     const absoluteFromFile = fromFile ? ensureAbsolutePath(fromFile, currentDir) : "";
     if (absoluteFromFile && !await exists(absoluteFromFile)) {
-      throw new Error("No such file: " + fromFile);
+      throw new CliError(CliErrorCode.INVALID_PARAMETERS, `No such file: ${fromFile}`);
     }
 
     // Debug: print template path and permissions before calling generatePrompt
@@ -215,7 +227,7 @@ export async function loadPrompt(
     );
 
     if (!result.success) {
-      throw new Error(result.error);
+      throw new CliError(CliErrorCode.INVALID_PARAMETERS, result.error);
     }
 
     logger?.debug("Resolved prompt path", { promptPath, absoluteBaseDir });
