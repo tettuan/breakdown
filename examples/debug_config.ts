@@ -19,6 +19,13 @@
  *   Deno.cwd(): /path/to/your/project
  *   BreakdownConfig loaded settings: { ...config object... }
  */
+// NOTE:
+// This script relies on the import map defined in the root-level deno.json.
+// To ensure imports like '@tettuan/breakdownconfig' resolve correctly, run this script from the project root:
+//   deno run --allow-read examples/debug_config.ts
+// Or, if running from within the examples/ directory, specify the import map explicitly:
+//   deno run --import-map=../deno.json --allow-read debug_config.ts
+// No need to duplicate the import map in examples/deno.json.
 // Import BreakdownConfig from JSR package (ensure it's installed via deno add jsr:@tettuan/breakdownconfig)
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
