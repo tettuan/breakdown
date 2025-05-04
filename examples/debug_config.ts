@@ -23,7 +23,6 @@
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 // Output the current working directory for context
-debugger;
 console.log("Deno.cwd():", Deno.cwd());
 
 // Instantiate and load the configuration
@@ -32,4 +31,4 @@ await config.loadConfig();
 const settings = await config.getConfig();
 
 // Output the loaded configuration for inspection
-console.log("BreakdownConfig loaded settings:", settings); 
+console.log("BreakdownConfig loaded settings:", settings);
