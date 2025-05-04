@@ -1,0 +1,104 @@
+import * as path from "@std/path";
+// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
+type DoubleParamsResult = any;
+
+/**
+ * OutputFilePathResolver
+ *
+ * Purpose:
+ *   - Resolves the output file path for Breakdown's output according to CLI parameters and config.
+ *   - Handles all cases for destinationFile: absolute/relative path, directory, filename only, or not specified.
+ *   - Ensures output path is consistent with project conventions and user intent.
+ *
+ * Intent:
+ *   - To centralize and standardize output path resolution logic for maintainability and testability.
+ *   - To avoid path confusion and ensure correct file placement for all CLI/script/test scenarios.
+ *
+ * Expected Results:
+ *   - If destinationFile is not specified: output to <cwd>/{layerType}/<generated>.md
+ *   - If destinationFile is an absolute path:
+ *       - If directory: output to <absDir>/<generated>.md
+ *       - If file: output to <absFile>
+ *   - If destinationFile is a relative path:
+ *       - If directory: output to <absDir>/<generated>.md
+ *       - If path hierarchy + extension: output to <cwd>/<relPath>
+ *       - If filename only + extension: output to <cwd>/{layerType}/<filename>
+ *       - If filename only + no extension: output to <absDir>/<generated>.md
+ *   - Windows path separators are normalized.
+ *
+ * References:
+ *   - docs/breakdown/path.ja.md
+ *   - docs/breakdown/usage.ja.md
+ *   - docs/breakdown/cli.ja.md
+ *   - docs/index.ja.md
+ */
+export class OutputFilePathResolver {
+  constructor(private config: any, private cliParams: DoubleParamsResult) {}
+
+  /**
+   * Resolves the output file path according to CLI parameters and config.
+   *
+   * See: docs/breakdown/path.ja.md, usage.ja.md, cli.ja.md
+   *
+   * @returns {string} The resolved absolute output file path.
+   */
+  public getPath(): string {
+    const destinationFile = this.getDestinationFile();
+    const cwd = Deno.cwd();
+    if (!destinationFile) {
+      return path.join(cwd, this.cliParams.layerType, this.generateDefaultFilename());
+    }
+    const normalizedDest = this.normalizePath(destinationFile);
+    if (path.isAbsolute(normalizedDest)) {
+      if (this.isDirectory(normalizedDest)) {
+        return path.join(normalizedDest, this.generateDefaultFilename());
+      }
+      return normalizedDest;
+    }
+    const absDest = path.join(cwd, normalizedDest);
+    if (this.isDirectory(absDest)) {
+      return path.join(absDest, this.generateDefaultFilename());
+    }
+    if (this.hasPathHierarchy(normalizedDest) && this.hasExtension(normalizedDest)) {
+      return absDest;
+    }
+    if (this.hasExtension(normalizedDest)) {
+      return path.join(cwd, this.cliParams.layerType, normalizedDest);
+    }
+    return path.join(absDest, this.generateDefaultFilename());
+  }
+
+  private getDestinationFile(): string | undefined {
+    return this.cliParams.options?.destinationFile;
+  }
+
+  private normalizePath(p: string): string {
+    return p.replace(/\\/g, "/");
+  }
+
+  private generateDefaultFilename(): string {
+    const date = new Date();
+    const dateStr = date.getFullYear().toString() +
+      (date.getMonth() + 1).toString().padStart(2, "0") +
+      date.getDate().toString().padStart(2, "0");
+    const hash = Math.random().toString(16).slice(2, 9);
+    return `${dateStr}_${hash}.md`;
+  }
+
+  private isDirectory(p: string): boolean {
+    try {
+      const stat = Deno.statSync(p);
+      return stat.isDirectory;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  private hasPathHierarchy(p: string): boolean {
+    return p.includes("/") || p.includes("\\");
+  }
+
+  private hasExtension(p: string): boolean {
+    return p.includes(".");
+  }
+} 

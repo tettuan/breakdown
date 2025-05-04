@@ -72,6 +72,11 @@ Deno.test("CLI I/O Handling", async (t) => {
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
+    // prompts ディレクトリを作成
+    await ensureDir(join(TEST_DIR, "prompts"));
+    // prompts/to/project ディレクトリも作成
+    await ensureDir(join(TEST_DIR, "prompts", "to", "project"));
+
     // Save and change working directory to test dir
     originalCwd = Deno.cwd();
     Deno.chdir(TEST_DIR);
@@ -87,7 +92,7 @@ Deno.test("CLI I/O Handling", async (t) => {
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
     );
-    assertCommandOutput(result, { error: "File not found: -" });
+    assertCommandOutput(result, { error: "No such file: -" });
   });
 
   await t.step("error level logging", async () => {
@@ -103,8 +108,8 @@ Deno.test("CLI I/O Handling", async (t) => {
       "output.md",
     ]);
     // Check for error message in either output or error field
-    const hasError = result.output.includes("File not found") ||
-      result.error.includes("File not found");
+    const hasError = result.output.includes("No such file") ||
+      result.error.includes("No such file");
     assertEquals(hasError, true, "Expected file not found error message");
   });
 

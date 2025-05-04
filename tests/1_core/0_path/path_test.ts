@@ -1,8 +1,11 @@
 import { assertEquals, assertMatch } from "jsr:@std/testing@^0.224.0/asserts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 import { autoCompletePath, generateDefaultFilename, normalizePath } from "$lib/path/path.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";
+import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
+import { ensureDir } from "jsr:@std/fs@0.224.0";
+import { join } from "@std/path/join";
 
 const logger = new BreakdownLogger();
 
@@ -29,11 +32,18 @@ Deno.test("path - normalizePath basic", () => {
 });
 
 // Path completion tests
-Deno.test("path - autoCompletePath with filename", () => {
+Deno.test("path - autoCompletePath with filename", async () => {
   logger.debug("Testing path completion with filename");
   const input = "test.md";
   const demonstrative = "to";
-  const result = autoCompletePath(input, demonstrative);
+  // Ensure config file exists
+  const configDir = join(".agent", "breakdown", "config");
+  const configFile = join(configDir, "app.yml");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(configFile, `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`);
+  const cliParams = { demonstrativeType: demonstrative, layerType: "issue", options: { fromFile: input } };
+  const factory = await PromptVariablesFactory.create(cliParams);
+  const result = autoCompletePath(input, demonstrative, factory);
   logger.debug("Path completion result", { input, demonstrative, result });
   assertMatch(result, /\/test\.md$/);
 });
@@ -50,11 +60,18 @@ Deno.test("path - generateDefaultFilename format", () => {
 });
 
 // Error cases
-Deno.test("path - autoCompletePath with invalid input", () => {
+Deno.test("path - autoCompletePath with invalid input", async () => {
   logger.debug("Testing path completion with invalid input");
   const input = undefined;
   const demonstrative = "to";
-  const result = autoCompletePath(input, demonstrative);
+  // Ensure config file exists
+  const configDir = join(".agent", "breakdown", "config");
+  const configFile = join(configDir, "app.yml");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(configFile, `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`);
+  const cliParams = { demonstrativeType: demonstrative, layerType: "issue", options: { fromFile: input } };
+  const factory = await PromptVariablesFactory.create(cliParams);
+  const result = autoCompletePath(input, demonstrative, factory);
   logger.debug("Path completion with invalid input result", { input, demonstrative, result });
-  assertMatch(result, /\.md$/);
+  assertEquals(result, "");
 });

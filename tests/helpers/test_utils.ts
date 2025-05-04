@@ -1,4 +1,4 @@
-import { join } from "jsr:@std/path/join";
+import { join } from "@std/path/join";
 
 /**
  * Base directory for all test files

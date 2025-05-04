@@ -103,31 +103,37 @@ Deno.test("directory - structure with default config only", async () => {
   try {
     await Deno.remove(".agent", { recursive: true });
   } catch { /* ignore */ }
-  await initWorkspace();
-  // 1. Confirm .agent/breakdown/config/app.yml exists
-  const configPath = ".agent/breakdown/config/app.yml";
-  const configExists = await Deno.stat(configPath).then(() => true, () => false);
-  assertEquals(configExists, true, "app.yml should exist");
-  // 2. Read working_dir from app.yml
-  const _configText = await Deno.readTextFile(configPath);
-  const workingDir = ".agent/breakdown"; // always default in our impl
-  // 3. Confirm required dirs under working_dir
-  const requiredDirs = [
-    "projects",
-    "issues",
-    "tasks",
-    "temp",
-    "config",
-    "prompts",
-    "schema",
-  ];
-  for (const dir of requiredDirs) {
-    const dirPath = `${workingDir}/${dir}`;
-    const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
-    assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
+  let originalCwd = Deno.cwd();
+  // Use project root for this test, since .agent is created there
+  try {
+    await initWorkspace();
+    // 1. Confirm .agent/breakdown/config/app.yml exists
+    const configPath = ".agent/breakdown/config/app.yml";
+    const configExists = await Deno.stat(configPath).then(() => true, () => false);
+    assertEquals(configExists, true, "app.yml should exist");
+    // 2. Read working_dir from app.yml
+    const _configText = await Deno.readTextFile(configPath);
+    const workingDir = ".agent/breakdown"; // always default in our impl
+    // 3. Confirm required dirs under working_dir
+    const requiredDirs = [
+      "projects",
+      "issues",
+      "tasks",
+      "temp",
+      "config",
+      "prompts",
+      "schema",
+    ];
+    for (const dir of requiredDirs) {
+      const dirPath = `${workingDir}/${dir}`;
+      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
+    }
+    // Cleanup
+    await Deno.remove(".agent", { recursive: true });
+  } finally {
+    Deno.chdir(originalCwd);
   }
-  // Cleanup
-  await Deno.remove(".agent", { recursive: true });
 });
 
 // --- NEW TEST: User config overrides working_dir ---

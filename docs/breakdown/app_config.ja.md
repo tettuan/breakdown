@@ -3,6 +3,8 @@
 https://jsr.io/@tettuan/breakdownconfig を使用します。README
 https://github.com/tettuan/breakdownconfig を読み把握すること。
 
+> **設定値のパス解決・利用例の実装については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
+
 ```ts
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
 

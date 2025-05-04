@@ -1,7 +1,7 @@
-# {{input_markdown_file}}
+# {{input_text_file}}
 
 Content:
-{{input_markdown}}
+{{input_text}}
 
 Output to: {{destination_path}}
 

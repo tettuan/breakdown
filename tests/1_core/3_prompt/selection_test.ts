@@ -19,10 +19,10 @@ import { assertRejects } from "jsr:@std/assert@^0.224.0/assert-rejects";
 import { afterEach, beforeEach, describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
-import { processWithPrompt } from "../../../lib/prompt/processor.ts";
 import { DemonstrativeType, LayerType } from "../../../lib/types/mod.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { ensureDir } from "jsr:@std/fs@^0.224.0";
+import { PromptAdapterImpl } from "../../../lib/prompt/prompt_adapter.ts";
 
 const logger = new BreakdownLogger();
 
@@ -53,14 +53,22 @@ describe("Prompt Selection", () => {
     originalCwd = Deno.cwd();
     Deno.chdir(testDir);
 
+    // Create .agent/breakdown/config/app.yml for BreakdownConfig
+    const configDir = join(testDir, ".agent", "breakdown", "config");
+    await Deno.mkdir(configDir, { recursive: true });
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+    );
+
     // Create schema directory and file
     const schemaDir = join(testDir, "prompts", "schema");
     await Deno.mkdir(schemaDir, { recursive: true });
     const schema = {
       type: "object",
       properties: {
-        input_markdown_file: { type: "string" },
-        input_markdown: { type: "string" },
+        input_text_file: { type: "string" },
+        input_text: { type: "string" },
         destination_path: { type: "string" },
       },
     };
@@ -119,7 +127,7 @@ describe("Prompt Selection", () => {
     Deno.chdir(originalCwd);
   });
 
-  describe("processWithPrompt", () => {
+  describe("PromptAdapterImpl", () => {
     it("should process project to issue prompt", async () => {
       logger.debug("Testing project to issue prompt processing", {
         inputFile: join(testDir, "input", "project.md"),
@@ -139,7 +147,8 @@ describe("Prompt Selection", () => {
       logger.debug("[DEBUG] CWD", { cwd: Deno.cwd() });
       let result;
       try {
-        result = await processWithPrompt(
+        const adapter = new PromptAdapterImpl();
+        result = await adapter.generate(
           relPromptsDir,
           "to" as DemonstrativeType,
           "issue" as LayerType,
@@ -148,9 +157,9 @@ describe("Prompt Selection", () => {
           "",
           loggerAdapter,
         );
-        logger.debug("processWithPrompt success", { content: result.content });
+        logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", {
+        logger.error("PromptAdapterImpl error", {
           error: e instanceof Error ? e.message : String(e),
           inputFile,
           outputFile,
@@ -174,7 +183,8 @@ describe("Prompt Selection", () => {
       const relOutputFile = relative(testDir, outputFile);
       let result;
       try {
-        result = await processWithPrompt(
+        const adapter = new PromptAdapterImpl();
+        result = await adapter.generate(
           relPromptsDir,
           "to" as DemonstrativeType,
           "task" as LayerType,
@@ -183,9 +193,9 @@ describe("Prompt Selection", () => {
           "",
           loggerAdapter,
         );
-        logger.debug("processWithPrompt success", { content: result.content });
+        logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", {
+        logger.error("PromptAdapterImpl error", {
           error: e instanceof Error ? e.message : String(e),
           inputFile,
           outputFile,
@@ -209,7 +219,8 @@ describe("Prompt Selection", () => {
       const relOutputFile = relative(testDir, outputFile);
       let result;
       try {
-        result = await processWithPrompt(
+        const adapter = new PromptAdapterImpl();
+        result = await adapter.generate(
           relPromptsDir,
           "to" as DemonstrativeType,
           "issue" as LayerType,
@@ -219,9 +230,9 @@ describe("Prompt Selection", () => {
           loggerAdapter,
           "strict",
         );
-        logger.debug("processWithPrompt success", { content: result.content });
+        logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", {
+        logger.error("PromptAdapterImpl error", {
           error: e instanceof Error ? e.message : String(e),
           inputFile,
           outputFile,
@@ -245,7 +256,8 @@ describe("Prompt Selection", () => {
       const relOutputFile = relative(testDir, outputFile);
       let result;
       try {
-        result = await processWithPrompt(
+        const adapter = new PromptAdapterImpl();
+        result = await adapter.generate(
           relPromptsDir,
           "to" as DemonstrativeType,
           "task" as LayerType,
@@ -255,9 +267,9 @@ describe("Prompt Selection", () => {
           loggerAdapter,
           "a",
         );
-        logger.debug("processWithPrompt success", { content: result.content });
+        logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", {
+        logger.error("PromptAdapterImpl error", {
           error: e instanceof Error ? e.message : String(e),
           inputFile,
           outputFile,
@@ -281,7 +293,8 @@ describe("Prompt Selection", () => {
       const relOutputFile = relative(testDir, outputFile);
       let result;
       try {
-        result = await processWithPrompt(
+        const adapter = new PromptAdapterImpl();
+        result = await adapter.generate(
           relPromptsDir,
           "to" as DemonstrativeType,
           "task" as LayerType,
@@ -291,9 +304,9 @@ describe("Prompt Selection", () => {
           loggerAdapter,
           "nonexistent",
         );
-        logger.debug("processWithPrompt success", { content: result.content });
+        logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {
-        logger.error("processWithPrompt error", {
+        logger.error("PromptAdapterImpl error", {
           error: e instanceof Error ? e.message : String(e),
           inputFile,
           outputFile,
@@ -311,7 +324,8 @@ describe("Prompt Selection", () => {
 
       await assertRejects(
         async () => {
-          await processWithPrompt(
+          const adapter = new PromptAdapterImpl();
+          await adapter.generate(
             relPromptsDir,
             "invalid" as DemonstrativeType,
             "issue" as LayerType,
@@ -334,6 +348,13 @@ describe("CLI integration: adaptation option", () => {
     const testDir = await Deno.makeTempDir();
     Deno.chdir(testDir);
     try {
+      // Create .agent/breakdown/config/app.yml for BreakdownConfig
+      const configDir = join(testDir, ".agent", "breakdown", "config");
+      await Deno.mkdir(configDir, { recursive: true });
+      await Deno.writeTextFile(
+        join(configDir, "app.yml"),
+        `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+      );
       const promptsDir = join(testDir, "prompts", "to", "task");
       await ensureDir(promptsDir);
       // プロンプトテンプレート作成
@@ -354,7 +375,8 @@ describe("CLI integration: adaptation option", () => {
       const relPromptsDir = relative(testDir, join(testDir, "prompts"));
       const relInputFile = relative(testDir, fromFile);
       const relOutputFile = relative(testDir, outFile);
-      const result = await processWithPrompt(
+      const adapter = new PromptAdapterImpl();
+      const result = await adapter.generate(
         relPromptsDir,
         "to" as DemonstrativeType,
         "task" as LayerType,

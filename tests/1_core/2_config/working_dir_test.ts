@@ -87,43 +87,50 @@ Deno.test({
 Deno.test({
   name: "working_dir - simple pattern - default configuration",
   async fn() {
-    logger.debug("Testing default configuration", {
-      purpose: "Verify basic configuration loading",
-      step: "Simple pattern",
-      state: "Starting",
-      expectedDir: ".agent/breakdown",
-    });
+    let originalCwd = Deno.cwd();
+    await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
+    Deno.chdir(TEST_ENV.workingDir);
+    try {
+      logger.debug("Testing default configuration", {
+        purpose: "Verify basic configuration loading",
+        step: "Simple pattern",
+        state: "Starting",
+        expectedDir: ".agent/breakdown",
+      });
 
-    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
-    await Deno.mkdir(configPath, { recursive: true });
+      const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
+      await Deno.mkdir(configPath, { recursive: true });
 
-    logger.debug("Creating config file", {
-      step: "File creation",
-      configPath,
-    });
+      logger.debug("Creating config file", {
+        step: "File creation",
+        configPath,
+      });
 
-    const configFile = join(configPath, "app.yml");
-    await Deno.writeTextFile(
-      configFile,
-      `
+      const configFile = join(configPath, "app.yml");
+      await Deno.writeTextFile(
+        configFile,
+        `
 working_dir: .agent/breakdown
 app_prompt:
   base_dir: lib/breakdown/prompts
 app_schema:
   base_dir: lib/breakdown/schema
 `,
-    );
+      );
 
-    const config = new BreakdownConfig(TEST_ENV.workingDir);
-    await config.loadConfig();
-    const settings = await config.getConfig();
+      const config = new BreakdownConfig(TEST_ENV.workingDir);
+      await config.loadConfig();
+      const settings = await config.getConfig();
 
-    logger.debug("Configuration loaded", {
-      step: "Verification",
-      actualWorkingDir: settings.working_dir,
-      expectedDir: ".agent/breakdown",
-    });
-    assertEquals(settings.working_dir, ".agent/breakdown");
+      logger.debug("Configuration loaded", {
+        step: "Verification",
+        actualWorkingDir: settings.working_dir,
+        expectedDir: ".agent/breakdown",
+      });
+      assertEquals(settings.working_dir, ".agent/breakdown");
+    } finally {
+      Deno.chdir(originalCwd);
+    }
   },
 });
 
@@ -131,61 +138,68 @@ app_schema:
 Deno.test({
   name: "working_dir - simple pattern - directory structure",
   async fn() {
-    logger.debug("Testing directory structure", {
-      purpose: "Verify required directories exist",
-      step: "Simple pattern",
-      state: "Starting",
-    });
+    let originalCwd = Deno.cwd();
+    await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
+    Deno.chdir(TEST_ENV.workingDir);
+    try {
+      logger.debug("Testing directory structure", {
+        purpose: "Verify required directories exist",
+        step: "Simple pattern",
+        state: "Starting",
+      });
 
-    // Create config directory and file first
-    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
-    await Deno.mkdir(configPath, { recursive: true });
-    const configFile = join(configPath, "app.yml");
-    await Deno.writeTextFile(
-      configFile,
-      `
+      // Create config directory and file first
+      const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
+      await Deno.mkdir(configPath, { recursive: true });
+      const configFile = join(configPath, "app.yml");
+      await Deno.writeTextFile(
+        configFile,
+        `
 working_dir: .agent/breakdown
 app_prompt:
   base_dir: lib/breakdown/prompts
 app_schema:
   base_dir: lib/breakdown/schema
 `,
-    );
+      );
 
-    // Create the required directories
-    const workingDir = join(TEST_ENV.workingDir, ".agent", "breakdown");
-    const requiredDirs = [
-      "projects", // For project-related outputs
-      "issues", // For issue-related outputs
-      "tasks", // For task-related outputs
-      "temp", // For temporary files
-      "config", // For configuration files
-      "prompts", // For prompt files
-      "schema", // For schema files
-    ];
+      // Create the required directories
+      const workingDir = join(TEST_ENV.workingDir, ".agent", "breakdown");
+      const requiredDirs = [
+        "projects", // For project-related outputs
+        "issues", // For issue-related outputs
+        "tasks", // For task-related outputs
+        "temp", // For temporary files
+        "config", // For configuration files
+        "prompts", // For prompt files
+        "schema", // For schema files
+      ];
 
-    for (const dir of requiredDirs) {
-      const dirPath = join(workingDir, dir);
-      await Deno.mkdir(dirPath, { recursive: true });
-    }
+      for (const dir of requiredDirs) {
+        const dirPath = join(workingDir, dir);
+        await Deno.mkdir(dirPath, { recursive: true });
+      }
 
-    const config = new BreakdownConfig(TEST_ENV.workingDir);
-    await config.loadConfig();
-    const settings = await config.getConfig();
+      const config = new BreakdownConfig(TEST_ENV.workingDir);
+      await config.loadConfig();
+      const settings = await config.getConfig();
 
-    for (const dir of requiredDirs) {
-      const dirPath = join(TEST_ENV.workingDir, settings.working_dir, dir);
-      logger.debug("Checking directory", {
-        step: "Directory verification",
-        dir: dirPath,
-        state: "Checking",
-      });
-      await assertDirectoryExists(dirPath);
-      logger.debug("Directory verified", {
-        step: "Directory verification",
-        dir: dirPath,
-        state: "Complete",
-      });
+      for (const dir of requiredDirs) {
+        const dirPath = join(TEST_ENV.workingDir, settings.working_dir, dir);
+        logger.debug("Checking directory", {
+          step: "Directory verification",
+          dir: dirPath,
+          state: "Checking",
+        });
+        await assertDirectoryExists(dirPath);
+        logger.debug("Directory verified", {
+          step: "Directory verification",
+          dir: dirPath,
+          state: "Complete",
+        });
+      }
+    } finally {
+      Deno.chdir(originalCwd);
     }
   },
 });
@@ -194,39 +208,46 @@ app_schema:
 Deno.test({
   name: "working_dir - normal pattern - custom configuration",
   async fn() {
-    const customWorkingDir = "./tmp/test/custom-config";
-    logger.debug("Testing custom configuration", {
-      purpose: "Verify custom working directory",
-      step: "Normal pattern",
-      state: "Starting",
-      customWorkingDir,
-    });
+    let originalCwd = Deno.cwd();
+    await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
+    Deno.chdir(TEST_ENV.workingDir);
+    try {
+      const customWorkingDir = "./tmp/test/custom-config";
+      logger.debug("Testing custom configuration", {
+        purpose: "Verify custom working directory",
+        step: "Normal pattern",
+        state: "Starting",
+        customWorkingDir,
+      });
 
-    // Create config directory and file
-    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
-    await Deno.mkdir(configPath, { recursive: true });
-    const configFile = join(configPath, "app.yml");
-    await Deno.writeTextFile(
-      configFile,
-      `
+      // Create config directory and file
+      const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
+      await Deno.mkdir(configPath, { recursive: true });
+      const configFile = join(configPath, "app.yml");
+      await Deno.writeTextFile(
+        configFile,
+        `
 working_dir: ${customWorkingDir}/.agent/breakdown
 app_prompt:
   base_dir: custom/prompts
 app_schema:
   base_dir: custom/schema
 `,
-    );
+      );
 
-    const config = new BreakdownConfig(TEST_ENV.workingDir);
-    await config.loadConfig();
-    const settings = await config.getConfig();
+      const config = new BreakdownConfig(TEST_ENV.workingDir);
+      await config.loadConfig();
+      const settings = await config.getConfig();
 
-    logger.debug("Configuration loaded", {
-      step: "Verification",
-      actualWorkingDir: settings.working_dir,
-      expectedDir: `${customWorkingDir}/.agent/breakdown`,
-    });
-    assertEquals(settings.working_dir, `${customWorkingDir}/.agent/breakdown`);
+      logger.debug("Configuration loaded", {
+        step: "Verification",
+        actualWorkingDir: settings.working_dir,
+        expectedDir: `${customWorkingDir}/.agent/breakdown`,
+      });
+      assertEquals(settings.working_dir, `${customWorkingDir}/.agent/breakdown`);
+    } finally {
+      Deno.chdir(originalCwd);
+    }
   },
 });
 
@@ -234,70 +255,77 @@ app_schema:
 Deno.test({
   name: "working_dir - edge cases - invalid configuration",
   async fn() {
-    logger.debug("Testing invalid configurations", {
-      purpose: "Verify error handling",
-      step: "Edge cases",
-      state: "Starting",
-    });
+    let originalCwd = Deno.cwd();
+    await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
+    Deno.chdir(TEST_ENV.workingDir);
+    try {
+      logger.debug("Testing invalid configurations", {
+        purpose: "Verify error handling",
+        step: "Edge cases",
+        state: "Starting",
+      });
 
-    // Test non-existent path
-    logger.debug("Testing non-existent path", {
-      step: "Error handling",
-      path: "/non/existent/path",
-      state: "Starting",
-    });
+      // Test non-existent path
+      logger.debug("Testing non-existent path", {
+        step: "Error handling",
+        path: "/non/existent/path",
+        state: "Starting",
+      });
 
-    await assertRejects(
-      async () => {
-        const config = new BreakdownConfig("/non/existent/path");
-        await config.loadConfig();
-      },
-      Error,
-      "ERR1001: Application configuration file not found",
-    );
+      await assertRejects(
+        async () => {
+          const config = new BreakdownConfig("/non/existent/path");
+          await config.loadConfig();
+        },
+        Error,
+        "ERR1001: Application configuration file not found",
+      );
 
-    logger.debug("Non-existent path test complete", {
-      step: "Error handling",
-      state: "Complete",
-    });
+      logger.debug("Non-existent path test complete", {
+        step: "Error handling",
+        state: "Complete",
+      });
 
-    // Test file path instead of directory
-    logger.debug("Testing file path", {
-      step: "Error handling",
-      file: "/tmp/test/config-working-dir/test.txt",
-      state: "Starting",
-    });
+      // Test file path instead of directory
+      logger.debug("Testing file path", {
+        step: "Error handling",
+        file: "/tmp/test/config-working-dir/test.txt",
+        state: "Starting",
+      });
 
-    const testFile = join(TEST_ENV.workingDir, "test.txt");
-    await Deno.writeTextFile(testFile, "test");
+      const testFile = join(TEST_ENV.workingDir, "test.txt");
+      await Deno.writeTextFile(testFile, "test");
 
-    await assertRejects(
-      async () => {
-        const config = new BreakdownConfig(testFile);
-        await config.loadConfig();
-      },
-      Error,
-      "Not a directory",
-    );
+      await assertRejects(
+        async () => {
+          const config = new BreakdownConfig(testFile);
+          await config.loadConfig();
+        },
+        Error,
+        "Not a directory",
+      );
 
-    // Also test with a file that exists in the config path
-    const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
-    await Deno.mkdir(configPath, { recursive: true });
-    const invalidConfigFile = join(configPath, "invalid.txt");
-    await Deno.writeTextFile(invalidConfigFile, "test");
+      // Also test with a file that exists in the config path
+      const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
+      await Deno.mkdir(configPath, { recursive: true });
+      const invalidConfigFile = join(configPath, "invalid.txt");
+      await Deno.writeTextFile(invalidConfigFile, "test");
 
-    await assertRejects(
-      async () => {
-        const config = new BreakdownConfig(invalidConfigFile);
-        await config.loadConfig();
-      },
-      Error,
-      "Not a directory",
-    );
+      await assertRejects(
+        async () => {
+          const config = new BreakdownConfig(invalidConfigFile);
+          await config.loadConfig();
+        },
+        Error,
+        "Not a directory",
+      );
 
-    logger.debug("File path test complete", {
-      step: "Error handling",
-      state: "Complete",
-    });
+      logger.debug("File path test complete", {
+        step: "Error handling",
+        state: "Complete",
+      });
+    } finally {
+      Deno.chdir(originalCwd);
+    }
   },
 });

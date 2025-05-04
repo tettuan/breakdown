@@ -2,11 +2,11 @@
 
 ## Input
 
-{input_markdown}
+{input_text}
 
 ## Source
 
-{input_markdown_file}
+{input_text_file}
 
 ## Schema
 

@@ -1,88 +1,84 @@
-# PromptParamsFactory
+# PromptVariablesFactory
+
+> **アプリケーション設定（app.yml, user.yml）の詳細仕様については [app_config.ja.md](./app_config.ja.md) を参照してください。**
 
 ## 概要
 
-プロンプト置換処理に必要なパラメータを構築するファクトリクラス。
-デザインパターンのFactoryパターンを採用し、複雑なパラメータ構築処理をカプセル化します。
+プロンプト置換処理に必要な全パラメータ・パス解決を一元化するFactoryクラス。
+CLI・テスト・アプリ本体は必ずこのFactory経由でパス解決・パラメータ構築を行う。
+
+- 設定値はBreakdownConfigから取得し、CLIパラメータと組み合わせて仕様に従い全てのパス・パラメータを生成
+- スキーマファイルパスも含め、全てのパス解決を一元化
+- Factoryパターンにより、拡張性・テスト容易性・一貫性を担保
 
 ## 責務
 
-- プロンプト置換処理に必要なパラメータの構築
-- ファイルパスやディレクトリパスの生成
-- 入力パラメータのバリデーションと変換
+- プロンプト/スキーマ/入出力ファイル等、全パス・パラメータの構築
+- 仕様変更時の影響範囲最小化
 
-## 前提条件
+※ 入力値のバリデーションは原則Validatorの責務とし、Factoryはパス・パラメータ構築に専念する。
 
-1. 構成要素の設定が読み込まれていること
-   - アプリケーション設定（プロンプトベースディレクトリ、スキーマベースディレクトリなど）
-   - 作業ディレクトリ設定
-2. 構成要素のSeedがパラメータとして受け取られていること
-   - demonstrativeType（指示語タイプ）
-   - layerType（レイヤータイプ）
-   - オプション（fromFile, destinationFile, fromLayerType）
+## 入出力
 
-## 入力
+- **入力**:  
+  - BreakdownConfig（app.yml, user.yml などから読み込まれる設定値）
+  - CLIパラメータ（DoubleParamsResult等、コマンドライン引数やAPI経由で渡されるパラメータ全般）
+- **出力**:  
+  - promptFilePath, inputFilePath, outputFilePath, schemaFilePath など、プロンプト置換処理に必要な全パラメータ
 
-- breakdownparamsのDoubleParamsResultオブジェクト
-- アプリケーション設定オブジェクト
+## パス解決ルール（要点のみ）
 
-## 出力
+- **プロンプトファイル**:  
+  プロンプトベースディレクトリ（`app_prompt.base_dir`） + demonstrativeType + layerType + `f_{fromLayerType}.md`
+- **スキーマファイル**:  
+  スキーマベースディレクトリ（`app_schema.base_dir`） + demonstrativeType + layerType + `base.schema.md`
+- **入力ファイル**:  
+  [path.ja.md](./path.ja.md)「Inputファイル」セクション準拠
+- **出力ファイル**:  
+  [path.ja.md](./path.ja.md)「Outputファイル」セクション準拠
 
-プロンプト置換処理のメインクラスが必要とする以下のパラメータ：
+## クラス設計・API例
 
-1. プロンプトファイル関連
-   - プロンプトファイルのパス
-   - プロンプトの種類（from/to）
-   - 対象レイヤー情報
+> ※ 下記はpublicなAPIメソッドのみを記載。内部のprivateメソッドは省略。
 
-2. 入出力ファイル関連
-   - 入力ファイルのパス
-   - 出力ファイルのパス
-   - 入力レイヤータイプ
-   - 出力レイヤータイプ
+```ts
+interface PromptVariablesFactoryOptions {
+  config: AppConfig;
+  cliParams: DoubleParamsResult;
+}
 
-## 構築ルール
+class PromptVariablesFactory {
+  constructor(options: PromptVariablesFactoryOptions);
+  validateAll(): void;
+  getAllParams(): {
+    promptFilePath: string;
+    inputFilePath: string;
+    outputFilePath: string;
+    schemaFilePath: string;
+    // ...他の必要なパラメータ
+  };
+  // 個別getter（readonlyプロパティとしても可）
+  readonly promptFilePath: string;
+  readonly inputFilePath: string;
+  readonly outputFilePath: string;
+  readonly schemaFilePath: string;
+}
+```
 
-### プロンプトファイルパス
+### 利用例
 
-- ベースディレクトリ + demonstrativeType + layerType + プロンプトファイル名
-- プロンプトファイル名は `f_{fromLayerType}.md` の形式
+```ts
+const factory = new PromptVariablesFactory({ config, cliParams });
+// 一括取得
+const { promptFilePath, inputFilePath, outputFilePath, schemaFilePath } = factory.getAllParams();
+// 個別アクセス
+console.log(factory.promptFilePath);
+console.log(factory.inputFilePath);
+```
 
-### スキーマファイルパス
+## 参照
 
-- ベースディレクトリ + demonstrativeType + layerType + base.schema.md
-
-### 入力ファイルパス
-
-docs/breakdown/path.ja.md の「Inputファイル」セクションに従う
-
-1. fromFileがPATH階層を持つ場合：そのパスをそのまま使用
-2. fromFileがファイル名のみの場合：
-   - fromLayerTypeが指定されている場合：fromLayerType + fromFile
-   - 指定がない場合：layerType + fromFile
-3. fromFileが未指定の場合：空のパスを返す
-
-### 出力ファイルパス
-
-docs/breakdown/path.ja.md の「Outputファイル」セクションに従う
-
-> destinationFile（destinationPath）は、テンプレートに埋め込むための値であり、プロンプトを受け取った結果を書き込む必要は一切ありません。ファイル出力は必須ではなく、必要に応じて利用者が判断します。
-
-1. destinationFileがPATH階層を持つファイルの場合：そのパスをそのまま使用
-2. destinationFileがファイル名のみの場合：layerType + destinationFile
-3. destinationFileがディレクトリの場合：
-   - ディレクトリ + 日付_ハッシュ値.md
-4. destinationFileが未指定の場合：
-   - layerType + 日付_ハッシュ値.md
-
-## エラー処理
-
-1. 必須パラメータの欠落チェック
-2. パスの妥当性チェック
-3. ファイル/ディレクトリの存在チェック（必要な場合）
-
-## 拡張性への配慮
-
-1. 新しいパラメータタイプの追加が容易な構造
-2. パス生成ルールの変更に対応しやすい設計
-3. テスト可能な構造
+- [docs/breakdown/path.ja.md](./path.ja.md)
+- [docs/breakdown/options.ja.md](./options.ja.md)
+- [docs/breakdown/testing.ja.md](./testing.ja.md)
+- [docs/breakdown/app_config.ja.md](./app_config.ja.md)

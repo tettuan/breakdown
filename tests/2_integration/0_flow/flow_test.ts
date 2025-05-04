@@ -2,6 +2,8 @@ import { assertEquals } from "@std/assert";
 import { exists } from "@std/fs";
 import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
+import { join } from "@std/path/join";
+import { resolve } from "@std/path/resolve";
 
 /**
  * Integration tests for the breakdown workflow
@@ -46,20 +48,43 @@ Deno.test("workspace initialization and structure", async () => {
   // Initialize workspace
   await workspace.initialize();
 
+  // Create .agent/breakdown/config/app.yml for BreakdownConfig
+  const configDir = join(".agent", "breakdown", "config");
+  await Deno.mkdir(configDir, { recursive: true });
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+  );
+
+  // Set PromptVariablesFactory for path resolution
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "project",
+    options: {
+      fromFile: "test.md",
+      destinationFile: "test.md",
+      fromLayerType: "project",
+    },
+  };
+  const factory = await import("$lib/factory/PromptVariablesFactory.ts").then(m => m.PromptVariablesFactory.create(cliParams));
+  workspace.setPromptVariablesFactory(factory);
+
   // Verify workspace directories
   assertEquals(await exists(workspace.getPromptBaseDir()), true);
   assertEquals(await exists(workspace.getSchemaBaseDir()), true);
   assertEquals(await exists(workspace.getWorkingDir()), true);
 
-  // Verify path resolution
+  // See: docs/breakdown/app_config.ja.md
+  // app_prompt.base_dir, app_schema.base_dir は working_dir の prefix ではなく、Deno.cwd()（プロジェクトルート）基準で解決される仕様。
+  // 仕様詳細は app_config.ja.md を参照。
   assertEquals(
     workspace.resolvePromptPath("test.md"),
-    `${workspace.getPromptBaseDir()}/test.md`,
+    resolve(Deno.cwd(), "prompts", "to", "project", "f_project.md"),
   );
 
   assertEquals(
     workspace.resolveSchemaPath("test.json"),
-    `${workspace.getSchemaBaseDir()}/test.json`,
+    resolve(Deno.cwd(), "schemas", "to", "project", "base.schema.md"),
   );
 });
 

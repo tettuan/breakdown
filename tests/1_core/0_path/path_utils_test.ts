@@ -15,8 +15,8 @@
  */
 
 import { assertEquals, assertRejects } from "@std/assert";
-import { join } from "jsr:@std/path";
-import { exists } from "jsr:@std/fs";
+import { join } from "@std/path/join";
+import { exists } from "@std/fs";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";
 import {
@@ -27,6 +27,7 @@ import {
   validateWorkingDir,
   type WorkingDirStructure,
 } from "$lib/path/path_utils.ts";
+import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
 
 const env = {
   workingDir: "./tmp/test/working/dir",

@@ -143,59 +143,65 @@ Deno.test("parseParams - adaptation option (short form)", () => {
 });
 
 Deno.test("Command Module Tests", async (t) => {
-  // Setup: Create test directory
-  await t.step("setup", async () => {
-    try {
-      await Deno.remove(TEST_DIR, { recursive: true });
-    } catch { /* ignore */ }
-  });
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+  let originalCwd = Deno.cwd();
+  Deno.chdir(TEST_DIR);
+  try {
+    await t.step("setup", async () => {
+      try {
+        await Deno.remove(TEST_DIR, { recursive: true });
+      } catch { /* ignore */ }
+    });
 
-  await t.step("initWorkspace should create required directories", async () => {
-    await initWorkspace();
+    await t.step("initWorkspace should create required directories", async () => {
+      await initWorkspace();
 
-    // Verify .agent/breakdown directory exists
-    const breakdownDir = ".agent/breakdown";
-    const breakdownDirInfo = await Deno.stat(breakdownDir);
-    assertExists(breakdownDirInfo);
-    assertEquals(breakdownDirInfo.isDirectory, true);
+      // Verify .agent/breakdown directory exists
+      const breakdownDir = ".agent/breakdown";
+      const breakdownDirInfo = await Deno.stat(breakdownDir);
+      assertExists(breakdownDirInfo);
+      assertEquals(breakdownDirInfo.isDirectory, true);
 
-    // Verify required subdirectories exist
-    const requiredDirs = [
-      "projects",
-      "issues",
-      "tasks",
-      "temp",
-      "config",
-      "prompts",
-      "schema",
-    ];
+      // Verify required subdirectories exist
+      const requiredDirs = [
+        "projects",
+        "issues",
+        "tasks",
+        "temp",
+        "config",
+        "prompts",
+        "schema",
+      ];
 
-    for (const dir of requiredDirs) {
-      const dirPath = `.agent/breakdown/${dir}`;
-      const dirInfo = await Deno.stat(dirPath);
-      assertExists(dirInfo);
-      assertEquals(dirInfo.isDirectory, true);
-    }
-    // Cleanup after test
-    await Deno.remove(".agent", { recursive: true });
-  });
+      for (const dir of requiredDirs) {
+        const dirPath = `.agent/breakdown/${dir}`;
+        const dirInfo = await Deno.stat(dirPath);
+        assertExists(dirInfo);
+        assertEquals(dirInfo.isDirectory, true);
+      }
+      // Cleanup after test
+      await Deno.remove(".agent", { recursive: true });
+    });
 
-  await t.step("displayHelp should not throw", () => {
-    displayHelp();
-  });
+    await t.step("displayHelp should not throw", () => {
+      displayHelp();
+    });
 
-  await t.step("displayVersion should not throw and output correct version", () => {
-    const result = displayVersion();
-    assertEquals(result.success, true);
-    assertEquals(result.output, `Breakdown v${VERSION}`);
-  });
+    await t.step("displayVersion should not throw and output correct version", () => {
+      const result = displayVersion();
+      assertEquals(result.success, true);
+      assertEquals(result.output, `Breakdown v${VERSION}`);
+    });
 
-  // Cleanup: Remove test directory
-  await t.step("cleanup", async () => {
-    try {
-      await Deno.remove(TEST_DIR, { recursive: true });
-    } catch { /* ignore */ }
-  });
+    // Cleanup: Remove test directory
+    await t.step("cleanup", async () => {
+      try {
+        await Deno.remove(TEST_DIR, { recursive: true });
+      } catch { /* ignore */ }
+    });
+  } finally {
+    Deno.chdir(originalCwd);
+  }
 });
 
 Deno.test("cli - init command should finish and create config", async () => {
@@ -238,4 +244,21 @@ Deno.test("cli - init command should finish and create config", async () => {
   }
   // Cleanup
   await Deno.remove(testDir, { recursive: true });
+});
+
+Deno.test("CLI Command Execution", async (t) => {
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+  let originalCwd = Deno.cwd();
+  Deno.chdir(TEST_DIR);
+  try {
+    await t.step("setup", async () => {
+      // ... existing code ...
+    });
+    // ... all other steps ...
+    await t.step("cleanup", async () => {
+      // ... existing code ...
+    });
+  } finally {
+    Deno.chdir(originalCwd);
+  }
 });

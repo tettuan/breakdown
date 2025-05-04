@@ -13,8 +13,9 @@
  * 7. Document naming conventions
  */
 
-import { ensureDir, exists } from "jsr:@std/fs@^0.224.0";
-import { join, normalize, relative } from "jsr:@std/path@^0.224.0";
+import { ensureDir, exists } from "@std/fs";
+import { join, normalize, relative } from "@std/path";
+import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
 
 /**
  * Represents the structure of the working directory.
@@ -224,4 +225,22 @@ export function determineLayerType(filePath: string): LayerType {
 
   // If no layer type is found in the path, throw an error
   throw new Error(`Could not determine layer type from path: ${filePath}`);
+}
+
+/**
+ * レイヤーごとのファイルパスはPromptVariablesFactory経由で取得
+ */
+export function getLayerFilePath(factory: PromptVariablesFactory): string {
+  return factory.inputFilePath;
+}
+
+/**
+ * 必要に応じて他のパスもFactoryのgetter経由で取得
+ */
+export function getLayerOutputFilePath(factory: PromptVariablesFactory): string {
+  return factory.outputFilePath;
+}
+
+export function getLayerSchemaFilePath(factory: PromptVariablesFactory): string {
+  return factory.schemaFilePath;
 }

@@ -1,3 +1,3 @@
-# {input_markdown_file}
+# {input_text_file}
 
 {input_text} 

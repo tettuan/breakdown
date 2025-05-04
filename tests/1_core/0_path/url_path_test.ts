@@ -3,6 +3,9 @@ import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 import { autoCompletePath, normalizePath } from "$lib/path/path.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";
+import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
+import { ensureDir } from "jsr:@std/fs@0.224.0";
+import { join } from "@std/path/join";
 
 const logger = new BreakdownLogger();
 
@@ -100,8 +103,13 @@ Deno.test({
 });
 
 // URL path completion tests
-Deno.test("url path - autoCompletePath with URL-like paths", () => {
+Deno.test("url path - autoCompletePath with URL-like paths", async () => {
   logger.debug("Testing URL path completion");
+
+  const configDir = join(".agent", "breakdown", "config");
+  const configFile = join(configDir, "app.yml");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(configFile, `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`);
 
   const testCases = [
     {
@@ -118,7 +126,9 @@ Deno.test("url path - autoCompletePath with URL-like paths", () => {
 
   for (const { input, demonstrative, shouldContain } of testCases) {
     logger.debug("Testing case", { input, demonstrative, shouldContain });
-    const result = autoCompletePath(input, demonstrative);
+    const cliParams = { demonstrativeType: demonstrative, layerType: "issue", options: { fromFile: input } };
+    const factory = await PromptVariablesFactory.create(cliParams);
+    const result = autoCompletePath(input, demonstrative, factory);
     assertMatch(result, new RegExp(shouldContain.replace(/\//g, "\\/")));
     logger.debug("Case passed", { input, demonstrative, result });
   }

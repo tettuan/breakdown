@@ -33,7 +33,7 @@ user requests and define them while obtaining confirmation. Execute the followin
 
 ## Input Request
 
-{input_markdown}
+{input_text}
 
 ## JSON Schema to Apply for Output
 

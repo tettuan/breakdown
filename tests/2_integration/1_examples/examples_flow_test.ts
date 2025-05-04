@@ -1,0 +1,567 @@
+import { assertEquals, assertStringIncludes } from "@std/assert";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { runCommand } from "$test/helpers/setup.ts";
+import { ensureDir } from "@std/fs";
+import { join } from "@std/path";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
+
+const logger = new BreakdownLogger();
+
+/**
+ * E2E: project summary to project/issue/task (happy path)
+ *
+ * 検証内容:
+ * - CLIが設定ファイル(app.yml)・入力ファイル・テンプレートファイルを正しく参照し、
+ *   サマリー→プロジェクト→課題→タスクの変換が成功すること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (project_summary.md)
+ * - テンプレートファイル (base_dir/to/project/f_project.md など)
+ */
+Deno.test("E2E: project summary to project/issue/task (happy path)", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  // app.yml: base_dir=prompts
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+  );
+  // 入力ファイル
+  const projectDir = join(testDir, "project");
+  await ensureDir(projectDir);
+  const summaryPath = join(projectDir, "project_summary.md");
+  await Deno.writeTextFile(summaryPath, "# Project Summary\n- Overview: Example\n");
+  // テンプレートファイル
+  const promptDir = join(testDir, "prompts", "to", "project");
+  await ensureDir(promptDir);
+  await Deno.writeTextFile(join(promptDir, "f_project.md"), "template content");
+  // issue, task テンプレートも追加
+  const issuePromptDir = join(testDir, "prompts", "to", "issue");
+  await ensureDir(issuePromptDir);
+  await Deno.writeTextFile(join(issuePromptDir, "f_issue.md"), "template content");
+  await Deno.writeTextFile(join(issuePromptDir, "f_project.md"), "template content");
+  const taskPromptDir = join(testDir, "prompts", "to", "task");
+  await ensureDir(taskPromptDir);
+  await Deno.writeTextFile(join(taskPromptDir, "f_task.md"), "template content");
+  await Deno.writeTextFile(join(taskPromptDir, "f_issue.md"), "template content");
+
+  // Main Test
+  let result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      summaryPath,
+      "--destination",
+      join(projectDir, "project.md"),
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("to project result", { result });
+  assertEquals(result.success, true);
+  // project.md の存在確認
+  const projectMdPath = join(projectDir, "project.md");
+  let projectMdExists = false;
+  try {
+    await Deno.stat(projectMdPath);
+    projectMdExists = true;
+  } catch {
+    projectMdExists = false;
+  }
+  logger.debug("project.md exists after to project", { projectMdExists, projectMdPath });
+  assertEquals(projectMdExists, true, "project.md should exist after to project");
+
+  result = await runCommand(
+    [
+      "to",
+      "issue",
+      "--from",
+      join(projectDir, "project.md"),
+      "--destination",
+      join(testDir, "issue.md"),
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("to issue result", { result });
+  assertEquals(result.success, true);
+  // issue.md の存在確認
+  const issueMdPath = join(testDir, "issue.md");
+  let issueMdExists = false;
+  try {
+    await Deno.stat(issueMdPath);
+    issueMdExists = true;
+  } catch {
+    issueMdExists = false;
+  }
+  logger.debug("issue.md exists after to issue", { issueMdExists, issueMdPath });
+  assertEquals(issueMdExists, true, "issue.md should exist after to issue");
+
+  result = await runCommand(
+    [
+      "to",
+      "task",
+      "--from",
+      join(testDir, "issue.md"),
+      "--destination",
+      join(testDir, "tasks.md"),
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("to task result", { result });
+  assertEquals(result.success, true);
+});
+
+/**
+ * E2E: adaptation option (long and short)
+ *
+ * 検証内容:
+ * - --adaptation/-a オプションで異なるテンプレートが選択されること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (unorganized_tasks.md)
+ * - テンプレートファイル (base_dir/summary/task/f_task_strict.md, f_task_a.md)
+ */
+Deno.test("E2E: adaptation option (long and short)", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  // base_dir=.agent/breakdown/prompts (relative to testDir)
+  const relPromptDir = join(".agent", "breakdown", "prompts");
+  const appYmlPath = join(configDir, "app.yml");
+  const appYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${relPromptDir}\napp_schema:\n  base_dir: schemas\n`;
+  await Deno.writeTextFile(appYmlPath, appYmlContent);
+  const inputPath = join(testDir, "unorganized_tasks.md");
+  await Deno.writeTextFile(inputPath, "- Task 1\n- Task 2\n");
+  // テンプレート
+  const strictDir = join(testDir, ".agent", "breakdown", "prompts", "summary", "task");
+  await ensureDir(strictDir);
+  const strictTemplate = join(strictDir, "f_task_strict.md");
+  const aTemplate = join(strictDir, "f_task_a.md");
+  await Deno.writeTextFile(strictTemplate, "strict template");
+  await Deno.writeTextFile(aTemplate, "a template");
+  // Debug: config, cwd, template paths, file existence
+  logger.debug("[DEBUG] configDir", { configDir });
+  logger.debug("[DEBUG] testDir (cwd)", { testDir });
+  logger.debug("[DEBUG] appYmlPath", { appYmlPath });
+  logger.debug("[DEBUG] appYmlContent", { appYmlContent });
+  logger.debug("[DEBUG] strictTemplate abs", { strictTemplate });
+  logger.debug("[DEBUG] aTemplate abs", { aTemplate });
+  logger.debug("[DEBUG] strictTemplate exists", {
+    exists: await Deno.stat(strictTemplate).then(() => true).catch(() => false),
+  });
+  logger.debug("[DEBUG] aTemplate exists", {
+    exists: await Deno.stat(aTemplate).then(() => true).catch(() => false),
+  });
+  try {
+    // Main Test: long form
+    let result = await runCommand(
+      [
+        "summary",
+        "task",
+        "--from",
+        inputPath,
+        "--adaptation",
+        "strict",
+        "--destination",
+        join(testDir, "tasks_strict.md"),
+      ],
+      undefined,
+      testDir,
+    );
+    logger.debug("adaptation long form result", { result });
+    assertEquals(result.success, true);
+    assertStringIncludes(result.output, "strict template");
+    // Main Test: short form
+    result = await runCommand(
+      [
+        "summary",
+        "task",
+        "--from",
+        inputPath,
+        "-a",
+        "a",
+        "--destination",
+        join(testDir, "tasks_simple.md"),
+      ],
+      undefined,
+      testDir,
+    );
+    logger.debug("adaptation short form result", { result });
+    assertEquals(result.success, true);
+    assertStringIncludes(result.output, "a template");
+  } finally {
+  }
+});
+
+/**
+ * E2E: error case - missing input file
+ *
+ * 検証内容:
+ * - 入力ファイルが存在しない場合、適切なエラーが出ること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - テンプレートファイル (base_dir/to/project/f_project.md)
+ * - 入力ファイルは作成しない
+ */
+Deno.test("E2E: error case - missing input file", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+  );
+  // テンプレート
+  const promptDir = join(testDir, "prompts", "to", "project");
+  await ensureDir(promptDir);
+  await Deno.writeTextFile(join(promptDir, "f_project.md"), "template content");
+  // 入力ファイルは作成しない
+
+  // Main Test
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      join(testDir, "not_exist.md"),
+      "--destination",
+      join(testDir, "out.md"),
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("missing input file result", { result });
+  assertEquals(result.success, false);
+  assertStringIncludes(result.error, "No such file");
+});
+
+/**
+ * E2E: error if app_prompt.base_dir directory is missing
+ *
+ * 検証内容:
+ * - base_dirで指定されたディレクトリが存在しない場合、適切なエラーが出ること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (input.md)
+ * - テンプレートディレクトリは作成しない
+ */
+Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schemas\n`,
+  );
+  // 入力ファイル
+  const inputPath = join(testDir, "input.md");
+  await Deno.writeTextFile(inputPath, "# Dummy");
+  // テンプレートディレクトリは作成しない
+
+  // Main Test
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      inputPath,
+      "--destination",
+      "output.md",
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("missing base_dir directory result", { result });
+  assertEquals(result.success, false);
+  assertStringIncludes(result.error, "Required directory does not exist");
+});
+
+/**
+ * E2E: error if app_prompt.base_dir is a file, not a directory
+ *
+ * 検証内容:
+ * - base_dirで指定されたパスがファイルの場合、適切なエラーが出ること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (input.md)
+ * - base_dirにファイルを作成
+ */
+Deno.test("E2E: error if app_prompt.base_dir is a file, not a directory", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schemas\n`,
+  );
+  // 入力ファイル
+  const inputPath = join(testDir, "input.md");
+  await Deno.writeTextFile(inputPath, "# Dummy");
+  // base_dirにファイルを作成
+  const promptFile = join(testDir, "prompts_file");
+  await Deno.writeTextFile(promptFile, "not a directory");
+
+  // Main Test
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      inputPath,
+      "--destination",
+      "output.md",
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("base_dir is file result", { result });
+  assertEquals(result.success, false);
+  assertStringIncludes(result.error, "is not a directory");
+});
+
+/**
+ * E2E: relative vs absolute baseDir in config
+ *
+ * 検証内容:
+ * - baseDirが相対パス/絶対パスの両方で正しく解決されること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (input.md)
+ * - テンプレートファイル (相対/絶対両方)
+ */
+Deno.test("E2E: relative vs absolute baseDir in config", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  // 相対パス
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schemas\n`,
+  );
+  const relPromptDir = join(testDir, "prompts_rel", "to", "project");
+  await ensureDir(relPromptDir);
+  await Deno.writeTextFile(join(relPromptDir, "f_project.md"), "rel template");
+  // 絶対パス
+  const absPromptDir = join(testDir, "abs_prompts", "to", "project");
+  await ensureDir(absPromptDir);
+  await Deno.writeTextFile(join(absPromptDir, "f_project.md"), "abs template");
+  // 入力ファイル
+  const inputPath = join(testDir, "input.md");
+  await Deno.writeTextFile(inputPath, "# Dummy");
+  // Update config to use absolute path
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${
+      join(testDir, "abs_prompts")
+    }\napp_schema:\n  base_dir: schemas\n`,
+  );
+  // Should use absolute path
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      inputPath,
+      "--destination",
+      "output.md",
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("absolute baseDir result", { result });
+  assertEquals(result.success, true);
+  assertStringIncludes(result.output, "abs template");
+});
+
+/**
+ * E2E: CLI param promptDir overrides config baseDir
+ *
+ * 検証内容:
+ * - --prompt-dir オプションでbaseDirが上書きされること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (input.md)
+ * - CLI paramで指定するテンプレートディレクトリ
+ */
+Deno.test("E2E: CLI param promptDir overrides config baseDir", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_config\napp_schema:\n  base_dir: schemas\n`,
+  );
+  const cliPromptDir = join(testDir, "cli_prompts", "to", "project");
+  await ensureDir(cliPromptDir);
+  await Deno.writeTextFile(join(cliPromptDir, "f_project.md"), "cli param template");
+  // 入力ファイル
+  const inputPath = join(testDir, "input.md");
+  await Deno.writeTextFile(inputPath, "# Dummy");
+  // Should use CLI param
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      inputPath,
+      "--destination",
+      "output.md",
+      "--prompt-dir",
+      join(testDir, "cli_prompts"),
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("CLI param promptDir result", { result });
+  assertEquals(result.success, true);
+  assertStringIncludes(result.output, "cli param template");
+});
+
+/**
+ * E2E: template path is resolved using baseDir (relative)
+ *
+ * 検証内容:
+ * - baseDirで指定されたディレクトリ配下のテンプレートが正しく参照されること
+ *
+ * 前処理で用意すべきもの:
+ * - .agent/breakdown/config/app.yml
+ * - 入力ファイル (input.md)
+ * - テンプレートファイル (base_dir/to/project/f_project.md)
+ */
+Deno.test("E2E: template path is resolved using baseDir (relative)", async () => {
+  // Pre-processing and Preparing Part
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+  );
+  const promptDir = join(testDir, "prompts", "to", "project");
+  await ensureDir(promptDir);
+  await Deno.writeTextFile(join(promptDir, "f_project.md"), "template content");
+  // 入力ファイル
+  const inputPath = join(testDir, "input.md");
+  await Deno.writeTextFile(inputPath, "# Dummy");
+  const result = await runCommand(
+    [
+      "to",
+      "project",
+      "--from",
+      inputPath,
+      "--destination",
+      "output.md",
+    ],
+    undefined,
+    testDir,
+  );
+  logger.debug("template path resolved result", { result });
+  // Should succeed and output should include template content
+  assertEquals(result.success, true);
+  assertStringIncludes(result.output, "template content");
+});
+
+Deno.test("BreakdownConfig loads and merges app.yml and user.yml as spec", async () => {
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  // Write app.yml
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown
+app_prompt:
+  base_dir: prompts_app
+app_schema:
+  base_dir: schemas_app
+`,
+  );
+  // Write user.yml (override app_prompt.base_dir)
+  await Deno.writeTextFile(
+    join(configDir, "user.yml"),
+    `app_prompt:
+  base_dir: prompts_user
+`,
+  );
+  // Create both prompt dirs
+  await ensureDir(join(testDir, ".agent", "breakdown", "prompts_app"));
+  await ensureDir(join(testDir, ".agent", "breakdown", "prompts_user"));
+  // Load config
+  const config = new BreakdownConfig(testDir);
+  await config.loadConfig();
+  const settings = await config.getConfig();
+  logger.debug("BreakdownConfig merged settings", { settings });
+  // user.yml should override app.yml for app_prompt.base_dir
+  assertEquals(settings.app_prompt.base_dir, "prompts_user");
+  assertEquals(settings.app_schema.base_dir, "schemas_app");
+  assertEquals(settings.working_dir, ".agent/breakdown");
+});
+
+Deno.test("BreakdownConfig: working_dir is not used as prefix for app_prompt.base_dir", async () => {
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown
+app_prompt:
+  base_dir: prompts
+app_schema:
+  base_dir: schemas
+`,
+  );
+  const config = new BreakdownConfig(testDir);
+  await config.loadConfig();
+  const settings = await config.getConfig();
+  logger.debug("BreakdownConfig working_dir/prompt_dir", { settings });
+  // working_dir is not a prefix of app_prompt.base_dir
+  assertEquals(settings.app_prompt.base_dir, "prompts");
+  assertEquals(settings.working_dir, ".agent/breakdown");
+});
+
+Deno.test("BreakdownConfig: error if config missing required fields", async () => {
+  const testDir = await Deno.makeTempDir();
+  const configDir = join(testDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  // Write incomplete app.yml
+  await Deno.writeTextFile(
+    join(configDir, "app.yml"),
+    `working_dir: .agent/breakdown\n`,
+  );
+  let originalCwd = Deno.cwd();
+  Deno.chdir(testDir);
+  try {
+    const config = new BreakdownConfig(testDir);
+    let errorCaught = false;
+    try {
+      await config.loadConfig();
+      await config.getConfig();
+    } catch (e) {
+      logger.debug("BreakdownConfig error on missing fields", {
+        error: e instanceof Error ? e.message : String(e),
+      });
+      errorCaught = true;
+    }
+    assertEquals(errorCaught, true);
+  } finally {
+    Deno.chdir(originalCwd);
+  }
+});

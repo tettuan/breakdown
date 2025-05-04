@@ -35,7 +35,7 @@
 
 ## 入力された要求
 
-{input_markdown}
+{input_text}
 
 ## 出力時に適用する JSON Schema
 

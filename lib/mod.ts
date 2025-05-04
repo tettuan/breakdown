@@ -12,12 +12,6 @@
  */
 
 /**
- * Processes input using a prompt and returns the result.
- * @see {@link ./prompt/processor.ts}
- */
-export { processWithPrompt } from "./prompt/processor.ts";
-
-/**
  * Initializes a new workspace for Breakdown projects.
  * @see {@link ./workspace/workspace.ts}
  */

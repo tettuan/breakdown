@@ -1,6 +1,5 @@
 import { CommandOptions } from "./args.ts";
-import { processWithPrompt } from "../prompt/processor.ts";
-import { Config } from "./config/config.ts";
+import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
 export async function executeCommand(
   command: string,
@@ -46,13 +45,32 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
+        const adapter = new PromptAdapterImpl();
         let promptResult;
         switch (targetType) {
           case "issue":
-            promptResult = await processWithPrompt("", "to", "issue", fromFile, destFile, "");
+            promptResult = await adapter.generate(
+              args.promptDir || "",
+              "to",
+              "issue",
+              fromFile,
+              destFile,
+              "",
+              undefined,
+              args.adaptation,
+            );
             break;
           case "task":
-            promptResult = await processWithPrompt("", "to", "task", fromFile, destFile, "");
+            promptResult = await adapter.generate(
+              args.promptDir || "",
+              "to",
+              "task",
+              fromFile,
+              destFile,
+              "",
+              undefined,
+              args.adaptation,
+            );
             break;
           default:
             error = `Unknown conversion target type: ${targetType}`;
@@ -84,10 +102,20 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
+        const adapter = new PromptAdapterImpl();
         let promptResult;
         switch (targetType) {
           case "task":
-            promptResult = await processWithPrompt("", "summary", "task", fromFile, destFile, "");
+            promptResult = await adapter.generate(
+              args.promptDir || "",
+              "summary",
+              "task",
+              fromFile,
+              destFile,
+              "",
+              undefined,
+              args.adaptation,
+            );
             break;
           default:
             error = `Unknown analysis target type: ${targetType}`;
@@ -100,9 +128,6 @@ export async function executeCommand(
         break;
       }
       case "init": {
-        await Config.getInstance().initialize();
-        const now = new Date().toISOString();
-        console.debug(`[${now}] [DEBUG] Configuration loaded`);
         output = "";
         break;
       }

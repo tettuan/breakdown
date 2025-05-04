@@ -67,9 +67,8 @@ Deno.test("core functionality - JSR package integration", async () => {
   await Deno.copyFile(srcPromptPath, `${env.workingDir}/prompts/to/project/f_project.md`);
 
   Deno.env.set("LOG_LEVEL", "error");
-  Deno.env.set("BREAKDOWN_PROMPT_BASE", "prompts");
   logger.debug("Starting JSR package integration test");
-  const envInfo = { workingDir: env.workingDir, promptBase: Deno.env.get("BREAKDOWN_PROMPT_BASE") };
+  const envInfo = { workingDir: env.workingDir };
   logger.debug("Test environment info", envInfo);
 
   // 入力ファイルを作業ディレクトリにコピー
@@ -78,6 +77,9 @@ Deno.test("core functionality - JSR package integration", async () => {
     dest: `${env.workingDir}/input.md`,
   });
   await Deno.copyFile("tests/fixtures/input.md", `${env.workingDir}/input.md`);
+  // fromLayerTypeが"project"の場合に備え、project/input.mdにもコピー
+  await Deno.mkdir(`${env.workingDir}/project`, { recursive: true });
+  await Deno.copyFile("tests/fixtures/input.md", `${env.workingDir}/project/input.md`);
 
   try {
     // Test BreakdownConfig integration

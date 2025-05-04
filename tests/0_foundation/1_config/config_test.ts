@@ -44,6 +44,8 @@ Deno.test("config - default settings", async () => {
     workingDir: "./tmp/test/config",
     skipDefaultConfig: true,
   });
+  let originalCwd = Deno.cwd();
+  Deno.chdir(env.workingDir);
   try {
     // Create config file in the correct location
     const configDir = join(env.workingDir, ".agent", "breakdown", "config");
@@ -66,6 +68,7 @@ app_schema:
     assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
     assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
   } finally {
+    Deno.chdir(originalCwd);
     await cleanupTestEnvironment(env);
   }
 });
@@ -80,6 +83,8 @@ Deno.test("config - custom working directory", async () => {
     workingDir: "./tmp/test/config-custom",
     skipDefaultConfig: true,
   });
+  let originalCwd = Deno.cwd();
+  Deno.chdir(env.workingDir);
   try {
     // Create config file in the correct location
     const configDir = join(env.workingDir, ".agent", "breakdown", "config");
@@ -102,6 +107,7 @@ app_schema:
     assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
     assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
   } finally {
+    Deno.chdir(originalCwd);
     await cleanupTestEnvironment(env);
   }
 });
@@ -138,6 +144,8 @@ Deno.test({
       workingDir: "./tmp/test/config-basic",
       skipDefaultConfig: true,
     });
+    let originalCwd = Deno.cwd();
+    Deno.chdir(env.workingDir);
     try {
       // Create config file in the correct location
       const configDir = join(env.workingDir, ".agent", "breakdown", "config");
@@ -164,9 +172,40 @@ app_schema:
       assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
       assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
     } finally {
+      Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
     }
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test("config - error if no config file and different cwd", async () => {
+  // Create a temp directory and chdir into it
+  const tempDir = await Deno.makeTempDir();
+  const originalCwd = Deno.cwd();
+  Deno.chdir(tempDir);
+  try {
+    const config = new BreakdownConfig(); // No config file created
+    let errorCaught = false;
+    try {
+      await config.loadConfig();
+    } catch (error) {
+      errorCaught = true;
+      if (error instanceof Error) {
+        // Should mention missing config
+        if (!error.message.includes("Application configuration file not found")) {
+          throw new Error("Unexpected error message: " + error.message);
+        }
+      } else {
+        throw new Error("Unexpected error type");
+      }
+    }
+    if (!errorCaught) {
+      throw new Error("Should have thrown an error for missing config");
+    }
+  } finally {
+    Deno.chdir(originalCwd);
+    await Deno.remove(tempDir, { recursive: true });
+  }
 });

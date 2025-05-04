@@ -1,5 +1,5 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
-import { join } from "jsr:@std/path/join";
+import { join } from "@std/path/join";
 
 export interface TestEnvironmentOptions {
   workingDir?: string;
@@ -139,14 +139,19 @@ export async function runCommand(
   args: string[],
   stdin?: string,
   cwd?: string,
+  options?: { env?: Record<string, string> }
 ): Promise<CommandResult> {
+  const logger = new BreakdownLogger();
   const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
+  logger.debug("[runCommand] invoked", { cwd: Deno.cwd(), args, breakdownPath, runCwd: cwd, env: options?.env });
+  const mergedEnv = { ...Deno.env.toObject(), ...(options?.env ?? {}) };
   const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--allow-all", breakdownPath, ...args],
     stdout: "piped",
     stderr: "piped",
     stdin: stdin ? "piped" : undefined,
     cwd: cwd || undefined,
+    env: mergedEnv,
   });
 
   try {
@@ -159,6 +164,7 @@ export async function runCommand(
       const { code, stdout, stderr } = await process.output();
       const output = new TextDecoder().decode(stdout);
       const error = new TextDecoder().decode(stderr);
+      logger.debug("[runCommand] process output (with stdin)", { code, output, error });
       return {
         success: code === 0,
         output: output.trim(),
@@ -168,6 +174,7 @@ export async function runCommand(
       const { code, stdout, stderr } = await command.output();
       const output = new TextDecoder().decode(stdout);
       const error = new TextDecoder().decode(stderr);
+      logger.debug("[runCommand] process output", { code, output, error });
       return {
         success: code === 0,
         output: output.trim(),
@@ -175,6 +182,7 @@ export async function runCommand(
       };
     }
   } catch (err: unknown) {
+    logger.error("[runCommand] error", { err, cwd: Deno.cwd(), args, breakdownPath, runCwd: cwd });
     return {
       success: false,
       output: "",

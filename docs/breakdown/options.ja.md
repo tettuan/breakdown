@@ -1,5 +1,7 @@
 # breakdown 引数の仕様
 
+> **パラメータからパス解決への流れ・実装例については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
+
 ## パラメータ処理の実装
 
 https://jsr.io/@tettuan/breakdownparams を使用します。最新版はJSRを確認すること。 README

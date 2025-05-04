@@ -23,9 +23,21 @@ export class PromptLoader {
   private async getPromptBaseDir(): Promise<string> {
     const config = new BreakdownConfig();
     await config.loadConfig();
-    const settings = await config.getConfig();
+    let settings = await config.getConfig();
+    // user.yml > app.yml 優先
+    if (settings && typeof settings === "object" && settings.user && typeof settings.user === "object") {
+      if (settings.user.app_prompt && typeof settings.user.app_prompt === "object" && (settings.user.app_prompt as any).base_dir) {
+        if (settings.app_prompt && typeof settings.app_prompt === "object") {
+          (settings.app_prompt as any).base_dir = (settings.user.app_prompt as any).base_dir;
+        }
+      }
+    }
     if (settings.app_prompt?.base_dir && settings.app_prompt.base_dir.trim() !== "") {
-      return settings.app_prompt.base_dir;
+      let resolvedBaseDir = settings.app_prompt.base_dir;
+      if (!resolvedBaseDir.startsWith("/")) {
+        resolvedBaseDir = join(Deno.cwd(), resolvedBaseDir);
+      }
+      return resolvedBaseDir;
     }
     throw new Error(
       "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",

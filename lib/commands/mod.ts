@@ -7,12 +7,15 @@
  * @module
  */
 
-import { ensureDir } from "jsr:@std/fs@^0.224.0";
-import { join } from "jsr:@std/path@^0.224.0";
-import { ArgumentError } from "../cli/args.ts";
-import { exists } from "jsr:@std/fs@^0.224.0";
+import { ensureDir } from "@std/fs";
+import { join } from "@std/path";
+import { exists } from "@std/fs";
 import { VERSION } from "../version.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { normalize } from "@std/path";
+import { PromptFileGenerator } from "./prompt_file_generator.ts";
+import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
+import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -123,61 +126,79 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
   }
 }
 
-/**
- * Convert a file from one layer type to another
- */
-export async function convertFile(
+// 1. 入力ファイル存在チェック
+function validateInputFile(path: string): Promise<void> {
+  return Deno.stat(path).then(() => {}, () => {
+    throw new Error(`No such file: ${path}`);
+  });
+}
+
+// 3. プロンプトベースディレクトリ存在・型チェック
+async function validatePromptBaseDir(promptBaseDir: string): Promise<string> {
+  const absolutePromptBaseDir = promptBaseDir.startsWith("/")
+    ? normalize(promptBaseDir)
+    : join(Deno.cwd(), promptBaseDir);
+  try {
+    const stat = await Deno.stat(absolutePromptBaseDir);
+    if (!stat.isDirectory) {
+      throw new Error("is not a directory");
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message === "is not a directory") throw e;
+    throw new Error("Required directory does not exist");
+  }
+  return absolutePromptBaseDir;
+}
+
+// 4. ロガーセットアップ
+async function setupLogger(enabled: boolean) {
+  if (!enabled) return undefined;
+  const { BreakdownLogger, LogLevel } = await import("jsr:@tettuan/breakdownlogger@^0.1.10");
+  const testLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+  return {
+    debug: (...args: unknown[]) => testLogger.debug(String(args[0]), args[1]),
+    error: (...args: unknown[]) => testLogger.error(String(args[0]), args[1]),
+  };
+}
+
+// 5. プロンプト変換処理
+async function runPromptProcessing(
+  absolutePromptBaseDir: string,
+  demonstrativeType: string,
+  format: string,
+  fromFile: string,
+  toFile: string,
+  logger: any,
+  adaptation?: string,
+) {
+  const adapter = new PromptAdapterImpl();
+  return await adapter.generate(
+    absolutePromptBaseDir,
+    demonstrativeType,
+    format,
+    fromFile,
+    toFile,
+    "",
+    logger,
+    adaptation
+  );
+}
+
+// 6. ファイル出力
+async function writeOutputFile(path: string, content: string) {
+  await Deno.writeTextFile(path, content);
+}
+
+export async function generateWithPrompt(
   fromFile: string,
   toFile: string,
   format: string,
   _force = false,
+  options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
 ): Promise<CommandResult> {
   try {
-    // Ensure source file exists
-    try {
-      await Deno.stat(fromFile);
-    } catch {
-      throw new ArgumentError(`File not found: ${fromFile}`);
-    }
-
-    // Use BREAKDOWN_PROMPT_BASE env var if set
-    const promptBaseDir = Deno.env.get("BREAKDOWN_PROMPT_BASE") || "";
-    // If in test mode, pass a logger to processWithPrompt
-    let logger = undefined;
-    if (promptBaseDir) {
-      const { BreakdownLogger, LogLevel } = await import("jsr:@tettuan/breakdownlogger@^0.1.10");
-      const testLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
-      logger = {
-        debug: (...args: unknown[]) => testLogger.debug(String(args[0]), args[1]),
-        error: (...args: unknown[]) => testLogger.error(String(args[0]), args[1]),
-      };
-    }
-    // Prompt変換処理
-    const { processWithPrompt } = await import("../prompt/processor.ts");
-    const result = await processWithPrompt(
-      promptBaseDir,
-      "to",
-      format,
-      fromFile,
-      toFile,
-      "",
-      logger,
-    );
-
-    if (!result.success) {
-      return {
-        success: false,
-        output: "",
-        error: result.content,
-      };
-    }
-
-    // 変換結果をoutputに返す（ファイル書き込みは行わない）
-    return {
-      success: true,
-      output: result.content,
-      error: "",
-    };
+    const generator = new PromptFileGenerator();
+    return await generator.generateWithPrompt(fromFile, toFile, format, _force, options);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return {

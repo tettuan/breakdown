@@ -127,10 +127,10 @@ Deno.land/x で配布する場合、以下の解決策が考えられます：
 export const PROMPTS = {
   to: {
     project: `## Input
-{input_markdown}
+{input_text}
 
 ## Source
-{input_markdown_file}
+{input_text_file}
 
 ## Schema
 {schema_file}

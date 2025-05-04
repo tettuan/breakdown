@@ -11,6 +11,7 @@ import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { ensureDir } from "@std/fs";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
 
 /**
  * Workspace class and helpers for Breakdown.
@@ -23,6 +24,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   private promptBaseDir: string;
   private schemaBaseDir: string;
   private config: WorkspaceConfig | null = null;
+  private promptVariablesFactory?: PromptVariablesFactory;
 
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
@@ -278,34 +280,25 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Resolve prompt file path
+   * PromptVariablesFactory経由でプロンプトパスを取得
    */
-  public resolvePromptPath(name: string): string {
-    if (!name) {
-      throw new WorkspacePathError("Prompt name is required");
-    }
-    return join(this.promptBaseDir, name);
+  public setPromptVariablesFactory(factory: PromptVariablesFactory) {
+    this.promptVariablesFactory = factory;
   }
 
-  /**
-   * Resolve schema file path
-   * 設定値(app_schema.schemaBaseDir)を優先し、未設定時はlib/breakdown/schemaを使う
-   */
-  public resolveSchemaPath(name: string): string {
-    if (!name) {
-      throw new WorkspacePathError("Schema name is required");
-    }
-    return join(this.getSchemaBaseDir(), name);
+  public resolvePromptPath(_name: string): string {
+    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
+    return this.promptVariablesFactory.promptFilePath;
   }
 
-  /**
-   * Resolve output file path
-   */
-  public resolveOutputPath(name: string): string {
-    if (!name) {
-      throw new WorkspacePathError("Output name is required");
-    }
-    return join(this.workingDir, name);
+  public resolveSchemaPath(_name: string): string {
+    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
+    return this.promptVariablesFactory.schemaFilePath;
+  }
+
+  public resolveOutputPath(_name: string): string {
+    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
+    return this.promptVariablesFactory.outputFilePath;
   }
 }
 

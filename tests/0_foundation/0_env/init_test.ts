@@ -146,48 +146,54 @@ Deno.test({
       logLevel: LogLevel.DEBUG,
       skipDirectorySetup: true,
     };
-    await setupTestEnvironment(options);
-
-    // Create the .agent/breakdown directory structure but leave out prompts
-    const breakdownDir = join(options.workingDir, ".agent", "breakdown");
-    await Deno.mkdir(breakdownDir, { recursive: true });
-
-    // Create a file that will block directory creation
-    const targetDir = join(breakdownDir, "prompts");
-    await Deno.writeTextFile(targetDir, "");
-
-    // Create config directory and file
-    const configDir = join(breakdownDir, "config");
-    await Deno.mkdir(configDir, { recursive: true });
-    const configFile = join(configDir, "app.yml");
-    const config = {
-      working_dir: ".agent/breakdown",
-      app_prompt: {
-        base_dir: "prompts",
-      },
-      app_schema: {
-        base_dir: "schemas",
-      },
-    };
-    await Deno.writeTextFile(configFile, stringify(config));
-
-    await assertRejects(
-      async () => {
-        const workspace = new Workspace({ workingDir: options.workingDir });
-        await workspace.initialize();
-      },
-      WorkspaceInitError,
-      "Path exists but is not a directory",
-    );
-
-    // Clean up the file before cleanup
+    await Deno.mkdir(options.workingDir, { recursive: true });
+    let originalCwd = Deno.cwd();
+    Deno.chdir(options.workingDir);
     try {
-      await Deno.remove(targetDir);
-    } catch (_error) {
-      // Ignore error if file doesn't exist
-    }
+      await setupTestEnvironment(options);
+      // Create the .agent/breakdown directory structure but leave out prompts
+      const breakdownDir = join(options.workingDir, ".agent", "breakdown");
+      await Deno.mkdir(breakdownDir, { recursive: true });
 
-    await cleanupTestEnvironment(options);
+      // Create a file that will block directory creation
+      const targetDir = join(breakdownDir, "prompts");
+      await Deno.writeTextFile(targetDir, "");
+
+      // Create config directory and file
+      const configDir = join(breakdownDir, "config");
+      await Deno.mkdir(configDir, { recursive: true });
+      const configFile = join(configDir, "app.yml");
+      const config = {
+        working_dir: ".agent/breakdown",
+        app_prompt: {
+          base_dir: "prompts",
+        },
+        app_schema: {
+          base_dir: "schemas",
+        },
+      };
+      await Deno.writeTextFile(configFile, stringify(config));
+
+      await assertRejects(
+        async () => {
+          const workspace = new Workspace({ workingDir: options.workingDir });
+          await workspace.initialize();
+        },
+        WorkspaceInitError,
+        "Path exists but is not a directory",
+      );
+
+      // Clean up the file before cleanup
+      try {
+        await Deno.remove(targetDir);
+      } catch (_error) {
+        // Ignore error if file doesn't exist
+      }
+
+      await cleanupTestEnvironment(options);
+    } finally {
+      Deno.chdir(originalCwd);
+    }
   },
 });
 
@@ -199,31 +205,38 @@ Deno.test({
       logger,
       logLevel: LogLevel.DEBUG,
     };
-    logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
-    await setupTestEnvironment(options);
-    logger.debug("[TEST] setupTestEnvironment complete");
-    const workspace = new Workspace({ workingDir: options.workingDir });
-    logger.debug("[TEST] Workspace instance created");
-    await workspace.initialize();
-    logger.debug("[TEST] Workspace initialized");
+    await Deno.mkdir(options.workingDir, { recursive: true });
+    let originalCwd = Deno.cwd();
+    Deno.chdir(options.workingDir);
+    try {
+      logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+      await setupTestEnvironment(options);
+      logger.debug("[TEST] setupTestEnvironment complete");
+      const workspace = new Workspace({ workingDir: options.workingDir });
+      logger.debug("[TEST] Workspace instance created");
+      await workspace.initialize();
+      logger.debug("[TEST] Workspace initialized");
 
-    // config/app.yml が生成されているか
-    const configFile = join(options.workingDir, ".agent", "breakdown", "config", "app.yml");
-    logger.debug("[TEST] Checking config file existence", { configFile });
-    const existsConfig = await exists(configFile);
-    logger.debug("[TEST] Config file exists?", { existsConfig });
-    assertEquals(existsConfig, true);
+      // config/app.yml が生成されているか
+      const configFile = join(options.workingDir, ".agent", "breakdown", "config", "app.yml");
+      logger.debug("[TEST] Checking config file existence", { configFile });
+      const existsConfig = await exists(configFile);
+      logger.debug("[TEST] Config file exists?", { existsConfig });
+      assertEquals(existsConfig, true);
 
-    // 雛形内容の検証（例: working_dir, app_prompt, app_schema のデフォルト値）
-    const content = await Deno.readTextFile(configFile);
-    logger.debug("[TEST] Config file content", { content });
-    // 雛形の主要キーが含まれているか
-    assert(content.includes("working_dir"));
-    assert(content.includes("app_prompt"));
-    assert(content.includes("app_schema"));
+      // 雛形内容の検証（例: working_dir, app_prompt, app_schema のデフォルト値）
+      const content = await Deno.readTextFile(configFile);
+      logger.debug("[TEST] Config file content", { content });
+      // 雛形の主要キーが含まれているか
+      assert(content.includes("working_dir"));
+      assert(content.includes("app_prompt"));
+      assert(content.includes("app_schema"));
 
-    await cleanupTestEnvironment(options);
-    logger.debug("[TEST] cleanupTestEnvironment complete");
+      await cleanupTestEnvironment(options);
+      logger.debug("[TEST] cleanupTestEnvironment complete");
+    } finally {
+      Deno.chdir(originalCwd);
+    }
   },
 });
 

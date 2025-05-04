@@ -8,17 +8,23 @@
  *
  * Related Specifications:
  * - docs/breakdown/app_prompt.ja.md: Prompt processing specifications
+ *
+ * IMPORTANT:
+ * - See docs/breakdown/app_config.ja.md for the distinction between working_dir and app_prompt.base_dir.
+ * - working_dir is used ONLY for input/output file resolution (not for prompt or schema directories).
+ * - app_prompt.base_dir is the root for prompt templates; prompt files must be created under this directory to be found.
+ * - Do NOT create prompt files under working_dir unless it matches app_prompt.base_dir.
+ * - This test intentionally sets app_prompt.base_dir: prompts, so prompt files must be created in 'prompts/' relative to the test working directory.
  */
 
 import { assertRejects } from "@std/assert";
 import { dirname, ensureDir, join } from "$deps/mod.ts";
-import { processWithPrompt } from "$lib/prompt/processor.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { assertEquals, assertExists } from "jsr:@std/assert@^0.224.0";
-import { sanitizePathForPrompt } from "$lib/prompt/processor.ts";
 import { TEST_BASE_DIR } from "$test/helpers/test_utils.ts";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
+import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
 
 // Adapter to match the expected logger interface
 function createLoggerAdapter(logger: BreakdownLogger) {
@@ -63,7 +69,7 @@ async function setupTestFiles(workingDir: string) {
 
   // Create test input content
   const inputContent = "# Project Title\n- Feature 1: First feature\n- Feature 2: Second feature";
-  const testPromptsDir = join(workingDir, ".agent", "breakdown", "prompts");
+  const testPromptsDir = join(workingDir, "prompts");
   const schemaDir = join(workingDir, ".agent", "breakdown", "schema");
 
   // Create test prompt directory and template
@@ -74,8 +80,8 @@ async function setupTestFiles(workingDir: string) {
   const schema = {
     type: "object",
     properties: {
-      input_markdown_file: { type: "string" },
-      input_markdown: { type: "string" },
+      input_text_file: { type: "string" },
+      input_text: { type: "string" },
       destination_path: { type: "string" },
     },
   };
@@ -85,10 +91,10 @@ async function setupTestFiles(workingDir: string) {
     { mode: 0o666 },
   );
 
-  const promptTemplate = `# {input_markdown_file}
+  const promptTemplate = `# {input_text_file}
 
 Content:
-{input_markdown}
+{input_text}
 
 Output to: {destination_path}`;
   await Deno.writeTextFile(
@@ -117,6 +123,12 @@ Deno.test("Prompt Processing Integration", async (t) => {
   const originalCwd = Deno.cwd();
   Deno.chdir(workingDir);
 
+  // Ensure config file exists for BreakdownConfig
+  const configDir = join(workingDir, ".agent", "breakdown", "config");
+  const configFile = join(configDir, "app.yml");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(configFile, `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`);
+
   try {
     // Setup test files and get content
     const { inputContent, testPromptsDir } = await setupTestFiles(workingDir);
@@ -138,14 +150,15 @@ Deno.test("Prompt Processing Integration", async (t) => {
       const promptExists = await Deno.stat(promptFile).then(() => true).catch(() => false);
       console.log("Prompt file exists:", promptFile, promptExists);
       // Log all path variables and cwd
-      console.log("CWD before processWithPrompt:", Deno.cwd());
+      console.log("CWD before PromptAdapterImpl:", Deno.cwd());
       console.log("relPromptsDir:", relPromptsDir);
       console.log("relFromFile:", relFromFile);
       console.log("relDestFile:", relDestFile);
       console.log("fromFile (abs):", fromFile);
       console.log("destFile (abs):", destFile);
-      logger.debug("[TEST] Before processWithPrompt", { fromFile, destFile });
-      const result = await processWithPrompt(
+      logger.debug("[TEST] Before PromptAdapterImpl", { fromFile, destFile });
+      const adapter = new PromptAdapterImpl();
+      const result = await adapter.generate(
         relPromptsDir,
         "to",
         "issue",
@@ -154,9 +167,9 @@ Deno.test("Prompt Processing Integration", async (t) => {
         "",
         logger,
       );
-      logger.debug("[TEST] After processWithPrompt", { result });
+      logger.debug("[TEST] After PromptAdapterImpl", { result });
       if (!result.success) {
-        logger.error("[TEST] processWithPrompt failed", { result });
+        logger.error("[TEST] PromptAdapterImpl failed", { result });
       }
       assertEquals(result.success, true);
       assertExists(result.content);
@@ -168,7 +181,8 @@ Deno.test("Prompt Processing Integration", async (t) => {
     await t.step("should handle invalid demonstrative type", async () => {
       await assertRejects(
         async () => {
-          await processWithPrompt(
+          const adapter = new PromptAdapterImpl();
+          await adapter.generate(
             relPromptsDir,
             "invalid",
             "issue",
@@ -185,7 +199,8 @@ Deno.test("Prompt Processing Integration", async (t) => {
 
     // Test missing prompt template
     await t.step("should handle missing prompt template", async () => {
-      const result = await processWithPrompt(
+      const adapter = new PromptAdapterImpl();
+      const result = await adapter.generate(
         relPromptsDir,
         "to",
         "nonexistent",
@@ -200,7 +215,8 @@ Deno.test("Prompt Processing Integration", async (t) => {
 
     // Test invalid input file
     await t.step("should handle invalid input file", async () => {
-      const result = await processWithPrompt(
+      const adapter = new PromptAdapterImpl();
+      const result = await adapter.generate(
         relPromptsDir,
         "to",
         "issue",
@@ -219,47 +235,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
   }
 });
 
-// Path sanitization tests remain unchanged as they are still relevant
-interface TestPaths {
-  input: string;
-  expected: string;
-}
-
-function setupPathTestCases(): TestPaths[] {
-  return [
-    {
-      input: "path/to/file.md",
-      expected: "path/to/file.md",
-    },
-    {
-      input: "/absolute/path/file.md",
-      expected: "absolute/path/file.md",
-    },
-    {
-      input: "path/../file.md",
-      expected: "file.md",
-    },
-    {
-      input: "path/with spaces/file.md",
-      expected: "path/with_spaces/file.md",
-    },
-    {
-      input: "path/with@special#chars/file.md",
-      expected: "path/with_special_chars/file.md",
-    },
-  ];
-}
-
-Deno.test("sanitizePathForPrompt handles various path formats correctly", () => {
-  const testCases = setupPathTestCases();
-
-  for (const { input, expected } of testCases) {
-    const result = sanitizePathForPrompt(input);
-    assertEquals(result, expected, `Failed to sanitize path: ${input}`);
-  }
-});
-
-Deno.test("processWithPrompt should generate prompt text", async () => {
+Deno.test("PromptAdapterImpl should generate prompt text", async () => {
   const testDirRaw = await Deno.makeTempDir();
   const testDir = await Deno.realPath(testDirRaw);
   const env = await setupTestEnvironment({
@@ -278,7 +254,8 @@ Deno.test("processWithPrompt should generate prompt text", async () => {
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
 
-  const result = await processWithPrompt(
+  const adapter = new PromptAdapterImpl();
+  const result = await adapter.generate(
     relPromptsDir,
     "to",
     "issue",
@@ -299,7 +276,7 @@ Deno.test("processWithPrompt should generate prompt text", async () => {
   await cleanupTestEnvironment(env);
 });
 
-Deno.test("processWithPrompt should handle file operations when destFile is provided", async () => {
+Deno.test("PromptAdapterImpl should handle file operations when destFile is provided", async () => {
   const testDirRaw = await Deno.makeTempDir();
   const testDir = await Deno.realPath(testDirRaw);
   const env = await setupTestEnvironment({
@@ -321,7 +298,8 @@ Deno.test("processWithPrompt should handle file operations when destFile is prov
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
 
-  const result = await processWithPrompt(
+  const adapter = new PromptAdapterImpl();
+  const result = await adapter.generate(
     relPromptsDir,
     "to",
     "issue",
@@ -342,7 +320,7 @@ Deno.test("processWithPrompt should handle file operations when destFile is prov
   await cleanupTestEnvironment(env);
 });
 
-Deno.test("processWithPrompt should handle path sanitization", async () => {
+Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
   const testDir = await Deno.makeTempDir();
   const env = await setupTestEnvironment({
     workingDir: testDir,
@@ -360,7 +338,8 @@ Deno.test("processWithPrompt should handle path sanitization", async () => {
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
 
-  const result = await processWithPrompt(
+  const adapter = new PromptAdapterImpl();
+  const result = await adapter.generate(
     relPromptsDir,
     "to",
     "issue",
@@ -381,14 +360,15 @@ Deno.test("processWithPrompt should handle path sanitization", async () => {
   await cleanupTestEnvironment(env);
 });
 
-Deno.test("processWithPrompt allows empty baseDir and uses default", async () => {
+Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () => {
   // Setup: create a temp working directory and minimal input file
   const testDirRaw = await Deno.makeTempDir();
   const testDir = await Deno.realPath(testDirRaw);
   const inputFile = join(testDir, "input.md");
   await Deno.writeTextFile(inputFile, "# Dummy input\n");
   // Call with baseDir = ""
-  const result = await processWithPrompt(
+  const adapter = new PromptAdapterImpl();
+  const result = await adapter.generate(
     "", // promptBaseDir empty
     "to",
     "project",
@@ -433,7 +413,7 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(
       promptFile,
-      "# {input_markdown_file}\nContent: {input_markdown}\nOutput to: {destination_path}",
+      "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
     );
     // Simulate input file
     const inputDir = join(workingDir, "tmp", "examples", "project");
@@ -447,14 +427,15 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
     await ensureDir(destDir);
     const relDestFile = relative(workingDir, join(destDir, "project.md"));
     // Debug output before
-    logger.debug("[TEST] Before processWithPrompt (path mismatch reproduction)", {
+    logger.debug("[TEST] Before PromptAdapterImpl (path mismatch reproduction)", {
       relPromptsDir,
       relFromFile,
       relDestFile,
       cwd: Deno.cwd(),
       promptFile,
     });
-    const result = await processWithPrompt(
+    const adapter = new PromptAdapterImpl();
+    const result = await adapter.generate(
       relPromptsDir,
       "to",
       "project",
@@ -464,10 +445,10 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
       logger,
     );
     // Debug output after
-    logger.debug("[TEST] After processWithPrompt (path mismatch reproduction)", { result });
+    logger.debug("[TEST] After PromptAdapterImpl (path mismatch reproduction)", { result });
     // The result should succeed and use the correct prompt path
     if (!result.success) {
-      logger.error("[TEST] processWithPrompt failed (path mismatch reproduction)", { result });
+      logger.error("[TEST] PromptAdapterImpl failed (path mismatch reproduction)", { result });
     }
     assertEquals(result.success, true);
     assertExists(result.content);

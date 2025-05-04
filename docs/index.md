@@ -1,5 +1,7 @@
 # BreakDown Documentation
 
+> **PromptVariablesFactory (unified parameter/path resolver) is described in [breakdown/app_factory.ja.md](breakdown/app_factory.ja.md).**
+
 BreakDown is a development instruction language tool for AI-automated development using TypeScript and JSON.
 
 ## Table of Contents

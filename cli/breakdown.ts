@@ -170,7 +170,33 @@ export async function runBreakdown(args: string[]): Promise<void> {
   // Double command (e.g., to, summary, defect)
   if (result.type === "double") {
     // Only load config for non-init commands
-    await settings.loadConfig();
+    let configLoadSuccess = false;
+    try {
+      await settings.loadConfig();
+      configLoadSuccess = true;
+    } catch (e) {
+      configLoadSuccess = false;
+      if (Deno.env.get("DEBUG")) {
+        logger.error("[DEBUG] Config load failed", { error: e instanceof Error ? e.message : String(e) });
+      }
+      throw e;
+    }
+    if (Deno.env.get("DEBUG")) {
+      if (configLoadSuccess) {
+        logger.debug("[DEBUG] Config loaded successfully");
+      }
+    }
+    // DEBUG: 設定ファイルのパスを出力
+    try {
+      // BreakdownConfigがパス情報を持っていない場合はデフォルトパスを推定
+      const cwd = Deno.cwd();
+      const configDir = `${cwd}/.agent/breakdown/config`;
+      const appYmlPath = `${configDir}/app.yml`;
+      const userYmlPath = `${configDir}/user.yml`;
+      logger.debug("[DEBUG] Loaded config files", { appYmlPath, userYmlPath });
+    } catch (e) {
+      logger.debug("[DEBUG] Could not determine config file paths", { error: e instanceof Error ? e.message : String(e) });
+    }
     const settingsConfig = await settings.getConfig();
     // Validate CLI arguments using validateArgs (from lib/cli/args.ts)
     let parsedArgs: CommandOptions;
@@ -186,51 +212,62 @@ export async function runBreakdown(args: string[]): Promise<void> {
       }
       Deno.exit(1);
     }
-    // call convertFile for 'to' command
+    // generateWithPrompt呼び出し直前でpromptDirの階層ごとにstat
+    if (parsedArgs.promptDir) {
+      const pathParts = parsedArgs.promptDir.split(/[\\/]/).filter(Boolean);
+      let currentPath = parsedArgs.promptDir.startsWith("/") ? "/" : "";
+      for (let i = 0; i < pathParts.length; i++) {
+        currentPath = currentPath === "/" ? `/${pathParts[i]}` : (currentPath ? `${currentPath}/${pathParts[i]}` : pathParts[i]);
+        try {
+          const stat = await Deno.stat(currentPath);
+          logger.debug(`[CLI][stat階層] ${i}階層目: ${currentPath}`, { isDirectory: stat.isDirectory, isFile: stat.isFile });
+        } catch (err) {
+          logger.error(`[CLI][stat階層] ${i}階層目: ${currentPath} stat失敗`, { error: err instanceof Error ? err.message : String(err) });
+          break;
+        }
+      }
+    }
+    // call generateWithPrompt for 'to' command
     if (result.demonstrativeType === "to" && parsedArgs.from && parsedArgs.destination) {
-      const { convertFile } = await import("../lib/commands/mod.ts");
-      const convResult = await convertFile(
+      const { generateWithPrompt } = await import("../lib/commands/mod.ts");
+      const convResult = await generateWithPrompt(
         parsedArgs.from,
         parsedArgs.destination,
         result.layerType || "project",
+        false,
+        {
+          adaptation: parsedArgs.adaptation,
+          promptDir: parsedArgs.promptDir,
+          demonstrativeType: result.demonstrativeType,
+        },
       );
       if (convResult.success) {
         writeStdout(convResult.output);
       } else {
         writeStderr(convResult.error);
+        Deno.exit(1);
       }
       return;
     }
-    // summary command handling
+    // call generateWithPrompt for 'summary' command
     if (result.demonstrativeType === "summary" && parsedArgs.from && parsedArgs.destination) {
-      const { processWithPrompt } = await import("../lib/prompt/processor.ts");
-      const promptBaseDir = parsedArgs.promptDir;
-      const adaptationIdx = args.findIndex((a) => a === "--adaptation" || a === "-a");
-      const adaptation = adaptationIdx !== -1 ? args[adaptationIdx + 1] : parsedArgs.adaptation;
-      try {
-        const summaryResult = await processWithPrompt(
-          promptBaseDir || "",
-          result.demonstrativeType,
-          (result.layerType as any) || "task",
-          parsedArgs.from,
-          parsedArgs.destination,
-          "",
-          undefined,
-          adaptation,
-        );
-        if (summaryResult.success) {
-          writeStdout(summaryResult.content);
-        } else {
-          writeStderr(summaryResult.content);
-        }
-      } catch (err) {
-        if (err instanceof CliError) {
-          writeStderr(`[${err.code}] ${err.message}`);
-        } else if (err instanceof Error) {
-          writeStderr(err.message);
-        } else {
-          writeStderr("Unknown summary error");
-        }
+      const { generateWithPrompt } = await import("../lib/commands/mod.ts");
+      const convResult = await generateWithPrompt(
+        parsedArgs.from,
+        parsedArgs.destination,
+        result.layerType || "project",
+        false,
+        {
+          adaptation: parsedArgs.adaptation,
+          promptDir: parsedArgs.promptDir,
+          demonstrativeType: result.demonstrativeType,
+        },
+      );
+      if (convResult.success) {
+        writeStdout(convResult.output);
+      } else {
+        writeStderr(convResult.error);
+        Deno.exit(1);
       }
       return;
     }

@@ -53,6 +53,16 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
+    // prompts ディレクトリを作成
+    await ensureDir(join(TEST_DIR, "prompts"));
+    // prompts/to/project ディレクトリも作成
+    await ensureDir(join(TEST_DIR, "prompts", "to", "project"));
+    // テンプレートファイルを作成
+    await Deno.writeTextFile(
+      join(TEST_DIR, "prompts", "to", "project", "f_project.md"),
+      "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}"
+    );
+
     // Save and change working directory to test dir
     originalCwd = Deno.cwd();
     Deno.chdir(TEST_DIR);
@@ -78,7 +88,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "[INVALID_PARAMETERS] Prompt base_dir must be set. No fallback allowed.",
+      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
     });
     logger.debug("[DEBUG] Assertion completed for multiple options");
   });
@@ -187,9 +197,72 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "[INVALID_PARAMETERS] Prompt base_dir must be set. No fallback allowed.",
+      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
     });
     logger.debug("[DEBUG] Assertion completed for short form options");
+  });
+
+  await t.step("relative path input", async () => {
+    logger.debug("Testing relative path input");
+    const args = [
+      "--from",
+      "project/test.md",
+      "--destination",
+      "result_rel.md",
+    ];
+    logger.debug("Testing relative path input", { args });
+    const result = await runCommand([
+      "to",
+      "project",
+      ...args,
+    ]);
+    logger.debug("[DEBUG] Command result for relative path", { result });
+    assertCommandOutput(result, {
+      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+    });
+  });
+
+  await t.step("absolute path input", async () => {
+    logger.debug("Testing absolute path input");
+    const absPath = "/Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md";
+    const args = [
+      "--from",
+      absPath,
+      "--destination",
+      "result_abs.md",
+    ];
+    logger.debug("Testing absolute path input", { args });
+    const result = await runCommand([
+      "to",
+      "project",
+      ...args,
+    ]);
+    logger.debug("[DEBUG] Command result for absolute path", { result });
+    assertCommandOutput(result, {
+      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+    });
+  });
+
+  await t.step("mixed path input/output", async () => {
+    logger.debug("Testing mixed path input/output");
+    const absDest = "/tmp/result_mixed.md";
+    const args = [
+      "--from",
+      "./test.md",
+      "--destination",
+      absDest,
+    ];
+    logger.debug("Testing mixed path input/output", { args });
+    const result = await runCommand([
+      "to",
+      "project",
+      ...args,
+    ]);
+    logger.debug("[DEBUG] Command result for mixed path (before assertion)", { result });
+    assertCommandOutput(result, {
+      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+    });
+    logger.debug("[DEBUG] Assertion completed for mixed path input/output");
   });
 
   await t.step("cleanup", async () => {

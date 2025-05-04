@@ -33,8 +33,6 @@ let absTestDir: string;
 Deno.test("CLI Command Execution", async (t) => {
   await t.step("setup", async () => {
     logger.debug("Setting up test environment");
-    // Set log level to debug for this test
-    Deno.env.set("LOG_LEVEL", "debug");
     try {
       await Deno.remove(TEST_DIR, { recursive: true });
     } catch {
@@ -76,7 +74,7 @@ Deno.test("CLI Command Execution", async (t) => {
         // --from, --destination omitted
       ],
       undefined,
-      absTestDir,
+      absTestDir
     );
     logger.debug("[DEBUG] Parameter error test result", result);
     // Expect no error, and help text in output
@@ -85,6 +83,8 @@ Deno.test("CLI Command Execution", async (t) => {
   });
 
   await t.step("Invalid option: should return error", async () => {
+    // このテストは「不正なオプションを渡した場合にCLIが正しくエラーを返すか」を検証する意図で残す。
+    // 期待値は「エラーが発生すること（=正常）」である。
     logger.debug("[DEBUG] Invalid option test (before runCommand)");
     const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
     await Deno.writeTextFile(
@@ -99,14 +99,15 @@ Deno.test("CLI Command Execution", async (t) => {
         "value",
       ],
       undefined,
-      absTestDir,
+      absTestDir
     );
     logger.debug("[DEBUG] Invalid option test result", result);
-    assert(result.error !== "", "Should return error for invalid option");
+    // 期待値: エラーが返ることが正常
+    assert(result.error !== "", "Should return error for invalid option (this is expected)");
     assert(
       result.error.toLowerCase().includes("unknown option") ||
         result.error.toLowerCase().includes("invalid option"),
-      "Error should mention unknown or invalid option",
+      "Error should mention unknown or invalid option (this is expected behavior)",
     );
   });
 
@@ -133,11 +134,11 @@ Deno.test("CLI Command Execution", async (t) => {
         ...args,
       ],
       undefined,
-      absTestDir,
+      absTestDir
     );
     logger.debug("[DEBUG] Template not found test result", result);
     assertCommandOutput(result, {
-      error: "[INVALID_PARAMETERS] Prompt base_dir must be set. No fallback allowed.",
+      error: "Required directory does not exist",
     });
   });
 
