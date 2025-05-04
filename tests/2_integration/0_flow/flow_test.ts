@@ -33,8 +33,8 @@ Deno.test("breakdown init creates correct directory structure", async () => {
 
   // Verify directory structure exists
   assertEquals(await exists(workspace.getWorkingDir()), true);
-  assertEquals(await exists(workspace.getPromptDir()), true);
-  assertEquals(await exists(workspace.getSchemaDir()), true);
+  assertEquals(await exists(workspace.getPromptBaseDir()), true);
+  assertEquals(await exists(workspace.getSchemaBaseDir()), true);
 });
 
 // Test workspace initialization and structure
@@ -47,19 +47,19 @@ Deno.test("workspace initialization and structure", async () => {
   await workspace.initialize();
 
   // Verify workspace directories
-  assertEquals(await exists(workspace.getPromptDir()), true);
-  assertEquals(await exists(workspace.getSchemaDir()), true);
+  assertEquals(await exists(workspace.getPromptBaseDir()), true);
+  assertEquals(await exists(workspace.getSchemaBaseDir()), true);
   assertEquals(await exists(workspace.getWorkingDir()), true);
 
   // Verify path resolution
   assertEquals(
     workspace.resolvePromptPath("test.md"),
-    `${workspace.getPromptDir()}/test.md`,
+    `${workspace.getPromptBaseDir()}/test.md`,
   );
 
   assertEquals(
     workspace.resolveSchemaPath("test.json"),
-    `${workspace.getSchemaDir()}/test.json`,
+    `${workspace.getSchemaBaseDir()}/test.json`,
   );
 });
 

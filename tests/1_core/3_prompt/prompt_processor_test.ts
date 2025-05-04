@@ -389,7 +389,7 @@ Deno.test("processWithPrompt allows empty baseDir and uses default", async () =>
   await Deno.writeTextFile(inputFile, "# Dummy input\n");
   // Call with baseDir = ""
   const result = await processWithPrompt(
-    "", // baseDir empty
+    "", // promptBaseDir empty
     "to",
     "project",
     inputFile,
@@ -397,11 +397,87 @@ Deno.test("processWithPrompt allows empty baseDir and uses default", async () =>
     "project",
     logger,
   );
-  // Assert: error is about missing template, not about baseDir
+  // Assert: error is about missing base_dir, not about template
   if (result.success) {
-    throw new Error("Expected failure due to missing template, but got success");
+    throw new Error("Expected failure due to missing base_dir, but got success");
   }
-  if (!result.content.includes("template not found")) {
-    throw new Error(`Expected error about template not found, got: ${result.content}`);
+  if (!result.content.includes("Prompt base_dir must be set")) {
+    throw new Error(`Expected error about missing base_dir, got: ${result.content}`);
+  }
+});
+
+Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (example script scenario)", async () => {
+  // Pre-processing and Preparing Part
+  const BreakdownLogger = (await import("jsr:@tettuan/breakdownlogger@^0.1.10")).BreakdownLogger;
+  const logger = createLoggerAdapter(new BreakdownLogger());
+  const testDirRaw = await Deno.makeTempDir();
+  const testDir = await Deno.realPath(testDirRaw);
+  const env = await setupTestEnvironment({
+    workingDir: testDir,
+    skipDirectorySetup: true,
+  });
+  const workingDir = env.workingDir;
+  const originalCwd = Deno.cwd();
+  Deno.chdir(workingDir);
+  try {
+    // Simulate example's .agent/breakdown/config/app.yml
+    const configDir = join(workingDir, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: .agent/breakdown/prompts\napp_schema:\n  base_dir: .agent/breakdown/schema\n`,
+    );
+    // Simulate prompt template directory and file
+    const promptDir = join(workingDir, ".agent", "breakdown", "prompts", "to", "project");
+    await ensureDir(promptDir);
+    const promptFile = join(promptDir, "f_project.md");
+    await Deno.writeTextFile(
+      promptFile,
+      "# {input_markdown_file}\nContent: {input_markdown}\nOutput to: {destination_path}",
+    );
+    // Simulate input file
+    const inputDir = join(workingDir, "tmp", "examples", "project");
+    await ensureDir(inputDir);
+    const inputFile = join(inputDir, "project_summary.md");
+    await Deno.writeTextFile(inputFile, "# Example Project Summary\n- Feature: Example");
+    // Main Test
+    const relPromptsDir = relative(workingDir, join(workingDir, ".agent", "breakdown", "prompts"));
+    const relFromFile = relative(workingDir, inputFile);
+    const destDir = join(workingDir, "tmp", "examples", "project");
+    await ensureDir(destDir);
+    const relDestFile = relative(workingDir, join(destDir, "project.md"));
+    // Debug output before
+    logger.debug("[TEST] Before processWithPrompt (path mismatch reproduction)", {
+      relPromptsDir,
+      relFromFile,
+      relDestFile,
+      cwd: Deno.cwd(),
+      promptFile,
+    });
+    const result = await processWithPrompt(
+      relPromptsDir,
+      "to",
+      "project",
+      relFromFile,
+      relDestFile,
+      "project",
+      logger,
+    );
+    // Debug output after
+    logger.debug("[TEST] After processWithPrompt (path mismatch reproduction)", { result });
+    // The result should succeed and use the correct prompt path
+    if (!result.success) {
+      logger.error("[TEST] processWithPrompt failed (path mismatch reproduction)", { result });
+    }
+    assertEquals(result.success, true);
+    assertExists(result.content);
+    assertEquals(result.content.includes("project_summary.md"), true);
+    // Clean up
+    Deno.chdir(originalCwd);
+    await cleanupTestEnvironment(env);
+  } catch (e) {
+    Deno.chdir(originalCwd);
+    await cleanupTestEnvironment(env);
+    throw e;
   }
 });

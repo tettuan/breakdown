@@ -68,7 +68,7 @@ function ensureAbsolutePath(path: string, baseDir: string): string {
 
 /**
  * Load a prompt file and replace variables using BreakdownPrompt
- * @param baseDir Base directory for prompts
+ * @param promptBaseDir Base directory for prompts
  * @param demonstrativeType The type of demonstrative
  * @param layer The layer type
  * @param fromFile The source file
@@ -80,7 +80,7 @@ function ensureAbsolutePath(path: string, baseDir: string): string {
  * @throws {Error} When prompt loading or processing fails
  */
 export async function loadPrompt(
-  baseDir: string,
+  promptBaseDir: string,
   demonstrativeType: string,
   layer: string,
   fromFile: string,
@@ -91,6 +91,12 @@ export async function loadPrompt(
 ): Promise<{ success: boolean; content: string }> {
   try {
     // Validate inputs
+    if (!promptBaseDir || promptBaseDir.trim() === "") {
+      throw new CliError(
+        CliErrorCode.INVALID_PARAMETERS,
+        "Prompt base_dir must be set. No fallback allowed.",
+      );
+    }
     if (!demonstrativeType || !layer) {
       throw new CliError(CliErrorCode.INVALID_PARAMETERS, "Invalid input parameters");
     }
@@ -113,7 +119,7 @@ export async function loadPrompt(
     }
 
     logger?.debug("Loading prompt", {
-      baseDir,
+      promptBaseDir,
       demonstrativeType,
       layer,
       fromFile,
@@ -124,31 +130,63 @@ export async function loadPrompt(
 
     // Ensure absolute paths
     const currentDir = Deno.cwd();
-    const absoluteBaseDir = ensureAbsolutePath(baseDir, currentDir);
+    const absolutePromptBaseDir = ensureAbsolutePath(promptBaseDir, currentDir);
     const sanitizedDemonstrativeType = sanitizePathForPrompt(demonstrativeType);
     const sanitizedLayer = sanitizePathForPrompt(layer);
     const sanitizedFromLayerType = sanitizePathForPrompt(fromLayerType);
 
+    // Debug: Output config file path and loaded config if DEBUG is set
+    if (Deno.env.get("DEBUG")) {
+      try {
+        const cwd = Deno.cwd();
+        console.log("[DEBUG] current working directory:", cwd);
+      } catch (e) {
+        console.log(
+          "[DEBUG] failed to get current working directory:",
+          e instanceof Error ? e.message : String(e),
+        );
+      }
+      try {
+        const configPath = Deno.realPathSync("./.agent/breakdown/config/app.yml");
+        const configText = await Deno.readTextFile(configPath);
+        console.log("[DEBUG] app.yml path:", configPath);
+        console.log("[DEBUG] app.yml content:\n", configText);
+      } catch (e) {
+        console.log(
+          "[DEBUG] app.yml not found or unreadable:",
+          e instanceof Error ? e.message : String(e),
+        );
+      }
+      try {
+        const userConfigPath = Deno.realPathSync("./.agent/breakdown/config/user.yml");
+        const userConfigText = await Deno.readTextFile(userConfigPath);
+        console.log("[DEBUG] user.yml path:", userConfigPath);
+        console.log("[DEBUG] user.yml content:\n", userConfigText);
+      } catch (e) {
+        console.log(
+          "[DEBUG] user.yml not found or unreadable:",
+          e instanceof Error ? e.message : String(e),
+        );
+      }
+    }
+
     // Construct the prompt file name based on fromLayerType and adaptation
     const promptFileName = `f_${sanitizedFromLayerType}${adaptation ? `_${adaptation}` : ""}.md`;
     const promptPath = join(
-      absoluteBaseDir,
+      absolutePromptBaseDir,
       sanitizedDemonstrativeType,
       sanitizedLayer,
       promptFileName,
     );
 
-    logger?.debug("Prompt loader debug info", {
-      cwd: currentDir,
-      promptBaseDir: baseDir,
-      promptPath,
-      absoluteBaseDir,
-    });
+    if (Deno.env.get("DEBUG")) {
+      console.log("[DEBUG] prompt template path:", promptPath);
+    }
 
     // If the adapted prompt doesn't exist, try the default prompt
     if (adaptation && !await exists(promptPath)) {
       const defaultPromptPath = join(
-        absoluteBaseDir,
+        absolutePromptBaseDir,
         sanitizedDemonstrativeType,
         sanitizedLayer,
         `f_${sanitizedFromLayerType}.md`,
@@ -156,7 +194,7 @@ export async function loadPrompt(
       if (!await exists(defaultPromptPath)) {
         throw new CliError(
           CliErrorCode.INVALID_PARAMETERS,
-          `Prompt loading failed: template not found (baseDir='${baseDir}', demonstrativeType='${demonstrativeType}', layer='${layer}', adaptation='${adaptation}')`,
+          `Prompt loading failed: template not found (promptBaseDir='${promptBaseDir}', demonstrativeType='${demonstrativeType}', layer='${layer}', adaptation='${adaptation}')`,
         );
       }
       logger?.debug("Adaptation prompt not found, falling back to default", {
@@ -164,7 +202,7 @@ export async function loadPrompt(
         defaultPath: defaultPromptPath,
       });
       return await loadPrompt(
-        baseDir,
+        promptBaseDir,
         demonstrativeType,
         layer,
         fromFile,
@@ -213,24 +251,36 @@ export async function loadPrompt(
       inputText = await Deno.readTextFile(absoluteFromFile);
     }
 
+    // JSON schema path
+    const schemaPath = join(absolutePromptBaseDir, "schema", "implementation.json");
+    if (Deno.env.get("DEBUG")) {
+      console.log("[DEBUG] JSON schema path:", schemaPath);
+    }
+
+    // Prepare variables for PromptManager
+    const variables = {
+      schema_file: schemaPath,
+      input_text: inputText,
+      input_markdown_file: absoluteFromFile ? basename(absoluteFromFile) : "",
+      destination_path: destinationPath ? sanitizePathForPrompt(destinationPath) : "output.md",
+      fromLayerType,
+    };
+    if (Deno.env.get("DEBUG")) {
+      console.log("[DEBUG] variables for PromptManager:", JSON.stringify(variables, null, 2));
+    }
+
     // Remove testLogger and BreakdownLogger debug logging
     // Only keep application logic and comments
     const result = await prompt.generatePrompt(
       promptPath,
-      {
-        schema_file: join(absoluteBaseDir, "schema", "implementation.json"),
-        input_text: inputText,
-        input_markdown_file: absoluteFromFile ? basename(absoluteFromFile) : "",
-        destination_path: destinationPath ? sanitizePathForPrompt(destinationPath) : "output.md",
-        fromLayerType,
-      },
+      variables,
     );
 
     if (!result.success) {
       throw new CliError(CliErrorCode.INVALID_PARAMETERS, result.error);
     }
 
-    logger?.debug("Resolved prompt path", { promptPath, absoluteBaseDir });
+    logger?.debug("Resolved prompt path", { promptPath, absolutePromptBaseDir });
 
     return {
       success: true,

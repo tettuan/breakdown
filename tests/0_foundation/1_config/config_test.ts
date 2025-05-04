@@ -1,6 +1,9 @@
 /**
  * Foundation tests for configuration functionality
  *
+ * All configuration access in tests must use BreakdownConfig from @tettuan/breakdownconfig.
+ * Do not read YAML or JSON config files directly in test logic.
+ *
  * Purpose:
  * - Verify basic configuration loading and validation
  * - Ensure working directory management works correctly
@@ -31,7 +34,11 @@ Deno.test({
   sanitizeOps: false,
 });
 
-// Basic configuration tests
+/**
+ * Test: config - default settings
+ *
+ * All config access must use BreakdownConfig, not direct file reads.
+ */
 Deno.test("config - default settings", async () => {
   const env = await setupTestEnvironment({
     workingDir: "./tmp/test/config",
@@ -63,7 +70,11 @@ app_schema:
   }
 });
 
-// Working directory tests
+/**
+ * Test: config - custom working directory
+ *
+ * All config access must use BreakdownConfig, not direct file reads.
+ */
 Deno.test("config - custom working directory", async () => {
   const env = await setupTestEnvironment({
     workingDir: "./tmp/test/config-custom",
@@ -88,12 +99,18 @@ app_schema:
     const settings = await config.getConfig();
 
     assertEquals(settings.working_dir, "./tmp/test/config-custom");
+    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
   } finally {
     await cleanupTestEnvironment(env);
   }
 });
 
-// Error handling tests
+/**
+ * Test: config - invalid configuration handling
+ *
+ * All config access must use BreakdownConfig, not direct file reads.
+ */
 Deno.test("config - invalid configuration handling", async () => {
   const config = new BreakdownConfig("nonexistent/path");
 
@@ -109,6 +126,11 @@ Deno.test("config - invalid configuration handling", async () => {
   }
 });
 
+/**
+ * Test: config - basic functionality
+ *
+ * All config access must use BreakdownConfig, not direct file reads.
+ */
 Deno.test({
   name: "config - basic functionality",
   async fn() {
@@ -139,6 +161,8 @@ app_schema:
       assertEquals(typeof settings.working_dir, "string");
       assertEquals(typeof settings.app_prompt, "object");
       assertEquals(typeof settings.app_schema, "object");
+      assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+      assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
     } finally {
       await cleanupTestEnvironment(env);
     }

@@ -4,6 +4,13 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 const logger = new BreakdownLogger();
 
 /**
+ * Assertion helpers for Breakdown tests.
+ *
+ * All configuration assertions must use BreakdownConfig structure (e.g., settings.app_prompt.base_dir),
+ * not direct file reads or legacy config keys.
+ */
+
+/**
  * Asserts that a configuration object is valid
  */
 export function assertValidConfig(config: unknown): void {
@@ -14,6 +21,19 @@ export function assertValidConfig(config: unknown): void {
   assertExists(configObj.working_dir, "Config should have working_dir");
   assertExists(configObj.app_prompt, "Config should have app_prompt");
   assertExists(configObj.app_schema, "Config should have app_schema");
+  // Check for base_dir keys if present
+  if (typeof configObj.app_prompt === "object" && configObj.app_prompt !== null) {
+    assertExists(
+      (configObj.app_prompt as Record<string, unknown>).base_dir,
+      "app_prompt should have base_dir",
+    );
+  }
+  if (typeof configObj.app_schema === "object" && configObj.app_schema !== null) {
+    assertExists(
+      (configObj.app_schema as Record<string, unknown>).base_dir,
+      "app_schema should have base_dir",
+    );
+  }
 }
 
 /**

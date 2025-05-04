@@ -35,7 +35,7 @@ Deno.test({
 
     // Verify directories are created under the breakdown subdirectory
     assertEquals(await exists(join(options.workingDir, ".agent", "breakdown", "prompts")), true);
-    assertEquals(await exists(join(options.workingDir, ".agent", "breakdown", "schema")), true);
+    assertEquals(await exists(join(options.workingDir, ".agent", "breakdown", "schemas")), true);
 
     await cleanupTestEnvironment(options);
   },
@@ -79,6 +79,12 @@ Deno.test({
     };
     await setupTestEnvironment(options);
     const customDir = join(options.workingDir, "custom");
+    // Create required directory structure and config under customDir
+    await ensureDir(join(customDir, ".agent", "breakdown", "config"));
+    await Deno.writeTextFile(
+      join(customDir, ".agent", "breakdown", "config", "app.yml"),
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    );
     const workspace = new Workspace({ workingDir: customDir });
     await workspace.initialize();
 
@@ -155,7 +161,7 @@ Deno.test({
     await Deno.mkdir(configDir, { recursive: true });
     const configFile = join(configDir, "app.yml");
     const config = {
-      working_dir: options.workingDir,
+      working_dir: ".agent/breakdown",
       app_prompt: {
         base_dir: "prompts",
       },
@@ -237,7 +243,7 @@ Deno.test({
     const configDir = join(options.workingDir, ".agent", "breakdown", "config");
     await ensureDir(configDir);
     const customConfig =
-      `\nworking_dir: ${options.workingDir}/.agent/breakdown\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`;
+      `\nworking_dir: .agent/breakdown\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`;
     await Deno.writeTextFile(join(configDir, "app.yml"), customConfig);
     logger.debug("[TEST] Custom app.yml written", { configDir });
 
@@ -277,7 +283,9 @@ Deno.test({
 
     const configDir = join(options.workingDir, ".agent", "breakdown", "config");
     await ensureDir(configDir);
-    const originalContent = "custom: true";
+    // Write a valid config with a custom key
+    const originalContent =
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\ncustom: true\n`;
     const configFile = join(configDir, "app.yml");
     await Deno.writeTextFile(configFile, originalContent);
 

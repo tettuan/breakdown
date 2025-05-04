@@ -26,6 +26,8 @@ const settings = config.getConfig();
 ## アプリケーション設定項目
 
 - `working_dir`: 作業ディレクトリのパス（デフォルト: `.agent/breakdown`）
+  - **注意: `working_dir` は `app_prompt.base_dir` や `app_schema.base_dir` のプレフィックス（親ディレクトリ）ではありません。**
+  - **`working_dir` は出力・入力ファイルの解決（-o, -i オプション等）にのみ使われ、プロンプトやスキーマのディレクトリ解決には使いません。**
 - `app_prompt`: プロンプト関連の設定
   - `base_dir`: プロンプトファイルのベースディレクトリ（デフォルト: `lib/breakdown/prompts`）
 - `app_schema`: スキーマ関連の設定

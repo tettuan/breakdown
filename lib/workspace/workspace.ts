@@ -8,33 +8,33 @@ import {
   WorkspaceStructure,
 } from "./types.ts";
 import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./errors.ts";
-import { parse, stringify } from "jsr:@std/yaml@1.0.6";
+import { stringify } from "jsr:@std/yaml@1.0.6";
 import { ensureDir } from "@std/fs";
-
-const DEFAULT_CONFIG = {
-  working_dir: "breakdown",
-  app_prompt: { base_dir: "prompts" },
-  app_schema: { base_dir: "schemas" },
-};
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
- * Workspace class for managing directory structure and configuration
+ * Workspace class and helpers for Breakdown.
+ *
+ * All configuration access (e.g., prompt base dir, schema base dir) must use BreakdownConfig from @tettuan/breakdownconfig.
+ * Do not read YAML or JSON config files directly in this module.
  */
 export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, WorkspacePaths {
   private workingDir: string;
-  private promptsDir: string;
-  private schemaDir: string;
+  private promptBaseDir: string;
+  private schemaBaseDir: string;
   private config: WorkspaceConfig | null = null;
 
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    this.promptsDir = options.promptsDir || join(breakdownDir, "prompts");
-    this.schemaDir = options.schemaDir || join(breakdownDir, "schemas");
+    this.promptBaseDir = options.promptBaseDir || join(breakdownDir, "prompts");
+    this.schemaBaseDir = options.schemaBaseDir || join(breakdownDir, "schemas");
   }
 
   /**
    * Initialize the workspace by creating required directories and validating configuration
+   *
+   * All config access must use BreakdownConfig, not direct file reads.
    */
   public async initialize(): Promise<void> {
     // 1. Ensure .agent/breakdown/config/app.yml exists
@@ -56,18 +56,30 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 
     if (!(await exists(configFile))) {
       await ensureDir(configDir);
-      config = { ...DEFAULT_CONFIG, working_dir: breakdownDir };
+      config = {
+        working_dir: ".agent/breakdown",
+        app_prompt: { base_dir: "prompts" },
+        app_schema: { base_dir: "schemas" },
+      };
       const configYaml = stringify(config);
       await Deno.writeTextFile(configFile, configYaml);
-    } else {
-      const configText = await Deno.readTextFile(configFile);
-      config = parse(configText) as WorkspaceConfig;
     }
-    this.config = config;
-
-    // 2. Use config values for directory creation
-    const promptBase = (config?.app_prompt?.base_dir || "prompts").toString().trim();
-    const schemaBase = (config?.app_schema?.base_dir || "schemas").toString().trim();
+    // Use BreakdownConfig to load config
+    const breakdownConfig = new BreakdownConfig(this.workingDir);
+    await breakdownConfig.loadConfig();
+    const settings = await breakdownConfig.getConfig();
+    if (!settings.app_prompt?.base_dir || settings.app_prompt.base_dir.trim() === "") {
+      throw new WorkspaceInitError(
+        "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
+      );
+    }
+    if (!settings.app_schema?.base_dir || settings.app_schema.base_dir.trim() === "") {
+      throw new WorkspaceInitError(
+        "Schema base_dir must be set in config (app_schema.base_dir). No fallback allowed.",
+      );
+    }
+    const promptBase = settings.app_prompt.base_dir.toString().trim();
+    const schemaBase = settings.app_schema.base_dir.toString().trim();
 
     // 3. Create required directories
     const subdirs = [
@@ -82,7 +94,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 
     // Check if any subdirectories exist as files
     for (const dir of subdirs) {
-      const dirPath = join(breakdownDir, dir);
+      const dirPath = join(this.workingDir, ".agent", "breakdown", dir);
       if (await exists(dirPath)) {
         const stat = await Deno.stat(dirPath);
         if (!stat.isDirectory) {
@@ -91,9 +103,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       }
     }
 
-    await ensureDir(breakdownDir);
+    await ensureDir(join(this.workingDir, ".agent", "breakdown"));
     for (const dir of subdirs) {
-      await ensureDir(join(breakdownDir, dir));
+      await ensureDir(join(this.workingDir, ".agent", "breakdown", dir));
     }
 
     // 4. Validate config (check dirs exist)
@@ -204,12 +216,12 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   public getConfig(): Promise<WorkspaceConfig> {
     if (!this.config) {
       this.config = {
-        working_dir: join(this.workingDir, ".agent", "breakdown"),
+        working_dir: ".agent/breakdown",
         app_prompt: {
-          base_dir: this.promptsDir,
+          base_dir: "prompts",
         },
         app_schema: {
-          base_dir: this.schemaDir,
+          base_dir: "schemas",
         },
       };
     }
@@ -228,10 +240,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       breakdownDir,
     ];
     if (config.app_prompt && config.app_prompt.base_dir) {
-      requiredDirs.push(join(breakdownDir, config.app_prompt.base_dir));
+      requiredDirs.push(join(this.workingDir, ".agent", "breakdown", config.app_prompt.base_dir));
     }
     if (config.app_schema && config.app_schema.base_dir) {
-      requiredDirs.push(join(breakdownDir, config.app_schema.base_dir));
+      requiredDirs.push(join(this.workingDir, ".agent", "breakdown", config.app_schema.base_dir));
     }
     for (const dir of requiredDirs) {
       if (!(await exists(dir))) {
@@ -243,15 +255,19 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   /**
    * Get prompts directory path
    */
-  public getPromptDir(): string {
-    return this.promptsDir;
+  public getPromptBaseDir(): string {
+    // Always return the absolute path to the prompts directory
+    const config = this.config || { app_prompt: { base_dir: "prompts" } };
+    return join(this.workingDir, ".agent", "breakdown", config.app_prompt.base_dir || "prompts");
   }
 
   /**
    * Get schema directory path
+   * 設定値(app_schema.base_dir)を優先し、未設定時はlib/breakdown/schemaを返す
    */
-  public getSchemaDir(): string {
-    return this.schemaDir;
+  public getSchemaBaseDir(): string {
+    const config = this.config || { app_schema: { base_dir: "schemas" } };
+    return join(this.workingDir, ".agent", "breakdown", config.app_schema.base_dir || "schemas");
   }
 
   /**
@@ -268,17 +284,18 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     if (!name) {
       throw new WorkspacePathError("Prompt name is required");
     }
-    return join(this.promptsDir, name);
+    return join(this.promptBaseDir, name);
   }
 
   /**
    * Resolve schema file path
+   * 設定値(app_schema.schemaBaseDir)を優先し、未設定時はlib/breakdown/schemaを使う
    */
   public resolveSchemaPath(name: string): string {
     if (!name) {
       throw new WorkspacePathError("Schema name is required");
     }
-    return join(this.schemaDir, name);
+    return join(this.getSchemaBaseDir(), name);
   }
 
   /**

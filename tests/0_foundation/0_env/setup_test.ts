@@ -17,7 +17,7 @@ Deno.test("setup - environment initialization", async () => {
     // Verify directory structure
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "prompts"));
-    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schema"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schemas"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "config"));
 
     // Verify config file exists

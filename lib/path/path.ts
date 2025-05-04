@@ -135,7 +135,7 @@ export function getPromptPath(
 ): string {
   try {
     const config = getConfig();
-    const baseDir = config.app_prompt?.base_dir || "./.agent/breakdown/prompts/";
+    const baseDir = config.app_prompt?.promptBaseDir || "./.agent/breakdown/prompts/";
     const fromType = fromFile.includes("project")
       ? "project"
       : fromFile.includes("issue")
@@ -151,7 +151,7 @@ export function getPromptPath(
   } catch (_error) {
     // If URL handling fails, fall back to simple path joining
     const config = getConfig();
-    const baseDir = config.app_prompt?.base_dir || "./.agent/breakdown/prompts/";
+    const baseDir = config.app_prompt?.promptBaseDir || "./.agent/breakdown/prompts/";
     const fromType = fromFile.includes("project")
       ? "project"
       : fromFile.includes("issue")

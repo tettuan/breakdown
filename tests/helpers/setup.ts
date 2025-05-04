@@ -43,10 +43,10 @@ export async function setupTestEnvironment(
     const configDir = join(workingDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
 
-    // Create breakdown/prompts and breakdown/schema directories
+    // Create breakdown/prompts and breakdown/schemas directories
     const breakdownDir = join(workingDir, ".agent", "breakdown");
     await Deno.mkdir(join(breakdownDir, "prompts"), { recursive: true, mode: 0o777 });
-    await Deno.mkdir(join(breakdownDir, "schema"), { recursive: true, mode: 0o777 });
+    await Deno.mkdir(join(breakdownDir, "schemas"), { recursive: true, mode: 0o777 });
 
     // Create layer directories
     await Deno.mkdir(join(workingDir, "project"), { recursive: true, mode: 0o777 });
@@ -59,11 +59,11 @@ export async function setupTestEnvironment(
       const appConfigPath = join(configDir, "app.yml");
       await Deno.writeTextFile(
         appConfigPath,
-        `working_dir: ${workingDir}
+        `working_dir: .agent/breakdown
 app_prompt:
-  base_dir: ${workingDir}/.agent/breakdown/prompts
+  base_dir: prompts
 app_schema:
-  base_dir: ${workingDir}/.agent/breakdown/schema
+  base_dir: schemas
 `,
         { mode: 0o666 },
       );

@@ -16,8 +16,14 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     exit 1
 fi
 
-# Define the path for the user configuration
+# --- 1. Remember system app_prompt.base_dir and schema dir from default config ---
+SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
+SYSTEM_SCHEMA_DIR="./.agent/breakdown/schema"
+
+# --- 2. Define the path for the user configuration ---
 USER_CONFIG_PATH="${CONFIG_DIR}/user.yml"
+USER_PROMPT_DIR="./.agent/breakdown/prompts/user"
+USER_SCHEMA_DIR="./.agent/breakdown/schema/user"
 
 # Create the user configuration file
 cat > "${USER_CONFIG_PATH}" << 'EOL'
@@ -29,10 +35,13 @@ app_schema:
   base_dir: "./.agent/breakdown/schema/user"
 EOL
 
-# Copy default prompt template to user prompt base_dir
-target_prompt_dir=".agent/breakdown/prompts/user/to/project"
-mkdir -p "$target_prompt_dir"
-cp ../lib/breakdown/prompts/to/project/f_project.md "$target_prompt_dir/"
+# --- 3. Copy system files to user dir ---
+# Copy prompts recursively
+mkdir -p "$USER_PROMPT_DIR"
+cp -r "$SYSTEM_PROMPT_DIR/"* "$USER_PROMPT_DIR/"
+# Copy schema recursively
+mkdir -p "$USER_SCHEMA_DIR"
+cp -r "$SYSTEM_SCHEMA_DIR/"* "$USER_SCHEMA_DIR/"
 
 echo "Created user configuration at: ${USER_CONFIG_PATH}"
 echo "Contents of user configuration:"

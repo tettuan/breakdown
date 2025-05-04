@@ -12,11 +12,11 @@ export interface Config {
     };
   };
   app_prompt: {
-    base_dir: string;
+    promptBaseDir: string;
     debug: boolean;
   };
   app_schema: {
-    base_dir: string;
+    schemaBaseDir: string;
   };
   [key: string]: unknown;
 }
@@ -36,10 +36,10 @@ export const DEFAULT_CONFIG: Config = {
     },
   },
   app_prompt: {
-    base_dir: "",
+    promptBaseDir: "",
     debug: false,
   },
   app_schema: {
-    base_dir: "",
+    schemaBaseDir: "",
   },
 };

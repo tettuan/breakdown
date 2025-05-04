@@ -1,14 +1,18 @@
 /**
  * Command handlers for the Breakdown tool.
+ *
+ * All configuration access (e.g., prompt base dir, schema base dir) must use BreakdownConfig from @tettuan/breakdownconfig.
+ * Do not read YAML or JSON config files directly in this module.
+ *
  * @module
  */
 
 import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0";
 import { ArgumentError } from "../cli/args.ts";
-import { parse } from "jsr:@std/yaml@1.0.6";
 import { exists } from "jsr:@std/fs@^0.224.0";
 import { VERSION } from "../version.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -38,6 +42,8 @@ interface AppConfig {
 
 /**
  * Initialize the workspace directory structure.
+ *
+ * All config access must use BreakdownConfig, not direct file reads.
  */
 export async function initWorkspace(_workingDir?: string): Promise<CommandResult> {
   try {
@@ -59,11 +65,22 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
       // Config already exists, do not overwrite
     }
 
-    // Read config
-    const configText = await Deno.readTextFile(configFile);
-    const config = parse(configText) as AppConfig;
-    const promptBase = config?.app_prompt?.base_dir || "prompts";
-    const schemaBase = config?.app_schema?.base_dir || "schema";
+    // Use BreakdownConfig to load config
+    const config = new BreakdownConfig();
+    await config.loadConfig();
+    const settings = await config.getConfig();
+    if (!settings.app_prompt?.base_dir || settings.app_prompt.base_dir.trim() === "") {
+      throw new Error(
+        "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
+      );
+    }
+    if (!settings.app_schema?.base_dir || settings.app_schema.base_dir.trim() === "") {
+      throw new Error(
+        "Schema base_dir must be set in config (app_schema.base_dir). No fallback allowed.",
+      );
+    }
+    const promptBase = settings.app_prompt.base_dir;
+    const schemaBase = settings.app_schema.base_dir;
 
     // Create required subdirectories under .agent/breakdown
     const subdirs = [

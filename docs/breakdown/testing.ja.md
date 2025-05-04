@@ -4,51 +4,36 @@
 
 ```
 tests/
-├── 0_foundation/           # 基盤機能のテスト
-│   ├── 0_env/             # 環境・初期化
-│   ├── 1_config/          # 設定管理
-│   │   └── config_test.ts
-│   ├── 2_commands/        # コマンドパラメータ解析・実行
-│   ├── 3_logger/          # ロギング
-│   │   ├── logger_test.ts
-│   │   └── logger_level_test.ts
-│   └── 4_directory_structure/ # ディレクトリ構造管理
-├── 1_core/                # コア機能のテスト
-│   ├── 0_path/           # パス処理
-│   │   ├── path_utils_test.ts
-│   │   ├── path_resolver_test.ts
-│   │   ├── prompt_path_test.ts
-│   │   ├── url_path_test.ts
-│   │   └── path_test.ts
-│   ├── 1_io/             # I/O処理
-│   │   └── stdin_test.ts
-│   ├── 2_config/         # 設定管理
-│   │   └── working_dir_test.ts
-│   ├── 3_prompt/         # プロンプト処理
-│   │   ├── prompt_processor_test.ts
-│   │   ├── selection_test.ts
-│   │   ├── prompt_setup_test.ts
-│   │   └── prompt_path_sanitize_test.ts
-│   └── cli/              # CLIテスト
-│       ├── args_test.ts
-│       ├── commands_test.ts
-│       └── io_test.ts
-├── 2_integration/         # 統合テスト
-│   └── 0_flow/           # フロー統合
-│       └── flow_test.ts
-├── 3_scenarios/           # シナリオテスト
-│   └── 0_basic/          # 基本シナリオ
-│       └── commands_test.ts
-├── fixtures/              # テストデータ
-│   ├── prompts/
-│   ├── schemas/
-│   ├── config/
-│   └── projects/
-├── helpers/               # テストヘルパー
-│   ├── setup.ts
-│   ├── test_utils.ts
-│   └── assertions.ts
-├── tmp/                   # 一時ファイル
+├── 0_foundation/           # 0: 基盤機能のテスト
+│   ├── 0_env/             # 0: 環境・初期化
+│   ├── 1_config/          # 1: 設定管理
+│   ├── 2_commands/        # 2: コマンドパラメータ解析・実行
+│   ├── 3_logger/          # 3: ロギング
+│   └── 4_directory_structure/ # 4: ディレクトリ構造管理
+├── 1_core/                # 1: コア機能のテスト（正常系・エッジケース分離）
+│   ├── 0_path/           # 0: パス処理
+│   ├── 1_io/             # 1: I/O処理
+│   ├── 2_config/         # 2: 設定管理
+│   ├── 3_prompt/         # 3: プロンプト処理
+│   │   ├── prompt_processor_test.ts      # プロンプト生成の正常系
+│   │   ├── prompt_path_test.ts           # パス生成の正常系
+│   │   ├── prompt_setup_test.ts          # セットアップの正常系
+│   │   └── edge_cases/                   # エッジケース・異常系専用
+│   │        ├── prompt_base_dir_edge_test.ts   # baseDir関連の異常系
+│   │        └── prompt_path_edge_test.ts       # パス生成の異常系
+│   └── 4_cli/              # 4: CLIテスト
+├── 2_integration/         # 2: 統合テスト（E2E・examples再現）
+│   ├── 0_flow/           # 0: フロー統合
+│   └── 1_examples/         # 1: examples/配下のE2E再現
+│        └── examples_flow_test.ts
+├── 3_scenarios/           # 3: シナリオテスト（ユースケース・複合動作）
+│   ├── 0_basic/          # 0: 基本シナリオ
+│   │   └── commands_test.ts
+│   └── 1_edge_cases/       # 1: シナリオのエッジケース
+│        └── edge_scenarios_test.ts
+├── helpers/                # 他テストから参照されるヘルパー
+├── fixtures/               # テストデータ
+├── tmp/                    # 一時ファイル
 ├── test_config.yml
 ├── params_test.ts
 └── README.md
@@ -121,7 +106,7 @@ deno test <test_file.ts> --allow-env --allow-write --allow-read
 ```
 tests/
 └── 1_core/
-    └── 1_cli/           # CLIテスト専用ディレクトリ
+    └── 4_cli/           # CLIテスト専用ディレクトリ
         ├── args_test.ts     # 引数解析テスト
         ├── commands_test.ts # コマンド実行テスト
         └── io_test.ts      # 入出力テスト

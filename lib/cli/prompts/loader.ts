@@ -1,20 +1,46 @@
 import { CommandOptions } from "$lib/cli/args.ts";
 import { join } from "../../deps.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 export interface Prompt {
   path: string;
   content: string;
 }
 
+/**
+ * PromptLoader loads prompt templates for the Breakdown CLI.
+ *
+ * All configuration access (e.g., prompt base dir) must use BreakdownConfig from @tettuan/breakdownconfig.
+ * Do not read YAML or JSON config files directly in this module.
+ */
 export class PromptLoader {
-  async load(args: CommandOptions): Promise<Prompt> {
-    // プロンプトのベースディレクトリを取得
-    const baseDir = "./breakdown/prompts";
+  /**
+   * Gets the prompt base directory from config using BreakdownConfig.
+   * All config access must use BreakdownConfig, not direct file reads.
+   * @returns {Promise<string>} The prompt base directory
+   * @throws {Error} If base_dir is not set in config
+   */
+  private async getPromptBaseDir(): Promise<string> {
+    const config = new BreakdownConfig();
+    await config.loadConfig();
+    const settings = await config.getConfig();
+    if (settings.app_prompt?.base_dir && settings.app_prompt.base_dir.trim() !== "") {
+      return settings.app_prompt.base_dir;
+    }
+    throw new Error(
+      "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
+    );
+  }
 
-    // プロンプトのディレクトリを構築
+  /**
+   * プロンプトテンプレートをロードする
+   * @param args コマンドオプション
+   */
+  async load(args: CommandOptions): Promise<Prompt> {
+    const promptBaseDir = await this.getPromptBaseDir();
     const demonstrative = args.demonstrative || "default";
     const layer = args.layer || "default";
-    const promptDir = join(baseDir, demonstrative, layer);
+    const promptDir = join(promptBaseDir, demonstrative, layer);
 
     // 入力レイヤータイプを決定
     let fromLayerType = "default";

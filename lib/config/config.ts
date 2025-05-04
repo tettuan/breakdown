@@ -31,11 +31,11 @@ export class ConfigManager implements Config {
     };
   } = DEFAULT_CONFIG.workspaceStructure;
   app_prompt: {
-    base_dir: string;
+    promptBaseDir: string;
     debug: boolean;
   } = DEFAULT_CONFIG.app_prompt;
   app_schema: {
-    base_dir: string;
+    schemaBaseDir: string;
   } = DEFAULT_CONFIG.app_schema;
   [key: string]: unknown;
 
@@ -78,16 +78,16 @@ export class ConfigManager implements Config {
       normalized.working_dir = normalize(config.working_dir);
     }
 
-    if (config.app_prompt?.base_dir) {
+    if (config.app_prompt?.promptBaseDir) {
       normalized.app_prompt = {
-        base_dir: normalize(config.app_prompt.base_dir),
+        promptBaseDir: normalize(config.app_prompt.promptBaseDir),
         debug: config.app_prompt.debug ?? this.app_prompt.debug,
       };
     }
 
-    if (config.app_schema?.base_dir) {
+    if (config.app_schema?.schemaBaseDir) {
       normalized.app_schema = {
-        base_dir: normalize(config.app_schema.base_dir),
+        schemaBaseDir: normalize(config.app_schema.schemaBaseDir),
       };
     }
 
@@ -106,18 +106,18 @@ export class ConfigManager implements Config {
       );
     }
 
-    if (!config.app_prompt?.base_dir?.trim()) {
+    if (!config.app_prompt?.promptBaseDir?.trim()) {
       throw new InvalidConfigError(
-        "app_prompt.base_dir",
-        config.app_prompt?.base_dir,
+        "app_prompt.promptBaseDir",
+        config.app_prompt?.promptBaseDir,
         "Prompt directory cannot be empty",
       );
     }
 
-    if (!config.app_schema?.base_dir?.trim()) {
+    if (!config.app_schema?.schemaBaseDir?.trim()) {
       throw new InvalidConfigError(
-        "app_schema.base_dir",
-        config.app_schema?.base_dir,
+        "app_schema.schemaBaseDir",
+        config.app_schema?.schemaBaseDir,
         "Schema directory cannot be empty",
       );
     }

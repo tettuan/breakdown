@@ -3,8 +3,8 @@
  */
 export interface WorkspaceOptions {
   workingDir: string;
-  promptsDir?: string;
-  schemaDir?: string;
+  promptBaseDir?: string;
+  schemaBaseDir?: string;
 }
 
 /**
@@ -24,8 +24,8 @@ export interface WorkspaceConfig {
  * Directory structure management interface
  */
 export interface WorkspaceStructure {
-  getPromptDir(): string;
-  getSchemaDir(): string;
+  getPromptBaseDir(): string;
+  getSchemaBaseDir(): string;
   getWorkingDir(): string;
   initialize(): Promise<void>;
   ensureDirectories(): Promise<void>;
