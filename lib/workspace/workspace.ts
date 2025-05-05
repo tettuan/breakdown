@@ -1,4 +1,4 @@
-import { isAbsolute, join } from "@std/path";
+import { dirname, fromFileUrl, isAbsolute, join } from "@std/path";
 import { exists } from "@std/fs";
 import {
   WorkspaceConfig,
@@ -309,7 +309,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * lib配下のテンプレート・スキーマをワークスペースにコピー
    */
   private async copyTemplatesAndSchemas(): Promise<void> {
-    const projectRoot = Deno.cwd();
+    // Use the directory of this file to resolve the project root, independent of cwd
+    const thisFileDir = dirname(fromFileUrl(import.meta.url));
+    const projectRoot = join(thisFileDir, "../..");
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
     // config取得
     const breakdownConfig = new BreakdownConfig(this.workingDir);

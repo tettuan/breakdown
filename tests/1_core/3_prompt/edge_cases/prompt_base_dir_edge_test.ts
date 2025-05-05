@@ -170,7 +170,7 @@ describe("Prompt baseDir edge cases", () => {
             },
           };
           const factoryRel = await PromptVariablesFactory.create(cliParamsRel);
-          const adapterRel = new PromptAdapterImpl(factoryRel, logger);
+          const adapterRel = new PromptAdapterImpl(factoryRel);
           const resultRel = await adapterRel.validateAndGenerate();
           logger.debug("[TEST] result (relative path)", { resultRel });
           assertEquals(resultRel.success, true);
@@ -219,7 +219,7 @@ describe("Prompt baseDir edge cases", () => {
             },
           };
           const factoryAbs = await PromptVariablesFactory.create(cliParamsAbs);
-          const adapterAbs = new PromptAdapterImpl(factoryAbs, logger);
+          const adapterAbs = new PromptAdapterImpl(factoryAbs);
           const resultAbs = await adapterAbs.validateAndGenerate();
           logger.debug("[TEST] result (absolute path)", { resultAbs });
           assertEquals(resultAbs.success, true);
@@ -270,7 +270,7 @@ describe("Prompt baseDir edge cases", () => {
           },
         };
         const factoryConfig = await PromptVariablesFactory.create(cliParamsConfig);
-        const adapterConfig = new PromptAdapterImpl(factoryConfig, logger);
+        const adapterConfig = new PromptAdapterImpl(factoryConfig);
         const resultConfig = await adapterConfig.validateAndGenerate();
         logger.debug("[TEST] result (config promptBaseDir)", { resultConfig });
         assertEquals(resultConfig.success, true);

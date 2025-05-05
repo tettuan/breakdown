@@ -26,21 +26,12 @@ import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_valid
  */
 export class PromptAdapterImpl {
   private readonly factory: PromptVariablesFactory;
-  private readonly logger?: {
-    debug: (...args: unknown[]) => void;
-    error: (...args: unknown[]) => void;
-  };
 
   /**
    * @param factory 必須: パス解決済みのファクトリ
-   * @param logger 任意: デバッグ用ロガー
    */
-  constructor(
-    factory: PromptVariablesFactory,
-    logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
-  ) {
+  constructor(factory: PromptVariablesFactory) {
     this.factory = factory;
-    this.logger = logger;
   }
 
   /**

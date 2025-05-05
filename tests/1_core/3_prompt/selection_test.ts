@@ -25,14 +25,6 @@ import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger();
 
-function createLoggerAdapter(logger: BreakdownLogger) {
-  return {
-    debug: (...args: unknown[]) => logger.debug(String(args[0]), args[1]),
-    error: (...args: unknown[]) => logger.error(String(args[0]), args[1]),
-  };
-}
-const loggerAdapter = createLoggerAdapter(logger);
-
 interface SetupResult {
   inputContent: string;
   testPromptsDir: string;
@@ -193,7 +185,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       });
       // --- End Debug ---
       try {
-        const adapter = new PromptAdapterImpl(factory, loggerAdapter);
+        const adapter = new PromptAdapterImpl(factory);
         result = await adapter.validateAndGenerate();
         logger.debug("PromptAdapterImpl success", { content: result.content });
       } catch (e) {

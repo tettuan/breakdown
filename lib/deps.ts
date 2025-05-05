@@ -25,5 +25,3 @@ export {
 } from "jsr:@tettuan/breakdownparams@0.1.11";
 
 export * from "jsr:@tettuan/breakdownprompt@1.1.2";
-
-export { BreakdownLogger, type LogLevel } from "jsr:@tettuan/breakdownlogger@0.1.10";

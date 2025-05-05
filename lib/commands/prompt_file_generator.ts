@@ -19,16 +19,6 @@ export class PromptFileGenerator {
     });
   }
 
-  async setupLogger(enabled: boolean) {
-    if (!enabled) return undefined;
-    const { BreakdownLogger, LogLevel } = await import("@tettuan/breakdownlogger");
-    const testLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
-    return {
-      debug: (...args: unknown[]) => testLogger.debug(String(args[0]), args[1]),
-      error: (...args: unknown[]) => testLogger.error(String(args[0]), args[1]),
-    };
-  }
-
   async writeOutputFile(path: string, content: string) {
     await Deno.writeTextFile(path, content);
   }
@@ -111,11 +101,9 @@ export class PromptFileGenerator {
         },
       };
     }
-    // 5. ロガーセットアップ
-    const logger = await this.setupLogger(true);
     // 6. テンプレート処理
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
-    const adapter = new PromptAdapterImpl(factory, logger);
+    const adapter = new PromptAdapterImpl(factory);
     const result = await adapter.validateAndGenerate();
     if (result.success) {
       await this.writeOutputFile(outputFilePath, result.content);

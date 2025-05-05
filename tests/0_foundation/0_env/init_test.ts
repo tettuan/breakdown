@@ -11,6 +11,7 @@ import {
 import { Workspace } from "../../../lib/workspace/workspace.ts";
 import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 import { stringify } from "jsr:@std/yaml@^1.0.6";
+import { resolve } from "jsr:@std/path@^0.224.0/resolve";
 
 const logger = new BreakdownLogger();
 
@@ -350,5 +351,59 @@ Deno.test({
     assertEquals(destSchemaContent, srcSchemaContent, "Schema template is copied");
 
     await cleanupTestEnvironment(options);
+  },
+});
+
+Deno.test({
+  name: "init - prompt and schema templates are copied even if cwd is changed",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-copy-cwd",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    await setupTestEnvironment(options);
+
+    // Save original cwd and resolve absolute paths for source files
+    const originalCwd = Deno.cwd();
+    const srcPrompt = resolve(originalCwd, "lib/breakdown/prompts/to/project/f_project.md");
+    const srcSchema = resolve(originalCwd, "lib/breakdown/schemas/definitions.ts");
+
+    // Change to a different directory
+    const tempCwd = await Deno.makeTempDir();
+    Deno.chdir(tempCwd);
+    try {
+      const workspace = new Workspace({ workingDir: options.workingDir });
+      await workspace.initialize();
+
+      // prompts: Check if a representative md file is copied
+      const destPrompt = join(
+        options.workingDir,
+        ".agent",
+        "breakdown",
+        "prompts",
+        "to",
+        "project",
+        "f_project.md",
+      );
+      const srcPromptContent = await Deno.readTextFile(srcPrompt);
+      const destPromptContent = await Deno.readTextFile(destPrompt);
+      assertEquals(destPromptContent, srcPromptContent, "Prompt template is copied");
+
+      // schemas: Check if a representative schema file is copied
+      const destSchema = join(
+        options.workingDir,
+        ".agent",
+        "breakdown",
+        "schemas",
+        "definitions.ts",
+      );
+      const srcSchemaContent = await Deno.readTextFile(srcSchema);
+      const destSchemaContent = await Deno.readTextFile(destSchema);
+      assertEquals(destSchemaContent, srcSchemaContent, "Schema template is copied");
+    } finally {
+      Deno.chdir(originalCwd);
+      await cleanupTestEnvironment(options);
+    }
   },
 });

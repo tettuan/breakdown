@@ -255,7 +255,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         });
       }
       console.log("DEBUG (test): Directory contents BEFORE validateAndGenerate", dirContentsBefore);
-      const adapter = new PromptAdapterImpl(factory, logger);
+      const adapter = new PromptAdapterImpl(factory);
       const result = await adapter.validateAndGenerate();
       // Debug: print result object
       console.log("DEBUG (test): result", JSON.stringify(result, null, 2));
@@ -293,7 +293,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         },
       };
       const factory = await PromptVariablesFactory.create(cliParams);
-      const adapter = new PromptAdapterImpl(factory, logger);
+      const adapter = new PromptAdapterImpl(factory);
       const result = await adapter.validateAndGenerate();
       assertEquals(result.success, false);
       // Accepts [NotFound] error for missing prompt file
@@ -341,7 +341,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
         },
       };
       const factory = await PromptVariablesFactory.create(cliParams);
-      const adapter = new PromptAdapterImpl(factory, logger);
+      const adapter = new PromptAdapterImpl(factory);
       // Directly test input file validation
       const inputValidation = await adapter.validateInputFile();
       assertEquals(inputValidation.ok, false);
@@ -408,7 +408,7 @@ Deno.test("PromptAdapterImpl should generate prompt text", async () => {
   );
 
   const factory = await PromptVariablesFactory.create(cliParams);
-  const adapter = new PromptAdapterImpl(factory, logger);
+  const adapter = new PromptAdapterImpl(factory);
   const result = await adapter.validateAndGenerate();
 
   // Restore working directory
@@ -470,7 +470,7 @@ Deno.test("PromptAdapterImpl should handle file operations when destFile is prov
   );
 
   const factory = await PromptVariablesFactory.create(cliParams);
-  const adapter = new PromptAdapterImpl(factory, logger);
+  const adapter = new PromptAdapterImpl(factory);
   const result = await adapter.validateAndGenerate();
 
   // Restore working directory
@@ -528,7 +528,7 @@ Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
   );
 
   const factory = await PromptVariablesFactory.create(cliParams);
-  const adapter = new PromptAdapterImpl(factory, logger);
+  const adapter = new PromptAdapterImpl(factory);
   const result = await adapter.validateAndGenerate();
 
   // Restore working directory
@@ -574,7 +574,7 @@ Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () =>
       },
     };
     const factory = await PromptVariablesFactory.create(cliParams);
-    const adapter = new PromptAdapterImpl(factory, logger);
+    const adapter = new PromptAdapterImpl(factory);
     const result = await adapter.validateAndGenerate();
     // Assert: if base_dir is empty, default directory is used; if prompt file is missing, NotFound error is expected
     if (result.success) {
@@ -646,7 +646,7 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
       },
     };
     const factory = await PromptVariablesFactory.create(cliParams);
-    const adapter = new PromptAdapterImpl(factory, logger);
+    const adapter = new PromptAdapterImpl(factory);
     const result = await adapter.validateAndGenerate();
     // Debug output after
     logger.debug("[TEST] After PromptAdapterImpl (path mismatch reproduction)", { result });
