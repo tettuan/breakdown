@@ -82,3 +82,29 @@ console.log(factory.inputFilePath);
 - [docs/breakdown/options.ja.md](./options.ja.md)
 - [docs/breakdown/testing.ja.md](./testing.ja.md)
 - [docs/breakdown/app_config.ja.md](./app_config.ja.md)
+
+# パラメータオプションと予約変数の対応表
+
+> breakdownparams のパラメータオプション（--from, -o, など）と、breakdownprompt の予約変数の関係を整理したものです。
+
+## 対応表
+
+| 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      |
+|------------------------|-----------------------|-----------------------|-----------------------|-----------------------|----------------------|---------------------|
+| --from, -f             | 入力ファイルパスとして利用 |                       |                       |                       | fromFileから推定      |                     |
+| --destination, -o      |                       | 出力ファイルパスとして利用 |                       |                       |                      |                     |
+| --input, -i            |                       |                       |                       |                       | 入力レイヤー種別を指定 |                     |
+| --adaptation, -a       |                       |                       | プロンプトファイル名のsuffix |                       |                      | プロンプト種別を指定   |
+| demonstrativeType      |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |
+| layerType              |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |
+
+### 補足
+- inputFilePath, outputFilePath, promptFilePath, schemaFilePath などの予約変数は PromptVariablesFactory で一元的に構築される。
+- fromLayerType は --input で明示指定されない場合、fromFile のパスやファイル名から推定される。
+- adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
+- demonstrativeType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
+
+---
+
+- 入力オプション（CLIオプション）の詳細な説明は [breakdownparams リポジトリ](https://github.com/tettuan/breakdownparams) を参照してください。
+- 予約変数の詳細な説明は [breakdownprompt の variables.ja.md](https://github.com/tettuan/breakdownprompt/blob/main/docs/variables.ja.md) を参照してください。
