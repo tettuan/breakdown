@@ -26,7 +26,11 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
   - `temp/`
   - `config/`
   - `prompts/` (または `app_prompt.base_dir` で指定)
+    - `to/project/f_project.md` など、**lib配下の雛形ファイルをコピー**
+    # (EN) Prompt template source: lib/prompts/to/issue/, lib/prompts/to/task/, etc.
   - `schema/` (または `app_schema.base_dir` で指定)
+    - `to/project/base.schema.md` など、**lib配下の雛形ファイルをコピー**
+    # (EN) Schema file source: lib/schemas/
 
 ## 設定ファイル
 - コマンドがインストールされたフォルダを起点とする
@@ -35,9 +39,11 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
   ```yaml
   working_dir: .agent/breakdown # use for output and tmporary
   app_prompt:
-    base_dir: .agent/breakdown/prompts # use for prompts. when init, command copy prompt files from app default to this dir.
+    base_dir: .agent/breakdown/prompts # use for prompts. when init, command copy prompt files from app default (lib配下) to this dir.
+    # Prompt template source: lib/prompts/to/issue/, lib/prompts/to/task/, etc.
   app_schema:
-    base_dir: .agent/breakdown/schema # use for JSON schema. when init, command copy schema files from app default to this dir.
+    base_dir: .agent/breakdown/schema # use for JSON schema. when init, command copy schema files from app default (lib配下) to this dir.
+    # Schema file source: lib/schemas/
   ```
 - `app_prompt.base_dir` や `app_schema.base_dir` をカスタマイズした場合、指定ディレクトリも作成
 
