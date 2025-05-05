@@ -85,7 +85,7 @@ sync_versions() {
  * The current version of Breakdown CLI, synchronized with deno.json.
  * @module
  */
-export const VERSION = \"$deno_ver\";
+export const VERSION = "$deno_ver";
 EOF
     deno fmt "$VERSION_TS"
     git add "$VERSION_TS"
@@ -172,7 +172,7 @@ cat > "$tmp_ts" <<EOF
  * The current version of Breakdown CLI, synchronized with deno.json.
  * @module
  */
-export const VERSION = \"$new_version\";
+export const VERSION = "$new_version";
 EOF
 mv "$tmp_deno" "$DENO_JSON"
 mv "$tmp_ts" "$VERSION_TS"
