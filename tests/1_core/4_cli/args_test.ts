@@ -203,7 +203,6 @@ Deno.test("CLI High-Level Arguments", async (t) => {
   });
 
   await t.step("relative path input", async () => {
-    logger.debug("Testing relative path input");
     const args = [
       "--from",
       "project/test.md",
@@ -217,14 +216,15 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     logger.debug("[DEBUG] Command result for relative path", { result });
+    const expectedPath = join(Deno.cwd(), "project", "test.md");
     assertCommandOutput(result, {
-      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+      error: `No such file: ${expectedPath}`,
     });
   });
 
   await t.step("absolute path input", async () => {
     logger.debug("Testing absolute path input");
-    const absPath = "/Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md";
+    const absPath = join(Deno.cwd(), "project", "test.md");
     const args = [
       "--from",
       absPath,
@@ -239,7 +239,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result for absolute path", { result });
     assertCommandOutput(result, {
-      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+      error: `No such file: ${absPath}`,
     });
   });
 
