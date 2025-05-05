@@ -309,11 +309,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * lib配下のテンプレート・スキーマをワークスペースにコピー
    */
   private async copyTemplatesAndSchemas(): Promise<void> {
-    // Use the directory of this file to resolve the project root, independent of cwd
     const thisFileDir = dirname(fromFileUrl(import.meta.url));
     const projectRoot = join(thisFileDir, "../..");
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    // config取得
     const breakdownConfig = new BreakdownConfig(this.workingDir);
     await breakdownConfig.loadConfig();
     const settings = await breakdownConfig.getConfig();
@@ -324,18 +322,38 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       const srcPrompts = join(projectRoot, "lib", "breakdown", "prompts");
       const destPrompts = join(breakdownDir, promptBase);
       await ensureDir(destPrompts);
+      const srcPromptsExists = await exists(srcPrompts);
+      console.log(`[DEBUG] (prompts) src: ${srcPrompts} exists: ${srcPromptsExists}`);
+      if (srcPromptsExists) {
+        const entries = [];
+        for await (const entry of Deno.readDir(srcPrompts)) {
+          entries.push(entry.name + (entry.isDirectory ? '/' : ''));
+        }
+        console.log(`[DEBUG] (prompts) src dir entries:`, entries);
+      }
+      console.log(`[DEBUG] Copying prompts from ${srcPrompts} to ${destPrompts}`);
       await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
-    } catch (_e) {
-      // コピー失敗時は何もしない（必要ならthrowに変更可）
+    } catch (e) {
+      console.log(`[DEBUG] Failed to copy prompts: ${e}`);
     }
     // schemas
     try {
       const srcSchemas = join(projectRoot, "lib", "breakdown", "schemas");
       const destSchemas = join(breakdownDir, schemaBase);
       await ensureDir(destSchemas);
+      const srcSchemasExists = await exists(srcSchemas);
+      console.log(`[DEBUG] (schemas) src: ${srcSchemas} exists: ${srcSchemasExists}`);
+      if (srcSchemasExists) {
+        const entries = [];
+        for await (const entry of Deno.readDir(srcSchemas)) {
+          entries.push(entry.name + (entry.isDirectory ? '/' : ''));
+        }
+        console.log(`[DEBUG] (schemas) src dir entries:`, entries);
+      }
+      console.log(`[DEBUG] Copying schemas from ${srcSchemas} to ${destSchemas}`);
       await this.copyDirRecursive(srcSchemas, destSchemas);
-    } catch (_e) {
-      // コピー失敗時は何もしない
+    } catch (e) {
+      console.log(`[DEBUG] Failed to copy schemas: ${e}`);
     }
   }
 
@@ -356,6 +374,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
             // 既に存在する場合は上書きしない
           } catch (_e) {
             await Deno.copyFile(srcPath, destPath);
+            console.log(`[DEBUG] Copied file: ${srcPath} -> ${destPath}`);
           }
         }
       }
