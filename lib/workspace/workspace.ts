@@ -110,6 +110,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       await ensureDir(join(this.workingDir, ".agent", "breakdown", dir));
     }
 
+    // テンプレート・スキーマコピー処理を追加
+    await this.copyTemplatesAndSchemas();
+
     // 4. Validate config (check dirs exist)
     await this.validateConfig();
   }
@@ -300,6 +303,61 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   public resolveOutputPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
     return this.promptVariablesFactory.outputFilePath;
+  }
+
+  /**
+   * lib配下のテンプレート・スキーマをワークスペースにコピー
+   */
+  private async copyTemplatesAndSchemas(): Promise<void> {
+    const projectRoot = Deno.cwd();
+    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
+    // config取得
+    const breakdownConfig = new BreakdownConfig(this.workingDir);
+    await breakdownConfig.loadConfig();
+    const settings = await breakdownConfig.getConfig();
+    const promptBase = settings.app_prompt.base_dir.toString().trim();
+    const schemaBase = settings.app_schema.base_dir.toString().trim();
+    // prompts
+    try {
+      const srcPrompts = join(projectRoot, "lib", "prompts");
+      const destPrompts = join(breakdownDir, promptBase);
+      await ensureDir(destPrompts);
+      await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
+    } catch (_e) {
+      // コピー失敗時は何もしない（必要ならthrowに変更可）
+    }
+    // schemas
+    try {
+      const srcSchemas = join(projectRoot, "lib", "schemas");
+      const destSchemas = join(breakdownDir, schemaBase);
+      await ensureDir(destSchemas);
+      await this.copyDirRecursive(srcSchemas, destSchemas);
+    } catch (_e) {
+      // コピー失敗時は何もしない
+    }
+  }
+
+  /**
+   * 再帰的にディレクトリをコピーするユーティリティ
+   */
+  private async copyDirRecursive(src: string, dest: string, exts?: string[]) {
+    for await (const entry of Deno.readDir(src)) {
+      const srcPath = join(src, entry.name);
+      const destPath = join(dest, entry.name);
+      if (entry.isDirectory) {
+        await ensureDir(destPath);
+        await this.copyDirRecursive(srcPath, destPath, exts);
+      } else if (entry.isFile) {
+        if (!exts || exts.some((ext) => entry.name.endsWith(ext))) {
+          try {
+            await Deno.lstat(destPath);
+            // 既に存在する場合は上書きしない
+          } catch (_e) {
+            await Deno.copyFile(srcPath, destPath);
+          }
+        }
+      }
+    }
   }
 }
 

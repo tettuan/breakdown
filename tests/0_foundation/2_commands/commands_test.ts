@@ -170,7 +170,7 @@ Deno.test("Command Module Tests", async (t) => {
         "temp",
         "config",
         "prompts",
-        "schema",
+        "schemas",
       ];
 
       for (const dir of requiredDirs) {
@@ -236,8 +236,8 @@ Deno.test("cli - init command should finish and create config", async () => {
   logger.debug("[CLI INIT TEST] Config file exists?", { configFile, existsConfig });
   assertEquals(existsConfig, true);
   // Check main directories
-  for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schema"]) {
-    const dirPath = `${testDir}/.agent/breakdown/${dir}`;
+  for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schemas"]) {
+    const dirPath = `${testDir}/.agent/breakdown/${dir === "schema" ? "schemas" : dir}`;
     const existsDir = await exists(dirPath);
     logger.debug("[CLI INIT TEST] Directory exists?", { dirPath, existsDir });
     assertEquals(existsDir, true);

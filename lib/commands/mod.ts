@@ -8,10 +8,9 @@
  */
 
 import { join } from "@std/path";
-import { ensureDir, exists } from "@std/fs";
 import { VERSION } from "../version.ts";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
+import { Workspace } from "../workspace/workspace.ts";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -46,106 +45,9 @@ interface AppConfig {
  */
 export async function initWorkspace(_workingDir?: string): Promise<CommandResult> {
   try {
-    // Always use ./.agent/breakdown as the root for config and subdirs
-    const projectRoot = Deno.cwd();
-    const breakdownDir = join(projectRoot, ".agent", "breakdown");
-    await ensureDir(breakdownDir);
-
-    // Config dir and file (under .agent/breakdown)
-    const configDir = join(breakdownDir, "config");
-    const configFile = join(configDir, "app.yml");
-    if (!(await exists(configFile))) {
-      await ensureDir(configDir);
-      // working_dir value is always .agent/breakdown (relative to project root)
-      const configYaml =
-        `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
-      await Deno.writeTextFile(configFile, configYaml);
-    } else {
-      // Config already exists, do not overwrite
-    }
-
-    // Use BreakdownConfig to load config
-    const config = new BreakdownConfig();
-    await config.loadConfig();
-    const settings = await config.getConfig();
-    if (!settings.app_prompt?.base_dir || settings.app_prompt.base_dir.trim() === "") {
-      throw new Error(
-        "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
-      );
-    }
-    if (!settings.app_schema?.base_dir || settings.app_schema.base_dir.trim() === "") {
-      throw new Error(
-        "Schema base_dir must be set in config (app_schema.base_dir). No fallback allowed.",
-      );
-    }
-    const promptBase = settings.app_prompt.base_dir;
-    const schemaBase = settings.app_schema.base_dir;
-
-    // Create required subdirectories under .agent/breakdown
-    const subdirs = [
-      "projects",
-      "issues",
-      "tasks",
-      "temp",
-      "config",
-      promptBase,
-      schemaBase,
-    ];
-    for (const dir of subdirs) {
-      const fullPath = join(breakdownDir, dir);
-      try {
-        await ensureDir(fullPath);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("Not a directory")) {
-          return {
-            success: false,
-            output: "",
-            error: `is not a directory: ${fullPath}`,
-          };
-        }
-        if (!(error instanceof Deno.errors.AlreadyExists)) {
-          return {
-            success: false,
-            output: "",
-            error: `Failed to create directory ${dir}: ${errorMessage}`,
-          };
-        }
-      }
-    }
-
-    // --- Copy prompt templates from lib/prompts/to/* to promptBase ---
-    // Only copy if not already present
-    const promptSourceRoot = join(projectRoot, "lib", "prompts", "to");
-    try {
-      for await (const entry of Deno.readDir(promptSourceRoot)) {
-        if (entry.isDirectory) {
-          const srcDir = join(promptSourceRoot, entry.name);
-          const destDir = join(breakdownDir, promptBase, entry.name);
-          await ensureDir(destDir);
-          for await (const fileEntry of Deno.readDir(srcDir)) {
-            if (fileEntry.isFile && fileEntry.name.endsWith(".md")) {
-              const srcFile = join(srcDir, fileEntry.name);
-              const destFile = join(destDir, fileEntry.name);
-              try {
-                await Deno.lstat(destFile);
-                // File exists, do not overwrite
-              } catch (_e) {
-                // File does not exist, copy
-                await Deno.copyFile(srcFile, destFile);
-              }
-            }
-          }
-        }
-      }
-    } catch (copyErr) {
-      return {
-        success: false,
-        output: "",
-        error: `Failed to copy prompt templates: ${copyErr}`,
-      };
-    }
-
+    const workingDir = _workingDir ?? Deno.cwd();
+    const workspace = new Workspace({ workingDir });
+    await workspace.initialize();
     return {
       success: true,
       output: "Workspace initialized successfully",

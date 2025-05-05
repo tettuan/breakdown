@@ -312,3 +312,43 @@ Deno.test({
     await cleanupTestEnvironment(options);
   },
 });
+
+Deno.test({
+  name: "init - prompt and schema templates under lib are copied",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-copy",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    await setupTestEnvironment(options);
+
+    // Assumes lib/prompts/to/project/f_project.md, lib/schemas/definitions.ts, etc. exist beforehand
+    const workspace = new Workspace({ workingDir: options.workingDir });
+    await workspace.initialize();
+
+    // prompts: Check if a representative md file is copied
+    const srcPrompt = "lib/prompts/to/project/f_project.md";
+    const destPrompt = join(
+      options.workingDir,
+      ".agent",
+      "breakdown",
+      "prompts",
+      "to",
+      "project",
+      "f_project.md",
+    );
+    const srcPromptContent = await Deno.readTextFile(srcPrompt);
+    const destPromptContent = await Deno.readTextFile(destPrompt);
+    assertEquals(destPromptContent, srcPromptContent, "Prompt template is copied");
+
+    // schemas: Check if a representative schema file is copied
+    const srcSchema = "lib/schemas/definitions.ts";
+    const destSchema = join(options.workingDir, ".agent", "breakdown", "schemas", "definitions.ts");
+    const srcSchemaContent = await Deno.readTextFile(srcSchema);
+    const destSchemaContent = await Deno.readTextFile(destSchema);
+    assertEquals(destSchemaContent, srcSchemaContent, "Schema template is copied");
+
+    await cleanupTestEnvironment(options);
+  },
+});

@@ -123,7 +123,7 @@ Deno.test("directory - structure with default config only", async () => {
       "temp",
       "config",
       "prompts",
-      "schema",
+      "schemas",
     ];
     for (const dir of requiredDirs) {
       const dirPath = `${workingDir}/${dir}`;
@@ -164,7 +164,7 @@ Deno.test("directory - structure with user config working_dir override", async (
     "temp",
     "config",
     "prompts",
-    "schema",
+    "schemas",
   ];
   for (const dir of requiredDirs) {
     await Deno.mkdir(`${userWorkingDir}/${dir}`, { recursive: true });
