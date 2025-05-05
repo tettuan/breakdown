@@ -171,17 +171,23 @@ async function runPromptProcessing(
   logger: any,
   adaptation?: string,
 ) {
-  const adapter = new PromptAdapterImpl();
-  return await adapter.generate(
-    absolutePromptBaseDir,
+  // 1. Factory生成
+  const cliParams = {
     demonstrativeType,
-    format,
-    fromFile,
-    toFile,
-    "",
-    logger,
-    adaptation
-  );
+    layerType: format,
+    options: {
+      fromFile,
+      destinationFile: toFile,
+      adaptation,
+      promptDir: absolutePromptBaseDir,
+    },
+  };
+  const factory = await PromptVariablesFactory.create(cliParams, absolutePromptBaseDir);
+  // 2. Adapter生成
+  const adapter = new PromptAdapterImpl(factory, logger);
+  // 3. バリデーション＋プロンプト生成
+  const result = await adapter.validateAndGenerate();
+  return result;
 }
 
 // 6. ファイル出力

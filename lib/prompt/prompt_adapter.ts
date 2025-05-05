@@ -41,32 +41,60 @@ export class PromptAdapterImpl {
   }
 
   /**
-   * パスの存在バリデーションとプロンプト生成
-   * @returns { success, content }
+   * Validates the existence and correctness of prompt and input file paths.
+   * @returns { success, errors }
    */
-  async validateAndGenerate(): Promise<{ success: boolean; content: string }> {
-    const { promptFilePath, inputFilePath, outputFilePath } = this.factory.getAllParams();
+  async validatePaths(): Promise<{ success: boolean; errors: string[] }> {
+    const { promptFilePath, inputFilePath } = this.factory.getAllParams();
     const validator = new PromptAdapterValidator();
-    // Promptファイルのバリデーション
+    const errors: string[] = [];
+    // Validate prompt file
     const promptResult = await validator.validateFile(promptFilePath, "Prompt file");
     if (!promptResult.ok) {
-      return { success: false, content: `[${promptResult.error}] ${promptResult.message}` };
+      errors.push(`[${promptResult.error}] ${promptResult.message}`);
     }
-    // Inputファイルのバリデーション（任意）
+    // Validate input file (if set)
     if (inputFilePath) {
       const inputResult = await validator.validateFile(inputFilePath, "Input file");
       if (!inputResult.ok) {
-        return { success: false, content: `[${inputResult.error}] ${inputResult.message}` };
+        errors.push(`[${inputResult.error}] ${inputResult.message}`);
       }
     }
-    // outputFilePath: existence check is not required for output (usually written, not read)
+    return { success: errors.length === 0, errors };
+  }
+
+  /**
+   * Reads files and generates the prompt using PromptManager.
+   * Assumes validation has already passed.
+   * @returns { success, content }
+   */
+  async generatePrompt(): Promise<{ success: boolean; content: string }> {
+    const { promptFilePath, inputFilePath, outputFilePath } = this.factory.getAllParams();
+    // Read the template file content
+    let template = "";
+    try {
+      template = await Deno.readTextFile(promptFilePath);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { success: false, content: `[ReadError] Failed to read template: ${msg}` };
+    }
+    // If template references {input_text}, try to read input file
+    let inputText = "";
+    if (template.includes("{input_text}") && inputFilePath) {
+      try {
+        inputText = await Deno.readTextFile(inputFilePath);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return { success: false, content: `[ReadError] Failed to read input file: ${msg}` };
+      }
+    }
     const variables = {
       input_text_file: inputFilePath ? basename(inputFilePath) : "",
-      input_text: "",
+      input_text: inputText,
       destination_path: outputFilePath || ""
     };
     const prompt = new PromptManager();
-    const genResult = await prompt.generatePrompt("", variables);
+    const genResult = await prompt.generatePrompt(template, variables);
     if (genResult && typeof genResult === "object" && "success" in genResult) {
       if (genResult.success) {
         return { success: true, content: genResult.prompt ?? "" };
@@ -75,5 +103,38 @@ export class PromptAdapterImpl {
       }
     }
     return { success: true, content: String(genResult) };
+  }
+
+  /**
+   * Validates paths and generates the prompt if validation passes.
+   * @returns { success, content }
+   */
+  async validateAndGenerate(): Promise<{ success: boolean; content: string }> {
+    if (!this.factory.hasValidBaseDir()) {
+      return { success: false, content: this.factory.getBaseDirError() ?? "Prompt base_dir must be set" };
+    }
+    const validation = await this.validatePaths();
+    if (!validation.success) {
+      return { success: false, content: validation.errors.join("\n") };
+    }
+    return await this.generatePrompt();
+  }
+
+  /**
+   * Public method for test: validate input file only
+   */
+  public async validateInputFile(): Promise<ValidationResult> {
+    const { inputFilePath } = this.factory.getAllParams();
+    const validator = new PromptAdapterValidator();
+    return await validator.validateFile(inputFilePath, "Input file");
+  }
+
+  /**
+   * Public method for test: validate output file only
+   */
+  public async validateOutputFile(): Promise<ValidationResult> {
+    const { outputFilePath } = this.factory.getAllParams();
+    const validator = new PromptAdapterValidator();
+    return await validator.validateFile(outputFilePath, "Output file");
   }
 }

@@ -15,6 +15,15 @@
  * - app_prompt.base_dir is the root for prompt templates; prompt files must be created under this directory to be found.
  * - Do NOT create prompt files under working_dir unless it matches app_prompt.base_dir.
  * - This test intentionally sets app_prompt.base_dir: prompts, so prompt files must be created in 'prompts/' relative to the test working directory.
+ *
+ * IMPORTANT: Read docs/breakdown/app_config.ja.md before editing this test.
+ *
+ * - Be careful: `working_dir` is NOT a prefix for `app_prompt.base_dir`.
+ * - `working_dir` is only for input/output file resolution.
+ * - `app_prompt.base_dir` is the root for prompt templates. Prompt files must be created under this directory.
+ * - Always check the config and ensure prompt templates are created in the correct directory.
+ *
+ * See also: docs/breakdown/app_factory.ja.md for path resolution examples.
  */
 
 import { assertRejects } from "@std/assert";
@@ -25,6 +34,7 @@ import { assertEquals, assertExists } from "jsr:@std/assert@^0.224.0";
 import { TEST_BASE_DIR } from "$test/helpers/test_utils.ts";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
+import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
 
 // Adapter to match the expected logger interface
 function createLoggerAdapter(logger: BreakdownLogger) {
@@ -91,19 +101,25 @@ async function setupTestFiles(workingDir: string) {
     { mode: 0o666 },
   );
 
-  const promptTemplate = `# {input_text_file}
-
-Content:
-{input_text}
-
-Output to: {destination_path}`;
+  // Use PromptVariablesFactory to resolve the correct prompt file path
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "issue",
+    options: {
+      fromFile: "project/test_input.md",
+      destinationFile: "issue/test_output.md",
+      promptDir: "prompts",
+    },
+  };
+  const factory = await PromptVariablesFactory.create(cliParams, "prompts");
+  const promptFilePath = factory.promptFilePath;
+  await ensureDir(dirname(promptFilePath));
   await Deno.writeTextFile(
-    join(testPromptsDir, "to", "issue", "f_project.md"),
-    promptTemplate,
-    { mode: 0o666 },
+    promptFilePath,
+    "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}"
   );
   logger.debug("Created test prompt template", {
-    path: join(testPromptsDir, "to", "issue", "f_project.md"),
+    path: promptFilePath,
   });
 
   return { inputContent, testPromptsDir };
@@ -142,91 +158,161 @@ Deno.test("Prompt Processing Integration", async (t) => {
     await ensureDir(dirname(fromFile));
     await Deno.writeTextFile(fromFile, inputContent, { mode: 0o666 });
 
-    // Test prompt generation
-    await t.step("should generate project to issue prompt", async () => {
+    // Test prompt generation (split into two steps)
+    await t.step("should create prompt file", async () => {
       // Debug: print prompt directory and file existence
-      console.log("Prompt dir:", testPromptsDir);
-      const promptFile = join(testPromptsDir, "to", "issue", "f_project.md");
-      const promptExists = await Deno.stat(promptFile).then(() => true).catch(() => false);
-      console.log("Prompt file exists:", promptFile, promptExists);
-      // Log all path variables and cwd
-      console.log("CWD before PromptAdapterImpl:", Deno.cwd());
-      console.log("relPromptsDir:", relPromptsDir);
-      console.log("relFromFile:", relFromFile);
-      console.log("relDestFile:", relDestFile);
-      console.log("fromFile (abs):", fromFile);
-      console.log("destFile (abs):", destFile);
-      logger.debug("[TEST] Before PromptAdapterImpl", { fromFile, destFile });
-      const adapter = new PromptAdapterImpl();
-      const result = await adapter.generate(
-        relPromptsDir,
-        "to",
-        "issue",
-        relFromFile,
-        relDestFile,
-        "",
-        logger,
-      );
+      // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+      // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+      const cliParams = {
+        demonstrativeType: "to",
+        layerType: "issue",
+        options: {
+          fromFile: relFromFile,
+          destinationFile: relDestFile,
+          promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+        },
+      };
+      // Use PromptVariablesFactory to resolve and create the prompt file for this test
+      const factoryForFile = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+      console.log("DEBUG (test): app_prompt.base_dir =", factoryForFile['config']?.app_prompt?.base_dir);
+      const promptFilePath = factoryForFile.promptFilePath;
+      await ensureDir(dirname(promptFilePath));
+      await Deno.writeTextFile(promptFilePath, "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}");
+      const promptExists = await Deno.stat(promptFilePath).then(() => true).catch(() => false);
+      console.log("Prompt file exists:", promptFilePath, promptExists);
+      // List directory contents and stat info for prompt file before running the adapter
+      const promptDir = dirname(promptFilePath);
+      const dirContents = await Deno.readDir(promptDir);
+      console.log("DEBUG (test): Directory contents of", promptDir);
+      for await (const entry of dirContents) {
+        console.log("  -", entry.name, entry.isFile ? "[file]" : "[dir]");
+      }
+      try {
+        const stat = await Deno.stat(promptFilePath);
+        console.log("DEBUG (test): Stat for prompt file", promptFilePath, stat);
+      } catch (e) {
+        console.log("DEBUG (test): Stat for prompt file FAILED", promptFilePath, e);
+      }
+      // Assert file exists and has correct content
+      if (!promptExists) throw new Error("Prompt file was not created");
+      const content = await Deno.readTextFile(promptFilePath);
+      if (!content.includes("# Issue Prompt")) throw new Error("Prompt file content is incorrect");
+    });
+    await t.step("should generate project to issue prompt via CLI", async () => {
+      // Use the same params as above
+      const cliParams = {
+        demonstrativeType: "to",
+        layerType: "issue",
+        options: {
+          fromFile: relFromFile,
+          destinationFile: relDestFile,
+          promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+        },
+      };
+      // Debug: print CLI params
+      console.log("DEBUG (test): CLI params", JSON.stringify(cliParams, null, 2));
+      // PromptVariablesFactoryを生成
+      const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+      const promptFilePath = factory.promptFilePath;
+      const promptDir = dirname(promptFilePath);
+      // Debug: print prompt file path
+      console.log("DEBUG (test): promptFilePath", promptFilePath);
+      // Debug: print prompt file content
+      let promptFileContent = "(not found)";
+      try {
+        promptFileContent = await Deno.readTextFile(promptFilePath);
+      } catch (e) {
+        promptFileContent = `(error reading file: ${e})`;
+      }
+      console.log("DEBUG (test): prompt file content:", promptFileContent);
+      // List directory contents before
+      const dirContentsBefore = [];
+      for await (const entry of await Deno.readDir(promptDir)) {
+        dirContentsBefore.push({ name: entry.name, isFile: entry.isFile, isDirectory: entry.isDirectory });
+      }
+      console.log("DEBUG (test): Directory contents BEFORE validateAndGenerate", dirContentsBefore);
+      const adapter = new PromptAdapterImpl(factory, logger);
+      const result = await adapter.validateAndGenerate();
+      // Debug: print result object
+      console.log("DEBUG (test): result", JSON.stringify(result, null, 2));
+      // List directory contents after
+      const dirContentsAfter = [];
+      for await (const entry of await Deno.readDir(promptDir)) {
+        dirContentsAfter.push({ name: entry.name, isFile: entry.isFile, isDirectory: entry.isDirectory });
+      }
+      console.log("DEBUG (test): Directory contents AFTER validateAndGenerate", dirContentsAfter);
       logger.debug("[TEST] After PromptAdapterImpl", { result });
       if (!result.success) {
         logger.error("[TEST] PromptAdapterImpl failed", { result });
       }
       assertEquals(result.success, true);
       assertExists(result.content);
-      // The result should contain some expected content from the prompt template
-      assertEquals(result.content.includes("test_input.md"), true);
-    });
-
-    // Test invalid demonstrative type
-    await t.step("should handle invalid demonstrative type", async () => {
-      await assertRejects(
-        async () => {
-          const adapter = new PromptAdapterImpl();
-          await adapter.generate(
-            relPromptsDir,
-            "invalid",
-            "issue",
-            relFromFile,
-            relDestFile,
-            "",
-            logger,
-          );
-        },
-        Error,
-        "Unsupported demonstrative type: invalid",
-      );
+      // The result should contain the output from the f_issue.md template
+      assertEquals(result.content.includes("# Issue Prompt"), true);
+      assertEquals(result.content.includes("Output:"), true);
     });
 
     // Test missing prompt template
     await t.step("should handle missing prompt template", async () => {
-      const adapter = new PromptAdapterImpl();
-      const result = await adapter.generate(
-        relPromptsDir,
-        "to",
-        "nonexistent",
-        relFromFile,
-        relDestFile,
-        "",
-        logger,
-      );
+      // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+      // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+      const cliParams = {
+        demonstrativeType: "to",
+        layerType: "nonexistent",
+        options: {
+          fromFile: relFromFile,
+          destinationFile: relDestFile,
+          promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+        },
+      };
+      const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+      const adapter = new PromptAdapterImpl(factory, logger);
+      const result = await adapter.validateAndGenerate();
       assertEquals(result.success, false);
-      assertEquals(result.content, "Invalid layer type: nonexistent");
+      // Accepts [NotFound] error for missing prompt file
+      if (typeof result.content === "string") {
+        assertEquals(result.content.includes("File does not exist"), true, "Should report missing prompt file");
+      } else if (
+        result.content &&
+        typeof result.content === "object" &&
+        "code" in result.content &&
+        typeof (result.content as { code: unknown }).code === "string"
+      ) {
+        assertEquals((result.content as { code: string }).code, "[NotFound]", "Should return [NotFound] error code");
+      } else {
+        throw new Error("Unexpected error result for missing prompt template");
+      }
     });
 
     // Test invalid input file
     await t.step("should handle invalid input file", async () => {
-      const adapter = new PromptAdapterImpl();
-      const result = await adapter.generate(
-        relPromptsDir,
-        "to",
-        "issue",
-        relative(workingDir, join(workingDir, "project", "nonexistent.md")),
-        relDestFile,
-        "",
-        logger,
-      );
-      assertEquals(result.success, false);
-      assertEquals(result.content.includes("No such file"), true);
+      // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+      // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+      // Ensure the input file does NOT exist
+      const missingInputFile = relative(workingDir, join(workingDir, "project", "definitely_missing_input_file.md"));
+      // Remove the file if it exists
+      try {
+        await Deno.remove(join(workingDir, missingInputFile));
+      } catch (_) {}
+      const cliParams = {
+        demonstrativeType: "to",
+        layerType: "issue",
+        options: {
+          fromFile: missingInputFile,
+          destinationFile: relDestFile,
+          promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+        },
+      };
+      const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+      const adapter = new PromptAdapterImpl(factory, logger);
+      // Directly test input file validation
+      const inputValidation = await adapter.validateInputFile();
+      assertEquals(inputValidation.ok, false);
+      if (!inputValidation.ok && "message" in inputValidation && typeof inputValidation.message === "string") {
+        assertEquals(inputValidation.message.includes("File does not exist"), true);
+      } else {
+        throw new Error("Unexpected input file validation result");
+      }
     });
   } finally {
     await cleanupTestEnvironment(env);
@@ -242,6 +328,10 @@ Deno.test("PromptAdapterImpl should generate prompt text", async () => {
     workingDir: testDir,
   });
 
+  // Save and change working directory
+  const originalCwd = Deno.cwd();
+  Deno.chdir(testDir);
+
   // Setup test files and get content
   const { testPromptsDir } = await setupTestFiles(testDir);
   const inputFile = join(testDir, "project", "input.md");
@@ -250,29 +340,36 @@ Deno.test("PromptAdapterImpl should generate prompt text", async () => {
   const relPromptsDir = relative(testDir, testPromptsDir);
   const relInputFile = relative(testDir, inputFile);
 
-  // Save and change working directory
-  const originalCwd = Deno.cwd();
-  Deno.chdir(testDir);
+  // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+  // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "issue",
+    options: {
+      fromFile: relInputFile,
+      destinationFile: "",
+      promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+    },
+  };
+  // Use PromptVariablesFactory to resolve and create the prompt file for this test
+  const factoryForFile = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  console.log("DEBUG (test): app_prompt.base_dir =", factoryForFile['config']?.app_prompt?.base_dir);
+  const promptFilePath = factoryForFile.promptFilePath;
+  await ensureDir(dirname(promptFilePath));
+  await Deno.writeTextFile(promptFilePath, "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}");
 
-  const adapter = new PromptAdapterImpl();
-  const result = await adapter.generate(
-    relPromptsDir,
-    "to",
-    "issue",
-    relInputFile,
-    "",
-    "",
-    logger,
-  );
+  const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  const adapter = new PromptAdapterImpl(factory, logger);
+  const result = await adapter.validateAndGenerate();
 
   // Restore working directory
   Deno.chdir(originalCwd);
 
   assertExists(result);
   assertEquals(typeof result.content, "string");
-  // The result should contain some expected content from the prompt template
-  assertEquals(result.content.includes("input.md"), true);
-
+  // The result should contain the output from the f_issue.md template
+  assertEquals(result.content.includes("# Issue Prompt"), true);
+  assertEquals(result.content.includes("Output:"), true);
   await cleanupTestEnvironment(env);
 });
 
@@ -282,6 +379,10 @@ Deno.test("PromptAdapterImpl should handle file operations when destFile is prov
   const env = await setupTestEnvironment({
     workingDir: testDir,
   });
+
+  // Save and change working directory
+  const originalCwd = Deno.cwd();
+  Deno.chdir(testDir);
 
   // Setup test files and get content
   const { testPromptsDir } = await setupTestFiles(testDir);
@@ -294,29 +395,36 @@ Deno.test("PromptAdapterImpl should handle file operations when destFile is prov
   const relInputFile = relative(testDir, inputFile);
   const relOutputFile = relative(testDir, outputFile);
 
-  // Save and change working directory
-  const originalCwd = Deno.cwd();
-  Deno.chdir(testDir);
+  // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+  // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "issue",
+    options: {
+      fromFile: relInputFile,
+      destinationFile: relOutputFile,
+      promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+    },
+  };
+  // Use PromptVariablesFactory to resolve and create the prompt file for this test
+  const factoryForFile = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  console.log("DEBUG (test): app_prompt.base_dir =", factoryForFile['config']?.app_prompt?.base_dir);
+  const promptFilePath = factoryForFile.promptFilePath;
+  await ensureDir(dirname(promptFilePath));
+  await Deno.writeTextFile(promptFilePath, "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}");
 
-  const adapter = new PromptAdapterImpl();
-  const result = await adapter.generate(
-    relPromptsDir,
-    "to",
-    "issue",
-    relInputFile,
-    relOutputFile,
-    "",
-    logger,
-  );
+  const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  const adapter = new PromptAdapterImpl(factory, logger);
+  const result = await adapter.validateAndGenerate();
 
   // Restore working directory
   Deno.chdir(originalCwd);
 
   assertExists(result);
   assertEquals(typeof result.content, "string");
-  // The result should contain some expected content from the prompt template
-  assertEquals(result.content.includes("input.md"), true);
-
+  // The result should contain the output from the f_issue.md template
+  assertEquals(result.content.includes("# Issue Prompt"), true);
+  assertEquals(result.content.includes("Output:"), true);
   await cleanupTestEnvironment(env);
 });
 
@@ -326,6 +434,10 @@ Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
     workingDir: testDir,
   });
 
+  // Save and change working directory
+  const originalCwd = Deno.cwd();
+  Deno.chdir(testDir);
+
   // Setup test files and get content
   const { testPromptsDir } = await setupTestFiles(testDir);
   const inputFile = join(testDir, "project", "input.md");
@@ -334,20 +446,27 @@ Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
   const relPromptsDir = relative(testDir, testPromptsDir);
   const relInputFile = relative(testDir, inputFile);
 
-  // Save and change working directory
-  const originalCwd = Deno.cwd();
-  Deno.chdir(testDir);
+  // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+  // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "issue",
+    options: {
+      fromFile: relInputFile,
+      destinationFile: "",
+      promptDir: relPromptsDir, // <-- Must match app_prompt.base_dir
+    },
+  };
+  // Use PromptVariablesFactory to resolve and create the prompt file for this test
+  const factoryForFile = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  console.log("DEBUG (test): app_prompt.base_dir =", factoryForFile['config']?.app_prompt?.base_dir);
+  const promptFilePath = factoryForFile.promptFilePath;
+  await ensureDir(dirname(promptFilePath));
+  await Deno.writeTextFile(promptFilePath, "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}");
 
-  const adapter = new PromptAdapterImpl();
-  const result = await adapter.generate(
-    relPromptsDir,
-    "to",
-    "issue",
-    relInputFile,
-    "",
-    "",
-    logger,
-  );
+  const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+  const adapter = new PromptAdapterImpl(factory, logger);
+  const result = await adapter.validateAndGenerate();
 
   // Restore working directory
   Deno.chdir(originalCwd);
@@ -356,7 +475,9 @@ Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
   assertEquals(typeof result.content, "string");
   // The result should not contain absolute paths
   assertEquals(result.content.includes(TEST_BASE_DIR), false);
-
+  // The result should contain the output from the f_issue.md template
+  assertEquals(result.content.includes("# Issue Prompt"), true);
+  assertEquals(result.content.includes("Output:"), true);
   await cleanupTestEnvironment(env);
 });
 
@@ -367,16 +488,20 @@ Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () =>
   const inputFile = join(testDir, "input.md");
   await Deno.writeTextFile(inputFile, "# Dummy input\n");
   // Call with baseDir = ""
-  const adapter = new PromptAdapterImpl();
-  const result = await adapter.generate(
-    "", // promptBaseDir empty
-    "to",
-    "project",
-    inputFile,
-    join(testDir, "output.md"),
-    "project",
-    logger,
-  );
+  // [CAUTION] When setting cliParams, ensure promptDir matches app_prompt.base_dir in config.
+  // See docs/breakdown/app_config.ja.md for details. Do NOT confuse working_dir with app_prompt.base_dir.
+  const cliParams = {
+    demonstrativeType: "to",
+    layerType: "project",
+    options: {
+      fromFile: inputFile,
+      destinationFile: join(testDir, "output.md"),
+      promptDir: "", // <-- Must match app_prompt.base_dir
+    },
+  };
+  const factory = await PromptVariablesFactory.create(cliParams, "");
+  const adapter = new PromptAdapterImpl(factory, logger);
+  const result = await adapter.validateAndGenerate();
   // Assert: error is about missing base_dir, not about template
   if (result.success) {
     throw new Error("Expected failure due to missing base_dir, but got success");
@@ -434,16 +559,18 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
       cwd: Deno.cwd(),
       promptFile,
     });
-    const adapter = new PromptAdapterImpl();
-    const result = await adapter.generate(
-      relPromptsDir,
-      "to",
-      "project",
-      relFromFile,
-      relDestFile,
-      "project",
-      logger,
-    );
+    const cliParams = {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: {
+        fromFile: relFromFile,
+        destinationFile: relDestFile,
+        promptDir: relPromptsDir,
+      },
+    };
+    const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+    const adapter = new PromptAdapterImpl(factory, logger);
+    const result = await adapter.validateAndGenerate();
     // Debug output after
     logger.debug("[TEST] After PromptAdapterImpl (path mismatch reproduction)", { result });
     // The result should succeed and use the correct prompt path

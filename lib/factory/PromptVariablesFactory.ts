@@ -75,7 +75,23 @@ export class PromptVariablesFactory {
         }
       }
     }
-    return new PromptVariablesFactory(config, cliParams, baseDirOverride);
+    // Use override if provided
+    let baseDir = baseDirOverride ?? config?.app_prompt?.base_dir;
+    if (typeof baseDir !== "string" || baseDir.trim() === "") {
+      // Return a factory with an error property for adapter to check
+      const factory = new PromptVariablesFactory(undefined, undefined, undefined);
+      (factory as any)._baseDirError = "Prompt base_dir must be set";
+      return factory;
+    }
+    const instance = new PromptVariablesFactory(config, cliParams, baseDirOverride);
+    // Debug output for config and resolved paths
+    console.log("[DEBUG Factory] app_prompt.base_dir:", config.app_prompt?.base_dir);
+    console.log("[DEBUG Factory] promptFilePath:", instance.promptFilePath);
+    console.log("[DEBUG Factory] inputFilePath:", instance.inputFilePath);
+    console.log("[DEBUG Factory] outputFilePath:", instance.outputFilePath);
+    console.log("[DEBUG Factory] schemaFilePath:", instance.schemaFilePath);
+    console.log("[DEBUG Factory] cwd:", Deno.cwd());
+    return instance;
   }
 
   /**
@@ -131,5 +147,20 @@ export class PromptVariablesFactory {
    */
   public get schemaFilePath(): string {
     return this.schemaPathResolver.getPath();
+  }
+
+  /**
+   * Returns true if base_dir is valid (not empty or missing)
+   */
+  public hasValidBaseDir(): boolean {
+    // If _baseDirError is set, base_dir is invalid
+    return !(this as any)._baseDirError;
+  }
+
+  /**
+   * If base_dir is invalid, returns the error message
+   */
+  public getBaseDirError(): string | undefined {
+    return (this as any)._baseDirError;
   }
 } 

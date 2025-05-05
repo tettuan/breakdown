@@ -20,7 +20,7 @@
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
     "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.0.11",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^0.1.11",
-    "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.1.4",
+    "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.0",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10"
   },
   "publish": {
@@ -39,7 +39,8 @@
   "tasks": {
     "test": "deno test --allow-env --allow-write --allow-read --allow-run",
     "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",
-    "check": "deno check **/*.ts"
+    "check": "deno check **/*.ts",
+    "ci": "sh scripts/local_ci.sh"
   },
   "fmt": {
     "indentWidth": 2,

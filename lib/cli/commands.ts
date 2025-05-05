@@ -1,4 +1,5 @@
 import { CommandOptions } from "./args.ts";
+import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
 import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
 export async function executeCommand(
@@ -45,37 +46,19 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
-        const adapter = new PromptAdapterImpl();
-        let promptResult;
-        switch (targetType) {
-          case "issue":
-            promptResult = await adapter.generate(
-              args.promptDir || "",
-              "to",
-              "issue",
-              fromFile,
-              destFile,
-              "",
-              undefined,
-              args.adaptation,
-            );
-            break;
-          case "task":
-            promptResult = await adapter.generate(
-              args.promptDir || "",
-              "to",
-              "task",
-              fromFile,
-              destFile,
-              "",
-              undefined,
-              args.adaptation,
-            );
-            break;
-          default:
-            error = `Unknown conversion target type: ${targetType}`;
-            return { success: false, output, error };
-        }
+        const cliParams = {
+          demonstrativeType: "to",
+          layerType: targetType,
+          options: {
+            fromFile,
+            destinationFile: destFile,
+            adaptation: args.adaptation,
+            promptDir: args.promptDir || "",
+          },
+        };
+        const factory = await PromptVariablesFactory.create(cliParams, args.promptDir || "");
+        const adapter = new PromptAdapterImpl(factory);
+        const promptResult = await adapter.validateAndGenerate();
         if (!promptResult.success) {
           return { success: false, output: "", error: promptResult.content };
         }
@@ -102,29 +85,23 @@ export async function executeCommand(
           return { success: false, output, error };
         }
 
-        const adapter = new PromptAdapterImpl();
-        let promptResult;
-        switch (targetType) {
-          case "task":
-            promptResult = await adapter.generate(
-              args.promptDir || "",
-              "summary",
-              "task",
-              fromFile,
-              destFile,
-              "",
-              undefined,
-              args.adaptation,
-            );
-            break;
-          default:
-            error = `Unknown analysis target type: ${targetType}`;
-            return { success: false, output, error };
+        const cliParams2 = {
+          demonstrativeType: "summary",
+          layerType: targetType,
+          options: {
+            fromFile,
+            destinationFile: destFile,
+            adaptation: args.adaptation,
+            promptDir: args.promptDir || "",
+          },
+        };
+        const factory2 = await PromptVariablesFactory.create(cliParams2, args.promptDir || "");
+        const adapter2 = new PromptAdapterImpl(factory2);
+        const promptResult2 = await adapter2.validateAndGenerate();
+        if (!promptResult2.success) {
+          return { success: false, output: "", error: promptResult2.content };
         }
-        if (!promptResult.success) {
-          return { success: false, output: "", error: promptResult.content };
-        }
-        output = promptResult.content;
+        output = promptResult2.content;
         break;
       }
       case "init": {

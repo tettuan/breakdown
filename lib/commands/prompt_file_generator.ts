@@ -84,29 +84,15 @@ export class PromptFileGenerator {
     // 5. ロガーセットアップ
     const logger = await this.setupLogger(true);
     // 6. テンプレート処理
-    const adapter = new (await import("../prompt/prompt_adapter.ts")).PromptAdapterImpl();
-    const result = await adapter.generate(
-      join(promptFilePath, ".."),
-      cliParams.demonstrativeType,
-      cliParams.layerType,
-      inputFilePath,
-      outputFilePath,
-      cliParams.layerType,
-      logger,
-      cliParams.options.adaptation,
-    );
+    const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
+    const adapter = new PromptAdapterImpl(factory, logger);
+    const result = await adapter.validateAndGenerate();
     if (result.success) {
       await this.writeOutputFile(outputFilePath, result.content);
       return {
         success: true,
         output: result.content,
         error: "",
-      };
-    } else if (typeof result.content === "string" && result.content.includes("template not found")) {
-      return {
-        success: false,
-        output: "",
-        error: "template not found",
       };
     } else {
       return {
