@@ -1,7 +1,7 @@
 import { isAbsolute, join, resolve } from "@std/path";
 import { existsSync } from "@std/fs";
 import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
-import type { PromptCliParams } from "./PromptVariablesFactory.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 
 type DoubleParamsResult = PromptCliParams;
 

@@ -67,7 +67,7 @@ Deno.test("workspace initialization and structure", async () => {
       fromLayerType: "project",
     },
   };
-  const factory = await import("$lib/factory/PromptVariablesFactory.ts").then((m) =>
+  const factory = await import("$lib/factory/prompt_variables_factory.ts").then((m) =>
     m.PromptVariablesFactory.create(cliParams)
   );
   workspace.setPromptVariablesFactory(factory);

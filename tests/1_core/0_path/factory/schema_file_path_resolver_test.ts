@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { SchemaFilePathResolver } from "$lib/factory/SchemaFilePathResolver.ts";
+import { SchemaFilePathResolver } from "$lib/factory/schema_file_path_resolver.ts";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";

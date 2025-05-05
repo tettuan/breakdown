@@ -11,7 +11,7 @@
 
 import { assertEquals } from "@std/assert";
 import { join } from "@std/path";
-import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,

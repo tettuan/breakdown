@@ -11,7 +11,7 @@ import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { ensureDir } from "@std/fs";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 
 /**
  * Workspace class and helpers for Breakdown.

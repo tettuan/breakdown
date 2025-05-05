@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { PromptTemplatePathResolver } from "$lib/factory/PromptTemplatePathResolver.ts";
+import { PromptTemplatePathResolver } from "$lib/factory/prompt_template_path_resolver.ts";
 import { ensureDir } from "@std/fs";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";

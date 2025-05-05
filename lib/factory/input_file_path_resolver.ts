@@ -1,5 +1,5 @@
 import { isAbsolute, resolve } from "@std/path";
-import type { PromptCliParams } from "./PromptVariablesFactory.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 
 type DoubleParamsResult = PromptCliParams;
 

@@ -1,4 +1,4 @@
-import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
 

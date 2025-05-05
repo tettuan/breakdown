@@ -43,7 +43,7 @@ import { assertEquals, assertExists } from "jsr:@std/assert@^0.224.0";
 import { TEST_BASE_DIR } from "$test/helpers/test_utils.ts";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
-import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 // Adapter to match the expected logger interface

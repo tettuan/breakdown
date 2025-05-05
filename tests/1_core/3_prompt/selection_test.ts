@@ -20,7 +20,7 @@ import { join } from "jsr:@std/path@^0.224.0/join";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { PromptAdapterImpl } from "../../../lib/prompt/prompt_adapter.ts";
-import { PromptVariablesFactory } from "../../../lib/factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger();

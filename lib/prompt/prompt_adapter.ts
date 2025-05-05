@@ -16,7 +16,7 @@
  */
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
 import { basename } from "@std/path/basename";
-import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 
 /**

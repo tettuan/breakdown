@@ -18,10 +18,10 @@ export interface PromptCliParams {
 
 type DoubleParamsResult = PromptCliParams;
 
-import { PromptTemplatePathResolver } from "./PromptTemplatePathResolver.ts";
-import { InputFilePathResolver } from "./InputFilePathResolver.ts";
-import { OutputFilePathResolver } from "./OutputFilePathResolver.ts";
-import { SchemaFilePathResolver } from "./SchemaFilePathResolver.ts";
+import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { InputFilePathResolver } from "./input_file_path_resolver.ts";
+import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
+import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 /**
  * PromptVariablesFactoryOptions

@@ -1,5 +1,5 @@
 import { isAbsolute, join } from "@std/path";
-import type { PromptCliParams } from "./PromptVariablesFactory.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 // TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
 type DoubleParamsResult = PromptCliParams;
 

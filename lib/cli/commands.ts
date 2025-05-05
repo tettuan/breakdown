@@ -1,5 +1,5 @@
 import { CommandOptions } from "./args.ts";
-import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
+import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
 export async function executeCommand(
