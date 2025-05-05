@@ -323,18 +323,12 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       const destPrompts = join(breakdownDir, promptBase);
       await ensureDir(destPrompts);
       const srcPromptsExists = await exists(srcPrompts);
-      console.log(`[DEBUG] (prompts) src: ${srcPrompts} exists: ${srcPromptsExists}`);
       if (srcPromptsExists) {
-        const entries = [];
-        for await (const entry of Deno.readDir(srcPrompts)) {
-          entries.push(entry.name + (entry.isDirectory ? '/' : ''));
-        }
-        console.log(`[DEBUG] (prompts) src dir entries:`, entries);
+        // no debug output
       }
-      console.log(`[DEBUG] Copying prompts from ${srcPrompts} to ${destPrompts}`);
       await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
-    } catch (e) {
-      console.log(`[DEBUG] Failed to copy prompts: ${e}`);
+    } catch (_e) {
+      // no debug output
     }
     // schemas
     try {
@@ -342,18 +336,12 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       const destSchemas = join(breakdownDir, schemaBase);
       await ensureDir(destSchemas);
       const srcSchemasExists = await exists(srcSchemas);
-      console.log(`[DEBUG] (schemas) src: ${srcSchemas} exists: ${srcSchemasExists}`);
       if (srcSchemasExists) {
-        const entries = [];
-        for await (const entry of Deno.readDir(srcSchemas)) {
-          entries.push(entry.name + (entry.isDirectory ? '/' : ''));
-        }
-        console.log(`[DEBUG] (schemas) src dir entries:`, entries);
+        // no debug output
       }
-      console.log(`[DEBUG] Copying schemas from ${srcSchemas} to ${destSchemas}`);
       await this.copyDirRecursive(srcSchemas, destSchemas);
-    } catch (e) {
-      console.log(`[DEBUG] Failed to copy schemas: ${e}`);
+    } catch (_e) {
+      // no debug output
     }
   }
 
@@ -374,7 +362,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
             // 既に存在する場合は上書きしない
           } catch (_e) {
             await Deno.copyFile(srcPath, destPath);
-            console.log(`[DEBUG] Copied file: ${srcPath} -> ${destPath}`);
+            // no debug output
           }
         }
       }
