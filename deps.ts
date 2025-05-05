@@ -18,13 +18,15 @@ export { parse } from "@std/flags";
 export {
   assert,
   assertEquals,
+  assertExists,
   assertRejects,
   assertStringIncludes,
   assertThrows,
 } from "@std/assert";
 
 // Third-party dependencies
-export { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+// [2024-05-05] cliffy Command import removed: Not used anywhere in the codebase, only re-exported in deps.ts. All CLI and command logic uses Deno.Command or internal logic. See https://github.com/c4spar/deno-cliffy for latest. If CLI framework is needed in the future, consider JSR version.
+// export { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
 
 // TODO: Add required JSR package imports as specified in breakdown.ja.md:
 // - @tettuan/breakdownconfig

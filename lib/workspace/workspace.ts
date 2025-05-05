@@ -1,4 +1,4 @@
-import { join } from "@std/path";
+import { isAbsolute, join } from "@std/path";
 import { exists } from "@std/fs";
 import {
   WorkspaceConfig,
@@ -7,7 +7,7 @@ import {
   WorkspacePaths,
   WorkspaceStructure,
 } from "./types.ts";
-import { WorkspaceConfigError, WorkspaceInitError, WorkspacePathError } from "./errors.ts";
+import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { ensureDir } from "@std/fs";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
@@ -258,9 +258,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * Get prompts directory path
    */
   public getPromptBaseDir(): string {
-    // Always return the absolute path to the prompts directory
     const config = this.config || { app_prompt: { base_dir: "prompts" } };
-    return join(this.workingDir, ".agent", "breakdown", config.app_prompt.base_dir || "prompts");
+    const baseDir = config.app_prompt.base_dir || "prompts";
+    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
   }
 
   /**
@@ -269,7 +269,8 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    */
   public getSchemaBaseDir(): string {
     const config = this.config || { app_schema: { base_dir: "schemas" } };
-    return join(this.workingDir, ".agent", "breakdown", config.app_schema.base_dir || "schemas");
+    const baseDir = config.app_schema.base_dir || "schemas";
+    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
   }
 
   /**

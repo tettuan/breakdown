@@ -74,7 +74,7 @@ Deno.test("CLI Command Execution", async (t) => {
         // --from, --destination omitted
       ],
       undefined,
-      absTestDir
+      absTestDir,
     );
     logger.debug("[DEBUG] Parameter error test result", result);
     // Expect no error, and help text in output
@@ -99,7 +99,7 @@ Deno.test("CLI Command Execution", async (t) => {
         "value",
       ],
       undefined,
-      absTestDir
+      absTestDir,
     );
     logger.debug("[DEBUG] Invalid option test result", result);
     // 期待値: エラーが返ることが正常
@@ -134,7 +134,7 @@ Deno.test("CLI Command Execution", async (t) => {
         ...args,
       ],
       undefined,
-      absTestDir
+      absTestDir,
     );
     logger.debug("[DEBUG] Template not found test result", result);
     assertCommandOutput(result, {

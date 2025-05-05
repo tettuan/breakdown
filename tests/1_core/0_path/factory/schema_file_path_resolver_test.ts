@@ -1,14 +1,19 @@
 import { assertEquals } from "@std/assert";
 import { SchemaFilePathResolver } from "$lib/factory/SchemaFilePathResolver.ts";
-import { join, resolve, isAbsolute } from "@std/path";
+import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 describe("SchemaFilePathResolver: base_dir resolution", () => {
   it("resolves with config.app_schema.base_dir (absolute)", () => {
     const baseDir = resolve(Deno.cwd(), "tmp", "schemas");
     const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: baseDir } },
-      { demonstrativeType: "to", layerType: "project" },
+      {
+        demonstrativeType: "to" as DemonstrativeType,
+        layerType: "project" as LayerType,
+        options: {},
+      },
     );
     const expected = join(baseDir, "to", "project", "base.schema.md");
     assertEquals(resolver.getPath(), expected);
@@ -18,7 +23,11 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
     const absBaseDir = resolve(Deno.cwd(), relBaseDir);
     const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: relBaseDir } },
-      { demonstrativeType: "summary", layerType: "issue" },
+      {
+        demonstrativeType: "summary" as DemonstrativeType,
+        layerType: "issue" as LayerType,
+        options: {},
+      },
     );
     const expected = join(absBaseDir, "summary", "issue", "base.schema.md");
     assertEquals(resolver.getPath(), expected);
@@ -27,7 +36,11 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
     const defaultBaseDir = resolve(Deno.cwd(), ".agent/breakdown/schemas");
     const resolver = new SchemaFilePathResolver(
       {},
-      { demonstrativeType: "defect", layerType: "task" },
+      {
+        demonstrativeType: "defect" as DemonstrativeType,
+        layerType: "task" as LayerType,
+        options: {},
+      },
     );
     const expected = join(defaultBaseDir, "defect", "task", "base.schema.md");
     assertEquals(resolver.getPath(), expected);
@@ -39,9 +52,13 @@ describe("SchemaFilePathResolver: absolute path check", () => {
     const relBaseDir = "./tmp/abs_schema";
     const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: relBaseDir } },
-      { demonstrativeType: "to", layerType: "issue" },
+      {
+        demonstrativeType: "to" as DemonstrativeType,
+        layerType: "issue" as LayerType,
+        options: {},
+      },
     );
     const result = resolver.getPath();
     assertEquals(isAbsolute(result), true);
   });
-}); 
+});

@@ -139,11 +139,17 @@ export async function runCommand(
   args: string[],
   stdin?: string,
   cwd?: string,
-  options?: { env?: Record<string, string> }
+  options?: { env?: Record<string, string> },
 ): Promise<CommandResult> {
   const logger = new BreakdownLogger();
   const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
-  logger.debug("[runCommand] invoked", { cwd: Deno.cwd(), args, breakdownPath, runCwd: cwd, env: options?.env });
+  logger.debug("[runCommand] invoked", {
+    cwd: Deno.cwd(),
+    args,
+    breakdownPath,
+    runCwd: cwd,
+    env: options?.env,
+  });
   const mergedEnv = { ...Deno.env.toObject(), ...(options?.env ?? {}) };
   const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--allow-all", breakdownPath, ...args],

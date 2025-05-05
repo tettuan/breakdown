@@ -4,6 +4,7 @@ import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
 import { join } from "@std/path/join";
 import { resolve } from "@std/path/resolve";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 /**
  * Integration tests for the breakdown workflow
@@ -53,20 +54,22 @@ Deno.test("workspace initialization and structure", async () => {
   await Deno.mkdir(configDir, { recursive: true });
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
   );
 
   // Set PromptVariablesFactory for path resolution
   const cliParams = {
-    demonstrativeType: "to",
-    layerType: "project",
+    demonstrativeType: "to" as DemonstrativeType,
+    layerType: "project" as LayerType,
     options: {
       fromFile: "test.md",
       destinationFile: "test.md",
       fromLayerType: "project",
     },
   };
-  const factory = await import("$lib/factory/PromptVariablesFactory.ts").then(m => m.PromptVariablesFactory.create(cliParams));
+  const factory = await import("$lib/factory/PromptVariablesFactory.ts").then((m) =>
+    m.PromptVariablesFactory.create(cliParams)
+  );
   workspace.setPromptVariablesFactory(factory);
 
   // Verify workspace directories

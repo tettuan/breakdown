@@ -7,15 +7,11 @@
  * @module
  */
 
-import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
-import { exists } from "@std/fs";
+import { ensureDir, exists } from "@std/fs";
 import { VERSION } from "../version.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { normalize } from "@std/path";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
-import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
-import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -100,8 +96,15 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
       try {
         await ensureDir(fullPath);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("Not a directory")) {
+          return {
+            success: false,
+            output: "",
+            error: `is not a directory: ${fullPath}`,
+          };
+        }
         if (!(error instanceof Deno.errors.AlreadyExists)) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
           return {
             success: false,
             output: "",
@@ -109,6 +112,38 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
           };
         }
       }
+    }
+
+    // --- Copy prompt templates from lib/prompts/to/* to promptBase ---
+    // Only copy if not already present
+    const promptSourceRoot = join(projectRoot, "lib", "prompts", "to");
+    try {
+      for await (const entry of Deno.readDir(promptSourceRoot)) {
+        if (entry.isDirectory) {
+          const srcDir = join(promptSourceRoot, entry.name);
+          const destDir = join(breakdownDir, promptBase, entry.name);
+          await ensureDir(destDir);
+          for await (const fileEntry of Deno.readDir(srcDir)) {
+            if (fileEntry.isFile && fileEntry.name.endsWith(".md")) {
+              const srcFile = join(srcDir, fileEntry.name);
+              const destFile = join(destDir, fileEntry.name);
+              try {
+                await Deno.lstat(destFile);
+                // File exists, do not overwrite
+              } catch (_e) {
+                // File does not exist, copy
+                await Deno.copyFile(srcFile, destFile);
+              }
+            }
+          }
+        }
+      }
+    } catch (copyErr) {
+      return {
+        success: false,
+        output: "",
+        error: `Failed to copy prompt templates: ${copyErr}`,
+      };
     }
 
     return {
@@ -133,78 +168,37 @@ function validateInputFile(path: string): Promise<void> {
   });
 }
 
-// 3. プロンプトベースディレクトリ存在・型チェック
-async function validatePromptBaseDir(promptBaseDir: string): Promise<string> {
-  const absolutePromptBaseDir = promptBaseDir.startsWith("/")
-    ? normalize(promptBaseDir)
-    : join(Deno.cwd(), promptBaseDir);
-  try {
-    const stat = await Deno.stat(absolutePromptBaseDir);
-    if (!stat.isDirectory) {
-      throw new Error("is not a directory");
-    }
-  } catch (e) {
-    if (e instanceof Error && e.message === "is not a directory") throw e;
-    throw new Error("Required directory does not exist");
-  }
-  return absolutePromptBaseDir;
-}
-
-// 4. ロガーセットアップ
-async function setupLogger(enabled: boolean) {
-  if (!enabled) return undefined;
-  const { BreakdownLogger, LogLevel } = await import("jsr:@tettuan/breakdownlogger@^0.1.10");
-  const testLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
-  return {
-    debug: (...args: unknown[]) => testLogger.debug(String(args[0]), args[1]),
-    error: (...args: unknown[]) => testLogger.error(String(args[0]), args[1]),
-  };
-}
-
 // 5. プロンプト変換処理
 async function runPromptProcessing(
-  absolutePromptBaseDir: string,
-  demonstrativeType: string,
-  format: string,
-  fromFile: string,
-  toFile: string,
-  logger: any,
-  adaptation?: string,
-) {
-  // 1. Factory生成
-  const cliParams = {
-    demonstrativeType,
-    layerType: format,
-    options: {
-      fromFile,
-      destinationFile: toFile,
-      adaptation,
-      promptDir: absolutePromptBaseDir,
-    },
-  };
-  const factory = await PromptVariablesFactory.create(cliParams, absolutePromptBaseDir);
-  // 2. Adapter生成
-  const adapter = new PromptAdapterImpl(factory, logger);
-  // 3. バリデーション＋プロンプト生成
-  const result = await adapter.validateAndGenerate();
-  return result;
-}
-
-// 6. ファイル出力
-async function writeOutputFile(path: string, content: string) {
-  await Deno.writeTextFile(path, content);
-}
-
-export async function generateWithPrompt(
-  fromFile: string,
-  toFile: string,
-  format: string,
-  _force = false,
-  options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
+  _fromFile: string,
+  _toFile: string,
+  _format: string,
+  _force: boolean,
+  _options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
 ): Promise<CommandResult> {
   try {
+    // --- Add input file existence check ---
+    try {
+      const absFromFile = _fromFile.startsWith("/") ? _fromFile : join(Deno.cwd(), _fromFile);
+      await validateInputFile(absFromFile);
+    } catch (_e) {
+      const absFromFile = _fromFile.startsWith("/") ? _fromFile : join(Deno.cwd(), _fromFile);
+      return {
+        success: false,
+        output: "",
+        error: `No such file: ${absFromFile}`,
+      };
+    }
+    // ---
     const generator = new PromptFileGenerator();
-    return await generator.generateWithPrompt(fromFile, toFile, format, _force, options);
+    const result = await generator.generateWithPrompt(
+      _fromFile,
+      _toFile,
+      _format,
+      _force,
+      _options,
+    );
+    return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return {
@@ -213,6 +207,16 @@ export async function generateWithPrompt(
       error: errorMessage,
     };
   }
+}
+
+export async function generateWithPrompt(
+  _fromFile: string,
+  _toFile: string,
+  _format: string,
+  _force = false,
+  _options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
+): Promise<CommandResult> {
+  return await runPromptProcessing(_fromFile, _toFile, _format, _force, _options);
 }
 
 /**

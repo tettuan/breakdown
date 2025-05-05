@@ -69,7 +69,6 @@ PATH processing varies according to parameter values.
 ```yaml
 - When fromFile has PATH hierarchy
 - When fromFile has filename only
-  - When fromLayerType is specified
 - When fromFile is empty (not specified)
 ```
 
@@ -80,30 +79,16 @@ The fromFile parameter has the highest priority. When fromFile exists, other par
 ```mermaid
 flowchart TD
     A[Start] --> B{fromFile exists?}
-    B -->|Yes| C{Has PATH hierarchy?}
-    C -->|Yes| D[Use fromFile as is]
-    C -->|No| E{fromLayerType exists?}
-    E -->|Yes| F[Use fromLayerType as dir<br/>fromFile as filename]
-    E -->|No| G[Use layerType as dir<br/>fromFile as filename]
-    B -->|No| H[Return empty path]
+    B -->|Yes| C[Use fromFile as is]
+    B -->|No| D[Return empty path]
 ```
 
 Each case is processed as follows:
 
-### When fromFile Has PATH Hierarchy
+### When fromFile Has PATH Hierarchy or Filename Only
 
-Use fromFile as is. Other parameters are not used.
-
-- dir & filename: {fromFile}
-
-### When fromFile Has Filename Only
-
-- When fromLayerType is not specified
-  - dir: {layerType}
-  - filename: {fromFile}
-- When fromLayerType is specified
-  - dir: {fromLayerType}
-  - filename: {fromFile}
+- Use the path specified by fromFile as-is, whether it is a path hierarchy or just a filename
+- No additional directory completion is performed
 
 ### When fromFile is Empty (or Not Specified)
 

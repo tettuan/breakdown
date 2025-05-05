@@ -2,11 +2,21 @@
 // See: docs/breakdown/app_factory.ja.md
 
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import * as path from "@std/path";
-import { existsSync } from "@std/fs";
-// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
-// import type { DoubleParamsResult } from "../params/types.ts";
-type DoubleParamsResult = any;
+import type { DemonstrativeType, LayerType } from "../types/mod.ts";
+
+export interface PromptCliParams {
+  demonstrativeType: DemonstrativeType;
+  layerType: LayerType;
+  options: {
+    fromFile?: string;
+    destinationFile?: string;
+    adaptation?: string;
+    promptDir?: string;
+    fromLayerType?: string;
+  };
+}
+
+type DoubleParamsResult = PromptCliParams;
 
 import { PromptTemplatePathResolver } from "./PromptTemplatePathResolver.ts";
 import { InputFilePathResolver } from "./InputFilePathResolver.ts";
@@ -20,8 +30,10 @@ import { SchemaFilePathResolver } from "./SchemaFilePathResolver.ts";
  */
 export interface PromptVariablesFactoryOptions {
   /** BreakdownConfig.getConfig() で取得した設定オブジェクト */
-  config: any;
-  cliParams: DoubleParamsResult;
+  config:
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown>;
+  cliParams: PromptCliParams;
 }
 
 // --- サブクラス定義削除 ---
@@ -34,8 +46,10 @@ export interface PromptVariablesFactoryOptions {
  * - インスタンス生成は static async create(cliParams) を利用
  */
 export class PromptVariablesFactory {
-  private config: any;
-  private readonly cliParams: DoubleParamsResult;
+  private config:
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown>;
+  private readonly cliParams: PromptCliParams;
   private baseDirOverride?: string;
 
   private promptPathResolver: PromptTemplatePathResolver;
@@ -43,7 +57,13 @@ export class PromptVariablesFactory {
   private outputPathResolver: OutputFilePathResolver;
   private schemaPathResolver: SchemaFilePathResolver;
 
-  private constructor(config: any, cliParams: DoubleParamsResult, baseDirOverride?: string) {
+  private constructor(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+    cliParams: PromptCliParams,
+    baseDirOverride?: string,
+  ) {
     this.config = config;
     this.cliParams = cliParams;
     this.baseDirOverride = baseDirOverride;
@@ -54,44 +74,14 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * 非同期ファクトリメソッド
-   * @param cliParams 実行時パラメータ
-   * @param baseDirOverride オプション: app_prompt.base_dir を上書き
+   * Factory method to create PromptVariablesFactory
+   * @param cliParams CLI parameters
    */
-  static async create(cliParams: DoubleParamsResult, baseDirOverride?: string): Promise<PromptVariablesFactory> {
-    const breakdownConfig = new BreakdownConfig();
+  static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
+    const breakdownConfig = new BreakdownConfig(Deno.cwd());
     await breakdownConfig.loadConfig();
-    // 明示的にuser.yml > app.ymlの優先順位でマージ
-    let config = await breakdownConfig.getConfig();
-    if (config && typeof config === "object" && config.user && typeof config.user === "object") {
-      if (config.user.app_prompt && typeof config.user.app_prompt === "object" && (config.user.app_prompt as any).base_dir) {
-        if (config.app_prompt && typeof config.app_prompt === "object") {
-          (config.app_prompt as any).base_dir = (config.user.app_prompt as any).base_dir;
-        }
-      }
-      if (config.user.app_schema && typeof config.user.app_schema === "object" && (config.user.app_schema as any).base_dir) {
-        if (config.app_schema && typeof config.app_schema === "object") {
-          (config.app_schema as any).base_dir = (config.user.app_schema as any).base_dir;
-        }
-      }
-    }
-    // Use override if provided
-    let baseDir = baseDirOverride ?? config?.app_prompt?.base_dir;
-    if (typeof baseDir !== "string" || baseDir.trim() === "") {
-      // Return a factory with an error property for adapter to check
-      const factory = new PromptVariablesFactory(undefined, undefined, undefined);
-      (factory as any)._baseDirError = "Prompt base_dir must be set";
-      return factory;
-    }
-    const instance = new PromptVariablesFactory(config, cliParams, baseDirOverride);
-    // Debug output for config and resolved paths
-    console.log("[DEBUG Factory] app_prompt.base_dir:", config.app_prompt?.base_dir);
-    console.log("[DEBUG Factory] promptFilePath:", instance.promptFilePath);
-    console.log("[DEBUG Factory] inputFilePath:", instance.inputFilePath);
-    console.log("[DEBUG Factory] outputFilePath:", instance.outputFilePath);
-    console.log("[DEBUG Factory] schemaFilePath:", instance.schemaFilePath);
-    console.log("[DEBUG Factory] cwd:", Deno.cwd());
-    return instance;
+    const config = await breakdownConfig.getConfig();
+    return new PromptVariablesFactory(config, cliParams);
   }
 
   /**
@@ -153,14 +143,17 @@ export class PromptVariablesFactory {
    * Returns true if base_dir is valid (not empty or missing)
    */
   public hasValidBaseDir(): boolean {
-    // If _baseDirError is set, base_dir is invalid
-    return !(this as any)._baseDirError;
+    // 型安全に _baseDirError をアクセス
+    // @ts-ignore: _baseDirError は protected/private で型定義されていない場合の暫定対応
+    return !(this as { _baseDirError?: boolean })._baseDirError;
   }
 
   /**
    * If base_dir is invalid, returns the error message
    */
   public getBaseDirError(): string | undefined {
-    return (this as any)._baseDirError;
+    // 型安全に _baseDirError をアクセス
+    // @ts-ignore: _baseDirError は protected/private で型定義されていない場合の暫定対応
+    return (this as { _baseDirError?: boolean })._baseDirError;
   }
-} 
+}

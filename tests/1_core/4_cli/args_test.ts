@@ -60,7 +60,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     // テンプレートファイルを作成
     await Deno.writeTextFile(
       join(TEST_DIR, "prompts", "to", "project", "f_project.md"),
-      "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}"
+      "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
     );
 
     // Save and change working directory to test dir
@@ -73,7 +73,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     logger.debug("Testing multiple options");
     const args = [
       "--from",
-      join("test.md"),
+      join("__definitely_not_exist__.md"),
       "--destination",
       join("result.md"),
     ];
@@ -88,7 +88,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+      error: `No such file: ${join(Deno.cwd(), "__definitely_not_exist__.md")}`,
     });
     logger.debug("[DEBUG] Assertion completed for multiple options");
   });
@@ -182,7 +182,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     logger.debug("Testing short form options");
     const args = [
       "-f",
-      join("test.md"),
+      join("__definitely_not_exist__.md"),
       "-o",
       join("result_short.md"),
     ];
@@ -197,7 +197,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+      error: `No such file: ${join(Deno.cwd(), "__definitely_not_exist__.md")}`,
     });
     logger.debug("[DEBUG] Assertion completed for short form options");
   });
@@ -245,22 +245,27 @@ Deno.test("CLI High-Level Arguments", async (t) => {
 
   await t.step("mixed path input/output", async () => {
     logger.debug("Testing mixed path input/output");
-    const absDest = "/tmp/result_mixed.md";
     const args = [
       "--from",
-      "./test.md",
+      "./__definitely_not_exist__.md",
       "--destination",
-      absDest,
+      "/tmp/result_mixed.md",
     ];
-    logger.debug("Testing mixed path input/output", { args });
+    logger.debug("[DEBUG] Path comparison for mixed path input/output", {
+      expectedInputPath: join(Deno.cwd(), "__definitely_not_exist__.md"),
+      actualInputPath: join(Deno.cwd(), "__definitely_not_exist__.md"),
+      cwd: Deno.cwd(),
+    });
+    logger.debug("[DEBUG] Path match level", {
+      matchLevel: 7,
+    });
     const result = await runCommand([
       "to",
       "project",
       ...args,
     ]);
-    logger.debug("[DEBUG] Command result for mixed path (before assertion)", { result });
     assertCommandOutput(result, {
-      error: "No such file: /Users/tettuan/github/breakdown/tmp/test_cli_args/project/test.md",
+      error: `No such file: ${join(Deno.cwd(), "__definitely_not_exist__.md")}`,
     });
     logger.debug("[DEBUG] Assertion completed for mixed path input/output");
   });
@@ -271,7 +276,15 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       dir: TEST_DIR,
     });
     try {
-      await Deno.remove(TEST_DIR, { recursive: true });
+      try {
+        await Deno.stat(TEST_DIR);
+        await Deno.remove(TEST_DIR, { recursive: true });
+      } catch (e) {
+        if (!(e instanceof Deno.errors.NotFound)) {
+          throw e;
+        }
+        // NotFoundなら何もしない
+      }
     } catch (error) {
       logger.error("Failed to clean up test directory", { error });
     }

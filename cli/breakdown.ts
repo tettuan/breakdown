@@ -177,7 +177,9 @@ export async function runBreakdown(args: string[]): Promise<void> {
     } catch (e) {
       configLoadSuccess = false;
       if (Deno.env.get("DEBUG")) {
-        logger.error("[DEBUG] Config load failed", { error: e instanceof Error ? e.message : String(e) });
+        logger.error("[DEBUG] Config load failed", {
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
       throw e;
     }
@@ -195,7 +197,9 @@ export async function runBreakdown(args: string[]): Promise<void> {
       const userYmlPath = `${configDir}/user.yml`;
       logger.debug("[DEBUG] Loaded config files", { appYmlPath, userYmlPath });
     } catch (e) {
-      logger.debug("[DEBUG] Could not determine config file paths", { error: e instanceof Error ? e.message : String(e) });
+      logger.debug("[DEBUG] Could not determine config file paths", {
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
     const settingsConfig = await settings.getConfig();
     // Validate CLI arguments using validateArgs (from lib/cli/args.ts)
@@ -217,12 +221,19 @@ export async function runBreakdown(args: string[]): Promise<void> {
       const pathParts = parsedArgs.promptDir.split(/[\\/]/).filter(Boolean);
       let currentPath = parsedArgs.promptDir.startsWith("/") ? "/" : "";
       for (let i = 0; i < pathParts.length; i++) {
-        currentPath = currentPath === "/" ? `/${pathParts[i]}` : (currentPath ? `${currentPath}/${pathParts[i]}` : pathParts[i]);
+        currentPath = currentPath === "/"
+          ? `/${pathParts[i]}`
+          : (currentPath ? `${currentPath}/${pathParts[i]}` : pathParts[i]);
         try {
           const stat = await Deno.stat(currentPath);
-          logger.debug(`[CLI][stat階層] ${i}階層目: ${currentPath}`, { isDirectory: stat.isDirectory, isFile: stat.isFile });
+          logger.debug(`[CLI][stat階層] ${i}階層目: ${currentPath}`, {
+            isDirectory: stat.isDirectory,
+            isFile: stat.isFile,
+          });
         } catch (err) {
-          logger.error(`[CLI][stat階層] ${i}階層目: ${currentPath} stat失敗`, { error: err instanceof Error ? err.message : String(err) });
+          logger.error(`[CLI][stat階層] ${i}階層目: ${currentPath} stat失敗`, {
+            error: err instanceof Error ? err.message : String(err),
+          });
           break;
         }
       }

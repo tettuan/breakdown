@@ -36,7 +36,8 @@
  * - Configuration loading is tested separately
  */
 
-import { assertEquals, assertRejects, join } from "$deps/mod.ts";
+import { assertEquals, assertRejects } from "../../../deps.ts";
+import { join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment,
@@ -103,7 +104,7 @@ Deno.test("directory - structure with default config only", async () => {
   try {
     await Deno.remove(".agent", { recursive: true });
   } catch { /* ignore */ }
-  let originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   // Use project root for this test, since .agent is created there
   try {
     await initWorkspace();

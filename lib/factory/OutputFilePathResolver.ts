@@ -1,6 +1,7 @@
-import * as path from "@std/path";
+import { isAbsolute, join } from "@std/path";
+import type { PromptCliParams } from "./PromptVariablesFactory.ts";
 // TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
-type DoubleParamsResult = any;
+type DoubleParamsResult = PromptCliParams;
 
 /**
  * OutputFilePathResolver
@@ -33,7 +34,7 @@ type DoubleParamsResult = any;
  *   - docs/index.ja.md
  */
 export class OutputFilePathResolver {
-  constructor(private config: any, private cliParams: DoubleParamsResult) {}
+  constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
 
   /**
    * Resolves the output file path according to CLI parameters and config.
@@ -46,26 +47,26 @@ export class OutputFilePathResolver {
     const destinationFile = this.getDestinationFile();
     const cwd = Deno.cwd();
     if (!destinationFile) {
-      return path.join(cwd, this.cliParams.layerType, this.generateDefaultFilename());
+      return join(cwd, this.cliParams.layerType, this.generateDefaultFilename());
     }
     const normalizedDest = this.normalizePath(destinationFile);
-    if (path.isAbsolute(normalizedDest)) {
+    if (isAbsolute(normalizedDest)) {
       if (this.isDirectory(normalizedDest)) {
-        return path.join(normalizedDest, this.generateDefaultFilename());
+        return join(normalizedDest, this.generateDefaultFilename());
       }
       return normalizedDest;
     }
-    const absDest = path.join(cwd, normalizedDest);
+    const absDest = join(cwd, normalizedDest);
     if (this.isDirectory(absDest)) {
-      return path.join(absDest, this.generateDefaultFilename());
+      return join(absDest, this.generateDefaultFilename());
     }
     if (this.hasPathHierarchy(normalizedDest) && this.hasExtension(normalizedDest)) {
       return absDest;
     }
     if (this.hasExtension(normalizedDest)) {
-      return path.join(cwd, this.cliParams.layerType, normalizedDest);
+      return join(cwd, this.cliParams.layerType, normalizedDest);
     }
-    return path.join(absDest, this.generateDefaultFilename());
+    return join(absDest, this.generateDefaultFilename());
   }
 
   private getDestinationFile(): string | undefined {
@@ -101,4 +102,4 @@ export class OutputFilePathResolver {
   private hasExtension(p: string): boolean {
     return p.includes(".");
   }
-} 
+}

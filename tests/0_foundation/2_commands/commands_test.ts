@@ -19,8 +19,8 @@
  *    - Normal pattern: Command with options
  */
 
-import { assertEquals, assertExists } from "$deps/mod.ts";
-import { join as _join } from "$deps/mod.ts";
+import { assertEquals, assertExists } from "../../../deps.ts";
+import { join as _join } from "../../../deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type NoParamsResult,
@@ -144,7 +144,7 @@ Deno.test("parseParams - adaptation option (short form)", () => {
 
 Deno.test("Command Module Tests", async (t) => {
   await Deno.mkdir(TEST_DIR, { recursive: true });
-  let originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
   try {
     await t.step("setup", async () => {
@@ -248,7 +248,7 @@ Deno.test("cli - init command should finish and create config", async () => {
 
 Deno.test("CLI Command Execution", async (t) => {
   await Deno.mkdir(TEST_DIR, { recursive: true });
-  let originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
   try {
     await t.step("setup", async () => {

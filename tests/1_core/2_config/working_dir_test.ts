@@ -87,7 +87,7 @@ Deno.test({
 Deno.test({
   name: "working_dir - simple pattern - default configuration",
   async fn() {
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {
@@ -138,7 +138,7 @@ app_schema:
 Deno.test({
   name: "working_dir - simple pattern - directory structure",
   async fn() {
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {
@@ -208,7 +208,7 @@ app_schema:
 Deno.test({
   name: "working_dir - normal pattern - custom configuration",
   async fn() {
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {
@@ -255,7 +255,7 @@ app_schema:
 Deno.test({
   name: "working_dir - edge cases - invalid configuration",
   async fn() {
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {

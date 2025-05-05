@@ -1,7 +1,9 @@
-import * as path from "@std/path";
+import { isAbsolute, join, resolve } from "@std/path";
 import { existsSync } from "@std/fs";
-// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
-type DoubleParamsResult = any;
+import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
+import type { PromptCliParams } from "./PromptVariablesFactory.ts";
+
+type DoubleParamsResult = PromptCliParams;
 
 /**
  * PromptTemplatePathResolver
@@ -29,11 +31,16 @@ type DoubleParamsResult = any;
  *   - docs/index.ja.md
  */
 export class PromptTemplatePathResolver {
+  private config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>;
+  private cliParams: DoubleParamsResult;
+
   constructor(
-    private config: any,
-    private cliParams: DoubleParamsResult,
-    private baseDirOverride?: string,
-  ) {}
+    config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>,
+    cliParams: DoubleParamsResult,
+  ) {
+    this.config = config;
+    this.cliParams = cliParams;
+  }
 
   /**
    * Resolves the prompt template file path according to CLI parameters and config.
@@ -59,9 +66,12 @@ export class PromptTemplatePathResolver {
   }
 
   private resolveBaseDir(): string {
-    let baseDir = this.baseDirOverride || this.config.app_prompt?.base_dir || ".agent/breakdown/prompts";
-    if (!path.isAbsolute(baseDir)) {
-      baseDir = path.resolve(Deno.cwd(), baseDir);
+    let baseDir = this.config.app_prompt?.base_dir;
+    if (!baseDir) {
+      baseDir = DEFAULT_PROMPT_BASE_DIR;
+    }
+    if (!isAbsolute(baseDir)) {
+      baseDir = resolve(Deno.cwd(), baseDir);
     }
     return baseDir;
   }
@@ -81,11 +91,11 @@ export class PromptTemplatePathResolver {
 
   private buildPromptPath(baseDir: string, fileName: string): string {
     const { demonstrativeType, layerType } = this.cliParams;
-    return path.join(baseDir, demonstrativeType, layerType, fileName);
+    return join(baseDir, demonstrativeType, layerType, fileName);
   }
 
   private shouldFallback(promptPath: string): boolean {
     const { options } = this.cliParams;
     return Boolean(options?.adaptation) && !existsSync(promptPath);
   }
-} 
+}

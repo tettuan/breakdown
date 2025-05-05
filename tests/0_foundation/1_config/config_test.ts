@@ -44,7 +44,7 @@ Deno.test("config - default settings", async () => {
     workingDir: "./tmp/test/config",
     skipDefaultConfig: true,
   });
-  let originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   Deno.chdir(env.workingDir);
   try {
     // Create config file in the correct location
@@ -83,7 +83,7 @@ Deno.test("config - custom working directory", async () => {
     workingDir: "./tmp/test/config-custom",
     skipDefaultConfig: true,
   });
-  let originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   Deno.chdir(env.workingDir);
   try {
     // Create config file in the correct location
@@ -144,7 +144,7 @@ Deno.test({
       workingDir: "./tmp/test/config-basic",
       skipDefaultConfig: true,
     });
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     Deno.chdir(env.workingDir);
     try {
       // Create config file in the correct location

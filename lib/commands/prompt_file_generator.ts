@@ -1,9 +1,9 @@
 import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
-import { join, dirname } from "@std/path";
+import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
 
 export class PromptFileGenerator {
-  async validateInputFile(path: string): Promise<void> {
+  validateInputFile(path: string): Promise<void> {
     return Deno.stat(path).then(() => {}, () => {
       throw new Error(`No such file: ${path}`);
     });
@@ -34,21 +34,21 @@ export class PromptFileGenerator {
     options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
   ) {
     // stdin ('-') 特別扱い: 先にエラー返す
-    if (fromFile === '-') {
-      throw new Error('No such file: -');
+    if (fromFile === "-") {
+      throw new Error("No such file: -");
     }
     // 1. CLIパラメータを組み立ててPromptVariablesFactoryで一元解決
     const cliParams = {
-      demonstrativeType: options?.demonstrativeType || "to",
-      layerType: format,
+      demonstrativeType:
+        (options?.demonstrativeType || "to") as import("../types/mod.ts").DemonstrativeType,
+      layerType: format as import("../types/mod.ts").LayerType,
       options: {
         fromFile,
         destinationFile: toFile,
         adaptation: options?.adaptation,
-        promptDir: options?.promptDir,
       },
     };
-    const factory = await PromptVariablesFactory.create(cliParams, options?.promptDir);
+    const factory = await PromptVariablesFactory.create(cliParams);
     factory.validateAll();
     // 2. 必要なパスを取得
     const { promptFilePath, inputFilePath, outputFilePath } = factory.getAllParams();
@@ -102,4 +102,4 @@ export class PromptFileGenerator {
       };
     }
   }
-} 
+}

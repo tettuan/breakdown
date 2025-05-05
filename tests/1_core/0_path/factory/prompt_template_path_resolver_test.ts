@@ -1,25 +1,17 @@
 import { assertEquals } from "@std/assert";
 import { PromptTemplatePathResolver } from "$lib/factory/PromptTemplatePathResolver.ts";
 import { ensureDir } from "@std/fs";
-import { join, resolve, isAbsolute } from "@std/path";
+import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+
+/*
+ * IMPORTANT: All path resolution is based on config/app_prompt.base_dir (and app_schema.base_dir).
+ * - baseDirOverride or promptDir override is NOT supported.
+ * - All tests use config/app_prompt.base_dir for baseDir resolution.
+ */
 
 describe("PromptTemplatePathResolver: baseDir resolution", () => {
-  it("resolves with baseDirOverride (absolute)", async () => {
-    const baseDir = await Deno.makeTempDir();
-    const promptDir = join(baseDir, "to", "project");
-    await ensureDir(promptDir);
-    const promptFile = join(promptDir, "f_project.md");
-    await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
-      {},
-      { demonstrativeType: "to", layerType: "project", options: {} },
-      baseDir,
-    );
-    const result = resolver.getPath();
-    assertEquals(result, join(baseDir, "to", "project", "f_project.md"));
-    await Deno.remove(baseDir, { recursive: true });
-  });
   it("falls back to config.app_prompt.base_dir", async () => {
     const baseDir = await Deno.makeTempDir();
     const promptDir = join(baseDir, "to", "project");
@@ -164,7 +156,11 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
     // fromLayerType omitted, fromFile contains 'issue'
     const resolver = new PromptTemplatePathResolver(
       { app_prompt: { base_dir: baseDir } },
-      { demonstrativeType: "to", layerType: "issue", options: { fromFile: "something/created/123_issue_file.md" } },
+      {
+        demonstrativeType: "to",
+        layerType: "issue",
+        options: { fromFile: "something/created/123_issue_file.md" },
+      },
     );
     const result = resolver.getPath();
     assertEquals(result, join(baseDir, "to", "issue", "f_issue.md"));
@@ -178,7 +174,11 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
     await Deno.writeTextFile(promptFile, "dummy");
     const resolver = new PromptTemplatePathResolver(
       { app_prompt: { base_dir: baseDir } },
-      { demonstrativeType: "to", layerType: "issue", options: { fromFile: "foo.md", fromLayerType: "project" } },
+      {
+        demonstrativeType: "to",
+        layerType: "issue",
+        options: { fromFile: "foo.md", fromLayerType: "project" },
+      },
     );
     const result = resolver.getPath();
     assertEquals(result, join(baseDir, "to", "issue", "f_project.md"));
@@ -216,7 +216,7 @@ describe("PromptTemplatePathResolver: file existence and edge cases", () => {
     const baseDir = "somewhere";
     const resolver = new PromptTemplatePathResolver(
       { app_prompt: { base_dir: baseDir } },
-      { demonstrativeType: "", layerType: "", options: {} },
+      { demonstrativeType: "" as DemonstrativeType, layerType: "" as LayerType, options: {} },
     );
     const expected = resolve(Deno.cwd(), baseDir, "", "", "f_.md");
     const result = resolver.getPath();
@@ -250,7 +250,11 @@ describe("PromptTemplatePathResolver: demonstrativeType/layerType combinations",
         await Deno.writeTextFile(promptFile, "dummy");
         const resolver = new PromptTemplatePathResolver(
           { app_prompt: { base_dir: baseDir } },
-          { demonstrativeType, layerType, options: {} },
+          {
+            demonstrativeType: demonstrativeType as DemonstrativeType,
+            layerType: layerType as LayerType,
+            options: {},
+          },
         );
         const result = resolver.getPath();
         assertEquals(result, join(baseDir, demonstrativeType, layerType, `f_${layerType}.md`));
@@ -258,4 +262,4 @@ describe("PromptTemplatePathResolver: demonstrativeType/layerType combinations",
       });
     }
   }
-}); 
+});

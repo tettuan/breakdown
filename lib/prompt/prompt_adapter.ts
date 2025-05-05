@@ -14,11 +14,8 @@
  * - PromptManager is only responsible for template processing
  * - Adapter coordinates the flow and error handling between these components
  */
-import { PromptManager } from "../deps.ts";
-import { join, normalize } from "@std/path";
-import { exists } from "@std/fs";
+import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
 import { basename } from "@std/path/basename";
-import { CliError, CliErrorCode } from "../cli/errors.ts";
 import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 
@@ -29,13 +26,19 @@ import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_valid
  */
 export class PromptAdapterImpl {
   private readonly factory: PromptVariablesFactory;
-  private readonly logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void };
+  private readonly logger?: {
+    debug: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+  };
 
   /**
    * @param factory 必須: パス解決済みのファクトリ
    * @param logger 任意: デバッグ用ロガー
    */
-  constructor(factory: PromptVariablesFactory, logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void }) {
+  constructor(
+    factory: PromptVariablesFactory,
+    logger?: { debug: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
+  ) {
     this.factory = factory;
     this.logger = logger;
   }
@@ -91,7 +94,7 @@ export class PromptAdapterImpl {
     const variables = {
       input_text_file: inputFilePath ? basename(inputFilePath) : "",
       input_text: inputText,
-      destination_path: outputFilePath || ""
+      destination_path: outputFilePath || "",
     };
     const prompt = new PromptManager();
     const genResult = await prompt.generatePrompt(template, variables);
@@ -111,7 +114,10 @@ export class PromptAdapterImpl {
    */
   async validateAndGenerate(): Promise<{ success: boolean; content: string }> {
     if (!this.factory.hasValidBaseDir()) {
-      return { success: false, content: this.factory.getBaseDirError() ?? "Prompt base_dir must be set" };
+      return {
+        success: false,
+        content: this.factory.getBaseDirError() ?? "Prompt base_dir must be set",
+      };
     }
     const validation = await this.validatePaths();
     if (!validation.success) {

@@ -1,6 +1,7 @@
-import * as path from "@std/path";
-// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
-type DoubleParamsResult = any;
+import { isAbsolute, resolve } from "@std/path";
+import type { PromptCliParams } from "./PromptVariablesFactory.ts";
+
+type DoubleParamsResult = PromptCliParams;
 
 /**
  * InputFilePathResolver
@@ -28,7 +29,7 @@ type DoubleParamsResult = any;
  *   - docs/index.ja.md
  */
 export class InputFilePathResolver {
-  constructor(private config: any, private cliParams: DoubleParamsResult) {}
+  constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
 
   /**
    * Resolves the input file path according to CLI parameters and config.
@@ -44,11 +45,8 @@ export class InputFilePathResolver {
     if (this.isAbsolute(normalizedFromFile)) {
       return normalizedFromFile;
     }
-    if (this.hasPathHierarchy(normalizedFromFile)) {
-      return path.resolve(Deno.cwd(), normalizedFromFile);
-    }
-    const dir = this.getDirectory();
-    return path.resolve(Deno.cwd(), dir, normalizedFromFile);
+    // パス階層の有無にかかわらず、--fromで指定されたパスをそのままcwdからの相対パスとして解決する
+    return resolve(Deno.cwd(), normalizedFromFile);
   }
 
   private getFromFile(): string | undefined {
@@ -60,14 +58,21 @@ export class InputFilePathResolver {
   }
 
   private isAbsolute(p: string): boolean {
-    return path.isAbsolute(p);
+    return isAbsolute(p);
   }
 
   private hasPathHierarchy(p: string): boolean {
-    return p.includes("/");
+    // Only treat as hierarchy if path contains a slash and does not start with './' or '../'
+    // './file.md' and '../file.md' should NOT be treated as hierarchy
+    // 'project/file.md' or 'foo/bar.md' should be treated as hierarchy
+    const normalized = p.replace(/\\/g, "/");
+    if (normalized.startsWith("./") || normalized.startsWith("../")) {
+      return false;
+    }
+    return normalized.includes("/");
   }
 
   private getDirectory(): string {
     return this.cliParams.options?.fromLayerType || this.cliParams.layerType;
   }
-} 
+}

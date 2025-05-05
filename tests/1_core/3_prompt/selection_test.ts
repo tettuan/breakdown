@@ -14,16 +14,14 @@
  * - Adaptation option correctly modifies prompt selection
  */
 
-import { assert, assertEquals } from "jsr:@std/assert@0.224.0";
-import { assertRejects } from "jsr:@std/assert@^0.224.0/assert-rejects";
+import { assert, assertEquals } from "@std/assert";
 import { afterEach, beforeEach, describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
-import { DemonstrativeType, LayerType } from "../../../lib/types/mod.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { PromptAdapterImpl } from "../../../lib/prompt/prompt_adapter.ts";
 import { PromptVariablesFactory } from "../../../lib/factory/PromptVariablesFactory.ts";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger();
 
@@ -59,7 +57,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     await Deno.mkdir(configDir, { recursive: true });
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
     );
 
     // Create schema directory and file
@@ -169,8 +167,16 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
         outputFile,
         promptDir: absPromptDir,
       });
-      const cliParams = { demonstrativeType: "to", layerType: "issue", options: { fromFile: relInputFile, destinationFile: relOutputFile, promptDir: relPromptsDir } };
-      const factory = await PromptVariablesFactory.create(cliParams, relPromptsDir);
+      const cliParams = {
+        demonstrativeType: "to" as DemonstrativeType,
+        layerType: "issue" as LayerType,
+        options: {
+          fromFile: relInputFile,
+          destinationFile: relOutputFile,
+          promptDir: relPromptsDir,
+        },
+      };
+      const factory = await PromptVariablesFactory.create(cliParams);
       const params = factory.getAllParams();
       logger2.debug("[DEBUG] Implementation-resolved paths", params);
       // Compare path segments

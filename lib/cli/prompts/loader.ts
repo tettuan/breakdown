@@ -1,6 +1,6 @@
 import { CommandOptions } from "$lib/cli/args.ts";
-import { join } from "../../deps.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { join } from "@std/path";
 
 export interface Prompt {
   path: string;
@@ -23,12 +23,18 @@ export class PromptLoader {
   private async getPromptBaseDir(): Promise<string> {
     const config = new BreakdownConfig();
     await config.loadConfig();
-    let settings = await config.getConfig();
+    const settings = await config.getConfig();
     // user.yml > app.yml 優先
-    if (settings && typeof settings === "object" && settings.user && typeof settings.user === "object") {
-      if (settings.user.app_prompt && typeof settings.user.app_prompt === "object" && (settings.user.app_prompt as any).base_dir) {
+    if (
+      settings && typeof settings === "object" && settings.user && typeof settings.user === "object"
+    ) {
+      if (
+        settings.user.app_prompt && typeof settings.user.app_prompt === "object" &&
+        (settings.user.app_prompt as Record<string, unknown>).base_dir
+      ) {
         if (settings.app_prompt && typeof settings.app_prompt === "object") {
-          (settings.app_prompt as any).base_dir = (settings.user.app_prompt as any).base_dir;
+          (settings.app_prompt as Record<string, unknown>).base_dir =
+            (settings.user.app_prompt as Record<string, unknown>).base_dir;
         }
       }
     }

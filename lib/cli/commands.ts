@@ -47,16 +47,15 @@ export async function executeCommand(
         }
 
         const cliParams = {
-          demonstrativeType: "to",
-          layerType: targetType,
+          demonstrativeType: "to" as import("../types/mod.ts").DemonstrativeType,
+          layerType: targetType as import("../types/mod.ts").LayerType,
           options: {
             fromFile,
             destinationFile: destFile,
             adaptation: args.adaptation,
-            promptDir: args.promptDir || "",
           },
         };
-        const factory = await PromptVariablesFactory.create(cliParams, args.promptDir || "");
+        const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
         const promptResult = await adapter.validateAndGenerate();
         if (!promptResult.success) {
@@ -86,16 +85,15 @@ export async function executeCommand(
         }
 
         const cliParams2 = {
-          demonstrativeType: "summary",
-          layerType: targetType,
+          demonstrativeType: "summary" as import("../types/mod.ts").DemonstrativeType,
+          layerType: targetType as import("../types/mod.ts").LayerType,
           options: {
             fromFile,
             destinationFile: destFile,
             adaptation: args.adaptation,
-            promptDir: args.promptDir || "",
           },
         };
-        const factory2 = await PromptVariablesFactory.create(cliParams2, args.promptDir || "");
+        const factory2 = await PromptVariablesFactory.create(cliParams2);
         const adapter2 = new PromptAdapterImpl(factory2);
         const promptResult2 = await adapter2.validateAndGenerate();
         if (!promptResult2.success) {

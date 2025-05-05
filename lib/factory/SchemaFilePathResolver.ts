@@ -1,6 +1,7 @@
-import * as path from "@std/path";
+import { isAbsolute, join, resolve } from "@std/path";
+import type { PromptCliParams } from "./PromptVariablesFactory.ts";
 // TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
-type DoubleParamsResult = any;
+type DoubleParamsResult = PromptCliParams;
 
 /**
  * SchemaFilePathResolver
@@ -26,7 +27,10 @@ type DoubleParamsResult = any;
  *   - docs/index.ja.md
  */
 export class SchemaFilePathResolver {
-  constructor(private config: any, private cliParams: DoubleParamsResult) {}
+  constructor(
+    private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
+    private cliParams: DoubleParamsResult,
+  ) {}
 
   /**
    * Resolves the schema file path according to CLI parameters and config.
@@ -43,8 +47,8 @@ export class SchemaFilePathResolver {
 
   private resolveBaseDir(): string {
     let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schemas";
-    if (!path.isAbsolute(baseDir)) {
-      baseDir = path.resolve(Deno.cwd(), baseDir);
+    if (!isAbsolute(baseDir)) {
+      baseDir = resolve(Deno.cwd(), baseDir);
     }
     return baseDir;
   }
@@ -55,6 +59,6 @@ export class SchemaFilePathResolver {
 
   private buildSchemaPath(baseDir: string, fileName: string): string {
     const { demonstrativeType, layerType } = this.cliParams;
-    return path.join(baseDir, demonstrativeType, layerType, fileName);
+    return join(baseDir, demonstrativeType, layerType, fileName);
   }
-} 
+}

@@ -147,7 +147,7 @@ Deno.test({
       skipDirectorySetup: true,
     };
     await Deno.mkdir(options.workingDir, { recursive: true });
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     Deno.chdir(options.workingDir);
     try {
       await setupTestEnvironment(options);
@@ -206,7 +206,7 @@ Deno.test({
       logLevel: LogLevel.DEBUG,
     };
     await Deno.mkdir(options.workingDir, { recursive: true });
-    let originalCwd = Deno.cwd();
+    const originalCwd = Deno.cwd();
     Deno.chdir(options.workingDir);
     try {
       logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });

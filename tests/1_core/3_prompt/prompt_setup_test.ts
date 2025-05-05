@@ -7,6 +7,14 @@
  * - Validate error handling during setup
  */
 
+/*
+ * IMPORTANT: All path resolution is based on config/app_prompt.base_dir (and app_schema.base_dir).
+ * - Each test sets up a config file with app_prompt.base_dir and app_schema.base_dir in the test working directory.
+ * - No promptDir or baseDir override is supported; config is the only source of truth.
+ * - All expected paths are based on the config's baseDir ("prompts"), not hardcoded or empty/undefined.
+ * - Directory structure is always created under the configured baseDir.
+ */
+
 import { assertEquals, assertRejects } from "jsr:@std/assert@^0.224.0";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { exists } from "jsr:@std/fs@^0.224.0";

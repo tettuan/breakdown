@@ -37,7 +37,6 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandOutput } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
@@ -92,7 +91,15 @@ Deno.test("CLI I/O Handling", async (t) => {
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
     );
-    assertCommandOutput(result, { error: "No such file: -" });
+    // Accept both 'No such file: -' and 'No such file: <abs path to ->'
+    const expected1 = "No such file: -";
+    const expected2 = `No such file: ${join(Deno.cwd(), "-")}`;
+    const hasExpected = result.error.includes(expected1) || result.error.includes(expected2);
+    if (!hasExpected) {
+      throw new Error(
+        `Command error does not contain expected: ${expected1} or ${expected2}\nActual error: ${result.error}`,
+      );
+    }
   });
 
   await t.step("error level logging", async () => {

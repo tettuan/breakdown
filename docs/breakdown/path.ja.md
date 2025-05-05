@@ -72,7 +72,6 @@ Schemaファイル例： `lib/breakdown/schema/to/issue/base.schema.md`
 ```yaml
 - fromFile が PATH階層を持つ時
 - fromFile が ファイル名のみを持つ時
-  - fromLayerType の指定がある時
 - fromFile が 空白の時（指定がないとき）
 ```
 
@@ -83,30 +82,16 @@ fromFileパラメータが最優先される。fromFileが存在する場合、�
 ```mermaid
 flowchart TD
     A[Start] --> B{fromFile exists?}
-    B -->|Yes| C{Has PATH hierarchy?}
-    C -->|Yes| D[Use fromFile as is]
-    C -->|No| E{fromLayerType exists?}
-    E -->|Yes| F[Use fromLayerType as dir<br/>fromFile as filename]
-    E -->|No| G[Use layerType as dir<br/>fromFile as filename]
-    B -->|No| H[Return empty path]
+    B -->|Yes| C[Use fromFile as is]
+    B -->|No| D[Return empty path]
 ```
 
 それぞれ、次の処理を行う。
 
-### fromFile が PATH階層を持つ時
+### fromFile が PATH階層を持つ時、またはファイル名のみを持つ時
 
-そのまま fromFile を利用する。他のパラメータは使われない。
-
-- dir & filename : {fromFile}
-
-### fromFile が ファイル名のみを持つ時
-
-- fromLayerType の指定がない時
-  - dir : {layerType}
-  - filename : {fromFile}
-- fromLayerType の指定がある時
-  - dir : {fromLayerType}
-  - filename : {fromFile}
+- fromFile で指定されたパスを、そのまま絶対・相対パスとして利用する
+- 追加のディレクトリ補完は一切行わない
 
 ### fromFile が 空白の時（あるいは指定がないとき）
 
