@@ -18,12 +18,12 @@ fi
 
 # --- 1. Remember system app_prompt.base_dir and schema dir from default config ---
 SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
-SYSTEM_SCHEMA_DIR="./.agent/breakdown/schema"
+SYSTEM_SCHEMA_DIR="./.agent/breakdown/schemas"
 
 # --- 2. Define the path for the user configuration ---
 USER_CONFIG_PATH="${CONFIG_DIR}/user.yml"
 USER_PROMPT_DIR="./.agent/breakdown/prompts/user"
-USER_SCHEMA_DIR="./.agent/breakdown/schema/user"
+USER_SCHEMA_DIR="./.agent/breakdown/schemas/user"
 
 # Create the user configuration file
 cat > "${USER_CONFIG_PATH}" << 'EOL'
@@ -32,7 +32,7 @@ working_dir: "./.agent/breakdown/examples"
 app_prompt:
   base_dir: "./.agent/breakdown/prompts/user"
 app_schema:
-  base_dir: "./.agent/breakdown/schema/user"
+  base_dir: "./.agent/breakdown/schemas/user"
 EOL
 
 # --- 3. Copy system files to user dir ---

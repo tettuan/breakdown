@@ -287,7 +287,7 @@ Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => 
   );
   logger.debug("missing base_dir directory result", { result });
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "Required directory does not exist");
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
 });
 
 /**

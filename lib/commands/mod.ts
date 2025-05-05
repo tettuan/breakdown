@@ -17,12 +17,12 @@ import { Workspace } from "../workspace/workspace.ts";
  *
  * @property success Indicates if the command was successful.
  * @property output The output message or result of the command.
- * @property error The error message, if the command failed.
+ * @property error The error message, if the command failed. Can be a string or an error object with type and message.
  */
 export interface CommandResult {
   success: boolean;
   output: string;
-  error: string;
+  error: string | { type: string; message: string } | null;
 }
 
 /**

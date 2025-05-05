@@ -104,6 +104,15 @@ function writeStderr(message: string): void {
   Deno.stderr.writeSync(new TextEncoder().encode(message + "\n"));
 }
 
+function formatError(error: string | { type: string; message: string } | null): string {
+  if (!error) return "";
+  if (typeof error === "string") return error;
+  if (typeof error === "object" && "type" in error && "message" in error) {
+    return `[${error.type}] ${error.message}`;
+  }
+  return String(error);
+}
+
 function handleTestError(message: string): void {
   writeStderr(message);
   writeStdout(HELP_TEXT);
@@ -255,7 +264,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
       if (convResult.success) {
         writeStdout(convResult.output);
       } else {
-        writeStderr(convResult.error);
+        writeStderr(formatError(convResult.error));
         Deno.exit(1);
       }
       return;
@@ -277,7 +286,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
       if (convResult.success) {
         writeStdout(convResult.output);
       } else {
-        writeStderr(convResult.error);
+        writeStderr(formatError(convResult.error));
         Deno.exit(1);
       }
       return;

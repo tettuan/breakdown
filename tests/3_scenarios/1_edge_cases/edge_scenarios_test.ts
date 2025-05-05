@@ -88,7 +88,7 @@ Deno.test("CLI error scenario when baseDir is unset", async () => {
   );
   logger.debug("CLI result (baseDir unset)", { result });
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "Required directory does not exist");
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
 });
 
 Deno.test("Recovery scenario when app.yml and actual directory mismatch", async () => {
@@ -109,7 +109,7 @@ Deno.test("Recovery scenario when app.yml and actual directory mismatch", async 
   );
   logger.debug("CLI result (dir mismatch, before recovery)", { result });
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "Required directory does not exist");
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
   await ensureDir(join(testDir, "not_exist_dir"));
   // テンプレートは作成しない
   await logDirStructure(testDir, "[dir mismatch] testDir構成(after recovery)");
@@ -120,7 +120,7 @@ Deno.test("Recovery scenario when app.yml and actual directory mismatch", async 
   );
   logger.debug("CLI result (dir mismatch, after recovery)", { result });
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "Required directory does not exist");
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
 });
 
 Deno.test("Precedence when user.yml and app.yml baseDir conflict", async () => {
@@ -293,6 +293,7 @@ Deno.test("E2E: baseDir is used for template lookup", async () => {
   });
   logger.debug("CLI result (E2E baseDir lookup)", { result });
   assertEquals(result.success, false);
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
 });
 
 Deno.test("Retry/recovery scenario on error", async () => {
@@ -336,4 +337,5 @@ Deno.test("Retry/recovery scenario on error", async () => {
   });
   logger.debug("CLI result (retry, second run)", { result });
   assertEquals(result.success, false);
+  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
 });

@@ -2,6 +2,16 @@ import { PromptVariablesFactory } from "../factory/PromptVariablesFactory.ts";
 import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
 
+/**
+ * Error types for prompt file generation
+ */
+export enum PromptFileErrorType {
+  InputFileNotFound = "InputFileNotFound",
+  PromptDirNotFound = "PromptDirNotFound",
+  PromptFileNotFound = "PromptFileNotFound",
+  Unknown = "Unknown",
+}
+
 export class PromptFileGenerator {
   validateInputFile(path: string): Promise<void> {
     return Deno.stat(path).then(() => {}, () => {
@@ -33,11 +43,16 @@ export class PromptFileGenerator {
     _force = false,
     options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
   ) {
-    // stdin ('-') 特別扱い: 先にエラー返す
     if (fromFile === "-") {
-      throw new Error("No such file: -");
+      return {
+        success: false,
+        output: "",
+        error: {
+          type: PromptFileErrorType.InputFileNotFound,
+          message: `Input file is stdin ('-'), which is not supported. [file: -]`,
+        },
+      };
     }
-    // 1. CLIパラメータを組み立ててPromptVariablesFactoryで一元解決
     const cliParams = {
       demonstrativeType:
         (options?.demonstrativeType || "to") as import("../types/mod.ts").DemonstrativeType,
@@ -50,7 +65,6 @@ export class PromptFileGenerator {
     };
     const factory = await PromptVariablesFactory.create(cliParams);
     factory.validateAll();
-    // 2. 必要なパスを取得
     const { promptFilePath, inputFilePath, outputFilePath } = factory.getAllParams();
     // 3. 入力ファイル存在チェック（先に判定）
     try {
@@ -60,10 +74,20 @@ export class PromptFileGenerator {
         return {
           success: false,
           output: "",
-          error: e.message,
+          error: {
+            type: PromptFileErrorType.InputFileNotFound,
+            message: `Input file not found: ${inputFilePath}`,
+          },
         };
       }
-      throw e;
+      return {
+        success: false,
+        output: "",
+        error: {
+          type: PromptFileErrorType.Unknown,
+          message: `Unknown error while checking input file: ${inputFilePath} - ${e}`,
+        },
+      };
     }
     // 4. テンプレートファイル存在チェック
     const promptDir = dirname(promptFilePath);
@@ -71,14 +95,20 @@ export class PromptFileGenerator {
       return {
         success: false,
         output: "",
-        error: "Required directory does not exist",
+        error: {
+          type: PromptFileErrorType.PromptDirNotFound,
+          message: `Prompt directory not found: ${promptDir}`,
+        },
       };
     }
     if (!existsSync(promptFilePath)) {
       return {
         success: false,
         output: "",
-        error: "template not found",
+        error: {
+          type: PromptFileErrorType.PromptFileNotFound,
+          message: `Prompt template file not found: ${promptFilePath}`,
+        },
       };
     }
     // 5. ロガーセットアップ
@@ -92,13 +122,16 @@ export class PromptFileGenerator {
       return {
         success: true,
         output: result.content,
-        error: "",
+        error: null,
       };
     } else {
       return {
         success: false,
         output: "",
-        error: result.content,
+        error: {
+          type: PromptFileErrorType.Unknown,
+          message: result.content,
+        },
       };
     }
   }

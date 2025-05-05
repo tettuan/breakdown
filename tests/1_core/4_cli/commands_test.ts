@@ -138,7 +138,7 @@ Deno.test("CLI Command Execution", async (t) => {
     );
     logger.debug("[DEBUG] Template not found test result", result);
     assertCommandOutput(result, {
-      error: "Required directory does not exist",
+      error: "[PromptDirNotFound] Prompt directory not found",
     });
   });
 
