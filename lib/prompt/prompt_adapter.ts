@@ -134,13 +134,4 @@ export class PromptAdapterImpl {
     const validator = new PromptAdapterValidator();
     return await validator.validateFile(inputFilePath, "Input file");
   }
-
-  /**
-   * Public method for test: validate output file only
-   */
-  public async validateOutputFile(): Promise<ValidationResult> {
-    const { outputFilePath } = this.factory.getAllParams();
-    const validator = new PromptAdapterValidator();
-    return await validator.validateFile(outputFilePath, "Output file");
-  }
 }
