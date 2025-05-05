@@ -1,6 +1,9 @@
 /**
  * External dependencies for the Breakdown tool.
- * This file centralizes all external dependencies and re-exports them.
+ *
+ * Centralizes and re-exports all required dependencies for the project.
+ *
+ * @module
  */
 
 // Standard Deno modules with aliasing
