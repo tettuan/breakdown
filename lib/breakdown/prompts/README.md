@@ -1,5 +1,27 @@
-## システム標準プロンプトについて
+# Prompt Directory Structure
 
-- このディレクトリは breakdown の「システム標準プロンプト」格納場所です。
-- CLIやローダーは、まず設定ファイル(app.yml)のapp_prompt.base_dirを参照し、未設定時のみ本ディレクトリをデフォルトとして利用します。
-- ユーザー独自のプロンプトを利用したい場合は、app.ymlでbase_dirを明示的に指定してください。 
+This directory contains prompt templates used by the breakdown tool.
+
+## Directory Structure
+
+```
+prompts/
+├── issue/
+│   ├── default.prompt    # Default prompt for issue breakdown
+│   └── custom.prompt     # Custom prompt examples
+├── task/
+│   ├── default.prompt    # Default prompt for task breakdown
+│   └── custom.prompt     # Custom prompt examples
+└── samples/
+    ├── issues/
+    │   └── sample_issue.md
+    └── tasks/
+        └── sample_task.json
+```
+
+## Usage
+
+1. Issue breakdown prompts are in `issue/` directory
+2. Task breakdown prompts are in `task/` directory
+3. Sample files are provided in `samples/` directory
+4. Custom prompts can be added to respective directories

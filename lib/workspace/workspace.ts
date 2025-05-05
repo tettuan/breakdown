@@ -319,7 +319,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     const schemaBase = settings.app_schema.base_dir.toString().trim();
     // prompts
     try {
-      const srcPrompts = join(projectRoot, "lib", "prompts");
+      const srcPrompts = join(projectRoot, "lib", "breakdown", "prompts");
       const destPrompts = join(breakdownDir, promptBase);
       await ensureDir(destPrompts);
       await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
@@ -328,7 +328,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     }
     // schemas
     try {
-      const srcSchemas = join(projectRoot, "lib", "schemas");
+      const srcSchemas = join(projectRoot, "lib", "breakdown", "schemas");
       const destSchemas = join(breakdownDir, schemaBase);
       await ensureDir(destSchemas);
       await this.copyDirRecursive(srcSchemas, destSchemas);

@@ -323,12 +323,12 @@ Deno.test({
     };
     await setupTestEnvironment(options);
 
-    // Assumes lib/prompts/to/project/f_project.md, lib/schemas/definitions.ts, etc. exist beforehand
+    // Assumes lib/breakdown/prompts/to/project/f_project.md, lib/breakdown/schemas/definitions.ts, etc. exist beforehand
     const workspace = new Workspace({ workingDir: options.workingDir });
     await workspace.initialize();
 
     // prompts: Check if a representative md file is copied
-    const srcPrompt = "lib/prompts/to/project/f_project.md";
+    const srcPrompt = "lib/breakdown/prompts/to/project/f_project.md";
     const destPrompt = join(
       options.workingDir,
       ".agent",
@@ -343,7 +343,7 @@ Deno.test({
     assertEquals(destPromptContent, srcPromptContent, "Prompt template is copied");
 
     // schemas: Check if a representative schema file is copied
-    const srcSchema = "lib/schemas/definitions.ts";
+    const srcSchema = "lib/breakdown/schemas/definitions.ts";
     const destSchema = join(options.workingDir, ".agent", "breakdown", "schemas", "definitions.ts");
     const srcSchemaContent = await Deno.readTextFile(srcSchema);
     const destSchemaContent = await Deno.readTextFile(destSchema);

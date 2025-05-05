@@ -1,16 +1,17 @@
-# {{input_text_file}}
+ストーリーからIssueへの変換プロンプト
 
-Content:
-{{input_text}}
+# Input
 
-Output to: {{destination_path}}
+{input_text}
 
-## Instructions
-1. Extract key information from input
-2. Create descriptive issue title
-3. Write clear description
-4. Define acceptance criteria
-5. List dependencies
-6. Set priority level
-7. Estimate effort required
-8. Document technical requirements 
+# Source
+
+{input_text_file}
+
+# Schema
+
+{schema_file}
+
+# Output
+
+{destination_path}

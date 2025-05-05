@@ -16,9 +16,18 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     exit 1
 fi
 
-# --- 1. Remember system app_prompt.base_dir and schema dir from default config ---
+# --- 1. Read and save current app_prompt.base_dir and app_schema.base_dir from app.yml ---
+APP_YML_PATH="${CONFIG_DIR}/app.yml"
 SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
 SYSTEM_SCHEMA_DIR="./.agent/breakdown/schemas"
+if [ -f "$APP_YML_PATH" ]; then
+    # Extract base_dir values using grep/sed (YAML, so simple extraction)
+    SYSTEM_PROMPT_DIR=$(grep 'app_prompt:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
+    SYSTEM_SCHEMA_DIR=$(grep 'app_schema:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
+    # Fallback if empty
+    [ -z "$SYSTEM_PROMPT_DIR" ] && SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
+    [ -z "$SYSTEM_SCHEMA_DIR" ] && SYSTEM_SCHEMA_DIR="./.agent/breakdown/schemas"
+fi
 
 # --- 2. Define the path for the user configuration ---
 USER_CONFIG_PATH="${CONFIG_DIR}/user.yml"
@@ -35,7 +44,7 @@ app_schema:
   base_dir: "./.agent/breakdown/schemas/user"
 EOL
 
-# --- 3. Copy system files to user dir ---
+# --- 3. Copy system files to user dir (after user.yml creation) ---
 # Copy prompts recursively
 mkdir -p "$USER_PROMPT_DIR"
 cp -r "$SYSTEM_PROMPT_DIR/"* "$USER_PROMPT_DIR/"
