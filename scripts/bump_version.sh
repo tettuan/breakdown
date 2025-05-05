@@ -100,6 +100,13 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
+# 2b. Git Push Check
+# -------------------
+if [[ -n "$(git log --branches --not --remotes)" ]]; then
+  echo "Error: You have local commits that have not been pushed to the remote repository. Please push them first."
+  exit 1
+fi
+
 # 3. Local CI Check
 # -----------------
 if ! bash scripts/local_ci.sh; then
