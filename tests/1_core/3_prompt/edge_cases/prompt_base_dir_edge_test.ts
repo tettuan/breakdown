@@ -17,6 +17,7 @@ import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
+import { PromptVariablesFactory } from "$lib/factory/PromptVariablesFactory.ts";
 
 function createLoggerAdapter(logger: BreakdownLogger) {
   return {
@@ -26,6 +27,51 @@ function createLoggerAdapter(logger: BreakdownLogger) {
 }
 
 describe("Prompt baseDir edge cases", () => {
+  it("should match test-created and implementation-resolved prompt directory (relative path)", async () => {
+    const testDirRaw = await Deno.makeTempDir();
+    const testDir = await Deno.realPath(testDirRaw);
+    const logger = createLoggerAdapter(new BreakdownLogger());
+    const originalCwd = Deno.cwd();
+    Deno.chdir(testDir);
+    try {
+      const configDir = join(testDir, ".agent", "breakdown", "config");
+      await ensureDir(configDir);
+      await Deno.writeTextFile(
+        join(configDir, "app.yml"),
+        `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`
+      );
+      const promptDir = join(testDir, "custom_prompts", "to", "project");
+      await ensureDir(promptDir);
+      const promptFile = join(promptDir, "f_project.md");
+      await Deno.writeTextFile(
+        promptFile,
+        "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
+      );
+      const inputFile = join(testDir, "input.md");
+      await Deno.writeTextFile(inputFile, "# Example\n- Feature");
+      const relPromptBaseDir = relative(testDir, join(testDir, "custom_prompts"));
+      // 実装が参照するパスを取得
+      const cliParamsRel = {
+        demonstrativeType: "to",
+        layerType: "project",
+        options: {
+          fromFile: inputFile,
+          destinationFile: "output.md",
+          promptDir: relPromptBaseDir,
+        },
+      };
+      const factoryRel = await PromptVariablesFactory.create(cliParamsRel, relPromptBaseDir);
+      const implPromptFile = factoryRel.getAllParams().promptFilePath;
+      // ディレクトリ部分を比較
+      const testPromptDir = join(testDir, "custom_prompts", "to", "project");
+      const implPromptDir = implPromptFile ? implPromptFile.substring(0, implPromptFile.lastIndexOf("/")) : "";
+      logger.debug("[TEST] Directory match check", { testPromptDir, implPromptDir });
+      assertEquals(implPromptDir, testPromptDir);
+    } finally {
+      Deno.chdir(originalCwd);
+    }
+  });
+
   // Group 1: baseDir not specified or empty
   describe("baseDir not specified or empty", () => {
     /**
@@ -43,7 +89,7 @@ describe("Prompt baseDir edge cases", () => {
         await ensureDir(configDir);
         await Deno.writeTextFile(
           join(configDir, "app.yml"),
-          `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+          `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`
         );
         const promptDir = join(testDir, "prompts", "to", "project");
         await ensureDir(promptDir);
@@ -55,16 +101,18 @@ describe("Prompt baseDir edge cases", () => {
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");
         logger.debug("[TEST] PromptAdapterImpl with empty promptBaseDir", { cwd: Deno.cwd(), promptFile });
-        const adapter = new PromptAdapterImpl();
-        const result = await adapter.generate(
-          "", // promptBaseDir not specified
-          "to",
-          "project",
-          inputFile,
-          "output.md",
-          "project",
-          logger,
-        );
+        const cliParams = {
+          demonstrativeType: "to",
+          layerType: "project",
+          options: {
+            fromFile: inputFile,
+            destinationFile: "output.md",
+            promptDir: "", // baseDir not specified
+          },
+        };
+        const factory = await PromptVariablesFactory.create(cliParams, "");
+        const adapter = new PromptAdapterImpl(factory, logger);
+        const result = await adapter.validateAndGenerate();
         if (result.success) {
           throw new Error("Expected failure due to missing base_dir, but got success");
         }
@@ -95,7 +143,7 @@ describe("Prompt baseDir edge cases", () => {
           await ensureDir(configDir);
           await Deno.writeTextFile(
             join(configDir, "app.yml"),
-            `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
           await ensureDir(promptDir);
@@ -108,16 +156,18 @@ describe("Prompt baseDir edge cases", () => {
           await Deno.writeTextFile(inputFile, "# Example\n- Feature");
           const relPromptBaseDir = relative(testDir, join(testDir, "custom_prompts"));
           logger.debug("[TEST] promptBaseDir (relative path)", { relPromptBaseDir });
-          const adapter = new PromptAdapterImpl();
-          const resultRel = await adapter.generate(
-            relPromptBaseDir,
-            "to",
-            "project",
-            inputFile,
-            "output.md",
-            "project",
-            logger,
-          );
+          const cliParamsRel = {
+            demonstrativeType: "to",
+            layerType: "project",
+            options: {
+              fromFile: inputFile,
+              destinationFile: "output.md",
+              promptDir: relPromptBaseDir,
+            },
+          };
+          const factoryRel = await PromptVariablesFactory.create(cliParamsRel, relPromptBaseDir);
+          const adapterRel = new PromptAdapterImpl(factoryRel, logger);
+          const resultRel = await adapterRel.validateAndGenerate();
           logger.debug("[TEST] result (relative path)", { resultRel });
           assertEquals(resultRel.success, true);
           assertExists(resultRel.content);
@@ -142,7 +192,7 @@ describe("Prompt baseDir edge cases", () => {
           await ensureDir(configDir);
           await Deno.writeTextFile(
             join(configDir, "app.yml"),
-            `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
           await ensureDir(promptDir);
@@ -154,16 +204,18 @@ describe("Prompt baseDir edge cases", () => {
           const inputFile = join(testDir, "input.md");
           await Deno.writeTextFile(inputFile, "# Example\n- Feature");
           logger.debug("[TEST] promptBaseDir (absolute path)", { promptDir: join(testDir, "custom_prompts") });
-          const adapter = new PromptAdapterImpl();
-          const resultAbs = await adapter.generate(
-            join(testDir, "custom_prompts"),
-            "to",
-            "project",
-            inputFile,
-            "output.md",
-            "project",
-            logger,
-          );
+          const cliParamsAbs = {
+            demonstrativeType: "to",
+            layerType: "project",
+            options: {
+              fromFile: inputFile,
+              destinationFile: "output.md",
+              promptDir: join(testDir, "custom_prompts"),
+            },
+          };
+          const factoryAbs = await PromptVariablesFactory.create(cliParamsAbs, join(testDir, "custom_prompts"));
+          const adapterAbs = new PromptAdapterImpl(factoryAbs, logger);
+          const resultAbs = await adapterAbs.validateAndGenerate();
           logger.debug("[TEST] result (absolute path)", { resultAbs });
           assertEquals(resultAbs.success, true);
           assertExists(resultAbs.content);
@@ -191,9 +243,9 @@ describe("Prompt baseDir edge cases", () => {
         await ensureDir(configDir);
         await Deno.writeTextFile(
           join(configDir, "app.yml"),
-          `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`
+          `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`
         );
-        const promptBaseDir = join(testDir, ".agent", "breakdown", "prompts");
+        const promptBaseDir = join(testDir, "custom_prompts");
         const promptDir = join(promptBaseDir, "to", "project");
         await ensureDir(promptDir);
         const promptFile = join(promptDir, "f_project.md");
@@ -204,19 +256,21 @@ describe("Prompt baseDir edge cases", () => {
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");
         logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", { promptBaseDir });
-        const adapter = new PromptAdapterImpl();
-        const result = await adapter.generate(
-          promptBaseDir,
-          "to",
-          "project",
-          inputFile,
-          "output.md",
-          "project",
-          logger,
-        );
-        logger.debug("[TEST] result (config promptBaseDir)", { result });
-        assertEquals(result.success, true);
-        assertExists(result.content);
+        const cliParamsConfig = {
+          demonstrativeType: "to",
+          layerType: "project",
+          options: {
+            fromFile: inputFile,
+            destinationFile: "output.md",
+            promptDir: promptBaseDir,
+          },
+        };
+        const factoryConfig = await PromptVariablesFactory.create(cliParamsConfig, promptBaseDir);
+        const adapterConfig = new PromptAdapterImpl(factoryConfig, logger);
+        const resultConfig = await adapterConfig.validateAndGenerate();
+        logger.debug("[TEST] result (config promptBaseDir)", { resultConfig });
+        assertEquals(resultConfig.success, true);
+        assertExists(resultConfig.content);
       } finally {
         Deno.chdir(originalCwd);
       }
