@@ -8,6 +8,7 @@
  */
 
 import type { CommandValidatorStrategy } from "./base_validator.ts";
+import { resolve } from "@std/path";
 
 /**
  * Enum representing each stage of the double param validation flow.
@@ -114,16 +115,22 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
         values,
       };
     }
-    // --fromまたは--inputまたはSTDINのいずれかは必須
-    step = DoubleParamValidationStep.CHECK_STDIN;
-    if (!fromStr && !inputStr && !stdinAvailable) {
-      return {
-        success: false,
-        step,
-        errorCode: DoubleParamValidationErrorCode.MISSING_INPUT,
-        errorMessage: "Invalid input parameters: missing --from, --input, or STDIN",
-        values,
-      };
+    // --from指定時はファイル存在チェック（destination必須チェックより先）
+    if (fromStr) {
+      // 絶対パス化（CLI本体と同じ挙動に合わせる）
+      const absFromPath = fromStr.startsWith("/") ? fromStr : resolve(Deno.cwd(), fromStr);
+      values.from = absFromPath;
+      try {
+        Deno.statSync(absFromPath);
+      } catch (_e) {
+        return {
+          success: false,
+          step,
+          errorCode: DoubleParamValidationErrorCode.FILE_NOT_FOUND,
+          errorMessage: `No such file: ${absFromPath}`,
+          values,
+        };
+      }
     }
     // --from指定時は--destination必須
     step = DoubleParamValidationStep.CHECK_DESTINATION;
@@ -133,6 +140,17 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
         step,
         errorCode: DoubleParamValidationErrorCode.MISSING_DESTINATION,
         errorMessage: "Invalid input parameters: missing --destination for --from",
+        values,
+      };
+    }
+    // --fromまたは--inputまたはSTDINのいずれかは必須
+    step = DoubleParamValidationStep.CHECK_STDIN;
+    if (!fromStr && !inputStr && !stdinAvailable) {
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.MISSING_INPUT,
+        errorMessage: "Invalid input parameters: missing --from, --input, or STDIN",
         values,
       };
     }

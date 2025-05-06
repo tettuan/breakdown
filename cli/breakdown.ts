@@ -13,6 +13,7 @@ import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { CliError } from "../lib/cli/errors.ts";
 import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
+import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
 
 const HELP_TEXT = `
 Breakdown - AI Development Instruction Tool
@@ -85,6 +86,21 @@ export async function runBreakdown(args: string[]): Promise<void> {
     Deno.exit(1);
   }
 
+  // バリデーション一元化: CommandOptionsValidator
+  const validator = new CommandOptionsValidator();
+  const parsedOptions = validateArgs(args);
+  const validationResult = validator.validate({
+    ...result,
+    options: parsedOptions,
+    stdinAvailable: isStdinAvailable(),
+  });
+  if (!validationResult.success) {
+    writeStderr(validationResult.errorMessage ?? "Invalid CLI parameters");
+    Deno.exit(1);
+  }
+  const values = validationResult.values;
+
+  // ここから下はバリデーション済みのみで分岐
   // Handle help/version flags
   if (result.type === "no-params") {
     if (result.help) {
@@ -114,64 +130,34 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
   // Double command (e.g., to, summary, defect)
   if (result.type === "double") {
-    // Validate CLI arguments using validateArgs (from lib/cli/args.ts)
-    let parsedArgs: CommandOptions;
-    try {
-      parsedArgs = validateArgs(args.slice(1)); // skip the command itself (e.g., 'to')
-    } catch (err) {
-      if (err instanceof CliError) {
-        writeStderr(`[${err.code}] ${err.message}`);
-      } else if (err instanceof Error) {
-        writeStderr(err.message);
-      } else {
-        writeStderr("Unknown argument error");
-      }
-      Deno.exit(1);
-    }
-
     // --- STDIN/ファイル入力の取得 ---
     let inputText = "";
     let inputTextFile = "";
     let hasInput = false;
 
     // 1. -f(--from)があればinput_text_fileにセット（ファイル存在チェック優先）
-    if (parsedArgs.from) {
-      const absFromPath = parsedArgs.from.startsWith("/")
-        ? parsedArgs.from
-        : resolve(Deno.cwd(), parsedArgs.from);
-      try {
-        inputTextFile = await Deno.readTextFile(absFromPath);
-        hasInput = true;
-      } catch (e) {
-        writeStderr(`No such file: ${absFromPath}`);
-        Deno.exit(1);
-      }
+    if (values.from) {
+      inputTextFile = await Deno.readTextFile(values.from);
+      hasInput = true;
     }
     // 2. STDINがあればinput_textにセット（-fが無い場合のみ）
     if (!hasInput && isStdinAvailable()) {
       inputText = await readStdin({ allowEmpty: false });
       hasInput = true;
     }
-    // 3. どちらも無い場合はエラー
-    if (!hasInput) {
-      writeStderr("No input provided via stdin or -f/--from option");
-      Deno.exit(1);
-    }
-
     // --- Factory/PromptManagerに渡す ---
-    // generateWithPromptのoptionsにinputText, inputTextFileを追加
     const extraVars = { input_text: inputText, input_text_file: inputTextFile };
     // call generateWithPrompt for 'to' command
-    if (result.demonstrativeType === "to" && parsedArgs.destination) {
+    if (result.demonstrativeType === "to" && values.destination) {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from || "", // fromFile
-        parsedArgs.destination,
-        result.layerType || "project",
+        values.from || "", // fromFile
+        values.destination,
+        result.layerType!,
         false,
         {
-          adaptation: parsedArgs.adaptation,
-          promptDir: parsedArgs.promptDir,
+          adaptation: values.adaptation,
+          promptDir: values.promptDir,
           demonstrativeType: result.demonstrativeType,
           ...extraVars,
         },
@@ -185,16 +171,16 @@ export async function runBreakdown(args: string[]): Promise<void> {
       return;
     }
     // call generateWithPrompt for 'summary' command
-    if (result.demonstrativeType === "summary" && parsedArgs.destination) {
+    if (result.demonstrativeType === "summary" && values.destination) {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from || "",
-        parsedArgs.destination,
-        result.layerType || "project",
+        values.from || "",
+        values.destination,
+        result.layerType!,
         false,
         {
-          adaptation: parsedArgs.adaptation,
-          promptDir: parsedArgs.promptDir,
+          adaptation: values.adaptation,
+          promptDir: values.promptDir,
           demonstrativeType: result.demonstrativeType,
           ...extraVars,
         },

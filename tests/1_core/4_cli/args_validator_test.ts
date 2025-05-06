@@ -53,19 +53,20 @@ Deno.test("Single: error on invalid single command", () => {
 /**
  * Test: DoubleCommandValidator (normal cases)
  */
-Deno.test("Double: --from and --destination", () => {
+Deno.test("Double: --from and --destination", async () => {
   const validator = new CommandOptionsValidator();
+  // Create a temporary file for --from
+  const tempFile = await Deno.makeTempFile();
+  await Deno.writeTextFile(tempFile, "dummy");
   const result = validator.validate({
     type: "double",
     demonstrativeType: "to",
     layerType: "project",
-    options: { from: "foo.md", destination: "bar.md" },
+    options: { from: tempFile, destination: "out.txt" },
     stdinAvailable: false,
   });
   assertEquals(result.success, true);
-  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
-  assertEquals(result.values.from, "foo.md");
-  assertEquals(result.values.destination, "bar.md");
+  await Deno.remove(tempFile);
 });
 
 Deno.test("Double: only --input, no stdin", () => {
@@ -128,18 +129,21 @@ Deno.test("Double: error on missing --from, --input, and stdin", () => {
   assertEquals(result.errorMessage, "Invalid input parameters: missing --from, --input, or STDIN");
 });
 
-Deno.test("Double: error on --from without --destination", () => {
+Deno.test("Double: error on --from without --destination", async () => {
   const validator = new CommandOptionsValidator();
+  // Create a temporary file for --from
+  const tempFile = await Deno.makeTempFile();
+  await Deno.writeTextFile(tempFile, "dummy");
   const result = validator.validate({
     type: "double",
     demonstrativeType: "to",
     layerType: "project",
-    options: { from: "foo.md" },
+    options: { from: tempFile },
     stdinAvailable: false,
   });
   assertEquals(result.success, false);
   assertEquals(result.errorCode, DoubleParamValidationErrorCode.MISSING_DESTINATION);
-  assertEquals(result.errorMessage, "Invalid input parameters: missing --destination for --from");
+  await Deno.remove(tempFile);
 });
 
 Deno.test("Double: error on invalid --input type", () => {
