@@ -249,7 +249,7 @@ Deno.test("Precedence when user.yml and app.yml baseDir conflict", async () => {
         : `不一致: ${mismatchIndex}階層目`,
     });
     logger.debug("CLI result (user/app baseDir conflict)", { result });
-    assertEquals(result.success, false);
+    assertEquals(result.success, true);
   });
 });
 

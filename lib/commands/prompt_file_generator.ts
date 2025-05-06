@@ -19,10 +19,6 @@ export class PromptFileGenerator {
     });
   }
 
-  async writeOutputFile(path: string, content: string) {
-    await Deno.writeTextFile(path, content);
-  }
-
   /**
    * メインAPI: プロンプトテンプレートを使ってファイルを生成
    */
@@ -55,7 +51,7 @@ export class PromptFileGenerator {
     };
     const factory = await PromptVariablesFactory.create(cliParams);
     factory.validateAll();
-    const { promptFilePath, inputFilePath, outputFilePath } = factory.getAllParams();
+    const { promptFilePath, inputFilePath } = factory.getAllParams();
     // 3. 入力ファイル存在チェック（先に判定）
     try {
       await this.validateInputFile(inputFilePath);
@@ -106,7 +102,6 @@ export class PromptFileGenerator {
     const adapter = new PromptAdapterImpl(factory);
     const result = await adapter.validateAndGenerate();
     if (result.success) {
-      await this.writeOutputFile(outputFilePath, result.content);
       return {
         success: true,
         output: result.content,

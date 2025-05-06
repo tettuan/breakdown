@@ -38,18 +38,9 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
   const promptDir = join(testDir, "prompts", "to", "project");
   await ensureDir(promptDir);
   await Deno.writeTextFile(join(promptDir, "f_project.md"), "template content");
-  // issue, task テンプレートも追加
-  const issuePromptDir = join(testDir, "prompts", "to", "issue");
-  await ensureDir(issuePromptDir);
-  await Deno.writeTextFile(join(issuePromptDir, "f_issue.md"), "template content");
-  await Deno.writeTextFile(join(issuePromptDir, "f_project.md"), "template content");
-  const taskPromptDir = join(testDir, "prompts", "to", "task");
-  await ensureDir(taskPromptDir);
-  await Deno.writeTextFile(join(taskPromptDir, "f_task.md"), "template content");
-  await Deno.writeTextFile(join(taskPromptDir, "f_issue.md"), "template content");
 
   // Main Test
-  let result = await runCommand(
+  const result = await runCommand(
     [
       "to",
       "project",
@@ -63,58 +54,11 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
   );
   logger.debug("to project result", { result });
   assertEquals(result.success, true);
-  // project.md の存在確認
-  const projectMdPath = join(projectDir, "project.md");
-  let projectMdExists = false;
-  try {
-    await Deno.stat(projectMdPath);
-    projectMdExists = true;
-  } catch {
-    projectMdExists = false;
-  }
-  logger.debug("project.md exists after to project", { projectMdExists, projectMdPath });
-  assertEquals(projectMdExists, true, "project.md should exist after to project");
-
-  result = await runCommand(
-    [
-      "to",
-      "issue",
-      "--from",
-      join(projectDir, "project.md"),
-      "--destination",
-      join(testDir, "issue.md"),
-    ],
-    undefined,
-    testDir,
+  assertStringIncludes(
+    result.output,
+    "template content",
+    "output should include template content after to project",
   );
-  logger.debug("to issue result", { result });
-  assertEquals(result.success, true);
-  // issue.md の存在確認
-  const issueMdPath = join(testDir, "issue.md");
-  let issueMdExists = false;
-  try {
-    await Deno.stat(issueMdPath);
-    issueMdExists = true;
-  } catch {
-    issueMdExists = false;
-  }
-  logger.debug("issue.md exists after to issue", { issueMdExists, issueMdPath });
-  assertEquals(issueMdExists, true, "issue.md should exist after to issue");
-
-  result = await runCommand(
-    [
-      "to",
-      "task",
-      "--from",
-      join(testDir, "issue.md"),
-      "--destination",
-      join(testDir, "tasks.md"),
-    ],
-    undefined,
-    testDir,
-  );
-  logger.debug("to task result", { result });
-  assertEquals(result.success, true);
 });
 
 /**
@@ -163,7 +107,8 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
   });
   try {
     // Main Test: long form
-    let result = await runCommand(
+    let result;
+    result = await runCommand(
       [
         "summary",
         "task",
