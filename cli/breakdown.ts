@@ -11,6 +11,8 @@ import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { CliError } from "../lib/cli/errors.ts";
+import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
+import { resolve } from "@std/path";
 
 const HELP_TEXT = `
 Breakdown - AI Development Instruction Tool
@@ -126,11 +128,44 @@ export async function runBreakdown(args: string[]): Promise<void> {
       }
       Deno.exit(1);
     }
+
+    // --- STDIN/ファイル入力の取得 ---
+    let inputText = "";
+    let inputTextFile = "";
+    let hasInput = false;
+
+    // 1. -f(--from)があればinput_text_fileにセット（ファイル存在チェック優先）
+    if (parsedArgs.from) {
+      const absFromPath = parsedArgs.from.startsWith("/")
+        ? parsedArgs.from
+        : resolve(Deno.cwd(), parsedArgs.from);
+      try {
+        inputTextFile = await Deno.readTextFile(absFromPath);
+        hasInput = true;
+      } catch (e) {
+        writeStderr(`No such file: ${absFromPath}`);
+        Deno.exit(1);
+      }
+    }
+    // 2. STDINがあればinput_textにセット（-fが無い場合のみ）
+    if (!hasInput && isStdinAvailable()) {
+      inputText = await readStdin({ allowEmpty: false });
+      hasInput = true;
+    }
+    // 3. どちらも無い場合はエラー
+    if (!hasInput) {
+      writeStderr("No input provided via stdin or -f/--from option");
+      Deno.exit(1);
+    }
+
+    // --- Factory/PromptManagerに渡す ---
+    // generateWithPromptのoptionsにinputText, inputTextFileを追加
+    const extraVars = { input_text: inputText, input_text_file: inputTextFile };
     // call generateWithPrompt for 'to' command
-    if (result.demonstrativeType === "to" && parsedArgs.from && parsedArgs.destination) {
+    if (result.demonstrativeType === "to" && parsedArgs.destination) {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from,
+        parsedArgs.from || "", // fromFile
         parsedArgs.destination,
         result.layerType || "project",
         false,
@@ -138,6 +173,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
           adaptation: parsedArgs.adaptation,
           promptDir: parsedArgs.promptDir,
           demonstrativeType: result.demonstrativeType,
+          ...extraVars,
         },
       );
       if (convResult.success) {
@@ -149,10 +185,10 @@ export async function runBreakdown(args: string[]): Promise<void> {
       return;
     }
     // call generateWithPrompt for 'summary' command
-    if (result.demonstrativeType === "summary" && parsedArgs.from && parsedArgs.destination) {
+    if (result.demonstrativeType === "summary" && parsedArgs.destination) {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from,
+        parsedArgs.from || "",
         parsedArgs.destination,
         result.layerType || "project",
         false,
@@ -160,6 +196,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
           adaptation: parsedArgs.adaptation,
           promptDir: parsedArgs.promptDir,
           demonstrativeType: result.demonstrativeType,
+          ...extraVars,
         },
       );
       if (convResult.success) {

@@ -2,6 +2,9 @@
  * Command Line Argument Parser
  *
  * Handles parsing and validation of command line arguments for the Breakdown CLI.
+ *
+ * The specification and validation rules for this file are described in docs/breakdown/options.ja.md.
+ *
  * Validates option combinations and enforces rules for input/output options.
  *
  * @module
@@ -45,8 +48,6 @@ export interface CommandOptions {
   workingDir?: string;
   /** Suppress output if true. */
   quiet?: boolean;
-  /** Enable debug mode if true. */
-  debug: boolean;
   /** Demonstrative type for the CLI. */
   demonstrative?: string;
   /** Layer type for the CLI. */
@@ -65,8 +66,6 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--from", "-f"],
   ["--destination", "-o"],
   ["--input", "-i"],
-  ["--debug", "-d"],
-  ["--no-debug", "-n"],
   ["--adaptation", "-a"],
   ["--prompt-dir", ""],
 ]);
@@ -93,7 +92,6 @@ export function parseArgs(args: string[]): CommandOptions {
     from: undefined,
     destination: undefined,
     input: undefined,
-    debug: false,
   };
 
   const seenOptions = new Set<string>();
@@ -147,12 +145,6 @@ export function parseArgs(args: string[]): CommandOptions {
         options.input = inputType;
         break;
       }
-      case "--debug":
-        options.debug = true;
-        break;
-      case "--no-debug":
-        options.debug = false;
-        break;
       case "--adaptation":
       case "-a":
         if (options.adaptation) {
@@ -203,9 +195,6 @@ function getCanonicalOptionName(option: string): string | undefined {
     "-o": "--destination",
     "--input": "--input",
     "-i": "--input",
-    "--debug": "--debug",
-    "-d": "--debug",
-    "--no-debug": "--no-debug",
     "--adaptation": "--adaptation",
     "-a": "--adaptation",
     "--prompt-dir": "--prompt-dir",
@@ -252,9 +241,7 @@ export function getOptionValue(args: string[], option: string): string | undefin
  * @throws {CliError} If validation fails.
  */
 export function validateCommandOptions(args: string[]): CommandOptions {
-  const options: CommandOptions = {
-    debug: false,
-  };
+  const options: CommandOptions = {};
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -309,12 +296,6 @@ export function validateCommandOptions(args: string[]): CommandOptions {
         }
         options.input = value;
         i++;
-        break;
-      case "--debug":
-        options.debug = true;
-        break;
-      case "--no-debug":
-        options.debug = false;
         break;
       case "--adaptation":
       case "-a":

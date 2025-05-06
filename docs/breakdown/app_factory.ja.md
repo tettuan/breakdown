@@ -108,3 +108,39 @@ console.log(factory.inputFilePath);
 
 - 入力オプション（CLIオプション）の詳細な説明は [breakdownparams リポジトリ](https://github.com/tettuan/breakdownparams) を参照してください。
 - 予約変数の詳細な説明は [breakdownprompt の variables.ja.md](https://github.com/tettuan/breakdownprompt/blob/main/docs/variables.ja.md) を参照してください。
+
+# STDIN・-f（--from）・input_textの仕様
+
+## 概要
+- Breakdown CLIでは、標準入力（STDIN）と-f（--from）オプションは**独立して動作**します。
+- それぞれ、異なる予約変数（`input_text`, `input_text_file`）のトリガーとなります。
+
+## 仕様詳細
+- **STDINがある場合**
+  - STDINの内容は `variables.input_text` にセットされます。
+  - -f（--from）は**オプショナル**で、指定してもしなくてもよい。
+  - STDINが存在しない場合、`input_text` は空文字列または未定義となります。
+- **-f（--from）を指定した場合**
+  - 指定したファイルの内容は `variables.input_text_file` にセットされます。
+  - STDINの有無に関わらず、`input_text_file` の値は独立して決まります。
+- **両方指定した場合**
+  - `input_text` にはSTDIN、`input_text_file` にはファイル内容がセットされます。
+  - どちらもテンプレート内で `{input_text}` `{input_text_file}` として利用可能です。
+- **相互干渉なし**
+  - STDINと-fは互いに干渉せず、どちらか一方・両方、いずれのケースも許容されます。
+- **両方指定しなかった場合**
+  どちらも無しは許容されません。いずれかは必須です。入力がいずれもない場合はエラーです。
+
+## テンプレート変数への反映
+- プロンプトテンプレート内で `{input_text}` `{input_text_file}` などの変数を使うことで、
+  CLIから渡されたSTDINやファイル内容を柔軟に利用できます。
+- 例：
+  ```md
+  # Project
+  {input_text}
+  {input_text_file}
+  ```
+- これにより、パイプやリダイレクト、ファイル指定など多様な入力方法に対応できます。
+
+## 参考
+- 仕様の根拠・詳細は `docs/breakdown/cli.ja.md` および `docs/breakdown/path.ja.md` も参照してください。
