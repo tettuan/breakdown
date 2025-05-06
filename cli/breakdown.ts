@@ -1,3 +1,11 @@
+/**
+ * Breakdown CLI Entrypoint
+ *
+ * This module provides the command-line interface for the Breakdown tool. It parses arguments, dispatches commands,
+ * and handles user interaction for initializing workspaces, converting layers, generating summaries, and defect reports.
+ *
+ * @module
+ */
 import { type OptionParams } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
@@ -26,21 +34,6 @@ Options:
   -o, --destination <file>  Output file path
   -i, --input <type>    Input layer type (project|issue|task)
 `;
-
-/**
- * Extended options for Breakdown CLI commands.
- *
- * This interface extends OptionParams to include additional CLI-specific options
- * such as file paths, help/version flags, and debug mode.
- */
-export interface ExtendedOptionParams extends OptionParams {
-  fromFile?: string;
-  destinationFile?: string;
-  inputLayerType?: string;
-  help?: boolean;
-  version?: boolean;
-  noDebug?: boolean;
-}
 
 function writeStdout(message: string): void {
   Deno.stdout.writeSync(new TextEncoder().encode(message + "\n"));
