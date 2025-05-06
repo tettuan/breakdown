@@ -1,6 +1,7 @@
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
+import type { CommandResult } from "./mod.ts";
 
 /**
  * Error types for prompt file generation.
@@ -44,7 +45,7 @@ export class PromptFileGenerator {
     format: string,
     _force = false,
     options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
-  ): Promise<{ success: boolean; output: string; error: unknown }> {
+  ): Promise<CommandResult> {
     if (fromFile === "-") {
       return {
         success: false,
@@ -129,7 +130,7 @@ export class PromptFileGenerator {
         output: "",
         error: {
           type: PromptFileErrorType.Unknown,
-          message: result.content,
+          message: String(result.content),
         },
       };
     }
