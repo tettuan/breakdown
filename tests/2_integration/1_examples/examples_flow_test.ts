@@ -53,6 +53,7 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
     testDir,
   );
   logger.debug("to project result", { result });
+  // Validation: should succeed
   assertEquals(result.success, true);
   assertStringIncludes(
     result.output,
@@ -188,6 +189,7 @@ Deno.test("E2E: error case - missing input file", async () => {
     testDir,
   );
   logger.debug("missing input file result", { result });
+  // Validation: should fail
   assertEquals(result.success, false);
   assertStringIncludes(result.error, "No such file");
 });

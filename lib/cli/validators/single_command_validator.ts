@@ -7,24 +7,36 @@
  * See docs/breakdown/options.ja.md for details.
  */
 
-import type { CommandOptions } from "../args.ts";
 import type { CommandValidatorStrategy } from "./base_validator.ts";
-import { CliError, CliErrorCode } from "../errors.ts";
+import {
+  DoubleParamValidationErrorCode,
+  DoubleParamValidationResult,
+  DoubleParamValidationStep,
+} from "./double_command_validator.ts";
 
 export class SingleCommandValidator implements CommandValidatorStrategy {
-  validate(params: unknown): CommandOptions {
-    // params: { command: string }
+  validate(params: unknown): DoubleParamValidationResult {
+    const step = DoubleParamValidationStep.START;
+    const values: DoubleParamValidationResult["values"] = {};
     if (
       params &&
       typeof params === "object" &&
       "command" in params &&
       (params as { command?: string }).command === "init"
     ) {
-      return { demonstrative: "init" };
+      values.command = "init";
+      return {
+        success: true,
+        step: DoubleParamValidationStep.COMPLETE,
+        values,
+      };
     }
-    throw new CliError(
-      CliErrorCode.INVALID_OPTION,
-      "Invalid single command. Only 'init' is supported.",
-    );
+    return {
+      success: false,
+      step,
+      errorCode: DoubleParamValidationErrorCode.INVALID_INPUT_TYPE,
+      errorMessage: "Invalid single command. Only 'init' is supported.",
+      values,
+    };
   }
 }

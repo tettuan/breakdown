@@ -7,23 +7,85 @@
  * @param params: { demonstrativeType, layerType, options: {...}, stdinAvailable?: boolean }
  */
 
-import type { CommandOptions } from "../args.ts";
 import type { CommandValidatorStrategy } from "./base_validator.ts";
-import { CliError, CliErrorCode } from "../errors.ts";
+
+/**
+ * Enum representing each stage of the double param validation flow.
+ * Used to indicate how far validation progressed and where errors occurred.
+ */
+export enum DoubleParamValidationStep {
+  START = "START",
+  CHECK_FROM = "CHECK_FROM",
+  CHECK_STDIN = "CHECK_STDIN",
+  CHECK_INPUT = "CHECK_INPUT",
+  CHECK_DESTINATION = "CHECK_DESTINATION",
+  COMPLETE = "COMPLETE",
+}
+
+/**
+ * Enum for error codes corresponding to specific error points in the double param validation flowchart.
+ * Enables mapping errors to validation steps for precise diagnostics.
+ */
+export enum DoubleParamValidationErrorCode {
+  MISSING_INPUT = "MISSING_INPUT", // No --from and no stdin
+  FILE_NOT_FOUND = "FILE_NOT_FOUND", // --from file does not exist
+  INVALID_INPUT_TYPE = "INVALID_INPUT_TYPE", // --input value invalid
+  CONFLICTING_OPTIONS = "CONFLICTING_OPTIONS", // --from and --input both specified
+  MISSING_DESTINATION = "MISSING_DESTINATION", // --from specified but no --destination
+  UNKNOWN = "UNKNOWN", // fallback for unexpected errors
+}
+
+/**
+ * Result object for double param validation.
+ * Indicates success/failure, validation step, error details, and all relevant parameter values.
+ * Used for both error reporting and downstream processing.
+ */
+export interface DoubleParamValidationResult {
+  /** Whether validation succeeded (true) or failed (false) */
+  success: boolean;
+  /** The last validation step reached (see DoubleParamValidationStep) */
+  step: DoubleParamValidationStep;
+  /** Error code if validation failed (see DoubleParamValidationErrorCode) */
+  errorCode?: DoubleParamValidationErrorCode;
+  /** Human-readable error message if validation failed */
+  errorMessage?: string;
+  /** All relevant parameter values (from, input, destination, etc.) */
+  values: {
+    from?: string;
+    stdinAvailable?: boolean;
+    input?: string;
+    destination?: string;
+    adaptation?: string;
+    promptDir?: string;
+    command?: string;
+    // Add other relevant fields as needed
+  };
+}
 
 export class DoubleCommandValidator implements CommandValidatorStrategy {
-  validate(params: unknown): CommandOptions {
+  validate(params: unknown): DoubleParamValidationResult {
+    let step = DoubleParamValidationStep.START;
+    const values: DoubleParamValidationResult["values"] = {};
+
     // params: { demonstrativeType, layerType, options: { from, destination, input, adaptation, promptDir }, stdinAvailable? }
     if (
       !params || typeof params !== "object" || !("demonstrativeType" in params) ||
       !("layerType" in params)
     ) {
-      throw new CliError(
-        CliErrorCode.INVALID_OPTION,
-        "Invalid double command parameters.",
-      );
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.UNKNOWN,
+        errorMessage: "Invalid double command parameters.",
+        values,
+      };
     }
-    const { demonstrativeType, layerType, options = {}, stdinAvailable } = params as Record<
+    const {
+      demonstrativeType: _demonstrativeType,
+      layerType: _layerType,
+      options = {},
+      stdinAvailable,
+    } = params as Record<
       string,
       unknown
     >;
@@ -34,43 +96,63 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
     const adaptationStr = adaptation as string | undefined;
     const promptDirStr = promptDir as string | undefined;
 
+    values.from = fromStr;
+    values.stdinAvailable = !!stdinAvailable;
+    values.input = inputStr;
+    values.destination = destinationStr;
+    values.adaptation = adaptationStr;
+    values.promptDir = promptDirStr;
+
     // --fromと--inputは同時指定不可
+    step = DoubleParamValidationStep.CHECK_FROM;
     if (fromStr && inputStr) {
-      throw new CliError(
-        CliErrorCode.CONFLICTING_OPTIONS,
-        "Cannot use --from and --input together",
-      );
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.CONFLICTING_OPTIONS,
+        errorMessage: "Cannot use --from and --input together",
+        values,
+      };
     }
     // --fromまたは--inputまたはSTDINのいずれかは必須
+    step = DoubleParamValidationStep.CHECK_STDIN;
     if (!fromStr && !inputStr && !stdinAvailable) {
-      throw new CliError(
-        CliErrorCode.MISSING_REQUIRED,
-        "Invalid input parameters: missing --from, --input, or STDIN",
-      );
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.MISSING_INPUT,
+        errorMessage: "Invalid input parameters: missing --from, --input, or STDIN",
+        values,
+      };
     }
     // --from指定時は--destination必須
+    step = DoubleParamValidationStep.CHECK_DESTINATION;
     if (fromStr && !destinationStr) {
-      throw new CliError(
-        CliErrorCode.MISSING_REQUIRED,
-        "Invalid input parameters: missing --destination for --from",
-      );
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.MISSING_DESTINATION,
+        errorMessage: "Invalid input parameters: missing --destination for --from",
+        values,
+      };
     }
     // --input指定時は型チェック
+    step = DoubleParamValidationStep.CHECK_INPUT;
     if (inputStr && !["project", "issue", "task"].includes(inputStr)) {
-      throw new CliError(
-        CliErrorCode.INVALID_INPUT_TYPE,
-        `Invalid input layer type: ${inputStr}`,
-      );
+      return {
+        success: false,
+        step,
+        errorCode: DoubleParamValidationErrorCode.INVALID_INPUT_TYPE,
+        errorMessage: `Invalid input layer type: ${inputStr}`,
+        values,
+      };
     }
-    // 重複・その他のバリデーションは呼び出し元で行う前提
+    // 進行完了
+    step = DoubleParamValidationStep.COMPLETE;
     return {
-      demonstrative: demonstrativeType as string | undefined,
-      layer: layerType as string | undefined,
-      from: fromStr,
-      destination: destinationStr,
-      input: inputStr,
-      adaptation: adaptationStr,
-      promptDir: promptDirStr,
+      success: true,
+      step,
+      values,
     };
   }
 }

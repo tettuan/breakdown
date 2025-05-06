@@ -91,6 +91,8 @@ Deno.test("CLI I/O Handling", async (t) => {
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
     );
+    // Validation: should fail (file '-' does not exist)
+    assertEquals(result.success, false);
     // Accept both 'No such file: -' and 'No such file: <abs path to ->'
     const expected1 = "No such file: -";
     const expected2 = `No such file: ${join(Deno.cwd(), "-")}`;

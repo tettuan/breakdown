@@ -7,24 +7,34 @@
  * See docs/breakdown/options.ja.md for details.
  */
 
-import type { CommandOptions } from "../args.ts";
 import type { CommandValidatorStrategy } from "./base_validator.ts";
-import { CliError, CliErrorCode } from "../errors.ts";
+import {
+  DoubleParamValidationErrorCode,
+  DoubleParamValidationResult,
+  DoubleParamValidationStep,
+} from "./double_command_validator.ts";
 
 export class NoParamsCommandValidator implements CommandValidatorStrategy {
-  validate(params: unknown): CommandOptions {
-    // params: { help?: boolean, version?: boolean }
+  validate(params: unknown): DoubleParamValidationResult {
+    const step = DoubleParamValidationStep.START;
+    const values: DoubleParamValidationResult["values"] = {};
     if (
       params &&
       typeof params === "object" &&
       ("help" in params || "version" in params)
     ) {
-      // No validation needed for help/version
-      return {};
+      return {
+        success: true,
+        step: DoubleParamValidationStep.COMPLETE,
+        values,
+      };
     }
-    throw new CliError(
-      CliErrorCode.INVALID_OPTION,
-      "No command or invalid parameters provided. Use --help for usage.",
-    );
+    return {
+      success: false,
+      step,
+      errorCode: DoubleParamValidationErrorCode.UNKNOWN,
+      errorMessage: "No command or invalid parameters provided. Use --help for usage.",
+      values,
+    };
   }
 }

@@ -77,7 +77,8 @@ Deno.test("CLI Command Execution", async (t) => {
       absTestDir,
     );
     logger.debug("[DEBUG] Parameter error test result", result);
-    // Expect error message for missing input
+    // Validation: should fail
+    assertEquals(result.success, false);
     assertEquals(result.error, "No input provided via stdin or -f/--from option");
     // Optionally, check that help text is not shown
     // assert(!result.output.includes("Usage:"), "Help text should not be shown when input is missing");

@@ -1,10 +1,14 @@
-// CLIパラメータバリデーションのStrategyパターンテスト
+// CLI parameter validation Strategy pattern tests
 // CommandOptionsValidator, NoParamsCommandValidator, SingleCommandValidator, DoubleCommandValidator
-// - 正常系・異常系のスケルトン
-// - テスト意図・対象をJSDocで明記
+// - Normal and error case skeletons
+// - State test intent and target in JSDoc
 
-import { assertEquals, assertThrows } from "https://deno.land/std@0.203.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.203.0/assert/mod.ts";
 import { CommandOptionsValidator } from "../../../lib/cli/validators/command_options_validator.ts";
+import {
+  DoubleParamValidationErrorCode,
+  DoubleParamValidationStep,
+} from "../../../lib/cli/validators/double_command_validator.ts";
 
 /**
  * Test: NoParamsCommandValidator (help/version)
@@ -12,16 +16,19 @@ import { CommandOptionsValidator } from "../../../lib/cli/validators/command_opt
 Deno.test("NoParams: help flag", () => {
   const validator = new CommandOptionsValidator();
   const result = validator.validate({ type: "no-params", help: true });
-  assertEquals(result, {});
+  assertEquals(result.success, true);
+  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
 });
 
-Deno.test("NoParams: invalid usage throws", () => {
+Deno.test("NoParams: error on invalid usage", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () => validator.validate({ type: "no-params" }),
-    Error,
-    "No command or invalid parameters",
+  const result = validator.validate({ type: "no-params" });
+  assertEquals(result.success, false);
+  assertEquals(
+    result.errorMessage,
+    "No command or invalid parameters provided. Use --help for usage.",
   );
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.UNKNOWN);
 });
 
 /**
@@ -30,22 +37,23 @@ Deno.test("NoParams: invalid usage throws", () => {
 Deno.test("Single: init command", () => {
   const validator = new CommandOptionsValidator();
   const result = validator.validate({ type: "single", command: "init" });
-  assertEquals(result, { demonstrative: "init" });
+  assertEquals(result.success, true);
+  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
+  assertEquals(result.values.command, "init");
 });
 
-Deno.test("Single: invalid single command throws", () => {
+Deno.test("Single: error on invalid single command", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () => validator.validate({ type: "single", command: "foo" }),
-    Error,
-    "Invalid single command",
-  );
+  const result = validator.validate({ type: "single", command: "foo" });
+  assertEquals(result.success, false);
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.INVALID_INPUT_TYPE);
+  assertEquals(result.errorMessage, "Invalid single command. Only 'init' is supported.");
 });
 
 /**
- * Test: DoubleCommandValidator (正常系)
+ * Test: DoubleCommandValidator (normal cases)
  */
-Deno.test("Double: --from + --destination", () => {
+Deno.test("Double: --from and --destination", () => {
   const validator = new CommandOptionsValidator();
   const result = validator.validate({
     type: "double",
@@ -54,11 +62,13 @@ Deno.test("Double: --from + --destination", () => {
     options: { from: "foo.md", destination: "bar.md" },
     stdinAvailable: false,
   });
-  assertEquals(result.from, "foo.md");
-  assertEquals(result.destination, "bar.md");
+  assertEquals(result.success, true);
+  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
+  assertEquals(result.values.from, "foo.md");
+  assertEquals(result.values.destination, "bar.md");
 });
 
-Deno.test("Double: --inputのみ + stdin無し", () => {
+Deno.test("Double: only --input, no stdin", () => {
   const validator = new CommandOptionsValidator();
   const result = validator.validate({
     type: "double",
@@ -67,10 +77,12 @@ Deno.test("Double: --inputのみ + stdin無し", () => {
     options: { input: "project" },
     stdinAvailable: false,
   });
-  assertEquals(result.input, "project");
+  assertEquals(result.success, true);
+  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
+  assertEquals(result.values.input, "project");
 });
 
-Deno.test("Double: stdinのみ", () => {
+Deno.test("Double: only stdin", () => {
   const validator = new CommandOptionsValidator();
   const result = validator.validate({
     type: "double",
@@ -79,73 +91,67 @@ Deno.test("Double: stdinのみ", () => {
     options: {},
     stdinAvailable: true,
   });
-  assertEquals(result.from, undefined);
-  assertEquals(result.input, undefined);
+  assertEquals(result.success, true);
+  assertEquals(result.step, DoubleParamValidationStep.COMPLETE);
+  assertEquals(result.values.from, undefined);
+  assertEquals(result.values.input, undefined);
 });
 
 /**
- * Test: DoubleCommandValidator (異常系)
+ * Test: DoubleCommandValidator (error cases)
  */
-Deno.test("Double: --fromと--input同時指定はエラー", () => {
+Deno.test("Double: error on both --from and --input", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () =>
-      validator.validate({
-        type: "double",
-        demonstrativeType: "to",
-        layerType: "project",
-        options: { from: "foo.md", input: "project" },
-        stdinAvailable: false,
-      }),
-    Error,
-    "Cannot use --from and --input together",
-  );
+  const result = validator.validate({
+    type: "double",
+    demonstrativeType: "to",
+    layerType: "project",
+    options: { from: "foo.md", input: "project" },
+    stdinAvailable: false,
+  });
+  assertEquals(result.success, false);
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.CONFLICTING_OPTIONS);
+  assertEquals(result.errorMessage, "Cannot use --from and --input together");
 });
 
-Deno.test("Double: --from/--input/STDINいずれも無しはエラー", () => {
+Deno.test("Double: error on missing --from, --input, and stdin", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () =>
-      validator.validate({
-        type: "double",
-        demonstrativeType: "to",
-        layerType: "project",
-        options: {},
-        stdinAvailable: false,
-      }),
-    Error,
-    "missing --from, --input, or STDIN",
-  );
+  const result = validator.validate({
+    type: "double",
+    demonstrativeType: "to",
+    layerType: "project",
+    options: {},
+    stdinAvailable: false,
+  });
+  assertEquals(result.success, false);
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.MISSING_INPUT);
+  assertEquals(result.errorMessage, "Invalid input parameters: missing --from, --input, or STDIN");
 });
 
-Deno.test("Double: --from指定時に--destination無しはエラー", () => {
+Deno.test("Double: error on --from without --destination", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () =>
-      validator.validate({
-        type: "double",
-        demonstrativeType: "to",
-        layerType: "project",
-        options: { from: "foo.md" },
-        stdinAvailable: false,
-      }),
-    Error,
-    "missing --destination for --from",
-  );
+  const result = validator.validate({
+    type: "double",
+    demonstrativeType: "to",
+    layerType: "project",
+    options: { from: "foo.md" },
+    stdinAvailable: false,
+  });
+  assertEquals(result.success, false);
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.MISSING_DESTINATION);
+  assertEquals(result.errorMessage, "Invalid input parameters: missing --destination for --from");
 });
 
-Deno.test("Double: --input型不正はエラー", () => {
+Deno.test("Double: error on invalid --input type", () => {
   const validator = new CommandOptionsValidator();
-  assertThrows(
-    () =>
-      validator.validate({
-        type: "double",
-        demonstrativeType: "to",
-        layerType: "project",
-        options: { input: "invalid" },
-        stdinAvailable: false,
-      }),
-    Error,
-    "Invalid input layer type",
-  );
+  const result = validator.validate({
+    type: "double",
+    demonstrativeType: "to",
+    layerType: "project",
+    options: { input: "invalid" },
+    stdinAvailable: false,
+  });
+  assertEquals(result.success, false);
+  assertEquals(result.errorCode, DoubleParamValidationErrorCode.INVALID_INPUT_TYPE);
+  assertEquals(result.errorMessage, "Invalid input layer type: invalid");
 });

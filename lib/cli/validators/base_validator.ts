@@ -7,13 +7,13 @@
  * The specification and validation rules are described in docs/breakdown/options.ja.md.
  */
 
-import type { CommandOptions } from "../args.ts";
+import type { DoubleParamValidationResult } from "./double_command_validator.ts";
 
 export interface CommandValidatorStrategy {
   /**
    * Validate CLI parameters for a specific command type.
    * @param params Parsed params (BreakdownParams result or raw args)
-   * @returns Validated CommandOptions or throws error
+   * @returns DoubleParamValidationResult (step, error, values)
    */
-  validate(params: unknown): CommandOptions;
+  validate(params: unknown): DoubleParamValidationResult;
 }
