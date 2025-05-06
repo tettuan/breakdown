@@ -3,14 +3,21 @@
  *
  * Handles parsing and validation of command line arguments for the Breakdown CLI.
  * Validates option combinations and enforces rules for input/output options.
+ *
+ * @module
  */
 
 import { CliError, CliErrorCode } from "../cli/errors.ts";
 
 /**
- * Error thrown when command line arguments are invalid
+ * Error thrown when command line arguments are invalid.
+ * Used to indicate issues with CLI argument parsing or validation.
  */
 export class ArgumentError extends Error {
+  /**
+   * Creates a new ArgumentError instance.
+   * @param message The error message describing the invalid argument.
+   */
   constructor(message: string) {
     super(message);
     this.name = "ArgumentError";
@@ -18,25 +25,42 @@ export class ArgumentError extends Error {
 }
 
 /**
- * Type definition for command line options
+ * Type definition for command line options.
+ * Represents the set of options that can be passed to the Breakdown CLI.
  */
 export interface CommandOptions {
+  /** Path or identifier for the source input. */
   from?: string;
+  /** Path to a file to use as input. */
   fromFile?: string;
+  /** Project identifier to use as input. */
   fromProject?: string;
+  /** Issue identifier to use as input. */
   fromIssue?: string;
+  /** Path or identifier for the output destination. */
   destination?: string;
+  /** Input type (e.g., project, issue, task). */
   input?: string;
+  /** Working directory for the CLI process. */
   workingDir?: string;
+  /** Suppress output if true. */
   quiet?: boolean;
+  /** Enable debug mode if true. */
   debug: boolean;
+  /** Demonstrative type for the CLI. */
   demonstrative?: string;
+  /** Layer type for the CLI. */
   layer?: string;
+  /** Adaptation type for the CLI. */
   adaptation?: string;
+  /** Directory containing prompt files. */
   promptDir?: string;
 }
 
-// Valid command line options and their aliases
+/**
+ * Valid command line options and their aliases.
+ * Maps long and short option names for the CLI.
+ */
 export const VALID_OPTIONS = new Map<string, string>([
   ["--from", "-f"],
   ["--destination", "-o"],
@@ -47,7 +71,9 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--prompt-dir", ""],
 ]);
 
-// Input layer types that can be used with --input
+/**
+ * Valid input layer types that can be used with --input.
+ */
 export const VALID_INPUT_TYPES = new Set([
   "project",
   "issue",
@@ -55,9 +81,12 @@ export const VALID_INPUT_TYPES = new Set([
 ]);
 
 /**
- * Parses and validates command line arguments
- * @param args Raw command line arguments
- * @returns Validated argument object or error message
+ * Parses and validates command line arguments.
+ * Throws a CliError if arguments are invalid or conflicting.
+ *
+ * @param args Raw command line arguments.
+ * @returns Validated argument object.
+ * @throws {CliError} If arguments are invalid or conflicting.
  */
 export function parseArgs(args: string[]): CommandOptions {
   const options: CommandOptions = {
@@ -189,10 +218,11 @@ function isValidInputType(type: string): boolean {
 }
 
 /**
- * Gets the value for a command line option
- * @param args Raw command line arguments
- * @param option Option name to get value for
- * @returns Option value or undefined if not found
+ * Gets the value for a command line option.
+ *
+ * @param args Raw command line arguments.
+ * @param option Option name to get value for.
+ * @returns Option value or undefined if not found.
  */
 export function getOptionValue(args: string[], option: string): string | undefined {
   const index = args.indexOf(option);
@@ -213,6 +243,14 @@ export function getOptionValue(args: string[], option: string): string | undefin
   return undefined;
 }
 
+/**
+ * Validates command line options and returns a CommandOptions object.
+ * Throws a CliError if validation fails.
+ *
+ * @param args Raw command line arguments.
+ * @returns Validated CommandOptions object.
+ * @throws {CliError} If validation fails.
+ */
 export function validateCommandOptions(args: string[]): CommandOptions {
   const options: CommandOptions = {
     debug: false,

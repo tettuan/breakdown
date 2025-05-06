@@ -34,6 +34,11 @@ type DoubleParamsResult = PromptCliParams;
  *   - docs/index.ja.md
  */
 export class OutputFilePathResolver {
+  /**
+   * Creates a new OutputFilePathResolver instance.
+   * @param config The configuration object for the resolver.
+   * @param cliParams The CLI parameters used for path resolution.
+   */
   constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
 
   /**
@@ -69,15 +74,28 @@ export class OutputFilePathResolver {
     return join(absDest, this.generateDefaultFilename());
   }
 
-  private getDestinationFile(): string | undefined {
+  /**
+   * Gets the destination file path from CLI parameters.
+   * @returns The destination file path or undefined if not specified.
+   */
+  public getDestinationFile(): string | undefined {
     return this.cliParams.options?.destinationFile;
   }
 
-  private normalizePath(p: string): string {
+  /**
+   * Normalizes a file path to use forward slashes.
+   * @param p The path to normalize.
+   * @returns The normalized path string.
+   */
+  public normalizePath(p: string): string {
     return p.replace(/\\/g, "/");
   }
 
-  private generateDefaultFilename(): string {
+  /**
+   * Generates a default filename for output files.
+   * @returns The generated filename string.
+   */
+  public generateDefaultFilename(): string {
     const date = new Date();
     const dateStr = date.getFullYear().toString() +
       (date.getMonth() + 1).toString().padStart(2, "0") +
@@ -86,7 +104,12 @@ export class OutputFilePathResolver {
     return `${dateStr}_${hash}.md`;
   }
 
-  private isDirectory(p: string): boolean {
+  /**
+   * Checks if a path is a directory.
+   * @param p The path to check.
+   * @returns True if the path is a directory, false otherwise.
+   */
+  public isDirectory(p: string): boolean {
     try {
       const stat = Deno.statSync(p);
       return stat.isDirectory;
@@ -95,11 +118,21 @@ export class OutputFilePathResolver {
     }
   }
 
-  private hasPathHierarchy(p: string): boolean {
+  /**
+   * Determines if a path has a hierarchy (contains a slash or backslash).
+   * @param p The path to check.
+   * @returns True if the path has a hierarchy, false otherwise.
+   */
+  public hasPathHierarchy(p: string): boolean {
     return p.includes("/") || p.includes("\\");
   }
 
-  private hasExtension(p: string): boolean {
+  /**
+   * Checks if a path has a file extension.
+   * @param p The path to check.
+   * @returns True if the path has an extension, false otherwise.
+   */
+  public hasExtension(p: string): boolean {
     return p.includes(".");
   }
 }

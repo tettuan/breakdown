@@ -4,14 +4,26 @@
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { DemonstrativeType, LayerType } from "../types/mod.ts";
 
+/**
+ * Parameters for CLI prompt operations.
+ * Used to configure prompt generation and file resolution.
+ */
 export interface PromptCliParams {
+  /** The demonstrative type for the prompt (e.g., 'to', 'summary'). */
   demonstrativeType: DemonstrativeType;
+  /** The layer type for the prompt (e.g., 'project', 'issue'). */
   layerType: LayerType;
+  /** Options for prompt generation and file resolution. */
   options: {
+    /** The input file path. */
     fromFile?: string;
+    /** The destination file path. */
     destinationFile?: string;
+    /** The adaptation type for the prompt. */
     adaptation?: string;
+    /** The directory for prompt files. */
     promptDir?: string;
+    /** The layer type inferred from input. */
     fromLayerType?: string;
   };
 }
@@ -24,32 +36,33 @@ import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 /**
- * PromptVariablesFactoryOptions
- * @property config - アプリケーション設定（BreakdownConfig.getConfig()で取得したものを渡すこと）
- * @property cliParams - CLI/テスト等から渡されるパラメータ
+ * Options for creating a PromptVariablesFactory instance.
+ * @property config - Application configuration (from BreakdownConfig.getConfig()).
+ * @property cliParams - Parameters from CLI or tests.
  */
 export interface PromptVariablesFactoryOptions {
-  /** BreakdownConfig.getConfig() で取得した設定オブジェクト */
+  /** Application configuration (from BreakdownConfig.getConfig()). */
   config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
+  /** Parameters from CLI or tests. */
   cliParams: PromptCliParams;
 }
 
 // --- サブクラス定義削除 ---
 
 /**
- * PromptVariablesFactory
- * Breakdown全体のパス解決・パラメータ構築の唯一の窓口
- * - 設定値は内部でBreakdownConfigから取得
- * - cliParamsは必ず外部から受け取る
- * - インスタンス生成は static async create(cliParams) を利用
+ * The main factory for resolving paths and constructing parameters for Breakdown operations.
+ * Use static async create(cliParams) to instantiate.
  */
 export class PromptVariablesFactory {
   private config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
-  private readonly cliParams: PromptCliParams;
+  /**
+   * The CLI parameters used for prompt generation and file resolution.
+   */
+  public readonly cliParams: PromptCliParams;
   private baseDirOverride?: string;
 
   private promptPathResolver: PromptTemplatePathResolver;

@@ -1,5 +1,6 @@
 /**
- * CLI error codes for common argument and validation errors
+ * CLI error codes for common argument and validation errors.
+ * Used to identify specific error types in CLI operations.
  */
 export enum CliErrorCode {
   INVALID_OPTION = "INVALID_OPTION",
@@ -11,10 +12,17 @@ export enum CliErrorCode {
 }
 
 /**
- * Custom error for CLI argument/validation errors
+ * Custom error for CLI argument/validation errors.
+ * Associates a CliErrorCode with the error for precise error handling.
  */
 export class CliError extends Error {
+  /** The error code representing the type of CLI error. */
   code: CliErrorCode;
+  /**
+   * Creates a new CliError instance.
+   * @param code The error code representing the type of error.
+   * @param message The error message describing the error.
+   */
   constructor(code: CliErrorCode, message: string) {
     super(`[${code}] ${message}`);
     this.code = code;

@@ -26,6 +26,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   private config: WorkspaceConfig | null = null;
   private promptVariablesFactory?: PromptVariablesFactory;
 
+  /**
+   * Creates a new Workspace instance.
+   * @param options The workspace options for initialization.
+   */
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
@@ -290,16 +294,31 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     this.promptVariablesFactory = factory;
   }
 
+  /**
+   * Resolves the path to a prompt file by name using the PromptVariablesFactory.
+   * @param _name The name of the prompt file.
+   * @returns The resolved prompt file path.
+   */
   public resolvePromptPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
     return this.promptVariablesFactory.promptFilePath;
   }
 
+  /**
+   * Resolves the path to a schema file by name using the PromptVariablesFactory.
+   * @param _name The name of the schema file.
+   * @returns The resolved schema file path.
+   */
   public resolveSchemaPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
     return this.promptVariablesFactory.schemaFilePath;
   }
 
+  /**
+   * Resolves the path to an output file by name using the PromptVariablesFactory.
+   * @param _name The name of the output file.
+   * @returns The resolved output file path.
+   */
   public resolveOutputPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
     return this.promptVariablesFactory.outputFilePath;

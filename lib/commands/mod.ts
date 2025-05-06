@@ -20,8 +20,11 @@ import { Workspace } from "../workspace/workspace.ts";
  * @property error The error message, if the command failed. Can be a string or an error object with type and message.
  */
 export interface CommandResult {
+  /** Indicates if the command was successful. */
   success: boolean;
+  /** The output message or result of the command. */
   output: string;
+  /** The error message, if the command failed. Can be a string or an error object with type and message. */
   error: string | { type: string; message: string } | null;
 }
 
@@ -111,6 +114,16 @@ async function runPromptProcessing(
   }
 }
 
+/**
+ * Generates a prompt file by processing the input file and writing to the output file.
+ *
+ * @param _fromFile The source file path.
+ * @param _toFile The destination file path.
+ * @param _format The format to use for the prompt.
+ * @param _force Whether to overwrite the destination file if it exists.
+ * @param _options Additional options for prompt generation.
+ * @returns The result of the command execution.
+ */
 export async function generateWithPrompt(
   _fromFile: string,
   _toFile: string,

@@ -3,7 +3,8 @@ import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
 
 /**
- * Error types for prompt file generation
+ * Error types for prompt file generation.
+ * Used to categorize errors encountered during prompt file generation.
  */
 export enum PromptFileErrorType {
   InputFileNotFound = "InputFileNotFound",
@@ -12,7 +13,15 @@ export enum PromptFileErrorType {
   Unknown = "Unknown",
 }
 
+/**
+ * Generates prompt files using templates and validates input/output paths.
+ */
 export class PromptFileGenerator {
+  /**
+   * Validates that the input file exists at the given path.
+   * @param path The file path to validate.
+   * @returns A promise that resolves if the file exists, or throws an error if not.
+   */
   validateInputFile(path: string): Promise<void> {
     return Deno.stat(path).then(() => {}, () => {
       throw new Error(`No such file: ${path}`);
@@ -20,7 +29,14 @@ export class PromptFileGenerator {
   }
 
   /**
-   * メインAPI: プロンプトテンプレートを使ってファイルを生成
+   * Main API: Generates a file using a prompt template.
+   *
+   * @param fromFile The source file path.
+   * @param toFile The destination file path.
+   * @param format The format to use for the prompt.
+   * @param _force Whether to overwrite the destination file if it exists.
+   * @param options Additional options for prompt generation.
+   * @returns An object indicating success, output, and error details.
    */
   async generateWithPrompt(
     fromFile: string,
@@ -28,7 +44,7 @@ export class PromptFileGenerator {
     format: string,
     _force = false,
     options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
-  ) {
+  ): Promise<{ success: boolean; output: string; error: unknown }> {
     if (fromFile === "-") {
       return {
         success: false,

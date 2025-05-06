@@ -20,15 +20,15 @@ import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 
 /**
- * PromptAdapterImpl
- * - PromptVariablesFactoryを受け取り、パスのバリデーションとプロンプト生成を担う
- * - 生成APIは validateAndGenerate のみ
+ * Implementation of the PromptAdapter pattern for Breakdown.
+ * Receives a PromptVariablesFactory and provides prompt validation and generation APIs.
  */
 export class PromptAdapterImpl {
   private readonly factory: PromptVariablesFactory;
 
   /**
-   * @param factory 必須: パス解決済みのファクトリ
+   * Creates a new PromptAdapterImpl instance.
+   * @param factory The PromptVariablesFactory with resolved paths and parameters.
    */
   constructor(factory: PromptVariablesFactory) {
     this.factory = factory;

@@ -4,29 +4,16 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 type DoubleParamsResult = PromptCliParams;
 
 /**
- * SchemaFilePathResolver
- *
- * Purpose:
- *   - Resolves the schema file path for Breakdown according to CLI parameters and config.
- *   - Handles all cases for config, default, and path normalization.
- *   - Ensures schema path is consistent with project conventions and user intent.
- *
- * Intent:
- *   - To centralize and standardize schema file path resolution logic for maintainability and testability.
- *   - To avoid path confusion and ensure correct file placement for all CLI/script/test scenarios.
- *
- * Expected Results:
- *   - If config.app_schema.base_dir is specified, it is used; otherwise, default is used.
- *   - Returns absolute path to the resolved schema file.
- *   - Windows path separators are normalized.
- *
- * References:
- *   - docs/breakdown/path.ja.md
- *   - docs/breakdown/usage.ja.md
- *   - docs/breakdown/cli.ja.md
- *   - docs/index.ja.md
+ * Resolves the schema file path for Breakdown according to CLI parameters and config.
+ * Handles all cases for config, default, and path normalization.
+ * Ensures schema path is consistent with project conventions and user intent.
  */
 export class SchemaFilePathResolver {
+  /**
+   * Creates a new SchemaFilePathResolver instance.
+   * @param config The configuration object for the resolver.
+   * @param cliParams The CLI parameters used for path resolution.
+   */
   constructor(
     private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
     private cliParams: DoubleParamsResult,
@@ -45,7 +32,11 @@ export class SchemaFilePathResolver {
     return this.buildSchemaPath(baseDir, fileName);
   }
 
-  private resolveBaseDir(): string {
+  /**
+   * Resolves the base directory for schema files.
+   * @returns The resolved base directory path.
+   */
+  public resolveBaseDir(): string {
     let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schemas";
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
@@ -53,11 +44,21 @@ export class SchemaFilePathResolver {
     return baseDir;
   }
 
-  private buildFileName(): string {
+  /**
+   * Builds the filename for the schema file.
+   * @returns The constructed filename string.
+   */
+  public buildFileName(): string {
     return "base.schema.md";
   }
 
-  private buildSchemaPath(baseDir: string, fileName: string): string {
+  /**
+   * Builds the full schema file path from base directory and filename.
+   * @param baseDir The base directory for schema files.
+   * @param fileName The filename to use.
+   * @returns The constructed schema file path.
+   */
+  public buildSchemaPath(baseDir: string, fileName: string): string {
     const { demonstrativeType, layerType } = this.cliParams;
     return join(baseDir, demonstrativeType, layerType, fileName);
   }

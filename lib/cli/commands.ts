@@ -1,7 +1,17 @@
-import { CommandOptions } from "./args.ts";
+import type { CommandOptions } from "./args.ts";
+export type { CommandOptions } from "./args.ts";
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterImpl } from "../prompt/prompt_adapter.ts";
 
+/**
+ * Executes a CLI command with the given subcommands and arguments.
+ * Handles command validation, option conflicts, and delegates to the appropriate logic for each command.
+ *
+ * @param command The main command to execute (e.g., 'convert', 'analyze', 'init').
+ * @param subcommands The list of subcommands or arguments for the command.
+ * @param args The parsed command line options.
+ * @returns An object containing success status, output, and error message.
+ */
 export async function executeCommand(
   command: string,
   subcommands: string[],

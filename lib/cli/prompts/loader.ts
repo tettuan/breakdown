@@ -2,8 +2,13 @@ import { CommandOptions } from "$lib/cli/args.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { join } from "@std/path";
 
+/**
+ * Represents a prompt template loaded by the Breakdown CLI.
+ */
 export interface Prompt {
+  /** The file path to the prompt template. */
   path: string;
+  /** The content of the prompt template. */
   content: string;
 }
 
@@ -83,6 +88,11 @@ export class PromptLoader {
     };
   }
 
+  /**
+   * Resolves the canonical layer type alias from a given input string.
+   * @param input The input string to resolve.
+   * @returns The canonical layer type alias or 'default'.
+   */
   private resolveLayerTypeAlias(input: string): string {
     const ALIASES = {
       project: ["project", "pj", "prj"],
@@ -99,6 +109,11 @@ export class PromptLoader {
     return "default";
   }
 
+  /**
+   * Infers the layer type from a given file path.
+   * @param path The file path to analyze.
+   * @returns The inferred layer type or undefined if not matched.
+   */
   private inferLayerTypeFromPath(path: string): string | undefined {
     const PATTERNS = {
       project: /project|pj|prj/i,
@@ -114,6 +129,11 @@ export class PromptLoader {
     return undefined;
   }
 
+  /**
+   * Reads the content of a prompt file at the given path.
+   * @param path The file path to read.
+   * @returns The file content as a string, or a default if not found.
+   */
   private async readPromptFile(path: string): Promise<string> {
     try {
       return await Deno.readTextFile(path);
@@ -123,3 +143,5 @@ export class PromptLoader {
     }
   }
 }
+
+export type { CommandOptions } from "$lib/cli/args.ts";

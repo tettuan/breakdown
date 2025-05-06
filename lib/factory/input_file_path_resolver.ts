@@ -29,6 +29,11 @@ type DoubleParamsResult = PromptCliParams;
  *   - docs/index.ja.md
  */
 export class InputFilePathResolver {
+  /**
+   * Creates a new InputFilePathResolver instance.
+   * @param config The configuration object for the resolver.
+   * @param cliParams The CLI parameters used for path resolution.
+   */
   constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
 
   /**
@@ -49,18 +54,37 @@ export class InputFilePathResolver {
     return resolve(Deno.cwd(), normalizedFromFile);
   }
 
+  /**
+   * Gets the fromFile value from CLI parameters.
+   * @returns The fromFile string or undefined if not specified.
+   */
   private getFromFile(): string | undefined {
     return this.cliParams.options?.fromFile;
   }
 
+  /**
+   * Normalizes a file path to use forward slashes.
+   * @param p The path to normalize.
+   * @returns The normalized path string.
+   */
   private normalizePath(p: string): string {
     return p.replace(/\\/g, "/");
   }
 
+  /**
+   * Checks if a path is absolute.
+   * @param p The path to check.
+   * @returns True if the path is absolute, false otherwise.
+   */
   private isAbsolute(p: string): boolean {
     return isAbsolute(p);
   }
 
+  /**
+   * Determines if a path has a hierarchy (contains a slash and is not './' or '../').
+   * @param p The path to check.
+   * @returns True if the path has a hierarchy, false otherwise.
+   */
   private hasPathHierarchy(p: string): boolean {
     // Only treat as hierarchy if path contains a slash and does not start with './' or '../'
     // './file.md' and '../file.md' should NOT be treated as hierarchy
@@ -72,6 +96,10 @@ export class InputFilePathResolver {
     return normalized.includes("/");
   }
 
+  /**
+   * Gets the directory name from CLI parameters.
+   * @returns The directory name string.
+   */
   private getDirectory(): string {
     return this.cliParams.options?.fromLayerType || this.cliParams.layerType;
   }

@@ -10,9 +10,13 @@
 import { readAll } from "jsr:@std/io@0.224.9/read-all";
 
 /**
- * Error thrown when stdin reading fails
+ * Error thrown when stdin reading fails.
  */
 export class StdinError extends Error {
+  /**
+   * Creates a new StdinError instance.
+   * @param message The error message describing the stdin error.
+   */
   constructor(message: string) {
     super(message);
     this.name = "StdinError";
@@ -102,22 +106,37 @@ export function writeStdout(content: string): void {
 }
 
 /**
- * Progress indicator with percentage
+ * Progress indicator with percentage.
+ * Used to display progress for long-running CLI operations.
  */
 export class ProgressBar {
-  private enabled: boolean = true;
-  private progress: number;
-  private total: number;
-  private width: number;
+  /** Indicates if the progress bar is enabled. */
+  public enabled: boolean = true;
+  /** The current progress value. */
+  public progress: number;
+  /** The total value representing 100% progress. */
+  public total: number;
+  /** The width of the progress bar in characters. */
+  public width: number;
 
-  constructor(total: number, width = 40, options?: { quiet?: boolean }) {
+  /**
+   * Creates a new ProgressBar instance.
+   * @param total The total value representing 100% progress.
+   * @param width The width of the progress bar in characters.
+   * @param options Optional settings (e.g., quiet mode).
+   */
+  public constructor(total: number, width = 40, options?: { quiet?: boolean }) {
     this.enabled = !(options?.quiet);
     this.progress = 0;
     this.total = total;
     this.width = width;
   }
 
-  update(current: number): void {
+  /**
+   * Updates the progress bar to the current value.
+   * @param current The current progress value.
+   */
+  public update(current: number): void {
     if (!this.enabled) return;
 
     this.progress = current;
@@ -138,22 +157,34 @@ export class ProgressBar {
 }
 
 /**
- * Spinner for indeterminate progress
+ * Spinner for indeterminate progress.
+ * Used to display a spinner animation for ongoing CLI operations.
  */
 export class Spinner {
-  private enabled: boolean = true;
-  private frames: string[];
-  private currentFrame: number;
-  private interval: number | null;
+  /** Indicates if the spinner is enabled. */
+  public enabled: boolean = true;
+  /** The spinner animation frames. */
+  public frames: string[];
+  /** The current frame index. */
+  public currentFrame: number;
+  /** The interval timer for the spinner. */
+  public interval: number | null;
 
-  constructor(options?: { quiet?: boolean }) {
+  /**
+   * Creates a new Spinner instance.
+   * @param options Optional settings (e.g., quiet mode).
+   */
+  public constructor(options?: { quiet?: boolean }) {
     this.enabled = !(options?.quiet);
     this.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     this.currentFrame = 0;
     this.interval = null;
   }
 
-  start(): void {
+  /**
+   * Starts the spinner animation.
+   */
+  public start(): void {
     if (!this.enabled) return;
 
     this.interval = setInterval(() => {
@@ -162,7 +193,10 @@ export class Spinner {
     }, 80);
   }
 
-  stop(): void {
+  /**
+   * Stops the spinner animation.
+   */
+  public stop(): void {
     if (!this.enabled) return;
 
     if (this.interval) {

@@ -34,6 +34,11 @@ export class PromptTemplatePathResolver {
   private config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>;
   private cliParams: DoubleParamsResult;
 
+  /**
+   * Creates a new PromptTemplatePathResolver instance.
+   * @param config The configuration object for the resolver.
+   * @param cliParams The CLI parameters used for path resolution.
+   */
   constructor(
     config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>,
     cliParams: DoubleParamsResult,
@@ -65,7 +70,11 @@ export class PromptTemplatePathResolver {
     return promptPath;
   }
 
-  private resolveBaseDir(): string {
+  /**
+   * Resolves the base directory for prompt templates.
+   * @returns The resolved base directory path.
+   */
+  public resolveBaseDir(): string {
     let baseDir = this.config.app_prompt?.base_dir;
     if (!baseDir) {
       baseDir = DEFAULT_PROMPT_BASE_DIR;
@@ -76,25 +85,44 @@ export class PromptTemplatePathResolver {
     return baseDir;
   }
 
-  private buildFileName(): string {
+  /**
+   * Builds the filename for the prompt template.
+   * @returns The constructed filename string.
+   */
+  public buildFileName(): string {
     const { layerType, options } = this.cliParams;
     const fromLayerType = options?.fromLayerType || layerType;
     const adaptation = options?.adaptation ? `_${options.adaptation}` : "";
     return `f_${fromLayerType}${adaptation}.md`;
   }
 
-  private buildFallbackFileName(): string {
+  /**
+   * Builds the fallback filename for the prompt template.
+   * @returns The constructed fallback filename string.
+   */
+  public buildFallbackFileName(): string {
     const { layerType, options } = this.cliParams;
     const fromLayerType = options?.fromLayerType || layerType;
     return `f_${fromLayerType}.md`;
   }
 
-  private buildPromptPath(baseDir: string, fileName: string): string {
+  /**
+   * Builds the full prompt template path from base directory and filename.
+   * @param baseDir The base directory for prompt templates.
+   * @param fileName The filename to use.
+   * @returns The constructed prompt template path.
+   */
+  public buildPromptPath(baseDir: string, fileName: string): string {
     const { demonstrativeType, layerType } = this.cliParams;
     return join(baseDir, demonstrativeType, layerType, fileName);
   }
 
-  private shouldFallback(promptPath: string): boolean {
+  /**
+   * Determines if a fallback should be used for the prompt template path.
+   * @param promptPath The prompt template path to check.
+   * @returns True if fallback should be used, false otherwise.
+   */
+  public shouldFallback(promptPath: string): boolean {
     const { options } = this.cliParams;
     return Boolean(options?.adaptation) && !existsSync(promptPath);
   }
