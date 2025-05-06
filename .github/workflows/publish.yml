@@ -13,10 +13,27 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      # Check if tag is on main
+      - name: Check if tag is on main
+        id: check-tag
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_COMMIT=$(git rev-parse $TAG_NAME)
+          # Check if tag's commit is in main branch history
+          if git rev-list main | grep -q "^$TAG_COMMIT$"; then
+            echo "Tag is on main branch"
+          else
+            echo "Tag is not on main branch"
+            exit 1
+          fi
 
       # Install Deno
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
@@ -60,4 +77,4 @@ jobs:
 
       # Publish to JSR
       - name: Publish to JSR
-        run: npx jsr publish
+        run: deno publish
