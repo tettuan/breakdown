@@ -196,7 +196,7 @@ BreakdownはCLIツールとしての利用が主目的です。
 **Deno公式/JSR標準の方法**で、以下のコマンドでインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 ```
 - `-A` : すべての権限を許可（推奨）
 - `-f` : 既存のコマンドを上書き
@@ -204,8 +204,8 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 - `breakdown` : コマンド名
 
 > **Note:**  
-> 旧バージョンや `jsr:@tettuan/breakdown/cli` のようなサブパス指定は不要です。  
-> JSRの `bin` 設定により、`jsr:@tettuan/breakdown` だけでCLIとして動作します。
+> Breakdown CLIのメインモジュールは `jsr:@tettuan/breakdown/cli` です。  
+> 必ず `/cli` サブパスを指定してください。
 
 ---
 
@@ -214,7 +214,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 新しいバージョンが公開された場合も、同じコマンドで上書きインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 ```
 
 ---
