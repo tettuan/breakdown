@@ -28,8 +28,6 @@ breakdown <demonstrative> [layer] [options]
 ### 入力ソース指定
 
 - `--from <file>`, `-f <file>`: 入力ファイルの指定
-- `--from-project <file>`: プロジェクトファイルからの生成
-- `--from-issue <file>`: 課題ファイルからの生成
 
 ### 出力先指定
 

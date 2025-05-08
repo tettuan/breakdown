@@ -20,6 +20,7 @@ BreakdownSchema構文を資料として読むことで、AIシステムはJSON�
 
 - 最適化されたMarkdownの変換プロンプト
 - AIシステムのためのJSONスキーマ構文
+- ドメイン固有の用語を網羅した[用語集](./docs/breakdown/glossary.md)
 
 ## 目的
 

@@ -5,6 +5,20 @@
 https://jsr.io/@tettuan/breakdownlogger を使用します。README
 https://github.com/tettuan/breakdownlogger を読み把握すること。
 
+### DEBUG と LOG_LEVEL の使い分け
+
+- `LOG_LEVEL`: BreakdownLoggerで使用する環境変数
+  - テストコードでのみ使用
+  - 恒久的なデバッグ出力として機能
+  - テストの一部として扱われる
+  - テストケースの実行状態や結果の追跡に使用
+
+- `DEBUG`: 一時的なデバッグ出力用の環境変数
+  - テスト以外のコードでも使用可能
+  - 一時的なデバッグコードとして扱う
+  - 開発時の問題調査用
+  - 最終的には削除されるべきコード
+
 ### テストコードのみでの使用
 
 - アプリケーションコードでは`BreakdownLogger`を使用しない

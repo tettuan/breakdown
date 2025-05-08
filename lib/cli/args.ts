@@ -36,18 +36,12 @@ export interface CommandOptions {
   from?: string;
   /** Path to a file to use as input. */
   fromFile?: string;
-  /** Project identifier to use as input. */
-  fromProject?: string;
-  /** Issue identifier to use as input. */
-  fromIssue?: string;
   /** Path or identifier for the output destination. */
   destination?: string;
   /** Input type (e.g., project, issue, task). */
   input?: string;
   /** Working directory for the CLI process. */
   workingDir?: string;
-  /** Suppress output if true. */
-  quiet?: boolean;
   /** Demonstrative type for the CLI. */
   demonstrative?: string;
   /** Layer type for the CLI. */
