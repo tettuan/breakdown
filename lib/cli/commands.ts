@@ -21,104 +21,80 @@ export async function executeCommand(
   let error = "";
 
   try {
-    // Validate mutually exclusive options
-    if (args.fromFile && args.fromProject) {
-      error = "Conflicting options: --from and --from-project cannot be used together";
-      return { success: false, output, error };
-    }
-    if (args.fromFile && args.fromIssue) {
-      error = "Conflicting options: --from and --from-issue cannot be used together";
-      return { success: false, output, error };
-    }
-    if (args.fromProject && args.fromIssue) {
-      error = "Conflicting options: --from-project and --from-issue cannot be used together";
-      return { success: false, output, error };
+    // Validate input file options
+    if (args.fromFile && args.from) {
+      throw new Error("Cannot specify both --from and --from-file");
     }
 
-    switch (command) {
-      case "convert": {
-        if (subcommands.length < 2 || subcommands[0] !== "to") {
-          error = "Invalid convert command. Usage: convert to <type>";
+    // Get input file path
+    const fromFile = args.fromFile || args.from;
+    if (!fromFile) {
+      throw new Error("No input file specified");
+    }
+
+    // Validate destination
+    if (!args.destination) {
+      throw new Error("Destination must be specified");
+    }
+
+    // Process command based on type
+    if (subcommands.length === 2) {
+      switch (command) {
+        case "convert": {
+          const targetType = subcommands[1];
+          const destFile = args.destination;
+
+          const cliParams = {
+            demonstrativeType: "to" as import("../types/mod.ts").DemonstrativeType,
+            layerType: targetType as import("../types/mod.ts").LayerType,
+            options: {
+              fromFile,
+              destinationFile: destFile,
+              adaptation: args.adaptation,
+            },
+          };
+          const factory = await PromptVariablesFactory.create(cliParams);
+          const adapter = new PromptAdapterImpl(factory);
+          const promptResult = await adapter.validateAndGenerate();
+          if (!promptResult.success) {
+            return { success: false, output: "", error: promptResult.content };
+          }
+          output = promptResult.content;
+          break;
+        }
+        case "analyze": {
+          const targetType = subcommands[1];
+          const destFile = args.destination;
+
+          const cliParams2 = {
+            demonstrativeType: "summary" as import("../types/mod.ts").DemonstrativeType,
+            layerType: targetType as import("../types/mod.ts").LayerType,
+            options: {
+              fromFile,
+              destinationFile: destFile,
+              adaptation: args.adaptation,
+            },
+          };
+          const factory2 = await PromptVariablesFactory.create(cliParams2);
+          const adapter2 = new PromptAdapterImpl(factory2);
+          const promptResult2 = await adapter2.validateAndGenerate();
+          if (!promptResult2.success) {
+            return { success: false, output: "", error: promptResult2.content };
+          }
+          output = promptResult2.content;
+          break;
+        }
+        case "init": {
+          output = "";
+          break;
+        }
+        default:
+          error = `Unknown command: ${command}`;
           return { success: false, output, error };
-        }
-
-        const targetType = subcommands[1];
-        const fromFile = args.fromFile || args.fromProject || args.fromIssue;
-        const destFile = args.destination;
-
-        if (!fromFile) {
-          error = "Source file must be specified using --from, --from-project, or --from-issue";
-          return { success: false, output, error };
-        }
-
-        if (!destFile) {
-          error = "Destination file must be specified using --destination";
-          return { success: false, output, error };
-        }
-
-        const cliParams = {
-          demonstrativeType: "to" as import("../types/mod.ts").DemonstrativeType,
-          layerType: targetType as import("../types/mod.ts").LayerType,
-          options: {
-            fromFile,
-            destinationFile: destFile,
-            adaptation: args.adaptation,
-          },
-        };
-        const factory = await PromptVariablesFactory.create(cliParams);
-        const adapter = new PromptAdapterImpl(factory);
-        const promptResult = await adapter.validateAndGenerate();
-        if (!promptResult.success) {
-          return { success: false, output: "", error: promptResult.content };
-        }
-        output = promptResult.content;
-        break;
       }
-      case "analyze": {
-        if (subcommands.length < 2 || subcommands[0] !== "summary") {
-          error = "Invalid analyze command. Usage: analyze summary <type>";
-          return { success: false, output, error };
-        }
-
-        const targetType = subcommands[1];
-        const fromFile = args.fromFile;
-        const destFile = args.destination;
-
-        if (!fromFile) {
-          error = "Source file must be specified using --from";
-          return { success: false, output, error };
-        }
-
-        if (!destFile) {
-          error = "Destination file must be specified using --destination";
-          return { success: false, output, error };
-        }
-
-        const cliParams2 = {
-          demonstrativeType: "summary" as import("../types/mod.ts").DemonstrativeType,
-          layerType: targetType as import("../types/mod.ts").LayerType,
-          options: {
-            fromFile,
-            destinationFile: destFile,
-            adaptation: args.adaptation,
-          },
-        };
-        const factory2 = await PromptVariablesFactory.create(cliParams2);
-        const adapter2 = new PromptAdapterImpl(factory2);
-        const promptResult2 = await adapter2.validateAndGenerate();
-        if (!promptResult2.success) {
-          return { success: false, output: "", error: promptResult2.content };
-        }
-        output = promptResult2.content;
-        break;
-      }
-      case "init": {
-        output = "";
-        break;
-      }
-      default:
-        error = `Unknown command: ${command}`;
-        return { success: false, output, error };
+    } else {
+      error = `Invalid command usage. Usage: ${command} <type>`;
+      return { success: false, output, error };
     }
 
     return { success: true, output, error };

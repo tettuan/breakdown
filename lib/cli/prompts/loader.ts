@@ -65,19 +65,17 @@ export class PromptLoader {
     const layer = args.layer || "default";
     const promptDir = join(promptBaseDir, demonstrative, layer);
 
-    // 入力レイヤータイプを決定
-    let fromLayerType = "default";
-    if (args.fromProject) {
-      fromLayerType = "project";
-    } else if (args.fromIssue) {
-      fromLayerType = "issue";
-    } else if (args.fromFile) {
-      // ファイルパスからの推論
-      fromLayerType = this.inferLayerTypeFromPath(args.fromFile) || "default";
+    // Determine input type from file path
+    if (!args.fromFile) {
+      throw new Error("No input file specified");
+    }
+    const inputType = args.input || this.inferLayerTypeFromPath(args.fromFile);
+    if (!inputType) {
+      throw new Error("Could not determine input type from file path");
     }
 
     // プロンプトファイルのパスを構築
-    const promptPath = join(promptDir, `f_${fromLayerType}.md`);
+    const promptPath = join(promptDir, `f_${inputType}.md`);
 
     // プロンプトファイルを読み込み
     const content = await this.readPromptFile(promptPath);
