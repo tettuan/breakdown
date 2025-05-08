@@ -114,6 +114,14 @@ async function runPromptProcessing(
   }
 }
 
+export interface GenerateWithPromptOptions {
+  adaptation?: string;
+  promptDir?: string;
+  demonstrativeType?: string;
+  input_text?: string;
+  input_text_file?: string;
+}
+
 /**
  * Generates a prompt file by processing the input file and writing to the output file.
  *
@@ -129,7 +137,7 @@ export async function generateWithPrompt(
   _toFile: string,
   _format: string,
   _force = false,
-  _options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
+  _options?: GenerateWithPromptOptions,
 ): Promise<CommandResult> {
   return await runPromptProcessing(_fromFile, _toFile, _format, _force, _options);
 }

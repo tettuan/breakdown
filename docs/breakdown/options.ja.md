@@ -97,10 +97,15 @@ ex.
 
 ### オプション一覧
 
-- `-f, --from <file>`: 入力ファイルを指定
-- `-o, --destination <output_file>`: 出力先を指定
-- `-i, --input <from_layer_type>`: 入力レイヤーの種類を指定
-- `-a, --adaptation <adaptation_type>`: プロンプトの種類を指定（例: strict, a など）
+- プロンプト指定に利用
+  - `-a, --adaptation <adaptation_type>`: プロンプトの種類を指定（例: strict, a など）
+  - `-i, --input <from_layer_type>`: usecase:入力レイヤーの種類を指定, system: fromLayerType を上書き
+- テンプレート変数（ see `BreakdownPrompt` documents ）の値に利用
+  - `-f, --from <file>`: usecase:入力ファイルを指定, system: `{input_text_file}` を置き換え
+  - `-o, --destination <output_file>`: usecase:出力先を指定, system: `{destination_path}` を置き換え
+
+- STDIN 
+  - テンプレート変数の値に利用。 `{input_text}` を置き換え
 
 # doubleコマンドのパラメータバリデーション仕様
 

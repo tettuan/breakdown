@@ -3,15 +3,7 @@
 This prompt helps create comprehensive project summaries.
 
 ## Input
-The input is a project breakdown containing:
-- Project overview
-- Main objectives
-- Key deliverables
-- Technical requirements
-- Timeline estimates
-- Resource allocations
-- Dependencies
-- Risks and constraints
+{input_text}
 
 ## Output
 The output should be a structured project summary with:

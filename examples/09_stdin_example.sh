@@ -6,11 +6,14 @@
 
 pushd "$(dirname "$0")" > /dev/null
 
-WORK_DIR="$(pwd)"
+# Create output directory in the project root
+mkdir -p ../output
 
 echo "=== Example: Passing input via STDIN to breakdown summary project (project root style) ==="
-echo "This is a messy project summary from STDIN." | \
-  deno run -A ../cli/breakdown.ts summary project
+INPUT_TEXT="This is a messy project summary from STDIN."
+echo "Input text: $INPUT_TEXT"
+echo "$INPUT_TEXT" | \
+  deno run -A ../cli/breakdown.ts summary project -o ../output/project_summary.md
 
 popd > /dev/null
 exit 0 

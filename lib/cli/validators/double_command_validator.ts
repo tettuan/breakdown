@@ -116,7 +116,7 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
       };
     }
     // --from指定時はファイル存在チェック（destination必須チェックより先）
-    if (fromStr) {
+    if (fromStr && fromStr !== "-") {
       // 絶対パス化（CLI本体と同じ挙動に合わせる）
       const absFromPath = fromStr.startsWith("/") ? fromStr : resolve(Deno.cwd(), fromStr);
       values.from = absFromPath;
@@ -134,7 +134,7 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
     }
     // --from指定時は--destination必須
     step = DoubleParamValidationStep.CHECK_DESTINATION;
-    if (fromStr && !destinationStr) {
+    if (fromStr && fromStr !== "-" && !destinationStr) {
       return {
         success: false,
         step,

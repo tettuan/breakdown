@@ -25,6 +25,8 @@ export interface PromptCliParams {
     promptDir?: string;
     /** The layer type inferred from input. */
     fromLayerType?: string;
+    /** The input text from stdin. */
+    input_text?: string;
   };
 }
 
@@ -105,7 +107,6 @@ export class PromptVariablesFactory {
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
-    // ...他の必要なパラメータ
   } {
     return {
       promptFilePath: this.promptFilePath,
@@ -113,6 +114,13 @@ export class PromptVariablesFactory {
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
     };
+  }
+
+  /**
+   * Get the CLI options
+   */
+  public getOptions(): PromptCliParams["options"] {
+    return this.cliParams.options;
   }
 
   /**

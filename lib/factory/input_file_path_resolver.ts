@@ -46,6 +46,7 @@ export class InputFilePathResolver {
   public getPath(): string {
     const fromFile = this.getFromFile();
     if (!fromFile) return "";
+    if (fromFile === "-") return ""; // Handle stdin input
     const normalizedFromFile = this.normalizePath(fromFile);
     if (this.isAbsolute(normalizedFromFile)) {
       return normalizedFromFile;

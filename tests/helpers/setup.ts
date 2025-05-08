@@ -143,11 +143,12 @@ export async function runCommand(
 ): Promise<CommandResult> {
   const logger = new BreakdownLogger();
   const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
+  const absoluteCwd = cwd ? join(Deno.cwd(), cwd) : undefined;
   logger.debug("[runCommand] invoked", {
     cwd: Deno.cwd(),
     args,
     breakdownPath,
-    runCwd: cwd,
+    runCwd: absoluteCwd,
     env: options?.env,
   });
   const mergedEnv = { ...Deno.env.toObject(), ...(options?.env ?? {}) };
@@ -156,7 +157,7 @@ export async function runCommand(
     stdout: "piped",
     stderr: "piped",
     stdin: stdin ? "piped" : undefined,
-    cwd: cwd || undefined,
+    cwd: absoluteCwd,
     env: mergedEnv,
   });
 
@@ -188,7 +189,7 @@ export async function runCommand(
       };
     }
   } catch (err: unknown) {
-    logger.error("[runCommand] error", { err, cwd: Deno.cwd(), args, breakdownPath, runCwd: cwd });
+    logger.error("[runCommand] error", { err, cwd: Deno.cwd(), args, breakdownPath, runCwd: absoluteCwd });
     return {
       success: false,
       output: "",

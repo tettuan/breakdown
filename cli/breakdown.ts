@@ -135,24 +135,31 @@ export async function runBreakdown(args: string[]): Promise<void> {
     let inputTextFile = "";
     let hasInput = false;
 
-    // 1. -f(--from)があればinput_text_fileにセット（ファイル存在チェック優先）
+    // Handle file input if specified
     if (values.from) {
       inputTextFile = await Deno.readTextFile(values.from);
       hasInput = true;
     }
-    // 2. STDINがあればinput_textにセット（-fが無い場合のみ）
-    if (!hasInput && isStdinAvailable()) {
+    // Handle stdin input if available and no file input
+    else if (isStdinAvailable()) {
       inputText = await readStdin({ allowEmpty: false });
       hasInput = true;
     }
+
+    if (!hasInput) {
+      writeStderr("No input provided via stdin or --from option");
+      Deno.exit(1);
+    }
+
     // --- Factory/PromptManagerに渡す ---
-    const extraVars = { input_text: inputText, input_text_file: inputTextFile };
+    const extraVars = values.from ? { input_text_file: inputTextFile } : { input_text: inputText };
+
     // call generateWithPrompt for 'to' command
-    if (result.demonstrativeType === "to" && values.destination) {
+    if (result.demonstrativeType === "to") {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
         values.from || "", // fromFile
-        values.destination,
+        values.destination || "output.md", // Default output file
         result.layerType!,
         false,
         {
@@ -170,12 +177,13 @@ export async function runBreakdown(args: string[]): Promise<void> {
       }
       return;
     }
+
     // call generateWithPrompt for 'summary' command
-    if (result.demonstrativeType === "summary" && values.destination) {
+    if (result.demonstrativeType === "summary") {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        values.from || "",
-        values.destination,
+        values.from || "", // fromFile
+        values.destination || "output.md", // Default output file
         result.layerType!,
         false,
         {
@@ -186,6 +194,15 @@ export async function runBreakdown(args: string[]): Promise<void> {
         },
       );
       if (convResult.success) {
+        // Write output to destination file if specified
+        if (values.destination) {
+          try {
+            await Deno.writeTextFile(values.destination, convResult.output);
+          } catch (e) {
+            writeStderr(`Failed to write output to ${values.destination}: ${e}`);
+            Deno.exit(1);
+          }
+        }
         writeStdout(convResult.output);
       } else {
         writeStderr(formatError(convResult.error));

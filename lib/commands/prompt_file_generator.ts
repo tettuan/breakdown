@@ -24,6 +24,10 @@ export class PromptFileGenerator {
    * @returns A promise that resolves if the file exists, or throws an error if not.
    */
   validateInputFile(path: string): Promise<void> {
+    // Only validate if path is provided (actual file input)
+    if (!path) {
+      return Promise.resolve();
+    }
     return Deno.stat(path).then(() => {}, () => {
       throw new Error(`No such file: ${path}`);
     });
@@ -44,18 +48,8 @@ export class PromptFileGenerator {
     toFile: string,
     format: string,
     _force = false,
-    options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string },
+    options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string; input_text?: string },
   ): Promise<CommandResult> {
-    if (fromFile === "-") {
-      return {
-        success: false,
-        output: "",
-        error: {
-          type: PromptFileErrorType.InputFileNotFound,
-          message: `Input file is stdin ('-'), which is not supported. [file: -]`,
-        },
-      };
-    }
     const cliParams = {
       demonstrativeType:
         (options?.demonstrativeType || "to") as import("../types/mod.ts").DemonstrativeType,
@@ -64,34 +58,52 @@ export class PromptFileGenerator {
         fromFile,
         destinationFile: toFile,
         adaptation: options?.adaptation,
+        input_text: options?.input_text,
       },
     };
     const factory = await PromptVariablesFactory.create(cliParams);
     factory.validateAll();
     const { promptFilePath, inputFilePath } = factory.getAllParams();
-    // 3. 入力ファイル存在チェック（先に判定）
-    try {
-      await this.validateInputFile(inputFilePath);
-    } catch (e) {
-      if (e instanceof Error && e.message.startsWith("No such file")) {
+
+    // Handle stdin input
+    if (fromFile === "-") {
+      if (!options?.input_text) {
         return {
           success: false,
           output: "",
           error: {
             type: PromptFileErrorType.InputFileNotFound,
-            message: `Input file not found: ${inputFilePath}`,
+            message: "No input provided via stdin",
           },
         };
       }
-      return {
-        success: false,
-        output: "",
-        error: {
-          type: PromptFileErrorType.Unknown,
-          message: `Unknown error while checking input file: ${inputFilePath} - ${e}`,
-        },
-      };
+      // Skip input file validation for stdin
+    } else {
+      // 3. 入力ファイル存在チェック（先に判定）
+      try {
+        await this.validateInputFile(inputFilePath);
+      } catch (e) {
+        if (e instanceof Error && e.message.startsWith("No such file")) {
+          return {
+            success: false,
+            output: "",
+            error: {
+              type: PromptFileErrorType.InputFileNotFound,
+              message: `Input file not found: ${inputFilePath}`,
+            },
+          };
+        }
+        return {
+          success: false,
+          output: "",
+          error: {
+            type: PromptFileErrorType.Unknown,
+            message: `Unknown error while checking input file: ${inputFilePath} - ${e}`,
+          },
+        };
+      }
     }
+
     // 4. テンプレートファイル存在チェック
     const promptDir = dirname(promptFilePath);
     if (!existsSync(promptDir)) {
@@ -114,6 +126,7 @@ export class PromptFileGenerator {
         },
       };
     }
+
     // 6. テンプレート処理
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
     const adapter = new PromptAdapterImpl(factory);
