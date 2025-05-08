@@ -21,10 +21,43 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import { setInputTextVariable } from "$lib/factory/variables_util.ts";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import { join } from "@std/path/join";
+import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
+const TEST_DIR = "tmp/test_factory_stdin";
+let originalCwd: string;
 
 Deno.test("Factory stdin handling", async (t) => {
+  await t.step("setup", async () => {
+    logger.debug("Setting up test environment", {
+      purpose: "Prepare test directory for factory stdin tests",
+      dir: TEST_DIR,
+    });
+    try {
+      await Deno.remove(TEST_DIR, { recursive: true });
+    } catch {
+      // Ignore if directory doesn't exist
+    }
+    await ensureDir(TEST_DIR);
+
+    // Create minimal config file for CLI
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+    );
+
+    // Create prompts directory structure
+    await ensureDir(join(TEST_DIR, ".agent", "breakdown", "prompts"));
+    await ensureDir(join(TEST_DIR, ".agent", "breakdown", "prompts", "to", "project"));
+
+    // Save and change working directory to test dir
+    originalCwd = Deno.cwd();
+    Deno.chdir(TEST_DIR);
+  });
+
   await t.step("should handle stdin input", async () => {
     logger.debug("Testing stdin input handling in factory", {
       purpose: "Verify stdin input is correctly processed",
@@ -43,7 +76,11 @@ Deno.test("Factory stdin handling", async (t) => {
     const params = factory.getAllParams();
     const updatedParams = setInputTextVariable(params, "Test input from stdin");
 
-    assertEquals(updatedParams.input_text, "Test input from stdin", "Input text should be set from stdin");
+    assertEquals(
+      updatedParams.input_text,
+      "Test input from stdin",
+      "Input text should be set from stdin",
+    );
   });
 
   await t.step("should handle both stdin and file input", async () => {
@@ -64,6 +101,24 @@ Deno.test("Factory stdin handling", async (t) => {
     const params = factory.getAllParams();
     const updatedParams = setInputTextVariable(params, "Test input from stdin");
 
-    assertEquals(updatedParams.input_text, "Test input from stdin", "Input text should be set from stdin");
+    assertEquals(
+      updatedParams.input_text,
+      "Test input from stdin",
+      "Input text should be set from stdin",
+    );
   });
-}); 
+
+  await t.step("cleanup", async () => {
+    logger.debug("Cleaning up test environment", {
+      purpose: "Remove test directory and files",
+      dir: TEST_DIR,
+    });
+    try {
+      await Deno.remove(TEST_DIR, { recursive: true });
+    } catch (error) {
+      logger.error("Failed to clean up test directory", { error });
+    }
+    // Restore original working directory
+    Deno.chdir(originalCwd);
+  });
+});

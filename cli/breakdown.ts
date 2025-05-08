@@ -137,10 +137,23 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
     // Handle file input if specified
     if (values.from) {
-      inputTextFile = await Deno.readTextFile(values.from);
-      hasInput = true;
-    }
-    // Handle stdin input if available and no file input
+      if (values.from === "-") {
+        // Special case: '-' indicates stdin input
+        if (isStdinAvailable()) {
+          inputText = await readStdin({ allowEmpty: false });
+          hasInput = true;
+        }
+      } else {
+        try {
+          const resolvedPath = resolve(Deno.cwd(), values.from);
+          inputTextFile = await Deno.readTextFile(resolvedPath);
+          hasInput = true;
+        } catch (e) {
+          writeStderr(`Failed to read input file ${values.from}: ${e}`);
+          Deno.exit(1);
+        }
+      }
+    } // Handle stdin input if available and no file input
     else if (isStdinAvailable()) {
       inputText = await readStdin({ allowEmpty: false });
       hasInput = true;
@@ -152,37 +165,18 @@ export async function runBreakdown(args: string[]): Promise<void> {
     }
 
     // --- Factory/PromptManagerに渡す ---
-    const extraVars = values.from ? { input_text_file: inputTextFile } : { input_text: inputText };
+    const extraVars = values.from === "-"
+      ? { input_text: inputText }
+      : values.from
+      ? { input_text_file: inputTextFile }
+      : { input_text: inputText };
+    const fromFile = values.from || (isStdinAvailable() ? "-" : "");
 
     // call generateWithPrompt for 'to' command
     if (result.demonstrativeType === "to") {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        values.from || "", // fromFile
-        values.destination || "output.md", // Default output file
-        result.layerType!,
-        false,
-        {
-          adaptation: values.adaptation,
-          promptDir: values.promptDir,
-          demonstrativeType: result.demonstrativeType,
-          ...extraVars,
-        },
-      );
-      if (convResult.success) {
-        writeStdout(convResult.output);
-      } else {
-        writeStderr(formatError(convResult.error));
-        Deno.exit(1);
-      }
-      return;
-    }
-
-    // call generateWithPrompt for 'summary' command
-    if (result.demonstrativeType === "summary") {
-      const { generateWithPrompt } = await import("../lib/commands/mod.ts");
-      const convResult = await generateWithPrompt(
-        values.from || "", // fromFile
+        fromFile, // fromFile
         values.destination || "output.md", // Default output file
         result.layerType!,
         false,
@@ -197,6 +191,49 @@ export async function runBreakdown(args: string[]): Promise<void> {
         // Write output to destination file if specified
         if (values.destination) {
           try {
+            // Ensure output directory exists
+            const outputDir = values.destination.split("/").slice(0, -1).join("/");
+            if (outputDir) {
+              await Deno.mkdir(outputDir, { recursive: true });
+            }
+            await Deno.writeTextFile(values.destination, convResult.output);
+          } catch (e) {
+            writeStderr(`Failed to write output to ${values.destination}: ${e}`);
+            Deno.exit(1);
+          }
+        }
+        writeStdout(convResult.output);
+      } else {
+        writeStderr(formatError(convResult.error));
+        Deno.exit(1);
+      }
+      return;
+    }
+
+    // call generateWithPrompt for 'summary' command
+    if (result.demonstrativeType === "summary") {
+      const { generateWithPrompt } = await import("../lib/commands/mod.ts");
+      const convResult = await generateWithPrompt(
+        fromFile, // fromFile
+        values.destination || "output.md", // Default output file
+        result.layerType!,
+        false,
+        {
+          adaptation: values.adaptation,
+          promptDir: values.promptDir,
+          demonstrativeType: result.demonstrativeType,
+          ...extraVars,
+        },
+      );
+      if (convResult.success) {
+        // Write output to destination file if specified
+        if (values.destination) {
+          try {
+            // Ensure output directory exists
+            const outputDir = values.destination.split("/").slice(0, -1).join("/");
+            if (outputDir) {
+              await Deno.mkdir(outputDir, { recursive: true });
+            }
             await Deno.writeTextFile(values.destination, convResult.output);
           } catch (e) {
             writeStderr(`Failed to write output to ${values.destination}: ${e}`);

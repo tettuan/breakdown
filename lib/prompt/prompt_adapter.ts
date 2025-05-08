@@ -47,8 +47,8 @@ export class PromptAdapterImpl {
     if (!promptResult.ok) {
       errors.push(`[${promptResult.error}] ${promptResult.message}`);
     }
-    // Validate input file (if set)
-    if (inputFilePath) {
+    // Validate input file (if set and not stdin)
+    if (inputFilePath && inputFilePath !== "-") {
       const inputResult = await validator.validateFile(inputFilePath, "Input file");
       if (!inputResult.ok) {
         errors.push(`[${inputResult.error}] ${inputResult.message}`);

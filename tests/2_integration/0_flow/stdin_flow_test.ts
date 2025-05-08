@@ -26,19 +26,75 @@ const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_stdin_flow";
 
 Deno.test("Stdin Flow Integration", async (t) => {
-  let originalCwd: string;
+  let _originalCwd: string;
 
   await t.step("setup", async () => {
     logger.debug("Setting up test environment", {
       purpose: "Create test directory and files",
       dir: TEST_DIR,
     });
-    originalCwd = Deno.cwd();
+    _originalCwd = Deno.cwd();
     await ensureDir(TEST_DIR);
 
     // Initialize workspace
     const initResult = await runCommand(["init"], undefined, TEST_DIR);
     assertEquals(initResult.success, true, "Workspace initialization should succeed");
+
+    // Create prompt template directories
+    const promptsDir = join(TEST_DIR, ".agent", "breakdown", "prompts");
+    await ensureDir(join(promptsDir, "summary", "project"));
+    await ensureDir(join(promptsDir, "to", "project"));
+
+    // Create app.yml with correct prompt directory
+    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: .agent/breakdown
+app_prompt:
+  base_dir: .agent/breakdown/prompts
+app_schema:
+  base_dir: schema
+`,
+    );
+
+    // Create prompt template files
+    const summaryTemplate = `# Project Summary Template
+Input:
+{input_text}
+
+Output:
+A project summary should include:
+- Project status overview
+- Progress on key objectives
+- Deliverable status
+- Technical achievements
+- Timeline assessment
+- Resource utilization
+- Dependency status
+- Risk assessment
+- Next steps`;
+
+    const toTemplate = `# Project Description Template
+Input:
+{input_text}
+
+Output:
+A project description should include:
+- Project overview
+- Goals and objectives
+- Scope
+- Deliverables
+- Timeline
+- Resources
+- Dependencies
+- Risks`;
+
+    await Deno.writeTextFile(
+      join(promptsDir, "summary", "project", "f_project.md"),
+      summaryTemplate,
+    );
+    await Deno.writeTextFile(join(promptsDir, "to", "project", "f_project.md"), toTemplate);
   });
 
   await t.step("summary command with stdin input", async () => {
@@ -66,7 +122,11 @@ Deno.test("Stdin Flow Integration", async (t) => {
       TEST_DIR,
     );
     assertEquals(result.success, true, "Command should succeed");
-    assertStringIncludes(result.output, "project description", "Output should contain project description");
+    assertStringIncludes(
+      result.output,
+      "project description",
+      "Output should contain project description",
+    );
   });
 
   await t.step("stdin with -o option", async () => {
@@ -96,4 +156,4 @@ Deno.test("Stdin Flow Integration", async (t) => {
       logger.error("Failed to clean up test directory", { error });
     }
   });
-}); 
+});

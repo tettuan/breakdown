@@ -48,7 +48,12 @@ export class PromptFileGenerator {
     toFile: string,
     format: string,
     _force = false,
-    options?: { adaptation?: string; promptDir?: string; demonstrativeType?: string; input_text?: string },
+    options?: {
+      adaptation?: string;
+      promptDir?: string;
+      demonstrativeType?: string;
+      input_text?: string;
+    },
   ): Promise<CommandResult> {
     const cliParams = {
       demonstrativeType:
