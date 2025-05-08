@@ -3,7 +3,7 @@
 # This script cleans up all example results and initialized files
 #
 # Usage:
-# ./examples/09_clean.sh
+# ./examples/11_clean.sh
 #
 # Note:
 # - This script should be run from the project root directory
@@ -21,6 +21,10 @@ EXAMPLES_DIR="./tmp/examples"  # Directory for all example outputs
 ERROR_LOG="./error.log"
 DENOBIN="./.deno/bin/breakdown"
 DENOBIN_DIR="./.deno/bin"
+OUTPUT_DIR="./output"
+TMP_DIR="./tmp"
+DEBUG_LOG="./debug.log"
+USER_CONFIG="./.agent/breakdown/config/user.yml"
 
 # Function to safely remove a file or directory
 safe_remove() {
@@ -36,6 +40,11 @@ safe_remove "$AGENT_DIR"
 safe_remove "$EXAMPLES_DIR"
 safe_remove "$ERROR_LOG"
 safe_remove "$DENOBIN"
+safe_remove "$OUTPUT_DIR"
+safe_remove "$TMP_DIR"
+safe_remove "$DEBUG_LOG"
+safe_remove "$USER_CONFIG"
+
 # .deno/bin ディレクトリが空なら削除
 test -d "$DENOBIN_DIR" && [ "$(ls -A $DENOBIN_DIR)" = "" ] && rmdir "$DENOBIN_DIR"
 
@@ -44,10 +53,14 @@ echo "The following directories and files were removed (if they existed):"
 echo "- $AGENT_DIR (breakdown initialization directory)"
 echo "- $EXAMPLES_DIR (all example outputs)"
 echo "- $ERROR_LOG (error logs)"
-echo "- $DENOBIN (breakdown バイナリ)"
-echo "- $DENOBIN_DIR (バイナリディレクトリ、空の場合のみ削除)"
+echo "- $DENOBIN (breakdown binary)"
+echo "- $OUTPUT_DIR (output directory for example results)"
+echo "- $TMP_DIR (temporary files directory)"
+echo "- $DEBUG_LOG (debug log file)"
+echo "- $USER_CONFIG (user configuration file)"
+echo "- $DENOBIN_DIR (binary directory, removed if empty)"
 
 popd > /dev/null
 exit 0
 
-# ※ breakdownコマンドは直接使用していませんが、使用する場合は必ず ./.deno/bin/breakdown をパス指定してください 
+# Note: When using the breakdown command, always specify the full path: ./.deno/bin/breakdown 
