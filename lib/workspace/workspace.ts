@@ -1,3 +1,22 @@
+/**
+ * Workspace module for Breakdown tool.
+ *
+ * This module provides the core workspace functionality for the Breakdown tool,
+ * including directory structure management, configuration handling, and path resolution.
+ * It implements the workspace structure, configuration management, and path resolution
+ * interfaces.
+ *
+ * @example
+ * ```ts
+ * import { Workspace } from "@tettuan/breakdown/lib/workspace/workspace.ts";
+ *
+ * const workspace = new Workspace({ workingDir: "." });
+ * await workspace.initialize();
+ * ```
+ *
+ * @module
+ */
+
 import { dirname, fromFileUrl, isAbsolute, join } from "@std/path";
 import { exists } from "@std/fs";
 import {
@@ -14,10 +33,20 @@ import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 
 /**
- * Workspace class and helpers for Breakdown.
+ * Workspace class for managing Breakdown project structure and configuration.
  *
- * All configuration access (e.g., prompt base dir, schema base dir) must use BreakdownConfig from @tettuan/breakdownconfig.
- * Do not read YAML or JSON config files directly in this module.
+ * This class handles all workspace-related operations including:
+ * - Directory structure management
+ * - Configuration file handling
+ * - Path resolution for prompts, schemas, and outputs
+ * - Template and schema file management
+ *
+ * All configuration access must use BreakdownConfig from @tettuan/breakdownconfig.
+ * Direct YAML or JSON config file reading is not allowed in this module.
+ *
+ * @implements {WorkspaceStructure}
+ * @implements {WorkspaceConfigManager}
+ * @implements {WorkspacePaths}
  */
 export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, WorkspacePaths {
   private workingDir: string;
@@ -28,7 +57,11 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 
   /**
    * Creates a new Workspace instance.
-   * @param options The workspace options for initialization.
+   *
+   * @param options - The workspace options for initialization
+   * @param options.workingDir - The base working directory for the workspace
+   * @param options.promptBaseDir - Optional custom prompt base directory
+   * @param options.schemaBaseDir - Optional custom schema base directory
    */
   constructor(options: WorkspaceOptions) {
     this.workingDir = options.workingDir;
@@ -38,9 +71,16 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Initialize the workspace by creating required directories and validating configuration
+   * Initialize the workspace by creating required directories and validating configuration.
    *
-   * All config access must use BreakdownConfig, not direct file reads.
+   * This method:
+   * 1. Creates the necessary directory structure
+   * 2. Initializes configuration files
+   * 3. Validates the configuration
+   * 4. Copies template and schema files
+   *
+   * @throws {WorkspaceInitError} If initialization fails
+   * @throws {WorkspaceConfigError} If configuration validation fails
    */
   public async initialize(): Promise<void> {
     // 1. Ensure .agent/breakdown/config/app.yml exists
@@ -122,8 +162,11 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Test if a directory is writable by attempting to create and remove a test file
+   * Test if a directory is writable by attempting to create and remove a test file.
+   *
+   * @param dir - The directory to test
    * @throws {Error} If directory is not writable
+   * @private
    */
   private async testDirectoryWritable(dir: string): Promise<void> {
     const testFile = join(dir, ".write_test");
@@ -141,7 +184,8 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Ensure required directories exist
+   * Ensure required directories exist and are writable.
+   *
    * @throws {WorkspaceInitError} If directory creation fails
    * @throws {Error} If permission denied
    */
@@ -220,7 +264,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Get workspace configuration
+   * Get the current workspace configuration.
+   *
+   * @returns {Promise<WorkspaceConfig>} The workspace configuration
+   * @throws {WorkspaceConfigError} If configuration is not loaded
    */
   public getConfig(): Promise<WorkspaceConfig> {
     if (!this.config) {
@@ -238,7 +285,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Validate workspace configuration
+   * Validate the workspace configuration.
+   *
+   * @throws {WorkspaceConfigError} If validation fails
    */
   public async validateConfig(): Promise<void> {
     // Get config first
@@ -262,7 +311,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Get prompts directory path
+   * Get the prompt base directory path.
+   *
+   * @returns {string} The absolute path to the prompt base directory
    */
   public getPromptBaseDir(): string {
     const config = this.config || { app_prompt: { base_dir: "prompts" } };
@@ -271,8 +322,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Get schema directory path
-   * 設定値(app_schema.base_dir)を優先し、未設定時はlib/breakdown/schemaを返す
+   * Get the schema base directory path.
+   *
+   * @returns {string} The absolute path to the schema base directory
    */
   public getSchemaBaseDir(): string {
     const config = this.config || { app_schema: { base_dir: "schemas" } };
@@ -281,23 +333,28 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Get working directory path
+   * Get the working directory path.
+   *
+   * @returns {string} The absolute path to the working directory
    */
   public getWorkingDir(): string {
     return this.workingDir;
   }
 
   /**
-   * PromptVariablesFactory経由でプロンプトパスを取得
+   * Set the prompt variables factory.
+   *
+   * @param factory - The prompt variables factory to use
    */
   public setPromptVariablesFactory(factory: PromptVariablesFactory) {
     this.promptVariablesFactory = factory;
   }
 
   /**
-   * Resolves the path to a prompt file by name using the PromptVariablesFactory.
-   * @param _name The name of the prompt file.
-   * @returns The resolved prompt file path.
+   * Resolve the full path for a prompt file.
+   *
+   * @param name - The name of the prompt file
+   * @returns {string} The absolute path to the prompt file
    */
   public resolvePromptPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
@@ -305,9 +362,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Resolves the path to a schema file by name using the PromptVariablesFactory.
-   * @param _name The name of the schema file.
-   * @returns The resolved schema file path.
+   * Resolve the full path for a schema file.
+   *
+   * @param name - The name of the schema file
+   * @returns {string} The absolute path to the schema file
    */
   public resolveSchemaPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
@@ -315,9 +373,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Resolves the path to an output file by name using the PromptVariablesFactory.
-   * @param _name The name of the output file.
-   * @returns The resolved output file path.
+   * Resolve the full path for an output file.
+   *
+   * @param name - The name of the output file
+   * @returns {string} The absolute path to the output file
    */
   public resolveOutputPath(_name: string): string {
     if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
@@ -325,7 +384,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * lib配下のテンプレート・スキーマをワークスペースにコピー
+   * Copy template and schema files to the workspace.
+   *
+   * @private
    */
   private async copyTemplatesAndSchemas(): Promise<void> {
     const thisFileDir = dirname(fromFileUrl(import.meta.url));
@@ -365,7 +426,12 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * 再帰的にディレクトリをコピーするユーティリティ
+   * Recursively copy a directory.
+   *
+   * @param src - Source directory path
+   * @param dest - Destination directory path
+   * @param exts - Optional array of file extensions to copy
+   * @private
    */
   private async copyDirRecursive(src: string, dest: string, exts?: string[]) {
     for await (const entry of Deno.readDir(src)) {
@@ -390,7 +456,13 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
 }
 
 /**
- * Initialize a new workspace
+ * Initialize a new Breakdown workspace.
+ *
+ * Creates and initializes a new workspace in the specified directory.
+ *
+ * @param workingDir - The directory to initialize the workspace in (defaults to ".")
+ * @throws {WorkspaceInitError} If initialization fails
+ * @throws {WorkspaceConfigError} If configuration validation fails
  */
 export async function initWorkspace(workingDir = "."): Promise<void> {
   const workspace = new Workspace({ workingDir });
