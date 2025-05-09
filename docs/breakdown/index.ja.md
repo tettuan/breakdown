@@ -210,3 +210,7 @@ Breakdown ツールでは、Markdownファイルの内容を構造的に parse
 
 3. parsing Markdown file is never required. If needed to so, use `BreakdownPrompt`. this is the only
    way to parsing md file.
+
+---
+
+[日本語](./index.ja.md) | [English](./index.md)

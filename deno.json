@@ -40,7 +40,8 @@
     "test": "deno test --allow-env --allow-write --allow-read --allow-run",
     "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",
     "check": "deno check **/*.ts",
-    "ci": "sh scripts/local_ci.sh"
+    "ci": "sh scripts/local_ci.sh",
+    "build:docs": "deno doc --json > docs/api.json && deno run --allow-read --allow-write --allow-env scripts/build_docs.ts"
   },
   "fmt": {
     "indentWidth": 2,
