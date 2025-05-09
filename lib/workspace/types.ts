@@ -1,13 +1,13 @@
 /**
  * Type definitions for the Breakdown workspace module.
- * 
+ *
  * This module defines the core interfaces and types used for workspace management,
  * including configuration, directory structure, and path resolution.
  *
  * @example
  * ```ts
  * import { WorkspaceOptions, WorkspaceConfig } from "@tettuan/breakdown/lib/workspace/types.ts";
- * 
+ *
  * const options: WorkspaceOptions = {
  *   workingDir: ".",
  *   promptBaseDir: "custom/prompts"
@@ -20,7 +20,7 @@
 /**
  * Workspace configuration options.
  * Used to configure the workspace directory and base directories.
- * 
+ *
  * @interface
  * @property {string} workingDir - The working directory for the workspace
  * @property {string} [promptBaseDir] - Optional custom base directory for prompts
@@ -38,7 +38,7 @@ export interface WorkspaceOptions {
 /**
  * Workspace configuration structure.
  * Represents the structure of the workspace configuration file (app.yml).
- * 
+ *
  * @interface
  * @property {string} working_dir - The working directory path relative to the workspace root
  * @property {Object} app_prompt - Prompt configuration settings
@@ -64,7 +64,7 @@ export interface WorkspaceConfig {
 /**
  * Directory structure management interface.
  * Provides methods for managing workspace directories and structure.
- * 
+ *
  * @interface
  * @property {function(): string} getPromptBaseDir - Gets the base directory for prompts
  * @property {function(): string} getSchemaBaseDir - Gets the base directory for schemas
@@ -88,7 +88,7 @@ export interface WorkspaceStructure {
 /**
  * Configuration management interface.
  * Provides methods for managing and validating workspace configuration.
- * 
+ *
  * @interface
  * @property {function(): Promise<WorkspaceConfig>} getConfig - Gets the workspace configuration
  * @property {function(): Promise<void>} validateConfig - Validates the workspace configuration
@@ -103,7 +103,7 @@ export interface WorkspaceConfigManager {
 /**
  * Path resolution interface.
  * Provides methods for resolving workspace paths for various file types.
- * 
+ *
  * @interface
  * @property {function(name: string): string} resolvePromptPath - Resolves the path to a prompt file
  * @property {function(name: string): string} resolveSchemaPath - Resolves the path to a schema file
