@@ -60,7 +60,7 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
     const content = new TextDecoder().decode(input).trim();
 
     if (!allowEmpty && !content) {
-      throw new StdinError("No input provided via stdin");
+      throw new StdinError("No input provided via stdin or -f/--from option");
     }
 
     return content;
@@ -208,4 +208,15 @@ export class Spinner {
   private disable(): void {
     this.enabled = false;
   }
+}
+
+/**
+ * Checks if STDIN is available (i.e., not a TTY, so piped or redirected input exists).
+ * @param opts Optional override for isTerminal (for testing/mocking)
+ * @returns true if STDIN is available (not a TTY), false otherwise
+ */
+export function isStdinAvailable(opts?: { isTerminal?: boolean }): boolean {
+  // For testability, allow isTerminal to be injected
+  const isTerminal = opts?.isTerminal ?? Deno.stdin.isTerminal();
+  return !isTerminal;
 }

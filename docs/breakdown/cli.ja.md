@@ -28,8 +28,6 @@ breakdown <demonstrative> [layer] [options]
 ### 入力ソース指定
 
 - `--from <file>`, `-f <file>`: 入力ファイルの指定
-- `--from-project <file>`: プロジェクトファイルからの生成
-- `--from-issue <file>`: 課題ファイルからの生成
 
 ### 出力先指定
 
@@ -56,7 +54,7 @@ tail -100 "<log_file>" | breakdown defect <layer> -o <output>
 
 ### 標準出力への出力
 
-出力先を指定しない場合、結果は標準出力に出力されます。
+結果は標準出力に出力されます。
 
 ## パス解決
 

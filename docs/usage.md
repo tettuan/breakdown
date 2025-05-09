@@ -1,26 +1,54 @@
 # Breakdown Usage Guide
 
-This document outlines the various use cases and command patterns for using the Breakdown tool.
+This document explains various use cases and command patterns for the Breakdown tool.
 
 ## Installation
 
-### Install to System
+### Recommended: Install as CLI
 
+Breakdown is primarily intended to be used as a CLI tool.  
+You can install it using **Deno official/JSR standard method** with the following command:
+
+```bash
+deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 ```
+- `-A` : Allow all permissions (recommended)
+- `-f` : Overwrite existing command
+- `--global` : Global installation
+- `breakdown` : Command name
+
+> **Note:**  
+> The main module for Breakdown CLI is `jsr:@tettuan/breakdown/cli`.  
+> Make sure to specify the `/cli` subpath.
+
+---
+
+### Update
+
+When a new version is released, you can overwrite install using the same command:
+
+```bash
+deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+```
+
+---
+
+### Using as a Library
+
+When importing directly from TypeScript/JavaScript,  
+you can add it as a dependency using `deno add`.
+
+```bash
 deno add @tettuan/breakdown
 ```
 
-### Install Only to AI Development Repository
+---
 
-```
-deno add --root ./tools @tettuan/breakdown
-```
+### Notes
 
-If you want to use it without installation:
-
-```
-deno run --allow-read --allow-net jsr:@tettuan/breakdown
-```
+- The breakdown command automatically uses `cli/breakdown.ts` as the entry point through the `bin` setting in `deno.json`.
+- Deno 1.40 or later is recommended.
+- For detailed usage, refer to the "Usage" section below.
 
 ## Basic Commands
 
@@ -30,37 +58,37 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 breakdown init
 ```
 
-This command creates the necessary working directory structure as specified in your configuration.
+This command creates the necessary working directory structure as specified in the configuration.
 
 ### Markdown Processing Commands
 
 The following combinations are available:
 
 | Command \ Layer | Command Description | Project | Issue | Task |
-| --------------- | ------------------ | ------- | ----- | ---- |
-| to | Command to convert input Markdown to next layer format | Break down into project<br>breakdown to project <written_project_summary.md> -o <project_dir> | Break down project into issues<br>breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | Break down issues into tasks<br>breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
-| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project summary in Markdown format<br>echo "<messy_something>" \| breakdown summary project -o <project_summary.md> | Generate issue summary in Markdown format<br>breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | Generate task summary in Markdown format<br>breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
-| defect | Command to generate fixes from error logs or defect information | Generate project information from defect info<br>tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | Generate issues from defect info<br>breakdown defect issue --from <bug_report.md> -o <issue_defect_dir> | Generate tasks from defect info<br>breakdown defect task --from <improvement_request.md> -o <task_defect_dir> |
+| --------------- | ------------------- | ------- | ----- | ---- |
+| to | Command to convert input Markdown to the next layer format | Decompose to project<br>breakdown to project <written_project_summary.md> -o <project_dir> | Decompose project to issues<br>breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | Decompose issue to tasks<br>breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
+| summary | Command to generate new Markdown or generate Markdown for specified layer | Generate project overview in Markdown format<br>echo "<messy_something>" \| breakdown summary project -o <project_summary.md> | Generate issue overview in Markdown format<br>breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | Generate task overview in Markdown format<br>breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
+| defect | Command to generate fixes from error logs and defect information | Generate project information from defects<br>tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | Generate issues from defect information<br>breakdown defect issue --from <bug_report.md> -o <issue_defect_dir> | Generate tasks from defect information<br>breakdown defect task --from <improvement_request.md> -o <task_defect_dir> |
 
-### Breaking Down into Projects
+### Decompose to Project
 
 ```bash
 breakdown to project <written_project_summary.md> -o <project_dir>
 ```
 
-### Breaking Down into Issues
+### Decompose to Issues
 
 ```bash
 breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
 ```
 
-### Breaking Down into Tasks
+### Decompose to Tasks
 
 ```bash
 breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 ```
 
-### Generating Markdown Summaries
+### Generate Markdown Summary
 
 **Project Summary** Generate project overview from unorganized information:
 
@@ -68,7 +96,7 @@ breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 ```
 
-**Issue Summary** Generate issues from a collection of tasks:
+**Issue Summary** Generate issues from task groups:
 
 ```bash
 breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>

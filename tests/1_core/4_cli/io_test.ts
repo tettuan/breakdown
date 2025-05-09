@@ -75,6 +75,11 @@ Deno.test("CLI I/O Handling", async (t) => {
     await ensureDir(join(TEST_DIR, "prompts"));
     // prompts/to/project ディレクトリも作成
     await ensureDir(join(TEST_DIR, "prompts", "to", "project"));
+    // Create prompt template file
+    await Deno.writeTextFile(
+      join(TEST_DIR, "prompts", "to", "project", "f_project.md"),
+      "# {input_text}\n",
+    );
 
     // Save and change working directory to test dir
     originalCwd = Deno.cwd();
@@ -91,14 +96,16 @@ Deno.test("CLI I/O Handling", async (t) => {
       ["to", "project", "--from", "-", "--destination", outputFile],
       input,
     );
-    // Accept both 'No such file: -' and 'No such file: <abs path to ->'
-    const expected1 = "No such file: -";
-    const expected2 = `No such file: ${join(Deno.cwd(), "-")}`;
-    const hasExpected = result.error.includes(expected1) || result.error.includes(expected2);
-    if (!hasExpected) {
-      throw new Error(
-        `Command error does not contain expected: ${expected1} or ${expected2}\nActual error: ${result.error}`,
-      );
+    // Validation: should succeed with stdin input
+    assertEquals(result.success, true);
+    // Check if output file was created with expected content
+    try {
+      const outputContent = await Deno.readTextFile(outputFile);
+      assertEquals(outputContent.includes("# Test Project"), true);
+      assertEquals(outputContent.includes("- Task 1"), true);
+      assertEquals(outputContent.includes("- Task 2"), true);
+    } catch (e) {
+      throw new Error(`Failed to read output file: ${e}`);
     }
   });
 

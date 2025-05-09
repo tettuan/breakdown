@@ -35,8 +35,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 6. `06_detailed_issue_creation.sh` - 詳細な課題の作成
 7. `07_test_result_tasks.sh` - テスト結果からのタスク生成
 8. `08_adaptation_option.sh` - プロンプト適応オプションの使用
-9. `09_prompt_debug.sh` - プロンプトのデバッグ
-10. `10_clean.sh` - 生成されたファイルのクリーンアップ
+9. `09_stdin_example.sh` - STDIN入力の利用例
+10. `10_prompt_debug.sh` - プロンプトのデバッグ
+11. `11_clean.sh` - 生成されたファイルのクリーンアップ
 
 ## 前準備の詳細
 
@@ -110,18 +111,27 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `--adaptation` または `-a` オプションを使ってプロンプトの種類パターンを切り替え
 - 長い形式（--adaptation strict）と短い形式（-a a）の両方の例を含みます
 
-### 9. プロンプトデバッグ
+### 9. STDIN入力の利用例
 ```bash
-./examples/09_prompt_debug.sh
+./examples/09_stdin_example.sh
+```
+このスクリプトは以下を実行します：
+- echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
+- summaryコマンドでプロジェクトサマリーを生成
+- 生成ファイルの確認
+
+### 10. プロンプトデバッグ
+```bash
+./examples/10_prompt_debug.sh
 ```
 このスクリプトは以下を実行します：
 - プロンプトの動作確認
 - デバッグ情報の出力
 - プロンプトの調整例
 
-### 10. クリーンアップ
+### 11. クリーンアップ
 ```bash
-./examples/10_clean.sh
+./examples/11_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除

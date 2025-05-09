@@ -16,6 +16,7 @@ This library is designed to work with AI development agents like Cursor. This de
 
 - Optimized Markdown conversion prompts
 - JSON schema syntax for AI systems
+- Comprehensive [glossary](./docs/breakdown/glossary.md) for domain-specific terminology
 
 ## Purpose
 

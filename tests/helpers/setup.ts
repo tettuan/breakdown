@@ -143,11 +143,13 @@ export async function runCommand(
 ): Promise<CommandResult> {
   const logger = new BreakdownLogger();
   const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
+  // Use cwd directly if it's already absolute, otherwise join with Deno.cwd()
+  const absoluteCwd = cwd ? (cwd.startsWith("/") ? cwd : join(Deno.cwd(), cwd)) : undefined;
   logger.debug("[runCommand] invoked", {
     cwd: Deno.cwd(),
     args,
     breakdownPath,
-    runCwd: cwd,
+    runCwd: absoluteCwd,
     env: options?.env,
   });
   const mergedEnv = { ...Deno.env.toObject(), ...(options?.env ?? {}) };
@@ -156,20 +158,23 @@ export async function runCommand(
     stdout: "piped",
     stderr: "piped",
     stdin: stdin ? "piped" : undefined,
-    cwd: cwd || undefined,
+    cwd: absoluteCwd,
     env: mergedEnv,
   });
 
   try {
     let process;
     if (stdin) {
+      // Spawn the process with stdin
       process = command.spawn();
       const writer = process.stdin.getWriter();
       await writer.write(new TextEncoder().encode(stdin));
       await writer.close();
+
       const { code, stdout, stderr } = await process.output();
       const output = new TextDecoder().decode(stdout);
       const error = new TextDecoder().decode(stderr);
+
       logger.debug("[runCommand] process output (with stdin)", { code, output, error });
       return {
         success: code === 0,
@@ -188,7 +193,13 @@ export async function runCommand(
       };
     }
   } catch (err: unknown) {
-    logger.error("[runCommand] error", { err, cwd: Deno.cwd(), args, breakdownPath, runCwd: cwd });
+    logger.error("[runCommand] error", {
+      err,
+      cwd: Deno.cwd(),
+      args,
+      breakdownPath,
+      runCwd: absoluteCwd,
+    });
     return {
       success: false,
       output: "",

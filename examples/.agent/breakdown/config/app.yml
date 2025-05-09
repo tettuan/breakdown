@@ -1,5 +1,0 @@
-working_dir: .agent/breakdown
-app_prompt:
-  base_dir: prompts
-app_schema:
-  base_dir: schemas

@@ -47,8 +47,8 @@ export class PromptAdapterImpl {
     if (!promptResult.ok) {
       errors.push(`[${promptResult.error}] ${promptResult.message}`);
     }
-    // Validate input file (if set)
-    if (inputFilePath) {
+    // Validate input file (if set and not stdin)
+    if (inputFilePath && inputFilePath !== "-") {
       const inputResult = await validator.validateFile(inputFilePath, "Input file");
       if (!inputResult.ok) {
         errors.push(`[${inputResult.error}] ${inputResult.message}`);
@@ -72,14 +72,21 @@ export class PromptAdapterImpl {
       const msg = e instanceof Error ? e.message : String(e);
       return { success: false, content: `[ReadError] Failed to read template: ${msg}` };
     }
-    // If template references {input_text}, try to read input file
+    // Get input text from stdin or file
     let inputText = "";
-    if (template.includes("{input_text}") && inputFilePath) {
-      try {
-        inputText = await Deno.readTextFile(inputFilePath);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        return { success: false, content: `[ReadError] Failed to read input file: ${msg}` };
+    if (template.includes("{input_text}")) {
+      // First try to get input_text from options (stdin)
+      const options = this.factory.getOptions();
+      if (options?.input_text) {
+        inputText = options.input_text;
+      } else if (inputFilePath) {
+        // Fall back to reading from file
+        try {
+          inputText = await Deno.readTextFile(inputFilePath);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          return { success: false, content: `[ReadError] Failed to read input file: ${msg}` };
+        }
       }
     }
     const variables = {

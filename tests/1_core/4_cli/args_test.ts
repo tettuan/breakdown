@@ -17,7 +17,7 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
-import { assertCommandOutput, assertCommandSuccess } from "../../helpers/assertions.ts";
+import { assertCommandOutput } from "../../helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
@@ -110,7 +110,8 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       "issue",
       ...args,
     ]);
-    assertCommandSuccess(result);
+    logger.debug("[DEBUG] result.error before assertion", { error: result.error });
+    assertEquals(result.error, "No input provided via stdin or -f/--from option");
   });
 
   // Advanced Error Cases
@@ -291,4 +292,19 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     // Restore original working directory
     Deno.chdir(originalCwd);
   });
+});
+
+Deno.test("CLI error handling - source options with input", async () => {
+  // breakdown to issue --input project --destination result.md
+  // 入力ファイルもSTDINも無い場合は、エラー出力が発生するのが正しい
+  const result = await runCommand([
+    "to",
+    "issue",
+    "--input",
+    "project",
+    "--destination",
+    "result.md",
+  ]);
+  logger.debug("[DEBUG] result.error before assertion", { error: result.error });
+  assertEquals(result.error, "No input provided via stdin or -f/--from option");
 });

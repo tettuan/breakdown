@@ -11,6 +11,9 @@ import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { CliError } from "../lib/cli/errors.ts";
+import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
+import { resolve } from "@std/path";
+import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
 
 const HELP_TEXT = `
 Breakdown - AI Development Instruction Tool
@@ -83,6 +86,21 @@ export async function runBreakdown(args: string[]): Promise<void> {
     Deno.exit(1);
   }
 
+  // バリデーション一元化: CommandOptionsValidator
+  const validator = new CommandOptionsValidator();
+  const parsedOptions = validateArgs(args);
+  const validationResult = validator.validate({
+    ...result,
+    options: parsedOptions,
+    stdinAvailable: isStdinAvailable(),
+  });
+  if (!validationResult.success) {
+    writeStderr(validationResult.errorMessage ?? "Invalid CLI parameters");
+    Deno.exit(1);
+  }
+  const values = validationResult.values;
+
+  // ここから下はバリデーション済みのみで分岐
   // Handle help/version flags
   if (result.type === "no-params") {
     if (result.help) {
@@ -112,35 +130,78 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
   // Double command (e.g., to, summary, defect)
   if (result.type === "double") {
-    // Validate CLI arguments using validateArgs (from lib/cli/args.ts)
-    let parsedArgs: CommandOptions;
-    try {
-      parsedArgs = validateArgs(args.slice(1)); // skip the command itself (e.g., 'to')
-    } catch (err) {
-      if (err instanceof CliError) {
-        writeStderr(`[${err.code}] ${err.message}`);
-      } else if (err instanceof Error) {
-        writeStderr(err.message);
+    // --- STDIN/ファイル入力の取得 ---
+    let inputText = "";
+    let inputTextFile = "";
+    let hasInput = false;
+
+    // Handle file input if specified
+    if (values.from) {
+      if (values.from === "-") {
+        // Special case: '-' indicates stdin input
+        if (isStdinAvailable()) {
+          inputText = await readStdin({ allowEmpty: false });
+          hasInput = true;
+        }
       } else {
-        writeStderr("Unknown argument error");
+        try {
+          const resolvedPath = resolve(Deno.cwd(), values.from);
+          inputTextFile = await Deno.readTextFile(resolvedPath);
+          hasInput = true;
+        } catch (e) {
+          writeStderr(`Failed to read input file ${values.from}: ${e}`);
+          Deno.exit(1);
+        }
       }
+    } // Handle stdin input if available and no file input
+    else if (isStdinAvailable()) {
+      inputText = await readStdin({ allowEmpty: false });
+      hasInput = true;
+    }
+
+    if (!hasInput) {
+      writeStderr("No input provided via stdin or --from option");
       Deno.exit(1);
     }
+
+    // --- Factory/PromptManagerに渡す ---
+    const extraVars = values.from === "-"
+      ? { input_text: inputText }
+      : values.from
+      ? { input_text_file: inputTextFile }
+      : { input_text: inputText };
+    const fromFile = values.from || (isStdinAvailable() ? "-" : "");
+
     // call generateWithPrompt for 'to' command
-    if (result.demonstrativeType === "to" && parsedArgs.from && parsedArgs.destination) {
+    if (result.demonstrativeType === "to") {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from,
-        parsedArgs.destination,
-        result.layerType || "project",
+        fromFile, // fromFile
+        values.destination || "output.md", // Default output file
+        result.layerType!,
         false,
         {
-          adaptation: parsedArgs.adaptation,
-          promptDir: parsedArgs.promptDir,
+          adaptation: values.adaptation,
+          promptDir: values.promptDir,
           demonstrativeType: result.demonstrativeType,
+          ...extraVars,
         },
       );
       if (convResult.success) {
+        // Write output to destination file if specified
+        if (values.destination) {
+          try {
+            // Ensure output directory exists
+            const outputDir = values.destination.split("/").slice(0, -1).join("/");
+            if (outputDir) {
+              await Deno.mkdir(outputDir, { recursive: true });
+            }
+            await Deno.writeTextFile(values.destination, convResult.output);
+          } catch (e) {
+            writeStderr(`Failed to write output to ${values.destination}: ${e}`);
+            Deno.exit(1);
+          }
+        }
         writeStdout(convResult.output);
       } else {
         writeStderr(formatError(convResult.error));
@@ -148,21 +209,37 @@ export async function runBreakdown(args: string[]): Promise<void> {
       }
       return;
     }
+
     // call generateWithPrompt for 'summary' command
-    if (result.demonstrativeType === "summary" && parsedArgs.from && parsedArgs.destination) {
+    if (result.demonstrativeType === "summary") {
       const { generateWithPrompt } = await import("../lib/commands/mod.ts");
       const convResult = await generateWithPrompt(
-        parsedArgs.from,
-        parsedArgs.destination,
-        result.layerType || "project",
+        fromFile, // fromFile
+        values.destination || "output.md", // Default output file
+        result.layerType!,
         false,
         {
-          adaptation: parsedArgs.adaptation,
-          promptDir: parsedArgs.promptDir,
+          adaptation: values.adaptation,
+          promptDir: values.promptDir,
           demonstrativeType: result.demonstrativeType,
+          ...extraVars,
         },
       );
       if (convResult.success) {
+        // Write output to destination file if specified
+        if (values.destination) {
+          try {
+            // Ensure output directory exists
+            const outputDir = values.destination.split("/").slice(0, -1).join("/");
+            if (outputDir) {
+              await Deno.mkdir(outputDir, { recursive: true });
+            }
+            await Deno.writeTextFile(values.destination, convResult.output);
+          } catch (e) {
+            writeStderr(`Failed to write output to ${values.destination}: ${e}`);
+            Deno.exit(1);
+          }
+        }
         writeStdout(convResult.output);
       } else {
         writeStderr(formatError(convResult.error));
