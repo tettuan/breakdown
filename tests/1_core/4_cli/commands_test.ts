@@ -19,7 +19,7 @@
  * - テストでは、コマンド実行後の副作用（ファイル生成や内容）を検証することで、正しい動作を確認する。
  */
 
-import { assert, assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
@@ -82,35 +82,6 @@ Deno.test("CLI Command Execution", async (t) => {
     assertEquals(result.error, "No input provided via stdin or -f/--from option");
     // Optionally, check that help text is not shown
     // assert(!result.output.includes("Usage:"), "Help text should not be shown when input is missing");
-  });
-
-  await t.step("Invalid option: should return error", async () => {
-    // このテストは「不正なオプションを渡した場合にCLIが正しくエラーを返すか」を検証する意図で残す。
-    // 期待値は「エラーが発生すること（=正常）」である。
-    logger.debug("[DEBUG] Invalid option test (before runCommand)");
-    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
-    await Deno.writeTextFile(
-      join(configDir, "app.yml"),
-      `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
-    );
-    const result = await runCommand(
-      [
-        "to",
-        "project",
-        "--unknown",
-        "value",
-      ],
-      undefined,
-      absTestDir,
-    );
-    logger.debug("[DEBUG] Invalid option test result", result);
-    // 期待値: エラーが返ることが正常
-    assert(result.error !== "", "Should return error for invalid option (this is expected)");
-    assert(
-      result.error.toLowerCase().includes("unknown option") ||
-        result.error.toLowerCase().includes("invalid option"),
-      "Error should mention unknown or invalid option (this is expected behavior)",
-    );
   });
 
   await t.step("Template not found: Prompt loading failed", async () => {

@@ -191,36 +191,82 @@ breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
 
 ## インストール
 
-### 推奨: CLIとしてインストール
+Breakdown を使用するには、Deno がインストールされている必要があります。Deno のインストールについては、[Deno の公式サイト](https://deno.com/manual/getting_started/installation) を参照してください。
 
-BreakdownはCLIツールとしての利用が主目的です。  
-**Deno公式/JSR標準の方法**で、以下のコマンドでインストールできます。
+### 推奨: CLIとしてグローバルインストール
 
-```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
-```
-- `-A` : すべての権限を許可（推奨）
-- `-f` : 既存のコマンドを上書き
-- `--global` : グローバルインストール
-- `breakdown` : コマンド名
-
-> **Note:**  
-> Breakdown CLIのメインモジュールは `jsr:@tettuan/breakdown/cli` です。  
-> 必ず `/cli` サブパスを指定してください。
-
----
-
-### アップデート
-
-新しいバージョンが公開された場合も、同じコマンドで上書きインストールできます。
+Breakdown は主にコマンドラインインターフェース（CLI）ツールとして使用します。
+以下のコマンドで、JSR から直接グローバルにインストールできます。これが最も簡単で推奨される方法です。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global --name breakdown jsr:@tettuan/breakdown/cli
 ```
 
----
+- `-A`: すべての権限を許可します (推奨)。
+- `-f`: 既存のコマンドがある場合に上書きします。
+- `--global`: システム全体で `breakdown` コマンドを利用できるようにします。
+- `--name breakdown`: コマンド名を `breakdown` とします。
+- `jsr:@tettuan/breakdown/cli`: Breakdown CLI の JSR パッケージ識別子です。**必ず `/cli` サブパスを指定してください。**
 
-### アンインストール
+インストール後、ターミナルで `breakdown --version` を実行して、バージョン情報が表示されれば成功です。
+
+### 最新バージョンへのアップデート
+
+Breakdown CLI の新しいバージョンがリリースされた場合、以下のコマンドで最新版にアップデートできます。
+これはインストールコマンドと同じです。
+
+```bash
+deno install -A -f --global --name breakdown jsr:@tettuan/breakdown/cli
+```
+
+最新のバージョン番号は、JSR のパッケージページで確認できます:
+[https://jsr.io/@tettuan/breakdown](https://jsr.io/@tettuan/breakdown)
+
+### その他のインストール方法
+
+#### ライブラリとして利用する
+
+Breakdown の機能を TypeScript/JavaScript プロジェクトから直接利用したい場合は、`deno add` コマンドでプロジェクトの依存関係に追加できます。
+
+```bash
+deno add @tettuan/breakdown
+```
+この場合、エントリーポイントは `jsr:@tettuan/breakdown` となります。
+
+#### 特定のプロジェクト配下にローカルインストールする
+
+特定のプロジェクト内でのみ `breakdown` コマンドを使用したい場合は、プロジェクト内の特定のディレクトリ（例: `.deno`）をインストールルートとして指定し、そこにコマンドをインストールすることができます。Deno 2.x 以降では、このようにURLやJSR識別子からスクリプトをインストールする際には `--global` フラグが必須となりました。
+
+```bash
+deno install -A -f --global --root .deno --name breakdown jsr:@tettuan/breakdown/cli
+```
+
+- `-A`: すべての権限を許可します。`--global` を指定しているため使用可能です。
+- `-f`: 既存のコマンドがある場合に上書きします。
+- `--global`: スクリプトを実行可能ファイルとしてインストールする際に必須のフラグです (Deno 2.x 以降)。
+- `--root .deno`: プロジェクト内の `.deno` ディレクトリをインストールルートにします。コマンドは `.deno/bin/breakdown` にインストールされます。
+- `--name breakdown`: コマンド名を `breakdown` とします。
+- `jsr:@tettuan/breakdown/cli`: インストールするCLIのJSR識別子です。
+
+この方法でインストールした場合、コマンドは指定した `--root` ディレクトリ配下の `bin` フォルダ（この例では `.deno/bin/breakdown`）に保存されます。
+実行する際は、そのパスを直接指定するか、そのディレクトリに `PATH` を通してください。
+
+実行例:
+```bash
+# .deno/bin にPATHが通っている場合
+# breakdown to project input.md (シェルのエイリアスやPATH設定によります)
+
+# .deno/bin にPATHが通っていない、または直接実行ファイルを指定する場合
+./.deno/bin/breakdown to project input.md
+
+# Deno を介して実行する場合 (権限はコマンド自体に焼き付けられています)
+deno run ./.deno/bin/breakdown to project input.md 
+# (注意: 上記の deno run で実行する場合、-A は breakdown スクリプト自体ではなく deno run コマンドの権限になるため、
+# インストール時に -A で権限を焼き付けていれば、deno run に -A は不要な場合があります。
+# 確実なのは、インストールされたスクリプトを直接実行することです。）
+```
+
+## アンインストール
 
 #### グローバルインストールの場合
 
@@ -233,38 +279,13 @@ deno uninstall breakdown
 ```bash
 deno uninstall --root .deno breakdown
 ```
-
 - `--root .deno` で、プロジェクト内の `.deno/bin` からアンインストールされます。
 
----
+## 注意事項
 
-### ライブラリとして使う場合
-
-TypeScript/JavaScriptから直接importして使う場合は、  
-`deno add` で依存に追加できます。
-
-```bash
-deno add @tettuan/breakdown
-```
-
----
-
-### 注意事項
-
-- breakdownコマンドは、`deno.json`の`bin`設定により自動的に`cli/breakdown.ts`をエントリーポイントとして動作します。
-- Deno 1.40以降を推奨します。
-- 詳細な使い方は下記「Usage」セクションを参照してください。
-
-### プロジェクト配下にローカルインストールしたい場合
-
-特定のプロジェクト内だけでbreakdownコマンドを使いたい場合は、`--root` オプションで `.deno/bin` 配下にインストールできます。
-
-```bash
-deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
-```
-- `.deno/bin/breakdown` で実行できます。
-- 必要に応じて `.deno/bin` を `PATH` に追加してください。
-- この方法でインストールしたCLIは、そのプロジェクト内でのみ有効です。
+- `breakdown` コマンドは、`jsr publish` の設定により、`cli/breakdown.ts` をエントリーポイントとして動作します。
+- Deno 1.40 以降を推奨します。
+- 詳細な使い方は上記「Usage」セクションおよび下記のドキュメントを参照してください。
 
 # ドキュメント
 

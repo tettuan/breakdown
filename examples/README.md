@@ -27,17 +27,22 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ### 前準備
 1. `01_install.sh` - Breakdownのインストール案内
 2. `02_compile.sh` - バイナリ生成
-3. `03_init.sh` - プロジェクトの初期化
-4. `04_create_user_config.sh` - ユーザー設定の作成
+3. `03_check_version.sh` - バージョン確認のテスト (インストール/コンパイル済みバイナリ)
+4. `03a_check_version_deno_run.sh` - バージョン確認のテスト (deno run で直接実行)
+5. `04_init.sh` - プロジェクトの初期化 (バイナリ実行)
+6. `04a_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
+7. `05_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
+8. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 使用例
-5. `05_project_to_implementation.sh` - プロジェクト実装への変換
-6. `06_detailed_issue_creation.sh` - 詳細な課題の作成
-7. `07_test_result_tasks.sh` - テスト結果からのタスク生成
-8. `08_adaptation_option.sh` - プロンプト適応オプションの使用
-9. `09_stdin_example.sh` - STDIN入力の利用例
-10. `10_prompt_debug.sh` - プロンプトのデバッグ
-11. `11_clean.sh` - 生成されたファイルのクリーンアップ
+9. `06_project_to_implementation.sh` - プロジェクト実装への変換 (バイナリ実行)
+10. `06a_project_to_implementation_deno_task.sh` - プロジェクト実装への変換 (Denoタスク実行)
+11. `07_detailed_issue_creation.sh` - 詳細な課題の作成
+12. `08_test_result_tasks.sh` - テスト結果からのタスク生成
+13. `09_adaptation_option.sh` - プロンプト適応オプションの使用
+14. `10_stdin_example.sh` - STDIN入力の利用例
+15. `11_prompt_debug.sh` - プロンプトのデバッグ
+16. `12_clean.sh` - 生成されたファイルのクリーンアップ
 
 ## 前準備の詳細
 
@@ -55,83 +60,125 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 このスクリプトは以下を実行します：
 - breakdown CLIのバイナリを ./.deno/bin/breakdown に生成
 
-### 3. 初期化
+### 3. バージョン確認のテスト (インストール/コンパイル済みバイナリ)
 ```bash
-./examples/03_init.sh
+./examples/03_check_version.sh
 ```
 このスクリプトは以下を実行します：
+- インストール済みまたはコンパイル済みの `breakdown` CLI の `--version` オプションの動作を確認
+
+### 4. バージョン確認のテスト (deno run で直接実行)
+```bash
+./examples/03a_check_version_deno_run.sh
+```
+このスクリプトは以下を実行します：
+- `deno run` を使用して `cli/breakdown.ts` や JSR モジュールを直接実行し、`--version` オプションの動作を確認
+
+### 5. 初期化 (バイナリ実行)
+```bash
+./examples/04_init.sh
+```
+このスクリプトは以下を実行します（コンパイル済みのバイナリを使用）：
 - プロジェクト構造の初期化
 - 必要なディレクトリの作成
 - 基本設定の配置
 
-### 4. ユーザー設定
+### 6. 初期化 (deno run で直接実行)
 ```bash
-./examples/04_create_user_config.sh
+./examples/04a_init_deno_run.sh
 ```
-このスクリプトは以下を実行します：
+このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
+- プロジェクト構造の初期化
+- 必要なディレクトリの作成
+- 基本設定の配置
+
+### 7. ユーザー設定 (バイナリ実行)
+```bash
+./examples/05_create_user_config.sh
+```
+このスクリプトは以下を実行します（コンパイル済みのバイナリを使用）：
+- `./.agent/breakdown/config/user.yml` の作成
+- working_dirの設定（`./.agent/breakdown/examples`）
+- 基本設定の構成
+
+### 8. ユーザー設定 (deno run で直接実行)
+```bash
+./examples/05a_create_user_config_deno_run.sh
+```
+このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - `./.agent/breakdown/config/user.yml` の作成
 - working_dirの設定（`./.agent/breakdown/examples`）
 - 基本設定の構成
 
 ## 使用例の詳細
 
-### 5. プロジェクト実装への変換
+### 9. プロジェクト実装への変換 (バイナリ実行)
 ```bash
-./examples/05_project_to_implementation.sh
+./examples/06_project_to_implementation.sh
 ```
-このスクリプトは以下を実行します：
+このスクリプトは以下を実行します（コンパイル済みのバイナリを使用）：
 - 未整理の情報からプロジェクトサマリーを生成
 - プロジェクトへの分解
 - 課題への分解
 - タスクへの分解
 
-### 6. 詳細な課題の作成
+### 10. プロジェクト実装への変換 (Denoタスク実行)
 ```bash
-./examples/06_detailed_issue_creation.sh
+./examples/06a_project_to_implementation_deno_task.sh
+```
+このスクリプトは以下を実行します（`deno task breakdown` を使用）：
+- 未整理の情報からプロジェクトサマリーを生成
+- プロジェクトへの分解
+- 課題への分解
+- タスクへの分解
+
+### 11. 詳細な課題の作成
+```bash
+./examples/07_detailed_issue_creation.sh
 ```
 このスクリプトは以下を実行します：
 - タスク群から課題を生成
 - 生成された課題の確認と編集（手動）
 - 課題からタスクを生成
 
-### 7. テスト結果からのタスク生成
+### 12. テスト結果からのタスク生成
 ```bash
-./examples/07_test_result_tasks.sh
+./examples/08_test_result_tasks.sh
 ```
 このスクリプトは以下を実行します：
 - テスト結果からタスクを生成
 - タスクの優先順位付け
 - タスクの整理と出力
 
-### 8. プロンプト適応オプション
+### 13. プロンプト適応オプション
 ```bash
-./examples/08_adaptation_option.sh
+./examples/09_adaptation_option.sh
 ```
 このスクリプトは以下を実行します：
 - `--adaptation` または `-a` オプションを使ってプロンプトの種類パターンを切り替え
 - 長い形式（--adaptation strict）と短い形式（-a a）の両方の例を含みます
 
-### 9. STDIN入力の利用例
+### 14. STDIN入力の利用例
 ```bash
-./examples/09_stdin_example.sh
+./examples/10_stdin_example.sh
 ```
 このスクリプトは以下を実行します：
 - echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
 - summaryコマンドでプロジェクトサマリーを生成
 - 生成ファイルの確認
 
-### 10. プロンプトデバッグ
+### 15. プロンプトデバッグ
 ```bash
-./examples/10_prompt_debug.sh
+./examples/11_prompt_debug.sh
 ```
 このスクリプトは以下を実行します：
 - プロンプトの動作確認
 - デバッグ情報の出力
 - プロンプトの調整例
 
-### 11. クリーンアップ
+### 16. クリーンアップ
 ```bash
-./examples/11_clean.sh
+./examples/12_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
