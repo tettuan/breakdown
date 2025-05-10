@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Branch Check
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" != "main" ]]; then
-  echo "Error: You must be on the 'main' branch to run this script. Current branch: $current_branch"
-  exit 1
-fi
-
 # ============================================================================
 # Automated Version Management Script for Breakdown (Deno/JSR)
 #
@@ -21,57 +14,34 @@ fi
 #   ./scripts/bump_version.sh [--major|--minor|--patch]
 #   (default: --patch)
 #
-# Flow:
-#   1. Version Sync Check
-#      - Ensures deno.json and lib/version.ts have matching versions
-#      - If mismatch, updates lib/version.ts to match deno.json
-#   2. Git Status Check
-#      - Aborts if there are any uncommitted changes
-#   3. Local CI Check
-#      - Runs scripts/local_ci.sh and aborts if it fails
-#   4. GitHub Actions Status
-#      - Checks .github/workflows/test.yml and version-check.yml for the latest commit
-#      - Aborts if either workflow has not succeeded
-#   4b. JSR Pre-publish Check
-#       - Runs deno publish --dry-run --allow-dirty --no-check to check for issues before publishing
-#   5. JSR Version Check
-#      - Fetches published versions from JSR registry (meta.json endpoint)
-#      - Determines the latest released version
-#   6. GitHub Tags Cleanup and Version Sync
-#      - Fetches all tags from remote
-#      - Deletes any tags (local and remote) that are ahead of the latest JSR version
-#   7. New Version Generation
-#      - Increments version based on bump type (major/minor/patch)
-#   8. Version Update (atomic)
-#      - Updates version in both deno.json and lib/version.ts using atomic file operations
-#   9. Version Verification
-#      - Verifies both files have the same new version
-#   10. Git Commit
-#       - Commits version changes with a standard message
-#   11. Git Tag
-#       - Creates a new tag with the version (vX.Y.Z)
-#   12. Push Changes
-#       - Pushes commit and tag to remote
-#
-# Exit Codes:
-#   0 - Success
-#   1 - Any check or update failed
-#
-# Notes:
-#   - Only deno.json and lib/version.ts are used for versioning (no src/mod.ts)
-#   - The script uses robust error handling and atomic file operations
-#   - All git/gh commands are single-line and non-interactive
-#   - The script is intended to be run before publishing or merging to main
+# Categories:
+#   1. Status Checks
+#      - Local Git Status Check
+#      - Version Sync Check
+#      - GitHub Actions Status Check
+#      - JSR Version Check
+#      - GitHub Tags Cleanup and Version Sync
+#   2. Local CI
+#      - Local CI Check
+#      - JSR Pre-publish Check
+#   3. New Version Bump
+#      - New Version Generation
+#      - Version Update (Atomic)
+#      - Version Verification
+#   4. Git Operations
+#      - Git Commit
+#      - Git Tag
+#      - Push Changes
 # ============================================================================
 
 set -euo pipefail
 
-# 1. Version Sync Check
-# ---------------------
-# Only deno.json and lib/version.ts are relevant
+# Constants
 DENO_JSON="deno.json"
 VERSION_TS="lib/version.ts"
+JSR_META_URL="https://jsr.io/@tettuan/breakdown/meta.json"
 
+# Helper Functions
 get_deno_version() {
   jq -r '.version' "$DENO_JSON"
 }
@@ -80,77 +50,53 @@ get_ts_version() {
   grep 'export const VERSION' "$VERSION_TS" | sed -E 's/.*\"([0-9.]+)\".*/\1/'
 }
 
-sync_versions() {
-  local deno_ver ts_ver
-  deno_ver=$(get_deno_version)
-  ts_ver=$(get_ts_version)
-  if [[ "$deno_ver" != "$ts_ver" ]]; then
-    echo "Syncing $VERSION_TS to match $DENO_JSON ($deno_ver)"
-    cat > "$VERSION_TS" <<EOF
-// This file is auto-generated. Do not edit manually.
-// The version is synchronized with deno.json.
+# ============================================================================
+# 1. Status Checks
+# ============================================================================
+echo "Running Status Checks..."
 
-/**
- * The current version of Breakdown CLI, synchronized with deno.json.
- * @module
- */
-export const VERSION = "$deno_ver";
-EOF
-    deno fmt "$VERSION_TS"
-    git add "$VERSION_TS"
-    git commit -m "fix: sync lib/version.ts with deno.json version $deno_ver" || true
-  fi
-}
-
-# 2. Git Status Check
-# -------------------
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Error: You have uncommitted changes. Please commit or stash them first."
+# 1.1 Branch Check
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_branch" != "main" ]]; then
+  echo "Error: You must be on the 'main' branch to run this script. Current branch: $current_branch"
   exit 1
 fi
 
-# 2b. Git Push Check
-# -------------------
+# 1.2 Git Push Check
 if [[ -n "$(git log --branches --not --remotes)" ]]; then
   echo "Error: You have local commits that have not been pushed to the remote repository. Please push them first."
   exit 1
 fi
 
-# 3. Local CI Check
-# -----------------
-if ! bash scripts/local_ci.sh; then
-  echo "Error: Local CI failed. Aborting version bump."
+# 1.3 Local Git Status Check
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Error: You have uncommitted changes. Please commit or stash them first."
   exit 1
 fi
 
-# 4. GitHub Actions Status
-# ------------------------
+# 1.4 Version Sync Check
+deno_ver=$(get_deno_version)
+ts_ver=$(get_ts_version)
+if [[ "$deno_ver" != "$ts_ver" ]]; then
+  echo "Error: Version mismatch between $DENO_JSON ($deno_ver) and $VERSION_TS ($ts_ver)"
+  exit 1
+fi
+
+# 1.5 GitHub Actions Status Check
 latest_commit=$(git rev-parse HEAD)
 for workflow in "test.yml" "version-check.yml"; do
   echo "Checking $workflow..."
-  # Try to get workflow status, but don't fail if gh command fails
   if ! gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha 2>/dev/null | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null; then
     echo "Warning: Could not verify $workflow status. Please check manually at https://github.com/tettuan/breakdown/actions"
     echo "Continuing with version bump..."
   fi
 done
 
-# 4b. JSR Pre-publish Check
-# -------------------------
-echo "Running JSR pre-publish check..."
-if ! deno publish --dry-run --allow-dirty --no-check > /dev/null 2>&1; then
-  echo "Error: JSR pre-publish check failed. Please fix any issues before bumping version."
-  exit 1
-fi
-
-# 5. JSR Version Check
-# --------------------
-JSR_META_URL="https://jsr.io/@tettuan/breakdown/meta.json"
+# 1.6 JSR Version Check
 latest_jsr_version=$(curl -s "$JSR_META_URL" | jq -r '.versions | keys | .[]' | sort -V | tail -n 1)
 echo "Latest JSR published version: $latest_jsr_version"
 
-# 6. GitHub Tags Cleanup and Version Sync
-# --------------------------------------
+# 1.7 GitHub Tags Cleanup and Version Sync
 git fetch --tags
 current_version=$(get_deno_version)
 echo "Current version in deno.json: $current_version"
@@ -163,8 +109,34 @@ for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
   fi
 done
 
-# 7. New Version Generation
-# -------------------------
+echo "✓ Status Checks passed"
+
+# ============================================================================
+# 2. Local CI
+# ============================================================================
+echo -e "\nRunning Local CI..."
+
+# 2.1 Local CI Check
+if ! bash scripts/local_ci.sh; then
+  echo "Error: Local CI failed. Aborting version bump."
+  exit 1
+fi
+
+# 2.2 JSR Pre-publish Check
+echo "Running JSR pre-publish check..."
+if ! deno publish --dry-run --allow-dirty --no-check > /dev/null 2>&1; then
+  echo "Error: JSR pre-publish check failed. Please fix any issues before bumping version."
+  exit 1
+fi
+
+echo "✓ Local CI passed"
+
+# ============================================================================
+# 3. New Version Bump
+# ============================================================================
+echo -e "\nBumping Version..."
+
+# 3.1 New Version Generation
 bump_type="patch"
 if [[ $# -gt 0 ]]; then
   case "$1" in
@@ -175,21 +147,16 @@ if [[ $# -gt 0 ]]; then
   esac
 fi
 
-# Use latest JSR version as the base for bumping
 IFS='.' read -r major minor patch <<< "$latest_jsr_version"
 case "$bump_type" in
-  major)
-    major=$((major + 1)); minor=0; patch=0 ;;
-  minor)
-    minor=$((minor + 1)); patch=0 ;;
-  patch)
-    patch=$((patch + 1)) ;;
+  major) major=$((major + 1)); minor=0; patch=0 ;;
+  minor) minor=$((minor + 1)); patch=0 ;;
+  patch) patch=$((patch + 1)) ;;
 esac
 new_version="$major.$minor.$patch"
 echo "Bumping version from latest JSR version $latest_jsr_version -> $new_version"
 
-# 8. Version Update (atomic)
-# --------------------------
+# 3.2 Version Update (Atomic)
 tmp_deno="${DENO_JSON}.tmp"
 tmp_ts="${VERSION_TS}.tmp"
 jq --arg v "$new_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
@@ -207,28 +174,30 @@ mv "$tmp_deno" "$DENO_JSON"
 mv "$tmp_ts" "$VERSION_TS"
 deno fmt "$VERSION_TS"
 
-git add "$DENO_JSON" "$VERSION_TS"
-
-# 9. Version Verification
-# -----------------------
+# 3.3 Version Verification
 if [[ "$(get_deno_version)" != "$new_version" ]] || [[ "$(get_ts_version)" != "$new_version" ]]; then
   echo "Error: Version update failed."
   exit 1
 fi
 
-echo "Version updated to $new_version in both files."
+echo "✓ Version bump completed"
 
-# 10. Git Commit
-# --------------
+# ============================================================================
+# 4. Git Operations
+# ============================================================================
+echo -e "\nPerforming Git Operations..."
+
+# 4.1 Git Commit
+git add "$DENO_JSON" "$VERSION_TS"
 git commit -m "chore: bump version to $new_version"
 
-# 11. Git Tag
-# ------------
+# 4.2 Git Tag
 git tag "v$new_version"
 
-# 12. Push Changes
-# ----------------
+# 4.3 Push Changes
 git push
 git push origin "v$new_version"
+
+echo "✓ Git operations completed"
 
 echo "\nVersion bumped to $new_version, committed, tagged, and pushed.\n" 
