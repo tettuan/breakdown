@@ -155,14 +155,24 @@ git fetch --tags
 current_version=$(get_deno_version)
 echo "Current version in deno.json: $current_version"
 
-# Delete any tags that are ahead of the latest JSR version
+tag_removed=false
 for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
   if [[ "$tag" > "$latest_jsr_version" ]]; then
-    echo "Deleting local and remote tag: v$tag (ahead of latest JSR version $latest_jsr_version)"
-    git tag -d "v$tag"
-    git push --delete origin "v$tag" || true
+    echo "Deleting local tag: v$tag (ahead of latest JSR version $latest_jsr_version)"
+    git tag -d "v$tag" && echo "Local tag v$tag deleted." || echo "Failed to delete local tag v$tag."
+    echo "Deleting remote tag: v$tag"
+    if git push --delete origin "v$tag"; then
+      echo "Remote tag v$tag deleted."
+    else
+      echo "Failed to delete remote tag v$tag."
+    fi
+    tag_removed=true
   fi
 done
+
+if $tag_removed; then
+  echo "\n===============================================================================\n>>> TAG CLEANUP COMPLETE <<<\n===============================================================================\nAll local and remote tags ahead of the latest JSR version have been removed.\nPlease verify on GitHub if needed.\n===============================================================================\n"
+fi
 
 # If JSR is behind, sync local versions and exit
 if [[ "$current_version" > "$latest_jsr_version" ]]; then
