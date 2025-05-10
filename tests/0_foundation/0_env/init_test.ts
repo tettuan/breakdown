@@ -21,6 +21,11 @@ interface TestOptions extends Omit<TestEnvironmentOptions, "workingDir" | "logLe
   debug?: boolean;
 }
 
+// ---
+// Breakdownワークスペース初期化の正常系テスト
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/workspace.ja.md, docs/breakdown/testing.ja.md
+// - 新規環境でディレクトリ構造が正しく作成されることを検証
+// ---
 Deno.test({
   name: "init - new environment",
   async fn() {
@@ -45,6 +50,10 @@ Deno.test({
   },
 });
 
+// ---
+// 既存環境での初期化時、既存ファイルが上書きされず保持されることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.3, 4.2, docs/breakdown/workspace.ja.md
+// ---
 Deno.test({
   name: "init - existing environment",
   async fn() {
@@ -81,6 +90,10 @@ Deno.test({
   sanitizeOps: false,
 });
 
+// ---
+// カスタム作業ディレクトリ指定時の初期化動作検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/app_config.ja.md
+// ---
 Deno.test({
   name: "init - with custom working directory",
   async fn() {
@@ -112,6 +125,10 @@ Deno.test({
   },
 });
 
+// ---
+// デバッグ出力有効時の初期化動作・ログ出力検証
+// 仕様参照: docs/breakdown/testing.ja.md, docs/breakdown/init_template.ja.md 4.3
+// ---
 Deno.test({
   name: "init - with debug output",
   async fn() {
@@ -158,6 +175,10 @@ Deno.test({
   },
 });
 
+// ---
+// 初期化時のエラーハンドリング（ディレクトリ作成失敗時）
+// 仕様参照: docs/breakdown/init_template.ja.md 4.3, docs/breakdown/workspace.ja.md エラー処理
+// ---
 Deno.test({
   name: "init - error handling",
   async fn() {
@@ -229,6 +250,10 @@ Deno.test({
   },
 });
 
+// ---
+// configファイル自動生成の検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/app_config.ja.md
+// ---
 Deno.test({
   name: "init - config file auto-generation",
   async fn() {
@@ -260,6 +285,10 @@ Deno.test({
   },
 });
 
+// ---
+// カスタムプロンプト/スキーマディレクトリ指定時の初期化動作検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.2, docs/breakdown/app_config.ja.md
+// ---
 Deno.test({
   name: "init - custom prompt/schema base_dir",
   async fn() {
@@ -312,6 +341,10 @@ Deno.test({
   },
 });
 
+// ---
+// 既存のapp.ymlが初期化時に上書きされないことの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.2, docs/breakdown/app_config.ja.md
+// ---
 Deno.test({
   name: "init - preserve existing app.yml",
   async fn() {
@@ -347,6 +380,10 @@ Deno.test({
   },
 });
 
+// ---
+// テンプレート（prompts/schema）がTypeScriptオブジェクトから正しく展開されることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.1, 5.1, docs/breakdown/app_factory.ja.md
+// ---
 Deno.test({
   name: "init - prompt and schema templates under lib are copied",
   async fn() {
@@ -407,6 +444,10 @@ Deno.test({
   },
 });
 
+// ---
+// カレントディレクトリ変更時もテンプレート展開が正しく行われることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, 4.1, docs/breakdown/testing.ja.md
+// ---
 Deno.test({
   name: "init - prompt and schema templates are copied even if cwd is changed",
   async fn() {
