@@ -37,7 +37,7 @@ export class SchemaFilePathResolver {
    * @returns The resolved base directory path.
    */
   public resolveBaseDir(): string {
-    let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schemas";
+    let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schema";
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
     }

@@ -50,7 +50,7 @@ describe("Prompt baseDir edge cases", () => {
       await ensureDir(configDir);
       await Deno.writeTextFile(
         join(configDir, "app.yml"),
-        `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
+        `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
       );
       const promptDir = join(testDir, "custom_prompts", "to", "project");
       await ensureDir(promptDir);
@@ -84,13 +84,13 @@ describe("Prompt baseDir edge cases", () => {
       const workspace = new Workspace({
         workingDir: testDir,
         promptBaseDir: resolve(Deno.cwd(), "custom_prompts"),
-        schemaBaseDir: resolve(Deno.cwd(), "schemas"),
+        schemaBaseDir: resolve(Deno.cwd(), "schema"),
       });
       await workspace.initialize();
 
       assertEquals(
         await workspace.getPromptBaseDir(),
-        resolve(Deno.cwd(), "custom_prompts")
+        resolve(Deno.cwd(), "custom_prompts"),
       );
     } finally {
       Deno.chdir(originalCwd);
@@ -114,7 +114,7 @@ describe("Prompt baseDir edge cases", () => {
         await ensureDir(configDir);
         await Deno.writeTextFile(
           join(configDir, "app.yml"),
-          `working_dir: .\napp_prompt:\n  base_dir: \napp_schema:\n  base_dir: schemas\n`,
+          `working_dir: .\napp_prompt:\n  base_dir: \napp_schema:\n  base_dir: schema\n`,
         );
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");
@@ -163,7 +163,7 @@ describe("Prompt baseDir edge cases", () => {
           await ensureDir(configDir);
           await Deno.writeTextFile(
             join(configDir, "app.yml"),
-            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
+            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
           await ensureDir(promptDir);
@@ -211,7 +211,7 @@ describe("Prompt baseDir edge cases", () => {
           await ensureDir(configDir);
           await Deno.writeTextFile(
             join(configDir, "app.yml"),
-            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
+            `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
           await ensureDir(promptDir);
@@ -263,7 +263,7 @@ describe("Prompt baseDir edge cases", () => {
         await ensureDir(configDir);
         await Deno.writeTextFile(
           join(configDir, "app.yml"),
-          `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
+          `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
         );
         // Load config before creating factory
         const breakdownConfig = new BreakdownConfig(testDir);
@@ -278,7 +278,9 @@ describe("Prompt baseDir edge cases", () => {
           promptFile,
           "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
         );
-        logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", { promptBaseDir: join(testDir, "custom_prompts") });
+        logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", {
+          promptBaseDir: join(testDir, "custom_prompts"),
+        });
         const cliParamsConfig = {
           demonstrativeType: "to" as DemonstrativeType,
           layerType: "project" as LayerType,

@@ -16,13 +16,17 @@ Deno.test("setup - environment initialization", async () => {
     assertEquals(workingDirExists, true, "Working directory should be created");
 
     // Initialize workspace to create directory structure
-    const workspace = new Workspace({ workingDir: env.workingDir, promptBaseDir: "prompts", schemaBaseDir: "schemas" });
+    const workspace = new Workspace({
+      workingDir: env.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
     await workspace.initialize();
 
     // Verify directory structure
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "prompts"));
-    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schemas"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schema"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "config"));
 
     // Verify config file exists

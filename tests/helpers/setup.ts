@@ -1,6 +1,5 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { join } from "@std/path/join";
-import { DEFAULT_WORKSPACE_STRUCTURE } from "../../lib/config/constants.ts";
 
 export interface TestEnvironmentOptions {
   workingDir?: string;
@@ -43,16 +42,17 @@ export async function setupTestEnvironment(
     // Create required directory structure
     const configDir = join(workingDir, ".agent", "breakdown", "config");
     const promptsDir = join(workingDir, "prompts");
-    const schemasDir = join(workingDir, "schemas");
+    const schemaDir = join(workingDir, "schema");
 
     await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
     await Deno.mkdir(promptsDir, { recursive: true, mode: 0o777 });
-    await Deno.mkdir(schemasDir, { recursive: true, mode: 0o777 });
+    await Deno.mkdir(schemaDir, { recursive: true, mode: 0o777 });
 
     // Create default app.yml if not skipped
     if (!options.skipDefaultConfig) {
       const configPath = join(configDir, "app.yml");
-      const configContent = `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`;
+      const configContent =
+        `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
       await Deno.writeTextFile(configPath, configContent);
     }
   } else {

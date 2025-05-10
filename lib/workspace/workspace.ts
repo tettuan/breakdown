@@ -17,22 +17,11 @@
  * @module
  */
 
-import { dirname, fromFileUrl, isAbsolute, join, normalize, basename } from "@std/path";
-import { exists } from "@std/fs";
+import { dirname, fromFileUrl, join } from "@std/path";
+import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import {
-  WorkspaceConfig,
-  WorkspaceConfigManager,
-  WorkspaceOptions,
-  WorkspacePaths,
-  WorkspaceStructure,
-} from "./types.ts";
 import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
-import { ensureDir } from "@std/fs";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
-import { DEFAULT_WORKSPACE_STRUCTURE } from "../config/constants.ts";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
@@ -46,7 +35,7 @@ import { resolve } from "jsr:@std/path@1.0.0";
  * This class handles all workspace-related operations including:
  * - Directory structure management
  * - Configuration file handling
- * - Path resolution for prompts, schemas, and outputs
+ * - Path resolution for prompts, schema, and outputs
  * - Template and schema file management
  *
  * All configuration access must use BreakdownConfig from @tettuan/breakdownconfig.
@@ -73,11 +62,11 @@ export class WorkspaceImpl implements Workspace {
       await ensureDir(join(this.config.workingDir, this.config.promptBaseDir));
       await ensureDir(join(this.config.workingDir, this.config.schemaBaseDir));
       await this.structure.initialize();
-      
+
       // Create config file if it doesn't exist
       const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
       const configFile = join(configDir, "app.yml");
-      
+
       try {
         await Deno.stat(configFile);
       } catch (error) {
@@ -99,9 +88,19 @@ export class WorkspaceImpl implements Workspace {
       }
 
       // Create custom base directories if specified
-      const customPromptDir = join(this.config.workingDir, ".agent", "breakdown", this.config.promptBaseDir);
-      const customSchemaDir = join(this.config.workingDir, ".agent", "breakdown", this.config.schemaBaseDir);
-      
+      const customPromptDir = join(
+        this.config.workingDir,
+        ".agent",
+        "breakdown",
+        this.config.promptBaseDir,
+      );
+      const customSchemaDir = join(
+        this.config.workingDir,
+        ".agent",
+        "breakdown",
+        this.config.schemaBaseDir,
+      );
+
       await ensureDir(customPromptDir);
       await ensureDir(customSchemaDir);
 
@@ -122,10 +121,9 @@ export class WorkspaceImpl implements Workspace {
         }
       }
 
-      // Copy schema templates if not already present (from both schema and schemas)
+      // Copy schema templates if not already present (from only schema)
       const schemaTemplateSrcs = [
         join(fromFileUrl(import.meta.url), "../../breakdown/schema"),
-        join(fromFileUrl(import.meta.url), "../../breakdown/schemas"),
       ];
       for (const schemaTemplateSrc of schemaTemplateSrcs) {
         try {
@@ -152,38 +150,42 @@ export class WorkspaceImpl implements Workspace {
       }
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new WorkspaceInitError(`Permission denied: Cannot create directory structure in ${join(this.config.workingDir, "breakdown")}`);
+        throw new WorkspaceInitError(
+          `Permission denied: Cannot create directory structure in ${
+            join(this.config.workingDir, "breakdown")
+          }`,
+        );
       }
       throw error;
     }
   }
 
-  async resolvePath(path: string): Promise<string> {
+  resolvePath(path: string): Promise<string> {
     return this.pathResolver.resolve(path);
   }
 
-  async createDirectory(path: string): Promise<void> {
-    await this.structure.createDirectory(path);
+  createDirectory(path: string): Promise<void> {
+    return this.structure.createDirectory(path);
   }
 
-  async removeDirectory(path: string): Promise<void> {
-    await this.structure.removeDirectory(path);
+  removeDirectory(path: string): Promise<void> {
+    return this.structure.removeDirectory(path);
   }
 
-  async exists(path?: string): Promise<boolean> {
+  exists(path?: string): Promise<boolean> {
     return this.structure.exists(path);
   }
 
-  async getPromptBaseDir(): Promise<string> {
-    return resolve(this.config.workingDir, this.config.promptBaseDir);
+  getPromptBaseDir(): Promise<string> {
+    return Promise.resolve(resolve(this.config.workingDir, this.config.promptBaseDir));
   }
 
-  async getSchemaBaseDir(): Promise<string> {
-    return resolve(this.config.workingDir, this.config.schemaBaseDir);
+  getSchemaBaseDir(): Promise<string> {
+    return Promise.resolve(resolve(this.config.workingDir, this.config.schemaBaseDir));
   }
 
-  async getWorkingDir(): Promise<string> {
-    return this.config.workingDir;
+  getWorkingDir(): Promise<string> {
+    return Promise.resolve(this.config.workingDir);
   }
 
   async validateConfig(): Promise<void> {
@@ -196,7 +198,7 @@ export class WorkspaceImpl implements Workspace {
     // Reload configuration from file
     const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
     const configFile = join(configDir, "app.yml");
-    
+
     try {
       const configContent = await Deno.readTextFile(configFile);
       const config = parse(configContent) as {
@@ -204,7 +206,7 @@ export class WorkspaceImpl implements Workspace {
         app_prompt: { base_dir: string };
         app_schema: { base_dir: string };
       };
-      
+
       this.config = {
         workingDir: this.config.workingDir,
         promptBaseDir: config.app_prompt.base_dir,
@@ -235,7 +237,7 @@ export async function initWorkspace(workingDir = "."): Promise<void> {
   const workspace = new WorkspaceImpl({
     workingDir,
     promptBaseDir: "prompts", // placeholder, should be loaded from config
-    schemaBaseDir: "schemas", // placeholder, should be loaded from config
+    schemaBaseDir: "schema", // placeholder, should be loaded from config
   });
   await workspace.initialize();
 }

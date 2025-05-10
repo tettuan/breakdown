@@ -8,7 +8,7 @@ Deno.test("Workspace", async (t) => {
   const workspace = new WorkspaceImpl({
     workingDir: ".",
     promptBaseDir: "prompts",
-    schemaBaseDir: "schemas",
+    schemaBaseDir: "schema",
   });
 
   // Main Test
@@ -38,4 +38,4 @@ Deno.test("Workspace", async (t) => {
 
   // Cleanup
   await Deno.remove(".agent/breakdown", { recursive: true });
-}); 
+});

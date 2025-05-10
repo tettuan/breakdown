@@ -47,7 +47,7 @@ function makeCliParams(
   };
 }
 
-// All tests below assume config/app_prompt.base_dir = "prompts" and app_schema.base_dir = "schemas" in the test working directory.
+// All tests below assume config/app_prompt.base_dir = "prompts" and app_schema.base_dir = "schema" in the test working directory.
 // Directory structure is always created under the configured baseDir.
 
 describe("Input Path: fromFile hierarchy", () => {
@@ -63,7 +63,7 @@ describe("Input Path: fromFile hierarchy", () => {
     const configPath = join(configDir, "app.yml");
     await Deno.writeTextFile(
       configPath,
-      `working_dir: ${_testDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+      `working_dir: ${_testDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
     // Ensure config file exists before continuing
     const configExistsAfterWrite = await Deno.stat(configPath).then(() => true).catch(() => false);
@@ -325,7 +325,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },
-        app_schema: { base_dir: "schemas" },
+        app_schema: { base_dir: "schema" },
       };
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
@@ -341,7 +341,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       assertEquals(factory.promptFilePath, path.resolve("prompts/to/issue/f_project_strict.md"));
       assertEquals(factory.inputFilePath, path.resolve("project.md"));
       assertEquals(factory.outputFilePath, path.resolve("issue/issue.md"));
-      assertEquals(factory.schemaFilePath, path.resolve("schemas/to/issue/base.schema.md"));
+      assertEquals(factory.schemaFilePath, path.resolve("schema/to/issue/base.schema.md"));
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
@@ -355,7 +355,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },
-        app_schema: { base_dir: "schemas" },
+        app_schema: { base_dir: "schema" },
       };
       const cliParams = {
         demonstrativeType: "summary" as DemonstrativeType,
@@ -371,7 +371,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       assertEquals(factory.promptFilePath, path.resolve("prompts/summary/project/f_project.md"));
       assertEquals(factory.inputFilePath, path.resolve("input.md"));
       assertEquals(factory.outputFilePath, path.resolve("project/output.md"));
-      assertEquals(factory.schemaFilePath, path.resolve("schemas/summary/project/base.schema.md"));
+      assertEquals(factory.schemaFilePath, path.resolve("schema/summary/project/base.schema.md"));
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
@@ -385,7 +385,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },
-        app_schema: { base_dir: "schemas" },
+        app_schema: { base_dir: "schema" },
       };
       const absDest = path.resolve("tmp/defect_task.md");
       const cliParams = {
@@ -402,7 +402,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       assertEquals(factory.promptFilePath, path.resolve("prompts/defect/task/f_task.md"));
       assertEquals(factory.inputFilePath, path.resolve("task_input.md"));
       assertEquals(factory.outputFilePath, absDest);
-      assertEquals(factory.schemaFilePath, path.resolve("schemas/defect/task/base.schema.md"));
+      assertEquals(factory.schemaFilePath, path.resolve("schema/defect/task/base.schema.md"));
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);

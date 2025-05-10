@@ -4,7 +4,6 @@ import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
 import { join } from "@std/path/join";
 import { resolve } from "@std/path/resolve";
-import type { WorkspaceConfig } from "$lib/workspace/types.ts";
 
 /**
  * Integration tests for the breakdown workflow
@@ -25,7 +24,7 @@ Deno.test({
     }
     // Create required directories for cwd-based path resolution
     await Deno.mkdir("prompts", { recursive: true });
-    await Deno.mkdir("schemas", { recursive: true });
+    await Deno.mkdir("schema", { recursive: true });
   },
 });
 
@@ -34,7 +33,7 @@ Deno.test("breakdown init creates correct directory structure", async () => {
   const workspace = new Workspace({
     workingDir: TEST_DIR,
     promptBaseDir: "prompts",
-    schemaBaseDir: "schemas",
+    schemaBaseDir: "schema",
   });
 
   await workspace.initialize();
@@ -52,17 +51,17 @@ Deno.test("workspace initialization and structure", async () => {
   await Deno.mkdir(configDir, { recursive: true });
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`,
+    `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schema\n`,
   );
 
   // Create custom directories
   await Deno.mkdir(join(TEST_DIR, "custom_prompts"), { recursive: true });
-  await Deno.mkdir(join(TEST_DIR, "custom_schemas"), { recursive: true });
+  await Deno.mkdir(join(TEST_DIR, "custom_schema"), { recursive: true });
 
   const workspace = new Workspace({
     workingDir: TEST_DIR,
     promptBaseDir: "custom_prompts",
-    schemaBaseDir: "custom_schemas",
+    schemaBaseDir: "custom_schema",
   });
 
   // Initialize workspace
@@ -77,7 +76,7 @@ Deno.test("workspace initialization and structure", async () => {
 
   assertEquals(
     await workspace.getSchemaBaseDir(),
-    resolve(TEST_DIR, "custom_schemas"),
+    resolve(TEST_DIR, "custom_schema"),
     "Custom schema base directory should be resolved relative to workspace directory",
   );
 });
@@ -87,7 +86,7 @@ Deno.test("workspace error handling", async () => {
   const workspace = new Workspace({
     workingDir: "/nonexistent/path",
     promptBaseDir: "prompts",
-    schemaBaseDir: "schemas",
+    schemaBaseDir: "schema",
   });
 
   try {
@@ -107,7 +106,7 @@ Deno.test("workspace path resolution", async () => {
   const workspace = new Workspace({
     workingDir: TEST_DIR,
     promptBaseDir: "custom_prompts",
-    schemaBaseDir: "custom_schemas",
+    schemaBaseDir: "custom_schema",
   });
 
   // Initialize workspace
@@ -118,12 +117,12 @@ Deno.test("workspace path resolution", async () => {
   await Deno.mkdir(configDir, { recursive: true });
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schemas\n`,
+    `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: custom_schema\n`,
   );
 
   // Create custom directories
   await Deno.mkdir(join(TEST_DIR, "custom_prompts"), { recursive: true });
-  await Deno.mkdir(join(TEST_DIR, "custom_schemas"), { recursive: true });
+  await Deno.mkdir(join(TEST_DIR, "custom_schema"), { recursive: true });
 
   // Reload config after writing app.yml
   await workspace.reloadConfig();
@@ -141,7 +140,7 @@ Deno.test("workspace path resolution", async () => {
 
   assertEquals(
     await workspace.getSchemaBaseDir(),
-    resolve(TEST_DIR, "custom_schemas"),
+    resolve(TEST_DIR, "custom_schema"),
     "Custom schema base directory should be resolved relative to workspace directory",
   );
 });

@@ -51,4 +51,4 @@ function captureConsoleOutput(fn: () => void): string {
   fn();
   console.error = originalConsoleError;
   return output;
-} 
+}

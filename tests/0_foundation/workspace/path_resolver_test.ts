@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { WorkspacePathResolverImpl } from "../../../lib/workspace/path/resolver.ts";
 import { PlatformAgnosticPathStrategy } from "../../../lib/workspace/path/strategies.ts";
 import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
@@ -13,11 +13,11 @@ Deno.test("WorkspacePathResolver", async (t) => {
   // Main Test
   await t.step("should handle path resolution and normalization", async () => {
     logger.debug("Testing path resolution and normalization");
-    
+
     // Test path resolution
     assertEquals(await resolver.resolve("test"), "/workspace/test");
     assertEquals(await resolver.resolve("dir/subdir"), "/workspace/dir/subdir");
-    
+
     // Test path normalization
     assertEquals(await resolver.normalize("dir//subdir"), "dir/subdir");
     assertEquals(await resolver.normalize("dir\\subdir"), "dir/subdir");
@@ -54,7 +54,7 @@ Deno.test("WorkspacePathResolver", async (t) => {
     await assertRejects(
       () => resolver.resolve("invalid//path"),
       Error,
-      "Invalid path: invalid//path"
+      "Invalid path: invalid//path",
     );
   });
 
@@ -64,4 +64,4 @@ Deno.test("WorkspacePathResolver", async (t) => {
     resolver.updateStrategy(newStrategy);
     assertEquals(await resolver.resolve("test"), "/workspace/test");
   });
-}); 
+});

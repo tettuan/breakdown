@@ -24,14 +24,14 @@
  * @interface
  * @property {string} workingDir - The working directory for the workspace
  * @property {string} [promptBaseDir] - Optional custom base directory for prompts
- * @property {string} [schemaBaseDir] - Optional custom base directory for schemas
+ * @property {string} [schemaBaseDir] - Optional custom base directory for schema
  */
 export interface WorkspaceOptions {
   /** The working directory for the workspace. */
   workingDir: string;
   /** The base directory for prompts. */
   promptBaseDir?: string;
-  /** The base directory for schemas. */
+  /** The base directory for schema. */
   schemaBaseDir?: string;
 }
 
@@ -44,7 +44,7 @@ export interface WorkspaceOptions {
  * @property {Object} app_prompt - Prompt configuration settings
  * @property {string} app_prompt.base_dir - The base directory for prompts
  * @property {Object} app_schema - Schema configuration settings
- * @property {string} app_schema.base_dir - The base directory for schemas
+ * @property {string} app_schema.base_dir - The base directory for schema
  */
 export interface WorkspaceConfig {
   /** The working directory for the workspace. */
@@ -56,7 +56,7 @@ export interface WorkspaceConfig {
   };
   /** Schema configuration. */
   app_schema: {
-    /** The base directory for schemas. */
+    /** The base directory for schema. */
     base_dir: string;
   };
 }
@@ -67,7 +67,7 @@ export interface WorkspaceConfig {
  *
  * @interface
  * @property {function(): string} getPromptBaseDir - Gets the base directory for prompts
- * @property {function(): string} getSchemaBaseDir - Gets the base directory for schemas
+ * @property {function(): string} getSchemaBaseDir - Gets the base directory for schema
  * @property {function(): string} getWorkingDir - Gets the working directory
  * @property {function(): Promise<void>} initialize - Initializes the workspace
  * @property {function(): Promise<void>} ensureDirectories - Ensures required directories exist
@@ -75,7 +75,7 @@ export interface WorkspaceConfig {
 export interface WorkspaceStructure {
   /** Gets the base directory for prompts. */
   getPromptBaseDir(): Promise<string>;
-  /** Gets the base directory for schemas. */
+  /** Gets the base directory for schema. */
   getSchemaBaseDir(): Promise<string>;
   /** Gets the working directory. */
   getWorkingDir(): string;

@@ -15,8 +15,8 @@ export class WorkspaceErrorHandlerImpl implements WorkspaceErrorHandler {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      context
+      context,
     };
     console.error(JSON.stringify(errorInfo, null, 2));
   }
-} 
+}

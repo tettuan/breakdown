@@ -76,7 +76,7 @@ Deno.test("CLI error scenario when baseDir is unset", async () => {
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ""\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ""\napp_schema:\n  base_dir: schema\n`,
   );
   // input.md を testDir/input.md に作成
   await Deno.writeTextFile(join(testDir, "input.md"), "dummy input");
@@ -97,7 +97,7 @@ Deno.test("Recovery scenario when app.yml and actual directory mismatch", async 
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: not_exist_dir\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: not_exist_dir\napp_schema:\n  base_dir: schema\n`,
   );
   // input.md を testDir/input.md に作成
   await Deno.writeTextFile(join(testDir, "input.md"), "dummy input");
@@ -130,7 +130,7 @@ Deno.test("Precedence when user.yml and app.yml baseDir conflict", async () => {
     await ensureDir(configDir);
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: .agent/breakdown/prompts_app\napp_schema:\n  base_dir: schemas\n`,
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: .agent/breakdown/prompts_app\napp_schema:\n  base_dir: schema\n`,
     );
     await Deno.writeTextFile(
       join(configDir, "user.yml"),
@@ -259,7 +259,7 @@ Deno.test("E2E: baseDir is used for template lookup", async () => {
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
   );
   const templatePath = join(testDir, ".agent", "breakdown", "custom_prompts", "to", "project");
   await ensureDir(templatePath);
@@ -302,7 +302,7 @@ Deno.test("Retry/recovery scenario on error", async () => {
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: retry_prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: retry_prompts\napp_schema:\n  base_dir: schema\n`,
   );
   const promptDir = join(testDir, ".agent", "breakdown", "retry_prompts", "to", "project");
   await ensureDir(promptDir);

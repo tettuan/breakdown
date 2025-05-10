@@ -66,4 +66,4 @@ export interface Workspace {
   getWorkingDir(): Promise<string>;
   validateConfig(): Promise<void>;
   reloadConfig(): Promise<void>;
-} 
+}

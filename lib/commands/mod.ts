@@ -53,7 +53,7 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
     const workspace = new Workspace({
       workingDir,
       promptBaseDir: "prompts", // placeholder, should be loaded from config
-      schemaBaseDir: "schemas", // placeholder, should be loaded from config
+      schemaBaseDir: "schema", // placeholder, should be loaded from config
     });
     await workspace.initialize();
     return {

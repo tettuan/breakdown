@@ -1,4 +1,4 @@
-import { WorkspaceStructure, WorkspaceConfig } from "./interfaces.ts";
+import { WorkspaceConfig, WorkspaceStructure } from "./interfaces.ts";
 import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
 import { WorkspaceInitError } from "./errors.ts";
@@ -16,7 +16,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
       ".agent/breakdown/temp",
       ".agent/breakdown/config",
       ".agent/breakdown/prompts",
-      ".agent/breakdown/schemas",
+      ".agent/breakdown/schema",
     ];
   }
 
@@ -61,4 +61,4 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
     const targetPath = join(this.config.workingDir, path);
     await Deno.remove(targetPath, { recursive: true });
   }
-} 
+}
