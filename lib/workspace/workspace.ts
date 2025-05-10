@@ -54,6 +54,7 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   private schemaBaseDir: string;
   private config: WorkspaceConfig | null = null;
   private promptVariablesFactory?: PromptVariablesFactory;
+  private breakdownConfig: BreakdownConfig;
 
   /**
    * Creates a new Workspace instance.
@@ -64,10 +65,11 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * @param options.schemaBaseDir - Optional custom schema base directory
    */
   constructor(options: WorkspaceOptions) {
-    this.workingDir = options.workingDir;
+    this.workingDir = isAbsolute(options.workingDir) ? options.workingDir : join(Deno.cwd(), options.workingDir);
     const breakdownDir = join(this.workingDir, ".agent", "breakdown");
     this.promptBaseDir = options.promptBaseDir || join(breakdownDir, "prompts");
     this.schemaBaseDir = options.schemaBaseDir || join(breakdownDir, "schemas");
+    this.breakdownConfig = new BreakdownConfig(this.workingDir);
   }
 
   /**
@@ -110,10 +112,10 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       const configYaml = stringify(config);
       await Deno.writeTextFile(configFile, configYaml);
     }
-    // Use BreakdownConfig to load config
-    const breakdownConfig = new BreakdownConfig(this.workingDir);
-    await breakdownConfig.loadConfig();
-    const settings = await breakdownConfig.getConfig();
+
+    // Load configuration using BreakdownConfig
+    await this.breakdownConfig.loadConfig();
+    const settings = await this.breakdownConfig.getConfig();
     if (!settings.app_prompt?.base_dir || settings.app_prompt.base_dir.trim() === "") {
       throw new WorkspaceInitError(
         "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
@@ -124,8 +126,6 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
         "Schema base_dir must be set in config (app_schema.base_dir). No fallback allowed.",
       );
     }
-    const promptBase = settings.app_prompt.base_dir.toString().trim();
-    const schemaBase = settings.app_schema.base_dir.toString().trim();
 
     // 3. Create required directories
     const subdirs = [
@@ -134,13 +134,13 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       "tasks",
       "temp",
       "config",
-      promptBase,
-      schemaBase,
+      settings.app_prompt.base_dir,
+      settings.app_schema.base_dir,
     ];
 
     // Check if any subdirectories exist as files
     for (const dir of subdirs) {
-      const dirPath = join(this.workingDir, ".agent", "breakdown", dir);
+      const dirPath = join(this.workingDir, dir);
       if (await exists(dirPath)) {
         const stat = await Deno.stat(dirPath);
         if (!stat.isDirectory) {
@@ -149,9 +149,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
       }
     }
 
-    await ensureDir(join(this.workingDir, ".agent", "breakdown"));
+    await ensureDir(breakdownDir);
     for (const dir of subdirs) {
-      await ensureDir(join(this.workingDir, ".agent", "breakdown", dir));
+      await ensureDir(join(this.workingDir, dir));
     }
 
     // テンプレート・スキーマコピー処理を追加
@@ -311,25 +311,53 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
   }
 
   /**
-   * Get the prompt base directory path.
+   * Get the prompt base directory path (absolute).
+   * This path is resolved relative to the workspace directory.
    *
-   * @returns {string} The absolute path to the prompt base directory
+   * @returns The prompt base directory absolute path
    */
-  public getPromptBaseDir(): string {
-    const config = this.config || { app_prompt: { base_dir: "prompts" } };
-    const baseDir = config.app_prompt.base_dir || "prompts";
-    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
+  public async getPromptBaseDir(): Promise<string> {
+    const rel = await this.getPromptBaseDirRelative();
+    return isAbsolute(rel) ? rel : join(this.workingDir, rel);
   }
 
   /**
-   * Get the schema base directory path.
+   * Get the schema base directory path (absolute).
+   * This path is resolved relative to the workspace directory.
    *
-   * @returns {string} The absolute path to the schema base directory
+   * @returns The schema base directory absolute path
    */
-  public getSchemaBaseDir(): string {
-    const config = this.config || { app_schema: { base_dir: "schemas" } };
-    const baseDir = config.app_schema.base_dir || "schemas";
-    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
+  public async getSchemaBaseDir(): Promise<string> {
+    const rel = await this.getSchemaBaseDirRelative();
+    return isAbsolute(rel) ? rel : join(this.workingDir, rel);
+  }
+
+  /**
+   * Get the prompt base directory path (relative, as in config base_dir).
+   *
+   * @returns The prompt base directory relative path (as in config)
+   */
+  public async getPromptBaseDirRelative(): Promise<string> {
+    const settings = await this.breakdownConfig.getConfig();
+    const baseDir = settings.app_prompt?.base_dir?.trim() || "";
+    if (!baseDir) {
+      throw new WorkspaceConfigError("Prompt base_dir not set in config");
+    }
+    return baseDir;
+  }
+
+  /**
+   * Get the schema base directory path (relative, as in config base_dir).
+   *
+   * @returns The schema base directory relative path (as in config)
+   */
+  public async getSchemaBaseDirRelative(): Promise<string> {
+    const settings = await this.breakdownConfig.getConfig();
+    const baseDir = settings.app_schema?.base_dir?.trim() || "";
+    if (!baseDir) {
+      throw new WorkspaceConfigError("Schema base_dir not set in config");
+    }
+    return baseDir;
   }
 
   /**
@@ -488,6 +516,13 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
         }
       }
     }
+  }
+
+  /**
+   * Reload the BreakdownConfig from disk (for test or runtime config changes).
+   */
+  public async reloadConfig(): Promise<void> {
+    await this.breakdownConfig.loadConfig();
   }
 }
 

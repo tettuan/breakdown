@@ -74,9 +74,9 @@ export interface WorkspaceConfig {
  */
 export interface WorkspaceStructure {
   /** Gets the base directory for prompts. */
-  getPromptBaseDir(): string;
+  getPromptBaseDir(): Promise<string>;
   /** Gets the base directory for schemas. */
-  getSchemaBaseDir(): string;
+  getSchemaBaseDir(): Promise<string>;
   /** Gets the working directory. */
   getWorkingDir(): string;
   /** Initializes the workspace. */
