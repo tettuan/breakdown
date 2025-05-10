@@ -8,14 +8,15 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
         with:
-          fetch-depth: 0
-          ref: main
+          deno-version: v1.x
+      - name: Publish to JSR
+        run: deno task publish
+        env:
+          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
       # Check if tag is on main
       - name: Check if tag is on main
@@ -74,35 +75,3 @@ jobs:
       # Run lint check
       - name: Run linter
         run: deno lint
-
-      # Publish to JSR
-      - name: Publish to JSR
-        run: deno publish
-
-  deploy-docs:
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Build docs
-        run: |
-          deno task build:docs
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          publish_branch: gh-pages
-          commit_message: "docs: update documentation for ${{ github.ref_name }}"
