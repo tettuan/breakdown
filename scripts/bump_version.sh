@@ -129,6 +129,7 @@ if [[ "$all_match" == true ]]; then
   echo "Version Consistency Check: true (all versions match: $jsr_ver)"
 else
   echo "Version Consistency Check: false"
+  echo "Please run ./scripts/rewind_to_jsr.sh to synchronize versions."
   exit 1
 fi
 
