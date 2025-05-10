@@ -155,77 +155,13 @@ git fetch --tags
 current_version=$(get_deno_version)
 echo "Current version in deno.json: $current_version"
 
-# If JSR is behind, sync everything to JSR version
-if [[ "$current_version" > "$latest_jsr_version" ]]; then
-  echo "
-===============================================================================
->>> VERSION SYNC REQUIRED <<<
-===============================================================================
-JSR version ($latest_jsr_version) is behind local version ($current_version)
-Performing full version sync:
-1. Removing tags ahead of JSR version
-2. Syncing local versions to match JSR
-==============================================================================="
-
-  # Remove tags ahead of JSR version
-  tag_removed=false
-  for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
-    if [[ "$tag" > "$latest_jsr_version" ]]; then
-      echo "Deleting local tag: v$tag (ahead of latest JSR version $latest_jsr_version)"
-      git tag -d "v$tag" && echo "Local tag v$tag deleted." || echo "Failed to delete local tag v$tag."
-      echo "Deleting remote tag: v$tag"
-      if git push --delete origin "v$tag"; then
-        echo "Remote tag v$tag deleted."
-      else
-        echo "Failed to delete remote tag v$tag."
-      fi
-      tag_removed=true
-    fi
-  done
-
-  if $tag_removed; then
-    echo "\n>>> TAG CLEANUP COMPLETE <<<\n"
+# Check if any tags are ahead of JSR version
+for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
+  if [[ "$tag" > "$latest_jsr_version" ]]; then
+    echo "\n===============================================================================\nLocal tags are ahead of JSR version ($latest_jsr_version).\nPlease run scripts/rewind_to_jsr.sh to rewind local versions and tags.\n===============================================================================\n"
+    exit 1
   fi
-
-  # Update both files to match JSR version
-  echo "Syncing local versions to match JSR version $latest_jsr_version..."
-  tmp_deno="${DENO_JSON}.tmp"
-  tmp_ts="${VERSION_TS}.tmp"
-  
-  # Update deno.json
-  jq --arg v "$latest_jsr_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
-  mv "$tmp_deno" "$DENO_JSON"
-  
-  # Update version.ts
-  cat > "$tmp_ts" <<EOF
-// This file is auto-generated. Do not edit manually.
-// The version is synchronized with deno.json.
-
-/**
- * The current version of Breakdown CLI, synchronized with deno.json.
- * @module
- */
-export const VERSION = "$latest_jsr_version";
-EOF
-  mv "$tmp_ts" "$VERSION_TS"
-  deno fmt "$VERSION_TS"
-
-  # Stage and commit the changes
-  git add "$DENO_JSON" "$VERSION_TS"
-  git commit -m "chore: sync versions to match JSR version $latest_jsr_version"
-
-  echo "
-===============================================================================
->>> VERSION SYNC COMPLETE <<<
-===============================================================================
-Local versions have been synced to match JSR version $latest_jsr_version.
-Changes have been committed. Please:
-1. Review the changes
-2. Run 'deno task ci' to verify everything
-3. Push the changes if CI passes
-==============================================================================="
-  exit 0
-fi
+done
 
 # 7. New Version Generation
 # -------------------------
