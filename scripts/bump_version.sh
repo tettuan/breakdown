@@ -129,6 +129,7 @@ if [[ "$all_match" == true ]]; then
   echo "Version Consistency Check: true (all versions match: $jsr_ver)"
 else
   echo "Version Consistency Check: false"
+  exit 1
 fi
 
 echo "✓ Status Checks passed"
