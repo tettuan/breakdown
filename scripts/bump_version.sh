@@ -164,6 +164,42 @@ for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
   fi
 done
 
+# If JSR is behind, sync local versions and exit
+if [[ "$current_version" > "$latest_jsr_version" ]]; then
+  echo "JSR version ($latest_jsr_version) is behind local version ($current_version)"
+  echo "Syncing local versions to match JSR version..."
+  
+  # Update both files to match JSR version
+  tmp_deno="${DENO_JSON}.tmp"
+  tmp_ts="${VERSION_TS}.tmp"
+  jq --arg v "$latest_jsr_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
+  cat > "$tmp_ts" <<EOF
+// This file is auto-generated. Do not edit manually.
+// The version is synchronized with deno.json.
+
+/**
+ * The current version of Breakdown CLI, synchronized with deno.json.
+ * @module
+ */
+export const VERSION = "$latest_jsr_version";
+EOF
+  mv "$tmp_deno" "$DENO_JSON"
+  mv "$tmp_ts" "$VERSION_TS"
+  deno fmt "$VERSION_TS"
+
+  echo "
+===============================================================================
+>>> VERSION SYNC COMPLETE <<<
+===============================================================================
+Local versions have been synced to match JSR version $latest_jsr_version.
+Please:
+1. Review the changes
+2. Run 'deno task ci' to verify everything
+3. Commit and push if CI passes
+==============================================================================="
+  exit 0
+fi
+
 # 7. New Version Generation
 # -------------------------
 bump_type="patch"
