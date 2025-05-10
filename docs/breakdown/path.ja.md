@@ -1,5 +1,24 @@
 # オプション（パラメータ値）に基づくPATH処理
 
+## 用語の整理（2024年5月追記）
+
+- **cwd**
+  - 実行時の「カレントワーキングディレクトリ」
+  - `Deno.cwd()` で取得されるディレクトリ
+  - コマンド実行時の基準パス
+
+- **working_dir**
+  - Breakdown の設定ファイル（`breakdownConfig`/`app.yml`）で指定される作業ディレクトリ
+  - `.agent/breakdown` など、Breakdown の管理用ディレクトリ
+  - 入出力ファイル（-i, -o）の解決に使う
+
+- **app_prompt.base_dir / app_schema.base_dir**
+  - プロンプト・スキーマテンプレートのベースディレクトリ
+  - **cwd**（`Deno.cwd()`）起点で解決する
+  - 例: `app_prompt.base_dir: prompts` の場合、`Deno.cwd()/prompts` となる
+
+---
+
 > **パス解決・パラメータ構築の実装例・推奨実装については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
 
 path を解釈するための仕様である。 PATHは2つの前提が揃うと決まる。
@@ -16,9 +35,9 @@ path を解釈するための仕様である。 PATHは2つの前提が揃うと
 
 2. 続けて、設定値を用いる。
 
-- プロンプト : `app_prompt.base_dir`
-- Schema : `app_schema.base_dir`
-- その他 : `working_dir`
+- プロンプト : `app_prompt.base_dir`（**cwd起点で解決**）
+- Schema : `app_schema.base_dir`（**cwd起点で解決**）
+- その他 : `working_dir`（入出力ファイルの解決にのみ使用）
 
 3. その次に、パラメータ2つの組み合わせでPATHを構成する。
 
@@ -41,13 +60,14 @@ path を解釈するための仕様である。 PATHは2つの前提が揃うと
 ## プロンプト
 
 - dir : {app_prompt.base_dir}/{demonstrativeType}/{layerType}
+  - **app_prompt.base_dir は cwd 起点で解決すること**
 - filename : f_{fromLayerType}.md
   - adaptation オプション(-a, --adaptation)が指定された場合:
     - filename : f_{fromLayerType}_{adaptation}.md
 
 プロンプトファイル例：
-- 通常時: `lib/breakdown/prompts/to/issue/f_issue.md`
-- adaptation指定時: `lib/breakdown/prompts/to/issue/f_issue_strict.md`
+- 通常時: `prompts/to/issue/f_issue.md`（`Deno.cwd()/prompts/to/issue/f_issue.md`）
+- adaptation指定時: `prompts/to/issue/f_issue_strict.md`
 
 ### fromLayerType が空白時
 
@@ -60,10 +80,11 @@ fromLayerType が空白で fromFile が `something/created/123_issue_file.md` �
 ## Schema
 
 - dir : {app_schema.base_dir}/{demonstrativeType}/{layerType}
+  - **app_schema.base_dir は cwd 起点で解決すること**
 - filename : `base.schema.md`
   - デフォルト値を `base.schema.md` で固定
 
-Schemaファイル例： `lib/breakdown/schema/to/issue/base.schema.md`
+Schemaファイル例： `schemas/to/issue/base.schema.md`（`Deno.cwd()/schemas/to/issue/base.schema.md`）
 
 ## Inputファイル
 
