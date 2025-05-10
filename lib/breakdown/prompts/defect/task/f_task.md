@@ -1,33 +1,27 @@
-# Task Defect Analysis Prompt
-
-This prompt helps analyze and document defects found in tasks.
+# Task Defect Analysis Template
 
 ## Input
-The input is a task containing:
-- Task title
-- Description
-- Steps to complete
-- Dependencies
-- Technical requirements
-- Current status
-- Error reports or symptoms
+- {input_text_file}
+- {input_text}
 
 ## Output
-The output should be a structured defect analysis with:
-- Defect summary
-- Root cause analysis
-- Impact assessment
-- Steps to reproduce
-- Affected components
-- Suggested fixes
-- Testing requirements
-- Priority level
+- {destination_path}
+
+---
+
+## Analysis Perspectives
+- Overview of defects related to the task
+- Source, environment, and reproduction steps
+- Related systems and components
+- Known errors and patterns
+- Clearly indicate missing information
+- Improvement requests and fixes
 
 ## Instructions
-1. Analyze the task and error reports
-2. Identify the root cause
-3. Document reproduction steps
-4. Assess impact on other components
-5. Propose potential fixes
-6. Define testing criteria
-7. Set defect priority 
+1. Analyze the input information from the above perspectives.
+2. Create a section for each perspective and organize the information.
+3. Clearly indicate any missing information as "Missing Information".
+4. Always use template variables.
+
+## Output Format
+- Output as structured Markdown according to the task defect schema. 

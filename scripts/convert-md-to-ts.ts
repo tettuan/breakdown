@@ -1,5 +1,5 @@
 /**
- * MarkdownディレクトリをTypeScriptファイルに変換するスクリプト
+ * Markdown directory to TypeScript file converter script (English .md only)
  * Usage: deno run -A scripts/convert-md-to-ts.ts <inputDir> <output.ts>
  */
 import { walk } from "jsr:@std/fs@0.224.0";
@@ -15,10 +15,12 @@ const [inputDir, outputPath] = Deno.args;
 const templates: Record<string, string> = {};
 
 for await (const entry of walk(inputDir, { includeDirs: false, exts: [".md"] })) {
+  // Exclude Japanese markdown files (*.ja.md)
+  if (entry.path.endsWith(".ja.md")) continue;
   const content = await Deno.readTextFile(entry.path);
-  // パスは inputDir からの相対パス
+  // Path is relative to inputDir
   const relPath = relative(inputDir, entry.path).replaceAll("\\", "/");
-  // エスケープ
+  // Escape
   const escaped = content
     .replace(/\\/g, "\\\\")
     .replace(/`/g, "\\`")
@@ -28,13 +30,13 @@ for await (const entry of walk(inputDir, { includeDirs: false, exts: [".md"] }))
 
 const varName = basename(outputPath).replace(/\.ts$/, "").replace(/[^a-zA-Z0-9_]/g, "_");
 
-const tsContent = `// このファイルは自動生成されています。直接編集しないでください。
+const tsContent = `// This file is auto-generated. Do not edit directly.
 /**
- * 元: ${inputDir} 配下のMarkdownテンプレート
+ * Source: Markdown templates under ${inputDir} (English only)
  */
 export const ${varName} = ${JSON.stringify(templates, null, 2)} as const;
 `;
 
 await Deno.writeTextFile(outputPath, tsContent);
 
-console.log(`✅ Converted ${inputDir} -> ${outputPath}`);
+console.log(`✅ Converted (English .md only) ${inputDir} -> ${outputPath}`);
