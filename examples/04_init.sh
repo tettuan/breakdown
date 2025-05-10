@@ -64,8 +64,8 @@ if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/prompts" ]; then
 fi
 
 # スキーマディレクトリの確認
-if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/schemas" ]; then
-    echo "❌ スキーマディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/schemas"
+if [ ! -d "${WORK_DIR}/${BREAKDOWN_DIR}/schema" ]; then
+    echo "❌ スキーマディレクトリが作成されていません: ${WORK_DIR}/${BREAKDOWN_DIR}/schema"
     exit 1
 fi
 
@@ -73,7 +73,7 @@ echo "✓ 初期化が完了しました"
 echo "作業ディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}"
 echo "設定ファイル: ${WORK_DIR}/${BREAKDOWN_DIR}/config/app.yml"
 echo "プロンプトディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/prompts"
-echo "スキーマディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/schemas"
+echo "スキーマディレクトリ: ${WORK_DIR}/${BREAKDOWN_DIR}/schema"
 
 # サンプル入力ファイルの自動生成
 TMP_EXAMPLES_DIR="$PWD/examples/tmp/examples"

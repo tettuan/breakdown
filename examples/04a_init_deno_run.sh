@@ -21,7 +21,7 @@ if [ -d .agent/breakdown ]; then
   echo "作業ディレクトリ: $WORKDIR/.agent/breakdown"
   echo "設定ファイル: $WORKDIR/.agent/breakdown/config/app.yml"
   echo "プロンプトディレクトリ: $WORKDIR/.agent/breakdown/prompts"
-  echo "スキーマディレクトリ: $WORKDIR/.agent/breakdown/schemas"
+  echo "スキーマディレクトリ: $WORKDIR/.agent/breakdown/schema"
 else
   echo "✗ 初期化ディレクトリが見つかりません"
   exit 1
