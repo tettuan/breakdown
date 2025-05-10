@@ -418,7 +418,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     }
 
     if (!srcPrompts) {
-      throw new WorkspaceInitError(`Source prompts directory not found in any of: ${possiblePromptPaths.join(", ")}`);
+      throw new WorkspaceInitError(
+        `Source prompts directory not found in any of: ${possiblePromptPaths.join(", ")}`,
+      );
     }
 
     console.log("[DEBUG] Using source prompts from:", srcPrompts);
@@ -443,7 +445,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     }
 
     if (!srcSchemas) {
-      throw new WorkspaceInitError(`Source schemas directory not found in any of: ${possibleSchemasPaths.join(", ")}`);
+      throw new WorkspaceInitError(
+        `Source schemas directory not found in any of: ${possibleSchemasPaths.join(", ")}`,
+      );
     }
 
     console.log("[DEBUG] Using source schemas from:", srcSchemas);
@@ -476,7 +480,9 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
             await Deno.copyFile(srcPath, destPath);
           } catch (error: unknown) {
             if (error instanceof Error && !(error instanceof Deno.errors.AlreadyExists)) {
-              throw new WorkspaceInitError(`Failed to copy file ${srcPath} to ${destPath}: ${error.message}`);
+              throw new WorkspaceInitError(
+                `Failed to copy file ${srcPath} to ${destPath}: ${error.message}`,
+              );
             }
           }
         }
