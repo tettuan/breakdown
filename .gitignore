@@ -81,3 +81,6 @@ tmp/*
 /worktree-*/
 /.worktree-*
 /.worktree-*/
+
+# Deno compiled binaries
+.deno/bin/
