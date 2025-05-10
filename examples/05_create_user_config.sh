@@ -6,6 +6,9 @@
 pushd "$(dirname "$0")" > /dev/null
 set -e
 
+# Create .deno/bin directory if it doesn't exist
+mkdir -p .deno/bin
+
 # Define the config directory path
 CONFIG_DIR="./.agent/breakdown/config"
 
@@ -22,11 +25,11 @@ SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
 SYSTEM_SCHEMA_DIR="./.agent/breakdown/schemas"
 if [ -f "$APP_YML_PATH" ]; then
     # Extract base_dir values using grep/sed (YAML, so simple extraction)
-    SYSTEM_PROMPT_DIR=$(grep 'app_prompt:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
-    SYSTEM_SCHEMA_DIR=$(grep 'app_schema:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
-    # Fallback if empty
-    [ -z "$SYSTEM_PROMPT_DIR" ] && SYSTEM_PROMPT_DIR="./.agent/breakdown/prompts"
-    [ -z "$SYSTEM_SCHEMA_DIR" ] && SYSTEM_SCHEMA_DIR="./.agent/breakdown/schemas"
+    BASE_PROMPT_DIR=$(grep 'app_prompt:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
+    BASE_SCHEMA_DIR=$(grep 'app_schema:' -A 2 "$APP_YML_PATH" | grep 'base_dir:' | head -n1 | sed 's/.*base_dir:[ ]*//;s/"//g')
+    # Use full paths
+    [ -n "$BASE_PROMPT_DIR" ] && SYSTEM_PROMPT_DIR="./.agent/breakdown/$BASE_PROMPT_DIR"
+    [ -n "$BASE_SCHEMA_DIR" ] && SYSTEM_SCHEMA_DIR="./.agent/breakdown/$BASE_SCHEMA_DIR"
 fi
 
 # --- 2. Define the path for the user configuration ---

@@ -27,6 +27,19 @@ echo "=== プロジェクト実装への変換 ==="
 
 # カレントディレクトリを作業ディレクトリとして使用
 WORK_DIR="$(pwd)"
+DENO_BIN_DIR=".deno/bin"
+BREAKDOWN_BIN="${DENO_BIN_DIR}/breakdown"
+
+# .deno/binディレクトリの作成と確認
+echo "バイナリディレクトリの確認..."
+mkdir -p "${DENO_BIN_DIR}" || handle_error "バイナリディレクトリの作成に失敗しました"
+
+# バイナリの存在確認
+if [ ! -f "${BREAKDOWN_BIN}" ]; then
+    echo "❌ breakdownバイナリが見つかりません: ${BREAKDOWN_BIN}"
+    echo "先に ./02_compile.sh を実行してください。"
+    exit 1
+fi
 
 # Create necessary directories
 mkdir -p "${WORK_DIR}/tmp/examples/project"
