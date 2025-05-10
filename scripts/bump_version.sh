@@ -32,6 +32,8 @@ fi
 #   4. GitHub Actions Status
 #      - Checks .github/workflows/test.yml and version-check.yml for the latest commit
 #      - Aborts if either workflow has not succeeded
+#   4b. JSR Pre-publish Check
+#       - Runs deno publish --dry-run --allow-dirty --no-check to check for issues before publishing
 #   5. JSR Version Check
 #      - Fetches published versions from JSR registry (meta.json endpoint)
 #      - Determines the latest released version
@@ -132,6 +134,14 @@ for workflow in "test.yml" "version-check.yml"; do
     echo "Continuing with version bump..."
   fi
 done
+
+# 4b. JSR Pre-publish Check
+# -------------------------
+echo "Running JSR pre-publish check..."
+if ! deno publish --dry-run --allow-dirty --no-check > /dev/null 2>&1; then
+  echo "Error: JSR pre-publish check failed. Please fix any issues before bumping version."
+  exit 1
+fi
 
 # 5. JSR Version Check
 # --------------------

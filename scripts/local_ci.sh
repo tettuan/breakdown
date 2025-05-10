@@ -305,6 +305,32 @@ if ! error_output=$(deno publish --dry-run --allow-dirty 2>&1); then
     handle_jsr_error "$error_output"
 fi
 
+# Add comprehensive JSR publish test
+echo "Running comprehensive JSR publish test..."
+if ! error_output=$(deno publish --dry-run --allow-dirty --no-check 2>&1); then
+  echo "
+===============================================================================
+>>> JSR PUBLISH TEST FAILED <<<
+===============================================================================
+Error: JSR publish test failed
+
+Common causes:
+1. Dependency version mismatches
+2. Invalid package structure
+3. Missing required files
+4. Invalid file permissions
+
+Next steps:
+1. Check dependency versions in deps.ts and deno.json
+2. Verify package structure in deno.json publish config
+3. Ensure all required files are included
+4. Check file permissions
+
+Error details: $error_output
+==============================================================================="
+  exit 1
+fi
+
 # Function to run a single test file
 run_single_test() {
     local test_file=$1

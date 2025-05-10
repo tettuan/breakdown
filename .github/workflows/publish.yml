@@ -14,7 +14,7 @@ jobs:
         with:
           deno-version: v1.x
       - name: Publish to JSR
-        run: deno task publish
+        run: deno publish
         env:
           JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 

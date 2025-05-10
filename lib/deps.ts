@@ -19,7 +19,7 @@ export {
   BreakdownConfig,
   type MergedConfig,
   type UserConfig,
-} from "jsr:@tettuan/breakdownconfig@1.0.10";
+} from "jsr:@tettuan/breakdownconfig@^1.0.11";
 
 export {
   type ParamsParser,
