@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for OIDC authentication with deno publish
+      id-token: write # Required for OIDC authentication with deno publish
       contents: read
     steps:
       - uses: actions/checkout@v4
