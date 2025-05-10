@@ -11,11 +11,11 @@ mkdir -p tmp/examples/adaptation
 
 # Long form usage
 echo "Testing long form (--adaptation strict)..."
-./.deno/bin/breakdown summary task --from examples/fixtures/unorganized_tasks.md --adaptation strict -o tmp/examples/adaptation/tasks_strict.md
+./.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md --adaptation strict -o tmp/examples/adaptation/tasks_strict.md
 
 # Short form usage
 echo "Testing short form (-a a)..."
-./.deno/bin/breakdown summary task --from examples/fixtures/unorganized_tasks.md -a a -o tmp/examples/adaptation/tasks_simple.md
+./.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md -a a -o tmp/examples/adaptation/tasks_simple.md
 
 # Show the results
 echo "\nGenerated files:"

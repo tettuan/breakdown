@@ -397,32 +397,59 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
     const settings = await breakdownConfig.getConfig();
     const promptBase = settings.app_prompt.base_dir.toString().trim();
     const schemaBase = settings.app_schema.base_dir.toString().trim();
-    // prompts
-    try {
-      const srcPrompts = join(projectRoot, "lib", "breakdown", "prompts");
-      const destPrompts = join(breakdownDir, promptBase);
-      await ensureDir(destPrompts);
-      const srcPromptsExists = await exists(srcPrompts);
-      if (srcPromptsExists) {
-        // no debug output
+
+    console.log("[DEBUG] Current directory:", Deno.cwd());
+    console.log("[DEBUG] Project root:", projectRoot);
+
+    // Try to find prompts in different locations
+    const possiblePromptPaths = [
+      join(projectRoot, "lib", "breakdown", "prompts"), // When running from source
+      join(Deno.cwd(), "lib", "breakdown", "prompts"), // When running from project root
+      join(dirname(Deno.cwd()), "lib", "breakdown", "prompts"), // When running from examples
+    ];
+
+    let srcPrompts = "";
+    for (const path of possiblePromptPaths) {
+      console.log("[DEBUG] Checking for prompts at:", path);
+      if (await exists(path)) {
+        srcPrompts = path;
+        break;
       }
-      await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
-    } catch (_e) {
-      // no debug output
     }
-    // schemas
-    try {
-      const srcSchemas = join(projectRoot, "lib", "breakdown", "schemas");
-      const destSchemas = join(breakdownDir, schemaBase);
-      await ensureDir(destSchemas);
-      const srcSchemasExists = await exists(srcSchemas);
-      if (srcSchemasExists) {
-        // no debug output
+
+    if (!srcPrompts) {
+      throw new WorkspaceInitError(`Source prompts directory not found in any of: ${possiblePromptPaths.join(", ")}`);
+    }
+
+    console.log("[DEBUG] Using source prompts from:", srcPrompts);
+    const destPrompts = join(breakdownDir, promptBase);
+    await ensureDir(destPrompts);
+    await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
+
+    // Try to find schemas in different locations
+    const possibleSchemasPaths = [
+      join(projectRoot, "lib", "breakdown", "schemas"), // When running from source
+      join(Deno.cwd(), "lib", "breakdown", "schemas"), // When running from project root
+      join(dirname(Deno.cwd()), "lib", "breakdown", "schemas"), // When running from examples
+    ];
+
+    let srcSchemas = "";
+    for (const path of possibleSchemasPaths) {
+      console.log("[DEBUG] Checking for schemas at:", path);
+      if (await exists(path)) {
+        srcSchemas = path;
+        break;
       }
-      await this.copyDirRecursive(srcSchemas, destSchemas);
-    } catch (_e) {
-      // no debug output
     }
+
+    if (!srcSchemas) {
+      throw new WorkspaceInitError(`Source schemas directory not found in any of: ${possibleSchemasPaths.join(", ")}`);
+    }
+
+    console.log("[DEBUG] Using source schemas from:", srcSchemas);
+    const destSchemas = join(breakdownDir, schemaBase);
+    await ensureDir(destSchemas);
+    await this.copyDirRecursive(srcSchemas, destSchemas);
   }
 
   /**
@@ -434,20 +461,23 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
    * @private
    */
   private async copyDirRecursive(src: string, dest: string, exts?: string[]) {
+    console.log("[DEBUG] Copying directory:", src, "to", dest);
     for await (const entry of Deno.readDir(src)) {
       const srcPath = join(src, entry.name);
       const destPath = join(dest, entry.name);
       if (entry.isDirectory) {
+        console.log("[DEBUG] Creating directory:", destPath);
         await ensureDir(destPath);
         await this.copyDirRecursive(srcPath, destPath, exts);
       } else if (entry.isFile) {
         if (!exts || exts.some((ext) => entry.name.endsWith(ext))) {
           try {
-            await Deno.lstat(destPath);
-            // 既に存在する場合は上書きしない
-          } catch (_e) {
+            console.log("[DEBUG] Copying file:", srcPath, "to", destPath);
             await Deno.copyFile(srcPath, destPath);
-            // no debug output
+          } catch (error: unknown) {
+            if (error instanceof Error && !(error instanceof Deno.errors.AlreadyExists)) {
+              throw new WorkspaceInitError(`Failed to copy file ${srcPath} to ${destPath}: ${error.message}`);
+            }
           }
         }
       }

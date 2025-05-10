@@ -1,5 +1,26 @@
 # Unorganized Tasks
 
+## Task List
+- Fix config directory creation bug
+  - Directory not created during initialization
+  - Expected: .agent/breakdown/config should exist
+  - Priority: High
+
+- Update task output format
+  - Missing required fields in JSON output
+  - Need to add: priority, assignee
+  - Priority: Medium
+
+- Fix YAML config parsing
+  - Invalid indentation on line 5
+  - Need to validate YAML syntax
+  - Priority: High
+
+## Notes
+- AI integration tests passing
+- Need to improve error messages
+- Consider adding validation layer
+
 ## Task Ideas
 - Implement user authentication system
 - Add dark mode support
