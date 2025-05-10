@@ -25,4 +25,4 @@ Options:
   -o, --destination <file>  Output file path
   -i, --input <type>    Input layer type (project|issue|task)
   -a, --adaptation <type>  Adaptation type for template selection
-`; 
+`;
