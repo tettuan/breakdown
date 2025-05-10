@@ -80,7 +80,7 @@ for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
     echo "Deleting local tag: v$tag (ahead of latest JSR version $latest_jsr_version)"
     git tag -d "v$tag" && echo "Local tag v$tag deleted." || echo "Failed to delete local tag v$tag."
     echo "Deleting remote tag: v$tag"
-    if git push --delete origin "v$tag"; then
+    if gh release delete "v$tag" --yes; then
       echo "Remote tag v$tag deleted."
     else
       echo "Failed to delete remote tag v$tag."
