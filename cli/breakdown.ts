@@ -15,6 +15,10 @@ import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
 import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
 
+/**
+ * Help text displayed for the Breakdown CLI.
+ * Provides usage instructions, command descriptions, and available options for users.
+ */
 export const HELP_TEXT: string = `
 Breakdown - AI Development Instruction Tool
 
