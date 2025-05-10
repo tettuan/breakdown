@@ -166,9 +166,13 @@ echo "Latest JSR published version: $latest_jsr_version"
 # 6. GitHub Tags Cleanup
 # ----------------------
 git fetch --tags
+current_version=$(get_deno_version)
+echo "Current version in deno.json: $current_version"
+
+# Only delete tags if they're ahead of current version
 for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
-  if [[ "$tag" > "$latest_jsr_version" ]]; then
-    echo "Deleting local and remote tag: v$tag (ahead of JSR)"
+  if [[ "$tag" > "$current_version" ]]; then
+    echo "Deleting local and remote tag: v$tag (ahead of current version $current_version)"
     git tag -d "v$tag"
     git push --delete origin "v$tag" || true
   fi
@@ -185,7 +189,7 @@ if [[ $# -gt 0 ]]; then
     *) echo "Unknown bump type: $1"; exit 1 ;;
   esac
 fi
-current_version=$(get_deno_version)
+
 IFS='.' read -r major minor patch <<< "$current_version"
 case "$bump_type" in
   major)
