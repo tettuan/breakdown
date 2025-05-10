@@ -61,9 +61,20 @@ export class PromptLoader {
    */
   async load(args: CommandOptions): Promise<Prompt> {
     const promptBaseDir = await this.getPromptBaseDir();
-    const demonstrative = args.demonstrative || "default";
-    const layer = args.layer || "default";
-    const promptDir = join(promptBaseDir, demonstrative, layer);
+    const demonstrative = args.demonstrative;
+    const layer = args.layer;
+
+    if (demonstrative && layer) {
+      // Both parameters are provided, validate they are not empty
+      if (!demonstrative.trim()) {
+        throw new Error("demonstrative type cannot be empty");
+      }
+      if (!layer.trim()) {
+        throw new Error("layer type cannot be empty");
+      }
+    }
+
+    const promptDir = args.promptDir || `${demonstrative}/${layer}`;
 
     // Determine input type from file path
     if (!args.fromFile) {
@@ -75,7 +86,7 @@ export class PromptLoader {
     }
 
     // プロンプトファイルのパスを構築
-    const promptPath = join(promptDir, `f_${inputType}.md`);
+    const promptPath = join(promptBaseDir, promptDir, `f_${inputType}.md`);
 
     // プロンプトファイルを読み込み
     const content = await this.readPromptFile(promptPath);
