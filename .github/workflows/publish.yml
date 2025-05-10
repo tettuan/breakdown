@@ -8,49 +8,37 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC authentication with deno publish
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.x
-      - name: Publish to JSR
-        run: deno publish
-        env:
-          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
-
+          deno-version: v2.x
       # Check if tag is on main
       - name: Check if tag is on main
         id: check-tag
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           TAG_COMMIT=$(git rev-parse $TAG_NAME)
-          # Check if tag's commit is in main branch history
           if git rev-list main | grep -q "^$TAG_COMMIT$"; then
             echo "Tag is on main branch"
           else
             echo "Tag is not on main branch"
             exit 1
           fi
-
-      # Install Deno
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
       # Extract version from tag
       - name: Get tag version
         id: get_tag
         run: |
           echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-
       # Fetch latest JSR version
       - name: Get latest JSR version
         id: get_jsr
         run: |
           LATEST_JSR_VERSION=$(curl -s https://jsr.io/@tettuan/breakdown/meta.json | jq -r '.versions | keys | .[-1]')
           echo "LATEST_JSR_VERSION=$LATEST_JSR_VERSION" >> $GITHUB_ENV
-
       # Compare versions and skip if tag is not newer
       - name: Check if tag version is newer than JSR
         id: check_version
@@ -63,15 +51,16 @@ jobs:
             echo "Tag version ($TAG_VERSION) is not newer than JSR latest ($LATEST_JSR_VERSION). Skipping publish.";
             exit 78;
           fi
-
       # Run tests before publishing
       - name: Run tests
         run: deno test --allow-env --allow-write --allow-read --allow-run
-
       # Run format check
       - name: Check formatting
         run: deno fmt --check
-
       # Run lint check
       - name: Run linter
         run: deno lint
+      # Publish to JSR using OIDC (no token required)
+      - name: Publish to JSR (OIDC)
+        run: deno publish
+        # OIDC is used automatically when id-token: write is set
