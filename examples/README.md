@@ -28,11 +28,10 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 1. `01_install.sh` - Breakdownのインストール案内
 2. `02_compile.sh` - バイナリ生成
 3. `03_check_version.sh` - バージョン確認のテスト (インストール/コンパイル済みバイナリ)
-4. `03a_check_version_deno_run.sh` - バージョン確認のテスト (deno run で直接実行)
-5. `04_init.sh` - プロジェクトの初期化 (バイナリ実行)
-6. `04a_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
-7. `05_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
-8. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
+4. `04_init.sh` - プロジェクトの初期化 (バイナリ実行)
+5. `04a_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
+6. `05_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
+7. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 使用例
 9. `06_project_to_implementation.sh` - プロジェクト実装への変換 (バイナリ実行)
@@ -67,14 +66,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 このスクリプトは以下を実行します：
 - インストール済みまたはコンパイル済みの `breakdown` CLI の `--version` オプションの動作を確認
 
-### 4. バージョン確認のテスト (deno run で直接実行)
-```bash
-./examples/03a_check_version_deno_run.sh
-```
-このスクリプトは以下を実行します：
-- `deno run` を使用して `cli/breakdown.ts` や JSR モジュールを直接実行し、`--version` オプションの動作を確認
-
-### 5. 初期化 (バイナリ実行)
+### 4. 初期化 (バイナリ実行)
 ```bash
 ./examples/04_init.sh
 ```
@@ -83,7 +75,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 必要なディレクトリの作成
 - 基本設定の配置
 
-### 6. 初期化 (deno run で直接実行)
+### 5. 初期化 (deno run で直接実行)
 ```bash
 ./examples/04a_init_deno_run.sh
 ```
@@ -92,7 +84,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 必要なディレクトリの作成
 - 基本設定の配置
 
-### 7. ユーザー設定 (バイナリ実行)
+### 6. ユーザー設定 (バイナリ実行)
 ```bash
 ./examples/05_create_user_config.sh
 ```
@@ -101,7 +93,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - working_dirの設定（`./.agent/breakdown/examples`）
 - 基本設定の構成
 
-### 8. ユーザー設定 (deno run で直接実行)
+### 7. ユーザー設定 (deno run で直接実行)
 ```bash
 ./examples/05a_create_user_config_deno_run.sh
 ```
