@@ -151,6 +151,10 @@ export class ProgressBar {
     }
   }
 
+  /**
+   * Disables the progress bar.
+   * @private
+   */
   private disable(): void {
     this.enabled = false;
   }
@@ -205,6 +209,10 @@ export class Spinner {
     }
   }
 
+  /**
+   * Disables the spinner.
+   * @private
+   */
   private disable(): void {
     this.enabled = false;
   }

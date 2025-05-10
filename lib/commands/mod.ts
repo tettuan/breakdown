@@ -126,11 +126,19 @@ async function runPromptProcessing(
   }
 }
 
+/**
+ * Options for generating a prompt file.
+ */
 export interface GenerateWithPromptOptions {
+  /** Adaptation type for prompt generation. */
   adaptation?: string;
+  /** Directory for prompt files. */
   promptDir?: string;
+  /** Demonstrative type for prompt generation. */
   demonstrativeType?: string;
+  /** Input text from stdin. */
   input_text?: string;
+  /** Input text from file. */
   input_text_file?: string;
 }
 

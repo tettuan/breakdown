@@ -1,14 +1,9 @@
-/**
- * CommandValidatorStrategy
- *
- * Strategy interface for CLI parameter validation.
- * Each command type (NoParams, Single, Double) should implement this interface.
- *
- * The specification and validation rules are described in docs/breakdown/options.ja.md.
- */
-
 import type { DoubleParamValidationResult } from "./double_command_validator.ts";
 
+/**
+ * Strategy interface for validating CLI command parameters.
+ * Implemented by all command validator classes to provide a common validation contract.
+ */
 export interface CommandValidatorStrategy {
   /**
    * Validate CLI parameters for a specific command type.

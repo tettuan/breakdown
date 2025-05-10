@@ -63,7 +63,16 @@ export interface DoubleParamValidationResult {
   };
 }
 
+/**
+ * Strategy for validating CLI parameters for double commands (e.g. to, summary, defect).
+ * Implements the validation rules described in docs/breakdown/options.ja.md.
+ */
 export class DoubleCommandValidator implements CommandValidatorStrategy {
+  /**
+   * Validate CLI parameters for double commands.
+   * @param params The parameters to validate.
+   * @returns The result of the validation.
+   */
   validate(params: unknown): DoubleParamValidationResult {
     let step = DoubleParamValidationStep.START;
     const values: DoubleParamValidationResult["values"] = {};

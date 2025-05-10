@@ -30,6 +30,7 @@
  * @property {string} code - The error code identifying the specific error type
  */
 export class WorkspaceError extends Error {
+  /** The error code identifying the specific error type. */
   code: string;
 
   /**
@@ -110,8 +111,16 @@ export class WorkspacePathError extends WorkspaceError {
 
 /**
  * Error thrown when directory operations fail.
+ *
+ * @extends {WorkspaceError}
+ * @property {string} code - Always set to "WORKSPACE_DIRECTORY_ERROR"
  */
 export class WorkspaceDirectoryError extends WorkspaceError {
+  /**
+   * Creates a new WorkspaceDirectoryError instance.
+   *
+   * @param message - The error message describing the directory error
+   */
   constructor(message: string) {
     super(message, "WORKSPACE_DIRECTORY_ERROR");
     this.name = "WorkspaceDirectoryError";

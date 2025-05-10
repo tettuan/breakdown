@@ -1,12 +1,3 @@
-/**
- * CommandOptionsValidator (Facade)
- *
- * Selects and executes the appropriate parameter validation strategy
- * based on BreakdownParams result type (no-params, single, double).
- *
- * See docs/breakdown/options.ja.md for details.
- */
-
 import { CommandValidatorStrategy } from "./base_validator.ts";
 import { NoParamsCommandValidator } from "./no_params_command_validator.ts";
 import { SingleCommandValidator } from "./single_command_validator.ts";
@@ -17,9 +8,16 @@ import {
   DoubleParamValidationStep,
 } from "./double_command_validator.ts";
 
+/**
+ * Provides validation for CLI command options using different strategies.
+ * Selects and executes the appropriate validator for no-params, single, or double command types.
+ */
 export class CommandOptionsValidator {
   private readonly strategies: Record<string, CommandValidatorStrategy>;
 
+  /**
+   * Creates a new CommandOptionsValidator instance.
+   */
   constructor() {
     this.strategies = {
       "no-params": new NoParamsCommandValidator(),

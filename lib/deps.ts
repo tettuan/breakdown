@@ -6,14 +6,41 @@
  * @module
  */
 
-// Standard Deno modules with aliasing
-export { ensureDir, exists } from "jsr:@std/fs@0.224.0";
+/**
+ * Ensures that a directory exists. If the directory structure does not exist, it is created.
+ * Re-exported from @std/fs.
+ */
+export { ensureDir } from "jsr:@std/fs@0.224.0";
 
-export { dirname, fromFileUrl, join } from "@std/path";
+/**
+ * Checks if a file or directory exists at the given path.
+ * Re-exported from @std/fs.
+ */
+export { exists } from "jsr:@std/fs@0.224.0";
 
+/**
+ * Returns the directory name of a path. Re-exported from @std/path.
+ */
+export { dirname } from "@std/path";
+
+/**
+ * Converts a file URL to a path string. Re-exported from @std/path.
+ */
+export { fromFileUrl } from "@std/path";
+
+/**
+ * Joins all given path segments together. Re-exported from @std/path.
+ */
+export { join } from "@std/path";
+
+/**
+ * Parses command-line flags. Re-exported from @std/flags.
+ */
 export { parse as parseFlags } from "@std/flags";
 
-// JSR packages
+/**
+ * Types and configuration utilities for Breakdown. Re-exported from @tettuan/breakdownconfig.
+ */
 export {
   type AppConfig,
   BreakdownConfig,
@@ -21,10 +48,16 @@ export {
   type UserConfig,
 } from "jsr:@tettuan/breakdownconfig@^1.0.11";
 
+/**
+ * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.
+ */
 export {
   type ParamsParser,
   ParamsParser as BreakdownParams,
   type ParamsResult,
 } from "jsr:@tettuan/breakdownparams@0.1.11";
 
+/**
+ * Prompt management utilities for Breakdown. Re-exported from @tettuan/breakdownprompt.
+ */
 export * from "jsr:@tettuan/breakdownprompt@1.1.2";

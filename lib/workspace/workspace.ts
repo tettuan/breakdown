@@ -51,12 +51,20 @@ export class WorkspaceImpl implements Workspace {
   private pathResolver: WorkspacePathResolverImpl;
   private config: WorkspaceConfigInterface;
 
+  /**
+   * Creates a new WorkspaceImpl instance.
+   * @param config The workspace configuration.
+   */
   constructor(config: WorkspaceConfigInterface) {
     this.config = config;
     this.structure = new WorkspaceStructureImpl(config);
     this.pathResolver = new WorkspacePathResolverImpl(new DefaultPathResolutionStrategy());
   }
 
+  /**
+   * Initializes the workspace, creating required directories and config files.
+   * @throws {WorkspaceInitError} If initialization fails
+   */
   async initialize(): Promise<void> {
     try {
       await ensureDir(this.config.workingDir);
@@ -146,40 +154,80 @@ export class WorkspaceImpl implements Workspace {
     }
   }
 
+  /**
+   * Resolves a path in the workspace using the path resolver.
+   * @param path The path to resolve.
+   * @returns A promise resolving to the resolved path.
+   */
   resolvePath(path: string): Promise<string> {
     return this.pathResolver.resolve(path);
   }
 
+  /**
+   * Creates a directory in the workspace.
+   * @param path The path of the directory to create.
+   * @returns A promise that resolves when the directory is created.
+   */
   createDirectory(path: string): Promise<void> {
     return this.structure.createDirectory(path);
   }
 
+  /**
+   * Removes a directory from the workspace.
+   * @param path The path of the directory to remove.
+   * @returns A promise that resolves when the directory is removed.
+   */
   removeDirectory(path: string): Promise<void> {
     return this.structure.removeDirectory(path);
   }
 
+  /**
+   * Checks if a path exists in the workspace.
+   * @param path The path to check. If not provided, checks the working directory.
+   * @returns A promise resolving to true if the path exists, false otherwise.
+   */
   exists(path?: string): Promise<boolean> {
     return this.structure.exists(path);
   }
 
+  /**
+   * Gets the base directory for prompt files.
+   * @returns A promise resolving to the prompt base directory.
+   */
   getPromptBaseDir(): Promise<string> {
     return Promise.resolve(resolve(this.config.workingDir, this.config.promptBaseDir));
   }
 
+  /**
+   * Gets the base directory for schema files.
+   * @returns A promise resolving to the schema base directory.
+   */
   getSchemaBaseDir(): Promise<string> {
     return Promise.resolve(resolve(this.config.workingDir, this.config.schemaBaseDir));
   }
 
+  /**
+   * Gets the working directory for the workspace.
+   * @returns A promise resolving to the working directory.
+   */
   getWorkingDir(): Promise<string> {
     return Promise.resolve(this.config.workingDir);
   }
 
+  /**
+   * Validates the workspace configuration.
+   * @throws {WorkspaceConfigError} If the working directory does not exist
+   */
   async validateConfig(): Promise<void> {
     if (!await exists(this.config.workingDir)) {
       throw new WorkspaceConfigError("Working directory does not exist");
     }
   }
 
+  /**
+   * Reloads the workspace configuration from file.
+   * @throws {WorkspaceConfigError} If the configuration file is not found
+   */
   async reloadConfig(): Promise<void> {
     // Reload configuration from file
     const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");

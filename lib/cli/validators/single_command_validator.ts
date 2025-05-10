@@ -14,7 +14,16 @@ import {
   DoubleParamValidationStep,
 } from "./double_command_validator.ts";
 
+/**
+ * Class for validating CLI parameters for single commands (e.g. init).
+ * Throws error for any other usage.
+ */
 export class SingleCommandValidator implements CommandValidatorStrategy {
+  /**
+   * Validate CLI parameters for the single command case (e.g. init).
+   * @param params The parameters to validate.
+   * @returns The result of the validation.
+   */
   validate(params: unknown): DoubleParamValidationResult {
     const step = DoubleParamValidationStep.START;
     const values: DoubleParamValidationResult["values"] = {};
