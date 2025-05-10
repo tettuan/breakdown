@@ -1,6 +1,27 @@
-// このファイルは自動生成されています。直接編集しないでください。
 /**
- * 元: lib/breakdown/schema 配下のMarkdownテンプレート
+ * Schema templates for the Breakdown tool.
+ *
+ * This module provides all schema templates as a TypeScript object, mapping relative paths to schema content strings.
+ * These templates are used for initializing and generating schema files in Breakdown workspaces.
+ *
+ * @example
+ * ```ts
+ * import { schema } from "jsr:@tettuan/breakdown/lib/templates/schema.ts";
+ *
+ * // Get the content of a specific schema template
+ * const projectSchema = schema["to/project/base.schema.md"];
+ * console.log(projectSchema);
+ * ```
+ *
+ * @module
+ */
+/**
+ * An object containing all schema templates for Breakdown.
+ *
+ * - Keys are relative paths (from the original schema directory)
+ * - Values are the Markdown content of each schema template
+ *
+ * Use this object to programmatically access or expand schema templates in your application or CLI tools.
  */
 export const schema = {
   "to/project/base.schema.md":
