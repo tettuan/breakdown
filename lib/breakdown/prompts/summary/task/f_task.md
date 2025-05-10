@@ -1,4 +1,4 @@
-# Issue Summary Template
+# Task Summary Template
 
 ## Input
 - {input_text}
@@ -9,11 +9,9 @@
 ---
 
 ## Summary Perspectives
-- Issue overview
-- Key requirements and issues
-- Dependencies summary
+- Task overview
+- Required steps and dependencies
 - Priority and urgency
-- Effort estimation
 - Status and blockers
 
 ## Instructions

@@ -1,17 +1,25 @@
-ストーリーからIssueへの変換プロンプト
+# Issue Breakdown Detailed Template
 
-# Input
+## Input
+- {input_text_file}
+- {input_text}
 
-{input_text}
+## Output
+- {destination_path}
 
-# Source
+---
 
-{input_text_file}
+## Breakdown Perspectives
+- Requirements/specification classification
+- Issue purpose, problems, background, and history
+- MoSCoW analysis, DDD, design patterns
+- Taskification and relationships between tasks (blocked, related, sub, parent)
 
-# Schema
+## Instructions
+1. Break down the input information according to the above perspectives.
+2. Create a section for each perspective and organize the information.
+3. Clearly indicate any missing information as "Missing Information".
+4. Always use template variables.
 
-{schema_file}
-
-# Output
-
-{destination_path}
+## Output Format
+- Output as structured Markdown according to the issue schema.
