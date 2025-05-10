@@ -88,7 +88,12 @@ Deno.test("should throw permission denied error when creating workspace in read-
 
   try {
     await assertRejects(
-      () => new Workspace({ workingDir: readOnlyDir }).ensureDirectories(),
+      () =>
+        new Workspace({
+          workingDir: readOnlyDir,
+          promptBaseDir: "prompts",
+          schemaBaseDir: "schema",
+        }).initialize(),
       WorkspaceInitError,
       `Permission denied: Cannot create directory structure in ${join(readOnlyDir, "breakdown")}`,
     );
@@ -123,7 +128,7 @@ Deno.test("directory - structure with default config only", async () => {
       "temp",
       "config",
       "prompts",
-      "schemas",
+      "schema",
     ];
     for (const dir of requiredDirs) {
       const dirPath = `${workingDir}/${dir}`;
@@ -164,7 +169,7 @@ Deno.test("directory - structure with user config working_dir override", async (
     "temp",
     "config",
     "prompts",
-    "schemas",
+    "schema",
   ];
   for (const dir of requiredDirs) {
     await Deno.mkdir(`${userWorkingDir}/${dir}`, { recursive: true });

@@ -30,15 +30,18 @@
  * @property {string} code - The error code identifying the specific error type
  */
 export class WorkspaceError extends Error {
+  code: string;
+
   /**
    * Creates a new WorkspaceError instance.
    *
    * @param message - The error message describing the workspace error
    * @param code - The error code for the workspace error
    */
-  constructor(message: string, public code: string) {
+  constructor(message: string, code: string) {
     super(message);
     this.name = "WorkspaceError";
+    this.code = code;
   }
 }
 
@@ -59,11 +62,12 @@ export class WorkspaceInitError extends WorkspaceError {
    */
   constructor(message: string) {
     super(message, "WORKSPACE_INIT_ERROR");
+    this.name = "WorkspaceInitError";
   }
 }
 
 /**
- * Error thrown when workspace configuration is invalid.
+ * Error thrown when workspace configuration is invalid or missing.
  *
  * This error is thrown when there are problems with the workspace configuration,
  * such as missing required settings or invalid values.
@@ -79,11 +83,12 @@ export class WorkspaceConfigError extends WorkspaceError {
    */
   constructor(message: string) {
     super(message, "WORKSPACE_CONFIG_ERROR");
+    this.name = "WorkspaceConfigError";
   }
 }
 
 /**
- * Error thrown when workspace path resolution fails.
+ * Error thrown when path resolution fails.
  *
  * This error is thrown when there are problems resolving paths within the workspace,
  * such as invalid file paths or missing directories.
@@ -99,5 +104,16 @@ export class WorkspacePathError extends WorkspaceError {
    */
   constructor(message: string) {
     super(message, "WORKSPACE_PATH_ERROR");
+    this.name = "WorkspacePathError";
+  }
+}
+
+/**
+ * Error thrown when directory operations fail.
+ */
+export class WorkspaceDirectoryError extends WorkspaceError {
+  constructor(message: string) {
+    super(message, "WORKSPACE_DIRECTORY_ERROR");
+    this.name = "WorkspaceDirectoryError";
   }
 }

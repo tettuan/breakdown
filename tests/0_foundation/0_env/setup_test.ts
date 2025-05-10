@@ -3,6 +3,7 @@ import { join } from "jsr:@std/path/join";
 import { exists } from "jsr:@std/fs/exists";
 import { assertDirectoryExists } from "$test/helpers/assertions.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
+import { Workspace } from "../../../lib/workspace/workspace.ts";
 
 Deno.test("setup - environment initialization", async () => {
   const env = await setupTestEnvironment({ workingDir: "./tmp/test/setup" });
@@ -14,10 +15,18 @@ Deno.test("setup - environment initialization", async () => {
     );
     assertEquals(workingDirExists, true, "Working directory should be created");
 
+    // Initialize workspace to create directory structure
+    const workspace = new Workspace({
+      workingDir: env.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    await workspace.initialize();
+
     // Verify directory structure
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "prompts"));
-    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schemas"));
+    await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "schema"));
     await assertDirectoryExists(join(env.workingDir, ".agent", "breakdown", "config"));
 
     // Verify config file exists

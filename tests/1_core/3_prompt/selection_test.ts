@@ -49,7 +49,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     await Deno.mkdir(configDir, { recursive: true });
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
-      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
     // Create schema directory and file

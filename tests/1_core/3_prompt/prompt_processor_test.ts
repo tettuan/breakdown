@@ -155,7 +155,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
   await ensureDir(configDir);
   await Deno.writeTextFile(
     configFile,
-    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
 
   try {
@@ -558,7 +558,7 @@ Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () =>
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   try {
     // Call with baseDir = ""

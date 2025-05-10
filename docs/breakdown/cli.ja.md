@@ -62,6 +62,22 @@ tail -100 "<log_file>" | breakdown defect <layer> -o <output>
 
 - `init`コマンドで初期化された作業ディレクトリを基準
 - 未初期化の場合はエラー
+- 詳細な実装については[Workspace仕様書](./workspace.ja.md)を参照
+- パス解決の実装詳細は[PromptVariablesFactory](./app_factory.ja.md)を参照
+
+### パス解決の実装
+
+WorkspaceとPromptVariablesFactoryは以下の関係で連携します：
+
+1. Workspace
+   - 作業ディレクトリの管理
+   - 設定ファイル（app.yml）の読み込み
+   - 基本的なパス解決機能の提供
+
+2. PromptVariablesFactory
+   - Workspaceの設定とCLIパラメータを統合
+   - プロンプト、スキーマ、入出力ファイルのパスを生成
+   - パス解決の一元化と一貫性の確保
 
 ### パスの自動補完
 

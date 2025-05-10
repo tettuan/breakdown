@@ -6,7 +6,7 @@ import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 describe("SchemaFilePathResolver: base_dir resolution", () => {
   it("resolves with config.app_schema.base_dir (absolute)", () => {
-    const baseDir = resolve(Deno.cwd(), "tmp", "schemas");
+    const baseDir = resolve(Deno.cwd(), "tmp", "schema");
     const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: baseDir } },
       {
@@ -19,7 +19,7 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
     assertEquals(resolver.getPath(), expected);
   });
   it("resolves with config.app_schema.base_dir (relative)", () => {
-    const relBaseDir = "./tmp/rel_schemas";
+    const relBaseDir = "./tmp/rel_schema";
     const absBaseDir = resolve(Deno.cwd(), relBaseDir);
     const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: relBaseDir } },
@@ -33,7 +33,7 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
     assertEquals(resolver.getPath(), expected);
   });
   it("falls back to default if config.app_schema.base_dir is not set", () => {
-    const defaultBaseDir = resolve(Deno.cwd(), ".agent/breakdown/schemas");
+    const defaultBaseDir = resolve(Deno.cwd(), ".agent/breakdown/schema");
     const resolver = new SchemaFilePathResolver(
       {},
       {

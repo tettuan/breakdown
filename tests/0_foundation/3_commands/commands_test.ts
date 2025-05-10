@@ -20,7 +20,7 @@
  */
 
 import { assertEquals, assertExists } from "../../../deps.ts";
-import { join as _join } from "../../../deps.ts";
+import { join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type NoParamsResult,
@@ -170,11 +170,11 @@ Deno.test("Command Module Tests", async (t) => {
         "temp",
         "config",
         "prompts",
-        "schemas",
+        "schema",
       ];
 
       for (const dir of requiredDirs) {
-        const dirPath = `.agent/breakdown/${dir}`;
+        const dirPath = join(".agent", "breakdown", dir);
         const dirInfo = await Deno.stat(dirPath);
         assertExists(dirInfo);
         assertEquals(dirInfo.isDirectory, true);
@@ -236,8 +236,8 @@ Deno.test("cli - init command should finish and create config", async () => {
   logger.debug("[CLI INIT TEST] Config file exists?", { configFile, existsConfig });
   assertEquals(existsConfig, true);
   // Check main directories
-  for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schemas"]) {
-    const dirPath = `${testDir}/.agent/breakdown/${dir === "schema" ? "schemas" : dir}`;
+  for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schema"]) {
+    const dirPath = `${testDir}/.agent/breakdown/${dir === "schema" ? "schema" : dir}`;
     const existsDir = await exists(dirPath);
     logger.debug("[CLI INIT TEST] Directory exists?", { dirPath, existsDir });
     assertEquals(existsDir, true);

@@ -27,7 +27,7 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
   // app.yml: base_dir=prompts
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
   const projectDir = join(testDir, "project");
@@ -82,7 +82,7 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
   const relPromptDir = join(".agent", "breakdown", "prompts");
   const appYmlPath = join(configDir, "app.yml");
   const appYmlContent =
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${relPromptDir}\napp_schema:\n  base_dir: schemas\n`;
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${relPromptDir}\napp_schema:\n  base_dir: schema\n`;
   await Deno.writeTextFile(appYmlPath, appYmlContent);
   const inputPath = join(testDir, "unorganized_tasks.md");
   await Deno.writeTextFile(inputPath, "- Task 1\n- Task 2\n");
@@ -167,7 +167,7 @@ Deno.test("E2E: error case - missing input file", async () => {
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   // テンプレート
   const promptDir = join(testDir, "prompts", "to", "project");
@@ -212,7 +212,7 @@ Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => 
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
   const inputPath = join(testDir, "input.md");
@@ -249,7 +249,7 @@ Deno.test("E2E: error if app_prompt.base_dir is a file (error message contains '
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
   const inputPath = join(testDir, "input.md");
@@ -301,7 +301,7 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
   // 相対パス
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schema\n`,
   );
   const relPromptDir = join(testDir, "prompts_rel", "to", "project");
   await ensureDir(relPromptDir);
@@ -320,7 +320,7 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
     join(configDir, "app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${
       join(testDir, "abs_prompts")
-    }\napp_schema:\n  base_dir: schemas\n`,
+    }\napp_schema:\n  base_dir: schema\n`,
   );
   // Should use absolute path
   const result = await runCommand(
@@ -347,7 +347,7 @@ Deno.test("E2E: template path is resolved using baseDir (relative)", async () =>
   await ensureDir(configDir);
   await Deno.writeTextFile(
     join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   const promptDir = join(testDir, "prompts", "to", "project");
   await ensureDir(promptDir);
@@ -386,7 +386,7 @@ Deno.test("BreakdownConfig loads and merges app.yml and user.yml as spec", async
 app_prompt:
   base_dir: prompts_app
 app_schema:
-  base_dir: schemas_app
+  base_dir: schema_app
 `,
   );
   // Write user.yml (override app_prompt.base_dir)
@@ -406,7 +406,7 @@ app_schema:
   logger.debug("BreakdownConfig merged settings", { settings });
   // user.yml should override app.yml for app_prompt.base_dir
   assertEquals(settings.app_prompt.base_dir, "prompts_user");
-  assertEquals(settings.app_schema.base_dir, "schemas_app");
+  assertEquals(settings.app_schema.base_dir, "schema_app");
   assertEquals(settings.working_dir, ".agent/breakdown");
 });
 
@@ -420,7 +420,7 @@ Deno.test("BreakdownConfig: working_dir is not used as prefix for app_prompt.bas
 app_prompt:
   base_dir: prompts
 app_schema:
-  base_dir: schemas
+  base_dir: schema
 `,
   );
   const config = new BreakdownConfig(testDir);

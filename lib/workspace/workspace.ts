@@ -17,20 +17,18 @@
  * @module
  */
 
-import { dirname, fromFileUrl, isAbsolute, join } from "@std/path";
-import { exists } from "@std/fs";
-import {
-  WorkspaceConfig,
-  WorkspaceConfigManager,
-  WorkspaceOptions,
-  WorkspacePaths,
-  WorkspaceStructure,
-} from "./types.ts";
+import { dirname, join } from "@std/path";
+import { ensureDir, exists } from "@std/fs";
+import { parse } from "@std/yaml";
 import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
-import { ensureDir } from "@std/fs";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
+import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
+import { WorkspaceStructureImpl } from "./structure.ts";
+import { WorkspacePathResolverImpl } from "./path/resolver.ts";
+import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
+import { resolve } from "jsr:@std/path@1.0.0";
+import { prompts } from "../templates/prompts.ts";
+import { schema } from "../templates/schema.ts";
 
 /**
  * Workspace class for managing Breakdown project structure and configuration.
@@ -38,7 +36,7 @@ import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
  * This class handles all workspace-related operations including:
  * - Directory structure management
  * - Configuration file handling
- * - Path resolution for prompts, schemas, and outputs
+ * - Path resolution for prompts, schema, and outputs
  * - Template and schema file management
  *
  * All configuration access must use BreakdownConfig from @tettuan/breakdownconfig.
@@ -48,448 +46,168 @@ import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
  * @implements {WorkspaceConfigManager}
  * @implements {WorkspacePaths}
  */
-export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, WorkspacePaths {
-  private workingDir: string;
-  private promptBaseDir: string;
-  private schemaBaseDir: string;
-  private config: WorkspaceConfig | null = null;
-  private promptVariablesFactory?: PromptVariablesFactory;
+export class WorkspaceImpl implements Workspace {
+  private structure: WorkspaceStructureImpl;
+  private pathResolver: WorkspacePathResolverImpl;
+  private config: WorkspaceConfigInterface;
 
-  /**
-   * Creates a new Workspace instance.
-   *
-   * @param options - The workspace options for initialization
-   * @param options.workingDir - The base working directory for the workspace
-   * @param options.promptBaseDir - Optional custom prompt base directory
-   * @param options.schemaBaseDir - Optional custom schema base directory
-   */
-  constructor(options: WorkspaceOptions) {
-    this.workingDir = options.workingDir;
-    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    this.promptBaseDir = options.promptBaseDir || join(breakdownDir, "prompts");
-    this.schemaBaseDir = options.schemaBaseDir || join(breakdownDir, "schemas");
+  constructor(config: WorkspaceConfigInterface) {
+    this.config = config;
+    this.structure = new WorkspaceStructureImpl(config);
+    this.pathResolver = new WorkspacePathResolverImpl(new DefaultPathResolutionStrategy());
   }
 
-  /**
-   * Initialize the workspace by creating required directories and validating configuration.
-   *
-   * This method:
-   * 1. Creates the necessary directory structure
-   * 2. Initializes configuration files
-   * 3. Validates the configuration
-   * 4. Copies template and schema files
-   *
-   * @throws {WorkspaceInitError} If initialization fails
-   * @throws {WorkspaceConfigError} If configuration validation fails
-   */
-  public async initialize(): Promise<void> {
-    // 1. Ensure .agent/breakdown/config/app.yml exists
-    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    const configDir = join(breakdownDir, "config");
-    const configFile = join(configDir, "app.yml");
-    let config: WorkspaceConfig;
-
-    // Check if any required paths exist as files
-    const dirsToCheck = [breakdownDir, configDir];
-    for (const dir of dirsToCheck) {
-      if (await exists(dir)) {
-        const stat = await Deno.stat(dir);
-        if (!stat.isDirectory) {
-          throw new WorkspaceInitError(`Path exists but is not a directory: ${dir}`);
-        }
-      }
-    }
-
-    if (!(await exists(configFile))) {
-      await ensureDir(configDir);
-      config = {
-        working_dir: ".agent/breakdown",
-        app_prompt: { base_dir: "prompts" },
-        app_schema: { base_dir: "schemas" },
-      };
-      const configYaml = stringify(config);
-      await Deno.writeTextFile(configFile, configYaml);
-    }
-    // Use BreakdownConfig to load config
-    const breakdownConfig = new BreakdownConfig(this.workingDir);
-    await breakdownConfig.loadConfig();
-    const settings = await breakdownConfig.getConfig();
-    if (!settings.app_prompt?.base_dir || settings.app_prompt.base_dir.trim() === "") {
-      throw new WorkspaceInitError(
-        "Prompt base_dir must be set in config (app_prompt.base_dir). No fallback allowed.",
-      );
-    }
-    if (!settings.app_schema?.base_dir || settings.app_schema.base_dir.trim() === "") {
-      throw new WorkspaceInitError(
-        "Schema base_dir must be set in config (app_schema.base_dir). No fallback allowed.",
-      );
-    }
-    const promptBase = settings.app_prompt.base_dir.toString().trim();
-    const schemaBase = settings.app_schema.base_dir.toString().trim();
-
-    // 3. Create required directories
-    const subdirs = [
-      "projects",
-      "issues",
-      "tasks",
-      "temp",
-      "config",
-      promptBase,
-      schemaBase,
-    ];
-
-    // Check if any subdirectories exist as files
-    for (const dir of subdirs) {
-      const dirPath = join(this.workingDir, ".agent", "breakdown", dir);
-      if (await exists(dirPath)) {
-        const stat = await Deno.stat(dirPath);
-        if (!stat.isDirectory) {
-          throw new WorkspaceInitError(`Path exists but is not a directory: ${dirPath}`);
-        }
-      }
-    }
-
-    await ensureDir(join(this.workingDir, ".agent", "breakdown"));
-    for (const dir of subdirs) {
-      await ensureDir(join(this.workingDir, ".agent", "breakdown", dir));
-    }
-
-    // テンプレート・スキーマコピー処理を追加
-    await this.copyTemplatesAndSchemas();
-
-    // 4. Validate config (check dirs exist)
-    await this.validateConfig();
-  }
-
-  /**
-   * Test if a directory is writable by attempting to create and remove a test file.
-   *
-   * @param dir - The directory to test
-   * @throws {Error} If directory is not writable
-   * @private
-   */
-  private async testDirectoryWritable(dir: string): Promise<void> {
-    const testFile = join(dir, ".write_test");
+  async initialize(): Promise<void> {
     try {
-      await Deno.writeTextFile(testFile, "test");
-      await Deno.remove(testFile);
-    } catch (error: unknown) {
+      await ensureDir(this.config.workingDir);
+      await ensureDir(join(this.config.workingDir, this.config.promptBaseDir));
+      await ensureDir(join(this.config.workingDir, this.config.schemaBaseDir));
+      await this.structure.initialize();
+
+      // Create config file if it doesn't exist
+      const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
+      const configFile = join(configDir, "app.yml");
+
+      try {
+        await Deno.stat(configFile);
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) {
+          await ensureDir(configDir);
+          const config = {
+            working_dir: ".agent/breakdown",
+            app_prompt: {
+              base_dir: this.config.promptBaseDir,
+            },
+            app_schema: {
+              base_dir: this.config.schemaBaseDir,
+            },
+          };
+          await Deno.writeTextFile(configFile, stringify(config));
+        } else {
+          throw error;
+        }
+      }
+
+      // Create custom base directories if specified
+      const customPromptDir = join(
+        this.config.workingDir,
+        ".agent",
+        "breakdown",
+        this.config.promptBaseDir,
+      );
+      const customSchemaDir = join(
+        this.config.workingDir,
+        ".agent",
+        "breakdown",
+        this.config.schemaBaseDir,
+      );
+
+      await ensureDir(customPromptDir);
+      await ensureDir(customSchemaDir);
+
+      // 展開: prompts テンプレート
+      for (const [relPath, content] of Object.entries(prompts)) {
+        const destPath = join(customPromptDir, relPath);
+        try {
+          await Deno.stat(destPath);
+        } catch (e) {
+          if (e instanceof Deno.errors.NotFound) {
+            await ensureDir(dirname(destPath));
+            await Deno.writeTextFile(destPath, content);
+          } else {
+            throw e;
+          }
+        }
+      }
+
+      // 展開: schema テンプレート
+      for (const [relPath, content] of Object.entries(schema)) {
+        const destPath = join(customSchemaDir, relPath);
+        try {
+          await Deno.stat(destPath);
+        } catch (e) {
+          if (e instanceof Deno.errors.NotFound) {
+            await ensureDir(dirname(destPath));
+            await Deno.writeTextFile(destPath, content);
+          } else {
+            throw e;
+          }
+        }
+      }
+    } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
         throw new WorkspaceInitError(
-          `Permission denied: Cannot create directory structure in ${join(dir, "breakdown")}`,
+          `Permission denied: Cannot create directory structure in ${
+            join(this.config.workingDir, "breakdown")
+          }`,
         );
       }
       throw error;
     }
   }
 
-  /**
-   * Ensure required directories exist and are writable.
-   *
-   * @throws {WorkspaceInitError} If directory creation fails
-   * @throws {Error} If permission denied
-   */
-  public async ensureDirectories(): Promise<void> {
-    // First check if parent directory exists and is writable
-    const parentDir = this.workingDir;
-    try {
-      const parentStat = await Deno.stat(parentDir);
-      if (!parentStat.isDirectory) {
-        throw new WorkspaceInitError(`${parentDir} exists but is not a directory`);
-      }
+  resolvePath(path: string): Promise<string> {
+    return this.pathResolver.resolve(path);
+  }
 
-      // Test write permission on parent directory
-      await this.testDirectoryWritable(parentDir);
-    } catch (error: unknown) {
-      if (error instanceof Deno.errors.NotFound) {
-        // Parent directory doesn't exist, try to create it
-        try {
-          await Deno.mkdir(parentDir, { recursive: true });
-          // Test write permission after creation
-          await this.testDirectoryWritable(parentDir);
-        } catch (mkdirError: unknown) {
-          if (mkdirError instanceof Deno.errors.PermissionDenied) {
-            throw new WorkspaceInitError(`Permission denied: Cannot create directory ${parentDir}`);
-          }
-          throw new WorkspaceInitError(
-            `Failed to create working directory: ${
-              mkdirError instanceof Error ? mkdirError.message : String(mkdirError)
-            }`,
-          );
-        }
-      } else if (error instanceof Error) {
-        throw new WorkspaceInitError(error.message);
-      } else {
-        throw new WorkspaceInitError(String(error));
-      }
-    }
+  createDirectory(path: string): Promise<void> {
+    return this.structure.createDirectory(path);
+  }
 
-    // Create the breakdown directory structure
-    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    const subdirs = [
-      "projects",
-      "issues",
-      "tasks",
-      "temp",
-      "config",
-      "prompts",
-      "schemas",
-    ];
+  removeDirectory(path: string): Promise<void> {
+    return this.structure.removeDirectory(path);
+  }
 
-    try {
-      // Create breakdown directory first
-      await Deno.mkdir(breakdownDir, { recursive: true });
-      // Test write permission on breakdown directory
-      await this.testDirectoryWritable(breakdownDir);
+  exists(path?: string): Promise<boolean> {
+    return this.structure.exists(path);
+  }
 
-      // Create all subdirectories
-      for (const dir of subdirs) {
-        const dirPath = join(breakdownDir, dir);
-        await Deno.mkdir(dirPath, { recursive: true });
-        // Test write permission on each subdirectory
-        await this.testDirectoryWritable(dirPath);
-      }
-    } catch (error: unknown) {
-      if (error instanceof Deno.errors.PermissionDenied) {
-        throw new WorkspaceInitError(
-          `Permission denied: Cannot create directory structure in ${breakdownDir}`,
-        );
-      }
-      throw new WorkspaceInitError(
-        `Failed to create directory structure: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
+  getPromptBaseDir(): Promise<string> {
+    return Promise.resolve(resolve(this.config.workingDir, this.config.promptBaseDir));
+  }
+
+  getSchemaBaseDir(): Promise<string> {
+    return Promise.resolve(resolve(this.config.workingDir, this.config.schemaBaseDir));
+  }
+
+  getWorkingDir(): Promise<string> {
+    return Promise.resolve(this.config.workingDir);
+  }
+
+  async validateConfig(): Promise<void> {
+    if (!await exists(this.config.workingDir)) {
+      throw new WorkspaceConfigError("Working directory does not exist");
     }
   }
 
-  /**
-   * Get the current workspace configuration.
-   *
-   * @returns {Promise<WorkspaceConfig>} The workspace configuration
-   * @throws {WorkspaceConfigError} If configuration is not loaded
-   */
-  public getConfig(): Promise<WorkspaceConfig> {
-    if (!this.config) {
-      this.config = {
-        working_dir: ".agent/breakdown",
-        app_prompt: {
-          base_dir: "prompts",
-        },
-        app_schema: {
-          base_dir: "schemas",
-        },
+  async reloadConfig(): Promise<void> {
+    // Reload configuration from file
+    const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
+    const configFile = join(configDir, "app.yml");
+
+    try {
+      const configContent = await Deno.readTextFile(configFile);
+      const config = parse(configContent) as {
+        working_dir: string;
+        app_prompt: { base_dir: string };
+        app_schema: { base_dir: string };
       };
-    }
-    return Promise.resolve(this.config);
-  }
 
-  /**
-   * Validate the workspace configuration.
-   *
-   * @throws {WorkspaceConfigError} If validation fails
-   */
-  public async validateConfig(): Promise<void> {
-    // Get config first
-    const config = await this.getConfig();
-    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    // Check for existence of the correct absolute paths
-    const requiredDirs = [
-      breakdownDir,
-    ];
-    if (config.app_prompt && config.app_prompt.base_dir) {
-      requiredDirs.push(join(this.workingDir, ".agent", "breakdown", config.app_prompt.base_dir));
-    }
-    if (config.app_schema && config.app_schema.base_dir) {
-      requiredDirs.push(join(this.workingDir, ".agent", "breakdown", config.app_schema.base_dir));
-    }
-    for (const dir of requiredDirs) {
-      if (!(await exists(dir))) {
-        throw new WorkspaceConfigError(`Required directory does not exist: ${dir}`);
+      this.config = {
+        workingDir: this.config.workingDir,
+        promptBaseDir: config.app_prompt.base_dir,
+        schemaBaseDir: config.app_schema.base_dir,
+      };
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new WorkspaceConfigError("Configuration file not found");
       }
-    }
-  }
-
-  /**
-   * Get the prompt base directory path.
-   *
-   * @returns {string} The absolute path to the prompt base directory
-   */
-  public getPromptBaseDir(): string {
-    const config = this.config || { app_prompt: { base_dir: "prompts" } };
-    const baseDir = config.app_prompt.base_dir || "prompts";
-    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
-  }
-
-  /**
-   * Get the schema base directory path.
-   *
-   * @returns {string} The absolute path to the schema base directory
-   */
-  public getSchemaBaseDir(): string {
-    const config = this.config || { app_schema: { base_dir: "schemas" } };
-    const baseDir = config.app_schema.base_dir || "schemas";
-    return isAbsolute(baseDir) ? baseDir : join(this.workingDir, ".agent", "breakdown", baseDir);
-  }
-
-  /**
-   * Get the working directory path.
-   *
-   * @returns {string} The absolute path to the working directory
-   */
-  public getWorkingDir(): string {
-    return this.workingDir;
-  }
-
-  /**
-   * Set the prompt variables factory.
-   *
-   * @param factory - The prompt variables factory to use
-   */
-  public setPromptVariablesFactory(factory: PromptVariablesFactory) {
-    this.promptVariablesFactory = factory;
-  }
-
-  /**
-   * Resolve the full path for a prompt file.
-   *
-   * @param name - The name of the prompt file
-   * @returns {string} The absolute path to the prompt file
-   */
-  public resolvePromptPath(_name: string): string {
-    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
-    return this.promptVariablesFactory.promptFilePath;
-  }
-
-  /**
-   * Resolve the full path for a schema file.
-   *
-   * @param name - The name of the schema file
-   * @returns {string} The absolute path to the schema file
-   */
-  public resolveSchemaPath(_name: string): string {
-    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
-    return this.promptVariablesFactory.schemaFilePath;
-  }
-
-  /**
-   * Resolve the full path for an output file.
-   *
-   * @param name - The name of the output file
-   * @returns {string} The absolute path to the output file
-   */
-  public resolveOutputPath(_name: string): string {
-    if (!this.promptVariablesFactory) throw new Error("PromptVariablesFactory not set");
-    return this.promptVariablesFactory.outputFilePath;
-  }
-
-  /**
-   * Copy template and schema files to the workspace.
-   *
-   * @private
-   */
-  private async copyTemplatesAndSchemas(): Promise<void> {
-    const thisFileDir = dirname(fromFileUrl(import.meta.url));
-    const projectRoot = join(thisFileDir, "../..");
-    const breakdownDir = join(this.workingDir, ".agent", "breakdown");
-    const breakdownConfig = new BreakdownConfig(this.workingDir);
-    await breakdownConfig.loadConfig();
-    const settings = await breakdownConfig.getConfig();
-    const promptBase = settings.app_prompt.base_dir.toString().trim();
-    const schemaBase = settings.app_schema.base_dir.toString().trim();
-
-    console.log("[DEBUG] Current directory:", Deno.cwd());
-    console.log("[DEBUG] Project root:", projectRoot);
-
-    // Try to find prompts in different locations
-    const possiblePromptPaths = [
-      join(projectRoot, "lib", "breakdown", "prompts"), // When running from source
-      join(Deno.cwd(), "lib", "breakdown", "prompts"), // When running from project root
-      join(dirname(Deno.cwd()), "lib", "breakdown", "prompts"), // When running from examples
-    ];
-
-    let srcPrompts = "";
-    for (const path of possiblePromptPaths) {
-      console.log("[DEBUG] Checking for prompts at:", path);
-      if (await exists(path)) {
-        srcPrompts = path;
-        break;
-      }
-    }
-
-    if (!srcPrompts) {
-      throw new WorkspaceInitError(
-        `Source prompts directory not found in any of: ${possiblePromptPaths.join(", ")}`,
-      );
-    }
-
-    console.log("[DEBUG] Using source prompts from:", srcPrompts);
-    const destPrompts = join(breakdownDir, promptBase);
-    await ensureDir(destPrompts);
-    await this.copyDirRecursive(srcPrompts, destPrompts, [".md"]);
-
-    // Try to find schemas in different locations
-    const possibleSchemasPaths = [
-      join(projectRoot, "lib", "breakdown", "schemas"), // When running from source
-      join(Deno.cwd(), "lib", "breakdown", "schemas"), // When running from project root
-      join(dirname(Deno.cwd()), "lib", "breakdown", "schemas"), // When running from examples
-    ];
-
-    let srcSchemas = "";
-    for (const path of possibleSchemasPaths) {
-      console.log("[DEBUG] Checking for schemas at:", path);
-      if (await exists(path)) {
-        srcSchemas = path;
-        break;
-      }
-    }
-
-    if (!srcSchemas) {
-      throw new WorkspaceInitError(
-        `Source schemas directory not found in any of: ${possibleSchemasPaths.join(", ")}`,
-      );
-    }
-
-    console.log("[DEBUG] Using source schemas from:", srcSchemas);
-    const destSchemas = join(breakdownDir, schemaBase);
-    await ensureDir(destSchemas);
-    await this.copyDirRecursive(srcSchemas, destSchemas);
-  }
-
-  /**
-   * Recursively copy a directory.
-   *
-   * @param src - Source directory path
-   * @param dest - Destination directory path
-   * @param exts - Optional array of file extensions to copy
-   * @private
-   */
-  private async copyDirRecursive(src: string, dest: string, exts?: string[]) {
-    console.log("[DEBUG] Copying directory:", src, "to", dest);
-    for await (const entry of Deno.readDir(src)) {
-      const srcPath = join(src, entry.name);
-      const destPath = join(dest, entry.name);
-      if (entry.isDirectory) {
-        console.log("[DEBUG] Creating directory:", destPath);
-        await ensureDir(destPath);
-        await this.copyDirRecursive(srcPath, destPath, exts);
-      } else if (entry.isFile) {
-        if (!exts || exts.some((ext) => entry.name.endsWith(ext))) {
-          try {
-            console.log("[DEBUG] Copying file:", srcPath, "to", destPath);
-            await Deno.copyFile(srcPath, destPath);
-          } catch (error: unknown) {
-            if (error instanceof Error && !(error instanceof Deno.errors.AlreadyExists)) {
-              throw new WorkspaceInitError(
-                `Failed to copy file ${srcPath} to ${destPath}: ${error.message}`,
-              );
-            }
-          }
-        }
-      }
+      throw error;
     }
   }
 }
+
+export { WorkspaceImpl as Workspace };
 
 /**
  * Initialize a new Breakdown workspace.
@@ -501,6 +219,11 @@ export class Workspace implements WorkspaceStructure, WorkspaceConfigManager, Wo
  * @throws {WorkspaceConfigError} If configuration validation fails
  */
 export async function initWorkspace(workingDir = "."): Promise<void> {
-  const workspace = new Workspace({ workingDir });
+  // In production, use BreakdownConfig to load these values
+  const workspace = new WorkspaceImpl({
+    workingDir,
+    promptBaseDir: "prompts", // placeholder, should be loaded from config
+    schemaBaseDir: "schema", // placeholder, should be loaded from config
+  });
   await workspace.initialize();
 }
