@@ -10,7 +10,7 @@ BreakdownはCLIツールとしての利用が主目的です。
 **Deno公式/JSR標準の方法**で、以下のコマンドでインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 - `-A` : すべての権限を許可（推奨）
 - `-f` : 既存のコマンドを上書き
@@ -18,8 +18,8 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 - `breakdown` : コマンド名
 
 > **Note:**  
-> Breakdown CLIのメインモジュールは `jsr:@tettuan/breakdown/cli` です。  
-> 必ず `/cli` サブパスを指定してください。
+> JSRの`bin`設定により、`jsr:@tettuan/breakdown`だけでCLIとして動作します。  
+> `/cli`サブパスを指定する必要はありません。
 
 ---
 
@@ -28,7 +28,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 新しいバージョンが公開された場合も、同じコマンドで上書きインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 ---
@@ -49,6 +49,22 @@ deno add @tettuan/breakdown
 - breakdownコマンドは、`deno.json`の`bin`設定により自動的に`cli/breakdown.ts`をエントリーポイントとして動作します。
 - Deno 1.40以降を推奨します。
 - 詳細な使い方は下記「Usage」セクションを参照してください。
+
+### プロジェクトディレクトリへのローカルインストール
+
+特定のプロジェクト内でのみbreakdownコマンドを使用したい場合は、`--root`オプションを使用して`.deno/bin`にインストールできます：
+
+```bash
+deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
+```
+
+インストール後、binディレクトリをPATHに追加します：
+
+```bash
+export PATH="$(pwd)/.deno/bin:$PATH"
+```
+
+この設定を永続化するには、シェルの設定ファイル（例：`~/.zshrc`や`~/.bashrc`）に追加してください。
 
 ## 基本コマンド
 

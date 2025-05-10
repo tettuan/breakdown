@@ -198,11 +198,16 @@ deno add @tettuan/breakdown
 If you want to use the breakdown command only within a specific project, you can install it under `.deno/bin` using the `--root` option:
 
 ```bash
-deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
+deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
-- You can run it with `.deno/bin/breakdown`.
-- Add `.deno/bin` to your `PATH` if needed.
-- This CLI is only available within that project.
+
+After installation, add the bin directory to your PATH:
+
+```bash
+export PATH="$(pwd)/.deno/bin:$PATH"
+```
+
+To make this permanent, add it to your shell configuration file (e.g., `~/.zshrc` or `~/.bashrc`).
 
 ---
 
