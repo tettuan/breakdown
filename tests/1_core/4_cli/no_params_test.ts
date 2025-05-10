@@ -1,8 +1,9 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { HELP_TEXT as EXPECTED_HELP_TEXT } from "../../../cli/breakdown.ts"; // Adjust path as necessary
 import { fromFileUrl } from "@std/path/from-file-url";
+import { VERSION } from "../../../lib/version.ts";
 
-const TEST_VERSION_STRING = "Breakdown v1.0.5";
+const TEST_VERSION_STRING = `Breakdown v${VERSION}`;
 
 async function runCli(args: string[]): Promise<{ stdout: string; stderr: string; code: number }> {
   const resolvedUrl = import.meta.resolve("../../../cli/breakdown.ts");
