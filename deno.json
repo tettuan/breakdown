@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdown",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "exports": {
     ".": "./mod.ts",
     "./cli": "./cli/breakdown.ts"
