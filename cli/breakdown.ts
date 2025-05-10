@@ -72,11 +72,6 @@ function formatError(error: string | { type: string; message: string } | null): 
  * @returns {Promise<void>} Resolves when the command completes.
  */
 export async function runBreakdown(args: string[]): Promise<void> {
-  if (args.length === 0) {
-    writeStdout(HELP_TEXT);
-    return;
-  }
-
   const parser = new ParamsParser();
   const result = parser.parse(args);
 
@@ -86,7 +81,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
     Deno.exit(1);
   }
 
-  // Handle help/version flags recognized by ParamsParser immediately
+  // Handle help/version flags recognized by ParamsParser
   if (result.type === "no-params") {
     if (result.help) {
       writeStdout(HELP_TEXT);
