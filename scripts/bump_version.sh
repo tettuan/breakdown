@@ -145,10 +145,10 @@ git fetch --tags
 current_version=$(get_deno_version)
 echo "Current version in deno.json: $current_version"
 
-# Only delete tags if they're ahead of current version
+# Delete any tags that are ahead of the latest JSR version
 for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
-  if [[ "$tag" > "$current_version" ]]; then
-    echo "Deleting local and remote tag: v$tag (ahead of current version $current_version)"
+  if [[ "$tag" > "$latest_jsr_version" ]]; then
+    echo "Deleting local and remote tag: v$tag (ahead of latest JSR version $latest_jsr_version)"
     git tag -d "v$tag"
     git push --delete origin "v$tag" || true
   fi
@@ -166,7 +166,8 @@ if [[ $# -gt 0 ]]; then
   esac
 fi
 
-IFS='.' read -r major minor patch <<< "$current_version"
+# Use latest JSR version as the base for bumping
+IFS='.' read -r major minor patch <<< "$latest_jsr_version"
 case "$bump_type" in
   major)
     major=$((major + 1)); minor=0; patch=0 ;;
@@ -176,7 +177,7 @@ case "$bump_type" in
     patch=$((patch + 1)) ;;
 esac
 new_version="$major.$minor.$patch"
-echo "Bumping version: $current_version -> $new_version"
+echo "Bumping version from latest JSR version $latest_jsr_version -> $new_version"
 
 # 8. Version Update (atomic)
 # --------------------------
