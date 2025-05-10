@@ -1,5 +1,6 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { join } from "@std/path/join";
+import { DEFAULT_WORKSPACE_STRUCTURE } from "../../lib/config/constants.ts";
 
 export interface TestEnvironmentOptions {
   workingDir?: string;
@@ -39,34 +40,20 @@ export async function setupTestEnvironment(
     // Create test directories with proper permissions
     await Deno.mkdir(workingDir, { recursive: true, mode: 0o777 });
 
-    // Create .agent/breakdown/config directory
+    // Create required directory structure
     const configDir = join(workingDir, ".agent", "breakdown", "config");
+    const promptsDir = join(workingDir, "prompts");
+    const schemasDir = join(workingDir, "schemas");
+
     await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
+    await Deno.mkdir(promptsDir, { recursive: true, mode: 0o777 });
+    await Deno.mkdir(schemasDir, { recursive: true, mode: 0o777 });
 
-    // Create breakdown/prompts and breakdown/schemas directories
-    const breakdownDir = join(workingDir, ".agent", "breakdown");
-    await Deno.mkdir(join(breakdownDir, "prompts"), { recursive: true, mode: 0o777 });
-    await Deno.mkdir(join(breakdownDir, "schemas"), { recursive: true, mode: 0o777 });
-
-    // Create layer directories
-    await Deno.mkdir(join(workingDir, "project"), { recursive: true, mode: 0o777 });
-    await Deno.mkdir(join(workingDir, "issue"), { recursive: true, mode: 0o777 });
-    await Deno.mkdir(join(workingDir, "task"), { recursive: true, mode: 0o777 });
-    await Deno.mkdir(join(workingDir, "temp"), { recursive: true, mode: 0o777 });
-
-    // Create default app.yml if it doesn't exist
+    // Create default app.yml if not skipped
     if (!options.skipDefaultConfig) {
-      const appConfigPath = join(configDir, "app.yml");
-      await Deno.writeTextFile(
-        appConfigPath,
-        `working_dir: .agent/breakdown
-app_prompt:
-  base_dir: prompts
-app_schema:
-  base_dir: schemas
-`,
-        { mode: 0o666 },
-      );
+      const configPath = join(configDir, "app.yml");
+      const configContent = `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`;
+      await Deno.writeTextFile(configPath, configContent);
     }
   } else {
     // Only create the base working directory

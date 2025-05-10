@@ -58,12 +58,24 @@ describe("Input Path: fromFile hierarchy", () => {
     const originalCwd = Deno.cwd();
     Deno.chdir(_testDir);
     // --- Config setup ---
-    const configDir = join(_testDir, ".agent", "breakdown", "config");
+    const configDir = join(".agent", "breakdown", "config");
     await ensureDir(configDir);
+    const configPath = join(configDir, "app.yml");
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
-      `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
+      configPath,
+      `working_dir: ${_testDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schemas\n`,
     );
+    // Ensure config file exists before continuing
+    const configExistsAfterWrite = await Deno.stat(configPath).then(() => true).catch(() => false);
+    if (!configExistsAfterWrite) {
+      throw new Error(`Config file was not found after write at: ${configPath}`);
+    }
+    logger.debug(`Checking config file at: ${configPath}`);
+    const configExists = await Deno.stat(configPath).then(() => true).catch(() => false);
+    logger.debug(`Config exists: ${configExists}`);
+    if (!configExists) {
+      throw new Error(`Config file not found at: ${configPath}`);
+    }
     try {
       const fromFile = join("path", "to", "file.md");
       logger.debug(`Deno.cwd() before: ${originalCwd}`);

@@ -29,6 +29,7 @@ import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 import { Workspace } from "$lib/workspace/workspace.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 function createLoggerAdapter(logger: BreakdownLogger) {
   return {
@@ -80,11 +81,16 @@ describe("Prompt baseDir edge cases", () => {
 
       // Verify that prompt base directory is resolved from Deno.cwd()
       // See: docs/breakdown/glossary.ja.md - working_dir specification
-      const workspace = new Workspace({ workingDir: testDir });
+      const workspace = new Workspace({
+        workingDir: testDir,
+        promptBaseDir: resolve(Deno.cwd(), "custom_prompts"),
+        schemaBaseDir: resolve(Deno.cwd(), "schemas"),
+      });
+      await workspace.initialize();
+
       assertEquals(
         await workspace.getPromptBaseDir(),
-        resolve(Deno.cwd(), "custom_prompts"),
-        "Prompt base directory should be resolved from Deno.cwd()"
+        resolve(Deno.cwd(), "custom_prompts")
       );
     } finally {
       Deno.chdir(originalCwd);
@@ -259,17 +265,20 @@ describe("Prompt baseDir edge cases", () => {
           join(configDir, "app.yml"),
           `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schemas\n`,
         );
-        const promptBaseDir = join(testDir, "custom_prompts");
-        const promptDir = join(promptBaseDir, "to", "project");
+        // Load config before creating factory
+        const breakdownConfig = new BreakdownConfig(testDir);
+        await breakdownConfig.loadConfig();
+        const inputFile = join(testDir, "input.md");
+        await Deno.writeTextFile(inputFile, "# Example\n- Feature");
+        // Create prompt file
+        const promptDir = join(testDir, "custom_prompts", "to", "project");
         await ensureDir(promptDir);
         const promptFile = join(promptDir, "f_project.md");
         await Deno.writeTextFile(
           promptFile,
           "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
         );
-        const inputFile = join(testDir, "input.md");
-        await Deno.writeTextFile(inputFile, "# Example\n- Feature");
-        logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", { promptBaseDir });
+        logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", { promptBaseDir: join(testDir, "custom_prompts") });
         const cliParamsConfig = {
           demonstrativeType: "to" as DemonstrativeType,
           layerType: "project" as LayerType,

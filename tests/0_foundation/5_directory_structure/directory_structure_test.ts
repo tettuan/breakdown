@@ -88,7 +88,11 @@ Deno.test("should throw permission denied error when creating workspace in read-
 
   try {
     await assertRejects(
-      () => new Workspace({ workingDir: readOnlyDir }).ensureDirectories(),
+      () => new Workspace({ 
+        workingDir: readOnlyDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schemas"
+      }).initialize(),
       WorkspaceInitError,
       `Permission denied: Cannot create directory structure in ${join(readOnlyDir, "breakdown")}`,
     );

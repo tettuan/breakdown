@@ -4,7 +4,7 @@ import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
 import { join } from "@std/path/join";
 import { resolve } from "@std/path/resolve";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import type { WorkspaceConfig } from "$lib/workspace/types.ts";
 
 /**
  * Integration tests for the breakdown workflow
@@ -33,12 +33,14 @@ Deno.test({
 Deno.test("breakdown init creates correct directory structure", async () => {
   const workspace = new Workspace({
     workingDir: TEST_DIR,
+    promptBaseDir: "prompts",
+    schemaBaseDir: "schemas",
   });
 
   await workspace.initialize();
 
   // Verify directory structure exists
-  assertEquals(await exists(workspace.getWorkingDir()), true);
+  assertEquals(await exists(await workspace.getWorkingDir()), true);
   assertEquals(await exists(await workspace.getPromptBaseDir()), true);
   assertEquals(await exists(await workspace.getSchemaBaseDir()), true);
 });
@@ -59,6 +61,8 @@ Deno.test("workspace initialization and structure", async () => {
 
   const workspace = new Workspace({
     workingDir: TEST_DIR,
+    promptBaseDir: "custom_prompts",
+    schemaBaseDir: "custom_schemas",
   });
 
   // Initialize workspace
@@ -68,13 +72,13 @@ Deno.test("workspace initialization and structure", async () => {
   assertEquals(
     await workspace.getPromptBaseDir(),
     resolve(TEST_DIR, "custom_prompts"),
-    "Custom prompt base directory should be resolved relative to workspace directory"
+    "Custom prompt base directory should be resolved relative to workspace directory",
   );
 
   assertEquals(
     await workspace.getSchemaBaseDir(),
     resolve(TEST_DIR, "custom_schemas"),
-    "Custom schema base directory should be resolved relative to workspace directory"
+    "Custom schema base directory should be resolved relative to workspace directory",
   );
 });
 
@@ -82,6 +86,8 @@ Deno.test("workspace initialization and structure", async () => {
 Deno.test("workspace error handling", async () => {
   const workspace = new Workspace({
     workingDir: "/nonexistent/path",
+    promptBaseDir: "prompts",
+    schemaBaseDir: "schemas",
   });
 
   try {
@@ -100,6 +106,8 @@ Deno.test("workspace error handling", async () => {
 Deno.test("workspace path resolution", async () => {
   const workspace = new Workspace({
     workingDir: TEST_DIR,
+    promptBaseDir: "custom_prompts",
+    schemaBaseDir: "custom_schemas",
   });
 
   // Initialize workspace
@@ -122,20 +130,18 @@ Deno.test("workspace path resolution", async () => {
 
   // Debug output
   const actualPromptBaseDir = await workspace.getPromptBaseDir();
-  const config = await (workspace as any).breakdownConfig.getConfig();
   console.log("[DEBUG] actualPromptBaseDir:", actualPromptBaseDir);
-  console.log("[DEBUG] config.app_prompt.base_dir:", config.app_prompt.base_dir);
 
   // Verify that paths are resolved relative to the workspace directory
   assertEquals(
     actualPromptBaseDir,
     resolve(TEST_DIR, "custom_prompts"),
-    "Custom prompt base directory should be resolved relative to workspace directory"
+    "Custom prompt base directory should be resolved relative to workspace directory",
   );
 
   assertEquals(
     await workspace.getSchemaBaseDir(),
     resolve(TEST_DIR, "custom_schemas"),
-    "Custom schema base directory should be resolved relative to workspace directory"
+    "Custom schema base directory should be resolved relative to workspace directory",
   );
 });

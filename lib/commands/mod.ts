@@ -49,7 +49,12 @@ interface AppConfig {
 export async function initWorkspace(_workingDir?: string): Promise<CommandResult> {
   try {
     const workingDir = _workingDir ?? Deno.cwd();
-    const workspace = new Workspace({ workingDir });
+    // In production, use BreakdownConfig to load these values
+    const workspace = new Workspace({
+      workingDir,
+      promptBaseDir: "prompts", // placeholder, should be loaded from config
+      schemaBaseDir: "schemas", // placeholder, should be loaded from config
+    });
     await workspace.initialize();
     return {
       success: true,

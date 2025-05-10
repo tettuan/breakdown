@@ -20,7 +20,7 @@
  */
 
 import { assertEquals, assertExists } from "../../../deps.ts";
-import { join as _join } from "../../../deps.ts";
+import { join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type NoParamsResult,
@@ -174,7 +174,7 @@ Deno.test("Command Module Tests", async (t) => {
       ];
 
       for (const dir of requiredDirs) {
-        const dirPath = `.agent/breakdown/${dir}`;
+        const dirPath = join(".agent", "breakdown", dir);
         const dirInfo = await Deno.stat(dirPath);
         assertExists(dirInfo);
         assertEquals(dirInfo.isDirectory, true);
