@@ -11,7 +11,6 @@ import {
 import { Workspace } from "../../../lib/workspace/workspace.ts";
 import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 import { stringify } from "jsr:@std/yaml@^1.0.6";
-import { resolve } from "jsr:@std/path@^0.224.0/resolve";
 
 const logger = new BreakdownLogger();
 
@@ -358,7 +357,6 @@ Deno.test({
     };
     await setupTestEnvironment(options);
 
-    // Assumes lib/breakdown/prompts/to/project/f_project.md, lib/breakdown/schema/definitions.ts, etc. exist beforehand
     const workspace = new Workspace({
       workingDir: options.workingDir,
       promptBaseDir: "prompts",
@@ -367,7 +365,9 @@ Deno.test({
     await workspace.initialize();
 
     // prompts: Check if a representative md file is copied
-    const srcPrompt = "lib/breakdown/prompts/to/project/f_project.md";
+    // Use the TypeScript template as the source of truth
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { prompts } = await import("../../../lib/templates/prompts.ts");
     const destPrompt = join(
       options.workingDir,
       ".agent",
@@ -377,12 +377,16 @@ Deno.test({
       "project",
       "f_project.md",
     );
-    const srcPromptContent = await Deno.readTextFile(srcPrompt);
     const destPromptContent = await Deno.readTextFile(destPrompt);
-    assertEquals(destPromptContent, srcPromptContent, "Prompt template is copied");
+    assertEquals(
+      destPromptContent,
+      prompts["to/project/f_project.md"],
+      "Prompt template is copied from TS template",
+    );
 
     // schema: Check if a representative schema file is copied
-    const srcSchema = "lib/breakdown/schema/to/project/base.schema.md";
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { schema } = await import("../../../lib/templates/schema.ts");
     const destSchema = join(
       options.workingDir,
       ".agent",
@@ -392,9 +396,12 @@ Deno.test({
       "project",
       "base.schema.md",
     );
-    const srcSchemaContent = await Deno.readTextFile(srcSchema);
     const destSchemaContent = await Deno.readTextFile(destSchema);
-    assertEquals(destSchemaContent, srcSchemaContent, "Schema template is copied");
+    assertEquals(
+      destSchemaContent,
+      schema["to/project/base.schema.md"],
+      "Schema template is copied from TS template",
+    );
 
     await cleanupTestEnvironment(options);
   },
@@ -410,10 +417,8 @@ Deno.test({
     };
     await setupTestEnvironment(options);
 
-    // Save original cwd and resolve absolute paths for source files
+    // Save original cwd
     const originalCwd = Deno.cwd();
-    const srcPrompt = resolve(originalCwd, "lib/breakdown/prompts/to/project/f_project.md");
-    const srcSchema = resolve(originalCwd, "lib/breakdown/schema/to/project/base.schema.md");
 
     // Change to a different directory
     const tempCwd = await Deno.makeTempDir();
@@ -427,6 +432,9 @@ Deno.test({
       await workspace.initialize();
 
       // prompts: Check if a representative md file is copied
+      // Use the TypeScript template as the source of truth
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { prompts } = await import("../../../lib/templates/prompts.ts");
       const destPrompt = join(
         options.workingDir,
         ".agent",
@@ -436,11 +444,16 @@ Deno.test({
         "project",
         "f_project.md",
       );
-      const srcPromptContent = await Deno.readTextFile(srcPrompt);
       const destPromptContent = await Deno.readTextFile(destPrompt);
-      assertEquals(destPromptContent, srcPromptContent, "Prompt template is copied");
+      assertEquals(
+        destPromptContent,
+        prompts["to/project/f_project.md"],
+        "Prompt template is copied from TS template",
+      );
 
       // schema: Check if a representative schema file is copied
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { schema } = await import("../../../lib/templates/schema.ts");
       const destSchema = join(
         options.workingDir,
         ".agent",
@@ -450,9 +463,12 @@ Deno.test({
         "project",
         "base.schema.md",
       );
-      const srcSchemaContent = await Deno.readTextFile(srcSchema);
       const destSchemaContent = await Deno.readTextFile(destSchema);
-      assertEquals(destSchemaContent, srcSchemaContent, "Schema template is copied");
+      assertEquals(
+        destSchemaContent,
+        schema["to/project/base.schema.md"],
+        "Schema template is copied from TS template",
+      );
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(options);

@@ -17,7 +17,7 @@
  * @module
  */
 
-import { dirname, fromFileUrl, join } from "@std/path";
+import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
 import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
@@ -26,8 +26,9 @@ import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interf
 import { WorkspaceStructureImpl } from "./structure.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
 import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
-import { walk } from "jsr:@std/fs@0.224.0/walk";
 import { resolve } from "jsr:@std/path@1.0.0";
+import { prompts } from "../templates/prompts.ts";
+import { schema } from "../templates/schema.ts";
 
 /**
  * Workspace class for managing Breakdown project structure and configuration.
@@ -104,48 +105,33 @@ export class WorkspaceImpl implements Workspace {
       await ensureDir(customPromptDir);
       await ensureDir(customSchemaDir);
 
-      // Copy prompt templates if not already present
-      const promptTemplateSrc = join(fromFileUrl(import.meta.url), "../../breakdown/prompts");
-      for await (const entry of walk(promptTemplateSrc, { includeDirs: false })) {
-        const relPath = entry.path.substring(promptTemplateSrc.length + 1);
+      // 展開: prompts テンプレート
+      for (const [relPath, content] of Object.entries(prompts)) {
         const destPath = join(customPromptDir, relPath);
         try {
           await Deno.stat(destPath);
         } catch (e) {
           if (e instanceof Deno.errors.NotFound) {
             await ensureDir(dirname(destPath));
-            await Deno.copyFile(entry.path, destPath);
+            await Deno.writeTextFile(destPath, content);
           } else {
             throw e;
           }
         }
       }
 
-      // Copy schema templates if not already present (from only schema)
-      const schemaTemplateSrcs = [
-        join(fromFileUrl(import.meta.url), "../../breakdown/schema"),
-      ];
-      for (const schemaTemplateSrc of schemaTemplateSrcs) {
+      // 展開: schema テンプレート
+      for (const [relPath, content] of Object.entries(schema)) {
+        const destPath = join(customSchemaDir, relPath);
         try {
-          for await (const entry of walk(schemaTemplateSrc, { includeDirs: false })) {
-            const relPath = entry.path.substring(schemaTemplateSrc.length + 1);
-            const destPath = join(customSchemaDir, relPath);
-            try {
-              await Deno.stat(destPath);
-            } catch (e) {
-              if (e instanceof Deno.errors.NotFound) {
-                await ensureDir(dirname(destPath));
-                await Deno.copyFile(entry.path, destPath);
-              } else {
-                throw e;
-              }
-            }
-          }
+          await Deno.stat(destPath);
         } catch (e) {
-          if (!(e instanceof Deno.errors.NotFound)) {
+          if (e instanceof Deno.errors.NotFound) {
+            await ensureDir(dirname(destPath));
+            await Deno.writeTextFile(destPath, content);
+          } else {
             throw e;
           }
-          // If the directory doesn't exist, skip
         }
       }
     } catch (error) {
