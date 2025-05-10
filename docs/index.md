@@ -117,3 +117,7 @@ In a near version, Schema references will be possible via URL.
 This will enable data processing using Schema.org and utilization of other Schema definitions.
 
 If there are appropriate Schema definitions for development requirements, they will be referenced, but since none are found yet, we plan to create what this application needs. 
+
+---
+
+[English](index.md) | [日本語](index.ja.md) 

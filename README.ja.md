@@ -314,3 +314,7 @@ https://jsr.io/@tettuan/breakdown
 - [アプリケーション設定・作業ディレクトリ仕様](docs/breakdown/app_config.ja.md)
 - [パス・ファイル名仕様](docs/breakdown/path.ja.md)
 - [モジュール構成・ディレクトリ構成](docs/breakdown/module.ja.md)
+
+---
+
+[English](README.md) | [日本語](README.ja.md)

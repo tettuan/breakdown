@@ -233,3 +233,7 @@ deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli
 https://tettuan.github.io/breakdown/
 
 JSR: https://jsr.io/@tettuan/breakdown
+
+---
+
+[English](README.md) | [日本語](README.ja.md)
