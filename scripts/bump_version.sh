@@ -101,13 +101,16 @@ git fetch --tags
 current_version=$(get_deno_version)
 echo "Current version in deno.json: $current_version"
 
-# Check if any tags are ahead of JSR version
-for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
-  if [[ "$tag" > "$latest_jsr_version" ]]; then
+latest_tag=$(git tag --list 'v*' | sed 's/^v//' | sort -V | tail -n 1)
+if [[ "$latest_tag" > "$latest_jsr_version" ]]; then
+  # If all versions match, allow and continue
+  if [[ "$latest_tag" == "$latest_jsr_version" && "$deno_ver" == "$latest_jsr_version" && "$ts_ver" == "$latest_jsr_version" ]]; then
+    echo "All versions match JSR version ($latest_jsr_version). Proceeding."
+  else
     echo "\n===============================================================================\nLocal tags are ahead of JSR version ($latest_jsr_version).\nPlease run scripts/rewind_to_jsr.sh to rewind local versions and tags.\n===============================================================================\n"
     exit 1
   fi
-done
+fi
 
 # 1.8 Version Consistency Check
 jsr_ver="$latest_jsr_version"
