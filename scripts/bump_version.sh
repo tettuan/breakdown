@@ -109,6 +109,28 @@ for tag in $(git tag --list 'v*' | sed 's/^v//' | sort -V); do
   fi
 done
 
+# 1.8 Version Consistency Check
+jsr_ver="$latest_jsr_version"
+git_tag_ver=$(git tag --list 'v*' | sed 's/^v//' | sort -V | tail -n 1)
+deno_ver=$(get_deno_version)
+ts_ver=$(get_ts_version)
+
+all_match=true
+if [[ "$jsr_ver" != "$git_tag_ver" ]]; then
+  echo "Mismatch: JSR version ($jsr_ver) != GitHub tag ($git_tag_ver)"; all_match=false
+fi
+if [[ "$jsr_ver" != "$deno_ver" ]]; then
+  echo "Mismatch: JSR version ($jsr_ver) != deno.json ($deno_ver)"; all_match=false
+fi
+if [[ "$jsr_ver" != "$ts_ver" ]]; then
+  echo "Mismatch: JSR version ($jsr_ver) != version.ts ($ts_ver)"; all_match=false
+fi
+if [[ "$all_match" == true ]]; then
+  echo "Version Consistency Check: true (all versions match: $jsr_ver)"
+else
+  echo "Version Consistency Check: false"
+fi
+
 echo "✓ Status Checks passed"
 
 # ============================================================================
