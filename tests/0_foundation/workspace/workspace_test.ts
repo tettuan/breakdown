@@ -1,14 +1,16 @@
 import { assertEquals } from "jsr:@std/assert";
 import { WorkspaceImpl } from "../../../lib/workspace/workspace.ts";
 import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { join } from "@std/path/join";
 
 Deno.test("Workspace", async (t) => {
   // Pre-processing and Preparing Part
+  const tempDir = await Deno.makeTempDir();
   const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
   const workspace = new WorkspaceImpl({
-    workingDir: ".",
-    promptBaseDir: "prompts",
-    schemaBaseDir: "schema",
+    workingDir: tempDir,
+    promptBaseDir: join(tempDir, "prompts"),
+    schemaBaseDir: join(tempDir, "schema"),
   });
 
   // Main Test
@@ -27,7 +29,7 @@ Deno.test("Workspace", async (t) => {
 
   await t.step("should handle directory operations", async () => {
     logger.debug("Testing directory operations");
-    const dirPath = "test/dir";
+    const dirPath = join(tempDir, "test/dir");
     await workspace.createDirectory(dirPath);
     const exists = await workspace.exists(dirPath);
     assertEquals(exists, true);
@@ -37,5 +39,5 @@ Deno.test("Workspace", async (t) => {
   });
 
   // Cleanup
-  await Deno.remove(".agent/breakdown", { recursive: true });
+  await Deno.remove(tempDir, { recursive: true });
 });

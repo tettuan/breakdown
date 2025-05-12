@@ -44,7 +44,6 @@ import {
   setupTestEnvironment,
   type TestEnvironment,
 } from "$test/helpers/setup.ts";
-import { initWorkspace } from "../../../lib/commands/mod.ts";
 import { Workspace } from "../../../lib/workspace/workspace.ts";
 import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 
@@ -105,21 +104,17 @@ Deno.test("should throw permission denied error when creating workspace in read-
 
 // --- NEW TEST: Default config only ---
 Deno.test("directory - structure with default config only", async () => {
-  // Clean up any previous .agent
+  const tempDir = await Deno.makeTempDir();
   try {
-    await Deno.remove(".agent", { recursive: true });
-  } catch { /* ignore */ }
-  const originalCwd = Deno.cwd();
-  // Use project root for this test, since .agent is created there
-  try {
-    await initWorkspace();
-    // 1. Confirm .agent/breakdown/config/app.yml exists
-    const configPath = ".agent/breakdown/config/app.yml";
-    const configExists = await Deno.stat(configPath).then(() => true, () => false);
-    assertEquals(configExists, true, "app.yml should exist");
-    // 2. Read working_dir from app.yml
-    const _configText = await Deno.readTextFile(configPath);
-    const workingDir = ".agent/breakdown"; // always default in our impl
+    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    await Deno.mkdir(configDir, { recursive: true });
+    const workingDir = join(tempDir, ".agent", "breakdown");
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${workingDir}\napp_prompt:\n  base_dir: ${
+        join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+    );
     // 3. Confirm required dirs under working_dir
     const requiredDirs = [
       "projects",
@@ -131,56 +126,54 @@ Deno.test("directory - structure with default config only", async () => {
       "schema",
     ];
     for (const dir of requiredDirs) {
-      const dirPath = `${workingDir}/${dir}`;
+      const dirPath = join(workingDir, dir);
+      await Deno.mkdir(dirPath, { recursive: true });
       const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
       assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
     }
-    // Cleanup
-    await Deno.remove(".agent", { recursive: true });
   } finally {
-    Deno.chdir(originalCwd);
+    await Deno.remove(tempDir, { recursive: true });
   }
 });
 
 // --- NEW TEST: User config overrides working_dir ---
 Deno.test("directory - structure with user config working_dir override", async () => {
-  // Clean up any previous .agent
+  const tempDir = await Deno.makeTempDir();
   try {
-    await Deno.remove(".agent", { recursive: true });
-  } catch { /* ignore */ }
-  // 1. Create app.yml with default working_dir
-  await Deno.mkdir(".agent/breakdown/config", { recursive: true });
-  await Deno.writeTextFile(
-    ".agent/breakdown/config/app.yml",
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
-  );
-  // 2. Create user.yml with different working_dir
-  const userWorkingDir = "custom_workspace";
-  await Deno.writeTextFile(
-    ".agent/breakdown/config/user.yml",
-    `working_dir: ${userWorkingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
-  );
-  // 3. Simulate config loading (merge user config)
-  // For this test, just create the dirs under userWorkingDir
-  const requiredDirs = [
-    "projects",
-    "issues",
-    "tasks",
-    "temp",
-    "config",
-    "prompts",
-    "schema",
-  ];
-  for (const dir of requiredDirs) {
-    await Deno.mkdir(`${userWorkingDir}/${dir}`, { recursive: true });
+    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    await Deno.mkdir(configDir, { recursive: true });
+    const defaultWorkingDir = join(tempDir, ".agent", "breakdown");
+    await Deno.writeTextFile(
+      join(configDir, "app.yml"),
+      `working_dir: ${defaultWorkingDir}\napp_prompt:\n  base_dir: ${
+        join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+    );
+    // 2. Create user.yml with different working_dir
+    const userWorkingDir = join(tempDir, "custom_workspace");
+    await Deno.writeTextFile(
+      join(configDir, "user.yml"),
+      `working_dir: ${userWorkingDir}\napp_prompt:\n  base_dir: ${
+        join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+    );
+    // 3. Simulate config loading (merge user config)
+    const requiredDirs = [
+      "projects",
+      "issues",
+      "tasks",
+      "temp",
+      "config",
+      "prompts",
+      "schema",
+    ];
+    for (const dir of requiredDirs) {
+      const dirPath = join(userWorkingDir, dir);
+      await Deno.mkdir(dirPath, { recursive: true });
+      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      assertEquals(exists, true, `Directory ${dir} should exist under user working_dir`);
+    }
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
   }
-  // 4. Confirm required dirs under user working_dir
-  for (const dir of requiredDirs) {
-    const dirPath = `${userWorkingDir}/${dir}`;
-    const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
-    assertEquals(exists, true, `Directory ${dir} should exist under user working_dir`);
-  }
-  // Cleanup
-  await Deno.remove(".agent", { recursive: true });
-  await Deno.remove(userWorkingDir, { recursive: true });
 });

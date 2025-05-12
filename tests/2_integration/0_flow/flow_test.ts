@@ -3,7 +3,7 @@ import { exists } from "@std/fs";
 import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
 import { join } from "@std/path/join";
-import { resolve } from "@std/path/resolve";
+// import { resolve } from "@std/path/resolve";
 
 /**
  * Integration tests for the breakdown workflow
