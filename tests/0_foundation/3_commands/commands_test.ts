@@ -40,8 +40,6 @@ import { exists } from "jsr:@std/fs";
 const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
 
-const TEST_DIR = "./test_workspace";
-
 // Setup test environment before running tests
 Deno.test({
   name: "setup",
@@ -143,7 +141,7 @@ Deno.test("parseParams - adaptation option (short form)", () => {
 });
 
 Deno.test("Command Module Tests", async (t) => {
-  await Deno.mkdir(TEST_DIR, { recursive: true });
+  const TEST_DIR = await Deno.makeTempDir();
   const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
   try {
@@ -154,14 +152,12 @@ Deno.test("Command Module Tests", async (t) => {
     });
 
     await t.step("initWorkspace should create required directories", async () => {
-      await initWorkspace();
-
+      await initWorkspace(TEST_DIR);
       // Verify .agent/breakdown directory exists
-      const breakdownDir = ".agent/breakdown";
+      const breakdownDir = join(TEST_DIR, ".agent/breakdown");
       const breakdownDirInfo = await Deno.stat(breakdownDir);
       assertExists(breakdownDirInfo);
       assertEquals(breakdownDirInfo.isDirectory, true);
-
       // Verify required subdirectories exist
       const requiredDirs = [
         "projects",
@@ -172,15 +168,14 @@ Deno.test("Command Module Tests", async (t) => {
         "prompts",
         "schema",
       ];
-
       for (const dir of requiredDirs) {
-        const dirPath = join(".agent", "breakdown", dir);
+        const dirPath = join(TEST_DIR, ".agent", "breakdown", dir);
         const dirInfo = await Deno.stat(dirPath);
         assertExists(dirInfo);
         assertEquals(dirInfo.isDirectory, true);
       }
       // Cleanup after test
-      await Deno.remove(".agent", { recursive: true });
+      await Deno.remove(join(TEST_DIR, ".agent"), { recursive: true });
     });
 
     await t.step("displayHelp should not throw", () => {
@@ -195,18 +190,17 @@ Deno.test("Command Module Tests", async (t) => {
 
     // Cleanup: Remove test directory
     await t.step("cleanup", async () => {
-      try {
-        await Deno.remove(TEST_DIR, { recursive: true });
-      } catch { /* ignore */ }
+      // No need to remove TEST_DIR here, will be removed in finally
     });
   } finally {
     Deno.chdir(originalCwd);
+    await Deno.remove(TEST_DIR, { recursive: true });
   }
 });
 
 Deno.test("cli - init command should finish and create config", async () => {
   const logger = new BreakdownLogger();
-  const testDir = "./tmp/cli_init_test";
+  const testDir = await Deno.makeTempDir();
   logger.debug("[CLI INIT TEST] Cleaning up test dir", { testDir });
   try {
     await Deno.remove(testDir, { recursive: true });
@@ -237,7 +231,7 @@ Deno.test("cli - init command should finish and create config", async () => {
   assertEquals(existsConfig, true);
   // Check main directories
   for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schema"]) {
-    const dirPath = `${testDir}/.agent/breakdown/${dir === "schema" ? "schema" : dir}`;
+    const dirPath = `${testDir}/.agent/breakdown/${dir}`;
     const existsDir = await exists(dirPath);
     logger.debug("[CLI INIT TEST] Directory exists?", { dirPath, existsDir });
     assertEquals(existsDir, true);
@@ -247,6 +241,7 @@ Deno.test("cli - init command should finish and create config", async () => {
 });
 
 Deno.test("CLI Command Execution", async (t) => {
+  const TEST_DIR = await Deno.makeTempDir();
   await Deno.mkdir(TEST_DIR, { recursive: true });
   const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
@@ -260,5 +255,6 @@ Deno.test("CLI Command Execution", async (t) => {
     });
   } finally {
     Deno.chdir(originalCwd);
+    await Deno.remove(TEST_DIR, { recursive: true });
   }
 });

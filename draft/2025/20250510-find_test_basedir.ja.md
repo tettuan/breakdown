@@ -9,24 +9,25 @@
 
 ##  完了条件
 - `tmp/test_list_with_dir_check.ja.md` を日本語で作成している
--  `custom_prompts/`,`prompts/`, `custom_schema/`,`schema/`,`test/` の列が存在する
+-  `test_workspace/` の列が存在する
 - 行に全てのテストファイルが記載されている
 - プロジェクト直下に、各列のディレクトリが残らないセルには "No Dir"、残るテストには "Dir Created" と記載済
 
 ### 完了例
 ```
-| filenmae |custom_prompts|prompts| ...
-| --- | --- | --- | ...
-| testname | No Dir | Dir Created | ... 
+| filenmae |test_workspace
+| --- | --- |
+| testname | No Dir | 
+| other testname | Dir Created |
 ```
 
 # 実装の自動確認
 1. tests/ 配下のテストファイル一覧作成する
 2. `tmp/test_list_with_dir_check.ja.md` へ記録し、表を作成する
-3. `custom_prompts/`,`prompts/`, `custom_schema/`,`schema/`,`test/` を削除する（削除の自動実行を許可するので、確認不要）
+3. `test_workspace/`を削除する（削除の自動実行を許可するので、確認不要）
 4. 各テストファイルごとに実行する
    `deno test -A ./test/test_file_name.ts`
-5. `custom_prompts/`,`prompts/`, `custom_schema/`,`schema/`,`test/` が作成されているかチェックする
+5. `test_workspace/` が作成されているかチェックする
 6. 表の列に、 "No dir" または "Dir Created" を記す
 6. 次のテストファイル実行検証のために3へ戻る
 
