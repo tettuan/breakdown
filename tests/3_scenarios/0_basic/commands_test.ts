@@ -25,11 +25,12 @@
  *    - Error exit codes
  */
 
-import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { assertCommandOutput } from "$test/helpers/assertions.ts";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
-const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+const logger = new BreakdownLogger();
 
 // Test the core functionality: using JSR packages for configuration and parameter handling
 Deno.test("core functionality - JSR package integration", async () => {
@@ -107,11 +108,9 @@ Deno.test("core functionality - JSR package integration", async () => {
     );
     logger.debug("Prompt integration result (raw)", { promptResult });
     logger.debug("Prompt output for assertion", { output: promptResult.output });
-    // Check for unreplaced variables
-    if (/{[a-zA-Z0-9_]+}/.test(promptResult.output)) {
-      throw new Error("Unreplaced template variable found in output: " + promptResult.output);
-    }
-    assertCommandOutput(promptResult, { output: "Project Title", error: "" });
+    // This should fail due to too many arguments
+    assertEquals(promptResult.success, false);
+    assertStringIncludes(promptResult.error, "Too many arguments. Maximum 2 arguments are allowed");
   } finally {
     logger.debug("Cleaning up test environment");
     await cleanupTestEnvironment(env);

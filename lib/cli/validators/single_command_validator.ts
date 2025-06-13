@@ -30,8 +30,9 @@ export class SingleCommandValidator implements CommandValidatorStrategy {
     if (
       params &&
       typeof params === "object" &&
-      "command" in params &&
-      (params as { command?: string }).command === "init"
+      (("command" in params && (params as { command?: string }).command === "init") ||
+        ("demonstrativeType" in params &&
+          (params as { demonstrativeType?: string }).demonstrativeType === "init"))
     ) {
       values.command = "init";
       return {

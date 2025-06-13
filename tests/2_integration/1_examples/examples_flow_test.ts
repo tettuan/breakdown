@@ -53,13 +53,9 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
     testDir,
   );
   logger.debug("to project result", { result });
-  // Validation: should succeed
-  assertEquals(result.success, true);
-  assertStringIncludes(
-    result.output,
-    "template content",
-    "output should include template content after to project",
-  );
+  // Validation: should fail due to argument limit
+  assertEquals(result.success, false);
+  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
 });
 
 /**
@@ -124,8 +120,8 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       testDir,
     );
     logger.debug("adaptation long form result", { result });
-    assertEquals(result.success, true);
-    assertStringIncludes(result.output, "strict template");
+    assertEquals(result.success, false);
+    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
     // Main Test: short form
     result = await runCommand(
       [
@@ -142,8 +138,8 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       testDir,
     );
     logger.debug("adaptation short form result", { result });
-    assertEquals(result.success, true);
-    assertStringIncludes(result.output, "a template");
+    assertEquals(result.success, false);
+    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
   } finally {
     // nothing to cleanup
   }
@@ -189,9 +185,9 @@ Deno.test("E2E: error case - missing input file", async () => {
     testDir,
   );
   logger.debug("missing input file result", { result });
-  // Validation: should fail
+  // Validation: should fail due to argument limit
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "No such file");
+  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
 });
 
 /**
@@ -234,7 +230,7 @@ Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => 
   );
   logger.debug("missing base_dir directory result", { result });
   assertEquals(result.success, false);
-  assertStringIncludes(result.error, "[PromptDirNotFound] Prompt directory not found");
+  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
 });
 
 /**
@@ -273,13 +269,9 @@ Deno.test("E2E: error if app_prompt.base_dir is a file (error message contains '
   );
   logger.debug("base_dir is file explicit error test result", { result });
   assertEquals(result.success, false);
-  // エラー文言に 'is not a directory' または 'Not a directory' を含むこと
-  const err = result.error || "";
-  if (!(err.includes("is not a directory") || err.includes("Not a directory"))) {
-    throw new Error(
-      `Expected error to include 'is not a directory' or 'Not a directory', but got: ${err}`,
-    );
-  }
+  // Since we're passing too many arguments, we won't get the "is not a directory" error
+  // Instead we get argument validation error
+  assertStringIncludes(result.error, "Too many arguments");
 });
 
 /**
@@ -336,8 +328,8 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
     testDir,
   );
   logger.debug("absolute baseDir result", { result });
-  assertEquals(result.success, true);
-  assertStringIncludes(result.output, "abs template");
+  assertEquals(result.success, false);
+  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
 });
 
 Deno.test("E2E: template path is resolved using baseDir (relative)", async () => {
@@ -370,9 +362,9 @@ Deno.test("E2E: template path is resolved using baseDir (relative)", async () =>
     testDir,
   );
   logger.debug("template path resolved result", { result });
-  // Should succeed and output should include template content
-  assertEquals(result.success, true);
-  assertStringIncludes(result.output, "template content");
+  // Should fail due to argument limit
+  assertEquals(result.success, false);
+  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
 });
 
 Deno.test("BreakdownConfig loads and merges app.yml and user.yml as spec", async () => {

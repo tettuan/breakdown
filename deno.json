@@ -20,9 +20,9 @@
     "@std/yaml": "jsr:@std/yaml@^1.0.6",
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
     "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.0.11",
-    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^0.1.11",
+    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.0",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.0",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^0.1.10"
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.0"
   },
   "publish": {
     "include": [

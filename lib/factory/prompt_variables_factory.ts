@@ -66,6 +66,7 @@ export class PromptVariablesFactory {
    */
   public readonly cliParams: PromptCliParams;
   private baseDirOverride?: string;
+  private _baseDirError?: string;
 
   private promptPathResolver: PromptTemplatePathResolver;
   private inputPathResolver: InputFilePathResolver;
@@ -82,6 +83,12 @@ export class PromptVariablesFactory {
     this.config = config;
     this.cliParams = cliParams;
     this.baseDirOverride = baseDirOverride;
+
+    // Validate base_dir configuration
+    if (!config.app_prompt?.base_dir || config.app_prompt.base_dir.trim() === "") {
+      this._baseDirError = "Prompt base_dir must be set in configuration";
+    }
+
     this.promptPathResolver = new PromptTemplatePathResolver(config, cliParams);
     this.inputPathResolver = new InputFilePathResolver(config, cliParams);
     this.outputPathResolver = new OutputFilePathResolver(config, cliParams);
@@ -164,17 +171,13 @@ export class PromptVariablesFactory {
    * Returns true if base_dir is valid (not empty or missing)
    */
   public hasValidBaseDir(): boolean {
-    // 型安全に _baseDirError をアクセス
-    // @ts-ignore: _baseDirError は protected/private で型定義されていない場合の暫定対応
-    return !(this as { _baseDirError?: boolean })._baseDirError;
+    return !this._baseDirError;
   }
 
   /**
    * If base_dir is invalid, returns the error message
    */
   public getBaseDirError(): string | undefined {
-    // 型安全に _baseDirError をアクセス
-    // @ts-ignore: _baseDirError は protected/private で型定義されていない場合の暫定対応
-    return (this as { _baseDirError?: boolean })._baseDirError;
+    return this._baseDirError;
   }
 }

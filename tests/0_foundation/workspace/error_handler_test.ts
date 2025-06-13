@@ -1,12 +1,12 @@
 import { assertEquals } from "jsr:@std/assert";
 import { WorkspaceErrorHandlerImpl } from "../../../lib/workspace/error_handler.ts";
 import { WorkspaceError, WorkspaceInitError } from "../../../lib/workspace/errors.ts";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspaceErrorHandler", async (t) => {
   // Pre-processing and Preparing Part
   const handler = new WorkspaceErrorHandlerImpl();
-  const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+  const logger = new BreakdownLogger();
 
   // Main Test
   await t.step("should handle workspace-specific errors", () => {

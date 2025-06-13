@@ -1,12 +1,12 @@
 import { assertEquals } from "jsr:@std/assert";
 import { WorkspaceImpl } from "../../../lib/workspace/workspace.ts";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { join } from "@std/path/join";
 
 Deno.test("Workspace", async (t) => {
   // Pre-processing and Preparing Part
   const tempDir = await Deno.makeTempDir();
-  const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+  const logger = new BreakdownLogger();
   const workspace = new WorkspaceImpl({
     workingDir: tempDir,
     promptBaseDir: join(tempDir, "prompts"),

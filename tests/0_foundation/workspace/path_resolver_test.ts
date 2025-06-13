@@ -1,14 +1,14 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { WorkspacePathResolverImpl } from "../../../lib/workspace/path/resolver.ts";
 import { PlatformAgnosticPathStrategy } from "../../../lib/workspace/path/strategies.ts";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspacePathResolver", async (t) => {
   // Pre-processing and Preparing Part
   const baseDir = "/workspace";
   const strategy = new PlatformAgnosticPathStrategy(baseDir);
   const resolver = new WorkspacePathResolverImpl(strategy);
-  const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+  const logger = new BreakdownLogger();
 
   // Main Test
   await t.step("should handle path resolution and normalization", async () => {
