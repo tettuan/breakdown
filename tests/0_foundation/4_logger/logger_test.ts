@@ -43,18 +43,36 @@ Deno.test("logger - message formatting", async () => {
 
   // Test string messages
   testEnv.logger.info("Test info message", { key: "logger_test.ts#L45#message-formatting-info" });
-  testEnv.logger.warn("Test warning message", { key: "logger_test.ts#L46#message-formatting-warn" });
-  testEnv.logger.error("Test error message", { key: "logger_test.ts#L47#message-formatting-error" });
-  testEnv.logger.debug("Test debug message", { key: "logger_test.ts#L48#message-formatting-debug" });
+  testEnv.logger.warn("Test warning message", {
+    key: "logger_test.ts#L46#message-formatting-warn",
+  });
+  testEnv.logger.error("Test error message", {
+    key: "logger_test.ts#L47#message-formatting-error",
+  });
+  testEnv.logger.debug("Test debug message", {
+    key: "logger_test.ts#L48#message-formatting-debug",
+  });
 
   // Test messages with data
-  testEnv.logger.info("Message with data", { key: "logger_test.ts#L51#message-formatting-data", data: { key: "value" } });
-  testEnv.logger.warn("Warning with number", { key: "logger_test.ts#L52#message-formatting-number", number: 42 });
-  testEnv.logger.error("Error with array", { key: "logger_test.ts#L53#message-formatting-array", array: [1, 2, 3] });
+  testEnv.logger.info("Message with data", {
+    key: "logger_test.ts#L51#message-formatting-data",
+    data: { key: "value" },
+  });
+  testEnv.logger.warn("Warning with number", {
+    key: "logger_test.ts#L52#message-formatting-number",
+    number: 42,
+  });
+  testEnv.logger.error("Error with array", {
+    key: "logger_test.ts#L53#message-formatting-array",
+    array: [1, 2, 3],
+  });
 
   // Test with Error objects
   const testError = new Error("Test error");
-  testEnv.logger.error("Error object", { key: "logger_test.ts#L57#message-formatting-error-object", error: testError });
+  testEnv.logger.error("Error object", {
+    key: "logger_test.ts#L57#message-formatting-error-object",
+    error: testError,
+  });
 
   // If we get here without throwing, the logger is working
   assertEquals(true, true);
@@ -110,8 +128,12 @@ Deno.test("logger - error handling", async () => {
   });
 
   // Test with string messages
-  testEnv.logger.error("Standard error message", { key: "logger_test.ts#L110#error-handling-standard" });
-  testEnv.logger.error("Another error message", { key: "logger_test.ts#L111#error-handling-another" });
+  testEnv.logger.error("Standard error message", {
+    key: "logger_test.ts#L110#error-handling-standard",
+  });
+  testEnv.logger.error("Another error message", {
+    key: "logger_test.ts#L111#error-handling-another",
+  });
 
   // Test with structured error message
   testEnv.logger.error("Error occurred", {
@@ -131,10 +153,22 @@ Deno.test("logger - log level configuration", async () => {
   });
 
   // Test different log levels
-  testEnv.logger.debug("Debug message", { key: "logger_test.ts#L130#log-level-config-debug", level: "debug" });
-  testEnv.logger.info("Info message", { key: "logger_test.ts#L131#log-level-config-info", level: "info" });
-  testEnv.logger.warn("Warning message", { key: "logger_test.ts#L132#log-level-config-warn", level: "warn" });
-  testEnv.logger.error("Error message", { key: "logger_test.ts#L133#log-level-config-error", level: "error" });
+  testEnv.logger.debug("Debug message", {
+    key: "logger_test.ts#L130#log-level-config-debug",
+    level: "debug",
+  });
+  testEnv.logger.info("Info message", {
+    key: "logger_test.ts#L131#log-level-config-info",
+    level: "info",
+  });
+  testEnv.logger.warn("Warning message", {
+    key: "logger_test.ts#L132#log-level-config-warn",
+    level: "warn",
+  });
+  testEnv.logger.error("Error message", {
+    key: "logger_test.ts#L133#log-level-config-error",
+    level: "error",
+  });
 
   await cleanupTestEnvironment(testEnv);
 });

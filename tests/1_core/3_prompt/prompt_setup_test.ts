@@ -70,7 +70,11 @@ async function restoreWritePermissions(path: string): Promise<void> {
     }
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      logger.error(`Error restoring permissions for ${path}:`, { path, error: error.message, stack: error.stack });
+      logger.error(`Error restoring permissions for ${path}:`, {
+        path,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
     }
   }
 }
@@ -85,7 +89,11 @@ async function cleanupTestDir(path: string): Promise<void> {
     await Deno.remove(path, { recursive: true });
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      logger.error(`Error cleaning up test directory ${path}:`, { path, error: error.message, stack: error.stack });
+      logger.error(`Error cleaning up test directory ${path}:`, {
+        path,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
     }
   }
 }
