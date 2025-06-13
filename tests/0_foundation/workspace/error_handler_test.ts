@@ -43,10 +43,13 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
 
 // Helper function to capture console output
 function captureConsoleOutput(fn: () => void): string {
+  const testLogger = new BreakdownLogger("test-capture");
   const originalConsoleError = console.error;
   let output = "";
   console.error = (...args: unknown[]) => {
     output += args.join(" ") + "\n";
+    // Also log with BreakdownLogger for consistency
+    testLogger.warn("Console error captured", { args });
   };
   fn();
   console.error = originalConsoleError;

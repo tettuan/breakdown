@@ -109,6 +109,8 @@ await workspace.initialize();
 - `BreakdownParams`はCLIパラメータの解析と検証を担当
 - パラメータの解析結果は`PromptVariablesFactory`を通じてWorkspaceの設定に反映
 - パス解決やテンプレート選択に使用される変数（`demonstrativeType`、`layerType`など）を提供
+- **v1.0.1新機能**: カスタム変数（--uv-*）の解析と管理
+- **v1.0.1新機能**: 拡張パラメータ（--extended, --custom-validation, --error-format）のサポート
 
 ### initプロセスとの関係
 1. `breakdown init`コマンドが実行される
@@ -124,17 +126,59 @@ await workspace.initialize();
   - `outputFilePath`: 出力ファイルのパス
   - `promptFilePath`: プロンプトテンプレートのパス
   - `schemaFilePath`: スキーマファイルのパス
+  - **v1.0.1新機能**: `customVariables`: ユーザー定義変数のマップ（--uv-*）
 - Workspaceのパス解決機能を使用して、これらのパスを適切に解決
+- **v1.0.1新機能**: カスタム変数はテンプレート内で `{uv.変数名}` として参照可能
 
 ### 設定の流れ
 1. CLIパラメータの解析（`BreakdownParams`）
+   - **v1.0.1新機能**: .breakdownrc.jsonからのデフォルト値読み込み
+   - **v1.0.1新機能**: 環境別設定の適用
 2. 設定ファイル（`app.yml`）の読み込み（`BreakdownConfig`）
 3. Workspaceの初期化と設定の適用
 4. `PromptVariablesFactory`による変数の生成
+   - **v1.0.1新機能**: カスタム変数の統合
 5. 各コンポーネントでの設定の利用
+
+### BreakdownParams v1.0.1 対応
+
+#### 設定ファイルサポート
+
+v1.0.1では、`.breakdownrc.json`による設定管理が可能になりました。Workspaceは以下の設定を活用します：
+
+```json
+{
+  "defaultOptions": {
+    "adaptation": "strict",
+    "errorFormat": "detailed"
+  },
+  "environments": {
+    "production": {
+      "customValidation": {
+        "strictMode": true
+      }
+    }
+  }
+}
+```
+
+#### カスタム変数の管理
+
+Workspaceは、ユーザー定義のカスタム変数（--uv-*）を管理し、テンプレート処理に渡します：
+
+```typescript
+// カスタム変数の例
+const customVariables = {
+  projectName: "MyProject",    // --uv-projectName=MyProject
+  author: "太郎",              // --uv-author=太郎
+  version: "1.0.0"            // --uv-version=1.0.0
+};
+```
 
 ### 注意事項
 1. 設定ファイルへのアクセスは必ず`BreakdownConfig`を使用
 2. パス解決は`WorkspacePathResolver`を通じて行う
 3. ディレクトリ操作は`WorkspaceStructure`インターフェースを使用
-4. テンプレートファイルの管理はWorkspaceが担当 
+4. テンプレートファイルの管理はWorkspaceが担当
+5. **v1.0.1新機能**: カスタム変数は`PromptVariablesFactory`経由で管理
+6. **v1.0.1新機能**: 環境別設定は`BREAKDOWN_ENV`環境変数で切り替え 

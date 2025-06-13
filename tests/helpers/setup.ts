@@ -148,7 +148,7 @@ async function restoreWritePermissions(path: string): Promise<void> {
     }
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      logger.error('Permission restore failed', { path, error });
+      logger.error("Permission restore failed", { path, error });
     }
   }
 }
@@ -173,10 +173,10 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
       // Then remove the directory
       await Deno.remove(env.workingDir, { recursive: true });
     } catch (error) {
-      logger.error('Error cleaning up test directory', { workingDir: env.workingDir, error });
+      logger.error("Error cleaning up test directory", { workingDir: env.workingDir, error });
     }
   } catch (error) {
-    logger.error('Error during test environment cleanup', { error });
+    logger.error("Error during test environment cleanup", { error });
   }
 }
 

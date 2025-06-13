@@ -224,7 +224,7 @@ Deno.test("cli - init command should finish and create config", async () => {
       error: err,
       exitCode: code,
       testDir: testDir,
-      cliPath: cliPath
+      cliPath: cliPath,
     });
   }
   // Check exit code

@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { exists } from "@std/fs";
 import { ensureDir } from "@std/fs";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@1.0.0";
+import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,

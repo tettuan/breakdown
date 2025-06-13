@@ -43,6 +43,38 @@ breakdown <demonstrative> [layer] [options]
   - 例: `strict`, `a` など
   - プロンプトファイル名に影響: `f_{fromLayerType}_{adaptation}.md`
 
+### カスタム変数 (v1.0.1新機能)
+
+- `--uv-<変数名>=<値>`: テンプレート内で使用可能なカスタム変数を定義
+  - 例: `--uv-userName=太郎`
+  - テンプレート内では `{uv.userName}` として参照
+  - 複数の変数を定義可能
+
+## 使用例
+
+### カスタム変数を使用した実行例
+
+```bash
+# ユーザー情報を含むタスク生成
+breakdown to task -f requirements.md \
+  --uv-userName=太郎 \
+  --uv-teamName=開発チーム \
+  --uv-deadline=2024-12-31
+
+# プロジェクト情報を含むイシュー生成
+breakdown to issue -f spec.md -o issues/ \
+  --uv-projectName=ECサイトリニューアル \
+  --uv-version=2.0.0 \
+  --uv-priority=high \
+  --uv-assignee=山田花子
+
+# 多言語対応のドキュメント生成
+breakdown summary project -f project.json \
+  --uv-language=日本語 \
+  --uv-audience=技術者向け \
+  --uv-format=詳細版
+```
+
 ## 標準入出力
 
 ### 標準入力からの読み込み
@@ -50,6 +82,11 @@ breakdown <demonstrative> [layer] [options]
 ```bash
 echo "<content>" | breakdown <demonstrative> <layer> -o <output>
 tail -100 "<log_file>" | breakdown defect <layer> -o <output>
+
+# カスタム変数と組み合わせた使用
+cat error.log | breakdown defect task \
+  --uv-severity=critical \
+  --uv-module=認証システム
 ```
 
 ### 標準出力への出力
