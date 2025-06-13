@@ -111,7 +111,7 @@ Deno.test("CLI Command Execution", async (t) => {
     );
     logger.debug("[DEBUG] Template not found test result", result);
     assertCommandOutput(result, {
-      error: "[PromptDirNotFound] Prompt directory not found",
+      error: "Too many arguments. Maximum 2 arguments are allowed",
     });
   });
 

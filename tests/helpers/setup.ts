@@ -1,6 +1,50 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { join } from "@std/path/join";
 
+/**
+ * Parses log level string to LogLevel enum
+ */
+function parseLogLevel(level: string | undefined): LogLevel | undefined {
+  if (!level) return undefined;
+
+  switch (level.toLowerCase()) {
+    case "debug":
+      return LogLevel.DEBUG;
+    case "info":
+      return LogLevel.INFO;
+    case "warn":
+      return LogLevel.WARN;
+    case "error":
+      return LogLevel.ERROR;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Sets LOG_LEVEL environment variable based on LogLevel enum
+ */
+function setLogLevel(level: LogLevel): void {
+  let envValue: string;
+  switch (level) {
+    case LogLevel.DEBUG:
+      envValue = "debug";
+      break;
+    case LogLevel.INFO:
+      envValue = "info";
+      break;
+    case LogLevel.WARN:
+      envValue = "warn";
+      break;
+    case LogLevel.ERROR:
+      envValue = "error";
+      break;
+    default:
+      envValue = "info";
+  }
+  Deno.env.set("LOG_LEVEL", envValue);
+}
+
 export interface TestEnvironmentOptions {
   workingDir?: string;
   logLevel?: LogLevel;
@@ -32,7 +76,21 @@ export async function setupTestEnvironment(
   options: TestEnvironmentOptions = {},
 ): Promise<TestEnvironment> {
   const workingDir = options.workingDir || "./tmp/test";
-  const logLevel = options.logLevel || LogLevel.DEBUG;
+
+  // Save original LOG_LEVEL to restore later
+  const originalLogLevel = Deno.env.get("LOG_LEVEL");
+
+  // Determine log level from options or environment variable
+  let logLevel: LogLevel;
+  if (options.logLevel !== undefined) {
+    logLevel = options.logLevel;
+    // Set environment variable to match the requested log level
+    setLogLevel(logLevel);
+  } else {
+    // Get from environment variable or default to INFO
+    const envLogLevel = Deno.env.get("LOG_LEVEL");
+    logLevel = parseLogLevel(envLogLevel) || LogLevel.INFO;
+  }
 
   // Create test directories only if not skipped
   if (!options.skipDirectorySetup) {
@@ -62,12 +120,13 @@ export async function setupTestEnvironment(
 
   // Set up logger
   const logger = new BreakdownLogger();
-  logger.setLogLevel(logLevel);
+  // BreakdownLogger v1.0.0 uses LOG_LEVEL environment variable automatically
 
   return {
     workingDir,
     logLevel,
     logger,
+    originalLogLevel,
   };
 }
 
@@ -76,6 +135,7 @@ export async function setupTestEnvironment(
  * @param path The path to restore permissions for
  */
 async function restoreWritePermissions(path: string): Promise<void> {
+  const logger = new BreakdownLogger("setup-permissions");
   try {
     const info = await Deno.stat(path);
     if (info.isDirectory) {
@@ -88,7 +148,7 @@ async function restoreWritePermissions(path: string): Promise<void> {
     }
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      console.error(`Error restoring permissions for ${path}:`, error);
+      logger.error('Permission restore failed', { path, error });
     }
   }
 }
@@ -97,6 +157,7 @@ async function restoreWritePermissions(path: string): Promise<void> {
  * Cleans up test environment and restores original settings
  */
 export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void> {
+  const logger = new BreakdownLogger("setup-cleanup");
   try {
     // Restore original log level if it exists
     if (env.originalLogLevel !== undefined) {
@@ -112,10 +173,10 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
       // Then remove the directory
       await Deno.remove(env.workingDir, { recursive: true });
     } catch (error) {
-      console.error("Error cleaning up test directory:", error);
+      logger.error('Error cleaning up test directory', { workingDir: env.workingDir, error });
     }
   } catch (error) {
-    console.error("Error during test environment cleanup:", error);
+    logger.error('Error during test environment cleanup', { error });
   }
 }
 

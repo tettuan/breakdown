@@ -52,12 +52,21 @@ export {
  * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.
  */
 export {
+  type ErrorInfo,
+  type OneParamsResult,
   type ParamsParser,
   ParamsParser as BreakdownParams,
   type ParamsResult,
-} from "jsr:@tettuan/breakdownparams@0.1.11";
+  type TwoParamsResult,
+  type ZeroParamsResult,
+} from "jsr:@tettuan/breakdownparams@1.0.1";
 
 /**
  * Prompt management utilities for Breakdown. Re-exported from @tettuan/breakdownprompt.
  */
 export * from "jsr:@tettuan/breakdownprompt@1.1.2";
+
+/**
+ * Logging utilities for Breakdown. Re-exported from @tettuan/breakdownlogger.
+ */
+export * from "jsr:@tettuan/breakdownlogger@1.0.0";

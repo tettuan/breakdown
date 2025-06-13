@@ -23,9 +23,9 @@ import { assertEquals, assertExists } from "../../../deps.ts";
 import { join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  type NoParamsResult,
+  type OneParamsResult,
   ParamsParser,
-  type SingleParamResult,
+  type ZeroParamsResult,
 } from "@tettuan/breakdownparams";
 import {
   cleanupTestEnvironment,
@@ -72,11 +72,11 @@ Deno.test("parseParams - help command", () => {
   const args = ["--help"];
   const parser = new ParamsParser();
   const result = parser.parse(args);
-  if (result.type !== "no-params") {
-    throw new Error("Expected no-params result type");
+  if (result.type !== "zero") {
+    throw new Error("Expected zero result type");
   }
-  const noParamsResult = result as NoParamsResult;
-  assertEquals(noParamsResult.help, true);
+  const noParamsResult = result as ZeroParamsResult;
+  assertEquals(noParamsResult.options.help, true);
   logger.debug("Help flag parsing test complete", { result: noParamsResult });
 });
 
@@ -89,11 +89,11 @@ Deno.test("parseParams - version command", () => {
   const args = ["--version"];
   const parser = new ParamsParser();
   const result = parser.parse(args);
-  if (result.type !== "no-params") {
-    throw new Error("Expected no-params result type");
+  if (result.type !== "zero") {
+    throw new Error("Expected zero result type");
   }
-  const noParamsResult = result as NoParamsResult;
-  assertEquals(noParamsResult.version, true);
+  const noParamsResult = result as ZeroParamsResult;
+  assertEquals(noParamsResult.options.version, true);
   logger.debug("Version flag parsing test complete", { result: noParamsResult });
 });
 
@@ -107,11 +107,11 @@ Deno.test("parseParams - init command", () => {
   const args = ["init"];
   const parser = new ParamsParser();
   const result = parser.parse(args);
-  if (result.type !== "single") {
-    throw new Error("Expected single result type");
+  if (result.type !== "one") {
+    throw new Error("Expected one result type");
   }
-  const singleResult = result as SingleParamResult;
-  assertEquals(singleResult.command, "init");
+  const singleResult = result as OneParamsResult;
+  assertEquals(singleResult.demonstrativeType, "init");
   logger.debug("Init command parsing test complete", { result: singleResult });
 });
 
@@ -219,8 +219,13 @@ Deno.test("cli - init command should finish and create config", async () => {
   const err = new TextDecoder().decode(stderr);
   logger.debug("[CLI INIT TEST] CLI finished", { code, out, err });
   if (code !== 0) {
-    console.error("[CLI INIT TEST] CLI failed output:", out);
-    console.error("[CLI INIT TEST] CLI failed error:", err);
+    logger.error("[CLI INIT TEST] CLI failed", {
+      output: out,
+      error: err,
+      exitCode: code,
+      testDir: testDir,
+      cliPath: cliPath
+    });
   }
   // Check exit code
   assertEquals(code, 0);

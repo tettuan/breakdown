@@ -38,7 +38,7 @@ import { assertRejects as _assertRejects } from "@std/assert";
 import { ensureDir } from "../../../deps.ts";
 import { dirname, join } from "@std/path";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
 import { assertEquals, assertExists } from "jsr:@std/assert@^0.224.0";
 import { TEST_BASE_DIR } from "$test/helpers/test_utils.ts";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
@@ -85,7 +85,10 @@ const logger = createLoggerAdapter(new BreakdownLogger());
 
 // Preparing Part
 async function setupTestFiles(workingDir: string) {
-  logger.debug("Setting up test files", { workingDir });
+  logger.debug("Setting up test files", { 
+    key: "prompt_processor_test.ts#L87#setup-start",
+    workingDir 
+  });
 
   // Create test input content
   const inputContent = "# Project Title\n- Feature 1: First feature\n- Feature 2: Second feature";
@@ -129,6 +132,7 @@ async function setupTestFiles(workingDir: string) {
     "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}",
   );
   logger.debug("Created test prompt template", {
+    key: "prompt_processor_test.ts#L131#template-created",
     path: promptFilePath,
   });
 
@@ -137,7 +141,9 @@ async function setupTestFiles(workingDir: string) {
 
 // Main Test
 Deno.test("Prompt Processing Integration", async (t) => {
-  logger.debug("Setting up test environment");
+  logger.debug("Setting up test environment", {
+    key: "prompt_processor_test.ts#L142#integration-test-start"
+  });
   const testDirRaw = await Deno.makeTempDir();
   const testDir = await Deno.realPath(testDirRaw);
   const env = await setupTestEnvironment({
@@ -145,7 +151,10 @@ Deno.test("Prompt Processing Integration", async (t) => {
     skipDirectorySetup: true,
   });
   const workingDir = env.workingDir;
-  logger.debug("Test environment setup", { workingDir });
+  logger.debug("Test environment setup", { 
+    key: "prompt_processor_test.ts#L151#env-setup-complete",
+    workingDir 
+  });
   const originalCwd = Deno.cwd();
   Deno.chdir(workingDir);
 
@@ -188,10 +197,10 @@ Deno.test("Prompt Processing Integration", async (t) => {
       const factoryForFile = await PromptVariablesFactory.create(cliParams);
       // 型安全にconfigへアクセス（@ts-ignoreで暫定対応）
       // @ts-ignore: configはPromptVariablesFactoryのprivate/protectedだがテスト用にアクセス
-      console.log(
-        "DEBUG (test): app_prompt.base_dir =",
-        ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
-          ?.app_prompt?.base_dir,
+      logger.debug(
+        "DEBUG (test): app_prompt.base_dir",
+        { base_dir: ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
+          ?.app_prompt?.base_dir }
       );
       const promptFilePath = factoryForFile.promptFilePath;
       await ensureDir(dirname(promptFilePath));
@@ -200,19 +209,38 @@ Deno.test("Prompt Processing Integration", async (t) => {
         "# Issue Prompt\nInput: {input_text}\nOutput: {destination_path}",
       );
       const promptExists = await Deno.stat(promptFilePath).then(() => true).catch(() => false);
-      console.log("Prompt file exists:", promptFilePath, promptExists);
+      logger.debug("Prompt file exists", { 
+        key: "prompt_processor_test.ts#L202#prompt-file-check",
+        promptFilePath, 
+        promptExists 
+      });
       // List directory contents and stat info for prompt file before running the adapter
       const promptDir = dirname(promptFilePath);
       const dirContents = await Deno.readDir(promptDir);
-      console.log("DEBUG (test): Directory contents of", promptDir);
+      logger.debug("DEBUG (test): Directory contents", { 
+        key: "prompt_processor_test.ts#L220#dir-contents-scan",
+        promptDir 
+      });
       for await (const entry of dirContents) {
-        console.log("  -", entry.name, entry.isFile ? "[file]" : "[dir]");
+        logger.debug("Directory entry", { 
+          key: "prompt_processor_test.ts#L225#dir-entry-detail",
+          name: entry.name, 
+          type: entry.isFile ? "file" : "dir" 
+        });
       }
       try {
         const stat = await Deno.stat(promptFilePath);
-        console.log("DEBUG (test): Stat for prompt file", promptFilePath, stat);
+        logger.debug("DEBUG (test): Stat for prompt file", { 
+          key: "prompt_processor_test.ts#L233#file-stat-success",
+          promptFilePath, 
+          stat 
+        });
       } catch (e) {
-        console.log("DEBUG (test): Stat for prompt file FAILED", promptFilePath, e);
+        logger.error("DEBUG (test): Stat for prompt file FAILED", { 
+          key: "prompt_processor_test.ts#L239#file-stat-error",
+          promptFilePath, 
+          error: e 
+        });
       }
       // Assert file exists and has correct content
       if (!promptExists) throw new Error("Prompt file was not created");
@@ -230,13 +258,13 @@ Deno.test("Prompt Processing Integration", async (t) => {
         },
       };
       // Debug: print CLI params
-      console.log("DEBUG (test): CLI params", JSON.stringify(cliParams, null, 2));
+      logger.debug("DEBUG (test): CLI params", { cliParams });
       // PromptVariablesFactoryを生成
       const factory = await PromptVariablesFactory.create(cliParams);
       const promptFilePath = factory.promptFilePath;
       const promptDir = dirname(promptFilePath);
       // Debug: print prompt file path
-      console.log("DEBUG (test): promptFilePath", promptFilePath);
+      logger.debug("DEBUG (test): promptFilePath", { promptFilePath });
       // Debug: print prompt file content
       let promptFileContent = "(not found)";
       try {
@@ -244,7 +272,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
       } catch (e) {
         promptFileContent = `(error reading file: ${e})`;
       }
-      console.log("DEBUG (test): prompt file content:", promptFileContent);
+      logger.debug("DEBUG (test): prompt file content", { promptFileContent });
       // List directory contents before
       const dirContentsBefore = [];
       for await (const entry of await Deno.readDir(promptDir)) {
@@ -254,11 +282,11 @@ Deno.test("Prompt Processing Integration", async (t) => {
           isDirectory: entry.isDirectory,
         });
       }
-      console.log("DEBUG (test): Directory contents BEFORE validateAndGenerate", dirContentsBefore);
+      logger.debug("DEBUG (test): Directory contents BEFORE validateAndGenerate", { dirContentsBefore });
       const adapter = new PromptAdapterImpl(factory);
       const result = await adapter.validateAndGenerate();
       // Debug: print result object
-      console.log("DEBUG (test): result", JSON.stringify(result, null, 2));
+      logger.debug("DEBUG (test): result", { result });
       // List directory contents after
       const dirContentsAfter = [];
       for await (const entry of await Deno.readDir(promptDir)) {
@@ -268,7 +296,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
           isDirectory: entry.isDirectory,
         });
       }
-      console.log("DEBUG (test): Directory contents AFTER validateAndGenerate", dirContentsAfter);
+      logger.debug("DEBUG (test): Directory contents AFTER validateAndGenerate", { dirContentsAfter });
       logger.debug("[TEST] After PromptAdapterImpl", { result });
       if (!result.success) {
         logger.error("[TEST] PromptAdapterImpl failed", { result });
@@ -395,10 +423,10 @@ Deno.test("PromptAdapterImpl should generate prompt text", async () => {
   const factoryForFile = await PromptVariablesFactory.create(cliParams);
   // 型安全にconfigへアクセス（@ts-ignoreで暫定対応）
   // @ts-ignore: configはPromptVariablesFactoryのprivate/protectedだがテスト用にアクセス
-  console.log(
-    "DEBUG (test): app_prompt.base_dir =",
-    ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
-      ?.app_prompt?.base_dir,
+  logger.debug(
+    "DEBUG (test): app_prompt.base_dir",
+    { base_dir: ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
+      ?.app_prompt?.base_dir }
   );
   const promptFilePath = factoryForFile.promptFilePath;
   await ensureDir(dirname(promptFilePath));
@@ -457,10 +485,10 @@ Deno.test("PromptAdapterImpl should handle file operations when destFile is prov
   };
   // Use PromptVariablesFactory to resolve and create the prompt file for this test
   const factoryForFile = await PromptVariablesFactory.create(cliParams);
-  console.log(
-    "DEBUG (test): app_prompt.base_dir =",
-    ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
-      ?.app_prompt?.base_dir,
+  logger.debug(
+    "DEBUG (test): app_prompt.base_dir",
+    { base_dir: ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
+      ?.app_prompt?.base_dir }
   );
   const promptFilePath = factoryForFile.promptFilePath;
   await ensureDir(dirname(promptFilePath));
@@ -515,10 +543,10 @@ Deno.test("PromptAdapterImpl should handle path sanitization", async () => {
   };
   // Use PromptVariablesFactory to resolve and create the prompt file for this test
   const factoryForFile = await PromptVariablesFactory.create(cliParams);
-  console.log(
-    "DEBUG (test): app_prompt.base_dir =",
-    ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
-      ?.app_prompt?.base_dir,
+  logger.debug(
+    "DEBUG (test): app_prompt.base_dir",
+    { base_dir: ((factoryForFile as unknown) as { config?: { app_prompt?: { base_dir?: string } } }).config
+      ?.app_prompt?.base_dir }
   );
   const promptFilePath = factoryForFile.promptFilePath;
   await ensureDir(dirname(promptFilePath));
@@ -588,9 +616,51 @@ Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () =>
   }
 });
 
+Deno.test("KEY functionality demo: targeted debugging with hash keys", async () => {
+  // Pre-processing and Preparing Part - Demonstrate KEY functionality
+  const BreakdownLogger = (await import("jsr:@tettuan/breakdownlogger@^1.0.0")).BreakdownLogger;
+  const logger = createLoggerAdapter(new BreakdownLogger());
+  
+  // Demo: Multiple debug points with specific hash keys
+  logger.debug("Demo test started", {
+    key: "prompt_processor_test.ts#L620#demo-start",
+    purpose: "Demonstrate KEY filtering functionality",
+    timestamp: new Date().toISOString()
+  });
+  
+  logger.debug("Setup phase beginning", {
+    key: "prompt_processor_test.ts#L625#demo-setup",
+    phase: "initialization",
+    details: "Creating temporary directories and config files"
+  });
+  
+  logger.debug("Processing phase", {
+    key: "prompt_processor_test.ts#L630#demo-processing", 
+    phase: "execution",
+    data: "Large amount of processing data here for LENGTH testing",
+    moreData: "Additional data to test LENGTH truncation functionality",
+    evenMoreData: "This is extra verbose data to demonstrate how LENGTH controls output size"
+  });
+  
+  logger.debug("Validation phase", {
+    key: "prompt_processor_test.ts#L635#demo-validation",
+    phase: "validation", 
+    result: "success",
+    errors: []
+  });
+  
+  logger.debug("Demo test completed", {
+    key: "prompt_processor_test.ts#L640#demo-complete",
+    status: "completed",
+    totalPhases: 4
+  });
+  
+  // Original test continues...
+});
+
 Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (example script scenario)", async () => {
   // Pre-processing and Preparing Part
-  const BreakdownLogger = (await import("jsr:@tettuan/breakdownlogger@^0.1.10")).BreakdownLogger;
+  const BreakdownLogger = (await import("jsr:@tettuan/breakdownlogger@^1.0.0")).BreakdownLogger;
   const logger = createLoggerAdapter(new BreakdownLogger());
   const testDirRaw = await Deno.makeTempDir();
   const testDir = await Deno.realPath(testDirRaw);

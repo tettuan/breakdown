@@ -23,6 +23,9 @@ export class CommandOptionsValidator {
       "no-params": new NoParamsCommandValidator(),
       "single": new SingleCommandValidator(),
       "double": new DoubleCommandValidator(),
+      "zero": new NoParamsCommandValidator(),
+      "one": new SingleCommandValidator(),
+      "two": new DoubleCommandValidator(),
     };
   }
 

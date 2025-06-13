@@ -6,10 +6,9 @@
  *
  * @module
  */
-import { type OptionParams } from "jsr:@tettuan/breakdownparams@^0.1.11";
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
-import { ParamsParser } from "jsr:@tettuan/breakdownparams@^0.1.11";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.1";
 import { CliError } from "../lib/cli/errors.ts";
 import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
@@ -80,18 +79,18 @@ export async function runBreakdown(args: string[]): Promise<void> {
   const result = parser.parse(args);
 
   // Handle error from ParamsParser
-  if ("error" in result && result.error) {
-    writeStderr(result.error);
+  if (result.type === "error" && result.error) {
+    writeStderr(result.error.message || "Unknown error");
     Deno.exit(1);
   }
 
   // Handle help/version flags recognized by ParamsParser
-  if (result.type === "no-params") {
-    if (result.help) {
+  if (result.type === "zero") {
+    if (result.options.help) {
       writeStdout(HELP_TEXT);
       return;
     }
-    if (result.version) {
+    if (result.options.version) {
       const { displayVersion } = await import("../lib/commands/mod.ts");
       const versionResult = displayVersion();
       writeStdout(versionResult.output);
@@ -118,8 +117,8 @@ export async function runBreakdown(args: string[]): Promise<void> {
     const values = validationResult.values;
 
     // Single command (e.g., init)
-    if (result.type === "single") {
-      if (result.command === "init") {
+    if (result.type === "one") {
+      if (result.demonstrativeType === "init") {
         await initWorkspace(".");
         return;
       }
@@ -127,7 +126,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
     }
 
     // Double command (e.g., to, summary, defect)
-    if (result.type === "double") {
+    if (result.type === "two") {
       // --- STDIN/ファイル入力の取得 ---
       let inputText = "";
       let inputTextFile = "";
@@ -176,7 +175,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
         const convResult = await generateWithPrompt(
           fromFile, // fromFile
           values.destination || "output.md", // Default output file
-          result.layerType!,
+          result.layerType,
           false,
           {
             adaptation: values.adaptation,
@@ -214,7 +213,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
         const convResult = await generateWithPrompt(
           fromFile, // fromFile
           values.destination || "output.md", // Default output file
-          result.layerType!,
+          result.layerType,
           false,
           {
             adaptation: values.adaptation,

@@ -7,30 +7,39 @@
  * - Validate log level changes
  */
 
-import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
-
-const logger = new BreakdownLogger();
+// Removed unused imports - logger instance is accessed via testEnv.logger
+import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 
 Deno.test("logger - log level functionality", async (t) => {
-  await t.step("verify log level setting", () => {
+  await t.step("verify log level setting", async () => {
     // Set to ERROR level
-    logger.setLogLevel(LogLevel.ERROR);
+    Deno.env.set("LOG_LEVEL", "error");
+    const testEnv = await setupTestEnvironment({
+      workingDir: "./tmp/test/logger/level/error",
+    });
 
     // Try to log at different levels
-    logger.debug("Debug message"); // Should not be logged
-    logger.info("Info message"); // Should not be logged
-    logger.warn("Warn message"); // Should not be logged
-    logger.error("Error message"); // Should be logged
+    testEnv.logger.debug("Debug message"); // Should not be logged
+    testEnv.logger.info("Info message"); // Should not be logged
+    testEnv.logger.warn("Warn message"); // Should not be logged
+    testEnv.logger.error("Error message"); // Should be logged
+
+    await cleanupTestEnvironment(testEnv);
   });
 
-  await t.step("verify log level initialization", () => {
+  await t.step("verify log level initialization", async () => {
     // Create a new logger with DEBUG level
-    const debugLogger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+    Deno.env.set("LOG_LEVEL", "debug");
+    const testEnv = await setupTestEnvironment({
+      workingDir: "./tmp/test/logger/level/debug",
+    });
 
     // Try to log at different levels
-    debugLogger.debug("Debug message"); // Should be logged
-    debugLogger.info("Info message"); // Should be logged
-    debugLogger.warn("Warn message"); // Should be logged
-    debugLogger.error("Error message"); // Should be logged
+    testEnv.logger.debug("Debug message"); // Should be logged
+    testEnv.logger.info("Info message"); // Should be logged
+    testEnv.logger.warn("Warn message"); // Should be logged
+    testEnv.logger.error("Error message"); // Should be logged
+
+    await cleanupTestEnvironment(testEnv);
   });
 });

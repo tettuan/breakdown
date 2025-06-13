@@ -17,9 +17,9 @@ import { assertEquals, assertRejects } from "@std/assert";
 import { readStdin, StdinError } from "../../../lib/io/stdin.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 import { getTestEnvOptions } from "../../helpers/test_utils.ts";
-import { BreakdownLogger, LogLevel } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 
-const logger = new BreakdownLogger({ initialLevel: LogLevel.DEBUG });
+const logger = new BreakdownLogger();
 
 // Helper function to simulate stdin input
 async function withStdinInput(input: string, fn: () => Promise<void>): Promise<void> {

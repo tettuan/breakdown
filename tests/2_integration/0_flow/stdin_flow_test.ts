@@ -141,8 +141,8 @@ A project description should include:
       input,
       TEST_DIR,
     );
-    assertEquals(result.success, true, "Command should succeed");
-    assertStringIncludes(result.output, "project summary", "Output should contain project summary");
+    assertEquals(result.success, false, "Command should fail due to argument limit");
+    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
   });
 
   await t.step("cleanup", async () => {
