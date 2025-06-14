@@ -17,6 +17,16 @@ SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
+# Check prerequisites
+if ! command -v deno &> /dev/null; then
+    handle_error "Deno is not installed. Please install Deno first."
+fi
+
+# Check if breakdown binary exists
+if [ ! -f ".deno/bin/breakdown" ]; then
+    handle_error "Breakdown binary not found. Please run ./examples/02_compile.sh first."
+fi
+
 # Use predefined test configuration
 CONFIG_FILE="${PROJECT_ROOT}/configs/test.json"
 
