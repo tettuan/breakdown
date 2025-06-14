@@ -148,6 +148,8 @@ export interface GenerateWithPromptOptions {
   customValidation?: boolean;
   /** Error format option (--error-format). */
   errorFormat?: "simple" | "detailed" | "json";
+  /** Config file path (--config). */
+  config?: string;
 }
 
 /**

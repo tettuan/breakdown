@@ -59,6 +59,7 @@ export interface DoubleParamValidationResult {
     adaptation?: string;
     promptDir?: string;
     command?: string;
+    config?: string;
     // Add other relevant fields as needed
   };
 }
@@ -99,12 +100,16 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
       string,
       unknown
     >;
-    const { from, destination, input, adaptation, promptDir } = options as Record<string, unknown>;
+    const { from, destination, input, adaptation, promptDir, config } = options as Record<
+      string,
+      unknown
+    >;
     const fromStr = from as string | undefined;
     const destinationStr = destination as string | undefined;
     const inputStr = input as string | undefined;
     const adaptationStr = adaptation as string | undefined;
     const promptDirStr = promptDir as string | undefined;
+    const configStr = config as string | undefined;
 
     values.from = fromStr;
     values.stdinAvailable = !!stdinAvailable;
@@ -112,6 +117,7 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
     values.destination = destinationStr;
     values.adaptation = adaptationStr;
     values.promptDir = promptDirStr;
+    values.config = configStr;
 
     // --fromと--inputは同時指定不可
     step = DoubleParamValidationStep.CHECK_FROM;

@@ -35,6 +35,8 @@ export interface PromptCliParams {
     customValidation?: boolean;
     /** Error format option (--error-format). */
     errorFormat?: "simple" | "detailed" | "json";
+    /** Custom configuration file path. */
+    config?: string;
   };
 }
 
@@ -108,7 +110,7 @@ export class PromptVariablesFactory {
    * @param cliParams CLI parameters
    */
   static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
-    const breakdownConfig = new BreakdownConfig(Deno.cwd());
+    const breakdownConfig = new BreakdownConfig(Deno.cwd(), cliParams.options.config);
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
     return new PromptVariablesFactory(config, cliParams);

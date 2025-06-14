@@ -1,0 +1,139 @@
+# Production User Configuration for Breakdown
+# This file contains custom configuration settings for production environment
+
+# CustomConfig settings
+customConfig:
+  # Enable custom configuration features
+  enabled: true
+
+  # Custom settings for find-bugs functionality
+  findBugs:
+    # Enable bug finding features
+    enabled: true
+
+    # Bug detection sensitivity (low, medium, high)
+    sensitivity: medium
+
+    # Patterns to search for potential bugs
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+
+    # File extensions to include in bug search
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".tsx"
+      - ".jsx"
+      - ".md"
+
+    # Directories to exclude from bug search
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+      - "coverage"
+      - ".obsidian"
+
+    # Maximum number of results to return
+    maxResults: 100
+
+    # Enable detailed bug reports
+    detailedReports: true
+
+# BreakdownParams configuration
+breakdownParams:
+  # Version of BreakdownParams to use
+  version: "latest"
+
+  # Custom parameters
+  customParams:
+    # Maximum breakdown depth
+    maxDepth: 10
+
+    # Enable parallel processing
+    parallelProcessing: true
+
+    # Cache results
+    enableCache: true
+
+    # Cache TTL in seconds
+    cacheTTL: 3600
+
+# Logger configuration
+logger:
+  # Log level (debug, info, warn, error)
+  level: "info"
+
+  # Enable file logging
+  fileLogging: true
+
+  # Log file path
+  logFilePath: "./logs/breakdown.log"
+
+  # Maximum log file size in MB
+  maxFileSize: 10
+
+  # Number of backup files to keep
+  maxBackups: 5
+
+# Performance settings
+performance:
+  # Enable performance monitoring
+  monitoring: true
+
+  # Memory limit in MB
+  memoryLimit: 512
+
+  # Timeout for operations in seconds
+  timeout: 300
+
+  # Enable profiling
+  profiling: false
+
+# Output settings
+output:
+  # Default output format (json, yaml, markdown)
+  format: "markdown"
+
+  # Pretty print output
+  prettyPrint: true
+
+  # Include timestamps
+  includeTimestamps: true
+
+  # Output directory
+  directory: "./output"
+
+# Security settings
+security:
+  # Enable security checks
+  enabled: true
+
+  # Validate input
+  validateInput: true
+
+  # Sanitize output
+  sanitizeOutput: true
+
+  # Maximum input size in KB
+  maxInputSize: 1024
+
+# Feature flags
+features:
+  # Enable experimental features
+  experimental: false
+
+  # Enable beta features
+  beta: true
+
+  # Custom feature flags
+  custom:
+    asyncProcessing: true
+    enhancedReporting: true
+    smartCaching: true

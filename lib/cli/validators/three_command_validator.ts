@@ -91,6 +91,7 @@ export class ThreeCommandValidator implements CommandValidatorStrategy {
       input,
       adaptation,
       promptDir,
+      config,
     } = options as Record<string, unknown>;
 
     // Check FROM option
@@ -182,6 +183,9 @@ export class ThreeCommandValidator implements CommandValidatorStrategy {
     }
     if (promptDir && typeof promptDir === "string") {
       values.promptDir = promptDir;
+    }
+    if (config && typeof config === "string") {
+      values.config = config;
     }
 
     // Store layer type if provided

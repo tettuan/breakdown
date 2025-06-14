@@ -41,6 +41,10 @@ https://github.com/tettuan/breakdownparams/blob/main/docs/custom_params.ja.md
 1-2. 差分調査したうえで、新しいカスタム設定を使うためのプランを立てる
 1-3. 追加する機能、削除する機能、改変する機能を、大筋でまとめる。（階層別に、目的を整理しておくこと）
 
+変更2つ: 
+1. `to project`といった標準パラメータだけではなく、`find bugs` というカスタム設定を使った例を作成し、動作させる。（find bugsが two params）
+2. `-f test.md` が `-f=test.md` という "=" 形式にする
+
 `docs/breakdown/app_factory.ja.md` をベースに、どう変えるべきか？を考えること。
 
 2. examplesの追加

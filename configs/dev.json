@@ -1,0 +1,68 @@
+{
+  "working_dir": "./.breakdown-dev",
+  "app_prompt": {
+    "base_dir": "./dev/prompts/"
+  },
+  "app_schema": {
+    "base_dir": "./dev/schemas/"
+  },
+  "validation": {
+    "zero": {
+      "allowedOptions": ["help", "version", "init", "debug"],
+      "valueOptions": ["config", "c", "log-level"]
+    },
+    "one": {
+      "allowedOptions": ["help", "extended", "custom-validation", "debug", "verbose"],
+      "valueOptions": ["config", "c", "error-format", "destination", "from", "output", "log-level"]
+    },
+    "two": {
+      "allowedOptions": ["help", "extended", "custom-validation", "debug", "verbose"],
+      "valueOptions": [
+        "config",
+        "c",
+        "error-format",
+        "destination",
+        "from",
+        "output",
+        "prompt-dir",
+        "log-level"
+      ]
+    }
+  },
+  "params": {
+    "two": {
+      "demonstrativeType": {
+        "pattern": "^(to|find)$",
+        "errorMessage": "Demonstrative type must be 'to' or 'find'"
+      },
+      "layerType": {
+        "pattern": "^(project|system|bugs|layer)$",
+        "errorMessage": "Layer type must be 'project', 'system', 'bugs', or 'layer'"
+      }
+    }
+  },
+  "options": {
+    "values": {
+      "config": {
+        "shortForm": "c",
+        "description": "Configuration file path"
+      },
+      "error-format": {
+        "description": "Error output format",
+        "allowedValues": ["simple", "detailed", "json"],
+        "default": "detailed"
+      },
+      "extended": {
+        "description": "Enable extended processing mode"
+      },
+      "debug": {
+        "description": "Enable debug mode for development"
+      },
+      "log-level": {
+        "description": "Set logging level",
+        "allowedValues": ["error", "warn", "info", "debug"],
+        "default": "debug"
+      }
+    }
+  }
+}
