@@ -21,6 +21,9 @@
 *.sln
 *.sw?
 
+# Obsidian
+.obsidian/
+
 # macOS specific
 .DS_Store
 .AppleDouble
