@@ -11,7 +11,10 @@
 
 set -e
 
-cd "$(dirname "$0")"
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 echo "=== breakdown CLI 利用案内（Deno 1.44+対応） ==="
 echo ""
@@ -37,4 +40,6 @@ echo ""
 echo "【補足】"
 echo "- Deno 1.44以降では、ローカルインストール（--root）でパーミッション付与はできません。"
 echo "- deno runやdeno taskでの利用、またはバイナリ化を推奨します。"
-echo "- 詳細はREADME.mdのインストール手順を参照してください。" 
+echo "- 詳細はREADME.mdのインストール手順を参照してください。"
+
+popd > /dev/null 

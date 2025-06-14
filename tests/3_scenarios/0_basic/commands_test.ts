@@ -27,7 +27,7 @@
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { assertCommandOutput } from "$test/helpers/assertions.ts";
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
 const logger = new BreakdownLogger();
@@ -108,9 +108,9 @@ Deno.test("core functionality - JSR package integration", async () => {
     );
     logger.debug("Prompt integration result (raw)", { promptResult });
     logger.debug("Prompt output for assertion", { output: promptResult.output });
-    // This should fail due to too many arguments
-    assertEquals(promptResult.success, false);
-    assertStringIncludes(promptResult.error, "Too many arguments. Maximum 2 arguments are allowed");
+    // Parser now correctly handles options, should succeed
+    assertEquals(promptResult.success, true);
+    logger.debug("Prompt integration error", { error: promptResult.error });
   } finally {
     logger.debug("Cleaning up test environment");
     await cleanupTestEnvironment(env);

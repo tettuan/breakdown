@@ -10,7 +10,10 @@
 # - This will remove all example generated files and directories
 # - All example outputs are stored in ./tmp/examples directory
 
-pushd "$(dirname "$0")" > /dev/null
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 set -e
 
 echo "=== Cleaning up example results ==="
@@ -19,8 +22,8 @@ echo "=== Cleaning up example results ==="
 AGENT_DIR="./.agent"
 EXAMPLES_DIR="./tmp/examples"  # Directory for all example outputs
 ERROR_LOG="./error.log"
-DENOBIN="./.deno/bin/breakdown"
-DENOBIN_DIR="./.deno/bin"
+DENOBIN=".deno/bin/breakdown"
+DENOBIN_DIR=".deno/bin"
 OUTPUT_DIR="./output"
 TMP_DIR="./tmp"
 DEBUG_LOG="./debug.log"
@@ -63,4 +66,4 @@ echo "- $DENOBIN_DIR (binary directory, removed if empty)"
 popd > /dev/null
 exit 0
 
-# Note: When using the breakdown command, always specify the full path: ./.deno/bin/breakdown 
+# Note: When using the breakdown command, always specify the full path: .deno/bin/breakdown 

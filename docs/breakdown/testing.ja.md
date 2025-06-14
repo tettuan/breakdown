@@ -2,44 +2,122 @@
 
 > **テスト用のパス解決・パラメータ構築の実装例については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
 
+## テスト設計原則
+
+テストは以下の原則に従って設計されています：
+
+1. **段階的な複雑性**
+   - 基本機能から始まり、徐々に複雑なユースケースへと進む
+   - 各段階で必要な前提条件が満たされていることを確認
+   - 前段階のテストが成功していることを前提とする
+
+2. **階層的な構造**
+   - 単体テスト（実装ファイルと同じ階層に配置）
+   - アーキテクチャテスト（実装ファイルと同じ階層に配置）
+   - 構造テスト（実装ファイルと同じ階層に配置）
+   - 結合テスト（tests/配下に配置）
+   - E2Eテスト（tests/配下に配置）
+
+3. **テストファイルの配置**
+   - 単体/アーキテクチャ/構造テスト: 実装ファイルと同じ階層
+   - 結合/E2Eテスト: tests/ディレクトリ配下
+
+4. **実行順序の保証**
+   - 依存関係に基づいた実行順序の制御
+   - 前段階のテストが成功していることを確認
+
 ## テストディレクトリ構造
 
 ```
+lib/io/
+  └── stdin.ts
+      ├── 0_architecture_stdin_test.ts
+      ├── 1_structure_stdin_test.ts
+      └── 2_unit_stdin_test.ts
+lib/factory/
+  └── input_file_path_resolver.ts
+  └── tests/
+      ├── 0_architecture_input_file_path_resolver_test.ts
+      ├── 1_structure_input_file_path_resolver_test.ts
+      └── 2_unit_input_file_path_resolver_test.ts
 tests/
-├── 0_foundation/           # 0: 基盤機能のテスト
-│   ├── 0_env/             # 0: 環境・初期化
-│   ├── 1_config/          # 1: 設定管理
-│   ├── 2_commands/        # 2: コマンドパラメータ解析・実行
-│   ├── 3_logger/          # 3: ロギング
-│   └── 4_directory_structure/ # 4: ディレクトリ構造管理
-├── 1_core/                # 1: コア機能のテスト（正常系・エッジケース分離）
-│   ├── 0_path/           # 0: パス処理
-│   ├── 1_io/             # 1: I/O処理
-│   ├── 2_config/         # 2: 設定管理
-│   ├── 3_prompt/         # 3: プロンプト処理
-│   │   ├── prompt_processor_test.ts      # プロンプト生成の正常系
-│   │   ├── prompt_path_test.ts           # パス生成の正常系
-│   │   ├── prompt_setup_test.ts          # セットアップの正常系
-│   │   └── edge_cases/                   # エッジケース・異常系専用
-│   │        ├── prompt_base_dir_edge_test.ts   # baseDir関連の異常系
-│   │        └── prompt_path_edge_test.ts       # パス生成の異常系
-│   └── 4_cli/              # 4: CLIテスト
-├── 2_integration/         # 2: 統合テスト（E2E・examples再現）
-│   ├── 0_flow/           # 0: フロー統合
-│   └── 1_examples/         # 1: examples/配下のE2E再現
-│        └── examples_flow_test.ts
-├── 3_scenarios/           # 3: シナリオテスト（ユースケース・複合動作）
-│   ├── 0_basic/          # 0: 基本シナリオ
-│   │   └── commands_test.ts
-│   └── 1_edge_cases/       # 1: シナリオのエッジケース
-│        └── edge_scenarios_test.ts
-├── helpers/                # 他テストから参照されるヘルパー
-├── fixtures/               # テストデータ
-├── tmp/                    # 一時ファイル
-├── test_config.yml
-├── params_test.ts
-└── README.md
+  ├── 3_integration/
+  │   └── input_file_path_resolver_test.ts
+  └── 4_e2e/
+      └── input_file_path_resolver_test.ts
 ```
+
+## テストファイル命名規則
+
+テストファイルは、その目的に応じて以下の命名規則に従います：
+
+1. **アーキテクチャテスト**
+   - 命名規則: `0_architecture_<実装ファイル名>.ts`
+   - 例: `0_architecture_model.ts`
+   - 用途: アーキテクチャの制約や依存関係の検証
+   - 配置: 実装ファイルと同じ階層
+   - 検証項目:
+     - 依存関係の方向性
+     - 循環参照の有無
+     - レイヤー間の境界
+     - インターフェースの一貫性
+
+2. **構造テスト**
+   - 命名規則: `1_structure_<実装ファイル名>.ts`
+   - 例: `1_structure_model.ts`
+   - 用途: クラス構造や責務分離の検証
+   - 配置: 実装ファイルと同じ階層
+   - 検証項目:
+     - 単一責任の原則の遵守
+     - 責務の重複の有無
+     - 適切な抽象化レベル
+     - クラス間の関係性
+
+3. **単体テスト**
+   - 命名規則: `2_unit_<実装ファイル名>.ts`
+   - 例: `2_unit_model.ts`
+   - 用途: 機能の動作検証
+   - 配置: 実装ファイルと同じ階層
+
+4. **結合テスト**
+   - 命名規則: `3_integration_<機能名>.ts`
+   - 例: `3_integration_params_parser.ts`
+   - 用途: 複数のコンポーネント間の連携検証
+   - 配置: tests/3_integration/
+
+5. **E2Eテスト**
+   - 命名規則: `4_e2e_<機能名>.ts`
+   - 例: `4_e2e_params_parser.ts`
+   - 用途: エンドツーエンドの動作検証
+   - 配置: tests/4_e2e/
+
+## テストの依存関係
+
+テストは以下の順序で実行されます：
+
+1. モデルと型のテスト
+   - 基本的なデータ構造と型の検証
+   - バリデーションルールの検証
+
+2. 派生コンポーネントのテスト
+   - モデルや型を利用した機能の検証
+   - Factoryやユーティリティの検証
+
+3. ParamsParserのテスト
+   - 個別の機能検証
+   - 全体の統合検証
+
+### 依存関係の例
+
+```
+tests/
+  ├── 3_integration/
+  │   └── input_file_path_resolver_core_test.ts
+  └── 4_e2e/
+      └── input_file_path_resolver_basic_test.ts
+  └── 5_edgecase/
+```
+
 
 ## テスト実行手順
 
@@ -53,7 +131,7 @@ bash scripts/local_ci.sh
 
 - CIと同等のフローをローカルで再現します。
 - すべての *_test.ts を順に実行し、テスト通過後にフォーマット・Lintチェックを行います。
-- エラー時は `DEBUG=true bash scripts/local_ci.sh` で詳細なデバッグ出力が得られます。
+- エラー時は `LOG_LEVEL=debug deno task ci` で詳細なデバッグ出力が得られます。
 - テストは依存順（番号順）で実行されます。
 - コミット・プッシュ・マージ前に必ずこのスクリプトで全チェックを通過させてください。
 
@@ -102,17 +180,6 @@ deno test <test_file.ts> --allow-env --allow-write --allow-read
 - エラー回復
 
 ## CLI テスト要件
-
-### テストの配置
-
-```
-tests/
-└── 1_core/
-    └── 4_cli/           # CLIテスト専用ディレクトリ
-        ├── args_test.ts     # 引数解析テスト
-        ├── commands_test.ts # コマンド実行テスト
-        └── io_test.ts      # 入出力テスト
-```
 
 ### テスト項目
 
@@ -196,6 +263,103 @@ logger.debug("テスト実行開始", { testName: "example" });
 - `info`: 重要な処理の開始/終了
 - `warn`: 警告（回復可能なエラー）
 - `error`: エラー（処理中断）
+
+### テスト実行時のログ制御
+
+BreakdownLoggerは、テスト実行時に特に有用な環境変数による詳細なログ制御機能を提供します：
+
+#### LOG_KEY による特定ログの抽出
+
+特定のキーワードを含むログメッセージのみを出力することで、テスト時のノイズを削減できます：
+
+```bash
+# 特定の機能に関連するログのみ表示
+LOG_KEY="parser" deno test --allow-env --allow-write --allow-read
+
+# 複数のキーワードでフィルタリング（カンマ区切り）
+LOG_KEY="parser,validation" deno test --allow-env --allow-write --allow-read
+
+# エラー関連のログのみ表示
+LOG_KEY="error,fail" deno test --allow-env --allow-write --allow-read
+```
+
+#### LOG_LENGTH による出力制御
+
+ログメッセージの長さを制限することで、大量データのテスト時でも読みやすい出力を得られます：
+
+```bash
+# ログメッセージを100文字に制限
+LOG_LENGTH=S deno test --allow-env --allow-write --allow-read
+
+# 長いメッセージ（200文字）で詳細表示
+LOG_LENGTH=L deno test --allow-env --allow-write --allow-read
+
+# 制限なしで完全な詳細表示
+LOG_LENGTH=W deno test --allow-env --allow-write --allow-read
+
+# デフォルト（30文字）短縮表示
+deno test --allow-env --allow-write --allow-read
+```
+
+#### 組み合わせた高度なログ制御
+
+テスト状況に応じて、両方の機能を組み合わせて使用できます：
+
+```bash
+# パーサー関連の短いログのみ表示
+LOG_KEY="parser" LOG_LENGTH=S deno test --allow-env --allow-write --allow-read
+
+# エラー系の詳細ログを表示
+LOG_KEY="error" LOG_LENGTH=W LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
+```
+
+### テスト段階別のログ設定推奨例
+
+1. **開発初期・デバッグ時**
+   ```bash
+   LOG_LEVEL=debug LOG_LENGTH=W deno test
+   ```
+
+2. **特定機能のテスト時**
+   ```bash
+   LOG_KEY="target_function" LOG_LEVEL=debug deno test
+   ```
+
+3. **CI実行時・本番確認**
+   ```bash
+   LOG_LEVEL=info LOG_LENGTH=S deno test
+   ```
+
+4. **エラー調査時**
+   ```bash
+   LOG_KEY="error,fail,exception" LOG_LEVEL=debug LOG_LENGTH=W deno test
+   ```
+
+### テストコード内でのログ活用
+
+```typescript
+// テスト対象を明確にするためのログ
+const logger = new BreakdownLogger("test-parser");
+logger.debug("テスト開始: パラメータバリデーション", { 
+  testCase: "invalid_input",
+  input: inputData 
+});
+
+// テスト中の状態確認用ログ
+const processLogger = new BreakdownLogger("preprocessing");
+processLogger.info("中間処理完了", { 
+  step: "preprocessing",
+  result: processedData 
+});
+
+// エラー再現時の詳細ログ
+const errorLogger = new BreakdownLogger("validation-error");
+errorLogger.error("期待されるエラーが発生", { 
+  expected: true,
+  errorType: "ValidationError",
+  details: errorDetails 
+});
+```
 
 ## エラー処理とデバッグ
 

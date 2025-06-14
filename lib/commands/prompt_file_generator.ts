@@ -84,7 +84,7 @@ export class PromptFileGenerator {
       }
       // Skip input file validation for stdin
     } else {
-      // 3. 入力ファイル存在チェック（先に判定）
+      // 3. 入力ファイル存在チェック（引数バリデーション後に実行）
       try {
         await this.validateInputFile(inputFilePath);
       } catch (e) {

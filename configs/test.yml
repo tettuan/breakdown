@@ -1,0 +1,4 @@
+test_mode: true
+project_name: "test_project"
+output_format: "markdown"
+debug: true

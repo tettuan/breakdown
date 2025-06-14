@@ -170,6 +170,14 @@
   },
   "active": "8449f09153a4fe67",
   "lastOpenFiles": [
+    "prompts/find/bugs/f_bugs_detailed.md",
+    "schema/find/bugs/base.schema.md",
+    "prompts/find/bugs/f_bugs.ja.md",
+    "prompts/find/bugs/f_bugs.md",
+    "schema/find/bugs",
+    "schema/find",
+    "prompts/find/bugs",
+    "prompts/find",
     "prompts/summary/task/f_task.md",
     "prompts/summary/issue/f_issue.md",
     "prompts/samples/issues/sample_issue.md"

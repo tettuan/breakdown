@@ -1,0 +1,64 @@
+{
+  "working_dir": "/var/breakdown/production",
+  "app_prompt": {
+    "base_dir": "/opt/breakdown/production/prompts/"
+  },
+  "app_schema": {
+    "base_dir": "/opt/breakdown/production/schemas/"
+  },
+  "validation": {
+    "zero": {
+      "allowedOptions": ["help", "version"],
+      "valueOptions": ["config", "c"]
+    },
+    "one": {
+      "allowedOptions": ["help", "extended", "custom-validation"],
+      "valueOptions": ["config", "c", "error-format", "destination", "from", "output"]
+    },
+    "two": {
+      "allowedOptions": ["help", "extended", "custom-validation"],
+      "valueOptions": ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
+    }
+  },
+  "params": {
+    "two": {
+      "demonstrativeType": {
+        "pattern": "^(to|find)$",
+        "errorMessage": "Demonstrative type must be 'to' or 'find'"
+      },
+      "layerType": {
+        "pattern": "^(project|system|bugs|layer)$",
+        "errorMessage": "Layer type must be 'project', 'system', 'bugs', or 'layer'"
+      }
+    }
+  },
+  "options": {
+    "values": {
+      "config": {
+        "shortForm": "c",
+        "description": "Configuration file path"
+      },
+      "error-format": {
+        "description": "Error output format",
+        "allowedValues": ["simple", "detailed", "json"],
+        "default": "simple"
+      },
+      "extended": {
+        "description": "Enable extended processing mode"
+      },
+      "custom-validation": {
+        "description": "Enable custom validation rules"
+      }
+    }
+  },
+  "performance": {
+    "timeout": 300000,
+    "maxRetries": 3,
+    "cacheEnabled": true
+  },
+  "security": {
+    "sanitizeInput": true,
+    "validateOutputPaths": true,
+    "restrictedPaths": ["/etc", "/usr", "/var/log", "/root"]
+  }
+}

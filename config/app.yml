@@ -1,0 +1,50 @@
+# Application Base Configuration for Breakdown
+# This file contains the base configuration settings
+
+# Application settings
+app:
+  name: "Breakdown"
+  version: "1.0.0"
+  description: "Breakdown application for document processing"
+
+# Default settings that can be overridden by user configs
+defaults:
+  # Basic configuration
+  enabled: true
+
+  # Logger configuration
+  logger:
+    level: "info"
+    fileLogging: false
+    maxFileSize: 5
+    maxBackups: 3
+
+  # Performance settings
+  performance:
+    monitoring: false
+    memoryLimit: 256
+    timeout: 120
+    profiling: false
+
+  # Output settings
+  output:
+    format: "json"
+    prettyPrint: false
+    includeTimestamps: false
+    directory: "./output"
+
+  # Security settings
+  security:
+    enabled: true
+    validateInput: true
+    sanitizeOutput: true
+    maxInputSize: 512
+
+  # Feature flags
+  features:
+    experimental: false
+    beta: false
+    custom:
+      asyncProcessing: false
+      enhancedReporting: false
+      smartCaching: false

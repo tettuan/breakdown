@@ -59,6 +59,7 @@ export interface DoubleParamValidationResult {
     adaptation?: string;
     promptDir?: string;
     command?: string;
+    config?: string;
     // Add other relevant fields as needed
   };
 }
@@ -99,12 +100,16 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
       string,
       unknown
     >;
-    const { from, destination, input, adaptation, promptDir } = options as Record<string, unknown>;
-    const fromStr = from as string | undefined;
-    const destinationStr = destination as string | undefined;
-    const inputStr = input as string | undefined;
-    const adaptationStr = adaptation as string | undefined;
-    const promptDirStr = promptDir as string | undefined;
+    const { from, destination, input, adaptation, promptDir, config } = options as Record<
+      string,
+      unknown
+    >;
+    const fromStr = typeof from === "string" ? from : undefined;
+    const destinationStr = typeof destination === "string" ? destination : undefined;
+    const inputStr = typeof input === "string" ? input : undefined;
+    const adaptationStr = typeof adaptation === "string" ? adaptation : undefined;
+    const promptDirStr = typeof promptDir === "string" ? promptDir : undefined;
+    const configStr = typeof config === "string" ? config : undefined;
 
     values.from = fromStr;
     values.stdinAvailable = !!stdinAvailable;
@@ -112,6 +117,7 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
     values.destination = destinationStr;
     values.adaptation = adaptationStr;
     values.promptDir = promptDirStr;
+    values.config = configStr;
 
     // --fromと--inputは同時指定不可
     step = DoubleParamValidationStep.CHECK_FROM;
@@ -124,22 +130,11 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
         values,
       };
     }
-    // --from指定時はファイル存在チェック（destination必須チェックより先）
+    // ファイル存在チェックはPromptFileGeneratorに移譲（二重処理解消）
     if (fromStr && fromStr !== "-") {
       // 絶対パス化（CLI本体と同じ挙動に合わせる）
       const absFromPath = fromStr.startsWith("/") ? fromStr : resolve(Deno.cwd(), fromStr);
       values.from = absFromPath;
-      try {
-        Deno.statSync(absFromPath);
-      } catch (_e) {
-        return {
-          success: false,
-          step,
-          errorCode: DoubleParamValidationErrorCode.FILE_NOT_FOUND,
-          errorMessage: `No such file: ${absFromPath}`,
-          values,
-        };
-      }
     }
     // --from指定時は--destination必須
     step = DoubleParamValidationStep.CHECK_DESTINATION;

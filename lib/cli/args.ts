@@ -11,6 +11,7 @@
  */
 
 import { CliError, CliErrorCode } from "../cli/errors.ts";
+import { join } from "@std/path";
 
 /**
  * Error thrown when command line arguments are invalid.
@@ -50,6 +51,16 @@ export interface CommandOptions {
   adaptation?: string;
   /** Directory containing prompt files. */
   promptDir?: string;
+  /** Custom variables specified with --uv-* options. */
+  customVariables?: Record<string, string>;
+  /** Extended mode flag (--extended). */
+  extended?: boolean;
+  /** Custom validation flag (--custom-validation). */
+  customValidation?: boolean;
+  /** Error format option (--error-format). */
+  errorFormat?: "simple" | "detailed" | "json";
+  /** Path to configuration file. */
+  config?: string;
 }
 
 /**
@@ -62,6 +73,10 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--input", "-i"],
   ["--adaptation", "-a"],
   ["--prompt-dir", ""],
+  ["--extended", ""],
+  ["--custom-validation", ""],
+  ["--error-format", ""],
+  ["--config", "-c"],
 ]);
 
 /**
@@ -158,6 +173,17 @@ export function parseArgs(args: string[]): CommandOptions {
         }
         options.promptDir = args[++i];
         break;
+      case "--config":
+      case "-c":
+        if (options.config) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --config is used multiple times",
+          );
+        }
+        // Resolve config name to actual file path
+        options.config = resolveConfigPath(args[++i]);
+        break;
       default:
         throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
     }
@@ -192,12 +218,92 @@ function getCanonicalOptionName(option: string): string | undefined {
     "--adaptation": "--adaptation",
     "-a": "--adaptation",
     "--prompt-dir": "--prompt-dir",
+    "--config": "--config",
+    "-c": "--config",
   };
   return optionMap[option];
 }
 
 function isValidInputType(type: string): boolean {
   return ["project", "issue", "task"].includes(type);
+}
+
+/**
+ * Parses custom variables from command line arguments.
+ * Custom variables are specified with --uv-* options.
+ *
+ * @param args Raw command line arguments.
+ * @returns Record of custom variables (key-value pairs).
+ */
+export function parseCustomVariables(args: string[]): Record<string, string> {
+  const customVariables: Record<string, string> = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith("--uv-")) {
+      const variableName = arg.slice(5); // Remove "--uv-" prefix
+      const value = args[i + 1];
+      if (value && !value.startsWith("-")) {
+        customVariables[variableName] = value;
+        i++; // Skip the value on next iteration
+      } else {
+        throw new CliError(
+          CliErrorCode.INVALID_OPTION,
+          `Custom variable ${arg} requires a value`,
+        );
+      }
+    }
+  }
+
+  return customVariables;
+}
+
+/**
+ * Valid error format values.
+ */
+export const VALID_ERROR_FORMATS = new Set([
+  "simple",
+  "detailed",
+  "json",
+]);
+
+/**
+ * Predefined configuration name to file path mappings.
+ * These allow users to specify --config=test instead of full file paths.
+ */
+export const PREDEFINED_CONFIGS = new Map<string, string>([
+  ["test", ".agent/breakdown/config/test.yml"],
+  ["dev", ".agent/breakdown/config/dev.yml"],
+  ["prod", ".agent/breakdown/config/prod.yml"],
+  ["production", ".agent/breakdown/config/prod.yml"],
+]);
+
+/**
+ * Resolves a configuration name or path to an actual file path.
+ * If the value matches a predefined config name, returns the mapped path.
+ * Otherwise, treats the value as a file path and returns it as-is.
+ *
+ * @param configValue - The configuration name or file path from --config option
+ * @param workingDir - The working directory to resolve relative paths against (defaults to current working directory)
+ * @returns Resolved configuration file path
+ */
+export function resolveConfigPath(configValue: string, workingDir?: string): string {
+  // Check if it's a predefined configuration name
+  if (PREDEFINED_CONFIGS.has(configValue)) {
+    const predefinedPath = PREDEFINED_CONFIGS.get(configValue)!;
+    const baseDir = workingDir || Deno.cwd();
+    return join(baseDir, predefinedPath);
+  }
+
+  // If not a predefined name, treat as file path
+  // If it's already absolute, return as-is
+  // If relative, resolve against working directory
+  if (configValue.startsWith("/")) {
+    return configValue;
+  }
+
+  const baseDir = workingDir || Deno.cwd();
+  return join(baseDir, configValue);
 }
 
 /**
@@ -237,9 +343,18 @@ export function getOptionValue(args: string[], option: string): string | undefin
 export function validateCommandOptions(args: string[]): CommandOptions {
   const options: CommandOptions = {};
 
+  // Parse custom variables first
+  options.customVariables = parseCustomVariables(args);
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (!arg.startsWith("-")) continue;
+
+    // Skip custom variables as they're already parsed
+    if (arg.startsWith("--uv-")) {
+      i++; // Skip the value
+      continue;
+    }
 
     const value = args[i + 1];
     switch (arg) {
@@ -310,6 +425,56 @@ export function validateCommandOptions(args: string[]): CommandOptions {
           );
         }
         options.promptDir = value;
+        i++;
+        break;
+      case "--extended":
+        if (options.extended !== undefined) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --extended is used multiple times",
+          );
+        }
+        options.extended = true;
+        // No i++ because this is a flag without value
+        break;
+      case "--custom-validation":
+        if (options.customValidation !== undefined) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --custom-validation is used multiple times",
+          );
+        }
+        options.customValidation = true;
+        // No i++ because this is a flag without value
+        break;
+      case "--error-format":
+        if (options.errorFormat) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --error-format is used multiple times",
+          );
+        }
+        if (!VALID_ERROR_FORMATS.has(value)) {
+          throw new CliError(
+            CliErrorCode.INVALID_OPTION,
+            `Invalid error format: ${value}. Valid formats: ${
+              Array.from(VALID_ERROR_FORMATS).join(", ")
+            }`,
+          );
+        }
+        options.errorFormat = value as "simple" | "detailed" | "json";
+        i++;
+        break;
+      case "--config":
+      case "-c":
+        if (options.config) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --config is used multiple times",
+          );
+        }
+        // Resolve config name to actual file path
+        options.config = resolveConfigPath(value);
         i++;
         break;
       default:

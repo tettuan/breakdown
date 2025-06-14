@@ -106,6 +106,22 @@ export async function setupTestEnvironment(
     await Deno.mkdir(promptsDir, { recursive: true, mode: 0o777 });
     await Deno.mkdir(schemaDir, { recursive: true, mode: 0o777 });
 
+    // Create find bugs prompt directories and files
+    const findBugsDir = join(promptsDir, "find", "bugs");
+    await Deno.mkdir(findBugsDir, { recursive: true, mode: 0o777 });
+
+    // Create base find bugs prompt
+    const findBugsPrompt = `# Find Bugs Analysis
+
+Analyze the provided code to identify potential bugs and issues.
+
+## Code to Analyze
+{{CODE}}
+
+## Analysis Output
+Provide a detailed analysis of bugs found.`;
+    await Deno.writeTextFile(join(findBugsDir, "base.md"), findBugsPrompt);
+
     // Create default app.yml if not skipped
     if (!options.skipDefaultConfig) {
       const configPath = join(configDir, "app.yml");

@@ -1,0 +1,248 @@
+# Production User Configuration for Breakdown
+# This file contains custom configuration settings for production environment
+
+# CustomConfig settings
+customConfig:
+  # Enable custom configuration features
+  enabled: true
+
+  # BreakdownParams CustomConfig for find command
+  find:
+    # Allow bugs as a two parameter
+    twoParams:
+      - bugs
+
+  # Custom settings for find-bugs functionality
+  findBugs:
+    # Enable bug finding features
+    enabled: true
+
+    # Bug detection sensitivity (low, medium, high)
+    sensitivity: medium
+
+    # Patterns to search for potential bugs
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+
+    # File extensions to include in bug search
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".tsx"
+      - ".jsx"
+      - ".md"
+
+    # Directories to exclude from bug search
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+      - "coverage"
+      - ".obsidian"
+
+    # Maximum number of results to return
+    maxResults: 100
+
+    # Enable detailed bug reports
+    detailedReports: true
+
+# BreakdownParams configuration
+breakdownParams:
+  # Version of BreakdownParams to use
+  version: "latest"
+
+  # CustomConfig structure for BreakdownParams
+  customConfig:
+    # Parameter patterns for two-word commands
+    params:
+      two:
+        demonstrativeType:
+          pattern: "^(to|summary|defect|find)$"
+          errorMessage: "Invalid demonstrative type. Must be one of: to, summary, defect, find"
+        layerType:
+          pattern: "^(project|issue|task|bugs)$"
+          errorMessage: "Invalid layer type. Must be one of: project, issue, task, bugs"
+
+    # Validation rules for different command types
+    validation:
+      zero:
+        allowedOptions:
+          - "help"
+          - "version"
+          - "init"
+        valueOptions:
+          - "config"
+          - "c"
+        allowCustomVariables: true
+      one:
+        allowedOptions:
+          - "help"
+          - "extended"
+          - "custom-validation"
+        valueOptions:
+          - "config"
+          - "c"
+          - "error-format"
+          - "destination"
+          - "from"
+          - "output"
+        allowCustomVariables: true
+      two:
+        allowedOptions:
+          - "help"
+          - "extended"
+          - "custom-validation"
+        valueOptions:
+          - "config"
+          - "c"
+          - "error-format"
+          - "destination"
+          - "from"
+          - "output"
+          - "prompt-dir"
+        allowCustomVariables: true
+
+    # Option definitions
+    options:
+      values:
+        config:
+          shortForm: "c"
+          description: "Configuration file path"
+          valueRequired: true
+        from:
+          shortForm: "f"
+          description: "Input file path"
+          valueRequired: true
+        destination:
+          shortForm: "o"
+          description: "Output file path"
+          valueRequired: true
+        input:
+          shortForm: "i"
+          description: "Input layer type"
+          valueRequired: true
+        adaptation:
+          shortForm: "a"
+          description: "Adaptation type for template selection"
+          valueRequired: true
+        prompt-dir:
+          description: "Custom prompt directory"
+          valueRequired: true
+        error-format:
+          description: "Error output format"
+          valueRequired: true
+      flags:
+        help:
+          shortForm: "h"
+          description: "Show help message"
+        version:
+          shortForm: "v"
+          description: "Show version information"
+        extended:
+          description: "Enable extended processing"
+        custom-validation:
+          description: "Enable custom validation rules"
+
+      # Custom variables configuration
+      customVariables:
+        pattern: "^--uv-[a-zA-Z-]+$"
+        description: "User-defined variables with --uv- prefix"
+
+    # Error handling configuration
+    errorHandling:
+      unknownOption: "error"
+      duplicateOption: "warn"
+      emptyValue: "error"
+
+  # Custom parameters
+  customParams:
+    # Maximum breakdown depth
+    maxDepth: 10
+
+    # Enable parallel processing
+    parallelProcessing: true
+
+    # Cache results
+    enableCache: true
+
+    # Cache TTL in seconds
+    cacheTTL: 3600
+
+# Logger configuration
+logger:
+  # Log level (debug, info, warn, error)
+  level: "info"
+
+  # Enable file logging
+  fileLogging: true
+
+  # Log file path
+  logFilePath: "./logs/breakdown.log"
+
+  # Maximum log file size in MB
+  maxFileSize: 10
+
+  # Number of backup files to keep
+  maxBackups: 5
+
+# Performance settings
+performance:
+  # Enable performance monitoring
+  monitoring: true
+
+  # Memory limit in MB
+  memoryLimit: 512
+
+  # Timeout for operations in seconds
+  timeout: 300
+
+  # Enable profiling
+  profiling: false
+
+# Output settings
+output:
+  # Default output format (json, yaml, markdown)
+  format: "markdown"
+
+  # Pretty print output
+  prettyPrint: true
+
+  # Include timestamps
+  includeTimestamps: true
+
+  # Output directory
+  directory: "./output"
+
+# Security settings
+security:
+  # Enable security checks
+  enabled: true
+
+  # Validate input
+  validateInput: true
+
+  # Sanitize output
+  sanitizeOutput: true
+
+  # Maximum input size in KB
+  maxInputSize: 1024
+
+# Feature flags
+features:
+  # Enable experimental features
+  experimental: false
+
+  # Enable beta features
+  beta: true
+
+  # Custom feature flags
+  custom:
+    asyncProcessing: true
+    enhancedReporting: true
+    smartCaching: true

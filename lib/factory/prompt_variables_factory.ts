@@ -27,6 +27,16 @@ export interface PromptCliParams {
     fromLayerType?: string;
     /** The input text from stdin. */
     input_text?: string;
+    /** Custom variables specified with --uv-* options. */
+    customVariables?: Record<string, string>;
+    /** Extended mode flag (--extended). */
+    extended?: boolean;
+    /** Custom validation flag (--custom-validation). */
+    customValidation?: boolean;
+    /** Error format option (--error-format). */
+    errorFormat?: "simple" | "detailed" | "json";
+    /** Custom configuration file path. */
+    config?: string;
   };
 }
 
@@ -100,7 +110,7 @@ export class PromptVariablesFactory {
    * @param cliParams CLI parameters
    */
   static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
-    const breakdownConfig = new BreakdownConfig(Deno.cwd());
+    const breakdownConfig = new BreakdownConfig(Deno.cwd(), cliParams.options.config);
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
     return new PromptVariablesFactory(config, cliParams);
@@ -114,12 +124,14 @@ export class PromptVariablesFactory {
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
+    customVariables?: Record<string, string>;
   } {
     return {
       promptFilePath: this.promptFilePath,
       inputFilePath: this.inputFilePath,
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
+      customVariables: this.customVariables,
     };
   }
 
@@ -165,6 +177,34 @@ export class PromptVariablesFactory {
    */
   public get schemaFilePath(): string {
     return this.schemaPathResolver.getPath();
+  }
+
+  /**
+   * カスタム変数（--uv-*）
+   */
+  public get customVariables(): Record<string, string> {
+    return this.cliParams.options.customVariables || {};
+  }
+
+  /**
+   * 拡張モードフラグ（--extended）
+   */
+  public get extended(): boolean {
+    return this.cliParams.options.extended || false;
+  }
+
+  /**
+   * カスタムバリデーションフラグ（--custom-validation）
+   */
+  public get customValidation(): boolean {
+    return this.cliParams.options.customValidation || false;
+  }
+
+  /**
+   * エラーフォーマット（--error-format）
+   */
+  public get errorFormat(): "simple" | "detailed" | "json" {
+    return this.cliParams.options.errorFormat || "simple";
   }
 
   /**

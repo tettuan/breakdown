@@ -1,0 +1,305 @@
+# Staging Application Configuration for Breakdown
+# This file contains application-level settings for staging environment
+
+# Working directory configuration
+working_dir: "./.breakdown-staging"
+
+# Application prompt configuration
+app_prompt:
+  base_dir: "prompts"
+  template_dir: "templates"
+
+# Application schema configuration
+app_schema:
+  base_dir: "schema"
+  validation_dir: "validation"
+
+# Database configuration for staging
+database:
+  # Database type (sqlite, postgresql, mysql)
+  type: "sqlite"
+
+  # Database file path for SQLite
+  path: "./data/breakdown_staging.db"
+
+  # Connection pool settings
+  pool:
+    minSize: 2
+    maxSize: 10
+    timeout: 30000
+
+  # Auto-migration settings
+  migration:
+    enabled: true
+    autoRun: true
+
+# Application server configuration
+server:
+  # Server port
+  port: 8081
+
+  # Host binding
+  host: "0.0.0.0"
+
+  # Enable HTTPS (disabled for staging)
+  https:
+    enabled: false
+
+  # Request timeout in milliseconds
+  timeout: 60000
+
+# Authentication and authorization
+auth:
+  # Enable authentication (relaxed for staging)
+  enabled: true
+
+  # JWT settings
+  jwt:
+    secret: "${JWT_SECRET_STAGING}"
+    expiresIn: "12h"
+    algorithm: "HS256"
+
+  # Session settings
+  session:
+    cookieName: "breakdown_staging_session"
+    maxAge: 43200000
+    secure: false
+    httpOnly: true
+
+# Rate limiting (relaxed for staging)
+rateLimit:
+  # Enable rate limiting
+  enabled: true
+
+  # Requests per minute per IP
+  requestsPerMinute: 200
+
+  # Burst capacity
+  burstCapacity: 500
+
+# Monitoring and health checks
+monitoring:
+  # Enable health checks
+  healthCheck:
+    enabled: true
+    endpoint: "/health"
+    interval: 60000
+
+  # Metrics collection
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    format: "prometheus"
+
+  # Application performance monitoring
+  apm:
+    enabled: true
+    serviceName: "breakdown-staging"
+    environment: "staging"
+
+# Error handling (more verbose for staging)
+errorHandling:
+  # Global error handler
+  global: true
+
+  # Stack trace in errors (enabled for debugging)
+  includeStackTrace: true
+
+  # Error reporting
+  reporting:
+    enabled: true
+    service: "console"
+
+# Caching configuration (simplified for staging)
+cache:
+  # Cache provider (memory for staging)
+  provider: "memory"
+
+  # Memory cache configuration
+  memory:
+    maxSize: "256MB"
+    checkInterval: 600
+
+  # Default TTL in seconds (shorter for staging)
+  defaultTTL: 1800
+
+  # Cache key prefix
+  keyPrefix: "breakdown:staging:"
+
+# Static file serving
+static:
+  # Enable static file serving
+  enabled: true
+
+  # Static files directory
+  directory: "./public"
+
+  # Cache control headers (shorter for staging)
+  cacheControl: "public, max-age=3600"
+
+# Security configuration (relaxed for staging)
+security:
+  # CORS settings
+  cors:
+    enabled: true
+    origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      - "https://staging.breakdown.example.com"
+    credentials: true
+
+  # Helmet.js security headers (relaxed)
+  helmet:
+    enabled: true
+    contentSecurityPolicy: false
+    hsts: false
+    noSniff: true
+
+  # API key validation (disabled for easier testing)
+  apiKey:
+    enabled: false
+
+# Logging configuration (more verbose for staging)
+logging:
+  # Log level (debug for staging)
+  level: "debug"
+
+  # Log format (text for easier reading)
+  format: "text"
+
+  # Log destinations
+  destinations:
+    - type: "file"
+      path: "./logs/breakdown-staging.log"
+      maxSize: "50MB"
+      maxFiles: 5
+    - type: "console"
+      colorize: true
+
+  # Request logging (detailed for staging)
+  requestLogging:
+    enabled: true
+    includeBody: true
+    excludePaths:
+      - "/health"
+
+# Environment-specific settings
+environment:
+  name: "staging"
+
+  # Debug mode (enabled for staging)
+  debug: true
+
+  # Development features (enabled)
+  development: true
+
+  # Performance optimizations (disabled for easier debugging)
+  optimizations:
+    enabled: false
+    minification: false
+    compression: false
+
+# Application features (enhanced for testing)
+features:
+  # File upload
+  fileUpload:
+    enabled: true
+    maxSize: "50MB"
+    allowedTypes:
+      - "text/markdown"
+      - "text/plain"
+      - "application/json"
+      - "text/csv"
+      - "application/yaml"
+
+  # Batch processing (limited for staging)
+  batchProcessing:
+    enabled: true
+    maxConcurrency: 5
+    queueSize: 500
+
+  # Webhook support
+  webhooks:
+    enabled: true
+    timeout: 15000
+    retries: 2
+
+# Backup and recovery (minimal for staging)
+backup:
+  # Automated backups (disabled for staging)
+  enabled: false
+
+  # Manual backup capability
+  manual: true
+
+  # Backup destination
+  destination: "./backups/staging"
+
+# Third-party integrations (mock/test versions)
+integrations:
+  # External API configurations
+  apis:
+    enabled: true
+    timeout: 15000
+    retries: 2
+    useMocks: true
+
+  # Message queue (disabled for staging)
+  messageQueue:
+    enabled: false
+
+# Resource limits (relaxed for staging)
+resources:
+  # Memory limits
+  memory:
+    heap: "512MB"
+    buffer: "128MB"
+
+  # CPU limits
+  cpu:
+    cores: 2
+    utilization: 90
+
+  # File system limits
+  filesystem:
+    maxFiles: 5000
+    maxSize: "5GB"
+
+# Testing and development features
+testing:
+  # Enable test endpoints
+  testEndpoints: true
+
+  # Mock data generation
+  mockData: true
+
+  # Performance testing
+  loadTesting:
+    enabled: true
+    maxConnections: 100
+
+  # Database seeding
+  seeding:
+    enabled: true
+    seedFile: "./seeds/staging-data.sql"
+
+# Development tools
+devTools:
+  # Hot reload
+  hotReload: true
+
+  # API documentation
+  apiDocs:
+    enabled: true
+    endpoint: "/docs"
+    ui: "swagger"
+
+  # Database admin interface
+  dbAdmin:
+    enabled: true
+    endpoint: "/db-admin"
+
+  # Debug panel
+  debugPanel:
+    enabled: true
+    endpoint: "/debug"
