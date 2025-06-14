@@ -84,5 +84,5 @@ try {
   const parsedOptions = validateArgs(filteredArgs);
   console.log("Parsed options:", parsedOptions);
 } catch (error) {
-  console.error("validateArgs error:", error.message);
+  console.error("validateArgs error:", error instanceof Error ? error.message : String(error));
 }

@@ -84,3 +84,4 @@ tmp/*
 /.worktree-*/
 
 # Deno compiled binaries
+debug*.ts

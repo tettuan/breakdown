@@ -276,9 +276,9 @@ fi
 # Comprehensive type checking
 echo "Running comprehensive type checks..."
 
-# Collect all TypeScript files for comprehensive check
+# Collect all TypeScript files for comprehensive check (respecting .gitignore)
 echo "Collecting all TypeScript files..."
-all_ts_files=$(find . -name "*.ts" -not -path "./node_modules/*" -not -path "./tmp/*" -not -path "./tests/*" -not -name "*.test.ts" -not -name "*_test.ts" | sort)
+all_ts_files=$(git ls-files "*.ts" | grep -v -E "(tests/|\.test\.ts$|_test\.ts$)" | sort)
 
 if [ -z "$all_ts_files" ]; then
     echo "No TypeScript files found for type checking"
@@ -456,7 +456,7 @@ fi
 
 echo "All tests passed. Running final comprehensive type check..."
 # Final comprehensive type check (should pass since we checked earlier)
-all_ts_files=$(find . -name "*.ts" -not -path "./node_modules/*" -not -path "./tmp/*" -not -path "./tests/*" -not -name "*.test.ts" -not -name "*_test.ts" | sort)
+all_ts_files=$(git ls-files "*.ts" | grep -v -E "(tests/|\.test\.ts$|_test\.ts$)" | sort)
 if [ -n "$all_ts_files" ]; then
     if ! deno check $all_ts_files; then
         handle_type_error "final comprehensive check" "$(deno check $all_ts_files 2>&1)"
