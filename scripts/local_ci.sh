@@ -276,27 +276,53 @@ fi
 # Comprehensive type checking
 echo "Running comprehensive type checks..."
 
-# Check main entry points
-echo "Checking entry points..."
-for entry_point in mod.ts cli.ts main.ts; do
-    if [ -f "$entry_point" ]; then
-        if ! deno check "$entry_point"; then
-            handle_error "$entry_point" "Type check failed" "false"
-        fi
-    fi
-done
+# Collect all TypeScript files for comprehensive check
+echo "Collecting all TypeScript files..."
+all_ts_files=$(find . -name "*.ts" -not -path "./node_modules/*" -not -path "./tmp/*" -not -path "./tests/*" -not -name "*.test.ts" -not -name "*_test.ts" | sort)
 
-# Check all TypeScript files in lib directory
-echo "Checking library files..."
-ts_files=$(find lib -name "*.ts" -not -name "*.test.ts")
-if ! deno check $ts_files; then
-    echo "Batch type check failed. Running individual checks for debug..."
-    for file in $ts_files; do
-        if ! deno check "$file"; then
-            echo "[DEBUG] Type check failed for $file"
+if [ -z "$all_ts_files" ]; then
+    echo "No TypeScript files found for type checking"
+else
+    echo "Running comprehensive type check on all TypeScript files..."
+    if ! deno check $all_ts_files 2>/dev/null; then
+        echo "
+===============================================================================
+>>> COMPREHENSIVE TYPE CHECK FAILED <<<
+===============================================================================
+Running individual file checks to identify specific issues..."
+        
+        # Individual file checks to identify problematic files
+        failed_files=()
+        for file in $all_ts_files; do
+            if ! deno check "$file" 2>/dev/null; then
+                failed_files+=("$file")
+                echo "[ERROR] Type check failed for: $file"
+                # Show detailed error for this file
+                echo "--- Detailed error for $file ---"
+                deno check "$file" 2>&1 | head -20
+                echo "--- End of error details ---"
+                echo ""
+            fi
+        done
+        
+        if [ ${#failed_files[@]} -gt 0 ]; then
+            echo "
+===============================================================================
+>>> SUMMARY: TYPE CHECK FAILURES <<<
+===============================================================================
+The following files have type check errors:"
+            for file in "${failed_files[@]}"; do
+                echo "  - $file"
+            done
+            echo "
+Total failed files: ${#failed_files[@]}
+Please fix these type errors before proceeding.
+==============================================================================="
+            handle_error "comprehensive type check" "Type check failed on ${#failed_files[@]} files (see above for details)" "false"
         fi
-    done
-    handle_error "lib/*.ts" "Type check failed (see above for details)" "false"
+    else
+        echo "✓ All TypeScript files passed comprehensive type check"
+    fi
 fi
 
 # Try JSR type check with --allow-dirty if available
@@ -428,9 +454,16 @@ if ! run_all_tests "${DEBUG:-false}"; then
     exit 1
 fi
 
-echo "All tests passed. Running type check..."
-if ! deno check mod.ts; then
-    handle_type_error "mod.ts" "$(deno check mod.ts 2>&1)"
+echo "All tests passed. Running final comprehensive type check..."
+# Final comprehensive type check (should pass since we checked earlier)
+all_ts_files=$(find . -name "*.ts" -not -path "./node_modules/*" -not -path "./tmp/*" -not -path "./tests/*" -not -name "*.test.ts" -not -name "*_test.ts" | sort)
+if [ -n "$all_ts_files" ]; then
+    if ! deno check $all_ts_files; then
+        handle_type_error "final comprehensive check" "$(deno check $all_ts_files 2>&1)"
+    fi
+    echo "✓ Final comprehensive type check passed"
+else
+    echo "No TypeScript files found for final type check"
 fi
 
 echo "Running JSR type check..."
