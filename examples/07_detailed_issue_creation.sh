@@ -9,7 +9,10 @@
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存のファイルがある場合は上書きされます
 
-pushd "$(dirname "$0")" > /dev/null
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # エラーハンドリング関数
 handle_error() {
@@ -67,11 +70,11 @@ cat > "${WORK_DIR}/tmp/examples/project/project_summary.json" << 'EOL'
 EOL
 
 # プロジェクトから課題への変換
-FAILED_COMMAND="./.deno/bin/breakdown to issue -f ${WORK_DIR}/tmp/examples/project/project_summary.json -o ${WORK_DIR}/tmp/examples/issue/issue.json"
+FAILED_COMMAND=".deno/bin/breakdown to issue -f ${WORK_DIR}/tmp/examples/project/project_summary.json -o ${WORK_DIR}/tmp/examples/issue/issue.json"
 $FAILED_COMMAND || handle_error "課題への変換に失敗しました"
 
 # 課題からタスクへの変換
-FAILED_COMMAND="./.deno/bin/breakdown to task -f ${WORK_DIR}/tmp/examples/issue/issue.json -o ${WORK_DIR}/tmp/examples/tasks/tasks.json"
+FAILED_COMMAND=".deno/bin/breakdown to task -f ${WORK_DIR}/tmp/examples/issue/issue.json -o ${WORK_DIR}/tmp/examples/tasks/tasks.json"
 $FAILED_COMMAND || handle_error "タスクへの変換に失敗しました"
 
 echo "✓ 全ての処理が完了しました"

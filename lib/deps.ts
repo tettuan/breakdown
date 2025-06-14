@@ -41,12 +41,7 @@ export { parse as parseFlags } from "@std/flags";
 /**
  * Types and configuration utilities for Breakdown. Re-exported from @tettuan/breakdownconfig.
  */
-export {
-  type AppConfig,
-  BreakdownConfig,
-  type MergedConfig,
-  type UserConfig,
-} from "jsr:@tettuan/breakdownconfig@^1.0.11";
+export { BreakdownConfig, type MergedConfig } from "jsr:@tettuan/breakdownconfig@^1.1.0";
 
 /**
  * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.

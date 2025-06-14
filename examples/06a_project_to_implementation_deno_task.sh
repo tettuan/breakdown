@@ -9,7 +9,10 @@
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存のファイルがある場合は上書きされます
 
-pushd "$(dirname "$0")" > /dev/null
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # エラーハンドリング関数
 handle_error() {

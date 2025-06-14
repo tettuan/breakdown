@@ -88,7 +88,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
     logger.debug("[DEBUG] Assertion completed for multiple options");
   });
@@ -111,7 +111,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     logger.debug("[DEBUG] result.error before assertion", { error: result.error });
-    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
+    assertEquals(result.error, "No input provided via stdin or -f/--from option");
   });
 
   // Advanced Error Cases
@@ -133,7 +133,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     // Parser now throws argument count error before option validation
-    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
+    assertEquals(result.error, "No input provided via stdin or -f/--from option");
   });
 
   await t.step("invalid input type", async () => {
@@ -152,7 +152,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     // Parser now throws argument count error before input type validation
-    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
+    assertEquals(result.error, "No input provided via stdin or -f/--from option");
   });
 
   await t.step("duplicate options", async () => {
@@ -173,7 +173,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     // Parser now throws argument count error before duplicate option validation
-    assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
+    assertEquals(result.error, "No input provided via stdin or -f/--from option");
   });
 
   await t.step("short form options", async () => {
@@ -195,7 +195,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result before assertion", { result });
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
     logger.debug("[DEBUG] Assertion completed for short form options");
   });
@@ -216,7 +216,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     logger.debug("[DEBUG] Command result for relative path", { result });
     const _expectedPath = join(Deno.cwd(), "project", "test.md");
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
   });
 
@@ -237,7 +237,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
     ]);
     logger.debug("[DEBUG] Command result for absolute path", { result });
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
   });
 
@@ -263,7 +263,7 @@ Deno.test("CLI High-Level Arguments", async (t) => {
       ...args,
     ]);
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
     logger.debug("[DEBUG] Assertion completed for mixed path input/output");
   });
@@ -303,5 +303,5 @@ Deno.test("CLI error handling - source options with input", async () => {
     "result.md",
   ]);
   logger.debug("[DEBUG] result.error before assertion", { error: result.error });
-  assertEquals(result.error, "Too many arguments. Maximum 2 arguments are allowed");
+  assertEquals(result.error, "No input provided via stdin or -f/--from option");
 });

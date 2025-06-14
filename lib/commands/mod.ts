@@ -140,6 +140,14 @@ export interface GenerateWithPromptOptions {
   input_text?: string;
   /** Input text from file. */
   input_text_file?: string;
+  /** Custom variables specified with --uv-* options. */
+  customVariables?: Record<string, string>;
+  /** Extended mode flag (--extended). */
+  extended?: boolean;
+  /** Custom validation flag (--custom-validation). */
+  customValidation?: boolean;
+  /** Error format option (--error-format). */
+  errorFormat?: "simple" | "detailed" | "json";
 }
 
 /**

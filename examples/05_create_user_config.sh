@@ -3,8 +3,12 @@
 # This script demonstrates how to create a user configuration file for breakdown
 # It creates user.yml in the .agent/breakdown/config directory
 
-pushd "$(dirname "$0")" > /dev/null
 set -e
+
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # Create .deno/bin directory if it doesn't exist
 mkdir -p .deno/bin
@@ -61,4 +65,4 @@ cat "${USER_CONFIG_PATH}"
 popd > /dev/null
 exit 0
 
-# ※ breakdownコマンドは直接使用していませんが、使用する場合は必ず ./.deno/bin/breakdown をパス指定してください 
+# ※ breakdownコマンドは直接使用していませんが、使用する場合は必ず .deno/bin/breakdown をパス指定してください 

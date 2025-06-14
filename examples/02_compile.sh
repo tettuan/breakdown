@@ -18,21 +18,23 @@ cleanup() {
 # スクリプト終了時のクリーンアップを設定
 trap cleanup EXIT
 
-# 作業ディレクトリの移動
-pushd "$(dirname "$0")" > /dev/null || handle_error "ディレクトリの移動に失敗しました"
+# 作業ディレクトリをプロジェクトルートに移動
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null || handle_error "プロジェクトルートディレクトリの移動に失敗しました"
 
 # 出力ディレクトリの作成
 mkdir -p .deno/bin || handle_error "出力ディレクトリの作成に失敗しました"
 
 # コンパイル前のバージョン確認
 echo "コンパイル前のバージョン確認..."
-if ! deno run -A ../cli/breakdown.ts --version; then
+if ! deno run -A cli/breakdown.ts --version; then
     handle_error "ソースコードのバージョン確認に失敗しました"
 fi
 
 # コンパイル実行
 echo "コンパイルを開始します..."
-if ! deno compile -A -o .deno/bin/breakdown ../cli/breakdown.ts; then
+if ! deno compile -A -o .deno/bin/breakdown cli/breakdown.ts; then
     handle_error "コンパイルに失敗しました"
 fi
 

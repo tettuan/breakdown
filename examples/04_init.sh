@@ -10,7 +10,10 @@
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存の設定がある場合は上書きされます
 
-pushd "$(dirname "$0")" > /dev/null
+# 作業ディレクトリをプロジェクトルートに移動
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # エラーハンドリング関数
 handle_error() {
@@ -26,7 +29,7 @@ trap 'handle_error "${BASH_COMMAND}"' ERR
 
 echo "=== breakdown作業環境の初期化 ==="
 
-# カレントディレクトリを作業ディレクトリとして使用
+# プロジェクトルートを作業ディレクトリとして使用
 WORK_DIR="$(pwd)"
 BREAKDOWN_DIR=".agent/breakdown"
 DENO_BIN_DIR=".deno/bin"

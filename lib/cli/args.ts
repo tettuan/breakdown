@@ -50,6 +50,14 @@ export interface CommandOptions {
   adaptation?: string;
   /** Directory containing prompt files. */
   promptDir?: string;
+  /** Custom variables specified with --uv-* options. */
+  customVariables?: Record<string, string>;
+  /** Extended mode flag (--extended). */
+  extended?: boolean;
+  /** Custom validation flag (--custom-validation). */
+  customValidation?: boolean;
+  /** Error format option (--error-format). */
+  errorFormat?: "simple" | "detailed" | "json";
 }
 
 /**
@@ -62,6 +70,9 @@ export const VALID_OPTIONS = new Map<string, string>([
   ["--input", "-i"],
   ["--adaptation", "-a"],
   ["--prompt-dir", ""],
+  ["--extended", ""],
+  ["--custom-validation", ""],
+  ["--error-format", ""],
 ]);
 
 /**
@@ -201,6 +212,45 @@ function isValidInputType(type: string): boolean {
 }
 
 /**
+ * Parses custom variables from command line arguments.
+ * Custom variables are specified with --uv-* options.
+ *
+ * @param args Raw command line arguments.
+ * @returns Record of custom variables (key-value pairs).
+ */
+export function parseCustomVariables(args: string[]): Record<string, string> {
+  const customVariables: Record<string, string> = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith("--uv-")) {
+      const variableName = arg.slice(5); // Remove "--uv-" prefix
+      const value = args[i + 1];
+      if (value && !value.startsWith("-")) {
+        customVariables[variableName] = value;
+        i++; // Skip the value on next iteration
+      } else {
+        throw new CliError(
+          CliErrorCode.INVALID_OPTION,
+          `Custom variable ${arg} requires a value`,
+        );
+      }
+    }
+  }
+
+  return customVariables;
+}
+
+/**
+ * Valid error format values.
+ */
+export const VALID_ERROR_FORMATS = new Set([
+  "simple",
+  "detailed",
+  "json",
+]);
+
+/**
  * Gets the value for a command line option.
  *
  * @param args Raw command line arguments.
@@ -237,9 +287,18 @@ export function getOptionValue(args: string[], option: string): string | undefin
 export function validateCommandOptions(args: string[]): CommandOptions {
   const options: CommandOptions = {};
 
+  // Parse custom variables first
+  options.customVariables = parseCustomVariables(args);
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (!arg.startsWith("-")) continue;
+
+    // Skip custom variables as they're already parsed
+    if (arg.startsWith("--uv-")) {
+      i++; // Skip the value
+      continue;
+    }
 
     const value = args[i + 1];
     switch (arg) {
@@ -310,6 +369,44 @@ export function validateCommandOptions(args: string[]): CommandOptions {
           );
         }
         options.promptDir = value;
+        i++;
+        break;
+      case "--extended":
+        if (options.extended !== undefined) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --extended is used multiple times",
+          );
+        }
+        options.extended = true;
+        // No i++ because this is a flag without value
+        break;
+      case "--custom-validation":
+        if (options.customValidation !== undefined) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --custom-validation is used multiple times",
+          );
+        }
+        options.customValidation = true;
+        // No i++ because this is a flag without value
+        break;
+      case "--error-format":
+        if (options.errorFormat) {
+          throw new CliError(
+            CliErrorCode.DUPLICATE_OPTION,
+            "Duplicate option: --error-format is used multiple times",
+          );
+        }
+        if (!VALID_ERROR_FORMATS.has(value)) {
+          throw new CliError(
+            CliErrorCode.INVALID_OPTION,
+            `Invalid error format: ${value}. Valid formats: ${
+              Array.from(VALID_ERROR_FORMATS).join(", ")
+            }`,
+          );
+        }
+        options.errorFormat = value as "simple" | "detailed" | "json";
         i++;
         break;
       default:

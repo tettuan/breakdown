@@ -110,8 +110,9 @@ Deno.test("CLI Command Execution", async (t) => {
       absTestDir,
     );
     logger.debug("[DEBUG] Template not found test result", result);
+    // Parser now correctly handles options, input validation happens first
     assertCommandOutput(result, {
-      error: "Too many arguments. Maximum 2 arguments are allowed",
+      error: "No input provided via stdin or -f/--from option",
     });
   });
 

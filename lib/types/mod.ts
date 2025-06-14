@@ -24,13 +24,14 @@
  * @property {"summary"} - Summarize the current layer
  * @property {"defect"} - Analyze defects in the current layer
  * @property {"init"} - Initialize the workspace
+ * @property {"find"} - Find and analyze specific patterns (e.g., bugs)
  *
  * @example
  * ```ts
  * const command: DemonstrativeType = "to";
  * ```
  */
-export type DemonstrativeType = "to" | "summary" | "defect" | "init";
+export type DemonstrativeType = "to" | "summary" | "defect" | "init" | "find";
 
 /**
  * Type representing the available layer types for Breakdown.
@@ -39,6 +40,7 @@ export type DemonstrativeType = "to" | "summary" | "defect" | "init";
  * @property {"project"} - Project layer, top-level organizational unit
  * @property {"issue"} - Issue layer, represents specific problems or features
  * @property {"task"} - Task layer, represents actionable items
+ * @property {"bugs"} - Bugs layer, for tracking and analyzing bugs or defects
  * @property {"temp"} - Temporary layer, for intermediate or temporary data
  *
  * @example
@@ -46,4 +48,4 @@ export type DemonstrativeType = "to" | "summary" | "defect" | "init";
  * const layer: LayerType = "project";
  * ```
  */
-export type LayerType = "project" | "issue" | "task" | "temp";
+export type LayerType = "project" | "issue" | "task" | "bugs" | "temp";

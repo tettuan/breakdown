@@ -9,7 +9,10 @@
 # - プロジェクトのルートディレクトリから実行することを想定しています
 # - 既存のファイルがある場合は上書きされます
 
-pushd "$(dirname "$0")" > /dev/null
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # エラーハンドリング関数
 handle_error() {
@@ -67,15 +70,15 @@ A command-line tool for breaking down projects into manageable tasks using AI as
 EOL
 
 # プロジェクトサマリーからプロジェクトへの変換
-FAILED_COMMAND="./.deno/bin/breakdown to project -f ${WORK_DIR}/tmp/examples/project/project_summary.md -o ${WORK_DIR}/tmp/examples/project/project.md"
+FAILED_COMMAND=".deno/bin/breakdown to project -f ${WORK_DIR}/tmp/examples/project/project_summary.md -o ${WORK_DIR}/tmp/examples/project/project.md"
 $FAILED_COMMAND || handle_error "プロジェクトへの変換に失敗しました"
 
 # プロジェクトから課題への変換
-FAILED_COMMAND="./.deno/bin/breakdown to issue -f ${WORK_DIR}/tmp/examples/project/project.md -o ${WORK_DIR}/tmp/examples/issue/issue.md"
+FAILED_COMMAND=".deno/bin/breakdown to issue -f ${WORK_DIR}/tmp/examples/project/project.md -o ${WORK_DIR}/tmp/examples/issue/issue.md"
 $FAILED_COMMAND || handle_error "課題への変換に失敗しました"
 
 # 課題からタスクへの変換
-FAILED_COMMAND="./.deno/bin/breakdown to task -f ${WORK_DIR}/tmp/examples/issue/issue.md -o ${WORK_DIR}/tmp/examples/tasks/tasks.md"
+FAILED_COMMAND=".deno/bin/breakdown to task -f ${WORK_DIR}/tmp/examples/issue/issue.md -o ${WORK_DIR}/tmp/examples/tasks/tasks.md"
 $FAILED_COMMAND || handle_error "タスクへの変換に失敗しました"
 
 echo "✓ 全ての処理が完了しました"

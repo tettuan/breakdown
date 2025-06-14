@@ -4,7 +4,10 @@
 # This script helps debug which prompt files are being used with different
 # adaptation options by showing the expected file paths.
 
-pushd "$(dirname "$0")" > /dev/null
+# Add at the top after any initial setup:
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+pushd "$PROJECT_ROOT" > /dev/null
 
 # Create output directory if it doesn't exist
 mkdir -p tmp/examples/debug
@@ -31,13 +34,13 @@ echo
 # Test with --adaptation strict
 echo "=== Testing with --adaptation strict ==="
 echo "Expected prompt file: lib/breakdown/prompts/summary/task/f_task_strict.md"
-./.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md --adaptation strict -o tmp/examples/debug/tasks_strict.md
+.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md --adaptation strict -o tmp/examples/debug/tasks_strict.md
 echo
 
 # Test with -a a
 echo "=== Testing with -a a ==="
 echo "Expected prompt file: lib/breakdown/prompts/summary/task/f_task_a.md"
-./.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md -a a -o tmp/examples/debug/tasks_simple.md
+.deno/bin/breakdown summary task --from fixtures/unorganized_tasks.md -a a -o tmp/examples/debug/tasks_simple.md
 echo
 
 # Show the results
