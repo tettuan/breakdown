@@ -1,10 +1,30 @@
 #!/bin/bash
-
 # Example 17: Basic --config option usage
 # This example demonstrates how to use a custom configuration file with Breakdown CLI
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Use predefined test configuration
-CONFIG_FILE="./configs/test.json"
+CONFIG_FILE="${PROJECT_ROOT}/configs/test.json"
+
+# Check if config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    handle_error "Configuration file not found: $CONFIG_FILE"
+fi
+
 echo "Using test configuration: $CONFIG_FILE"
 
 # Create sample input file
@@ -27,13 +47,16 @@ EOF
 
 # Run breakdown with the config file
 echo "Running breakdown with basic config..."
-echo "Command: breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE"
-breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE"
+.deno/bin/breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE
 
 # Show the result
 echo -e "\nGenerated output structure:"
 find /tmp/output -type f -name "*.md" | head -10
 
 # Clean up
+echo -e "\nCleaning up temporary files..."
 rm -f /tmp/input.md
 rm -rf /tmp/output
+
+echo "Example completed successfully!"

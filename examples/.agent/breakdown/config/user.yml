@@ -1,0 +1,6 @@
+# User configuration for breakdown
+working_dir: "./.agent/breakdown/examples"
+app_prompt:
+  base_dir: "./.agent/breakdown/prompts/user"
+app_schema:
+  base_dir: "./.agent/breakdown/schema/user"

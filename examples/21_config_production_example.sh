@@ -1,15 +1,35 @@
 #!/bin/bash
-
 # Example 21: Production configuration with find bugs command
 # This example demonstrates using 'breakdown find bugs' with production-user.yml configuration
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Set the configuration file path
-CONFIG_FILE="./config/production-user.yml"
+CONFIG_FILE="${PROJECT_ROOT}/config/production-user.yml"
+
+# Check if config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    handle_error "Production configuration file not found: $CONFIG_FILE"
+fi
+
 echo "Using production configuration: $CONFIG_FILE"
 echo "This configuration enables the 'find bugs' two-parameter command"
 
 # Create sample code with various bug indicators for testing
-mkdir -p /tmp/production-test/src
+mkdir -p /tmp/production-test/src || handle_error "Failed to create temporary src directory"
 cat > /tmp/production-test/src/payment_service.ts << 'EOF'
 /**
  * Payment processing service
@@ -112,11 +132,11 @@ EOF
 
 # Run breakdown find bugs with production configuration
 echo -e "\n=== Running 'breakdown find bugs' with production configuration ==="
-echo "Command: breakdown find bugs --config production --from /tmp/production-test --output /tmp/bug-report"
+echo "Command: .deno/bin/breakdown find bugs --config production --from /tmp/production-test --output /tmp/bug-report"
 echo -e "\nSearching for bugs in /tmp/production-test using production-user.yml settings..."
 
 # Execute the command
-deno run --allow-read --allow-write --allow-env lib/cli/breakdown.ts find bugs --config production --from /tmp/production-test --output /tmp/bug-report
+.deno/bin/breakdown find bugs --config production --from /tmp/production-test --output /tmp/bug-report
 
 # Show what the command found
 echo -e "\n=== Bug Report Generated ==="
@@ -149,3 +169,5 @@ echo "  - Bug detection sensitivity: medium"
 echo -e "\n=== Cleaning up ==="
 rm -rf /tmp/production-test /tmp/bug-report
 echo "Temporary files removed."
+
+echo -e "\nExample completed successfully!"

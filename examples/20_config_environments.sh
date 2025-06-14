@@ -1,12 +1,33 @@
 #!/bin/bash
-
 # Example 20: Environment-specific configurations
 # This example shows how to use different configs for different environments
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Define configuration files for different environments
-DEV_CONFIG="./configs/dev.json"
-TEST_CONFIG="./configs/test.json"
-PROD_CONFIG="./configs/prod.json"
+DEV_CONFIG="${PROJECT_ROOT}/configs/dev.json"
+TEST_CONFIG="${PROJECT_ROOT}/configs/test.json"
+PROD_CONFIG="${PROJECT_ROOT}/configs/prod.json"
+
+# Check if all config files exist
+for config in "$DEV_CONFIG" "$TEST_CONFIG" "$PROD_CONFIG"; do
+    if [ ! -f "$config" ]; then
+        handle_error "Configuration file not found: $config"
+    fi
+done
 
 echo "Using environment configurations:"
 echo "  Development: $DEV_CONFIG"
@@ -14,7 +35,7 @@ echo "  Test/Staging: $TEST_CONFIG"
 echo "  Production: $PROD_CONFIG"
 
 # Create a sample application specification
-mkdir -p /tmp/app-specs
+mkdir -p /tmp/app-specs || handle_error "Failed to create temporary app-specs directory"
 cat > /tmp/app-specs/main.md << 'EOF'
 # E-Commerce Platform Specification
 
@@ -111,16 +132,16 @@ run_with_env() {
   
   case $env in
     development)
-      echo "Command: breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG"
-      breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG
+      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG"
+      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG
       ;;
     staging)
-      echo "Command: breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG"
-      breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG
+      echo "Command: .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG"
+      .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG
       ;;
     production)
-      echo "Command: breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended"
-      breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended
+      echo "Command: .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended"
+      .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended
       ;;
   esac
   
@@ -150,4 +171,7 @@ echo "Staging: Uses test.json - test environment paths, system-level breakdown"
 echo "Production: Uses prod.json - production paths, system-level with extended mode"
 
 # Clean up
+echo -e "\nCleaning up temporary files..."
 rm -rf /tmp/app-specs /tmp/development-docs /tmp/staging-docs /tmp/production-docs
+
+echo "Example completed successfully!"

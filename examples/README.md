@@ -34,18 +34,16 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 7. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 使用例
-9. `06_project_to_implementation.sh` - プロジェクト実装への変換 (バイナリ実行)
-10. `06a_project_to_implementation_deno_task.sh` - プロジェクト実装への変換 (Denoタスク実行)
-11. `07_detailed_issue_creation.sh` - 詳細な課題の作成
-12. `08_test_result_tasks.sh` - テスト結果からのタスク生成
-13. `09_adaptation_option.sh` - プロンプト適応オプションの使用
-14. `10_stdin_example.sh` - STDIN入力の利用例
-15. `11_prompt_debug.sh` - プロンプトのデバッグ
-16. `12_clean.sh` - 生成されたファイルのクリーンアップ
-17. `13_custom_variables_example.sh` - カスタム変数機能のデモンストレーション
-18. `13_custom_variables_team_workflow.sh` - カスタム変数を活用したチーム開発ワークフロー
-19. `14_find_bugs_example.sh` - バグ検出機能 'breakdown find bugs' の基本使用例
-20. `15_find_bugs_team_workflow.sh` - チームでのバグ検出ワークフロー実例
+8. `10_stdin_example.sh` - STDIN入力の利用例
+9. `12_clean.sh` - 生成されたファイルのクリーンアップ
+
+### 設定例
+10. `17_config_basic.sh` - 基本的な設定例
+11. `18_config_production.sh` - 本番環境用設定例
+12. `19_config_team.sh` - チーム開発用設定例
+13. `20_config_environments.sh` - 環境別設定例
+14. `21_config_production_example.sh` - 本番環境設定の実例
+15. `22_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs準備
 
 ## 前準備の詳細
 
@@ -108,53 +106,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 使用例の詳細
 
-### 9. プロジェクト実装への変換 (バイナリ実行)
-```bash
-./examples/06_project_to_implementation.sh
-```
-このスクリプトは以下を実行します（コンパイル済みのバイナリを使用）：
-- 未整理の情報からプロジェクトサマリーを生成
-- プロジェクトへの分解
-- 課題への分解
-- タスクへの分解
-
-### 10. プロジェクト実装への変換 (Denoタスク実行)
-```bash
-./examples/06a_project_to_implementation_deno_task.sh
-```
-このスクリプトは以下を実行します（`deno task breakdown` を使用）：
-- 未整理の情報からプロジェクトサマリーを生成
-- プロジェクトへの分解
-- 課題への分解
-- タスクへの分解
-
-### 11. 詳細な課題の作成
-```bash
-./examples/07_detailed_issue_creation.sh
-```
-このスクリプトは以下を実行します：
-- タスク群から課題を生成
-- 生成された課題の確認と編集（手動）
-- 課題からタスクを生成
-
-### 12. テスト結果からのタスク生成
-```bash
-./examples/08_test_result_tasks.sh
-```
-このスクリプトは以下を実行します：
-- テスト結果からタスクを生成
-- タスクの優先順位付け
-- タスクの整理と出力
-
-### 13. プロンプト適応オプション
-```bash
-./examples/09_adaptation_option.sh
-```
-このスクリプトは以下を実行します：
-- `--adaptation` または `-a` オプションを使ってプロンプトの種類パターンを切り替え
-- 長い形式（--adaptation strict）と短い形式（-a a）の両方の例を含みます
-
-### 14. STDIN入力の利用例
+### 8. STDIN入力の利用例
 ```bash
 ./examples/10_stdin_example.sh
 ```
@@ -163,16 +115,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - summaryコマンドでプロジェクトサマリーを生成
 - 生成ファイルの確認
 
-### 15. プロンプトデバッグ
-```bash
-./examples/11_prompt_debug.sh
-```
-このスクリプトは以下を実行します：
-- プロンプトの動作確認
-- デバッグ情報の出力
-- プロンプトの調整例
-
-### 16. クリーンアップ
+### 9. クリーンアップ
 ```bash
 ./examples/12_clean.sh
 ```
@@ -181,47 +124,54 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 初期化ディレクトリの削除
 - テスト出力の削除
 
-### 17. カスタム変数機能のデモンストレーション
+## 設定例の詳細
+
+### 10. 基本的な設定例
 ```bash
-./examples/13_custom_variables_example.sh
+./examples/17_config_basic.sh
 ```
 このスクリプトは以下を実行します：
-- `--uv-*` オプションを使用したカスタム変数の基本例
-- 複数のカスタム変数を同時に使用する方法
-- 既存オプション（--extended, --error-format）との組み合わせ
-- カスタム変数の動作確認と検証
+- 基本的な設定ファイルの作成
+- デフォルト設定の確認
+- 簡単な設定のカスタマイズ
 
-### 18. カスタム変数を活用したチーム開発ワークフロー
+### 11. 本番環境用設定例
 ```bash
-./examples/13_custom_variables_team_workflow.sh
+./examples/18_config_production.sh
 ```
 このスクリプトは以下を実行します：
-- `--uv-*` オプションを使用したカスタム変数の実用例
-- チーム開発での標準化されたドキュメント生成
-- 複数のシナリオでの変数活用（課題分析、タスク生成、デプロイメント文書化）
-- STDIN ワークフローとカスタム変数の組み合わせ
+- 本番環境向けの設定ファイル作成
+- セキュリティ設定の強化
+- パフォーマンス最適化設定
 
-### 19. バグ検出機能の基本使用例
+### 12. チーム開発用設定例
 ```bash
-./examples/14_find_bugs_example.sh
+./examples/19_config_team.sh
 ```
 このスクリプトは以下を実行します：
-- 新機能 `breakdown find bugs` コマンドの基本的な使用方法
-- サンプルコードからのセキュリティ脆弱性の検出
-- ロジックエラーの自動分析
-- 拡張オプションとSTDIN入力の活用例
+- チーム開発向けの共有設定
+- コラボレーション設定
+- 権限管理の設定
 
-### 20. チームでのバグ検出ワークフロー実例
+### 13. 環境別設定例
 ```bash
-./examples/15_find_bugs_team_workflow.sh
+./examples/20_config_environments.sh
 ```
 このスクリプトは以下を実行します：
-- チーム開発におけるバグ検出の自動化ワークフロー
-- Pre-commitフック、コードレビュー、セキュリティ監査での活用
-- 複数ファイルの一括バグ分析
-- CI/CD パイプライン統合のためのパターン例
+- 開発、ステージング、本番環境の設定切り替え
+- 環境変数による設定管理
+- 環境別のプロンプト設定
 
-### 22. 本番環境カスタム設定とFind Bugs準備
+### 14. 本番環境設定の実例
+```bash
+./examples/21_config_production_example.sh
+```
+このスクリプトは以下を実行します：
+- 実際の本番環境での設定例
+- ベストプラクティスの実装
+- トラブルシューティング設定
+
+### 15. 本番環境カスタム設定とFind Bugs準備
 ```bash
 ./examples/22_config_production_custom.sh
 ```

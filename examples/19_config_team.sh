@@ -1,14 +1,34 @@
 #!/bin/bash
-
 # Example 19: Team shared configuration
 # This example demonstrates a configuration file shared among team members with custom directories
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Use predefined dev configuration for team development
-CONFIG_FILE="./configs/dev.json"
+CONFIG_FILE="${PROJECT_ROOT}/configs/dev.json"
+
+# Check if config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    handle_error "Development configuration file not found: $CONFIG_FILE"
+fi
+
 echo "Using team development configuration: $CONFIG_FILE"
 
 # Create sample project documentation for team collaboration
-mkdir -p /tmp/project-docs
+mkdir -p /tmp/project-docs || handle_error "Failed to create temporary project-docs directory"
 cat > /tmp/project-docs/architecture.md << 'EOF'
 # MyApp Architecture Documentation
 
@@ -142,13 +162,13 @@ EOF
 # Run breakdown with team config for architecture documentation
 echo "Running breakdown with team shared configuration..."
 echo "Processing architecture documentation..."
-echo "Command: breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE"
-breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE"
+.deno/bin/breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE
 
 # Process deployment documentation
 echo -e "\nProcessing deployment documentation..."
-echo "Command: breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE"
-breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE"
+.deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE
 
 # Show results
 echo -e "\nTeam documentation generated:"
@@ -158,4 +178,7 @@ echo -e "\nDeployment breakdown:"
 find /tmp/team-output/deployment -type f -name "*.md" 2>/dev/null | head -5
 
 # Clean up
+echo -e "\nCleaning up temporary files..."
 rm -rf /tmp/project-docs /tmp/team-output
+
+echo "Example completed successfully!"

@@ -3,20 +3,33 @@
 #
 # This script demonstrates how to use STDIN to provide input to Breakdown CLI,
 # matching the invocation and CWD handling style of 05a_project_to_implementation.sh.
+set -euo pipefail
 
-# Add at the top after any initial setup:
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-pushd "$PROJECT_ROOT" > /dev/null
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Create output directory in the project root
-mkdir -p output
+mkdir -p output || handle_error "Failed to create output directory"
 
 echo "=== Example: Passing input via STDIN to breakdown summary project (project root style) ==="
 INPUT_TEXT="This is a messy project summary from STDIN."
 echo "Input text: $INPUT_TEXT"
-echo "$INPUT_TEXT" | \
-  deno run -A cli/breakdown.ts summary project -o output/project_summary.md
 
-popd > /dev/null
-exit 0 
+# Run breakdown with STDIN input
+if ! echo "$INPUT_TEXT" | deno run -A "$PROJECT_ROOT/cli/breakdown.ts" summary project -o output/project_summary.md; then
+    handle_error "Failed to run breakdown with STDIN input"
+fi
+
+echo -e "\n✓ Example completed successfully!"
+echo "Output file created: output/project_summary.md" 

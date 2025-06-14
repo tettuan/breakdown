@@ -1,14 +1,34 @@
 #!/bin/bash
-
 # Example 18: Production environment configuration
 # This example shows a configuration optimized for production use with custom paths
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Use predefined production configuration
-CONFIG_FILE="./configs/prod.json"
+CONFIG_FILE="${PROJECT_ROOT}/configs/prod.json"
+
+# Check if config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    handle_error "Production configuration file not found: $CONFIG_FILE"
+fi
+
 echo "Using production configuration: $CONFIG_FILE"
 
 # Create sample API documentation as input
-mkdir -p /tmp/docs
+mkdir -p /tmp/docs || handle_error "Failed to create temporary docs directory"
 cat > /tmp/docs/api_documentation.md << 'EOF'
 # Production API Documentation
 
@@ -70,12 +90,15 @@ EOF
 
 # Run breakdown with production config
 echo "Running breakdown with production configuration..."
-echo "Command: breakdown to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config $CONFIG_FILE"
-breakdown to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config $CONFIG_FILE
+echo "Command: deno run -A cli/breakdown.ts to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config prod"
+deno run -A cli/breakdown.ts to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config prod
 
 # Show results
 echo -e "\nProduction output generated:"
 find /tmp/prod-output -type f -name "*.md" | head -10
 
 # Clean up
+echo -e "\nCleaning up temporary files..."
 rm -rf /tmp/docs /tmp/prod-output
+
+echo "Example completed successfully!"

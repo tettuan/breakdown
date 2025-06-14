@@ -45,7 +45,7 @@ echo "実行コマンド: deno run -A jsr:@tettuan/breakdown/cli --version"
 deno run -A jsr:@tettuan/breakdown/cli --version
 
 echo "\n--- 5. (参考) コンパイルされたバイナリのバージョン確認 (もしあれば) ---"
-COMPILED_BREAKDOWN="${PROJECT_ROOT}/.deno/bin/breakdown_compiled"
+COMPILED_BREAKDOWN="${PROJECT_ROOT}/.deno/bin/breakdown"
 if [ -f "${COMPILED_BREAKDOWN}" ]; then
     echo "実行コマンド: ${COMPILED_BREAKDOWN} --version"
     "${COMPILED_BREAKDOWN}" --version

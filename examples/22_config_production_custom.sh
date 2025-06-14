@@ -1,15 +1,29 @@
 #!/bin/bash
-
 # Example 22: Production Custom Configuration with Find Bugs
 # This example demonstrates using 'breakdown find bugs --config=production' with production-user.yml
 # It showcases CustomConfig features and advanced bug detection capabilities
+set -euo pipefail
+
+# Error handling
+handle_error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Set trap for better error reporting
+trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+
+# Get script directory and project root
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 echo "=== Example 22: Production Custom Configuration Find Bugs ==="
 echo "This example shows how to use production-user.yml for advanced bug detection"
 echo
 
 # Set configuration paths
-CONFIG_FILE="./config/production-user.yml"
+CONFIG_FILE="${PROJECT_ROOT}/config/production-user.yml"
 TEST_DIR="/tmp/production-custom-test"
 OUTPUT_DIR="/tmp/production-bug-reports"
 
@@ -28,10 +42,10 @@ fi
 echo "=== Creating Test Project with Various Bug Types ==="
 
 # Create test project structure
-mkdir -p "$TEST_DIR/src/services"
-mkdir -p "$TEST_DIR/src/components"
-mkdir -p "$TEST_DIR/src/utils"
-mkdir -p "$TEST_DIR/tests"
+mkdir -p "$TEST_DIR/src/services" || handle_error "Failed to create services directory"
+mkdir -p "$TEST_DIR/src/components" || handle_error "Failed to create components directory"
+mkdir -p "$TEST_DIR/src/utils" || handle_error "Failed to create utils directory"
+mkdir -p "$TEST_DIR/tests" || handle_error "Failed to create tests directory"
 
 # Create main service file with various bug indicators
 cat > "$TEST_DIR/src/services/api_service.ts" << 'EOF'
@@ -420,3 +434,5 @@ echo "For more information, see:"
 echo "  • config/production-user.yml - Configuration file"
 echo "  • docs/breakdown/cli.md - CLI documentation"
 echo "  • examples/README.md - All examples overview"
+
+echo -e "\nExample completed successfully!"
