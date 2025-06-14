@@ -104,12 +104,12 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
       string,
       unknown
     >;
-    const fromStr = from as string | undefined;
-    const destinationStr = destination as string | undefined;
-    const inputStr = input as string | undefined;
-    const adaptationStr = adaptation as string | undefined;
-    const promptDirStr = promptDir as string | undefined;
-    const configStr = config as string | undefined;
+    const fromStr = typeof from === "string" ? from : undefined;
+    const destinationStr = typeof destination === "string" ? destination : undefined;
+    const inputStr = typeof input === "string" ? input : undefined;
+    const adaptationStr = typeof adaptation === "string" ? adaptation : undefined;
+    const promptDirStr = typeof promptDir === "string" ? promptDir : undefined;
+    const configStr = typeof config === "string" ? config : undefined;
 
     values.from = fromStr;
     values.stdinAvailable = !!stdinAvailable;
@@ -130,22 +130,11 @@ export class DoubleCommandValidator implements CommandValidatorStrategy {
         values,
       };
     }
-    // --from指定時はファイル存在チェック（destination必須チェックより先）
+    // ファイル存在チェックはPromptFileGeneratorに移譲（二重処理解消）
     if (fromStr && fromStr !== "-") {
       // 絶対パス化（CLI本体と同じ挙動に合わせる）
       const absFromPath = fromStr.startsWith("/") ? fromStr : resolve(Deno.cwd(), fromStr);
       values.from = absFromPath;
-      try {
-        Deno.statSync(absFromPath);
-      } catch (_e) {
-        return {
-          success: false,
-          step,
-          errorCode: DoubleParamValidationErrorCode.FILE_NOT_FOUND,
-          errorMessage: `No such file: ${absFromPath}`,
-          values,
-        };
-      }
     }
     // --from指定時は--destination必須
     step = DoubleParamValidationStep.CHECK_DESTINATION;

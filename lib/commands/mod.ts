@@ -11,6 +11,7 @@ import { join } from "@std/path";
 import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
 import { Workspace } from "../workspace/workspace.ts";
+import type { CustomConfig } from "../config/breakdown_config_option.ts";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -150,6 +151,8 @@ export interface GenerateWithPromptOptions {
   errorFormat?: "simple" | "detailed" | "json";
   /** Config file path (--config). */
   config?: string;
+  /** Custom configuration for BreakdownParams validation and parsing. */
+  customConfig?: CustomConfig;
 }
 
 /**

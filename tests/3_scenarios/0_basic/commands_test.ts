@@ -108,8 +108,8 @@ Deno.test("core functionality - JSR package integration", async () => {
     );
     logger.debug("Prompt integration result (raw)", { promptResult });
     logger.debug("Prompt output for assertion", { output: promptResult.output });
-    // Parser now correctly handles options, should fail with template/config error
-    assertEquals(promptResult.success, false);
+    // Parser now correctly handles options, should succeed
+    assertEquals(promptResult.success, true);
     logger.debug("Prompt integration error", { error: promptResult.error });
   } finally {
     logger.debug("Cleaning up test environment");

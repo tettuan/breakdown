@@ -1,9 +1,8 @@
 /**
- * Enhanced ParamsParser with Two-Parameter and Three-Word Command Support
+ * Enhanced ParamsParser with Two-Parameter Command Support
  *
  * This module provides an enhanced wrapper around BreakdownParams ParamsParser
  * to handle:
- * - Three-word commands (e.g., "find bugs layer" as type="three")
  * - Two-parameter commands (e.g., "find bugs" as demonstrativeType="find", layerType="bugs")
  * - Equals format options (e.g., -f=test.md)
  *
@@ -12,7 +11,6 @@
 
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.1";
 import type { ParamsResult } from "jsr:@tettuan/breakdownparams@^1.0.1";
-import type { ThreeParamsResult } from "../validators/three_command_validator.ts";
 
 /**
  * CustomConfig interface that matches the structure expected by BreakdownParams.
@@ -102,6 +100,7 @@ export class EnhancedParamsParser {
             "extended",
             "customValidation",
             "errorFormat",
+            "config",
           ],
           valueOptions: [
             "from",
@@ -110,6 +109,7 @@ export class EnhancedParamsParser {
             "adaptation",
             "promptDir",
             "errorFormat",
+            "config",
           ],
         },
       },
@@ -133,6 +133,7 @@ export class EnhancedParamsParser {
           adaptation: { shortForm: "a", valueRequired: true, allowEqualsFormat: true },
           promptDir: { valueRequired: true, allowEqualsFormat: true },
           errorFormat: { valueRequired: true, allowEqualsFormat: true },
+          config: { shortForm: "c", valueRequired: true, allowEqualsFormat: true },
         },
         flags: {
           help: { shortForm: "h" },
@@ -196,21 +197,15 @@ export class EnhancedParamsParser {
   }
 
   /**
-   * Parse command-line arguments with three-word command and equals format support.
+   * Parse command-line arguments with equals format support.
    *
-   * First checks for three-word command patterns (e.g., "find bugs layer"),
-   * then preprocesses arguments to handle equals format (e.g., -f=value)
+   * Preprocesses arguments to handle equals format (e.g., -f=value)
    * before delegating to the standard ParamsParser.
    *
    * @param args - Array of command-line arguments
    * @returns Parsed result object with type information
    */
-  parse(args: string[]): ParamsResult | ThreeParamsResult {
-    // Check for three-word command pattern first
-    if (this.isThreeWordCommand(args)) {
-      return this.parseThreeWordCommand(args);
-    }
-
+  parse(args: string[]): ParamsResult {
     // Separate positional arguments, options, and custom variables
     const { positionalArgs, options, customVariables } = this.separateArgs(args);
 
@@ -461,97 +456,5 @@ export class EnhancedParamsParser {
     }
 
     return { args: processedArgs, customVariables };
-  }
-
-  /**
-   * Checks if the arguments represent a three-word command pattern.
-   *
-   * @param args - Array of command-line arguments
-   * @returns True if it matches a three-word command pattern
-   */
-  private isThreeWordCommand(args: string[]): boolean {
-    // Check if we have "find bugs" as the first two arguments
-    if (args.length >= 2 && args[0] === "find" && args[1] === "bugs") {
-      // If no user-provided custom config, always treat "find bugs" as three-word command
-      if (!this.hasUserProvidedConfig) {
-        return true;
-      }
-
-      // If user provided custom config and it defines "find" pattern, check if it should be two-parameter
-      const twoParamsConfig = this.customConfig?.params?.two;
-      if (twoParamsConfig?.demonstrativeType?.pattern && twoParamsConfig?.layerType?.pattern) {
-        const demonstrativePattern = new RegExp(twoParamsConfig.demonstrativeType.pattern);
-        const layerPattern = new RegExp(twoParamsConfig.layerType.pattern);
-
-        // If both "find" and "bugs" match the patterns, treat as two-parameter
-        if (demonstrativePattern.test("find") && layerPattern.test("bugs")) {
-          return false;
-        }
-      }
-
-      // Otherwise treat as three-word command
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Parses a three-word command and returns a ThreeParamsResult.
-   *
-   * @param args - Array of command-line arguments
-   * @returns ThreeParamsResult object
-   */
-  private parseThreeWordCommand(args: string[]): ThreeParamsResult {
-    // Preprocess arguments to extract custom variables and handle equals format
-    const { args: processedArgs, customVariables } = this.preprocessArgs(args);
-
-    // Extract layer type (third word if present and not an option)
-    let layerType: string | undefined;
-    let optionStartIndex = 2;
-
-    if (processedArgs.length > 2 && !processedArgs[2].startsWith("-")) {
-      layerType = processedArgs[2];
-      optionStartIndex = 3;
-    }
-
-    // Parse options from the remaining arguments
-    const options: Record<string, unknown> = {};
-
-    for (let i = optionStartIndex; i < processedArgs.length; i++) {
-      const arg = processedArgs[i];
-
-      if (arg.startsWith("--")) {
-        const optionName = arg.substring(2);
-        // Regular long option
-        if (i + 1 < processedArgs.length && !processedArgs[i + 1].startsWith("-")) {
-          options[optionName] = processedArgs[i + 1];
-          i++; // Skip the value
-        } else {
-          options[optionName] = true; // Flag option
-        }
-      } else if (arg.startsWith("-")) {
-        // Short option
-        const optionName = arg.substring(1);
-        if (i + 1 < processedArgs.length && !processedArgs[i + 1].startsWith("-")) {
-          options[optionName] = processedArgs[i + 1];
-          i++; // Skip the value
-        } else {
-          options[optionName] = true; // Flag option
-        }
-      }
-    }
-
-    // Add custom variables to options
-    if (Object.keys(customVariables).length > 0) {
-      options.customVariables = customVariables;
-    }
-
-    return {
-      type: "three",
-      demonstrativeType: "find",
-      subCommand: "bugs",
-      layerType,
-      options,
-    };
   }
 }

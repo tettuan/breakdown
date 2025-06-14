@@ -221,6 +221,18 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 複数ファイルの一括バグ分析
 - CI/CD パイプライン統合のためのパターン例
 
+### 22. 本番環境カスタム設定とFind Bugs準備
+```bash
+./examples/22_config_production_custom.sh
+```
+このスクリプトは以下を実行します：
+- production-user.ymlを使用したCustomConfig設定のデモンストレーション
+- `breakdown find bugs` コマンド準備（現在開発中）
+- BreakdownParamsのCustomConfig機能の活用
+- バグ検出パターンと除外ディレクトリの設定
+- 本番環境に最適化された設定例
+- 将来の `find bugs` コマンド実装に向けた設定構造の確認
+
 ## コマンドパターン
 
 ### 基本コマンド

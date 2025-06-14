@@ -52,7 +52,7 @@ Prompt file examples:
 When fromLayerType is not specified, determine the equivalent value from fromFile. For example,
 when fromLayerType is empty and fromFile is `something/created/123_issue_file.md`, since fromFile
 contains `issue`, `issue` is identified from fromFile instead of fromLayerType. Since fromLayerType
-can be project, issue, or task, this can be achieved by scanning fromFile for these three words.
+can be project, issue, or task, this can be achieved by scanning fromFile for these keywords.
 
 ## Schema
 

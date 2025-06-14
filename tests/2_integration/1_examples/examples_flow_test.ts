@@ -53,8 +53,8 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
     testDir,
   );
   logger.debug("to project result", { result });
-  // Parser now correctly handles options, should fail with file/template issues
-  assertEquals(result.success, false);
+  // Parser now correctly handles options, should succeed
+  assertEquals(result.success, true);
   logger.debug("E2E to project result details", { error: result.error });
 });
 
@@ -120,7 +120,7 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       testDir,
     );
     logger.debug("adaptation long form result", { result });
-    assertEquals(result.success, false);
+    assertEquals(result.success, true);
     logger.debug("Adaptation long form error", { error: result.error });
     // Main Test: short form
     result = await runCommand(
@@ -138,7 +138,7 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       testDir,
     );
     logger.debug("adaptation short form result", { result });
-    assertEquals(result.success, false);
+    assertEquals(result.success, true);
     logger.debug("Adaptation short form error", { error: result.error });
   } finally {
     // nothing to cleanup
@@ -187,7 +187,7 @@ Deno.test("E2E: error case - missing input file", async () => {
   logger.debug("missing input file result", { result });
   // Parser now correctly handles options, should fail with file not found
   assertEquals(result.success, false);
-  assertEquals(result.error, "No input provided via stdin or -f/--from option");
+  assertEquals(result.error?.startsWith("Failed to read input file"), true);
 });
 
 /**
@@ -328,7 +328,7 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
     testDir,
   );
   logger.debug("absolute baseDir result", { result });
-  assertEquals(result.success, false);
+  assertEquals(result.success, true);
   // Should fail with template/config error
   logger.debug("Absolute baseDir error", { error: result.error });
 });
@@ -364,7 +364,7 @@ Deno.test("E2E: template path is resolved using baseDir (relative)", async () =>
   );
   logger.debug("template path resolved result", { result });
   // Parser now correctly handles options, should process normally or fail with template issues
-  assertEquals(result.success, false);
+  assertEquals(result.success, true);
   logger.debug("Template path resolved error", { error: result.error });
 });
 

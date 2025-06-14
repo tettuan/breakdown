@@ -252,7 +252,7 @@ Deno.test("Precedence when user.yml and app.yml baseDir conflict", async () => {
         : `不一致: ${mismatchIndex}階層目`,
     });
     logger.debug("CLI result (user/app baseDir conflict)", { result });
-    assertEquals(result.success, false);
+    assertEquals(result.success, true);
     // Should process normally or fail with template issues
     logger.debug("User/app baseDir conflict error", { error: result.error });
   });

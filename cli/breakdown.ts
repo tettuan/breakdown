@@ -7,18 +7,14 @@
  * @module
  */
 import { initWorkspace } from "../lib/commands/mod.ts";
-import { type CommandOptions, validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
+import { validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
 import { EnhancedParamsParser } from "../lib/cli/parser/enhanced_params_parser.ts";
 import { CliError } from "../lib/cli/errors.ts";
 import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
 import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
-import type { ThreeParamsResult } from "../lib/cli/validators/three_command_validator.ts";
-import type {
-  OneParamsResult,
-  ParamsResult,
-  TwoParamsResult,
-} from "jsr:@tettuan/breakdownparams@^1.0.1";
+import { BreakdownConfigOption, type FullConfig } from "../lib/config/breakdown_config_option.ts";
+import type { OneParamsResult, TwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.0.1";
 
 /**
  * Help text displayed for the Breakdown CLI.
@@ -35,10 +31,10 @@ Commands:
   to <layer>             Convert to specified layer type
   summary <layer>        Generate summary for layer type
   defect <layer>         Generate defect report for layer type
-  find bugs              Find and analyze bugs in code
+  find <type>            Find and analyze specific issues
 
 Layer Types:
-  project, issue, task
+  project, issue, task, bugs
 
 Options:
   -h, --help            Show this help message
@@ -157,11 +153,32 @@ function preprocessCommandLine(args: string[]): {
  * @returns {Promise<void>} Resolves when the command completes.
  */
 export async function runBreakdown(args: string[]): Promise<void> {
+  // 2-1: Initialize BreakdownConfigOption to extract --config option
+  const configOption = new BreakdownConfigOption(args);
+
+  // 2-2: Load custom configuration if --config option is provided
+  let fullConfig: FullConfig | undefined = undefined;
+  let customConfig = undefined;
+  if (configOption.hasConfigOption()) {
+    try {
+      await configOption.loadBreakdownConfig();
+      // 2-4: Obtain FullConfig and CustomConfig using BreakdownConfig
+      fullConfig = await configOption.getFullConfig();
+      customConfig = await configOption.getCustomConfig();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      writeStderr(`Failed to load configuration: ${message}`);
+      Deno.exit(1);
+    }
+  }
+
   // Pre-process arguments to handle BreakdownParams limitations
   const { commandArgs, extractedOptions } = preprocessCommandLine(args);
 
-  const parser = new EnhancedParamsParser();
-  const result = parser.parse(commandArgs);
+  // 2-5: Pass CustomConfig to EnhancedParamsParser for enhanced validation
+  const parser = new EnhancedParamsParser(fullConfig?.breakdownParams?.customConfig);
+  // Parse the full args instead of just commandArgs to include options
+  const result = parser.parse(args);
 
   // Handle error from EnhancedParamsParser
   if (result.type === "error" && result.error) {
@@ -189,13 +206,13 @@ export async function runBreakdown(args: string[]): Promise<void> {
   try {
     // バリデーション一元化: CommandOptionsValidator
     const validator = new CommandOptionsValidator();
-    // Get filtered args without custom variables to avoid duplicate processing
-    // EnhancedParamsParser already processed custom variables and added them to result.options.customVariables
-    const filteredArgs = commandArgs.filter((arg) => !arg.startsWith("--uv-"));
-    const parsedOptions = validateArgs(filteredArgs);
+
+    // Use options parsed by EnhancedParamsParser instead of re-parsing
+    // This avoids the issue where validateArgs expects to see option arguments
+    // but only gets positional arguments from commandArgs
     const validationResult = validator.validate({
       ...result,
-      options: parsedOptions,
+      options: result.options || {},
       stdinAvailable: isStdinAvailable(),
     });
     if (!validationResult.success) {
@@ -275,6 +292,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
             extended: twoResult.options.extended as boolean,
             customValidation: twoResult.options.customValidation as boolean,
             errorFormat: twoResult.options.errorFormat as "detailed" | "simple" | "json",
+            customConfig: customConfig, // 2-3: Pass CustomConfig to BreakdownParams
             ...extraVars,
           },
         );
@@ -317,6 +335,7 @@ export async function runBreakdown(args: string[]): Promise<void> {
             extended: twoResult.options.extended as boolean,
             customValidation: twoResult.options.customValidation as boolean,
             errorFormat: twoResult.options.errorFormat as "detailed" | "simple" | "json",
+            customConfig: customConfig, // 2-3: Pass CustomConfig to BreakdownParams
             ...extraVars,
           },
         );
@@ -342,68 +361,24 @@ export async function runBreakdown(args: string[]): Promise<void> {
         }
         return;
       }
-    }
 
-    // Three-word command (e.g., find bugs)
-    if (result.type === "three") {
-      const threeResult = result as ThreeParamsResult;
-      if (threeResult.demonstrativeType === "find" && threeResult.subCommand === "bugs") {
-        // --- STDIN/ファイル入力の取得 (three-word command用) ---
-        let inputText = "";
-        let inputTextFile = "";
-        let hasInput = false;
-
-        // Handle file input if specified
-        if (values.from) {
-          if (values.from === "-") {
-            // Special case: '-' indicates stdin input
-            if (isStdinAvailable()) {
-              inputText = await readStdin({ allowEmpty: false });
-              hasInput = true;
-            }
-          } else {
-            try {
-              const resolvedPath = resolve(Deno.cwd(), values.from);
-              inputTextFile = await Deno.readTextFile(resolvedPath);
-              hasInput = true;
-            } catch (e) {
-              writeStderr(`Failed to read input file ${values.from}: ${e}`);
-              Deno.exit(1);
-            }
-          }
-        } // Handle stdin input if available and no file input
-        else if (isStdinAvailable()) {
-          inputText = await readStdin({ allowEmpty: false });
-          hasInput = true;
-        }
-
-        if (!hasInput) {
-          writeStderr("No input provided via stdin or --from option for find bugs command");
-          Deno.exit(1);
-        }
-
-        // --- Factory/PromptManagerに渡す (three-word command用) ---
-        const extraVars = values.from === "-"
-          ? { input_text: inputText }
-          : values.from
-          ? { input_text_file: inputTextFile }
-          : { input_text: inputText };
-        const fromFile = values.from || (isStdinAvailable() ? "-" : "");
-
+      // call generateWithPrompt for 'defect' command
+      if (twoResult.demonstrativeType === "defect") {
         const { generateWithPrompt } = await import("../lib/commands/mod.ts");
         const convResult = await generateWithPrompt(
           fromFile, // fromFile
-          values.destination || "bugs_report.md", // Default output file for bug reports
-          "bugs", // Use "bugs" as layerType for find bugs command
+          values.destination || "output.md", // Default output file
+          twoResult.layerType,
           false,
           {
             adaptation: values.adaptation,
             promptDir: values.promptDir,
-            demonstrativeType: "find", // Use "find" as demonstrative type
-            customVariables: threeResult.options.customVariables as Record<string, string>,
-            extended: threeResult.options.extended as boolean,
-            customValidation: threeResult.options.customValidation as boolean,
-            errorFormat: threeResult.options.errorFormat as "detailed" | "simple" | "json",
+            demonstrativeType: twoResult.demonstrativeType,
+            customVariables: twoResult.options.customVariables as Record<string, string>,
+            extended: twoResult.options.extended as boolean,
+            customValidation: twoResult.options.customValidation as boolean,
+            errorFormat: twoResult.options.errorFormat as "detailed" | "simple" | "json",
+            customConfig: customConfig, // 2-3: Pass CustomConfig to BreakdownParams
             ...extraVars,
           },
         );
@@ -428,11 +403,49 @@ export async function runBreakdown(args: string[]): Promise<void> {
           Deno.exit(1);
         }
         return;
-      } else {
-        writeStderr(
-          `Unsupported three-word command: ${threeResult.demonstrativeType} ${threeResult.subCommand}`,
+      }
+
+      // call generateWithPrompt for 'find' command
+      if (twoResult.demonstrativeType === "find") {
+        const { generateWithPrompt } = await import("../lib/commands/mod.ts");
+        const convResult = await generateWithPrompt(
+          fromFile, // fromFile
+          values.destination || "output.md", // Default output file
+          twoResult.layerType,
+          false,
+          {
+            adaptation: values.adaptation,
+            promptDir: values.promptDir,
+            demonstrativeType: twoResult.demonstrativeType,
+            customVariables: twoResult.options.customVariables as Record<string, string>,
+            extended: twoResult.options.extended as boolean,
+            customValidation: twoResult.options.customValidation as boolean,
+            errorFormat: twoResult.options.errorFormat as "detailed" | "simple" | "json",
+            customConfig: customConfig, // 2-3: Pass CustomConfig to BreakdownParams
+            ...extraVars,
+          },
         );
-        Deno.exit(1);
+        if (convResult.success) {
+          // Write output to destination file if specified
+          if (values.destination) {
+            try {
+              // Ensure output directory exists
+              const outputDir = values.destination.split("/").slice(0, -1).join("/");
+              if (outputDir) {
+                await Deno.mkdir(outputDir, { recursive: true });
+              }
+              await Deno.writeTextFile(values.destination, convResult.output);
+            } catch (e) {
+              writeStderr(`Failed to write output to ${values.destination}: ${e}`);
+              Deno.exit(1);
+            }
+          }
+          writeStdout(convResult.output);
+        } else {
+          writeStderr(formatError(convResult.error));
+          Deno.exit(1);
+        }
+        return;
       }
     }
   } catch (error: unknown) {

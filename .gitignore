@@ -69,8 +69,6 @@ yarn-error.log*
 
 # breakdown
 /.breakdown
-/.agent/
-/.agent/*
 
 /tmp/*
 /tmp
@@ -83,4 +81,3 @@ tmp/*
 /.worktree-*/
 
 # Deno compiled binaries
-.deno/bin/

@@ -6,6 +6,12 @@ customConfig:
   # Enable custom configuration features
   enabled: true
 
+  # BreakdownParams CustomConfig for find command
+  find:
+    # Allow bugs as a two parameter
+    twoParams:
+      - bugs
+
   # Custom settings for find-bugs functionality
   findBugs:
     # Enable bug finding features
@@ -50,6 +56,109 @@ customConfig:
 breakdownParams:
   # Version of BreakdownParams to use
   version: "latest"
+
+  # CustomConfig structure for BreakdownParams
+  customConfig:
+    # Parameter patterns for two-word commands
+    params:
+      two:
+        demonstrativeType:
+          pattern: "^(to|summary|defect|find)$"
+          errorMessage: "Invalid demonstrative type. Must be one of: to, summary, defect, find"
+        layerType:
+          pattern: "^(project|issue|task|bugs)$"
+          errorMessage: "Invalid layer type. Must be one of: project, issue, task, bugs"
+
+    # Validation rules for different command types
+    validation:
+      zero:
+        allowedOptions:
+          - "help"
+          - "version"
+          - "init"
+        valueOptions:
+          - "config"
+          - "c"
+        allowCustomVariables: true
+      one:
+        allowedOptions:
+          - "help"
+          - "extended"
+          - "custom-validation"
+        valueOptions:
+          - "config"
+          - "c"
+          - "error-format"
+          - "destination"
+          - "from"
+          - "output"
+        allowCustomVariables: true
+      two:
+        allowedOptions:
+          - "help"
+          - "extended"
+          - "custom-validation"
+        valueOptions:
+          - "config"
+          - "c"
+          - "error-format"
+          - "destination"
+          - "from"
+          - "output"
+          - "prompt-dir"
+        allowCustomVariables: true
+
+    # Option definitions
+    options:
+      values:
+        config:
+          shortForm: "c"
+          description: "Configuration file path"
+          valueRequired: true
+        from:
+          shortForm: "f"
+          description: "Input file path"
+          valueRequired: true
+        destination:
+          shortForm: "o"
+          description: "Output file path"
+          valueRequired: true
+        input:
+          shortForm: "i"
+          description: "Input layer type"
+          valueRequired: true
+        adaptation:
+          shortForm: "a"
+          description: "Adaptation type for template selection"
+          valueRequired: true
+        prompt-dir:
+          description: "Custom prompt directory"
+          valueRequired: true
+        error-format:
+          description: "Error output format"
+          valueRequired: true
+      flags:
+        help:
+          shortForm: "h"
+          description: "Show help message"
+        version:
+          shortForm: "v"
+          description: "Show version information"
+        extended:
+          description: "Enable extended processing"
+        custom-validation:
+          description: "Enable custom validation rules"
+
+      # Custom variables configuration
+      customVariables:
+        pattern: "^--uv-[a-zA-Z-]+$"
+        description: "User-defined variables with --uv- prefix"
+
+    # Error handling configuration
+    errorHandling:
+      unknownOption: "error"
+      duplicateOption: "warn"
+      emptyValue: "error"
 
   # Custom parameters
   customParams:
