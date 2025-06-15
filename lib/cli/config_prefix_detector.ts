@@ -1,9 +1,9 @@
 /**
  * Config Prefix Detector
- * 
+ *
  * Lightweight detector for early --config/-c option detection.
  * Executes before parseArgs to identify configuration file paths.
- * 
+ *
  * @module
  */
 
@@ -27,8 +27,10 @@ export class ConfigPrefixDetector {
    */
   hasConfig(): boolean {
     for (const arg of this.args) {
-      if (arg === "--config" || arg === "-c" || 
-          arg.startsWith("--config=") || arg.startsWith("-c=")) {
+      if (
+        arg === "--config" || arg === "-c" ||
+        arg.startsWith("--config=") || arg.startsWith("-c=")
+      ) {
         return true;
       }
     }
@@ -42,8 +44,10 @@ export class ConfigPrefixDetector {
   getConfigIndex(): number {
     for (let i = 0; i < this.args.length; i++) {
       const arg = this.args[i];
-      if (arg === "--config" || arg === "-c" || 
-          arg.startsWith("--config=") || arg.startsWith("-c=")) {
+      if (
+        arg === "--config" || arg === "-c" ||
+        arg.startsWith("--config=") || arg.startsWith("-c=")
+      ) {
         return i;
       }
     }
@@ -58,17 +62,17 @@ export class ConfigPrefixDetector {
   public static detectConfigPath(args: string[]): string | undefined {
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      
+
       // Handle --config=value format
       if (arg.startsWith("--config=")) {
         return arg.slice("--config=".length);
       }
-      
+
       // Handle -c=value format
       if (arg.startsWith("-c=")) {
         return arg.slice("-c=".length);
       }
-      
+
       // Handle space-separated format (--config value or -c value)
       if ((arg === "--config" || arg === "-c") && i + 1 < args.length) {
         const nextArg = args[i + 1];

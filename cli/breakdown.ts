@@ -127,14 +127,21 @@ function preprocessCommandLine(args: string[]): {
     if (arg.startsWith("-")) {
       const key = arg.replace(/^-+/, "");
       // Map short options to long options
-      const mappedKey = key === "f" ? "from" : 
-                       key === "o" ? "destination" :
-                       key === "i" ? "input" :
-                       key === "a" ? "adaptation" :
-                       key === "h" ? "help" :
-                       key === "v" ? "version" :
-                       key === "c" ? "config" :
-                       key;
+      const mappedKey = key === "f"
+        ? "from"
+        : key === "o"
+        ? "destination"
+        : key === "i"
+        ? "input"
+        : key === "a"
+        ? "adaptation"
+        : key === "h"
+        ? "help"
+        : key === "v"
+        ? "version"
+        : key === "c"
+        ? "config"
+        : key;
       if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
         extractedOptions[mappedKey] = args[i + 1];
         i++; // Skip value
@@ -191,10 +198,11 @@ export async function runBreakdown(args: string[]): Promise<void> {
 
   // Convert 'find' to 'defect' to work around BreakdownParams v1.0.1 limitation
   // Track if we're processing 'find bugs' command
-  const isFindBugsCommand = commandArgs.length >= 2 && commandArgs[0] === 'find' && commandArgs[1] === 'bugs';
-  const processedArgs = commandArgs.map(arg => {
-    if (arg === 'find') return 'defect';
-    if (arg === 'bugs') return 'task';  // Temporary workaround
+  const isFindBugsCommand = commandArgs.length >= 2 && commandArgs[0] === "find" &&
+    commandArgs[1] === "bugs";
+  const processedArgs = commandArgs.map((arg) => {
+    if (arg === "find") return "defect";
+    if (arg === "bugs") return "task"; // Temporary workaround
     return arg;
   });
 

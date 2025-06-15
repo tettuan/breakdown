@@ -1,6 +1,6 @@
 /**
  * Boundary Value Tests for BreakdownConfigPrefix Detection
- * 
+ *
  * Tests edge cases and boundary values for --config/-c option parsing
  * in BreakdownConfigOption class.
  */
@@ -128,11 +128,12 @@ Deno.test("BreakdownConfigPrefix - Integration with Other Options", async (t) =>
 
   await t.step("Complex integration", () => {
     const option = new BreakdownConfigOption([
-      "find", "bugs", 
+      "find",
+      "bugs",
       "--config=./configs/find-bugs.yml",
       "--from=/src/app/",
       "--destination=/tmp/report.md",
-      "--extended"
+      "--extended",
     ]);
     assertEquals(option.getConfigPrefix(), "./configs/find-bugs.yml");
     assertEquals(option.hasConfigOption(), true);
@@ -191,8 +192,8 @@ Deno.test("BreakdownConfigPrefix - Whitespace and Special Cases", async (t) => {
   });
 
   await t.step("Config with quotes", () => {
-    const option = new BreakdownConfigOption(["-c=\"quoted-config.yml\""]);
-    assertEquals(option.getConfigPrefix(), "\"quoted-config.yml\"");
+    const option = new BreakdownConfigOption(['-c="quoted-config.yml"']);
+    assertEquals(option.getConfigPrefix(), '"quoted-config.yml"');
     assertEquals(option.hasConfigOption(), true);
   });
 });

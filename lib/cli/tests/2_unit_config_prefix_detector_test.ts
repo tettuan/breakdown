@@ -1,9 +1,9 @@
 /**
  * ConfigPrefixDetector Test Suite
- * 
+ *
  * TDD approach for testing config prefix detection functionality.
  * Tests both space-separated and equals format for --config/-c options.
- * 
+ *
  * @module
  */
 
@@ -126,7 +126,10 @@ Deno.test("ConfigPrefixDetector - Edge Cases", async (t) => {
 Deno.test("ConfigPrefixDetector - Integration Scenarios", async (t) => {
   await t.step("works with find bugs command", () => {
     const detector = new ConfigPrefixDetector([
-      "find", "bugs", "--config=production", "--from=src/"
+      "find",
+      "bugs",
+      "--config=production",
+      "--from=src/",
     ]);
     assertEquals(detector.detectPrefix(), "production");
     assertEquals(detector.hasConfig(), true);
@@ -135,7 +138,10 @@ Deno.test("ConfigPrefixDetector - Integration Scenarios", async (t) => {
 
   await t.step("works with mixed options", () => {
     const detector = new ConfigPrefixDetector([
-      "--help", "-c", "test", "--version"
+      "--help",
+      "-c",
+      "test",
+      "--version",
     ]);
     assertEquals(detector.detectPrefix(), "test");
     assertEquals(detector.hasConfig(), true);
@@ -144,7 +150,10 @@ Deno.test("ConfigPrefixDetector - Integration Scenarios", async (t) => {
 
   await t.step("prioritizes first config option", () => {
     const detector = new ConfigPrefixDetector([
-      "--config", "first", "--config=second", "-c=third"
+      "--config",
+      "first",
+      "--config=second",
+      "-c=third",
     ]);
     assertEquals(detector.detectPrefix(), "first");
     assertEquals(detector.getConfigIndex(), 0);
@@ -152,11 +161,13 @@ Deno.test("ConfigPrefixDetector - Integration Scenarios", async (t) => {
 
   await t.step("handles complex real-world scenario", () => {
     const detector = new ConfigPrefixDetector([
-      "breakdown", "find", "bugs", 
-      "--from=/src/app", 
+      "breakdown",
+      "find",
+      "bugs",
+      "--from=/src/app",
       "--config=./configs/find-bugs.yml",
       "--destination=report.md",
-      "--extended"
+      "--extended",
     ]);
     assertEquals(detector.detectPrefix(), "./configs/find-bugs.yml");
     assertEquals(detector.hasConfig(), true);
@@ -215,9 +226,9 @@ export const TEST_CASES = {
  * Validates detector behavior against expected results
  */
 export function validateDetector(
-  detector: ConfigPrefixDetector, 
+  detector: ConfigPrefixDetector,
   expectedPrefix: string | undefined,
-  expectedHasConfig: boolean
+  expectedHasConfig: boolean,
 ): void {
   assertEquals(detector.detectPrefix(), expectedPrefix);
   assertEquals(detector.hasConfig(), expectedHasConfig);
