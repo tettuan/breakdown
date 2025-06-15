@@ -23,7 +23,20 @@ const settings = config.getConfig();
 設定は以下の階層で管理されます：
 
 1. アプリケーション設定（`.agent/breakdown/config/app.yml`）
-2. ユーザー設定（アプリケーション設定の階層化に存在）
+2. ユーザー設定（`.agent/breakdown/config/user.yml`）
+
+## `--config` or `-c` があるとき　
+
+`-c=$prefix` のとき、　
+
+1. アプリケーション設定（`.agent/breakdown/config/$prefix-app.yml`）
+2. ユーザー設定（`.agent/breakdown/config/$prefix-user.yml`）
+
+### `--config` or `-c` の存在チェック
+
+- Breakdown本体の、単一責務を持つ ConfigPrefixDetector 
+  -　責務: `--config` or `-c` の検知と、値の取得のみ実施する
+- BreakdownConfig は、$prefix を必要としており、$prefxi 取得には使えない
 
 ## アプリケーション設定項目
 

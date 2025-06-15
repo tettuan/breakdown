@@ -109,8 +109,7 @@ export function parseArgs(args: string[]): CommandOptions {
     const arg = args[i];
     if (!arg.startsWith("-")) continue;
 
-    const option = arg.startsWith("--") ? arg : `--${arg.slice(1)}`;
-    const canonicalName = getCanonicalOptionName(option);
+    const canonicalName = getCanonicalOptionName(arg);
 
     if (!canonicalName) {
       throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
@@ -197,7 +196,8 @@ export function parseArgs(args: string[]): CommandOptions {
     );
   }
 
-  if (options.from && !options.destination) {
+  // Require --destination for --from, except when --from is "-" (stdin)
+  if (options.from && options.from !== "-" && !options.destination) {
     throw new CliError(
       CliErrorCode.MISSING_REQUIRED,
       "Invalid input parameters: missing --destination for --from",
@@ -335,152 +335,17 @@ export function getOptionValue(args: string[], option: string): string | undefin
 /**
  * Validates command line options and returns a CommandOptions object.
  * Throws a CliError if validation fails.
+ * This is a simplified wrapper around parseArgs for backward compatibility.
  *
  * @param args Raw command line arguments.
  * @returns Validated CommandOptions object.
  * @throws {CliError} If validation fails.
  */
 export function validateCommandOptions(args: string[]): CommandOptions {
-  const options: CommandOptions = {};
+  const options = parseArgs(args);
 
-  // Parse custom variables first
+  // Parse custom variables separately as they're not handled by parseArgs
   options.customVariables = parseCustomVariables(args);
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (!arg.startsWith("-")) continue;
-
-    // Skip custom variables as they're already parsed
-    if (arg.startsWith("--uv-")) {
-      i++; // Skip the value
-      continue;
-    }
-
-    const value = args[i + 1];
-    switch (arg) {
-      case "--from":
-      case "-f":
-        if (options.from) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --from is used multiple times",
-          );
-        }
-        if (options.input) {
-          throw new CliError(
-            CliErrorCode.CONFLICTING_OPTIONS,
-            "Cannot use --from and --input together",
-          );
-        }
-        options.from = value;
-        i++;
-        break;
-      case "--destination":
-      case "-o":
-        if (options.destination) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --destination is used multiple times",
-          );
-        }
-        options.destination = value;
-        i++;
-        break;
-      case "--input":
-      case "-i":
-        if (options.input) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --input is used multiple times",
-          );
-        }
-        if (options.from) {
-          throw new CliError(
-            CliErrorCode.CONFLICTING_OPTIONS,
-            "Cannot use --from and --input together",
-          );
-        }
-        if (!isValidInputType(value)) {
-          throw new CliError(CliErrorCode.INVALID_INPUT_TYPE, `Invalid input layer type: ${value}`);
-        }
-        options.input = value;
-        i++;
-        break;
-      case "--adaptation":
-      case "-a":
-        if (options.adaptation) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --adaptation is used multiple times",
-          );
-        }
-        options.adaptation = value;
-        i++;
-        break;
-      case "--prompt-dir":
-        if (options.promptDir) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --prompt-dir is used multiple times",
-          );
-        }
-        options.promptDir = value;
-        i++;
-        break;
-      case "--extended":
-        if (options.extended !== undefined) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --extended is used multiple times",
-          );
-        }
-        options.extended = true;
-        // No i++ because this is a flag without value
-        break;
-      case "--custom-validation":
-        if (options.customValidation !== undefined) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --custom-validation is used multiple times",
-          );
-        }
-        options.customValidation = true;
-        // No i++ because this is a flag without value
-        break;
-      case "--error-format":
-        if (options.errorFormat) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --error-format is used multiple times",
-          );
-        }
-        if (!VALID_ERROR_FORMATS.has(value)) {
-          throw new CliError(
-            CliErrorCode.INVALID_OPTION,
-            `Invalid error format: ${value}. Valid formats: ${
-              Array.from(VALID_ERROR_FORMATS).join(", ")
-            }`,
-          );
-        }
-        options.errorFormat = value as "simple" | "detailed" | "json";
-        i++;
-        break;
-      case "--config":
-      case "-c":
-        if (options.config) {
-          throw new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
-            "Duplicate option: --config is used multiple times",
-          );
-        }
-        // Resolve config name to actual file path
-        options.config = resolveConfigPath(value);
-        i++;
-        break;
-      default:
-        throw new CliError(CliErrorCode.INVALID_OPTION, `Unknown option: ${arg}`);
-    }
-  }
 
   return options;
 }

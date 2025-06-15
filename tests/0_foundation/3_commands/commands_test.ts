@@ -120,9 +120,27 @@ Deno.test("parseParams - adaptation option (long form)", () => {
   logger.debug("Testing adaptation option parsing", {
     purpose: "Verify --adaptation flag recognition",
     step: "Command options",
-    args: ["summary", "task", "--from", "input.md", "--adaptation", "strict"],
+    args: [
+      "summary",
+      "task",
+      "--from",
+      "input.md",
+      "--destination",
+      "output.md",
+      "--adaptation",
+      "strict",
+    ],
   });
-  const args = ["summary", "task", "--from", "input.md", "--adaptation", "strict"];
+  const args = [
+    "summary",
+    "task",
+    "--from",
+    "input.md",
+    "--destination",
+    "output.md",
+    "--adaptation",
+    "strict",
+  ];
   const options = validateCommandOptions(args.slice(2)); // Skip command and subcommand
   assertEquals(options.adaptation, "strict");
   logger.debug("Adaptation option parsing test complete", { options });
@@ -132,9 +150,9 @@ Deno.test("parseParams - adaptation option (short form)", () => {
   logger.debug("Testing adaptation short option parsing", {
     purpose: "Verify -a flag recognition",
     step: "Command options",
-    args: ["summary", "task", "--from", "input.md", "-a", "a"],
+    args: ["summary", "task", "--from", "input.md", "--destination", "output.md", "-a", "a"],
   });
-  const args = ["summary", "task", "--from", "input.md", "-a", "a"];
+  const args = ["summary", "task", "--from", "input.md", "--destination", "output.md", "-a", "a"];
   const options = validateCommandOptions(args.slice(2)); // Skip command and subcommand
   assertEquals(options.adaptation, "a");
   logger.debug("Adaptation short option parsing test complete", { options });

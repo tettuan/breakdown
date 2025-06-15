@@ -13,8 +13,6 @@ import { CliError } from "../lib/cli/errors.ts";
 import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
 import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
-import { BreakdownConfigOption, type FullConfig } from "../lib/config/breakdown_config_option.ts";
-import { ConfigPrefixDetector } from "../lib/cli/config_prefix_detector.ts";
 import type { OneParamsResult, TwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.0.1";
 
 /**
@@ -64,6 +62,37 @@ function formatError(error: string | { type: string; message: string } | null): 
 }
 
 /**
+ * Extracts config file path from command line arguments
+ * @param args - Command line arguments array
+ * @returns Config file path if found, undefined otherwise
+ */
+function detectConfigPath(args: string[]): string | undefined {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    // Handle --config=value format
+    if (arg.startsWith("--config=")) {
+      return arg.slice("--config=".length);
+    }
+
+    // Handle -c=value format
+    if (arg.startsWith("-c=")) {
+      return arg.slice("-c=".length);
+    }
+
+    // Handle space-separated format (--config value or -c value)
+    if ((arg === "--config" || arg === "-c") && i + 1 < args.length) {
+      const nextArg = args[i + 1];
+      // Only recognize as value if next arg doesn't start with dash
+      if (nextArg && !nextArg.startsWith("-")) {
+        return nextArg;
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
  * Pre-processes command line arguments to separate commands from options.
  * This works around BreakdownParams v1.0.1 limitation where options are counted as arguments.
  *
@@ -78,8 +107,8 @@ function preprocessCommandLine(args: string[]): {
   const commandArgs: string[] = [];
   const extractedOptions: Record<string, string | boolean> = {};
 
-  // Early detection of config path using ConfigPrefixDetector
-  const earlyConfigPath = ConfigPrefixDetector.detectConfigPath(args);
+  // Early detection of config path using built-in function
+  const earlyConfigPath = detectConfigPath(args);
 
   // Find the end of command arguments (stop at first option)
   let commandEndIndex = 0;
@@ -174,18 +203,22 @@ function preprocessCommandLine(args: string[]): {
  * @returns {Promise<void>} Resolves when the command completes.
  */
 export async function runBreakdown(args: string[]): Promise<void> {
-  // 2-1: Initialize BreakdownConfigOption to extract --config option
-  const configOption = new BreakdownConfigOption(args);
+  // 2-1: Extract --config option using BreakdownConfig compatible parsing
+  const configPrefix = detectConfigPath(args);
 
   // 2-2: Load custom configuration if --config option is provided
-  let fullConfig: FullConfig | undefined = undefined;
-  let customConfig = undefined;
-  if (configOption.hasConfigOption()) {
+  let fullConfig: Record<string, unknown> | undefined = undefined;
+  let customConfig: Record<string, unknown> | undefined = undefined;
+  if (configPrefix) {
     try {
-      await configOption.loadBreakdownConfig();
+      const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
+      const breakdownConfig = new BreakdownConfig(Deno.cwd(), configPrefix);
+      await breakdownConfig.loadConfig();
       // 2-4: Obtain FullConfig and CustomConfig using BreakdownConfig
-      fullConfig = await configOption.getFullConfig();
-      customConfig = await configOption.getCustomConfig();
+      fullConfig = await breakdownConfig.getConfig();
+      customConfig = (fullConfig as { customConfig?: Record<string, unknown> })?.customConfig as
+        | Record<string, unknown>
+        | undefined;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       writeStderr(`Failed to load configuration: ${message}`);
