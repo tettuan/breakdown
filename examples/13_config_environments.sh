@@ -138,16 +138,16 @@ run_with_env() {
   
   case $env in
     development)
-      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $DEV_CONFIG"
-      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $DEV_CONFIG
+      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$DEV_CONFIG"
+      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$DEV_CONFIG
       ;;
     staging)
-      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $TEST_CONFIG"
-      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $TEST_CONFIG
+      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$TEST_CONFIG"
+      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$TEST_CONFIG
       ;;
     production)
-      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $PROD_CONFIG --extended"
-      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $PROD_CONFIG --extended
+      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$PROD_CONFIG --extended"
+      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$PROD_CONFIG --extended
       ;;
   esac
   

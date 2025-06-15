@@ -9,7 +9,7 @@ Breakdownは、プロジェクト管理のための階層的なタスク分解�
    - プロジェクト → イシュー → タスクの変換が正確に行われること
      ```typescript
      // 例：プロジェクトからイシューへの分解
-     breakdown to issue --from project.md
+     breakdown to issue --from=project.md
      // 結果：プロジェクトの主要機能ごとにイシューが生成される
      ```
    - 各レイヤー間の関係性（依存関係、優先度など）が保持されること

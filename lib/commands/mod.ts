@@ -176,14 +176,14 @@ Options:
   --help             Show this help message
   --version          Show version information
   --working-dir      Set working directory
-  --from             Source file path
-  --to               Destination file path
-  --input            Input layer type
+  --from=<file>      Source file path
+  --to=<file>        Destination file path
+  --input=<type>     Input layer type
 
 Examples:
   breakdown init
-  breakdown to project --from input.md
-  breakdown summary issue --from issue.md
+  breakdown to project --from=input.md
+  breakdown summary issue --from=issue.md
   `;
 
   return {

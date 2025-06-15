@@ -65,13 +65,13 @@ echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 **課題サマリー** タスク群から課題を生成：
 
 ```bash
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 ```
 
 **タスクサマリー** 未整理のタスク情報から整理されたタスクを生成：
 
 ```bash
-breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
+breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 ```
 
 ### 不具合情報からの修正生成
@@ -85,13 +85,13 @@ tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 **課題レベルの不具合分析**
 
 ```bash
-breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
+breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>
 ```
 
 **タスクレベルの不具合分析**
 
 ```bash
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 ## ユースケースパターン
@@ -108,7 +108,7 @@ breakdown to task <issue.md> -o <tasks_dir>
 ### 2. タスク群からの課題作成
 
 ```bash
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 # 必要に応じて生成された課題を編集
 breakdown to task <issue.md> -o <tasks_dir>
 ```
@@ -117,14 +117,14 @@ breakdown to task <issue.md> -o <tasks_dir>
 
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
-breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
-breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+breakdown defect issue --from=<project_defect.md> -o=<issue_defect_dir>
+breakdown defect task --from=<issue_defect.md> -o=<task_defect_dir>
 ```
 
 ### 4. 改善要求からの修正提案作成
 
 ```bash
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 # セットアップ

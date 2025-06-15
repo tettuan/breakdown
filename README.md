@@ -65,13 +65,13 @@ echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 **Issue Summary** Generate issues from task groups:
 
 ```bash
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 ```
 
 **Task Summary** Generate organized tasks from unorganized task information:
 
 ```bash
-breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
+breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 ```
 
 ### Fix Generation from Defect Information
@@ -85,13 +85,13 @@ tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
 **Issue Level Defect Analysis**
 
 ```bash
-breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>
+breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>
 ```
 
 **Task Level Defect Analysis**
 
 ```bash
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 ## Use Case Patterns
@@ -108,7 +108,7 @@ breakdown to task <issue.md> -o <tasks_dir>
 ### 2. Creating Issues from Task Groups
 
 ```bash
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 # Edit generated issues if needed
 breakdown to task <issue.md> -o <tasks_dir>
 ```
@@ -117,14 +117,14 @@ breakdown to task <issue.md> -o <tasks_dir>
 
 ```bash
 tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
-breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
-breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+breakdown defect issue --from=<project_defect.md> -o=<issue_defect_dir>
+breakdown defect task --from=<issue_defect.md> -o=<task_defect_dir>
 ```
 
 ### 4. Creating Fix Proposals from Improvement Requests
 
 ```bash
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 # Setup

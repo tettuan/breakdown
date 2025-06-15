@@ -109,7 +109,17 @@ export function parseArgs(args: string[]): CommandOptions {
     const arg = args[i];
     if (!arg.startsWith("-")) continue;
 
-    const canonicalName = getCanonicalOptionName(arg);
+    // Handle equals-separated options (--from=value)
+    let optionName = arg;
+    let optionValue: string | undefined;
+
+    if (arg.includes("=")) {
+      const [name, ...valueParts] = arg.split("=");
+      optionName = name;
+      optionValue = valueParts.join("=");
+    }
+
+    const canonicalName = getCanonicalOptionName(optionName);
 
     if (!canonicalName) {
       throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
@@ -131,10 +141,18 @@ export function parseArgs(args: string[]): CommandOptions {
             "Cannot use --from and --input together",
           );
         }
-        options.from = args[++i];
+        if (optionValue !== undefined) {
+          options.from = optionValue;
+        } else {
+          options.from = args[++i];
+        }
         break;
       case "--destination":
-        options.destination = args[++i];
+        if (optionValue !== undefined) {
+          options.destination = optionValue;
+        } else {
+          options.destination = args[++i];
+        }
         break;
       case "--input": {
         if (options.from) {
@@ -143,7 +161,7 @@ export function parseArgs(args: string[]): CommandOptions {
             "Cannot use --from and --input together",
           );
         }
-        const inputType = args[++i];
+        const inputType = optionValue !== undefined ? optionValue : args[++i];
         if (!isValidInputType(inputType)) {
           throw new CliError(
             CliErrorCode.INVALID_INPUT_TYPE,
@@ -161,7 +179,11 @@ export function parseArgs(args: string[]): CommandOptions {
             "Duplicate option: --adaptation is used multiple times",
           );
         }
-        options.adaptation = args[++i];
+        if (optionValue !== undefined) {
+          options.adaptation = optionValue;
+        } else {
+          options.adaptation = args[++i];
+        }
         break;
       case "--prompt-dir":
         if (options.promptDir) {
@@ -170,10 +192,14 @@ export function parseArgs(args: string[]): CommandOptions {
             "Duplicate option: --prompt-dir is used multiple times",
           );
         }
-        options.promptDir = args[++i];
+        if (optionValue !== undefined) {
+          options.promptDir = optionValue;
+        } else {
+          options.promptDir = args[++i];
+        }
         break;
       case "--config":
-      case "-c":
+      case "-c": {
         if (options.config) {
           throw new CliError(
             CliErrorCode.DUPLICATE_OPTION,
@@ -181,8 +207,10 @@ export function parseArgs(args: string[]): CommandOptions {
           );
         }
         // Resolve config name to actual file path
-        options.config = resolveConfigPath(args[++i]);
+        const configValue = optionValue !== undefined ? optionValue : args[++i];
+        options.config = resolveConfigPath(configValue);
         break;
+      }
       default:
         throw new CliError(CliErrorCode.INVALID_OPTION, `Invalid option: ${arg}`);
     }
@@ -241,16 +269,25 @@ export function parseCustomVariables(args: string[]): Record<string, string> {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg.startsWith("--uv-")) {
-      const variableName = arg.slice(5); // Remove "--uv-" prefix
-      const value = args[i + 1];
-      if (value && !value.startsWith("-")) {
+      // Handle equals-separated custom variables (--uv-var=value)
+      if (arg.includes("=")) {
+        const [name, ...valueParts] = arg.split("=");
+        const variableName = name.slice(5); // Remove "--uv-" prefix
+        const value = valueParts.join("=");
         customVariables[variableName] = value;
-        i++; // Skip the value on next iteration
       } else {
-        throw new CliError(
-          CliErrorCode.INVALID_OPTION,
-          `Custom variable ${arg} requires a value`,
-        );
+        // Handle space-separated custom variables (--uv-var value)
+        const variableName = arg.slice(5); // Remove "--uv-" prefix
+        const value = args[i + 1];
+        if (value && !value.startsWith("-")) {
+          customVariables[variableName] = value;
+          i++; // Skip the value on next iteration
+        } else {
+          throw new CliError(
+            CliErrorCode.INVALID_OPTION,
+            `Custom variable ${arg} requires a value`,
+          );
+        }
       }
     }
   }
@@ -314,6 +351,22 @@ export function resolveConfigPath(configValue: string, workingDir?: string): str
  * @returns Option value or undefined if not found.
  */
 export function getOptionValue(args: string[], option: string): string | undefined {
+  // Check for equals-separated options first
+  for (const arg of args) {
+    if (arg.includes("=")) {
+      const [name, ...valueParts] = arg.split("=");
+      if (name === option) {
+        return valueParts.join("=");
+      }
+      // Try short form
+      const shortForm = VALID_OPTIONS.get(option);
+      if (shortForm && name === shortForm) {
+        return valueParts.join("=");
+      }
+    }
+  }
+
+  // Fallback to space-separated options
   const index = args.indexOf(option);
   if (index === -1) {
     // Try short form

@@ -106,8 +106,8 @@ The following combinations are available:
 | Command \ Layer | Description                                                       | Project                                                                                                                 | Issue                                                                                                                         | Task                                                                                                          |
 | --------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | to              | Command to convert input Markdown to the next layer format         | Breakdown to project<br>breakdown to project <written_project_summary.md> -o <project_dir>                                | Breakdown from project to issues<br>breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir>                        | Breakdown from issues to tasks<br>breakdown to task <issue.md\|written_task.md> -o <tasks_dir>                          |
-| summary         | Command to generate new Markdown or generate Markdown for a layer   | Generate project overview in Markdown<br>echo "<messy_something>" \| breakdown summary project -o <project_summary.md>   | Generate issue overview in Markdown<br>breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir> | Generate task overview in Markdown<br>breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir> |
-| defect          | Command to generate fixes from error logs and defect information    | Generate project information from defect info<br>tail -100 "<error_log_file>" \| breakdown defect project -o <project_defect.md> | Generate issues from defect info<br>breakdown defect issue --from <bug_report.md> -o <issue_defect_dir>                               | Generate tasks from defect info<br>breakdown defect task --from <improvement_request.md> -o <task_defect_dir>      |
+| summary         | Command to generate new Markdown or generate Markdown for a layer   | Generate project overview in Markdown<br>echo "<messy_something>" \| breakdown summary project -o=<project_summary.md>   | Generate issue overview in Markdown<br>breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir> | Generate task overview in Markdown<br>breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
+| defect          | Command to generate fixes from error logs and defect information    | Generate project information from defect info<br>tail -100 "<error_log_file>" \| breakdown defect project -o=<project_defect.md> | Generate issues from defect info<br>breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>                               | Generate tasks from defect info<br>breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>      |
 
 ### Project Breakdown
 
@@ -132,19 +132,19 @@ breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 **Project Summary** Generate project overview from unorganized information:
 
 ```bash
-echo "<messy_something>" | breakdown summary project -o <project_summary.md>
+echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
 ```
 
 **Issue Summary** Generate issues from task groups:
 
 ```bash
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 ```
 
 **Task Summary** Generate organized tasks from unorganized task information:
 
 ```bash
-breakdown summary task --from <unorganized_tasks.md> -o <task_markdown_dir>
+breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 ```
 
 ## Common Use Case Patterns
@@ -155,7 +155,7 @@ Build a project from unorganized information and break it down into issues and t
 
 ```bash
 # Generate project summary from unorganized information
-echo "<messy_something>" | breakdown summary project -o <project_summary.md>
+echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
 
 # Break down into project
 breakdown to project <project_summary.md> -o <project_dir>
@@ -173,7 +173,7 @@ Generate issues from multiple unorganized tasks and break them down into tasks a
 
 ```bash
 # Generate issues from task collection
-breakdown summary issue --from <aggregated_tasks.md> --input task -o <issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
 
 # Edit generated issues (if necessary)
 
@@ -187,13 +187,13 @@ Generate fix tasks from error logs or defect reports:
 
 ```bash
 # Generate defect information from error logs
-tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
+tail -100 "<error_log_file>" | breakdown defect project -o=<project_defect.md>
 
 # Generate issues from defect information
-breakdown defect issue --from <project_defect.md> -o <issue_defect_dir>
+breakdown defect issue --from=<project_defect.md> -o=<issue_defect_dir>
 
 # Generate fix tasks from issues
-breakdown defect task --from <issue_defect.md> -o <task_defect_dir>
+breakdown defect task --from=<issue_defect.md> -o=<task_defect_dir>
 ```
 
 ### 4. Creating Fix Proposals from Improvement Requests
@@ -202,7 +202,7 @@ Generate task-level fixes directly from improvement requests:
 
 ```bash
 # Generate fix tasks from improvement requests
-breakdown defect task --from <improvement_request.md> -o <task_defect_dir>
+breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 ## Command Options Reference
@@ -223,7 +223,7 @@ Prompt types can be specified using the `--adaptation` option:
 breakdown to task issue.md -o tasks_dir -a strict
 
 # Example: Generate task summary in 'a' mode
-breakdown summary task --from unorganized_tasks.md -o task_markdown_dir -a a
+breakdown summary task --from=unorganized_tasks.md -o=task_markdown_dir -a=a
 ```
 
 ### Path Auto-completion

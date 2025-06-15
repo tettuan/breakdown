@@ -37,7 +37,7 @@ INPUT_TEXT="This is a messy project summary from STDIN."
 echo "Input text: $INPUT_TEXT"
 
 # Run breakdown with STDIN input
-if ! echo "$INPUT_TEXT" | .deno/bin/breakdown summary project -o examples/output/project_summary.md; then
+if ! echo "$INPUT_TEXT" | .deno/bin/breakdown summary project -o=examples/output/project_summary.md; then
     handle_error "Failed to run breakdown with STDIN input"
 fi
 

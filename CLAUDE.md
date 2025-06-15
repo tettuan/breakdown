@@ -1,8 +1,11 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+# Files
+
+- プロジェクト直下へファイルを作らない
+  -  JSR, deno, git, renovate関連は配置してOK
+- 一時ファイルはプロジェクト直下の tmp/ へ配置
+- テストファイル: @docs/tests/testing.ja.md 
+
+# Project
 - Project: Deno, JSR publish
 - run `scripts/local_ci.sh` for testing code.
 - publish JSR with CI. see `https://jsr.io/@tettuan/breakdownprompt/publish`
