@@ -127,11 +127,11 @@ EOF
 
 # Run breakdown find bugs with production configuration
 echo -e "\n=== Running 'breakdown find bugs' with production configuration ==="
-echo "Command: .deno/bin/breakdown find bugs --config production --from /tmp/production-test/src/payment_service.ts --destination /tmp/bug-report"
+echo "Command: .deno/bin/breakdown find bugs --config=production --from=/tmp/production-test/src/payment_service.ts --destination=/tmp/bug-report"
 echo -e "\nSearching for bugs in /tmp/production-test using production-app.yml settings..."
 
 # Execute the command
-.deno/bin/breakdown find bugs --config production --from /tmp/production-test/src/payment_service.ts --destination /tmp/bug-report
+.deno/bin/breakdown find bugs --config=production --from=/tmp/production-test/src/payment_service.ts --destination=/tmp/bug-report
 
 # Show what the command found
 echo -e "\n=== Bug Report Generated ==="

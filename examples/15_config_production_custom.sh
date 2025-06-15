@@ -381,7 +381,7 @@ fi
 echo
 echo "=== Future Usage (When Implemented) ==="
 echo "Once the 'find bugs' command is implemented, you can use:"
-echo "  breakdown find bugs --config prod --from \"$TEST_DIR\" --destination \"$OUTPUT_DIR\""
+echo "  breakdown find bugs --config=prod --from=\"$TEST_DIR\" --destination=\"$OUTPUT_DIR\""
 echo
 echo "Expected behavior:"
 echo "  • Load prod-app.yml configuration"
@@ -412,7 +412,7 @@ echo "  📝 Detailed reporting with context"
 echo
 echo "=== Usage Instructions ==="
 echo "1. Ensure prod-app.yml is configured in ./config/"
-echo "2. Run: breakdown find bugs --config prod --from <source_dir> --destination <output_dir>"
+echo "2. Run: breakdown find bugs --config=prod --from=<source_dir> --destination=<output_dir>"
 echo "3. Review generated reports in the output directory"
 echo "4. Use --help flag for additional options"
 

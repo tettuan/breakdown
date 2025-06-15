@@ -64,8 +64,8 @@ EOF
 
 # Run breakdown with the config file
 echo "Running breakdown with basic config..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/input.md --destination /tmp/output --config $CONFIG_NAME"
-.deno/bin/breakdown to project --from /tmp/input.md --destination /tmp/output --config $CONFIG_NAME
+echo "Command: .deno/bin/breakdown to project --from=/tmp/input.md --destination=/tmp/output --config=$CONFIG_NAME"
+.deno/bin/breakdown to project --from=/tmp/input.md --destination=/tmp/output --config=$CONFIG_NAME
 
 # Show the result
 echo -e "\nGenerated output structure:"

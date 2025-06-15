@@ -157,13 +157,13 @@ EOF
 # Run breakdown with team config for architecture documentation
 echo "Running breakdown with team shared configuration..."
 echo "Processing architecture documentation..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/architecture.md --destination /tmp/team-output/architecture --config $CONFIG_NAME"
-.deno/bin/breakdown to project --from /tmp/project-docs/architecture.md --destination /tmp/team-output/architecture --config $CONFIG_NAME
+echo "Command: .deno/bin/breakdown to project --from=/tmp/project-docs/architecture.md --destination=/tmp/team-output/architecture --config=$CONFIG_NAME"
+.deno/bin/breakdown to project --from=/tmp/project-docs/architecture.md --destination=/tmp/team-output/architecture --config=$CONFIG_NAME
 
 # Process deployment documentation
 echo -e "\nProcessing deployment documentation..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --destination /tmp/team-output/deployment --config $CONFIG_NAME"
-.deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --destination /tmp/team-output/deployment --config $CONFIG_NAME
+echo "Command: .deno/bin/breakdown to project --from=/tmp/project-docs/deployment.md --destination=/tmp/team-output/deployment --config=$CONFIG_NAME"
+.deno/bin/breakdown to project --from=/tmp/project-docs/deployment.md --destination=/tmp/team-output/deployment --config=$CONFIG_NAME
 
 # Show results
 echo -e "\nTeam documentation generated:"

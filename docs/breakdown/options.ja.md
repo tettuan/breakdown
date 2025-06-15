@@ -79,20 +79,20 @@ ex.
 
 ```bash
 ./.deno/bin/breakdown `<DemonstrativeType>` `<layerType>` \
-  --from `<file>` \
-  --destination `<output_file>` \
-  --input `<from_layer_type>` \
-  --adaptation `<adaptation_type>` \
+  --from=`<file>` \
+  --destination=`<output_file>` \
+  --input=`<from_layer_type>` \
+  --adaptation=`<adaptation_type>` \
 ```
 
 ex.
 
 ```bash
 ./.deno/bin/breakdown to issue \
-  --from project.md \
-  --destination issue_details \
-  --input project \
-  --adaptation strict \
+  --from=project.md \
+  --destination=issue_details \
+  --input=project \
+  --adaptation=strict \
 ```
 
 ### オプション一覧
@@ -100,11 +100,11 @@ ex.
 #### 基本オプション
 
 - プロンプト指定に利用
-  - `-a, --adaptation <adaptation_type>`: プロンプトの種類を指定（例: strict, a など）
-  - `-i, --input <from_layer_type>`: usecase:入力レイヤーの種類を指定, system: fromLayerType を上書き
+  - `-a, --adaptation=<adaptation_type>`: プロンプトの種類を指定（例: strict, a など）
+  - `-i, --input=<from_layer_type>`: usecase:入力レイヤーの種類を指定, system: fromLayerType を上書き
 - テンプレート変数（ see `BreakdownPrompt` documents ）の値に利用
-  - `-f, --from <file>`: usecase:入力ファイルを指定, system: `{input_text_file}` を置き換え
-  - `-o, --destination <output_file>`: usecase:出力先を指定, system: `{destination_path}` を置き換え
+  - `-f, --from=<file>`: usecase:入力ファイルを指定, system: `{input_text_file}` を置き換え
+  - `-o, --destination=<output_file>`: usecase:出力先を指定, system: `{destination_path}` を置き換え
 
 - STDIN 
   - テンプレート変数の値に利用。 `{input_text}` を置き換え
@@ -120,12 +120,12 @@ ex.
 ```bash
 # 単一のカスタム変数
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --uv-userName=太郎
 
 # 複数のカスタム変数
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --uv-userName=太郎 \
   --uv-projectName=マイプロジェクト \
   --uv-version=1.0.0 \
@@ -157,21 +157,21 @@ ex.
 ```bash
 # ユーザー情報を含むイシュー作成
 ./.deno/bin/breakdown to issue \
-  --from requirements.md \
+  --from=requirements.md \
   --uv-userName=太郎 \
   --uv-assignee=花子 \
   --uv-priority=high
 
 # プロジェクト情報を含むドキュメント生成
 ./.deno/bin/breakdown to documentation \
-  --from design.md \
+  --from=design.md \
   --uv-projectName=ECサイト \
   --uv-version=2.1.0 \
   --uv-releaseDate=2024-04-01
 
 # 複数言語対応の例
 ./.deno/bin/breakdown to translation \
-  --from content.md \
+  --from=content.md \
   --uv-sourceLang=日本語 \
   --uv-targetLang=英語 \
   --uv-translator=山田太郎
@@ -191,7 +191,7 @@ ex.
 
 ```bash
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --extended
 ```
 
@@ -205,9 +205,9 @@ ex.
 ```bash
 # 拡張モードでプロジェクトをissueに分解
 ./.deno/bin/breakdown to issue \
-  --from large_project.md \
+  --from=large_project.md \
   --extended \
-  --destination issues/
+  --destination=issues/
 
 # 結果: 通常より詳細な分解結果と処理統計を出力
 # - 処理時間: 2.3秒
@@ -222,7 +222,7 @@ ex.
 
 ```bash
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --custom-validation
 ```
 
@@ -236,7 +236,7 @@ ex.
 ```bash
 # カスタムバリデーションを使用してプロジェクトファイルを検証
 ./.deno/bin/breakdown to issue \
-  --from project_with_custom_format.md \
+  --from=project_with_custom_format.md \
   --custom-validation \
   --uv-validator=project_rules.json
 
@@ -258,7 +258,7 @@ ex.
 
 ```bash
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --error-format=detailed
 ```
 
@@ -277,7 +277,7 @@ ex.
 ```bash
 # 詳細エラー形式でデバッグ
 ./.deno/bin/breakdown to issue \
-  --from non_existent_file.md \
+  --from=non_existent_file.md \
   --error-format=detailed
 
 # 出力例:
@@ -295,7 +295,7 @@ ex.
 
 # JSON形式でエラー出力（自動化ツール向け）
 ./.deno/bin/breakdown to issue \
-  --from project.md \
+  --from=project.md \
   --error-format=json \
   2> error_log.json
 
@@ -318,17 +318,17 @@ ex.
 ```bash
 # フル機能を有効化した例
 ./.deno/bin/breakdown to issue \
-  --from complex_project.md \
+  --from=complex_project.md \
   --extended \
   --custom-validation \
   --error-format=detailed \
   --uv-project=enterprise \
   --uv-validation-config=strict_rules.json \
-  --destination output/issues/
+  --destination=output/issues/
 
 # CI/CD環境での使用例
 ./.deno/bin/breakdown to task \
-  --from requirements.md \
+  --from=requirements.md \
   --extended \
   --error-format=json \
   --custom-validation \
@@ -338,13 +338,13 @@ ex.
 
 # 開発環境でのデバッグ例
 ./.deno/bin/breakdown to test \
-  --from test_specs.md \
+  --from=test_specs.md \
   --extended \
   --custom-validation \
   --error-format=detailed \
   --uv-coverage=true \
   --uv-report-format=html \
-  --destination test_results/
+  --destination=test_results/
 ```
 
 ##### 設定ファイルサポート
@@ -459,7 +459,7 @@ BreakdownParamsは以下の順序で設定ファイルを検索します：
 
 1. **コマンドライン引数**: 直接指定された値が最優先
    ```bash
-   breakdown to test --adaptation strict --uv-author="John Doe"
+   breakdown to test --adaptation=strict --uv-author="John Doe"
    ```
 
 2. **環境変数**: BREAKDOWN_で始まる環境変数
@@ -486,13 +486,13 @@ BreakdownParamsは以下の順序で設定ファイルを検索します：
 
 ```bash
 # 本番環境の設定を使用
-NODE_ENV=production breakdown to test --from specs.md
+NODE_ENV=production breakdown to test --from=specs.md
 
 # 開発環境の設定を使用（デフォルト）
-NODE_ENV=development breakdown to test --from specs.md
+NODE_ENV=development breakdown to test --from=specs.md
 
 # テスト環境の設定を使用
-NODE_ENV=test breakdown to test --from specs.md
+NODE_ENV=test breakdown to test --from=specs.md
 ```
 
 環境別設定は、グローバル設定とマージされ、環境固有の値が優先されます。
@@ -549,7 +549,7 @@ NODE_ENV=test breakdown to test --from specs.md
 # errorFormat: "simple" （デフォルト値）
 
 # コマンドライン引数で上書き
-./.deno/bin/breakdown to issue --adaptation flexible
+./.deno/bin/breakdown to issue --adaptation=flexible
 # adaptation: "flexible" （コマンドラインで上書き）
 # input: "project" （デフォルト値）
 # errorFormat: "simple" （デフォルト値）
@@ -618,13 +618,13 @@ NODE_ENV=test breakdown to test --from specs.md
 **環境の指定方法：**
 ```bash
 # 環境変数で指定
-BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from project.md
+BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from=project.md
 
 # コマンドライン引数で指定
-./.deno/bin/breakdown to issue --from project.md --env production
+./.deno/bin/breakdown to issue --from=project.md --env=production
 
 # NODE_ENVを使用（BREAKDOWN_ENVが未設定の場合）
-NODE_ENV=production ./.deno/bin/breakdown to issue --from project.md
+NODE_ENV=production ./.deno/bin/breakdown to issue --from=project.md
 ```
 
 ###### 設定ファイルの優先順位
@@ -633,7 +633,7 @@ NODE_ENV=production ./.deno/bin/breakdown to issue --from project.md
 
 1. **コマンドライン引数**
    ```bash
-   ./.deno/bin/breakdown to issue --adaptation loose
+   ./.deno/bin/breakdown to issue --adaptation=loose
    ```
 
 2. **環境変数**
@@ -686,15 +686,15 @@ NODE_ENV=production ./.deno/bin/breakdown to issue --from project.md
 
 ```bash
 # ケース1: デフォルト環境（development）
-./.deno/bin/breakdown to issue --from project.md
+./.deno/bin/breakdown to issue --from=project.md
 # adaptation: "normal" （グローバルデフォルト）
 
 # ケース2: production環境
-BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from project.md
+BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from=project.md
 # adaptation: "strict" （production環境設定）
 
 # ケース3: コマンドライン引数で上書き
-BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from project.md --adaptation flexible
+BREAKDOWN_ENV=production ./.deno/bin/breakdown to issue --from=project.md --adaptation=flexible
 # adaptation: "flexible" （コマンドライン引数が最優先）
 ```
 
@@ -726,10 +726,10 @@ const optionRules = {
 
 // 使用例
 // --verbose フラグのみ（値なし）
-./.deno/bin/breakdown to issue --from project.md --verbose
+./.deno/bin/breakdown to issue --from=project.md --verbose
 
 // 複数のフラグ指定
-./.deno/bin/breakdown to issue --from project.md --verbose --debug
+./.deno/bin/breakdown to issue --from=project.md --verbose --debug
 ```
 
 ###### 必須オプション指定
@@ -750,7 +750,7 @@ const optionRules = {
 // Error: Required option '--from' is missing for 'to' command
 
 // 正しい使用例
-./.deno/bin/breakdown to issue --from project.md
+./.deno/bin/breakdown to issue --from=project.md
 ```
 
 ###### 型定義（string/number/boolean）
@@ -772,16 +772,16 @@ const optionRules = {
 
 // 使用例
 // 数値型オプション
-./.deno/bin/breakdown server --port 8080 --timeout 30000
+./.deno/bin/breakdown server --port=8080 --timeout=30000
 
 // 型エラーの例
-./.deno/bin/breakdown server --port "abc"
+./.deno/bin/breakdown server --port="abc"
 // Error: Option '--port' expects a number but received 'abc'
 
 // boolean型の扱い
-./.deno/bin/breakdown to issue --from project.md --verbose=true
-./.deno/bin/breakdown to issue --from project.md --verbose=false
-./.deno/bin/breakdown to issue --from project.md --verbose  // trueとして扱われる
+./.deno/bin/breakdown to issue --from=project.md --verbose=true
+./.deno/bin/breakdown to issue --from=project.md --verbose=false
+./.deno/bin/breakdown to issue --from=project.md --verbose  // trueとして扱われる
 ```
 
 ###### エラーハンドリング
@@ -802,11 +802,11 @@ const optionRules = {
 // Error: Option '--from' cannot be empty
 
 // 正常例：空値が許可されている場合
-./.deno/bin/breakdown to issue --from project.md --destination=""
+./.deno/bin/breakdown to issue --from=project.md --destination=""
 // destinationは空文字列として処理される
 
 // 値なしオプションの扱い
-./.deno/bin/breakdown to issue --from project.md --destination
+./.deno/bin/breakdown to issue --from=project.md --destination
 // フラグとして扱われるか、デフォルト値が使用される
 ```
 
@@ -820,7 +820,7 @@ const optionRules = {
 };
 
 // エラー例：未知のオプション
-./.deno/bin/breakdown to issue --from project.md --unknown-option=value
+./.deno/bin/breakdown to issue --from=project.md --unknown-option=value
 // Error: Unknown option '--unknown-option'
 
 // 警告モード（strictMode: false）
@@ -830,7 +830,7 @@ const optionRules = {
 };
 
 // 警告例
-./.deno/bin/breakdown to issue --from project.md --typo-option=value
+./.deno/bin/breakdown to issue --from=project.md --typo-option=value
 // Warning: Unknown option '--typo-option' will be ignored
 // 処理は続行される
 ```
@@ -849,19 +849,19 @@ const optionRules = {
 };
 
 // エラー例：重複が許可されていない
-./.deno/bin/breakdown to issue --from file1.md --from file2.md
+./.deno/bin/breakdown to issue --from=file1.md --from=file2.md
 // Error: Option '--from' specified multiple times
 
 // 最後の値を使用（デフォルト動作）
-./.deno/bin/breakdown to issue --from project.md --adaptation strict --adaptation loose
+./.deno/bin/breakdown to issue --from=project.md --adaptation=strict --adaptation=loose
 // --adaptation=loose が使用される
 
 // 配列として収集
-./.deno/bin/breakdown to issue --from project.md --tags bug --tags enhancement --tags urgent
+./.deno/bin/breakdown to issue --from=project.md --tags=bug --tags=enhancement --tags=urgent
 // tags: ["bug", "enhancement", "urgent"]
 
 // カスタム変数のマージ
-./.deno/bin/breakdown to issue --from project.md --uv-env=dev --uv-env=test
+./.deno/bin/breakdown to issue --from=project.md --uv-env=dev --uv-env=test
 // 実装により、最後の値使用またはエラー
 ```
 

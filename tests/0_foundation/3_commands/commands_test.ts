@@ -150,9 +150,9 @@ Deno.test("parseParams - adaptation option (short form)", () => {
   logger.debug("Testing adaptation short option parsing", {
     purpose: "Verify -a flag recognition",
     step: "Command options",
-    args: ["summary", "task", "--from", "input.md", "--destination", "output.md", "-a", "a"],
+    args: ["summary", "task", "--from=input.md", "--destination=output.md", "-a=a"],
   });
-  const args = ["summary", "task", "--from", "input.md", "--destination", "output.md", "-a", "a"];
+  const args = ["summary", "task", "--from=input.md", "--destination=output.md", "-a=a"];
   const options = validateCommandOptions(args.slice(2)); // Skip command and subcommand
   assertEquals(options.adaptation, "a");
   logger.debug("Adaptation short option parsing test complete", { options });

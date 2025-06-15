@@ -131,7 +131,7 @@ const templateVariables = {
 
 ```bash
 # CLI実行時
-breakdown to issue --from project.md \
+breakdown to issue --from=project.md \
   --uv-projectName=MyProject \
   --uv-author=太郎 \
   --uv-version=1.0.0

@@ -95,8 +95,8 @@ EOF
 
 # Run breakdown with production config
 echo "Running breakdown with production configuration..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/docs/api_documentation.md --destination /tmp/prod-output --config $CONFIG_NAME"
-.deno/bin/breakdown to project --from /tmp/docs/api_documentation.md --destination /tmp/prod-output --config $CONFIG_NAME
+echo "Command: .deno/bin/breakdown to project --from=/tmp/docs/api_documentation.md --destination=/tmp/prod-output --config=$CONFIG_NAME"
+.deno/bin/breakdown to project --from=/tmp/docs/api_documentation.md --destination=/tmp/prod-output --config=$CONFIG_NAME
 
 # Show results
 echo -e "\nProduction output generated:"
