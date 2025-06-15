@@ -29,6 +29,7 @@ import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
 import { resolve } from "jsr:@std/path@1.0.0";
 import { prompts } from "../templates/prompts.ts";
 import { schema } from "../templates/schema.ts";
+import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 
 /**
  * Workspace class for managing Breakdown project structure and configuration.
@@ -263,15 +264,19 @@ export { WorkspaceImpl as Workspace };
  * Creates and initializes a new workspace in the specified directory.
  *
  * @param workingDir - The directory to initialize the workspace in (defaults to ".")
+ * @param config - Optional configuration object with app_prompt and app_schema base directories
  * @throws {WorkspaceInitError} If initialization fails
  * @throws {WorkspaceConfigError} If configuration validation fails
  */
-export async function initWorkspace(workingDir = "."): Promise<void> {
+export async function initWorkspace(
+  workingDir = ".",
+  config?: { app_prompt?: { base_dir?: string }, app_schema?: { base_dir?: string } }
+): Promise<void> {
   // In production, use BreakdownConfig to load these values
   const workspace = new WorkspaceImpl({
     workingDir,
-    promptBaseDir: "prompts", // placeholder, should be loaded from config
-    schemaBaseDir: "schema", // placeholder, should be loaded from config
+    promptBaseDir: config?.app_prompt?.base_dir ?? DEFAULT_PROMPT_BASE_DIR,
+    schemaBaseDir: config?.app_schema?.base_dir ?? DEFAULT_SCHEMA_BASE_DIR,
   });
   await workspace.initialize();
 }

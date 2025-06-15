@@ -225,7 +225,8 @@ export async function runBreakdown(args: string[]): Promise<void> {
     if (result.type === "one") {
       const oneResult = result as OneParamsResult;
       if (oneResult.demonstrativeType === "init") {
-        await initWorkspace(".");
+        // Pass configuration to initWorkspace if available
+        await initWorkspace(".", undefined);
         return;
       }
       // Add more single commands as needed
