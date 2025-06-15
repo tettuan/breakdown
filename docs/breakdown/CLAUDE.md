@@ -20,3 +20,7 @@ glossary.ja.md を元に、必要ファイルを読む
 testing.ja.md を読む
 
 
+# Breakdown以外の仕様を置かない
+
+- deno関連 : docs/deno/  へ
+- testやdebug: docs/tests/ へ
