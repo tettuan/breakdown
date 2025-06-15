@@ -17,7 +17,7 @@
 
 1. configオプションを取得し、カスタム設定を取得 → Breakdown本体で実施
 2. argsを受け取って、パラメータとオプションを分けて把握 → BreakdownParams へ移譲
-2-1. このとき、BreakdownConfigPrefix にて、パラメータをカスタム設定するprefixが必要（任意）
+2-1. このとき、ConfigPrefixDetector にて、パラメータをカスタム設定するprefixが必要（任意）
 3. BreakdownParams から Result を受け取り、パラメータの数で分岐（zero,one,two）
 4. zero,one,two の処理に分かれて実施
 
@@ -29,14 +29,30 @@
 2-2. Breakdown本体は、 args の分解も行わないし、定義も知らないで済む（関心の分離）
 2-2-1. ただし `--config/-c` だけ例外。BreakdownParams の前に設定ファイルを特定する必要があるため避けられない。
 
+# 3. パラメータの処理でzero,one,twoとも生成する理由
+
+1. Breakdown本体は、 args を parse しないので中身を知らない
+2. args を BreakdownParams へ渡す
+3. BreakdownParams は、 Resultがどのように使われるかを知らない
+4. BreakdownParams は解析結果を返すまでが責務
+5. 結果、Breakdown本体は args を渡し、BreakdownParams は3つのResultを含めてResultとする
+5-1. Result が zero,one,two を持ち、それぞれは。成功/失敗 を持つ
+6. Breakdown本体は zero,one,two の判定結果から、処理を分岐する
+7. Breakdown本体は zero,one,two それぞれに応じて、取れるオプションが何かを判定する
+7-1. BreakdownParams は、 Option単体のバリデーションのみ実施
+8. BreakdownParams は、 text_input として、STDINを受け取る
+8-1. BreakdownParams は STDIN を見ない
+
+
 # 3. two パラメータの処理
 
 1. Breakdown本体は、BreakdownParams の Result から、PATH構築
 2. プロンプトのPATH、Schema特定のPATH、出力ディレクトリに関わるPATHをそれぞれ分けて作成
 2-1.  プロンプトやSchema特定のPATHは、BreakdownConfigの設定値、.base_dir を使う
-3. 全てのPATHが解決されたあと、変数と一緒に BreakdownPrompt へ渡す
-4. BreakdownPrompt がプロンプト変換処理を行って、結果のプロンプト文を返す
-5. 出力する
+3. STDIN の存在を確認し、あれば input_text として扱う
+4. 全てのPATHが解決されたあと、変数と一緒に BreakdownPrompt へ渡す
+5. BreakdownPrompt がプロンプト変換処理を行って、結果のプロンプト文を返す
+6. 出力する
 
 # 3. two パラメータで使える文字の指定
 
@@ -97,6 +113,8 @@
 
 # 3. カスタムできる種類
 
+以下の3点をユーザーが指定し、カスタム運用できる。
+
 1. config: 
   - 標準: app.yml, user.yml
   - カスタム: $prefix-app.yml, $prefix-user.yml
@@ -120,116 +138,171 @@
 
 # シーケンス図
 
-## 大きな粒度のシーケンス図（最上位設計レベル）
+## 1. 最上位レベル - CLI全体フロー
 
 ```mermaid
 sequenceDiagram
-    participant User as ユーザー
+    participant User
     participant CLI as Breakdown CLI
-    participant Config as BreakdownConfig
     participant Params as BreakdownParams
+    participant Core as Breakdown本体
     participant Prompt as BreakdownPrompt
-    participant Output as 出力
-
-    User->>+CLI: argsを渡す (breakdown to issue -f=test.md -o=tmp/ -a=fix --config=mine)
-    CLI->>+Config: configオプションを取得、カスタム設定を取得
-    Config-->>-CLI: 設定値を返却
     
-    CLI->>+Params: argsを渡して、パラメータとオプションを分けて把握
-    Params->>Params: zero,one,twoの全パターンを調べる
-    Params-->>-CLI: 成功したResult（パラメータ数で分岐）
+    User->>CLI: args (ex. breakdown to issue -f=test.md -o=tmp/ --config=mine)
+    CLI->>Core: 起動
+    Core->>Core: configオプション取得
+    Core->>Params: args渡し
+    Params->>Core: Result(zero,one,two)
+    Core->>Core: パラメータ数で分岐判定
     
-    alt two params の場合
-        CLI->>CLI: PATH構築（プロンプト、スキーマ、出力ディレクトリ）
-        CLI->>CLI: 変数セット構築（uv-prefix削除）
-        CLI->>+Prompt: PATH情報と変数を渡してプロンプト変換処理
-        Prompt->>Prompt: バリデート
-        Prompt->>Prompt: プロンプトを置換処理
-        Prompt-->>-CLI: 置換後プロンプトテキスト
+    alt two parameters
+        Core->>Core: プロンプト選択
+        Core->>Prompt: プロンプト置換処理
+        Prompt->>Core: 置換後プロンプトテキスト
+    else one or zero parameters
+        Core->>Core: その他の処理
     end
     
-    CLI->>+Output: 結果を出力
-    Output-->>-CLI: 出力完了
-    CLI-->>-User: CLI終了
+    Core->>User: 結果出力
+    Core->>CLI: 終了
 ```
 
-## 小さい範囲のシーケンス図（two パラメータ処理の詳細）
+## 2. パラメータ処理レベル - BreakdownParams詳細
 
 ```mermaid
 sequenceDiagram
-    participant CLI as Breakdown本体
-    participant Params as BreakdownParams
+    participant Core as Breakdown本体
     participant Config as BreakdownConfig
-    participant PathResolver as PATH解決
-    participant Prompt as BreakdownPrompt
-    participant Validator as バリデータ
-
-    CLI->>+Params: two params のResult取得
-    Params-->>-CLI: demonstrativeType, layerType, options
+    participant Prefix as BreakdownConfigPrefix
+    participant Params as BreakdownParams
+    participant STDIN
     
-    CLI->>+PathResolver: パラメータとオプション値から PATH構築開始
+    Core->>Config: configオプション取得
+    Config->>Core: カスタム設定
+    Core->>Prefix: prefix設定(任意)
+    Core->>Params: args + config値
     
-    PathResolver->>+Config: app_prompt.base_dir 取得
-    Config-->>-PathResolver: base_dir
-    PathResolver->>PathResolver: プロンプトファイルのPATH特定
+    Params->>Params: zero params 解析
+    Params->>Params: one params 解析
+    Params->>Params: two params 解析
+    Params->>Params: オプション単体バリデーション
     
-    PathResolver->>+Config: app_schema.base_dir 取得
-    Config-->>-PathResolver: base_dir
-    PathResolver->>PathResolver: スキーマファイルのPATH特定
+    Note over STDIN,Params: STDINはtext_inputとして受け取るが<br/>BreakdownParamsは直接見ない
     
-    PathResolver->>PathResolver: 出力先PATH特定（ファイル/ディレクトリ判定）
-    PathResolver-->>-CLI: 全PATH情報
-    
-    CLI->>CLI: ユーザー変数変換（uv-$name → $name）
-    
-    CLI->>+Prompt: PATH情報と変数セットを渡す
-    Prompt->>+Validator: プロンプトファイル存在確認
-    Validator-->>-Prompt: バリデート結果
-    
-    alt バリデート成功
-        Prompt->>Prompt: プロンプトテンプレート読み込み
-        Prompt->>Prompt: 変数置換処理（{$name}）
-        Prompt-->>CLI: 置換後プロンプトテキスト
-    else バリデート失敗
-        Prompt-->>CLI: エラー
-    end
-    
-    CLI->>CLI: 結果出力処理
+    Params->>Core: Result{zero: 成功/失敗, one: 成功/失敗, two: 成功/失敗}
+    Core->>Core: 成功したものを採用
 ```
 
-## PATH解決の詳細シーケンス図
+## 3. Two パラメータ処理レベル - PATH解決と変数処理
 
 ```mermaid
 sequenceDiagram
-    participant CLI as Breakdown本体
+    participant Core as Breakdown本体
+    participant Params as BreakdownParams
     participant Config as BreakdownConfig
-    participant PathBuilder as PATH構築処理
-
-    CLI->>+PathBuilder: demonstrativeType, layerType, options
+    participant Prompt as BreakdownPrompt
+    participant STDIN
+    participant FileSystem as ファイルシステム
     
-    Note over PathBuilder: プロンプトファイルPATH解決
-    PathBuilder->>+Config: app_prompt.base_dir 取得
-    Config-->>-PathBuilder: base_dir
-    PathBuilder->>PathBuilder: demonstrativeType + layerType でファイル名構築
+    Core->>Params: Result取得
+    Params->>Core: two params result
     
-    alt input オプション指定
-        PathBuilder->>PathBuilder: fromLayerType を考慮
+    Core->>Core: demonstrativeType, layerType設定
+    Core->>Config: app_prompt.base_dir取得
+    Core->>Config: app_schema.base_dir取得
+    Core->>Core: プロンプトPATH構築
+    Core->>Core: SchemaPATH構築
+    Core->>Core: 出力先PATH構築
+    
+    Core->>STDIN: 存在確認
+    alt STDIN存在
+        STDIN->>Core: input_text
     end
     
-    alt adaptation オプション指定
-        PathBuilder->>PathBuilder: 派生版を考慮
-    end
+    Core->>Params: Option値セット取得
+    Params->>Core: uv-$name形式オプション
+    Core->>Core: uv-削除して変数変換
     
-    Note over PathBuilder: スキーマファイルPATH解決
-    PathBuilder->>+Config: app_schema.base_dir 取得
-    Config-->>-PathBuilder: base_dir
-    PathBuilder->>PathBuilder: 同様の組み合わせでスキーマファイル特定
+    Core->>Prompt: PATH情報 + Variables
+    Prompt->>Prompt: PATHバリデーション
+    Prompt->>FileSystem: プロンプトファイル読み込み
+    Prompt->>Prompt: プロンプト変換処理
+    Prompt->>Core: 置換後プロンプトテキスト
     
-    Note over PathBuilder: 出力先PATH解決
-    PathBuilder->>PathBuilder: destinationFile の PATH構造判定
-    PathBuilder->>PathBuilder: ファイル名/ディレクトリ名判定
-    PathBuilder->>PathBuilder: ディレクトリPATHに統一
-    
-    PathBuilder-->>-CLI: 全PATH情報（プロンプト、スキーマ、出力先）
+    Core->>FileSystem: 結果出力
 ```
+
+## 4. PATH解決詳細レベル - ファイル特定プロセス
+
+```mermaid
+sequenceDiagram
+    participant Core as Breakdown本体
+    participant Config as BreakdownConfig
+    participant PathResolver as PATH解決処理
+    participant Prompt as BreakdownPrompt
+    
+    Core->>PathResolver: demonstrativeType, layerType
+    
+    Note over PathResolver: パラメータとオプション値の組み合わせ
+    PathResolver->>Config: app_prompt.base_dir
+    PathResolver->>PathResolver: プロンプトファイルPATH特定
+    
+    PathResolver->>Config: app_schema.base_dir  
+    PathResolver->>PathResolver: SchemaファイルPATH特定
+    
+    PathResolver->>PathResolver: destinationFile構造判定
+    alt PATH構造あり
+        PathResolver->>PathResolver: ファイル名/ディレクトリ名判定
+    end
+    PathResolver->>PathResolver: 出力先PATH特定(ディレクトリ)
+    
+    PathResolver->>Core: 全PATH情報
+    Core->>Prompt: PATH情報渡し
+    
+    Note over Prompt: BreakdownPromptがバリデーション実施<br/>Breakdown本体はPATHバリデータを持たない
+    Prompt->>Prompt: 存在確認・バリデーション
+```
+
+## 5. 変数処理詳細レベル - カスタム変数とオプション処理
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Params as BreakdownParams
+    participant Core as Breakdown本体
+    participant Prompt as BreakdownPrompt
+    
+    User->>CLI: --uv-$name=value
+    CLI->>Params: uv-$nameオプション
+    
+    Params->>Params: uv-$name形式でキー保存
+    Params->>Core: Option値セット(uv-$name=value)
+    
+    Core->>Core: uv-プレフィックス削除
+    Core->>Core: Variables構築($name=value)
+    
+    Note over Core: 英数字とアンダースコアのみ<br/>先頭は英字のみ、大文字小文字区別
+    
+    Core->>Prompt: Variables渡し
+    Prompt->>Prompt: プロンプトテンプレート内で{$name}置換
+    Prompt->>Core: 置換済みプロンプト
+```
+
+## 設計上の注意点
+
+### 関心の分離
+- **Breakdown本体**: args解析を行わない、パラメータ定義を知らない
+- **BreakdownParams**: 解析結果を返すまでが責務、結果の使われ方を知らない  
+- **BreakdownPrompt**: PATHバリデーションを実施、本体はバリデータを持たない
+
+### 事前準備の必要性
+- プロンプトファイルは事前に準備されている前提
+- CLI実行時には生成されない
+- 存在しないプロンプトを指定する可能性がある
+
+### カスタマイズポイント
+1. **config**: `--config/-c`でprefix指定
+2. **パラメータパターン**: 正規表現でdemonstrative/layerType制御
+3. **ユーザー変数**: `--uv-$name=value`でプロンプト内変数制御
 
