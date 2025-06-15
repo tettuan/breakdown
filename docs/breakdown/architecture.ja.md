@@ -13,6 +13,18 @@
 6. 結果を出力する(結果 = 置換後プロンプトのテキスト)
 7. CLI終了
 
+# 1. 分割されたモジュールの位置付け
+
+Breakdown本体は、4つの外部モジュールを持っている。
+これらは、内部実装を意図的に外部実装したものである。
+
+いわば四天王のような存在で、Breakdown本体と同等の存在である。
+
+1. BreakdownParams
+2. BreakdownConfig
+3. BreakdownPrompt
+4. BreakdownLogger
+
 # 2. 処理分解
 
 1. configオプションを取得し、カスタム設定を取得 → Breakdown本体で実施
