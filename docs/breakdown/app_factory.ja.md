@@ -42,10 +42,10 @@ CLI・テスト・アプリ本体は必ずこのFactory経由でパス解決・�
 - **入力**:  
   - BreakdownConfig（app.yml, user.yml などから読み込まれる設定値）
   - CLIパラメータ（TwoParamsResult等、コマンドライン引数やAPI経由で渡されるパラメータ全般）
-  - カスタム変数（--uv-* オプションで指定されるユーザー定義変数）
+  - カスタム変数（--* オプションで指定されるユーザー定義変数）
 - **出力**:  
   - promptFilePath, inputFilePath, outputFilePath, schemaFilePath など、プロンプト置換処理に必要な全パラメータ
-  - カスタム変数マップ（uv.変数名でアクセス可能）
+  - カスタム変数マップ（変数名でアクセス可能）
 
 ## パス解決ルール（要点のみ）
 
@@ -98,7 +98,7 @@ const { promptFilePath, inputFilePath, outputFilePath, schemaFilePath, customVar
 console.log(factory.promptFilePath);
 console.log(factory.inputFilePath);
 // v1.0.1: カスタム変数へのアクセス
-console.log(factory.customVariables['projectName']); // --uv-projectName=value で指定した値
+console.log(factory.customVariables['projectName']); // --projectName=value で指定した値
 ```
 
 ## 参照
@@ -108,23 +108,15 @@ console.log(factory.customVariables['projectName']); // --uv-projectName=value �
 - [docs/breakdown/testing.ja.md](./testing.ja.md)
 - [docs/breakdown/app_config.ja.md](./app_config.ja.md)
 
-# BreakdownParams v1.0.1 新機能対応
+# カスタム変数（--*）のサポート
 
-## カスタム変数（--uv-*）のサポート
+ユーザー定義のカスタム変数をCLIから指定し、テンプレート内で利用できます。
 
-v1.0.1では、ユーザー定義のカスタム変数をCLIから指定し、テンプレート内で利用できるようになりました。
-
-### 実装方法
+## 実装方法
 
 ```ts
-// CLIパラメータからカスタム変数を抽出
-const customVariables = cliParams.options.customVariables || {};
-
-// テンプレート変数として利用可能にする
-const templateVariables = {
-  ...standardVariables,
-  uv: customVariables, // {uv.変数名} でアクセス可能
-};
+// TwoParamsResult型のcliParamsからカスタム変数を抽出
+const customVariables = tpr.options.customVariables || {};
 ```
 
 ### 使用例
@@ -132,25 +124,15 @@ const templateVariables = {
 ```bash
 # CLI実行時
 breakdown to issue --from=project.md \
-  --uv-projectName=MyProject \
-  --uv-author=太郎 \
-  --uv-version=1.0.0
+  --projectName=MyProject \
+  --author=太郎 \
+  --version=1.0.0
 
-# テンプレート内での参照
-プロジェクト: {uv.projectName}
-作成者: {uv.author}
-バージョン: {uv.version}
+# テンプレート内での参照 -> 　`` は除去されて渡される 
+プロジェクト: {projectName}
+作成者: {uauthor}
+バージョン: {version}
 ```
-
-## 拡張パラメータのサポート
-
-v1.0.1では以下の拡張パラメータが追加されました：
-
-- `--extended`: 拡張モードの有効化
-- `--custom-validation`: カスタムバリデーションの有効化
-- `--error-format`: エラー表示形式の指定（simple/detailed/json）
-
-これらのパラメータはFactoryで取得し、各処理コンポーネントに渡されます。
 
 # パラメータオプションと予約変数の対応表
 
@@ -158,13 +140,13 @@ v1.0.1では以下の拡張パラメータが追加されました：
 
 ## 対応表
 
-| 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      | customVariables (v1.0.1) |
+| 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      | customVariables |
 |------------------------|-----------------------|-----------------------|-----------------------|-----------------------|----------------------|---------------------|--------------------------|
 | --from, -f             | 入力ファイルパスとして利用 |                       |                       |                       | fromFileから推定      |                     |                          |
 | --destination, -o      |                       | 出力ファイルパスとして利用 |                       |                       |                      |                     |                          |
 | --input, -i            |                       |                       |                       |                       | 入力レイヤー種別を指定 |                     |                          |
 | --adaptation, -a       |                       |                       | プロンプトファイル名のsuffix |                       |                      | プロンプト種別を指定   |                          |
-| --uv-* (v1.0.1)        |                       |                       |                       |                       |                      |                     | カスタム変数として格納    |
+| --* (v1.0.1)        |                       |                       |                       |                       |                      |                     | カスタム変数として格納    |
 | demonstrativeType      |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |                          |
 | layerType              |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |                          |
 
@@ -173,9 +155,7 @@ v1.0.1では以下の拡張パラメータが追加されました：
 - fromLayerType は --input で明示指定されない場合、fromFile のパスやファイル名から推定される。
 - adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
 - demonstrativeType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
-- **v1.0.1新機能**: カスタム変数（--uv-*）は customVariables オブジェクトに格納され、テンプレート内で `{uv.変数名}` として参照可能。
-- **v1.0.1新機能**: 拡張パラメータ（--extended, --custom-validation, --error-format）は options オブジェクトの一部として管理される。
-
+- カスタム変数（--*）は customVariables オブジェクトに格納され、テンプレート内で `{変数名}` として参照可能。
 ---
 
 - 入力オプション（CLIオプション）の詳細な説明は [breakdownparams リポジトリ](https://github.com/tettuan/breakdownparams) を参照してください。
