@@ -23,7 +23,20 @@ const settings = config.getConfig();
 Settings are managed in the following hierarchy:
 
 1. Application settings (`.agent/breakdown/config/app.yml`)
-2. User settings (exists in the application settings hierarchy)
+2. User settings (`.agent/breakdown/config/user.yml`)
+
+## When `--config` or `-c` is specified
+
+When `-c=$prefix` is specified:
+
+1. Application settings (`.agent/breakdown/config/$prefix-app.yml`)
+2. User settings (`.agent/breakdown/config/$prefix-user.yml`)
+
+### Existence Check for `--config` or `-c`
+
+- Breakdown's single-responsibility ConfigPrefixDetector
+  - Responsibility: Only detects `--config` or `-c` and retrieves the value
+- BreakdownConfig requires $prefix, but cannot be used to retrieve $prefix
 
 ## Application Settings
 
@@ -37,4 +50,4 @@ Settings are managed in the following hierarchy:
 
 ## User Settings
 
-None 
+None

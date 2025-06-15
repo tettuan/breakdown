@@ -83,4 +83,5 @@
 | -a, --adaptation | [options.md](./docs/breakdown/options.md) | Option for specifying prompt type. Sets `adaptationType` with specified value and uses it as suffix for prompt filenames. | adaptationType, prompt type |
 | --help | [options.md](./docs/breakdown/options.md) | Option for displaying help message. Shows command usage and option descriptions. | NoParamsResult, help |
 | --version | [options.md](./docs/breakdown/options.md) | Option for displaying version information. Shows application version number. | NoParamsResult, version |
+| stdin | [app_factory.md](./docs/breakdown/app_factory.md) | Data reading from standard input. Uses pipes (\|) or redirects (<) to pass input data and uses its content as `input_text`. Works independently of file input (-f) and can be used simultaneously. | input_text, input source |
 | stdin | [app_factory.md](./docs/breakdown/app_factory.md) | Data reading from standard input. Uses pipe (|) or redirect (<) to pass input data and uses its content as `input_text`. Works independently of file input (-f) and can be used simultaneously. | input_text, input source | 
