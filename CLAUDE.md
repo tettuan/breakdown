@@ -93,9 +93,59 @@ Codeインスタンスを並列実行し、効率的にタスクを分散処理�
 
 ### 1. tmux pane構成作成
 
+最適化レイアウト（推奨）：メイン40% + 部下3x4グリッド
+
+```bash
+# 既存paneを削除してリセット
+tmux kill-pane -a -t 0
+
+# 横を40%:60%に分割
+tmux split-window -h -p 60
+
+# 右側(60%)を縦に4分割
+tmux select-pane -t 1
+tmux split-window -v -p 75
+tmux split-window -v -p 66
+tmux split-window -v -p 50
+
+# 各行を横に3分割（1行目）
+tmux select-pane -t 1
+tmux split-window -h -p 66
+tmux split-window -h -p 50
+
+# 2行目
+tmux select-pane -t 4
+tmux split-window -h -p 66
+tmux split-window -h -p 50
+
+# 3行目
+tmux select-pane -t 7
+tmux split-window -h -p 66
+tmux split-window -h -p 50
+
+# 4行目
+tmux select-pane -t 10
+tmux split-window -h -p 66
+tmux split-window -h -p 50
+
+# メインpaneに戻る
+tmux select-pane -t 0
+
+# メインpaneに色をつけて視認性向上
+tmux select-pane -P 'fg=white,bg=black,bold'
 ```
-# 13画面分割（メイン1つ + サブ12つ）
-tmux split-window -h && tmux split-window -h && tmux split-window -h && tmux select-pane-t 1 && tmux split-window -v && tmux split-window -v && tmux split-window -v && tmuxselect-pane -t 5 && tmux split-window -v && tmux split-window -v && tmux split-window -v&& tmux select-pane -t 9 && tmux split-window -v && tmux split-window -v && tmuxsplit-window -v && tmux select-pane -t 0 && tmux select-pane -P 'fg=white,bg=black,bold'
+
+**レイアウト結果**：
+```
+┌─────────────────────┬────────┬────────┬────────┐
+│      メイン         │ pane1  │ pane2  │ pane3  │
+│     (40%)           ├────────┼────────┼────────┤
+│     視認性良好      │ pane4  │ pane5  │ pane6  │
+│                     ├────────┼────────┼────────┤
+│                     │ pane7  │ pane8  │ pane9  │
+│                     ├────────┼────────┼────────┤
+│                     │ pane10 │ pane11 │ pane12 │
+└─────────────────────┴────────┴────────┴────────┘
 ```
 
 ### 2. pane番号の確認
@@ -114,19 +164,20 @@ tmux list-panes -F "#{pane_index}: #{pane_id} #{pane_current_command} #{pane_act
 
 ### 3. Claude Codeセッション起動
 
-**注意**: `cld`はClaude
-Codeのエイリアスです。事前に`alias cld="claude --dangerously-skip-permissions"`を設定してください。
+**注意**: `cld`はClaude Codeのエイリアスです。事前に`alias cld="claude --dangerously-skip-permissions"`を設定してください。
 
-**%27等の番号について**: これらはtmuxが自動割り当てするpane
-IDです。上記の確認コマンドで実際のIDを確認してから使用してください。
+**%27等の番号について**: これらはtmuxが自動割り当てするpane IDです。上記の確認コマンドで実際のIDを確認してから使用してください。
 
-```
-# 全paneで並列起動（実際のpane IDに置き換えて使用, sleep は 3秒以内のランダム数値）
-tmux send-keys -t %27 "cld" && sleep 0.3 && tmux send-keys -t %27 Enter & \
-tmux send-keys -t %28 "cld" && sleep 0.1 && tmux send-keys -t %28 Enter & \
-tmux send-keys -t %25 "cld" && sleep 0.5 && tmux send-keys -t %25 Enter & \
-tmux send-keys -t %29 "cld" && sleep 0.7 && tmux send-keys -t %29 Enter & \
-tmux send-keys -t %26 "cld" && sleep 0.9 && tmux send-keys -t %26 Enter & \
+#### 最適化レイアウト（推奨）
+
+```bash
+# pane IDを動的に取得して起動（3x4グリッド）
+for pane in $(tmux list-panes -F "#{pane_id}" | grep -v "$(tmux display-message -p '#{pane_id}')"); do
+    # エイリアス設定、テーマ設定、起動を順次実行
+    tmux send-keys -t $pane "alias cld='claude --dangerously-skip-permissions'" && sleep 0.1 && tmux send-keys -t $pane Enter
+    tmux send-keys -t $pane "claude config set -g theme dark" && sleep 0.1 && tmux send-keys -t $pane Enter
+    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter &
+done
 wait
 ```
 
