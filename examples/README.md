@@ -29,21 +29,21 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 2. `02_compile.sh` - バイナリ生成
 3. `03_check_version.sh` - バージョン確認のテスト (インストール/コンパイル済みバイナリ)
 4. `04_init.sh` - プロジェクトの初期化 (バイナリ実行)
-5. `04a_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
-6. `05_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
-7. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
+5. `05_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
+6. `06_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
+7. `07_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 使用例
 8. `08_stdin_example.sh` - STDIN入力の利用例
 9. `09_clean.sh` - 生成されたファイルのクリーンアップ
 
 ### 設定例
-10. `17_config_basic.sh` - 基本的な設定例
-11. `18_config_production.sh` - 本番環境用設定例
-12. `19_config_team.sh` - チーム開発用設定例
-13. `20_config_environments.sh` - 環境別設定例
-14. `21_config_production_example.sh` - 本番環境設定の実例
-15. `22_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs準備
+10. `10_config_basic.sh` - 基本的な設定例
+11. `11_config_production.sh` - 本番環境用設定例
+12. `12_config_team.sh` - チーム開発用設定例
+13. `13_config_environments.sh` - 環境別設定例
+14. `14_config_production_example.sh` - 本番環境設定とバグ検出例
+15. `15_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
 ## 前準備の詳細
 
@@ -79,7 +79,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 5. 初期化 (deno run で直接実行)
 ```bash
-./examples/04a_init_deno_run.sh
+./examples/05_init_deno_run.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - プロジェクト構造の初期化
@@ -88,7 +88,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 6. ユーザー設定 (バイナリ実行)
 ```bash
-./examples/05_create_user_config.sh
+./examples/06_create_user_config.sh
 ```
 このスクリプトは以下を実行します（コンパイル済みのバイナリを使用）：
 - `./.agent/breakdown/config/user.yml` の作成
@@ -97,7 +97,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 7. ユーザー設定 (deno run で直接実行)
 ```bash
-./examples/05a_create_user_config_deno_run.sh
+./examples/07_create_user_config_deno_run.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - `./.agent/breakdown/config/user.yml` の作成
@@ -128,7 +128,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 10. 基本的な設定例
 ```bash
-./examples/17_config_basic.sh
+./examples/10_config_basic.sh
 ```
 このスクリプトは以下を実行します：
 - 基本的な設定ファイルの作成
@@ -137,7 +137,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 11. 本番環境用設定例
 ```bash
-./examples/18_config_production.sh
+./examples/11_config_production.sh
 ```
 このスクリプトは以下を実行します：
 - 本番環境向けの設定ファイル作成
@@ -146,7 +146,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 12. チーム開発用設定例
 ```bash
-./examples/19_config_team.sh
+./examples/12_config_team.sh
 ```
 このスクリプトは以下を実行します：
 - チーム開発向けの共有設定
@@ -155,33 +155,35 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 13. 環境別設定例
 ```bash
-./examples/20_config_environments.sh
+./examples/13_config_environments.sh
 ```
 このスクリプトは以下を実行します：
 - 開発、ステージング、本番環境の設定切り替え
 - 環境変数による設定管理
 - 環境別のプロンプト設定
 
-### 14. 本番環境設定の実例
+### 14. 本番環境設定とバグ検出例
 ```bash
-./examples/21_config_production_example.sh
+./examples/14_config_production_example.sh
 ```
 このスクリプトは以下を実行します：
-- 実際の本番環境での設定例
-- ベストプラクティスの実装
-- トラブルシューティング設定
+- production-user.ymlを使用した `breakdown find bugs` コマンドのデモンストレーション
+- バグ検出用のサンプルコード作成（PaymentService、UserAuth等）
+- TODO、FIXME、HACK、BUG、XXX、DEPRECATED などのバグインジケーターを含むコード例
+- `breakdown find bugs` コマンドの実行と結果表示
+- 本番環境設定の詳細表示（検出パターン、対象ファイル拡張子、除外ディレクトリ等）
 
-### 15. 本番環境カスタム設定とFind Bugs準備
+### 15. 本番環境カスタム設定とFind Bugs
 ```bash
-./examples/22_config_production_custom.sh
+./examples/15_config_production_custom.sh
 ```
 このスクリプトは以下を実行します：
-- production-user.ymlを使用したCustomConfig設定のデモンストレーション
-- `breakdown find bugs` コマンド準備（現在開発中）
-- BreakdownParamsのCustomConfig機能の活用
-- バグ検出パターンと除外ディレクトリの設定
-- 本番環境に最適化された設定例
-- 将来の `find bugs` コマンド実装に向けた設定構造の確認
+- production-user.ymlを使用したCustomConfig機能のデモンストレーション
+- 大規模なテストプロジェクト作成（API Service、React Component、Auth Utils、Test Files）
+- セキュリティ問題、パフォーマンス問題、アーキテクチャ問題を含む包括的なバグ例
+- CustomConfigとBreakdownParamsの設定構造の確認
+- `find bugs` 二パラメータコマンドのサポート確認
+- 設定ファイルの検証とロードテスト
 
 ## コマンドパターン
 
