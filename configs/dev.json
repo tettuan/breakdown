@@ -1,43 +1,34 @@
 {
-  "working_dir": "./.breakdown-dev",
+  "working_dir": "./.agent/breakdown/team",
   "app_prompt": {
-    "base_dir": "./dev/prompts/"
+    "base_dir": "./prompts/team"
   },
   "app_schema": {
-    "base_dir": "./dev/schemas/"
+    "base_dir": "./schema/team"
   },
   "validation": {
     "zero": {
-      "allowedOptions": ["help", "version", "init", "debug"],
-      "valueOptions": ["config", "c", "log-level"]
+      "allowedOptions": ["help", "version", "init"],
+      "valueOptions": ["config", "c"]
     },
     "one": {
-      "allowedOptions": ["help", "extended", "custom-validation", "debug", "verbose"],
-      "valueOptions": ["config", "c", "error-format", "destination", "from", "output", "log-level"]
+      "allowedOptions": ["help", "extended", "custom-validation"],
+      "valueOptions": ["config", "c", "error-format", "destination", "from", "output"]
     },
     "two": {
-      "allowedOptions": ["help", "extended", "custom-validation", "debug", "verbose"],
-      "valueOptions": [
-        "config",
-        "c",
-        "error-format",
-        "destination",
-        "from",
-        "output",
-        "prompt-dir",
-        "log-level"
-      ]
+      "allowedOptions": ["help", "extended", "custom-validation"],
+      "valueOptions": ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
     }
   },
   "params": {
     "two": {
       "demonstrativeType": {
-        "pattern": "^(to|find)$",
-        "errorMessage": "Demonstrative type must be 'to' or 'find'"
+        "pattern": "^(to|summary|defect)$",
+        "errorMessage": "Demonstrative type must be 'to', 'summary', or 'defect'"
       },
       "layerType": {
-        "pattern": "^(project|system|bugs|layer)$",
-        "errorMessage": "Layer type must be 'project', 'system', 'bugs', or 'layer'"
+        "pattern": "^(project|issue|task)$",
+        "errorMessage": "Layer type must be 'project', 'issue', or 'task'"
       }
     }
   },
@@ -49,20 +40,48 @@
       },
       "error-format": {
         "description": "Error output format",
-        "allowedValues": ["simple", "detailed", "json"],
-        "default": "detailed"
+        "allowedValues": ["simple", "detailed", "json"]
       },
       "extended": {
         "description": "Enable extended processing mode"
       },
-      "debug": {
-        "description": "Enable debug mode for development"
-      },
-      "log-level": {
-        "description": "Set logging level",
-        "allowedValues": ["error", "warn", "info", "debug"],
-        "default": "debug"
+      "custom-validation": {
+        "description": "Enable custom validation mode"
       }
+    }
+  },
+  "logger": {
+    "level": "debug",
+    "fileLogging": true,
+    "maxFileSize": 5,
+    "maxBackups": 3
+  },
+  "performance": {
+    "monitoring": true,
+    "memoryLimit": 256,
+    "timeout": 120,
+    "profiling": false
+  },
+  "output": {
+    "format": "json",
+    "prettyPrint": true,
+    "includeTimestamps": true,
+    "directory": "./team-output"
+  },
+  "security": {
+    "enabled": true,
+    "validateInput": true,
+    "sanitizeOutput": true,
+    "maxInputSize": 512
+  },
+  "features": {
+    "experimental": true,
+    "beta": true,
+    "custom": {
+      "asyncProcessing": true,
+      "enhancedReporting": true,
+      "smartCaching": false,
+      "teamCollaboration": true
     }
   }
 }

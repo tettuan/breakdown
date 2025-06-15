@@ -8,12 +8,13 @@
  */
 import { initWorkspace } from "../lib/commands/mod.ts";
 import { validateCommandOptions as validateArgs } from "../lib/cli/args.ts";
-import { EnhancedParamsParser } from "../lib/cli/parser/enhanced_params_parser.ts";
+import { ParamsParser } from "@tettuan/breakdownparams";
 import { CliError } from "../lib/cli/errors.ts";
 import { isStdinAvailable, readStdin } from "../lib/io/stdin.ts";
 import { resolve } from "@std/path";
 import { CommandOptionsValidator } from "../lib/cli/validators/command_options_validator.ts";
 import { BreakdownConfigOption, type FullConfig } from "../lib/config/breakdown_config_option.ts";
+import { ConfigPrefixDetector } from "../lib/cli/config_prefix_detector.ts";
 import type { OneParamsResult, TwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.0.1";
 
 /**
@@ -72,9 +73,13 @@ function formatError(error: string | { type: string; message: string } | null): 
 function preprocessCommandLine(args: string[]): {
   commandArgs: string[];
   extractedOptions: Record<string, string | boolean>;
+  earlyConfigPath?: string;
 } {
   const commandArgs: string[] = [];
   const extractedOptions: Record<string, string | boolean> = {};
+
+  // Early detection of config path using ConfigPrefixDetector
+  const earlyConfigPath = ConfigPrefixDetector.detectConfigPath(args);
 
   // Find the end of command arguments (stop at first option)
   let commandEndIndex = 0;
@@ -89,7 +94,7 @@ function preprocessCommandLine(args: string[]): {
 
   // If no options found, return original args
   if (commandEndIndex >= args.length) {
-    return { commandArgs: args, extractedOptions: {} };
+    return { commandArgs: args, extractedOptions: {}, earlyConfigPath };
   }
 
   // Process options
@@ -121,11 +126,27 @@ function preprocessCommandLine(args: string[]): {
     // Handle regular options
     if (arg.startsWith("-")) {
       const key = arg.replace(/^-+/, "");
+      // Map short options to long options
+      const mappedKey = key === "f"
+        ? "from"
+        : key === "o"
+        ? "destination"
+        : key === "i"
+        ? "input"
+        : key === "a"
+        ? "adaptation"
+        : key === "h"
+        ? "help"
+        : key === "v"
+        ? "version"
+        : key === "c"
+        ? "config"
+        : key;
       if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
-        extractedOptions[key] = args[i + 1];
+        extractedOptions[mappedKey] = args[i + 1];
         i++; // Skip value
       } else {
-        extractedOptions[key] = true;
+        extractedOptions[mappedKey] = true;
       }
       continue;
     }
@@ -134,7 +155,7 @@ function preprocessCommandLine(args: string[]): {
     commandArgs.push(arg);
   }
 
-  return { commandArgs, extractedOptions };
+  return { commandArgs, extractedOptions, earlyConfigPath };
 }
 
 /**
@@ -173,17 +194,31 @@ export async function runBreakdown(args: string[]): Promise<void> {
   }
 
   // Pre-process arguments to handle BreakdownParams limitations
-  const { commandArgs, extractedOptions } = preprocessCommandLine(args);
+  const { commandArgs, extractedOptions, earlyConfigPath } = preprocessCommandLine(args);
 
-  // 2-5: Pass CustomConfig to EnhancedParamsParser for enhanced validation
-  const parser = new EnhancedParamsParser(fullConfig?.breakdownParams?.customConfig);
-  // Parse the full args instead of just commandArgs to include options
-  const result = parser.parse(args);
+  // Convert 'find' to 'defect' to work around BreakdownParams v1.0.1 limitation
+  // Track if we're processing 'find bugs' command
+  const isFindBugsCommand = commandArgs.length >= 2 && commandArgs[0] === "find" &&
+    commandArgs[1] === "bugs";
+  const processedArgs = commandArgs.map((arg) => {
+    if (arg === "find") return "defect";
+    if (arg === "bugs") return "task"; // Temporary workaround
+    return arg;
+  });
+
+  // Parse arguments directly with ParamsParser
+  const parser = new ParamsParser();
+  const result = parser.parse(processedArgs);
 
   // Handle error from EnhancedParamsParser
   if (result.type === "error" && result.error) {
     writeStderr(result.error.message || "Unknown error");
     Deno.exit(1);
+  }
+
+  // Merge extracted options back into the result
+  if (result.type !== "error") {
+    result.options = { ...result.options, ...extractedOptions };
   }
 
   // Handle help/version flags from both ParamsParser and extractedOptions
@@ -225,7 +260,8 @@ export async function runBreakdown(args: string[]): Promise<void> {
     if (result.type === "one") {
       const oneResult = result as OneParamsResult;
       if (oneResult.demonstrativeType === "init") {
-        await initWorkspace(".");
+        // Pass configuration to initWorkspace if available
+        await initWorkspace(".", undefined);
         return;
       }
       // Add more single commands as needed
@@ -365,15 +401,18 @@ export async function runBreakdown(args: string[]): Promise<void> {
       // call generateWithPrompt for 'defect' command
       if (twoResult.demonstrativeType === "defect") {
         const { generateWithPrompt } = await import("../lib/commands/mod.ts");
+        // Restore original layer type if this was a 'find bugs' command
+        const actualLayerType = isFindBugsCommand ? "bugs" : twoResult.layerType;
+        const actualDemonstrativeType = isFindBugsCommand ? "find" : twoResult.demonstrativeType;
         const convResult = await generateWithPrompt(
           fromFile, // fromFile
           values.destination || "output.md", // Default output file
-          twoResult.layerType,
+          actualLayerType,
           false,
           {
             adaptation: values.adaptation,
             promptDir: values.promptDir,
-            demonstrativeType: twoResult.demonstrativeType,
+            demonstrativeType: actualDemonstrativeType,
             customVariables: twoResult.options.customVariables as Record<string, string>,
             extended: twoResult.options.extended as boolean,
             customValidation: twoResult.options.customValidation as boolean,

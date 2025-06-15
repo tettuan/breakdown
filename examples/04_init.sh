@@ -1,6 +1,6 @@
 #!/bin/bash
-
 # このスクリプトは、breakdownの作業環境を初期化します。
+set -euo pipefail
 # 他のexamplesを実行する前に、まず最初に実行する必要があります。
 #
 # 実行方法：
@@ -13,7 +13,7 @@
 # 作業ディレクトリをプロジェクトルートに移動
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-pushd "$PROJECT_ROOT" > /dev/null
+cd "$PROJECT_ROOT" || { echo "Failed to change to project root"; exit 1; }
 
 # エラーハンドリング関数
 handle_error() {
@@ -99,5 +99,4 @@ cat > "$TMP_EXAMPLES_DIR/test_results/test_results.txt" <<EOF
 テスト結果: すべて成功
 EOF
 
-popd > /dev/null
-exit 0 
+echo -e "\n✓ すべての初期化処理が正常に完了しました。" 

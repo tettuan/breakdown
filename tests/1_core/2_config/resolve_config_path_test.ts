@@ -16,17 +16,17 @@ import { PREDEFINED_CONFIGS, resolveConfigPath } from "../../../lib/cli/args.ts"
 Deno.test("resolveConfigPath - predefined config names", () => {
   // Test predefined config name "test"
   const testConfigPath = resolveConfigPath("test");
-  const expectedTestPath = join(Deno.cwd(), ".agent/breakdown/config/test.yml");
+  const expectedTestPath = join(Deno.cwd(), "config/test-app.yml");
   assertEquals(testConfigPath, expectedTestPath);
 
   // Test predefined config name "dev"
   const devConfigPath = resolveConfigPath("dev");
-  const expectedDevPath = join(Deno.cwd(), ".agent/breakdown/config/dev.yml");
+  const expectedDevPath = join(Deno.cwd(), "config/dev-app.yml");
   assertEquals(devConfigPath, expectedDevPath);
 
   // Test predefined config name "prod"
   const prodConfigPath = resolveConfigPath("prod");
-  const expectedProdPath = join(Deno.cwd(), ".agent/breakdown/config/prod.yml");
+  const expectedProdPath = join(Deno.cwd(), "config/prod-app.yml");
   assertEquals(prodConfigPath, expectedProdPath);
 });
 
@@ -34,11 +34,11 @@ Deno.test("resolveConfigPath - predefined config names with custom working direc
   const customWorkingDir = "/tmp/custom";
 
   const testConfigPath = resolveConfigPath("test", customWorkingDir);
-  const expectedPath = join(customWorkingDir, ".agent/breakdown/config/test.yml");
+  const expectedPath = join(customWorkingDir, "config/test-app.yml");
   assertEquals(testConfigPath, expectedPath);
 
   const devConfigPath = resolveConfigPath("dev", customWorkingDir);
-  const expectedDevPath = join(customWorkingDir, ".agent/breakdown/config/dev.yml");
+  const expectedDevPath = join(customWorkingDir, "config/dev-app.yml");
   assertEquals(devConfigPath, expectedDevPath);
 });
 
@@ -95,7 +95,7 @@ Deno.test("resolveConfigPath - case sensitivity", () => {
 
   // Verify that lowercase "test" still works as predefined
   const lowerResult = resolveConfigPath("test");
-  const expectedLowerPath = join(Deno.cwd(), ".agent/breakdown/config/test.yml");
+  const expectedLowerPath = join(Deno.cwd(), "config/test-app.yml");
   assertEquals(lowerResult, expectedLowerPath);
 });
 
@@ -113,9 +113,9 @@ Deno.test("resolveConfigPath - special characters in paths", () => {
 
 Deno.test("resolveConfigPath - predefined configs constant verification", () => {
   // Verify PREDEFINED_CONFIGS contains expected mappings
-  assertEquals(PREDEFINED_CONFIGS.get("test"), ".agent/breakdown/config/test.yml");
-  assertEquals(PREDEFINED_CONFIGS.get("dev"), ".agent/breakdown/config/dev.yml");
-  assertEquals(PREDEFINED_CONFIGS.get("prod"), ".agent/breakdown/config/prod.yml");
+  assertEquals(PREDEFINED_CONFIGS.get("test"), "config/test-app.yml");
+  assertEquals(PREDEFINED_CONFIGS.get("dev"), "config/dev-app.yml");
+  assertEquals(PREDEFINED_CONFIGS.get("prod"), "config/prod-app.yml");
 
   // Verify non-existent predefined config
   assertEquals(PREDEFINED_CONFIGS.get("nonexistent"), undefined);

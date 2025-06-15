@@ -1,26 +1,41 @@
-# 実装向け説明
+---
+description: Examples directory specific guidelines
+globs: ["examples/**"]
+alwaysApply: true
+---
 
-README.md を読む
+# Examples Implementation Guidelines
 
-この階層は、test 成功よりも後に、リリース後の利用をエミュレートするものである。
-そのため、example 自体はテストではないし、example のテストもない。
+Read README.md first.
 
-ライブラリの全てが完成している前提で、ユーザーが実行した時の挙動が正しく動くかを、確認するものである。
+This directory emulates post-release usage after successful tests.
+Examples are not tests themselves and have no test coverage.
 
-## エラー時
-- examples が悪い
-  - 仕様通りに動かしていない
-    - example を修正する
-  - 仕様通りに動かしている
-    - 仕様を改めて把握しても動かない
-      - ユースケースが正しいか確認する
-        - どれだけ調べても、ユースケース通りの場合、報告して終了する
-- 実装が悪い
-  - testが通っている
-    - 仕様通りに実装されていない
-      - 報告して作業を終了する
-    - 仕様が間違っている
-      - 報告して作業を終了する
-  - testが通っていない
-    - テストを修正する
+Assumes complete library functionality and verifies correct user execution behavior.
 
+## Error Handling
+- **Examples issue**
+  - Not following specifications
+    - Fix examples
+  - Following specifications but not working  
+    - Verify use case validity
+    - If use case is correct after investigation, report and stop
+- **Implementation issue**
+  - Tests passing
+    - Implementation doesn't match specifications
+      - Report and stop work
+    - Specifications are incorrect
+      - Report and stop work  
+  - Tests failing
+    - Fix tests
+
+## Output Validation
+
+If these directories exist in project root, examples are incorrectly creating them. Investigate each execution and fix. Should be created under examples/ directory:
+
+- prompts
+- prompt
+- output
+- schema
+- schemas
+- configs

@@ -272,10 +272,10 @@ export const VALID_ERROR_FORMATS = new Set([
  * These allow users to specify --config=test instead of full file paths.
  */
 export const PREDEFINED_CONFIGS = new Map<string, string>([
-  ["test", ".agent/breakdown/config/test.yml"],
-  ["dev", ".agent/breakdown/config/dev.yml"],
-  ["prod", ".agent/breakdown/config/prod.yml"],
-  ["production", ".agent/breakdown/config/prod.yml"],
+  ["test", "config/test-app.yml"],
+  ["dev", "config/dev-app.yml"],
+  ["prod", "config/prod-app.yml"],
+  ["production", "config/production-app.yml"],
 ]);
 
 /**

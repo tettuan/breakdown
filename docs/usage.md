@@ -10,7 +10,7 @@ Breakdown is primarily intended for use as a CLI tool.
 You can install it using the official Deno/JSR method as follows:
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 - `-A`: Allow all permissions (recommended)
 - `-f`: Overwrite existing command
@@ -18,7 +18,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 - `breakdown`: Command name
 
 > **Note:**  
-> The CLI module must be specified as `jsr:@tettuan/breakdown/cli`.  
+> The CLI module must be specified as `jsr:@tettuan/breakdown`.  
 > This is based on the `exports` setting in `deno.json`.
 
 ---
@@ -28,7 +28,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
 To update to the latest version, simply run the same install command again:
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 ---
@@ -54,7 +54,7 @@ deno add @tettuan/breakdown
 If you want to use the breakdown command only within a specific project, you can install it under `.deno/bin` using the `--root` option:
 
 ```bash
-deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown/cli
+deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
 
 After installation, add the bin directory to your PATH:
@@ -76,12 +76,12 @@ which breakdown
 
 2. Test by running directly:
 ```bash
-deno run --allow-all jsr:@tettuan/breakdown/cli
+deno run --allow-all jsr:@tettuan/breakdown
 ```
 
 3. Compile as a binary:
 ```bash
-deno compile -A -o ~/.deno/bin/breakdown jsr:@tettuan/breakdown/cli
+deno compile -A -o ~/.deno/bin/breakdown jsr:@tettuan/breakdown
 ```
 
 4. Check your PATH:

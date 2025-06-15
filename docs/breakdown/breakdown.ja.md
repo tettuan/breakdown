@@ -13,7 +13,7 @@ Denoの `deno compile` 機能でスタンドアロンバイナリを生成し、
 ```bash
 mkdir -p .deno/bin
 # バイナリ生成
- deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli
+ deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown
 # 実行例
 ./.deno/bin/breakdown --help
 ```
@@ -25,7 +25,7 @@ mkdir -p .deno/bin
 ```jsonc
 {
   "tasks": {
-    "breakdown": "run -A jsr:@tettuan/breakdown/cli"
+    "breakdown": "run -A jsr:@tettuan/breakdown"
   }
 }
 ```
@@ -47,8 +47,8 @@ breakdown --help
 ### 4. 直接 deno run で実行
 
 ```bash
-deno run -A jsr:@tettuan/breakdown/cli --help
-deno run -A jsr:@tettuan/breakdown/cli to project <input.md> -o <output_dir>
+deno run -A jsr:@tettuan/breakdown --help
+deno run -A jsr:@tettuan/breakdown to project <input.md> -o <output_dir>
 ```
 
 ---

@@ -1,0 +1,1662 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="deno test" tests="428" failures="78" errors="0" time="2.392">
+    <testsuite name="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" tests="15" disabled="0" errors="0" failures="0">
+        <testcase name="BreakdownConfigOption - CustomConfig Functionality" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.002" line="12" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.002" line="89" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - Error Handling" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.032" line="187" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Functionality &gt; should allow setting and getting CustomConfig programmatically" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.001" line="13" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Functionality &gt; should provide correct type interfaces" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="38" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Functionality &gt; should handle working directory parameter" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="61" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Functionality &gt; should handle undefined CustomConfig gracefully" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="69" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should check if CustomConfig is enabled" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.001" line="106" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should get findBugs configuration" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="121" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should check if find-bugs is enabled" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="133" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should get supported two-parameter commands" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="151" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should check if specific two-parameter command is supported" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="162" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - CustomConfig Methods &gt; should get find configuration" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.000" line="175" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - Error Handling &gt; should handle BreakdownConfig loading errors gracefully" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.030" line="188" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigOption - Error Handling &gt; should handle missing CustomConfig sections" classname="./lib/cli/tests/1_structure_breakdown_config_option_custom_test.ts" time="0.001" line="201" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/config_prefix_detector_test.ts" tests="10" disabled="0" errors="0" failures="0">
+        <testcase name="ConfigPrefixDetector.detectConfigPath - detects --config option" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="8" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - detects -c short option" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="14" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - returns undefined when not found" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="20" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - ignores config without value" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="26" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - ignores config followed by another option" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="32" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - handles config at end of args" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="38" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - returns first config when multiple exist" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="44" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - handles empty args array" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="50" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - handles predefined config names" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="56" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector.detectConfigPath - handles file paths with spaces when quoted" classname="./lib/cli/config_prefix_detector_test.ts" time="0.000" line="62" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" tests="34" disabled="0" errors="0" failures="0">
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.002" line="11" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.001" line="46" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Multiple Options Boundary" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.001" line="78" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.001" line="104" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.001" line="142" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Whitespace and Special Cases" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="174" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests &gt; Empty prefix boundary" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.001" line="12" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests &gt; Single character prefix" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="18" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests &gt; Very long prefix" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="24" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests &gt; Prefix with special characters" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="31" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Boundary Value Tests &gt; Unicode prefix" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="38" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests &gt; Missing value at end of arguments" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="47" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests &gt; Missing value with short form" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="53" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests &gt; Next argument is another option" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="59" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests &gt; Next argument is another short option" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="65" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Error Boundary Tests &gt; Config option in middle with missing value" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="71" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Multiple Options Boundary &gt; First config wins with equals format" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="79" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Multiple Options Boundary &gt; First config wins with space format" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="85" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Multiple Options Boundary &gt; Mixed format - equals first" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="91" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Multiple Options Boundary &gt; Mixed format - space first" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="97" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options &gt; Config with command arguments" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="105" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options &gt; Config at beginning" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="111" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options &gt; Config at end" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="117" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options &gt; Config with help flag" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="123" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Integration with Other Options &gt; Complex integration" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="129" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests &gt; Relative path" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="143" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests &gt; Absolute path" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="149" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests &gt; Windows-style path" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="155" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests &gt; Config name only" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="161" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Path and File Format Tests &gt; URL-like config" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="167" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Whitespace and Special Cases &gt; Config with spaces in value" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="175" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Whitespace and Special Cases &gt; Config with tabs" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="181" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Whitespace and Special Cases &gt; Config with newlines" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="187" col="11">
+        </testcase>
+        <testcase name="BreakdownConfigPrefix - Whitespace and Special Cases &gt; Config with quotes" classname="./lib/cli/tests/1_structure_breakdown_config_prefix_boundary_test.ts" time="0.000" line="193" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/0_architecture_config_integration_test.ts" tests="11" disabled="0" errors="0" failures="0">
+        <testcase name="CLI Config Integration Tests" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.052" line="9" col="6">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should parse --config=production argument correctly" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.000" line="34" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should load production-user.yml with --config=production" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.038" line="42" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should support find bugs command with CustomConfig" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.002" line="56" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should load full configuration structure" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.001" line="72" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should handle missing config file gracefully" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.000" line="92" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should work without config option" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.000" line="107" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should parse -c short form" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.000" line="125" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should parse -c=production format" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.000" line="133" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should validate CustomConfig findBugs settings" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.001" line="141" col="13">
+        </testcase>
+        <testcase name="CLI Config Integration Tests &gt; should support two-param command validation" classname="./lib/cli/tests/0_architecture_config_integration_test.ts" time="0.001" line="172" col="13">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" tests="10" disabled="0" errors="0" failures="0">
+        <testcase name="BreakdownConfigOption - parses --config=prefix format" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="4" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - parses -c=prefix format" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="12" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - parses --config prefix space-separated format" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="20" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - parses -c prefix space-separated format" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="28" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - returns undefined when no config option" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="36" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - handles empty prefix" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="44" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - ignores next option as value" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="52" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - ignores -c at end of args" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="60" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - takes first config option when multiple exist" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="68" col="6">
+        </testcase>
+        <testcase name="BreakdownConfigOption - handles complex prefix values" classname="./lib/cli/tests/1_structure_breakdown_config_option_test.ts" time="0.000" line="76" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/1_structure_predefined_configs_test.ts" tests="4" disabled="0" errors="0" failures="0">
+        <testcase name="PREDEFINED_CONFIGS - includes production mapping" classname="./lib/cli/tests/1_structure_predefined_configs_test.ts" time="0.000" line="10" col="6">
+        </testcase>
+        <testcase name="PREDEFINED_CONFIGS - all predefined configs present" classname="./lib/cli/tests/1_structure_predefined_configs_test.ts" time="0.000" line="29" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - handles predefined config names" classname="./lib/cli/tests/1_structure_predefined_configs_test.ts" time="0.001" line="41" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - handles custom file paths" classname="./lib/cli/tests/1_structure_predefined_configs_test.ts" time="0.000" line="73" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" tests="18" disabled="0" errors="0" failures="17">
+        <testcase name="CustomConfig - Core Functionality" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.005" line="103" col="6">
+            <failure message="3 test steps failed">3 test steps failed.</failure>
+        </testcase>
+        <testcase name="CustomConfig - BreakdownParams Integration" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.001" line="168" col="6">
+            <failure message="4 test steps failed">4 test steps failed.</failure>
+        </testcase>
+        <testcase name="CustomConfig - Find Command Integration" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.002" line="245" col="6">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="CustomConfig - Error Handling" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.003" line="281" col="6">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="CustomConfig - Performance and Validation" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.003" line="305" col="6">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="CustomConfig - Core Functionality &gt; should load CustomConfig from production-user.yml" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.003" line="106" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m107[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m106[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Core Functionality &gt; should validate findBugs configuration" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="118" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m119[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m118[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Core Functionality &gt; should validate file extensions and exclusions" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="150" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m151[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m150[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - BreakdownParams Integration &gt; should validate BreakdownParams customConfig structure" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="171" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m172[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m171[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - BreakdownParams Integration &gt; should validate two-parameter command patterns" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.001" line="184" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m185[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m184[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - BreakdownParams Integration &gt; should validate command validation rules" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="205" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m206[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m205[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - BreakdownParams Integration &gt; should validate option definitions" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="225" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m226[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m225[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Find Command Integration &gt; should support find command with bugs parameter" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="248" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m249[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m248[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Find Command Integration &gt; should validate find-bugs end-to-end configuration" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="261" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m262[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m261[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Error Handling &gt; should handle missing config file gracefully" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="282" col="11">
+        </testcase>
+        <testcase name="CustomConfig - Error Handling &gt; should validate error handling configuration" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.000" line="292" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m293[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m292[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Performance and Validation &gt; should load configuration efficiently" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.001" line="308" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m310[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m308[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CustomConfig - Performance and Validation &gt; should validate all required fields exist" classname="./lib/cli/tests/0_architecture_custom_config_integration_test.ts" time="0.001" line="319" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadCustomConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m99[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m320[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/0_architecture_custom_config_integration_test.ts[0m:[0m[33m319[0m:[0m[33m3[0m</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" tests="10" disabled="0" errors="0" failures="9">
+        <testcase name="BreakdownConfig - CustomConfig Integration" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.005" line="59" col="6">
+            <failure message="3 test steps failed">3 test steps failed.</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - Integration with BreakdownConfig class" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.003" line="151" col="6">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - Custom Config Validation" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.002" line="191" col="6">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - CustomConfig Integration &gt; should load production-user.yml with basic loadConfig utility" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.000" line="62" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m55[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m63[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m62[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - CustomConfig Integration &gt; should contain BreakdownParams customConfig structure" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.000" line="90" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m55[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m91[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m90[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - CustomConfig Integration &gt; should validate production-user.yml structure matches expected format" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.000" line="128" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m55[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m131[0m:[0m[33m22[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m128[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - Integration with BreakdownConfig class &gt; should handle BreakdownConfig initialization gracefully" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.001" line="152" col="11">
+        </testcase>
+        <testcase name="BreakdownConfig - Integration with BreakdownConfig class &gt; should document BreakdownConfig integration requirements" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.001" line="171" col="11">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m186[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m171[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - Custom Config Validation &gt; should validate customConfig findBugs configuration structure" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.001" line="192" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m55[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m193[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m192[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="BreakdownConfig - Custom Config Validation &gt; should validate BreakdownParams customConfig validation rules" classname="./lib/cli/tests/1_structure_breakdown_config_custom_test.ts" time="0.000" line="216" col="11">
+            <failure message="Uncaught Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;">Error: Failed to load config from /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml: No such file or directory (os error 2): readfile &apos;/private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/351211a774434b42/config/production-user.yml&apos;
+    throw new Error(`Failed to load config from ${configPath}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mloadConfig[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m55[0m:[0m[33m11[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m217[0m:[0m[33m20[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/1_structure_breakdown_config_custom_test.ts[0m:[0m[33m216[0m:[0m[33m3[0m</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" tests="35" disabled="0" errors="0" failures="0">
+        <testcase name="ConfigPrefixDetector - Basic Space-Separated Format" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.002" line="14" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Equals Format" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.002" line="36" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - hasConfig Method" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="58" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - getConfigIndex Method" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="80" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Edge Cases" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.002" line="103" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Integration Scenarios" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="126" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Special Characters and Unicode" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="168" col="6">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Space-Separated Format &gt; detects --config with space separator" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="15" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Space-Separated Format &gt; detects -c with space separator" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="20" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Space-Separated Format &gt; returns undefined when no config option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="25" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Space-Separated Format &gt; returns undefined when config has no value" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="30" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Equals Format &gt; detects --config=value format" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="37" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Equals Format &gt; detects -c=value format" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="42" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Equals Format &gt; handles empty value with equals" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="47" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Basic Equals Format &gt; handles complex values with equals" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="52" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - hasConfig Method &gt; returns true when --config exists" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="59" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - hasConfig Method &gt; returns true when -c exists" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="64" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - hasConfig Method &gt; returns false when no config option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="69" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - hasConfig Method &gt; returns true even without value" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="74" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - getConfigIndex Method &gt; returns index of --config option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="81" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - getConfigIndex Method &gt; returns index of -c option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="86" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - getConfigIndex Method &gt; returns -1 when no config option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="91" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - getConfigIndex Method &gt; returns first occurrence when multiple configs" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="96" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Edge Cases &gt; handles config at end of arguments" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="104" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Edge Cases &gt; ignores option-like values" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="110" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Edge Cases &gt; handles multiple equals signs" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="115" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Edge Cases &gt; handles paths as values" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="120" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Integration Scenarios &gt; works with find bugs command" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="127" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Integration Scenarios &gt; works with mixed options" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="136" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Integration Scenarios &gt; prioritizes first config option" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="145" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Integration Scenarios &gt; handles complex real-world scenario" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="153" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Special Characters and Unicode &gt; handles special characters in prefix" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.001" line="169" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Special Characters and Unicode &gt; handles unicode characters" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="174" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Special Characters and Unicode &gt; handles whitespace in values" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="179" col="11">
+        </testcase>
+        <testcase name="ConfigPrefixDetector - Special Characters and Unicode &gt; handles empty array" classname="./lib/cli/tests/2_unit_config_prefix_detector_test.ts" time="0.000" line="184" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_args_validator_test.ts" tests="11" disabled="0" errors="0" failures="0">
+        <testcase name="NoParams: help flag" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.001" line="16" col="6">
+        </testcase>
+        <testcase name="NoParams: error on invalid usage" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="23" col="6">
+        </testcase>
+        <testcase name="Single: init command" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="37" col="6">
+        </testcase>
+        <testcase name="Single: error on invalid single command" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="45" col="6">
+        </testcase>
+        <testcase name="Double: --from and --destination" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.002" line="56" col="6">
+        </testcase>
+        <testcase name="Double: only --input, no stdin" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="72" col="6">
+        </testcase>
+        <testcase name="Double: only stdin" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="86" col="6">
+        </testcase>
+        <testcase name="Double: error on both --from and --input" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="104" col="6">
+        </testcase>
+        <testcase name="Double: error on missing --from, --input, and stdin" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="118" col="6">
+        </testcase>
+        <testcase name="Double: error on --from without --destination" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="132" col="6">
+        </testcase>
+        <testcase name="Double: error on invalid --input type" classname="./lib/cli/tests/2_unit_args_validator_test.ts" time="0.000" line="149" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_args_test.ts" tests="13" disabled="0" errors="0" failures="4">
+        <testcase name="CLI High-Level Arguments" classname="./lib/cli/tests/2_unit_args_test.ts" time="1.596" line="28" col="6">
+            <failure message="3 test steps failed">3 test steps failed.</failure>
+        </testcase>
+        <testcase name="CLI error handling - source options with input" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.099" line="296" col="6">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; setup" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.007" line="30" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; multiple options" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.182" line="72" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; source options with input" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.176" line="96" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; conflicting options" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.141" line="118" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; invalid input type" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.135" line="139" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; duplicate options" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.297" line="158" col="11">
+            <failure message="Uncaught AssertionError: Command error does not contain expected: Invalid input parameters
+Actual error: No such file or directory (os error 2)">AssertionError: Command error does not contain expected: Invalid input parameters
+Actual error: No such file or directory (os error 2)
+    throw new AssertionError(msg);
+[0m[31m          ^[0m
+    at [0m[1m[3massert[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert.ts[0m:[0m[33m18[0m:[0m[33m11[0m)
+    at [0m[1m[3massertCommandOutput[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/assertions.ts[0m:[0m[33m119[0m:[0m[33m5[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m176[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m158[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; short form options" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.138" line="181" col="11">
+            <failure message="Uncaught AssertionError: Command error does not contain expected: Failed to read input file
+Actual error: No input provided via stdin or -f/--from option">AssertionError: Command error does not contain expected: Failed to read input file
+Actual error: No input provided via stdin or -f/--from option
+    throw new AssertionError(msg);
+[0m[31m          ^[0m
+    at [0m[1m[3massert[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert.ts[0m:[0m[33m18[0m:[0m[33m11[0m)
+    at [0m[1m[3massertCommandOutput[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/assertions.ts[0m:[0m[33m119[0m:[0m[33m5[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m199[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m181[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; relative path input" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.152" line="205" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; absolute path input" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.159" line="225" col="11">
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; mixed path input/output" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.127" line="246" col="11">
+            <failure message="Uncaught AssertionError: Command error does not contain expected: Failed to read input file
+Actual error: No such file or directory (os error 2)">AssertionError: Command error does not contain expected: Failed to read input file
+Actual error: No such file or directory (os error 2)
+    throw new AssertionError(msg);
+[0m[31m          ^[0m
+    at [0m[1m[3massert[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert.ts[0m:[0m[33m18[0m:[0m[33m11[0m)
+    at [0m[1m[3massertCommandOutput[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/assertions.ts[0m:[0m[33m119[0m:[0m[33m5[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m267[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_args_test.ts[0m:[0m[33m246[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="CLI High-Level Arguments &gt; cleanup" classname="./lib/cli/tests/2_unit_args_test.ts" time="0.000" line="273" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_commands_test.ts" tests="6" disabled="0" errors="0" failures="3">
+        <testcase name="CLI Command Execution" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.460" line="33" col="6">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="CLI Command Execution &gt; setup" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.211" line="34" col="11">
+        </testcase>
+        <testcase name="CLI Command Execution &gt; Parameter error: Invalid input parameters" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.001" line="62" col="11">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_cli/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_cli/.agent/breakdown/config/app.yml&apos;
+    await Deno.writeTextFile(
+[0m[31m               ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_commands_test.ts[0m:[0m[33m66[0m:[0m[33m16[0m
+    at [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m11[0m)
+    at [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m33[0m)
+    at [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m20[0m)
+    at [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m37[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_commands_test.ts[0m:[0m[33m62[0m:[0m[33m11[0m</failure>
+        </testcase>
+        <testcase name="CLI Command Execution &gt; Template not found: Prompt loading failed" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.001" line="87" col="11">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_cli/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_cli/.agent/breakdown/config/app.yml&apos;
+    await Deno.writeTextFile(
+[0m[31m               ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_commands_test.ts[0m:[0m[33m91[0m:[0m[33m16[0m
+    at [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m11[0m)
+    at [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m33[0m)
+    at [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m20[0m)
+    at [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m37[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/lib/cli/tests/2_unit_commands_test.ts[0m:[0m[33m87[0m:[0m[33m11[0m</failure>
+        </testcase>
+        <testcase name="CLI Command Execution &gt; configuration integration" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.177" line="119" col="11">
+        </testcase>
+        <testcase name="CLI Command Execution &gt; cleanup" classname="./lib/cli/tests/2_unit_commands_test.ts" time="0.002" line="136" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_params_test.ts" tests="11" disabled="0" errors="0" failures="0">
+        <testcase name="parseArgs: parses required --from and --destination" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.001" line="4" col="6">
+        </testcase>
+        <testcase name="parseArgs: throws on missing required options" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="11" col="6">
+        </testcase>
+        <testcase name="parseArgs: throws on conflicting --from and --input" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="15" col="6">
+        </testcase>
+        <testcase name="parseArgs: throws on duplicate option" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="23" col="6">
+        </testcase>
+        <testcase name="parseArgs: throws on invalid input type" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="31" col="6">
+        </testcase>
+        <testcase name="parseArgs: parses adaptation and promptDir" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="35" col="6">
+        </testcase>
+        <testcase name="validateCommandOptions: parses short and long options" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="51" col="6">
+        </testcase>
+        <testcase name="validateCommandOptions: throws on duplicate" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="60" col="6">
+        </testcase>
+        <testcase name="validateCommandOptions: throws on conflicting" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="68" col="6">
+        </testcase>
+        <testcase name="getOptionValue: returns value for long and short" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.030" line="76" col="6">
+        </testcase>
+        <testcase name="getOptionValue: returns undefined if not found" classname="./lib/cli/tests/2_unit_params_test.ts" time="0.000" line="82" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/factory/2_unit_factory_integrate_test.ts" tests="2" disabled="0" errors="0" failures="0">
+        <testcase name="PromptManager receives input_text from Factory" classname="./lib/factory/2_unit_factory_integrate_test.ts" time="0.000" line="15" col="6">
+        </testcase>
+        <testcase name="PromptManager receives empty input_text from Factory" classname="./lib/factory/2_unit_factory_integrate_test.ts" time="0.001" line="27" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" tests="100" disabled="0" errors="0" failures="20">
+        <testcase name="InputFilePathResolver: fromFile not provided/absolute/relative" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="191" col="10">
+        </testcase>
+        <testcase name="InputFilePathResolver: layerType/fromLayerType handling" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="191" col="10">
+        </testcase>
+        <testcase name="InputFilePathResolver: Windows/edge/ambiguous cases" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="191" col="10">
+        </testcase>
+        <testcase name="InputFilePathResolver: fromFile not provided/absolute/relative &gt; returns empty string if fromFile is not provided" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: fromFile not provided/absolute/relative &gt; returns absolute path if fromFile is absolute" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: fromFile not provided/absolute/relative &gt; resolves path if fromFile has path hierarchy (relative)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: layerType/fromLayerType handling &gt; resolves path if fromFile is filename only (uses layerType)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: layerType/fromLayerType handling &gt; resolves path if fromFile is filename only (uses fromLayerType)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: Windows/edge/ambiguous cases &gt; normalizes Windows-style path separators" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="InputFilePathResolver: Windows/edge/ambiguous cases &gt; handles edge case with empty layerType and fromLayerType" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: path resolution" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.004" line="191" col="10">
+        </testcase>
+        <testcase name="OutputFilePathResolver: directory/file/extension handling" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.012" line="191" col="10">
+        </testcase>
+        <testcase name="OutputFilePathResolver: Windows/ambiguous cases" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="191" col="10">
+        </testcase>
+        <testcase name="OutputFilePathResolver: unique filename generation" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="191" col="10">
+        </testcase>
+        <testcase name="InputFilePathResolver: Windows/edge/ambiguous cases &gt; handles ambiguous case where fromFile is a directory name" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: path resolution &gt; returns default path if destinationFile is not provided" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: path resolution &gt; returns absolute path if destinationFile is absolute file path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: path resolution &gt; returns path if destinationFile has path hierarchy and extension" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: directory/file/extension handling &gt; returns path in directory if destinationFile is directory" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.005" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: directory/file/extension handling &gt; returns path in layerType dir if destinationFile is filename only with extension" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.028" line="191" col="10">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: adaptation/fallback logic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.063" line="191" col="10">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: fromLayerType inference" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.097" line="191" col="10">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: file existence and edge cases" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.007" line="191" col="10">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.026" line="191" col="10">
+        </testcase>
+        <testcase name="OutputFilePathResolver: directory/file/extension handling &gt; returns path in directory if destinationFile is filename only without extension" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; falls back to config.app_prompt.base_dir" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.005" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: Windows/ambiguous cases &gt; normalizes Windows-style path separators" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: Windows/ambiguous cases &gt; handles ambiguous case where destinationFile is a directory name with extension" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="OutputFilePathResolver: unique filename generation &gt; generates unique filenames for default output (hash collision test)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; uses relative baseDir and resolves to absolute" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: base_dir resolution" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="191" col="10">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: absolute path check" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="191" col="10">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; config.app_prompt.base_dir is a nested relative path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: base_dir resolution &gt; resolves with config.app_schema.base_dir (absolute)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: base_dir resolution &gt; resolves with config.app_schema.base_dir (relative)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: base_dir resolution &gt; falls back to default if config.app_schema.base_dir is not set" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.001" line="323" col="15">
+        </testcase>
+        <testcase name="SchemaFilePathResolver: absolute path check &gt; returns absolute path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; config.app_prompt.base_dir is an absolute path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; config.app_prompt.base_dir is empty string (should fallback to default)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: baseDir resolution &gt; config.app_prompt.base_dir is deeply nested" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: adaptation/fallback logic &gt; adaptation file preferred if exists" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.004" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: adaptation/fallback logic &gt; uses adaptation and falls back if not found" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: adaptation/fallback logic &gt; adaptation and fallback both missing" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: fromLayerType inference &gt; infers fromLayerType from fromFile" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: fromLayerType inference &gt; uses explicit fromLayerType" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.031" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: fromLayerType inference &gt; falls back to layerType if fromFile has no keyword" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.030" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: file existence and edge cases &gt; returns path even if file does not exist" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: file existence and edge cases &gt; returns correct path for missing demonstrativeType/layerType" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: file existence and edge cases &gt; fromFile is absolute path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.005" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; to/project basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; to/issue basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; to/task basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; summary/project basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; summary/issue basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; summary/task basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; defect/project basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.002" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; defect/issue basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="PromptTemplatePathResolver: demonstrativeType/layerType combinations &gt; defect/task basic" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+        </testcase>
+        <testcase name="Input Path: fromFile hierarchy" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.171" line="191" col="10">
+        </testcase>
+        <testcase name="Input Path: fromLayerType vs layerType" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.096" line="191" col="10">
+        </testcase>
+        <testcase name="Input Path: fromFile edge cases" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.017" line="191" col="10">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="Output Path: destinationFile patterns" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.101" line="191" col="10">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Output Path: Directory vs File Ambiguity and Hash" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.026" line="191" col="10">
+            <failure message="2 test steps failed">2 test steps failed.</failure>
+        </testcase>
+        <testcase name="Factory Combination: resolves all subclass paths" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.200" line="191" col="10">
+        </testcase>
+        <testcase name="Input Path: fromFile hierarchy &gt; should resolve relative path correctly" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.157" line="323" col="15">
+        </testcase>
+        <testcase name="Input Path: fromLayerType vs layerType &gt; should resolve with fromLayerType provided" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.017" line="323" col="15">
+        </testcase>
+        <testcase name="Input Path: fromLayerType vs layerType &gt; should resolve with layerType when fromLayerType not provided" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.049" line="323" col="15">
+        </testcase>
+        <testcase name="Input Path: fromFile edge cases &gt; should return empty string if fromFile not provided" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.007" line="323" col="15">
+            <failure message="Uncaught Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/bd2eaec09fc68c05/.agent/breakdown/config/app.yml">Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/bd2eaec09fc68c05/.agent/breakdown/config/app.yml
+    throw new Error(`${code}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mFunction.throwError[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/error_manager.ts[0m:[0m[33m86[0m:[0m[33m11[0m)
+    at [0m[1m[3mAppConfigLoader.load[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/loaders/app_config_loader.ts[0m:[0m[33m166[0m:[0m[33m24[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mConfigManager.loadAppConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m77[0m:[0m[33m24[0m)
+    at async [0m[1m[3mConfigManager.getConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m56[0m:[0m[33m25[0m)
+    at async [0m[1m[3mBreakdownConfig.loadConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/breakdown_config.ts[0m:[0m[33m65[0m:[0m[33m22[0m)
+    at async [0m[1m[3mFunction.create[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/factory/prompt_variables_factory.ts[0m:[0m[33m114[0m:[0m[33m5[0m)
+    at async [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/0_path/path_resolver_test.ts[0m:[0m[33m151[0m:[0m[33m23[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.197" line="191" col="10">
+            <failure message="4 test steps failed">4 test steps failed.</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; should match test-created and implementation-resolved prompt directory (relative path)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.013" line="323" col="15">
+            <failure message="Uncaught Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml">Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml
+    throw new Error(`${code}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mFunction.throwError[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/error_manager.ts[0m:[0m[33m86[0m:[0m[33m11[0m)
+    at [0m[1m[3mAppConfigLoader.load[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/loaders/app_config_loader.ts[0m:[0m[33m166[0m:[0m[33m24[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mConfigManager.loadAppConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m77[0m:[0m[33m24[0m)
+    at async [0m[1m[3mConfigManager.getConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m56[0m:[0m[33m25[0m)
+    at async [0m[1m[3mBreakdownConfig.loadConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/breakdown_config.ts[0m:[0m[33m65[0m:[0m[33m22[0m)
+    at async [0m[1m[3mFunction.create[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/factory/prompt_variables_factory.ts[0m:[0m[33m114[0m:[0m[33m5[0m)
+    at async [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/edge_cases/prompt_base_dir_edge_test.ts[0m:[0m[33m75[0m:[0m[33m23[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)</failure>
+        </testcase>
+        <testcase name="Input Path: fromFile edge cases &gt; should resolve Windows-style path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_path_resolver/prompts/find/bugs/base.md&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_path_resolver/prompts/find/bugs/base.md&apos;
+    await Deno.writeTextFile(join(findBugsDir, &quot;base.md&quot;), findBugsPrompt);
+[0m[31m               ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m123[0m:[0m[33m16[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/0_path/path_resolver_test.ts[0m:[0m[33m159[0m:[0m[33m17[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; baseDir not specified or empty" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.005" line="323" col="15">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; baseDir not specified or empty &gt; should error when baseDir is not specified (empty string)" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.003" line="323" col="15">
+            <failure message="Uncaught Error: Expected &apos;Invalid application configuration&apos; error, got: Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml">Error: Expected &apos;Invalid application configuration&apos; error, got: Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml
+            throw new Error(`Expected &apos;Invalid application configuration&apos; error, got: ${e}`);
+[0m[31m                  ^[0m
+    at [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/edge_cases/prompt_base_dir_edge_test.ts[0m:[0m[33m136[0m:[0m[33m19[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Output Path: destinationFile patterns &gt; should resolve default path pattern" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.008" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; promptBaseDir path interpretation" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.113" line="323" col="15">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; promptBaseDir path interpretation &gt; relative path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.052" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; promptBaseDir path interpretation &gt; relative path &gt; should find template when promptBaseDir is a relative path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.017" line="323" col="15">
+        </testcase>
+        <testcase name="Output Path: destinationFile patterns &gt; should resolve path hierarchy and extension" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.020" line="323" col="15">
+        </testcase>
+        <testcase name="Output Path: destinationFile patterns &gt; should resolve filename only" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.006" line="323" col="15">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/[31m[1m316a97578523a1b7[1m[31m[31m[1m/[1m[31m[31m[1mtmp[1m[31m[31m[1m/[1m[31m[31m[1mtest_path_resolver[1m[31m/issue/file.md
+[22m[39m[32m[1m+   /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/[32m[1m3e53b40f3e5556f9[1m[32m/issue/file.md
+[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/[31m[1m316a97578523a1b7[1m[31m[31m[1m/[1m[31m[31m[1mtmp[1m[31m[31m[1m/[1m[31m[31m[1mtest_path_resolver[1m[31m/issue/file.md
+[22m[39m[32m[1m+   /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/[32m[1m3e53b40f3e5556f9[1m[32m/issue/file.md
+[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/0_path/path_resolver_test.ts[0m:[0m[33m231[0m:[0m[33m7[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.329" line="191" col="10">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt Selection: CLI integration adaptation option" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="191" col="10">
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; promptBaseDir path interpretation &gt; absolute path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.043" line="323" col="15">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; promptBaseDir path interpretation &gt; absolute path &gt; should find template when promptBaseDir is an absolute path" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.008" line="323" col="15">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/edge_cases/prompt_base_dir_edge_test.ts[0m:[0m[33m240[0m:[0m[33m11[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.327" line="323" col="15">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should process project to issue prompt" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.034" line="323" col="15">
+            <failure message="Uncaught AssertionError">AssertionError
+    throw new AssertionError(msg);
+[0m[31m          ^[0m
+    at [0m[1m[3massert[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert.ts[0m:[0m[33m18[0m:[0m[33m11[0m)
+    at [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/selection_test.ts[0m:[0m[33m202[0m:[0m[33m7[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Output Path: Directory vs File Ambiguity and Hash &gt; should resolve directory destinationFile" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.004" line="323" col="15">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test_path_resolver/prompts/find/bugs&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test_path_resolver/prompts/find/bugs&apos;
+    await Deno.mkdir(findBugsDir, { recursive: true, mode: 0o777 });
+[0m[31m    ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m111[0m:[0m[33m5[0m)
+    at async [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/0_path/path_resolver_test.ts[0m:[0m[33m241[0m:[0m[33m17[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Output Path: Directory vs File Ambiguity and Hash &gt; should resolve ambiguous directory vs file" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.016" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; Explicit config value as promptBaseDir" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.018" line="323" col="15">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="Prompt baseDir edge cases &gt; Explicit config value as promptBaseDir &gt; should find correct template when using config value as promptBaseDir" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.018" line="323" col="15">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/edge_cases/prompt_base_dir_edge_test.ts[0m:[0m[33m296[0m:[0m[33m9[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Output Path: Directory vs File Ambiguity and Hash &gt; should generate unique paths for hash collisions" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.004" line="323" col="15">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_path_resolver/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_path_resolver/.agent/breakdown/config/app.yml&apos;
+      await Deno.writeTextFile(configPath, configContent);
+[0m[31m                 ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m130[0m:[0m[33m18[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mObject.&lt;anonymous&gt;[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/0_path/path_resolver_test.ts[0m:[0m[33m289[0m:[0m[33m17[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m358[0m:[0m[33m7[0m)
+    at async [0m[1m[3mFunction.runTest[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m346[0m:[0m[33m9[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mhttps://jsr.io/@std/testing/0.224.0/_test_suite.ts[0m:[0m[33m316[0m:[0m[33m13[0m)</failure>
+        </testcase>
+        <testcase name="Factory Combination: resolves all subclass paths &gt; should resolve all subclass paths for project-&gt;issue conversion" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.010" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should process issue to task prompt" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.052" line="323" col="15">
+        </testcase>
+        <testcase name="Factory Combination: resolves all subclass paths &gt; should resolve all subclass paths for summary/project" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.051" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should process project to issue prompt with strict adaptation" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.134" line="323" col="15">
+        </testcase>
+        <testcase name="Factory Combination: resolves all subclass paths &gt; should resolve all subclass paths for defect/task with absolute destinationFile" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.101" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should process issue to task prompt with &apos;a&apos; adaptation" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.013" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should fall back to default prompt if adaptation variant doesn&apos;t exist" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.013" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: PromptAdapterImpl &gt; PromptAdapterImpl: core prompt processing &gt; should throw error for invalid demonstrative type" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.072" line="323" col="15">
+        </testcase>
+        <testcase name="Prompt Selection: CLI integration adaptation option &gt; should generate correct prompt content via CLI adaptation option" classname="https://jsr.io/@std/testing/0.224.0/_test_suite.ts" time="0.000" line="323" col="15">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/io/2_unit_stdin_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="stdin - basic input" classname="./lib/io/2_unit_stdin_test.ts" time="0.044" line="47" col="6">
+        </testcase>
+        <testcase name="stdin - empty input handling" classname="./lib/io/2_unit_stdin_test.ts" time="0.054" line="66" col="6">
+        </testcase>
+        <testcase name="stdin - multiline input" classname="./lib/io/2_unit_stdin_test.ts" time="0.072" line="102" col="6">
+        </testcase>
+        <testcase name="stdin - special characters" classname="./lib/io/2_unit_stdin_test.ts" time="0.014" line="126" col="6">
+        </testcase>
+        <testcase name="stdin - error handling" classname="./lib/io/2_unit_stdin_test.ts" time="0.010" line="147" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/cli/tests/2_unit_no_params_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="CLI no-params: --version flag" classname="./lib/cli/tests/2_unit_no_params_test.ts" time="0.159" line="29" col="6">
+        </testcase>
+        <testcase name="CLI no-params: -v flag" classname="./lib/cli/tests/2_unit_no_params_test.ts" time="0.144" line="35" col="6">
+        </testcase>
+        <testcase name="CLI no-params: --help flag" classname="./lib/cli/tests/2_unit_no_params_test.ts" time="0.146" line="41" col="6">
+        </testcase>
+        <testcase name="CLI no-params: -h flag" classname="./lib/cli/tests/2_unit_no_params_test.ts" time="0.169" line="48" col="6">
+        </testcase>
+        <testcase name="CLI no-params: no arguments" classname="./lib/cli/tests/2_unit_no_params_test.ts" time="0.294" line="54" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/io/2_unit_io_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="CLI I/O Handling" classname="./lib/io/2_unit_io_test.ts" time="0.419" line="48" col="6">
+        </testcase>
+        <testcase name="CLI I/O Handling &gt; setup" classname="./lib/io/2_unit_io_test.ts" time="0.007" line="49" col="11">
+        </testcase>
+        <testcase name="CLI I/O Handling &gt; pipe input through stdin" classname="./lib/io/2_unit_io_test.ts" time="0.189" line="90" col="11">
+        </testcase>
+        <testcase name="CLI I/O Handling &gt; error level logging" classname="./lib/io/2_unit_io_test.ts" time="0.137" line="105" col="11">
+        </testcase>
+        <testcase name="CLI I/O Handling &gt; cleanup" classname="./lib/io/2_unit_io_test.ts" time="0.001" line="122" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/workspace/2_unit_error_handler_test.ts" tests="4" disabled="0" errors="0" failures="0">
+        <testcase name="WorkspaceErrorHandler" classname="./lib/workspace/2_unit_error_handler_test.ts" time="0.013" line="6" col="6">
+        </testcase>
+        <testcase name="WorkspaceErrorHandler &gt; should handle workspace-specific errors" classname="./lib/workspace/2_unit_error_handler_test.ts" time="0.001" line="12" col="11">
+        </testcase>
+        <testcase name="WorkspaceErrorHandler &gt; should handle unexpected errors" classname="./lib/workspace/2_unit_error_handler_test.ts" time="0.001" line="21" col="11">
+        </testcase>
+        <testcase name="WorkspaceErrorHandler &gt; should log errors with context" classname="./lib/workspace/2_unit_error_handler_test.ts" time="0.001" line="30" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/workspace/path/2_unit_resolver_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="WorkspacePathResolver" classname="./lib/workspace/path/2_unit_resolver_test.ts" time="0.007" line="6" col="6">
+        </testcase>
+        <testcase name="WorkspacePathResolver &gt; should handle path resolution and normalization" classname="./lib/workspace/path/2_unit_resolver_test.ts" time="0.001" line="14" col="11">
+        </testcase>
+        <testcase name="WorkspacePathResolver &gt; should validate paths" classname="./lib/workspace/path/2_unit_resolver_test.ts" time="0.000" line="26" col="11">
+        </testcase>
+        <testcase name="WorkspacePathResolver &gt; should handle invalid paths" classname="./lib/workspace/path/2_unit_resolver_test.ts" time="0.001" line="52" col="11">
+        </testcase>
+        <testcase name="WorkspacePathResolver &gt; should support strategy updates" classname="./lib/workspace/path/2_unit_resolver_test.ts" time="0.001" line="61" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./lib/workspace/2_unit_workspace_test.ts" tests="4" disabled="0" errors="0" failures="0">
+        <testcase name="Workspace" classname="./lib/workspace/2_unit_workspace_test.ts" time="0.288" line="6" col="6">
+        </testcase>
+        <testcase name="Workspace &gt; should initialize workspace" classname="./lib/workspace/2_unit_workspace_test.ts" time="0.153" line="17" col="11">
+        </testcase>
+        <testcase name="Workspace &gt; should resolve paths correctly" classname="./lib/workspace/2_unit_workspace_test.ts" time="0.000" line="24" col="11">
+        </testcase>
+        <testcase name="Workspace &gt; should handle directory operations" classname="./lib/workspace/2_unit_workspace_test.ts" time="0.002" line="30" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/0_env/init_test.ts" tests="10" disabled="0" errors="0" failures="5">
+        <testcase name="init - new environment" classname="./tests/0_foundation/0_env/init_test.ts" time="0.061" line="29" col="6">
+        </testcase>
+        <testcase name="init - existing environment" classname="./tests/0_foundation/0_env/init_test.ts" time="0.089" line="57" col="6">
+        </testcase>
+        <testcase name="init - with custom working directory" classname="./tests/0_foundation/0_env/init_test.ts" time="0.001" line="97" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/init-custom/.agent/breakdown/config&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/init-custom/.agent/breakdown/config&apos;
+    await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
+[0m[31m    ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m105[0m:[0m[33m5[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/init_test.ts[0m:[0m[33m105[0m:[0m[33m5[0m)</failure>
+        </testcase>
+        <testcase name="init - with debug output" classname="./tests/0_foundation/0_env/init_test.ts" time="0.129" line="132" col="6">
+        </testcase>
+        <testcase name="init - error handling" classname="./tests/0_foundation/0_env/init_test.ts" time="0.059" line="182" col="6">
+        </testcase>
+        <testcase name="init - config file auto-generation" classname="./tests/0_foundation/0_env/init_test.ts" time="0.098" line="257" col="6">
+        </testcase>
+        <testcase name="init - custom prompt/schema base_dir" classname="./tests/0_foundation/0_env/init_test.ts" time="0.002" line="292" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/init-custom-base/prompts/find/bugs&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/init-custom-base/prompts/find/bugs&apos;
+    await Deno.mkdir(findBugsDir, { recursive: true, mode: 0o777 });
+[0m[31m    ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m111[0m:[0m[33m5[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/init_test.ts[0m:[0m[33m301[0m:[0m[33m5[0m)</failure>
+        </testcase>
+        <testcase name="init - preserve existing app.yml" classname="./tests/0_foundation/0_env/init_test.ts" time="0.035" line="348" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-preserve-config/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-preserve-config/.agent/breakdown/config/app.yml&apos;
+      await Deno.writeTextFile(configPath, configContent);
+[0m[31m                 ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m130[0m:[0m[33m18[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/init_test.ts[0m:[0m[33m357[0m:[0m[33m5[0m)</failure>
+        </testcase>
+        <testcase name="init - prompt and schema templates under lib are copied" classname="./tests/0_foundation/0_env/init_test.ts" time="0.016" line="387" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-copy/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-copy/.agent/breakdown/config/app.yml&apos;
+      await Deno.writeTextFile(configPath, configContent);
+[0m[31m                 ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m130[0m:[0m[33m18[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/init_test.ts[0m:[0m[33m395[0m:[0m[33m5[0m)</failure>
+        </testcase>
+        <testcase name="init - prompt and schema templates are copied even if cwd is changed" classname="./tests/0_foundation/0_env/init_test.ts" time="0.025" line="451" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-copy-cwd/.agent/breakdown/prompts/to/issue/defect_fix_markdown.md&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/init-copy-cwd/.agent/breakdown/prompts/to/issue/defect_fix_markdown.md&apos;
+            await Deno.writeTextFile(destPath, content);
+[0m[31m                       ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3mWorkspaceImpl.initialize[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/workspace/workspace.ts[0m:[0m[33m125[0m:[0m[33m24[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/init_test.ts[0m:[0m[33m473[0m:[0m[33m7[0m)</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/2_config/config_test.ts" tests="6" disabled="0" errors="0" failures="0">
+        <testcase name="cleanup" classname="./tests/0_foundation/2_config/config_test.ts" time="0.015" line="28" col="6">
+        </testcase>
+        <testcase name="config - default settings" classname="./tests/0_foundation/2_config/config_test.ts" time="0.028" line="42" col="6">
+        </testcase>
+        <testcase name="config - custom working directory" classname="./tests/0_foundation/2_config/config_test.ts" time="0.078" line="81" col="6">
+        </testcase>
+        <testcase name="config - invalid configuration handling" classname="./tests/0_foundation/2_config/config_test.ts" time="0.000" line="120" col="6">
+        </testcase>
+        <testcase name="config - basic functionality" classname="./tests/0_foundation/2_config/config_test.ts" time="0.033" line="140" col="6">
+        </testcase>
+        <testcase name="config - error if no config file and different cwd" classname="./tests/0_foundation/2_config/config_test.ts" time="0.001" line="183" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/0_env/setup_test.ts" tests="2" disabled="0" errors="0" failures="1">
+        <testcase name="setup - environment initialization" classname="./tests/0_foundation/0_env/setup_test.ts" time="0.056" line="8" col="6">
+            <failure message="Uncaught AssertionError: Values are not equal: Directory does not exist: tmp/test/setup/.agent/breakdown/prompts
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal: Directory does not exist: tmp/test/setup/.agent/breakdown/prompts
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[1m[3massertDirectoryExists[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/assertions.ts[0m:[0m[33m79[0m:[0m[33m3[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/0_env/setup_test.ts[0m:[0m[33m28[0m:[0m[33m5[0m</failure>
+        </testcase>
+        <testcase name="setup - cleanup" classname="./tests/0_foundation/0_env/setup_test.ts" time="0.062" line="42" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/3_commands/commands_test.ts" tests="17" disabled="0" errors="0" failures="1">
+        <testcase name="setup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.033" line="44" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_commands/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test_commands/.agent/breakdown/config/app.yml&apos;
+      await Deno.writeTextFile(configPath, configContent);
+[0m[31m                 ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m130[0m:[0m[33m18[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/3_commands/commands_test.ts[0m:[0m[33m48[0m:[0m[33m16[0m)</failure>
+        </testcase>
+        <testcase name="cleanup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.001" line="56" col="6">
+        </testcase>
+        <testcase name="parseParams - help command" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.001" line="66" col="6">
+        </testcase>
+        <testcase name="parseParams - version command" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="83" col="6">
+        </testcase>
+        <testcase name="parseParams - init command" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="101" col="6">
+        </testcase>
+        <testcase name="parseParams - adaptation option (long form)" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="119" col="6">
+        </testcase>
+        <testcase name="parseParams - adaptation option (short form)" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="131" col="6">
+        </testcase>
+        <testcase name="Command Module Tests" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.138" line="143" col="6">
+        </testcase>
+        <testcase name="cli - init command should finish and create config" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.282" line="203" col="6">
+        </testcase>
+        <testcase name="CLI Command Execution" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.004" line="250" col="6">
+        </testcase>
+        <testcase name="Command Module Tests &gt; setup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.001" line="148" col="13">
+        </testcase>
+        <testcase name="Command Module Tests &gt; initWorkspace should create required directories" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.079" line="154" col="13">
+        </testcase>
+        <testcase name="Command Module Tests &gt; displayHelp should not throw" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="183" col="13">
+        </testcase>
+        <testcase name="Command Module Tests &gt; displayVersion should not throw and output correct version" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="187" col="13">
+        </testcase>
+        <testcase name="Command Module Tests &gt; cleanup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="194" col="13">
+        </testcase>
+        <testcase name="CLI Command Execution &gt; setup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="256" col="13">
+        </testcase>
+        <testcase name="CLI Command Execution &gt; cleanup" classname="./tests/0_foundation/3_commands/commands_test.ts" time="0.000" line="260" col="13">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/4_logger/logger_level_test.ts" tests="3" disabled="0" errors="0" failures="2">
+        <testcase name="logger - log level functionality" classname="./tests/0_foundation/4_logger/logger_level_test.ts" time="0.033" line="13" col="6">
+            <failure message="1 test step failed">1 test step failed.</failure>
+        </testcase>
+        <testcase name="logger - log level functionality &gt; verify log level setting" classname="./tests/0_foundation/4_logger/logger_level_test.ts" time="0.005" line="14" col="11">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/logger/level/error/.agent/breakdown/config/app.yml&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/logger/level/error/.agent/breakdown/config/app.yml&apos;
+      await Deno.writeTextFile(configPath, configContent);
+[0m[31m                 ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m130[0m:[0m[33m18[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/4_logger/logger_level_test.ts[0m:[0m[33m17[0m:[0m[33m21[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/4_logger/logger_level_test.ts[0m:[0m[33m14[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="logger - log level functionality &gt; verify log level initialization" classname="./tests/0_foundation/4_logger/logger_level_test.ts" time="0.015" line="30" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/4_logger/logger_test.ts" tests="5" disabled="0" errors="0" failures="1">
+        <testcase name="logger - basic functionality" classname="./tests/0_foundation/4_logger/logger_test.ts" time="0.010" line="19" col="6">
+        </testcase>
+        <testcase name="logger - message formatting" classname="./tests/0_foundation/4_logger/logger_test.ts" time="0.001" line="34" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/logger/formatting/.agent/breakdown/config&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/logger/formatting/.agent/breakdown/config&apos;
+    await Deno.mkdir(configDir, { recursive: true, mode: 0o777 });
+[0m[31m    ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m105[0m:[0m[33m5[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/0_foundation/4_logger/logger_test.ts[0m:[0m[33m36[0m:[0m[33m19[0m</failure>
+        </testcase>
+        <testcase name="logger - structured data formatting" classname="./tests/0_foundation/4_logger/logger_test.ts" time="0.015" line="84" col="6">
+        </testcase>
+        <testcase name="logger - error handling" classname="./tests/0_foundation/4_logger/logger_test.ts" time="0.008" line="124" col="6">
+        </testcase>
+        <testcase name="logger - log level configuration" classname="./tests/0_foundation/4_logger/logger_test.ts" time="0.078" line="149" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/2_config/resolve_config_path_test.ts" tests="11" disabled="0" errors="0" failures="1">
+        <testcase name="resolveConfigPath - predefined config names" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="16" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - predefined config names with custom working directory" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="33" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - absolute file paths" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="45" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - relative file paths" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="55" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - relative file paths with custom working directory" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="62" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - edge cases" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="70" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - case sensitivity" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="89" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - special characters in paths" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="102" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - predefined configs constant verification" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="114" col="6">
+        </testcase>
+        <testcase name="resolveConfigPath - working directory parameter validation" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.003" line="124" col="6">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   /Users/tettuan/github/breakdown/tmp/test_cli_args/custom.yml
+[22m[39m[32m[1m+   /Users/tettuan/github/breakdown/tmp/test_cli_args/[32m[1mtmp[1m[32m[32m[1m/[1m[32m[32m[1mtest[1m[32m[32m[1m/[1m[32m[32m[1minit[1m[32m[32m[1m-[1m[32m[32m[1merror[1m[32m[32m[1m/[1m[32mcustom.yml
+[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   /Users/tettuan/github/breakdown/tmp/test_cli_args/custom.yml
+[22m[39m[32m[1m+   /Users/tettuan/github/breakdown/tmp/test_cli_args/[32m[1mtmp[1m[32m[32m[1m/[1m[32m[32m[1mtest[1m[32m[32m[1m/[1m[32m[32m[1minit[1m[32m[32m[1m-[1m[32m[32m[1merror[1m[32m[32m[1m/[1m[32mcustom.yml
+[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/2_config/resolve_config_path_test.ts[0m:[0m[33m129[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="resolveConfigPath - error handling and boundary conditions" classname="./tests/1_core/2_config/resolve_config_path_test.ts" time="0.000" line="136" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="setup" classname="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" time="0.003" line="54" col="6">
+        </testcase>
+        <testcase name="cleanup" classname="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" time="0.003" line="68" col="6">
+        </testcase>
+        <testcase name="should throw permission denied error when creating workspace in read-only directory" classname="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" time="0.026" line="84" col="6">
+        </testcase>
+        <testcase name="directory - structure with default config only" classname="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" time="0.014" line="106" col="6">
+        </testcase>
+        <testcase name="directory - structure with user config working_dir override" classname="./tests/0_foundation/5_directory_structure/directory_structure_test.ts" time="0.009" line="140" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/2_config/working_dir_test.ts" tests="6" disabled="0" errors="0" failures="2">
+        <testcase name="setup" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.005" line="47" col="6">
+        </testcase>
+        <testcase name="cleanup" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.039" line="69" col="6">
+        </testcase>
+        <testcase name="working_dir - simple pattern - default configuration" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.004" line="87" col="6">
+        </testcase>
+        <testcase name="working_dir - simple pattern - directory structure" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.010" line="138" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/config-working-dir/.agent/breakdown/schema&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test/config-working-dir/.agent/breakdown/schema&apos;
+        await Deno.mkdir(dirPath, { recursive: true });
+[0m[31m        ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/2_config/working_dir_test.ts[0m:[0m[33m180[0m:[0m[33m9[0m)</failure>
+        </testcase>
+        <testcase name="working_dir - normal pattern - custom configuration" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.002" line="208" col="6">
+        </testcase>
+        <testcase name="working_dir - edge cases - invalid configuration" classname="./tests/1_core/2_config/working_dir_test.ts" time="0.002" line="255" col="6">
+            <failure message="Uncaught AssertionError: Expected error message to include &quot;Not a directory&quot;, but got &quot;ERR1001: Application configuration file not found at: tmp/test/config-working-dir/test.txt/.agent/breakdown/config/app.yml&quot;.">AssertionError: Expected error message to include &quot;Not a directory&quot;, but got &quot;ERR1001: Application configuration file not found at: tmp/test/config-working-dir/test.txt/.agent/breakdown/config/app.yml&quot;.
+    throw new AssertionError(msg);
+[0m[31m          ^[0m
+    at [0m[1m[3massertIsError[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_is_error.ts[0m:[0m[33m62[0m:[0m[33m11[0m)
+    at [0m[1m[3massertRejects[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_rejects.ts[0m:[0m[33m95[0m:[0m[33m7[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mfn[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/2_config/working_dir_test.ts[0m:[0m[33m299[0m:[0m[33m7[0m)</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/3_prompt/prompt_processor_test.ts" tests="7" disabled="0" errors="0" failures="2">
+        <testcase name="Prompt Processing Integration" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.060" line="143" col="6">
+            <failure message="Uncaught Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml">Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/b66ef329eb4352a/tmp/test/config-working-dir/.agent/breakdown/config/app.yml
+    throw new Error(`${code}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mFunction.throwError[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/error_manager.ts[0m:[0m[33m86[0m:[0m[33m11[0m)
+    at [0m[1m[3mAppConfigLoader.load[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/loaders/app_config_loader.ts[0m:[0m[33m166[0m:[0m[33m24[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mConfigManager.loadAppConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m77[0m:[0m[33m24[0m)
+    at async [0m[1m[3mConfigManager.getConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m56[0m:[0m[33m25[0m)
+    at async [0m[1m[3mBreakdownConfig.loadConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/breakdown_config.ts[0m:[0m[33m65[0m:[0m[33m22[0m)
+    at async [0m[1m[3mFunction.create[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/factory/prompt_variables_factory.ts[0m:[0m[33m114[0m:[0m[33m5[0m)
+    at async [0m[1m[3msetupTestFiles[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/prompt_processor_test.ts[0m:[0m[33m127[0m:[0m[33m19[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/prompt_processor_test.ts[0m:[0m[33m172[0m:[0m[33m46[0m</failure>
+        </testcase>
+        <testcase name="PromptAdapterImpl should generate prompt text" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.015" line="400" col="6">
+            <failure message="Uncaught AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal.
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/prompt_processor_test.ts[0m:[0m[33m459[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="PromptAdapterImpl should handle file operations when destFile is provided" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.009" line="464" col="6">
+        </testcase>
+        <testcase name="PromptAdapterImpl should handle path sanitization" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.224" line="529" col="6">
+        </testcase>
+        <testcase name="PromptAdapterImpl allows empty baseDir and uses default" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.004" line="592" col="6">
+        </testcase>
+        <testcase name="KEY functionality demo: targeted debugging with hash keys" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.000" line="636" col="6">
+        </testcase>
+        <testcase name="should reproduce path mismatch when app_prompt.base_dir is ignored (example script scenario)" classname="./tests/1_core/3_prompt/prompt_processor_test.ts" time="0.020" line="678" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/3_prompt/prompt_setup_test.ts" tests="1" disabled="0" errors="0" failures="1">
+        <testcase name="Prompt Setup" classname="./tests/1_core/3_prompt/prompt_setup_test.ts" time="0.005" line="102" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/prompt_setup_test/prompts/find/bugs/base.md&apos;">NotFound: No such file or directory (os error 2): writefile &apos;tmp/test/prompt_setup_test/prompts/find/bugs/base.md&apos;
+    await Deno.writeTextFile(join(findBugsDir, &quot;base.md&quot;), findBugsPrompt);
+[0m[31m               ^[0m
+    at [0m[1m[3mwriteFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m842[0m:[0m[33m13[0m)
+    at [0m[1m[3mObject.writeTextFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m884[0m:[0m[33m12[0m)
+    at [0m[1m[3msetupTestEnvironment[0m ([0m[36mfile:///Users/tettuan/github/breakdown/tests/helpers/setup.ts[0m:[0m[33m123[0m:[0m[33m16[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/3_prompt/prompt_setup_test.ts[0m:[0m[33m106[0m:[0m[33m15[0m</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/5_schema_validation/custom_variables_schema_test.ts" tests="3" disabled="1" errors="0" failures="0">
+        <testcase name="Custom Variables Schema Tests - All Disabled" classname="./tests/1_core/5_schema_validation/custom_variables_schema_test.ts" time="0.000" line="13" col="6">
+            <skipped/>
+        </testcase>
+        <testcase name="setup" classname="./tests/1_core/5_schema_validation/custom_variables_schema_test.ts" time="0.000" line="22" col="6">
+        </testcase>
+        <testcase name="cleanup" classname="./tests/1_core/5_schema_validation/custom_variables_schema_test.ts" time="0.000" line="29" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/factory/input_text_set_test.ts" tests="2" disabled="0" errors="0" failures="0">
+        <testcase name="input_textに値をセットできる" classname="./tests/1_core/factory/input_text_set_test.ts" time="0.001" line="7" col="6">
+        </testcase>
+        <testcase name="input_textが空の場合は空文字列になる" classname="./tests/1_core/factory/input_text_set_test.ts" time="0.000" line="16" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/2_integration/0_flow/stdin_flow_test.ts" tests="6" disabled="0" errors="0" failures="4">
+        <testcase name="Stdin Flow Integration" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.195" line="28" col="6">
+            <failure message="3 test steps failed">3 test steps failed.</failure>
+        </testcase>
+        <testcase name="Stdin Flow Integration &gt; setup" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.044" line="31" col="11">
+            <failure message="Uncaught AssertionError: Values are not equal: Workspace initialization should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal: Workspace initialization should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m41[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m31[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="Stdin Flow Integration &gt; summary command with stdin input" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.063" line="100" col="11">
+            <failure message="Uncaught AssertionError: Values are not equal: Command should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal: Command should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m110[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m100[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="Stdin Flow Integration &gt; to command with stdin input" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.029" line="114" col="11">
+            <failure message="Uncaught AssertionError: Values are not equal: Command should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+">AssertionError: Values are not equal: Command should succeed
+
+
+    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
+
+
+[31m[1m-   false[22m[39m
+[32m[1m+   true[22m[39m
+
+  throw new AssertionError(message);
+[0m[31m        ^[0m
+    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/0.224.0/assert_equals.ts[0m:[0m[33m52[0m:[0m[33m9[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m124[0m:[0m[33m5[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/2_integration/0_flow/stdin_flow_test.ts[0m:[0m[33m114[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="Stdin Flow Integration &gt; stdin with -o option" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.047" line="132" col="11">
+        </testcase>
+        <testcase name="Stdin Flow Integration &gt; cleanup" classname="./tests/2_integration/0_flow/stdin_flow_test.ts" time="0.000" line="149" col="11">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/2_integration/0_flow/flow_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="setup" classname="./tests/2_integration/0_flow/flow_test.ts" time="0.000" line="17" col="6">
+        </testcase>
+        <testcase name="breakdown init creates correct directory structure" classname="./tests/2_integration/0_flow/flow_test.ts" time="0.234" line="32" col="6">
+        </testcase>
+        <testcase name="workspace initialization and structure" classname="./tests/2_integration/0_flow/flow_test.ts" time="0.052" line="51" col="6">
+        </testcase>
+        <testcase name="workspace error handling" classname="./tests/2_integration/0_flow/flow_test.ts" time="0.000" line="83" col="6">
+        </testcase>
+        <testcase name="workspace path resolution" classname="./tests/2_integration/0_flow/flow_test.ts" time="0.027" line="102" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/1_core/factory/stdin_handling_test.ts" tests="5" disabled="0" errors="0" failures="4">
+        <testcase name="Factory stdin handling" classname="./tests/1_core/factory/stdin_handling_test.ts" time="0.139" line="31" col="6">
+            <failure message="3 test steps failed">3 test steps failed.</failure>
+        </testcase>
+        <testcase name="Factory stdin handling &gt; setup" classname="./tests/1_core/factory/stdin_handling_test.ts" time="0.094" line="32" col="11">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test_factory_stdin/.agent/breakdown/config&apos;">NotFound: No such file or directory (os error 2): mkdir &apos;tmp/test_factory_stdin/.agent/breakdown/config&apos;
+    await Deno.mkdir(dir, { recursive: true });
+[0m[31m    ^[0m
+    at async [0m[1m[3mObject.mkdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m200[0m:[0m[33m3[0m)
+    at async [0m[1m[3mensureDir[0m ([0m[36mhttps://jsr.io/@std/fs/0.224.0/ensure_dir.ts[0m:[0m[33m40[0m:[0m[33m5[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/factory/stdin_handling_test.ts[0m:[0m[33m46[0m:[0m[33m5[0m
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/factory/stdin_handling_test.ts[0m:[0m[33m32[0m:[0m[33m3[0m</failure>
+        </testcase>
+        <testcase name="Factory stdin handling &gt; should handle stdin input" classname="./tests/1_core/factory/stdin_handling_test.ts" time="0.035" line="61" col="11">
+        </testcase>
+        <testcase name="Factory stdin handling &gt; should handle both stdin and file input" classname="./tests/1_core/factory/stdin_handling_test.ts" time="0.002" line="86" col="11">
+            <failure message="Uncaught Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/48e2168e8f03e574/.agent/breakdown/config/app.yml">Error: ERR1001: Application configuration file not found at: /private/var/folders/02/xg6n7xd16l7cq_xgh9_x9d300000gp/T/48e2168e8f03e574/.agent/breakdown/config/app.yml
+    throw new Error(`${code}: ${message}`);
+[0m[31m          ^[0m
+    at [0m[1m[3mFunction.throwError[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/error_manager.ts[0m:[0m[33m86[0m:[0m[33m11[0m)
+    at [0m[1m[3mAppConfigLoader.load[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/loaders/app_config_loader.ts[0m:[0m[33m166[0m:[0m[33m24[0m)
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3mConfigManager.loadAppConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m77[0m:[0m[33m24[0m)
+    at async [0m[1m[3mConfigManager.getConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/config_manager.ts[0m:[0m[33m56[0m:[0m[33m25[0m)
+    at async [0m[1m[3mBreakdownConfig.loadConfig[0m ([0m[36mhttps://jsr.io/@tettuan/breakdownconfig/1.1.0/src/breakdown_config.ts[0m:[0m[33m65[0m:[0m[33m22[0m)
+    at async [0m[1m[3mFunction.create[0m ([0m[36mfile:///Users/tettuan/github/breakdown/lib/factory/prompt_variables_factory.ts[0m:[0m[33m114[0m:[0m[33m5[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/factory/stdin_handling_test.ts[0m:[0m[33m100[0m:[0m[33m21[0m</failure>
+        </testcase>
+        <testcase name="Factory stdin handling &gt; cleanup" classname="./tests/1_core/factory/stdin_handling_test.ts" time="0.001" line="111" col="11">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): chdir &apos;undefined&apos;">NotFound: No such file or directory (os error 2): chdir &apos;undefined&apos;
+    Deno.chdir(originalCwd);
+[0m[31m         ^[0m
+    at [0m[1m[3mObject.chdir[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m156[0m:[0m[33m3[0m)
+    at [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/factory/stdin_handling_test.ts[0m:[0m[33m122[0m:[0m[33m10[0m
+    at [0m[1m[3meventLoopTick[0m ([0m[36mext:core/01_core.js[0m:[0m[33m177[0m:[0m[33m7[0m)
+    at async [0m[1m[3minnerWrapped[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m191[0m:[0m[33m5[0m)
+    at async [0m[1m[3mexitSanitizer[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m107[0m:[0m[33m27[0m)
+    at async [0m[1m[3mObject.outerWrapped [as fn][0m ([0m[36mext:cli/40_test.js[0m:[0m[33m134[0m:[0m[33m14[0m)
+    at async [0m[1m[3mTestContext.step[0m ([0m[36mext:cli/40_test.js[0m:[0m[33m492[0m:[0m[33m22[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/1_core/factory/stdin_handling_test.ts[0m:[0m[33m111[0m:[0m[33m3[0m</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/3_scenarios/0_basic/commands_test.ts" tests="1" disabled="0" errors="0" failures="1">
+        <testcase name="core functionality - JSR package integration" classname="./tests/3_scenarios/0_basic/commands_test.ts" time="0.066" line="36" col="6">
+            <failure message="Uncaught NotFound: No such file or directory (os error 2): copy &apos;tests/fixtures/prompts/to/project/f_project.md&apos; -&gt; &apos;./tmp/test/core-integration/prompts/to/project/f_project.md&apos;">NotFound: No such file or directory (os error 2): copy &apos;tests/fixtures/prompts/to/project/f_project.md&apos; -&gt; &apos;./tmp/test/core-integration/prompts/to/project/f_project.md&apos;
+  await Deno.copyFile(srcPromptPath, `${env.workingDir}/prompts/to/project/f_project.md`);
+[0m[31m  ^[0m
+    at async [0m[1m[3mObject.copyFile[0m ([0m[36mext:deno_fs/30_fs.js[0m:[0m[33m145[0m:[0m[33m3[0m)
+    at async [0m[36mfile:///Users/tettuan/github/breakdown/tests/3_scenarios/0_basic/commands_test.ts[0m:[0m[33m68[0m:[0m[33m3[0m</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/2_integration/1_examples/examples_flow_test.ts" tests="10" disabled="0" errors="0" failures="0">
+        <testcase name="E2E: project summary to project/issue/task (happy path)" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.175" line="22" col="6">
+        </testcase>
+        <testcase name="E2E: adaptation option (long and short)" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.211" line="72" col="6">
+        </testcase>
+        <testcase name="E2E: error case - missing input file" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.090" line="161" col="6">
+        </testcase>
+        <testcase name="E2E: error if app_prompt.base_dir directory is missing" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.101" line="206" col="6">
+        </testcase>
+        <testcase name="E2E: error if app_prompt.base_dir is a file (error message contains &apos;is not a directory&apos;)" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.092" line="244" col="6">
+        </testcase>
+        <testcase name="E2E: relative vs absolute baseDir in config" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.104" line="290" col="6">
+        </testcase>
+        <testcase name="E2E: template path is resolved using baseDir (relative)" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.095" line="338" col="6">
+        </testcase>
+        <testcase name="BreakdownConfig loads and merges app.yml and user.yml as spec" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.003" line="373" col="6">
+        </testcase>
+        <testcase name="BreakdownConfig: working_dir is not used as prefix for app_prompt.base_dir" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.000" line="408" col="6">
+        </testcase>
+        <testcase name="BreakdownConfig: error if config missing required fields" classname="./tests/2_integration/1_examples/examples_flow_test.ts" time="0.000" line="430" col="6">
+        </testcase>
+    </testsuite>
+    <testsuite name="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" tests="5" disabled="0" errors="0" failures="0">
+        <testcase name="CLI error scenario when baseDir is unset" classname="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" time="0.121" line="73" col="6">
+        </testcase>
+        <testcase name="Recovery scenario when app.yml and actual directory mismatch" classname="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" time="0.195" line="95" col="6">
+        </testcase>
+        <testcase name="Precedence when user.yml and app.yml baseDir conflict" classname="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" time="0.115" line="129" col="6">
+        </testcase>
+        <testcase name="E2E: baseDir is used for template lookup" classname="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" time="0.094" line="261" col="6">
+        </testcase>
+        <testcase name="Retry/recovery scenario on error" classname="./tests/3_scenarios/1_edge_cases/edge_scenarios_test.ts" time="0.190" line="305" col="6">
+        </testcase>
+    </testsuite>
+</testsuites>
+[0m[1m[31merror[0m: Test failed

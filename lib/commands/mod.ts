@@ -7,11 +7,11 @@
  * @module
  */
 
-import { join } from "@std/path";
 import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
 import { Workspace } from "../workspace/workspace.ts";
 import type { CustomConfig } from "../config/breakdown_config_option.ts";
+import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 
 /**
  * The result of a command execution in the Breakdown CLI.
@@ -47,14 +47,17 @@ interface AppConfig {
  *
  * All config access must use BreakdownConfig, not direct file reads.
  */
-export async function initWorkspace(_workingDir?: string): Promise<CommandResult> {
+export async function initWorkspace(
+  _workingDir?: string,
+  config?: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } },
+): Promise<CommandResult> {
   try {
     const workingDir = _workingDir ?? Deno.cwd();
     // In production, use BreakdownConfig to load these values
     const workspace = new Workspace({
       workingDir,
-      promptBaseDir: "prompts", // placeholder, should be loaded from config
-      schemaBaseDir: "schema", // placeholder, should be loaded from config
+      promptBaseDir: config?.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+      schemaBaseDir: config?.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
     });
     await workspace.initialize();
     return {
@@ -72,13 +75,6 @@ export async function initWorkspace(_workingDir?: string): Promise<CommandResult
   }
 }
 
-// 1. 入力ファイル存在チェック
-function validateInputFile(path: string): Promise<void> {
-  return Deno.stat(path).then(() => {}, () => {
-    throw new Error(`No such file: ${path}`);
-  });
-}
-
 // 5. プロンプト変換処理
 async function runPromptProcessing(
   _fromFile: string,
@@ -93,21 +89,6 @@ async function runPromptProcessing(
   },
 ): Promise<CommandResult> {
   try {
-    // --- Add input file existence check ---
-    if (_fromFile !== "-") {
-      try {
-        const absFromFile = _fromFile.startsWith("/") ? _fromFile : join(Deno.cwd(), _fromFile);
-        await validateInputFile(absFromFile);
-      } catch (_e) {
-        const absFromFile = _fromFile.startsWith("/") ? _fromFile : join(Deno.cwd(), _fromFile);
-        return {
-          success: false,
-          output: "",
-          error: `No such file: ${absFromFile}`,
-        };
-      }
-    }
-    // ---
     const generator = new PromptFileGenerator();
     const result = await generator.generateWithPrompt(
       _fromFile,
@@ -221,20 +202,4 @@ export function displayVersion(): CommandResult {
     output: `Breakdown v${VERSION}`,
     error: "",
   };
-}
-
-/**
- * Convert a file to an issue layer (stub for future implementation).
- *
- * @param _fromFile The source file path.
- * @param _toFile The destination file path.
- * @param _force Whether to overwrite the destination file if it exists.
- * @returns {Promise<void>} Resolves when the conversion is complete.
- */
-export async function convertToIssue(
-  _fromFile: string,
-  _toFile: string,
-  _force = false,
-): Promise<void> {
-  // ... existing code ...
 }
