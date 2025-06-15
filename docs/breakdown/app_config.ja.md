@@ -50,4 +50,4 @@ const settings = config.getConfig();
 
 ## ユーザー設定項目
 
-なし
+説明なし

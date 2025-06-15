@@ -33,7 +33,7 @@ mkdir -p .deno/bin
 実行例：
 ```bash
 deno task breakdown --help
-deno task breakdown to project <input.md> -o <output_dir>
+deno task breakdown to project <input.md> -o=<output_dir>
 ```
 
 ### 3. グローバルインストール（システム全体で利用）
@@ -48,7 +48,7 @@ breakdown --help
 
 ```bash
 deno run -A jsr:@tettuan/breakdown --help
-deno run -A jsr:@tettuan/breakdown to project <input.md> -o <output_dir>
+deno run -A jsr:@tettuan/breakdown to project <input.md> -o=<output_dir>
 ```
 
 ### 5. シェルスクリプトラッパーの作成
@@ -107,19 +107,19 @@ deno task breakdown init
 
 ### プロジェクト分解
 ```bash
-./.deno/bin/breakdown to project -f <project_summary.md> -o <project_dir>
+./.deno/bin/breakdown to project -f=<project_summary.md> -o=<project_dir>
 # または
-deno task breakdown to project -f <project_summary.md> -o <project_dir>
+deno task breakdown to project -f=<project_summary.md> -o=<project_dir>
 ```
 
 ### 課題分解
 ```bash
-./.deno/bin/breakdown to issue -f <project.md> -o <issue_dir>
+./.deno/bin/breakdown to issue -f=<project.md> -o=<issue_dir>
 ```
 
 ### タスク分解
 ```bash
-./.deno/bin/breakdown to task -f <issue.md> -o <tasks_dir>
+./.deno/bin/breakdown to task -f=<issue.md> -o=<tasks_dir>
 ```
 
 ---

@@ -23,14 +23,11 @@ app_configファイルで baseDir や debug オプションを指定すること
 ```json
 {
   "app_prompt": {
-    "baseDir": "./.agent/breakdown/prompts/",
+    "base_dir": "./.agent/breakdown/prompts/",
     "debug": false
   }
 }
 ```
-
-**デバッグ方法**
-デバッグ時はLOG_LEVEL=debugの環境変数を設定するか、コード内でdebug:trueを指定することで、詳細なログ出力や挙動の確認が可能です。問題発生時の原因特定に役立ちます。
 
 ---
 
