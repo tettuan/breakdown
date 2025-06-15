@@ -8,26 +8,22 @@ import { assertEquals } from "@std/assert";
 import { PREDEFINED_CONFIGS, resolveConfigPath } from "../../../lib/cli/args.ts";
 
 Deno.test("PREDEFINED_CONFIGS - includes production mapping", () => {
-  // Check that production is mapped to prod.yml
+  // Check that production is mapped to production-app.yml
   assertEquals(
     PREDEFINED_CONFIGS.get("production"),
-    ".agent/breakdown/config/prod.yml",
-    "production should map to prod.yml",
+    "config/production-app.yml",
+    "production should map to production-app.yml",
   );
 
-  // Check that prod is also mapped to prod.yml
+  // Check that prod is also mapped to prod-app.yml
   assertEquals(
     PREDEFINED_CONFIGS.get("prod"),
-    ".agent/breakdown/config/prod.yml",
-    "prod should map to prod.yml",
+    "config/prod-app.yml",
+    "prod should map to prod-app.yml",
   );
 
-  // Verify both map to the same file
-  assertEquals(
-    PREDEFINED_CONFIGS.get("production"),
-    PREDEFINED_CONFIGS.get("prod"),
-    "production and prod should map to the same file",
-  );
+  // Note: production and prod now map to different files
+  // production -> production-app.yml, prod -> prod-app.yml
 });
 
 Deno.test("PREDEFINED_CONFIGS - all predefined configs present", () => {
@@ -48,29 +44,29 @@ Deno.test("resolveConfigPath - handles predefined config names", () => {
   // Test production
   assertEquals(
     resolveConfigPath("production"),
-    `${cwd}/.agent/breakdown/config/prod.yml`,
-    "production should resolve to prod.yml",
+    `${cwd}/config/production-app.yml`,
+    "production should resolve to production-app.yml",
   );
 
   // Test prod
   assertEquals(
     resolveConfigPath("prod"),
-    `${cwd}/.agent/breakdown/config/prod.yml`,
-    "prod should resolve to prod.yml",
+    `${cwd}/config/prod-app.yml`,
+    "prod should resolve to prod-app.yml",
   );
 
   // Test dev
   assertEquals(
     resolveConfigPath("dev"),
-    `${cwd}/.agent/breakdown/config/dev.yml`,
-    "dev should resolve to dev.yml",
+    `${cwd}/config/dev-app.yml`,
+    "dev should resolve to dev-app.yml",
   );
 
   // Test test
   assertEquals(
     resolveConfigPath("test"),
-    `${cwd}/.agent/breakdown/config/test.yml`,
-    "test should resolve to test.yml",
+    `${cwd}/config/test-app.yml`,
+    "test should resolve to test-app.yml",
   );
 });
 

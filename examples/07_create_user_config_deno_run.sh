@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 04a_create_user_config_deno_run.sh: Create user config using direct deno run if breakdown CLI is needed
+# 07_create_user_config_deno_run.sh: Create user config using direct deno run if breakdown CLI is needed
 
 # Print current directory before any operation
 echo "[DEBUG] Before cd: CWD is $(pwd)"

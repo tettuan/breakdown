@@ -17,15 +17,21 @@ SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
-# Define configuration files for different environments
-DEV_CONFIG="${PROJECT_ROOT}/configs/dev.json"
-TEST_CONFIG="${PROJECT_ROOT}/configs/test.json"
-PROD_CONFIG="${PROJECT_ROOT}/configs/prod.json"
+# Define configuration names for different environments
+DEV_CONFIG="dev"
+TEST_CONFIG="test"
+PROD_CONFIG="prod"
 
-# Check if all config files exist
-for config in "$DEV_CONFIG" "$TEST_CONFIG" "$PROD_CONFIG"; do
-    if [ ! -f "$config" ]; then
-        handle_error "Configuration file not found: $config"
+# Check if all config files exist in .agent/breakdown/config/ or configs/
+for config_name in "$DEV_CONFIG" "$TEST_CONFIG" "$PROD_CONFIG"; do
+    config_found=false
+    if [ -f "${PROJECT_ROOT}/.agent/breakdown/config/${config_name}-app.yml" ]; then
+        config_found=true
+    elif [ -f "${PROJECT_ROOT}/config/${config_name}-app.yml" ]; then
+        config_found=true
+    fi
+    if [ "$config_found" = false ]; then
+        handle_error "Configuration file not found for: $config_name"
     fi
 done
 
@@ -132,16 +138,16 @@ run_with_env() {
   
   case $env in
     development)
-      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG"
-      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $DEV_CONFIG
+      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $DEV_CONFIG"
+      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $DEV_CONFIG
       ;;
     staging)
-      echo "Command: .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG"
-      .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $TEST_CONFIG
+      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $TEST_CONFIG"
+      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $TEST_CONFIG
       ;;
     production)
-      echo "Command: .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended"
-      .deno/bin/breakdown to system --from /tmp/app-specs/main.md --output /tmp/$env-docs --config $PROD_CONFIG --extended
+      echo "Command: .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $PROD_CONFIG --extended"
+      .deno/bin/breakdown to project --from /tmp/app-specs/main.md --destination /tmp/$env-docs --config $PROD_CONFIG --extended
       ;;
   esac
   

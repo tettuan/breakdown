@@ -154,7 +154,7 @@ Deno.test("Command Module Tests", async (t) => {
     await t.step("initWorkspace should create required directories", async () => {
       const result = await initWorkspace(TEST_DIR);
       assertEquals(result.success, true);
-      assertEquals(result.error, '');
+      assertEquals(result.error, "");
       // Verify .agent/breakdown directory exists
       const breakdownDir = join(TEST_DIR, ".agent/breakdown");
       const breakdownDirInfo = await Deno.stat(breakdownDir);

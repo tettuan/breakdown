@@ -145,7 +145,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 - `breakdown`: Command name
 
 > **Note:**  
-> You do not need to specify subpaths like `jsr:@tettuan/breakdown/cli`.  
+> You do not need to specify subpaths like `jsr:@tettuan/breakdown`.  
 > Thanks to the JSR `bin` setting, `jsr:@tettuan/breakdown` alone works as a CLI.
 
 ---
@@ -219,7 +219,7 @@ You can also compile the Breakdown CLI as a standalone binary using JSR and plac
 mkdir -p .deno/bin
 # Compile the CLI from JSR and output to .deno/bin/breakdown
 
-deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli
+deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown
 ```
 - The resulting binary will be available at `./.deno/bin/breakdown`.
 - You can run it with:

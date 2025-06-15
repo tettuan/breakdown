@@ -7,7 +7,6 @@
  * @module
  */
 
-import { join } from "@std/path";
 import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
 import { Workspace } from "../workspace/workspace.ts";
@@ -50,7 +49,7 @@ interface AppConfig {
  */
 export async function initWorkspace(
   _workingDir?: string,
-  config?: { app_prompt?: { base_dir?: string }, app_schema?: { base_dir?: string } }
+  config?: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } },
 ): Promise<CommandResult> {
   try {
     const workingDir = _workingDir ?? Deno.cwd();
@@ -204,4 +203,3 @@ export function displayVersion(): CommandResult {
     error: "",
   };
 }
-

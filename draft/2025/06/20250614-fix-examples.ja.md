@@ -18,19 +18,30 @@
 ## 足元のタスクとゴール
 
 前提: Breakdownが仕様を満たして動く状態にある。
-タスク: examples/ に重複がないか調べる。動かない実行例のファイルは削除する。その後、番号を振り直し、examples/README.md を書き換える。
+タスク: examples/ が動作する状況になるよう、ユースケースを調べ、examples を修正する。
 ゴール: examples 配下の実行例が全て、ユースケースに沿って動作する。
 
-### 足元のゴール
+### タスクの例
 
-以下の3点です。
+- ユースケース: 
+  - cli-example: `breakdown init`, `breakdown to project -f=test.md`, `breakdown find system -f=test.md -o=tmp/sysytemlist/`
+    - docs: `docs/usage.ja.md`, `README.md`
+  - 準備例: 
+    - config: `breakdown find system -c=product`のとき `product-app.yml`,`product-user.yml`  が必要
+    - prompt: `breakdown find system -f=test.md -o=tmp/sysytemlist/` のとき `prompts/system/find/f_test.md` がおそらく必要
+    - docs: `docs/breakdown/*`
 
-- 不要な examples の例が、削除されている事
-- 残された examples が、すべて意図した通りに動作すること
-- tests/ が全て pass すること
-- `deno task ci` が成功すること
+### 完了条件
+
+以下の4点です。
+
+- 間違えたユースケースを採用している examples が0件になる
+- 存在する examples を0から順番に実行した結果、最後までエラーなく完了する
+- tests/ が全て pass する
+- `deno task ci` が成功する
 
 ## サマリー: 状況把握と方針決め
+サマリー役が行う「サマリー」とは、次のことです。
 
 - 1状況あたり:
   - 文字数:100文字以内
@@ -44,13 +55,15 @@
 
 ## タスクの進め方
 
-### CI 失敗時
+- サイクル: 仕様把握 → 調査 → 計画・設計 → 実行 → 記録・検証 → 学習 → 仕様把握へ戻る
+- サイクル段階に応じて、メンバーの役割を変更し最適アサイン。常時フル稼働を目指す。
 
-- マネージャーへ関連する仕様理解を指示し、エラーを分析させる
-  - マネージャーからメンバーへタスクを振らせる
-- 総指揮官も、エラーを元に仕様理解を深める
-- マネージャーと総指揮官で議論して、対応を決める
-- 修正案をマネージャーがメンバーへ指示
+### エラー対応
+
+- 総司令官とマネージャーが決める役。メンバーは実行役。
+  - エラー前比で、2段階x2広い範囲で仕様理解する。
+  - 仕様理解に必要な作業自体はメンバーへ依頼する。
+- マネージャーと総司令官で議論して、対応を決める
 
 ### 進捗更新
 

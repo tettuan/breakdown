@@ -22,6 +22,21 @@ if [ -d .agent/breakdown ]; then
   echo "設定ファイル: $WORKDIR/.agent/breakdown/config/app.yml"
   echo "プロンプトディレクトリ: $WORKDIR/.agent/breakdown/prompts"
   echo "スキーマディレクトリ: $WORKDIR/.agent/breakdown/schema"
+  
+  echo ""
+  echo "=== 利用可能な設定ファイル ==="
+  ls -la .agent/breakdown/config/
+  
+  echo ""
+  echo "=== 設定ファイルの使用例 ==="
+  echo "# 名前指定での設定ファイル使用（推奨）"
+  echo "deno run -A ../cli/breakdown.ts to project --config app"
+  echo "deno run -A ../cli/breakdown.ts to project --config user"
+  echo "deno run -A ../cli/breakdown.ts to project --config product-app"
+  echo "deno run -A ../cli/breakdown.ts to project --config product-user"
+  echo ""
+  echo "# 従来のパス指定（非推奨）"
+  echo "# deno run -A ../cli/breakdown.ts to project --config configs/prod.json"
 else
   echo "✗ 初期化ディレクトリが見つかりません"
   exit 1

@@ -1,0 +1,32 @@
+# Test Configuration for Breakdown
+app:
+  name: "Breakdown Test"
+  version: "1.0.0"
+
+working_dir: ".agent/breakdown"
+
+app_prompt:
+  base_dir: "prompts"
+
+app_schema:
+  base_dir: "schema"
+
+validation:
+  zero:
+    allowCustomVariables: false
+  one:
+    allowCustomVariables: true
+  two:
+    allowCustomVariables: true
+
+errorHandling:
+  unknownOption: "error"
+  duplicateOption: "warn"
+  emptyValue: "error"
+
+breakdownParams:
+  customParams:
+    enabled: true
+    allowDynamicParams: true
+    paramValidation: true
+    maxParamLength: 256

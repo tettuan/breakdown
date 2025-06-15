@@ -27,15 +27,22 @@ if [ ! -f ".deno/bin/breakdown" ]; then
     handle_error "Breakdown binary not found. Please run ./examples/02_compile.sh first."
 fi
 
-# Use predefined test configuration
-CONFIG_FILE="${PROJECT_ROOT}/configs/test.json"
+# Create examples configs directory if it doesn't exist
+mkdir -p "${PROJECT_ROOT}/examples/configs"
 
-# Check if config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    handle_error "Configuration file not found: $CONFIG_FILE"
+# Use predefined test configuration
+CONFIG_NAME="test"
+
+# Copy test config to examples/configs if not exists
+if [ ! -f "${PROJECT_ROOT}/examples/configs/${CONFIG_NAME}.json" ]; then
+    if [ -f "${PROJECT_ROOT}/configs/${CONFIG_NAME}.json" ]; then
+        cp "${PROJECT_ROOT}/configs/${CONFIG_NAME}.json" "${PROJECT_ROOT}/examples/configs/"
+    else
+        handle_error "Test configuration not found in configs/${CONFIG_NAME}.json"
+    fi
 fi
 
-echo "Using test configuration: $CONFIG_FILE"
+echo "Using test configuration: $CONFIG_NAME"
 
 # Create sample input file
 cat > /tmp/input.md << 'EOF'
@@ -57,8 +64,8 @@ EOF
 
 # Run breakdown with the config file
 echo "Running breakdown with basic config..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE"
-.deno/bin/breakdown to project --from /tmp/input.md --output /tmp/output --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/input.md --destination /tmp/output --config $CONFIG_NAME"
+.deno/bin/breakdown to project --from /tmp/input.md --destination /tmp/output --config $CONFIG_NAME
 
 # Show the result
 echo -e "\nGenerated output structure:"

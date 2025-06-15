@@ -13,7 +13,7 @@ Generate a standalone binary using Deno's `deno compile` feature for local proje
 ```bash
 mkdir -p .deno/bin
 # Generate binary
-deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli
+deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown
 # Example execution
 ./.deno/bin/breakdown --help
 ```
@@ -25,7 +25,7 @@ Add a task to `deno.json` to invoke the CLI via JSR.
 ```jsonc
 {
   "tasks": {
-    "breakdown": "run -A jsr:@tettuan/breakdown/cli"
+    "breakdown": "run -A jsr:@tettuan/breakdown"
   }
 }
 ```
@@ -47,8 +47,8 @@ breakdown --help
 ### 4. Direct Execution with deno run
 
 ```bash
-deno run -A jsr:@tettuan/breakdown/cli --help
-deno run -A jsr:@tettuan/breakdown/cli to project <input.md> -o <output_dir>
+deno run -A jsr:@tettuan/breakdown --help
+deno run -A jsr:@tettuan/breakdown to project <input.md> -o <output_dir>
 ```
 
 ---

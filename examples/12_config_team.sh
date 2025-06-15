@@ -18,14 +18,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 # Use predefined dev configuration for team development
-CONFIG_FILE="${PROJECT_ROOT}/configs/dev.json"
+CONFIG_NAME="dev"
 
-# Check if config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    handle_error "Development configuration file not found: $CONFIG_FILE"
-fi
-
-echo "Using team development configuration: $CONFIG_FILE"
+echo "Using team development configuration: $CONFIG_NAME"
 
 # Create sample project documentation for team collaboration
 mkdir -p /tmp/project-docs || handle_error "Failed to create temporary project-docs directory"
@@ -162,13 +157,13 @@ EOF
 # Run breakdown with team config for architecture documentation
 echo "Running breakdown with team shared configuration..."
 echo "Processing architecture documentation..."
-echo "Command: .deno/bin/breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE"
-.deno/bin/breakdown to system --from /tmp/project-docs/architecture.md --output /tmp/team-output/architecture --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/architecture.md --destination /tmp/team-output/architecture --config $CONFIG_NAME"
+.deno/bin/breakdown to project --from /tmp/project-docs/architecture.md --destination /tmp/team-output/architecture --config $CONFIG_NAME
 
 # Process deployment documentation
 echo -e "\nProcessing deployment documentation..."
-echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE"
-.deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --output /tmp/team-output/deployment --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --destination /tmp/team-output/deployment --config $CONFIG_NAME"
+.deno/bin/breakdown to project --from /tmp/project-docs/deployment.md --destination /tmp/team-output/deployment --config $CONFIG_NAME
 
 # Show results
 echo -e "\nTeam documentation generated:"

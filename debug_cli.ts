@@ -1,4 +1,4 @@
-import { EnhancedParamsParser } from "./lib/cli/parser/enhanced_params_parser.ts";
+import { ParamsParser } from "@tettuan/breakdownparams";
 import { validateCommandOptions as validateArgs } from "./lib/cli/args.ts";
 
 function preprocessCommandLine(args: string[]): {
@@ -28,7 +28,7 @@ function preprocessCommandLine(args: string[]): {
   for (let i = commandEndIndex; i < args.length; i++) {
     const arg = args[i];
 
-    // Custom variables (--uv-*) are handled by EnhancedParamsParser
+    // Custom variables (--uv-*) are handled by ParamsParser
     if (arg.startsWith("--uv-")) {
       commandArgs.push(arg);
       if (!arg.includes("=") && i + 1 < args.length && !args[i + 1].startsWith("-")) {
@@ -73,9 +73,9 @@ const { commandArgs, extractedOptions } = preprocessCommandLine(testArgs);
 console.log("Command args:", commandArgs);
 console.log("Extracted options:", extractedOptions);
 
-const parser = new EnhancedParamsParser();
+const parser = new ParamsParser();
 const result = parser.parse(commandArgs);
-console.log("EnhancedParamsParser result:", result);
+console.log("ParamsParser result:", result);
 
 const filteredArgs = commandArgs.filter((arg) => !arg.startsWith("--uv-"));
 console.log("Filtered args:", filteredArgs);

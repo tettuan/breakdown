@@ -8,15 +8,12 @@ handle_error() {
     exit 1
 }
 
-# クリーンアップ用の関数
+# クリーンアップ用の関数（一時ファイルのみ削除、バイナリは保持）
 cleanup() {
-    if [ -f ".deno/bin/breakdown" ]; then
-        rm -f .deno/bin/breakdown
-    fi
+    # 一時ファイルがある場合は削除（現在は特に管理していない）
+    # バイナリファイルは削除せず保持する
+    :
 }
-
-# スクリプト終了時のクリーンアップを設定
-trap cleanup EXIT
 
 # 作業ディレクトリをプロジェクトルートに移動
 SCRIPT_DIR="$(dirname "$0")"

@@ -53,6 +53,5 @@ Until BreakdownParams is updated to properly handle options separately from posi
 
 ## Related Files
 
-- `/lib/cli/parser/enhanced_params_parser.ts` - Wrapper that documents the limitations
-- `/tests/1_core/4_cli/enhanced_params_parser_test.ts` - Tests documenting expected vs actual behavior
-- `/tests/1_core/4_cli/enhanced_params_consistency_test.ts` - Consistency tests for the limitations
+- `/lib/cli/config_prefix_detector.ts` - Minimal config detection implementation
+- `/lib/cli/config_prefix_detector_test.ts` - Tests for config detection functionality

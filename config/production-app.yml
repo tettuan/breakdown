@@ -1,274 +1,127 @@
 # Production Application Configuration for Breakdown
-# This file contains application-level settings for production environment
+# This file contains production-optimized settings for bug detection and analysis
 
-# Working directory configuration
-working_dir: "./.breakdown"
+# Application settings
+app:
+  name: "Breakdown"
+  version: "1.0.0"
+  description: "Production breakdown application for bug detection and document processing"
 
-# Application prompt configuration
+# Working directory settings
+working_dir: ".agent/breakdown"
+
+# Prompt configuration
 app_prompt:
   base_dir: "prompts"
-  template_dir: "templates"
 
-# Application schema configuration
+# Schema configuration
 app_schema:
   base_dir: "schema"
-  validation_dir: "validation"
 
-# Database configuration for production
-database:
-  # Database type (sqlite, postgresql, mysql)
-  type: "sqlite"
-
-  # Database file path for SQLite
-  path: "./data/breakdown_production.db"
-
-  # Connection pool settings
-  pool:
-    minSize: 5
-    maxSize: 20
-    timeout: 30000
-
-  # Auto-migration settings
-  migration:
-    enabled: true
-    autoRun: true
-
-# Application server configuration
-server:
-  # Server port
-  port: 8080
-
-  # Host binding
-  host: "0.0.0.0"
-
-  # Enable HTTPS
-  https:
-    enabled: true
-    certFile: "./certs/breakdown.crt"
-    keyFile: "./certs/breakdown.key"
-
-  # Request timeout in milliseconds
-  timeout: 120000
-
-# Authentication and authorization
-auth:
-  # Enable authentication
+# Custom configuration for advanced features
+customConfig:
   enabled: true
 
-  # JWT settings
-  jwt:
-    secret: "${JWT_SECRET}"
-    expiresIn: "24h"
-    algorithm: "HS256"
-
-  # Session settings
-  session:
-    cookieName: "breakdown_session"
-    maxAge: 86400000
-    secure: true
-    httpOnly: true
-
-# Rate limiting
-rateLimit:
-  # Enable rate limiting
-  enabled: true
-
-  # Requests per minute per IP
-  requestsPerMinute: 100
-
-  # Burst capacity
-  burstCapacity: 200
-
-# Monitoring and health checks
-monitoring:
-  # Enable health checks
-  healthCheck:
+  # Find bugs configuration
+  findBugs:
     enabled: true
-    endpoint: "/health"
-    interval: 30000
+    sensitivity: "medium"
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".tsx"
+      - ".jsx"
+      - ".md"
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+      - "coverage"
+      - ".obsidian"
+    maxResults: 100
+    detailedReports: true
 
-  # Metrics collection
-  metrics:
-    enabled: true
-    endpoint: "/metrics"
-    format: "prometheus"
+  # Support for two-parameter commands
+  find:
+    twoParams:
+      - "bugs"
 
-  # Application performance monitoring
-  apm:
-    enabled: true
-    serviceName: "breakdown-production"
-    environment: "production"
+# BreakdownParams configuration
+breakdownParams:
+  version: "1.0.0"
+  customConfig:
+    params:
+      two:
+        demonstrativeType:
+          pattern: "^(to|find)$"
+          errorMessage: "Demonstrative type must be 'to' or 'find'"
+        layerType:
+          pattern: "^(project|system|bugs|layer)$"
+          errorMessage: "Layer type must be 'project', 'system', 'bugs', or 'layer'"
+    validation:
+      zero:
+        allowedOptions: ["help", "version", "init"]
+        valueOptions: ["config", "c"]
+      one:
+        allowedOptions: ["help", "extended", "custom-validation"]
+        valueOptions: ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
+      two:
+        allowedOptions: ["help", "extended", "custom-validation"]
+        valueOptions: ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
+    options:
+      values:
+        config:
+          shortForm: "c"
+          description: "Configuration file path"
+        prompt-dir:
+          description: "Custom prompt directory path"
+        error-format:
+          description: "Error output format"
+          allowedValues: ["simple", "detailed", "json"]
+        extended:
+          description: "Enable extended processing mode"
 
-# Error handling
-errorHandling:
-  # Global error handler
-  global: true
-
-  # Stack trace in errors
-  includeStackTrace: false
-
-  # Error reporting
-  reporting:
-    enabled: true
-    service: "sentry"
-    dsn: "${SENTRY_DSN}"
-
-# Caching configuration
-cache:
-  # Cache provider (memory, redis)
-  provider: "redis"
-
-  # Redis configuration
-  redis:
-    host: "${REDIS_HOST}"
-    port: 6379
-    db: 0
-    password: "${REDIS_PASSWORD}"
-
-  # Default TTL in seconds
-  defaultTTL: 3600
-
-  # Cache key prefix
-  keyPrefix: "breakdown:prod:"
-
-# Static file serving
-static:
-  # Enable static file serving
-  enabled: true
-
-  # Static files directory
-  directory: "./public"
-
-  # Cache control headers
-  cacheControl: "public, max-age=86400"
-
-# Security configuration
-security:
-  # CORS settings
-  cors:
-    enabled: true
-    origins:
-      - "https://breakdown.example.com"
-      - "https://api.breakdown.example.com"
-    credentials: true
-
-  # Helmet.js security headers
-  helmet:
-    enabled: true
-    contentSecurityPolicy: true
-    hsts: true
-    noSniff: true
-
-  # API key validation
-  apiKey:
-    enabled: true
-    headerName: "X-API-Key"
-
-# Logging configuration
-logging:
-  # Log level
+# Production logger configuration
+logger:
   level: "info"
+  fileLogging: true
+  maxFileSize: 10
+  maxBackups: 5
 
-  # Log format (json, text)
+# Production performance settings
+performance:
+  monitoring: true
+  memoryLimit: 512
+  timeout: 300
+  profiling: false
+
+# Production output settings
+output:
   format: "json"
+  prettyPrint: true
+  includeTimestamps: true
+  directory: "./output"
 
-  # Log destinations
-  destinations:
-    - type: "file"
-      path: "./logs/breakdown-app.log"
-      maxSize: "100MB"
-      maxFiles: 10
-    - type: "console"
-      colorize: false
-
-  # Request logging
-  requestLogging:
-    enabled: true
-    includeBody: false
-    excludePaths:
-      - "/health"
-      - "/metrics"
-
-# Environment-specific settings
-environment:
-  name: "production"
-
-  # Debug mode
-  debug: false
-
-  # Development features
-  development: false
-
-  # Performance optimizations
-  optimizations:
-    enabled: true
-    minification: true
-    compression: true
-
-# Application features
-features:
-  # File upload
-  fileUpload:
-    enabled: true
-    maxSize: "10MB"
-    allowedTypes:
-      - "text/markdown"
-      - "text/plain"
-      - "application/json"
-
-  # Batch processing
-  batchProcessing:
-    enabled: true
-    maxConcurrency: 10
-    queueSize: 1000
-
-  # Webhook support
-  webhooks:
-    enabled: true
-    timeout: 30000
-    retries: 3
-
-# Backup and recovery
-backup:
-  # Automated backups
+# Production security settings
+security:
   enabled: true
+  validateInput: true
+  sanitizeOutput: true
+  maxInputSize: 1024
 
-  # Backup schedule (cron format)
-  schedule: "0 2 * * *"
-
-  # Backup retention (days)
-  retentionDays: 30
-
-  # Backup destination
-  destination: "./backups"
-
-# Third-party integrations
-integrations:
-  # External API configurations
-  apis:
-    enabled: true
-    timeout: 30000
-    retries: 3
-
-  # Message queue
-  messageQueue:
-    enabled: false
-    provider: "rabbitmq"
-    url: "${RABBITMQ_URL}"
-
-# Resource limits
-resources:
-  # Memory limits
-  memory:
-    heap: "1GB"
-    buffer: "256MB"
-
-  # CPU limits
-  cpu:
-    cores: 4
-    utilization: 80
-
-  # File system limits
-  filesystem:
-    maxFiles: 10000
-    maxSize: "10GB"
+# Production feature flags
+features:
+  experimental: false
+  beta: false
+  custom:
+    asyncProcessing: true
+    enhancedReporting: true
+    smartCaching: true

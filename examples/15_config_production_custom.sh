@@ -1,6 +1,6 @@
 #!/bin/bash
 # Example 22: Production Custom Configuration with Find Bugs
-# This example demonstrates using 'breakdown find bugs --config=production' with production-user.yml
+# This example demonstrates using 'breakdown find bugs --config prod' with prod-app.yml
 # It showcases CustomConfig features and advanced bug detection capabilities
 set -euo pipefail
 
@@ -19,11 +19,11 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
 
 echo "=== Example 22: Production Custom Configuration Find Bugs ==="
-echo "This example shows how to use production-user.yml for advanced bug detection"
+echo "This example shows how to use prod-app.yml for advanced bug detection"
 echo
 
 # Set configuration paths
-CONFIG_FILE="${PROJECT_ROOT}/config/production-user.yml"
+CONFIG_FILE="${PROJECT_ROOT}/config/prod-app.yml"
 TEST_DIR="/tmp/production-custom-test"
 OUTPUT_DIR="/tmp/production-bug-reports"
 
@@ -35,7 +35,7 @@ echo
 # Verify configuration exists
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "ERROR: Production configuration file not found: $CONFIG_FILE"
-    echo "Please ensure the production-user.yml file exists."
+    echo "Please ensure the prod-app.yml file exists."
     exit 1
 fi
 
@@ -298,13 +298,13 @@ echo
 
 echo "=== Demonstrating Production Custom Configuration ==="
 echo "Note: The 'breakdown find bugs' command is currently in development."
-echo "This example shows how to configure production-user.yml for when it's implemented."
+echo "This example shows how to configure prod-app.yml for when it's implemented."
 echo
 
 # Show the configuration structure
 echo "=== Production Configuration Structure ==="
 echo "Configuration file: $CONFIG_FILE"
-echo "The production-user.yml contains CustomConfig settings for:"
+echo "The prod-app.yml contains CustomConfig settings for:"
 echo "  • Bug detection patterns (TODO, FIXME, HACK, BUG, XXX, DEPRECATED)"
 echo "  • File extensions to include (.ts, .js, .tsx, .jsx, .md)"
 echo "  • Directories to exclude (node_modules, .git, dist, build, coverage)"
@@ -343,7 +343,7 @@ import { parse } from "https://deno.land/std@0.224.0/yaml/mod.ts";
 
 async function testConfig() {
   try {
-    const configPath = "./config/production-user.yml";
+    const configPath = "./config/prod-app.yml";
     const content = await Deno.readTextFile(configPath);
     const config = parse(content);
     
@@ -381,10 +381,10 @@ fi
 echo
 echo "=== Future Usage (When Implemented) ==="
 echo "Once the 'find bugs' command is implemented, you can use:"
-echo "  breakdown find bugs --config production --from \"$TEST_DIR\" --output \"$OUTPUT_DIR\""
+echo "  breakdown find bugs --config prod --from \"$TEST_DIR\" --destination \"$OUTPUT_DIR\""
 echo
 echo "Expected behavior:"
-echo "  • Load production-user.yml configuration"
+echo "  • Load prod-app.yml configuration"
 echo "  • Apply CustomConfig settings for bug detection"
 echo "  • Scan files matching configured extensions"
 echo "  • Generate detailed bug reports"
@@ -392,7 +392,7 @@ echo "  • Exclude configured directories from scanning"
 
 echo
 echo "=== Production Configuration Features Used ==="
-echo "The production-user.yml configuration provides:"
+echo "The prod-app.yml configuration provides:"
 echo "  🔍 Bug Patterns: TODO, FIXME, HACK, BUG, XXX, DEPRECATED"
 echo "  📁 File Extensions: .ts, .js, .tsx, .jsx, .md"
 echo "  🚫 Excluded Directories: node_modules, .git, dist, build, coverage, .obsidian"
@@ -411,8 +411,8 @@ echo "  📝 Detailed reporting with context"
 
 echo
 echo "=== Usage Instructions ==="
-echo "1. Ensure production-user.yml is configured in ./config/"
-echo "2. Run: breakdown find bugs --config production --from <source_dir> --output <output_dir>"
+echo "1. Ensure prod-app.yml is configured in ./config/"
+echo "2. Run: breakdown find bugs --config prod --from <source_dir> --destination <output_dir>"
 echo "3. Review generated reports in the output directory"
 echo "4. Use --help flag for additional options"
 
@@ -425,13 +425,13 @@ echo "✅ Cleanup completed"
 echo
 echo "=== Example Complete ==="
 echo "This example demonstrated:"
-echo "  • Using production-user.yml for CustomConfig settings"
-echo "  • Running 'breakdown find bugs' with production configuration"
+echo "  • Using prod-app.yml for CustomConfig settings"
+echo "  • Running 'breakdown find bugs' with prod configuration"
 echo "  • Advanced bug detection across multiple file types"
 echo "  • Production-optimized bug reporting"
 echo
 echo "For more information, see:"
-echo "  • config/production-user.yml - Configuration file"
+echo "  • config/prod-app.yml - Configuration file"
 echo "  • docs/breakdown/cli.md - CLI documentation"
 echo "  • examples/README.md - All examples overview"
 

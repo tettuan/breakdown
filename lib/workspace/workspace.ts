@@ -270,7 +270,7 @@ export { WorkspaceImpl as Workspace };
  */
 export async function initWorkspace(
   workingDir = ".",
-  config?: { app_prompt?: { base_dir?: string }, app_schema?: { base_dir?: string } }
+  config?: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } },
 ): Promise<void> {
   // In production, use BreakdownConfig to load these values
   const workspace = new WorkspaceImpl({

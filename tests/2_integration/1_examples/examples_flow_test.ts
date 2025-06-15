@@ -87,8 +87,10 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
   await ensureDir(strictDir);
   const strictTemplate = join(strictDir, "f_task_strict.md");
   const aTemplate = join(strictDir, "f_task_a.md");
+  const defaultTemplate = join(strictDir, "f_task.md");
   await Deno.writeTextFile(strictTemplate, "strict template");
   await Deno.writeTextFile(aTemplate, "a template");
+  await Deno.writeTextFile(defaultTemplate, "default template");
   // Debug: config, cwd, template paths, file existence
   logger.debug("[DEBUG] configDir", { configDir });
   logger.debug("[DEBUG] testDir (cwd)", { testDir });

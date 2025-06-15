@@ -1,0 +1,133 @@
+# Production Application Configuration for Breakdown (prod-app.yml)
+# This file contains production-optimized settings specifically for CustomConfig features
+
+# Application settings
+app:
+  name: "Breakdown"
+  version: "1.0.0"
+  description: "Production breakdown application with CustomConfig support"
+
+# Working directory settings
+working_dir: ".agent/breakdown"
+
+# Prompt configuration
+app_prompt:
+  base_dir: "prompts"
+
+# Schema configuration
+app_schema:
+  base_dir: "schema"
+
+# Custom configuration for advanced features (CustomConfig)
+customConfig:
+  enabled: true
+
+  # Find bugs configuration with enhanced settings
+  findBugs:
+    enabled: true
+    sensitivity: "medium"
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".tsx"
+      - ".jsx"
+      - ".md"
+      - ".json"
+      - ".yml"
+      - ".yaml"
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+      - "coverage"
+      - ".obsidian"
+      - ".deno"
+      - "tmp"
+    maxResults: 100
+    detailedReports: true
+
+  # Support for two-parameter commands (enables 'breakdown find bugs')
+  find:
+    twoParams:
+      - "bugs"
+
+# BreakdownParams CustomConfig integration
+breakdownParams:
+  version: "1.0.0"
+  customConfig:
+    params:
+      two:
+        demonstrativeType:
+          pattern: "^(to|find)$"
+          errorMessage: "Demonstrative type must be 'to' or 'find'"
+        layerType:
+          pattern: "^(project|system|bugs|layer)$"
+          errorMessage: "Layer type must be 'project', 'system', 'bugs', or 'layer'"
+    validation:
+      zero:
+        allowedOptions: ["help", "version", "init"]
+        valueOptions: ["config", "c"]
+      one:
+        allowedOptions: ["help", "extended", "custom-validation"]
+        valueOptions: ["config", "c", "error-format", "destination", "from", "output"]
+      two:
+        allowedOptions: ["help", "extended", "custom-validation"]
+        valueOptions: ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
+    options:
+      values:
+        config:
+          shortForm: "c"
+          description: "Configuration file path"
+        error-format:
+          description: "Error output format"
+          allowedValues: ["simple", "detailed", "json"]
+        extended:
+          description: "Enable extended processing mode"
+        custom-validation:
+          description: "Enable custom validation mode"
+
+# Enhanced logger configuration for production
+logger:
+  level: "info"
+  fileLogging: true
+  maxFileSize: 10
+  maxBackups: 5
+
+# Enhanced performance settings
+performance:
+  monitoring: true
+  memoryLimit: 512
+  timeout: 300
+  profiling: false
+
+# Enhanced output settings
+output:
+  format: "json"
+  prettyPrint: true
+  includeTimestamps: true
+  directory: "./output"
+
+# Enhanced security settings
+security:
+  enabled: true
+  validateInput: true
+  sanitizeOutput: true
+  maxInputSize: 1024
+
+# Enhanced feature flags
+features:
+  experimental: false
+  beta: false
+  custom:
+    asyncProcessing: true
+    enhancedReporting: true
+    smartCaching: true
+    advancedBugDetection: true

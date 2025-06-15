@@ -1,6 +1,6 @@
-import { EnhancedParamsParser } from "./lib/cli/parser/enhanced_params_parser.ts";
+import { ParamsParser } from "@tettuan/breakdownparams";
 
-const parser = new EnhancedParamsParser();
+const parser = new ParamsParser();
 const result = parser.parse([
   "find",
   "bugs",
@@ -9,4 +9,4 @@ const result = parser.parse([
   "--destination",
   "output.md",
 ]);
-console.log("EnhancedParamsParser result:", JSON.stringify(result, null, 2));
+console.log("ParamsParser result:", JSON.stringify(result, null, 2));

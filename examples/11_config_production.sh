@@ -28,14 +28,9 @@ if [ ! -f ".deno/bin/breakdown" ]; then
 fi
 
 # Use predefined production configuration
-CONFIG_FILE="${PROJECT_ROOT}/configs/prod.json"
+CONFIG_NAME="prod"
 
-# Check if config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    handle_error "Production configuration file not found: $CONFIG_FILE"
-fi
-
-echo "Using production configuration: $CONFIG_FILE"
+echo "Using production configuration: $CONFIG_NAME"
 
 # Create sample API documentation as input
 mkdir -p /tmp/docs || handle_error "Failed to create temporary docs directory"
@@ -100,8 +95,8 @@ EOF
 
 # Run breakdown with production config
 echo "Running breakdown with production configuration..."
-echo "Command: .deno/bin/breakdown to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config $CONFIG_FILE"
-.deno/bin/breakdown to system --from /tmp/docs/api_documentation.md --output /tmp/prod-output --config $CONFIG_FILE
+echo "Command: .deno/bin/breakdown to project --from /tmp/docs/api_documentation.md --destination /tmp/prod-output --config $CONFIG_NAME"
+.deno/bin/breakdown to project --from /tmp/docs/api_documentation.md --destination /tmp/prod-output --config $CONFIG_NAME
 
 # Show results
 echo -e "\nProduction output generated:"

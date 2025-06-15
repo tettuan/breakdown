@@ -1,5 +1,5 @@
 #!/bin/bash
-# examples/12_check_version.sh
+# examples/03_check_version.sh
 
 # このスクリプトは、breakdown CLI の --version オプションの動作を確認します。
 

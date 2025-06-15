@@ -3,7 +3,7 @@
 # This script cleans up all example results and initialized files
 #
 # Usage:
-# ./examples/11_clean.sh
+# ./examples/09_clean.sh
 #
 # Note:
 # - This script should be run from the project root directory
