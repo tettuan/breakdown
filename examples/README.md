@@ -34,8 +34,8 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 7. `05a_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 使用例
-8. `10_stdin_example.sh` - STDIN入力の利用例
-9. `12_clean.sh` - 生成されたファイルのクリーンアップ
+8. `08_stdin_example.sh` - STDIN入力の利用例
+9. `09_clean.sh` - 生成されたファイルのクリーンアップ
 
 ### 設定例
 10. `17_config_basic.sh` - 基本的な設定例
@@ -108,7 +108,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 8. STDIN入力の利用例
 ```bash
-./examples/10_stdin_example.sh
+./examples/08_stdin_example.sh
 ```
 このスクリプトは以下を実行します：
 - echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
@@ -117,7 +117,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 9. クリーンアップ
 ```bash
-./examples/12_clean.sh
+./examples/09_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除

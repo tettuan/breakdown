@@ -24,3 +24,12 @@ README.md を読む
   - testが通っていない
     - テストを修正する
 
+## 結果評価
+
+プロジェクト直下に以下のディレクトリがある場合、examples が誤って作成している。1つずつ実行し調査して、修正すべき。本来は examples/ 配下へ作成されるべき。
+
+- prompts
+- prompt
+- outoput
+- schema
+- schemas

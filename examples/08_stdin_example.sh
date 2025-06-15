@@ -29,17 +29,17 @@ if [ ! -f ".deno/bin/breakdown" ]; then
     handle_error "Breakdown binary not found. Please run ./examples/02_compile.sh first."
 fi
 
-# Create output directory in the project root
-mkdir -p output || handle_error "Failed to create output directory"
+# Create output directory under examples/output
+mkdir -p examples/output || handle_error "Failed to create output directory"
 
 echo "=== Example: Passing input via STDIN to breakdown summary project (project root style) ==="
 INPUT_TEXT="This is a messy project summary from STDIN."
 echo "Input text: $INPUT_TEXT"
 
 # Run breakdown with STDIN input
-if ! echo "$INPUT_TEXT" | .deno/bin/breakdown summary project -o output/project_summary.md; then
+if ! echo "$INPUT_TEXT" | .deno/bin/breakdown summary project -o examples/output/project_summary.md; then
     handle_error "Failed to run breakdown with STDIN input"
 fi
 
 echo -e "\n✓ Example completed successfully!"
-echo "Output file created: output/project_summary.md" 
+echo "Output file created: examples/output/project_summary.md" 
