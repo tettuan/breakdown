@@ -501,4 +501,9 @@ if ! deno lint; then
     handle_lint_error "$(deno lint 2>&1)"
 fi
 
+echo "Running automatic test cleanup..."
+if ! deno run -A scripts/test_cleanup.ts; then
+    echo "⚠️ Warning: Test cleanup failed, but CI continues"
+fi
+
 echo "✓ Local checks completed successfully." 

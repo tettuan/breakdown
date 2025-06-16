@@ -197,6 +197,78 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
 }
 
 /**
+ * Global cleanup for all temporary test artifacts
+ * Automatically removes all remaining test files in tmp/ directory
+ * Should be called at the end of test suites to prevent accumulation
+ */
+export async function globalTestCleanup(): Promise<void> {
+  const logger = new BreakdownLogger("global-cleanup");
+  const tmpDir = "tmp";
+
+  try {
+    const stat = await Deno.stat(tmpDir);
+    if (stat.isDirectory) {
+      const size = await getTmpDirectorySize(tmpDir);
+      logger.debug("Starting global test cleanup", {
+        tmpDir,
+        sizeKB: Math.round(size / 1024),
+      });
+
+      // Restore write permissions recursively
+      await restoreWritePermissions(tmpDir);
+
+      // Remove all contents but keep the directory
+      for await (const entry of Deno.readDir(tmpDir)) {
+        const entryPath = join(tmpDir, entry.name);
+        try {
+          await Deno.remove(entryPath, { recursive: true });
+          logger.debug("Removed test artifact", { path: entryPath });
+        } catch (error) {
+          logger.warn("Failed to remove test artifact", { path: entryPath, error });
+        }
+      }
+
+      const finalSize = await getTmpDirectorySize(tmpDir);
+      logger.info("Global test cleanup completed", {
+        tmpDir,
+        removedKB: Math.round((size - finalSize) / 1024),
+        remainingKB: Math.round(finalSize / 1024),
+      });
+    }
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      logger.debug("No tmp directory to clean up");
+    } else {
+      logger.error("Error during global test cleanup", { error });
+    }
+  }
+}
+
+/**
+ * Calculate directory size in bytes
+ */
+async function getTmpDirectorySize(dirPath: string): Promise<number> {
+  let totalSize = 0;
+
+  try {
+    for await (const entry of Deno.readDir(dirPath)) {
+      const entryPath = join(dirPath, entry.name);
+      const stat = await Deno.stat(entryPath);
+
+      if (stat.isFile) {
+        totalSize += stat.size;
+      } else if (stat.isDirectory) {
+        totalSize += await getTmpDirectorySize(entryPath);
+      }
+    }
+  } catch (_error) {
+    // Ignore errors for individual files/directories
+  }
+
+  return totalSize;
+}
+
+/**
  * Runs a command and returns the result
  */
 export async function runCommand(
