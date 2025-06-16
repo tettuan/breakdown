@@ -25,6 +25,9 @@ import { ensureDir } from "@std/fs";
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_stdin_flow";
 
+// Workaround implemented for BreakdownParams v1.0.1 limitation
+// The CLI now separates positional arguments from options before parsing
+// to avoid "Too many arguments" error
 Deno.test("Stdin Flow Integration", async (t) => {
   let _originalCwd: string;
 
@@ -103,7 +106,7 @@ A project description should include:
     });
     const input = "This is a test project summary from stdin.";
     const result = await runCommand(
-      ["summary", "project", "--from", "-"],
+      ["summary", "project", "--from=-", "--destination=stdout"],
       input,
       TEST_DIR,
     );
@@ -117,7 +120,7 @@ A project description should include:
     });
     const input = "This is a test project description from stdin.";
     const result = await runCommand(
-      ["to", "project", "--from", "-"],
+      ["to", "project", "--from=-", "--destination=stdout"],
       input,
       TEST_DIR,
     );
@@ -137,7 +140,7 @@ A project description should include:
     const outputFile = "output/project_summary.md";
     await ensureDir(join(TEST_DIR, "output"));
     const result = await runCommand(
-      ["summary", "project", "--from", "-", "-o", outputFile],
+      ["summary", "project", "--from=-", "-o=" + outputFile],
       input,
       TEST_DIR,
     );

@@ -84,6 +84,8 @@
 - Document investigation results in a file under tmp/ directory
 
 
+# Claude Code Compay
+`start company`: 「tmuxを使った相互通信によるClaude Code Company管理方法」の「基本セットアップ」を実施する。
 
 # tmuxを使った相互通信によるClaude Code Company管理方法
 
@@ -195,9 +197,9 @@ tmux send-keys -t %27 "cd 'ワーキングディレクトリ' && あなたはpan
 ### 並列タスク割り当て例
 
 ```
-tmux send-keys -t %27 "タスク1の内容" && sleep 0.1 && tmux send-keys -t %27 Enter & \
-tmux send-keys -t %28 "タスク2の内容" && sleep 0.1 && tmux send-keys -t %28 Enter & \
-tmux send-keys -t %25 "タスク3の内容" && sleep 0.1 && tmux send-keys -t %25 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %27 "タスク1の内容" && sleep 0.1 && tmux send-keys -t %27 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %28 "タスク2の内容" && sleep 0.1 && tmux send-keys -t %28 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %25 "タスク3の内容" && sleep 0.1 && tmux send-keys -t %25 Enter & \
 wait
 ```
 

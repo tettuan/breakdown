@@ -52,12 +52,22 @@ app_schema:
 EOL
 
 # --- 3. Copy system files to user dir (after user.yml creation) ---
-# Copy prompts recursively
+# Copy prompts recursively (excluding user directory to avoid recursion)
 mkdir -p "$USER_PROMPT_DIR"
-cp -r "$SYSTEM_PROMPT_DIR/"* "$USER_PROMPT_DIR/"
-# Copy schema recursively
+for item in "$SYSTEM_PROMPT_DIR"/*; do
+    base_item=$(basename "$item")
+    if [ "$base_item" != "user" ]; then
+        cp -r "$item" "$USER_PROMPT_DIR/"
+    fi
+done
+# Copy schema recursively (excluding user directory to avoid recursion)
 mkdir -p "$USER_SCHEMA_DIR"
-cp -r "$SYSTEM_SCHEMA_DIR/"* "$USER_SCHEMA_DIR/"
+for item in "$SYSTEM_SCHEMA_DIR"/*; do
+    base_item=$(basename "$item")
+    if [ "$base_item" != "user" ]; then
+        cp -r "$item" "$USER_SCHEMA_DIR/"
+    fi
+done
 
 echo "Created user configuration at: ${USER_CONFIG_PATH}"
 echo "Contents of user configuration:"

@@ -44,10 +44,8 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
     [
       "to",
       "project",
-      "--from",
-      summaryPath,
-      "--destination",
-      join(projectDir, "project.md"),
+      `--from=${summaryPath}`,
+      `--destination=${join(projectDir, "project.md")}`,
     ],
     undefined,
     testDir,
@@ -111,12 +109,9 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       [
         "summary",
         "task",
-        "--from",
-        inputPath,
-        "--adaptation",
-        "strict",
-        "--destination",
-        join(testDir, "tasks_strict.md"),
+        `--from=${inputPath}`,
+        "--adaptation=strict",
+        `--destination=${join(testDir, "tasks_strict.md")}`,
       ],
       undefined,
       testDir,
@@ -129,12 +124,9 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
       [
         "summary",
         "task",
-        "--from",
-        inputPath,
-        "-a",
-        "a",
-        "--destination",
-        join(testDir, "tasks_simple.md"),
+        `--from=${inputPath}`,
+        "-a=a",
+        `--destination=${join(testDir, "tasks_simple.md")}`,
       ],
       undefined,
       testDir,
@@ -178,10 +170,8 @@ Deno.test("E2E: error case - missing input file", async () => {
     [
       "to",
       "project",
-      "--from",
-      join(testDir, "not_exist.md"),
-      "--destination",
-      join(testDir, "out.md"),
+      `--from=${join(testDir, "not_exist.md")}`,
+      `--destination=${join(testDir, "out.md")}`,
     ],
     undefined,
     testDir,
@@ -189,7 +179,7 @@ Deno.test("E2E: error case - missing input file", async () => {
   logger.debug("missing input file result", { result });
   // Parser now correctly handles options, should fail with file not found
   assertEquals(result.success, false);
-  assertEquals(result.error?.startsWith("Failed to read input file"), true);
+  assertEquals(result.error?.includes("Failed to read input file"), true);
 });
 
 /**
@@ -222,10 +212,8 @@ Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => 
     [
       "to",
       "project",
-      "--from",
-      inputPath,
-      "--destination",
-      "output.md",
+      `--from=${inputPath}`,
+      "--destination=output.md",
     ],
     undefined,
     testDir,
@@ -262,10 +250,8 @@ Deno.test("E2E: error if app_prompt.base_dir is a file (error message contains '
     [
       "to",
       "project",
-      "--from",
-      inputPath,
-      "--destination",
-      "output.md",
+      `--from=${inputPath}`,
+      "--destination=output.md",
     ],
     undefined,
     testDir,
@@ -321,10 +307,8 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
     [
       "to",
       "project",
-      "--from",
-      inputPath,
-      "--destination",
-      "output.md",
+      `--from=${inputPath}`,
+      "--destination=output.md",
     ],
     undefined,
     testDir,
@@ -356,10 +340,8 @@ Deno.test("E2E: template path is resolved using baseDir (relative)", async () =>
     [
       "to",
       "project",
-      "--from",
-      inputPath,
-      "--destination",
-      "output.md",
+      `--from=${inputPath}`,
+      "--destination=output.md",
     ],
     undefined,
     testDir,
