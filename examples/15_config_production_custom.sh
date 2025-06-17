@@ -337,14 +337,14 @@ cat > "$OUTPUT_DIR/test_breakdown.ts" << 'EOF'
 #!/usr/bin/env -S deno run -A
 
 // Example of using breakdown via JSR package
-import { parseArgs } from "jsr:@std/flags@^0.224.0";
+import { parse } from "jsr:@std/flags@^0.224.0";
 
 console.log("=== Breakdown JSR Package Usage Demo ===");
 console.log("This demonstrates how to use breakdown via JSR package");
 console.log();
 
 // Parse command line arguments
-const args = parseArgs(Deno.args);
+const args = parse(Deno.args);
 
 // Example: Check if find bugs would work
 const demonstrativeType = "find";
