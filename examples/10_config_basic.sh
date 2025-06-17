@@ -1,79 +1,75 @@
 #!/bin/bash
-# Example 17: Basic --config option usage
-# This example demonstrates how to use a custom configuration file with Breakdown CLI
-set -euo pipefail
+# Example 10: Basic configuration usage
+# This example demonstrates how to use a basic configuration file with Breakdown CLI
 
-# Error handling
-handle_error() {
-    echo "Error: $1" >&2
+set -e
+
+echo "=== Basic Configuration Example ==="
+
+# Run from examples directory
+CONFIG_DIR="../.agent/breakdown/config"
+
+# Check if initialized
+if [ ! -d "${CONFIG_DIR}" ]; then
+    echo "Error: Project not initialized. Please run 'breakdown init' first."
     exit 1
-}
-
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
-
-# Get script directory and project root
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
-
-# Check prerequisites
-if ! command -v deno &> /dev/null; then
-    handle_error "Deno is not installed. Please install Deno first."
 fi
 
-# Check if breakdown binary exists
-if [ ! -f ".deno/bin/breakdown" ]; then
-    handle_error "Breakdown binary not found. Please run ./examples/02_compile.sh first."
+# Check if user.yml exists
+if [ ! -f "${CONFIG_DIR}/user.yml" ]; then
+    echo "Creating user configuration..."
+    bash 06_create_user_config.sh
 fi
 
-# Create examples configs directory if it doesn't exist
-mkdir -p "${PROJECT_ROOT}/examples/configs"
-
-# Use predefined test configuration
-CONFIG_NAME="test"
-
-# Copy test config to examples/configs if not exists
-if [ ! -f "${PROJECT_ROOT}/examples/configs/${CONFIG_NAME}.json" ]; then
-    if [ -f "${PROJECT_ROOT}/configs/${CONFIG_NAME}.json" ]; then
-        cp "${PROJECT_ROOT}/configs/${CONFIG_NAME}.json" "${PROJECT_ROOT}/examples/configs/"
-    else
-        handle_error "Test configuration not found in configs/${CONFIG_NAME}.json"
-    fi
-fi
-
-echo "Using test configuration: $CONFIG_NAME"
-
-# Create sample input file
-cat > /tmp/input.md << 'EOF'
-# Sample Project Documentation
-
-## Overview
-This is a sample project to demonstrate the Breakdown CLI with custom configuration.
-
-## Features
-- Feature A: User authentication
-- Feature B: Data processing
-- Feature C: Reporting system
-
-## Requirements
-- Node.js 18+
-- PostgreSQL database
-- Redis cache
+# Create a basic configuration file
+cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
+# Basic application configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts"
+app_schema:
+  base_dir: "schema"
+logger:
+  level: "info"
+  format: "text"
+output:
+  format: "markdown"
+  includeHeaders: true
 EOF
 
-# Run breakdown with the config file
-echo "Running breakdown with basic config..."
-echo "Command: .deno/bin/breakdown to project --from=/tmp/input.md --destination=/tmp/output --config=$CONFIG_NAME"
-.deno/bin/breakdown to project --from=/tmp/input.md --destination=/tmp/output --config=$CONFIG_NAME
+echo "Created basic configuration: ${CONFIG_DIR}/basic-app.yml"
 
-# Show the result
-echo -e "\nGenerated output structure:"
-find /tmp/output -type f -name "*.md" | head -10
+# Create sample input
+cat > input.md << 'EOF'
+# Sample Project
 
-# Clean up
-echo -e "\nCleaning up temporary files..."
-rm -f /tmp/input.md
-rm -rf /tmp/output
+This is a sample project for testing basic configuration.
 
-echo "Example completed successfully!"
+## Features
+- Feature 1: User authentication
+- Feature 2: Data processing
+- Feature 3: Report generation
+
+## Technical Stack
+- Language: TypeScript
+- Framework: Deno
+- Database: PostgreSQL
+EOF
+
+echo "Created sample input file"
+
+# Run breakdown with basic configuration
+echo ""
+echo "Running breakdown with basic configuration..."
+echo "Command: deno run -A jsr:@tettuan/breakdown summary project --config=basic < input.md"
+deno run -A jsr:@tettuan/breakdown summary project --config=basic < input.md > output.md
+
+echo ""
+echo "=== Output ==="
+cat output.md
+
+# Cleanup
+rm -f input.md output.md
+
+echo ""
+echo "=== Basic Configuration Example Completed ==="

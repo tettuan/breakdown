@@ -1,109 +1,92 @@
 #!/bin/bash
-# Example 18: Production environment configuration
-# This example shows a configuration optimized for production use with custom paths
-set -euo pipefail
+# Example 11: Production configuration
+# This example demonstrates production-ready configuration with enhanced settings
 
-# Error handling
-handle_error() {
-    echo "Error: $1" >&2
+set -e
+
+echo "=== Production Configuration Example ==="
+
+# Run from examples directory
+CONFIG_DIR="../.agent/breakdown/config"
+
+# Check if initialized
+if [ ! -d "${CONFIG_DIR}" ]; then
+    echo "Error: Project not initialized. Please run 'breakdown init' first."
     exit 1
-}
-
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
-
-# Get script directory and project root
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
-
-# Check prerequisites
-if ! command -v deno &> /dev/null; then
-    handle_error "Deno is not installed. Please install Deno first."
 fi
 
-# Check if breakdown binary exists
-if [ ! -f ".deno/bin/breakdown" ]; then
-    handle_error "Breakdown binary not found. Please run ./examples/02_compile.sh first."
-fi
-
-# Use predefined production configuration
-CONFIG_NAME="prod"
-
-echo "Using production configuration: $CONFIG_NAME"
-
-# Create sample API documentation as input
-mkdir -p /tmp/docs || handle_error "Failed to create temporary docs directory"
-cat > /tmp/docs/api_documentation.md << 'EOF'
-# Production API Documentation
-
-## Authentication System
-All API endpoints require authentication via Bearer token.
-
-### Token Management
-- POST /auth/login - Authenticate user and receive token
-- POST /auth/refresh - Refresh expired token
-- POST /auth/logout - Invalidate current token
-
-## User Management Endpoints
-
-### GET /api/v1/users
-Returns a paginated list of all users in the system.
-
-**Parameters:**
-- page (integer): Page number (default: 1)
-- limit (integer): Items per page (default: 20)
-- sort (string): Sort field (default: created_at)
-
-### POST /api/v1/users
-Creates a new user with the provided data.
-
-**Request Body:**
-```json
-{
-  "username": "string",
-  "email": "string",
-  "role": "string"
-}
-```
-
-## Product Catalog Endpoints
-
-### GET /api/v1/products
-Returns a list of available products with filtering options.
-
-**Query Parameters:**
-- category (string): Filter by category
-- minPrice (number): Minimum price filter
-- maxPrice (number): Maximum price filter
-- inStock (boolean): Show only in-stock items
-
-### PUT /api/v1/products/{id}
-Updates an existing product.
-
-**Path Parameters:**
-- id (string): Product UUID
-
-## Order Processing
-
-### POST /api/v1/orders
-Create a new order with cart items.
-
-### GET /api/v1/orders/{id}/status
-Check order processing status.
+# Create production configuration
+cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
+# Production application configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts"
+app_schema:
+  base_dir: "schema"
+  validation_enabled: true
+logger:
+  level: "warn"
+  format: "json"
+  output: "stderr"
+  includeTimestamp: true
+performance:
+  maxFileSize: "10MB"
+  timeout: 30000
+  concurrency: 4
+  cacheEnabled: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: false
+  maxLineLength: 120
+security:
+  sanitizeInput: true
+  allowedProtocols: ["https", "file"]
+  blockedPatterns: [".env", "secrets", "password"]
+features:
+  cliValidation: true
+  experimentalFeatures: false
 EOF
 
-# Run breakdown with production config
+echo "Created production configuration: ${CONFIG_DIR}/production-app.yml"
+
+# Create sample production data
+cat > production_report.md << 'EOF'
+# Production System Report
+
+## System Overview
+Our production system handles millions of requests daily with high availability requirements.
+
+## Current Issues
+- Memory usage spikes during peak hours
+- Database connection pool exhaustion
+- Slow API response times for complex queries
+
+## Proposed Solutions
+1. Implement caching layer
+2. Optimize database queries
+3. Add horizontal scaling capabilities
+
+## Risk Assessment
+- High: Data consistency during migration
+- Medium: Service disruption during deployment
+- Low: User experience degradation
+EOF
+
+echo "Created sample production report"
+
+# Run breakdown with production configuration
+echo ""
 echo "Running breakdown with production configuration..."
-echo "Command: .deno/bin/breakdown to project --from=/tmp/docs/api_documentation.md --destination=/tmp/prod-output --config=$CONFIG_NAME"
-.deno/bin/breakdown to project --from=/tmp/docs/api_documentation.md --destination=/tmp/prod-output --config=$CONFIG_NAME
+echo "Command: deno run -A jsr:@tettuan/breakdown summary issue --config=production < production_report.md"
+deno run -A jsr:@tettuan/breakdown summary issue --config=production < production_report.md > production_output.md
 
-# Show results
-echo -e "\nProduction output generated:"
-find /tmp/prod-output -type f -name "*.md" | head -10
+echo ""
+echo "=== Output ==="
+cat production_output.md
 
-# Clean up
-echo -e "\nCleaning up temporary files..."
-rm -rf /tmp/docs /tmp/prod-output
+# Cleanup
+rm -f production_report.md production_output.md
 
-echo "Example completed successfully!"
+echo ""
+echo "=== Production Configuration Example Completed ==="

@@ -106,7 +106,7 @@ export class ResourceMonitor {
     this.monitoringInterval = setInterval(async () => {
       try {
         await this.collectMetrics();
-        await this.detectConflicts();
+        this.detectConflicts();
       } catch (error) {
         this.logger.error("Error during monitoring", { error });
       }
@@ -152,9 +152,9 @@ export class ResourceMonitor {
         activeTests: await this.getActiveTestCount(),
         tmpDirSize: await this.getTmpDirectorySize(),
         openFiles: await this.getOpenFileCount(),
-        memoryUsage: await this.getMemoryUsage(),
+        memoryUsage: this.getMemoryUsage(),
         cpuUsage: await this.getCpuUsage(),
-        diskIOPS: await this.getDiskIOPS(),
+        diskIOPS: this.getDiskIOPS(),
       };
 
       this.metrics.push(metrics);
@@ -173,7 +173,7 @@ export class ResourceMonitor {
   /**
    * Detect resource conflicts and race conditions
    */
-  private async detectConflicts(): Promise<void> {
+  private detectConflicts(): void {
     if (this.metrics.length < 2) return;
 
     const current = this.metrics[this.metrics.length - 1];
@@ -443,7 +443,7 @@ export class ResourceMonitor {
     }
   }
 
-  private async getMemoryUsage(): Promise<number> {
+  private getMemoryUsage(): number {
     try {
       // Get memory usage of current process
       if (Deno.systemMemoryInfo) {
@@ -475,7 +475,7 @@ export class ResourceMonitor {
     }
   }
 
-  private async getDiskIOPS(): Promise<number> {
+  private getDiskIOPS(): number {
     try {
       // Simplified disk I/O estimation
       return 0; // Implementation depends on platform
@@ -500,7 +500,6 @@ async function main() {
       console.log("Resource monitoring started. Press Ctrl+C to stop and generate report.");
 
       // Handle graceful shutdown
-      const abortController = new AbortController();
       Deno.addSignalListener("SIGINT", async () => {
         console.log("\nStopping resource monitoring...");
         const report = await monitor.stopMonitoring();
@@ -560,5 +559,3 @@ Reports are saved to tmp/monitoring/ directory.
 if (import.meta.main) {
   await main();
 }
-
-export { ResourceMonitor };

@@ -1,179 +1,118 @@
 #!/bin/bash
-# Example 19: Team shared configuration
-# This example demonstrates a configuration file shared among team members with custom directories
-set -euo pipefail
+# Example 12: Team development configuration
+# This example demonstrates team-oriented configuration with collaboration features
 
-# Error handling
-handle_error() {
-    echo "Error: $1" >&2
+set -e
+
+echo "=== Team Development Configuration Example ==="
+
+# Run from examples directory
+CONFIG_DIR="../.agent/breakdown/config"
+
+# Check if initialized
+if [ ! -d "${CONFIG_DIR}" ]; then
+    echo "Error: Project not initialized. Please run 'breakdown init' first."
     exit 1
-}
+fi
 
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
-
-# Get script directory and project root
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
-
-# Use predefined dev configuration for team development
-CONFIG_NAME="dev"
-
-echo "Using team development configuration: $CONFIG_NAME"
-
-# Create sample project documentation for team collaboration
-mkdir -p /tmp/project-docs || handle_error "Failed to create temporary project-docs directory"
-cat > /tmp/project-docs/architecture.md << 'EOF'
-# MyApp Architecture Documentation
-
-## Project Overview
-MyApp is a modern web application built with microservices architecture.
-
-## Core Components
-
-### Authentication Service
-Handles user authentication and authorization across all services.
-
-**Technologies:**
-- JWT tokens for session management
-- OAuth2 integration for social logins
-- Redis for token storage
-
-### User Service
-Manages user profiles and preferences.
-
-**API Endpoints:**
-- GET /users/:id - Get user profile
-- PUT /users/:id - Update user profile
-- DELETE /users/:id - Delete user account
-
-### Product Service
-Handles product catalog and inventory management.
-
-**Key Features:**
-- Real-time inventory tracking
-- Product categorization
-- Search and filtering capabilities
-
-### Order Service
-Processes customer orders and manages order lifecycle.
-
-**Order States:**
-- PENDING - Order created but not paid
-- PROCESSING - Payment received, preparing order
-- SHIPPED - Order shipped to customer
-- DELIVERED - Order delivered successfully
-- CANCELLED - Order cancelled by user or system
-
-## Infrastructure
-
-### Database Layer
-- PostgreSQL for primary data storage
-- MongoDB for product catalog
-- Redis for caching and sessions
-
-### Message Queue
-- RabbitMQ for inter-service communication
-- Event-driven architecture for order processing
-
-### API Gateway
-- Kong API Gateway for routing
-- Rate limiting and authentication
-- Request/response transformation
-
-## Development Guidelines
-
-### Code Style
-- TypeScript for all services
-- ESLint + Prettier for code formatting
-- Jest for unit testing
-- Cypress for E2E testing
-
-### Git Workflow
-- Feature branches from develop
-- Pull requests require 2 approvals
-- Automated CI/CD pipeline
-
-### Documentation Standards
-- API documentation with OpenAPI 3.0
-- Architecture decisions in ADR format
-- README files for each service
+# Create team configuration
+cat > "${CONFIG_DIR}/team-app.yml" << 'EOF'
+# Team development configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/team"
+  template_prefix: "team_"
+app_schema:
+  base_dir: "schema/team"
+  validation_enabled: true
+  strict_mode: false
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  includeTimestamp: true
+  includeContext: true
+collaboration:
+  enableSharing: true
+  defaultVisibility: "team"
+  reviewRequired: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: true
+  includeMetadata: true
+  authorInfo: true
+features:
+  cliValidation: true
+  experimentalFeatures: true
+  teamFeatures: true
+  debugMode: true
 EOF
 
-# Create another team document
-cat > /tmp/project-docs/deployment.md << 'EOF'
-# Deployment Guide
+echo "Created team configuration: ${CONFIG_DIR}/team-app.yml"
 
-## Environments
+# Create team collaboration scenario
+cat > team_planning.md << 'EOF'
+# Sprint Planning Meeting Notes
 
-### Development
-- Local Docker Compose setup
-- Hot reloading enabled
-- Mock external services
+## Team Members Present
+- Alice (Frontend Lead)
+- Bob (Backend Lead)
+- Carol (DevOps)
+- David (QA Lead)
 
-### Staging
-- Kubernetes cluster on AWS EKS
-- Mirrors production configuration
-- Uses production-like data
+## Sprint Goals
+1. Complete user authentication module
+2. Implement real-time notifications
+3. Set up CI/CD pipeline
+4. Create automated test suite
 
-### Production
-- Multi-region deployment
-- Auto-scaling enabled
-- Blue-green deployment strategy
+## Task Distribution
+### Frontend (Alice)
+- Design login/signup UI
+- Implement form validation
+- Create notification components
 
-## CI/CD Pipeline
+### Backend (Bob)
+- JWT token implementation
+- WebSocket server setup
+- Database schema updates
 
-### Build Stage
-1. Run linters and formatters
-2. Execute unit tests
-3. Build Docker images
-4. Push to container registry
+### DevOps (Carol)
+- GitHub Actions workflow
+- Docker containerization
+- Kubernetes deployment configs
 
-### Deploy Stage
-1. Update Kubernetes manifests
-2. Apply rolling updates
-3. Run smoke tests
-4. Monitor deployment health
+### QA (David)
+- Unit test framework setup
+- Integration test scenarios
+- Performance benchmarks
 
-## Monitoring
+## Blockers
+- Waiting for design mockups
+- Need AWS credentials
+- Database migration strategy unclear
 
-### Application Metrics
-- Prometheus for metrics collection
-- Grafana for visualization
-- Custom dashboards per service
-
-### Logging
-- ELK stack for centralized logging
-- Structured JSON logs
-- Log retention: 30 days
-
-### Alerting
-- PagerDuty integration
-- Slack notifications
-- Email alerts for critical issues
+## Next Steps
+1. Daily standup at 9 AM
+2. Design review on Tuesday
+3. Code review guidelines to be shared
 EOF
 
-# Run breakdown with team config for architecture documentation
-echo "Running breakdown with team shared configuration..."
-echo "Processing architecture documentation..."
-echo "Command: .deno/bin/breakdown to project --from=/tmp/project-docs/architecture.md --destination=/tmp/team-output/architecture --config=$CONFIG_NAME"
-.deno/bin/breakdown to project --from=/tmp/project-docs/architecture.md --destination=/tmp/team-output/architecture --config=$CONFIG_NAME
+echo "Created team planning document"
 
-# Process deployment documentation
-echo -e "\nProcessing deployment documentation..."
-echo "Command: .deno/bin/breakdown to project --from=/tmp/project-docs/deployment.md --destination=/tmp/team-output/deployment --config=$CONFIG_NAME"
-.deno/bin/breakdown to project --from=/tmp/project-docs/deployment.md --destination=/tmp/team-output/deployment --config=$CONFIG_NAME
+# Run breakdown with team configuration
+echo ""
+echo "Running breakdown with team configuration..."
+echo "Command: deno run -A jsr:@tettuan/breakdown to task --config=team < team_planning.md"
+deno run -A jsr:@tettuan/breakdown to task --config=team < team_planning.md > team_tasks.md
 
-# Show results
-echo -e "\nTeam documentation generated:"
-echo "Architecture breakdown:"
-find /tmp/team-output/architecture -type f -name "*.md" 2>/dev/null | head -5
-echo -e "\nDeployment breakdown:"
-find /tmp/team-output/deployment -type f -name "*.md" 2>/dev/null | head -5
+echo ""
+echo "=== Output ==="
+cat team_tasks.md
 
-# Clean up
-echo -e "\nCleaning up temporary files..."
-rm -rf /tmp/project-docs /tmp/team-output
+# Cleanup
+rm -f team_planning.md team_tasks.md
 
-echo "Example completed successfully!"
+echo ""
+echo "=== Team Development Configuration Example Completed ==="

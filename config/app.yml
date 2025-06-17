@@ -1,5 +1,17 @@
-working_dir: .agent/breakdown
-app_prompt:
-  base_dir: lib/breakdown/prompts
-app_schema:
-  base_dir: lib/breakdown/schema
+# Application Configuration
+# Base configuration for breakdown CLI
+
+# Application metadata
+app:
+  name: breakdown
+  version: 1.0.0
+  description: Breakdown CLI tool
+
+# Default configuration
+defaults:
+  logLevel: info
+  outputFormat: text
+
+# Base configuration that can be overridden by user configs
+config:
+  enabled: true

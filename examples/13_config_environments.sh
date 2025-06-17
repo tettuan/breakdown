@@ -1,183 +1,128 @@
 #!/bin/bash
-# Example 20: Environment-specific configurations
-# This example shows how to use different configs for different environments
-set -euo pipefail
+# Example 13: Environment-specific configurations
+# This example demonstrates how to use different configurations for dev/staging/prod
 
-# Error handling
-handle_error() {
-    echo "Error: $1" >&2
+set -e
+
+echo "=== Environment-Specific Configuration Example ==="
+
+# Run from examples directory
+CONFIG_DIR="../.agent/breakdown/config"
+
+# Check if initialized
+if [ ! -d "${CONFIG_DIR}" ]; then
+    echo "Error: Project not initialized. Please run 'breakdown init' first."
     exit 1
-}
+fi
 
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
-
-# Get script directory and project root
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
-
-# Define configuration names for different environments
-DEV_CONFIG="dev"
-TEST_CONFIG="test"
-PROD_CONFIG="prod"
-
-# Check if all config files exist in .agent/breakdown/config/ or configs/
-for config_name in "$DEV_CONFIG" "$TEST_CONFIG" "$PROD_CONFIG"; do
-    config_found=false
-    if [ -f "${PROJECT_ROOT}/.agent/breakdown/config/${config_name}-app.yml" ]; then
-        config_found=true
-    elif [ -f "${PROJECT_ROOT}/config/${config_name}-app.yml" ]; then
-        config_found=true
-    fi
-    if [ "$config_found" = false ]; then
-        handle_error "Configuration file not found for: $config_name"
-    fi
-done
-
-echo "Using environment configurations:"
-echo "  Development: $DEV_CONFIG"
-echo "  Test/Staging: $TEST_CONFIG"
-echo "  Production: $PROD_CONFIG"
-
-# Create a sample application specification
-mkdir -p /tmp/app-specs || handle_error "Failed to create temporary app-specs directory"
-cat > /tmp/app-specs/main.md << 'EOF'
-# E-Commerce Platform Specification
-
-## System Overview
-A comprehensive e-commerce platform supporting B2C and B2B operations.
-
-## Core Features
-
-### Customer Portal
-- User registration and authentication
-- Product browsing and search
-- Shopping cart management
-- Order placement and tracking
-- Payment processing
-- Review and rating system
-
-### Admin Dashboard
-- Product management (CRUD operations)
-- Inventory tracking
-- Order management
-- Customer support tools
-- Analytics and reporting
-- Marketing campaign management
-
-### API Services
-- RESTful API for mobile apps
-- GraphQL API for web frontend
-- Webhook support for integrations
-- Rate limiting and API key management
-
-## Technical Requirements
-
-### Performance
-- Page load time < 2 seconds
-- API response time < 200ms
-- Support for 10,000 concurrent users
-- 99.9% uptime SLA
-
-### Security
-- PCI DSS compliance for payment processing
-- GDPR compliance for data protection
-- SSL/TLS encryption
-- Regular security audits
-
-### Scalability
-- Horizontal scaling capability
-- Database sharding support
-- CDN integration
-- Microservices architecture
-
-## Integration Points
-
-### Payment Gateways
-- Stripe
-- PayPal
-- Square
-- Bank transfers
-
-### Shipping Providers
-- FedEx
-- UPS
-- DHL
-- Local carriers
-
-### Third-party Services
-- Email service (SendGrid)
-- SMS notifications (Twilio)
-- Analytics (Google Analytics)
-- Search (Elasticsearch)
-
-## Database Schema
-
-### Core Tables
-- users
-- products
-- categories
-- orders
-- order_items
-- payments
-- reviews
-- inventory
-
-### Relationships
-- Users have many orders
-- Orders have many order_items
-- Products belong to categories
-- Products have many reviews
+# Create development configuration
+cat > "${CONFIG_DIR}/dev-app.yml" << 'EOF'
+# Development environment configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/dev"
+app_schema:
+  base_dir: "schema/dev"
+  validation_enabled: false
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  colorize: true
+features:
+  experimentalFeatures: true
+  debugMode: true
 EOF
 
-# Function to run breakdown with different configs
-run_with_env() {
-  local env=$1
-  echo -e "\n=== Running breakdown for $env environment ==="
-  
-  case $env in
-    development)
-      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$DEV_CONFIG"
-      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$DEV_CONFIG
-      ;;
-    staging)
-      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$TEST_CONFIG"
-      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$TEST_CONFIG
-      ;;
-    production)
-      echo "Command: .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$PROD_CONFIG --extended"
-      .deno/bin/breakdown to project --from=/tmp/app-specs/main.md --destination=/tmp/$env-docs --config=$PROD_CONFIG --extended
-      ;;
-  esac
-  
-  echo "Output saved to /tmp/$env-docs/"
-}
+# Create staging configuration
+cat > "${CONFIG_DIR}/staging-app.yml" << 'EOF'
+# Staging environment configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/staging"
+app_schema:
+  base_dir: "schema/staging"
+  validation_enabled: true
+logger:
+  level: "info"
+  format: "json"
+  output: "stderr"
+performance:
+  maxFileSize: "5MB"
+  timeout: 20000
+features:
+  experimentalFeatures: false
+  debugMode: false
+EOF
 
-# Run for each environment
-run_with_env "development"
-run_with_env "staging"
-run_with_env "production"
+# Create production configuration (already exists as production-app.yml)
+cat > "${CONFIG_DIR}/prod-app.yml" << 'EOF'
+# Production environment configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/prod"
+app_schema:
+  base_dir: "schema/prod"
+  validation_enabled: true
+  strict_mode: true
+logger:
+  level: "error"
+  format: "json"
+  output: "stderr"
+  includeStackTrace: false
+performance:
+  maxFileSize: "10MB"
+  timeout: 30000
+  concurrency: 8
+security:
+  sanitizeInput: true
+  auditLog: true
+features:
+  experimentalFeatures: false
+  debugMode: false
+EOF
 
-# Show the different outputs
-echo -e "\n=== Environment-specific outputs ==="
-echo "Development docs:"
-find /tmp/development-docs -type f -name "*.md" 2>/dev/null | head -3 || echo "  (not created)"
+echo "Created environment configurations:"
+echo "- ${CONFIG_DIR}/dev-app.yml"
+echo "- ${CONFIG_DIR}/staging-app.yml"
+echo "- ${CONFIG_DIR}/prod-app.yml"
 
-echo -e "\nStaging docs:"
-find /tmp/staging-docs -type f -name "*.md" 2>/dev/null | head -3 || echo "  (not created)"
+# Create test data
+cat > environment_test.md << 'EOF'
+# Environment Test Data
 
-echo -e "\nProduction docs (with --extended):"
-find /tmp/production-docs -type f -name "*.md" 2>/dev/null | head -3 || echo "  (not created)"
+## Development Issue
+DEBUG: Memory leak detected in user service
+Stack trace shows recursive function call
+Need immediate fix for local testing
 
-# Compare config usage
-echo -e "\n=== Configuration Summary ==="
-echo "Development: Uses dev.json - local development paths, project-level breakdown"
-echo "Staging: Uses test.json - test environment paths, system-level breakdown"
-echo "Production: Uses prod.json - production paths, system-level with extended mode"
+## Staging Issue
+API endpoint /users/profile returns 500 error
+Occurs only under load testing
+Database connection pool may be exhausted
 
-# Clean up
-echo -e "\nCleaning up temporary files..."
-rm -rf /tmp/app-specs /tmp/development-docs /tmp/staging-docs /tmp/production-docs
+## Production Issue
+CRITICAL: Payment processing failing
+Error rate: 15% of transactions
+Started after deployment version 2.3.1
+EOF
 
-echo "Example completed successfully!"
+echo ""
+echo "Testing different environments..."
+
+# Test each environment
+for ENV in dev staging prod; do
+    echo ""
+    echo "=== Testing ${ENV} environment ==="
+    echo "Command: deno run -A jsr:@tettuan/breakdown defect issue --config=${ENV} < environment_test.md"
+    deno run -A jsr:@tettuan/breakdown defect issue --config=${ENV} < environment_test.md > ${ENV}_output.md
+    echo "Output preview:"
+    head -10 ${ENV}_output.md
+    rm -f ${ENV}_output.md
+done
+
+# Cleanup
+rm -f environment_test.md
+
+echo ""
+echo "=== Environment-Specific Configuration Example Completed ==="

@@ -35,7 +35,7 @@
 - BreakdownPrompt: 
   - JSR: https://jsr.io/@tettuan/breakdownprompt
 
-## 実装のアウトライン
+## CLI実装のアウトライン
 
 start 
 
@@ -58,6 +58,8 @@ end!
 
 正しいのは、BreakdownParams へ移譲し、頼ることです。
 BreakdownParams が出来ない部分のみを、Breakdown本体が担います。ConfigPrefixとSTDIN解釈は、BreakdownParams が使えない典型例です（でも、それ以外は任せられます。だって、args を渡せば済むんだもの）。
+
+再実装するつもりで、全て最適化するために、書き直してください。
 
 ### 必読資料
 

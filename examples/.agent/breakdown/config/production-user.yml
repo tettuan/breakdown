@@ -1,0 +1,195 @@
+# Production User Configuration
+# Custom configuration for breakdown CLI
+
+# Custom configuration section
+customConfig:
+  enabled: true
+  
+  # Find command configuration
+  find:
+    twoParams:
+      - bugs
+      - issues
+      - todos
+  
+  # Find bugs functionality configuration
+  findBugs:
+    enabled: true
+    sensitivity: medium
+    patterns:
+      - TODO
+      - FIXME
+      - BUG
+      - HACK
+      - XXX
+      - OPTIMIZE
+      - REFACTOR
+    includeExtensions:
+      - .ts
+      - .js
+      - .tsx
+      - .jsx
+      - .mjs
+      - .cjs
+    excludeDirectories:
+      - node_modules
+      - .git
+      - dist
+      - build
+      - .cache
+      - coverage
+    maxResults: 100
+    detailedReports: true
+
+# BreakdownParams configuration
+breakdownParams:
+  version: latest
+  
+  # Custom configuration for BreakdownParams
+  customConfig:
+    # Parameter patterns
+    params:
+      two:
+        demonstrativeType:
+          pattern: "^(find|search|list|show)$"
+          errorMessage: "Invalid demonstrative type. Must be one of: find, search, list, show"
+        layerType:
+          pattern: "^(bugs|issues|todos|comments|notes)$"
+          errorMessage: "Invalid layer type. Must be one of: bugs, issues, todos, comments, notes"
+    
+    # Validation rules for different command types
+    validation:
+      zero:
+        allowedOptions:
+          - help
+          - version
+          - verbose
+          - quiet
+        valueOptions:
+          - config
+          - log-level
+        allowCustomVariables: true
+      one:
+        allowedOptions:
+          - help
+          - verbose
+          - quiet
+          - extended
+        valueOptions:
+          - from
+          - output
+          - format
+        allowCustomVariables: true
+      two:
+        allowedOptions:
+          - help
+          - extended
+          - verbose
+          - quiet
+        valueOptions:
+          - from
+          - destination
+          - output
+          - format
+          - limit
+        allowCustomVariables: true
+    
+    # Options definitions
+    options:
+      values:
+        from:
+          description: "Source directory or file"
+          type: string
+        destination:
+          description: "Target directory or file"
+          type: string
+        output:
+          description: "Output file path"
+          type: string
+        format:
+          description: "Output format"
+          type: string
+          enum:
+            - json
+            - yaml
+            - text
+            - markdown
+        config:
+          description: "Configuration file path"
+          type: string
+        log-level:
+          description: "Logging level"
+          type: string
+          enum:
+            - debug
+            - info
+            - warn
+            - error
+        limit:
+          description: "Maximum number of results"
+          type: number
+      
+      flags:
+        help:
+          description: "Show help information"
+          short: h
+        version:
+          description: "Show version information"
+          short: v
+        verbose:
+          description: "Enable verbose output"
+          short: V
+        quiet:
+          description: "Suppress informational output"
+          short: q
+        extended:
+          description: "Show extended information"
+          short: e
+      
+      customVariables:
+        pattern: "^--uv-[a-zA-Z-]+$"
+        description: "Custom user variables following the pattern --uv-*"
+    
+    # Error handling configuration
+    errorHandling:
+      unknownOption: error
+      duplicateOption: warn
+      emptyValue: error
+  
+  # Custom parameters (placeholder for extensibility)
+  customParams:
+    example: value
+
+# Logger configuration
+logger:
+  defaultLevel: info
+  enableColors: true
+  timestamp: true
+
+# Performance configuration
+performance:
+  maxConcurrentOperations: 10
+  timeout: 30000
+  cache:
+    enabled: true
+    ttl: 3600
+
+# Output configuration
+output:
+  format: text
+  colors: true
+  lineNumbers: true
+  context: 3
+
+# Security configuration
+security:
+  allowExternalRequests: false
+  validateInputPaths: true
+  maxFileSize: 10485760
+
+# Features configuration
+features:
+  experimentalFeatures:
+    enabled: false
+  deprecatedFeatures:
+    warn: true

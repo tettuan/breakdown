@@ -1,168 +1,200 @@
 #!/bin/bash
-# Example 21: Production configuration with find bugs command
-# This example demonstrates using 'breakdown find bugs' with production-app.yml configuration
-set -euo pipefail
+# Example 14: Production configuration with find bugs feature
+# This example demonstrates the find bugs command with production settings
 
-# Error handling
-handle_error() {
-    echo "Error: $1" >&2
+set -e
+
+echo "=== Production Find Bugs Example ==="
+
+# Run from examples directory
+CONFIG_DIR="../.agent/breakdown/config"
+
+# Check if initialized
+if [ ! -d "${CONFIG_DIR}" ]; then
+    echo "Error: Project not initialized. Please run 'breakdown init' first."
     exit 1
-}
+fi
 
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+# Create production configuration with find bugs settings
+cat > "${CONFIG_DIR}/production-bugs-app.yml" << 'EOF'
+# Production configuration with bug detection
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/production"
+app_schema:
+  base_dir: "schema/production"
+  validation_enabled: true
+logger:
+  level: "info"
+  format: "json"
+features:
+  customConfig: true
+  findBugs: true
+customConfig:
+  enabled: true
+  find:
+    twoParams:
+      - "bugs"
+  findBugs:
+    enabled: true
+    sensitivity: "medium"
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".py"
+      - ".go"
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+    maxResults: 100
+    detailedReports: true
+EOF
 
-# Get script directory and project root
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT" || handle_error "Failed to change to project root"
+echo "Created production configuration with find bugs: ${CONFIG_DIR}/production-bugs-app.yml"
 
-# Use the production configuration
-CONFIG_NAME="production"
+# Create sample code with various bug indicators
+mkdir -p sample_code
+cat > sample_code/payment_service.ts << 'EOF'
+// Payment Service Implementation
 
-echo "Using production configuration: $CONFIG_NAME"
-echo "This configuration enables the 'find bugs' two-parameter command"
-
-# Create sample code with various bug indicators for testing
-mkdir -p /tmp/production-test/src || handle_error "Failed to create temporary src directory"
-cat > /tmp/production-test/src/payment_service.ts << 'EOF'
-/**
- * Payment processing service
- * TODO: Add proper error handling for failed transactions
- */
 export class PaymentService {
-  private apiKey: string;
-  
-  constructor() {
-    // FIXME: Move API key to environment variables
-    this.apiKey = 'sk_test_hardcoded_key';
-  }
+  private apiKey: string = "sk_live_1234"; // TODO: Move to environment variables
   
   async processPayment(amount: number, currency: string) {
-    // TODO: Validate amount and currency
-    
-    // HACK: Temporary workaround for decimal handling
-    const roundedAmount = Math.round(amount * 100) / 100;
-    
+    // FIXME: Add proper error handling for network failures
     try {
-      // BUG: Race condition when processing multiple payments
-      const result = await this.chargeCard(roundedAmount, currency);
+      // BUG: Currency validation is missing
+      const result = await this.callPaymentAPI(amount, currency);
       
-      // XXX: This logging might expose sensitive data
-      console.log('Payment processed:', result);
+      // HACK: Temporary workaround for decimal precision
+      const roundedAmount = Math.round(amount * 100) / 100;
       
-      return result;
+      if (result.status === 'success') {
+        // XXX: Should we log successful payments?
+        return { success: true, transactionId: result.id };
+      }
     } catch (error) {
-      // TODO: Implement proper error recovery
+      // TODO: Implement proper error logging
+      console.error('Payment failed:', error);
       throw error;
     }
   }
   
   // DEPRECATED: Use processPayment instead
-  async oldChargeMethod(amount: number) {
-    console.warn('This method is deprecated');
+  async oldProcessPayment(amount: number) {
+    // Legacy code - remove after migration
     return this.processPayment(amount, 'USD');
   }
   
-  private async chargeCard(amount: number, currency: string) {
-    // FIXME: Add retry logic for network failures
-    return { status: 'success', amount, currency };
-  }
-}
-EOF
-
-cat > /tmp/production-test/src/user_auth.ts << 'EOF'
-/**
- * User authentication module
- */
-export class UserAuth {
-  // TODO: Implement proper session management
-  private sessions = new Map();
-  
-  async login(username: string, password: string) {
-    // BUG: No password hashing implemented
-    if (username === 'admin' && password === 'admin') {
-      // HACK: Using timestamp as session ID
-      const sessionId = Date.now().toString();
-      this.sessions.set(sessionId, { username });
-      return sessionId;
-    }
+  private async callPaymentAPI(amount: number, currency: string) {
+    // FIXME: Add timeout and retry logic
+    // BUG: API endpoint should be configurable
+    const endpoint = 'https://api.payment.com/v1/charge';
     
-    // FIXME: Timing attack vulnerability
-    return null;
+    // TODO: Add request validation
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`, // HACK: Hardcoded auth
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ amount, currency })
+    });
+    
+    return response.json();
   }
-  
-  // XXX: Missing rate limiting
-  async validateSession(sessionId: string) {
-    return this.sessions.has(sessionId);
-  }
-  
-  // TODO: Add logout functionality
 }
 EOF
 
-cat > /tmp/production-test/README.md << 'EOF'
-# Production Test Project
+cat > sample_code/user_auth.py << 'EOF'
+# User Authentication Module
 
-This is a sample project for testing bug detection.
+import hashlib
+import time
 
-## Known Issues
-
-- TODO: Complete documentation
-- FIXME: Update dependencies
-- BUG: Memory leak in long-running processes
-
-## Installation
-
-```bash
-# TODO: Add installation instructions
-```
-
-## Usage
-
-See the code files for implementation details.
-
-Note: This codebase contains several intentional bug indicators for testing purposes.
+class UserAuth:
+    def __init__(self):
+        # TODO: Initialize database connection
+        self.users = {}  # FIXME: Replace with proper database
+        
+    def create_user(self, username, password):
+        # BUG: No validation for username format
+        if username in self.users:
+            return False
+            
+        # XXX: Should we use bcrypt instead of SHA256?
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        # HACK: Store user in memory for now
+        self.users[username] = {
+            'password': hashed_password,
+            'created_at': time.time(),
+            'failed_attempts': 0  # TODO: Implement account lockout
+        }
+        
+        return True
+        
+    def authenticate(self, username, password):
+        # FIXME: Add rate limiting to prevent brute force
+        if username not in self.users:
+            return False
+            
+        user = self.users[username]
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        if user['password'] == hashed_password:
+            # TODO: Generate and return JWT token
+            return True
+        else:
+            # BUG: Failed attempts counter not working
+            user['failed_attempts'] += 1
+            return False
+            
+    # DEPRECATED: Use authenticate() instead
+    def login(self, username, password):
+        # Legacy method - remove in v2.0
+        return self.authenticate(username, password)
 EOF
 
-# Run breakdown find bugs with production configuration
-echo -e "\n=== Running 'breakdown find bugs' with production configuration ==="
-echo "Command: .deno/bin/breakdown find bugs --config=production --from=/tmp/production-test/src/payment_service.ts --destination=/tmp/bug-report"
-echo -e "\nSearching for bugs in /tmp/production-test using production-app.yml settings..."
+echo "Created sample code with bug indicators"
 
-# Execute the command
-.deno/bin/breakdown find bugs --config=production --from=/tmp/production-test/src/payment_service.ts --destination=/tmp/bug-report
+# Create a markdown file listing the code files
+cat > code_files.md << EOF
+# Code Files for Bug Detection
 
-# Show what the command found
-echo -e "\n=== Bug Report Generated ==="
-if [ -d "/tmp/bug-report" ]; then
-  echo "Files created:"
-  find /tmp/bug-report -type f -name "*.md" | while read -r file; do
-    echo "  - $file"
-  done
-  
-  # Display a sample of the report
-  if [ -f "/tmp/bug-report/bug_report.md" ]; then
-    echo -e "\n=== Sample of Bug Report ==="
-    head -20 /tmp/bug-report/bug_report.md
-  fi
-else
-  echo "No output directory created. Check if the command executed successfully."
-fi
+## TypeScript Files
+\`\`\`typescript
+$(cat sample_code/payment_service.ts)
+\`\`\`
 
-# Show configuration details used
-echo -e "\n=== Production Configuration Details ==="
-echo "The production-app.yml configuration includes:"
-echo "  - Bug patterns: TODO, FIXME, HACK, BUG, XXX, DEPRECATED"
-echo "  - File extensions: .ts, .js, .tsx, .jsx, .md"
-echo "  - Excluded directories: node_modules, .git, dist, build, coverage, .obsidian"
-echo "  - Maximum results: 100"
-echo "  - Detailed reports: enabled"
-echo "  - Bug detection sensitivity: medium"
+## Python Files
+\`\`\`python
+$(cat sample_code/user_auth.py)
+\`\`\`
+EOF
 
-# Clean up
-echo -e "\n=== Cleaning up ==="
-rm -rf /tmp/production-test /tmp/bug-report
-echo "Temporary files removed."
+# Run breakdown find bugs command
+echo ""
+echo "Running breakdown find bugs command..."
+echo "Command: deno run -A jsr:@tettuan/breakdown find bugs --config=production-bugs < code_files.md"
+deno run -A jsr:@tettuan/breakdown find bugs --config=production-bugs < code_files.md > bugs_report.md
 
-echo -e "\nExample completed successfully!"
+echo ""
+echo "=== Bugs Report ==="
+cat bugs_report.md
+
+# Cleanup
+rm -rf sample_code
+rm -f code_files.md bugs_report.md
+
+echo ""
+echo "=== Production Find Bugs Example Completed ==="
