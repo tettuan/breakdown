@@ -1,0 +1,5 @@
+working_dir: ./tmp/test/config-basic
+app_prompt:
+  base_dir: lib/breakdown/prompts
+app_schema:
+  base_dir: lib/breakdown/schema

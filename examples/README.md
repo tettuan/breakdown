@@ -24,26 +24,31 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 構成
 
-### 前準備
+### 前準備 (01-05)
 1. `01_install.sh` - Breakdownのインストール案内
 2. `02_compile.sh` - バイナリ生成
-3. `03_check_version.sh` - バージョン確認のテスト (インストール/コンパイル済みバイナリ)
+3. `03_check_version.sh` - バージョン確認のテスト
 4. `04_init.sh` - プロジェクトの初期化 (バイナリ実行)
 5. `05_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
+
+### ユーザー設定 (06-07)
 6. `06_create_user_config.sh` - ユーザー設定の作成 (バイナリ実行)
 7. `07_create_user_config_deno_run.sh` - ユーザー設定の作成 (deno run で直接実行)
 
-### 使用例
+### 基本使用例 (08-09)
 8. `08_stdin_example.sh` - STDIN入力の利用例
-9. `09_clean.sh` - 生成されたファイルのクリーンアップ
+9. `09_basic_usage.sh` - 基本的なコマンド使用例 (to, summary, defect)
 
-### 設定例
+### 設定例 (10-15)
 10. `10_config_basic.sh` - 基本的な設定例
 11. `11_config_production.sh` - 本番環境用設定例
 12. `12_config_team.sh` - チーム開発用設定例
 13. `13_config_environments.sh` - 環境別設定例
 14. `14_config_production_example.sh` - 本番環境設定とバグ検出例
 15. `15_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
+
+### クリーンアップ
+99. `99_clean.sh` - 生成されたファイルのクリーンアップ
 
 ## 前準備の詳細
 
@@ -115,14 +120,15 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - summaryコマンドでプロジェクトサマリーを生成
 - 生成ファイルの確認
 
-### 9. クリーンアップ
+### 9. 基本的なコマンド使用例
 ```bash
-./examples/09_clean.sh
+./examples/09_basic_usage.sh
 ```
 このスクリプトは以下を実行します：
-- 生成された全ての出力ファイルの削除
-- 初期化ディレクトリの削除
-- テスト出力の削除
+- `breakdown to issue` - プロジェクト仕様からイシューへの分解
+- `breakdown summary task` - 散らかったメモをタスクサマリーに整理
+- `breakdown defect project` - エラーログから欠陥分析
+- `breakdown find bugs` - コード内のバグ検出（利用可能な場合）
 
 ## 設定例の詳細
 
@@ -184,6 +190,16 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - CustomConfigとBreakdownParamsの設定構造の確認
 - `find bugs` 二パラメータコマンドのサポート確認
 - 設定ファイルの検証とロードテスト
+
+### 99. クリーンアップ
+```bash
+./examples/99_clean.sh
+```
+このスクリプトは以下を実行します：
+- 生成された全ての出力ファイルの削除
+- 例題用の設定ファイルの削除
+- コンパイル済みバイナリの削除（オプション）
+- 注意：メインの.agent/breakdown構造は保持されます
 
 ## コマンドパターン
 

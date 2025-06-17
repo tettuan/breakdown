@@ -1,0 +1,40 @@
+# Production configuration with bug detection
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/production"
+app_schema:
+  base_dir: "schema/production"
+  validation_enabled: true
+logger:
+  level: "info"
+  format: "json"
+features:
+  customConfig: true
+  findBugs: true
+customConfig:
+  enabled: true
+  find:
+    twoParams:
+      - "bugs"
+  findBugs:
+    enabled: true
+    sensitivity: "medium"
+    patterns:
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".py"
+      - ".go"
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+    maxResults: 100
+    detailedReports: true

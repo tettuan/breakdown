@@ -4,14 +4,14 @@
 # Custom configuration section
 customConfig:
   enabled: true
-  
+
   # Find command configuration
   find:
     twoParams:
       - bugs
       - issues
       - todos
-  
+
   # Find bugs functionality configuration
   findBugs:
     enabled: true
@@ -44,7 +44,7 @@ customConfig:
 # BreakdownParams configuration
 breakdownParams:
   version: latest
-  
+
   # Custom configuration for BreakdownParams
   customConfig:
     # Parameter patterns
@@ -56,7 +56,7 @@ breakdownParams:
         layerType:
           pattern: "^(bugs|issues|todos|comments|notes)$"
           errorMessage: "Invalid layer type. Must be one of: bugs, issues, todos, comments, notes"
-    
+
     # Validation rules for different command types
     validation:
       zero:
@@ -93,7 +93,7 @@ breakdownParams:
           - format
           - limit
         allowCustomVariables: true
-    
+
     # Options definitions
     options:
       values:
@@ -128,7 +128,7 @@ breakdownParams:
         limit:
           description: "Maximum number of results"
           type: number
-      
+
       flags:
         help:
           description: "Show help information"
@@ -145,17 +145,17 @@ breakdownParams:
         extended:
           description: "Show extended information"
           short: e
-      
+
       customVariables:
         pattern: "^--uv-[a-zA-Z-]+$"
         description: "Custom user variables following the pattern --uv-*"
-    
+
     # Error handling configuration
     errorHandling:
       unknownOption: error
       duplicateOption: warn
       emptyValue: error
-  
+
   # Custom parameters (placeholder for extensibility)
   customParams:
     example: value
