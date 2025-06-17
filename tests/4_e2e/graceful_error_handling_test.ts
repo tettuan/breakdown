@@ -27,7 +27,10 @@ Deno.test("E2E: Graceful handling of missing configuration", async () => {
   try {
     // Run without any configuration files
     const result = await runCommand(["--help"], undefined, env.workingDir);
-    logger.debug("Missing config result", { result });
+    logger.debug("Missing config result", {
+      key: "graceful_error_handling_test.ts#L30#e2e-missing-config",
+      result,
+    });
 
     // Should complete successfully with default configuration fallback
     assertEquals(result.success, true, "Should succeed with missing config");
@@ -49,7 +52,10 @@ Deno.test("E2E: Graceful handling of two parameters without templates", async ()
       undefined,
       env.workingDir,
     );
-    logger.debug("No templates result", { result });
+    logger.debug("No templates result", {
+      key: "graceful_error_handling_test.ts#L52#e2e-no-templates",
+      result,
+    });
 
     // Current implementation may fail due to parameter parsing, but shouldn't crash
     // The key test is that we get a structured response, not a system crash
@@ -95,7 +101,11 @@ Deno.test("E2E: Graceful handling of invalid parameter combinations", async () =
 
     for (const args of testCases) {
       const result = await runCommand(args, undefined, env.workingDir);
-      logger.debug(`Invalid params test: ${args.join(" ")}`, { result });
+      logger.debug(`Invalid params test: ${args.join(" ")}`, {
+        key: "graceful_error_handling_test.ts#L98#e2e-invalid-params",
+        args: args.join(" "),
+        result,
+      });
 
       // Should not crash the system (exit code might be 1, but process should complete)
       // The key is that we get a response, not a system crash
@@ -120,7 +130,10 @@ Deno.test("E2E: Graceful handling of file system errors", async () => {
       undefined,
       env.workingDir,
     );
-    logger.debug("Non-existent file result", { result });
+    logger.debug("Non-existent file result", {
+      key: "graceful_error_handling_test.ts#L123#e2e-fs-errors",
+      result,
+    });
 
     // Current implementation may fail but should not crash the system
     // The key test is graceful error handling
@@ -149,7 +162,9 @@ Deno.test("E2E: Robust execution under various conditions", async () => {
     assertStringIncludes(helpResult.output, "Usage:");
 
     // Test that the CLI is consistently responsive
-    logger.debug("All robust execution tests completed successfully");
+    logger.debug("All robust execution tests completed successfully", {
+      key: "graceful_error_handling_test.ts#L152#e2e-robust-complete",
+    });
   } finally {
     await cleanupTestEnvironment(env);
   }

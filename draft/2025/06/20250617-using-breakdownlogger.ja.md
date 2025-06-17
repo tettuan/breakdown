@@ -24,27 +24,19 @@
 ## タスクとゴール
 
 信じて良い前提: `deno task ci` が1つのエラーもなく完了している
-タスク: 「examples調査結果」から、「06の修正」、「10-15の再作成」を行う。
-ゴール: 修正後のexamples/が全て成功し、ユースケースをカバーしている。
+タスク1: BreakdownLogger で、テストのログ出力を置き換える。その際に `docs/breakdown/breakdownlogger/*` を参考にする。BreakdownLoggerのLOG_KEYを活用する。
+タスク2: 本体コードのconsole.logなどのデバッグ出力を削除する
+ゴール: 修正後のtestが全て成功し、デバッグ性が高まっている。
 
-実行前に、examples/README.ja.md を読むこと。
-結果は tmp/examples_result-<date_str>/ 配下に1つずつ保存すること。(date_str: `date +'%Y%m%d'`)
-結果ファイルを分析した結果も、同じ階層に保存すること。
-
-### 06の修正
-示唆:設定の階層がずれていそう
-
-### 10-15の再作成
-示唆:設定ファイルが、そもそも仕様と異なりそう。
-
-1. 10-15のexamplesがやりたかった主旨や意図を理解する
-2. 10-15を削除する
-3. 改めて1に沿って再作成する（成功させるまで修正）
-4. 成功したら、examples/README.md を書き換える
+**禁止事項**
+1. 本体コードへはデバッグを入れない。
+  - 代わりに検証したい箇所に対して、テストコードを追加する。
+    - テストコードへデバッグ出力を入れ、詳細を把握する。
+      - テストのため、本体コードの単一責任や関心の分離が重要。
+2. 本体コードの改変は行わない。
 
 ### 必読資料
 
-- **examples調査結果**:`tmp/examples_result/final_analysis.md`
 - アーキテクチャ: `docs/breakdown/architecture.ja.md` に照らして判断する。
 - 用語集: `docs/breakdown/glossary.ja.md` にある。
 
@@ -52,8 +44,9 @@
 
 以下の4点です。
 
-- 存在する examples/* を0から順番に実行した結果、最後までエラーなく完了する
-- 仕様に存在するユースケースが、examples/ 配下で網羅的に実行され、再現されている
+- test のデバッグ出力が、BreakdownLoggerへ置き換わっている
+- BreakdownLoggerのLOG_KEYを活用している
+- 本体コードのconsole.logなどの出力が削除されている
 - lib/, tests/ のテストが全て pass する
 - `deno task ci` が1つのエラーもなく成功する
 

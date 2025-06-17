@@ -33,6 +33,7 @@ Deno.test("Stdin Flow Integration", async (t) => {
 
   await t.step("setup", async () => {
     logger.debug("Setting up test environment", {
+      key: "stdin_flow_test.ts#L35#integration-setup",
       purpose: "Create test directory and files",
       dir: TEST_DIR,
     });
@@ -102,6 +103,7 @@ A project description should include:
 
   await t.step("summary command with stdin input", async () => {
     logger.debug("Testing summary command with stdin input", {
+      key: "stdin_flow_test.ts#L104#integration-summary-stdin",
       purpose: "Verify stdin input is processed correctly for summary command",
     });
     const input = "This is a test project summary from stdin.";
@@ -116,6 +118,7 @@ A project description should include:
 
   await t.step("to command with stdin input", async () => {
     logger.debug("Testing to command with stdin input", {
+      key: "stdin_flow_test.ts#L118#integration-to-stdin",
       purpose: "Verify stdin input is processed correctly for to command",
     });
     const input = "This is a test project description from stdin.";
@@ -134,6 +137,7 @@ A project description should include:
 
   await t.step("stdin with -o option", async () => {
     logger.debug("Testing stdin with -o option", {
+      key: "stdin_flow_test.ts#L136#integration-stdin-output",
       purpose: "Verify -o option works correctly with stdin input",
     });
     const input = "This is a test project summary from stdin.";
@@ -145,19 +149,26 @@ A project description should include:
       TEST_DIR,
     );
     // Parser now correctly handles options, should process normally or fail with config/template issues
-    logger.debug("Stdin with -o option result", { result });
+    logger.debug("Stdin with -o option result", {
+      key: "stdin_flow_test.ts#L148#integration-stdin-result",
+      result,
+    });
     // The result depends on whether templates exist and are properly configured
   });
 
   await t.step("cleanup", async () => {
     logger.debug("Cleaning up test environment", {
+      key: "stdin_flow_test.ts#L153#integration-cleanup",
       purpose: "Remove test directory and files",
       dir: TEST_DIR,
     });
     try {
       await Deno.remove(TEST_DIR, { recursive: true });
     } catch (error) {
-      logger.error("Failed to clean up test directory", { error });
+      logger.error("Failed to clean up test directory", {
+        key: "stdin_flow_test.ts#L160#integration-cleanup-error",
+        error,
+      });
     }
   });
 });
