@@ -15,7 +15,7 @@ const logger = new BreakdownLogger();
  *   サマリー→プロジェクト→課題→タスクの変換が成功すること
  *
  * 前処理で用意すべきもの:
- * - .agent/breakdown/config/app.yml
+ * - .agent/breakdown/config/default-app.yml
  * - 入力ファイル (project_summary.md)
  * - テンプレートファイル (base_dir/to/project/f_project.md など)
  */
@@ -24,9 +24,9 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  // app.yml: base_dir=prompts
+  // default-app.yml: base_dir=prompts
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
@@ -63,7 +63,7 @@ Deno.test("E2E: project summary to project/issue/task (happy path)", async () =>
  * - --adaptation/-a オプションで異なるテンプレートが選択されること
  *
  * 前処理で用意すべきもの:
- * - .agent/breakdown/config/app.yml
+ * - .agent/breakdown/config/default-app.yml
  * - 入力ファイル (unorganized_tasks.md)
  * - テンプレートファイル (base_dir/summary/task/f_task_strict.md, f_task_a.md)
  */
@@ -74,7 +74,7 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
   await ensureDir(configDir);
   // base_dir=.agent/breakdown/prompts (relative to testDir)
   const relPromptDir = join(".agent", "breakdown", "prompts");
-  const appYmlPath = join(configDir, "app.yml");
+  const appYmlPath = join(configDir, "default-app.yml");
   const appYmlContent =
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${relPromptDir}\napp_schema:\n  base_dir: schema\n`;
   await Deno.writeTextFile(appYmlPath, appYmlContent);
@@ -148,7 +148,7 @@ Deno.test("E2E: adaptation option (long and short)", async () => {
  * - 入力ファイルが存在しない場合、適切なエラーが出ること
  *
  * 前処理で用意すべきもの:
- * - .agent/breakdown/config/app.yml
+ * - .agent/breakdown/config/default-app.yml
  * - テンプレートファイル (base_dir/to/project/f_project.md)
  * - 入力ファイルは作成しない
  */
@@ -158,7 +158,7 @@ Deno.test("E2E: error case - missing input file", async () => {
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   // テンプレート
@@ -194,7 +194,7 @@ Deno.test("E2E: error case - missing input file", async () => {
  * - base_dirで指定されたディレクトリが存在しない場合、適切なエラーが出ること
  *
  * 前処理で用意すべきもの:
- * - .agent/breakdown/config/app.yml
+ * - .agent/breakdown/config/default-app.yml
  * - 入力ファイル (input.md)
  * - テンプレートディレクトリは作成しない
  */
@@ -204,7 +204,7 @@ Deno.test("E2E: error if app_prompt.base_dir directory is missing", async () => 
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
@@ -241,7 +241,7 @@ Deno.test("E2E: error if app_prompt.base_dir is a file (error message contains '
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル
@@ -276,7 +276,7 @@ Deno.test("E2E: error if app_prompt.base_dir is a file (error message contains '
  * - baseDirが相対パス/絶対パスの両方で正しく解決されること
  *
  * 前処理で用意すべきもの:
- * - .agent/breakdown/config/app.yml
+ * - .agent/breakdown/config/default-app.yml
  * - 入力ファイル (input.md)
  * - テンプレートファイル (相対/絶対両方)
  */
@@ -287,7 +287,7 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
   await ensureDir(configDir);
   // 相対パス
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schema\n`,
   );
   const relPromptDir = join(testDir, "prompts_rel", "to", "project");
@@ -304,7 +304,7 @@ Deno.test("E2E: relative vs absolute baseDir in config", async () => {
   await ensureDir(join(testDir, "project"));
   // Update config to use absolute path
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${
       join(testDir, "abs_prompts")
     }\napp_schema:\n  base_dir: schema\n`,
@@ -332,7 +332,7 @@ Deno.test("E2E: template path is resolved using baseDir (relative)", async () =>
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   const promptDir = join(testDir, "prompts", "to", "project");
@@ -363,9 +363,9 @@ Deno.test("BreakdownConfig loads and merges app.yml and user.yml as spec", async
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  // Write app.yml
+  // Write test-examples-flow-app.yml
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "test-examples-flow-app.yml"),
     `working_dir: .agent/breakdown
 app_prompt:
   base_dir: prompts_app
@@ -373,9 +373,9 @@ app_schema:
   base_dir: schema_app
 `,
   );
-  // Write user.yml (override app_prompt.base_dir)
+  // Write test-examples-flow-user.yml (override app_prompt.base_dir)
   await Deno.writeTextFile(
-    join(configDir, "user.yml"),
+    join(configDir, "test-examples-flow-user.yml"),
     `app_prompt:
   base_dir: prompts_user
 `,
@@ -383,8 +383,10 @@ app_schema:
   // Create both prompt dirs
   await ensureDir(join(testDir, ".agent", "breakdown", "prompts_app"));
   await ensureDir(join(testDir, ".agent", "breakdown", "prompts_user"));
-  // Load config
-  const config = new BreakdownConfig(testDir);
+  // Load config (use valid config set name, then change working directory)
+  const originalCwd = Deno.cwd();
+  Deno.chdir(testDir);
+  const config = new BreakdownConfig("test-examples-flow");
   await config.loadConfig();
   const settings = await config.getConfig();
   logger.debug("BreakdownConfig merged settings", { settings });
@@ -392,6 +394,9 @@ app_schema:
   assertEquals(settings.app_prompt.base_dir, "prompts_user");
   assertEquals(settings.app_schema.base_dir, "schema_app");
   assertEquals(settings.working_dir, ".agent/breakdown");
+  // Cleanup
+  Deno.chdir(originalCwd);
+  await Deno.remove(testDir, { recursive: true });
 });
 
 Deno.test("BreakdownConfig: working_dir is not used as prefix for app_prompt.base_dir", async () => {
@@ -399,7 +404,7 @@ Deno.test("BreakdownConfig: working_dir is not used as prefix for app_prompt.bas
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "test-examples-flow-app.yml"),
     `working_dir: .agent/breakdown
 app_prompt:
   base_dir: prompts
@@ -407,28 +412,33 @@ app_schema:
   base_dir: schema
 `,
   );
-  const config = new BreakdownConfig(testDir);
+  const originalCwd2 = Deno.cwd();
+  Deno.chdir(testDir);
+  const config = new BreakdownConfig("test-examples-flow");
   await config.loadConfig();
   const settings = await config.getConfig();
   logger.debug("BreakdownConfig working_dir/prompt_dir", { settings });
   // working_dir is not a prefix of app_prompt.base_dir
   assertEquals(settings.app_prompt.base_dir, "prompts");
   assertEquals(settings.working_dir, ".agent/breakdown");
+  // Cleanup
+  Deno.chdir(originalCwd2);
+  await Deno.remove(testDir, { recursive: true });
 });
 
 Deno.test("BreakdownConfig: error if config missing required fields", async () => {
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  // Write incomplete app.yml
+  // Write incomplete test-examples-flow-app.yml
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "test-examples-flow-app.yml"),
     `working_dir: .agent/breakdown\n`,
   );
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
   try {
-    const config = new BreakdownConfig(testDir);
+    const config = new BreakdownConfig("test-examples-flow");
     let errorCaught = false;
     try {
       await config.loadConfig();
@@ -442,5 +452,6 @@ Deno.test("BreakdownConfig: error if config missing required fields", async () =
     assertEquals(errorCaught, true);
   } finally {
     Deno.chdir(originalCwd);
+    await Deno.remove(testDir, { recursive: true });
   }
 });

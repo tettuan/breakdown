@@ -110,7 +110,8 @@ export class PromptVariablesFactory {
    * @param cliParams CLI parameters
    */
   static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
-    const breakdownConfig = new BreakdownConfig(Deno.cwd(), cliParams.options.config);
+    const configSetName = cliParams.options.config || "default";
+    const breakdownConfig = new BreakdownConfig(configSetName, Deno.cwd());
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
     return new PromptVariablesFactory(config, cliParams);

@@ -201,7 +201,7 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     // 2. Initialize BreakdownConfig with prefix (with error handling)
     let config: Record<string, unknown> = {};
     try {
-      const breakdownConfig = new BreakdownConfig(Deno.cwd(), configPrefix);
+      const breakdownConfig = new BreakdownConfig(configPrefix, Deno.cwd());
       await breakdownConfig.loadConfig();
       config = await breakdownConfig.getConfig();
       console.log("✅ Configuration loaded successfully");

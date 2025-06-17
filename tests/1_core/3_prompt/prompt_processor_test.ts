@@ -114,6 +114,14 @@ async function setupTestFiles(workingDir: string) {
     { mode: 0o666 },
   );
 
+  // Create config file for BreakdownConfig
+  const configDir = join(workingDir, ".agent", "breakdown", "config");
+  await ensureDir(configDir);
+  await Deno.writeTextFile(
+    join(configDir, "default-app.yml"),
+    `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+  );
+
   // Use PromptVariablesFactory to resolve the correct prompt file path
   const cliParams = {
     demonstrativeType: "to" as DemonstrativeType,
@@ -160,7 +168,7 @@ Deno.test("Prompt Processing Integration", async (t) => {
 
   // Ensure config file exists for BreakdownConfig
   const configDir = join(workingDir, ".agent", "breakdown", "config");
-  const configFile = join(configDir, "app.yml");
+  const configFile = join(configDir, "default-app.yml");
   await ensureDir(configDir);
   await Deno.writeTextFile(
     configFile,
@@ -602,7 +610,7 @@ Deno.test("PromptAdapterImpl allows empty baseDir and uses default", async () =>
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   try {
@@ -693,7 +701,7 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
     const configDir = join(workingDir, ".agent", "breakdown", "config");
     await ensureDir(configDir);
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
+      join(configDir, "default-app.yml"),
       `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: .agent/breakdown/prompts\napp_schema:\n  base_dir: .agent/breakdown/schema\n`,
     );
     // Simulate prompt template directory and file

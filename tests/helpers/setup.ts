@@ -50,6 +50,7 @@ export interface TestEnvironmentOptions {
   logLevel?: LogLevel;
   skipDefaultConfig?: boolean;
   skipDirectorySetup?: boolean;
+  configSetName?: string;
 }
 
 export interface TestEnvironment {
@@ -76,6 +77,9 @@ export async function setupTestEnvironment(
   options: TestEnvironmentOptions = {},
 ): Promise<TestEnvironment> {
   const workingDir = options.workingDir || "./tmp/test";
+
+  // Set up logger early so it can be used throughout the function
+  const logger = new BreakdownLogger("setup");
 
   // Save original LOG_LEVEL to restore later
   const originalLogLevel = Deno.env.get("LOG_LEVEL");
@@ -122,20 +126,38 @@ Analyze the provided code to identify potential bugs and issues.
 Provide a detailed analysis of bugs found.`;
     await Deno.writeTextFile(join(findBugsDir, "base.md"), findBugsPrompt);
 
-    // Create default app.yml if not skipped
+    // Create config files based on configSetName or default
     if (!options.skipDefaultConfig) {
-      const configPath = join(configDir, "app.yml");
-      const configContent =
-        `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
-      await Deno.writeTextFile(configPath, configContent);
+      if (options.configSetName) {
+        // Create config files with the specified name
+        const appConfigPath = join(configDir, `${options.configSetName}-app.yml`);
+        const userConfigPath = join(configDir, `${options.configSetName}-user.yml`);
+
+        const appConfigContent =
+          `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+        const userConfigContent = `# User configuration for ${options.configSetName}\n`;
+
+        await Deno.writeTextFile(appConfigPath, appConfigContent);
+        await Deno.writeTextFile(userConfigPath, userConfigContent);
+
+        logger.debug("Created config files", {
+          configSetName: options.configSetName,
+          appConfig: appConfigPath,
+          userConfig: userConfigPath,
+        });
+      } else {
+        // Create default app.yml
+        const configPath = join(configDir, "app.yml");
+        const configContent =
+          `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+        await Deno.writeTextFile(configPath, configContent);
+      }
     }
   } else {
     // Only create the base working directory
     await Deno.mkdir(workingDir, { recursive: true, mode: 0o777 });
   }
 
-  // Set up logger
-  const logger = new BreakdownLogger();
   // BreakdownLogger v1.0.0 uses LOG_LEVEL environment variable automatically
 
   return {

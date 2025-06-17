@@ -27,7 +27,7 @@ import { assertCommandSuccess } from "../../../tests/helpers/assertions.ts";
 import { ensureDir } from "@std/fs";
 
 const logger = new BreakdownLogger();
-const TEST_DIR = "tmp/test_cli";
+const TEST_DIR = "tmp/test-cli";
 let absTestDir: string;
 
 Deno.test("CLI Command Execution", async (t) => {

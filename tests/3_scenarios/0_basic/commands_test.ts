@@ -34,7 +34,10 @@ const logger = new BreakdownLogger();
 
 // Test the core functionality: graceful execution and error handling
 Deno.test("core functionality - new implementation integration", async () => {
-  const env = await setupTestEnvironment({ workingDir: "./tmp/test/core-integration" });
+  const env = await setupTestEnvironment({
+    workingDir: "./tmp/test/core-integration",
+    configSetName: "test-core-integration",
+  });
 
   logger.debug("Starting new implementation integration test", {
     key: "commands_test.ts#L39#scenario-start",

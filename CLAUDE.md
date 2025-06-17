@@ -138,6 +138,10 @@ tmux select-pane -t 0
 
 # メインpaneに色をつけて視認性向上
 tmux select-pane -P 'fg=white,bg=black,bold'
+
+# pane番号と実行中コマンドを表示
+tmux display-panes -d 0  # pane番号を常時表示
+tmux list-panes -F "pane#{pane_index}(#{pane_id}): #{pane_current_command}"  # 実行中コマンド一覧表示
 ```
 
 **レイアウト結果**：

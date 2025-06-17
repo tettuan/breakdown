@@ -45,7 +45,7 @@ Deno.test("Factory stdin handling", async (t) => {
     const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
     await ensureDir(configDir);
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
+      join(configDir, "default-app.yml"),
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 
