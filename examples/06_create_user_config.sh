@@ -5,12 +5,20 @@
 
 set -e
 
+# Save the original CWD
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to the original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Move to the examples directory (script location)
+cd "$(dirname "$0")"
+
 # Script is run from examples directory
 echo "=== Creating User Configuration ==="
 
-# Define the config directory path relative to project root
-# Script should be run from examples directory
-CONFIG_DIR="../.agent/breakdown/config"
+# Define the config directory path in current directory (examples)
+CONFIG_DIR=".agent/breakdown/config"
 
 # Check if the config directory exists
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -34,12 +42,12 @@ if [ -f "$APP_YML_PATH" ]; then
     if [ -n "$BASE_PROMPT_DIR" ]; then
         # Remove leading ./ if present
         BASE_PROMPT_DIR=${BASE_PROMPT_DIR#./}
-        SYSTEM_PROMPT_DIR="../.agent/breakdown/${BASE_PROMPT_DIR}"
+        SYSTEM_PROMPT_DIR=".agent/breakdown/${BASE_PROMPT_DIR}"
     fi
     if [ -n "$BASE_SCHEMA_DIR" ]; then
         # Remove leading ./ if present
         BASE_SCHEMA_DIR=${BASE_SCHEMA_DIR#./}
-        SYSTEM_SCHEMA_DIR="../.agent/breakdown/${BASE_SCHEMA_DIR}"
+        SYSTEM_SCHEMA_DIR=".agent/breakdown/${BASE_SCHEMA_DIR}"
     fi
 fi
 
@@ -48,8 +56,8 @@ echo "System schema directory: ${SYSTEM_SCHEMA_DIR}"
 
 # --- 2. Define the path for the user configuration ---
 USER_CONFIG_PATH="${CONFIG_DIR}/user.yml"
-USER_PROMPT_DIR="../.agent/breakdown/prompts/user"
-USER_SCHEMA_DIR="../.agent/breakdown/schema/user"
+USER_PROMPT_DIR=".agent/breakdown/prompts/user"
+USER_SCHEMA_DIR=".agent/breakdown/schema/user"
 
 # Create the user configuration file
 cat > "${USER_CONFIG_PATH}" << 'EOL'

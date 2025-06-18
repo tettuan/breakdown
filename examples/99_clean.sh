@@ -4,23 +4,34 @@
 
 set -e
 
+# Save original working directory
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Get script directory and ensure we're in the examples directory
+SCRIPT_DIR="$(dirname "$0")"
+cd "$SCRIPT_DIR" || exit 1
+
 echo "=== Cleaning Up Example Files ==="
 
 # Clean up output directories
 echo "Removing output directories..."
 rm -rf ./output/
 rm -rf ./tmp/
-rm -rf ../.agent/breakdown/examples/
+rm -rf ./.agent/breakdown/examples/
 
 # Clean up generated config files (but preserve main config)
 echo "Removing example-specific config files..."
-rm -f ../.agent/breakdown/config/basic-app.yml
-rm -f ../.agent/breakdown/config/production-app.yml
-rm -f ../.agent/breakdown/config/team-app.yml
-rm -f ../.agent/breakdown/config/dev-app.yml
-rm -f ../.agent/breakdown/config/staging-app.yml
-rm -f ../.agent/breakdown/config/prod-app.yml
-rm -f ../.agent/breakdown/config/production-bugs-app.yml
+rm -f ./.agent/breakdown/config/basic-app.yml
+rm -f ./.agent/breakdown/config/production-app.yml
+rm -f ./.agent/breakdown/config/team-app.yml
+rm -f ./.agent/breakdown/config/dev-app.yml
+rm -f ./.agent/breakdown/config/staging-app.yml
+rm -f ./.agent/breakdown/config/prod-app.yml
+rm -f ./.agent/breakdown/config/production-bugs-app.yml
+rm -f ./.agent/breakdown/config/production-user.yml
 
 # Clean up any test input files
 echo "Removing test input files..."

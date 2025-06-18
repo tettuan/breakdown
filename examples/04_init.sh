@@ -4,6 +4,15 @@
 
 set -e
 
+# Save the original CWD
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to the original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Move to the examples directory (script location)
+cd "$(dirname "$0")"
+
 echo "=== Initializing Breakdown Project Structure (Binary) ==="
 
 # Check if breakdown binary exists
@@ -13,7 +22,7 @@ if [ ! -f ./.deno/bin/breakdown ]; then
   exit 1
 fi
 
-# Initialize project structure
+# Initialize project structure from current directory (examples)
 echo "Running breakdown init..."
 ./.deno/bin/breakdown init
 

@@ -4,14 +4,19 @@
 # Note: The find bugs functionality is prepared but not yet fully enabled in the current implementation
 set -euo pipefail
 
+# Save original working directory
+ORIGINAL_CWD="$(pwd)"
+
 # Error handling
 handle_error() {
+    cd "$ORIGINAL_CWD"
     echo "Error: $1" >&2
     exit 1
 }
 
-# Set trap for better error reporting
-trap 'handle_error "Command failed: ${BASH_COMMAND}"' ERR
+# Set trap for better error reporting and CWD restoration
+trap 'cd "$ORIGINAL_CWD"; handle_error "Command failed: ${BASH_COMMAND}"' ERR
+trap 'cd "$ORIGINAL_CWD"' EXIT
 
 # Get script directory and project root
 SCRIPT_DIR="$(dirname "$0")"

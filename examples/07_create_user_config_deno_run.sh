@@ -4,11 +4,20 @@
 
 set -e
 
+# Save the original CWD
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to the original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Move to the examples directory (script location)
+cd "$(dirname "$0")"
+
 # Script is run from examples directory
 echo "=== Creating User Configuration (deno run) ==="
 
 # Define the config directory path relative to project root
-CONFIG_DIR="../.agent/breakdown/config"
+CONFIG_DIR=".agent/breakdown/config"
 
 # Check if the config directory exists
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -42,12 +51,12 @@ EOF
     echo "✅ Created user configuration at: ${CONFIG_DIR}/user.yml"
     
     # Create user directories
-    mkdir -p "../.agent/breakdown/prompts/user"
-    mkdir -p "../.agent/breakdown/schema/user"
+    mkdir -p ".agent/breakdown/prompts/user"
+    mkdir -p ".agent/breakdown/schema/user"
     
     echo "✅ Created user directories:"
-    echo "   - Prompts: ../.agent/breakdown/prompts/user"
-    echo "   - Schemas: ../.agent/breakdown/schema/user"
+    echo "   - Prompts: .agent/breakdown/prompts/user"
+    echo "   - Schemas: .agent/breakdown/schema/user"
 fi
 
 echo "=== User Configuration Created Successfully ==="

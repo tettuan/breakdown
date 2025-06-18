@@ -4,9 +4,13 @@
 
 set -e
 
+# スクリプトが存在するディレクトリを取得
+SCRIPT_DIR="$(dirname "$0")"
+
 echo "=== Examples動作確認開始 ==="
 echo "日時: $(date)"
 echo "ディレクトリ: $(pwd)"
+echo "スクリプトディレクトリ: $SCRIPT_DIR"
 echo ""
 
 # 成功・失敗カウンタ
@@ -35,8 +39,9 @@ run_example() {
         return
     fi
     
-    # 実行
-    if PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH" timeout 30 $script > /tmp/example_output.txt 2>&1; then
+    # 実行（スクリプトディレクトリからの相対パスで実行）
+    local full_script_path="${SCRIPT_DIR}/${script#./}"
+    if PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH" timeout 30 "$full_script_path" > /tmp/example_output.txt 2>&1; then
         if [ "$expected_status" = "success" ]; then
             echo "✅ 成功"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
@@ -76,22 +81,26 @@ run_example "./07_create_user_config_deno_run.sh" "success" "ユーザー設定�
 echo ""
 echo "=== 使用例 ==="
 run_example "./08_stdin_example.sh" "success" "STDIN入力例"
-run_example "./09_clean.sh" "success" "クリーンアップ"
+run_example "./09_basic_usage.sh" "success" "基本使用例"
 
 echo ""
-echo "=== 設定例（BreakdownParams制限あり） ==="
-run_example "./10_config_basic.sh" "fail" "基本設定（既知の問題）"
-run_example "./11_config_production.sh" "fail" "本番設定（既知の問題）"
-run_example "./12_config_team.sh" "fail" "チーム設定（既知の問題）"
-run_example "./13_config_environments.sh" "fail" "環境別設定（既知の問題）"
-run_example "./14_config_production_example.sh" "fail" "本番例（既知の問題）"
-run_example "./15_config_production_custom.sh" "fail" "カスタム設定（既知の問題）"
+echo "=== 設定例 ==="
+run_example "./10_config_basic.sh" "success" "基本設定"
+run_example "./11_config_production.sh" "success" "本番設定"
+run_example "./12_config_team.sh" "success" "チーム設定"
+run_example "./13_config_environments.sh" "success" "環境別設定"
+run_example "./14_config_production_example.sh" "success" "本番例"
+run_example "./15_config_production_custom.sh" "success" "カスタム設定"
+
+echo ""
+echo "=== クリーンアップ ==="
+run_example "./99_clean.sh" "success" "設定クリーンアップ"
 
 echo ""
 echo "========================================="
 echo "=== 統合テスト結果サマリー ==="
 echo "========================================="
-echo "総数: 15例"
+echo "総数: 16例"
 echo "成功: $SUCCESS_COUNT"
 echo "失敗: $FAILED_COUNT"
 echo "スキップ: $SKIPPED_COUNT"
@@ -110,13 +119,17 @@ else
     echo "   ❌ 不合格 - 基本動作に問題あり"
 fi
 
-echo "2. 既知の問題（10-15）: "
-echo "   ⚠️ BreakdownParams v1.0.1の制限により失敗（予期された動作）"
+echo "2. 設定例（10-15）: "
+if [ $SUCCESS_COUNT -ge 15 ]; then
+    echo "   ✅ 合格 - 設定例も全て正常"
+else
+    echo "   ❌ 不合格 - 設定例に問題あり"
+fi
 
 echo ""
 echo "=== 最終判定 ==="
-if [ $FAILED_COUNT -eq 0 ] || [ $FAILED_COUNT -eq 6 ]; then
-    echo "🏆 統合成功！args.ts削除準備完了"
+if [ $FAILED_COUNT -eq 0 ]; then
+    echo "🏆 統合成功！全てのexamplesが正常動作"
     exit 0
 else
     echo "❌ 統合に問題あり - 修正が必要"

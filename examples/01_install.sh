@@ -4,6 +4,15 @@
 
 set -e
 
+# Save the original CWD
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to the original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Move to the examples directory (script location)
+cd "$(dirname "$0")"
+
 echo "=== Breakdown CLI Installation Guide ==="
 echo
 echo "Breakdown can be installed and used in several ways:"

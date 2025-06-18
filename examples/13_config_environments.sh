@@ -4,10 +4,20 @@
 
 set -e
 
+# Save original working directory
+ORIGINAL_CWD="$(pwd)"
+
+# Ensure we return to original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
+
+# Get script directory and ensure we're in the examples directory
+SCRIPT_DIR="$(dirname "$0")"
+cd "$SCRIPT_DIR" || exit 1
+
 echo "=== Environment-Specific Configuration Example ==="
 
 # Run from examples directory
-CONFIG_DIR="../.agent/breakdown/config"
+CONFIG_DIR=".agent/breakdown/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
