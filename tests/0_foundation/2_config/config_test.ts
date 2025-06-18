@@ -64,11 +64,11 @@ Deno.test("config - default settings", async () => {
 
     await Deno.writeTextFile(
       configPath,
-      `working_dir: .agent/breakdown
+      `working_dir: .
 app_prompt:
-  base_dir: lib/breakdown/prompts
+  base_dir: prompts/user
 app_schema:
-  base_dir: lib/breakdown/schema
+  base_dir: schema/user
 `,
     );
 
@@ -76,9 +76,9 @@ app_schema:
     await config.loadConfig();
     const settings = await config.getConfig();
 
-    assertEquals(settings.working_dir, ".agent/breakdown");
-    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+    assertEquals(settings.working_dir, ".");
+    assertEquals(settings.app_prompt.base_dir, "prompts/user");
+    assertEquals(settings.app_schema.base_dir, "schema/user");
 
     // Restore original config
     if (savedConfig !== null) {
@@ -121,11 +121,11 @@ Deno.test("config - custom working directory", async () => {
 
     await Deno.writeTextFile(
       configPath,
-      `working_dir: ./tmp/test/config-custom
+      `working_dir: .
 app_prompt:
-  base_dir: lib/breakdown/prompts
+  base_dir: prompts/user
 app_schema:
-  base_dir: lib/breakdown/schema
+  base_dir: schema/user
 `,
     );
 
@@ -133,9 +133,9 @@ app_schema:
     await config.loadConfig();
     const settings = await config.getConfig();
 
-    assertEquals(settings.working_dir, "./tmp/test/config-custom");
-    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+    assertEquals(settings.working_dir, ".");
+    assertEquals(settings.app_prompt.base_dir, "prompts/user");
+    assertEquals(settings.app_schema.base_dir, "schema/user");
 
     // Restore original config
     if (savedConfig !== null) {
@@ -209,11 +209,11 @@ Deno.test({
 
       await Deno.writeTextFile(
         configPath,
-        `working_dir: ./tmp/test/config-basic
+        `working_dir: .
 app_prompt:
-  base_dir: lib/breakdown/prompts
+  base_dir: prompts/user
 app_schema:
-  base_dir: lib/breakdown/schema
+  base_dir: schema/user
 `,
       );
 
@@ -226,8 +226,8 @@ app_schema:
       assertEquals(typeof settings.working_dir, "string");
       assertEquals(typeof settings.app_prompt, "object");
       assertEquals(typeof settings.app_schema, "object");
-      assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-      assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+      assertEquals(settings.app_prompt.base_dir, "prompts/user");
+      assertEquals(settings.app_schema.base_dir, "schema/user");
 
       // Restore original config
       if (savedConfig !== null) {
