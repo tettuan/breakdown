@@ -314,6 +314,8 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
 async function initializeBreakdownConfiguration(): Promise<void> {
   console.log("🚀 Initializing breakdown configuration...");
 
+  // TODO: If BreakdownConfig had write functionality, baseDir definition would be unnecessary
+  // BreakdownConfig already knows the appropriate paths and should handle initialization
   const baseDir = `${Deno.cwd()}/.agent/breakdown`;
 
   // Create directory structure
