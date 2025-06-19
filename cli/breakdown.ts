@@ -317,6 +317,10 @@ async function initializeBreakdownConfiguration(): Promise<void> {
   const baseDir = `${Deno.cwd()}/.agent/breakdown`;
 
   // Create directory structure
+  // TODO: Layer-specific directories should be derived from BreakdownParams
+  // e.g., const layerTypes = BreakdownParams.getDefaultLayerTypes();
+  //       const directories = ["config", ...layerTypes.map(t => t + "s"), "temp", "prompts", "schema"];
+  // This would dynamically create "projects", "issues", "tasks" based on defaults
   const directories = [
     "config",
     "projects",
