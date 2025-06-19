@@ -118,6 +118,20 @@ export class PromptVariablesFactory {
   }
 
   /**
+   * Factory method to create PromptVariablesFactory with existing config
+   * @param config Already loaded configuration
+   * @param cliParams CLI parameters
+   */
+  static createWithConfig(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+    cliParams: PromptCliParams,
+  ): PromptVariablesFactory {
+    return new PromptVariablesFactory(config, cliParams);
+  }
+
+  /**
    * 主要パラメータをまとめて取得
    */
   public getAllParams(): {

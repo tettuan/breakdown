@@ -18,6 +18,11 @@ import { ParamsParser } from "@tettuan/breakdownparams";
 import { PromptManager } from "@tettuan/breakdownprompt";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
+import {
+  type PromptCliParams,
+  PromptVariablesFactory,
+} from "$lib/factory/prompt_variables_factory.ts";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 
 /**
  * Main CLI entry point for direct execution
@@ -61,42 +66,96 @@ async function handleTwoParams(
     const [demonstrativeType, layerType] = params;
     console.log(`Parameters: demonstrativeType="${demonstrativeType}", layerType="${layerType}"`);
 
-    // 7. Delegate to BreakdownPrompt with paths and variables
+    // Convert ParamsParser result to PromptCliParams
+    const customVariables: Record<string, string> = {};
+    for (const [key, value] of Object.entries(options)) {
+      if (key.startsWith("uv-")) {
+        const varName = key.slice(3); // Remove 'uv-' prefix
+        customVariables[varName] = String(value);
+      }
+    }
+
+    // Add input text as a custom variable if available
+    if (inputText) {
+      customVariables.input_text = inputText;
+    }
+
+    const cliParams: PromptCliParams = {
+      demonstrativeType: demonstrativeType as DemonstrativeType,
+      layerType: layerType as LayerType,
+      options: {
+        fromFile: options.from || options.fromFile,
+        destinationFile: options.destination || options.output || "output.md",
+        adaptation: options.adaptation,
+        promptDir: options.promptDir,
+        fromLayerType: options.fromLayerType,
+        input_text: inputText,
+        customVariables,
+        extended: options.extended,
+        customValidation: options.customValidation,
+        errorFormat: options.errorFormat,
+        config: options.config,
+      },
+    };
+
+    // 7. Use PromptVariablesFactory to resolve paths and parameters
     try {
-      const promptManager = new PromptManager();
+      const factory = PromptVariablesFactory.createWithConfig(config, cliParams);
 
-      // Construct paths based on config and parameters
-      const configTyped = config as any;
-      const basePromptDir = configTyped.app_prompt?.base_dir || "lib/breakdown/prompts";
-      const templatePath = `${basePromptDir}/${demonstrativeType}/${layerType}/f_${layerType}.md`;
-      const outputPath = options.output || "output.md";
+      // Validate all parameters
+      factory.validateAll();
 
-      // Construct variables from options (uv- prefixed options)
-      const variables: Record<string, string> = {};
-      for (const [key, value] of Object.entries(options)) {
-        if (key.startsWith("uv-")) {
-          const varName = key.slice(3); // Remove 'uv-' prefix
-          variables[varName] = String(value);
-        }
-      }
-
-      // Add input text as a variable if available
-      if (inputText) {
-        variables.input_text = inputText;
-      }
+      // Get all resolved parameters
+      const allParams = factory.getAllParams();
 
       console.log(`📝 Processing with BreakdownPrompt:`);
-      console.log(`   Template: ${templatePath}`);
-      console.log(`   Output: ${outputPath}`);
-      console.log(`   Variables:`, variables);
+      console.log(`   Template: ${allParams.promptFilePath}`);
+      console.log(`   Output: ${allParams.outputFilePath}`);
+      console.log(`   Variables:`, allParams.customVariables);
 
-      const result = await promptManager.generatePrompt(templatePath, variables);
-      console.log(`✅ Prompt generated successfully:`, result);
+      // Use PromptManager with resolved paths
+      const promptManager = new PromptManager();
+      const result = await promptManager.generatePrompt(
+        allParams.promptFilePath,
+        allParams.customVariables || {},
+      );
+
+      // Extract the generated content from the result
+      let content: string;
+      if (result && typeof result === "object" && "success" in result) {
+        const res = result as any;
+        if (res.success) {
+          content = res.prompt || "";
+        } else {
+          throw new Error(res.error || "Prompt generation failed");
+        }
+      } else {
+        content = String(result);
+      }
+
+      // Write the result to output (file or stdout)
+      if (allParams.outputFilePath === "stdout" || allParams.outputFilePath === "-") {
+        console.log(content);
+      } else {
+        // Ensure output directory exists
+        const outputDir = allParams.outputFilePath.substring(
+          0,
+          allParams.outputFilePath.lastIndexOf("/"),
+        );
+        if (outputDir) {
+          await ensureDir(outputDir);
+        }
+        await Deno.writeTextFile(allParams.outputFilePath, content);
+        console.log(`✅ Output written to: ${allParams.outputFilePath}`);
+      }
     } catch (error) {
       console.error(
         `❌ BreakdownPrompt error:`,
         error instanceof Error ? error.message : String(error),
       );
+      if (error instanceof Error) {
+        console.error(`Stack trace:`, error.stack);
+      }
       console.log(`🔄 Fallback: Would process ${demonstrativeType} ${layerType} manually`);
     }
   }
@@ -213,6 +272,15 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
         error instanceof Error ? error.message : String(error),
       );
       // Use default configuration when config files are not found
+      config = {
+        app_prompt: {
+          base_dir: ".agent/breakdown/prompts",
+        },
+        app_schema: {
+          base_dir: ".agent/breakdown/schema",
+        },
+        working_dir: ".agent/breakdown",
+      };
     }
 
     // 3. Pass BreakdownConfig settings to BreakdownParams
