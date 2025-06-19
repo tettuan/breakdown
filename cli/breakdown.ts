@@ -334,9 +334,11 @@ async function initializeBreakdownConfiguration(): Promise<void> {
   }
 
   // Create basic app.yml config file
-  // TODO: Default patterns should be defined as constants and imported
-  // e.g., const DEFAULT_DEMONSTRATIVE_TYPES = ["to", "summary", "defect"];
-  //       const DEFAULT_LAYER_TYPES = ["project", "issue", "task"];
+  // TODO: Default patterns should be obtained from BreakdownParams
+  // BreakdownParams should provide methods like:
+  //   - getDefaultDemonstrativeTypes() => ["to", "summary", "defect"]
+  //   - getDefaultLayerTypes() => ["project", "issue", "task"]
+  // This ensures consistency across the ecosystem
   const configContent = `# Breakdown Configuration
 app_prompt:
   base_dir: "lib/breakdown/prompts"
