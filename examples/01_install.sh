@@ -26,16 +26,16 @@ echo "2. Using JSR for AI development repositories only:"
 echo "   deno add --root ./tools @tettuan/breakdown"
 echo
 
-echo "3. Direct execution without installation:"
-echo "   deno run --allow-read --allow-net jsr:@tettuan/breakdown"
+echo "3. Direct execution without installation (Local Development):"
+echo "   deno run -A ../cli/breakdown.ts"
 echo
 
 echo "4. Compile to binary (for production use):"
-echo "   deno compile --allow-read --allow-write --allow-env --allow-net --output breakdown jsr:@tettuan/breakdown"
+echo "   deno compile -A --output breakdown ../cli/breakdown.ts"
 echo
 
-echo "5. Global installation via deno install:"
-echo "   deno install --allow-read --allow-write --allow-env --allow-net -n breakdown jsr:@tettuan/breakdown"
+echo "5. Global installation via deno install (Local Development):"
+echo "   deno install -A -n breakdown ../cli/breakdown.ts"
 echo
 
 echo

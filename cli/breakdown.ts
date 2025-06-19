@@ -12,11 +12,12 @@
 
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { isStdinAvailable, readStdin } from "$lib/io/stdin.ts";
-import { loadConfig } from "$lib/config/loader.ts";
+import { loadBreakdownConfig, loadConfig } from "$lib/config/loader.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { ParamsParser } from "@tettuan/breakdownparams";
 import { PromptManager } from "@tettuan/breakdownprompt";
 import { ensureDir } from "@std/fs";
+import { join } from "@std/path";
 
 /**
  * Main CLI entry point for direct execution
@@ -194,16 +195,17 @@ Examples:
  */
 export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {
+    //     // console.log("🔍 DEBUG: Starting runBreakdown with args:", args);
+
     // 1. Extract config prefix (minimal implementation - cannot use BreakdownParams yet)
     const configDetector = new ConfigPrefixDetector();
     const configPrefix = configDetector.detect(args);
+    //     console.log("🔍 DEBUG: Detected config prefix:", configPrefix);
 
     // 2. Initialize BreakdownConfig with prefix (with error handling)
     let config: Record<string, unknown> = {};
     try {
-      const breakdownConfig = new BreakdownConfig(configPrefix, Deno.cwd());
-      await breakdownConfig.loadConfig();
-      config = await breakdownConfig.getConfig();
+      config = await loadBreakdownConfig(configPrefix, Deno.cwd());
       console.log("✅ Configuration loaded successfully");
     } catch (error) {
       console.warn(
@@ -211,15 +213,80 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
         error instanceof Error ? error.message : String(error),
       );
       // Use default configuration when config files are not found
-      config = {
-        app_prompt: { base_dir: "lib/breakdown/prompts" },
-        app_schema: { base_dir: "lib/breakdown/schema" },
-      };
     }
 
-    // 3. Delegate args to BreakdownParams
-    const paramsParser = new ParamsParser();
+    // 3. Pass BreakdownConfig settings to BreakdownParams
+    //     console.log("🔍 DEBUG: Creating ParamsParser with config from BreakdownConfig");
+
+    // Extract params configuration for CustomConfig
+    let customConfig: any = undefined;
+
+    // Check for params in different possible locations
+    const paramsConfig = config.params || (config as any).breakdownParams?.customConfig;
+
+    if (paramsConfig) {
+      // If it's already a complete customConfig object (from breakdownParams.customConfig)
+      if (paramsConfig.params && paramsConfig.validation) {
+        // Ensure the validation structure is complete even for pre-built configs
+        const validation: any = paramsConfig.validation || {};
+        customConfig = {
+          ...paramsConfig,
+          validation: {
+            zero: { allowedOptions: [], allowedValueOptions: [], ...(validation.zero || {}) },
+            one: { allowedOptions: [], allowedValueOptions: [], ...(validation.one || {}) },
+            two: { allowedOptions: [], allowedValueOptions: [], ...(validation.two || {}) },
+          },
+        };
+      } else {
+        // Otherwise build the customConfig object
+        // Ensure validation has all required properties
+        // Use default values that allow common options
+        const defaultValidation = {
+          zero: {
+            allowedOptions: ["help", "version"],
+            allowedValueOptions: [],
+          },
+          one: {
+            allowedOptions: ["help", "version", "verbose"],
+            allowedValueOptions: ["config"],
+          },
+          two: {
+            allowedOptions: ["help", "version", "verbose", "experimental"],
+            allowedValueOptions: ["from", "destination", "input", "output", "config"],
+          },
+        };
+
+        const validation: any = config.validation || {};
+        const mergedValidation = {
+          zero: { ...defaultValidation.zero, ...(validation.zero || {}) },
+          one: { ...defaultValidation.one, ...(validation.one || {}) },
+          two: { ...defaultValidation.two, ...(validation.two || {}) },
+        };
+
+        customConfig = {
+          params: paramsConfig,
+          validation: mergedValidation,
+          options: config.options || {},
+          errorHandling: config.errorHandling || {
+            unknownOption: "error",
+            duplicateOption: "error",
+            emptyValue: "error",
+          },
+        };
+      }
+      // console.log(
+      //   "🔍 DEBUG: Using custom config for ParamsParser:",
+      //   JSON.stringify(customConfig, null, 2),
+      // );
+    } else {
+      //       console.log("⚠️ DEBUG: No params configuration found in config");
+    }
+
+    const paramsParser = new ParamsParser(undefined, customConfig);
+
+    //     console.log("🔍 DEBUG: Calling parse() with args:", args);
     const result = paramsParser.parse(args);
+    //     console.log("🔍 DEBUG: ParamsParser result:", JSON.stringify(result, null, 2));
 
     // 4. Determine zero/one/two params and branch
     if (result.type === "two") {

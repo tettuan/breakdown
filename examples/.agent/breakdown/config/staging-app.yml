@@ -1,0 +1,17 @@
+# Staging environment configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/staging"
+app_schema:
+  base_dir: "schema/staging"
+  validation_enabled: true
+logger:
+  level: "info"
+  format: "json"
+  output: "stderr"
+performance:
+  maxFileSize: "5MB"
+  timeout: 20000
+features:
+  experimentalFeatures: false
+  debugMode: false

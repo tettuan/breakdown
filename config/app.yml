@@ -15,3 +15,22 @@ defaults:
 # Base configuration that can be overridden by user configs
 config:
   enabled: true
+
+# Prompt and schema configuration
+app_prompt:
+  base_dir: "lib/breakdown/prompts"
+app_schema:
+  base_dir: "lib/breakdown/schema"
+
+# Parameter validation patterns
+params:
+  two:
+    demonstrativeType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+
+# Workspace configuration
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"

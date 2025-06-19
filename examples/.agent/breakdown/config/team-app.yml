@@ -1,0 +1,30 @@
+# Team development configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/team"
+  template_prefix: "team_"
+app_schema:
+  base_dir: "schema/team"
+  validation_enabled: true
+  strict_mode: false
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  includeTimestamp: true
+  includeContext: true
+collaboration:
+  enableSharing: true
+  defaultVisibility: "team"
+  reviewRequired: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: true
+  includeMetadata: true
+  authorInfo: true
+features:
+  cliValidation: true
+  experimentalFeatures: true
+  teamFeatures: true
+  debugMode: true

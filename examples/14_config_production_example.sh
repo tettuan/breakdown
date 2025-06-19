@@ -34,6 +34,15 @@ app_prompt:
 app_schema:
   base_dir: "schema/production"
   validation_enabled: true
+
+# カスタムパラメータ設定
+params:
+  two:
+    demonstrativeType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+
 logger:
   level: "info"
   format: "json"
@@ -195,8 +204,8 @@ EOF
 # Run breakdown find bugs command
 echo ""
 echo "Running breakdown find bugs command..."
-echo "Command: deno run -A jsr:@tettuan/breakdown find bugs --config=production-bugs < code_files.md"
-deno run -A jsr:@tettuan/breakdown find bugs --config=production-bugs < code_files.md > bugs_report.md
+echo "Command: deno run -A ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md"
+deno run -A ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md > bugs_report.md
 
 echo ""
 echo "=== Bugs Report ==="

@@ -19,28 +19,39 @@
 `instructions/team.ja.md` に詳細の記載がある。
 チーム立ち上げの指示なので、必ず最初に読むこと。
 
+
 # プロジェクトの実行
 
 ## タスクとゴール
 
 信じて良い前提: `deno task ci` が1つのエラーもなく完了している
-タスク: 「examples調査結果」から、「06の修正」、「10-15の再作成」を行う。
+タスク: examples/*sh の breakdown 実行をローカルファイルで実施する
 ゴール: 修正後のexamples/が全て成功し、ユースケースをカバーしている。
 
 実行前に、examples/README.ja.md を読むこと。
 結果は tmp/examples_result-<date_str>/ 配下に1つずつ保存すること。(date_str: `date +'%Y%m%d'`)
 結果ファイルを分析した結果も、同じ階層に保存すること。
 
-### 06の修正
-示唆:設定の階層がずれていそう
+### breakdown 実行をローカルファイルで実施する とは
 
-### 10-15の再作成
-示唆:設定ファイルが、そもそも仕様と異なりそう。
+ユーザーが実際に実行する、本来の実行例:
+```
+deno run -A jsr:@tettuan/breakdown summary issue --config=production < production_report.md
+```
 
-1. 10-15のexamplesがやりたかった主旨や意図を理解する
-2. 10-15を削除する
-3. 改めて1に沿って再作成する（成功させるまで修正）
-4. 成功したら、examples/README.md を書き換える
+ローカルの実行例(binary):
+```
+deno run -A ./deno/bin/breakdown summary issue --config=production < production_report.md
+```
+
+ローカルの実行例(deno):
+```
+deno run -A {$project_root}/cli/breakdown.ts summary issue --config=production < production_report.md
+```
+{$project_root} は、GitHubプロジェクトのルートフォルダ。
+
+ローカルファイルで実行する意義は、リリース前の最新版で実行できる点。
+コメントにjsrを残しつつ、ローカル実行パターンをdenoで行なう。
 
 ### 必読資料
 

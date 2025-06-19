@@ -26,7 +26,7 @@ deno compile \
   --allow-env \
   --allow-net \
   --output ./.deno/bin/breakdown \
-  jsr:@tettuan/breakdown
+  ../cli/breakdown.ts
 
 if [ -f ./.deno/bin/breakdown ]; then
   echo "✅ Successfully compiled breakdown to ./.deno/bin/breakdown"

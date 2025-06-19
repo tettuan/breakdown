@@ -24,7 +24,7 @@ elif command -v breakdown &> /dev/null; then
   breakdown --version
 else
   echo "Breakdown not found. Trying direct execution with deno run..."
-  deno run --allow-read --allow-net jsr:@tettuan/breakdown --version
+  deno run --allow-read --allow-net deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts --version
 fi
 
 echo

@@ -21,7 +21,7 @@ if [ -f ./.deno/bin/breakdown ]; then
 elif command -v breakdown &> /dev/null; then
     BREAKDOWN="breakdown"
 else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net jsr:@tettuan/breakdown"
+    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts"
 fi
 
 # Create output directory for examples

@@ -71,8 +71,8 @@ echo "Created sample input file"
 # Run breakdown with basic configuration
 echo ""
 echo "Running breakdown with basic configuration..."
-echo "Command: deno run -A jsr:@tettuan/breakdown summary project --config=basic < input.md"
-deno run -A jsr:@tettuan/breakdown summary project --config=basic < input.md > output.md
+echo "Command: deno run -A ../cli/breakdown.ts summary project --config=basic < input.md"
+deno run -A ../cli/breakdown.ts summary project --config=basic < input.md > output.md
 
 echo ""
 echo "=== Output ==="

@@ -1,0 +1,15 @@
+# Development environment configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/dev"
+app_schema:
+  base_dir: "schema/dev"
+  validation_enabled: false
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  colorize: true
+features:
+  experimentalFeatures: true
+  debugMode: true

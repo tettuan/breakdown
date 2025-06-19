@@ -5,7 +5,7 @@
  * particularly for testing purposes and custom configuration scenarios.
  */
 
-import { parse } from "@std/yaml";
+import { parse } from "jsr:@std/yaml@^1.0.6";
 
 /**
  * Configuration structure for custom configs
@@ -69,9 +69,9 @@ export async function loadBreakdownConfig(
   configPrefix?: string,
   workingDir?: string,
 ): Promise<Record<string, unknown>> {
-  const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
+  const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.2");
 
-  const config = new BreakdownConfig(workingDir || Deno.cwd(), configPrefix);
+  const config = new BreakdownConfig(configPrefix, workingDir || Deno.cwd());
   await config.loadConfig();
   return await config.getConfig();
 }

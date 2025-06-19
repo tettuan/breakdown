@@ -140,7 +140,7 @@ switch (result.type) {
 ### BreakdownParams を使う
 
 JSR: https://jsr.io/@tettuan/breakdownparams を最新化
-資料: https://github.com/tettuan/breakdownparams/tree/main
+資料: https://github.com/tettuan/breakdownparams/
 
 
 ### 難易度
@@ -216,6 +216,8 @@ BreakdownParams が出来ない部分のみを、Breakdown本体が担います�
 - args は不要
   - 方向性:
     最初のconfig prefix取得 と、STDINの処理だけ、BreakdownParamsを使えない。そこだけ分割移譲したクラスが、Breakdown本体にあればよいだろう。
+- BreakdownParamsが優秀。フォールバック実装は誤り。
+
 
 # 開始指示
 

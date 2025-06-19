@@ -398,10 +398,10 @@ echo "=== Using Breakdown via JSR Package ==="
 echo "To use breakdown from JSR package in your code:"
 echo
 echo "1. Import method:"
-echo "   import { breakdown } from 'jsr:@tettuan/breakdown';"
+echo "   import { breakdown } from '../cli/breakdown.ts';"
 echo
 echo "2. CLI usage via deno task:"
-echo "   deno run -A jsr:@tettuan/breakdown/cli <command>"
+echo "   deno run -A ../cli/breakdown.ts <command>"
 echo
 echo "3. Or use the configured task:"
 echo "   deno task breakdown <command>"

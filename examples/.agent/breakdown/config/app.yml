@@ -1,14 +1,17 @@
-# Breakdown Configuration
+# Breakdown Configuration (Base Application Settings)
 app_prompt:
   base_dir: "lib/breakdown/prompts"
 app_schema:
   base_dir: "lib/breakdown/schema"
+
+# Basic parameter configuration (extended in user.yml)
 params:
   two:
     demonstrativeType:
       pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task)$"
+
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"

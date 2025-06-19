@@ -1,0 +1,116 @@
+# Development configuration for breakdown with full feature support
+working_dir: "."
+
+# Application paths
+app_prompt:
+  base_dir: "prompts/development"
+app_schema:
+  base_dir: "schema/development"
+
+# Workspace configuration
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+
+# Extended parameter configuration for development
+params:
+  two:
+    demonstrativeType:
+      pattern: "^(to|summary|defect|find|analyze|review)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs|code|security)$"
+
+# Feature flags
+features:
+  customConfig: true
+  findBugs: true
+  codeAnalysis: true
+  securityScan: true
+
+# Custom configuration for advanced features  
+customConfig:
+  enabled: true
+  
+  # Find bugs configuration
+  find:
+    twoParams:
+      - "bugs"
+      - "issues" 
+      - "problems"
+  
+  findBugs:
+    enabled: true
+    sensitivity: "high"
+    patterns:
+      # Code quality indicators
+      - "TODO"
+      - "FIXME"
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+      - "TEMP"
+      - "TEMPORARY"
+      
+      # Debug/logging patterns
+      - "console.log"
+      - "console.debug"
+      - "print("
+      - "println!"
+      - "debug!"
+      
+      # Security concerns
+      - "password"
+      - "secret"
+      - "token"
+      - "api_key"
+      - "hardcoded"
+      
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".tsx"
+      - ".jsx"
+      - ".py"
+      - ".go"
+      - ".java"
+      - ".cpp"
+      - ".c"
+      - ".rs"
+      - ".php"
+      - ".rb"
+      
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist" 
+      - "build"
+      - "target"
+      - ".deno"
+      - "coverage"
+      - ".nyc_output"
+      - "vendor"
+      
+    maxResults: 500
+    detailedReports: true
+    includeContext: 3
+    
+  # Code analysis configuration
+  analyze:
+    twoParams:
+      - "code"
+      - "security"
+    complexity: "medium"
+    includeMetrics: true
+    
+# Logger configuration
+logger:
+  level: "debug"
+  format: "detailed"
+  includeTimestamp: true
+  
+# Output configuration
+output:
+  format: "markdown"
+  includeLineNumbers: true
+  includeSummary: true
