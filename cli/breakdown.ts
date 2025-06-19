@@ -23,6 +23,7 @@ import {
   PromptVariablesFactory,
 } from "$lib/factory/prompt_variables_factory.ts";
 import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import { showHelp, showUsage, showVersion } from "./help.ts";
 
 /**
  * Main CLI entry point for direct execution
@@ -179,29 +180,9 @@ async function handleOneParams(
     if (command === "init") {
       await initializeBreakdownConfiguration();
     } else if (command === "version") {
-      console.log("Breakdown v1.0.13");
-      console.log("Breakdown - AI Development Instruction Tool");
+      showVersion();
     } else if (command === "help") {
-      console.log("Breakdown - AI Development Instruction Tool");
-      console.log(`
-Usage: breakdown [command] [options]
-
-Commands:
-  init                    Initialize breakdown configuration
-  to <type> <layer>       Process with two parameters
-  version                 Show version information
-  help                    Show this help message
-
-Options:
-  --config/-c <prefix>    Use custom config prefix
-  --help/-h               Show this help message
-  --version/-v            Show version information
-
-Examples:
-  breakdown init
-  breakdown to project --config=custom
-  breakdown to issue < input.md
-`);
+      showHelp();
     } else {
       console.log(`Would process single command: ${command}`);
     }
@@ -220,32 +201,11 @@ async function handleZeroParams(
 
   // Check for help flags or specific help requests
   if (args.includes("--help") || args.includes("-h") || args.includes("help")) {
-    console.log("Breakdown - AI Development Instruction Tool");
-    console.log(`
-Usage: breakdown [command] [options]
-
-Commands:
-  init                    Initialize breakdown configuration
-  to <type> <layer>       Process with two parameters
-  version                 Show version information
-  help                    Show this help message
-
-Options:
-  --config/-c <prefix>    Use custom config prefix
-  --help/-h               Show this help message
-  --version/-v            Show version information
-
-Examples:
-  breakdown init
-  breakdown to project --config=custom
-  breakdown to issue < input.md
-`);
+    showHelp();
   } else if (args.includes("--version") || args.includes("-v")) {
-    console.log("Breakdown v1.0.13");
-    console.log("Breakdown - AI Development Instruction Tool");
+    showVersion();
   } else {
-    console.log("Breakdown - AI Development Instruction Tool");
-    console.log("No parameters provided. Use --help for usage information.");
+    showUsage();
   }
 }
 
