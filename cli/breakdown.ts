@@ -199,10 +199,10 @@ async function handleZeroParams(
 ) {
   console.log("Processing zero parameters (help/usage):", args);
 
-  // Check for help flags or specific help requests
-  if (args.includes("--help") || args.includes("-h") || args.includes("help")) {
+  // Use options from BreakdownParams result instead of checking args directly
+  if (options.help) {
     showHelp();
-  } else if (args.includes("--version") || args.includes("-v")) {
+  } else if (options.version) {
     showVersion();
   } else {
     showUsage();
