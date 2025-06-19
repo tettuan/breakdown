@@ -350,6 +350,8 @@ workspace:
   temp_dir: ".agent/breakdown/temp"
 `;
 
+  // TODO: BreakdownConfig should provide a write method for config files
+  // This direct file writing should be delegated to BreakdownConfig
   const configPath = `${baseDir}/config/app.yml`;
   await Deno.writeTextFile(configPath, configContent);
   console.log(`✅ Created config file: ${configPath}`);
