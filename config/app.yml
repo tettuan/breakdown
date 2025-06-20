@@ -16,6 +16,9 @@ defaults:
 config:
   enabled: true
 
+# Working directory - required at top level by BreakdownConfig
+working_dir: ".agent/breakdown"
+
 # Prompt and schema configuration
 app_prompt:
   base_dir: "lib/breakdown/prompts"
@@ -32,5 +35,4 @@ params:
 
 # Workspace configuration
 workspace:
-  working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"

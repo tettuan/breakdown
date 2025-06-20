@@ -74,6 +74,10 @@ async function handleTwoParams(
     if (inputText) {
       customVariables.input_text = inputText;
     }
+    
+    // Add other required variables for template substitution
+    customVariables.input_text_file = options.fromFile || "stdin";
+    customVariables.destination_path = options.destinationFile || options.output || "stdout";
 
     const cliParams: PromptCliParams = {
       demonstrativeType: demonstrativeType as DemonstrativeType,
@@ -205,10 +209,10 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
       // Use default configuration when config files are not found
       config = {
         app_prompt: {
-          base_dir: ".agent/breakdown/prompts",
+          base_dir: "lib/breakdown/prompts",
         },
         app_schema: {
-          base_dir: ".agent/breakdown/schema",
+          base_dir: "lib/breakdown/schema",
         },
         working_dir: ".agent/breakdown",
       };

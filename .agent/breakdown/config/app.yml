@@ -1,14 +1,38 @@
-# Breakdown Configuration
+# Application Configuration
+# Base configuration for breakdown CLI
+
+# Application metadata
+app:
+  name: breakdown
+  version: 1.0.0
+  description: Breakdown CLI tool
+
+# Default configuration
+defaults:
+  logLevel: info
+  outputFormat: text
+
+# Base configuration that can be overridden by user configs
+config:
+  enabled: true
+
+# Working directory - required at top level by BreakdownConfig
+working_dir: ".agent/breakdown"
+
+# Prompt and schema configuration
 app_prompt:
   base_dir: "lib/breakdown/prompts"
 app_schema:
   base_dir: "lib/breakdown/schema"
+
+# Parameter validation patterns
 params:
   two:
     demonstrativeType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
-      pattern: "^(project|issue|task)$"
+      pattern: "^(project|issue|task|bugs)$"
+
+# Workspace configuration
 workspace:
-  working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
