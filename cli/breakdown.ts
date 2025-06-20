@@ -40,20 +40,15 @@ async function handleTwoParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-  console.log("Processing two parameters:", params);
 
   // 6. Check STDIN and prepare input_text
   let inputText = "";
   try {
     // Check if fromFile option specifies stdin ("-")
     if (options.from === "-" || options.fromFile === "-") {
-      console.log("Reading from STDIN...");
       inputText = await readStdin({ allowEmpty: false });
-      console.log("✅ STDIN input received:", inputText.length, "characters");
     } else if (isStdinAvailable()) {
-      console.log("STDIN data available, reading...");
       inputText = await readStdin({ allowEmpty: true });
-      console.log("✅ STDIN input received:", inputText.length, "characters");
     }
   } catch (error) {
     console.warn(
@@ -65,7 +60,6 @@ async function handleTwoParams(
   // Extract demonstrativeType and layerType
   if (params.length >= 2) {
     const [demonstrativeType, layerType] = params;
-    console.log(`Parameters: demonstrativeType="${demonstrativeType}", layerType="${layerType}"`);
 
     // Convert ParamsParser result to PromptCliParams
     const customVariables: Record<string, string> = {};
@@ -109,10 +103,6 @@ async function handleTwoParams(
       // Get all resolved parameters
       const allParams = factory.getAllParams();
 
-      console.log(`📝 Processing with BreakdownPrompt:`);
-      console.log(`   Template: ${allParams.promptFilePath}`);
-      console.log(`   Output: ${allParams.outputFilePath}`);
-      console.log(`   Variables:`, allParams.customVariables);
 
       // Use PromptManager with resolved paths
       const promptManager = new PromptManager();
@@ -126,7 +116,7 @@ async function handleTwoParams(
       if (result && typeof result === "object" && "success" in result) {
         const res = result as any;
         if (res.success) {
-          content = res.prompt || "";
+          content = res.content || "";
         } else {
           throw new Error(res.error || "Prompt generation failed");
         }
@@ -134,21 +124,8 @@ async function handleTwoParams(
         content = String(result);
       }
 
-      // Write the result to output (file or stdout)
-      if (allParams.outputFilePath === "stdout" || allParams.outputFilePath === "-") {
-        console.log(content);
-      } else {
-        // Ensure output directory exists
-        const outputDir = allParams.outputFilePath.substring(
-          0,
-          allParams.outputFilePath.lastIndexOf("/"),
-        );
-        if (outputDir) {
-          await ensureDir(outputDir);
-        }
-        await Deno.writeTextFile(allParams.outputFilePath, content);
-        console.log(`✅ Output written to: ${allParams.outputFilePath}`);
-      }
+      // Always output to stdout
+      await Deno.stdout.write(new TextEncoder().encode(content));
     } catch (error) {
       console.error(
         `❌ BreakdownPrompt error:`,
@@ -157,7 +134,6 @@ async function handleTwoParams(
       if (error instanceof Error) {
         console.error(`Stack trace:`, error.stack);
       }
-      console.log(`🔄 Fallback: Would process ${demonstrativeType} ${layerType} manually`);
     }
   }
 }
@@ -170,11 +146,9 @@ async function handleOneParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-  console.log("Processing one parameter:", params);
 
   if (params.length >= 1) {
     const [command] = params;
-    console.log(`Command: "${command}"`);
 
     // Handle common one-parameter commands
     if (command === "init") {
@@ -184,7 +158,6 @@ async function handleOneParams(
     } else if (command === "help") {
       showHelp();
     } else {
-      console.log(`Would process single command: ${command}`);
     }
   }
 }
@@ -197,7 +170,6 @@ async function handleZeroParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-  console.log("Processing zero parameters (help/usage):", args);
 
   // Use options from BreakdownParams result instead of checking args directly
   if (options.help) {
@@ -225,8 +197,7 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     let config: Record<string, unknown> = {};
     try {
       config = await loadBreakdownConfig(configPrefix, Deno.cwd());
-      console.log("✅ Configuration loaded successfully");
-    } catch (error) {
+      } catch (error) {
       console.warn(
         "⚠️ Configuration not found, using defaults:",
         error instanceof Error ? error.message : String(error),
@@ -329,7 +300,6 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
       throw new Error(`Unknown result type: ${result.type}`);
     }
 
-    console.log("Breakdown execution completed");
   } catch (error) {
     console.error("Error:", error instanceof Error ? error.message : String(error));
     throw error;

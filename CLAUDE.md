@@ -185,7 +185,7 @@ for pane in $(tmux list-panes -F "#{pane_id}" | grep -v "$(tmux display-message 
     # エイリアス設定、テーマ設定、起動を順次実行
     tmux send-keys -t $pane "alias cld='claude --dangerously-skip-permissions'" && sleep 0.1 && tmux send-keys -t $pane Enter
     tmux send-keys -t $pane "claude config set -g theme dark" && sleep 0.1 && tmux send-keys -t $pane Enter
-    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter &
+    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter 
 done
 wait
 ```
@@ -218,7 +218,7 @@ tmux send-keys -t %22 '[pane番号] 報告内容' && sleep 0.1 && tmux send-keys
 ```
 
 部下から報連相できるように、タスク依頼時に上記の方法を教えて上げてください。また、`/clear`
-を頻繁にするので、2回目以降でもタスクの末尾に報連相の方法を加えておくと良いです。
+を頻繁にするので、2回目以降でもタスクの末尾に報連相の方法を加えておくと良いです。マネージャーから部下へ送る時も同様です(Enterを文字列で送信しないよう留意。キー入力で送る。)。
 
 ### 例
 

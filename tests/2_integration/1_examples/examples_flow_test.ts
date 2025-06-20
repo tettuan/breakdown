@@ -183,8 +183,7 @@ Deno.test("E2E: error case - missing input file", async () => {
   assertEquals(result.success, true);
   // The CLI should complete successfully even with missing input files
   // because it's designed to be robust and handle such cases gracefully
-  const hasCompletionMessage = result.output.includes("Breakdown execution completed");
-  assertEquals(hasCompletionMessage, true, "Should complete execution gracefully");
+  // Note: "Breakdown execution completed" message was removed for cleaner stdout output
 });
 
 /**

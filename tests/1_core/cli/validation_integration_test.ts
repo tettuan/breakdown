@@ -121,9 +121,8 @@ Deno.test("CLI Integration: no arguments", async () => {
 Deno.test("CLI Integration: two parameter processing", async () => {
   const output = await runCLITest(["to", "project"]);
   // The new implementation should process two parameters gracefully
-  // Should show processing message without validation errors
-  assertStringIncludes(output.stdout, "Processing two parameters:");
-  assertStringIncludes(output.stdout, "Breakdown execution completed");
+  // Debug messages have been removed for cleaner output
+  // We should see prompt output instead
   assertEquals(output.exitCode, 0);
 });
 
