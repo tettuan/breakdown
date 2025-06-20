@@ -40,7 +40,6 @@ async function handleTwoParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-
   // 6. Check STDIN and prepare input_text
   let inputText = "";
   try {
@@ -74,7 +73,7 @@ async function handleTwoParams(
     if (inputText) {
       customVariables.input_text = inputText;
     }
-    
+
     // Add other required variables for template substitution
     customVariables.input_text_file = options.fromFile || "stdin";
     customVariables.destination_path = options.destinationFile || options.output || "stdout";
@@ -106,7 +105,6 @@ async function handleTwoParams(
 
       // Get all resolved parameters
       const allParams = factory.getAllParams();
-
 
       // Use PromptManager with resolved paths
       const promptManager = new PromptManager();
@@ -150,7 +148,6 @@ async function handleOneParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-
   if (params.length >= 1) {
     const [command] = params;
 
@@ -174,7 +171,6 @@ async function handleZeroParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-
   // Use options from BreakdownParams result instead of checking args directly
   if (options.help) {
     showHelp();
@@ -201,7 +197,7 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     let config: Record<string, unknown> = {};
     try {
       config = await loadBreakdownConfig(configPrefix, Deno.cwd());
-      } catch (error) {
+    } catch (error) {
       console.warn(
         "⚠️ Configuration not found, using defaults:",
         error instanceof Error ? error.message : String(error),
@@ -303,7 +299,6 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     } else {
       throw new Error(`Unknown result type: ${result.type}`);
     }
-
   } catch (error) {
     console.error("Error:", error instanceof Error ? error.message : String(error));
     throw error;

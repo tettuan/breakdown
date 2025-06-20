@@ -47,6 +47,7 @@ async function runCLITest(args: string[]): Promise<MockOutput> {
   const originalConsoleLog = console.log;
   const originalConsoleError = console.error;
   const originalExit = Deno.exit;
+  const originalStdoutWrite = Deno.stdout.write;
 
   console.log = (...args: unknown[]) => {
     output.stdout +=
@@ -58,6 +59,12 @@ async function runCLITest(args: string[]): Promise<MockOutput> {
     output.stderr +=
       args.map((arg) => typeof arg === "object" ? JSON.stringify(arg) : String(arg)).join(" ") +
       "\n";
+  };
+
+  // Mock Deno.stdout.write to capture direct stdout writes
+  Deno.stdout.write = (data: Uint8Array): Promise<number> => {
+    output.stdout += new TextDecoder().decode(data);
+    return Promise.resolve(data.length);
   };
 
   Deno.exit = output.exit as typeof Deno.exit;
@@ -74,6 +81,7 @@ async function runCLITest(args: string[]): Promise<MockOutput> {
     // Restore original functions
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
+    Deno.stdout.write = originalStdoutWrite;
     Deno.exit = originalExit;
   }
 
@@ -153,37 +161,32 @@ Deno.test("CLI Integration: two parameter processing", async () => {
 //   }
 // });
 
-// Test: File operations (with temporary files) - Updated for new implementation
+// Test: File operations (with temporary files) - Updated for stdout-only implementation
 Deno.test("CLI Integration: two parameters with options", async () => {
   // Create a temporary input file
   const tempFile = await Deno.makeTempFile({ suffix: ".md" });
   await Deno.writeTextFile(tempFile, "# Test Project\nThis is a test project.");
-
-  const tempOutput = await Deno.makeTempFile({ suffix: ".md" });
 
   try {
     const output = await runCLITest([
       "to",
       "project",
       `--from=${tempFile}`,
-      `--destination=${tempOutput}`,
+      `--destination=/tmp/ignored.md`, // This option is ignored in stdout-only mode
     ]);
 
     // Should not have validation errors, should process gracefully
-    assertStringIncludes(output.stdout, "Processing two parameters:");
     const hasValidationError = output.stderr.includes("validation error");
     assertEquals(hasValidationError, false, "Should not have validation errors");
+
+    // In stdout-only mode, output should be in stdout, not in file
+    assertStringIncludes(output.stdout, "# Test prompt");
 
     // May fail for other reasons (missing config, etc.) but not validation
   } finally {
     // Cleanup
     try {
       await Deno.remove(tempFile);
-    } catch {
-      // Ignore cleanup errors
-    }
-    try {
-      await Deno.remove(tempOutput);
     } catch {
       // Ignore cleanup errors
     }

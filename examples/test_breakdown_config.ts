@@ -13,9 +13,8 @@ async function testBreakdownConfig() {
   try {
     // Test with no prefix (should merge app.yml and user.yml)
     console.log("\n--- Testing with no prefix ---");
-    // Use the config directory where app.yml exists
-    const configDir = "/Users/tettuan/github/breakdown/config";
-    const config1 = new BreakdownConfig(undefined, configDir);
+    // Use the current directory where .agent/breakdown/config/app.yml exists
+    const config1 = new BreakdownConfig(undefined, Deno.cwd());
     await config1.loadConfig();
     const merged1 = await config1.getConfig();
     
