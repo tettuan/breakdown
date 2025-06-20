@@ -10,7 +10,6 @@
  *
  * // Get the content of a specific prompt template
  * const projectPrompt = prompts["to/project/f_project.md"];
- * console.log(projectPrompt);
  * ```
  *
  * @module

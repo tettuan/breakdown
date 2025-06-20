@@ -10,7 +10,6 @@
  *
  * // Get the content of a specific schema template
  * const projectSchema = schema["to/project/base.schema.md"];
- * console.log(projectSchema);
  * ```
  *
  * @module
