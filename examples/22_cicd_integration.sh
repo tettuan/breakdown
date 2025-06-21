@@ -38,7 +38,23 @@ TEST_DIR="$CI_DIR/test-results"
 REPORTS_DIR="$CI_DIR/reports"
 
 echo "Creating CI/CD directories..."
-mkdir -p "$BUILD_DIR" "$TEST_DIR" "$REPORTS_DIR" || handle_error "Failed to create directories"
+mkdir -p "$BUILD_DIR" "$TEST_DIR" "$REPORTS_DIR" .agent/breakdown/config || handle_error "Failed to create directories"
+
+# Create CI-specific configuration
+cat > ".agent/breakdown/config/ci-app.yml" << 'EOF'
+# CI/CD specific configuration
+working_dir: "."
+app_prompt:
+  base_dir: "../lib/breakdown/prompts"
+app_schema:
+  base_dir: "../lib/breakdown/schema"
+logger:
+  level: "info"
+  format: "text"
+output:
+  format: "markdown"
+  includeHeaders: true
+EOF
 
 # Create sample source files to analyze
 echo "=== Creating Sample Project for CI Analysis ==="
@@ -167,18 +183,18 @@ echo
 
 # 1. Analyze feature branch changes
 echo "1. Analyzing feature branch changes..."
-run_breakdown "cat '$CI_DIR/feature_branch_changes.md' | deno run -A ../cli/breakdown.ts summary project > '$REPORTS_DIR/feature_summary.md'"
+run_breakdown "cat '$CI_DIR/feature_branch_changes.md' | deno run -A ../cli/breakdown.ts summary project --config=ci > '$REPORTS_DIR/feature_summary.md'"
 
 echo "2. Breaking down changes into actionable items..."
-run_breakdown "deno run -A ../cli/breakdown.ts to issue '$CI_DIR/feature_branch_changes.md' -o '$REPORTS_DIR/issues/'"
+run_breakdown "deno run -A ../cli/breakdown.ts to issue --config=ci < '$CI_DIR/feature_branch_changes.md' > '$REPORTS_DIR/issues.md'"
 
 # 3. Analyze commit log
 echo "3. Generating changelog from commits..."
-run_breakdown "cat '$CI_DIR/commit_log.txt' | deno run -A ../cli/breakdown.ts summary changelog > '$REPORTS_DIR/changelog.md'"
+run_breakdown "cat '$CI_DIR/commit_log.txt' | deno run -A ../cli/breakdown.ts summary project --config=ci > '$REPORTS_DIR/changelog.md'"
 
 # 4. Analyze CI errors
 echo "4. Analyzing CI error logs..."
-run_breakdown "deno run -A ../cli/breakdown.ts defect project < '$CI_DIR/ci_error_log.txt' > '$REPORTS_DIR/error_analysis.md'"
+run_breakdown "deno run -A ../cli/breakdown.ts defect project --config=ci < '$CI_DIR/ci_error_log.txt' > '$REPORTS_DIR/error_analysis.md'"
 
 # 5. Create CI status report
 echo "5. Creating comprehensive CI status report..."
@@ -210,7 +226,7 @@ cat > "$CI_DIR/ci_status.md" << 'EOF'
 - Optimize database queries
 EOF
 
-run_breakdown "deno run -A ../cli/breakdown.ts summary project < '$CI_DIR/ci_status.md' > '$REPORTS_DIR/ci_summary.md'"
+run_breakdown "deno run -A ../cli/breakdown.ts summary project --config=ci < '$CI_DIR/ci_status.md' > '$REPORTS_DIR/ci_summary.md'"
 
 # 6. Generate PR review checklist
 echo "6. Generating PR review checklist..."
@@ -239,7 +255,7 @@ This PR implements user authentication with JWT tokens.
 - [ ] Security review completed
 EOF
 
-run_breakdown "deno run -A ../cli/breakdown.ts to task < '$CI_DIR/pr_description.md' -o '$REPORTS_DIR/pr_checklist.md'"
+run_breakdown "deno run -A ../cli/breakdown.ts to task --config=ci < '$CI_DIR/pr_description.md' > '$REPORTS_DIR/pr_checklist.md'"
 
 echo "=== CI/CD Integration Patterns ==="
 echo

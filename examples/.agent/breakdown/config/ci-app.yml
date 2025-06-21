@@ -1,0 +1,12 @@
+# CI/CD specific configuration
+working_dir: "."
+app_prompt:
+  base_dir: "../lib/breakdown/prompts"
+app_schema:
+  base_dir: "../lib/breakdown/schema"
+logger:
+  level: "info"
+  format: "text"
+output:
+  format: "markdown"
+  includeHeaders: true
