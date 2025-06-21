@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script provides installation instructions for the Breakdown CLI tool
+# This script displays installation and usage instructions for the Breakdown CLI tool
 
 set -e
 
@@ -38,11 +38,16 @@ echo "5. Global installation via deno install (Local Development):"
 echo "   deno install -A -n breakdown ../cli/breakdown.ts"
 echo
 
+echo "6. Deno task + executable script (Recommended for examples):"
+echo "   # Creates deno.json and .deno/bin/breakdown script"
+echo "   ./01_install.sh"
+echo
+
 echo
 echo "After installation, you can verify the installation with:"
 echo "   breakdown --version"
 echo
-echo "For this example suite, we'll use method 4 (compile to binary) in the next script."
+echo "For this example suite, we'll use method 6 (deno task + executable script) in the next script (01_install.sh)."
 echo
 
 echo "=== Installation Guide Completed ==="
