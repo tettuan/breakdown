@@ -35,12 +35,10 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 構成
 
-### 前準備 (00-02)
-1. `00_install.sh` - Breakdownのインストール案内
-2. `01_compile.sh` - バイナリ生成（※注: 現在バイナリ実行に制限あり）
+### 前準備 (00-03)
+1. `00_instructions.sh` - 使用方法の説明とガイダンス
+2. `01_install.sh` - Breakdownのインストール案内
 3. `02_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
-
-### ユーザー設定 (03)
 4. `03_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 基本使用例 (04-05)
@@ -69,23 +67,24 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 前準備の詳細
 
-### 1. インストール案内
+### 1. 使用方法の説明とガイダンス
+```bash
+./examples/00_instructions.sh
+```
+このスクリプトは以下を案内します：
+- Examples の使用方法とワークフロー
+- 各スクリプトの目的と実行順序
+
+### 2. インストール案内
 ```bash
 ./examples/01_install.sh
 ```
 このスクリプトは以下を案内します：
 - Breakdown CLIの推奨利用方法（deno task, バイナリ, グローバルインストール）
 
-### 2. バイナリ生成
-```bash
-./examples/02_compile.sh
-```
-このスクリプトは以下を実行します：
-- breakdown CLIのバイナリを ./.deno/bin/breakdown に生成
-
 ### 3. 初期化 (deno run で直接実行)
 ```bash
-./examples/05_init_deno_run.sh
+./examples/02_init_deno_run.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - プロジェクト構造の初期化
@@ -94,7 +93,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 4. ユーザー設定 (deno run で直接実行)
 ```bash
-./examples/07_create_user_config_deno_run.sh
+./examples/03_create_user_config.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - `./.agent/breakdown/config/user.yml` の作成
@@ -105,7 +104,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 5. STDIN入力の利用例
 ```bash
-./examples/08_stdin_example.sh
+./examples/04_stdin_example.sh
 ```
 このスクリプトは以下を実行します：
 - echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
@@ -114,7 +113,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 6. 基本的なコマンド使用例
 ```bash
-./examples/09_basic_usage.sh
+./examples/05_basic_usage.sh
 ```
 このスクリプトは以下を実行します：
 - `breakdown to issue` - プロジェクト仕様からイシューへの分解
@@ -126,7 +125,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 7. 基本的な設定例
 ```bash
-./examples/10_config_basic.sh
+./examples/06_config_basic.sh
 ```
 このスクリプトは以下を実行します：
 - 基本的な設定ファイルの作成
@@ -135,7 +134,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 8. 本番環境用設定例
 ```bash
-./examples/11_config_production.sh
+./examples/07_config_production.sh
 ```
 このスクリプトは以下を実行します：
 - 本番環境向けの設定ファイル作成
@@ -144,7 +143,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 9. チーム開発用設定例
 ```bash
-./examples/12_config_team.sh
+./examples/08_config_team.sh
 ```
 このスクリプトは以下を実行します：
 - チーム開発向けの共有設定
@@ -153,7 +152,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 10. 環境別設定例
 ```bash
-./examples/13_config_environments.sh
+./examples/09_config_environments.sh
 ```
 このスクリプトは以下を実行します：
 - 開発、ステージング、本番環境の設定切り替え
@@ -162,7 +161,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 11. 本番環境設定とバグ検出例
 ```bash
-./examples/14_config_production_example.sh
+./examples/10_config_production_example.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用した `breakdown find bugs` コマンドのデモンストレーション
@@ -173,7 +172,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 12. 本番環境カスタム設定とFind Bugs
 ```bash
-./examples/15_config_production_custom.sh
+./examples/11_config_production_custom.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用したCustomConfig機能のデモンストレーション
@@ -185,7 +184,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 13. Summary Issueの例
 ```bash
-./examples/16_summary_issue.sh
+./examples/12_summary_issue.sh
 ```
 このスクリプトは以下を実行します：
 - 散らかったタスクリストからイシューサマリーを生成
@@ -193,7 +192,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 14. Defectパターンの例
 ```bash
-./examples/17_defect_patterns.sh
+./examples/13_defect_patterns.sh
 ```
 このスクリプトは以下を実行します：
 - defect issue: バグレポートからの欠陥分析
@@ -201,7 +200,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 15. カスタム変数の例
 ```bash
-./examples/18_custom_variables.sh
+./examples/14_custom_variables.sh
 ```
 このスクリプトは以下を実行します：
 - --uv-*カスタム変数の使用方法
@@ -210,7 +209,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 16. パイプライン処理の例
 ```bash
-./examples/19_pipeline_processing.sh
+./examples/15_pipeline_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数のbreakdownコマンドの連携
@@ -219,7 +218,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 17. バッチ処理の例
 ```bash
-./examples/20_batch_processing.sh
+./examples/16_batch_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数ファイルの一括処理
@@ -228,7 +227,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 18. エラーハンドリングの例
 ```bash
-./examples/21_error_handling.sh
+./examples/17_error_handling.sh
 ```
 このスクリプトは以下を実行します：
 - エラーの捕捉と記録
@@ -237,7 +236,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 19. CI/CD統合の例
 ```bash
-./examples/22_cicd_integration.sh
+./examples/18_cicd_integration.sh
 ```
 このスクリプトは以下を実行します：
 - GitHub Actions、GitLab CI、Jenkins、CircleCIの設定例
@@ -246,7 +245,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 20. クリーンアップ
 ```bash
-./examples/99_clean.sh
+./examples/19_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
