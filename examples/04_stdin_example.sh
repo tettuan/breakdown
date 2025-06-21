@@ -16,7 +16,7 @@ cd "$(dirname "$0")"
 echo "=== STDIN Input Example ==="
 
 # Define the config directory path
-CONFIG_DIR="../.agent/breakdown/config"
+CONFIG_DIR="./.agent/breakdown/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then

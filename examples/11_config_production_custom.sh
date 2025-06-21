@@ -30,7 +30,7 @@ echo "   fully enabled in the CLI configuration. This example demonstrates the s
 echo
 
 # Set configuration paths
-CONFIG_DIR="../.agent/breakdown/config"
+CONFIG_DIR="./.agent/breakdown/config"
 CONFIG_FILE="$CONFIG_DIR/production-user.yml"
 TEST_DIR="tmp/production-custom-test"
 OUTPUT_DIR="tmp/production-bug-reports"
