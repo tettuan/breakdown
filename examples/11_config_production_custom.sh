@@ -44,6 +44,14 @@ echo
 # Create configuration directory if it doesn't exist
 mkdir -p "$CONFIG_DIR" || handle_error "Failed to create config directory"
 
+# Ensure local template directories exist
+echo "Setting up local template directories for find bugs..."
+mkdir -p prompts/find/bugs
+
+# Copy required template files for find bugs functionality
+echo "Copying find bugs template files..."
+cp ../lib/breakdown/prompts/find/bugs/f_bugs.md prompts/find/bugs/ 2>/dev/null || echo "Warning: Could not copy find bugs template"
+
 # Copy production configuration to the correct location
 if [ -f "../config/production-user.yml" ]; then
     echo "=== Setting up Production Configuration ==="

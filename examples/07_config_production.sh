@@ -25,14 +25,22 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     exit 1
 fi
 
+# Ensure local template directories exist
+echo "Setting up local production template directories..."
+mkdir -p prompts/production/defect/issue
+
+# Copy required production template files
+echo "Copying production template files..."
+cp ../lib/breakdown/prompts/production/defect/issue/f_issue.md prompts/production/defect/issue/ 2>/dev/null || echo "Warning: Could not copy production defect template"
+
 # Create production configuration
 cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
 # Production application configuration
 working_dir: "."
 app_prompt:
-  base_dir: "prompts"
+  base_dir: "prompts/production"
 app_schema:
-  base_dir: "schema"
+  base_dir: "schema/production"
   validation_enabled: true
 logger:
   level: "warn"

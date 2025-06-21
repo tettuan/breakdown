@@ -25,6 +25,18 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     exit 1
 fi
 
+# Ensure local template directories exist for all environments
+echo "Setting up local environment template directories..."
+mkdir -p prompts/dev/defect/issue
+mkdir -p prompts/staging/defect/issue  
+mkdir -p prompts/prod/defect/issue
+
+# Copy required environment template files
+echo "Copying environment template files..."
+cp ../lib/breakdown/prompts/dev/defect/issue/f_issue.md prompts/dev/defect/issue/ 2>/dev/null || echo "Warning: Could not copy dev template"
+cp ../lib/breakdown/prompts/staging/defect/issue/f_issue.md prompts/staging/defect/issue/ 2>/dev/null || echo "Warning: Could not copy staging template"
+cp ../lib/breakdown/prompts/prod/defect/issue/f_issue.md prompts/prod/defect/issue/ 2>/dev/null || echo "Warning: Could not copy prod template"
+
 # Create development configuration
 cat > "${CONFIG_DIR}/dev-app.yml" << 'EOF'
 # Development environment configuration
@@ -32,7 +44,7 @@ working_dir: "."
 app_prompt:
   base_dir: "prompts/dev"
 app_schema:
-  base_dir: "schema/dev"
+  base_dir: "../lib/breakdown/schema/dev"
   validation_enabled: false
 logger:
   level: "debug"
@@ -51,7 +63,7 @@ working_dir: "."
 app_prompt:
   base_dir: "prompts/staging"
 app_schema:
-  base_dir: "schema/staging"
+  base_dir: "../lib/breakdown/schema/staging"
   validation_enabled: true
 logger:
   level: "info"
@@ -72,7 +84,7 @@ working_dir: "."
 app_prompt:
   base_dir: "prompts/prod"
 app_schema:
-  base_dir: "schema/prod"
+  base_dir: "../lib/breakdown/schema/prod"
   validation_enabled: true
   strict_mode: true
 logger:

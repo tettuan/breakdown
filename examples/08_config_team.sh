@@ -25,6 +25,14 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     exit 1
 fi
 
+# Ensure local template directories exist
+echo "Setting up local team template directories..."
+mkdir -p prompts/team/to/task
+
+# Copy required team template files
+echo "Copying team template files..."
+cp ../lib/breakdown/prompts/team/to/task/f_task.md prompts/team/to/task/ 2>/dev/null || echo "Warning: Could not copy team task template"
+
 # Create team configuration
 cat > "${CONFIG_DIR}/team-app.yml" << 'EOF'
 # Team development configuration

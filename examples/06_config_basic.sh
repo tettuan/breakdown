@@ -31,6 +31,21 @@ if [ ! -f "${CONFIG_DIR}/user.yml" ]; then
     bash 03_create_user_config.sh
 fi
 
+# Ensure local template directories exist
+echo "Setting up local template directories..."
+mkdir -p prompts/summary/issue prompts/summary/project prompts/defect/issue
+
+# Copy required template files if they don't exist
+if [ ! -f "prompts/summary/issue/f_issue.md" ]; then
+    cp ../lib/breakdown/prompts/summary/issue/f_issue.md prompts/summary/issue/ 2>/dev/null || echo "Warning: Could not copy summary issue template"
+fi
+if [ ! -f "prompts/summary/project/f_project.md" ]; then
+    cp ../lib/breakdown/prompts/summary/project/f_project.md prompts/summary/project/ 2>/dev/null || echo "Warning: Could not copy summary project template"
+fi
+if [ ! -f "prompts/defect/issue/f_issue.md" ]; then
+    cp ../lib/breakdown/prompts/defect/issue/f_issue.md prompts/defect/issue/ 2>/dev/null || echo "Warning: Could not copy defect template"
+fi
+
 # Create a basic configuration file
 cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
 # Basic application configuration
