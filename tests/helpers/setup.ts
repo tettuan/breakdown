@@ -120,7 +120,7 @@ export async function setupTestEnvironment(
 Analyze the provided code to identify potential bugs and issues.
 
 ## Code to Analyze
-{{CODE}}
+{CODE}
 
 ## Analysis Output
 Provide a detailed analysis of bugs found.`;

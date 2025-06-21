@@ -67,11 +67,14 @@ export async function loadConfig(filePath: string): Promise<CustomConfig> {
  */
 export async function loadBreakdownConfig(
   configPrefix?: string,
-  workingDir?: string,
+  _workingDir?: string,
 ): Promise<Record<string, unknown>> {
-  const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.2");
+  const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
 
-  const config = new BreakdownConfig(configPrefix, workingDir || Deno.cwd());
+  const config = new BreakdownConfig(configPrefix);
+  console.log("Loading BreakdownConfig with prefix:", configPrefix);
+  console.log("config obj", config);
   await config.loadConfig();
+  console.log("loaded config obj", config);
   return await config.getConfig();
 }

@@ -49,7 +49,18 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       try {
-        input = await readAll(Deno.stdin);
+        // Create a promise that rejects when aborted
+        const abortPromise = new Promise<never>((_, reject) => {
+          controller.signal.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
+        });
+
+        // Race between reading stdin and the abort signal
+        input = await Promise.race([
+          readAll(Deno.stdin),
+          abortPromise,
+        ]);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -82,10 +93,17 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
  * Checks if stdin has any content available
  * @returns Promise resolving to true if stdin has content
  */
-export async function hasStdinContent(): Promise<boolean> {
+export function hasStdinContent(): boolean {
   try {
-    const input = await readAll(Deno.stdin);
-    return input.length > 0;
+    // Check if stdin is a terminal (TTY)
+    // If it's a terminal, there's no piped input
+    if (Deno.stdin.isTerminal()) {
+      return false;
+    }
+
+    // For non-TTY (piped input), we can't check without consuming
+    // So we return true if stdin is available (piped)
+    return true;
   } catch {
     return false;
   }

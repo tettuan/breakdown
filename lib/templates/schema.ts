@@ -1,28 +1,10 @@
+// This file is auto-generated. Do not edit directly.
 /**
- * Schema templates for the Breakdown tool.
- *
- * This module provides all schema templates as a TypeScript object, mapping relative paths to schema content strings.
- * These templates are used for initializing and generating schema files in Breakdown workspaces.
- *
- * @example
- * ```ts
- * import { schema } from "jsr:@tettuan/breakdown/lib/templates/schema.ts";
- *
- * // Get the content of a specific schema template
- * const projectSchema = schema["to/project/base.schema.md"];
- * ```
- *
- * @module
- */
-/**
- * An object containing all schema templates for Breakdown.
- *
- * - Keys are relative paths (from the original schema directory)
- * - Values are the Markdown content of each schema template
- *
- * Use this object to programmatically access or expand schema templates in your application or CLI tools.
+ * Source: Markdown templates under lib/breakdown/schema (English only)
  */
 export const schema = {
+  "find/bugs/base.schema.md":
+    '# Bug Analysis Schema\n\n\\`\\`\\`json\n{\n  "\\$schema": "http://json-schema.org/draft-07/schema#",\n  "type": "object",\n  "properties": {\n    "analysis_summary": {\n      "type": "object",\n      "properties": {\n        "total_issues": { "type": "number" },\n        "critical_count": { "type": "number" },\n        "high_count": { "type": "number" },\n        "medium_count": { "type": "number" },\n        "low_count": { "type": "number" },\n        "analyzed_files": {\n          "type": "array",\n          "items": { "type": "string" }\n        }\n      },\n      "required": ["total_issues", "critical_count", "high_count", "medium_count", "low_count"]\n    },\n    "bugs": {\n      "type": "array",\n      "items": {\n        "type": "object",\n        "properties": {\n          "id": { \n            "type": "string",\n            "description": "Unique identifier for the bug"\n          },\n          "title": { \n            "type": "string",\n            "description": "Brief title of the bug"\n          },\n          "description": { \n            "type": "string",\n            "description": "Detailed description of the issue"\n          },\n          "severity": {\n            "type": "string",\n            "enum": ["critical", "high", "medium", "low"],\n            "description": "Severity level of the bug"\n          },\n          "type": {\n            "type": "string",\n            "enum": [\n              "code_quality",\n              "security_vulnerability", \n              "error_handling",\n              "resource_management",\n              "type_safety",\n              "concurrency",\n              "api_integration",\n              "configuration",\n              "performance",\n              "logic_error"\n            ],\n            "description": "Category of the bug"\n          },\n          "location": {\n            "type": "object",\n            "properties": {\n              "file": { "type": "string" },\n              "line": { "type": "number" },\n              "column": { "type": "number" },\n              "function": { "type": "string" }\n            },\n            "required": ["file"]\n          },\n          "impact": {\n            "type": "string",\n            "description": "Potential impact of the bug"\n          },\n          "code_snippet": {\n            "type": "string",\n            "description": "Relevant code snippet showing the issue"\n          },\n          "suggested_fix": {\n            "type": "string",\n            "description": "Recommended solution or fix"\n          },\n          "references": {\n            "type": "array",\n            "items": { "type": "string" },\n            "description": "Links to documentation or resources"\n          },\n          "tags": {\n            "type": "array",\n            "items": { "type": "string" },\n            "description": "Tags for categorization"\n          }\n        },\n        "required": ["id", "title", "description", "severity", "type", "location", "impact", "suggested_fix"]\n      }\n    },\n    "recommendations": {\n      "type": "array",\n      "items": {\n        "type": "object",\n        "properties": {\n          "priority": {\n            "type": "string",\n            "enum": ["immediate", "high", "medium", "low"]\n          },\n          "action": { "type": "string" },\n          "reason": { "type": "string" }\n        },\n        "required": ["priority", "action", "reason"]\n      }\n    }\n  },\n  "required": ["analysis_summary", "bugs", "recommendations"]\n}\n\\`\\`\\`',
   "to/project/base.schema.md":
     '# Project Schema\n\n\\`\\`\\`json\n{\n  "\\$schema": "http://json-schema.org/draft-07/schema#",\n  "type": "object",\n  "properties": {\n    "project": {\n      "type": "object",\n      "properties": {\n        "name": { "type": "string" },\n        "description": { "type": "string" },\n        "objectives": {\n          "type": "array",\n          "items": { "type": "string" }\n        },\n        "deliverables": {\n          "type": "array",\n          "items": { "type": "string" }\n        },\n        "requirements": {\n          "type": "array",\n          "items": { "type": "string" }\n        },\n        "timeline": {\n          "type": "object",\n          "properties": {\n            "start": { "type": "string" },\n            "end": { "type": "string" }\n          }\n        }\n      },\n      "required": ["name", "description", "objectives", "deliverables", "requirements"]\n    }\n  }\n}\n\\`\\`\\` ',
   "to/issue/base.schema.md":

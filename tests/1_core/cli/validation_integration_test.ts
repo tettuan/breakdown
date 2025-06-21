@@ -180,7 +180,7 @@ Deno.test("CLI Integration: two parameters with options", async () => {
     assertEquals(hasValidationError, false, "Should not have validation errors");
 
     // In stdout-only mode, output should be in stdout, not in file
-    assertStringIncludes(output.stdout, "# Test prompt");
+    assertStringIncludes(output.stdout, "# {project_name} Project Plan");
 
     // May fail for other reasons (missing config, etc.) but not validation
   } finally {
