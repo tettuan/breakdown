@@ -17,7 +17,7 @@ cd "$(dirname "$0")"
 echo "=== Creating User Configuration (deno run) ==="
 
 # Define the config directory path relative to project root
-CONFIG_DIR=".agent/breakdown/config"
+CONFIG_DIR="../.agent/breakdown/config"
 
 # Check if the config directory exists
 if [ ! -d "${CONFIG_DIR}" ]; then

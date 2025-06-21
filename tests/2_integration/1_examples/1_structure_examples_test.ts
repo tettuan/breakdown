@@ -1,13 +1,13 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { exists, walk } from "@std/fs";
-import { join, dirname, basename } from "@std/path";
+import { join } from "@std/path";
 
 const logger = new BreakdownLogger("structure-examples-test");
 
 /**
  * Structure tests for example scripts dependencies and relationships
- * 
+ *
  * These tests verify:
  * - Dependencies between examples are properly managed
  * - Required files and directories are created in correct order
@@ -20,10 +20,8 @@ const logger = new BreakdownLogger("structure-examples-test");
  */
 Deno.test("Structure: Examples follow dependency order", async () => {
   const dependencies = new Map<string, string[]>([
-    // Installation must come first
-    ["01_compile.sh", ["00_install.sh"]],
     // Init requires installation
-    ["02_init_deno_run.sh", ["01_compile.sh"]],
+    ["02_init_deno_run.sh", ["01_install.sh"]],
     // User config requires init
     ["03_create_user_config.sh", ["02_init_deno_run.sh"]],
     // Basic usage requires setup
@@ -40,32 +38,32 @@ Deno.test("Structure: Examples follow dependency order", async () => {
     ["15_pipeline_processing.sh", ["05_basic_usage.sh"]],
     ["16_batch_processing.sh", ["05_basic_usage.sh"]],
     // Integration requires multiple features
-    ["22_cicd_integration.sh", ["05_basic_usage.sh", "07_config_production.sh"]],
+    ["18_cicd_integration.sh", ["05_basic_usage.sh", "07_config_production.sh"]],
   ]);
-  
+
   // Verify dependency files exist
   for (const [example, deps] of dependencies.entries()) {
     const examplePath = join(Deno.cwd(), "examples", example);
-    
+
     if (await exists(examplePath)) {
       for (const dep of deps) {
         const depPath = join(Deno.cwd(), "examples", dep);
         const depExists = await exists(depPath);
-        
+
         assertEquals(
           depExists,
           true,
-          `${example} depends on ${dep}, which should exist`
+          `${example} depends on ${dep}, which should exist`,
         );
-        
+
         // Verify numerical ordering
         const exampleNum = parseInt(example.substring(0, 2));
         const depNum = parseInt(dep.substring(0, 2));
-        
+
         assertEquals(
           depNum < exampleNum,
           true,
-          `Dependency ${dep} should come before ${example} numerically`
+          `Dependency ${dep} should come before ${example} numerically`,
         );
       }
     }
@@ -75,7 +73,7 @@ Deno.test("Structure: Examples follow dependency order", async () => {
 /**
  * Test: Examples create required directory structures
  */
-Deno.test("Structure: Examples create required directories in order", async () => {
+Deno.test("Structure: Examples create required directories in order", () => {
   // Map of which examples create which directories
   const directoryCreators = new Map<string, string[]>([
     ["02_init_deno_run.sh", [
@@ -94,33 +92,33 @@ Deno.test("Structure: Examples create required directories in order", async () =
       "configs",
     ]],
   ]);
-  
+
   // Verify examples that need directories have them created first
   const examplesNeedingDirs = [
-    "03_create_user_config.sh",  // Needs .agent/breakdown/config
-    "05_basic_usage.sh",          // Creates output
-    "12_summary_issue.sh",        // Needs output dir
-    "13_defect_patterns.sh",      // Needs output dir
+    "03_create_user_config.sh", // Needs .agent/breakdown/config
+    "05_basic_usage.sh", // Creates output
+    "12_summary_issue.sh", // Needs output dir
+    "13_defect_patterns.sh", // Needs output dir
   ];
-  
+
   for (const example of examplesNeedingDirs) {
     const exampleNum = parseInt(example.substring(0, 2));
-    
+
     // Find which example should create the needed directory
     let creatorFound = false;
-    for (const [creator, dirs] of directoryCreators.entries()) {
+    for (const [creator, _dirs] of directoryCreators.entries()) {
       const creatorNum = parseInt(creator.substring(0, 2));
-      
+
       if (creatorNum <= exampleNum) {
         creatorFound = true;
         break;
       }
     }
-    
+
     assertEquals(
       creatorFound,
       true,
-      `${example} should have a predecessor that creates required directories`
+      `${example} should have a predecessor that creates required directories`,
     );
   }
 });
@@ -128,11 +126,11 @@ Deno.test("Structure: Examples create required directories in order", async () =
 /**
  * Test: Examples handle file dependencies correctly
  */
-Deno.test("Structure: Examples manage file dependencies", async () => {
-  const examplesDir = join(Deno.cwd(), "examples");
-  
+Deno.test("Structure: Examples manage file dependencies", () => {
+  const _examplesDir = join(Deno.cwd(), "examples");
+
   // Map of files created and consumed by examples
-  const fileFlows = new Map<string, { creates?: string[], needs?: string[] }>([
+  const fileFlows = new Map<string, { creates?: string[]; needs?: string[] }>([
     ["03_create_user_config.sh", {
       creates: [".agent/breakdown/config/user.yml"],
     }],
@@ -147,12 +145,12 @@ Deno.test("Structure: Examples manage file dependencies", async () => {
       creates: ["output/summary_issue/organized_tasks.md"],
     }],
   ]);
-  
+
   // Verify file creation order
   for (const [example, flow] of fileFlows.entries()) {
     if (flow.needs) {
       const exampleNum = parseInt(example.substring(0, 2));
-      
+
       for (const neededFile of flow.needs) {
         // Find creator of needed file
         let creatorNum = -1;
@@ -162,12 +160,12 @@ Deno.test("Structure: Examples manage file dependencies", async () => {
             break;
           }
         }
-        
+
         if (creatorNum >= 0) {
           assertEquals(
             creatorNum < exampleNum,
             true,
-            `${example} needs ${neededFile} which should be created by an earlier example`
+            `${example} needs ${neededFile} which should be created by an earlier example`,
           );
         }
       }
@@ -185,25 +183,23 @@ Deno.test("Structure: Examples use consistent working directories", async () => 
     /BREAKDOWN_HOME=["']?.*\.agent\/breakdown["']?/,
     /working_dir:\s*\.agent\/breakdown/,
   ];
-  
+
   for await (const entry of walk(examplesDir, { maxDepth: 1 })) {
     if (entry.isFile && entry.name.endsWith(".sh")) {
       const content = await Deno.readTextFile(entry.path);
-      
+
       // Check if example changes directory
-      const changesDir = content.includes("cd ") && 
-                        !content.includes("cd examples");
-      
+      const changesDir = content.includes("cd ") &&
+        !content.includes("cd examples");
+
       if (changesDir) {
         // Verify it uses standard working directory
-        const usesStandardDir = workingDirPatterns.some(pattern => 
-          pattern.test(content)
-        );
-        
+        const usesStandardDir = workingDirPatterns.some((pattern) => pattern.test(content));
+
         // Some examples might use other directories for demos
         const isSpecialCase = entry.name.includes("clean") ||
-                            entry.name.includes("install");
-        
+          entry.name.includes("install");
+
         if (!isSpecialCase) {
           logger.debug(`${entry.name} directory usage`, {
             changesDir,
@@ -213,7 +209,7 @@ Deno.test("Structure: Examples use consistent working directories", async () => 
       }
     }
   }
-  
+
   // This is more of a guideline than strict requirement
   assertEquals(true, true);
 });
@@ -224,7 +220,7 @@ Deno.test("Structure: Examples use consistent working directories", async () => 
 Deno.test("Structure: Examples share utilities without duplication", async () => {
   const examplesDir = join(Deno.cwd(), "examples");
   const commonFunctions = new Map<string, number>();
-  
+
   // Patterns for common utility functions
   const utilityPatterns = [
     /function\s+run_breakdown\s*\(\)/,
@@ -232,12 +228,12 @@ Deno.test("Structure: Examples share utilities without duplication", async () =>
     /function\s+create_config\s*\(\)/,
     /function\s+cleanup\s*\(\)/,
   ];
-  
+
   // Count occurrences of utility functions
   for await (const entry of walk(examplesDir, { maxDepth: 1 })) {
     if (entry.isFile && entry.name.endsWith(".sh")) {
       const content = await Deno.readTextFile(entry.path);
-      
+
       for (const pattern of utilityPatterns) {
         if (pattern.test(content)) {
           const funcName = pattern.toString();
@@ -246,7 +242,7 @@ Deno.test("Structure: Examples share utilities without duplication", async () =>
       }
     }
   }
-  
+
   // Check for excessive duplication
   for (const [func, count] of commonFunctions.entries()) {
     if (count > 5) {
@@ -256,7 +252,7 @@ Deno.test("Structure: Examples share utilities without duplication", async () =>
       });
     }
   }
-  
+
   // Some duplication is acceptable for example independence
   assertEquals(true, true);
 });
@@ -266,30 +262,29 @@ Deno.test("Structure: Examples share utilities without duplication", async () =>
  */
 Deno.test("Structure: Examples with cleanup follow consistent patterns", async () => {
   const examplesDir = join(Deno.cwd(), "examples");
-  
+
   // Examples that create significant resources
   const examplesNeedingCleanup = [
     "05_basic_usage.sh",
-    "12_summary_issue.sh", 
+    "12_summary_issue.sh",
     "13_defect_patterns.sh",
     "16_batch_processing.sh",
     "22_cicd_integration.sh",
   ];
-  
+
   for (const exampleName of examplesNeedingCleanup) {
     const examplePath = join(examplesDir, exampleName);
-    
+
     if (await exists(examplePath)) {
       const content = await Deno.readTextFile(examplePath);
-      
+
       // Check for cleanup patterns
-      const hasCleanup = 
-        content.includes("cleanup") ||
+      const hasCleanup = content.includes("cleanup") ||
         content.includes("Clean up") ||
         content.includes("rm -rf") ||
         content.includes("19_clean.sh") ||
-        content.includes("echo \"Outputs saved");
-      
+        content.includes('echo "Outputs saved');
+
       // Not all examples need explicit cleanup if they mention where outputs are saved
       logger.debug(`${exampleName} cleanup check`, {
         hasCleanup,
@@ -297,15 +292,15 @@ Deno.test("Structure: Examples with cleanup follow consistent patterns", async (
       });
     }
   }
-  
+
   // Verify clean script exists
   const cleanScriptPath = join(examplesDir, "19_clean.sh");
   const cleanExists = await exists(cleanScriptPath);
-  
+
   assertEquals(
     cleanExists,
     true,
-    "Clean script (19_clean.sh) should exist for manual cleanup"
+    "Clean script (19_clean.sh) should exist for manual cleanup",
   );
 });
 
@@ -314,7 +309,7 @@ Deno.test("Structure: Examples with cleanup follow consistent patterns", async (
  */
 Deno.test("Structure: Examples use proper relative paths for resources", async () => {
   const examplesDir = join(Deno.cwd(), "examples");
-  
+
   // Common resource references
   const resourcePatterns = [
     { pattern: /\.\.\/cli\/breakdown\.ts/, type: "CLI" },
@@ -323,12 +318,12 @@ Deno.test("Structure: Examples use proper relative paths for resources", async (
     { pattern: /configs\//, type: "configs" },
     { pattern: /output\//, type: "output" },
   ];
-  
+
   for await (const entry of walk(examplesDir, { maxDepth: 1 })) {
     if (entry.isFile && entry.name.endsWith(".sh")) {
       const content = await Deno.readTextFile(entry.path);
       const references: Record<string, number> = {};
-      
+
       // Count resource references
       for (const { pattern, type } of resourcePatterns) {
         const matches = content.match(new RegExp(pattern, "g"));
@@ -336,12 +331,12 @@ Deno.test("Structure: Examples use proper relative paths for resources", async (
           references[type] = matches.length;
         }
       }
-      
+
       // CLI references should use consistent paths
       if (references["CLI"]) {
         const cliRefs = content.match(/\.\.\/cli\/breakdown\.ts/g) || [];
         const denoRunRefs = content.match(/deno run .* \.\.\/cli\/breakdown\.ts/g) || [];
-        
+
         // Most CLI references should be with deno run
         if (cliRefs.length > 0 && entry.name !== "01_compile.sh") {
           logger.debug(`${entry.name} CLI references`, {
@@ -352,7 +347,7 @@ Deno.test("Structure: Examples use proper relative paths for resources", async (
       }
     }
   }
-  
+
   assertEquals(true, true);
 });
 
@@ -361,71 +356,71 @@ Deno.test("Structure: Examples use proper relative paths for resources", async (
  */
 Deno.test("Structure: Examples increase in complexity progressively", async () => {
   const examplesDir = join(Deno.cwd(), "examples");
-  
+
   // Complexity indicators
   const complexityMarkers = {
     basic: ["echo", "cat", "mkdir", "deno run"],
     intermediate: ["function", "for", "if", "case", "array"],
     advanced: ["trap", "process substitution", "parallel", "retry", "timeout"],
   };
-  
+
   const exampleComplexity = new Map<string, number>();
-  
+
   for await (const entry of walk(examplesDir, { maxDepth: 1 })) {
     if (entry.isFile && entry.name.endsWith(".sh")) {
       const content = await Deno.readTextFile(entry.path);
       let complexity = 0;
-      
+
       // Basic: 1 point each
       for (const marker of complexityMarkers.basic) {
         if (content.includes(marker)) complexity += 1;
       }
-      
+
       // Intermediate: 2 points each
       for (const marker of complexityMarkers.intermediate) {
         if (content.includes(marker)) complexity += 2;
       }
-      
-      // Advanced: 3 points each  
+
+      // Advanced: 3 points each
       for (const marker of complexityMarkers.advanced) {
         if (content.includes(marker)) complexity += 3;
       }
-      
+
       exampleComplexity.set(entry.name, complexity);
     }
   }
-  
+
   // Verify general trend of increasing complexity
   const sortedExamples = Array.from(exampleComplexity.entries())
     .sort((a, b) => a[0].localeCompare(b[0]));
-  
+
   // Calculate average complexity for each range
   const ranges = [
     { name: "basic", start: 0, end: 5 },
     { name: "intermediate", start: 6, end: 14 },
     { name: "advanced", start: 15, end: 22 },
   ];
-  
-  const avgComplexity = ranges.map(range => {
+
+  const avgComplexity = ranges.map((range) => {
     const examples = sortedExamples.filter(([name]) => {
       const num = parseInt(name.substring(0, 2));
       return num >= range.start && num <= range.end;
     });
-    
+
     const total = examples.reduce((sum, [_, complexity]) => sum + complexity, 0);
     return {
       range: range.name,
       average: examples.length > 0 ? total / examples.length : 0,
     };
   });
-  
+
   logger.debug("Example complexity progression", { avgComplexity });
-  
+
   // Generally, complexity should increase
   if (avgComplexity.length >= 2) {
     const basicAvg = avgComplexity[0].average;
     const advancedAvg = avgComplexity[avgComplexity.length - 1].average;
-    
+
     // Advanced examples should generally be more complex
     // But this is a soft requirement as some advanced examples might be simple
     logger.debug("Complexity trend", {
@@ -434,6 +429,6 @@ Deno.test("Structure: Examples increase in complexity progressively", async () =
       increasing: advancedAvg >= basicAvg,
     });
   }
-  
+
   assertEquals(true, true);
 });

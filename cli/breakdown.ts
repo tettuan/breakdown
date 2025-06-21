@@ -86,7 +86,7 @@ async function handleTwoParams(
         destinationFile: options.destination || options.output || "output.md",
         adaptation: options.adaptation,
         promptDir: options.promptDir,
-        fromLayerType: options.fromLayerType,
+        fromLayerType: options.input,
         input_text: inputText,
         customVariables,
         extended: options.extended,

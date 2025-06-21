@@ -2,9 +2,8 @@
  * Help text constants for Breakdown CLI
  */
 
-// Read version from deno.json
-const denoJson = JSON.parse(await Deno.readTextFile(new URL("../deno.json", import.meta.url)));
-export const VERSION = denoJson.version || "unknown";
+// Version should be managed by lib/version.ts
+export const VERSION = "1.0.0"; // This should be imported from lib/version.ts
 export const APP_NAME = "Breakdown - AI Development Instruction Tool";
 
 /**

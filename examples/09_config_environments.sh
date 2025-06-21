@@ -17,7 +17,7 @@ cd "$SCRIPT_DIR" || exit 1
 echo "=== Environment-Specific Configuration Example ==="
 
 # Run from examples directory
-CONFIG_DIR=".agent/breakdown/config"
+CONFIG_DIR="../.agent/breakdown/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
