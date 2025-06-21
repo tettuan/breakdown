@@ -240,7 +240,13 @@ export async function globalTestCleanup(): Promise<void> {
       await restoreWritePermissions(tmpDir);
 
       // Remove all contents but keep the directory
+      // Skip example_results directory to preserve example outputs
       for await (const entry of Deno.readDir(tmpDir)) {
+        if (entry.name === "example_results") {
+          logger.debug("Skipping example_results directory", { path: join(tmpDir, entry.name) });
+          continue;
+        }
+        
         const entryPath = join(tmpDir, entry.name);
         try {
           await Deno.remove(entryPath, { recursive: true });

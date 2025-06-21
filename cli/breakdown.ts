@@ -13,9 +13,9 @@
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { isStdinAvailable, readStdin } from "$lib/io/stdin.ts";
 import { loadBreakdownConfig, loadConfig } from "$lib/config/loader.ts";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { ParamsParser } from "@tettuan/breakdownparams";
-import { PromptManager } from "@tettuan/breakdownprompt";
+import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.3";
+import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
 import {
@@ -213,6 +213,46 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
           base_dir: "lib/breakdown/schema",
         },
         working_dir: ".agent/breakdown",
+        params: {
+          two: {
+            demonstrativeType: {
+              pattern: "^(to|summary|defect|find)$",
+            },
+            layerType: {
+              pattern: "^(project|issue|task|bugs)$",
+            },
+          },
+          validation: {
+            two: {
+              allowedOptions: [
+                "help",
+                "version",
+                "verbose",
+                "experimental",
+                "extended",
+                "adaptation",
+              ],
+              allowedValueOptions: [
+                "from",
+                "destination",
+                "input",
+                "output",
+                "config",
+                "uv-project_name",
+                "uv-report_type",
+                "uv-userName",
+                "uv-project",
+                "uv-build_number",
+                "uv-job_name",
+                "uv-ci",
+                "uv-build_id",
+                "uv-branch",
+                "uv-pipeline_id",
+                "uv-commit",
+              ],
+            },
+          },
+        },
       };
     }
 
@@ -257,7 +297,7 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
           },
         };
 
-        const validation: any = config.validation || {};
+        const validation: any = (config as any).params?.validation || {};
         const mergedValidation = {
           zero: { ...defaultValidation.zero, ...(validation.zero || {}) },
           one: { ...defaultValidation.one, ...(validation.one || {}) },
@@ -281,6 +321,63 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
       // );
     } else {
       //       console.log("⚠️ DEBUG: No params configuration found in config");
+      // Emergency fallback - create minimum viable config for examples
+      customConfig = {
+        params: {
+          two: {
+            demonstrativeType: {
+              pattern: "^(to|summary|defect|find)$",
+            },
+            layerType: {
+              pattern: "^(project|issue|task|bugs)$",
+            },
+          },
+        },
+        validation: {
+          zero: {
+            allowedOptions: ["help", "version"],
+            allowedValueOptions: [],
+          },
+          one: {
+            allowedOptions: ["help", "version", "verbose"],
+            allowedValueOptions: ["config"],
+          },
+          two: {
+            allowedOptions: [
+              "help",
+              "version",
+              "verbose",
+              "experimental",
+              "extended",
+              "adaptation",
+            ],
+            allowedValueOptions: [
+              "from",
+              "destination",
+              "input",
+              "output",
+              "config",
+              "uv-project_name",
+              "uv-report_type",
+              "uv-userName",
+              "uv-project",
+              "uv-build_number",
+              "uv-job_name",
+              "uv-ci",
+              "uv-build_id",
+              "uv-branch",
+              "uv-pipeline_id",
+              "uv-commit",
+            ],
+          },
+        },
+        options: {},
+        errorHandling: {
+          unknownOption: "error",
+          duplicateOption: "error",
+          emptyValue: "error",
+        },
+      };
     }
 
     const paramsParser = new ParamsParser(undefined, customConfig);

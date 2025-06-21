@@ -6,7 +6,7 @@ https://github.com/tettuan/breakdownconfig.
 > **For implementation examples of configuration path resolution and usage, see also [app_factory.md](./app_factory.md).**
 
 ```ts
-import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
+import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
 
 // Create a new configuration instance
 const config = new BreakdownConfig();

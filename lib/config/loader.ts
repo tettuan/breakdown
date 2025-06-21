@@ -69,6 +69,7 @@ export async function loadBreakdownConfig(
   configPrefix?: string,
   _workingDir?: string,
 ): Promise<Record<string, unknown>> {
+  // Dynamic import using latest version (managed in versions.ts: 1.1.4)
   const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
 
   const config = new BreakdownConfig(configPrefix);
