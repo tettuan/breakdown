@@ -18,12 +18,8 @@ echo "=== Summary Issue Example ==="
 echo "散らかったタスクリストからイシューサマリーを生成します"
 echo
 
-# Ensure breakdown is available
-if command -v breakdown &> /dev/null; then
-    BREAKDOWN="breakdown"
-else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
-fi
+# Always use deno run for consistent path resolution
+BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
 
 # Create output directory
 OUTPUT_DIR="./output/summary_issue"

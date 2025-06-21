@@ -252,7 +252,20 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - 生成された全ての出力ファイルの削除
 - 例題用の設定ファイルの削除
 - コンパイル済みバイナリの削除（オプション）
-- 注意：メインの.agent/breakdown構造は保持されます
+- 注意：プロジェクト直下の.agent/breakdown構造は保持されます
+
+
+### 削除するもの
+`examples/`配下の、`examples/`実行で作成されたファイルやディレクトリの全て。
+
+- 残すもの:
+  - `examples/*.sh`
+  - `examples/CLAUDE.md`
+  - `examples/README.md`
+- 残さないもの:
+  - 上記以外の `examples/*`
+- 消さないもの:
+  - `examples/`配下以外のファイル
 
 ## コマンドパターン
 

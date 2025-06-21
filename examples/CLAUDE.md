@@ -1,37 +1,60 @@
----
-description: Examples directory specific guidelines
-globs: ["examples/**"]
-alwaysApply: true
----
 
-# Examples Implementation Guidelines
+# 重要なルール
+`examples/`は、テストではない。ユースケースを実際の利用方法で再現するものである。
+テストは、 `docs/tests.ja.md` に基づき、テストファイルとして作成すること。
 
-Read README.md first.
+**examples/ 配下は、実際のユースケースを用いること**。
 
-This directory emulates post-release usage after successful tests.
-Examples are not tests themselves and have no test coverage.
+## 重要な目的
 
-Assumes complete library functionality and verifies correct user execution behavior.
+### 最上位の目的
 
-## Error Handling
-- **Examples issue**
-  - Not following specifications
-    - Fix examples
-  - Following specifications but not working  
-    - Verify use case validity
-    - If use case is correct after investigation, report and stop
-- **Implementation issue**
-  - Tests passing
-    - Implementation doesn't match specifications
-      - Report and stop work
-    - Specifications are incorrect
-      - Report and stop work  
-  - Tests failing
-    - Fix tests
+examples 配下は、ユーザーがユースケース通りに利用した場合を、実例として実行するものである。
+これにより、test だけでなく、実際に Breakdown を利用するユーザーと同じ状態で、同じ結果を得られることを示す。
 
-## Output Validation
+#### 最上位の目的のためのルール
 
-If these directories exist in project root, examples are incorrectly creating them. Investigate each execution and fix. Should be created under examples/ directory:
+- ユースケースを網羅する
+- 実行方法は、ユースケースを再現する
+- 冪等性を重視し、毎回同じ実行で同じ結果が得られるようにする
+
+### 2番目の目的
+
+ユースケースに沿って実行した場合、E2Eテストの究極版となる。これ以上のE2Eは存在しない。
+テストケースのカバレッジ不足を補い、実際の挙動を確認することとなる。
+
+#### 2番目の目的のためのルール
+
+- 実際の実装コードを使う
+- examples 独自の実装は禁止する（examples専用実装が発生すると、試す意味が失せる）
+
+### 3番目の目的
+
+環境起因の問題を確認する。
+フォルダ階層が変わったり、実行位置が変わったりした場合にも、仕様通りならば等しく動作することを確認する。
+
+- あるべき場所に、設定ファイルがある
+- 期待結果のズレが解消している
+- examples/ 配下でも、プロジェクト配下で動かしたテストと同じように動作することを確認する
+
+# examples が実施すること
+
+目的に沿って、実際のプロダクトソースコードを用いて、ユーザーになりきった実装を行うことである。
+
+そのために、ユーザーと同じように、
+- docs/ で仕様を把握する
+- docs/ で、できること・できないことを把握する
+- できることを実装に反映する
+- 仕様で理解したアウトプットを期待する（その結果を出力したり、利用したりする）
+
+# おまけ
+
+examples の実装や実行結果から、テスト不足に気づくことがある。この場合はテスト(tests/**/*_test.ts)を追加する。
+**禁止事項**: examples/配下にテストを作ってはならない。
+
+## 出力検証
+
+以下のディレクトリがプロジェクトルートに存在する場合、examples が誤って作成しています。各実行を調査して修正してください。本来 examples/ ディレクトリ下に作成されるべきです：
 
 - prompts
 - prompt

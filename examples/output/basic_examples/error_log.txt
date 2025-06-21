@@ -1,7 +1,0 @@
-2024-01-15 10:23:45 ERROR: Database connection timeout after 30s
-2024-01-15 10:24:12 ERROR: NullPointerException in UserService.authenticate()
-2024-01-15 10:25:33 WARNING: Slow query detected: SELECT * FROM products took 5.2s
-2024-01-15 10:26:45 ERROR: PaymentGateway API returned 503 Service Unavailable
-2024-01-15 10:27:01 ERROR: Failed to send email: SMTP connection refused
-2024-01-15 10:28:15 ERROR: Memory usage exceeded 90% threshold
-2024-01-15 10:29:30 ERROR: Concurrent modification exception in ShoppingCart
