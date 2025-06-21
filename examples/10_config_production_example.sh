@@ -1,6 +1,6 @@
 #!/bin/bash
-# Example 14: Production configuration with find bugs feature
-# This example demonstrates the find bugs command with production settings
+# Example 10: Production configuration with bug detection
+# This example demonstrates the two-parameter command with production settings
 
 set -e
 
@@ -39,7 +39,7 @@ app_schema:
 params:
   two:
     demonstrativeType:
-      pattern: "^(to|summary|defect|find)$"
+      pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 
@@ -51,9 +51,6 @@ features:
   findBugs: true
 customConfig:
   enabled: true
-  find:
-    twoParams:
-      - "bugs"
   findBugs:
     enabled: true
     sensitivity: "medium"
@@ -204,8 +201,8 @@ EOF
 # Run breakdown find bugs command
 echo ""
 echo "Running breakdown find bugs command..."
-echo "Command: deno run -A ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md"
-deno run -A ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md > bugs_report.md
+echo "Command: deno run -A ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md"
+deno run -A ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md > bugs_report.md
 
 echo ""
 echo "=== Bugs Report ==="

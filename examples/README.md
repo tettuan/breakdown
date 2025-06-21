@@ -120,7 +120,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `breakdown to issue` - プロジェクト仕様からイシューへの分解
 - `breakdown summary task` - 散らかったメモをタスクサマリーに整理
 - `breakdown defect project` - エラーログから欠陥分析
-- `breakdown find bugs` - コード内のバグ検出（利用可能な場合）
+- `breakdown find bugs` - コード内のバグ検出（※カスタム設定が必要。デフォルトでは利用不可）
 
 ## 設定例の詳細
 

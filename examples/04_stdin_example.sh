@@ -16,13 +16,8 @@ cd "$(dirname "$0")"
 echo "=== STDIN Input Example ==="
 
 # Ensure we have a way to run breakdown
-if [ -f ./.deno/bin/breakdown ]; then
-    BREAKDOWN="./.deno/bin/breakdown"
-elif command -v breakdown &> /dev/null; then
-    BREAKDOWN="breakdown"
-else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts"
-fi
+# Force using source code directly due to compiled version issues
+BREAKDOWN="deno run -A ../cli/breakdown.ts"
 
 # Create a sample input for demonstration
 SAMPLE_INPUT="# Project Overview

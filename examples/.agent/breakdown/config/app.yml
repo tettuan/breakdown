@@ -1,8 +1,8 @@
 # Breakdown Configuration
 app_prompt:
-  base_dir: "lib/breakdown/prompts"
+  base_dir: "../../../lib/breakdown/prompts"
 app_schema:
-  base_dir: "lib/breakdown/schema"
+  base_dir: "../../../lib/breakdown/schema"
 params:
   two:
     demonstrativeType:

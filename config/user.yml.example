@@ -1,0 +1,279 @@
+# ===========================================================================
+# Breakdown User Configuration Template
+# ===========================================================================
+# This file serves as a template for user-specific configuration overrides.
+# Copy this file to your desired location and rename it to user.yml
+#
+# Configuration Loading Hierarchy:
+# 1. app.yml (base application configuration)
+# 2. user.yml (user overrides - this file)
+# 3. Environment-specific configs (e.g., production-user.yml)
+#
+# Usage:
+#   breakdown <command> --config=<name>
+#   Loads: <name>-app.yml + <name>-user.yml (if exists)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# BASIC CONFIGURATION
+# ---------------------------------------------------------------------------
+
+# Working directory (relative to where breakdown is executed)
+working_dir: "."
+
+# Custom prompt template paths
+app_prompt:
+  # Base directory for user-defined prompt templates
+  # Can be relative (to config file) or absolute path
+  base_dir: "prompts/user"
+  # Alternative examples:
+  # base_dir: "/absolute/path/to/prompts"
+  # base_dir: "../../../custom/prompts"
+
+# Custom schema paths  
+app_schema:
+  # Base directory for user-defined schemas
+  base_dir: "schema/user"
+
+# ---------------------------------------------------------------------------
+# WORKSPACE CONFIGURATION
+# ---------------------------------------------------------------------------
+
+workspace:
+  # Main working directory for breakdown operations
+  working_dir: ".agent/breakdown"
+  # Temporary files directory
+  temp_dir: ".agent/breakdown/temp"
+
+# ---------------------------------------------------------------------------
+# COMMAND PARAMETER OVERRIDES
+# ---------------------------------------------------------------------------
+
+# Override default command types (demonstrativeType)
+# Available: to, summary, defect, find
+demonstrativeType: "find"
+
+# Override default layer types (layerType)  
+# Available: project, issue, task, bugs
+layerType: "bugs"
+
+# ---------------------------------------------------------------------------
+# PARAMETER VALIDATION PATTERNS
+# ---------------------------------------------------------------------------
+
+params:
+  two:
+    demonstrativeType:
+      # Extended pattern to include custom commands
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      # Extended pattern to include bugs analysis
+      pattern: "^(project|issue|task|bugs)$"
+
+# ---------------------------------------------------------------------------
+# FEATURE FLAGS
+# ---------------------------------------------------------------------------
+
+features:
+  # Enable custom configuration extensions
+  customConfig: true
+  # Enable find bugs functionality
+  findBugs: true
+  # Enable code analysis features
+  codeAnalysis: true
+  # Enable security scanning
+  securityScan: false
+
+# ---------------------------------------------------------------------------
+# CUSTOM CONFIGURATION (Find Bugs)
+# ---------------------------------------------------------------------------
+
+customConfig:
+  enabled: true
+  
+  # Define custom find command parameters
+  find:
+    twoParams:
+      - "bugs"
+      - "issues"
+      - "problems"
+      - "todos"
+  
+  # Bug finding configuration
+  findBugs:
+    enabled: true
+    # Sensitivity: high, medium, low
+    sensitivity: "medium"
+    
+    # Patterns to search for in code
+    patterns:
+      - "TODO"
+      - "FIXME" 
+      - "HACK"
+      - "BUG"
+      - "XXX"
+      - "DEPRECATED"
+      - "console.log"    # JavaScript debugging
+      - "print("        # Python debugging
+      - "println!"      # Rust debugging
+      - "fmt.Println"   # Go debugging
+      - "System.out"    # Java debugging
+    
+    # File extensions to analyze
+    includeExtensions:
+      - ".ts"
+      - ".js"
+      - ".jsx"
+      - ".tsx"
+      - ".py" 
+      - ".go"
+      - ".java"
+      - ".rs"
+      - ".php"
+      - ".rb"
+      - ".c"
+      - ".cpp"
+      - ".h"
+      - ".hpp"
+    
+    # Directories to exclude from analysis
+    excludeDirectories:
+      - "node_modules"
+      - ".git"
+      - "dist"
+      - "build"
+      - "target"
+      - "vendor"
+      - "__pycache__"
+      - ".next"
+      - ".vscode"
+      - ".idea"
+    
+    # Maximum number of results to return
+    maxResults: 100
+    
+    # Include detailed analysis in reports
+    detailedReports: true
+
+# ---------------------------------------------------------------------------
+# LOGGING CONFIGURATION
+# ---------------------------------------------------------------------------
+
+logger:
+  # Log level: debug, info, warn, error
+  level: "info"
+  # Log format: json, text, detailed
+  format: "json"
+  # Enable file logging
+  fileLogging: false
+  # Maximum log file size (MB)
+  maxFileSize: 5
+  # Number of backup log files to keep
+  maxBackups: 3
+
+# ---------------------------------------------------------------------------
+# OUTPUT CONFIGURATION
+# ---------------------------------------------------------------------------
+
+output:
+  # Output format: markdown, json
+  format: "markdown"
+  # Include headers in output
+  includeHeaders: true
+  # Include timestamps in output
+  includeTimestamps: false
+  # Pretty print JSON output
+  prettyPrint: true
+  # Output directory (relative to working_dir)
+  directory: "./output"
+
+# ---------------------------------------------------------------------------
+# VALIDATION OPTIONS (CLI)
+# ---------------------------------------------------------------------------
+
+validation:
+  zero:
+    allowedOptions: ["help", "version", "init"]
+    valueOptions: ["config", "c"]
+  one:
+    allowedOptions: ["help", "extended", "custom-validation"]  
+    valueOptions: ["config", "c", "error-format", "destination", "from", "output"]
+  two:
+    allowedOptions: ["help", "extended", "custom-validation"]
+    valueOptions: ["config", "c", "error-format", "destination", "from", "output", "prompt-dir"]
+
+# ---------------------------------------------------------------------------
+# ENVIRONMENT-SPECIFIC EXAMPLES
+# ---------------------------------------------------------------------------
+
+# For development environment (save as development-user.yml):
+# logger:
+#   level: "debug"
+#   format: "detailed"
+# features:
+#   customConfig: true
+#   findBugs: true
+#   codeAnalysis: true
+#   securityScan: true
+
+# For production environment (save as production-user.yml):
+# logger:
+#   level: "warn"
+#   format: "json"
+#   fileLogging: true
+# features:
+#   customConfig: false
+#   findBugs: false
+#   codeAnalysis: false
+#   securityScan: true
+
+# For team collaboration (save as team-user.yml):
+# app_prompt:
+#   base_dir: "shared/prompts"
+# logger:
+#   level: "info"
+#   format: "json"
+# output:
+#   includeTimestamps: true
+#   directory: "./team-reports"
+
+# ---------------------------------------------------------------------------
+# CUSTOM TEMPLATE PATHS EXAMPLES
+# ---------------------------------------------------------------------------
+
+# Example 1: Custom prompts in different directories
+# app_prompt:
+#   base_dir: "custom/templates/prompts"
+# app_schema:
+#   base_dir: "custom/templates/schemas"
+
+# Example 2: Absolute paths for shared team templates
+# app_prompt:
+#   base_dir: "/shared/team/breakdown/prompts"
+# app_schema:
+#   base_dir: "/shared/team/breakdown/schemas"
+
+# Example 3: Environment-specific templates
+# app_prompt:
+#   base_dir: "environments/staging/prompts"
+# app_schema:
+#   base_dir: "environments/staging/schemas"
+
+# ===========================================================================
+# USAGE EXAMPLES
+# ===========================================================================
+#
+# 1. Basic usage with custom user config:
+#    breakdown find bugs < source_code.txt
+#
+# 2. Using named configuration:
+#    breakdown summary project --config=development < project_docs.md
+#    (Loads: development-app.yml + development-user.yml)
+#
+# 3. Custom template directory:
+#    breakdown to issue --prompt-dir=custom/prompts < requirements.md
+#
+# 4. CI/CD integration:
+#    git log --oneline -20 | breakdown summary changelog --config=ci
+#
+# ===========================================================================

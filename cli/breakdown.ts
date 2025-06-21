@@ -201,6 +201,8 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
       console.warn(
         "⚠️ Configuration not found, using defaults:",
         error instanceof Error ? error.message : String(error),
+        config,
+        configPrefix,
       );
       // Use default configuration when config files are not found
       config = {

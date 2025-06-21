@@ -101,7 +101,9 @@ echo "=== Example 1: File Not Found Error ==="
 NON_EXISTENT_FILE="$OUTPUT_DIR/does_not_exist.md"
 
 echo "処理: 存在しないファイルの読み込み"
-if $BREAKDOWN to project --from="$NON_EXISTENT_FILE" -o="$OUTPUT_DIR/test1.md" 2>/dev/null; then
+# Create a dummy stdin to prevent hanging
+echo "" | $BREAKDOWN to project --from="$NON_EXISTENT_FILE" -o="$OUTPUT_DIR/test1.md" 2>/dev/null
+if [ $? -eq 0 ]; then
     echo "✅ Unexpected success"
 else
     handle_error $? "File not found: $NON_EXISTENT_FILE"
@@ -115,7 +117,7 @@ EOF
     
     # リトライ
     echo "→ リトライ実行"
-    retry_with_backoff 3 1 "$BREAKDOWN to project --from='$NON_EXISTENT_FILE' -o='$OUTPUT_DIR/test1.md'"
+    retry_with_backoff 3 1 "echo '' | $BREAKDOWN to project --from='$NON_EXISTENT_FILE' -o='$OUTPUT_DIR/test1.md'"
 fi
 
 # Example 2: 不正な入力のエラーハンドリング
@@ -127,7 +129,8 @@ cat > "$OUTPUT_DIR/invalid_input.md" << 'EOF'
 EOF
 
 echo "処理: 不正な形式のファイル処理"
-if $BREAKDOWN summary project --from="$OUTPUT_DIR/invalid_input.md" -o="$OUTPUT_DIR/test2.md" 2>/dev/null; then
+echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/invalid_input.md" -o="$OUTPUT_DIR/test2.md" 2>/dev/null
+if [ $? -eq 0 ]; then
     echo "✅ Processing completed (may have handled internally)"
 else
     handle_error $? "Invalid input format"
@@ -138,7 +141,7 @@ else
     
     # サニタイズ後のリトライ
     echo "→ サニタイズ後のリトライ"
-    $BREAKDOWN summary project --from="$OUTPUT_DIR/sanitized_input.md" -o="$OUTPUT_DIR/test2_sanitized.md" 2>/dev/null && \
+    echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/sanitized_input.md" -o="$OUTPUT_DIR/test2_sanitized.md" 2>/dev/null && \
         echo "✅ Sanitized input processed successfully"
 fi
 
@@ -204,7 +207,7 @@ cat > "$OUTPUT_DIR/large_input.md" << 'EOF'
 This simulates a large document that takes time to process.
 EOF
 
-run_with_timeout 5 "$BREAKDOWN to project --from='$OUTPUT_DIR/large_input.md' -o='$OUTPUT_DIR/timeout_test.md'"
+run_with_timeout 5 "echo '' | $BREAKDOWN to project --from='$OUTPUT_DIR/large_input.md' -o='$OUTPUT_DIR/timeout_test.md'"
 
 # Example 5: エラー集約とレポート
 echo
@@ -231,7 +234,8 @@ for i in 1 2 3 4 5; do
         # 成功ケース
         echo "# Test content $i" > "$TEST_FILE"
         echo -n "Processing file $i... "
-        if $BREAKDOWN summary task --from="$TEST_FILE" -o="$OUTPUT_FILE" 2>/dev/null; then
+        echo "" | $BREAKDOWN summary task --from="$TEST_FILE" -o="$OUTPUT_FILE" 2>/dev/null
+        if [ $? -eq 0 ]; then
             echo "✅ Success"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else

@@ -1,4 +1,4 @@
-#\!/bin/bash
+#!/bin/bash
 # Example 20: Batch Processing
 # 複数ファイルの一括処理とレポート生成
 
@@ -97,7 +97,7 @@ process_batch() {
         
         echo -n "[$count] Processing $(basename "$input_file")... "
         
-        if $BREAKDOWN $command $layer --from="$input_file" -o="$output_file" 2>/dev/null; then
+        if $BREAKDOWN $command $layer --from="$input_file" -o="$output_file" </dev/null 2>/dev/null; then
             echo "✅ Success"
             success=$((success + 1))
         else
@@ -130,7 +130,7 @@ echo
 echo "=== 全ファイルのサマリー生成 ==="
 for file in "$BATCH_INPUT_DIR"/*.md; do
     basename=$(basename "$file" .md)
-    $BREAKDOWN summary task --from="$file" -o="$BATCH_OUTPUT_DIR/summary_${basename}.md" 2>/dev/null
+    $BREAKDOWN summary task --from="$file" -o="$BATCH_OUTPUT_DIR/summary_${basename}.md" </dev/null 2>/dev/null
 done
 echo "✅ サマリー生成完了"
 

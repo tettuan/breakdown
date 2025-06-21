@@ -65,8 +65,10 @@ cat > "$OUTPUT_DIR/bug_report.md" << 'EOF'
 - Redis接続確認 → 正常
 EOF
 
-echo "実行: breakdown defect issue --from=bug_report.md"
-$BREAKDOWN defect issue --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/defect_issue_analysis.md"
+echo "実行: breakdown defect issue < bug_report.md"
+cd "$OUTPUT_DIR"
+$BREAKDOWN defect issue < bug_report.md > defect_issue_analysis.md
+cd - > /dev/null
 
 echo
 echo "=== Example 2: Defect Task Analysis ==="
@@ -100,8 +102,10 @@ cat > "$OUTPUT_DIR/improvement_request.md" << 'EOF'
 - ユーザー体験の大幅改善
 EOF
 
-echo "実行: breakdown defect task --from=improvement_request.md"
-$BREAKDOWN defect task --from="$OUTPUT_DIR/improvement_request.md" -o="$OUTPUT_DIR/defect_task_analysis.md"
+echo "実行: breakdown defect task < improvement_request.md"
+cd "$OUTPUT_DIR"
+$BREAKDOWN defect task < improvement_request.md > defect_task_analysis.md
+cd - > /dev/null
 
 echo
 echo "=== 生成されたファイル ==="

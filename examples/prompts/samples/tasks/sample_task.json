@@ -1,0 +1,8 @@
+{
+  "title": "User Authentication System",
+  "description": "Implement a secure user authentication system using JWT tokens",
+  "labels": ["feature", "security"],
+  "assignees": ["lead-dev"],
+  "priority": "high",
+  "milestone": "v1.0"
+}

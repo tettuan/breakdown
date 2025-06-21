@@ -23,7 +23,7 @@ if [ -d ".agent/breakdown" ]; then
 else
   # Initialize project structure using deno run
   echo "Running breakdown init with deno run..."
-  deno run --allow-read --allow-write --allow-env --allow-net deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts init
+  deno run -A ../cli/breakdown.ts init
 
   # Verify the created structure
   if [ -d ".agent/breakdown" ]; then

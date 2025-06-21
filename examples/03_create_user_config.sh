@@ -22,7 +22,7 @@ CONFIG_DIR=".agent/breakdown/config"
 # Check if the config directory exists
 if [ ! -d "${CONFIG_DIR}" ]; then
     echo "Error: Config directory not found at ${CONFIG_DIR}"
-    echo "Please run 'deno run -A deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts init' first"
+    echo "Please run 'deno run -A ../cli/breakdown.ts init' first"
     echo "Run from project root first, then run this script from examples directory"
     exit 1
 fi

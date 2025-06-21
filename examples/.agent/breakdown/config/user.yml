@@ -4,3 +4,5 @@ app_prompt:
   base_dir: "prompts/user"
 app_schema:
   base_dir: "schema/user"
+demonstrativeType: find
+layerType: bugs

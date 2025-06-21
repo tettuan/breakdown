@@ -28,7 +28,7 @@ fi
 # Check if user.yml exists
 if [ ! -f "${CONFIG_DIR}/user.yml" ]; then
     echo "Creating user configuration..."
-    bash 06_create_user_config.sh
+    bash 03_create_user_config.sh
 fi
 
 # Create a basic configuration file

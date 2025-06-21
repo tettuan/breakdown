@@ -10,22 +10,22 @@ ORIGINAL_CWD="$(pwd)"
 # Ensure we return to the original directory on exit
 trap 'cd "$ORIGINAL_CWD"' EXIT
 
-# Move to the examples directory (script location)
-cd "$(dirname "$0")"
+# Move to the project root directory (parent of examples)
+cd "$(dirname "$0")/.."
 
 echo "=== Basic Usage Examples ==="
 
 # Ensure we have a way to run breakdown
-if [ -f ./.deno/bin/breakdown ]; then
+if [ -f ./.deno/bin/breakdown ] && ./.deno/bin/breakdown --help &> /dev/null; then
     BREAKDOWN="./.deno/bin/breakdown"
 elif command -v breakdown &> /dev/null; then
     BREAKDOWN="breakdown"
 else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net deno run -A /Users/tettuan/github/breakdown/cli/breakdown.ts"
+    BREAKDOWN="deno run -A ./cli/breakdown.ts"
 fi
 
 # Create output directory for examples
-OUTPUT_DIR="./output/basic_examples"
+OUTPUT_DIR="./examples/output/basic_examples"
 mkdir -p "$OUTPUT_DIR"
 
 # Example 1: TO command - Breaking down a project
@@ -45,7 +45,7 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 - Admin dashboard
 EOF
 
-$BREAKDOWN to issue "$OUTPUT_DIR/project_spec.md" -o "$OUTPUT_DIR/issues/"
+cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --destination="$OUTPUT_DIR/issues/"
 echo "✅ Created issue breakdowns in $OUTPUT_DIR/issues/"
 echo
 
@@ -63,7 +63,7 @@ mobile responsive design issues on tablets
 EOF
 
 echo "Processing messy notes into organized summary..."
-cat "$OUTPUT_DIR/messy_notes.md" | $BREAKDOWN summary task -o "$OUTPUT_DIR/task_summary.md"
+cat "$OUTPUT_DIR/messy_notes.md" | $BREAKDOWN summary task --destination="$OUTPUT_DIR/task_summary.md"
 echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
 echo
 
@@ -79,12 +79,14 @@ cat > "$OUTPUT_DIR/error_log.txt" << EOF
 2024-01-15 10:29:30 ERROR: Concurrent modification exception in ShoppingCart
 EOF
 
-tail -20 "$OUTPUT_DIR/error_log.txt" | $BREAKDOWN defect project -o "$OUTPUT_DIR/defect_analysis.md"
+tail -20 "$OUTPUT_DIR/error_log.txt" | $BREAKDOWN defect project --destination="$OUTPUT_DIR/defect_analysis.md"
 echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
 echo
 
-# Example 4: Custom command - Find bugs (if available)
+# Example 4: Custom command - Find bugs (requires custom configuration)
 echo "4. Finding bugs in code (custom command demonstration)"
+echo "⚠️  Note: 'find bugs' is a custom feature that requires user.yml configuration."
+echo "   This example uses 'defect task' as an alternative for bug-related analysis."
 cat > "$OUTPUT_DIR/buggy_code.md" << EOF
 \`\`\`javascript
 function calculateTotal(items) {
@@ -107,12 +109,9 @@ function authenticate(user, pass) {
 \`\`\`
 EOF
 
-if $BREAKDOWN find bugs --help &>/dev/null; then
-    $BREAKDOWN find bugs "$OUTPUT_DIR/buggy_code.md" -o "$OUTPUT_DIR/bugs_report.md"
-    echo "✅ Created bugs report at $OUTPUT_DIR/bugs_report.md"
-else
-    echo "⚠️  'find bugs' command not available in current version"
-fi
+# Using defect task for bug-related analysis (always available)
+cat "$OUTPUT_DIR/buggy_code.md" | $BREAKDOWN defect task --destination="$OUTPUT_DIR/bugs_report.md"
+echo "✅ Created defect analysis at $OUTPUT_DIR/bugs_report.md"
 
 echo
 echo "=== Basic Usage Examples Completed ==="
