@@ -95,6 +95,7 @@ export class StdinTestUtils {
         const result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.envInfo.isCI, true);
         assertEquals(result.isTerminal, true);
+        return Promise.resolve();
       });
     });
 
@@ -110,6 +111,7 @@ export class StdinTestUtils {
         const result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.isTerminal, false);
         assertEquals(result.confidence, "high");
+        return Promise.resolve();
       });
     });
   }

@@ -27,22 +27,20 @@ export type {
 
 // Resource management
 export { type StdinTestResource, StdinTestResourceManager } from "./resource_manager.ts";
+import { StdinTestResourceManager } from "./resource_manager.ts";
 
 // Mock implementation
 export { MockStdinReader } from "./mock_stdin_reader.ts";
 
 // Factory pattern
 export { createTestFactory, TestStdinReaderFactory } from "./factory.ts";
+import { TestStdinReaderFactory } from "./factory.ts";
 
 /**
  * Quick setup helper for common test scenarios
  * Creates a resource manager and factory for immediate use
  */
-export function setupStdinTest(): {
-  resourceManager: StdinTestResourceManager;
-  factory: TestStdinReaderFactory;
-  cleanup: () => Promise<void>;
-} {
+export function setupStdinTest() {
   const resourceManager = new StdinTestResourceManager();
   const factory = new TestStdinReaderFactory(resourceManager);
 

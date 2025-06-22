@@ -81,6 +81,7 @@ export class MockStdinReader implements StdinReader {
         this.resourceManager.registerCleanup(resourceId, () => {
           clearTimeout(timeoutId);
           logger.debug("Timeout cleanup executed", { resourceId });
+          return Promise.resolve();
         });
       }
 
@@ -150,6 +151,7 @@ export class MockStdinReader implements StdinReader {
         // Register cleanup for timer
         this.resourceManager.registerCleanup(resourceId, () => {
           clearTimeout(timer);
+          return Promise.resolve();
         });
 
         // Handle abort during delay
