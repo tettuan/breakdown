@@ -45,7 +45,7 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 - Admin dashboard
 EOF
 
-cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --destination="$OUTPUT_DIR/issues/"
+cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --config=default --destination="$OUTPUT_DIR/issues/"
 echo "✅ Created issue breakdowns in $OUTPUT_DIR/issues/"
 echo
 
@@ -63,7 +63,7 @@ mobile responsive design issues on tablets
 EOF
 
 echo "Processing messy notes into organized summary..."
-cat "$OUTPUT_DIR/messy_notes.md" | $BREAKDOWN summary task --destination="$OUTPUT_DIR/task_summary.md"
+cat "$OUTPUT_DIR/messy_notes.md" | $BREAKDOWN summary task --config=default --destination="$OUTPUT_DIR/task_summary.md"
 echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
 echo
 
@@ -79,7 +79,7 @@ cat > "$OUTPUT_DIR/error_log.txt" << EOF
 2024-01-15 10:29:30 ERROR: Concurrent modification exception in ShoppingCart
 EOF
 
-tail -20 "$OUTPUT_DIR/error_log.txt" | $BREAKDOWN defect project --destination="$OUTPUT_DIR/defect_analysis.md"
+tail -20 "$OUTPUT_DIR/error_log.txt" | $BREAKDOWN defect project --config=default --destination="$OUTPUT_DIR/defect_analysis.md"
 echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
 echo
 
@@ -110,7 +110,7 @@ function authenticate(user, pass) {
 EOF
 
 # Using defect task for bug-related analysis (always available)
-cat "$OUTPUT_DIR/buggy_code.md" | $BREAKDOWN defect task --destination="$OUTPUT_DIR/bugs_report.md"
+cat "$OUTPUT_DIR/buggy_code.md" | $BREAKDOWN defect task --config=default --destination="$OUTPUT_DIR/bugs_report.md"
 echo "✅ Created defect analysis at $OUTPUT_DIR/bugs_report.md"
 
 echo

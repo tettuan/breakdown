@@ -25,8 +25,13 @@
 
 ```yml
 - 信じて良い前提: Breakdown本体はテストをpassして正常に動作する
-- 作業リスト: 
-- タスク: 
+- 作業リスト: |
+    1. ⏱️ 12_summary_issue.sh |
+    2. ⏱️ 14_custom_variables.sh |
+    3. ⏱️ 15_pipeline_processing.sh |
+    4. ⏱️ 18_cicd_integration.sh
+
+- タスク: タイムアウトの調査
 - 解決すべき課題: 
   - "タイムアウト問題": STDINが渡されていないのに、STDIN待ちになる箇所を洗い出す
 - ゴール: エラーになる example が修正され、全て成功した

@@ -246,7 +246,7 @@ export async function globalTestCleanup(): Promise<void> {
           logger.debug("Skipping example_results directory", { path: join(tmpDir, entry.name) });
           continue;
         }
-        
+
         const entryPath = join(tmpDir, entry.name);
         try {
           await Deno.remove(entryPath, { recursive: true });
