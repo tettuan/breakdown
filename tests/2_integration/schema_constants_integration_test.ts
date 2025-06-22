@@ -3,7 +3,7 @@
  * 修正前後の動作確認用
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
 import {
   DEFAULT_SCHEMA_BASE_DIR,
@@ -37,7 +37,10 @@ Deno.test("Schema directory structure - 実際の構造確認", async () => {
     // 期待される階層構造
     const expectedDirs = ["defect", "find", "summary", "to"];
     for (const expectedDir of expectedDirs) {
-      assertEquals(dirEntries.includes(expectedDir), true, `Missing directory: ${expectedDir}`);
+      assert(
+        dirEntries.includes(expectedDir),
+        `Missing directory: ${expectedDir}. Found: ${dirEntries.join(", ")}`,
+      );
     }
 
     console.log("実際のschema構造:", dirEntries);
