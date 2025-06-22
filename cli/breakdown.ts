@@ -43,11 +43,14 @@ async function handleTwoParams(
   // 6. Check STDIN and prepare input_text
   let inputText = "";
   try {
+    // Get timeout from performance config (default: 30000ms)
+    const timeout = (config?.performance as any)?.timeout || 30000;
+
     // Check if fromFile option specifies stdin ("-")
     if (options.from === "-" || options.fromFile === "-") {
-      inputText = await readStdin({ allowEmpty: false });
+      inputText = await readStdin({ allowEmpty: false, timeout });
     } else if (isStdinAvailable()) {
-      inputText = await readStdin({ allowEmpty: true });
+      inputText = await readStdin({ allowEmpty: true, timeout });
     }
   } catch (error) {
     console.warn(

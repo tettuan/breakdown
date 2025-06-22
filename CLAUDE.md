@@ -86,6 +86,8 @@
 
 # Claude Code Compay
 `start company`: 「tmuxを使った相互通信によるClaude Code Company管理方法」の「基本セットアップ」を実施する。
+`pane clear`: pane一覧を取得し、各paneへ`/clear`を送信する
+`pane exit`: pane一覧を取得し、各paneへ`/exit`を送信する
 
 # tmuxを使った相互通信によるClaude Code Company管理方法
 
