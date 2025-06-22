@@ -69,7 +69,7 @@ export class StdinTestUtils {
       envVars: { 
         CI: "true", 
         GITHUB_ACTIONS: "true",
-        STDIN_DEBUG: "true" 
+        // STDIN_DEBUG removed - use LOG_LEVEL 
       },
       debug: true,
     };
@@ -142,7 +142,7 @@ export class StdinTestUtils {
       scenario: StdinTestScenario.TEST_CONTROLLED,
       inputData: "test input",
       isTerminal: false,
-      envVars: { DENO_TESTING: "true", STDIN_DEBUG: "true" },
+      envVars: { DENO_TESTING: "true" }, // STDIN_DEBUG removed
       timeout: 1000,
       debug: true,
       ...overrides,
@@ -208,7 +208,7 @@ export class StdinTestUtils {
           } catch (error) {
             // Check if it's a timeout error
             const isTimeoutError = error instanceof Error && error.message.includes("timeout");
-            assertEquals(isTimeoutError, false, `Unexpected timeout: ${error.message}`);
+            assertEquals(isTimeoutError, false, `Unexpected timeout: ${error instanceof Error ? error.message : String(error)}`);
           }
         });
       }
@@ -250,7 +250,7 @@ export class TestEnvironmentSetup {
     }
 
     // Clear test-only variables
-    const testOnlyVars = ["TEST_STDIN_AVAILABLE", "STDIN_DEBUG", "CI_STDIN_BEHAVIOR"];
+    const testOnlyVars = ["TEST_STDIN_AVAILABLE"]; // Removed obsolete env vars
     for (const key of testOnlyVars) {
       if (!(key in this.originalEnv)) {
         Deno.env.delete(key);

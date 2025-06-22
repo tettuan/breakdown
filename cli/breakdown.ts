@@ -13,6 +13,10 @@
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { isStdinAvailable, readStdin } from "$lib/io/stdin.ts";
 import { loadBreakdownConfig, loadConfig } from "$lib/config/loader.ts";
+import {
+  type BreakdownConfigCompatible,
+  createTimeoutManagerFromConfig,
+} from "$lib/config/timeout_manager.ts";
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.3";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
@@ -40,17 +44,17 @@ async function handleTwoParams(
   config: Record<string, unknown>,
   options: Record<string, any>,
 ) {
-  // 6. Check STDIN and prepare input_text
+  // 6. Check STDIN and prepare input_text with TimeoutManager
   let inputText = "";
   try {
-    // Get timeout from performance config (default: 30000ms)
-    const timeout = (config?.performance as any)?.timeout || 30000;
+    // Create TimeoutManager from config
+    const timeoutManager = createTimeoutManagerFromConfig(config as BreakdownConfigCompatible);
 
     // Check if fromFile option specifies stdin ("-")
     if (options.from === "-" || options.fromFile === "-") {
-      inputText = await readStdin({ allowEmpty: false, timeout });
+      inputText = await readStdin({ timeoutManager });
     } else if (isStdinAvailable()) {
-      inputText = await readStdin({ allowEmpty: true, timeout });
+      inputText = await readStdin({ timeoutManager });
     }
   } catch (error) {
     console.warn(

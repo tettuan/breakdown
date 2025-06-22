@@ -7,7 +7,7 @@
  * @module
  */
 
-import { readAll } from "jsr:@std/io@0.224.9/read-all";
+import { type EnhancedStdinOptions, readStdinEnhanced } from "./enhanced_stdin.ts";
 
 /**
  * Error thrown when stdin reading fails.
@@ -24,7 +24,7 @@ export class StdinError extends Error {
 }
 
 /**
- * Options for reading from stdin
+ * Options for reading from stdin (Legacy interface)
  */
 export interface StdinOptions {
   /** Whether to allow empty input */
@@ -35,82 +35,21 @@ export interface StdinOptions {
 
 /**
  * Reads content from stdin with proper error handling
+ * Uses enhanced stdin reader with TimeoutManager support
  * @param options - Configuration options for stdin reading
  * @returns Promise resolving to the stdin content
  * @throws {StdinError} If reading fails or validation fails
  */
-export async function readStdin(options: StdinOptions = {}): Promise<string> {
-  const { allowEmpty = false, timeout } = options;
-
+export async function readStdin(
+  options: StdinOptions & EnhancedStdinOptions = {},
+): Promise<string> {
   try {
-    let input: Uint8Array;
-    if (timeout) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      try {
-        // Create a promise that rejects when aborted
-        const abortPromise = new Promise<never>((_, reject) => {
-          controller.signal.addEventListener("abort", () => {
-            reject(new DOMException("Aborted", "AbortError"));
-          });
-        });
-
-        // In CI environments, add additional safeguards
-        const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
-
-        if (isCI && Deno.stdin.isTerminal()) {
-          // In CI terminal mode, don't wait for stdin input that won't come
-          throw new DOMException("Aborted", "AbortError");
-        }
-
-        // Race between reading stdin and the abort signal
-        input = await Promise.race([
-          readAll(Deno.stdin),
-          abortPromise,
-        ]);
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    } else {
-      // Add timeout protection even when no explicit timeout is set
-      const defaultTimeout = parseInt(Deno.env.get("BREAKDOWN_TIMEOUT") || "100", 10);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), defaultTimeout);
-
-      try {
-        const abortPromise = new Promise<never>((_, reject) => {
-          controller.signal.addEventListener("abort", () => {
-            reject(new DOMException("Aborted", "AbortError"));
-          });
-        });
-
-        input = await Promise.race([
-          readAll(Deno.stdin),
-          abortPromise,
-        ]);
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    }
-
-    const content = new TextDecoder().decode(input).trim();
-
-    if (!allowEmpty && !content) {
-      throw new StdinError("No input provided via stdin or -f/--from option");
-    }
-
-    return content;
+    // Use enhanced stdin reader with TimeoutManager support
+    return await readStdinEnhanced(options);
   } catch (error) {
-    if (error instanceof StdinError) {
-      throw error;
-    }
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new StdinError("Stdin reading timed out");
-    }
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    // Convert enhanced stdin errors to legacy stdin errors for compatibility
     throw new StdinError(
-      `Failed to read from stdin: ${errorMessage}`,
+      error instanceof Error ? error.message : String(error),
     );
   }
 }
@@ -230,6 +169,11 @@ export class Spinner {
     this.currentFrame = 0;
     this.interval = null;
     this.abortController = null;
+
+    // Ensure cleanup on process exit
+    if (globalThis.addEventListener) {
+      globalThis.addEventListener("unload", () => this.stop());
+    }
   }
 
   /**
@@ -262,15 +206,25 @@ export class Spinner {
   public stop(): void {
     if (!this.enabled) return;
 
+    // Clear interval first to prevent further updates
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+
     // Abort the controller to signal stopping
     if (this.abortController && !this.abortController.signal.aborted) {
       this.abortController.abort();
     }
+    this.abortController = null;
 
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
-      writeStdout("\n");
+    // Write newline only once
+    if (this.interval !== null || this.currentFrame > 0) {
+      try {
+        writeStdout("\n");
+      } catch {
+        // Ignore write errors during cleanup
+      }
     }
   }
 

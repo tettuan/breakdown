@@ -326,14 +326,22 @@ export async function runCommand(
     env: mergedEnv,
   });
 
+  let process: Deno.ChildProcess | undefined;
+  let writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
+  
   try {
-    let process;
     if (stdin) {
       // Spawn the process with stdin
       process = command.spawn();
-      const writer = process.stdin.getWriter();
-      await writer.write(new TextEncoder().encode(stdin));
-      await writer.close();
+      writer = process.stdin.getWriter();
+      
+      try {
+        await writer.write(new TextEncoder().encode(stdin));
+      } finally {
+        // Ensure writer is always released and closed
+        await writer.close().catch(() => {});
+        writer.releaseLock();
+      }
 
       const { code, stdout, stderr } = await process.output();
       const output = new TextDecoder().decode(stdout);
@@ -369,5 +377,15 @@ export async function runCommand(
       output: "",
       error: err instanceof Error ? err.message : String(err),
     };
+  } finally {
+    // Ensure process resources are cleaned up
+    if (process) {
+      try {
+        // Kill the process if it's still running
+        process.kill("SIGTERM");
+      } catch {
+        // Process may have already exited
+      }
+    }
   }
 }

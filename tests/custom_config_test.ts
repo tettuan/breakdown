@@ -39,9 +39,9 @@ params:
     const stagingUserYml = `
 working_dir: "."
 app_prompt:
-  base_dir: "prompts/user"
+  base_dir: "lib/breakdown/prompts"
 app_schema:
-  base_dir: "schema/user"
+  base_dir: "lib/breakdown/schema"
 `;
 
     await Deno.writeTextFile(`${configDir}/staging-app.yml`, stagingAppYml);

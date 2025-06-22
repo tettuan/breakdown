@@ -37,17 +37,18 @@ export interface StdinMigrationConfig {
 }
 
 /**
- * Get migration config from environment variables
+ * Get migration config with simplified defaults
+ * Migration-specific environment variables removed
  */
 function getMigrationConfig(): StdinMigrationConfig {
   return {
-    useEnhanced: Deno.env.get("STDIN_USE_ENHANCED") !== "false", // Default to enhanced
-    debug: Deno.env.get("STDIN_DEBUG") === "true",
-    forceFallback: Deno.env.get("STDIN_FORCE_FALLBACK") === "true",
+    useEnhanced: true, // Always use enhanced version
+    debug: false, // Use LOG_LEVEL for debugging instead
+    forceFallback: false, // Migration completed, no fallback needed
     environmentOverrides: {
-      ci: Deno.env.get("STDIN_OVERRIDE_CI") === "true",
-      test: Deno.env.get("STDIN_OVERRIDE_TEST") === "true",
-      terminal: Deno.env.get("STDIN_OVERRIDE_TERMINAL") === "true",
+      ci: false, // No environment overrides needed
+      test: false,
+      terminal: false,
     },
   };
 }
@@ -233,7 +234,7 @@ export async function handleStdinForCLI(options: {
   warnings: string[];
 }> {
   const warnings: string[] = [];
-  const debug = options.debug || Deno.env.get("STDIN_DEBUG") === "true";
+  const debug = options.debug || false; // Use LOG_LEVEL for debugging
 
   // Check for explicit stdin flags
   const explicitStdin = options.from === "-" || options.fromFile === "-";

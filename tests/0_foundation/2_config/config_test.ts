@@ -66,9 +66,9 @@ Deno.test("config - default settings", async () => {
       configPath,
       `working_dir: .
 app_prompt:
-  base_dir: prompts/user
+  base_dir: lib/breakdown/prompts
 app_schema:
-  base_dir: schema/user
+  base_dir: lib/breakdown/schema
 `,
     );
 
@@ -77,8 +77,8 @@ app_schema:
     const settings = await config.getConfig();
 
     assertEquals(settings.working_dir, ".");
-    assertEquals(settings.app_prompt.base_dir, "prompts/user");
-    assertEquals(settings.app_schema.base_dir, "schema/user");
+    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
     if (savedConfig !== null) {
@@ -123,9 +123,9 @@ Deno.test("config - custom working directory", async () => {
       configPath,
       `working_dir: .
 app_prompt:
-  base_dir: prompts/user
+  base_dir: lib/breakdown/prompts
 app_schema:
-  base_dir: schema/user
+  base_dir: lib/breakdown/schema
 `,
     );
 
@@ -134,8 +134,8 @@ app_schema:
     const settings = await config.getConfig();
 
     assertEquals(settings.working_dir, ".");
-    assertEquals(settings.app_prompt.base_dir, "prompts/user");
-    assertEquals(settings.app_schema.base_dir, "schema/user");
+    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
     if (savedConfig !== null) {
@@ -211,9 +211,9 @@ Deno.test({
         configPath,
         `working_dir: .
 app_prompt:
-  base_dir: prompts/user
+  base_dir: lib/breakdown/prompts
 app_schema:
-  base_dir: schema/user
+  base_dir: lib/breakdown/schema
 `,
       );
 
@@ -226,8 +226,8 @@ app_schema:
       assertEquals(typeof settings.working_dir, "string");
       assertEquals(typeof settings.app_prompt, "object");
       assertEquals(typeof settings.app_schema, "object");
-      assertEquals(settings.app_prompt.base_dir, "prompts/user");
-      assertEquals(settings.app_schema.base_dir, "schema/user");
+      assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+      assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
       // Restore original config
       if (savedConfig !== null) {

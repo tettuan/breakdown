@@ -14,9 +14,9 @@
  */
 
 import { assertEquals, assertRejects } from "@std/assert";
-import { readStdin, StdinError } from "./stdin.ts";
-import { cleanupTestEnvironment, setupTestEnvironment } from "../../tests/helpers/setup.ts";
-import { getTestEnvOptions } from "../../tests/helpers/test_utils.ts";
+import { readStdin, StdinError } from "../../../lib/io/stdin.ts";
+import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
+import { getTestEnvOptions } from "../../helpers/test_utils.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 
 const logger = new BreakdownLogger();
@@ -37,8 +37,20 @@ async function withStdinInput(input: string, fn: () => Promise<void>): Promise<v
   try {
     await fn();
   } finally {
-    file.close();
-    await Deno.remove(tempFile);
+    // Ensure file is properly closed
+    try {
+      file.close();
+    } catch (_e) {
+      // File might already be closed
+    }
+    
+    // Clean up temp file
+    try {
+      await Deno.remove(tempFile);
+    } catch (_e) {
+      // File might already be removed
+    }
+    
     // @ts-ignore: Restore original stdin
     Deno.stdin = originalStdin;
   }

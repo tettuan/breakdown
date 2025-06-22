@@ -7,6 +7,30 @@
  */
 
 /**
+ * Configuration for test environment detection
+ */
+export interface TestEnvironmentConfig {
+  /** Whether running in CI environment */
+  isCI?: boolean;
+  /** CI provider name */
+  ciProvider?: 'github' | 'gitlab' | 'jenkins' | 'travis' | 'circleci' | string;
+  /** Whether running in test environment */
+  isTest?: boolean;
+  /** Default timeout in milliseconds */
+  defaultTimeout?: number;
+  /** CI-specific timeout */
+  ciTimeout?: number;
+  /** Test-specific timeout */
+  testTimeout?: number;
+  /** Debug mode */
+  debug?: boolean;
+  /** Force interactive mode */
+  forceInteractive?: boolean;
+  /** Force non-interactive mode */
+  forceNonInteractive?: boolean;
+}
+
+/**
  * STDIN test scenario types
  */
 export enum StdinTestScenario {
@@ -40,6 +64,8 @@ export interface StdinMockConfig {
   timeout?: number;
   /** Debug mode */
   debug?: boolean;
+  /** Test environment configuration */
+  testConfig?: TestEnvironmentConfig;
 }
 
 /**
@@ -90,14 +116,20 @@ export class MockStdin {
   get readable(): ReadableStream<Uint8Array> {
     const data = this.data;
     let consumed = this.consumed;
+    let cancelled = false;
 
     return new ReadableStream({
       start(controller) {
-        if (!consumed) {
+        if (!consumed && !cancelled) {
           controller.enqueue(data);
           consumed = true;
         }
         controller.close();
+      },
+      cancel() {
+        // Mark as cancelled to prevent any pending operations
+        cancelled = true;
+        consumed = true;
       }
     });
   }
@@ -108,6 +140,14 @@ export class MockStdin {
  */
 export class CIStdinTestFramework {
   private testSessions: Map<string, TestEnvironmentState> = new Map();
+  private defaultConfig: TestEnvironmentConfig = {
+    isCI: false,
+    isTest: false,
+    defaultTimeout: 30000,
+    ciTimeout: 5000,
+    testTimeout: 1000,
+    debug: false,
+  };
 
   /**
    * Setup mock STDIN environment for testing
@@ -115,17 +155,18 @@ export class CIStdinTestFramework {
   async setupMockEnvironment(config: StdinMockConfig): Promise<TestEnvironmentState> {
     const sessionId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Backup original environment
-    const originalEnv: Record<string, string> = {};
-    const envKeysToBackup = [
-      "CI", "GITHUB_ACTIONS", "GITLAB_CI", "JENKINS_URL", "NODE_ENV",
-      "DENO_TESTING", "TEST", "STDIN_DEBUG", "BREAKDOWN_TIMEOUT"
-    ];
+    // Use provided test config or defaults
+    const testConfig = { ...this.defaultConfig, ...config.testConfig };
     
-    for (const key of envKeysToBackup) {
-      const value = Deno.env.get(key);
-      if (value !== undefined) {
-        originalEnv[key] = value;
+    // Backup original environment (only if envVars are provided for compatibility)
+    const originalEnv: Record<string, string> = {};
+    if (config.envVars) {
+      const envKeysToBackup = Object.keys(config.envVars);
+      for (const key of envKeysToBackup) {
+        const value = Deno.env.get(key);
+        if (value !== undefined) {
+          originalEnv[key] = value;
+        }
       }
     }
 
@@ -136,28 +177,10 @@ export class CIStdinTestFramework {
       }
     }
 
-    // Setup scenario-specific environment
-    switch (config.scenario) {
-      case StdinTestScenario.CI_PIPED:
-        Deno.env.set("CI", "true");
-        Deno.env.set("GITHUB_ACTIONS", "true");
-        break;
-        
-      case StdinTestScenario.CI_NO_INPUT:
-        Deno.env.set("CI", "true");
-        Deno.env.set("GITHUB_ACTIONS", "true");
-        break;
-        
-      case StdinTestScenario.TEST_CONTROLLED:
-        Deno.env.set("DENO_TESTING", "true");
-        Deno.env.set("TEST", "true");
-        break;
-    }
+    // Note: Scenario-specific environment setup removed.
+    // Use testConfig to control behavior instead of setting env vars
 
-    // Set debug mode
-    if (config.debug) {
-      Deno.env.set("STDIN_DEBUG", "true");
-    }
+    // Debug mode is now controlled through testConfig.debug
 
     // Create mock stdin
     const mockStdin = new MockStdin(
@@ -182,7 +205,7 @@ export class CIStdinTestFramework {
       stdin: mockStdin,
     };
 
-    if (config.debug) {
+    if (testConfig.debug) {
       console.debug(`[CI-STDIN-TEST] Setup mock environment: ${sessionId}`, config);
     }
 
@@ -220,7 +243,8 @@ export class CIStdinTestFramework {
     // Remove test session
     this.testSessions.delete(sessionId);
 
-    if (testState.mockConfig.debug) {
+    const testConfig = testState.mockConfig.testConfig || this.defaultConfig;
+    if (testConfig.debug) {
       console.debug(`[CI-STDIN-TEST] Cleaned up mock environment: ${sessionId}`);
     }
   }
@@ -274,34 +298,31 @@ export class CIStdinTestFramework {
         scenario: StdinTestScenario.PIPED_INPUT,
         inputData: "test input data",
         isTerminal: false,
-        debug: true,
+        testConfig: { debug: true },
       },
       {
         scenario: StdinTestScenario.NO_INPUT,
         inputData: "",
         isTerminal: true,
-        debug: true,
+        testConfig: { debug: true },
       },
       {
         scenario: StdinTestScenario.CI_PIPED,
         inputData: "ci test data",
         isTerminal: false,
-        envVars: { CI: "true", GITHUB_ACTIONS: "true" },
-        debug: true,
+        testConfig: { isCI: true, ciProvider: 'github', debug: true },
       },
       {
         scenario: StdinTestScenario.CI_NO_INPUT,
         inputData: "",
         isTerminal: true,
-        envVars: { CI: "true", GITHUB_ACTIONS: "true" },
-        debug: true,
+        testConfig: { isCI: true, ciProvider: 'github', debug: true },
       },
       {
         scenario: StdinTestScenario.TEST_CONTROLLED,
         inputData: "controlled test input",
         isTerminal: false,
-        envVars: { DENO_TESTING: "true", TEST_STDIN_AVAILABLE: "true" },
-        debug: true,
+        testConfig: { isTest: true, debug: true },
       },
     ];
   }
@@ -318,6 +339,7 @@ export class EnhancedTerminalDetector {
     forceInteractive?: boolean;
     forceNonInteractive?: boolean;
     ciOverride?: boolean;
+    config?: TestEnvironmentConfig;
   }): {
     isTerminal: boolean;
     confidence: 'high' | 'medium' | 'low';
@@ -328,21 +350,12 @@ export class EnhancedTerminalDetector {
       hasForceFlag: boolean;
     };
   } {
-    const { forceInteractive, forceNonInteractive, ciOverride } = options || {};
+    const { forceInteractive, forceNonInteractive, ciOverride, config } = options || {};
+    const testConfig = config || {};
 
-    // Environment detection
-    const isCI = !!(
-      Deno.env.get("CI") === "true" ||
-      Deno.env.get("GITHUB_ACTIONS") === "true" ||
-      Deno.env.get("GITLAB_CI") === "true" ||
-      Deno.env.get("JENKINS_URL")
-    );
-
-    const isTest = !!(
-      Deno.env.get("DENO_TESTING") === "true" ||
-      Deno.env.get("NODE_ENV") === "test" ||
-      Deno.env.get("TEST") === "true"
-    );
+    // Use configuration instead of environment detection
+    const isCI = testConfig.isCI || false;
+    const isTest = testConfig.isTest || false;
 
     const hasForceFlag = !!(forceInteractive || forceNonInteractive);
 
@@ -367,18 +380,9 @@ export class EnhancedTerminalDetector {
 
     // CI environment specific logic
     if (isCI && !ciOverride) {
-      // In CI, check for explicit piped input indicators
-      const hasStdinRedirect = Deno.env.get("STDIN_REDIRECTED") === "true";
-      const hasPipeInput = Deno.env.get("PIPE_INPUT") === "true";
-      
-      if (hasStdinRedirect || hasPipeInput) {
-        return {
-          isTerminal: false,
-          confidence: 'high',
-          reason: 'CI environment with piped input detected',
-          envInfo: { isCI, isTest, hasForceFlag },
-        };
-      }
+      // Simplified CI detection - use standard Deno.stdin.isTerminal() check
+      // STDIN_REDIRECTED and PIPE_INPUT removed - rely on native detection
+      // CI environments typically have proper stdin configuration
 
       // Default CI behavior: assume terminal unless explicitly piped
       try {
@@ -399,18 +403,15 @@ export class EnhancedTerminalDetector {
       }
     }
 
-    // Test environment specific logic
+    // Test environment specific logic - simplified
     if (isTest) {
-      const testStdinAvailable = Deno.env.get("TEST_STDIN_AVAILABLE");
-      if (testStdinAvailable !== undefined) {
-        const isTerminal = testStdinAvailable === "false";
-        return {
-          isTerminal,
-          confidence: 'high',
-          reason: `Test environment override: TEST_STDIN_AVAILABLE=${testStdinAvailable}`,
-          envInfo: { isCI, isTest, hasForceFlag },
-        };
-      }
+      // Use native detection in test environment
+      return {
+        isTerminal: Deno.stdin.isTerminal(),
+        confidence: 'high',
+        reason: 'Test environment with native detection',
+        envInfo: { isCI, isTest, hasForceFlag },
+      };
     }
 
     // Standard terminal detection
@@ -440,7 +441,7 @@ export class StdinEnvironmentController {
   /**
    * Get complete environment configuration for STDIN behavior
    */
-  static getEnvironmentConfig(): {
+  static getEnvironmentConfig(config?: TestEnvironmentConfig): {
     ci: {
       enabled: boolean;
       provider?: string;
@@ -466,58 +467,37 @@ export class StdinEnvironmentController {
       skipStdinCheck: boolean;
     };
   } {
+    const testConfig = config || {};
     return {
       ci: {
-        enabled: Deno.env.get("CI") === "true",
-        provider: this.detectCIProvider(),
-        stdinBehavior: this.getCIStdinBehavior(),
+        enabled: testConfig.isCI || false,
+        provider: testConfig.ciProvider,
+        stdinBehavior: 'strict' as const,
       },
       test: {
-        enabled: Deno.env.get("DENO_TESTING") === "true" || Deno.env.get("TEST") === "true",
-        stdinAvailable: Deno.env.get("TEST_STDIN_AVAILABLE") === "true",
-        mockMode: Deno.env.get("TEST_STDIN_MOCK") === "true",
+        enabled: testConfig.isTest || false,
+        stdinAvailable: !Deno.stdin.isTerminal(), // Native detection
+        mockMode: false, // Use test framework's built-in mocking
       },
       debug: {
-        enabled: Deno.env.get("STDIN_DEBUG") === "true",
-        verboseLevel: this.getDebugLevel(),
+        enabled: testConfig.debug || false,
+        verboseLevel: 'standard' as const,
       },
       timeout: {
-        default: parseInt(Deno.env.get("BREAKDOWN_TIMEOUT") || "30000", 10),
-        ci: parseInt(Deno.env.get("CI_STDIN_TIMEOUT") || "5000", 10),
-        test: parseInt(Deno.env.get("TEST_STDIN_TIMEOUT") || "1000", 10),
+        default: testConfig.defaultTimeout || 30000,
+        ci: testConfig.ciTimeout || 5000,
+        test: testConfig.testTimeout || 1000,
       },
       overrides: {
-        forceInteractive: Deno.env.get("FORCE_INTERACTIVE") === "true",
-        forceNonInteractive: Deno.env.get("FORCE_NON_INTERACTIVE") === "true",
-        skipStdinCheck: Deno.env.get("SKIP_STDIN_CHECK") === "true",
+        forceInteractive: testConfig.forceInteractive || false,
+        forceNonInteractive: testConfig.forceNonInteractive || false,
+        skipStdinCheck: false, // Always perform checks
       },
     };
   }
 
-  private static detectCIProvider(): string | undefined {
-    if (Deno.env.get("GITHUB_ACTIONS") === "true") return "github";
-    if (Deno.env.get("GITLAB_CI") === "true") return "gitlab";
-    if (Deno.env.get("JENKINS_URL")) return "jenkins";
-    if (Deno.env.get("TRAVIS") === "true") return "travis";
-    if (Deno.env.get("CIRCLECI") === "true") return "circleci";
-    return undefined;
-  }
-
-  private static getCIStdinBehavior(): 'strict' | 'permissive' | 'disabled' {
-    const behavior = Deno.env.get("CI_STDIN_BEHAVIOR");
-    if (behavior === "strict" || behavior === "permissive" || behavior === "disabled") {
-      return behavior;
-    }
-    return "strict"; // Default
-  }
-
-  private static getDebugLevel(): 'minimal' | 'standard' | 'verbose' {
-    const level = Deno.env.get("STDIN_DEBUG_LEVEL");
-    if (level === "minimal" || level === "standard" || level === "verbose") {
-      return level;
-    }
-    return "standard"; // Default
-  }
+  // Note: detectCIProvider, getCIStdinBehavior, and getDebugLevel methods removed
+  // as they are no longer needed with configuration-based approach
 }
 
 // Global test framework instance

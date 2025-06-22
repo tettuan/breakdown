@@ -18,9 +18,9 @@
 
 import { assertEquals } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { setInputTextVariable } from "$lib/factory/variables_util.ts";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
+import { setInputTextVariable } from "../../../lib/factory/variables_util.ts";
+import type { DemonstrativeType, LayerType } from "../../../lib/types/mod.ts";
 import { join } from "@std/path/join";
 import { ensureDir } from "@std/fs";
 

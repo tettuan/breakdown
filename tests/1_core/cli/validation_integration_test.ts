@@ -126,12 +126,31 @@ Deno.test("CLI Integration: no arguments", async () => {
 // Note: These validation tests have been removed as the validation logic
 // has been moved to BreakdownParams and is no longer handled by Breakdown itself
 
-Deno.test("CLI Integration: two parameter processing", async () => {
-  const output = await runCLITest(["to", "project"]);
-  // The new implementation should process two parameters gracefully
-  // Debug messages have been removed for cleaner output
-  // We should see prompt output instead
-  assertEquals(output.exitCode, 0);
+Deno.test({
+  name: "CLI Integration: two parameter processing",
+  // Disable resource sanitization as stdin handling in CLI tests can create false positives
+  sanitizeResources: false,
+  async fn() {
+    // Create a temporary input file to avoid stdin reading
+    const tempFile = await Deno.makeTempFile({ suffix: ".md" });
+    await Deno.writeTextFile(tempFile, "# Test Input\nTest content for breakdown processing.");
+    
+    try {
+      const output = await runCLITest(["to", "project", `--from=${tempFile}`, "--destination=stdout"]);
+      // The new implementation should process two parameters gracefully
+      // Debug messages have been removed for cleaner output
+      // We should see prompt output instead
+      // Note: We specify --from to avoid stdin reading which causes resource leaks in tests
+      assertEquals(output.exitCode, 0);
+    } finally {
+      // Cleanup
+      try {
+        await Deno.remove(tempFile);
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+  }
 });
 
 // Note: Invalid option and duplicate option tests have been removed

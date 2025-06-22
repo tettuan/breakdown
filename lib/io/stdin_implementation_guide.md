@@ -77,7 +77,7 @@ export class EnhancedTerminalDetector {
     
     if (isCI) {
       // CI環境では環境変数での明示的制御を優先
-      const hasStdinRedirect = Deno.env.get("STDIN_REDIRECTED") === "true";
+      // STDIN_REDIRECTED removed - use native Deno.stdin.isTerminal()
       if (hasStdinRedirect) {
         return { isTerminal: false, confidence: 'high', reason: 'CI piped input' };
       }
@@ -118,7 +118,7 @@ export class StdinTestUtils {
       envVars: { 
         CI: "true", 
         GITHUB_ACTIONS: "true",
-        STDIN_DEBUG: "true" 
+        // STDIN_DEBUG removed - use LOG_LEVEL=debug 
       },
     };
 
@@ -135,19 +135,17 @@ export class StdinTestUtils {
 # CI環境での推奨設定
 export CI=true
 export GITHUB_ACTIONS=true
-export CI_STDIN_BEHAVIOR=strict    # strict|permissive|disabled
-export CI_STDIN_TIMEOUT=5000       # CI用短縮タイムアウト
-export STDIN_DEBUG=true            # CI環境でのデバッグ有効
+# CI_STDIN_BEHAVIOR removed - strict mode always used
+# CI_STDIN_TIMEOUT removed - use TimeoutManager
+export LOG_LEVEL=debug             # CI環境でのデバッグ有効
 
 # テスト環境での設定  
 export DENO_TESTING=true
-export TEST_STDIN_AVAILABLE=false  # テストでのstdin無効化
-export TEST_STDIN_MOCK=true        # モック使用
-export STDIN_DEBUG_LEVEL=verbose   # 詳細ログ
+# TEST_STDIN_AVAILABLE and TEST_STDIN_MOCK removed - use native detection and test framework
+# STDIN_DEBUG_LEVEL removed - use LOG_LEVEL controls
 
 # 強制オーバーライド
-export FORCE_NON_INTERACTIVE=true  # 非インタラクティブ強制
-export SKIP_STDIN_CHECK=true       # stdin チェックスキップ
+# FORCE_NON_INTERACTIVE and SKIP_STDIN_CHECK removed - use standard detection
 ```
 
 ### 5. CLI統合実装
@@ -163,7 +161,7 @@ async function handleTwoParams(params: string[], config: Record<string, unknown>
       fromFile: options.fromFile,
       allowEmpty: true,
       timeout: (config?.performance as any)?.timeout || 30000,
-      debug: Deno.env.get("STDIN_DEBUG") === "true",
+      debug: false, // Use LOG_LEVEL=debug for debugging instead
     });
 
     // 警告メッセージの処理
@@ -185,30 +183,28 @@ async function handleTwoParams(params: string[], config: Record<string, unknown>
 | 環境変数 | 用途 | 値 | 説明 |
 |---------|------|----|----- |
 | `CI` | CI判定 | true/false | CI環境の基本判定 |
-| `CI_STDIN_BEHAVIOR` | CI動作制御 | strict/permissive/disabled | CI環境でのstdin動作モード |
-| `CI_STDIN_TIMEOUT` | CIタイムアウト | ミリ秒 | CI環境専用タイムアウト値 |
-| `TEST_STDIN_AVAILABLE` | テスト制御 | true/false | テスト環境でのstdin利用可否 |
-| `TEST_STDIN_MOCK` | テストモック | true/false | モックstdinの使用 |
-| `STDIN_DEBUG` | デバッグ | true/false | stdin関連のデバッグログ |
-| `STDIN_DEBUG_LEVEL` | ログレベル | minimal/standard/verbose | デバッグログの詳細度 |
-| `FORCE_NON_INTERACTIVE` | 強制制御 | true/false | 非インタラクティブ強制 |
-| `SKIP_STDIN_CHECK` | チェック制御 | true/false | stdin チェックのスキップ |
+| Native Detection | ネイティブ検出 | - | Deno.stdin.isTerminal()による標準検出 |
+| `TimeoutManager` | タイムアウト管理 | 統一API | 環境に応じたタイムアウト自動設定 |
+| Native Detection | テスト制御 | 自動 | テスト環境でのネイティブ検出 |
+| Test Framework | テストモック | - | テストフレームワーク組み込み機能使用 |
+| `LOG_LEVEL` | デバッグ | debug/info/warn/error | 全体的なデバッグログ制御 |
+| Standard Detection | 標準検出 | 自動 | 環境に応じた自動検出・判定 |
 
 ## テスト実行方法
 
 ### CI環境テスト
 ```bash
 # CI環境の模擬
-CI=true GITHUB_ACTIONS=true STDIN_DEBUG=true deno test tests/3_integration/stdin_timeout_test.ts --allow-env --allow-read
+CI=true GITHUB_ACTIONS=true LOG_LEVEL=debug deno test tests/3_integration/stdin_timeout_test.ts --allow-env --allow-read
 
 # CI環境でのタイムアウトテスト
-CI=true CI_STDIN_TIMEOUT=1000 deno test tests/4_e2e/examples_timeout_issue_test.ts --allow-env --allow-read --allow-write
+CI=true BREAKDOWN_TIMEOUT=1000 deno test tests/4_e2e/examples_timeout_issue_test.ts --allow-env --allow-read --allow-write
 ```
 
 ### モックテスト
 ```bash
 # テストモックを使用
-TEST_STDIN_MOCK=true STDIN_DEBUG=true deno test tests/helpers/stdin_test_helper.ts --allow-env
+LOG_LEVEL=debug deno test tests/helpers/stdin_test_helper.ts --allow-env
 
 # 包括的なシナリオテスト
 deno test tests/1_core/factory/stdin_handling_test.ts --allow-env --allow-read --allow-write
@@ -237,22 +233,22 @@ deno test tests/1_core/factory/stdin_handling_test.ts --allow-env --allow-read -
 
 1. **CI環境でテストがハングする**
    ```bash
-   CI=true FORCE_NON_INTERACTIVE=true deno test
+   CI=true deno test
    ```
 
 2. **タイムアウトが効かない**
    ```bash
-   CI_STDIN_TIMEOUT=1000 STDIN_DEBUG=true deno test
+   BREAKDOWN_TIMEOUT=1000 LOG_LEVEL=debug deno test
    ```
 
 3. **モック環境が動作しない**
    ```bash
-   TEST_STDIN_MOCK=true TEST_STDIN_AVAILABLE=false deno test
+   deno test # Native detection used
    ```
 
 4. **デバッグ情報が不足**
    ```bash
-   STDIN_DEBUG=true STDIN_DEBUG_LEVEL=verbose deno test
+   LOG_LEVEL=debug deno test
    ```
 
 この実装により、CI環境でのSTDIN処理問題を根本的に解決し、安全で信頼性の高いテスト実行が可能になります。
