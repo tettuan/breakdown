@@ -73,9 +73,6 @@ export async function loadBreakdownConfig(
   const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
 
   const config = new BreakdownConfig(configPrefix);
-  console.log("Loading BreakdownConfig with prefix:", configPrefix);
-  console.log("config obj", config);
   await config.loadConfig();
-  console.log("loaded config obj", config);
   return await config.getConfig();
 }
