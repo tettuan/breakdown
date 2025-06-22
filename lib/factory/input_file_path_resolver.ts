@@ -215,18 +215,18 @@ export class InputFilePathResolver {
 
   /**
    * Gets the target directory name from CLI parameters for file organization.
-   * 
+   *
    * This method determines the appropriate directory name for organizing files
    * within the workspace structure, prioritizing explicit fromLayerType over
    * the general layerType parameter.
-   * 
+   *
    * @returns string - The directory name for file organization (e.g., "project", "issue", "task")
-   * 
+   *
    * @example
    * ```typescript
    * // With explicit fromLayerType
    * const dir1 = this.getDirectory(); // "project" (from fromLayerType)
-   * 
+   *
    * // Fallback to layerType
    * const dir2 = this.getDirectory(); // "issue" (from layerType)
    * ```
