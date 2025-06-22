@@ -1,13 +1,16 @@
-# BreakdownLogger 使用ガイド (tests)
+# 禁止事項
+- プロジェクト直下の examples/ 配下をテストすることは禁ずる。（テスト対象にしない。） examples/ 配下は、テストファイルでも実装ファイルでもない。
+- テストファイル内で、`Deno.env.set` を使ってモードをセットすること
 
-## 概要
-BreakdownプロジェクトのテストでBreakdownLoggerを使用する方法を説明します。
+# デバッグ出力戦略
 
-## バージョン情報
-- **現在**: v1.0.0
-- **最新**: v1.0.1
+デバッグは、以下の方法で行う。
 
-## 基本的な使用方法
+## テストファイルへの記載時
+
+Breakdownプロジェクトのテストでは、BreakdownLoggerを使用しなさい。
+BreakdownLoggerには、LOG_KEYをセットしなさい。
+
 
 ### インポート
 ```typescript
@@ -20,138 +23,65 @@ import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 const logger = new BreakdownLogger();
 
 // キー付き初期化（フィルタリング用）
-const logger = new BreakdownLogger("module-name");
+const module_name_logger = new BreakdownLogger("module-name");
 ```
 
-## テスト実行時のユースケース
+### LOG_KEY一覧
 
-### 1. 基本的なテスト実行
+- `config`: 設定情報の出力に用いる、BreakdownConfigの出力に用いる
+- `template`: prompt の出力に用いる、BreakdownPromptの出力に用いる
+- `stdin`: STDIN の入力に用いる
+- `params`: args, BreakdownParams の出力に用いる
+- `options`: 引数のうち、オプションの出力に用いる
+- `schema`: Schemaの出力に用いる
+- `その他`:
+  - 他に重複しないHash値: 非常に重要で、必ずピンポイントで見るべきデバッグ出力には固有のKEYを割り当てる
 
-#### すべてのログを表示
+### 出力内容
+前半に概略、後半に詳細データを加える。LOG_LENGTHで出力される範囲を意識する。
+
+```sample_test.ts
+module_name_logger.debug("冒頭のデバッグ内容の短文", "出力の意図", <Objectやインスタンスや変数> );
+```
+
+## テスト実行時
+
+### 1. 最初の実行時
+
+#### 通常のデバッグ出力を表示
+
 ```bash
 LOG_LEVEL=debug deno test example_test.ts --allow-env --allow-write --allow-read
 ```
 
-#### エラーのみ表示（CI向け）
-```bash
-LOG_LEVEL=error deno test --allow-env --allow-write --allow-read
-```
-
-### 2. ログ出力量の制御（LOG_LENGTH）
-
-#### 短いログ（概要確認）
-```bash
-# デフォルト: 30文字
-deno test --allow-env --allow-write --allow-read
-
-# SHORT: 100文字
-LOG_LENGTH=S deno test --allow-env --allow-write --allow-read
-```
-
-#### 長いログ（詳細調査）
-```bash
-# LONG: 200文字
-LOG_LENGTH=L LOG_LEVEL=debug deno test failing_test.ts --allow-env --allow-write --allow-read
-
-# WHOLE: 無制限（完全なデバッグ）
-LOG_LENGTH=W LOG_LEVEL=debug deno test complex_test.ts --allow-env --allow-write --allow-read
-```
-
-### 3. 特定モジュールのフィルタリング（LOG_KEY）
-
-#### 単一モジュールのデバッグ
-```typescript
-// コード内でキーを設定
-const logger = new BreakdownLogger("cli-validator");
-```
+### 2. 詳細の把握時
+#### 指定したKEYのデバッグ出力を表示
 
 ```bash
-# 実行時に特定キーのみ表示
-LOG_KEY=cli-validator LOG_LEVEL=debug deno test cli_test.ts --allow-env --allow-write --allow-read
+LOG_LEVEL=debug LOG_LENGTH=S LOG_KEY=config deno test --allow-env --allow-write --allow-read
 ```
 
-#### 複数モジュールの監視
+##### 複数モジュールの監視
+
 ```bash
-# カンマ区切り
-LOG_KEY="auth,validation,database" LOG_LENGTH=L deno test --allow-env --allow-write --allow-read
-
-# コロン区切り（階層的）
-LOG_KEY="cli:args:parser" LOG_LEVEL=debug deno test cli/ --allow-env --allow-write --allow-read
-
-# スラッシュ区切り（パス風）
-LOG_KEY="tests/core/cli" deno test tests/core/ --allow-env --allow-write --allow-read
+LOG_KEY="auth,validation,database" LOG_LENGTH=L deno test --allow-env --allow-write --allow-read # カンマ区切り
+LOG_KEY="cli:args:parser" LOG_LEVEL=debug deno test cli/ --allow-env --allow-write --allow-read # コロン区切り（階層的）
+LOG_KEY="tests/core/cli" deno test tests/core/ --allow-env --allow-write --allow-read # スラッシュ区切り（パス風）
 ```
 
-## 実践的なユースケース
+#### ログ出力量を増やす 
 
-### ケース1: CI環境での実行
 ```bash
-# エラーのみ、短いメッセージ
-LOG_LEVEL=error scripts/local_ci.sh
-
-# デバッグモード時は詳細表示
-DEBUG=true LOG_LENGTH=L scripts/local_ci.sh
+deno test --allow-env --allow-write --allow-read # デフォルト: 30文字
+LOG_LENGTH=S deno test --allow-env --allow-write --allow-read # S, SHORT: 100文字
+LOG_LENGTH=L LOG_LEVEL=debug deno test failing_test.ts --allow-env --allow-write --allow-read # L, LONG: 200文字
+LOG_LENGTH=W LOG_LEVEL=debug deno test complex_test.ts --allow-env --allow-write --allow-read # W,  WHOLE: 無制限（完全なデバッグ）
 ```
 
-### ケース2: 特定のテスト失敗の調査
+### 3. 特定のテスト失敗の調査
 ```bash
-# Step 1: エラー箇所の特定（短いログ）
-LOG_LEVEL=error deno test failing_test.ts --allow-env --allow-write --allow-read
-
-# Step 2: 該当モジュールの詳細調査
-LOG_KEY=failing-module LOG_LENGTH=L LOG_LEVEL=debug deno test failing_test.ts --allow-env --allow-write --allow-read
-
-# Step 3: 完全なトレース
-LOG_LENGTH=W LOG_LEVEL=debug deno test failing_test.ts --allow-env --allow-write --allow-read
-```
-
-### ケース3: パフォーマンステストでの使用
-```bash
-# 最小限のログでパフォーマンスへの影響を抑制
-LOG_LEVEL=error deno test performance_test.ts --allow-env --allow-write --allow-read
-
-# 問題発生時のみ詳細確認
-LOG_KEY=performance-bottleneck LOG_LENGTH=W LOG_LEVEL=debug deno test performance_test.ts --allow-env --allow-write --allow-read
-```
-
-### ケース4: 統合テストでの段階的デバッグ
-```bash
-# 全体の流れを確認
-LOG_LENGTH=S LOG_LEVEL=info deno test integration/ --allow-env --allow-write --allow-read
-
-# 特定のフローを追跡
-LOG_KEY="auth,api-client" LOG_LENGTH=L LOG_LEVEL=debug deno test integration/ --allow-env --allow-write --allow-read
-
-# 問題箇所を詳細調査
-LOG_KEY=api-client LOG_LENGTH=W LOG_LEVEL=debug deno test integration/api_test.ts --allow-env --allow-write --allow-read
-```
-
-## setupTestEnvironment との組み合わせ
-
-```typescript
-import { setupTestEnvironment, cleanupTestEnvironment } from "$test/helpers/setup.ts";
-
-Deno.test("example test", async () => {
-  const testEnv = await setupTestEnvironment({
-    workingDir: "./tmp/test/example",
-    logLevel: LogLevel.DEBUG  // 環境変数を自動設定
-  });
-  
-  // テストロジック
-  testEnv.logger.debug("Test started");
-  testEnv.logger.info("Processing data");
-  testEnv.logger.error("Error occurred", { code: "ERR_001" });
-  
-  await cleanupTestEnvironment(testEnv);
-});
-```
-
-## トラブルシューティング
-
-### ログが出力されない
-```bash
-# 環境変数を明示的に設定
-LOG_LEVEL=debug LOG_LENGTH=W deno test your_test.ts --allow-env --allow-write --allow-read
+# 完全なトレース
+LOG_LENGTH=W LOG_LEVEL=debug deno test failing_test.ts --allow-env --allow-write --allow-read # W, Whole:全文の出力
 ```
 
 ### 特定のモジュールのログが見えない
@@ -160,7 +90,7 @@ LOG_LEVEL=debug LOG_LENGTH=W deno test your_test.ts --allow-env --allow-write --
 const logger = new BreakdownLogger("my-module");  // このキーを使用
 
 // 実行時
-LOG_KEY=my-module LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
+LOG_KEY="my-module" LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
 ```
 
 ### ログが途切れる
@@ -183,7 +113,3 @@ LOG_LENGTH=W deno test --allow-env --allow-write --allow-read
 | LOG_LEVEL | debug, info, warn, error | ログレベル制御 |
 | LOG_LENGTH | S, L, W | S=100文字, L=200文字, W=無制限 |
 | LOG_KEY | 文字列（カンマ/コロン/スラッシュ区切り） | モジュールフィルタ |
-
----
-*最終更新: 2025-01-13*
-*BreakdownLogger バージョン: v1.0.0 → v1.0.1（アップグレード推奨）*

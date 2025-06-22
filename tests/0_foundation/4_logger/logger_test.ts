@@ -13,12 +13,13 @@
  */
 
 import { assertEquals } from "jsr:@std/assert";
+import { LogLevel } from "@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 
 // Basic logging tests
 Deno.test("logger - basic functionality", async () => {
-  Deno.env.set("LOG_LEVEL", "debug");
   const testEnv = await setupTestEnvironment({
+    logLevel: LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/basic",
   });
 
@@ -32,8 +33,8 @@ Deno.test("logger - basic functionality", async () => {
 
 // Message formatting tests
 Deno.test("logger - message formatting", async () => {
-  Deno.env.set("LOG_LEVEL", "debug");
   const testEnv = await setupTestEnvironment({
+    logLevel: LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/formatting",
   });
 
@@ -82,8 +83,8 @@ Deno.test("logger - message formatting", async () => {
 
 // Structured data tests
 Deno.test("logger - structured data formatting", async () => {
-  Deno.env.set("LOG_LEVEL", "debug");
   const testEnv = await setupTestEnvironment({
+    logLevel: LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/structured",
   });
 
@@ -122,8 +123,8 @@ Deno.test("logger - structured data formatting", async () => {
 
 // Error handling tests
 Deno.test("logger - error handling", async () => {
-  Deno.env.set("LOG_LEVEL", "error");
   const testEnv = await setupTestEnvironment({
+    logLevel: LogLevel.ERROR,
     workingDir: "./tmp/test/logger/error",
   });
 
@@ -147,8 +148,8 @@ Deno.test("logger - error handling", async () => {
 
 // Log level configuration tests
 Deno.test("logger - log level configuration", async () => {
-  Deno.env.set("LOG_LEVEL", "debug");
   const testEnv = await setupTestEnvironment({
+    logLevel: LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/config",
   });
 

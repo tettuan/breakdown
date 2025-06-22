@@ -139,13 +139,9 @@ Deno.test({
       skipDefaultConfig: false,
     };
 
-    // Set debug log level
-    const originalLogLevel = Deno.env.get("LOG_LEVEL");
-    Deno.env.set("LOG_LEVEL", "debug");
-
     try {
-      // Initialize test environment with debug enabled
-      const env = await setupTestEnvironment(options);
+      // Initialize test environment with debug enabled using logLevel option
+      const env = await setupTestEnvironment({ ...options, logLevel: LogLevel.DEBUG });
       const workspace = new Workspace({
         workingDir: env.workingDir,
         promptBaseDir: "prompts",
@@ -160,12 +156,7 @@ Deno.test({
       // Verify debug output was captured
       assertEquals(true, true, "Debug output should be enabled");
     } finally {
-      // Restore original log level
-      if (originalLogLevel) {
-        Deno.env.set("LOG_LEVEL", originalLogLevel);
-      } else {
-        Deno.env.delete("LOG_LEVEL");
-      }
+      // No need to restore log level - setupTestEnvironment handles it
       await cleanupTestEnvironment({
         workingDir: "tmp/test/init-debug",
         logger,

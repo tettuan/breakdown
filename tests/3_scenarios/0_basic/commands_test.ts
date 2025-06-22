@@ -25,7 +25,7 @@
  *    - Error exit codes
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { assertCommandOutput as _assertCommandOutput } from "$test/helpers/assertions.ts";
 import { assertEquals } from "@std/assert";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
@@ -35,8 +35,8 @@ const logger = new BreakdownLogger();
 // Test the core functionality: graceful execution and error handling
 Deno.test("core functionality - new implementation integration", async () => {
   const env = await setupTestEnvironment({
+    logLevel: LogLevel.INFO,
     workingDir: "./tmp/test/core-integration",
-    configSetName: "test-core-integration",
   });
 
   logger.debug("Starting new implementation integration test", {
@@ -47,8 +47,6 @@ Deno.test("core functionality - new implementation integration", async () => {
     key: "commands_test.ts#L41#scenario-env",
     ...envInfo,
   });
-
-  Deno.env.set("LOG_LEVEL", "error");
 
   // Create basic test input
   await Deno.writeTextFile(`${env.workingDir}/input.md`, "# Test Input\nThis is a test.");
@@ -73,12 +71,9 @@ Deno.test("core functionality - new implementation integration", async () => {
     // Test two-parameter processing - expect graceful handling even if it fails
     const promptResult = await runCommand(
       [
+        "to",
         "project",
         "issue",
-        "--from",
-        "input.md",
-        "--destination",
-        "output.md",
       ],
       undefined,
       env.workingDir,
