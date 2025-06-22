@@ -20,9 +20,9 @@ export type DirectoryType = keyof typeof DEFAULT_WORKSPACE_STRUCTURE.directories
 /**
  * The default base directory for prompt templates (relative path).
  */
-export const DEFAULT_PROMPT_BASE_DIR = "prompts";
+export const DEFAULT_PROMPT_BASE_DIR = "lib/breakdown/prompts";
 
 /**
  * The default base directory for schema files (relative path).
  */
-export const DEFAULT_SCHEMA_BASE_DIR = "schema";
+export const DEFAULT_SCHEMA_BASE_DIR = "lib/breakdown/schema";

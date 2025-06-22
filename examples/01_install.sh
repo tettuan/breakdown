@@ -1,45 +1,76 @@
 #!/bin/bash
 
-# このスクリプトは、Deno 1.44以降の仕様に合わせて、deno taskやJSR経由でbreakdown CLIを使う方法の案内・ヘルプを出力します。
-# examples/配下の他のスクリプトを実行する前に、まず最初に実行してください。
-#
-# 注意: breakdown CLIのローカルインストール（パーミッション付与）はDeno 1.44以降では不可です。
-# - グローバルインストール、deno run、deno task、バイナリ化のいずれかを推奨します
-#
-# 実行方法：
-# ./examples/01_install.sh
+# This script installs Breakdown CLI by creating deno.json and executable script
 
 set -e
 
-# Add at the top after any initial setup:
-SCRIPT_DIR="$(dirname "$0")"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-pushd "$PROJECT_ROOT" > /dev/null
+# Save the original CWD
+ORIGINAL_CWD="$(pwd)"
 
-echo "=== breakdown CLI 利用案内（Deno 1.44+対応） ==="
-echo ""
-echo "【推奨】deno task でJSRからbreakdown CLIを使う方法:"
-echo "  1. deno.jsonに以下を追加してください:"
-echo ""
-echo '    "tasks": {'
-echo '      "breakdown": "run -A jsr:@tettuan/breakdown/cli"'
-echo '    }'
-echo ""
-echo "  2. コマンド例:"
-echo "     deno task breakdown --help"
-echo "     deno task breakdown to project <input.md> -o <output_dir>"
-echo ""
-echo "【グローバルインストールしたい場合】"
-echo "  deno install -A -f --global -n breakdown jsr:@tettuan/breakdown"
-echo ""
-echo "【バイナリ化して使いたい場合】"
-echo "  mkdir -p .deno/bin"
-echo "  deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown/cli"
-echo "  .deno/bin/breakdown --help"
-echo ""
-echo "【補足】"
-echo "- Deno 1.44以降では、ローカルインストール（--root）でパーミッション付与はできません。"
-echo "- deno runやdeno taskでの利用、またはバイナリ化を推奨します。"
-echo "- 詳細はREADME.mdのインストール手順を参照してください。"
+# Ensure we return to the original directory on exit
+trap 'cd "$ORIGINAL_CWD"' EXIT
 
-popd > /dev/null 
+# Move to the examples directory (script location)
+cd "$(dirname "$0")"
+
+echo "=== Installing Breakdown CLI ==="
+
+# Create deno.json with breakdown task
+echo "Creating deno.json..."
+cat > ./deno.json << 'EOF'
+{
+  "tasks": {
+    "breakdown": "deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
+  }
+}
+EOF
+
+# Create .deno/bin directory if it doesn't exist
+mkdir -p ./.deno/bin
+
+# Create breakdown executable script
+echo "Creating breakdown executable script..."
+cat > ./.deno/bin/breakdown << 'EOF'
+#!/bin/bash
+
+# Breakdown CLI executable script
+# This script runs 'deno task breakdown' from the examples directory
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Calculate the examples directory path
+# .deno/bin/breakdown -> ../../
+EXAMPLES_DIR="$SCRIPT_DIR/../.."
+
+# Change to examples directory and run deno task breakdown
+cd "$EXAMPLES_DIR"
+exec deno task breakdown "$@"
+EOF
+
+# Make the script executable
+chmod +x ./.deno/bin/breakdown
+
+if [ -f ./deno.json ] && [ -f ./.deno/bin/breakdown ]; then
+  echo "✅ Successfully created deno.json with breakdown task"
+  echo "✅ Successfully created breakdown executable at ./.deno/bin/breakdown"
+  echo
+  echo "You can now run breakdown using either:"
+  echo "   deno task breakdown --version"
+  echo "   ./.deno/bin/breakdown --version"
+  echo
+  echo "To add to PATH for this session:"
+  echo "   export PATH=\"\$PWD/.deno/bin:\$PATH\""
+  echo "   breakdown --version"
+  echo
+  echo "Examples:"
+  echo "   deno task breakdown --help"
+  echo "   ./.deno/bin/breakdown [options] [files...]"
+  echo
+  echo "Note: Both methods use 'deno task' internally."
+else
+  echo "❌ Failed to create required files"
+  exit 1
+fi
+
+echo "=== Breakdown CLI Installation Completed ==="

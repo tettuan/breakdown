@@ -19,9 +19,9 @@
     "@std/path": "jsr:@std/path@^1.0.9",
     "@std/yaml": "jsr:@std/yaml@^1.0.6",
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
-    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.0",
-    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.1",
-    "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.0",
+    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.4",
+    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.3",
+    "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.3",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.0"
   },
   "publish": {

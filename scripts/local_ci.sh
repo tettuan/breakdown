@@ -279,7 +279,7 @@ echo "Running comprehensive type checks..."
 # Collect all TypeScript files for comprehensive check (respecting .gitignore)
 echo "Collecting all TypeScript files..."
 # Filter out deleted files by checking if they exist
-all_ts_files=$(git ls-files "*.ts" | while read file; do [ -f "$file" ] && echo "$file"; done | grep -v -E "(tests/|\.test\.ts$|_test\.ts$)" | sort)
+all_ts_files=$(git ls-files "*.ts" | while read file; do [ -f "$file" ] && echo "$file"; done | grep -v -E "(tmp/)" | sort)
 
 if [ -z "$all_ts_files" ]; then
     echo "No TypeScript files found for type checking"
@@ -457,7 +457,7 @@ fi
 
 echo "All tests passed. Running final comprehensive type check..."
 # Final comprehensive type check (should pass since we checked earlier)
-all_ts_files=$(git ls-files "*.ts" | grep -v -E "(tests/|\.test\.ts$|_test\.ts$)" | sort)
+all_ts_files=$(git ls-files "*.ts" | grep -v -E "(tests/|\.test\.ts$|_test\.ts$|tmp/)" | sort)
 if [ -n "$all_ts_files" ]; then
     if ! deno check $all_ts_files; then
         handle_type_error "final comprehensive check" "$(deno check $all_ts_files 2>&1)"
@@ -499,6 +499,16 @@ fi
 echo "Running lint..."
 if ! deno lint; then
     handle_lint_error "$(deno lint 2>&1)"
+fi
+
+echo "Running final comprehensive type check with --all flag..."
+if ! deno check --all; then
+    handle_type_error "comprehensive --all check" "$(deno check --all 2>&1)"
+fi
+
+echo "Running automatic test cleanup..."
+if ! deno run -A scripts/test_cleanup.ts; then
+    echo "⚠️ Warning: Test cleanup failed, but CI continues"
 fi
 
 echo "✓ Local checks completed successfully." 

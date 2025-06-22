@@ -6,7 +6,10 @@ import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setu
 import { Workspace } from "../../../lib/workspace/workspace.ts";
 
 Deno.test("setup - environment initialization", async () => {
-  const env = await setupTestEnvironment({ workingDir: "./tmp/test/setup" });
+  const env = await setupTestEnvironment({
+    workingDir: "./tmp/test/setup",
+    configSetName: "test-setup",
+  });
   try {
     // Verify working directory was created
     const workingDirExists = await Deno.stat(env.workingDir).then(
@@ -40,7 +43,10 @@ Deno.test("setup - environment initialization", async () => {
 });
 
 Deno.test("setup - cleanup", async () => {
-  const env = await setupTestEnvironment({ workingDir: "./tmp/test/setup-cleanup" });
+  const env = await setupTestEnvironment({
+    workingDir: "./tmp/test/setup-cleanup",
+    configSetName: "test-setup-cleanup",
+  });
   try {
     // Create test files
     const testDir = join(env.workingDir, "test");

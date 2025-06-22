@@ -90,8 +90,8 @@ export class PromptTemplatePathResolver {
    * @returns The constructed filename string.
    */
   public buildFileName(): string {
-    const { layerType, options } = this.cliParams;
-    const fromLayerType = options?.fromLayerType || layerType;
+    const { layerType: _layerType, options } = this.cliParams;
+    const fromLayerType = this.resolveFromLayerType();
     const adaptation = options?.adaptation ? `_${options.adaptation}` : "";
     return `f_${fromLayerType}${adaptation}.md`;
   }
@@ -101,8 +101,7 @@ export class PromptTemplatePathResolver {
    * @returns The constructed fallback filename string.
    */
   public buildFallbackFileName(): string {
-    const { layerType, options } = this.cliParams;
-    const fromLayerType = options?.fromLayerType || layerType;
+    const fromLayerType = this.resolveFromLayerType();
     return `f_${fromLayerType}.md`;
   }
 
@@ -125,5 +124,51 @@ export class PromptTemplatePathResolver {
   public shouldFallback(promptPath: string): boolean {
     const { options } = this.cliParams;
     return Boolean(options?.adaptation) && !existsSync(promptPath);
+  }
+
+  /**
+   * Resolves the fromLayerType from CLI parameters or infers it from the fromFile.
+   * @returns The resolved fromLayerType string.
+   */
+  public resolveFromLayerType(): string {
+    const { layerType, options } = this.cliParams;
+
+    // Use explicit fromLayerType if provided
+    if (options?.fromLayerType) {
+      return options.fromLayerType;
+    }
+
+    // Infer fromLayerType from fromFile if available
+    if (options?.fromFile) {
+      const inferredType = this.inferLayerTypeFromFileName(options.fromFile);
+      if (inferredType) {
+        return inferredType;
+      }
+    }
+
+    // Fallback to layerType
+    return layerType;
+  }
+
+  /**
+   * Infers layer type from a file name or path.
+   * @param fileName The file name or path to analyze.
+   * @returns The inferred layer type or null if none found.
+   */
+  private inferLayerTypeFromFileName(fileName: string): string | null {
+    // Extract the base filename without extension
+    const baseName = fileName.split("/").pop()?.replace(/\.[^.]*$/, "") || "";
+
+    // Common layer types to check for
+    const layerTypes = ["project", "issue", "task", "implementation"];
+
+    // Check if any layer type is contained in the filename
+    for (const layerType of layerTypes) {
+      if (baseName.toLowerCase().includes(layerType)) {
+        return layerType;
+      }
+    }
+
+    return null;
   }
 }

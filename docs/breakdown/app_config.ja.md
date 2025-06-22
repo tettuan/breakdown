@@ -6,7 +6,7 @@ https://github.com/tettuan/breakdownconfig を読み把握すること。
 > **設定値のパス解決・利用例の実装については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
 
 ```ts
-import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.0.6";
+import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
 
 // Create a new configuration instance
 const config = new BreakdownConfig();
@@ -50,4 +50,4 @@ const settings = config.getConfig();
 
 ## ユーザー設定項目
 
-なし
+説明なし

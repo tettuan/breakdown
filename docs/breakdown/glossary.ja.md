@@ -23,7 +23,6 @@
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
 | tests/ | testing.md, testing.ja.md | テストファイルを格納するディレクトリ。`0_foundation/` 配下に基盤機能のテストが配置される。日本語版では `0_env/`、`1_config/`、`2_commands/` のサブディレクトリ構造を持つ。英語版では `config_test.ts`、`logger_test.ts` などのファイルが直接配置される。 | 0_foundation/, config_test.ts, logger_test.ts |
-| DEBUG | debug.ja.md, testing.ja.md | 一時的なデバッグ出力を制御する環境変数。テスト以外のコードでも使用可能で、開発時の問題調査用に使用される。一時的なデバッグコードとして扱われ、最終的には削除されるべきコードである。 | LOG_LEVEL, debug mode |
 | LOG_LEVEL | logging.ja.md, testing.ja.md | テストコードでのログ出力の詳細度を制御する環境変数。`debug`、`info`、`warn`、`error` の4段階で制御可能。デフォルトは `info`。BreakdownLoggerで使用され、テストの一部として恒久的なデバッグ出力を提供する。 | DEBUG, logging |
 | fixtures/ | testing.md, testing.ja.md | テストデータを格納するディレクトリ。テスト実行時に使用される固定データやサンプルファイルが配置される。 | tests/, helpers/ |
 | helpers/ | testing.md, testing.ja.md | テストヘルパーを格納するディレクトリ。テスト実行を補助するユーティリティ関数や共通処理が配置される。 | tests/, fixtures/ |

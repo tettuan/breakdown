@@ -72,7 +72,7 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await Deno.remove(absBaseDir, { recursive: true });
   });
   it("config.app_prompt.base_dir is empty string (should fallback to default)", async () => {
-    const defaultBaseDir = resolve(Deno.cwd(), "prompts");
+    const defaultBaseDir = resolve(Deno.cwd(), "lib/breakdown/prompts");
     const promptDir = join(defaultBaseDir, "to", "project");
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
@@ -235,6 +235,75 @@ describe("PromptTemplatePathResolver: file existence and edge cases", () => {
     );
     const result = resolver.getPath();
     assertEquals(result, join(baseDir, "to", "project", "f_project.md"));
+    await Deno.remove(baseDir, { recursive: true });
+  });
+});
+
+describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
+  it("uses fromLayerType when provided via --input option", async () => {
+    const baseDir = await Deno.makeTempDir();
+    const promptDir = join(baseDir, "summary", "issue");
+    await ensureDir(promptDir);
+    const promptFile = join(promptDir, "f_task.md");
+    await Deno.writeTextFile(promptFile, "dummy");
+
+    const resolver = new PromptTemplatePathResolver(
+      { app_prompt: { base_dir: baseDir } },
+      {
+        demonstrativeType: "summary",
+        layerType: "issue",
+        options: { fromLayerType: "task" }, // --input=task
+      },
+    );
+
+    const result = resolver.getPath();
+    // Should use f_task.md instead of f_issue.md
+    assertEquals(result, join(baseDir, "summary", "issue", "f_task.md"));
+    await Deno.remove(baseDir, { recursive: true });
+  });
+
+  it("falls back to layerType when fromLayerType is not provided", async () => {
+    const baseDir = await Deno.makeTempDir();
+    const promptDir = join(baseDir, "summary", "issue");
+    await ensureDir(promptDir);
+    const promptFile = join(promptDir, "f_issue.md");
+    await Deno.writeTextFile(promptFile, "dummy");
+
+    const resolver = new PromptTemplatePathResolver(
+      { app_prompt: { base_dir: baseDir } },
+      {
+        demonstrativeType: "summary",
+        layerType: "issue",
+        options: {}, // No --input option
+      },
+    );
+
+    const result = resolver.getPath();
+    // Should use f_issue.md as default
+    assertEquals(result, join(baseDir, "summary", "issue", "f_issue.md"));
+    await Deno.remove(baseDir, { recursive: true });
+  });
+
+  it("handles all combinations of demonstrativeType/layerType with fromLayerType", async () => {
+    const baseDir = await Deno.makeTempDir();
+
+    // Test case: summary issue --input=task
+    const promptDir = join(baseDir, "summary", "issue");
+    await ensureDir(promptDir);
+    await Deno.writeTextFile(join(promptDir, "f_task.md"), "dummy");
+
+    const resolver = new PromptTemplatePathResolver(
+      { app_prompt: { base_dir: baseDir } },
+      {
+        demonstrativeType: "summary",
+        layerType: "issue",
+        options: { fromLayerType: "task" },
+      },
+    );
+
+    const result = resolver.getPath();
+    assertEquals(result, join(baseDir, "summary", "issue", "f_task.md"));
+
     await Deno.remove(baseDir, { recursive: true });
   });
 });

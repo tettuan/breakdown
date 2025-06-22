@@ -38,6 +38,9 @@ function createLoggerAdapter(logger: BreakdownLogger) {
   };
 }
 
+// Enhanced logger with standard key format
+const _enhancedLogger = new BreakdownLogger();
+
 describe("Prompt baseDir edge cases", () => {
   it("should match test-created and implementation-resolved prompt directory (relative path)", async () => {
     const testDirRaw = await Deno.makeTempDir();
@@ -49,7 +52,7 @@ describe("Prompt baseDir edge cases", () => {
       const configDir = join(testDir, ".agent", "breakdown", "config");
       await ensureDir(configDir);
       await Deno.writeTextFile(
-        join(configDir, "app.yml"),
+        join(configDir, "default-app.yml"),
         `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
       );
       const promptDir = join(testDir, "custom_prompts", "to", "project");
@@ -113,7 +116,7 @@ describe("Prompt baseDir edge cases", () => {
         const configDir = join(testDir, ".agent", "breakdown", "config");
         await ensureDir(configDir);
         await Deno.writeTextFile(
-          join(configDir, "app.yml"),
+          join(configDir, "default-app.yml"),
           `working_dir: .\napp_prompt:\n  base_dir: \napp_schema:\n  base_dir: schema\n`,
         );
         const inputFile = join(testDir, "input.md");
@@ -162,7 +165,7 @@ describe("Prompt baseDir edge cases", () => {
           const configDir = join(testDir, ".agent", "breakdown", "config");
           await ensureDir(configDir);
           await Deno.writeTextFile(
-            join(configDir, "app.yml"),
+            join(configDir, "default-app.yml"),
             `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
@@ -210,7 +213,7 @@ describe("Prompt baseDir edge cases", () => {
           const configDir = join(testDir, ".agent", "breakdown", "config");
           await ensureDir(configDir);
           await Deno.writeTextFile(
-            join(configDir, "app.yml"),
+            join(configDir, "default-app.yml"),
             `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
           );
           const promptDir = join(testDir, "custom_prompts", "to", "project");
@@ -262,11 +265,11 @@ describe("Prompt baseDir edge cases", () => {
         const configDir = join(testDir, ".agent", "breakdown", "config");
         await ensureDir(configDir);
         await Deno.writeTextFile(
-          join(configDir, "app.yml"),
+          join(configDir, "test-prompt-edge-app.yml"),
           `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
         );
         // Load config before creating factory
-        const breakdownConfig = new BreakdownConfig(testDir);
+        const breakdownConfig = new BreakdownConfig("test-prompt-edge", testDir);
         await breakdownConfig.loadConfig();
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");
@@ -287,6 +290,7 @@ describe("Prompt baseDir edge cases", () => {
           options: {
             fromFile: inputFile,
             destinationFile: "output.md",
+            config: "test-prompt-edge",
           },
         };
         const factoryConfig = await PromptVariablesFactory.create(cliParamsConfig);

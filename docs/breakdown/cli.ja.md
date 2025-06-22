@@ -3,7 +3,7 @@
 ## 基本構文
 
 ```bash
-breakdown <demonstrative> [layer] [options]
+breakdown [demonstrative] [layer] [options]
 ```
 
 ### demonstrative (必須)
@@ -27,11 +27,11 @@ breakdown <demonstrative> [layer] [options]
 
 ### 入力ソース指定
 
-- `--from <file>`, `-f <file>`: 入力ファイルの指定
+- `--from=<file>`, `-f=<file>`: 入力ファイルの指定
 
 ### 出力先指定
 
-- `--destination <path>`, `-o <path>`: 出力先の指定
+- `--destination=<path>`, `-o=<path>`: 出力先の指定
   - ディレクトリの場合: 自動的にファイル名を生成
   - ファイルの場合: 指定されたファイル名で出力
   
@@ -39,11 +39,11 @@ breakdown <demonstrative> [layer] [options]
 
 ### プロンプト制御
 
-- `--adaptation <type>`, `-a <type>`: プロンプトの種類を指定
+- `--adaptation=<type>`, `-a=<type>`: プロンプトの種類を指定
   - 例: `strict`, `a` など
   - プロンプトファイル名に影響: `f_{fromLayerType}_{adaptation}.md`
 
-### カスタム変数 (v1.0.1新機能)
+### カスタム変数
 
 - `--uv-<変数名>=<値>`: テンプレート内で使用可能なカスタム変数を定義
   - 例: `--uv-userName=太郎`
@@ -56,20 +56,20 @@ breakdown <demonstrative> [layer] [options]
 
 ```bash
 # ユーザー情報を含むタスク生成
-breakdown to task -f requirements.md \
+breakdown to task -f=requirements.md \
   --uv-userName=太郎 \
   --uv-teamName=開発チーム \
   --uv-deadline=2024-12-31
 
 # プロジェクト情報を含むイシュー生成
-breakdown to issue -f spec.md -o issues/ \
+breakdown to issue -f=spec.md -o=issues/ \
   --uv-projectName=ECサイトリニューアル \
   --uv-version=2.0.0 \
   --uv-priority=high \
   --uv-assignee=山田花子
 
 # 多言語対応のドキュメント生成
-breakdown summary project -f project.json \
+breakdown summary project -f=project.json \
   --uv-language=日本語 \
   --uv-audience=技術者向け \
   --uv-format=詳細版
@@ -80,8 +80,8 @@ breakdown summary project -f project.json \
 ### 標準入力からの読み込み
 
 ```bash
-echo "<content>" | breakdown <demonstrative> <layer> -o <output>
-tail -100 "<log_file>" | breakdown defect <layer> -o <output>
+echo "<content>" | breakdown <demonstrative> <layer> -o=<output>
+tail -100 "<log_file>" | breakdown defect <layer> -o=<output>
 
 # カスタム変数と組み合わせた使用
 cat error.log | breakdown defect task \

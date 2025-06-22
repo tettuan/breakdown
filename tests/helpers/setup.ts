@@ -50,6 +50,7 @@ export interface TestEnvironmentOptions {
   logLevel?: LogLevel;
   skipDefaultConfig?: boolean;
   skipDirectorySetup?: boolean;
+  configSetName?: string;
 }
 
 export interface TestEnvironment {
@@ -76,6 +77,9 @@ export async function setupTestEnvironment(
   options: TestEnvironmentOptions = {},
 ): Promise<TestEnvironment> {
   const workingDir = options.workingDir || "./tmp/test";
+
+  // Set up logger early so it can be used throughout the function
+  const logger = new BreakdownLogger("setup");
 
   // Save original LOG_LEVEL to restore later
   const originalLogLevel = Deno.env.get("LOG_LEVEL");
@@ -116,26 +120,44 @@ export async function setupTestEnvironment(
 Analyze the provided code to identify potential bugs and issues.
 
 ## Code to Analyze
-{{CODE}}
+{CODE}
 
 ## Analysis Output
 Provide a detailed analysis of bugs found.`;
     await Deno.writeTextFile(join(findBugsDir, "base.md"), findBugsPrompt);
 
-    // Create default app.yml if not skipped
+    // Create config files based on configSetName or default
     if (!options.skipDefaultConfig) {
-      const configPath = join(configDir, "app.yml");
-      const configContent =
-        `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
-      await Deno.writeTextFile(configPath, configContent);
+      if (options.configSetName) {
+        // Create config files with the specified name
+        const appConfigPath = join(configDir, `${options.configSetName}-app.yml`);
+        const userConfigPath = join(configDir, `${options.configSetName}-user.yml`);
+
+        const appConfigContent =
+          `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+        const userConfigContent = `# User configuration for ${options.configSetName}\n`;
+
+        await Deno.writeTextFile(appConfigPath, appConfigContent);
+        await Deno.writeTextFile(userConfigPath, userConfigContent);
+
+        logger.debug("Created config files", {
+          configSetName: options.configSetName,
+          appConfig: appConfigPath,
+          userConfig: userConfigPath,
+        });
+      } else {
+        // Create default app.yml
+        const configPath = join(configDir, "app.yml");
+        const configContent =
+          `working_dir: ${workingDir}\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+        await Deno.writeTextFile(configPath, configContent);
+      }
     }
   } else {
     // Only create the base working directory
     await Deno.mkdir(workingDir, { recursive: true, mode: 0o777 });
   }
 
-  // Set up logger
-  const logger = new BreakdownLogger();
   // BreakdownLogger v1.0.0 uses LOG_LEVEL environment variable automatically
 
   return {
@@ -197,6 +219,84 @@ export async function cleanupTestEnvironment(env: TestEnvironment): Promise<void
 }
 
 /**
+ * Global cleanup for all temporary test artifacts
+ * Automatically removes all remaining test files in tmp/ directory
+ * Should be called at the end of test suites to prevent accumulation
+ */
+export async function globalTestCleanup(): Promise<void> {
+  const logger = new BreakdownLogger("global-cleanup");
+  const tmpDir = "tmp";
+
+  try {
+    const stat = await Deno.stat(tmpDir);
+    if (stat.isDirectory) {
+      const size = await getTmpDirectorySize(tmpDir);
+      logger.debug("Starting global test cleanup", {
+        tmpDir,
+        sizeKB: Math.round(size / 1024),
+      });
+
+      // Restore write permissions recursively
+      await restoreWritePermissions(tmpDir);
+
+      // Remove all contents but keep the directory
+      // Skip example_results directory to preserve example outputs
+      for await (const entry of Deno.readDir(tmpDir)) {
+        if (entry.name === "example_results") {
+          logger.debug("Skipping example_results directory", { path: join(tmpDir, entry.name) });
+          continue;
+        }
+
+        const entryPath = join(tmpDir, entry.name);
+        try {
+          await Deno.remove(entryPath, { recursive: true });
+          logger.debug("Removed test artifact", { path: entryPath });
+        } catch (error) {
+          logger.warn("Failed to remove test artifact", { path: entryPath, error });
+        }
+      }
+
+      const finalSize = await getTmpDirectorySize(tmpDir);
+      logger.info("Global test cleanup completed", {
+        tmpDir,
+        removedKB: Math.round((size - finalSize) / 1024),
+        remainingKB: Math.round(finalSize / 1024),
+      });
+    }
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      logger.debug("No tmp directory to clean up");
+    } else {
+      logger.error("Error during global test cleanup", { error });
+    }
+  }
+}
+
+/**
+ * Calculate directory size in bytes
+ */
+async function getTmpDirectorySize(dirPath: string): Promise<number> {
+  let totalSize = 0;
+
+  try {
+    for await (const entry of Deno.readDir(dirPath)) {
+      const entryPath = join(dirPath, entry.name);
+      const stat = await Deno.stat(entryPath);
+
+      if (stat.isFile) {
+        totalSize += stat.size;
+      } else if (stat.isDirectory) {
+        totalSize += await getTmpDirectorySize(entryPath);
+      }
+    }
+  } catch (_error) {
+    // Ignore errors for individual files/directories
+  }
+
+  return totalSize;
+}
+
+/**
  * Runs a command and returns the result
  */
 export async function runCommand(
@@ -226,14 +326,22 @@ export async function runCommand(
     env: mergedEnv,
   });
 
+  let process: Deno.ChildProcess | undefined;
+  let writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
+
   try {
-    let process;
     if (stdin) {
       // Spawn the process with stdin
       process = command.spawn();
-      const writer = process.stdin.getWriter();
-      await writer.write(new TextEncoder().encode(stdin));
-      await writer.close();
+      writer = process.stdin.getWriter();
+
+      try {
+        await writer.write(new TextEncoder().encode(stdin));
+      } finally {
+        // Ensure writer is always released and closed
+        await writer.close().catch(() => {});
+        writer.releaseLock();
+      }
 
       const { code, stdout, stderr } = await process.output();
       const output = new TextDecoder().decode(stdout);
@@ -269,5 +377,15 @@ export async function runCommand(
       output: "",
       error: err instanceof Error ? err.message : String(err),
     };
+  } finally {
+    // Ensure process resources are cleaned up
+    if (process) {
+      try {
+        // Kill the process if it's still running
+        process.kill("SIGTERM");
+      } catch {
+        // Process may have already exited
+      }
+    }
   }
 }

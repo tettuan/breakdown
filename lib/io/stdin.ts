@@ -7,7 +7,7 @@
  * @module
  */
 
-import { readAll } from "jsr:@std/io@0.224.9/read-all";
+import { type EnhancedStdinOptions, readStdinEnhanced } from "./enhanced_stdin.ts";
 
 /**
  * Error thrown when stdin reading fails.
@@ -24,7 +24,7 @@ export class StdinError extends Error {
 }
 
 /**
- * Options for reading from stdin
+ * Options for reading from stdin (Legacy interface)
  */
 export interface StdinOptions {
   /** Whether to allow empty input */
@@ -35,45 +35,21 @@ export interface StdinOptions {
 
 /**
  * Reads content from stdin with proper error handling
+ * Uses enhanced stdin reader with TimeoutManager support
  * @param options - Configuration options for stdin reading
  * @returns Promise resolving to the stdin content
  * @throws {StdinError} If reading fails or validation fails
  */
-export async function readStdin(options: StdinOptions = {}): Promise<string> {
-  const { allowEmpty = false, timeout } = options;
-
+export async function readStdin(
+  options: StdinOptions & EnhancedStdinOptions = {},
+): Promise<string> {
   try {
-    let input: Uint8Array;
-    if (timeout) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      try {
-        input = await readAll(Deno.stdin);
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    } else {
-      input = await readAll(Deno.stdin);
-    }
-
-    const content = new TextDecoder().decode(input).trim();
-
-    if (!allowEmpty && !content) {
-      throw new StdinError("No input provided via stdin or -f/--from option");
-    }
-
-    return content;
+    // Use enhanced stdin reader with TimeoutManager support
+    return await readStdinEnhanced(options);
   } catch (error) {
-    if (error instanceof StdinError) {
-      throw error;
-    }
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new StdinError("Stdin reading timed out");
-    }
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    // Convert enhanced stdin errors to legacy stdin errors for compatibility
     throw new StdinError(
-      `Failed to read from stdin: ${errorMessage}`,
+      error instanceof Error ? error.message : String(error),
     );
   }
 }
@@ -82,10 +58,17 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
  * Checks if stdin has any content available
  * @returns Promise resolving to true if stdin has content
  */
-export async function hasStdinContent(): Promise<boolean> {
+export function hasStdinContent(): boolean {
   try {
-    const input = await readAll(Deno.stdin);
-    return input.length > 0;
+    // Check if stdin is a terminal (TTY)
+    // If it's a terminal, there's no piped input
+    if (Deno.stdin.isTerminal()) {
+      return false;
+    }
+
+    // For non-TTY (piped input), we can't check without consuming
+    // So we return true if stdin is available (piped)
+    return true;
   } catch {
     return false;
   }
@@ -173,6 +156,8 @@ export class Spinner {
   public currentFrame: number;
   /** The interval timer for the spinner. */
   public interval: number | null;
+  /** AbortController for managing spinner lifecycle. */
+  private abortController: AbortController | null;
 
   /**
    * Creates a new Spinner instance.
@@ -183,6 +168,12 @@ export class Spinner {
     this.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     this.currentFrame = 0;
     this.interval = null;
+    this.abortController = null;
+
+    // Ensure cleanup on process exit
+    if (globalThis.addEventListener) {
+      globalThis.addEventListener("unload", () => this.stop());
+    }
   }
 
   /**
@@ -191,7 +182,19 @@ export class Spinner {
   public start(): void {
     if (!this.enabled) return;
 
+    // Stop any existing spinner first
+    this.stop();
+
+    // Create new AbortController for this spinner session
+    this.abortController = new AbortController();
+
+    if (this.abortController.signal.aborted) return;
+
     this.interval = setInterval(() => {
+      if (this.abortController?.signal.aborted) {
+        this.stop();
+        return;
+      }
       this.currentFrame = (this.currentFrame + 1) % this.frames.length;
       writeStdout(`\r${this.frames[this.currentFrame]} Processing...`);
     }, 80);
@@ -203,9 +206,25 @@ export class Spinner {
   public stop(): void {
     if (!this.enabled) return;
 
+    // Clear interval first to prevent further updates
     if (this.interval) {
       clearInterval(this.interval);
-      writeStdout("\n");
+      this.interval = null;
+    }
+
+    // Abort the controller to signal stopping
+    if (this.abortController && !this.abortController.signal.aborted) {
+      this.abortController.abort();
+    }
+    this.abortController = null;
+
+    // Write newline only once
+    if (this.interval !== null || this.currentFrame > 0) {
+      try {
+        writeStdout("\n");
+      } catch {
+        // Ignore write errors during cleanup
+      }
     }
   }
 

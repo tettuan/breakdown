@@ -10,14 +10,14 @@ Breakdown is a development instruction language tool for AI automated developmen
 
 ## Overview
 
-BreakDown is a prompt generation tool for AI development support. It generates prompts in a format that is easy for AI to understand, based on input Markdown files and specified conditions. The generated prompts serve as instructions for AI systems to perform actual conversions and analysis.
+BreakDown is a prompt generation tool for AI development support. It generates prompts in a format that AI can easily understand, based on input Markdown files and specified conditions. The generated prompts function as instructions for AI systems to perform actual conversion and analysis.
 
 Key Features:
 
 - Automatic prompt selection and generation
   - Selection of appropriate prompts based on input and output conditions
-  - Dynamic generation through variable substitution in prompts
-  - Embedding of JSON Schema reference information in prompts
+  - Dynamic generation through variable replacement within prompts
+  - Embedding of JSON Schema reference information within prompts
 - TypeScript implementation with Deno runtime
 - Integration with AI development agents
   - Optimized for AI development agents like Cursor
@@ -27,43 +27,45 @@ Key Features:
 
 **Prompt Generation Process**
 
-When executing from the command line, it simply receives the prompt.
+When executed from the command line, it simply receives prompts.
 
 ```mermaid
 sequenceDiagram
-  participant Developer as Application Developer
+  participant Developer as App Developer
   participant Breakdown as Breakdown Tool
   participant Files as File System
 
   Developer->>Developer: Write project overview and requirements in Markdown
   Developer->>Breakdown: Execute command (e.g., breakdown to project)
-  Breakdown->>Files: Identify necessary files
-  Note over Breakdown,Files: - Prompt files<br>- JSON schemas<br>- Input/output paths
-  Files->>Breakdown: Read files
+  Breakdown->>Files: Identify required files
+  Note over Breakdown,Files: - Prompt files<br>- JSON Schema<br>- Input/output paths
+  Files->>Breakdown: Load files
   Breakdown->>Breakdown: Prompt generation process
-  Note over Breakdown: - Prompt selection<br>- Variable substitution<br>- Schema application
+  Note over Breakdown: - Prompt selection<br>- Variable replacement<br>- Schema application
   Breakdown->>Developer: Output generated prompt
 ```
 
-The terminal command → prompt part can be run on an AI development agent. The aim is to generate recursive instructions based on these instructions.
+The terminal command → prompt part can be run on AI development agents.
+The goal is to generate recursive instructions based on these instructions.
 
 **AI Processing Process**
 
-The basic structure is simple. By establishing a process for generating prompts for AI automated development, instructions are automatically provided. It creates new instructions that break down the instructions, which are then used for the next instructions.
+The basic structure is simple. By establishing a process to generate prompts for AI automated development, instructions are automatically given.
+Instructions create new subdivided instructions, which are then used for the next instructions.
 
 ```mermaid
 sequenceDiagram
-  participant Developer as Application Developer
+  participant Developer as App Developer
   participant AI as AI Development Agent
   participant Breakdown as breakdown command
   participant Result as Processing Result
 
-  loop Instruction・Prompt Generation・AI Processing Loop
+  loop Repetition of instruction, prompt generation, and AI processing
     Developer->>AI: Input new instruction
     AI->>Breakdown: Execute breakdown command based on instruction
     Breakdown->>AI: Output generated prompt
     AI->>AI: Process based on prompt
-    Note over AI: - Markdown parsing<br>- Structuring<br>- Task decomposition
+    Note over AI: - Markdown analysis<br>- Structuring<br>- Task breakdown
     AI->>Result: Output processing result
     Result->>Developer: Receive result
     Developer->>Developer: Result = new instruction
@@ -72,39 +74,50 @@ sequenceDiagram
 
 **Internal Processing**
 
-Uses pre-prepared prompts. Selects appropriate prompts from commands and treats parameter values as variables for embedding.
+Uses pre-prepared prompts.
+Selects appropriate prompts from commands and treats parameter values as variables to embed them.
 
 Number of combinations:
 - Pre-preparable prompt patterns (infinite)
 - Input variables (finite)
   - Input values (infinite)
 
-When combined with LLM's versatility, this tends to diverge.
+This combination number is multiplied by the versatility of LLM, making it prone to divergence.
 
-When considering development artifacts as deliverables, a method to control divergence and converge toward the goal is necessary. Also, the specification definitions and decomposition methods needed for development have finite patterns due to accumulated theory. (For example, GoF's 23 design patterns.)
+When considering development products as deliverables, methods to control divergence and converge toward objectives are necessary.
+Also, since specification definition and breakdown methods required for development have accumulated theories, they become finite patterns.
+(For example, the 23 design patterns in GoF.)
 
-Therefore, JSON Schema definitions are used to guide diverse expressions into specific patterns. The Breakdown tool pre-defines three layers: Project > Issues > Tasks, and the `to` instruction performs decomposition. At this stage, pre-prepared prompts are classified into project/issue/task. When multiplying the types of input → decomposition destination (output) combinations, 5 combination patterns (P->I,T, I->I,T,T->T) are pre-prepared.
+Therefore, Schema definitions are used to guide diverse expressions into specific patterns.
+The Breakdown tool predefines three layers: Project > Issues > Tasks, and the `to` instruction performs breakdown.
+At this stage, pre-prepared prompts are classified into either project/issue/task.
+When multiplying the combinations of input → breakdown destination (output), 5 combination patterns (P->I,T, I->I,T, T->T) are pre-prepared.
 
-Additionally, the `summary` instruction handles cases different from the decomposition direction, such as summarization direction (project -> Project, Issues -> Project, etc.). In particular, the `defect` instruction is provided to respond to error handling, defect resolution, and requests for unorganized states. For details, see [Usage](./usage.md).
+For cases different from the breakdown direction, the `summary` instruction performs summary direction (project -> Project, Issues -> Project, etc.).
+In particular, the `defect` instruction is provided to respond to error handling, bug response, and requests for undeveloped states. For details, see [Usage](./usage.md).
 
-### Dynamic Prompt Selection (Proposal)
+### Dynamic Prompt Selection (Plan)
 
-Making the prompt selection part AI-driven makes it more dynamic. This part can be separated from this tool as it would be more efficient to use external services.
+Making the prompt selection part AI-powered would make it more dynamic.
+Since this part would be more efficient using external services, it can also be separated from this tool.
 
 ## JSON Schema
 
-JSON Schema references are used to converge to finite patterns. The aim is not to fit into Schema definitions but to use them as a checklist to control generation results. The final output does not need to be JSON. More versatile YAML/Markdown/Text formats are assumed.
+JSON Schema references are used to converge to finite patterns.
+The goal is to control generation results by referencing Schema definitions as checklists rather than fitting them into Schema definitions.
+The final output does not need to be JSON. More versatile YAML/Markdown/Text is assumed.
 
-- JSON Schema files exist within this project
-- Schema definitions are documented in another project: https://github.com/tettuan/breakdownschema
-- This tool does not parse Schema contents
+- Schema JSON files exist within this project
+- Schema definitions have documentation in a separate project: https://github.com/tettuan/breakdownschema
+- This tool does not analyze Schema content
 - Schema files are embedded in prompts by PATH and used as reference information when AI interprets prompts and converts input values to output values
-- AI uses JSON Schema as an aid in interpretation when converting input values according to prompts, stabilizing output results
+- AI uses JSON Schema as an aid for interpretation when converting input values according to prompts, stabilizing output results
 
-In a near version, Schema references will be possible via URL. This will enable data processing using Schema.org and utilization of other Schema definitions.
+In upcoming versions, it is planned to enable Schema reference based on URLs.
+This will enable data processing using Schema.org and utilization of other Schema definitions.
 
-If there are appropriate Schema definitions for development requirements, they will be referenced, but since none are found yet, we plan to create what this application needs.
+If there are appropriate Schema definitions for development requirement definitions, they will be referenced, but since none have been found yet, we plan to create what this application requires.
 
 ---
 
-[English](index.md) | [Japanese](index.ja.md) 
+[English](index.md) | [日本語](index.ja.md)

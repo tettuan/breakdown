@@ -84,6 +84,10 @@
 - Document investigation results in a file under tmp/ directory
 
 
+# Claude Code Compay
+`start company`: 「tmuxを使った相互通信によるClaude Code Company管理方法」の「基本セットアップ」を実施する。
+`pane clear`: pane一覧を取得し、各paneへ`/clear`を送信する
+`pane exit`: pane一覧を取得し、各paneへ`/exit`を送信する
 
 # tmuxを使った相互通信によるClaude Code Company管理方法
 
@@ -136,6 +140,10 @@ tmux select-pane -t 0
 
 # メインpaneに色をつけて視認性向上
 tmux select-pane -P 'fg=white,bg=black,bold'
+
+# pane番号と実行中コマンドを表示
+tmux display-panes -d 0  # pane番号を常時表示
+tmux list-panes -F "pane#{pane_index}(#{pane_id}): #{pane_current_command}"  # 実行中コマンド一覧表示
 ```
 
 **レイアウト結果**：
@@ -179,7 +187,7 @@ for pane in $(tmux list-panes -F "#{pane_id}" | grep -v "$(tmux display-message 
     # エイリアス設定、テーマ設定、起動を順次実行
     tmux send-keys -t $pane "alias cld='claude --dangerously-skip-permissions'" && sleep 0.1 && tmux send-keys -t $pane Enter
     tmux send-keys -t $pane "claude config set -g theme dark" && sleep 0.1 && tmux send-keys -t $pane Enter
-    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter &
+    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter 
 done
 wait
 ```
@@ -192,12 +200,17 @@ wait
 tmux send-keys -t %27 "cd 'ワーキングディレクトリ' && あなたはpane1です。タスク内容。エラー時は[pane1]でtmux send-keys -t %22でメイン報告。" && sleep 0.1 && tmux send-keys -t %27 Enter
 ```
 
+**NG例**: 
+```
+tmux send-keys -t %27 "cd 'ワーキングディレクトリ' && あなたはpane1です。タスク内容。エラー時は[pane1]でtmux send-keys -t %22でメイン報告。 Enter"
+```
+
 ### 並列タスク割り当て例
 
 ```
-tmux send-keys -t %27 "タスク1の内容" && sleep 0.1 && tmux send-keys -t %27 Enter & \
-tmux send-keys -t %28 "タスク2の内容" && sleep 0.1 && tmux send-keys -t %28 Enter & \
-tmux send-keys -t %25 "タスク3の内容" && sleep 0.1 && tmux send-keys -t %25 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %27 "タスク1の内容" && sleep 0.1 && tmux send-keys -t %27 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %28 "タスク2の内容" && sleep 0.1 && tmux send-keys -t %28 Enter & \
+tmux select-pane -t %27 -T "役割名" && sleep 0.1 && tmux send-keys -t %25 "タスク3の内容" && sleep 0.1 && tmux send-keys -t %25 Enter & \
 wait
 ```
 
@@ -212,7 +225,8 @@ tmux send-keys -t %22 '[pane番号] 報告内容' && sleep 0.1 && tmux send-keys
 ```
 
 部下から報連相できるように、タスク依頼時に上記の方法を教えて上げてください。また、`/clear`
-を頻繁にするので、2回目以降でもタスクの末尾に報連相の方法を加えておくと良いです。
+を頻繁にするので、2回目以降でもタスクの末尾に報連相の方法を加えておくと良いです。マネージャーから部下へ送る時も同様です。
+Enterは必ず単独で送ります。
 
 ### 例
 
@@ -307,6 +321,7 @@ done
 - pane番号の確認を怠らない
 - トークン使用量の定期確認
 - 複雑な指示は段階的に分割
+- 最後のEnterは必ず単独で送信
 
 ## 活用例
 

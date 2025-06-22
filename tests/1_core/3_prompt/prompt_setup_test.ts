@@ -41,12 +41,12 @@ async function setupPromptFiles(workingDir: string): Promise<SetupResult> {
 
   // Create test prompt directory and template
   await ensureDir(join(testPromptsDir, "to", "issue"));
-  const promptTemplate = `# {{input_text_file}}
+  const promptTemplate = `# {input_text_file}
 
 Content:
-{{input_text}}
+{input_text}
 
-Output to: {{destination_path}}`;
+Output to: {destination_path}`;
   await Deno.writeTextFile(promptPath, promptTemplate);
   logger.debug("Created test prompt template", { promptPath });
 
@@ -125,7 +125,7 @@ Deno.test("Prompt Setup", async (t) => {
 
       const content = await Deno.readTextFile(promptPath);
       assertEquals(
-        content.includes("{{input_text}}"),
+        content.includes("{input_text}"),
         true,
         "Template should contain variable placeholders",
       );

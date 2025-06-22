@@ -110,9 +110,24 @@ export class PromptVariablesFactory {
    * @param cliParams CLI parameters
    */
   static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
-    const breakdownConfig = new BreakdownConfig(Deno.cwd(), cliParams.options.config);
+    const configSetName = cliParams.options.config || "default";
+    const breakdownConfig = new BreakdownConfig(configSetName, Deno.cwd());
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
+    return new PromptVariablesFactory(config, cliParams);
+  }
+
+  /**
+   * Factory method to create PromptVariablesFactory with existing config
+   * @param config Already loaded configuration
+   * @param cliParams CLI parameters
+   */
+  static createWithConfig(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+    cliParams: PromptCliParams,
+  ): PromptVariablesFactory {
     return new PromptVariablesFactory(config, cliParams);
   }
 
