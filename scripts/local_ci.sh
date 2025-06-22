@@ -279,7 +279,7 @@ echo "Running comprehensive type checks..."
 # Collect all TypeScript files for comprehensive check (respecting .gitignore)
 echo "Collecting all TypeScript files..."
 # Filter out deleted files by checking if they exist
-all_ts_files=$(git ls-files "*.ts" | while read file; do [ -f "$file" ] && echo "$file"; done | grep -v -E "(tests/|\.test\.ts$|_test\.ts$|tmp/)" | sort)
+all_ts_files=$(git ls-files "*.ts" | while read file; do [ -f "$file" ] && echo "$file"; done | grep -v -E "(tmp/)" | sort)
 
 if [ -z "$all_ts_files" ]; then
     echo "No TypeScript files found for type checking"
