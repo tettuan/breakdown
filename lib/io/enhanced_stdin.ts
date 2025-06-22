@@ -70,7 +70,7 @@ export class EnhancedStdinError extends Error {
   constructor(
     message: string,
     public readonly environmentInfo: EnvironmentInfo,
-    public readonly context?: Record<string, any>,
+    public readonly context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "EnhancedStdinError";
@@ -146,7 +146,7 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
   } else {
     try {
       isTerminal = Deno.stdin.isTerminal();
-    } catch (error) {
+    } catch (_error) {
       // Fallback: if we can't determine, assume non-terminal in CI
       isTerminal = !isCI;
     }
@@ -169,7 +169,8 @@ export function isStdinAvailableEnhanced(options?: {
   debug?: boolean;
   environmentDetectionConfig?: EnvironmentDetectionConfig;
 }): boolean {
-  const envInfo = options?.environmentInfo || detectEnvironment(options?.environmentDetectionConfig);
+  const envInfo = options?.environmentInfo ||
+    detectEnvironment(options?.environmentDetectionConfig);
   const debug = options?.debug || false;
 
   if (debug) {
@@ -235,9 +236,11 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
   // Get environment detection config from TimeoutManager if available
   let envDetectionConfig: EnvironmentDetectionConfig | undefined;
-  if (options.timeoutManager && 'getEnvironmentDetectionConfig' in options.timeoutManager) {
+  if (options.timeoutManager && "getEnvironmentDetectionConfig" in options.timeoutManager) {
     // TimeoutManager can provide environment detection configuration
-    envDetectionConfig = (options.timeoutManager as any).getEnvironmentDetectionConfig();
+    envDetectionConfig = (options.timeoutManager as TimeoutManager & {
+      getEnvironmentDetectionConfig(): EnvironmentDetectionConfig;
+    }).getEnvironmentDetectionConfig();
   }
 
   const envInfo = detectEnvironment(envDetectionConfig);
@@ -299,10 +302,10 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
     if (
       envInfo.isTest &&
-      !isStdinAvailableEnhanced({ 
-        environmentInfo: envInfo, 
+      !isStdinAvailableEnhanced({
+        environmentInfo: envInfo,
         debug: effectiveDebug,
-        environmentDetectionConfig: envDetectionConfig
+        environmentDetectionConfig: envDetectionConfig,
       })
     ) {
       const errorMsg = "Stdin not available in test environment";
@@ -353,13 +356,13 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
         try {
           input = await Promise.race([quickCheck, abortPromise]);
-        } catch (error) {
+        } catch (_error) {
           // Ensure readAll is cancelled on abort
-          if (error instanceof DOMException && error.name === "AbortError") {
+          if (_error instanceof DOMException && _error.name === "AbortError") {
             // Try to cancel the stdin read
             Deno.stdin.readable.cancel().catch(() => {});
           }
-          throw error;
+          throw _error;
         }
       } else {
         if (effectiveDebug) {
@@ -367,19 +370,19 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
         }
 
         const readPromise = readAll(Deno.stdin);
-        
+
         try {
           input = await Promise.race([
             readPromise,
             abortPromise,
           ]);
-        } catch (error) {
+        } catch (_error) {
           // Ensure readAll is cancelled on abort
-          if (error instanceof DOMException && error.name === "AbortError") {
+          if (_error instanceof DOMException && _error.name === "AbortError") {
             // Try to cancel the stdin read
             Deno.stdin.readable.cancel().catch(() => {});
           }
-          throw error;
+          throw _error;
         }
       }
 
@@ -458,11 +461,13 @@ export function shouldSkipStdinProcessing(options?: {
   }
 
   // Skip in test environments without explicit stdin
-  if (envInfo.isTest && !isStdinAvailableEnhanced({ 
-    environmentInfo: envInfo, 
-    debug,
-    environmentDetectionConfig: options?.environmentDetectionConfig
-  })) {
+  if (
+    envInfo.isTest && !isStdinAvailableEnhanced({
+      environmentInfo: envInfo,
+      debug,
+      environmentDetectionConfig: options?.environmentDetectionConfig,
+    })
+  ) {
     const reason = "Test environment without available stdin";
     if (debug) {
       console.debug(`[STDIN] Skipping: ${reason}`);
@@ -487,9 +492,11 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
 
   // Get environment detection config from TimeoutManager if available
   let envDetectionConfig: EnvironmentDetectionConfig | undefined;
-  if (options.timeoutManager && 'getEnvironmentDetectionConfig' in options.timeoutManager) {
+  if (options.timeoutManager && "getEnvironmentDetectionConfig" in options.timeoutManager) {
     // TimeoutManager can provide environment detection configuration
-    envDetectionConfig = (options.timeoutManager as any).getEnvironmentDetectionConfig();
+    envDetectionConfig = (options.timeoutManager as TimeoutManager & {
+      getEnvironmentDetectionConfig(): EnvironmentDetectionConfig;
+    }).getEnvironmentDetectionConfig();
   }
 
   // Check if we should skip stdin processing

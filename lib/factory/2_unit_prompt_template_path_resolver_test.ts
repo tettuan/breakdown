@@ -72,7 +72,7 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await Deno.remove(absBaseDir, { recursive: true });
   });
   it("config.app_prompt.base_dir is empty string (should fallback to default)", async () => {
-    const defaultBaseDir = resolve(Deno.cwd(), "prompts");
+    const defaultBaseDir = resolve(Deno.cwd(), "lib/breakdown/prompts");
     const promptDir = join(defaultBaseDir, "to", "project");
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");

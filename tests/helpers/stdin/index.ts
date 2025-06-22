@@ -1,14 +1,14 @@
 /**
  * STDIN Test Helpers - Main Export Module
- * 
+ *
  * Purpose:
  * - Provides centralized exports for STDIN test utilities
  * - Simplifies imports in test files
  * - Documents the available test helpers
- * 
+ *
  * Usage:
  * ```typescript
- * import { 
+ * import {
  *   StdinTestResourceManager,
  *   TestStdinReaderFactory,
  *   MockStdinReader,
@@ -19,26 +19,20 @@
 
 // Core interfaces
 export type {
-  StdinReader,
-  StdinReadOptions,
-  StdinReaderFactory,
   MockStdinConfig,
+  StdinReader,
+  StdinReaderFactory,
+  StdinReadOptions,
 } from "./interfaces.ts";
 
 // Resource management
-export {
-  StdinTestResourceManager,
-  type StdinTestResource,
-} from "./resource_manager.ts";
+export { type StdinTestResource, StdinTestResourceManager } from "./resource_manager.ts";
 
 // Mock implementation
 export { MockStdinReader } from "./mock_stdin_reader.ts";
 
 // Factory pattern
-export {
-  TestStdinReaderFactory,
-  createTestFactory,
-} from "./factory.ts";
+export { createTestFactory, TestStdinReaderFactory } from "./factory.ts";
 
 /**
  * Quick setup helper for common test scenarios

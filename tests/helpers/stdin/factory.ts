@@ -1,11 +1,11 @@
 /**
  * STDIN Reader Factory Implementation
- * 
+ *
  * Purpose:
  * - Provides factory pattern for creating StdinReader instances
  * - Simplifies test setup with default configurations
  * - Ensures consistent resource management across tests
- * 
+ *
  * Design:
  * - Based on tmp/stdin_test_design_proposal.md section 2.2
  * - Integrates with StdinTestResourceManager
@@ -58,8 +58,8 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
     const reader = new MockStdinReader(mergedConfig, this.resourceManager);
     this.createdReaders.push(reader);
 
-    logger.debug("Mock STDIN reader created", { 
-      totalReaders: this.createdReaders.length 
+    logger.debug("Mock STDIN reader created", {
+      totalReaders: this.createdReaders.length,
     });
 
     return reader;
@@ -115,7 +115,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
    * Creates a reader that simulates empty input
    * @param allowEmpty Whether the reader should allow empty input
    */
-  createEmptyReader(allowEmpty: boolean = false): StdinReader {
+  createEmptyReader(_allowEmpty: boolean = false): StdinReader {
     return this.create({
       data: "",
       isAvailable: true,
@@ -133,7 +133,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
   } {
     const totalReads = this.createdReaders.reduce(
       (sum, reader) => sum + reader.getReadCount(),
-      0
+      0,
     );
 
     return {
@@ -147,7 +147,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
    * Useful for test cleanup
    */
   resetStatistics(): void {
-    this.createdReaders.forEach(reader => reader.resetReadCount());
+    this.createdReaders.forEach((reader) => reader.resetReadCount());
     logger.debug("Reader statistics reset");
   }
 
@@ -165,6 +165,8 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
  * Creates a factory with common test configurations
  * Convenience function for test setup
  */
-export function createTestFactory(resourceManager: StdinTestResourceManager): TestStdinReaderFactory {
+export function createTestFactory(
+  resourceManager: StdinTestResourceManager,
+): TestStdinReaderFactory {
   return new TestStdinReaderFactory(resourceManager);
 }

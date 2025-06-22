@@ -1,8 +1,8 @@
 /**
  * Template Error Handler Module
- * 
+ *
  * テンプレート不足時のエラーハンドリング強化
- * 
+ *
  * @module
  */
 
@@ -34,7 +34,7 @@ export class TemplateError extends Error {
       suggestions?: string[];
       canAutoResolve?: boolean;
       cause?: Error;
-    }
+    },
   ) {
     super(message);
     this.name = "TemplateError";
@@ -42,7 +42,7 @@ export class TemplateError extends Error {
     this.templatePath = options?.templatePath;
     this.suggestions = options?.suggestions || [];
     this.canAutoResolve = options?.canAutoResolve || false;
-    
+
     if (options?.cause) {
       this.cause = options.cause;
     }
@@ -53,22 +53,22 @@ export class TemplateError extends Error {
    */
   getDetailedMessage(): string {
     let message = `❌ ${this.message}`;
-    
+
     if (this.templatePath) {
       message += `\n   Template: ${this.templatePath}`;
     }
-    
+
     if (this.suggestions.length > 0) {
       message += "\n\n💡 Suggestions:";
       for (const suggestion of this.suggestions) {
         message += `\n   - ${suggestion}`;
       }
     }
-    
+
     if (this.canAutoResolve) {
       message += "\n\n🔧 Auto-resolution available: Run template generator script";
     }
-    
+
     return message;
   }
 
@@ -77,28 +77,28 @@ export class TemplateError extends Error {
    */
   getRecoveryCommands(): string[] {
     const commands: string[] = [];
-    
+
     switch (this.errorType) {
       case TemplateErrorType.TEMPLATE_NOT_FOUND:
         commands.push("bash scripts/template_generator.sh generate");
         commands.push("bash examples/00_template_check.sh full");
         break;
-        
+
       case TemplateErrorType.TEMPLATE_GENERATION_FAILED:
         commands.push("bash scripts/template_generator.sh check");
         commands.push("deno run --allow-read --allow-write lib/helpers/template_validator.ts");
         break;
-        
+
       case TemplateErrorType.CONFIG_INVALID:
         commands.push("deno run -A cli/breakdown.ts init");
         commands.push("bash examples/00_template_check.sh full");
         break;
-        
+
       default:
         commands.push("bash examples/00_template_check.sh check");
         break;
     }
-    
+
     return commands;
   }
 }
@@ -116,10 +116,12 @@ export class TemplateErrorHandler {
   }): TemplateError | null {
     const message = error.message.toLowerCase();
     const templatePath = context?.templatePath;
-    
+
     // File not found errors
-    if (message.includes("no such file") || message.includes("enoent") || 
-        message.includes("not found")) {
+    if (
+      message.includes("no such file") || message.includes("enoent") ||
+      message.includes("not found")
+    ) {
       return new TemplateError(
         `Template file not found: ${templatePath || "unknown"}`,
         TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -132,10 +134,10 @@ export class TemplateErrorHandler {
           ],
           canAutoResolve: true,
           cause: error,
-        }
+        },
       );
     }
-    
+
     // Permission errors
     if (message.includes("permission denied") || message.includes("eacces")) {
       return new TemplateError(
@@ -150,10 +152,10 @@ export class TemplateErrorHandler {
           ],
           canAutoResolve: false,
           cause: error,
-        }
+        },
       );
     }
-    
+
     // Template validation errors
     if (message.includes("invalid template") || message.includes("malformed")) {
       return new TemplateError(
@@ -168,10 +170,10 @@ export class TemplateErrorHandler {
           ],
           canAutoResolve: true,
           cause: error,
-        }
+        },
       );
     }
-    
+
     return null;
   }
 
@@ -183,17 +185,17 @@ export class TemplateErrorHandler {
     options?: {
       autoResolve?: boolean;
       projectRoot?: string;
-    }
+    },
   ): Promise<{
     resolved: boolean;
     message: string;
     commands?: string[];
   }> {
     const { autoResolve = false, projectRoot = Deno.cwd() } = options || {};
-    
+
     // Log detailed error information
     console.error(error.getDetailedMessage());
-    
+
     if (!autoResolve || !error.canAutoResolve) {
       return {
         resolved: false,
@@ -201,16 +203,16 @@ export class TemplateErrorHandler {
         commands: error.getRecoveryCommands(),
       };
     }
-    
+
     // Attempt auto-resolution
     try {
       switch (error.errorType) {
         case TemplateErrorType.TEMPLATE_NOT_FOUND:
           return await this.autoGenerateTemplates(projectRoot);
-          
+
         case TemplateErrorType.TEMPLATE_GENERATION_FAILED:
           return await this.validateAndFixTemplates(projectRoot);
-          
+
         default:
           return {
             resolved: false,
@@ -221,7 +223,9 @@ export class TemplateErrorHandler {
     } catch (resolutionError) {
       return {
         resolved: false,
-        message: `Auto-resolution failed: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
+        message: `Auto-resolution failed: ${
+          resolutionError instanceof Error ? resolutionError.message : String(resolutionError)
+        }`,
         commands: error.getRecoveryCommands(),
       };
     }
@@ -235,14 +239,14 @@ export class TemplateErrorHandler {
     message: string;
   }> {
     console.log("🔧 Attempting to auto-generate missing templates...");
-    
+
     const process = new Deno.Command("bash", {
       args: ["scripts/template_generator.sh", "generate"],
       cwd: projectRoot,
     });
-    
+
     const result = await process.output();
-    
+
     if (result.success) {
       return {
         resolved: true,
@@ -264,14 +268,14 @@ export class TemplateErrorHandler {
     message: string;
   }> {
     console.log("🔧 Validating and fixing templates...");
-    
+
     const process = new Deno.Command("bash", {
       args: ["examples/00_template_check.sh", "full"],
       cwd: projectRoot,
     });
-    
+
     const result = await process.output();
-    
+
     if (result.success) {
       return {
         resolved: true,
@@ -295,7 +299,7 @@ export async function withTemplateErrorHandling<T>(
     templatePath?: string;
     operation?: string;
     autoResolve?: boolean;
-  }
+  },
 ): Promise<T> {
   try {
     return await operation();
@@ -303,16 +307,16 @@ export async function withTemplateErrorHandling<T>(
     if (!(error instanceof Error)) {
       throw error;
     }
-    
+
     // Detect if this is a template-related error
     const templateError = TemplateErrorHandler.detectTemplateError(error, context);
-    
+
     if (templateError) {
       // Handle template error with potential auto-resolution
       const result = await TemplateErrorHandler.handleTemplateError(templateError, {
         autoResolve: context?.autoResolve,
       });
-      
+
       if (result.resolved) {
         console.log(result.message);
         // Retry the operation after resolution

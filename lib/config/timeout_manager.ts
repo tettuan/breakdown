@@ -7,7 +7,11 @@
  * @module
  */
 
-import { detectEnvironment, type EnvironmentInfo, type EnvironmentDetectionConfig } from "../io/enhanced_stdin.ts";
+import {
+  detectEnvironment,
+  type EnvironmentDetectionConfig,
+  type EnvironmentInfo,
+} from "../io/enhanced_stdin.ts";
 
 /**
  * BreakdownConfig互換のCustomConfig型定義
@@ -241,7 +245,7 @@ export class TimeoutManager {
 
   /**
    * BREAKDOWN_TIMEOUT環境変数から値を取得
-   * 
+   *
    * @returns 環境変数から取得したタイムアウト値、または undefined
    */
   private getEnvironmentTimeout(): number | undefined {
@@ -269,7 +273,7 @@ export class TimeoutManager {
       }
       return envTimeout;
     }
-    
+
     // 既存のロジック
     const timeout = this.config.timeouts[this.environmentType];
 
@@ -294,7 +298,7 @@ export class TimeoutManager {
       }
       return envTimeout;
     }
-    
+
     // 既存のロジック
     const timeout = this.config.stdin.environments[this.environmentType].timeout;
 
@@ -483,10 +487,10 @@ export class TimeoutManager {
 
   /**
    * 環境検出設定を取得
-   * 
+   *
    * enhanced_stdin.tsのdetectEnvironment関数で使用される設定を提供します。
    * これにより、環境変数への直接依存を回避します。
-   * 
+   *
    * @returns 環境検出設定
    */
   getEnvironmentDetectionConfig(): EnvironmentDetectionConfig {
@@ -499,7 +503,7 @@ export class TimeoutManager {
 
   /**
    * 互換性API: lib/io/timeout_manager.tsとの後方互換性のための静的メソッド
-   * 
+   *
    * @param customTimeout カスタムタイムアウト値（省略可能）
    * @returns STDIN処理用のタイムアウト値（ミリ秒）
    */
@@ -507,14 +511,14 @@ export class TimeoutManager {
     if (customTimeout !== undefined) {
       return customTimeout;
     }
-    
+
     const manager = new TimeoutManager();
     return manager.getStdinTimeout();
   }
 
   /**
    * 互換性API: タイムアウトコンテキストの作成
-   * 
+   *
    * @param customTimeout カスタムタイムアウト値（省略可能）
    * @returns タイムアウトコンテキスト
    */
@@ -525,7 +529,7 @@ export class TimeoutManager {
   } {
     const manager = new TimeoutManager();
     const envInfo = manager.getEnvironmentInfo();
-    
+
     return {
       isCI: envInfo.isCI,
       isTest: envInfo.isTest,
@@ -535,7 +539,7 @@ export class TimeoutManager {
 
   /**
    * 互換性API: 環境に応じたタイムアウト値を取得
-   * 
+   *
    * @param context タイムアウトコンテキスト
    * @returns 適切なタイムアウト値（ミリ秒）
    */
@@ -547,11 +551,9 @@ export class TimeoutManager {
     if (context.customTimeout !== undefined) {
       return context.customTimeout;
     }
-    
-    const envType: EnvironmentType = context.isTest ? "test" : 
-                                     context.isCI ? "ci" : 
-                                     "interactive";
-    
+
+    const envType: EnvironmentType = context.isTest ? "test" : context.isCI ? "ci" : "interactive";
+
     const manager = new TimeoutManager(undefined, envType);
     return manager.getTimeout();
   }
@@ -616,13 +618,13 @@ export function createTimeoutManagerFromConfig(
 
 /**
  * ファクトリー関数: BREAKDOWN_TIMEOUT環境変数からTimeoutManagerを作成
- * 
+ *
  * @returns 環境変数設定を反映したTimeoutManager
  */
 export function createTimeoutManagerFromEnvironment(): TimeoutManager {
   const envTimeout = Deno.env.get("BREAKDOWN_TIMEOUT");
   const config: Partial<EnvironmentTimeoutConfig> = {};
-  
+
   if (envTimeout) {
     const parsed = parseInt(envTimeout, 10);
     if (!isNaN(parsed) && parsed > 0) {
@@ -633,7 +635,7 @@ export function createTimeoutManagerFromEnvironment(): TimeoutManager {
         test: parsed,
         interactive: parsed,
       };
-      
+
       // STDIN設定にも適用
       config.stdin = {
         timeout: parsed,
@@ -663,6 +665,6 @@ export function createTimeoutManagerFromEnvironment(): TimeoutManager {
       };
     }
   }
-  
+
   return new TimeoutManager(config);
 }

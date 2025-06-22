@@ -1,11 +1,11 @@
 /**
  * STDIN Test Interfaces
- * 
+ *
  * Purpose:
  * - Define core interfaces for STDIN testing with dependency injection
  * - Enable testable STDIN operations without environment dependencies
  * - Support flexible mock implementations
- * 
+ *
  * Design:
  * - Based on tmp/stdin_test_design_proposal.md section 2.1
  * - Separates interface from implementation for testing

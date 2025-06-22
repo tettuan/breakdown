@@ -1,6 +1,6 @@
 /**
  * IsolatedTestEnvironment
- * 
+ *
  * テスト環境の完全な分離と復元を保証するためのクラス。
  * 各テストケースが独立して実行され、環境の変更が他のテストに
  * 影響しないことを保証します。
@@ -12,18 +12,18 @@ export class IsolatedTestEnvironment {
 
   /**
    * テスト環境のセットアップ
-   * 
+   *
    * 現在の環境状態を保存し、テスト実行のための
    * クリーンな環境を準備します。
    */
-  async setup(): Promise<void> {
+  setup(): void {
     // stdin の保存
     this.originalStdin = Deno.stdin;
-    
+
     // 環境変数の保存（最小限必要なもののみ）
     this.originalEnv = new Map();
-    const keysToPreserve = ['CI', 'GITHUB_ACTIONS', 'LOG_LEVEL'];
-    
+    const keysToPreserve = ["CI", "GITHUB_ACTIONS", "LOG_LEVEL"];
+
     for (const key of keysToPreserve) {
       const value = Deno.env.get(key);
       if (value !== undefined) {
@@ -37,7 +37,7 @@ export class IsolatedTestEnvironment {
 
   /**
    * テスト環境の復元
-   * 
+   *
    * 保存した環境状態を復元し、テスト中に行われた
    * すべての変更をロールバックします。
    */
@@ -47,12 +47,12 @@ export class IsolatedTestEnvironment {
       try {
         await callback();
       } catch (error) {
-        console.error('Cleanup callback error:', error);
+        console.error("Cleanup callback error:", error);
       }
     }
 
     // stdin の復元
-    Object.defineProperty(globalThis.Deno, 'stdin', {
+    Object.defineProperty(globalThis.Deno, "stdin", {
       value: this.originalStdin,
       writable: true,
       configurable: true,
@@ -65,8 +65,8 @@ export class IsolatedTestEnvironment {
 
     // 保存していないキーは削除（テスト中に追加された可能性があるもの）
     const currentKeys = Array.from(this.originalEnv.keys());
-    const keysToCheck = ['CI', 'GITHUB_ACTIONS', 'LOG_LEVEL'];
-    
+    const keysToCheck = ["CI", "GITHUB_ACTIONS", "LOG_LEVEL"];
+
     for (const key of keysToCheck) {
       if (!currentKeys.includes(key) && Deno.env.get(key) !== undefined) {
         Deno.env.delete(key);
@@ -76,7 +76,7 @@ export class IsolatedTestEnvironment {
 
   /**
    * クリーンアップコールバックの登録
-   * 
+   *
    * teardown時に実行されるコールバックを登録します。
    * コールバックは登録と逆順（LIFO）で実行されます。
    */
@@ -86,11 +86,11 @@ export class IsolatedTestEnvironment {
 
   /**
    * モックstdinの設定
-   * 
+   *
    * Deno.stdinを指定されたモックオブジェクトで置き換えます。
    */
   setMockStdin(mockStdin: typeof Deno.stdin): void {
-    Object.defineProperty(globalThis.Deno, 'stdin', {
+    Object.defineProperty(globalThis.Deno, "stdin", {
       value: mockStdin,
       writable: true,
       configurable: true,
@@ -99,7 +99,7 @@ export class IsolatedTestEnvironment {
 
   /**
    * 環境変数の一時的な設定
-   * 
+   *
    * テスト用に環境変数を設定します。
    * teardown時に自動的に復元されます。
    */
@@ -111,13 +111,13 @@ export class IsolatedTestEnvironment {
         this.originalEnv.set(key, originalValue);
       }
     }
-    
+
     Deno.env.set(key, value);
   }
 
   /**
    * 環境変数の一時的な削除
-   * 
+   *
    * テスト用に環境変数を削除します。
    * teardown時に自動的に復元されます。
    */
@@ -129,24 +129,24 @@ export class IsolatedTestEnvironment {
         this.originalEnv.set(key, originalValue);
       }
     }
-    
+
     Deno.env.delete(key);
   }
 }
 
 // Deno標準ライブラリからのインポート
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { 
-  MockStdinReader as StdinReader,
+import {
   MockStdinConfig,
+  MockStdinReader as StdinReader,
   StdinReadOptions,
   StdinTestResourceManager,
-  TestStdinReaderFactory
+  TestStdinReaderFactory,
 } from "./mock_factory.ts";
 
 /**
  * StdinTestContext
- * 
+ *
  * STDINテストに必要なコンテキスト情報を提供します。
  */
 export interface StdinTestContext {
@@ -156,7 +156,7 @@ export interface StdinTestContext {
 
 /**
  * MockStdinReader
- * 
+ *
  * テスト用のSTDINリーダーのモック実装
  */
 export interface MockStdinReader {
@@ -167,26 +167,26 @@ export interface MockStdinReader {
 
 /**
  * withStdinTest
- * 
+ *
  * STDINテストを分離された環境で実行するためのラッパー関数。
  * テスト実行後は環境が自動的に復元されます。
  */
 export async function withStdinTest<T>(
-  testName: string,
-  testFn: (context: StdinTestContext) => Promise<T>
+  _testName: string,
+  testFn: (context: StdinTestContext) => Promise<T>,
 ): Promise<T> {
   const environment = new IsolatedTestEnvironment();
   const resourceManager = new StdinTestResourceManager();
   const factory = new TestStdinReaderFactory(resourceManager);
-  
+
   try {
     await environment.setup();
-    
+
     const context: StdinTestContext = {
       environment,
       createMockStdin: (config) => factory.create(config) as StdinReader,
     };
-    
+
     return await testFn(context);
   } finally {
     // リソースのクリーンアップ
@@ -198,7 +198,7 @@ export async function withStdinTest<T>(
 
 /**
  * StdinTestCase
- * 
+ *
  * 構造化されたテストケースの定義
  */
 export interface StdinTestCase {
@@ -212,7 +212,7 @@ export interface StdinTestCase {
 
 /**
  * defineStdinTests
- * 
+ *
  * 複数のSTDINテストケースを定義し、それぞれを分離された
  * 環境で実行します。
  */
@@ -223,12 +223,12 @@ export function defineStdinTests(cases: StdinTestCase[]): void {
       async fn() {
         await withStdinTest(testCase.name, async (context) => {
           const reader = context.createMockStdin(testCase.config);
-          
+
           if (testCase.expectedError) {
             await assertRejects(
               () => reader.read({ timeout: testCase.timeout }),
               Error,
-              testCase.expectedError
+              testCase.expectedError,
             );
           } else {
             const result = await reader.read({ timeout: testCase.timeout });

@@ -1,8 +1,8 @@
 /**
  * CI Environment STDIN Test Framework
- * 
+ *
  * CI環境でも安全にSTDIN機能をテストできるフレームワーク
- * 
+ *
  * @module
  */
 
@@ -13,7 +13,7 @@ export interface TestEnvironmentConfig {
   /** Whether running in CI environment */
   isCI?: boolean;
   /** CI provider name */
-  ciProvider?: 'github' | 'gitlab' | 'jenkins' | 'travis' | 'circleci' | string;
+  ciProvider?: "github" | "gitlab" | "jenkins" | "travis" | "circleci" | string;
   /** Whether running in test environment */
   isTest?: boolean;
   /** Default timeout in milliseconds */
@@ -37,7 +37,7 @@ export enum StdinTestScenario {
   /** Normal piped input */
   PIPED_INPUT = "piped_input",
   /** No input available */
-  NO_INPUT = "no_input", 
+  NO_INPUT = "no_input",
   /** Terminal interactive mode */
   TERMINAL_INTERACTIVE = "terminal_interactive",
   /** CI environment with piped input */
@@ -101,15 +101,15 @@ export class MockStdin {
   }
 
   /** Mock implementation of read() */
-  async read(buffer: Uint8Array): Promise<number | null> {
+  read(buffer: Uint8Array): Promise<number | null> {
     if (this.consumed) {
-      return null; // EOF
+      return Promise.resolve(null); // EOF
     }
 
     const bytesToRead = Math.min(buffer.length, this.data.length);
     buffer.set(this.data.slice(0, bytesToRead));
     this.consumed = true;
-    return bytesToRead;
+    return Promise.resolve(bytesToRead);
   }
 
   /** Get readable stream (for readAll compatibility) */
@@ -130,7 +130,7 @@ export class MockStdin {
         // Mark as cancelled to prevent any pending operations
         cancelled = true;
         consumed = true;
-      }
+      },
     });
   }
 }
@@ -152,12 +152,12 @@ export class CIStdinTestFramework {
   /**
    * Setup mock STDIN environment for testing
    */
-  async setupMockEnvironment(config: StdinMockConfig): Promise<TestEnvironmentState> {
+  setupMockEnvironment(config: StdinMockConfig): TestEnvironmentState {
     const sessionId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Use provided test config or defaults
     const testConfig = { ...this.defaultConfig, ...config.testConfig };
-    
+
     // Backup original environment (only if envVars are provided for compatibility)
     const originalEnv: Record<string, string> = {};
     if (config.envVars) {
@@ -185,7 +185,9 @@ export class CIStdinTestFramework {
     // Create mock stdin
     const mockStdin = new MockStdin(
       config.inputData || "",
-      config.isTerminal !== undefined ? config.isTerminal : this.getDefaultTerminalState(config.scenario)
+      config.isTerminal !== undefined
+        ? config.isTerminal
+        : this.getDefaultTerminalState(config.scenario),
     );
 
     // Store test state
@@ -199,8 +201,8 @@ export class CIStdinTestFramework {
     this.testSessions.set(sessionId, testState);
 
     // Override Deno.stdin for this test
-    const originalStdin = Deno.stdin;
-    (globalThis as any).Deno = {
+    const _originalStdin = Deno.stdin;
+    (globalThis as Record<string, unknown>).Deno = {
       ...Deno,
       stdin: mockStdin,
     };
@@ -215,7 +217,7 @@ export class CIStdinTestFramework {
   /**
    * Cleanup mock environment
    */
-  async cleanupMockEnvironment(sessionId: string): Promise<void> {
+  cleanupMockEnvironment(sessionId: string): void {
     const testState = this.testSessions.get(sessionId);
     if (!testState) {
       throw new Error(`Test session not found: ${sessionId}`);
@@ -235,7 +237,7 @@ export class CIStdinTestFramework {
     }
 
     // Restore original stdin
-    (globalThis as any).Deno = {
+    (globalThis as Record<string, unknown>).Deno = {
       ...Deno,
       stdin: testState.originalStdin,
     };
@@ -257,17 +259,17 @@ export class CIStdinTestFramework {
       case StdinTestScenario.PIPED_INPUT:
       case StdinTestScenario.CI_PIPED:
         return false; // Not a terminal when piped
-        
+
       case StdinTestScenario.NO_INPUT:
       case StdinTestScenario.CI_NO_INPUT:
         return true; // Terminal but no input
-        
+
       case StdinTestScenario.TERMINAL_INTERACTIVE:
         return true; // Interactive terminal
-        
+
       case StdinTestScenario.TEST_CONTROLLED:
         return false; // Controlled test environment
-        
+
       default:
         return false;
     }
@@ -278,10 +280,10 @@ export class CIStdinTestFramework {
    */
   async runStdinTest<T>(
     config: StdinMockConfig,
-    testFunction: (testState: TestEnvironmentState) => Promise<T>
+    testFunction: (testState: TestEnvironmentState) => Promise<T>,
   ): Promise<T> {
     const testState = await this.setupMockEnvironment(config);
-    
+
     try {
       return await testFunction(testState);
     } finally {
@@ -310,13 +312,13 @@ export class CIStdinTestFramework {
         scenario: StdinTestScenario.CI_PIPED,
         inputData: "ci test data",
         isTerminal: false,
-        testConfig: { isCI: true, ciProvider: 'github', debug: true },
+        testConfig: { isCI: true, ciProvider: "github", debug: true },
       },
       {
         scenario: StdinTestScenario.CI_NO_INPUT,
         inputData: "",
         isTerminal: true,
-        testConfig: { isCI: true, ciProvider: 'github', debug: true },
+        testConfig: { isCI: true, ciProvider: "github", debug: true },
       },
       {
         scenario: StdinTestScenario.TEST_CONTROLLED,
@@ -342,7 +344,7 @@ export class EnhancedTerminalDetector {
     config?: TestEnvironmentConfig;
   }): {
     isTerminal: boolean;
-    confidence: 'high' | 'medium' | 'low';
+    confidence: "high" | "medium" | "low";
     reason: string;
     envInfo: {
       isCI: boolean;
@@ -363,8 +365,8 @@ export class EnhancedTerminalDetector {
     if (forceInteractive) {
       return {
         isTerminal: true,
-        confidence: 'high',
-        reason: 'Forced interactive mode',
+        confidence: "high",
+        reason: "Forced interactive mode",
         envInfo: { isCI, isTest, hasForceFlag },
       };
     }
@@ -372,8 +374,8 @@ export class EnhancedTerminalDetector {
     if (forceNonInteractive) {
       return {
         isTerminal: false,
-        confidence: 'high',
-        reason: 'Forced non-interactive mode',
+        confidence: "high",
+        reason: "Forced non-interactive mode",
         envInfo: { isCI, isTest, hasForceFlag },
       };
     }
@@ -389,14 +391,14 @@ export class EnhancedTerminalDetector {
         const nativeResult = Deno.stdin.isTerminal();
         return {
           isTerminal: nativeResult,
-          confidence: 'medium',
+          confidence: "medium",
           reason: `CI environment, native detection: ${nativeResult}`,
           envInfo: { isCI, isTest, hasForceFlag },
         };
       } catch (error) {
         return {
           isTerminal: true, // Conservative assumption in CI
-          confidence: 'low',
+          confidence: "low",
           reason: `CI environment, detection failed: ${error}`,
           envInfo: { isCI, isTest, hasForceFlag },
         };
@@ -408,8 +410,8 @@ export class EnhancedTerminalDetector {
       // Use native detection in test environment
       return {
         isTerminal: Deno.stdin.isTerminal(),
-        confidence: 'high',
-        reason: 'Test environment with native detection',
+        confidence: "high",
+        reason: "Test environment with native detection",
         envInfo: { isCI, isTest, hasForceFlag },
       };
     }
@@ -419,14 +421,14 @@ export class EnhancedTerminalDetector {
       const nativeResult = Deno.stdin.isTerminal();
       return {
         isTerminal: nativeResult,
-        confidence: 'high',
-        reason: 'Native isTerminal() detection',
+        confidence: "high",
+        reason: "Native isTerminal() detection",
         envInfo: { isCI, isTest, hasForceFlag },
       };
     } catch (error) {
       return {
         isTerminal: false, // Safe default
-        confidence: 'low',
+        confidence: "low",
         reason: `Detection failed: ${error}`,
         envInfo: { isCI, isTest, hasForceFlag },
       };
@@ -445,7 +447,7 @@ export class StdinEnvironmentController {
     ci: {
       enabled: boolean;
       provider?: string;
-      stdinBehavior: 'strict' | 'permissive' | 'disabled';
+      stdinBehavior: "strict" | "permissive" | "disabled";
     };
     test: {
       enabled: boolean;
@@ -454,7 +456,7 @@ export class StdinEnvironmentController {
     };
     debug: {
       enabled: boolean;
-      verboseLevel: 'minimal' | 'standard' | 'verbose';
+      verboseLevel: "minimal" | "standard" | "verbose";
     };
     timeout: {
       default: number;
@@ -472,7 +474,7 @@ export class StdinEnvironmentController {
       ci: {
         enabled: testConfig.isCI || false,
         provider: testConfig.ciProvider,
-        stdinBehavior: 'strict' as const,
+        stdinBehavior: "strict" as const,
       },
       test: {
         enabled: testConfig.isTest || false,
@@ -481,7 +483,7 @@ export class StdinEnvironmentController {
       },
       debug: {
         enabled: testConfig.debug || false,
-        verboseLevel: 'standard' as const,
+        verboseLevel: "standard" as const,
       },
       timeout: {
         default: testConfig.defaultTimeout || 30000,

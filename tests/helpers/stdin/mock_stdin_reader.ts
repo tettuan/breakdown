@@ -1,11 +1,11 @@
 /**
  * Mock STDIN Reader Implementation
- * 
+ *
  * Purpose:
  * - Provides a mock implementation of StdinReader for testing
  * - Simulates various STDIN behaviors including timeouts and errors
  * - Integrates with resource manager for proper cleanup
- * 
+ *
  * Design:
  * - Based on tmp/stdin_test_design_proposal.md section 2.1
  * - Uses StdinTestResourceManager for lifecycle management
@@ -27,7 +27,7 @@ export class MockStdinReader implements StdinReader {
 
   constructor(
     private config: MockStdinConfig,
-    private resourceManager: StdinTestResourceManager
+    private resourceManager: StdinTestResourceManager,
   ) {
     logger.debug("MockStdinReader created", { config });
   }
@@ -40,29 +40,29 @@ export class MockStdinReader implements StdinReader {
     const resourceId = `read-${Date.now()}-${this.readCount}`;
     const resource = await this.resourceManager.createResource(resourceId);
 
-    logger.debug("Starting mock read", { 
-      resourceId, 
+    logger.debug("Starting mock read", {
+      resourceId,
       options,
-      config: this.config 
+      config: this.config,
     });
 
     try {
       // Merge abort signals if both exist
       const abortController = new AbortController();
       if (options?.signal) {
-        options.signal.addEventListener('abort', () => {
+        options.signal.addEventListener("abort", () => {
           abortController.abort();
         });
       }
-      resource.abortController.signal.addEventListener('abort', () => {
+      resource.abortController.signal.addEventListener("abort", () => {
         abortController.abort();
       });
 
       // Handle timeout with consideration for BREAKDOWN_TIMEOUT env var
       let effectiveTimeout = options?.timeout;
-      
+
       // Check for BREAKDOWN_TIMEOUT environment variable (highest priority)
-      const envTimeout = Deno.env.get('BREAKDOWN_TIMEOUT');
+      const envTimeout = Deno.env.get("BREAKDOWN_TIMEOUT");
       if (envTimeout) {
         const parsed = parseInt(envTimeout, 10);
         if (!isNaN(parsed) && parsed > 0) {
@@ -78,7 +78,7 @@ export class MockStdinReader implements StdinReader {
         }, effectiveTimeout);
 
         // Register cleanup for timeout
-        this.resourceManager.registerCleanup(resourceId, async () => {
+        this.resourceManager.registerCleanup(resourceId, () => {
           clearTimeout(timeoutId);
           logger.debug("Timeout cleanup executed", { resourceId });
         });
@@ -86,7 +86,7 @@ export class MockStdinReader implements StdinReader {
 
       // Simulate read operation
       const result = await this.simulateRead(abortController.signal, resourceId);
-      
+
       logger.debug("Mock read completed", { resourceId, resultLength: result.length });
       return result;
     } finally {
@@ -131,7 +131,7 @@ export class MockStdinReader implements StdinReader {
       logger.debug("Simulating timeout", { resourceId });
       // Wait indefinitely until aborted
       return new Promise((_, reject) => {
-        signal.addEventListener('abort', () => {
+        signal.addEventListener("abort", () => {
           reject(new Error("Stdin reading timed out"));
         });
       });
@@ -140,7 +140,7 @@ export class MockStdinReader implements StdinReader {
     // Handle configured delay
     if (this.config.delay && this.config.delay > 0) {
       logger.debug("Applying delay", { resourceId, delay: this.config.delay });
-      
+
       await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
           logger.debug("Delay completed", { resourceId });
@@ -148,15 +148,15 @@ export class MockStdinReader implements StdinReader {
         }, this.config.delay);
 
         // Register cleanup for timer
-        this.resourceManager.registerCleanup(resourceId, async () => {
+        this.resourceManager.registerCleanup(resourceId, () => {
           clearTimeout(timer);
         });
 
         // Handle abort during delay
-        signal.addEventListener('abort', () => {
+        signal.addEventListener("abort", () => {
           logger.debug("Aborted during delay", { resourceId });
           clearTimeout(timer);
-          reject(new Error('Operation aborted'));
+          reject(new Error("Operation aborted"));
         });
       });
     }
@@ -164,12 +164,12 @@ export class MockStdinReader implements StdinReader {
     // Check for abort before returning data
     if (signal.aborted) {
       logger.debug("Operation aborted before returning data", { resourceId });
-      throw new Error('Operation aborted');
+      throw new Error("Operation aborted");
     }
 
     // Return configured data
     const data = this.config.data || "";
-    
+
     // Validate empty data if not allowed
     if (!data && this.config.data !== "") {
       // Check if empty is allowed (from read options)

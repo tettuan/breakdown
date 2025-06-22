@@ -1,8 +1,8 @@
 /**
  * Template Validator Module
- * 
+ *
  * exampleス実行前のテンプレート確認・補完機能を提供
- * 
+ *
  * @module
  */
 
@@ -118,7 +118,7 @@ export class TemplateValidator {
       }
     }
 
-    const totalRequired = this.templateMappings.filter(m => m.required).length;
+    const totalRequired = this.templateMappings.filter((m) => m.required).length;
     const isValid = missingTemplates.length === 0;
 
     return {
@@ -191,11 +191,11 @@ export class TemplateValidator {
 
     // Validate templates
     const validation = await this.validateTemplates();
-    
+
     if (!validation.isValid) {
       issues.push(`Missing ${validation.missingTemplates.length} required templates`);
       recommendations.push("Run: bash scripts/template_generator.sh generate");
-      
+
       for (const missing of validation.missingTemplates) {
         issues.push(`  - ${missing}`);
       }
@@ -228,13 +228,15 @@ export async function validateTemplatesForExamples(projectRoot?: string): Promis
   const validator = new TemplateValidator(root);
 
   console.log("🔍 Validating templates for examples execution...");
-  
+
   const validation = await validator.validateTemplates();
-  
+
   if (validation.isValid) {
     console.log(`✅ All ${validation.totalRequired} required templates are present`);
   } else {
-    console.log(`❌ ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`);
+    console.log(
+      `❌ ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`,
+    );
     for (const missing of validation.missingTemplates) {
       console.log(`   - ${missing}`);
     }
@@ -243,7 +245,7 @@ export async function validateTemplatesForExamples(projectRoot?: string): Promis
 
   // Perform preflight check
   const preflight = await validator.preflightCheck();
-  
+
   if (preflight.ready) {
     console.log("🚀 Examples are ready to run!");
   } else {
@@ -251,7 +253,7 @@ export async function validateTemplatesForExamples(projectRoot?: string): Promis
     for (const issue of preflight.issues) {
       console.log(`   ${issue}`);
     }
-    
+
     if (preflight.recommendations.length > 0) {
       console.log("\n💡 Recommendations:");
       for (const rec of preflight.recommendations) {

@@ -1,12 +1,15 @@
 /**
  * Test for enhanced_stdin environment variable dependency removal
- * 
+ *
  * Verifies that detectEnvironment can work with injected configuration
  * instead of directly accessing Deno.env
  */
 
 import { assertEquals } from "jsr:@std/assert@1.0.7";
-import { detectEnvironment, type EnvironmentDetectionConfig } from "../../../lib/io/enhanced_stdin.ts";
+import {
+  detectEnvironment,
+  type EnvironmentDetectionConfig,
+} from "../../../lib/io/enhanced_stdin.ts";
 
 Deno.test("detectEnvironment - uses injected configuration instead of Deno.env", () => {
   // Create a mock configuration that doesn't use Deno.env
@@ -28,7 +31,7 @@ Deno.test("detectEnvironment - uses injected configuration instead of Deno.env",
   assertEquals(result.ciProvider, "CI");
   assertEquals(result.isTest, true);
   assertEquals(result.isTerminal, false);
-  
+
   // Verify that the environment variables were captured
   assertEquals(result.envVars["CI"], "true");
   assertEquals(result.envVars["GITHUB_ACTIONS"], "true");
@@ -37,7 +40,7 @@ Deno.test("detectEnvironment - uses injected configuration instead of Deno.env",
 Deno.test("detectEnvironment - falls back to Deno.env when no config provided", () => {
   // Test backward compatibility - should still work without config
   const result = detectEnvironment();
-  
+
   // Result will depend on actual environment, but should not throw
   assertEquals(typeof result.isCI, "boolean");
   assertEquals(typeof result.isTerminal, "boolean");

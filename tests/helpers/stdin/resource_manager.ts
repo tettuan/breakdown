@@ -1,11 +1,11 @@
 /**
  * STDIN Test Resource Manager
- * 
+ *
  * Purpose:
  * - Manages AbortController instances and cleanup callbacks
  * - Ensures reliable resource cleanup in test environments
  * - Prevents async operation leaks in tests
- * 
+ *
  * Design:
  * - Based on tmp/stdin_test_design_proposal.md section 1.1
  * - Provides centralized resource lifecycle management
@@ -32,7 +32,7 @@ export interface StdinTestResource {
 
 /**
  * Manages STDIN test resources with guaranteed cleanup
- * 
+ *
  * This class ensures that all AbortControllers are properly aborted
  * and all cleanup callbacks are executed, even if errors occur.
  */
@@ -89,10 +89,10 @@ export class StdinTestResourceManager {
     const callbackCount = resource.cleanupCallbacks.length;
     if (callbackCount > 0) {
       logger.debug("Executing cleanup callbacks", { id, callbackCount });
-      
+
       // Create a copy and reverse to avoid modifying during iteration
       const callbacks = [...resource.cleanupCallbacks].reverse();
-      
+
       for (let i = 0; i < callbacks.length; i++) {
         const callback = callbacks[i];
         try {
@@ -100,10 +100,10 @@ export class StdinTestResourceManager {
           await callback();
         } catch (error) {
           // Log error but continue with other cleanups
-          logger.error(`Cleanup callback error for ${id}`, { 
+          logger.error(`Cleanup callback error for ${id}`, {
             error: error instanceof Error ? error.message : String(error),
             callbackIndex: i,
-            totalCallbacks: callbackCount
+            totalCallbacks: callbackCount,
           });
         }
       }
@@ -129,24 +129,24 @@ export class StdinTestResourceManager {
 
     // Get all IDs before starting cleanup to avoid concurrent modification
     const ids = Array.from(this.resources.keys());
-    
+
     // Execute cleanups in parallel with error handling
     const results = await Promise.allSettled(
-      ids.map(id => this.cleanupResource(id))
+      ids.map((id) => this.cleanupResource(id)),
     );
 
     // Log any cleanup failures
-    const failures = results.filter(r => r.status === 'rejected');
+    const failures = results.filter((r) => r.status === "rejected");
     if (failures.length > 0) {
-      logger.error("Some resource cleanups failed", { 
+      logger.error("Some resource cleanups failed", {
         failureCount: failures.length,
-        totalCount: resourceCount 
+        totalCount: resourceCount,
       });
     }
 
-    logger.debug("All resources cleaned up", { 
-      successCount: results.filter(r => r.status === 'fulfilled').length,
-      failureCount: failures.length 
+    logger.debug("All resources cleaned up", {
+      successCount: results.filter((r) => r.status === "fulfilled").length,
+      failureCount: failures.length,
     });
   }
 
@@ -184,9 +184,9 @@ export class StdinTestResourceManager {
     }
 
     resource.cleanupCallbacks.push(callback);
-    logger.debug("Cleanup callback registered", { 
-      resourceId, 
-      totalCallbacks: resource.cleanupCallbacks.length 
+    logger.debug("Cleanup callback registered", {
+      resourceId,
+      totalCallbacks: resource.cleanupCallbacks.length,
     });
   }
 

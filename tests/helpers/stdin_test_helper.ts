@@ -1,17 +1,17 @@
 /**
  * STDIN Test Helper
- * 
+ *
  * CI環境でSTDINテストを安全に実行するためのヘルパー関数群
- * 
+ *
  * @module
  */
 
-import { 
-  CIStdinTestFramework, 
-  StdinTestScenario, 
-  type StdinMockConfig,
+import {
+  CIStdinTestFramework,
   EnhancedTerminalDetector,
   StdinEnvironmentController,
+  type StdinMockConfig,
+  StdinTestScenario,
 } from "../../lib/io/ci_stdin_test_framework.ts";
 import { assertEquals, assertRejects } from "jsr:@std/assert@1.0.8";
 
@@ -26,10 +26,10 @@ export class StdinTestUtils {
    */
   static async testStdinAcrossEnvironments<T>(
     testName: string,
-    testFunction: (scenario: StdinTestScenario, mockConfig: StdinMockConfig) => Promise<T>
+    testFunction: (scenario: StdinTestScenario, mockConfig: StdinMockConfig) => Promise<T>,
   ): Promise<void> {
     const scenarios = this.framework.createTestScenarios();
-    
+
     for (const config of scenarios) {
       await Deno.test(`${testName} - ${config.scenario}`, async () => {
         await this.framework.runStdinTest(config, async () => {
@@ -45,7 +45,7 @@ export class StdinTestUtils {
   static async testStdinScenario<T>(
     testName: string,
     config: StdinMockConfig,
-    testFunction: (mockConfig: StdinMockConfig) => Promise<T>
+    testFunction: (mockConfig: StdinMockConfig) => Promise<T>,
   ): Promise<void> {
     await Deno.test(testName, async () => {
       await this.framework.runStdinTest(config, async () => {
@@ -60,16 +60,16 @@ export class StdinTestUtils {
   static async testCIStdinBehavior<T>(
     testName: string,
     inputData: string,
-    testFunction: (inputData: string) => Promise<T>
+    testFunction: (inputData: string) => Promise<T>,
   ): Promise<void> {
     const config: StdinMockConfig = {
       scenario: StdinTestScenario.CI_PIPED,
       inputData,
       isTerminal: false,
-      envVars: { 
-        CI: "true", 
+      envVars: {
+        CI: "true",
         GITHUB_ACTIONS: "true",
-        // STDIN_DEBUG removed - use LOG_LEVEL 
+        // STDIN_DEBUG removed - use LOG_LEVEL
       },
       debug: true,
     };
@@ -91,7 +91,7 @@ export class StdinTestUtils {
         debug: true,
       };
 
-      await this.framework.runStdinTest(config, async () => {
+      await this.framework.runStdinTest(config, () => {
         const result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.envInfo.isCI, true);
         assertEquals(result.isTerminal, true);
@@ -106,7 +106,7 @@ export class StdinTestUtils {
         debug: true,
       };
 
-      await this.framework.runStdinTest(config, async () => {
+      await this.framework.runStdinTest(config, () => {
         const result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.isTerminal, false);
         assertEquals(result.confidence, "high");
@@ -120,13 +120,13 @@ export class StdinTestUtils {
   static validateEnvironmentConfig(): void {
     Deno.test("Environment configuration validation", () => {
       const config = StdinEnvironmentController.getEnvironmentConfig();
-      
+
       // Validate structure
       assertEquals(typeof config.ci.enabled, "boolean");
       assertEquals(typeof config.test.enabled, "boolean");
       assertEquals(typeof config.debug.enabled, "boolean");
       assertEquals(typeof config.timeout.default, "number");
-      
+
       // Validate timeout values are reasonable
       assertEquals(config.timeout.default > 0, true);
       assertEquals(config.timeout.ci > 0, true);
@@ -154,16 +154,24 @@ export class StdinTestUtils {
    */
   static assertStdinResult(
     result: { success: boolean; content: string; skipped: boolean; reason?: string },
-    expected: { success: boolean; contentMatch?: string | RegExp; skipped: boolean }
+    expected: { success: boolean; contentMatch?: string | RegExp; skipped: boolean },
   ): void {
-    assertEquals(result.success, expected.success, `Success mismatch: ${result.reason || 'no reason'}`);
+    assertEquals(
+      result.success,
+      expected.success,
+      `Success mismatch: ${result.reason || "no reason"}`,
+    );
     assertEquals(result.skipped, expected.skipped, "Skipped status mismatch");
-    
+
     if (expected.contentMatch) {
       if (typeof expected.contentMatch === "string") {
         assertEquals(result.content, expected.contentMatch, "Content exact match failed");
       } else {
-        assertEquals(expected.contentMatch.test(result.content), true, "Content regex match failed");
+        assertEquals(
+          expected.contentMatch.test(result.content),
+          true,
+          "Content regex match failed",
+        );
       }
     }
   }
@@ -174,7 +182,7 @@ export class StdinTestUtils {
   static async testTimeoutBehavior(
     testName: string,
     timeout: number,
-    expectTimeout: boolean = true
+    expectTimeout: boolean = true,
   ): Promise<void> {
     await Deno.test(testName, async () => {
       const config: StdinMockConfig = {
@@ -189,26 +197,30 @@ export class StdinTestUtils {
         await this.framework.runStdinTest(config, async () => {
           // Import the function to test here to avoid circular dependencies
           const { readStdinEnhanced } = await import("../../lib/io/enhanced_stdin.ts");
-          
+
           await assertRejects(
             async () => {
               await readStdinEnhanced({ timeout, debug: true });
             },
             Error,
-            "timeout"
+            "timeout",
           );
         });
       } else {
         await this.framework.runStdinTest(config, async () => {
           // Test should complete without timeout
           const { readStdinEnhanced } = await import("../../lib/io/enhanced_stdin.ts");
-          
+
           try {
             await readStdinEnhanced({ timeout, allowEmpty: true, debug: true });
           } catch (error) {
             // Check if it's a timeout error
             const isTimeoutError = error instanceof Error && error.message.includes("timeout");
-            assertEquals(isTimeoutError, false, `Unexpected timeout: ${error instanceof Error ? error.message : String(error)}`);
+            assertEquals(
+              isTimeoutError,
+              false,
+              `Unexpected timeout: ${error instanceof Error ? error.message : String(error)}`,
+            );
           }
         });
       }
@@ -265,7 +277,7 @@ export class TestEnvironmentSetup {
    */
   async withEnvironment<T>(
     envVars: Record<string, string>,
-    testFunction: () => Promise<T>
+    testFunction: () => Promise<T>,
   ): Promise<T> {
     this.setup(envVars);
     try {

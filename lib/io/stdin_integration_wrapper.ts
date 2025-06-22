@@ -1,21 +1,25 @@
 /**
  * Stdin Integration Wrapper
- * 
+ *
  * 既存のstdin.tsと新しいenhanced_stdin.tsの統合ラッパー
  * 後方互換性を維持しながら改善された機能を提供
- * 
+ *
  * @module
  */
 
-import { StdinOptions, readStdin as originalReadStdin, isStdinAvailable as originalIsStdinAvailable } from "./stdin.ts";
-import { 
-  readStdinEnhanced, 
-  isStdinAvailableEnhanced, 
-  safeReadStdin, 
+import {
+  isStdinAvailable as originalIsStdinAvailable,
+  readStdin as originalReadStdin,
+  StdinOptions,
+} from "./stdin.ts";
+import {
   detectEnvironment,
-  shouldSkipStdinProcessing,
   type EnhancedStdinOptions,
-  type EnvironmentInfo 
+  type EnvironmentInfo,
+  isStdinAvailableEnhanced,
+  readStdinEnhanced,
+  safeReadStdin,
+  shouldSkipStdinProcessing,
 } from "./enhanced_stdin.ts";
 
 /**
@@ -61,7 +65,7 @@ export function isStdinAvailable(options?: {
   migrationConfig?: StdinMigrationConfig;
 }): boolean {
   const config = options?.migrationConfig || getMigrationConfig();
-  
+
   if (config.forceFallback) {
     return originalIsStdinAvailable(options);
   }
@@ -69,7 +73,7 @@ export function isStdinAvailable(options?: {
   if (config.useEnhanced) {
     try {
       const envInfo = detectEnvironment();
-      
+
       // Apply environment overrides
       if (config.environmentOverrides) {
         if (config.environmentOverrides.ci !== undefined) {
@@ -83,9 +87,9 @@ export function isStdinAvailable(options?: {
         }
       }
 
-      return isStdinAvailableEnhanced({ 
-        environmentInfo: envInfo, 
-        debug: config.debug 
+      return isStdinAvailableEnhanced({
+        environmentInfo: envInfo,
+        debug: config.debug,
       });
     } catch (error) {
       if (config.debug) {
@@ -106,7 +110,7 @@ export async function readStdin(options: StdinOptions & {
   forceRead?: boolean;
 } = {}): Promise<string> {
   const config = options.migrationConfig || getMigrationConfig();
-  
+
   if (config.forceFallback) {
     return originalReadStdin(options);
   }
@@ -167,9 +171,9 @@ export async function readStdinSafe(options: StdinOptions & {
 
   // Fallback implementation using original readStdin
   try {
-    const skipCheck = shouldSkipStdinProcessing({ 
-      forceRead: options.forceRead, 
-      debug: config.debug 
+    const skipCheck = shouldSkipStdinProcessing({
+      forceRead: options.forceRead,
+      debug: config.debug,
     });
 
     if (skipCheck.skip && !options.forceRead) {
@@ -238,22 +242,26 @@ export async function handleStdinForCLI(options: {
 
   // Check for explicit stdin flags
   const explicitStdin = options.from === "-" || options.fromFile === "-";
-  
+
   if (explicitStdin) {
     if (debug) {
       console.debug("[CLI] Explicit stdin requested");
     }
-    
+
     try {
       const content = await readStdin({
         allowEmpty: options.allowEmpty || false,
         timeout: options.timeout,
         forceRead: true, // Force read when explicitly requested
       });
-      
+
       return { inputText: content, skipped: false, warnings };
     } catch (error) {
-      warnings.push(`Failed to read from explicitly requested stdin: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push(
+        `Failed to read from explicitly requested stdin: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
       return { inputText: "", skipped: false, warnings };
     }
   }
@@ -263,7 +271,7 @@ export async function handleStdinForCLI(options: {
     if (debug) {
       console.debug("[CLI] Stdin detected as available");
     }
-    
+
     const result = await readStdinSafe({
       allowEmpty: options.allowEmpty !== false, // Default to allowing empty for auto-detected stdin
       timeout: options.timeout,
@@ -282,6 +290,6 @@ export async function handleStdinForCLI(options: {
   if (debug) {
     console.debug("[CLI] No stdin available");
   }
-  
+
   return { inputText: "", skipped: true, warnings };
 }

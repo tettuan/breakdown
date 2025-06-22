@@ -43,14 +43,14 @@ async function withStdinInput(input: string, fn: () => Promise<void>): Promise<v
     } catch (_e) {
       // File might already be closed
     }
-    
+
     // Clean up temp file
     try {
       await Deno.remove(tempFile);
     } catch (_e) {
       // File might already be removed
     }
-    
+
     // @ts-ignore: Restore original stdin
     Deno.stdin = originalStdin;
   }

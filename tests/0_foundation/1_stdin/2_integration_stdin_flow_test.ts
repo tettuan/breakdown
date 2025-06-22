@@ -21,7 +21,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../helpers/setup.ts";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import { withStdinTest, IsolatedTestEnvironment } from "../../helpers/stdin/test_context.ts";
+import { IsolatedTestEnvironment, withStdinTest } from "../../helpers/stdin/test_context.ts";
 
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_stdin_flow";
@@ -37,48 +37,52 @@ Deno.test({
   async fn(t) {
     const environment = new IsolatedTestEnvironment();
     await environment.setup();
-    
+
     try {
       let _originalCwd: string;
 
       await t.step("setup", async () => {
-    logger.debug("Setting up test environment", {
-      key: "stdin_flow_test.ts#L35#integration-setup",
-      purpose: "Create test directory and files",
-      dir: TEST_DIR,
-    });
-    _originalCwd = Deno.cwd();
-    await ensureDir(TEST_DIR);
+        logger.debug("Setting up test environment", {
+          key: "stdin_flow_test.ts#L35#integration-setup",
+          purpose: "Create test directory and files",
+          dir: TEST_DIR,
+        });
+        _originalCwd = Deno.cwd();
+        await ensureDir(TEST_DIR);
 
-    // Initialize workspace
-    const initResult = await runCommand(["init"], undefined, TEST_DIR);
-    assertEquals(initResult.success, true, `Workspace initialization should succeed. Error: ${initResult.error}`);
-    
-    // Verify init created the expected directories
-    const agentDir = join(TEST_DIR, ".agent", "breakdown");
-    const configFile = join(agentDir, "config", "app.yml");
-    const configExists = await Deno.stat(configFile).then(() => true).catch(() => false);
-    assertEquals(configExists, true, "Init should create config/app.yml");
+        // Initialize workspace
+        const initResult = await runCommand(["init"], undefined, TEST_DIR);
+        assertEquals(
+          initResult.success,
+          true,
+          `Workspace initialization should succeed. Error: ${initResult.error}`,
+        );
 
-    // Create prompt template directories
-    const promptsDir = join(TEST_DIR, ".agent", "breakdown", "prompts");
-    await ensureDir(join(promptsDir, "summary", "project"));
-    await ensureDir(join(promptsDir, "to", "project"));
+        // Verify init created the expected directories
+        const agentDir = join(TEST_DIR, ".agent", "breakdown");
+        const configFile = join(agentDir, "config", "app.yml");
+        const configExists = await Deno.stat(configFile).then(() => true).catch(() => false);
+        assertEquals(configExists, true, "Init should create config/app.yml");
 
-    // Update app.yml with correct prompt directory (init already created it)
-    const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
-    await Deno.writeTextFile(
-      join(configDir, "app.yml"),
-      `working_dir: .agent/breakdown
+        // Create prompt template directories
+        const promptsDir = join(TEST_DIR, ".agent", "breakdown", "prompts");
+        await ensureDir(join(promptsDir, "summary", "project"));
+        await ensureDir(join(promptsDir, "to", "project"));
+
+        // Update app.yml with correct prompt directory (init already created it)
+        const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
+        await Deno.writeTextFile(
+          join(configDir, "app.yml"),
+          `working_dir: .agent/breakdown
 app_prompt:
   base_dir: .agent/breakdown/prompts
 app_schema:
   base_dir: schema
 `,
-    );
+        );
 
-    // Create prompt template files
-    const summaryTemplate = `# Project Summary Template
+        // Create prompt template files
+        const summaryTemplate = `# Project Summary Template
 Input:
 {input_text}
 
@@ -94,7 +98,7 @@ A project summary should include:
 - Risk assessment
 - Next steps`;
 
-    const toTemplate = `# Project Description Template
+        const toTemplate = `# Project Description Template
 Input:
 {input_text}
 
@@ -109,18 +113,18 @@ A project description should include:
 - Dependencies
 - Risks`;
 
-    await Deno.writeTextFile(
-      join(promptsDir, "summary", "project", "f_project.md"),
-      summaryTemplate,
-    );
-    await Deno.writeTextFile(join(promptsDir, "to", "project", "f_project.md"), toTemplate);
-  });
+        await Deno.writeTextFile(
+          join(promptsDir, "summary", "project", "f_project.md"),
+          summaryTemplate,
+        );
+        await Deno.writeTextFile(join(promptsDir, "to", "project", "f_project.md"), toTemplate);
+      });
 
       await t.step("summary command with stdin input", async () => {
         await withStdinTest("summary-stdin-test", async (context) => {
           // 環境変数BREAKDOWN_TIMEOUTを設定（TimeoutManagerが参照）
-          context.environment.setEnvVar('BREAKDOWN_TIMEOUT', '5000');
-          
+          context.environment.setEnvVar("BREAKDOWN_TIMEOUT", "5000");
+
           logger.debug("Testing summary command with stdin input", {
             key: "stdin_flow_test.ts#L104#integration-summary-stdin",
             purpose: "Verify stdin input is processed correctly for summary command",
@@ -132,15 +136,19 @@ A project description should include:
             TEST_DIR,
           );
           assertEquals(result.success, true, "Command should succeed");
-          assertStringIncludes(result.output, "project summary", "Output should contain project summary");
+          assertStringIncludes(
+            result.output,
+            "project summary",
+            "Output should contain project summary",
+          );
         });
       });
 
       await t.step("to command with stdin input", async () => {
         await withStdinTest("to-stdin-test", async (context) => {
           // 環境変数BREAKDOWN_TIMEOUTを設定（TimeoutManagerが参照）
-          context.environment.setEnvVar('BREAKDOWN_TIMEOUT', '5000');
-          
+          context.environment.setEnvVar("BREAKDOWN_TIMEOUT", "5000");
+
           logger.debug("Testing to command with stdin input", {
             key: "stdin_flow_test.ts#L118#integration-to-stdin",
             purpose: "Verify stdin input is processed correctly for to command",
@@ -163,8 +171,8 @@ A project description should include:
       await t.step("stdin with -o option", async () => {
         await withStdinTest("stdin-output-option-test", async (context) => {
           // 環境変数BREAKDOWN_TIMEOUTを設定（TimeoutManagerが参照）
-          context.environment.setEnvVar('BREAKDOWN_TIMEOUT', '5000');
-          
+          context.environment.setEnvVar("BREAKDOWN_TIMEOUT", "5000");
+
           logger.debug("Testing stdin with -o option", {
             key: "stdin_flow_test.ts#L136#integration-stdin-output",
             purpose: "Verify -o option works correctly with stdin input",

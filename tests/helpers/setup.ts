@@ -328,13 +328,13 @@ export async function runCommand(
 
   let process: Deno.ChildProcess | undefined;
   let writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
-  
+
   try {
     if (stdin) {
       // Spawn the process with stdin
       process = command.spawn();
       writer = process.stdin.getWriter();
-      
+
       try {
         await writer.write(new TextEncoder().encode(stdin));
       } finally {

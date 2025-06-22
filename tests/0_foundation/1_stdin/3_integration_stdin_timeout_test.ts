@@ -41,7 +41,7 @@ Deno.test("STDIN timeout - timeout value handling", async () => {
     const originalStdin = Deno.stdin;
     const abortController = new AbortController();
     let streamController: ReadableStreamDefaultController<Uint8Array> | undefined;
-    
+
     const mockStdin = {
       ...originalStdin,
       readable: new ReadableStream({
@@ -80,7 +80,7 @@ Deno.test("STDIN timeout - timeout value handling", async () => {
     } finally {
       // Ensure complete cleanup
       abortController.abort();
-      
+
       // Close the stream controller if it exists
       if (streamController) {
         try {
@@ -89,14 +89,14 @@ Deno.test("STDIN timeout - timeout value handling", async () => {
           // Controller might already be closed
         }
       }
-      
+
       // Cancel the mock stream to ensure cleanup
       try {
         await mockStdin.readable.cancel();
       } catch (_e) {
         // Stream might already be cancelled
       }
-      
+
       // @ts-ignore: Restore original stdin
       Deno.stdin = originalStdin;
     }
@@ -120,7 +120,7 @@ Deno.test("STDIN timeout - production config value validation", () => {
   logger.debug("Production timeout value validation passed");
 });
 
-Deno.test("STDIN timeout - parameter propagation test", async () => {
+Deno.test("STDIN timeout - parameter propagation test", () => {
   logger.debug("Testing timeout parameter propagation");
 
   // This test verifies that timeout parameter is correctly accepted by readStdin
@@ -131,19 +131,19 @@ Deno.test("STDIN timeout - parameter propagation test", async () => {
   const validOptions = { allowEmpty: true, timeout: 1000 };
   assertEquals(typeof validOptions.timeout, "number");
   assertEquals(validOptions.timeout > 0, true);
-  
+
   // Test timeout extraction from config structure
-  const mockStdinOptions = { 
-    allowEmpty: true, 
+  const mockStdinOptions = {
+    allowEmpty: true,
     timeout: 1000,
-    timeoutManager: undefined 
+    timeoutManager: undefined,
   };
-  
+
   // Validate the structure matches what readStdin expects
   assertEquals(typeof mockStdinOptions.allowEmpty, "boolean");
   assertEquals(typeof mockStdinOptions.timeout, "number");
   assertEquals(mockStdinOptions.timeout > 0, true);
-  
+
   logger.debug("Parameter structure validation completed");
 });
 
