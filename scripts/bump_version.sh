@@ -62,9 +62,9 @@ if [[ "$current_branch" != "main" ]]; then
   exit 1
 fi
 
-# 1.2 Git Push Check
-if [[ -n "$(git log --branches --not --remotes)" ]]; then
-  echo "Error: You have local commits that have not been pushed to the remote repository. Please push them first."
+# 1.2 Git Push Check (main branch only)
+if [[ -n "$(git log main --not --remotes)" ]]; then
+  echo "Error: You have local commits on main branch that have not been pushed to the remote repository. Please push them first."
   exit 1
 fi
 
