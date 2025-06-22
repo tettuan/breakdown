@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Prompt template path resolution for Breakdown CLI operations.
+ * 
+ * This module provides the PromptTemplatePathResolver class that handles the
+ * complex logic of resolving prompt template file paths based on CLI parameters,
+ * configuration, and fallback mechanisms. It supports the hierarchical prompt
+ * organization used by Breakdown's 3-layer architecture with adaptation support.
+ * 
+ * The resolver follows Breakdown's prompt conventions and provides intelligent
+ * fallback logic for adaptation-specific templates and layer type inference.
+ * 
+ * @module factory/prompt_template_path_resolver
+ */
+
 import { isAbsolute, join, resolve } from "@std/path";
 import { existsSync } from "@std/fs";
 import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
@@ -6,38 +20,55 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 type DoubleParamsResult = PromptCliParams;
 
 /**
- * PromptTemplatePathResolver
- *
- * Purpose:
- *   - Resolves the prompt template file path for Breakdown according to CLI parameters and config.
- *   - Handles all cases for baseDirOverride, config, adaptation, fromLayerType inference, and fallback.
- *   - Ensures prompt path is consistent with project conventions and user intent.
- *
- * Intent:
- *   - To centralize and standardize prompt template path resolution logic for maintainability and testability.
- *   - To avoid path confusion and ensure correct file placement for all CLI/script/test scenarios.
- *
- * Expected Results:
- *   - If baseDirOverride is specified, it takes precedence; otherwise, config.app_prompt.base_dir or default is used.
- *   - File name is determined by fromLayerType (explicit or inferred from fromFile) and adaptation option.
- *   - If adaptation file does not exist, fallback to non-adaptation file if present.
- *   - Returns absolute path to the resolved prompt template file.
- *   - Windows path separators are normalized.
- *
- * References:
- *   - docs/breakdown/path.ja.md
- *   - docs/breakdown/usage.ja.md
- *   - docs/breakdown/cli.ja.md
- *   - docs/index.ja.md
+ * Prompt template path resolver for Breakdown CLI operations.
+ * 
+ * The PromptTemplatePathResolver class handles the resolution of prompt template
+ * file paths according to Breakdown's hierarchical organization structure. It resolves
+ * templates based on demonstrative type, layer type, and adaptation options, with
+ * intelligent fallback mechanisms for missing adaptation-specific templates.
+ * 
+ * Template File Organization:
+ * - Base directory: from configuration or default constant
+ * - Demonstrative type: "to", "summary", etc.
+ * - Layer type: "project", "issue", "task"
+ * - Template naming: "f_{fromLayerType}[_{adaptation}].md"
+ * - Fallback: "f_{fromLayerType}.md" when adaptation-specific template missing
+ * 
+ * @example
+ * ```typescript
+ * const resolver = new PromptTemplatePathResolver(config, cliParams);
+ * 
+ * // Prompt template for "to project" with adaptation
+ * const adaptedTemplate = resolver.getPath(); 
+ * // Returns: "/prompts/to/project/f_issue_analysis.md" or fallback
+ * 
+ * // Standard prompt template
+ * const standardTemplate = resolver.getPath();
+ * // Returns: "/prompts/to/project/f_issue.md"
+ * ```
  */
 export class PromptTemplatePathResolver {
   private config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>;
   private cliParams: DoubleParamsResult;
 
   /**
-   * Creates a new PromptTemplatePathResolver instance.
-   * @param config The configuration object for the resolver.
-   * @param cliParams The CLI parameters used for path resolution.
+   * Creates a new PromptTemplatePathResolver instance with configuration and CLI parameters.
+   * 
+   * @param config - The configuration object containing prompt base directory settings
+   * @param cliParams - The parsed CLI parameters containing template specification options
+   * 
+   * @example
+   * ```typescript
+   * const config = { 
+   *   app_prompt: { base_dir: "lib/breakdown/prompts" } 
+   * };
+   * const cliParams = {
+   *   demonstrativeType: "to",
+   *   layerType: "project",
+   *   options: { adaptation: "analysis", fromLayerType: "issue" }
+   * };
+   * const resolver = new PromptTemplatePathResolver(config, cliParams);
+   * ```
    */
   constructor(
     config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>,
@@ -48,11 +79,32 @@ export class PromptTemplatePathResolver {
   }
 
   /**
-   * Resolves the prompt template file path according to CLI parameters and config.
-   *
-   * See: docs/breakdown/path.ja.md, usage.ja.md, cli.ja.md
-   *
-   * @returns {string} The resolved absolute prompt template file path.
+   * Resolves the complete prompt template file path with intelligent fallback logic.
+   * 
+   * This method implements the full prompt template resolution strategy, including
+   * adaptation-specific template discovery and fallback to standard templates when
+   * adaptation-specific versions are not available. It handles the complete workflow
+   * from base directory resolution to final path construction.
+   * 
+   * @returns string - The resolved absolute prompt template file path
+   * 
+   * @throws {Error} When template resolution fails or configuration is invalid
+   * 
+   * @example
+   * ```typescript
+   * const resolver = new PromptTemplatePathResolver(config, cliParams);
+   * 
+   * // With adaptation - tries adapted template first, fallback to standard
+   * const adaptedPath = resolver.getPath();
+   * // First try: "/prompts/to/project/f_issue_analysis.md"
+   * // Fallback:  "/prompts/to/project/f_issue.md"
+   * 
+   * // Without adaptation - direct standard template
+   * const standardPath = resolver.getPath();
+   * // Returns: "/prompts/to/project/f_issue.md"
+   * ```
+   * 
+   * @see {@link https://docs.breakdown.com/prompts} for template organization documentation
    */
   public getPath(): string {
     // No validation here; only resolve and return the path
@@ -71,8 +123,22 @@ export class PromptTemplatePathResolver {
   }
 
   /**
-   * Resolves the base directory for prompt templates.
-   * @returns The resolved base directory path.
+   * Resolves the base directory for prompt templates from configuration.
+   * 
+   * This method determines the prompt base directory by checking the configuration
+   * for an explicit base_dir setting, falling back to the default constant if not
+   * specified. Relative paths are resolved against the current working directory.
+   * 
+   * @returns string - The resolved absolute base directory path for prompt templates
+   * 
+   * @example
+   * ```typescript
+   * // With explicit configuration
+   * const baseDir1 = this.resolveBaseDir(); // "/custom/prompts/path"
+   * 
+   * // With default configuration
+   * const baseDir2 = this.resolveBaseDir(); // "/cwd/lib/breakdown/prompts"
+   * ```
    */
   public resolveBaseDir(): string {
     let baseDir = this.config.app_prompt?.base_dir;

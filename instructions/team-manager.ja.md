@@ -122,3 +122,25 @@
 4. 質問や相談のルートを明示する
 5. 定期的な進捗確認を
 
+### 部下のタスク管理
+
+```yml
+members:
+  - name: 部下1
+    tasks:
+      completed:
+        - ✅ 完了したタスク
+      in_progress:
+        - 🔄 実行中のタスク
+      pending:
+        - 🔲 未割り当てのタスク
+  - name: 部下2
+    tasks:
+      completed:
+        - ✅ 完了したタスク
+      in_progress:
+        - 🔄 実行中のタスク
+      pending:
+        - 🔲 未割り当てのタスク
+```
+
