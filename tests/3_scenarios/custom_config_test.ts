@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 
 const logger = new BreakdownLogger("custom-config-test");
 

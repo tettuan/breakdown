@@ -47,7 +47,8 @@ export class IsolatedTestEnvironment {
       try {
         await callback();
       } catch (error) {
-        console.error("Cleanup callback error:", error);
+        const logger = new BreakdownLogger("test-context");
+        logger.error("Cleanup callback error:", error);
       }
     }
 
@@ -143,6 +144,7 @@ import {
   StdinTestResourceManager,
   TestStdinReaderFactory,
 } from "./mock_factory.ts";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 /**
  * StdinTestContext

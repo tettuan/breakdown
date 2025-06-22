@@ -6,6 +6,8 @@
  * @module
  */
 
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
 /**
  * Template error types
  */
@@ -107,6 +109,7 @@ export class TemplateError extends Error {
  * Template error detector and handler
  */
 export class TemplateErrorHandler {
+  private static logger = new BreakdownLogger("template-error-handler");
   /**
    * Detect and classify template-related errors
    */
@@ -194,7 +197,7 @@ export class TemplateErrorHandler {
     const { autoResolve = false, projectRoot = Deno.cwd() } = options || {};
 
     // Log detailed error information
-    console.error(error.getDetailedMessage());
+    this.logger.error(error.getDetailedMessage());
 
     if (!autoResolve || !error.canAutoResolve) {
       return {
@@ -238,7 +241,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    console.log("🔧 Attempting to auto-generate missing templates...");
+    this.logger.info("🔧 Attempting to auto-generate missing templates...");
 
     const process = new Deno.Command("bash", {
       args: ["scripts/template_generator.sh", "generate"],
@@ -267,7 +270,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    console.log("🔧 Validating and fixing templates...");
+    this.logger.info("🔧 Validating and fixing templates...");
 
     const process = new Deno.Command("bash", {
       args: ["examples/00_template_check.sh", "full"],
@@ -301,6 +304,8 @@ export async function withTemplateErrorHandling<T>(
     autoResolve?: boolean;
   },
 ): Promise<T> {
+  const logger = new BreakdownLogger("template-error-wrapper");
+
   try {
     return await operation();
   } catch (error) {
@@ -318,15 +323,15 @@ export async function withTemplateErrorHandling<T>(
       });
 
       if (result.resolved) {
-        console.log(result.message);
+        logger.info(result.message);
         // Retry the operation after resolution
         return await operation();
       } else {
-        console.error(result.message);
+        logger.error(result.message);
         if (result.commands) {
-          console.error("\n🔧 Recovery commands:");
+          logger.error("\n🔧 Recovery commands:");
           for (const command of result.commands) {
-            console.error(`   ${command}`);
+            logger.error(`   ${command}`);
           }
         }
         throw templateError;

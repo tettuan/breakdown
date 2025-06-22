@@ -16,7 +16,7 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
-const logger = new BreakdownLogger();
+const logger = new BreakdownLogger("graceful-error-test");
 
 Deno.test("E2E: Graceful handling of missing configuration", async () => {
   const env = await setupTestEnvironment({

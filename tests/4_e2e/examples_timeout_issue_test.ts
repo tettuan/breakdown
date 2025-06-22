@@ -12,7 +12,7 @@
  */
 
 import { assertEquals } from "jsr:@std/assert@1.0.8";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.1";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 
 const logger = new BreakdownLogger("examples-timeout-test");
 

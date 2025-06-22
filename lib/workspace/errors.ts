@@ -12,7 +12,10 @@
  *   await workspace.initialize();
  * } catch (error) {
  *   if (error instanceof WorkspaceInitError) {
- *     console.error("Workspace initialization failed:", error.message);
+ *     // Use BreakdownLogger instead of console.error
+ *     // import { BreakdownLogger } from "@tettuan/breakdownlogger";
+ *     // const logger = new BreakdownLogger("workspace");
+ *     // logger.error("Workspace initialization failed:", error.message);
  *   }
  * }
  * ```

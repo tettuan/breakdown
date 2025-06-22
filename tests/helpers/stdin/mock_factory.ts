@@ -5,6 +5,8 @@
  * リソース管理とクリーンアップを適切に行い、テストの冪等性を確保します。
  */
 
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+
 // Core interfaces
 export interface StdinReader {
   read(options?: StdinReadOptions): Promise<string>;
@@ -60,7 +62,8 @@ export class StdinTestResourceManager {
       try {
         await callback();
       } catch (error) {
-        console.error(`Cleanup error for ${id}:`, error);
+        const logger = new BreakdownLogger("mock-factory");
+        logger.error(`Cleanup error for ${id}:`, error);
       }
     }
 

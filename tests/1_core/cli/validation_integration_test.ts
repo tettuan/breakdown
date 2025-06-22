@@ -8,7 +8,7 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@0.1.10";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 /**
  * Mock stdout/stderr for testing CLI output

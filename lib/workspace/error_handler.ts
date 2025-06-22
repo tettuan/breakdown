@@ -30,6 +30,6 @@ export class WorkspaceErrorHandlerImpl implements WorkspaceErrorHandler {
       stack: error.stack,
       context,
     };
-    console.error(JSON.stringify(errorInfo, null, 2));
+    console.error(JSON.stringify(errorInfo));
   }
 }

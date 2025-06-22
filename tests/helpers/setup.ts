@@ -305,17 +305,25 @@ export async function runCommand(
   cwd?: string,
   options?: { env?: Record<string, string> },
 ): Promise<CommandResult> {
-  const logger = new BreakdownLogger();
+  // Only create logger if LOG_LEVEL is explicitly set to debug or LOG_KEY includes test-helper
+  const logLevel = Deno.env.get("LOG_LEVEL");
+  const logKey = Deno.env.get("LOG_KEY");
+  const shouldLog = logLevel === "debug" || (logKey && logKey.includes("test-helper"));
+  const logger = shouldLog ? new BreakdownLogger("test-helper") : null;
+
   const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
   // Use cwd directly if it's already absolute, otherwise join with Deno.cwd()
   const absoluteCwd = cwd ? (cwd.startsWith("/") ? cwd : join(Deno.cwd(), cwd)) : undefined;
-  logger.debug("[runCommand] invoked", {
-    cwd: Deno.cwd(),
-    args,
-    breakdownPath,
-    runCwd: absoluteCwd,
-    env: options?.env,
-  });
+
+  if (logger) {
+    logger.debug("[runCommand] invoked", {
+      cwd: Deno.cwd(),
+      args,
+      breakdownPath,
+      runCwd: absoluteCwd,
+      env: options?.env,
+    });
+  }
   const mergedEnv = { ...Deno.env.toObject(), ...(options?.env ?? {}) };
   const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--allow-all", breakdownPath, ...args],
@@ -347,7 +355,9 @@ export async function runCommand(
       const output = new TextDecoder().decode(stdout);
       const error = new TextDecoder().decode(stderr);
 
-      logger.debug("[runCommand] process output (with stdin)", { code, output, error });
+      if (logger) {
+        logger.debug("[runCommand] process output (with stdin)", { code, output, error });
+      }
       return {
         success: code === 0,
         output: output.trim(),
@@ -357,7 +367,9 @@ export async function runCommand(
       const { code, stdout, stderr } = await command.output();
       const output = new TextDecoder().decode(stdout);
       const error = new TextDecoder().decode(stderr);
-      logger.debug("[runCommand] process output", { code, output, error });
+      if (logger) {
+        logger.debug("[runCommand] process output", { code, output, error });
+      }
       return {
         success: code === 0,
         output: output.trim(),
@@ -365,13 +377,15 @@ export async function runCommand(
       };
     }
   } catch (err: unknown) {
-    logger.error("[runCommand] error", {
-      err,
-      cwd: Deno.cwd(),
-      args,
-      breakdownPath,
-      runCwd: absoluteCwd,
-    });
+    if (logger) {
+      logger.error("[runCommand] error", {
+        err,
+        cwd: Deno.cwd(),
+        args,
+        breakdownPath,
+        runCwd: absoluteCwd,
+      });
+    }
     return {
       success: false,
       output: "",

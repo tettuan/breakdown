@@ -12,7 +12,7 @@
 
 import { assertEquals, assertRejects } from "jsr:@std/assert@1.0.7";
 import { readStdin, StdinError } from "../../../lib/io/stdin.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.2";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 
 const logger = new BreakdownLogger("stdin-timeout-test");
 

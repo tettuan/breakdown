@@ -5,7 +5,7 @@
 
 import { assertEquals, assertExists, assertNotEquals } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@0.1.10";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 import { DEFAULT_PROMPT_BASE_DIR } from "../../lib/config/constants.ts";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,

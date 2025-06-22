@@ -8,6 +8,7 @@
 
 import { exists } from "@std/fs";
 import { join } from "@std/path";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Template validation result
@@ -92,10 +93,12 @@ export const DEFAULT_TEMPLATE_MAPPINGS: TemplateMapping[] = [
 export class TemplateValidator {
   private projectRoot: string;
   private templateMappings: TemplateMapping[];
+  private logger: BreakdownLogger;
 
   constructor(projectRoot: string, templateMappings?: TemplateMapping[]) {
     this.projectRoot = projectRoot;
     this.templateMappings = templateMappings || DEFAULT_TEMPLATE_MAPPINGS;
+    this.logger = new BreakdownLogger("template-validator");
   }
 
   /**
@@ -226,38 +229,39 @@ export class TemplateValidator {
 export async function validateTemplatesForExamples(projectRoot?: string): Promise<void> {
   const root = projectRoot || Deno.cwd();
   const validator = new TemplateValidator(root);
+  const logger = new BreakdownLogger("template-validator-cli");
 
-  console.log("🔍 Validating templates for examples execution...");
+  logger.info("🔍 Validating templates for examples execution...");
 
   const validation = await validator.validateTemplates();
 
   if (validation.isValid) {
-    console.log(`✅ All ${validation.totalRequired} required templates are present`);
+    logger.info(`✅ All ${validation.totalRequired} required templates are present`);
   } else {
-    console.log(
+    logger.warn(
       `❌ ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`,
     );
     for (const missing of validation.missingTemplates) {
-      console.log(`   - ${missing}`);
+      logger.warn(`   - ${missing}`);
     }
-    console.log("\n💡 Run: bash scripts/template_generator.sh generate");
+    logger.info("\n💡 Run: bash scripts/template_generator.sh generate");
   }
 
   // Perform preflight check
   const preflight = await validator.preflightCheck();
 
   if (preflight.ready) {
-    console.log("🚀 Examples are ready to run!");
+    logger.info("🚀 Examples are ready to run!");
   } else {
-    console.log("\n⚠️  Issues detected:");
+    logger.warn("\n⚠️  Issues detected:");
     for (const issue of preflight.issues) {
-      console.log(`   ${issue}`);
+      logger.warn(`   ${issue}`);
     }
 
     if (preflight.recommendations.length > 0) {
-      console.log("\n💡 Recommendations:");
+      logger.info("\n💡 Recommendations:");
       for (const rec of preflight.recommendations) {
-        console.log(`   ${rec}`);
+        logger.info(`   ${rec}`);
       }
     }
   }
