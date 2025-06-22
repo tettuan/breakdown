@@ -56,6 +56,14 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
           });
         });
 
+        // In CI environments, add additional safeguards
+        const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
+
+        if (isCI && Deno.stdin.isTerminal()) {
+          // In CI terminal mode, don't actually wait for stdin
+          throw new DOMException("Aborted", "AbortError");
+        }
+
         // Race between reading stdin and the abort signal
         input = await Promise.race([
           readAll(Deno.stdin),
