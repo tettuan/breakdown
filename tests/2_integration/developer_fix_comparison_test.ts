@@ -5,8 +5,11 @@
 
 import { assertEquals, assertExists, assertNotEquals } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
-import { DEFAULT_PROMPT_BASE_DIR } from "../lib/config/constants.ts";
-import { DEFAULT_TEMPLATE_MAPPINGS, TemplateValidator } from "../lib/helpers/template_validator.ts";
+import { DEFAULT_PROMPT_BASE_DIR } from "../../lib/config/constants.ts";
+import {
+  DEFAULT_TEMPLATE_MAPPINGS,
+  TemplateValidator,
+} from "../../lib/helpers/template_validator.ts";
 
 const BASE_DIR = "/Users/tettuan/github/breakdown";
 

@@ -5,7 +5,10 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
-import { DEFAULT_SCHEMA_BASE_DIR, DEFAULT_WORKSPACE_STRUCTURE } from "../lib/config/constants.ts";
+import {
+  DEFAULT_SCHEMA_BASE_DIR,
+  DEFAULT_WORKSPACE_STRUCTURE,
+} from "../../lib/config/constants.ts";
 
 const BASE_DIR = "/Users/tettuan/github/breakdown";
 
