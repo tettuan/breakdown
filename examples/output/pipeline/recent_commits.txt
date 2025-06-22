@@ -1,0 +1,5 @@
+2aac6fc fix: complete example scripts execution and resolve all template errors
+9d9587d fix: resolve template and config path issues in examples scripts
+619ce5f feat: preserve tmp/example_results during test cleanup
+94c47a1 fix: remove example script execution tests and complete integration test migration
+e11d4e1 fix: add local template copying to examples scripts

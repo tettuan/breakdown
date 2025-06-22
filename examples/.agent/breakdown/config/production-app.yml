@@ -1,0 +1,29 @@
+# Production application configuration
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/production"
+app_schema:
+  base_dir: "schema/production"
+  validation_enabled: true
+logger:
+  level: "warn"
+  format: "json"
+  output: "stderr"
+  includeTimestamp: true
+performance:
+  maxFileSize: "10MB"
+  timeout: 30000
+  concurrency: 4
+  cacheEnabled: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: false
+  maxLineLength: 120
+security:
+  sanitizeInput: true
+  allowedProtocols: ["https", "file"]
+  blockedPatterns: [".env", "secrets", "password"]
+features:
+  cliValidation: true
+  experimentalFeatures: false

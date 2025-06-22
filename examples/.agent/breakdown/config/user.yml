@@ -1,0 +1,6 @@
+# User configuration for breakdown
+working_dir: "."
+app_prompt:
+  base_dir: "prompts/user"
+app_schema:
+  base_dir: "schema/user"

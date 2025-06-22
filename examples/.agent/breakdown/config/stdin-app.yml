@@ -1,0 +1,12 @@
+# Application configuration for STDIN example
+working_dir: "examples"
+app_prompt:
+  base_dir: "examples/prompts"
+app_schema:
+  base_dir: "examples/schema"
+logger:
+  level: "error"
+  format: "text"
+output:
+  format: "markdown"
+  includeHeaders: true

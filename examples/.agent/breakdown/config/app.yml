@@ -1,0 +1,14 @@
+# Breakdown Configuration
+app_prompt:
+  base_dir: "lib/breakdown/prompts"
+app_schema:
+  base_dir: "lib/breakdown/schema"
+params:
+  two:
+    demonstrativeType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
