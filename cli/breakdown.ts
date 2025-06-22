@@ -248,6 +248,16 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {
     //     // console.log("🔍 DEBUG: Starting runBreakdown with args:", args);
 
+    // Early return for help/version commands to avoid config loading debug output
+    if (args.includes("--help") || args.includes("-h") || args.includes("help")) {
+      showHelp();
+      return;
+    }
+    if (args.includes("--version") || args.includes("-v") || args.includes("version")) {
+      showVersion();
+      return;
+    }
+
     // 1. Extract config prefix (minimal implementation - cannot use BreakdownParams yet)
     const configDetector = new ConfigPrefixDetector();
     const configPrefix = configDetector.detect(args);
