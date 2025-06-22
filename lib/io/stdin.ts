@@ -60,7 +60,7 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
         const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
 
         if (isCI && Deno.stdin.isTerminal()) {
-          // In CI terminal mode, don't actually wait for stdin
+          // In CI terminal mode, don't wait for stdin input that won't come
           throw new DOMException("Aborted", "AbortError");
         }
 
@@ -73,7 +73,25 @@ export async function readStdin(options: StdinOptions = {}): Promise<string> {
         clearTimeout(timeoutId);
       }
     } else {
-      input = await readAll(Deno.stdin);
+      // Add timeout protection even when no explicit timeout is set
+      const defaultTimeout = parseInt(Deno.env.get("BREAKDOWN_TIMEOUT") || "100", 10);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), defaultTimeout);
+
+      try {
+        const abortPromise = new Promise<never>((_, reject) => {
+          controller.signal.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
+        });
+
+        input = await Promise.race([
+          readAll(Deno.stdin),
+          abortPromise,
+        ]);
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
 
     const content = new TextDecoder().decode(input).trim();
@@ -199,6 +217,8 @@ export class Spinner {
   public currentFrame: number;
   /** The interval timer for the spinner. */
   public interval: number | null;
+  /** AbortController for managing spinner lifecycle. */
+  private abortController: AbortController | null;
 
   /**
    * Creates a new Spinner instance.
@@ -209,6 +229,7 @@ export class Spinner {
     this.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     this.currentFrame = 0;
     this.interval = null;
+    this.abortController = null;
   }
 
   /**
@@ -217,7 +238,19 @@ export class Spinner {
   public start(): void {
     if (!this.enabled) return;
 
+    // Stop any existing spinner first
+    this.stop();
+
+    // Create new AbortController for this spinner session
+    this.abortController = new AbortController();
+
+    if (this.abortController.signal.aborted) return;
+
     this.interval = setInterval(() => {
+      if (this.abortController?.signal.aborted) {
+        this.stop();
+        return;
+      }
       this.currentFrame = (this.currentFrame + 1) % this.frames.length;
       writeStdout(`\r${this.frames[this.currentFrame]} Processing...`);
     }, 80);
@@ -229,8 +262,14 @@ export class Spinner {
   public stop(): void {
     if (!this.enabled) return;
 
+    // Abort the controller to signal stopping
+    if (this.abortController && !this.abortController.signal.aborted) {
+      this.abortController.abort();
+    }
+
     if (this.interval) {
       clearInterval(this.interval);
+      this.interval = null;
       writeStdout("\n");
     }
   }

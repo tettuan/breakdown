@@ -15,6 +15,16 @@ cd "$(dirname "$0")/.."
 
 echo "=== Basic Usage Examples ==="
 
+# Set timeout for examples execution (60 seconds)
+export BREAKDOWN_TIMEOUT=60000
+
+# Ensure templates are ready before execution
+echo "Checking template availability..."
+if ! bash ./examples/00_template_check.sh full; then
+    echo "❌ Template setup failed. Exiting."
+    exit 1
+fi
+
 # Ensure we have a way to run breakdown
 if [ -f ./.deno/bin/breakdown ] && ./.deno/bin/breakdown --help &> /dev/null; then
     BREAKDOWN="./.deno/bin/breakdown"
@@ -45,7 +55,7 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 - Admin dashboard
 EOF
 
-cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --config=default --destination="$OUTPUT_DIR/issues/"
+cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --config=timeout --destination="$OUTPUT_DIR/issues/"
 echo "✅ Created issue breakdowns in $OUTPUT_DIR/issues/"
 echo
 

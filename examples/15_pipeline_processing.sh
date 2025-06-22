@@ -16,6 +16,10 @@ cd "$SCRIPT_DIR" || exit 1
 
 echo "=== Pipeline Processing Example ==="
 echo "複数のコマンドを組み合わせた実践的な処理フロー"
+
+# Set timeout for pipeline processing (60 seconds)
+export BREAKDOWN_TIMEOUT=60000
+
 echo
 
 # Ensure breakdown is available

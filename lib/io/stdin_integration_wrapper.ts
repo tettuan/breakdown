@@ -1,0 +1,286 @@
+/**
+ * Stdin Integration Wrapper
+ * 
+ * 既存のstdin.tsと新しいenhanced_stdin.tsの統合ラッパー
+ * 後方互換性を維持しながら改善された機能を提供
+ * 
+ * @module
+ */
+
+import { StdinOptions, readStdin as originalReadStdin, isStdinAvailable as originalIsStdinAvailable } from "./stdin.ts";
+import { 
+  readStdinEnhanced, 
+  isStdinAvailableEnhanced, 
+  safeReadStdin, 
+  detectEnvironment,
+  shouldSkipStdinProcessing,
+  type EnhancedStdinOptions,
+  type EnvironmentInfo 
+} from "./enhanced_stdin.ts";
+
+/**
+ * Migration configuration for stdin behavior
+ */
+export interface StdinMigrationConfig {
+  /** Use enhanced stdin implementation */
+  useEnhanced?: boolean;
+  /** Enable debug logging */
+  debug?: boolean;
+  /** Force fallback to original implementation */
+  forceFallback?: boolean;
+  /** Environment-specific overrides */
+  environmentOverrides?: {
+    ci?: boolean;
+    test?: boolean;
+    terminal?: boolean;
+  };
+}
+
+/**
+ * Get migration config from environment variables
+ */
+function getMigrationConfig(): StdinMigrationConfig {
+  return {
+    useEnhanced: Deno.env.get("STDIN_USE_ENHANCED") !== "false", // Default to enhanced
+    debug: Deno.env.get("STDIN_DEBUG") === "true",
+    forceFallback: Deno.env.get("STDIN_FORCE_FALLBACK") === "true",
+    environmentOverrides: {
+      ci: Deno.env.get("STDIN_OVERRIDE_CI") === "true",
+      test: Deno.env.get("STDIN_OVERRIDE_TEST") === "true",
+      terminal: Deno.env.get("STDIN_OVERRIDE_TERMINAL") === "true",
+    },
+  };
+}
+
+/**
+ * Enhanced version of isStdinAvailable with backward compatibility
+ */
+export function isStdinAvailable(options?: {
+  isTerminal?: boolean;
+  migrationConfig?: StdinMigrationConfig;
+}): boolean {
+  const config = options?.migrationConfig || getMigrationConfig();
+  
+  if (config.forceFallback) {
+    return originalIsStdinAvailable(options);
+  }
+
+  if (config.useEnhanced) {
+    try {
+      const envInfo = detectEnvironment();
+      
+      // Apply environment overrides
+      if (config.environmentOverrides) {
+        if (config.environmentOverrides.ci !== undefined) {
+          envInfo.isCI = config.environmentOverrides.ci;
+        }
+        if (config.environmentOverrides.test !== undefined) {
+          envInfo.isTest = config.environmentOverrides.test;
+        }
+        if (config.environmentOverrides.terminal !== undefined) {
+          envInfo.isTerminal = config.environmentOverrides.terminal;
+        }
+      }
+
+      return isStdinAvailableEnhanced({ 
+        environmentInfo: envInfo, 
+        debug: config.debug 
+      });
+    } catch (error) {
+      if (config.debug) {
+        console.debug("[STDIN] Enhanced detection failed, falling back:", error);
+      }
+      return originalIsStdinAvailable(options);
+    }
+  }
+
+  return originalIsStdinAvailable(options);
+}
+
+/**
+ * Enhanced version of readStdin with backward compatibility
+ */
+export async function readStdin(options: StdinOptions & {
+  migrationConfig?: StdinMigrationConfig;
+  forceRead?: boolean;
+} = {}): Promise<string> {
+  const config = options.migrationConfig || getMigrationConfig();
+  
+  if (config.forceFallback) {
+    return originalReadStdin(options);
+  }
+
+  if (config.useEnhanced) {
+    try {
+      const enhancedOptions: EnhancedStdinOptions = {
+        allowEmpty: options.allowEmpty,
+        timeout: options.timeout,
+        forceRead: options.forceRead,
+        debug: config.debug,
+      };
+
+      return await readStdinEnhanced(enhancedOptions);
+    } catch (error) {
+      if (config.debug) {
+        console.debug("[STDIN] Enhanced read failed, falling back:", error);
+      }
+      // Fallback to original implementation
+      return originalReadStdin(options);
+    }
+  }
+
+  return originalReadStdin(options);
+}
+
+/**
+ * Safe stdin reader that handles all edge cases gracefully
+ */
+export async function readStdinSafe(options: StdinOptions & {
+  migrationConfig?: StdinMigrationConfig;
+  forceRead?: boolean;
+} = {}): Promise<{
+  success: boolean;
+  content: string;
+  skipped: boolean;
+  reason?: string;
+  environmentInfo?: EnvironmentInfo;
+}> {
+  const config = options.migrationConfig || getMigrationConfig();
+
+  if (config.useEnhanced && !config.forceFallback) {
+    try {
+      const enhancedOptions: EnhancedStdinOptions = {
+        allowEmpty: options.allowEmpty,
+        timeout: options.timeout,
+        forceRead: options.forceRead,
+        debug: config.debug,
+      };
+
+      return await safeReadStdin(enhancedOptions);
+    } catch (error) {
+      if (config.debug) {
+        console.debug("[STDIN] Enhanced safe read failed, falling back:", error);
+      }
+    }
+  }
+
+  // Fallback implementation using original readStdin
+  try {
+    const skipCheck = shouldSkipStdinProcessing({ 
+      forceRead: options.forceRead, 
+      debug: config.debug 
+    });
+
+    if (skipCheck.skip && !options.forceRead) {
+      return {
+        success: true,
+        content: "",
+        skipped: true,
+        reason: skipCheck.reason,
+        environmentInfo: skipCheck.envInfo,
+      };
+    }
+
+    const content = await originalReadStdin(options);
+    return {
+      success: true,
+      content,
+      skipped: false,
+      environmentInfo: skipCheck.envInfo,
+    };
+  } catch (error) {
+    const envInfo = detectEnvironment();
+    return {
+      success: false,
+      content: "",
+      skipped: false,
+      reason: error instanceof Error ? error.message : String(error),
+      environmentInfo: envInfo,
+    };
+  }
+}
+
+/**
+ * Utility function to get current environment information
+ */
+export function getEnvironmentInfo(): EnvironmentInfo {
+  return detectEnvironment();
+}
+
+/**
+ * Utility function to check if stdin processing should be skipped
+ */
+export function shouldSkipStdin(options?: {
+  forceRead?: boolean;
+  debug?: boolean;
+}): boolean {
+  const result = shouldSkipStdinProcessing(options);
+  return result.skip;
+}
+
+/**
+ * CLI integration helper for breakdown.ts
+ */
+export async function handleStdinForCLI(options: {
+  from?: string;
+  fromFile?: string;
+  allowEmpty?: boolean;
+  timeout?: number;
+  debug?: boolean;
+}): Promise<{
+  inputText: string;
+  skipped: boolean;
+  warnings: string[];
+}> {
+  const warnings: string[] = [];
+  const debug = options.debug || Deno.env.get("STDIN_DEBUG") === "true";
+
+  // Check for explicit stdin flags
+  const explicitStdin = options.from === "-" || options.fromFile === "-";
+  
+  if (explicitStdin) {
+    if (debug) {
+      console.debug("[CLI] Explicit stdin requested");
+    }
+    
+    try {
+      const content = await readStdin({
+        allowEmpty: options.allowEmpty || false,
+        timeout: options.timeout,
+        forceRead: true, // Force read when explicitly requested
+      });
+      
+      return { inputText: content, skipped: false, warnings };
+    } catch (error) {
+      warnings.push(`Failed to read from explicitly requested stdin: ${error instanceof Error ? error.message : String(error)}`);
+      return { inputText: "", skipped: false, warnings };
+    }
+  }
+
+  // Check if stdin is available
+  if (isStdinAvailable()) {
+    if (debug) {
+      console.debug("[CLI] Stdin detected as available");
+    }
+    
+    const result = await readStdinSafe({
+      allowEmpty: options.allowEmpty !== false, // Default to allowing empty for auto-detected stdin
+      timeout: options.timeout,
+    });
+
+    if (result.success) {
+      return { inputText: result.content, skipped: result.skipped, warnings };
+    } else {
+      if (result.reason) {
+        warnings.push(`Stdin read failed: ${result.reason}`);
+      }
+      return { inputText: "", skipped: result.skipped, warnings };
+    }
+  }
+
+  if (debug) {
+    console.debug("[CLI] No stdin available");
+  }
+  
+  return { inputText: "", skipped: true, warnings };
+}
