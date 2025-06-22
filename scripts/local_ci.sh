@@ -502,8 +502,8 @@ if ! deno lint; then
 fi
 
 echo "Running final comprehensive type check with --all flag..."
-if ! deno check --all; then
-    handle_type_error "comprehensive --all check" "$(deno check --all 2>&1)"
+if ! deno check --all **/*.ts; then
+    handle_type_error "comprehensive --all check" "$(deno check --all **/*.ts 2>&1)"
 fi
 
 echo "Running automatic test cleanup..."
