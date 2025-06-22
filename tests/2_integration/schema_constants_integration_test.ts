@@ -5,6 +5,7 @@
 
 import { assert, assertEquals, assertExists } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@0.1.10";
 import {
   DEFAULT_SCHEMA_BASE_DIR,
   DEFAULT_WORKSPACE_STRUCTURE,
@@ -19,10 +20,12 @@ Deno.test("Schema constants integration - 修正前の状態確認", () => {
   assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.tasks, "tasks");
   assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.projects, "projects");
 
-  console.log("constants.ts設定確認完了");
+  const logger = new BreakdownLogger();
+  logger.info("constants.ts設定確認完了");
 });
 
 Deno.test("Schema directory structure - 実際の構造確認", async () => {
+  const logger = new BreakdownLogger();
   const schemaBaseDir = join(BASE_DIR, DEFAULT_SCHEMA_BASE_DIR);
 
   try {
@@ -48,18 +51,16 @@ Deno.test("Schema directory structure - 実際の構造確認", async () => {
     const allExpectedDirs = ["defect", "find", "summary", "to"];
     const missingDirs = allExpectedDirs.filter((dir) => !dirEntries.includes(dir));
     if (missingDirs.length > 0) {
-      console.log(
-        `注意: 以下のディレクトリが存在しません（空のディレクトリの可能性）: ${
-          missingDirs.join(", ")
-        }`,
-      );
+      logger.warn("存在しないディレクトリ（空のディレクトリの可能性）", {
+        missingDirs,
+      });
     }
 
-    console.log("実際のschema構造:", dirEntries);
+    logger.debug("実際のschema構造", { dirEntries });
   } catch (error) {
     // ディレクトリが存在しない場合はテストをスキップ
     if (error instanceof Deno.errors.NotFound) {
-      console.log("schema ディレクトリが存在しません - テストスキップ");
+      logger.warn("schema ディレクトリが存在しません - テストスキップ");
       return;
     }
     throw error;
@@ -67,6 +68,7 @@ Deno.test("Schema directory structure - 実際の構造確認", async () => {
 });
 
 Deno.test("Schema file access - constants設定でのファイルアクセステスト", async () => {
+  const logger = new BreakdownLogger();
   const schemaBaseDir = join(BASE_DIR, DEFAULT_SCHEMA_BASE_DIR);
 
   // constants.tsの設定で期待されるパス (修正前 - 失敗するはず)
@@ -87,7 +89,7 @@ Deno.test("Schema file access - constants設定でのファイルアクセステ
     }
   }
 
-  console.log("パスアクセス結果:", pathAccessResults);
+  logger.debug("パスアクセス結果", { pathAccessResults });
 
   // 修正前は全てfalseになるはず（不整合の証明）
   const allPathsExist = pathAccessResults.every((result) => result.exists);
@@ -99,6 +101,7 @@ Deno.test("Schema file access - constants設定でのファイルアクセステ
 });
 
 Deno.test("Actual schema files access - 実際の構造でのファイル確認", async () => {
+  const logger = new BreakdownLogger();
   const schemaBaseDir = join(BASE_DIR, DEFAULT_SCHEMA_BASE_DIR);
 
   // 実際の構造でファイルが存在することを確認
@@ -113,19 +116,20 @@ Deno.test("Actual schema files access - 実際の構造でのファイル確認"
     try {
       const stat = await Deno.stat(path);
       assertExists(stat, `ファイルが存在しません: ${path}`);
-      console.log(`✓ ファイル確認: ${path}`);
+      logger.debug("ファイル確認", { path });
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-        console.log(`✗ ファイルが存在しません (テストスキップ): ${path}`);
+        logger.warn("ファイルが存在しません (テストスキップ)", { path });
         continue;
       }
-      console.error(`✗ ファイルアクセスエラー: ${path}`, error);
+      logger.error("ファイルアクセスエラー", { path, error });
       throw error;
     }
   }
 });
 
 Deno.test("Directory naming consistency check - 命名規則の一致確認", () => {
+  const logger = new BreakdownLogger();
   // constants.tsは複数形、実際のschemaは単数形の不整合を確認
   const constantsNames = Object.values(DEFAULT_WORKSPACE_STRUCTURE.directories);
   const expectedSingularNames = ["issue", "task", "project"];
@@ -142,5 +146,5 @@ Deno.test("Directory naming consistency check - 命名規則の一致確認", ()
     );
   });
 
-  console.log("命名規則の不整合を確認完了");
+  logger.info("命名規則の不整合を確認完了");
 });

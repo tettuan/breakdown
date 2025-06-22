@@ -119,16 +119,17 @@ Deno.test("CLI Integration: project summary to project/issue/task (happy path)",
   logger.debug("to project result", { result });
   // New implementation continues execution gracefully, should succeed
   if (!result.success) {
-    console.error("CLI Command failed!");
-    console.error("Output:", result.output);
-    console.error("Error:", result.error);
-    console.error("Args used:", [
-      "to",
-      "project",
-      `--from=${summaryPath}`,
-      `--destination=${join(projectDir, "project.md")}`,
-    ]);
-    console.error("Working directory:", testDir);
+    logger.error("CLI Command failed", {
+      output: result.output,
+      error: result.error,
+      args: [
+        "to",
+        "project",
+        `--from=${summaryPath}`,
+        `--destination=${join(projectDir, "project.md")}`,
+      ],
+      workingDirectory: testDir,
+    });
   }
   assertEquals(result.success, true);
   logger.debug("CLI Integration to project result details", { error: result.error });

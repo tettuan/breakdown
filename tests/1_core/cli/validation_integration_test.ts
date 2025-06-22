@@ -8,6 +8,7 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@0.1.10";
 
 /**
  * Mock stdout/stderr for testing CLI output
@@ -241,8 +242,9 @@ Deno.test("CLI Integration: non-existent config warning", async () => {
     // The CLI now continues execution even with config issues, which is the expected behavior
 
     // Debug output to understand what's happening
-    console.log("stdout:", output.stdout);
-    console.log("stderr:", output.stderr);
+    const logger = new BreakdownLogger();
+    logger.debug("CLI stdout", { stdout: output.stdout });
+    logger.debug("CLI stderr", { stderr: output.stderr });
 
     // Check for config warning - based on debug output, the config warning appears in the test output
     // but not in stderr. The CLI is failing due to template not found after config loading
