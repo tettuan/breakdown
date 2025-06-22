@@ -156,7 +156,7 @@ export class CIStdinTestFramework {
     const sessionId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Use provided test config or defaults
-    const testConfig = { ...this.defaultConfig, ...config.testConfig };
+    const _testConfig = { ...this.defaultConfig, ...config.testConfig };
 
     // Backup original environment (only if envVars are provided for compatibility)
     const originalEnv: Record<string, string> = {};
@@ -207,10 +207,6 @@ export class CIStdinTestFramework {
       stdin: mockStdin,
     };
 
-    if (testConfig.debug) {
-      console.debug(`[CI-STDIN-TEST] Setup mock environment: ${sessionId}`, config);
-    }
-
     return testState;
   }
 
@@ -245,10 +241,7 @@ export class CIStdinTestFramework {
     // Remove test session
     this.testSessions.delete(sessionId);
 
-    const testConfig = testState.mockConfig.testConfig || this.defaultConfig;
-    if (testConfig.debug) {
-      console.debug(`[CI-STDIN-TEST] Cleaned up mock environment: ${sessionId}`);
-    }
+    const _testConfig = testState.mockConfig.testConfig || this.defaultConfig;
   }
 
   /**

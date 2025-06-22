@@ -171,53 +171,27 @@ export function isStdinAvailableEnhanced(options?: {
 }): boolean {
   const envInfo = options?.environmentInfo ||
     detectEnvironment(options?.environmentDetectionConfig);
-  const debug = options?.debug || false;
-
-  if (debug) {
-    console.debug("[STDIN] Environment detection:", envInfo);
-  }
-
   // In CI environments, never assume stdin is available unless explicitly piped
   if (envInfo.isCI) {
-    if (debug) {
-      console.debug("[STDIN] CI environment detected, checking terminal status");
-    }
-
     // In CI, if it's a terminal, no stdin is available
     if (envInfo.isTerminal) {
-      if (debug) {
-        console.debug("[STDIN] CI + Terminal = No stdin available");
-      }
       return false;
     }
 
     // In CI, if it's not a terminal, stdin might be piped
-    if (debug) {
-      console.debug("[STDIN] CI + Non-terminal = Stdin potentially available");
-    }
     return true;
   }
 
   // In test environments, use conservative detection
   if (envInfo.isTest) {
-    if (debug) {
-      console.debug("[STDIN] Test environment detected");
-    }
-
     // Check for explicit test stdin configuration
     // TEST_STDIN_AVAILABLE removed - use native detection
-    if (debug) {
-      console.debug(`[STDIN] Test environment: using native terminal detection`);
-    }
 
     // Default: no stdin in tests unless piped
     return !envInfo.isTerminal;
   }
 
   // Standard terminal detection for interactive environments
-  if (debug) {
-    console.debug("[STDIN] Standard environment, using terminal detection");
-  }
 
   return !envInfo.isTerminal;
 }
@@ -230,7 +204,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
     allowEmpty = false,
     timeout,
     forceRead = false,
-    debug = false,
     ciDetector,
   } = options;
 
@@ -245,23 +218,15 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
   const envInfo = detectEnvironment(envDetectionConfig);
 
-  if (debug) {
-    console.debug("[STDIN] Starting enhanced stdin read", { options, envInfo });
-  }
-
   // Custom CI detection override
   if (ciDetector) {
     envInfo.isCI = ciDetector();
-    if (debug) {
-      console.debug("[STDIN] Custom CI detector result:", envInfo.isCI);
-    }
   }
 
   // Determine timeout value with environment-specific defaults first
   let effectiveTimeout: number;
   let effectiveAllowEmpty: boolean;
   let effectiveForceRead: boolean;
-  let effectiveDebug: boolean;
 
   if (options.timeoutManager) {
     // 新しい統一管理を使用
@@ -269,12 +234,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
     effectiveTimeout = stdinConfig.timeout;
     effectiveAllowEmpty = allowEmpty ?? stdinConfig.allowEmpty;
     effectiveForceRead = forceRead || stdinConfig.forceRead;
-    effectiveDebug = debug || stdinConfig.debug;
-
-    if (effectiveDebug) {
-      console.debug("[STDIN] Using TimeoutManager config:", stdinConfig);
-      console.debug("[STDIN] TimeoutManager debug info:", options.timeoutManager.getDebugInfo());
-    }
   } else {
     // フォールバック: TimeoutManagerを使用（推奨）
     const { TimeoutManager } = await import("../config/timeout_manager.ts");
@@ -283,20 +242,12 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
     effectiveTimeout = timeout || defaultManager.getStdinTimeout();
     effectiveAllowEmpty = allowEmpty ?? defaultManager.getStdinConfig().allowEmpty;
     effectiveForceRead = forceRead || defaultManager.getStdinConfig().forceRead;
-    effectiveDebug = debug || defaultManager.getStdinConfig().debug;
-
-    if (effectiveDebug) {
-      console.debug("[STDIN] Using default TimeoutManager config");
-    }
   }
 
   // Early abort conditions for CI/test environments
   if (!effectiveForceRead) {
     if (envInfo.isCI && envInfo.isTerminal) {
       const errorMsg = "Stdin not available in CI terminal environment";
-      if (effectiveDebug) {
-        console.debug(`[STDIN] ${errorMsg}`);
-      }
       throw new EnhancedStdinError(errorMsg, envInfo, { reason: "ci_terminal" });
     }
 
@@ -304,14 +255,11 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
       envInfo.isTest &&
       !isStdinAvailableEnhanced({
         environmentInfo: envInfo,
-        debug: effectiveDebug,
+        debug: options?.debug || false,
         environmentDetectionConfig: envDetectionConfig,
       })
     ) {
       const errorMsg = "Stdin not available in test environment";
-      if (effectiveDebug) {
-        console.debug(`[STDIN] ${errorMsg}`);
-      }
       throw new EnhancedStdinError(errorMsg, envInfo, { reason: "test_environment" });
     }
   }
@@ -319,15 +267,8 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
   try {
     let input: Uint8Array;
 
-    if (effectiveDebug) {
-      console.debug(`[STDIN] Using timeout: ${effectiveTimeout}ms`);
-    }
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      if (effectiveDebug) {
-        console.debug("[STDIN] Timeout triggered");
-      }
       controller.abort();
     }, effectiveTimeout);
 
@@ -350,10 +291,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
           clearTimeout(quickTimeoutId);
         });
 
-        if (effectiveDebug) {
-          console.debug("[STDIN] Using quick check for CI environment");
-        }
-
         try {
           input = await Promise.race([quickCheck, abortPromise]);
         } catch (_error) {
@@ -365,10 +302,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
           throw _error;
         }
       } else {
-        if (effectiveDebug) {
-          console.debug("[STDIN] Starting standard stdin read");
-        }
-
         const readPromise = readAll(Deno.stdin);
 
         try {
@@ -385,10 +318,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
           throw _error;
         }
       }
-
-      if (effectiveDebug) {
-        console.debug(`[STDIN] Successfully read ${input.length} bytes`);
-      }
     } finally {
       clearTimeout(timeoutId);
     }
@@ -397,14 +326,7 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
     if (!effectiveAllowEmpty && !content) {
       const errorMsg = "No input provided via stdin";
-      if (effectiveDebug) {
-        console.debug(`[STDIN] ${errorMsg}`);
-      }
       throw new EnhancedStdinError(errorMsg, envInfo, { reason: "empty_input" });
-    }
-
-    if (effectiveDebug) {
-      console.debug(`[STDIN] Successfully processed content: ${content.length} characters`);
     }
 
     return content;
@@ -415,10 +337,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
     const isAbortError = error instanceof Error && error.name === "AbortError";
     const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (effectiveDebug) {
-      console.debug(`[STDIN] Error occurred: ${errorMessage}`, { isAbortError, envInfo });
-    }
 
     if (isAbortError) {
       throw new EnhancedStdinError(
@@ -454,9 +372,6 @@ export function shouldSkipStdinProcessing(options?: {
   // Skip in CI terminal environments
   if (envInfo.isCI && envInfo.isTerminal) {
     const reason = `CI terminal environment (${envInfo.ciProvider})`;
-    if (debug) {
-      console.debug(`[STDIN] Skipping: ${reason}`);
-    }
     return { skip: true, reason, envInfo };
   }
 
@@ -469,9 +384,6 @@ export function shouldSkipStdinProcessing(options?: {
     })
   ) {
     const reason = "Test environment without available stdin";
-    if (debug) {
-      console.debug(`[STDIN] Skipping: ${reason}`);
-    }
     return { skip: true, reason, envInfo };
   }
 
@@ -525,10 +437,6 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
       envInfo: skipCheck.envInfo,
     };
   } catch (error) {
-    if (debug) {
-      console.debug("[STDIN] Safe read failed:", error);
-    }
-
     return {
       success: false,
       content: "",

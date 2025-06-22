@@ -91,10 +91,7 @@ export function isStdinAvailable(options?: {
         environmentInfo: envInfo,
         debug: config.debug,
       });
-    } catch (error) {
-      if (config.debug) {
-        console.debug("[STDIN] Enhanced detection failed, falling back:", error);
-      }
+    } catch (_error) {
       return originalIsStdinAvailable(options);
     }
   }
@@ -125,10 +122,7 @@ export async function readStdin(options: StdinOptions & {
       };
 
       return await readStdinEnhanced(enhancedOptions);
-    } catch (error) {
-      if (config.debug) {
-        console.debug("[STDIN] Enhanced read failed, falling back:", error);
-      }
+    } catch (_error) {
       // Fallback to original implementation
       return originalReadStdin(options);
     }
@@ -162,10 +156,8 @@ export async function readStdinSafe(options: StdinOptions & {
       };
 
       return await safeReadStdin(enhancedOptions);
-    } catch (error) {
-      if (config.debug) {
-        console.debug("[STDIN] Enhanced safe read failed, falling back:", error);
-      }
+    } catch (_error) {
+      // Error handling silently falls through to fallback
     }
   }
 
@@ -238,16 +230,12 @@ export async function handleStdinForCLI(options: {
   warnings: string[];
 }> {
   const warnings: string[] = [];
-  const debug = options.debug || false; // Use LOG_LEVEL for debugging
+  // Debug mode removed - use BreakdownLogger instead
 
   // Check for explicit stdin flags
   const explicitStdin = options.from === "-" || options.fromFile === "-";
 
   if (explicitStdin) {
-    if (debug) {
-      console.debug("[CLI] Explicit stdin requested");
-    }
-
     try {
       const content = await readStdin({
         allowEmpty: options.allowEmpty || false,
@@ -268,10 +256,6 @@ export async function handleStdinForCLI(options: {
 
   // Check if stdin is available
   if (isStdinAvailable()) {
-    if (debug) {
-      console.debug("[CLI] Stdin detected as available");
-    }
-
     const result = await readStdinSafe({
       allowEmpty: options.allowEmpty !== false, // Default to allowing empty for auto-detected stdin
       timeout: options.timeout,
@@ -285,10 +269,6 @@ export async function handleStdinForCLI(options: {
       }
       return { inputText: "", skipped: result.skipped, warnings };
     }
-  }
-
-  if (debug) {
-    console.debug("[CLI] No stdin available");
   }
 
   return { inputText: "", skipped: true, warnings };

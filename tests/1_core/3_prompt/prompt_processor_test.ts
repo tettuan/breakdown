@@ -713,14 +713,14 @@ Deno.test("should reproduce path mismatch when app_prompt.base_dir is ignored (e
       "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
     );
     // Simulate input file
-    const inputDir = join(workingDir, "tmp", "examples", "project");
+    const inputDir = join(workingDir, "tmp", "test_project", "project");
     await ensureDir(inputDir);
     const inputFile = join(inputDir, "project_summary.md");
     await Deno.writeTextFile(inputFile, "# Example Project Summary\n- Feature: Example");
     // Main Test
     const _relPromptsDir = relative(workingDir, join(workingDir, ".agent", "breakdown", "prompts"));
     const relFromFile = relative(workingDir, inputFile);
-    const destDir = join(workingDir, "tmp", "examples", "project");
+    const destDir = join(workingDir, "tmp", "test_project", "project");
     await ensureDir(destDir);
     const relDestFile = relative(workingDir, join(destDir, "project.md"));
     // Debug output before

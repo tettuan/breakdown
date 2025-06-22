@@ -143,7 +143,8 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
     // テスト実行前の状態
     const beforeTest = {
       mainConfig: "/Users/tettuan/github/breakdown/config/app.yml",
-      examplesConfig: "/Users/tettuan/github/breakdown/examples/.agent/breakdown/config/app.yml",
+      examplesConfig:
+        "/Users/tettuan/github/breakdown/tmp/test_examples/.agent/breakdown/config/app.yml",
       tmpConfigs: [
         "/Users/tettuan/github/breakdown/tmp/test_cli_io/.agent/breakdown/config/app.yml",
         // 他の一時設定ファイル

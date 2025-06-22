@@ -50,7 +50,7 @@ Deno.test("修正後想定: constants.ts参照による整合性テスト", () =
   const createDynamicMapping = (basePath: string) => {
     return {
       source: `${basePath}/summary/issue/f_issue.md`,
-      destination: "examples/prompts/summary/issue/f_issue.md",
+      destination: "tmp/test_prompts/summary/issue/f_issue.md",
       required: true,
     };
   };
@@ -117,7 +117,7 @@ Deno.test("修正提案: 動的パス生成の実装例", () => {
   ) => {
     return {
       source: `${baseDir}/${category}/${type}/${filename}`,
-      destination: `examples/prompts/${category}/${type}/${filename}`,
+      destination: `tmp/test_prompts/${category}/${type}/${filename}`,
       required: true,
     };
   };

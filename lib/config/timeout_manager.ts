@@ -172,13 +172,7 @@ export class TimeoutManager {
     // デバッグモードの決定
     this.debugMode = debugMode ?? this.config.stdin.environments[this.environmentType].debug;
 
-    if (this.debugMode) {
-      console.debug("[TimeoutManager] Initialized with config:", {
-        environmentType: this.environmentType,
-        environmentInfo: this.environmentInfo,
-        config: this.config,
-      });
-    }
+    // Debug logging removed - use BreakdownLogger instead
   }
 
   /**
@@ -222,24 +216,16 @@ export class TimeoutManager {
    */
   private detectEnvironmentType(): EnvironmentType {
     if (this.environmentInfo.isCI) {
-      if (this.debugMode) {
-        console.debug(
-          `[TimeoutManager] Detected CI environment: ${this.environmentInfo.ciProvider}`,
-        );
-      }
+      // Debug logging removed - use BreakdownLogger instead
       return "ci";
     }
 
     if (this.environmentInfo.isTest) {
-      if (this.debugMode) {
-        console.debug("[TimeoutManager] Detected test environment");
-      }
+      // Debug logging removed - use BreakdownLogger instead
       return "test";
     }
 
-    if (this.debugMode) {
-      console.debug("[TimeoutManager] Detected interactive environment");
-    }
+    // Debug logging removed - use BreakdownLogger instead
     return "interactive";
   }
 
@@ -268,18 +254,14 @@ export class TimeoutManager {
     // BREAKDOWN_TIMEOUTが最優先
     const envTimeout = this.getEnvironmentTimeout();
     if (envTimeout !== undefined) {
-      if (this.debugMode) {
-        console.debug(`[TimeoutManager] Using BREAKDOWN_TIMEOUT: ${envTimeout}ms`);
-      }
+      // Debug logging removed - use BreakdownLogger instead
       return envTimeout;
     }
 
     // 既存のロジック
     const timeout = this.config.timeouts[this.environmentType];
 
-    if (this.debugMode) {
-      console.debug(`[TimeoutManager] getTimeout() for ${this.environmentType}: ${timeout}ms`);
-    }
+    // Debug logging removed - use BreakdownLogger instead
 
     return timeout;
   }
@@ -293,18 +275,14 @@ export class TimeoutManager {
     // BREAKDOWN_TIMEOUTが最優先
     const envTimeout = this.getEnvironmentTimeout();
     if (envTimeout !== undefined) {
-      if (this.debugMode) {
-        console.debug(`[TimeoutManager] Using BREAKDOWN_TIMEOUT for STDIN: ${envTimeout}ms`);
-      }
+      // Debug logging removed - use BreakdownLogger instead
       return envTimeout;
     }
 
     // 既存のロジック
     const timeout = this.config.stdin.environments[this.environmentType].timeout;
 
-    if (this.debugMode) {
-      console.debug(`[TimeoutManager] getStdinTimeout() for ${this.environmentType}: ${timeout}ms`);
-    }
+    // Debug logging removed - use BreakdownLogger instead
 
     return timeout;
   }
@@ -317,9 +295,7 @@ export class TimeoutManager {
   getStdinConfig(): StdinTimeoutConfig {
     const config = this.config.stdin.environments[this.environmentType];
 
-    if (this.debugMode) {
-      console.debug(`[TimeoutManager] getStdinConfig() for ${this.environmentType}:`, config);
-    }
+    // Debug logging removed - use BreakdownLogger instead
 
     return config;
   }
@@ -336,13 +312,7 @@ export class TimeoutManager {
   applyCustomTimeout(customTimeout?: number): number {
     const timeout = customTimeout || this.getTimeout();
 
-    if (this.debugMode) {
-      console.debug(
-        `[TimeoutManager] applyCustomTimeout(): ${
-          customTimeout ? "custom" : "default"
-        } = ${timeout}ms`,
-      );
-    }
+    // Debug logging removed - use BreakdownLogger instead
 
     return timeout;
   }
@@ -401,13 +371,7 @@ export class TimeoutManager {
 
     const valid = errors.length === 0;
 
-    if (this.debugMode) {
-      console.debug("[TimeoutManager] Configuration validation:", {
-        valid,
-        errors,
-        warnings,
-      });
-    }
+    // Debug logging removed - use BreakdownLogger instead
 
     return { valid, errors, warnings };
   }
@@ -449,9 +413,7 @@ export class TimeoutManager {
   updateConfig(updates: Partial<EnvironmentTimeoutConfig>): void {
     this.config = this.mergeConfig(this.config, updates);
 
-    if (this.debugMode) {
-      console.debug("[TimeoutManager] Configuration updated:", updates);
-    }
+    // Debug logging removed - use BreakdownLogger instead
   }
 
   /**
@@ -462,14 +424,10 @@ export class TimeoutManager {
    * @param environmentType 新しい環境タイプ
    */
   setEnvironmentType(environmentType: EnvironmentType): void {
-    const previousType = this.environmentType;
+    const _previousType = this.environmentType;
     this.environmentType = environmentType;
 
-    if (this.debugMode) {
-      console.debug(
-        `[TimeoutManager] Environment type changed: ${previousType} -> ${environmentType}`,
-      );
-    }
+    // Debug logging removed - use BreakdownLogger instead
   }
 
   /**
@@ -480,9 +438,7 @@ export class TimeoutManager {
   setDebugMode(enabled: boolean): void {
     this.debugMode = enabled;
 
-    if (this.debugMode) {
-      console.debug("[TimeoutManager] Debug mode enabled");
-    }
+    // Debug logging removed - use BreakdownLogger instead
   }
 
   /**
