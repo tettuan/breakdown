@@ -506,9 +506,4 @@ if ! deno check --all **/*.ts; then
     handle_type_error "comprehensive --all check" "$(deno check --all **/*.ts 2>&1)"
 fi
 
-echo "Running automatic test cleanup..."
-if ! deno run -A scripts/test_cleanup.ts; then
-    echo "⚠️ Warning: Test cleanup failed, but CI continues"
-fi
-
 echo "✓ Local checks completed successfully." 
