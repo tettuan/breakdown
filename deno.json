@@ -2,8 +2,7 @@
   "name": "@tettuan/breakdown",
   "version": "1.1.1",
   "exports": {
-    ".": "./mod.ts",
-    "./cli": "./cli/breakdown.ts"
+    ".": "./mod.ts"
   },
   "bin": {
     "breakdown": "./cli/breakdown.ts"
