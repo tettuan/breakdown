@@ -22,7 +22,7 @@
     "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.4",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.3",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.3",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.4"
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.5"
   },
   "publish": {
     "include": [

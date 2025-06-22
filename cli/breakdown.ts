@@ -189,7 +189,60 @@ async function handleZeroParams(
 }
 
 /**
- * Exported function for module use
+ * Main entry point for the Breakdown prompt generation tool.
+ *
+ * This function orchestrates the complete Breakdown workflow:
+ * 1. Detects configuration prefix from command line arguments
+ * 2. Loads BreakdownConfig with appropriate settings
+ * 3. Parses command line arguments using BreakdownParams
+ * 4. Delegates to appropriate handlers based on parameter count
+ * 5. Generates prompts using BreakdownPrompt with variable substitution
+ * 6. Outputs the generated prompt to stdout
+ *
+ * The function integrates four JSR packages (@tettuan/breakdownconfig,
+ * @tettuan/breakdownparams, @tettuan/breakdownprompt, @tettuan/breakdownlogger)
+ * to provide a complete AI development assistance tool for prompt generation.
+ *
+ * @param args - Command line arguments. Defaults to Deno.args if not provided.
+ *               Supports various patterns:
+ *               - Zero params: Interactive mode or help/version display
+ *               - One param: Single layer processing (e.g., "project")
+ *               - Two params: Demonstrative type + layer processing (e.g., "to project")
+ *               - Options: --help, --version, --verbose, --experimental, --config=prefix
+ *
+ * @returns Promise<void> - Resolves when processing completes successfully.
+ *                         Generated prompts are written to stdout for piping.
+ *
+ * @throws {Error} When configuration loading fails, parameter parsing fails,
+ *                 or prompt generation encounters errors.
+ *
+ * @example
+ * ```typescript
+ * // Basic usage - generate project-level prompt
+ * await runBreakdown(["project"]);
+ *
+ * // Generate task breakdown prompt
+ * await runBreakdown(["to", "task"]);
+ *
+ * // Use custom config with verbose output
+ * await runBreakdown(["--config=custom", "--verbose", "to", "project"]);
+ *
+ * // Show help
+ * await runBreakdown(["--help"]);
+ * ```
+ *
+ * @example
+ * ```bash
+ * # CLI usage examples
+ * deno run --allow-read breakdown to project > prompt.md
+ * deno run --allow-read breakdown task --verbose
+ * deno run --allow-read breakdown --config=myproject to issue
+ * ```
+ *
+ * @see {@link https://jsr.io/@tettuan/breakdown} for complete documentation
+ * @see {@link https://jsr.io/@tettuan/breakdownconfig} for configuration options
+ * @see {@link https://jsr.io/@tettuan/breakdownparams} for parameter parsing
+ * @see {@link https://jsr.io/@tettuan/breakdownprompt} for prompt generation
  */
 export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {

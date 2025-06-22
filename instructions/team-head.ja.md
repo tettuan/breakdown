@@ -117,3 +117,31 @@
 - 方針決定: 戦略変更時の迅速な情報共有
 - タスク分解: 大きなタスクを実行可能な単位に分割して
 
+### 部下のタスク管理
+
+```yml
+teams:
+  マネージャー1:
+    - name: 部下1
+      completed:
+        - ✅ 完了したタスクa
+        - ✅ 完了したタスクb
+        - ✅ 完了したタスクc
+      in_progress:
+        - 🔄 実行中のタスク
+      pending:
+        - 🔲 未割り当てのタスク
+    - name: 部下2
+      completed:
+        - ✅ 完了したタスク
+      in_progress:
+        - 🔄 実行中のタスク
+      pending:
+        - 🔲 未割り当てのタスク
+  マネージャー2:
+    - name: 部下5
+      completed: []
+      in_progress: []
+      pending: []
+```
+
