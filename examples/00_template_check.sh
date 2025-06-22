@@ -44,7 +44,7 @@ run_template_validator() {
     cd "$(dirname "$SCRIPT_DIR")"
     
     # Run TypeScript template validator
-    if deno run --allow-read --allow-write lib/helpers/template_validator.ts; then
+    if deno run --allow-read --allow-write ../lib/helpers/template_validator.ts; then
         echo -e "${GREEN}✅ Template validation completed${NC}"
         return 0
     else
@@ -61,7 +61,7 @@ auto_generate_templates() {
     cd "$(dirname "$SCRIPT_DIR")"
     
     # Run template generator script
-    if bash scripts/template_generator.sh generate; then
+    if bash ../scripts/template_generator.sh generate; then
         echo -e "${GREEN}✅ Template generation completed${NC}"
         return 0
     else

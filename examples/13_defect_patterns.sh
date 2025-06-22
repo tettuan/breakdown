@@ -18,12 +18,8 @@ echo "=== Defect Analysis Examples ==="
 echo "バグレポートやエラーログから欠陥分析を実行します"
 echo
 
-# Ensure breakdown is available
-if command -v breakdown &> /dev/null; then
-    BREAKDOWN="breakdown"
-else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
-fi
+# Always use deno run for consistent path resolution
+BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
 
 # Create output directory
 OUTPUT_DIR="./output/defect_analysis"
@@ -66,7 +62,7 @@ cat > "$OUTPUT_DIR/bug_report.md" << 'EOF'
 EOF
 
 echo "実行: breakdown defect issue < bug_report.md"
-$BREAKDOWN defect issue --config=default < "$OUTPUT_DIR/bug_report.md" > "$OUTPUT_DIR/defect_issue_analysis.md"
+$BREAKDOWN defect issue --config=default --from="$OUTPUT_DIR/bug_report.md" --input=task -o="$OUTPUT_DIR/defect_issue_analysis.md"
 
 echo
 echo "=== Example 2: Defect Task Analysis ==="
@@ -101,7 +97,7 @@ cat > "$OUTPUT_DIR/improvement_request.md" << 'EOF'
 EOF
 
 echo "実行: breakdown defect task < improvement_request.md"
-$BREAKDOWN defect task --config=default < "$OUTPUT_DIR/improvement_request.md" > "$OUTPUT_DIR/defect_task_analysis.md"
+$BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/improvement_request.md" --input=task -o="$OUTPUT_DIR/defect_task_analysis.md"
 
 echo
 echo "=== 生成されたファイル ==="
