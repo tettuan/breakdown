@@ -501,6 +501,11 @@ if ! deno lint; then
     handle_lint_error "$(deno lint 2>&1)"
 fi
 
+echo "Running final comprehensive type check with --all flag..."
+if ! deno check --all; then
+    handle_type_error "comprehensive --all check" "$(deno check --all 2>&1)"
+fi
+
 echo "Running automatic test cleanup..."
 if ! deno run -A scripts/test_cleanup.ts; then
     echo "⚠️ Warning: Test cleanup failed, but CI continues"
