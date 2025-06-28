@@ -2,14 +2,14 @@
 
 ## Basic Policy
 
-1. Using import maps
+1. Using import map
 
-- Configure import map in `deno.json` or `deno.jsonc`
+- Set import map in `deno.json` or `deno.jsonc`
 
 ```jsonc
 {
   "imports": {
-    // Fix version of standard libraries used throughout the project
+    // Fix standard library versions used across the project
     "$std/": "jsr:@std/",
     // Project-specific aliases
     "$lib/": "./lib/",
@@ -25,21 +25,21 @@
 
 - Specify explicit versions for all packages
 - Use `@^x.y.z` format for version specification
-- Use consistent versions throughout the project
+- Use the same version throughout the project
 - Include `deno.lock` file in version control
 
 3. Security
 
-- Run with minimum required permissions
-- Specify `--allow-env --allow-write --allow-read` for test execution
-- Require explicit permission specification in CI/CD
+- Execute with minimum necessary permissions
+- Specify `--allow-env --allow-write --allow-read` when running tests
+- Require explicit permission specifications in CI/CD
 
 ## Import Writing Rules
 
 1. Standard Library Imports
 
 ```typescript
-// ✅ Correct imports
+// ✅ Correct import
 import { assertEquals } from "$std/assert/assert_equals.ts";
 import { join } from "$std/path/join.ts";
 import { exists } from "$std/fs/exists.ts";
@@ -55,7 +55,7 @@ import { join } from "./deps.ts"; // Avoid direct re-exports
 - Use `./` or `../` for relative paths
 
 ```typescript
-// ✅ Correct imports
+// ✅ Correct import
 import { MyComponent } from "./components/MyComponent.ts";
 import type { Config } from "../types.ts";
 
@@ -68,22 +68,22 @@ import type { Config } from "types"; // Unclear relative path
 
 ```typescript
 // deps.ts
-// Use only for centralized version management
+// Use only for centralizing version management
 export { assertEquals, assertExists } from "$std/assert/mod.ts";
 
 // ✅ Correct usage
 import { assertEquals } from "./deps.ts";
 
 // ❌ Avoid this usage
-import { assertEquals } from "$std/assert/mod.ts"; // Distributed version management
+import { assertEquals } from "$std/assert/mod.ts"; // Decentralized version management
 ```
 
 ## Implementation Notes
 
-1. Prioritize Web Standard APIs
+1. Prioritizing Web Standard APIs
 
-- Prioritize Web standard APIs like `fetch`, `Request`, `Response`
-- Import Deno-specific APIs from the `Deno` namespace
+- Prioritize Web Standard APIs like `fetch`, `Request`, `Response`
+- Import Deno-specific APIs from `Deno` namespace
 
 2. Node.js Compatibility Not Recommended. Use Deno Standards.
 
@@ -96,27 +96,27 @@ import * as path from "node:path";
 
 ## Dependency Verification Steps
 
-1. Package Information Check
+1. Package Information Verification
 
 ```bash
 # Check package information
 deno info jsr:@std/assert
 
-# Clear cache and resolve dependencies
+# Clear cache and re-resolve dependencies
 rm -f deno.lock
 deno cache --reload mod.ts
 
-# Check dependencies for specific file
+# Check dependencies of specific file
 deno info your_file.ts
 ```
 
-2. Permission Check
+2. Permission Verification
 
 ```bash
-# Run with only required permissions
+# Execute with only necessary permissions
 deno test --allow-read=. --allow-write=./tmp --allow-env
 
-# Use permission prompt to verify required permissions
+# Use permission prompts to verify required permissions
 deno test
 ```
 
@@ -125,8 +125,8 @@ deno test
 1. Resolving Import Errors
 
 - Check import map in `deno.json`
-- Verify file extension presence
-- Check package versions
+- Check file extension presence
+- Check package version
 
 2. Resolving Permission Errors
 
@@ -135,23 +135,23 @@ deno test
 
 3. Resolving Type Errors
 
-- Verify type definition file existence
-- Prioritize Web standard types
+- Check existence of type definition files
+- Prioritize using Web Standard types
 
-## Review Checkpoints
+## Review Checklist
 
 1. Security
 
-- Minimum required permission specification
-- Use of secure import formats
+- Minimum necessary permission specifications
+- Use of secure import format
 
 2. Dependencies
 
 - Version consistency
-- `deno.lock` update verification
+- Check `deno.lock` updates
 
 3. Code Quality
 
-- Use of Web standard APIs
+- Use of Web Standard APIs
 - Explicit type definitions
-- File extension specification 
+- File extension specifications

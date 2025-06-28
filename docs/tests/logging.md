@@ -2,27 +2,28 @@
 
 ## Basic Policy
 
-Use https://jsr.io/@tettuan/breakdownlogger. Read and understand the README at https://github.com/tettuan/breakdownlogger.
+Uses https://jsr.io/@tettuan/breakdownlogger. Read and understand README at
+https://github.com/tettuan/breakdownlogger.
 
-### Usage of DEBUG and LOG_LEVEL
+### Distinction Between DEBUG and LOG_LEVEL
 
 - `LOG_LEVEL`: Environment variable used by BreakdownLogger
   - Used only in test code
   - Functions as permanent debug output
-  - Treated as part of the test
+  - Treated as part of tests
   - Used for tracking test case execution status and results
 
 - `DEBUG`: Environment variable for temporary debug output
-  - Can be used in non-test code
+  - Can be used in non-test code as well
   - Treated as temporary debug code
-  - For development problem investigation
-  - Code that should eventually be removed
+  - For problem investigation during development
+  - Code that should ultimately be removed
 
-### Usage Only in Test Code
+### Use Only in Test Code
 
 - Do not use `BreakdownLogger` in application code
 - `BreakdownLogger` can only be used in test code
-- Debug information output is for development only
+- Debug information output is for development time only
 
 ## Log Levels
 
@@ -51,7 +52,7 @@ LOG_LEVEL=<level> deno test ...
 
 4. `error`: Errors
    - Process interruption
-   - Critical problems
+   - Serious problems
    - Unrecoverable errors
 
 ## Output Format
@@ -77,12 +78,12 @@ LOG_LEVEL=<level> deno test ...
 - `message`: Log message
 - `data`: Additional information (optional)
 
-## Debugging Methods
+## Debug Methods
 
 ### Debugging by Test Case
 
 ```typescript
-// In test file
+// Within test file
 const logger = new BreakdownLogger();
 
 Deno.test("Test case", () => {
@@ -104,10 +105,10 @@ Deno.test("Test case", () => {
 ### Output Destination
 
 - Default: Standard error output
-- File output not supported
+- File output is not supported
 
 ### Filtering
 
 - Filtering by level
 - Output for specific test cases only
-- Data field restrictions 
+- Restriction of data fields

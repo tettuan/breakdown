@@ -69,13 +69,13 @@ const match = pattern.exec("https://example.com/api/v1/users");
 console.log(match.pathname.groups.version); // "v1"
 ```
 
-## PATH When Following Specifications
+## Following Specification for PATH
 
-Prioritize specification definitions. Use relative paths if relative paths are required.
+When specifications require it, follow them. Use relative paths if required by specifications.
 
 ## File System Operations
 
-### File Reading
+### Reading Files
 
 ```typescript
 // Recommended
@@ -90,7 +90,7 @@ try {
 }
 ```
 
-### File Writing
+### Writing Files
 
 ```typescript
 // Recommended
@@ -111,7 +111,7 @@ try {
 ### Deno Built-in Errors
 
 ```typescript
-// Utilizing error types
+// Using error types
 class FileSystemError extends Error {
   constructor(message: string, cause?: Error) {
     super(message);
@@ -152,7 +152,7 @@ Deno.test({
   async fn() {
     const ctx = await createTestContext();
     try {
-      // Run test
+      // Test execution
     } finally {
       await ctx.cleanup();
     }
@@ -178,7 +178,7 @@ Deno.test("complex test", async (t) => {
 
 ## Security
 
-### Permission Minimization
+### Minimizing Permissions
 
 ```jsonc
 // deno.json
@@ -211,7 +211,7 @@ const [file1, file2] = await Promise.all([
   Deno.readTextFile("file2.txt"),
 ]);
 
-// Recommended: Optimizing iteration
+// Recommended: Optimizing iterations
 for await (const entry of Deno.readDir("./")) {
   if (entry.isFile) {
     // File processing

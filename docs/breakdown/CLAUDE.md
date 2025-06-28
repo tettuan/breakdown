@@ -2,9 +2,9 @@
 
 ## 上位
 1. index.ja.md
-2. glosarry.ja.md
+2. glossary.ja.md
 3. app_factory.ja.md
-4. breakdown.ja.md
+4. processing-flow.ja.md
 5. workspace.ja.md
 5. cli.ja.md
 6. options.ja.md
