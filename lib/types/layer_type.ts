@@ -12,60 +12,20 @@
 import type { TwoParamsResult } from "../deps.ts";
 
 /**
- * バリデーションパターン for LayerType
- * 設定ファイルの正規表現パターンをラップして安全な検証を提供
- */
-export class TwoParamsLayerTypePattern {
-  private constructor(private readonly pattern: RegExp) {}
-
-  /**
-   * 正規表現文字列からパターンを構築
-   * @param patternString 正規表現文字列（設定ファイルから取得）
-   * @returns 有効な場合はパターン、無効な場合は null
-   */
-  static create(patternString: string): TwoParamsLayerTypePattern | null {
-    try {
-      const regex = new RegExp(patternString);
-      return new TwoParamsLayerTypePattern(regex);
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * 値がパターンに一致するか検証
-   * @param value 検証対象の文字列
-   * @returns 一致する場合 true
-   */
-  test(value: string): boolean {
-    return this.pattern.test(value);
-  }
-
-  /**
-   * パターンの文字列表現を取得
-   * @returns 正規表現の文字列
-   */
-  toString(): string {
-    return this.pattern.source;
-  }
-
-  /**
-   * パターンの等価性確認
-   * @param other 比較対象のパターン
-   * @returns パターンが等しい場合 true
-   */
-  equals(other: TwoParamsLayerTypePattern): boolean {
-    return this.pattern.source === other.pattern.source;
-  }
-}
-
-/**
  * LayerType - 階層型
  * 
  * Totality原則に準拠した制約型。TwoParamsResult を受け取る制約を持ち、
  * バリデーション経由でのみ構築可能。
  * 処理対象の階層（project, issue, task, bugs, temp等）を表現し、
  * TwoParamsResult.layerType の値として検証される。
+ * 
+ * バリデーションパターンは BreakdownParams 呼び出し時に適用される。
+ * 
+ * ## Smart Constructor パターン
+ * このクラスは Smart Constructor パターンを実装しています：
+ * - `private constructor`: 直接インスタンス化を禁止
+ * - `static create()`: 制御された唯一の作成方法を提供
+ * - 型安全性と将来のバリデーション拡張性を保証
  * 
  * 環境別設定での使用例：
  * - デフォルト: "project|issue|task|bugs"
@@ -80,46 +40,39 @@ export class TwoParamsLayerTypePattern {
  *   layerType: "project",
  *   options: {}
  * };
- * const pattern = TwoParamsLayerTypePattern.create("project|issue|task");
- * const layerType = LayerType.create(twoParamsResult, pattern);
- * if (layerType) {
- *   console.log(layerType.value); // "project"
- * }
+ * const layerType = LayerType.create(twoParamsResult);
+ * console.log(layerType.value); // "project"
  * ```
  * 
  * @example 環境別設定での使用
  * ```typescript
  * // staging環境での拡張パターン
- * const stagingPattern = TwoParamsLayerTypePattern.create("project|issue|task|epic|system");
  * const epicResult: TwoParamsResult = { type: "two", demonstrativeType: "to", layerType: "epic", options: {} };
- * const epicLayer = LayerType.create(epicResult, stagingPattern);
+ * const epicLayer = LayerType.create(epicResult);
  * 
  * // production環境での特化パターン
- * const prodPattern = TwoParamsLayerTypePattern.create("bugs|issues|todos|comments|notes");
  * const issuesResult: TwoParamsResult = { type: "two", demonstrativeType: "to", layerType: "issues", options: {} };
- * const issuesLayer = LayerType.create(issuesResult, prodPattern);
+ * const issuesLayer = LayerType.create(issuesResult);
  * ```
  */
 export class LayerType {
+  /**
+   * Private constructor - Smart Constructor パターンの実装
+   * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制
+   */
   private constructor(private readonly result: TwoParamsResult) {}
 
   /**
    * TwoParamsResult からバリデーション済み LayerType を構築
    * 
    * この静的メソッドは Totality 原則の核心部分。
-   * TwoParamsResult を受け取り、バリデーションパターンを通過した値のみが LayerType として構築される。
+   * TwoParamsResult を受け取り、既にバリデーション済みの値のみが LayerType として構築される。
+   * バリデーションは BreakdownParams 側で実行済み。
    * 
-   * @param result TwoParamsResult 型の検証対象データ
-   * @param pattern TwoParamsLayerTypePattern によるバリデーションルール
-   * @returns 有効な場合は LayerType、無効な場合は null
+   * @param result TwoParamsResult 型の検証済みデータ
+   * @returns LayerType インスタンス（TwoParamsResult は既にバリデーション済みのため常に成功）
    */
-  static create(
-    result: TwoParamsResult, 
-    pattern: TwoParamsLayerTypePattern
-  ): LayerType | null {
-    if (!pattern.test(result.layerType)) {
-      return null;
-    }
+  static create(result: TwoParamsResult): LayerType {
     return new LayerType(result);
   }
 

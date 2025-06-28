@@ -12,60 +12,20 @@
 import type { TwoParamsResult } from "../deps.ts";
 
 /**
- * バリデーションパターン for DirectiveType
- * 設定ファイルの正規表現パターンをラップして安全な検証を提供
- */
-export class TwoParamsDirectivePattern {
-  private constructor(private readonly pattern: RegExp) {}
-
-  /**
-   * 正規表現文字列からパターンを構築
-   * @param patternString 正規表現文字列（設定ファイルから取得）
-   * @returns 有効な場合はパターン、無効な場合は null
-   */
-  static create(patternString: string): TwoParamsDirectivePattern | null {
-    try {
-      const regex = new RegExp(patternString);
-      return new TwoParamsDirectivePattern(regex);
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * 値がパターンに一致するか検証
-   * @param value 検証対象の文字列
-   * @returns 一致する場合 true
-   */
-  test(value: string): boolean {
-    return this.pattern.test(value);
-  }
-
-  /**
-   * パターンの文字列表現を取得
-   * @returns 正規表現の文字列
-   */
-  toString(): string {
-    return this.pattern.source;
-  }
-
-  /**
-   * パターンの等価性確認
-   * @param other 比較対象のパターン
-   * @returns パターンが等しい場合 true
-   */
-  equals(other: TwoParamsDirectivePattern): boolean {
-    return this.pattern.source === other.pattern.source;
-  }
-}
-
-/**
  * DirectiveType - 処理方向型
  * 
  * Totality原則に準拠した制約型。TwoParamsResult を受け取る制約を持ち、
  * バリデーション経由でのみ構築可能。
  * 処理の方向性（to, summary, defect, init, find等）を表現し、
  * TwoParamsResult.demonstrativeType の値として検証される。
+ * 
+ * バリデーションパターンは BreakdownParams 呼び出し時に適用される。
+ * 
+ * ## Smart Constructor パターン
+ * このクラスは Smart Constructor パターンを実装しています：
+ * - `private constructor`: 直接インスタンス化を禁止
+ * - `static create()`: 制御された唯一の作成方法を提供
+ * - 型安全性と将来のバリデーション拡張性を保証
  * 
  * @example 基本的な使用例
  * ```typescript
@@ -75,42 +35,35 @@ export class TwoParamsDirectivePattern {
  *   layerType: "project",
  *   options: {}
  * };
- * const pattern = TwoParamsDirectivePattern.create("to|summary|defect");
- * const directiveType = DirectiveType.create(twoParamsResult, pattern);
- * if (directiveType) {
- *   console.log(directiveType.value); // "to"
- * }
+ * const directiveType = DirectiveType.create(twoParamsResult);
+ * console.log(directiveType.value); // "to"
  * ```
  * 
  * @example 設定ファイル連携
  * ```typescript
- * // 設定から取得したパターン文字列
- * const configPattern = "web|rag|db"; // search プロファイル
- * const pattern = TwoParamsDirectivePattern.create(configPattern);
+ * // 設定から取得したパターンで BreakdownParams 側でバリデーション済み
  * const searchResult: TwoParamsResult = { type: "two", demonstrativeType: "web", layerType: "search", options: {} };
- * const searchDirective = DirectiveType.create(searchResult, pattern);
+ * const searchDirective = DirectiveType.create(searchResult);
  * ```
  */
 export class DirectiveType {
+  /**
+   * Private constructor - Smart Constructor パターンの実装
+   * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制
+   */
   private constructor(private readonly result: TwoParamsResult) {}
 
   /**
    * TwoParamsResult からバリデーション済み DirectiveType を構築
    * 
    * この静的メソッドは Totality 原則の核心部分。
-   * TwoParamsResult を受け取り、バリデーションパターンを通過した値のみが DirectiveType として構築される。
+   * TwoParamsResult を受け取り、既にバリデーション済みの値のみが DirectiveType として構築される。
+   * バリデーションは BreakdownParams 側で実行済み。
    * 
-   * @param result TwoParamsResult 型の検証対象データ
-   * @param pattern TwoParamsDirectivePattern によるバリデーションルール
-   * @returns 有効な場合は DirectiveType、無効な場合は null
+   * @param result TwoParamsResult 型の検証済みデータ
+   * @returns DirectiveType インスタンス（TwoParamsResult は既にバリデーション済みのため常に成功）
    */
-  static create(
-    result: TwoParamsResult, 
-    pattern: TwoParamsDirectivePattern
-  ): DirectiveType | null {
-    if (!pattern.test(result.demonstrativeType)) {
-      return null;
-    }
+  static create(result: TwoParamsResult): DirectiveType {
     return new DirectiveType(result);
   }
 
