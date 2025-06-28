@@ -1,26 +1,114 @@
-- DirectiveType:
-    - DirectiveType受け入れ可能型:
-        - パラメータで受け取った値
-    - DirectiveType受け入れ不可型:
-        - 値なし
-- LayerType:
-    - LayerType受け入れ可能型:
-        - パラメータで受け取った値
-    - LayerType受け入れ不可型:
-        - 値なし
-- DirectiveTypeのバリデーション型:
-    - 二重パラメータ処理方向バリデーションルール型(TwoParamsDirectivePattern):
-        - ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
-        - エラーメッセージ: string # 設定の中で行われるため型定義できない
-    - バリデーション済: true | false
-    - バリデーション結果: success | failure
-    - 結果型: 受け入れ可能型 | 受け入れ不可型
-- DirectiveType受け入れ可能型:
-    - パラメータで受け取った値: string
-- LayerTypeのバリデーション型:
-    - 二重パラメータ階層バリデーションルール型(TwoParamsLayerTypePattern):
-        - ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
-        - エラーメッセージ: string # 設定の中で行われるため型定義できない
-    - バリデーション済: true | false
-    - バリデーション結果: success | failure
-    - 結果型: 受け入れ可能型 | 受け入れ不可型
+# 全域性原則に基づく型定義仕様書
+#
+# この文書は totality.ja.md の「取りうる状態を明示的に定義し、それ以外を排除する」
+# アプローチに基づいて、型の制約を表現します。
+#
+# ## 基本的な記述パターン
+#
+# ### パターン1: 制約型（受け入れ可能型と受け入れ不可型の分離）
+# ```yaml
+# TypeName:
+#   受け入れ可能型:
+#     - SpecificType.Property
+#   受け入れ不可型:
+#     - 値なし
+# ```
+# この記述は以下を意味します：
+# - TypeName は SpecificType.Property のみを受け入れる
+# - それ以外の全ての値（null、undefined、任意の文字列等）は受け入れない
+# - 「受け入れ不可型: 値なし」は「無効な値のリストを明示的に列挙しない」ことを表す
+#
+# ### パターン2: Discriminated Union型
+# ```yaml
+# ResultType:
+#   VariantA:
+#     - PropertyX
+#     - PropertyY
+#   VariantB:
+#     - PropertyZ
+# ```
+# この記述は TypeScript の以下と同等です：
+# type ResultType = VariantA | VariantB
+# where VariantA = { kind: "VariantA"; PropertyX; PropertyY }
+#       VariantB = { kind: "VariantB"; PropertyZ }
+#
+# ### パターン3: Union型
+# ```yaml
+# OptionType: TypeA.Options | TypeB.Options | TypeC.Options
+# ```
+# この記述は複数の型の和集合を表します。
+#
+# ---
+
+DirectiveType:
+  受け入れ可能型:
+    - TwoParamsResult.DirectiveType
+  受け入れ不可型:
+    - 値なし
+
+LayerType:
+  受け入れ可能型:
+    - TwoParamsResult.LayerType
+  受け入れ不可型:
+    - 値なし
+
+ConfigProfileName:
+  exists: true | false # Configのプロファイル名が存在することを示す
+  value: string # Configのプロファイル名型
+BreakdownParams.constructorの引数:
+  args: # CLI args
+  TwoParamsCustomConfig: # BreakdownConfig のユーザー設定の一部、共有する型
+    二重パラメータ処理方向バリデーションルール型(TwoParamsDirectivePattern):
+      ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
+      エラーメッセージ: string # 設定の中で行われるため型定義できない
+    二重パラメータ階層バリデーションルール型(TwoParamsLayerTypePattern):
+      ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
+      エラーメッセージ: string # 設定の中で行われるため型定義できない
+
+BreakdownParams.ParamsResult: # BreakdownParamsの結果型
+  TwoParamsResult:
+    - DirectiveType(demonstrativeType)
+    - LayerType
+    - Options
+  OneParamsResult:
+    - Options
+  ZeroParamsResult:
+    - Options
+
+Options: TwoParamsResult.Options | OneParamsResult.Options | ZeroParamsResult.Options
+PromptResult: PromptManager.generatePrompt()
+
+PromptManager.generatePrompt()の引数:
+  template: PromptPath
+  variables: PromptVariables # Fileパス生成結果, STDIN取得結果, Optionsから統合され作成される
+
+PromptVariables: [
+  StandardVariable | FilePathVariable | StdinVariable | OptionsVariable
+] # PromptManager.generatePrompt()の引数で使用される変数型
+
+PromptPath: FilePath # PromptManager.generatePrompt()の引数で使用されるテンプレートパス型, Configのapp_prompt.base_dir, DirectiveTypeとLayerTypeの組み合わせから導き出される
+
+FilePath: string # ファイルパス型, PromptPathの一部
+
+DefaultApplicationConfig: {} # default_application_config.jsonの内容を表す型
+
+StandardVariable: {
+  name: string, # 標準変数の名前
+  value: string # 標準変数の値
+} # PromptVariablesの一部
+
+StandardVariable.name: string "input_text_file" | "destination_path" # 標準変数の名前
+
+FilePathVariable: {
+  name: string, # ファイルパス変数の名前
+  value: FilePath # ファイルパス変数の値
+} # PromptVariablesの一部
+
+FilePathVariable.name: string "schema_file" # ファイルパス変数の名前
+
+StdinVariable: {
+  name: string, # 標準入力変数の名前
+  value: string # 標準入力変数の値
+} # PromptVariablesの一部
+
+StdinVariable.name: string "input_text" # 標準入力変数の名前
