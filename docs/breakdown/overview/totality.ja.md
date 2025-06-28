@@ -102,7 +102,10 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 ```
 
 ### 人間によるType設定一覧
-- `docs/breakdown/overview/totality-type.ja.yml`
+- [`docs/breakdown/overview/totality-type.ja.yml`](./totality-type.ja.yml)
+
+### 具体的な適用例
+- [`docs/breakdown/technical/totality-types.ja.md`](../technical/totality-types.ja.md) - LayerTypeとDirectiveTypeのSmart Constructor化実例
 
 ### 実例テンプレート
 ```markdown
