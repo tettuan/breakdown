@@ -19,12 +19,42 @@ type GoodState = { kind: "A"; data: X } | { kind: "B"; data: Y };
 // ❌ 悪い例：無制限な値を許可
 type Rate = number;
 
+// ❌ 悪い例：列挙型の値で制約を表現
+enum LayerType {
+  PROJECT = "project",
+  ISSUE = "issue",
+  TASK = "task"
+}
+
 // ✅ 良い例：制約のある値型
 class ValidRate {
   private constructor(readonly value: number) {}
   static create(n: number): ValidRate | null {
     return (0 <= n && n <= 1) ? new ValidRate(n) : null;
   }
+}
+
+// ✅ 良い例：Configルールで制約を表現
+class LayerTypePattern {
+  private constructor(readonly pattern: RegExp) {}
+  static create(patternString: string): LayerTypePattern | null {
+    try {
+      const regex = new RegExp(patternString);
+      return new LayerTypePattern(regex);
+    } catch {
+      return null;
+    }
+  }
+  test(value: string): boolean { return this.pattern.test(value); }
+}
+
+class LayerType {
+  private constructor(readonly value: string) {}
+  static create(value: string, pattern: LayerTypePattern): LayerType | null {
+    // Configから取得したパターンを使用
+    return pattern.test(value) ? new LayerType(value) : null;
+  }
+  getValue(): string { return this.value; }
 }
 ```
 
