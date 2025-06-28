@@ -18,7 +18,7 @@ import {
   createTimeoutManagerFromConfig,
 } from "$lib/config/timeout_manager.ts";
 import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
-import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.3";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.4";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";

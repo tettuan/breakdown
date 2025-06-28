@@ -23,13 +23,49 @@ export type ConfigError =
   | { kind: 'InvalidOptions'; field: string; message: string };
 
 /**
- * CustomConfig type definition for BreakdownParams compatibility
+ * CustomConfig type definition for BreakdownParams v1.0.4+ compatibility
+ * Based on the actual type structure expected by ParamsParser constructor
  */
 export type CustomConfig = {
-  params: Record<string, unknown>;
-  options: Record<string, unknown>;
-  validation: Record<string, unknown>;
-  errorHandling: Record<string, unknown>;
+  params: {
+    two: {
+      demonstrativeType?: {
+        pattern?: string;
+        errorMessage?: string;
+      };
+      layerType?: {
+        pattern?: string;
+        errorMessage?: string;
+      };
+    };
+  };
+  options: {
+    flags?: string[];
+    values?: string[];
+    customVariables?: Record<string, string>;
+  };
+  validation: {
+    zero?: {
+      allowedOptions?: string[];
+      allowedValueOptions?: string[];
+      allowCustomVariables?: boolean;
+    };
+    one?: {
+      allowedOptions?: string[];
+      allowedValueOptions?: string[];
+      allowCustomVariables?: boolean;
+    };
+    two?: {
+      allowedOptions?: string[];
+      allowedValueOptions?: string[];
+      allowCustomVariables?: boolean;
+    };
+  };
+  errorHandling: {
+    unknownOption?: 'error' | 'ignore' | 'warn';
+    duplicateOption?: 'error' | 'ignore' | 'warn';
+    emptyValue?: 'error' | 'ignore' | 'warn';
+  };
 };
 
 /**
@@ -37,18 +73,44 @@ export type CustomConfig = {
  */
 export class ParamsCustomConfig {
   private constructor(
-    readonly params: Record<string, unknown>,
-    readonly options: Record<string, unknown>,
-    readonly validation: Record<string, unknown>,
-    readonly errorHandling: Record<string, unknown>
+    readonly params: CustomConfig['params'],
+    readonly options: CustomConfig['options'],
+    readonly validation: CustomConfig['validation'],
+    readonly errorHandling: CustomConfig['errorHandling']
   ) {}
 
   static create(mergedConfig: Record<string, unknown>): Result<ParamsCustomConfig, ConfigError> {
-    // Extract configuration sections from mergedConfig
-    const params = mergedConfig.params as Record<string, unknown> || {};
-    const options = mergedConfig.options as Record<string, unknown> || {};
-    const validation = mergedConfig.validation as Record<string, unknown> || {};
-    const errorHandling = mergedConfig.errorHandling as Record<string, unknown> || {};
+    // Extract configuration sections from mergedConfig and ensure proper structure
+    const rawParams = mergedConfig.params as Record<string, unknown> || {};
+    const rawOptions = mergedConfig.options as Record<string, unknown> || {};
+    const rawValidation = mergedConfig.validation as Record<string, unknown> || {};
+    const rawErrorHandling = mergedConfig.errorHandling as Record<string, unknown> || {};
+
+    // Transform to proper CustomConfig structure
+    const params: CustomConfig['params'] = {
+      two: {
+        demonstrativeType: ParamsCustomConfig.extractPatternConfig(rawParams, 'two.demonstrativeType'),
+        layerType: ParamsCustomConfig.extractPatternConfig(rawParams, 'two.layerType'),
+      }
+    };
+
+    const options: CustomConfig['options'] = {
+      flags: rawOptions.flags as string[] || [],
+      values: rawOptions.values as string[] || [],
+      customVariables: rawOptions.customVariables as Record<string, string> || {},
+    };
+
+    const validation: CustomConfig['validation'] = {
+      zero: ParamsCustomConfig.extractValidationRules(rawValidation, 'zero'),
+      one: ParamsCustomConfig.extractValidationRules(rawValidation, 'one'),
+      two: ParamsCustomConfig.extractValidationRules(rawValidation, 'two'),
+    };
+
+    const errorHandling: CustomConfig['errorHandling'] = {
+      unknownOption: rawErrorHandling.unknownOption as 'error' | 'ignore' | 'warn' || 'error',
+      duplicateOption: rawErrorHandling.duplicateOption as 'error' | 'ignore' | 'warn' || 'error',
+      emptyValue: rawErrorHandling.emptyValue as 'error' | 'ignore' | 'warn' || 'error',
+    };
 
     return {
       ok: true,
@@ -58,6 +120,52 @@ export class ParamsCustomConfig {
         validation,
         errorHandling
       )
+    };
+  }
+
+  /**
+   * Helper function to extract pattern configuration
+   */
+  private static extractPatternConfig(
+    rawParams: Record<string, unknown>, 
+    path: string
+  ): { pattern?: string; errorMessage?: string } | undefined {
+    const parts = path.split('.');
+    let current: Record<string, unknown> | unknown = rawParams;
+    
+    for (const part of parts) {
+      if (current && typeof current === 'object' && current !== null) {
+        current = (current as Record<string, unknown>)[part];
+      } else {
+        return undefined;
+      }
+    }
+    
+    if (current && typeof current === 'object' && current !== null) {
+      const config = current as Record<string, unknown>;
+      return {
+        pattern: config.pattern as string,
+        errorMessage: config.errorMessage as string,
+      };
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Helper function to extract validation rules
+   */
+  private static extractValidationRules(
+    rawValidation: Record<string, unknown>,
+    key: string
+  ): { allowedOptions?: string[]; allowedValueOptions?: string[]; allowCustomVariables?: boolean } | undefined {
+    const rules = rawValidation[key] as Record<string, unknown>;
+    if (!rules || typeof rules !== 'object') return undefined;
+
+    return {
+      allowedOptions: rules.allowedOptions as string[],
+      allowedValueOptions: rules.allowedValueOptions as string[],
+      allowCustomVariables: rules.allowCustomVariables as boolean,
     };
   }
 
