@@ -23,6 +23,16 @@ export type ConfigError =
   | { kind: 'InvalidOptions'; field: string; message: string };
 
 /**
+ * CustomConfig type definition for BreakdownParams compatibility
+ */
+export type CustomConfig = {
+  params: Record<string, unknown>;
+  options: Record<string, unknown>;
+  validation: Record<string, unknown>;
+  errorHandling: Record<string, unknown>;
+};
+
+/**
  * Complete parameters custom configuration following BreakdownParams format
  */
 export class ParamsCustomConfig {
@@ -53,8 +63,22 @@ export class ParamsCustomConfig {
 
   /**
    * Convert to BreakdownParams CustomConfig format
+   * Returns undefined if configuration is incomplete, which allows the receiving constructor
+   * to use its default configuration (customConfig?: CustomConfig pattern)
    */
-  toBreakdownParamsFormat(): Record<string, unknown> {
+  toBreakdownParamsFormat(): CustomConfig | undefined {
+    // Check if configuration is complete
+    if (!this.params || Object.keys(this.params).length === 0) {
+      // Return undefined to trigger default config usage in receiving constructor
+      return undefined;
+    }
+    
+    if (!this.options || !this.validation || !this.errorHandling) {
+      // Return undefined to trigger default config usage in receiving constructor
+      return undefined;
+    }
+
+    // Return complete configuration only when all sections are properly defined
     return {
       params: this.params,
       options: this.options,

@@ -42,6 +42,7 @@ export {
 export {
   type Result,
   type ConfigError,
+  type CustomConfig,
   ParamsCustomConfig
 } from "./params_custom_config.ts";
 
