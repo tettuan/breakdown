@@ -71,6 +71,9 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 - **異常系**: [エラー条件] → [対応方法]
 ```
 
+### 人間によるType設定一覧
+- `docs/breakdown/overview/totality-type.ja.yml`
+
 ### 実例テンプレート
 ```markdown
 ## 割引システムのルール

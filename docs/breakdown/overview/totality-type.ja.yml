@@ -1,0 +1,27 @@
+- DirectiveType:
+  - DirectiveType受け入れ可能型:
+    - パラメータで受け取った値
+  - DirectiveType受け入れ不可型:
+    - 値なし
+- LayerType:
+  - LayerType受け入れ可能型:
+    - パラメータで受け取った値
+  - LayerType受け入れ不可型:
+    - 値なし
+- DirectiveTypeのバリデーション型:
+  - 二重パラメータ処理方向バリデーションルール型(TwoParamsDirectivePattern):
+    - ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
+    - エラーメッセージ: string # 設定の中で行われるため型定義できない
+  - バリデーション済: true | false
+  - バリデーション結果: success | failure
+  - 結果型: 受け入れ可能型 | 受け入れ不可型
+- DirectiveType受け入れ可能型:
+  - パラメータで受け取った値: string
+- LayerTypeのバリデーション型:
+  - 二重パラメータ階層バリデーションルール型(TwoParamsLayerTypePattern):
+    - ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
+    - エラーメッセージ: string # 設定の中で行われるため型定義できない
+  - バリデーション済: true | false
+  - バリデーション結果: success | failure
+  - 結果型: 受け入れ可能型 | 受け入れ不可型
+

@@ -58,6 +58,8 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 旧無引数結果型 | No Parameters Result | NoParamsResult | 廃止：ZeroParamsResultに変更 |
 | 旧単一引数結果型 | Single Parameter Result | SingleParamResult | 廃止：OneParamResultに変更 |
 | 旧二重引数結果型 | Double Parameters Result | DoubleParamsResult | 廃止：TwoParamsResultに統合 |
+| **二重パラメータ処理方向バリデーションルール型** | Two Parameters Directive Pattern | TwoParamsDirectivePattern | `demonstrativeType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（to, summary, defect）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.demonstrativeType.pattern`で指定。 |
+| **二重パラメータ階層バリデーションルール型** | Two Parameters Layer Type Pattern | TwoParamsLayerTypePattern | `layerType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（project, issue, task）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.layerType.pattern`で指定。 |
 | 旧処理方向型 | Demonstrative Type | DemonstrativeType | 廃止：DirectiveTypeに変更 |
 | **戦略パターン** | | | |
 | パス解決戦略 | Path Resolution Strategy | PathResolutionStrategy | パス解決アルゴリズムの戦略パターン |
