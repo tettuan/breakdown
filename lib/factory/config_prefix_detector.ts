@@ -29,21 +29,18 @@
  *
  * @example Basic usage
  * ```typescript
- * const detector = new ConfigPrefixDetector();
- *
  * // Detect equals format
- * const config1 = detector.detect(['--config=production']);
+ * const config1 = ConfigPrefixDetector.detect(['--config=production']);
  * // Result: 'production'
  *
  * // Detect space-separated format
- * const config2 = detector.detect(['--config', 'development']);
+ * const config2 = ConfigPrefixDetector.detect(['--config', 'development']);
  * // Result: 'development'
  * ```
  *
  * @example Integration with CLI processing
  * ```typescript
- * const detector = new ConfigPrefixDetector();
- * const configName = detector.detect(Deno.args);
+ * const configName = ConfigPrefixDetector.detect(Deno.args);
  *
  * if (configName) {
  *   console.log(`Using configuration: ${configName}`);
@@ -54,6 +51,13 @@
  */
 export class ConfigPrefixDetector {
   /**
+   * Private constructor - use static detect method instead
+   */
+  private constructor() {
+    // Prevent instantiation
+  }
+
+  /**
    * Detects and extracts configuration prefix from command line arguments.
    *
    * Scans the provided argument array for configuration-related options
@@ -62,36 +66,32 @@ export class ConfigPrefixDetector {
    * values are not mistaken for flags.
    *
    * @param args - Array of command line arguments to scan
-   * @returns The configuration name/path if found, undefined if no config option detected
+   * @returns The configuration name/path if found, null if no config option detected
    *
    * @example Detect various configuration formats
    * ```typescript
-   * const detector = new ConfigPrefixDetector();
-   *
    * // Equals syntax detection
-   * detector.detect(['--config=prod']); // Returns: 'prod'
-   * detector.detect(['-c=dev']); // Returns: 'dev'
+   * ConfigPrefixDetector.detect(['--config=prod']); // Returns: 'prod'
+   * ConfigPrefixDetector.detect(['-c=dev']); // Returns: 'dev'
    *
    * // Space-separated detection
-   * detector.detect(['--config', 'staging']); // Returns: 'staging'
-   * detector.detect(['-c', 'test']); // Returns: 'test'
+   * ConfigPrefixDetector.detect(['--config', 'staging']); // Returns: 'staging'
+   * ConfigPrefixDetector.detect(['-c', 'test']); // Returns: 'test'
    *
    * // No configuration specified
-   * detector.detect(['--help', '--version']); // Returns: undefined
+   * ConfigPrefixDetector.detect(['--help', '--version']); // Returns: null
    * ```
    *
    * @example Handling edge cases
    * ```typescript
-   * const detector = new ConfigPrefixDetector();
-   *
    * // Avoids false positives with flags
-   * detector.detect(['--config', '--verbose']); // Returns: undefined
+   * ConfigPrefixDetector.detect(['--config', '--verbose']); // Returns: null
    *
    * // Handles mixed arguments
-   * detector.detect(['--verbose', '--config=custom', '--help']); // Returns: 'custom'
+   * ConfigPrefixDetector.detect(['--verbose', '--config=custom', '--help']); // Returns: 'custom'
    * ```
    */
-  detect(args: string[]): string | undefined {
+  static detect(args: string[]): string | null {
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
 
@@ -114,6 +114,6 @@ export class ConfigPrefixDetector {
         }
       }
     }
-    return undefined;
+    return null;
   }
 }
