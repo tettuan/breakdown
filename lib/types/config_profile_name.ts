@@ -21,28 +21,27 @@
  * - DirectiveTypeとLayerTypeの組み合わせの切り替え
  * 
  * ## 全域性原則の適用
- * この型は以下の状態のみを許可し、null/undefined の状態を排除：
- * - 有効なプロファイル名が存在する状態
- * - プロファイル名が存在しない状態（空文字で表現）
+ * この型は以下の状態のみを許可し、曖昧な状態を排除：
+ * - 有効なプロファイル名を含むConfigProfileNameインスタンス（value が string）
+ * - 無効・空・存在しない場合のConfigProfileNameインスタンス（value が null）
  * 
- * 値は必ずstring型として取得でき、利用者はnull/undefinedの処理を考慮不要。
+ * インスタンスは常に存在し、有効性は value プロパティのnullチェックで判定します。
  * 
  * @example 基本的な使用例
  * ```typescript
  * // 有効な設定プロファイル名
  * const profile = ConfigProfileName.create("production");
- * console.log(profile.getValue()); // "production"
- * console.log(profile.exists()); // true
+ * if (profile.value) {
+ *   console.log(profile.value); // "production"
+ * }
  * 
- * // 無効な設定プロファイル名（空のプロファイルとして扱われる）
+ * // 無効な設定プロファイル名
  * const invalid = ConfigProfileName.create("INVALID");
- * console.log(invalid.getValue()); // ""
- * console.log(invalid.exists()); // false
+ * console.log(invalid.value); // null
  * 
- * // 設定プロファイル名が存在しない場合
- * const noProfile = ConfigProfileName.empty();
- * console.log(noProfile.getValue()); // ""
- * console.log(noProfile.exists()); // false
+ * // 空文字の場合
+ * const empty = ConfigProfileName.create("");
+ * console.log(empty.value); // null
  * ```
  * 
  * @example BreakdownConfigとの連携
@@ -50,10 +49,11 @@
  * import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
  * 
  * const profile = ConfigProfileName.create("staging");
- * if (profile.exists()) {
- *   const config = new BreakdownConfig(profile.getValue());
- *   await config.loadConfig();
- *   // staging-app.yml, staging-user.yml が読み込まれる
+ * if (profile.value) {
+ *   const configResult = await BreakdownConfig.create(profile.value);
+ *   if (configResult.success && configResult.data) {
+ *     // staging-app.yml, staging-user.yml が読み込まれる
+ *   }
  * }
  * ```
  */
@@ -71,74 +71,55 @@ export class ConfigProfileName {
   private static readonly PROFILE_NAME_PATTERN = /^[a-z0-9_-]{1,50}$/;
 
   /**
-   * @param value - 設定プロファイル名（常にstring、存在しない場合は空文字）
+   * プライベートコンストラクタ
+   * 
+   * 直接インスタンス化を禁止し、createメソッドのみでインスタンス作成を可能にします。
+   * インスタンスが存在する時点で、値が有効であることを保証します。
+   * 
+   * @param value - 設定プロファイル名（有効な値またはnull）
    */
-  private constructor(private readonly value: string) {}
+  private constructor(public readonly value: string | null) {}
 
   /**
    * 設定プロファイル名を作成する
    * 
-   * 無効な値が渡された場合、空のプロファイル名として扱い、nullは返さない。
+   * 無効な値が渡された場合、nullの値を持つConfigProfileNameインスタンスを返す。
+   * 常にConfigProfileNameインスタンスを返し、nullは返さない。
    * 
-   * @param value - 設定プロファイル名の候補
-   * @returns ConfigProfileName インスタンス（常に有効なインスタンス）
+   * @param value - 設定プロファイル名の候補（string または null を受け取り可能）
+   * @returns 常にConfigProfileNameインスタンス（無効な場合はnullの値を持つ）
    * 
    * @example
    * ```typescript
    * const valid = ConfigProfileName.create("production");
-   * console.log(valid.getValue()); // "production"
-   * console.log(valid.exists()); // true
+   * console.log(valid.value); // "production"
    * 
    * const invalid = ConfigProfileName.create("INVALID");
-   * console.log(invalid.getValue()); // ""
-   * console.log(invalid.exists()); // false
+   * console.log(invalid.value); // null
+   * 
+   * const empty = ConfigProfileName.create("");
+   * console.log(empty.value); // null
+   * 
+   * const nullInput = ConfigProfileName.create(null);
+   * console.log(nullInput.value); // null
    * ```
    */
-  static create(value: string): ConfigProfileName {
+  static create(value: string | null): ConfigProfileName {
     // null/undefined/非文字列の処理
     if (!value || typeof value !== 'string') {
-      return new ConfigProfileName("");
+      return new ConfigProfileName(null);
+    }
+
+    // 空文字の場合はnullの値を持つインスタンスを返す
+    if (value === "") {
+      return new ConfigProfileName(null);
     }
 
     // プロファイル名のバリデーション
     if (!this.PROFILE_NAME_PATTERN.test(value)) {
-      return new ConfigProfileName("");
+      return new ConfigProfileName(null);
     }
 
     return new ConfigProfileName(value);
-  }
-
-  /**
-   * 空の設定プロファイル名を作成する
-   * 
-   * @returns 空の ConfigProfileName インスタンス
-   * 
-   * @example
-   * ```typescript
-   * const noProfile = ConfigProfileName.empty();
-   * console.log(noProfile.exists()); // false
-   * console.log(noProfile.getValue()); // ""
-   * ```
-   */
-  static empty(): ConfigProfileName {
-    return new ConfigProfileName("");
-  }
-
-  /**
-   * 設定プロファイル名の値を取得する
-   * 
-   * @returns 設定プロファイル名（存在しない場合は空文字、常にstring型）
-   */
-  getValue(): string {
-    return this.value;
-  }
-
-  /**
-   * 設定プロファイル名が存在するかどうかを確認する
-   * 
-   * @returns 設定プロファイル名が存在する場合は true、そうでなければ false
-   */
-  exists(): boolean {
-    return this.value !== "";
   }
 }
