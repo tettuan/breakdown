@@ -443,6 +443,11 @@ process_test_directory() {
 echo "Starting test execution..."
 
 # Process all tests hierarchically
+if ! process_test_directory "lib" "${DEBUG:-false}"; then
+    echo "Test execution stopped due to failure."
+    exit 1
+fi
+
 if ! process_test_directory "tests" "${DEBUG:-false}"; then
     echo "Test execution stopped due to failure."
     exit 1
