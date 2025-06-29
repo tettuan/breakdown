@@ -1,6 +1,6 @@
-# TotalityTypes設計：LayerTypeとDirectiveTypeのSmart Constructor化
+# Totality原則実装例：Smart Constructor化
 
-## 背景
+## 背景：アンチパターンの問題
 
 従来のLayerTypeとDirectiveTypeは、以下の問題を抱えていました：
 
@@ -13,79 +13,74 @@
 class LayerType {
   static create(value: string, pattern?: LayerTypePattern): LayerType | null
   static createFromTwoParams(result: TwoParamsResult): LayerType | null
-  // 複数の作成方法とバリデーション責任の混在
 }
 ```
 
-## 設計思想
+## Totality原則適用
 
-### 全域性原則の適用
-**Single Source of Truth**: バリデーションはBreakdownParamsで一元化し、LayerType/DirectiveTypeは検証済みの値のみを扱う純粋な値型とする。
+**Single Source of Truth**: バリデーションはBreakdownParamsで一元化、型は検証済み値のみ扱う
 
-### Smart Constructor Pattern
 ```typescript
-// ✅ 改善後の設計
+// ✅ 改善後：Smart Constructor
 class LayerType {
   private constructor(private readonly result: TwoParamsResult) {}
-  
   static create(result: TwoParamsResult): LayerType {
     return new LayerType(result);
   }
-  
-  get value(): string {
-    return this.result.layerType;
+  get value(): string { return this.result.layerType; }
+}
+```
+
+## 設定管理実例：ParamsCustomConfig
+
+Totality原則を設定管理に適用した実装例（`lib/types/params_custom_config.ts`）：
+
+```typescript
+export class ParamsCustomConfig {
+  private constructor() {} // Smart Constructor
+
+  // 設定不在判定：undefinedでデフォルト使用を促す
+  private static isConfigMissing(config: Record<string, unknown>): boolean {
+    const breakdown = config.breakdown;
+    if (!breakdown || typeof breakdown !== 'object') return true;
+    
+    const obj = breakdown as Record<string, unknown>;
+    return !(obj.params || obj.options || obj.validation || obj.errorHandling);
+  }
+
+  // Result型で型安全なエラーハンドリング
+  static create(config: Record<string, unknown>): Result<CustomConfig | undefined, ConfigError> {
+    if (ParamsCustomConfig.isConfigMissing(config)) {
+      return { status: ResultStatus.SUCCESS, data: undefined };
+    }
+
+    try {
+      // DEFAULT_CUSTOM_CONFIG + 部分上書き
+      const customConfig: CustomConfig = {
+        ...DEFAULT_CUSTOM_CONFIG,
+        ...ParamsCustomConfig.extractOverrides(config)
+      };
+      return { status: ResultStatus.SUCCESS, data: customConfig };
+    } catch (error) {
+      return { status: ResultStatus.ERROR, error: new ConfigError(...) };
+    }
   }
 }
 ```
 
-## 採用した方法
+### 核心パターン
+1. **Smart Constructor + Result型**: 失敗を値として明示的に扱う
+2. **undefined戦略**: ⚠️ Totalityアンチパターンだが、BreakdownParams仕様に合わせて協調
+3. **部分上書き**: `...DEFAULT_CONFIG + ...userOverrides` で安全合成
 
-### 1. 責任の分離
-- **BreakdownParams**: 入力値の検証とTwoParamsResultの生成
-- **LayerType/DirectiveType**: 検証済み値の型安全なアクセス
-
-### 2. Smart Constructor単一化
-- `TwoParamsResult`のみを受け入れる`create`メソッド
-- パターンバリデーション機能の完全除去
-- 検証済み前提での安全な値アクセス
-
-### 3. 型安全性の強化
+### 使用例
 ```typescript
-// 検証はBreakdownParamsで実施
-const params = BreakdownParams.create(layer, directive);
-if (!params) {
-  throw new Error("Invalid parameters");
+const result = ParamsCustomConfig.create(userConfig);
+if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
+  new ParamsParser(undefined, result.data); // カスタム設定使用
+} else if (result.status === ResultStatus.SUCCESS && result.data === undefined) {
+  new ParamsParser(undefined, undefined);   // デフォルト設定使用
+} else {
+  console.error("Config error:", result.error);
 }
-
-// LayerType/DirectiveTypeは検証済み値のみを扱う
-const layerType = LayerType.create(params);
-const directiveType = DirectiveType.create(params);
 ```
-
-## 利点
-
-1. **単一責任**: 各クラスの役割が明確
-2. **型安全性**: コンパイル時にバリデーション済みを保証
-3. **保守性**: バリデーションロジックの一元化
-4. **可読性**: Smart Constructorパターンによる意図の明確化
-
-## 使用例
-
-```typescript
-// 入力値の検証
-const result = BreakdownParams.create("project", "summary");
-if (!result) {
-  return { ok: false, error: "Invalid parameters" };
-}
-
-// 型安全な値の取得
-const layerType = LayerType.create(result);
-const directiveType = DirectiveType.create(result);
-
-console.log(layerType.value);      // "project"
-console.log(directiveType.value);  // "summary"
-```
-
-## 移行の影響
-
-既存のファクトリクラス（TypeFactory等）は、新しい`create`シグネチャに合わせて更新が必要です。これにより、バリデーション責任がより明確になり、コードベース全体の設計一貫性が向上します。
