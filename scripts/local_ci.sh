@@ -14,7 +14,7 @@
 #   - Automatically regenerate the lockfile to ensure dependency consistency.
 #   - Recursively discover and run all *_test.ts files in the tests/ directory.
 #   - Only proceed to lint and format checks if all tests pass.
-#   - Exit immediately on any error, with helpful debug output if DEBUG=true.
+#   - Exit immediately on any error, with helpful debug output if LOG_LEVEL=debug.
 #
 # Error Handling Strategy:
 #   - Two-phase test execution for better error diagnosis:
@@ -36,12 +36,12 @@
 # Usage:
 #   bash scripts/local_ci.sh
 #   # or, with debug output:
-#   DEBUG=true bash scripts/local_ci.sh
+#   LOG_LEVEL=debug bash scripts/local_ci.sh
 #
 # Maintenance:
 #   - If you encounter an error:
-#       1. Run with DEBUG=true to get detailed output:
-#            DEBUG=true bash scripts/local_ci.sh
+#       1. Run with LOG_LEVEL=debug to get detailed output:
+#            LOG_LEVEL=debug bash scripts/local_ci.sh
 #       2. Review the error message and the failing test file.
 #       3. Fix the test or the application code as needed, following the order:
 #            Initial loading → Use case entry → Conversion → Output → Integration → Edge case
@@ -369,7 +369,7 @@ run_single_test() {
 ===============================================================================
 >>> RUNNING TEST IN DEBUG MODE: $test_file <<<
 ==============================================================================="
-        if ! error_output=$(LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
+        if ! error_output=$(LOG_LEVEL=debug LOG_LENGTH=W deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "true"
             return 1
         fi
