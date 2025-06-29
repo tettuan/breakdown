@@ -4,194 +4,282 @@
  * This module defines type-safe configuration for BreakdownParams following Totality principles.
  * Uses Smart Constructors and Discriminated Unions to ensure type safety.
  * 
+ * Key features:
+ * - Returns undefined when configuration is missing (as expected by BreakdownParams for default behavior)
+ * - Uses DEFAULT_CUSTOM_CONFIG as base and applies partial overrides via spread operator
+ * - Supports partial configuration (only specified fields are overridden)
+ * - Smart constructor pattern following Totality principles
+ * - Direct compatibility with BreakdownParams v1.0.7 CustomConfig type
+ * 
  * @module types/params_custom_config
  */
 
-/**
- * Result type for operations that can fail
- */
-export type Result<T, E> = 
-  | { ok: true; data: T }
-  | { ok: false; error: E };
+// Import CustomConfig type and DEFAULT_CUSTOM_CONFIG from BreakdownParams
+import type { CustomConfig } from "@tettuan/breakdownparams";
+import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";
+
+// Import result types
+import { Result, ResultStatus } from "./enums.ts";
 
 /**
  * Configuration creation errors
  */
-export type ConfigError = 
-  | { kind: 'InvalidPattern'; pattern: string; message: string }
-  | { kind: 'EmptyErrorMessage'; field: string }
-  | { kind: 'InvalidOptions'; field: string; message: string };
+export class ConfigError extends Error {
+  constructor(message: string, public readonly code: string) {
+    super(message);
+    this.name = 'ConfigError';
+  }
+}
 
 /**
- * CustomConfig type definition for BreakdownParams v1.0.4+ compatibility
- * Based on the actual type structure expected by ParamsParser constructor
+ * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
  */
-export type CustomConfig = {
-  params: {
-    two: {
-      demonstrativeType?: {
-        pattern?: string;
-        errorMessage?: string;
-      };
-      layerType?: {
-        pattern?: string;
-        errorMessage?: string;
-      };
-    };
+export interface ParamsConfig {
+  demonstrativeType: {
+    pattern: string;
+    errorMessage: string;
   };
-  options: {
-    flags?: string[];
-    values?: string[];
-    customVariables?: Record<string, string>;
+  layerType: {
+    pattern: string;
+    errorMessage: string;
   };
-  validation: {
-    zero?: {
-      allowedOptions?: string[];
-      allowedValueOptions?: string[];
-      allowCustomVariables?: boolean;
-    };
-    one?: {
-      allowedOptions?: string[];
-      allowedValueOptions?: string[];
-      allowCustomVariables?: boolean;
-    };
-    two?: {
-      allowedOptions?: string[];
-      allowedValueOptions?: string[];
-      allowCustomVariables?: boolean;
-    };
-  };
-  errorHandling: {
-    unknownOption?: 'error' | 'ignore' | 'warn';
-    duplicateOption?: 'error' | 'ignore' | 'warn';
-    emptyValue?: 'error' | 'ignore' | 'warn';
-  };
-};
+}
 
 /**
- * Complete parameters custom configuration following BreakdownParams format
+ * ParamsCustomConfig utilities for creating type-safe BreakdownParams configuration
+ * Uses smart constructor following Totality principles
+ * 
+ * Usage:
+ * ```typescript
+ * // 1. Create configuration with partial overrides
+ * const userConfig = {
+ *   breakdown: {
+ *     params: {
+ *       two: {
+ *         demonstrativeType: {
+ *           pattern: "^(custom|test)$",
+ *           errorMessage: "Custom demonstrative error"
+ *         }
+ *         // layerType will use DEFAULT_CUSTOM_CONFIG values
+ *       }
+ *     },
+ *     errorHandling: {
+ *       unknownOption: "warn"  // Override just this one setting
+ *     }
+ *   }
+ * };
+ * 
+ * // 2. Create merged CustomConfig (defaults + overrides)
+ * const result = ParamsCustomConfig.create(userConfig);
+ * 
+ * // 3. Handle success/failure
+ * if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
+ *   // Uses: custom demonstrativeType + default layerType + custom unknownOption + other defaults
+ *   const parser = new ParamsParser(undefined, result.data);
+ * } else if (result.status === ResultStatus.SUCCESS && result.data === undefined) {
+ *   // No breakdown config found, BreakdownParams will use its defaults
+ *   const parser = new ParamsParser(undefined, undefined);
+ * } else {
+ *   console.error("Configuration extraction failed:", result.error);
+ * }
+ * ```
  */
 export class ParamsCustomConfig {
-  private constructor(
-    readonly params: CustomConfig['params'],
-    readonly options: CustomConfig['options'],
-    readonly validation: CustomConfig['validation'],
-    readonly errorHandling: CustomConfig['errorHandling']
-  ) {}
-
-  static create(mergedConfig: Record<string, unknown>): Result<ParamsCustomConfig, ConfigError> {
-    // Extract configuration sections from mergedConfig and ensure proper structure
-    const rawParams = mergedConfig.params as Record<string, unknown> || {};
-    const rawOptions = mergedConfig.options as Record<string, unknown> || {};
-    const rawValidation = mergedConfig.validation as Record<string, unknown> || {};
-    const rawErrorHandling = mergedConfig.errorHandling as Record<string, unknown> || {};
-
-    // Transform to proper CustomConfig structure
-    const params: CustomConfig['params'] = {
-      two: {
-        demonstrativeType: ParamsCustomConfig.extractPatternConfig(rawParams, 'two.demonstrativeType'),
-        layerType: ParamsCustomConfig.extractPatternConfig(rawParams, 'two.layerType'),
-      }
-    };
-
-    const options: CustomConfig['options'] = {
-      flags: rawOptions.flags as string[] || [],
-      values: rawOptions.values as string[] || [],
-      customVariables: rawOptions.customVariables as Record<string, string> || {},
-    };
-
-    const validation: CustomConfig['validation'] = {
-      zero: ParamsCustomConfig.extractValidationRules(rawValidation, 'zero'),
-      one: ParamsCustomConfig.extractValidationRules(rawValidation, 'one'),
-      two: ParamsCustomConfig.extractValidationRules(rawValidation, 'two'),
-    };
-
-    const errorHandling: CustomConfig['errorHandling'] = {
-      unknownOption: rawErrorHandling.unknownOption as 'error' | 'ignore' | 'warn' || 'error',
-      duplicateOption: rawErrorHandling.duplicateOption as 'error' | 'ignore' | 'warn' || 'error',
-      emptyValue: rawErrorHandling.emptyValue as 'error' | 'ignore' | 'warn' || 'error',
-    };
-
-    return {
-      ok: true,
-      data: new ParamsCustomConfig(
-        params,
-        options,
-        validation,
-        errorHandling
-      )
-    };
+  private constructor() {
+    // Static utility class
   }
 
   /**
-   * Helper function to extract pattern configuration
+   * Checks if configuration is missing or contains insufficient data
+   * Returns true when config should be considered "missing" and undefined should be returned
    */
-  private static extractPatternConfig(
-    rawParams: Record<string, unknown>, 
-    path: string
-  ): { pattern?: string; errorMessage?: string } | undefined {
-    const parts = path.split('.');
-    let current: Record<string, unknown> | unknown = rawParams;
-    
-    for (const part of parts) {
-      if (current && typeof current === 'object' && current !== null) {
-        current = (current as Record<string, unknown>)[part];
-      } else {
-        return undefined;
-      }
+  private static isConfigMissing(mergedConfig: Record<string, unknown>): boolean {
+    // Check if config is empty or null/undefined
+    if (!mergedConfig || Object.keys(mergedConfig).length === 0) {
+      return true;
     }
+
+    // Check if breakdown-specific configuration exists
+    const breakdown = mergedConfig.breakdown;
+    if (!breakdown || typeof breakdown !== 'object') {
+      return true;
+    }
+
+    const breakdownObj = breakdown as Record<string, unknown>;
     
-    if (current && typeof current === 'object' && current !== null) {
-      const config = current as Record<string, unknown>;
+    // Check if any breakdown configuration exists at all
+    // If there's any breakdown config, we consider it as present (even if partial)
+    const hasAnyConfig = (
+      (breakdownObj.params && typeof breakdownObj.params === 'object') ||
+      (breakdownObj.options && typeof breakdownObj.options === 'object') ||
+      (breakdownObj.validation && typeof breakdownObj.validation === 'object') ||
+      (breakdownObj.errorHandling && typeof breakdownObj.errorHandling === 'object')
+    );
+
+    return !hasAnyConfig;
+  }
+
+  /**
+   * Smart constructor that validates and creates type-safe CustomConfig
+   * Uses DEFAULT_CUSTOM_CONFIG as base and applies partial overrides
+   * Returns undefined when configuration is missing (as expected by BreakdownParams)
+   */
+  static create(mergedConfig: Record<string, unknown>): Result<CustomConfig | undefined, ConfigError> {
+    // Check if configuration is missing or empty
+    if (ParamsCustomConfig.isConfigMissing(mergedConfig)) {
       return {
-        pattern: config.pattern as string,
-        errorMessage: config.errorMessage as string,
+        status: ResultStatus.SUCCESS,
+        data: undefined
       };
     }
-    
-    return undefined;
+
+    try {
+      // Start with DEFAULT_CUSTOM_CONFIG as base
+      const customConfig: CustomConfig = {
+        ...DEFAULT_CUSTOM_CONFIG,
+        ...ParamsCustomConfig.extractOverrides(mergedConfig)
+      };
+
+      return {
+        status: ResultStatus.SUCCESS,
+        data: customConfig
+      };
+    } catch (error) {
+      return {
+        status: ResultStatus.ERROR,
+        error: new ConfigError(
+          error instanceof Error ? error.message : 'Unknown configuration error',
+          'CONFIG_EXTRACTION_ERROR'
+        )
+      };
+    }
   }
 
   /**
-   * Helper function to extract validation rules
+   * Extract partial overrides from user configuration
+   * Only extracts fields that exist and are valid, leaving others to defaults
    */
-  private static extractValidationRules(
-    rawValidation: Record<string, unknown>,
-    key: string
-  ): { allowedOptions?: string[]; allowedValueOptions?: string[]; allowCustomVariables?: boolean } | undefined {
-    const rules = rawValidation[key] as Record<string, unknown>;
-    if (!rules || typeof rules !== 'object') return undefined;
+  private static extractOverrides(mergedConfig: Record<string, unknown>): Partial<CustomConfig> {
+    const breakdown = mergedConfig.breakdown as Record<string, unknown>;
+    const overrides: Partial<CustomConfig> = {};
 
-    return {
-      allowedOptions: rules.allowedOptions as string[],
-      allowedValueOptions: rules.allowedValueOptions as string[],
-      allowCustomVariables: rules.allowCustomVariables as boolean,
-    };
-  }
+    // Extract params overrides
+    if (breakdown.params && typeof breakdown.params === 'object') {
+      const params = breakdown.params as Record<string, unknown>;
+      
+      if (params.two && typeof params.two === 'object') {
+        const two = params.two as Record<string, unknown>;
+        const paramsOverride: Partial<ParamsConfig> = {};
+        
+        // Override demonstrativeType if provided
+        if (two.demonstrativeType && typeof two.demonstrativeType === 'object') {
+          const demo = two.demonstrativeType as Record<string, unknown>;
+          if (typeof demo.pattern === 'string' && typeof demo.errorMessage === 'string') {
+            paramsOverride.demonstrativeType = {
+              pattern: demo.pattern,
+              errorMessage: demo.errorMessage
+            };
+          }
+        }
+        
+        // Override layerType if provided
+        if (two.layerType && typeof two.layerType === 'object') {
+          const layer = two.layerType as Record<string, unknown>;
+          if (typeof layer.pattern === 'string' && typeof layer.errorMessage === 'string') {
+            paramsOverride.layerType = {
+              pattern: layer.pattern,
+              errorMessage: layer.errorMessage
+            };
+          }
+        }
 
-  /**
-   * Convert to BreakdownParams CustomConfig format
-   * Returns undefined if configuration is incomplete, which allows the receiving constructor
-   * to use its default configuration (customConfig?: CustomConfig pattern)
-   */
-  toBreakdownParamsFormat(): CustomConfig | undefined {
-    // Check if configuration is complete
-    if (!this.params || Object.keys(this.params).length === 0) {
-      // Return undefined to trigger default config usage in receiving constructor
-      return undefined;
+        if (Object.keys(paramsOverride).length > 0) {
+          overrides.params = {
+            two: {
+              ...DEFAULT_CUSTOM_CONFIG.params.two,
+              ...paramsOverride
+            }
+          };
+        }
+      }
     }
-    
-    if (!this.options || !this.validation || !this.errorHandling) {
-      // Return undefined to trigger default config usage in receiving constructor
-      return undefined;
+
+    // Extract options overrides (if needed)
+    if (breakdown.options && typeof breakdown.options === 'object') {
+      const options = breakdown.options as Record<string, unknown>;
+      const optionsOverride: Partial<CustomConfig['options']> = {};
+      
+      if (options.customVariables && typeof options.customVariables === 'object') {
+        const customVars = options.customVariables as Record<string, unknown>;
+        if (typeof customVars.pattern === 'string' || typeof customVars.description === 'string') {
+          optionsOverride.customVariables = {
+            ...DEFAULT_CUSTOM_CONFIG.options.customVariables,
+            ...(typeof customVars.pattern === 'string' && { pattern: customVars.pattern }),
+            ...(typeof customVars.description === 'string' && { description: customVars.description })
+          };
+        }
+      }
+
+      if (Object.keys(optionsOverride).length > 0) {
+        overrides.options = {
+          ...DEFAULT_CUSTOM_CONFIG.options,
+          ...optionsOverride
+        };
+      }
     }
 
-    // Return complete configuration only when all sections are properly defined
-    return {
-      params: this.params,
-      options: this.options,
-      validation: this.validation,
-      errorHandling: this.errorHandling,
-    };
+    // Extract validation overrides (if needed)
+    if (breakdown.validation && typeof breakdown.validation === 'object') {
+      const validation = breakdown.validation as Record<string, unknown>;
+      const validationOverride: Partial<CustomConfig['validation']> = {};
+
+      ['zero', 'one', 'two'].forEach(key => {
+        const section = validation[key];
+        if (section && typeof section === 'object') {
+          const sectionObj = section as Record<string, unknown>;
+          validationOverride[key as keyof CustomConfig['validation']] = {
+            allowedOptions: Array.isArray(sectionObj.allowedOptions) 
+              ? sectionObj.allowedOptions as string[]
+              : DEFAULT_CUSTOM_CONFIG.validation[key as keyof CustomConfig['validation']].allowedOptions,
+            allowedValueOptions: Array.isArray(sectionObj.allowedValueOptions)
+              ? sectionObj.allowedValueOptions as string[]
+              : DEFAULT_CUSTOM_CONFIG.validation[key as keyof CustomConfig['validation']].allowedValueOptions,
+            allowCustomVariables: typeof sectionObj.allowCustomVariables === 'boolean'
+              ? sectionObj.allowCustomVariables
+              : DEFAULT_CUSTOM_CONFIG.validation[key as keyof CustomConfig['validation']].allowCustomVariables
+          };
+        }
+      });
+
+      if (Object.keys(validationOverride).length > 0) {
+        overrides.validation = {
+          ...DEFAULT_CUSTOM_CONFIG.validation,
+          ...validationOverride
+        };
+      }
+    }
+
+    // Extract errorHandling overrides (if needed)
+    if (breakdown.errorHandling && typeof breakdown.errorHandling === 'object') {
+      const errorHandling = breakdown.errorHandling as Record<string, unknown>;
+      const validValues = ['error', 'ignore', 'warn'] as const;
+      const errorHandlingOverride: Partial<CustomConfig['errorHandling']> = {};
+
+      ['unknownOption', 'duplicateOption', 'emptyValue'].forEach(key => {
+        const value = errorHandling[key];
+        if (typeof value === 'string' && validValues.includes(value as typeof validValues[number])) {
+          errorHandlingOverride[key as keyof CustomConfig['errorHandling']] = value as typeof validValues[number];
+        }
+      });
+
+      if (Object.keys(errorHandlingOverride).length > 0) {
+        overrides.errorHandling = {
+          ...DEFAULT_CUSTOM_CONFIG.errorHandling,
+          ...errorHandlingOverride
+        };
+      }
+    }
+
+    return overrides;
   }
 }
