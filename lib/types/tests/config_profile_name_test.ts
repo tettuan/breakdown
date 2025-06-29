@@ -25,8 +25,8 @@ Deno.test("ConfigProfileName - Valid profile name creation", () => {
 
   for (const name of validNames) {
     const profile = ConfigProfileName.create(name);
-    assertEquals(profile.getValue(), name);
-    assertEquals(profile.exists(), true);
+    assertEquals(profile.value, name);
+    assertEquals(profile.value !== null, true);
   }
 });
 
@@ -64,8 +64,8 @@ Deno.test("ConfigProfileName - Invalid profile name rejection", () => {
 
   for (const name of invalidNames) {
     const profile = ConfigProfileName.create(name);
-    assertEquals(profile.getValue(), "");
-    assertEquals(profile.exists(), false);
+    assertEquals(profile.value, null);
+    assertEquals(profile.value !== null, false);
   }
 });
 
@@ -81,16 +81,21 @@ Deno.test("ConfigProfileName - Non-string input handling", () => {
 
   for (const input of invalidInputs) {
     const profile = ConfigProfileName.create(input);
-    assertEquals(profile.getValue(), "");
-    assertEquals(profile.exists(), false);
+    assertEquals(profile.value, null, `Invalid input '${input}' should have null value`);
+    assertEquals(profile.value !== null, false);
   }
 });
 
-Deno.test("ConfigProfileName - Empty profile creation", () => {
-  const emptyProfile = ConfigProfileName.empty();
+Deno.test("ConfigProfileName - Null handling for invalid inputs", () => {
+  // Test that empty string returns null value
+  const empty = ConfigProfileName.create("");
+  assertEquals(empty.value, null);
+  assertEquals(empty.value !== null, false);
   
-  assertEquals(emptyProfile.getValue(), "");
-  assertEquals(emptyProfile.exists(), false);
+  // Test that whitespace-only string returns null value
+  const whitespace = ConfigProfileName.create("   ");
+  assertEquals(whitespace.value, null);
+  assertEquals(whitespace.value !== null, false);
 });
 
 Deno.test("ConfigProfileName - Business rules validation", () => {
@@ -112,8 +117,8 @@ Deno.test("ConfigProfileName - Business rules validation", () => {
 
   for (const profileName of commonProfiles) {
     const profile = ConfigProfileName.create(profileName);
-    assertEquals(profile.exists(), true, `Common profile '${profileName}' should be valid`);
-    assertEquals(profile.getValue(), profileName);
+    assertEquals(profile.value !== null, true, `Common profile '${profileName}' should be valid`);
+    assertEquals(profile.value, profileName);
   }
 });
 
@@ -122,7 +127,7 @@ Deno.test("ConfigProfileName - Integration with BreakdownConfig pattern", () => 
   const profile = ConfigProfileName.create("staging");
   
   // Simulate BreakdownConfig usage
-  const configPrefix = profile.exists() ? profile.getValue() : undefined;
+  const configPrefix = profile.value || undefined;
   assertEquals(configPrefix, "staging");
 });
 
@@ -146,7 +151,7 @@ Deno.test("ConfigProfileName - Edge cases for pattern matching", () => {
 
   for (const testCase of edgeCases) {
     const profile = ConfigProfileName.create(testCase.name);
-    const isValid = profile.exists();
+    const isValid = profile.value !== null;
     assertEquals(
       isValid, 
       testCase.valid, 

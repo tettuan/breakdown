@@ -13,140 +13,124 @@ import { assertEquals } from "@std/assert";
 import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
 Deno.test("ConfigPrefixDetector - detects --config=value format", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["--config=test"]),
+    ConfigPrefixDetector.detect(["--config=test"]),
     "test",
     "Should extract value from --config=value",
   );
 
   assertEquals(
-    detector.detect(["--config=prod"]),
+    ConfigPrefixDetector.detect(["--config=prod"]),
     "prod",
     "Should extract value from --config=prod",
   );
 
   assertEquals(
-    detector.detect(["--config="]),
+    ConfigPrefixDetector.detect(["--config="]),
     "",
     "Should return empty string for --config= without value",
   );
 });
 
 Deno.test("ConfigPrefixDetector - detects -c=value format", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["-c=test"]),
+    ConfigPrefixDetector.detect(["-c=test"]),
     "test",
     "Should extract value from -c=value",
   );
 
   assertEquals(
-    detector.detect(["-c=dev"]),
+    ConfigPrefixDetector.detect(["-c=dev"]),
     "dev",
     "Should extract value from -c=dev",
   );
 });
 
 Deno.test("ConfigPrefixDetector - detects --config value format", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["--config", "test"]),
+    ConfigPrefixDetector.detect(["--config", "test"]),
     "test",
     "Should extract value from space-separated --config",
   );
 
   assertEquals(
-    detector.detect(["--config", "production"]),
+    ConfigPrefixDetector.detect(["--config", "production"]),
     "production",
     "Should extract value from space-separated --config",
   );
 });
 
 Deno.test("ConfigPrefixDetector - detects -c value format", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["-c", "test"]),
+    ConfigPrefixDetector.detect(["-c", "test"]),
     "test",
     "Should extract value from space-separated -c",
   );
 });
 
 Deno.test("ConfigPrefixDetector - ignores values starting with dash", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["--config", "--other"]),
-    undefined,
+    ConfigPrefixDetector.detect(["--config", "--other"]),
+    null,
     "Should not treat --other as config value",
   );
 
   assertEquals(
-    detector.detect(["-c", "-x"]),
-    undefined,
+    ConfigPrefixDetector.detect(["-c", "-x"]),
+    null,
     "Should not treat -x as config value",
   );
 });
 
-Deno.test("ConfigPrefixDetector - returns undefined when no config found", () => {
-  const detector = new ConfigPrefixDetector();
-
+Deno.test("ConfigPrefixDetector - returns null when no config found", () => {
   assertEquals(
-    detector.detect([]),
-    undefined,
-    "Should return undefined for empty args",
+    ConfigPrefixDetector.detect([]),
+    null,
+    "Should return null for empty args",
   );
 
   assertEquals(
-    detector.detect(["init", "--verbose"]),
-    undefined,
-    "Should return undefined when no config option",
+    ConfigPrefixDetector.detect(["init", "--verbose"]),
+    null,
+    "Should return null when no config option",
   );
 
   assertEquals(
-    detector.detect(["--other=value"]),
-    undefined,
-    "Should return undefined for non-config options",
+    ConfigPrefixDetector.detect(["--other=value"]),
+    null,
+    "Should return null for non-config options",
   );
 });
 
 Deno.test("ConfigPrefixDetector - handles edge cases", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["--config"]),
-    undefined,
-    "Should return undefined for --config without value at end",
+    ConfigPrefixDetector.detect(["--config"]),
+    null,
+    "Should return null for --config without value at end",
   );
 
   assertEquals(
-    detector.detect(["-c"]),
-    undefined,
-    "Should return undefined for -c without value at end",
+    ConfigPrefixDetector.detect(["-c"]),
+    null,
+    "Should return null for -c without value at end",
   );
 
   assertEquals(
-    detector.detect(["something", "--config=test", "other"]),
+    ConfigPrefixDetector.detect(["something", "--config=test", "other"]),
     "test",
     "Should find config in middle of args",
   );
 });
 
 Deno.test("ConfigPrefixDetector - returns first config found", () => {
-  const detector = new ConfigPrefixDetector();
-
   assertEquals(
-    detector.detect(["--config=first", "--config=second"]),
+    ConfigPrefixDetector.detect(["--config=first", "--config=second"]),
     "first",
     "Should return first config value when multiple exist",
   );
 
   assertEquals(
-    detector.detect(["-c=first", "--config=second"]),
+    ConfigPrefixDetector.detect(["-c=first", "--config=second"]),
     "first",
     "Should return first config value regardless of format",
   );

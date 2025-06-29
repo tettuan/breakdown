@@ -16,8 +16,20 @@ import { isAbsolute, join, resolve } from "@std/path";
 import { existsSync } from "@std/fs";
 import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
+import type { TwoParamsResult } from "../deps.ts";
+import { DirectiveType } from "../types/directive_type.ts";
+import { LayerType as NewLayerType } from "../types/layer_type.ts";
 
+// Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
+
+/**
+ * TypeCreationResult - Unified error handling for type creation operations
+ * Follows Totality principle by explicitly representing success/failure states
+ */
+export type TypeCreationResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
 /**
  * Prompt template path resolver for Breakdown CLI operations.
@@ -49,7 +61,7 @@ type DoubleParamsResult = PromptCliParams;
  */
 export class PromptTemplatePathResolver {
   private config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>;
-  private cliParams: DoubleParamsResult;
+  private cliParams: DoubleParamsResult | TwoParamsResult;
 
   /**
    * Creates a new PromptTemplatePathResolver instance with configuration and CLI parameters.
@@ -72,11 +84,13 @@ export class PromptTemplatePathResolver {
    */
   constructor(
     config: { app_prompt?: { base_dir?: string } } & Record<string, unknown>,
-    cliParams: DoubleParamsResult,
+    cliParams: DoubleParamsResult | TwoParamsResult,
   ) {
     this.config = config;
     this.cliParams = cliParams;
   }
+
+
 
   /**
    * Resolves the complete prompt template file path with intelligent fallback logic.
@@ -156,10 +170,24 @@ export class PromptTemplatePathResolver {
    * @returns The constructed filename string.
    */
   public buildFileName(): string {
-    const { layerType: _layerType, options } = this.cliParams;
     const fromLayerType = this.resolveFromLayerType();
-    const adaptation = options?.adaptation ? `_${options.adaptation}` : "";
-    return `f_${fromLayerType}${adaptation}.md`;
+    const adaptation = this.getAdaptation();
+    const adaptationSuffix = adaptation ? `_${adaptation}` : "";
+    return `f_${fromLayerType}${adaptationSuffix}.md`;
+  }
+
+  /**
+   * Gets the adaptation option with compatibility handling
+   * @returns string | undefined - The adaptation value
+   */
+  private getAdaptation(): string | undefined {
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return this.cliParams.options?.adaptation as string | undefined;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { options?: { adaptation?: string } }).options?.adaptation;
   }
 
   /**
@@ -178,8 +206,39 @@ export class PromptTemplatePathResolver {
    * @returns The constructed prompt template path.
    */
   public buildPromptPath(baseDir: string, fileName: string): string {
-    const { demonstrativeType, layerType } = this.cliParams;
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
     return join(baseDir, demonstrativeType, layerType, fileName);
+  }
+
+  /**
+   * Gets the demonstrative type value using new type system
+   * @returns string - The demonstrative type value from DirectiveType
+   */
+  private getDemonstrativeType(): string {
+    // Handle both legacy and new parameter structures
+    if ('demonstrativeType' in this.cliParams) {
+      return this.cliParams.demonstrativeType;
+    }
+    // For TwoParamsResult structure, create DirectiveType and get value
+    const twoParams = this.cliParams as TwoParamsResult;
+    const directiveType = DirectiveType.create(twoParams);
+    return directiveType.value;
+  }
+
+  /**
+   * Gets the layer type value using new type system
+   * @returns string - The layer type value from LayerType
+   */
+  private getLayerType(): string {
+    // Handle both legacy and new parameter structures
+    if ('layerType' in this.cliParams) {
+      return this.cliParams.layerType;
+    }
+    // For TwoParamsResult structure, create LayerType and get value
+    const twoParams = this.cliParams as TwoParamsResult;
+    const layerType = NewLayerType.create(twoParams);
+    return layerType.value;
   }
 
   /**
@@ -188,8 +247,8 @@ export class PromptTemplatePathResolver {
    * @returns True if fallback should be used, false otherwise.
    */
   public shouldFallback(promptPath: string): boolean {
-    const { options } = this.cliParams;
-    return Boolean(options?.adaptation) && !existsSync(promptPath);
+    const adaptation = this.getAdaptation();
+    return Boolean(adaptation) && !existsSync(promptPath);
   }
 
   /**
@@ -197,16 +256,18 @@ export class PromptTemplatePathResolver {
    * @returns The resolved fromLayerType string.
    */
   public resolveFromLayerType(): string {
-    const { layerType, options } = this.cliParams;
+    const layerType = this.getLayerType();
+    const fromLayerType = this.getFromLayerType();
+    const fromFile = this.getFromFile();
 
     // Use explicit fromLayerType if provided
-    if (options?.fromLayerType) {
-      return options.fromLayerType;
+    if (fromLayerType) {
+      return fromLayerType;
     }
 
     // Infer fromLayerType from fromFile if available
-    if (options?.fromFile) {
-      const inferredType = this.inferLayerTypeFromFileName(options.fromFile);
+    if (fromFile) {
+      const inferredType = this.inferLayerTypeFromFileName(fromFile);
       if (inferredType) {
         return inferredType;
       }
@@ -214,6 +275,34 @@ export class PromptTemplatePathResolver {
 
     // Fallback to layerType
     return layerType;
+  }
+
+  /**
+   * Gets the fromLayerType option with compatibility handling
+   * @returns string | undefined - The fromLayerType value
+   */
+  private getFromLayerType(): string | undefined {
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return this.cliParams.options?.fromLayerType as string | undefined;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { options?: { fromLayerType?: string } }).options?.fromLayerType;
+  }
+
+  /**
+   * Gets the fromFile option with compatibility handling
+   * @returns string | undefined - The fromFile value
+   */
+  private getFromFile(): string | undefined {
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return this.cliParams.options?.fromFile as string | undefined;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { options?: { fromFile?: string } }).options?.fromFile;
   }
 
   /**

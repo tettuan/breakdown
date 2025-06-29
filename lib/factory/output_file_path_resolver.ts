@@ -14,8 +14,18 @@
 
 import { isAbsolute, join } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
+import type { TwoParamsResult } from "../deps.ts";
+
+// Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
+
+/**
+ * TypeCreationResult - Unified error handling for type creation operations
+ * Follows Totality principle by explicitly representing success/failure states
+ */
+export type TypeCreationResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
 /**
  * Output file path resolver for Breakdown CLI operations.
@@ -65,7 +75,10 @@ export class OutputFilePathResolver {
    * const resolver = new OutputFilePathResolver(config, cliParams);
    * ```
    */
-  constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
+  constructor(
+    private config: Record<string, unknown>, 
+    private cliParams: DoubleParamsResult | TwoParamsResult
+  ) {}
 
   /**
    * Resolves the output file path according to CLI parameters and configuration.
@@ -98,11 +111,14 @@ export class OutputFilePathResolver {
    *
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
+
+
   public getPath(): string {
     const destinationFile = this.getDestinationFile();
     const cwd = Deno.cwd();
     if (!destinationFile) {
-      return join(cwd, this.cliParams.layerType, this.generateDefaultFilename());
+      const layerType = this.getLayerType();
+      return join(cwd, layerType, this.generateDefaultFilename());
     }
     const normalizedDest = this.normalizePath(destinationFile);
     if (isAbsolute(normalizedDest)) {
@@ -119,7 +135,8 @@ export class OutputFilePathResolver {
       return absDest;
     }
     if (this.hasExtension(normalizedDest)) {
-      return join(cwd, this.cliParams.layerType, normalizedDest);
+      const layerType = this.getLayerType();
+      return join(cwd, layerType, normalizedDest);
     }
     return join(absDest, this.generateDefaultFilename());
   }
@@ -141,8 +158,28 @@ export class OutputFilePathResolver {
    * const noDestFile = this.getDestinationFile(); // undefined
    * ```
    */
+  /**
+   * Gets the layer type from CLI parameters with compatibility handling
+   * @returns string - The layer type value
+   */
+  private getLayerType(): string {
+    // Handle both legacy and new parameter structures
+    if ('layerType' in this.cliParams) {
+      return this.cliParams.layerType;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { layerType?: string }).layerType || "";
+  }
+
   public getDestinationFile(): string | undefined {
-    return this.cliParams.options?.destinationFile;
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return this.cliParams.options?.destinationFile as string | undefined;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { options?: { destinationFile?: string } }).options?.destinationFile;
   }
 
   /**

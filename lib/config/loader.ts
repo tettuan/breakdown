@@ -66,13 +66,18 @@ export async function loadConfig(filePath: string): Promise<CustomConfig> {
  * @returns Merged configuration from BreakdownConfig
  */
 export async function loadBreakdownConfig(
-  configPrefix?: string,
+  configPrefix?: string | null,
   _workingDir?: string,
 ): Promise<Record<string, unknown>> {
   // Dynamic import using latest version (managed in versions.ts: 1.1.4)
   const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
 
-  const config = new BreakdownConfig(configPrefix);
+  // Use BreakdownConfig static factory method (convert null to undefined)
+  const configResult = await BreakdownConfig.create(configPrefix ?? undefined);
+  if (!configResult.success) {
+    throw new Error(`Failed to create BreakdownConfig`);
+  }
+  const config = configResult.data;
   await config.loadConfig();
   return await config.getConfig();
 }

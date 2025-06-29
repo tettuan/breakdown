@@ -72,7 +72,11 @@ app_schema:
 `,
     );
 
-    const config = new BreakdownConfig();
+    const configResult = await BreakdownConfig.create();
+    if (!configResult.success) {
+      throw new Error("Failed to create BreakdownConfig");
+    }
+    const config = configResult.data;
     await config.loadConfig();
     const settings = await config.getConfig();
 
@@ -129,7 +133,11 @@ app_schema:
 `,
     );
 
-    const config = new BreakdownConfig();
+    const configResult = await BreakdownConfig.create();
+    if (!configResult.success) {
+      throw new Error("Failed to create BreakdownConfig");
+    }
+    const config = configResult.data;
     await config.loadConfig();
     const settings = await config.getConfig();
 
@@ -160,7 +168,11 @@ Deno.test("config - invalid configuration handling", async () => {
   const tempDir = await Deno.makeTempDir();
   Deno.chdir(tempDir);
   try {
-    const config = new BreakdownConfig();
+    const configResult = await BreakdownConfig.create();
+    if (!configResult.success) {
+      throw new Error("Failed to create BreakdownConfig");
+    }
+    const config = configResult.data;
 
     try {
       await config.loadConfig();
@@ -217,7 +229,11 @@ app_schema:
 `,
       );
 
-      const config = new BreakdownConfig();
+      const configResult = await BreakdownConfig.create();
+      if (!configResult.success) {
+        throw new Error("Failed to create BreakdownConfig");
+      }
+      const config = configResult.data;
       await config.loadConfig();
       const settings = await config.getConfig();
 
@@ -250,7 +266,11 @@ Deno.test("config - error if no config file and different cwd", async () => {
   const originalCwd = Deno.cwd();
   Deno.chdir(tempDir);
   try {
-    const config = new BreakdownConfig(); // No config file created
+    const configResult = await BreakdownConfig.create(); // No config file created
+    if (!configResult.success) {
+      throw new Error("Failed to create BreakdownConfig");
+    }
+    const config = configResult.data;
     let errorCaught = false;
     try {
       await config.loadConfig();

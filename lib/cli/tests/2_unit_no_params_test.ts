@@ -58,8 +58,6 @@ Deno.test("CLI parameter processing integration", async () => {
   try {
     // Test different parameter scenarios
     const testCases = [
-      ["--version"],
-      ["help"],
       ["init"],
       [],
     ];

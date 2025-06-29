@@ -269,7 +269,11 @@ describe("Prompt baseDir edge cases", () => {
           `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
         );
         // Load config before creating factory
-        const breakdownConfig = new BreakdownConfig("test-prompt-edge", testDir);
+        const configResult = await BreakdownConfig.create("test-prompt-edge", testDir);
+        if (!configResult.success) {
+          throw new Error("Failed to create BreakdownConfig");
+        }
+        const breakdownConfig = configResult.data;
         await breakdownConfig.loadConfig();
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");

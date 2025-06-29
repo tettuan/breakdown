@@ -2,7 +2,7 @@
  * Help text constants for Breakdown CLI
  */
 
-import { VERSION } from "../lib/version.ts";
+import { VERSION } from "../version.ts";
 
 export { VERSION };
 export const APP_NAME = "Breakdown - AI Development Instruction Tool";
@@ -23,8 +23,6 @@ const DEFAULT_HELP_CONFIG: HelpTextConfig = {
   commands: [
     { name: "init", description: "Initialize breakdown configuration" },
     { name: "to <type> <layer>", description: "Process with two parameters" },
-    { name: "version", description: "Show version information" },
-    { name: "help", description: "Show this help message" },
   ],
   options: [
     { flags: "--config/-c <prefix>", description: "Use custom config prefix" },

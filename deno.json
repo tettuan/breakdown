@@ -17,9 +17,10 @@
     "@std/flags": "jsr:@std/flags@^0.224.0",
     "@std/path": "jsr:@std/path@^1.0.9",
     "@std/yaml": "jsr:@std/yaml@^1.0.6",
+    "@std/testing": "jsr:@std/testing@^0.224.0",
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
     "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.4",
-    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.4",
+    "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.0.7",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@1.2.3",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.5"
   },

@@ -18,6 +18,12 @@
  */
 
 import type { PromptParams } from "@tettuan/breakdownprompt";
+import type { VariableResult } from "./variable_result.ts";
+import { 
+  createSuccess, 
+  createInvalidNameError, 
+  createEmptyValueError 
+} from "./variable_result.ts";
 
 // === Base Interface for Duck Typing ===
 
@@ -39,11 +45,17 @@ export class StandardVariable implements PromptVariableBase {
     readonly value: string
   ) {}
 
-  static create(name: string, value: string): StandardVariable | null {
-    const validName = StandardVariableName.create(name);
-    if (!validName) return null;
+  static create(name: string, value: string): VariableResult<StandardVariable> {
+    const nameResult = StandardVariableName.create(name);
+    if (!nameResult.ok) {
+      return nameResult;
+    }
     
-    return new StandardVariable(validName, value);
+    if (!value || value.trim().length === 0) {
+      return createEmptyValueError(name, "Standard variable value cannot be empty");
+    }
+    
+    return createSuccess(new StandardVariable(nameResult.data, value));
   }
 
   toRecord(): Record<string, string> {
@@ -60,14 +72,18 @@ export class FilePathVariable implements PromptVariableBase {
     readonly value: string
   ) {}
 
-  static create(name: string, value: string): FilePathVariable | null {
-    const validName = FilePathVariableName.create(name);
-    if (!validName) return null;
+  static create(name: string, value: string): VariableResult<FilePathVariable> {
+    const nameResult = FilePathVariableName.create(name);
+    if (!nameResult.ok) {
+      return nameResult;
+    }
 
     // Basic file path validation
-    if (!value || value.trim().length === 0) return null;
+    if (!value || value.trim().length === 0) {
+      return createEmptyValueError(name, "File path cannot be empty");
+    }
     
-    return new FilePathVariable(validName, value);
+    return createSuccess(new FilePathVariable(nameResult.data, value));
   }
 
   toRecord(): Record<string, string> {
@@ -84,11 +100,13 @@ export class StdinVariable implements PromptVariableBase {
     readonly value: string
   ) {}
 
-  static create(name: string, value: string): StdinVariable | null {
-    const validName = StdinVariableName.create(name);
-    if (!validName) return null;
+  static create(name: string, value: string): VariableResult<StdinVariable> {
+    const nameResult = StdinVariableName.create(name);
+    if (!nameResult.ok) {
+      return nameResult;
+    }
     
-    return new StdinVariable(validName, value);
+    return createSuccess(new StdinVariable(nameResult.data, value));
   }
 
   toRecord(): Record<string, string> {
@@ -105,11 +123,15 @@ export class UserVariable implements PromptVariableBase {
     readonly value: string
   ) {}
 
-  static create(name: string, value: string): UserVariable | null {
-    if (!name || name.trim().length === 0) return null;
-    if (!value || value.trim().length === 0) return null;
+  static create(name: string, value: string): VariableResult<UserVariable> {
+    if (!name || name.trim().length === 0) {
+      return createEmptyValueError("UserVariable", "Variable name cannot be empty");
+    }
+    if (!value || value.trim().length === 0) {
+      return createEmptyValueError(name, "Variable value cannot be empty");
+    }
     
-    return new UserVariable(name.trim(), value);
+    return createSuccess(new UserVariable(name.trim(), value));
   }
 
   toRecord(): Record<string, string> {
@@ -127,9 +149,12 @@ export class StandardVariableName {
   
   private constructor(readonly value: typeof StandardVariableName.VALID_NAMES[number]) {}
 
-  static create(name: string): StandardVariableName | null {
+  static create(name: string): VariableResult<StandardVariableName> {
     const validName = StandardVariableName.VALID_NAMES.find(valid => valid === name);
-    return validName ? new StandardVariableName(validName) : null;
+    if (validName) {
+      return createSuccess(new StandardVariableName(validName));
+    }
+    return createInvalidNameError(name, StandardVariableName.VALID_NAMES);
   }
 
   getValue(): string {
@@ -145,9 +170,12 @@ export class FilePathVariableName {
   
   private constructor(readonly value: typeof FilePathVariableName.VALID_NAMES[number]) {}
 
-  static create(name: string): FilePathVariableName | null {
+  static create(name: string): VariableResult<FilePathVariableName> {
     const validName = FilePathVariableName.VALID_NAMES.find(valid => valid === name);
-    return validName ? new FilePathVariableName(validName) : null;
+    if (validName) {
+      return createSuccess(new FilePathVariableName(validName));
+    }
+    return createInvalidNameError(name, FilePathVariableName.VALID_NAMES);
   }
 
   getValue(): string {
@@ -163,9 +191,12 @@ export class StdinVariableName {
   
   private constructor(readonly value: typeof StdinVariableName.VALID_NAMES[number]) {}
 
-  static create(name: string): StdinVariableName | null {
+  static create(name: string): VariableResult<StdinVariableName> {
     const validName = StdinVariableName.VALID_NAMES.find(valid => valid === name);
-    return validName ? new StdinVariableName(validName) : null;
+    if (validName) {
+      return createSuccess(new StdinVariableName(validName));
+    }
+    return createInvalidNameError(name, StdinVariableName.VALID_NAMES);
   }
 
   getValue(): string {

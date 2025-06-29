@@ -33,22 +33,24 @@ Deno.test("ConfigPrefixDetector architecture - no circular dependencies", async 
 Deno.test("ConfigPrefixDetector architecture - single responsibility", async () => {
   const { ConfigPrefixDetector } = await import("./config_prefix_detector.ts");
 
-  // Check that class has minimal public interface
-  const detector = new ConfigPrefixDetector();
-  const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(detector))
-    .filter((name) =>
-      name !== "constructor" && typeof detector[name as keyof typeof detector] === "function"
+  // Check that class has minimal static interface
+  const staticMethods = Object.getOwnPropertyNames(ConfigPrefixDetector)
+    .filter((name) => 
+      name !== "prototype" && 
+      name !== "length" && 
+      name !== "name" &&
+      typeof ConfigPrefixDetector[name as keyof typeof ConfigPrefixDetector] === "function"
     );
 
   assertEquals(
-    publicMethods.length,
+    staticMethods.length,
     1,
-    "ConfigPrefixDetector should have exactly one public method (detect)",
+    "ConfigPrefixDetector should have exactly one static method (detect)",
   );
 
   assertEquals(
-    publicMethods[0],
+    staticMethods[0],
     "detect",
-    "The single public method should be named 'detect'",
+    "The single static method should be named 'detect'",
   );
 });

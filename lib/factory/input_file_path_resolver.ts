@@ -14,8 +14,18 @@
 
 import { isAbsolute, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
+import type { TwoParamsResult } from "../deps.ts";
 
+// Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
+
+/**
+ * TypeCreationResult - Unified error handling for type creation operations
+ * Follows Totality principle by explicitly representing success/failure states
+ */
+export type TypeCreationResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
 /**
  * Input file path resolver for Breakdown CLI operations.
@@ -64,7 +74,10 @@ export class InputFilePathResolver {
    * const resolver = new InputFilePathResolver(config, cliParams);
    * ```
    */
-  constructor(private config: Record<string, unknown>, private cliParams: DoubleParamsResult) {}
+  constructor(
+    private config: Record<string, unknown>, 
+    private cliParams: DoubleParamsResult | TwoParamsResult
+  ) {}
 
   /**
    * Resolves the input file path according to CLI parameters and configuration.
@@ -98,6 +111,8 @@ export class InputFilePathResolver {
    *
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
+
+
   public getPath(): string {
     const fromFile = this.getFromFile();
     if (!fromFile) return "";
@@ -131,7 +146,13 @@ export class InputFilePathResolver {
    * ```
    */
   private getFromFile(): string | undefined {
-    return this.cliParams.options?.fromFile;
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return this.cliParams.options?.fromFile as string | undefined;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { options?: { fromFile?: string } }).options?.fromFile;
   }
 
   /**
@@ -232,6 +253,14 @@ export class InputFilePathResolver {
    * ```
    */
   private getDirectory(): string {
-    return this.cliParams.options?.fromLayerType || this.cliParams.layerType;
+    // Handle both legacy and new parameter structures
+    if ('options' in this.cliParams) {
+      return (this.cliParams.options?.fromLayerType as string) || this.cliParams.layerType;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    const fromLayerType = (twoParams as unknown as { options?: { fromLayerType?: string } }).options?.fromLayerType;
+    const layerType = (twoParams as unknown as { layerType?: string }).layerType;
+    return fromLayerType || layerType || "";
   }
 }

@@ -12,6 +12,55 @@
 import type { TwoParamsResult } from "../deps.ts";
 
 /**
+ * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン
+ * 
+ * 正規表現パターンを安全にラップし、LayerTypeのバリデーションに使用する。
+ * Smart Constructorパターンを採用して、無効なパターンの作成を防ぐ。
+ */
+export class TwoParamsLayerTypePattern {
+  private constructor(private readonly pattern: RegExp) {}
+
+  /**
+   * 文字列パターンから TwoParamsLayerTypePattern を作成
+   * @param pattern 正規表現文字列
+   * @returns 成功時は TwoParamsLayerTypePattern、失敗時は null
+   */
+  static create(pattern: string): TwoParamsLayerTypePattern | null {
+    try {
+      const regex = new RegExp(pattern);
+      return new TwoParamsLayerTypePattern(regex);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 値がパターンにマッチするかテスト
+   * @param value テスト対象の値
+   * @returns マッチする場合 true
+   */
+  test(value: string): boolean {
+    return this.pattern.test(value);
+  }
+
+  /**
+   * パターンの文字列表現を取得
+   * @returns 正規表現の文字列
+   */
+  toString(): string {
+    return this.pattern.toString();
+  }
+
+  /**
+   * TypePatternProvider インターフェース準拠のためのメソッド
+   * @returns 自身を返す（TypePatternProvider.getLayerTypePattern用）
+   */
+  getLayerTypePattern(): TwoParamsLayerTypePattern {
+    return this;
+  }
+}
+
+/**
  * LayerType - 階層型
  * 
  * Totality原則に準拠した制約型。TwoParamsResult を受け取る制約を持ち、
@@ -86,5 +135,56 @@ export class LayerType {
    */
   get value(): string {
     return this.result.layerType;
+  }
+
+  /**
+   * getValue method for compatibility with test files
+   * @deprecated Use .value property instead
+   */
+  getValue(): string {
+    return this.value;
+  }
+
+  /**
+   * equals method for value comparison
+   */
+  equals(other: LayerType): boolean {
+    return this.value === other.value;
+  }
+
+  /**
+   * getHierarchyLevel method for compatibility with test files
+   * @deprecated This method is for testing purposes only
+   */
+  getHierarchyLevel(): number {
+    const hierarchyMap: Record<string, number> = {
+      "project": 1,
+      "issue": 2,
+      "task": 3,
+      "bugs": 0,
+      "temp": 0
+    };
+    return hierarchyMap[this.value] || 0;
+  }
+
+  /**
+   * isStandardHierarchy method for compatibility with test files
+   * @deprecated This method is for testing purposes only
+   */
+  isStandardHierarchy(): boolean {
+    const standardTypes = ["project", "issue", "task"];
+    return standardTypes.includes(this.value);
+  }
+
+  /**
+   * 元の TwoParamsResult への読み取り専用アクセス
+   * 
+   * デバッグや詳細情報が必要な場合に使用。
+   * Immutable なので安全に公開可能。
+   * 
+   * @returns 元の TwoParamsResult（読み取り専用）
+   */
+  get originalResult(): Readonly<TwoParamsResult> {
+    return this.result;
   }
 }

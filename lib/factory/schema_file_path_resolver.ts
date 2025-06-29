@@ -14,8 +14,18 @@
 
 import { isAbsolute, join, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-// TODO: DoubleParamsResult型の正確な定義が見つからないため、any型で仮置き
+import type { TwoParamsResult } from "../deps.ts";
+
+// Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
+
+/**
+ * TypeCreationResult - Unified error handling for type creation operations
+ * Follows Totality principle by explicitly representing success/failure states
+ */
+export type TypeCreationResult<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
 /**
  * Schema file path resolver for Breakdown CLI operations.
@@ -64,8 +74,10 @@ export class SchemaFilePathResolver {
    */
   constructor(
     private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
-    private cliParams: DoubleParamsResult,
+    private cliParams: DoubleParamsResult | TwoParamsResult,
   ) {}
+
+
 
   /**
    * Resolves the complete schema file path according to CLI parameters and configuration.
@@ -169,7 +181,36 @@ export class SchemaFilePathResolver {
    * ```
    */
   public buildSchemaPath(baseDir: string, fileName: string): string {
-    const { demonstrativeType, layerType } = this.cliParams;
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
     return join(baseDir, demonstrativeType, layerType, fileName);
+  }
+
+  /**
+   * Gets the demonstrative type with compatibility handling
+   * @returns string - The demonstrative type value
+   */
+  private getDemonstrativeType(): string {
+    // Handle both legacy and new parameter structures
+    if ('demonstrativeType' in this.cliParams) {
+      return this.cliParams.demonstrativeType;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { demonstrativeType?: string }).demonstrativeType || "";
+  }
+
+  /**
+   * Gets the layer type with compatibility handling
+   * @returns string - The layer type value
+   */
+  private getLayerType(): string {
+    // Handle both legacy and new parameter structures
+    if ('layerType' in this.cliParams) {
+      return this.cliParams.layerType;
+    }
+    // For TwoParamsResult structure, adapt to legacy interface
+    const twoParams = this.cliParams as TwoParamsResult;
+    return (twoParams as unknown as { layerType?: string }).layerType || "";
   }
 }

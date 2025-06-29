@@ -457,7 +457,11 @@ app_schema:
   // Load config (use valid config set name, then change working directory)
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
-  const config = new BreakdownConfig("test-cli-integration");
+  const configResult = BreakdownConfig.create("test-cli-integration");
+  if (!configResult.success) {
+    throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+  }
+  const config = configResult.data;
   await config.loadConfig();
   const settings = await config.getConfig();
   logger.debug("BreakdownConfig merged settings", { settings });
@@ -485,7 +489,11 @@ app_schema:
   );
   const originalCwd2 = Deno.cwd();
   Deno.chdir(testDir);
-  const config = new BreakdownConfig("test-cli-integration");
+  const configResult = BreakdownConfig.create("test-cli-integration");
+  if (!configResult.success) {
+    throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+  }
+  const config = configResult.data;
   await config.loadConfig();
   const settings = await config.getConfig();
   logger.debug("BreakdownConfig working_dir/prompt_dir", { settings });
@@ -509,7 +517,11 @@ Deno.test("BreakdownConfig: error if config missing required fields", async () =
   const originalCwd = Deno.cwd();
   Deno.chdir(testDir);
   try {
-    const config = new BreakdownConfig("test-cli-integration");
+    const configResult = BreakdownConfig.create("test-cli-integration");
+  if (!configResult.success) {
+    throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+  }
+  const config = configResult.data;
     let errorCaught = false;
     try {
       await config.loadConfig();

@@ -91,7 +91,11 @@ async function loadCustomConfig(configPath: string): Promise<CustomConfigStructu
     const configPrefix = "production-user";
 
     // Create BreakdownConfig instance with production prefix
-    const breakdownConfig = new BreakdownConfig(workingDir, configPrefix);
+    const breakdownConfigResult = BreakdownConfig.create(workingDir, configPrefix);
+    if (!breakdownConfigResult.success) {
+      throw new Error(`Failed to create BreakdownConfig: ${breakdownConfigResult.error}`);
+    }
+    const breakdownConfig = breakdownConfigResult.data;
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
 

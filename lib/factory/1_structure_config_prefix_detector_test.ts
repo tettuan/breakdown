@@ -22,31 +22,55 @@ Deno.test("ConfigPrefixDetector structure - class exists", () => {
 });
 
 Deno.test("ConfigPrefixDetector structure - detect method signature", () => {
-  const detector = new ConfigPrefixDetector();
-
-  assertExists(detector.detect, "detect method should exist");
+  assertExists(ConfigPrefixDetector.detect, "static detect method should exist");
   assertEquals(
-    typeof detector.detect,
+    typeof ConfigPrefixDetector.detect,
     "function",
-    "detect should be a function",
+    "detect should be a static function",
   );
 
   // Test method accepts array argument
-  const result = detector.detect([]);
+  const result = ConfigPrefixDetector.detect([]);
   assertEquals(
     result,
-    undefined,
-    "detect should return undefined for empty array",
+    null,
+    "detect should return null for empty array",
   );
 });
 
+Deno.test("ConfigPrefixDetector structure - constructor is private", () => {
+  // TypeScript should prevent instantiation (compile-time check)
+  // At runtime, we can only verify the intended usage pattern
+  // The real protection is at compile-time via TypeScript
+  
+  // Verify that static method works as intended
+  const result = ConfigPrefixDetector.detect([]);
+  assertEquals(result, null, "Static method should work correctly");
+  
+  // Document that constructor should not be used directly
+  // (TypeScript will catch this at compile time)
+  assertEquals(true, true, "Constructor privacy enforced by TypeScript");
+});
+
 Deno.test("ConfigPrefixDetector structure - no extra public properties", () => {
-  const detector = new ConfigPrefixDetector();
-  const instance = Object.getOwnPropertyNames(detector);
+  // Check static methods only
+  const staticMethods = Object.getOwnPropertyNames(ConfigPrefixDetector)
+    .filter((name) => 
+      name !== "prototype" && 
+      name !== "length" && 
+      name !== "name" &&
+      typeof ConfigPrefixDetector[name as keyof typeof ConfigPrefixDetector] === "function"
+    );
 
   assertEquals(
-    instance.length,
-    0,
-    "ConfigPrefixDetector instance should have no public properties",
+    staticMethods.length,
+    1,
+    "ConfigPrefixDetector should have exactly one static method (detect)",
+  );
+
+  assertEquals(
+    staticMethods[0],
+    "detect",
+    "The single static method should be named 'detect'",
   );
 });

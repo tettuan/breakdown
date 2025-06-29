@@ -1,6 +1,7 @@
 /**
- * Stdin Integration Wrapper
+ * Stdin Integration Wrapper with Totality Principle
  *
+ * STDIN処理のTotality対応、例外を排除してResult型へ変換
  * 既存のstdin.tsと新しいenhanced_stdin.tsの統合ラッパー
  * 後方互換性を維持しながら改善された機能を提供
  *
@@ -21,6 +22,7 @@ import {
   safeReadStdin,
   shouldSkipStdinProcessing,
 } from "./enhanced_stdin.ts";
+import { Result, ok, error } from "../types/result.ts";
 
 /**
  * Migration configuration for stdin behavior
@@ -58,81 +60,204 @@ function getMigrationConfig(): StdinMigrationConfig {
 }
 
 /**
+ * StdinIntegrationWrapper class for Totality-compliant STDIN processing
+ */
+export class StdinIntegrationWrapper {
+  private config: StdinMigrationConfig;
+
+  constructor(config?: StdinMigrationConfig) {
+    this.config = config || getMigrationConfig();
+  }
+
+  /**
+   * Check stdin availability with Result type (Totality principle)
+   */
+  isStdinAvailable(options?: {
+    isTerminal?: boolean;
+  }): Result<boolean, string> {
+    try {
+      if (this.config.forceFallback) {
+        const result = originalIsStdinAvailable(options);
+        return ok(result);
+      }
+
+      if (this.config.useEnhanced) {
+        const envInfo = detectEnvironment();
+
+        // Apply environment overrides
+        if (this.config.environmentOverrides) {
+          if (this.config.environmentOverrides.ci !== undefined) {
+            envInfo.isCI = this.config.environmentOverrides.ci;
+          }
+          if (this.config.environmentOverrides.test !== undefined) {
+            envInfo.isTest = this.config.environmentOverrides.test;
+          }
+          if (this.config.environmentOverrides.terminal !== undefined) {
+            envInfo.isTerminal = this.config.environmentOverrides.terminal;
+          }
+        }
+
+        const result = isStdinAvailableEnhanced({
+          environmentInfo: envInfo,
+          debug: this.config.debug,
+        });
+        return ok(result);
+      }
+
+      const result = originalIsStdinAvailable(options);
+      return ok(result);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  /**
+   * Read stdin with Result type (Totality principle)
+   */
+  async readStdin(options: StdinOptions & {
+    forceRead?: boolean;
+  } = {}): Promise<Result<string, string>> {
+    try {
+      if (this.config.forceFallback) {
+        const content = await originalReadStdin(options);
+        return ok(content);
+      }
+
+      if (this.config.useEnhanced) {
+        const enhancedOptions: EnhancedStdinOptions = {
+          allowEmpty: options.allowEmpty,
+          timeout: options.timeout,
+          forceRead: options.forceRead,
+          debug: this.config.debug,
+        };
+
+        const content = await readStdinEnhanced(enhancedOptions);
+        return ok(content);
+      }
+
+      const content = await originalReadStdin(options);
+      return ok(content);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  /**
+   * Safe stdin reader with comprehensive Result type
+   */
+  async readStdinSafe(options: StdinOptions & {
+    forceRead?: boolean;
+  } = {}): Promise<Result<{
+    content: string;
+    skipped: boolean;
+    reason?: string;
+    environmentInfo?: EnvironmentInfo;
+  }, string>> {
+    try {
+      if (this.config.useEnhanced && !this.config.forceFallback) {
+        const enhancedOptions: EnhancedStdinOptions = {
+          allowEmpty: options.allowEmpty,
+          timeout: options.timeout,
+          forceRead: options.forceRead,
+          debug: this.config.debug,
+        };
+
+        const result = await safeReadStdin(enhancedOptions);
+        return ok({
+          content: result.content,
+          skipped: result.skipped,
+          reason: result.reason,
+          environmentInfo: result.envInfo,
+        });
+      }
+
+      // Fallback implementation
+      const skipCheck = shouldSkipStdinProcessing({
+        forceRead: options.forceRead,
+        debug: this.config.debug,
+      });
+
+      if (skipCheck.skip && !options.forceRead) {
+        return ok({
+          content: "",
+          skipped: true,
+          reason: skipCheck.reason,
+          environmentInfo: skipCheck.envInfo,
+        });
+      }
+
+      const content = await originalReadStdin(options);
+      return ok({
+        content,
+        skipped: false,
+        environmentInfo: skipCheck.envInfo,
+      });
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  /**
+   * Get environment information with Result type
+   */
+  getEnvironmentInfo(): Result<EnvironmentInfo, string> {
+    try {
+      const envInfo = detectEnvironment();
+      return ok(envInfo);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  /**
+   * Check if stdin processing should be skipped with Result type
+   */
+  shouldSkipStdin(options?: {
+    forceRead?: boolean;
+    debug?: boolean;
+  }): Result<boolean, string> {
+    try {
+      const result = shouldSkipStdinProcessing(options);
+      return ok(result.skip);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  }
+}
+
+/**
  * Enhanced version of isStdinAvailable with backward compatibility
+ * @deprecated Use StdinIntegrationWrapper class instead
  */
 export function isStdinAvailable(options?: {
   isTerminal?: boolean;
   migrationConfig?: StdinMigrationConfig;
 }): boolean {
-  const config = options?.migrationConfig || getMigrationConfig();
-
-  if (config.forceFallback) {
-    return originalIsStdinAvailable(options);
-  }
-
-  if (config.useEnhanced) {
-    try {
-      const envInfo = detectEnvironment();
-
-      // Apply environment overrides
-      if (config.environmentOverrides) {
-        if (config.environmentOverrides.ci !== undefined) {
-          envInfo.isCI = config.environmentOverrides.ci;
-        }
-        if (config.environmentOverrides.test !== undefined) {
-          envInfo.isTest = config.environmentOverrides.test;
-        }
-        if (config.environmentOverrides.terminal !== undefined) {
-          envInfo.isTerminal = config.environmentOverrides.terminal;
-        }
-      }
-
-      return isStdinAvailableEnhanced({
-        environmentInfo: envInfo,
-        debug: config.debug,
-      });
-    } catch (_error) {
-      return originalIsStdinAvailable(options);
-    }
-  }
-
-  return originalIsStdinAvailable(options);
+  const wrapper = new StdinIntegrationWrapper(options?.migrationConfig);
+  const result = wrapper.isStdinAvailable(options);
+  return result.ok ? result.data : false;
 }
 
 /**
  * Enhanced version of readStdin with backward compatibility
+ * @deprecated Use StdinIntegrationWrapper class instead
  */
 export async function readStdin(options: StdinOptions & {
   migrationConfig?: StdinMigrationConfig;
   forceRead?: boolean;
 } = {}): Promise<string> {
-  const config = options.migrationConfig || getMigrationConfig();
-
-  if (config.forceFallback) {
-    return originalReadStdin(options);
+  const wrapper = new StdinIntegrationWrapper(options.migrationConfig);
+  const result = await wrapper.readStdin(options);
+  if (result.ok) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
   }
-
-  if (config.useEnhanced) {
-    try {
-      const enhancedOptions: EnhancedStdinOptions = {
-        allowEmpty: options.allowEmpty,
-        timeout: options.timeout,
-        forceRead: options.forceRead,
-        debug: config.debug,
-      };
-
-      return await readStdinEnhanced(enhancedOptions);
-    } catch (_error) {
-      // Fallback to original implementation
-      return originalReadStdin(options);
-    }
-  }
-
-  return originalReadStdin(options);
 }
 
 /**
  * Safe stdin reader that handles all edge cases gracefully
+ * @deprecated Use StdinIntegrationWrapper class instead
  */
 export async function readStdinSafe(options: StdinOptions & {
   migrationConfig?: StdinMigrationConfig;
@@ -144,54 +269,24 @@ export async function readStdinSafe(options: StdinOptions & {
   reason?: string;
   environmentInfo?: EnvironmentInfo;
 }> {
-  const config = options.migrationConfig || getMigrationConfig();
-
-  if (config.useEnhanced && !config.forceFallback) {
-    try {
-      const enhancedOptions: EnhancedStdinOptions = {
-        allowEmpty: options.allowEmpty,
-        timeout: options.timeout,
-        forceRead: options.forceRead,
-        debug: config.debug,
-      };
-
-      return await safeReadStdin(enhancedOptions);
-    } catch (_error) {
-      // Error handling silently falls through to fallback
-    }
-  }
-
-  // Fallback implementation using original readStdin
-  try {
-    const skipCheck = shouldSkipStdinProcessing({
-      forceRead: options.forceRead,
-      debug: config.debug,
-    });
-
-    if (skipCheck.skip && !options.forceRead) {
-      return {
-        success: true,
-        content: "",
-        skipped: true,
-        reason: skipCheck.reason,
-        environmentInfo: skipCheck.envInfo,
-      };
-    }
-
-    const content = await originalReadStdin(options);
+  const wrapper = new StdinIntegrationWrapper(options.migrationConfig);
+  const result = await wrapper.readStdinSafe(options);
+  
+  if (result.ok) {
     return {
       success: true,
-      content,
-      skipped: false,
-      environmentInfo: skipCheck.envInfo,
+      content: result.data.content,
+      skipped: result.data.skipped,
+      reason: result.data.reason,
+      environmentInfo: result.data.environmentInfo,
     };
-  } catch (error) {
+  } else {
     const envInfo = detectEnvironment();
     return {
       success: false,
       content: "",
       skipped: false,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: result.error,
       environmentInfo: envInfo,
     };
   }
@@ -199,26 +294,100 @@ export async function readStdinSafe(options: StdinOptions & {
 
 /**
  * Utility function to get current environment information
+ * @deprecated Use StdinIntegrationWrapper class instead
  */
 export function getEnvironmentInfo(): EnvironmentInfo {
-  return detectEnvironment();
+  const wrapper = new StdinIntegrationWrapper();
+  const result = wrapper.getEnvironmentInfo();
+  if (result.ok) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
+  }
 }
 
 /**
  * Utility function to check if stdin processing should be skipped
+ * @deprecated Use StdinIntegrationWrapper class instead
  */
 export function shouldSkipStdin(options?: {
   forceRead?: boolean;
   debug?: boolean;
 }): boolean {
-  const result = shouldSkipStdinProcessing(options);
-  return result.skip;
+  const wrapper = new StdinIntegrationWrapper();
+  const result = wrapper.shouldSkipStdin(options);
+  return result.ok ? result.data : false;
 }
 
 /**
- * CLI integration helper for breakdown.ts
+ * CLI integration helper for breakdown.ts with Totality principle
  */
 export async function handleStdinForCLI(options: {
+  from?: string;
+  fromFile?: string;
+  allowEmpty?: boolean;
+  timeout?: number;
+  debug?: boolean;
+}): Promise<Result<{
+  inputText: string;
+  skipped: boolean;
+  warnings: string[];
+}, string>> {
+  try {
+    const warnings: string[] = [];
+    const wrapper = new StdinIntegrationWrapper();
+
+    // Check for explicit stdin flags
+    const explicitStdin = options.from === "-" || options.fromFile === "-";
+
+    if (explicitStdin) {
+      const result = await wrapper.readStdin({
+        allowEmpty: options.allowEmpty || false,
+        timeout: options.timeout,
+        forceRead: true, // Force read when explicitly requested
+      });
+
+      if (result.ok) {
+        return ok({ inputText: result.data, skipped: false, warnings });
+      } else {
+        warnings.push(
+          `Failed to read from explicitly requested stdin: ${result.error}`,
+        );
+        return ok({ inputText: "", skipped: false, warnings });
+      }
+    }
+
+    // Check if stdin is available
+    const availabilityResult = wrapper.isStdinAvailable();
+    if (availabilityResult.ok && availabilityResult.data) {
+      const safeResult = await wrapper.readStdinSafe({
+        allowEmpty: options.allowEmpty !== false, // Default to allowing empty for auto-detected stdin
+        timeout: options.timeout,
+      });
+
+      if (safeResult.ok) {
+        return ok({ 
+          inputText: safeResult.data.content, 
+          skipped: safeResult.data.skipped, 
+          warnings 
+        });
+      } else {
+        warnings.push(`Stdin read failed: ${safeResult.error}`);
+        return ok({ inputText: "", skipped: true, warnings });
+      }
+    }
+
+    return ok({ inputText: "", skipped: true, warnings });
+  } catch (err) {
+    return error(err instanceof Error ? err.message : String(err));
+  }
+}
+
+/**
+ * CLI integration helper for breakdown.ts (backward compatibility)
+ * @deprecated Use handleStdinForCLI with Result type instead
+ */
+export async function handleStdinForCLILegacy(options: {
   from?: string;
   fromFile?: string;
   allowEmpty?: boolean;
@@ -229,47 +398,10 @@ export async function handleStdinForCLI(options: {
   skipped: boolean;
   warnings: string[];
 }> {
-  const warnings: string[] = [];
-  // Debug mode removed - use BreakdownLogger instead
-
-  // Check for explicit stdin flags
-  const explicitStdin = options.from === "-" || options.fromFile === "-";
-
-  if (explicitStdin) {
-    try {
-      const content = await readStdin({
-        allowEmpty: options.allowEmpty || false,
-        timeout: options.timeout,
-        forceRead: true, // Force read when explicitly requested
-      });
-
-      return { inputText: content, skipped: false, warnings };
-    } catch (error) {
-      warnings.push(
-        `Failed to read from explicitly requested stdin: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-      return { inputText: "", skipped: false, warnings };
-    }
+  const result = await handleStdinForCLI(options);
+  if (result.ok) {
+    return result.data;
+  } else {
+    return { inputText: "", skipped: true, warnings: [result.error] };
   }
-
-  // Check if stdin is available
-  if (isStdinAvailable()) {
-    const result = await readStdinSafe({
-      allowEmpty: options.allowEmpty !== false, // Default to allowing empty for auto-detected stdin
-      timeout: options.timeout,
-    });
-
-    if (result.success) {
-      return { inputText: result.content, skipped: result.skipped, warnings };
-    } else {
-      if (result.reason) {
-        warnings.push(`Stdin read failed: ${result.reason}`);
-      }
-      return { inputText: "", skipped: result.skipped, warnings };
-    }
-  }
-
-  return { inputText: "", skipped: true, warnings };
 }

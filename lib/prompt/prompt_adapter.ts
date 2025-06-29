@@ -18,19 +18,39 @@ import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
 import { basename } from "@std/path/basename";
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
+import { VariablesBuilder } from "../builder/variables_builder.ts";
+import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
+
+/**
+ * Interface for providing prompt variables and configuration.
+ * This abstraction allows for future migration to TotalityPromptVariablesFactory.
+ */
+export interface PromptVariablesProvider {
+  getAllParams(): {
+    promptFilePath: string;
+    inputFilePath: string;
+    outputFilePath: string;
+    schemaFilePath: string;
+    customVariables?: Record<string, string>;
+  };
+  getOptions(): PromptCliOptions;
+  hasValidBaseDir(): boolean;
+  getBaseDirError(): string | undefined;
+  get customVariables(): Record<string, string>;
+}
 
 /**
  * Implementation of the PromptAdapter pattern for Breakdown.
- * Receives a PromptVariablesFactory and provides prompt validation and generation APIs.
+ * Receives a PromptVariablesProvider and provides prompt validation and generation APIs.
  */
 export class PromptAdapterImpl {
-  private readonly factory: PromptVariablesFactory;
+  private readonly factory: PromptVariablesProvider;
 
   /**
    * Creates a new PromptAdapterImpl instance.
-   * @param factory The PromptVariablesFactory with resolved paths and parameters.
+   * @param factory The PromptVariablesProvider with resolved paths and parameters.
    */
-  constructor(factory: PromptVariablesFactory) {
+  constructor(factory: PromptVariablesProvider) {
     this.factory = factory;
   }
 
@@ -58,12 +78,53 @@ export class PromptAdapterImpl {
   }
 
   /**
+   * Builds variables using VariablesBuilder for type-safe construction.
+   * @param inputText The input text content (from stdin or file)
+   * @returns Built variables in Record format
+   */
+  private buildVariables(inputText: string): Record<string, string> {
+    const { inputFilePath, outputFilePath, schemaFilePath } = this.factory.getAllParams();
+    const builder = new VariablesBuilder();
+    
+    // Add standard variables
+    if (inputFilePath) {
+      builder.addStandardVariable("input_text_file", basename(inputFilePath));
+    }
+    if (outputFilePath) {
+      builder.addStandardVariable("destination_path", outputFilePath);
+    }
+    
+    // Add file path variables
+    if (schemaFilePath) {
+      builder.addFilePathVariable("schema_file", schemaFilePath);
+    }
+    
+    // Add stdin variable
+    if (inputText) {
+      builder.addStdinVariable(inputText);
+    }
+    
+    // Add custom variables
+    const customVariables = this.factory.customVariables;
+    builder.addUserVariables(customVariables);
+    
+    // Debug information in development
+    if (Deno.env.get("DEBUG")) {
+      console.debug(`Variables built: ${builder.getVariableCount()} variables`);
+      console.debug(`Has input_text: ${builder.hasVariable("input_text")}`);
+      console.debug(`Has schema_file: ${builder.hasVariable("schema_file")}`);
+    }
+    
+    return builder.toRecord();
+  }
+
+  /**
    * Reads files and generates the prompt using PromptManager.
    * Assumes validation has already passed.
    * @returns { success, content }
    */
   async generatePrompt(): Promise<{ success: boolean; content: string }> {
-    const { promptFilePath, inputFilePath, outputFilePath } = this.factory.getAllParams();
+    const { promptFilePath, inputFilePath } = this.factory.getAllParams();
     // Read the template file content
     let template = "";
     try {
@@ -89,11 +150,9 @@ export class PromptAdapterImpl {
         }
       }
     }
-    const variables = {
-      input_text_file: inputFilePath ? basename(inputFilePath) : "",
-      input_text: inputText,
-      destination_path: outputFilePath || "",
-    };
+    // Build variables using separated method
+    const variables = this.buildVariables(inputText);
+    
     const prompt = new PromptManager();
     const genResult = await prompt.generatePrompt(template, variables);
     if (genResult && typeof genResult === "object" && "success" in genResult) {

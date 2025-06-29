@@ -29,8 +29,9 @@
  */
 
 // === New Totality-compliant types ===
-export { DirectiveType } from "./directive_type.ts";
-export { LayerType as NewLayerType } from "./layer_type.ts";
+export { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
+export { LayerType as NewLayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+export { ConfigProfileName } from "./config_profile_name.ts";
 export { 
   TypeFactory, 
   type TypePatternProvider, 
@@ -38,13 +39,49 @@ export {
   type TypeCreationError 
 } from "./type_factory.ts";
 
-// === ParamsCustomConfig types ===
+// === Factory types (temporary re-export from factory module) ===
+export { type TotalityPromptCliParams } from "../factory/prompt_variables_factory.ts";
+
+// === PromptVariables types ===
+export {
+  StandardVariable,
+  FilePathVariable,
+  StdinVariable,
+  UserVariable,
+  StandardVariableName,
+  FilePathVariableName,
+  StdinVariableName,
+  type PromptVariable,
+  type PromptVariables,
+  toPromptParamsVariables,
+  createPromptParams
+} from "./prompt_variables.ts";
+
+// === Enums and Result types ===
+export {
+  ResultStatus
+} from "./enums.ts";
+
 export {
   type Result,
-  type ConfigError,
-  type CustomConfig,
+  ok,
+  error,
+  isOk,
+  isError,
+  map,
+  chain,
+  getOrElse,
+  all
+} from "./result.ts";
+
+// === ParamsCustomConfig types ===
+export {
+  ConfigError,
   ParamsCustomConfig
 } from "./params_custom_config.ts";
+
+// === BreakdownParams types (re-export) ===
+export type { CustomConfig } from "@tettuan/breakdownparams";
 
 // === Legacy types (DEPRECATED) ===
 // These will be removed after migration completion
@@ -84,3 +121,11 @@ export type DemonstrativeType = "to" | "summary" | "defect" | "init" | "find";
  * ```
  */
 export type LayerType = "project" | "issue" | "task" | "bugs" | "temp";
+
+// === Legacy factory exports (DEPRECATED) ===
+export {
+  DemonstrativeTypeFactory,
+  LayerTypeFactory,
+  DemonstrativeTypeGuards,
+  LayerTypeGuards,
+} from "./legacy_factories.ts";

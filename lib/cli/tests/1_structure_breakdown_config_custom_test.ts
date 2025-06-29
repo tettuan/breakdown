@@ -51,7 +51,11 @@ async function loadConfig(configPath: string): Promise<CustomConfig> {
     const workingDir = Deno.cwd();
     const configPrefix = "production-user";
 
-    const breakdownConfig = new BreakdownConfig(workingDir, configPrefix);
+    const breakdownConfigResult = await BreakdownConfig.create(configPrefix, workingDir);
+    if (!breakdownConfigResult.success) {
+      throw new Error(`Failed to create BreakdownConfig: ${breakdownConfigResult.error}`);
+    }
+    const breakdownConfig = breakdownConfigResult.data;
     await breakdownConfig.loadConfig();
     const config = await breakdownConfig.getConfig();
 
@@ -163,7 +167,11 @@ Deno.test("BreakdownConfig - Integration with BreakdownConfig class", async (t) 
     // Test creating BreakdownConfig with production-user prefix
     // This test expects errors in current implementation but documents expected behavior
     try {
-      const breakdownConfig = new BreakdownConfig(Deno.cwd(), "production-user");
+      const breakdownConfigResult = await BreakdownConfig.create("production-user", Deno.cwd());
+      if (!breakdownConfigResult.success) {
+        throw new Error(`Failed to create BreakdownConfig: ${breakdownConfigResult.error}`);
+      }
+      const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const mergedConfig = await breakdownConfig.getConfig();
 
