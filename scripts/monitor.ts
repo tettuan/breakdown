@@ -14,6 +14,21 @@
  *   deno run --allow-run --allow-net scripts/monitor.ts --continuous
  *   deno run --allow-run --allow-net scripts/monitor.ts -c
  * 
+ *   # Scheduled execution (wait until specified time)
+ *   deno run --allow-run --allow-net scripts/monitor.ts --time=4:00
+ *   deno run --allow-run --allow-net scripts/monitor.ts -t 14:30
+ * 
+ *   # Scheduled + continuous mode (repeats at specified time daily)
+ *   deno run --allow-run --allow-net scripts/monitor.ts -c --time=4:00
+ *   deno run --allow-run --allow-net scripts/monitor.ts -c -t 4:00
+ * 
+ *   # Instruction file option (sends instruction file to main pane at startup)
+ *   deno run --allow-run --allow-net scripts/monitor.ts --instruction=draft/2025/06/20250629-14-fix-tests.ja.md
+ *   deno run --allow-run --allow-net scripts/monitor.ts -i draft/2025/06/20250629-14-fix-tests.ja.md
+ * 
+ *   # Combined options
+ *   deno run --allow-run --allow-net scripts/monitor.ts -c --time=4:00 --instruction=draft/file.md
+ * 
  * Features:
  *   - Discovers the most active tmux session automatically
  *   - Separates main pane (active) from target panes (inactive)
@@ -21,6 +36,8 @@
  *   - Reports pane status to main pane
  *   - Displays comprehensive pane list
  *   - Supports both single-run and continuous monitoring modes
+ *   - Scheduled execution with keyboard interrupt capability
+ *   - Instruction file option for sending startup commands to main pane
  */
 
 // =============================================================================
@@ -111,6 +128,139 @@ async function executeTmuxCommand(command: string): Promise<string> {
  */
 async function sleep(ms: number): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Global function to parse time string (HH:MM format) and get next occurrence
+ */
+function getNextScheduledTime(timeStr: string): Date | null {
+  const timeMatch = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+  if (!timeMatch) {
+    return null;
+  }
+  
+  const hours = parseInt(timeMatch[1], 10);
+  const minutes = parseInt(timeMatch[2], 10);
+  
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null;
+  }
+  
+  const now = new Date();
+  const scheduledTime = new Date();
+  scheduledTime.setHours(hours, minutes, 0, 0);
+  
+  // If the scheduled time has already passed today, schedule for tomorrow
+  if (scheduledTime <= now) {
+    scheduledTime.setDate(scheduledTime.getDate() + 1);
+  }
+  
+  return scheduledTime;
+}
+
+/**
+ * Global function to wait with keyboard interrupt capability
+ */
+async function sleepWithKeyboardInterrupt(ms: number): Promise<boolean> {
+  logInfo(`Waiting for ${ms/1000} seconds... Press any key to cancel and exit.`);
+  
+  // Set up stdin to read key presses
+  const stdin = Deno.stdin;
+  stdin.setRaw(true);
+  
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => resolve(false), ms);
+  });
+  
+  const keyPressPromise = new Promise<boolean>((resolve) => {
+    const buffer = new Uint8Array(1);
+    stdin.read(buffer).then(() => {
+      resolve(true);
+    }).catch(() => {
+      resolve(false);
+    });
+  });
+  
+  try {
+    const interrupted = await Promise.race([timeoutPromise, keyPressPromise]);
+    
+    // Restore stdin to normal mode
+    stdin.setRaw(false);
+    
+    if (interrupted) {
+      logInfo("Keyboard input detected. Exiting monitoring...");
+      return true; // Interrupted
+    }
+    
+    return false; // Not interrupted
+  } catch (error) {
+    // Restore stdin to normal mode on error
+    stdin.setRaw(false);
+    logError("Error during sleep with keyboard interrupt:", error);
+    return false;
+  }
+}
+
+/**
+ * Global function to wait until scheduled time with keyboard interrupt capability
+ */
+async function waitUntilScheduledTime(scheduledTime: Date): Promise<boolean> {
+  const now = new Date();
+  const msUntilScheduled = scheduledTime.getTime() - now.getTime();
+  
+  if (msUntilScheduled <= 0) {
+    logInfo("Scheduled time has already passed. Proceeding immediately.");
+    return false;
+  }
+  
+  const scheduledTimeStr = scheduledTime.toLocaleString('ja-JP', { 
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit', 
+    minute: '2-digit'
+  });
+  
+  logInfo(`Waiting until scheduled time: ${scheduledTimeStr} (Asia/Tokyo)`);
+  logInfo(`Time remaining: ${Math.round(msUntilScheduled/1000/60)} minutes. Press any key to cancel and exit.`);
+  
+  // Set up stdin to read key presses
+  const stdin = Deno.stdin;
+  stdin.setRaw(true);
+  
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => resolve(false), msUntilScheduled);
+  });
+  
+  const keyPressPromise = new Promise<boolean>((resolve) => {
+    const buffer = new Uint8Array(1);
+    stdin.read(buffer).then(() => {
+      resolve(true);
+    }).catch(() => {
+      resolve(false);
+    });
+  });
+  
+  try {
+    const interrupted = await Promise.race([timeoutPromise, keyPressPromise]);
+    
+    // Restore stdin to normal mode
+    stdin.setRaw(false);
+    
+    if (interrupted) {
+      logInfo("Keyboard input detected. Exiting monitoring...");
+      return true; // Interrupted
+    }
+    
+    logInfo("Scheduled time reached. Resuming monitoring...");
+    return false; // Not interrupted
+  } catch (error) {
+    // Restore stdin to normal mode on error
+    stdin.setRaw(false);
+    logError("Error during scheduled wait:", error);
+    return false;
+  }
 }
 
 /**
@@ -569,13 +719,17 @@ class TmuxMonitor {
   private communicator: PaneCommunicator;
   private displayer: PaneDisplayer;
   private statusTracker: PaneStatusTracker;
+  private scheduledTime: Date | null = null;
+  private instructionFile: string | null = null;
   
-  constructor() {
+  constructor(scheduledTime?: Date | null, instructionFile?: string | null) {
     this.session = new TmuxSession();
     this.paneManager = new PaneManager();
     this.communicator = new PaneCommunicator();
     this.displayer = new PaneDisplayer();
     this.statusTracker = new PaneStatusTracker();
+    this.scheduledTime = scheduledTime || null;
+    this.instructionFile = instructionFile || null;
   }
   
   /**
@@ -608,8 +762,27 @@ class TmuxMonitor {
   }
 
   /**
-   * Send CI instruction to main pane
+   * Send instruction file to main pane at startup
    */
+  private async sendInstructionFileToMainPane(): Promise<void> {
+    if (!this.instructionFile) {
+      return;
+    }
+
+    const mainPane = this.paneManager.getMainPane();
+    if (!mainPane) {
+      logError("Main pane not found for instruction file");
+      return;
+    }
+
+    const instructionMessage = `次の指示書を読んで、内容に従い実行して。 \`${this.instructionFile}\``;
+    logInfo(`Sending instruction file to main pane: ${this.instructionFile}`);
+    
+    // Send instruction file message to main pane with exact format from requirements
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${instructionMessage}' && sleep 0.3 && tmux send-keys -t ${mainPane.id} Enter`);
+    
+    logInfo("Instruction file sent to main pane");
+  }
   private async sendCIInstructionToMainPane(): Promise<void> {
     const mainPane = this.paneManager.getMainPane();
     if (!mainPane) {
@@ -715,6 +888,18 @@ class TmuxMonitor {
    * Main monitoring loop with CI error checking
    */
   public async monitor(): Promise<void> {
+    // If scheduled time is set, wait for it first before starting monitoring
+    if (this.scheduledTime) {
+      const interrupted = await waitUntilScheduledTime(this.scheduledTime);
+      if (interrupted) {
+        logInfo("Monitoring cancelled by user input. Exiting...");
+        return;
+      }
+      // Reset scheduled time after waiting (for continuous mode)
+      const timeStr = this.scheduledTime.toTimeString().substring(0, 5);
+      this.scheduledTime = getNextScheduledTime(timeStr);
+    }
+    
     while (true) {
       try {
         logInfo("Starting tmux monitoring...");
@@ -727,6 +912,14 @@ class TmuxMonitor {
         
         // 3. Separate main pane from other panes
         this.paneManager.separate(allPanes);
+        
+        // 3.5. Send instruction file to main pane if specified (only on first execution)
+        // For scheduled execution, this happens after the scheduled time is reached
+        if (this.instructionFile) {
+          await this.sendInstructionFileToMainPane();
+          // Clear instruction file after first execution to prevent repeated sending
+          this.instructionFile = null;
+        }
         
         // 4. Update status tracking before processing
         await this.updateStatusTracking();
@@ -743,9 +936,27 @@ class TmuxMonitor {
         // 8. Report status changes to main pane
         await this.reportStatusChanges();
         
-        // 9. Wait for 5 minutes
-        logInfo("Waiting for 5 minutes (300 seconds)...");
-        await sleep(TIMING.MONITORING_CYCLE_DELAY);
+        // 9. Wait for 5 minutes with keyboard interrupt, or wait until scheduled time
+        if (this.scheduledTime) {
+          const interrupted = await waitUntilScheduledTime(this.scheduledTime);
+          if (interrupted) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            break;
+          }
+          // Reset scheduled time after first execution (for continuous mode)
+          if (this.scheduledTime) {
+            const timeStr = this.scheduledTime.toTimeString().substring(0, 5);
+            this.scheduledTime = getNextScheduledTime(timeStr);
+          }
+        } else {
+          logInfo("Waiting for 5 minutes (300 seconds)...");
+          const interrupted = await sleepWithKeyboardInterrupt(TIMING.MONITORING_CYCLE_DELAY);
+          
+          if (interrupted) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            break;
+          }
+        }
         
         // 10. Execute CI and check for errors
         const hasErrors = await this.executeCIAndCheckErrors();
@@ -789,10 +1000,39 @@ class TmuxMonitor {
 /**
  * Global function to parse command line arguments
  */
-function parseCommandLineArgs(): { continuous: boolean } {
+function parseCommandLineArgs(): { continuous: boolean; scheduledTime: Date | null; instructionFile: string | null } {
   const args = Deno.args;
+  let scheduledTime: Date | null = null;
+  let instructionFile: string | null = null;
+  
+  // Look for time parameter (--time=HH:MM or -t HH:MM)
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith('--time=')) {
+      const timeStr = arg.substring(7);
+      scheduledTime = getNextScheduledTime(timeStr);
+      if (!scheduledTime) {
+        logError(`Invalid time format: ${timeStr}. Use HH:MM format (e.g., 4:00, 14:30)`);
+        Deno.exit(1);
+      }
+    } else if (arg === '-t' && i + 1 < args.length) {
+      const timeStr = args[i + 1];
+      scheduledTime = getNextScheduledTime(timeStr);
+      if (!scheduledTime) {
+        logError(`Invalid time format: ${timeStr}. Use HH:MM format (e.g., 4:00, 14:30)`);
+        Deno.exit(1);
+      }
+    } else if (arg.startsWith('--instruction=')) {
+      instructionFile = arg.substring(14);
+    } else if (arg === '-i' && i + 1 < args.length) {
+      instructionFile = args[i + 1];
+    }
+  }
+  
   return {
-    continuous: args.includes('--continuous') || args.includes('-c')
+    continuous: args.includes('--continuous') || args.includes('-c'),
+    scheduledTime,
+    instructionFile
   };
 }
 
@@ -800,8 +1040,21 @@ function parseCommandLineArgs(): { continuous: boolean } {
  * Main entry point of the application
  */
 async function main(): Promise<void> {
-  const monitor = new TmuxMonitor();
   const options = parseCommandLineArgs();
+  const monitor = new TmuxMonitor(options.scheduledTime, options.instructionFile);
+  
+  if (options.scheduledTime) {
+    const timeStr = options.scheduledTime.toLocaleString('ja-JP', { 
+      timeZone: 'Asia/Tokyo',
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+    logInfo(`Scheduled execution time: ${timeStr} (Asia/Tokyo)`);
+  }
+  
+  if (options.instructionFile) {
+    logInfo(`Instruction file specified: ${options.instructionFile}`);
+  }
   
   if (options.continuous) {
     await monitor.startContinuousMonitoring();
