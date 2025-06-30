@@ -1,423 +1,818 @@
-#!/usr/bin/env -S deno run --allow-run --allow-read
+#!/usr/bin/env deno run --allow-run --allow-net
 
 /**
- * tmux pane monitor script with worker status detection
- * Displays tmux pane list with worker status every 10 seconds until interrupted by key press
- * Automatically sends status update commands to UNKNOWN status panes
+ * tmux Monitor Tool
+ * 
+ * Monitor tmux session pane status and perform state management
+ * Design Policy: Object-Oriented + Global Functions
+ * 
+ * Usage:
+ *   # Single monitoring cycle
+ *   deno run --allow-run --allow-net scripts/monitor.ts
+ * 
+ *   # Continuous monitoring mode
+ *   deno run --allow-run --allow-net scripts/monitor.ts --continuous
+ *   deno run --allow-run --allow-net scripts/monitor.ts -c
+ * 
+ * Features:
+ *   - Discovers the most active tmux session automatically
+ *   - Separates main pane (active) from target panes (inactive)
+ *   - Sends status update instructions to target panes
+ *   - Reports pane status to main pane
+ *   - Displays comprehensive pane list
+ *   - Supports both single-run and continuous monitoring modes
  */
 
-type WorkerStatus = 'IDLE' | 'WORKING' | 'BLOCKED' | 'DONE' | 'TERMINATED' | 'UNKNOWN';
+// =============================================================================
+// Type Definitions
+// =============================================================================
 
-interface PaneInfo {
-  sessionWindow: string;
+interface Pane {
+  id: string;
+  active: boolean;
+  command?: string;
+  title?: string;
+}
+
+interface PaneDetail {
+  sessionName: string;
+  windowIndex: string;
+  windowName: string;
   paneId: string;
-  isActive: boolean;
-  command: string;
+  paneIndex: string;
+  tty: string;
+  pid: string;
+  currentCommand: string;
+  currentPath: string;
   title: string;
-  status: WorkerStatus;
-  managerPaneId?: string;
-  timestamp?: string;
+  active: string;
+  zoomed: string;
+  width: string;
+  height: string;
+  startCommand: string;
 }
+
+interface PaneStatusInfo {
+  paneId: string;
+  currentStatus: StatusKey;
+  previousStatus?: StatusKey;
+  lastUpdated: Date;
+}
+
+type StatusKey = 'IDLE' | 'WORKING' | 'BLOCKED' | 'DONE' | 'TERMINATED' | 'UNKNOWN';
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+const WORKER_STATUS: StatusKey[] = [
+  'IDLE',
+  'WORKING', 
+  'BLOCKED',
+  'DONE',
+  'TERMINATED',
+  'UNKNOWN'
+];
+
+const TIMING = {
+  INSTRUCTION_DELAY: 200,        // 0.2 seconds - delay after sending instruction
+  ENTER_KEY_DELAY: 300,          // 0.3 seconds - delay before sending additional Enter (updated per requirements)
+  PANE_PROCESSING_DELAY: 1000,   // 1 second - delay after processing each pane
+  MONITORING_CYCLE_DELAY: 300000, // 5*60 seconds (300 seconds) - delay between monitoring cycles (updated per requirements)
+  CLD_COMMAND_DELAY: 200         // 0.2 seconds - delay for cld command (from requirements)
+} as const;
+
+// =============================================================================
+// Global Functions (Utilities)
+// =============================================================================
 
 /**
- * pane_title からワーカーゴルーチンのステータスを判定
+ * Global function to execute tmux commands
  */
-function detectWorkerStatus(paneTitle: string): { status: WorkerStatus; managerPaneId?: string; timestamp?: string } {
-  // ターミナルタイトルのパターンマッチング
-  // 形式: [状態→mgr\[\マネージャーのpane_id\] MM/dd HH:mm]
-  const titlePattern = /\[(\w+)→mgr\[(\d+)\]\s+(\d{2}\/\d{2}\s+\d{2}:\d{2})\]/;
-  const match = paneTitle.match(titlePattern);
+async function executeTmuxCommand(command: string): Promise<string> {
+  const process = new Deno.Command("bash", {
+    args: ["-c", command],
+    stdout: "piped",
+    stderr: "piped"
+  });
 
-  if (match) {
-    const [, statusStr, managerPaneId, timestamp] = match;
-    
-    // ステータス文字列を WorkerStatus にマッピング
-    let status: WorkerStatus = 'UNKNOWN';
-    switch (statusStr.toUpperCase()) {
-      case 'IDLE':
-        status = 'IDLE';
-        break;
-      case 'WORKING':
-        status = 'WORKING';
-        break;
-      case 'BLOCKED':
-        status = 'BLOCKED';
-        break;
-      case 'DONE':
-        status = 'DONE';
-        break;
-      case 'TERMINATED':
-        status = 'TERMINATED';
-        break;
-    }
-    
-    return { status, managerPaneId, timestamp };
-  } else {
-    // パターンにマッチしない場合、部分的なマッチングを試行
-    const partialMatches = [
-      { pattern: /IDLE/i, status: 'IDLE' as WorkerStatus },
-      { pattern: /WORKING/i, status: 'WORKING' as WorkerStatus },
-      { pattern: /BLOCKED/i, status: 'BLOCKED' as WorkerStatus },
-      { pattern: /DONE/i, status: 'DONE' as WorkerStatus },
-      { pattern: /TERMINATED/i, status: 'TERMINATED' as WorkerStatus }
-    ];
-
-    for (const { pattern, status } of partialMatches) {
-      if (pattern.test(paneTitle)) {
-        return { status };
-      }
-    }
-  }
-
-  return { status: 'UNKNOWN' };
-}
-
-/**
- * ステータス別に色分けして表示
- */
-function getStatusColor(status: WorkerStatus): string {
-  switch (status) {
-    case 'IDLE': return '\x1b[36m';      // cyan
-    case 'WORKING': return '\x1b[33m';   // yellow
-    case 'BLOCKED': return '\x1b[31m';   // red
-    case 'DONE': return '\x1b[32m';      // green
-    case 'TERMINATED': return '\x1b[35m'; // magenta
-    case 'UNKNOWN': return '\x1b[37m';   // white
-    default: return '\x1b[0m';           // reset
-  }
-}
-
-const RESET_COLOR = '\x1b[0m';
-
-let isRunning = true;
-
-// Setup signal handlers for graceful exit
-Deno.addSignalListener("SIGINT", () => {
-  console.log("\n\nMonitoring stopped by user (Ctrl+C)");
-  isRunning = false;
-});
-
-// Setup stdin to detect key press
-if (Deno.stdin.isTerminal()) {
-  Deno.stdin.setRaw(true);
+  const result = await process.output();
   
-  // Start listening for key press in background
-  (async () => {
-    const buffer = new Uint8Array(1);
-    while (isRunning) {
-      try {
-        const bytesRead = await Deno.stdin.read(buffer);
-        if (bytesRead && isRunning) {
-          console.log("\n\nMonitoring stopped by key press");
-          isRunning = false;
-          break;
-        }
-      } catch (error) {
-        if (error instanceof Deno.errors.Interrupted) {
-          break;
-        }
-      }
-    }
-  })();
+  if (!result.success) {
+    const error = new TextDecoder().decode(result.stderr);
+    throw new Error(`Command failed: ${command}\nError: ${error}`);
+  }
+
+  return new TextDecoder().decode(result.stdout).trim();
 }
 
-async function listTmuxPanes(autoUpdate: boolean = false, targetStatus: WorkerStatus = 'IDLE'): Promise<void> {
+/**
+ * Global function to wait for a specified time
+ */
+async function sleep(ms: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Global function for log output
+ */
+function logInfo(message: string): void {
+  console.log(`[INFO] ${message}`);
+}
+
+function logError(message: string, error?: unknown): void {
+  console.error(`[ERROR] ${message}`, error || "");
+}
+
+/**
+ * Global function to count session name occurrences
+ */
+function countSessionOccurrences(sessionNames: string[]): Map<string, number> {
+  const sessionCounts = new Map<string, number>();
+  for (const session of sessionNames) {
+    sessionCounts.set(session, (sessionCounts.get(session) || 0) + 1);
+  }
+  return sessionCounts;
+}
+
+/**
+ * Global function to find the most frequent session name
+ */
+function findMostFrequentSession(sessionCounts: Map<string, number>): string {
+  let maxCount = 0;
+  let mostActiveSession = "";
+  for (const [session, count] of sessionCounts.entries()) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostActiveSession = session;
+    }
+  }
+  return mostActiveSession;
+}
+
+/**
+ * Global function to parse pane information
+ */
+function parsePane(line: string): Pane | null {
+  const parts = line.split(' ');
+  if (parts.length >= 2) {
+    const [id, activeStr] = parts;
+    return {
+      id: id,
+      active: activeStr === '1'
+    };
+  }
+  return null;
+}
+
+/**
+ * Global function to get detailed pane information
+ */
+async function getPaneDetail(paneId: string): Promise<PaneDetail | null> {
   try {
-    const cmd = new Deno.Command("tmux", {
-      args: [
-        "list-panes",
-        "-a",
-        "-F",
-        "#{session_name}:#{window_index}.#{pane_index}|#{pane_id}|#{pane_active}|#{pane_current_command}|#{pane_title}"
-      ],
-      stdout: "piped",
-      stderr: "piped"
-    });
+    const output = await executeTmuxCommand(`tmux display -p -t "${paneId}" -F 'Session: #{session_name}
+Window: #{window_index} #{window_name}
+Pane ID: #{pane_id}
+Pane Index: #{pane_index}
+TTY: #{pane_tty}
+PID: #{pane_pid}
+Current Command: #{pane_current_command}
+Current Path: #{pane_current_path}
+Title: #{pane_title}
+Active: #{pane_active}
+Zoomed: #{window_zoomed_flag}
+Pane Width: #{pane_width}
+Pane Height: #{pane_height}
+Start Command: #{pane_start_command}'`);
 
-    const output = await cmd.output();
+    const lines = output.split('\n');
+    const detail: Partial<PaneDetail> = {};
     
-    if (output.success) {
-      const result = new TextDecoder().decode(output.stdout);
+    for (const line of lines) {
+      const [key, ...valueParts] = line.split(': ');
+      const value = valueParts.join(': ').trim();
       
-      // Clear screen and move cursor to top
-      console.clear();
-      console.log("=== tmux Panes Monitor with Worker Status ===");
-      console.log(`Updated: ${new Date().toLocaleString()}`);
-      console.log("Press any key or Ctrl+C to stop\n");
-      
-      if (result.trim()) {
-        const panes: PaneInfo[] = [];
-        const lines = result.trim().split('\n');
-        
-        // Parse each pane line
-        for (const line of lines) {
-          const parts = line.split('|');
-          if (parts.length >= 5) {
-            const [sessionWindow, paneId, activeStr, command, title] = parts;
-            const statusInfo = detectWorkerStatus(title);
-            
-            panes.push({
-              sessionWindow,
-              paneId,
-              isActive: activeStr === '1',
-              command,
-              title,
-              status: statusInfo.status,
-              managerPaneId: statusInfo.managerPaneId,
-              timestamp: statusInfo.timestamp
-            });
-          }
-        }
-        
-        // Display panes grouped by status
-        displayPanesByStatus(panes);
-        
-        // Send status update commands to UNKNOWN panes (if auto-update is enabled)
-        if (autoUpdate) {
-          await sendStatusUpdateToUnknownPanes(panes, targetStatus);
-        }
-        
-        // Display detailed pane list
-        console.log("\n=== Detailed Pane List ===");
-        for (const pane of panes) {
-          const activeIndicator = pane.isActive ? '*' : ' ';
-          const statusColor = getStatusColor(pane.status);
-          const statusDisplay = `${statusColor}${pane.status.padEnd(10)}${RESET_COLOR}`;
-          
-          let statusDetails = '';
-          if (pane.managerPaneId) {
-            statusDetails += ` → mgr[${pane.managerPaneId}]`;
-          }
-          if (pane.timestamp) {
-            statusDetails += ` (${pane.timestamp})`;
-          }
-          
-          // タイトルが異なる場合は1行に含める
-          let titleInfo = '';
-          if (pane.title && pane.title !== pane.command) {
-            titleInfo = ` | Title: ${pane.title}`;
-          }
-          
-          console.log(
-            `${activeIndicator}${pane.sessionWindow} ${pane.paneId} ${statusDisplay} ${pane.command}${statusDetails}${titleInfo}`
-          );
-        }
-      } else {
-        console.log("No tmux panes found");
+      switch (key) {
+        case 'Session':
+          detail.sessionName = value;
+          break;
+        case 'Window':
+          const [index, name] = value.split(' ', 2);
+          detail.windowIndex = index;
+          detail.windowName = name || '';
+          break;
+        case 'Pane ID':
+          detail.paneId = value;
+          break;
+        case 'Pane Index':
+          detail.paneIndex = value;
+          break;
+        case 'TTY':
+          detail.tty = value;
+          break;
+        case 'PID':
+          detail.pid = value;
+          break;
+        case 'Current Command':
+          detail.currentCommand = value;
+          break;
+        case 'Current Path':
+          detail.currentPath = value;
+          break;
+        case 'Title':
+          detail.title = value;
+          break;
+        case 'Active':
+          detail.active = value;
+          break;
+        case 'Zoomed':
+          detail.zoomed = value;
+          break;
+        case 'Pane Width':
+          detail.width = value;
+          break;
+        case 'Pane Height':
+          detail.height = value;
+          break;
+        case 'Start Command':
+          detail.startCommand = value;
+          break;
       }
-    } else {
-      const error = new TextDecoder().decode(output.stderr);
-      console.error("Error executing tmux command:", error);
     }
+    
+    return detail as PaneDetail;
   } catch (error) {
-    console.error("Failed to list tmux panes:", error);
+    logError(`Failed to get pane detail for ${paneId}:`, error);
+    return null;
   }
 }
 
 /**
- * ステータス別にペインを表示
+ * Global function to generate instruction messages
  */
-function displayPanesByStatus(panes: PaneInfo[]): void {
-  const statusGroups: Record<WorkerStatus, PaneInfo[]> = {
-    IDLE: [],
-    WORKING: [],
-    BLOCKED: [],
-    DONE: [],
-    TERMINATED: [],
-    UNKNOWN: []
-  };
+function generateInstructionMessage(): string {
+  return `Script detection and Status determination: Update pane_title with Script(Node/Other) + Status(${WORKER_STATUS.join('/')})`;
+}
+
+/**
+ * Global function to check if command is node-related
+ */
+function isNodeCommand(command: string): boolean {
+  return command === 'node';
+}
+
+/**
+ * Global function to extract status from pane title
+ */
+function extractStatusFromTitle(title: string): StatusKey {
+  // Look for status patterns in the title
+  for (const status of WORKER_STATUS) {
+    if (title.includes(status)) {
+      return status;
+    }
+  }
+  return 'UNKNOWN';
+}
+
+/**
+ * Global function to generate status report messages
+ */
+function generateStatusReport(sessionName: string, mainPaneId: string, paneIds: string[]): string {
+  return `
+=== Pane Status Report ===
+Monitoring panes: ${paneIds.length}
+Session: ${sessionName}
+Main pane: ${mainPaneId}
+Target panes: ${paneIds.join(', ')}
+========================
+`.trim();
+}
+
+// =============================================================================
+// Object-Oriented Classes
+// =============================================================================
+
+/**
+ * Tmux Session Management Class
+ */
+class TmuxSession {
+  private sessionName: string = "";
   
-  // Group panes by status
-  for (const pane of panes) {
-    statusGroups[pane.status].push(pane);
+  constructor() {}
+  
+  /**
+   * Discover the latest tmux session (Result A)
+   */
+  async discover(): Promise<string> {
+    const output = await executeTmuxCommand('tmux list-panes -a -F "#{session_name}"');
+    const sessionNames = output.split('\n').filter(name => name.trim() !== '');
+    
+    const sessionCounts = countSessionOccurrences(sessionNames);
+    this.sessionName = findMostFrequentSession(sessionCounts);
+    
+    const maxCount = sessionCounts.get(this.sessionName) || 0;
+    logInfo(`Latest session: ${this.sessionName} (${maxCount} panes)`);
+    
+    return this.sessionName;
   }
   
-  console.log("=== Worker Status Summary ===");
+  /**
+   * Get session name
+   */
+  getName(): string {
+    return this.sessionName;
+  }
   
-  for (const [status, statusPanes] of Object.entries(statusGroups)) {
-    if (statusPanes.length > 0) {
-      const statusColor = getStatusColor(status as WorkerStatus);
-      const paneIds = statusPanes.map(p => p.paneId).join(', ');
-      console.log(`${statusColor}${status}${RESET_COLOR} (${statusPanes.length}): ${paneIds}`);
+  /**
+   * Get pane list for the session (Result B)
+   */
+  async getPanes(): Promise<Pane[]> {
+    if (!this.sessionName) {
+      throw new Error("Session not identified");
     }
+    
+    const output = await executeTmuxCommand(`tmux list-panes -t "${this.sessionName}" -F "#{pane_id} #{pane_active}"`);
+    const lines = output.split('\n').filter(line => line.trim() !== '');
+    
+    return lines.map(line => parsePane(line)).filter((pane): pane is Pane => pane !== null);
   }
 }
 
 /**
- * マネージャーペインを特定する
- * マネージャーは通常、他のワーカーから参照されているpaneまたは特定のタイトルパターンを持つ
+ * Pane Management Class
  */
-function findManagerPaneId(panes: PaneInfo[]): string | null {
-  // 他のpaneから参照されているマネージャーIDを探す
-  const referencedManagers = new Set<string>();
-  for (const pane of panes) {
-    if (pane.managerPaneId) {
-      referencedManagers.add(pane.managerPaneId);
+class PaneManager {
+  private mainPane: Pane | null = null;
+  private panes: Pane[] = [];
+  
+  constructor() {}
+  
+  /**
+   * Separate main pane from other panes
+   */
+  separate(allPanes: Pane[]): void {
+    this.mainPane = allPanes.find(pane => pane.active) || null;
+    this.panes = allPanes.filter(pane => !pane.active);
+    
+    logInfo(`Main pane: ${this.mainPane?.id || 'none'}`);
+    logInfo(`Target panes: ${this.panes.map(p => p.id).join(', ')}`);
+  }
+  
+  /**
+   * Get main pane
+   */
+  getMainPane(): Pane | null {
+    return this.mainPane;
+  }
+  
+  /**
+   * Get target panes for monitoring
+   */
+  getTargetPanes(): Pane[] {
+    return this.panes;
+  }
+  
+  /**
+   * Get target pane ID list
+   */
+  getTargetPaneIds(): string[] {
+    return this.panes.map(p => p.id);
+  }
+}
+
+/**
+ * Pane Status Tracker Class
+ */
+class PaneStatusTracker {
+  private statusMap: Map<string, PaneStatusInfo> = new Map();
+  
+  constructor() {}
+  
+  /**
+   * Update pane status and return true if status changed
+   */
+  updateStatus(paneId: string, newStatus: StatusKey): boolean {
+    const existing = this.statusMap.get(paneId);
+    
+    if (!existing) {
+      // First time tracking this pane
+      this.statusMap.set(paneId, {
+        paneId,
+        currentStatus: newStatus,
+        lastUpdated: new Date()
+      });
+      return true; // New pane is considered a change
     }
+    
+    if (existing.currentStatus !== newStatus) {
+      // Status changed
+      this.statusMap.set(paneId, {
+        paneId,
+        currentStatus: newStatus,
+        previousStatus: existing.currentStatus,
+        lastUpdated: new Date()
+      });
+      return true;
+    }
+    
+    return false; // No change
   }
   
-  // 最も多く参照されているマネージャーを返す
-  if (referencedManagers.size > 0) {
-    return Array.from(referencedManagers)[0]; // 最初に見つかったものを返す
+  /**
+   * Get panes that had status changes
+   */
+  getChangedPanes(): PaneStatusInfo[] {
+    const result: PaneStatusInfo[] = [];
+    
+    for (const [paneId, info] of this.statusMap.entries()) {
+      // Only include panes that have a previous status (indicating a change occurred)
+      if (info.previousStatus) {
+        result.push(info);
+      }
+    }
+    
+    return result;
   }
   
-  // マネージャーらしいタイトルパターンを探す
-  const managerPatterns = [
-    /manager/i,
-    /supervisor/i,
-    /head/i,
-    /secretary/i
-  ];
+  /**
+   * Get current status for a pane
+   */
+  getCurrentStatus(paneId: string): StatusKey | undefined {
+    return this.statusMap.get(paneId)?.currentStatus;
+  }
   
-  for (const pane of panes) {
-    for (const pattern of managerPatterns) {
-      if (pattern.test(pane.title)) {
-        return pane.paneId.replace('%', ''); // % を除去
+  /**
+   * Clear change flags (call after reporting)
+   */
+  clearChangeFlags(): void {
+    for (const [paneId, info] of this.statusMap.entries()) {
+      if (info.previousStatus) {
+        this.statusMap.set(paneId, {
+          ...info,
+          previousStatus: undefined
+        });
       }
     }
   }
+}
+class PaneCommunicator {
+  constructor() {}
   
-  // デフォルトとして最初のペインを返す
-  return panes.length > 0 ? panes[0].paneId.replace('%', '') : null;
+  /**
+   * Send instructions to pane based on command type
+   */
+  async sendInstruction(paneId: string): Promise<void> {
+    // Get detailed pane information
+    const paneDetail = await getPaneDetail(paneId);
+    if (!paneDetail) {
+      logError(`Cannot get pane detail for ${paneId}`);
+      return;
+    }
+
+    if (isNodeCommand(paneDetail.currentCommand)) {
+      // Case: Node command - send script and status detection instructions
+      logInfo(`Pane ${paneId} node, sending`);
+      await this.sendNodeInstruction(paneId);
+    } else {
+      // Case: Non-node command - send "cld" command
+      logInfo(`Pane ${paneId} ${paneDetail.currentCommand}, sending cld`);
+      await this.sendNonNodeInstruction(paneId);
+    }
+  }
+
+  /**
+   * Send instructions for node panes
+   */
+  private async sendNodeInstruction(paneId: string): Promise<void> {
+    const instruction = generateInstructionMessage();
+    
+    // Send according to instruction template format (updated to 0.3 seconds per requirements)
+    const escapedInstruction = instruction.replace(/'/g, "'\"'\"'");
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} '${escapedInstruction}' && sleep 0.3 && tmux send-keys -t ${paneId} Enter`);
+    
+    // Send additional Enter as specified in requirements (sleep 0.3 && tmux send-keys Enter)
+    await sleep(TIMING.ENTER_KEY_DELAY);
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} Enter`);
+    
+    // Wait for pane processing
+    await sleep(TIMING.PANE_PROCESSING_DELAY);
+  }
+
+  /**
+   * Send instructions for non-node panes
+   */
+  private async sendNonNodeInstruction(paneId: string): Promise<void> {
+    // Send "cld" command as specified in requirements
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} "cld" && sleep ${TIMING.CLD_COMMAND_DELAY/1000} && tmux send-keys -t ${paneId} Enter`);
+    
+    // Wait for pane processing
+    await sleep(TIMING.PANE_PROCESSING_DELAY);
+  }
+  
+  /**
+   * Send status change report to main pane
+   */
+  async sendStatusChangeReport(mainPaneId: string, changedPanes: PaneStatusInfo[]): Promise<void> {
+    if (changedPanes.length === 0) {
+      logInfo("No status changes to report");
+      return;
+    }
+
+    // Format as specified in requirements: #{pane_id} : #{status}
+    const reportLines = changedPanes.map(pane => `${pane.paneId} : ${pane.currentStatus}`);
+    const report = reportLines.join('\n');
+    
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' Enter`);
+    
+    // Send additional Enter as specified
+    await sleep(TIMING.ENTER_KEY_DELAY);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
+    
+    logInfo(`Reported ${changedPanes.length} status changes to main pane`);
+  }
+  
+  /**
+   * Send report to main pane
+   */
+  async sendReport(mainPaneId: string, sessionName: string, targetPaneIds: string[]): Promise<void> {
+    const report = generateStatusReport(sessionName, mainPaneId, targetPaneIds);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' Enter`);
+  }
 }
 
 /**
- * UNKNOWNステータスのペインに状態更新コマンドを送信
+ * Pane Display Class
  */
-async function sendStatusUpdateToUnknownPanes(panes: PaneInfo[], targetStatus: WorkerStatus = 'IDLE'): Promise<void> {
-  const unknownPanes = panes.filter(pane => pane.status === 'UNKNOWN');
+class PaneDisplayer {
+  constructor() {}
   
-  if (unknownPanes.length === 0) {
-    return;
-  }
-  
-  const managerPaneId = findManagerPaneId(panes);
-  if (!managerPaneId) {
-    console.log("⚠️  マネージャーペインが見つかりません");
-    return;
-  }
-  
-  console.log(`\n=== Sending Status Update Commands ===`);
-  console.log(`Manager Pane ID: ${managerPaneId}`);
-  console.log(`UNKNOWN panes: ${unknownPanes.length}`);
-  console.log(`Target Status: ${targetStatus}`);
-  
-  for (const pane of unknownPanes) {
-    const paneId = pane.paneId;
-    // 状態変更コマンド
-    const statusCommand = `echo -ne "\\033]0;[${targetStatus}→mgr[${managerPaneId}] $(date '+%m/%d %H:%M')]\\007"`;
+  /**
+   * Display pane list
+   */
+  async display(): Promise<void> {
+    logInfo("\n=== Pane List Display ===");
+    const output = await executeTmuxCommand(
+      'tmux list-panes -a -F "#{session_name}:#{window_index}.#{pane_index} #{pane_id} [#{pane_active}] #{pane_current_command} (#{pane_title})"'
+    );
     
+    console.log(output);
+    console.log("=====================\n");
+  }
+}
+
+/**
+ * Main Monitor Class (Integration of Object-Oriented + Global Functions)
+ */
+class TmuxMonitor {
+  private session: TmuxSession;
+  private paneManager: PaneManager;
+  private communicator: PaneCommunicator;
+  private displayer: PaneDisplayer;
+  private statusTracker: PaneStatusTracker;
+  
+  constructor() {
+    this.session = new TmuxSession();
+    this.paneManager = new PaneManager();
+    this.communicator = new PaneCommunicator();
+    this.displayer = new PaneDisplayer();
+    this.statusTracker = new PaneStatusTracker();
+  }
+  
+  /**
+   * Execute deno task ci and check for errors
+   */
+  private async executeCIAndCheckErrors(): Promise<boolean> {
     try {
-      const cmd = new Deno.Command("tmux", {
-        args: [
-          "send-keys",
-          "-t", paneId,
-          statusCommand,
-          "Enter"
-        ],
-        stdout: "piped",
-        stderr: "piped"
-      });
+      logInfo("Executing 'deno task ci' to check for errors...");
+      const output = await executeTmuxCommand('deno task ci');
       
-      const output = await cmd.output();
+      // Check for error patterns as specified in requirements
+      const errorPatterns = [
+        /FAILED \| [0-9]+ passed \| [0-9]+ failed/,
+        /error: Test failed/
+      ];
       
-      if (output.success) {
-        console.log(`✅ ${paneId}: Status update command sent (${targetStatus})`);
+      const hasError = errorPatterns.some(pattern => pattern.test(output));
+      
+      if (hasError) {
+        logInfo("CI execution detected errors");
+        return true;
       } else {
-        const error = new TextDecoder().decode(output.stderr);
-        console.log(`❌ ${paneId}: Failed to send command - ${error.trim()}`);
+        logInfo("CI execution completed without errors");
+        return false;
       }
     } catch (error) {
-      console.log(`❌ ${paneId}: Error sending command - ${error}`);
+      logError("Failed to execute CI:", error);
+      return true; // Treat execution failure as error
+    }
+  }
+
+  /**
+   * Send CI instruction to main pane
+   */
+  private async sendCIInstructionToMainPane(): Promise<void> {
+    const mainPane = this.paneManager.getMainPane();
+    if (!mainPane) {
+      logError("Main pane not found for CI instruction");
+      return;
+    }
+
+    logInfo("Sending 'deno task ci' instruction to main pane");
+    
+    // Send 'deno task ci' to main pane
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} 'deno task ci' Enter`);
+    
+    // Send additional Enter as specified
+    await sleep(TIMING.ENTER_KEY_DELAY);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} Enter`);
+    
+    logInfo("CI instruction sent to main pane");
+  }
+
+  /**
+   * Send additional Enter to all panes as specified in requirements
+   */
+  private async sendAdditionalEnterToAllPanes(): Promise<void> {
+    logInfo("Sending additional Enter to all panes...");
+    
+    const targetPanes = this.paneManager.getTargetPanes();
+    for (const pane of targetPanes) {      // Send additional Enter as specified: sleep 0.3 && tmux send-keys Enter
+      await sleep(TIMING.ENTER_KEY_DELAY);
+      await executeTmuxCommand(`tmux send-keys -t ${pane.id} Enter`);
     }
     
-    // 少し待機して次のコマンドへ
-    await new Promise(resolve => setTimeout(resolve, 100));
+    logInfo("Additional Enter sent to all panes completed");
+  }
+  
+  /**
+   * Send status report instructions to all panes
+   */
+  private async processAllPanes(): Promise<void> {
+    logInfo("Starting status report instructions to panes...");
+    
+    const targetPanes = this.paneManager.getTargetPanes();
+    for (const pane of targetPanes) {
+      await this.communicator.sendInstruction(pane.id);
+    }
+    
+    logInfo("All pane instructions completed");
+  }
+  
+  /**
+   * Update status tracking for all panes
+   */
+  private async updateStatusTracking(): Promise<void> {
+    const targetPanes = this.paneManager.getTargetPanes();
+    
+    for (const pane of targetPanes) {
+      const paneDetail = await getPaneDetail(pane.id);
+      if (paneDetail) {
+        const currentStatus = extractStatusFromTitle(paneDetail.title);
+        const hasChanged = this.statusTracker.updateStatus(pane.id, currentStatus);
+        
+        if (hasChanged) {
+          logInfo(`Status change detected for pane ${pane.id}: ${currentStatus}`);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Report status changes to main pane
+   */
+  private async reportStatusChanges(): Promise<void> {
+    const mainPane = this.paneManager.getMainPane();
+    if (!mainPane) {
+      logError("Main pane not found for status reporting");
+      return;
+    }
+
+    const changedPanes = this.statusTracker.getChangedPanes();
+    await this.communicator.sendStatusChangeReport(mainPane.id, changedPanes);
+    
+    // Clear change flags after reporting
+    this.statusTracker.clearChangeFlags();
+  }
+  
+  /**
+   * Report status of other panes to main pane (legacy method - kept for compatibility)
+   */
+  private async reportToMainPane(): Promise<void> {
+    const mainPane = this.paneManager.getMainPane();
+    if (!mainPane) {
+      logError("Main pane not found");
+      return;
+    }
+
+    const sessionName = this.session.getName();
+    const targetPaneIds = this.paneManager.getTargetPaneIds();
+    
+    const report = generateStatusReport(sessionName, mainPane.id, targetPaneIds);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${report}' Enter`);
+  }
+
+  /**
+   * Main monitoring loop with CI error checking
+   */
+  public async monitor(): Promise<void> {
+    while (true) {
+      try {
+        logInfo("Starting tmux monitoring...");
+        
+        // 1. Identify latest session
+        await this.session.discover();
+        
+        // 2. Get pane list
+        const allPanes = await this.session.getPanes();
+        
+        // 3. Separate main pane from other panes
+        this.paneManager.separate(allPanes);
+        
+        // 4. Update status tracking before processing
+        await this.updateStatusTracking();
+        
+        // 5. Send status report instructions to each pane
+        await this.processAllPanes();
+        
+        // 6. Display list
+        await this.displayer.display();
+        
+        // 7. Send additional Enter to all panes
+        await this.sendAdditionalEnterToAllPanes();
+        
+        // 8. Report status changes to main pane
+        await this.reportStatusChanges();
+        
+        // 9. Wait for 5 minutes
+        logInfo("Waiting for 5 minutes (300 seconds)...");
+        await sleep(TIMING.MONITORING_CYCLE_DELAY);
+        
+        // 10. Execute CI and check for errors
+        const hasErrors = await this.executeCIAndCheckErrors();
+        
+        if (hasErrors) {
+          // 11. If errors exist, send CI instruction to main pane
+          await this.sendCIInstructionToMainPane();
+          // Continue loop (back to step 1)
+          continue;
+        } else {
+          // No errors, exit the process
+          logInfo("No errors detected, exiting monitoring");
+          break;
+        }
+        
+      } catch (error) {
+        logError("Monitoring error:", error);
+        // Continue loop on error
+        continue;
+      }
+    }
+  }
+
+  /**
+   * Continuous monitoring mode
+   */
+  public async startContinuousMonitoring(): Promise<void> {
+    logInfo("Starting continuous monitoring mode (Stop with Ctrl+C)");
+    
+    while (true) {
+      await this.monitor();
+      logInfo("Waiting for next cycle...\n");
+    }
   }
 }
 
-function showHelp(): void {
-  console.log(`
-tmux Pane Monitor with Worker Status Detection
+// =============================================================================
+// Main Execution (Global Functions)
+// =============================================================================
 
-Usage: deno run --allow-run --allow-read scripts/monitor.ts [options]
-
-Options:
-  -a, --auto-update     Automatically send status update commands to UNKNOWN panes
-  --status=STATUS       Set target status for auto-update (default: IDLE)
-                        Valid statuses: IDLE, WORKING, BLOCKED, DONE, TERMINATED
-  -h, --help           Show this help message
-
-Examples:
-  # Monitor only (no auto-update)
-  deno run --allow-run --allow-read scripts/monitor.ts
-  
-  # Monitor with auto-update to IDLE status
-  deno run --allow-run --allow-read scripts/monitor.ts --auto-update
-  
-  # Monitor with auto-update to WORKING status
-  deno run --allow-run --allow-read scripts/monitor.ts -a --status=WORKING
-
-Worker Status Legend:
-  IDLE        - 待機中（新しいタスクを即座に受け入れ可能）
-  WORKING     - 実行中（タスク処理中、進捗定期報告）
-  BLOCKED     - 依存関係待ち（他ワーカーの完了・リソース待ち）
-  DONE        - タスク完了（結果報告済み、次タスク待ち）
-  TERMINATED  - 終了（コンテキストクリア、リソース解放完了）
-  UNKNOWN     - ステータス不明（タイトルパターンにマッチしない）
-`);
-}
-
-async function main(): Promise<void> {
-  // コマンドライン引数の解析
+/**
+ * Global function to parse command line arguments
+ */
+function parseCommandLineArgs(): { continuous: boolean } {
   const args = Deno.args;
-  const autoUpdate = args.includes('--auto-update') || args.includes('-a');
-  const targetStatus = args.find(arg => arg.startsWith('--status='))?.split('=')[1] as WorkerStatus || 'IDLE';
-  
-  // Help option
-  if (args.includes('-h') || args.includes('--help')) {
-    showHelp();
-    return;
-  }
-  
-  // ステータスの妥当性チェック
-  const validStatuses: WorkerStatus[] = ['IDLE', 'WORKING', 'BLOCKED', 'DONE', 'TERMINATED'];
-  if (!validStatuses.includes(targetStatus)) {
-    console.error(`Error: Invalid status '${targetStatus}'. Valid statuses: ${validStatuses.join(', ')}`);
-    return;
-  }
-  
-  console.log("Starting tmux pane monitor...");
-  console.log(`Auto-update UNKNOWN panes: ${autoUpdate ? 'Enabled' : 'Disabled'}`);
-  if (autoUpdate) {
-    console.log(`Target status: ${targetStatus}`);
-  }
-  console.log("Press any key or Ctrl+C to stop\n");
-
-  // Monitor function with auto-update option
-  const monitorWithOptions = async () => {
-    await listTmuxPanes(autoUpdate, targetStatus);
+  return {
+    continuous: args.includes('--continuous') || args.includes('-c')
   };
-
-  // Initial display
-  await monitorWithOptions();
-
-  // Monitor loop
-  while (isRunning) {
-    await new Promise(resolve => setTimeout(resolve, 10000)); // 10 seconds
-    
-    if (isRunning) {
-      await monitorWithOptions();
-    }
-  }
-
-  // Restore terminal
-  if (Deno.stdin.isTerminal()) {
-    Deno.stdin.setRaw(false);
-  }
-  
-  console.log("Monitor stopped.");
 }
+
+/**
+ * Main entry point of the application
+ */
+async function main(): Promise<void> {
+  const monitor = new TmuxMonitor();
+  const options = parseCommandLineArgs();
+  
+  if (options.continuous) {
+    await monitor.startContinuousMonitoring();
+  } else {
+    await monitor.monitor();
+  }
+}
+
+// =============================================================================
+// Application Startup
+// =============================================================================
 
 if (import.meta.main) {
   await main();
