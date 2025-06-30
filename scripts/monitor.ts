@@ -14,11 +14,11 @@
  *   deno run --allow-run --allow-net scripts/monitor.ts --continuous
  *   deno run --allow-run --allow-net scripts/monitor.ts -c
  * 
- *   # Scheduled execution (wait until specified time)
+ *   # Scheduled execution (wait until specified time, then start normal monitoring)
  *   deno run --allow-run --allow-net scripts/monitor.ts --time=4:00
  *   deno run --allow-run --allow-net scripts/monitor.ts -t 14:30
  * 
- *   # Scheduled + continuous mode (repeats at specified time daily)
+ *   # Scheduled + continuous mode (waits until scheduled time, then runs continuous monitoring)
  *   deno run --allow-run --allow-net scripts/monitor.ts -c --time=4:00
  *   deno run --allow-run --allow-net scripts/monitor.ts -c -t 4:00
  * 
@@ -888,16 +888,15 @@ class TmuxMonitor {
    * Main monitoring loop with CI error checking
    */
   public async monitor(): Promise<void> {
-    // If scheduled time is set, wait for it first before starting monitoring
+    // If scheduled time is set, wait for it first before starting monitoring (only once)
     if (this.scheduledTime) {
       const interrupted = await waitUntilScheduledTime(this.scheduledTime);
       if (interrupted) {
         logInfo("Monitoring cancelled by user input. Exiting...");
         return;
       }
-      // Reset scheduled time after waiting (for continuous mode)
-      const timeStr = this.scheduledTime.toTimeString().substring(0, 5);
-      this.scheduledTime = getNextScheduledTime(timeStr);
+      // Clear scheduled time after first execution - no more scheduling
+      this.scheduledTime = null;
     }
     
     while (true) {
@@ -936,26 +935,13 @@ class TmuxMonitor {
         // 8. Report status changes to main pane
         await this.reportStatusChanges();
         
-        // 9. Wait for 5 minutes with keyboard interrupt, or wait until scheduled time
-        if (this.scheduledTime) {
-          const interrupted = await waitUntilScheduledTime(this.scheduledTime);
-          if (interrupted) {
-            logInfo("Monitoring cancelled by user input. Exiting...");
-            break;
-          }
-          // Reset scheduled time after first execution (for continuous mode)
-          if (this.scheduledTime) {
-            const timeStr = this.scheduledTime.toTimeString().substring(0, 5);
-            this.scheduledTime = getNextScheduledTime(timeStr);
-          }
-        } else {
-          logInfo("Waiting for 5 minutes (300 seconds)...");
-          const interrupted = await sleepWithKeyboardInterrupt(TIMING.MONITORING_CYCLE_DELAY);
-          
-          if (interrupted) {
-            logInfo("Monitoring cancelled by user input. Exiting...");
-            break;
-          }
+        // 9. Wait for 5 minutes with keyboard interrupt (no more scheduled waits)
+        logInfo("Waiting for 5 minutes (300 seconds)...");
+        const interrupted = await sleepWithKeyboardInterrupt(TIMING.MONITORING_CYCLE_DELAY);
+        
+        if (interrupted) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
+          break;
         }
         
         // 10. Execute CI and check for errors
@@ -988,6 +974,7 @@ class TmuxMonitor {
     
     while (true) {
       await this.monitor();
+      // After the first execution, scheduled time is cleared, so subsequent cycles use normal 5-minute intervals
       logInfo("Waiting for next cycle...\n");
     }
   }
