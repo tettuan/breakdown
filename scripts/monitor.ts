@@ -415,12 +415,25 @@ function isNodeCommand(command: string): boolean {
  * Global function to extract status from pane title
  */
 function extractStatusFromTitle(title: string): StatusKey {
-  // Look for status patterns in the title
+  // Look for exact status patterns in the title
+  // Check for Status(STATUSNAME) format first (most specific)
+  const statusParenMatch = title.match(/Status\(([^)]+)\)/);
+  if (statusParenMatch) {
+    const statusCandidate = statusParenMatch[1];
+    if (WORKER_STATUS.includes(statusCandidate as StatusKey)) {
+      return statusCandidate as StatusKey;
+    }
+  }
+  
+  // Check for word boundary matches to avoid partial matches
   for (const status of WORKER_STATUS) {
-    if (title.includes(status)) {
+    // Use word boundary regex to match complete status words
+    const regex = new RegExp(`\\b${status}\\b`, 'i');
+    if (regex.test(title)) {
       return status;
     }
   }
+  
   return 'UNKNOWN';
 }
 
@@ -672,7 +685,8 @@ class PaneCommunicator {
     const reportLines = changedPanes.map(pane => `${pane.paneId} : ${pane.currentStatus}`);
     const report = reportLines.join('\n');
     
-    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' Enter`);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}'`);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
     
     // Send additional Enter as specified
     await sleep(TIMING.ENTER_KEY_DELAY);
@@ -686,7 +700,8 @@ class PaneCommunicator {
    */
   async sendReport(mainPaneId: string, sessionName: string, targetPaneIds: string[]): Promise<void> {
     const report = generateStatusReport(sessionName, mainPaneId, targetPaneIds);
-    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' Enter`);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' `);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
   }
 }
 
@@ -793,7 +808,8 @@ class TmuxMonitor {
     logInfo("Sending 'deno task ci' instruction to main pane");
     
     // Send 'deno task ci' to main pane
-    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} 'deno task ci' Enter`);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} 'deno task ci' and worki with your team.`);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} Enter`);
     
     // Send additional Enter as specified
     await sleep(TIMING.ENTER_KEY_DELAY);
@@ -880,8 +896,8 @@ class TmuxMonitor {
     const sessionName = this.session.getName();
     const targetPaneIds = this.paneManager.getTargetPaneIds();
     
-    const report = generateStatusReport(sessionName, mainPane.id, targetPaneIds);
-    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${report}' Enter`);
+    // Use PaneCommunicator.sendReport for consistency
+    await this.communicator.sendReport(mainPane.id, sessionName, targetPaneIds);
   }
 
   /**
@@ -934,6 +950,9 @@ class TmuxMonitor {
         
         // 8. Report status changes to main pane
         await this.reportStatusChanges();
+        
+        // 8.5. Send pane list report to main pane
+        await this.reportToMainPane();
         
         // 9. Wait for 5 minutes with keyboard interrupt (no more scheduled waits)
         logInfo("Waiting for 5 minutes (300 seconds)...");
