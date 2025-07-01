@@ -1,19 +1,23 @@
 # 設計の階層構造
 
-1 が最上位。中道度が高い。
-数字が大きいほど具体。
+Level.1 が最上位（最も抽象的）。
+数字が大きいほど解像度が高く（具体的）になる。
 
-# 1. 最上位設計
+- **Level.1**: システム全体の概念・抽象的設計
+- **Level.2**: コンポーネント間の設計・アーキテクチャ
+- **Level.3**: 実装詳細・具体的処理
+
+# Level.1 最上位設計
 
 1. CLIにargsを渡す(ex. `./.deno/bin/breakdown to issue -f=test.md, -o=tmp/ -a=fix --config=mine`)
 2. breakdownのCLI起動
-3. パラメータとオプションを分けて把握
+3. argsをパラメータとオプションへ分離
 4. パラメータが2個あるとき（two params）、プロンプトを選ぶ
 5. プロンプトを、オプション値で置換する
 6. 結果を出力する(結果 = 置換後プロンプトのテキスト)
 7. CLI終了
 
-# 1. 分割されたモジュールの位置付け
+# Level.1 分割されたモジュールの位置付け
 
 Breakdown本体は、4つの外部モジュールを持っている。
 これらは、内部実装を意図的に外部実装したものである。
@@ -25,15 +29,16 @@ Breakdown本体は、4つの外部モジュールを持っている。
 3. BreakdownPrompt
 4. BreakdownLogger
 
-# 2. 処理分解
+# Level.2 CLI起動とargsの分離処理アーキテクチャ
 
 1. configオプションを取得し、カスタム設定を取得 → Breakdown本体で実施
 2. argsを受け取って、パラメータとオプションを分けて把握 → BreakdownParams へ移譲
-2-1. このとき、ConfigPrefixDetector にて、パラメータをカスタム設定するprefixが必要（任意）
+2-1. このとき、ConfigProfileDetector にて、パラメータをカスタム設定するprofileが必要（任意）
+2-1-1. ConfigProfileDetectorは、ConfigProfileName型として型安全性を保証し、有効性検証済みのprofile名を返す
 3. BreakdownParams から Result を受け取り、パラメータの数で分岐（zero,one,two）
-4. zero,one,two の処理に分かれて実施
+4. zero,one,two の処理に分岐して実施
 
-# 2. パラメータの処理
+# Level.2 パラメータの分離後の結果取得アーキテクチャ
 
 1. BreakdownParams の Result は、 zero,one,two とも取得
 2. zero,one,twoを全て調べ、成功したものを採用する
@@ -41,7 +46,17 @@ Breakdown本体は、4つの外部モジュールを持っている。
 2-2. Breakdown本体は、 args の分解も行わないし、定義も知らないで済む（関心の分離）
 2-2-1. ただし `--config/-c` だけ例外。BreakdownParams の前に設定ファイルを特定する必要があるため避けられない。
 
-# 3. パラメータの処理でzero,one,twoとも生成する理由
+## 2-1. ParamsResultの型構成
+
+BreakdownParams.ParamsResultは以下の判別可能な結合型：
+
+- **TwoParamsResult**: DirectiveType + LayerType + Options を含む
+- **OneParamsResult**: Options のみを含む  
+- **ZeroParamsResult**: Options のみを含む
+
+各結果型は成功/失敗状態を持ち、Options型は全パラメータ型の和集合として構成される。
+
+# Level.3 パラメータの処理でzero,one,twoとも生成する理由
 
 1. Breakdown本体は、 args を parse しないので中身を知らない
 2. args を BreakdownParams へ渡す
@@ -56,7 +71,7 @@ Breakdown本体は、4つの外部モジュールを持っている。
 8-1. BreakdownParams は STDIN を見ない
 
 
-# 3. two パラメータの処理
+# Level.3 two パラメータの処理
 
 1. Breakdown本体は、BreakdownParams の Result から、PATH構築
 2. プロンプトのPATH、Schema特定のPATH、出力ディレクトリに関わるPATHをそれぞれ分けて作成
@@ -66,13 +81,13 @@ Breakdown本体は、4つの外部モジュールを持っている。
 5. BreakdownPrompt がプロンプト変換処理を行って、結果のプロンプト文を返す
 6. 出力する
 
-# 3. two パラメータで使える文字の指定
+# Level.3 two パラメータで使える文字の指定
 
 1. 設定ファイルを作成する時に、条件を意識する
 2. 設定ファイルを使い、BreakdownConfig値をBreakdownParamsへ渡す
 3. Breakdown本体は、twoパラメータで使える文字列の条件に関知しない（設定とBreakdownParamsに移譲）
 
-# 4. PATH解決
+# Level.2 プロンプト選択アーキテクチャ(PATH解決)
 
 1. two params では、demonstrativeType, layerType が使われる。これをパラメータの値からセットする。
 1-1. さらに、input オプションが fromLayerType を指定することもできる
@@ -84,7 +99,15 @@ Breakdown本体は、4つの外部モジュールを持っている。
 3-1. BreakdownPrompt がバリデートする
 3-2. Breakdown本体はPATHバリデータを持たない
 
-# 5. プロンプトファイルのPATH解決
+## 4-1. PATH解決における型安全性
+
+PATH解決では以下の型安全性を保証する：
+
+1. **WorkingDirectoryResult**: 未検証文字列から検証済み作業ディレクトリへの変換
+2. **AbsolutePath**: Smart Constructorで検証されたパスのみを受け入れ
+3. **FilePath**: プロンプトパス、スキーマパス、出力パスで統一された型
+
+# Level.3 プロンプトファイルのPATH解決
 
 1. BreakdownConfigの `app_prompt.base_dir`が基底となる。
 2. 組み合わせ方は `docs/path.ja.md` に組み合わせの詳細を記載しているので参照すること
@@ -96,14 +119,14 @@ Breakdown本体は、4つの外部モジュールを持っている。
 - prompt ファイルは、事前に準備されている前提である。
 - CLI実行時には、生成されない。存在しないプロンプトを指定することが、起こり得る
 
-# 5. SchemaファイルのPATH解決
+# Level.3 SchemaファイルのPATH解決
 
 1. BreakdownConfigの `app_schema.base_dir`が基底となる。
 2. 組み合わせ方は `docs/path.ja.md` に組み合わせの詳細を記載しているので参照すること
 3. Validatorがファイルの存在確認を行う必要はない
 3-1. BreakdownPrompt がバリデートする
 
-# 5. Destination のPATH解決
+# Level.3 Destination のPATH解決
 
 1. destinationFile 指定が、PATH構造を持つか否かで分岐する.
 1-1. さらに、指定がファイル名か、ディレクトリ名かで分岐する
@@ -112,7 +135,7 @@ Breakdown本体は、4つの外部モジュールを持っている。
 3. Validatorがファイルの存在確認を行う必要はない
 3-1. BreakdownPrompt がバリデートする
 
-# 4. 置換用の変数セット
+# Level.2 置換処理アーキテクチャ
 
 1. Breakdown本体は、BreakdownParams から Option値のセットを取得する
 2. Breakdown本体は、BreakdownPrompt が期待する Variables 形式に変換する
@@ -122,14 +145,23 @@ Breakdown本体は、4つの外部モジュールを持っている。
 3-1. BreakdownPromptでは、英数字とアンダースコアのみ使用可能, 先頭は英字のみ, 大文字小文字を区別
 3-2. 詳細: https://github.com/tettuan/breakdownprompt/blob/main/docs/variables.ja.md
 
+## 4-1. PromptVariablesの構成
 
-# 3. カスタムできる種類
+PromptVariablesは以下の4つの変数型で構成される：
+
+1. **StandardVariable**: `input_text_file`, `destination_path` など標準的な変数
+2. **FilePathVariable**: `schema_file` などのファイルパス変数  
+3. **StdinVariable**: `input_text` のみ（型安全性によりSTDIN変数名を制約）
+4. **UserVariable**: `--uv-$name=value` 形式で指定されるカスタム変数
+
+
+# Level.1 カスタムできる種類
 
 以下の3点をユーザーが指定し、カスタム運用できる。
 
 1. config: 
   - 標準: app.yml, user.yml
-  - カスタム: $prefix-app.yml, $prefix-user.yml
+  - カスタム: $profile-app.yml, $profile-user.yml
   - カスタム指定方法: CLI オプションで `--config/-c`を使う
     -例: `--config=production`, `-c=system`
 2. two パラメータに使える指示詞
@@ -148,9 +180,9 @@ Breakdown本体は、4つの外部モジュールを持っている。
     - BreakdownParams では、 `uv-$name` をキーにして、受け取る
     - プロンプト内部は、{$name} を使う
 
-# シーケンス図
+# Level.2 シーケンス図
 
-## 1. 最上位レベル - CLI全体フロー
+## Level.2.1 最上位レベル - CLI全体フロー
 
 ```mermaid
 sequenceDiagram
@@ -179,19 +211,19 @@ sequenceDiagram
     Core->>CLI: 終了
 ```
 
-## 2. パラメータ処理レベル - BreakdownParams詳細
+## Level.2.2 パラメータ処理レベル - BreakdownParams詳細
 
 ```mermaid
 sequenceDiagram
     participant Core as Breakdown本体
     participant Config as BreakdownConfig
-    participant Prefix as BreakdownConfigPrefix
+    participant Profile as BreakdownConfigProfile
     participant Params as BreakdownParams
     participant STDIN
     
     Core->>Config: configオプション取得
     Config->>Core: カスタム設定
-    Core->>Prefix: prefix設定(任意)
+    Core->>Profile: profile設定(任意)
     Core->>Params: args + config値
     
     Params->>Params: zero params 解析
@@ -205,7 +237,7 @@ sequenceDiagram
     Core->>Core: 成功したものを採用
 ```
 
-## 3. Two パラメータ処理レベル - PATH解決と変数処理
+## Level.2.3 Two パラメータ処理レベル - PATH解決と変数処理
 
 ```mermaid
 sequenceDiagram
@@ -244,7 +276,7 @@ sequenceDiagram
     Core->>FileSystem: 結果出力
 ```
 
-## 4. PATH解決詳細レベル - ファイル特定プロセス
+## Level.2.4 PATH解決詳細レベル - ファイル特定プロセス
 
 ```mermaid
 sequenceDiagram
@@ -275,7 +307,7 @@ sequenceDiagram
     Prompt->>Prompt: 存在確認・バリデーション
 ```
 
-## 5. 変数処理詳細レベル - カスタム変数とオプション処理
+## Level.2.5 変数処理詳細レベル - カスタム変数とオプション処理
 
 ```mermaid
 sequenceDiagram
@@ -301,20 +333,26 @@ sequenceDiagram
     Prompt->>Core: 置換済みプロンプト
 ```
 
-## 設計上の注意点
+## Level.1 設計上の注意点
 
-### 関心の分離
+### Level.1.1 関心の分離
 - **Breakdown本体**: args解析を行わない、パラメータ定義を知らない
 - **BreakdownParams**: 解析結果を返すまでが責務、結果の使われ方を知らない  
 - **BreakdownPrompt**: PATHバリデーションを実施、本体はバリデータを持たない
 
-### 事前準備の必要性
+### Level.1.2 事前準備の必要性
 - プロンプトファイルは事前に準備されている前提
 - CLI実行時には生成されない
 - 存在しないプロンプトを指定する可能性がある
 
-### カスタマイズポイント
-1. **config**: `--config/-c`でprefix指定
+### Level.1.3 型安全性による防御
+- **全域性原則**: 取りうる状態を明示的に定義し、それ以外を排除
+- **Smart Constructor**: 無効な値での型インスタンス作成を防止
+- **Discriminated Union**: パラメータ数による処理分岐を型で保証
+- **Result型**: 成功/失敗状態を型で明示し、エラーハンドリングを強制
+
+### Level.1.4 カスタマイズポイント
+1. **config**: `--config/-c`でprofile指定
 2. **パラメータパターン**: 正規表現でdemonstrative/layerType制御
 3. **ユーザー変数**: `--uv-$name=value`でプロンプト内変数制御
 
