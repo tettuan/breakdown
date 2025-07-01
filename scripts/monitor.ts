@@ -69,13 +69,6 @@ interface PaneDetail {
   startCommand: string;
 }
 
-interface PaneStatusInfo {
-  paneId: string;
-  currentStatus: StatusKey;
-  previousStatus?: StatusKey;
-  lastUpdated: Date;
-}
-
 type StatusKey = 'IDLE' | 'WORKING' | 'BLOCKED' | 'DONE' | 'TERMINATED' | 'UNKNOWN';
 
 // =============================================================================
@@ -401,40 +394,201 @@ Start Command: #{pane_start_command}'`);
  * Global function to generate instruction messages
  */
 function generateInstructionMessage(): string {
-  return `Script detection and Status determination: Update pane_title with Script(Node/Other) + Status(${WORKER_STATUS.join('/')})`;
+  return `instructions/team-worker.ja.md を参照し報告する`;
 }
 
 /**
  * Global function to check if command is node-related
  */
 function isNodeCommand(command: string): boolean {
-  return command === 'node';
+  // Edge case handling: null, undefined, or empty command
+  if (!command || typeof command !== 'string') {
+    return false;
+  }
+  
+  // Normalize command string (trim and lowercase for comparison)
+  const normalizedCommand = command.trim().toLowerCase();
+  if (normalizedCommand === '') {
+    return false;
+  }
+  
+  // Node.js runtime and package managers
+  const nodePatterns = [
+    'node', 'nodejs',
+    'npm', 'npx', 'yarn', 'pnpm',
+    'deno', 'bun'
+  ];
+  
+  // Framework and build tools
+  const frameworkPatterns = [
+    'next', 'nuxt', 'vite', 'webpack', 'rollup',
+    'tsc', 'typescript', 'ts-node',
+    'jest', 'vitest', 'mocha', 'cypress',
+    'eslint', 'prettier', 'nodemon'
+  ];
+  
+  // Test for exact matches or as part of commands
+  const allPatterns = [...nodePatterns, ...frameworkPatterns];
+  
+  try {
+    return allPatterns.some(pattern => {
+      // Safety check for pattern
+      if (!pattern || typeof pattern !== 'string') {
+        return false;
+      }
+      
+      const normalizedPattern = pattern.toLowerCase();
+      
+      return (
+        normalizedCommand === normalizedPattern || 
+        normalizedCommand.includes(normalizedPattern) ||
+        normalizedCommand.startsWith(`${normalizedPattern} `) ||
+        normalizedCommand.includes(`/${normalizedPattern}`)
+      );
+    });
+  } catch (error) {
+    logError(`Error in isNodeCommand for command "${command}":`, error);
+    return false;
+  }
 }
 
 /**
- * Global function to extract status from pane title
+ * Global function to extract simple status from pane title
  */
 function extractStatusFromTitle(title: string): StatusKey {
-  // Look for exact status patterns in the title
-  // Check for Status(STATUSNAME) format first (most specific)
-  const statusParenMatch = title.match(/Status\(([^)]+)\)/);
-  if (statusParenMatch) {
-    const statusCandidate = statusParenMatch[1];
-    if (WORKER_STATUS.includes(statusCandidate as StatusKey)) {
-      return statusCandidate as StatusKey;
-    }
+  if (!title || typeof title !== 'string') {
+    return 'UNKNOWN';
   }
   
-  // Check for word boundary matches to avoid partial matches
+  const normalizedTitle = title.trim().toUpperCase();
+  
   for (const status of WORKER_STATUS) {
-    // Use word boundary regex to match complete status words
-    const regex = new RegExp(`\\b${status}\\b`, 'i');
-    if (regex.test(title)) {
+    if (normalizedTitle.includes(status)) {
       return status;
     }
   }
   
   return 'UNKNOWN';
+}
+
+/**
+ * Global function to determine status from pane activity and command
+ */
+function determineStatus(paneDetail: PaneDetail): StatusKey {
+  try {
+    // Handle edge case for null or invalid paneDetail
+    if (!paneDetail || typeof paneDetail !== 'object') {
+      logError('Invalid paneDetail parameter in determineStatus:', paneDetail);
+      return 'UNKNOWN';
+    }
+    
+    const command = paneDetail.currentCommand || '';
+    const title = paneDetail.title || '';
+    const pid = paneDetail.pid || '';
+    
+    // Strategy 1: First check if status is already explicitly in title
+    const existingStatus = extractStatusFromTitle(title);
+    if (existingStatus !== 'UNKNOWN') {
+      return existingStatus;
+    }
+  
+  // Strategy 2: Determine status based on command patterns with priority
+  
+  // Check for terminated/dead processes (pid might indicate this)
+  if (pid === '0' || pid === '' || command === '') {
+    return 'TERMINATED';
+  }
+  
+  // Check for shell commands (typically idle)
+  const shellCommands = ['zsh', 'bash', 'sh', 'fish', 'tcsh', 'csh'];
+  if (shellCommands.includes(command)) {
+    return 'IDLE';
+  }
+  
+  // Check for active development tools and processes
+  const activeCommands = [
+    'claude', 'cld',
+    'vi', 'vim', 'nvim', 'nano', 'emacs',
+    'code', 'cursor'
+  ];
+  if (activeCommands.some(cmd => command.includes(cmd))) {
+    return 'WORKING';
+  }
+  
+  // Check for build/test processes (working state)
+  const buildTestPatterns = [
+    'test', 'build', 'compile', 'bundle',
+    'jest', 'vitest', 'mocha', 'cypress',
+    'webpack', 'vite', 'rollup', 'esbuild',
+    'tsc', 'typescript'
+  ];
+  if (buildTestPatterns.some(pattern => command.includes(pattern))) {
+    return 'WORKING';
+  }
+  
+  // Check for Node.js related processes
+  if (isNodeCommand(command)) {
+    // Check for specific Node.js states
+    if (command.includes('watch') || command.includes('dev') || command.includes('start')) {
+      return 'WORKING';
+    }
+    if (command.includes('install') || command.includes('update')) {
+      return 'WORKING';
+    }
+    return 'WORKING'; // Default for Node commands
+  }
+  
+  // Check for package managers in installation mode
+  const packageManagerPatterns = ['install', 'update', 'upgrade', 'add', 'remove'];
+  if (packageManagerPatterns.some(pattern => command.includes(pattern))) {
+    return 'WORKING';
+  }
+  
+  // Check for system monitoring/utility commands
+  const utilityCommands = ['htop', 'top', 'ps', 'netstat', 'ss', 'lsof', 'tail', 'watch', 'tmux'];
+  if (utilityCommands.some(cmd => command.includes(cmd))) {
+    return 'WORKING';
+  }
+  
+  // Check for git operations
+  if (command.includes('git')) {
+    return 'WORKING';
+  }
+  
+  // Check for file operations
+  const fileCommands = ['ls', 'cat', 'grep', 'find', 'sed', 'awk', 'sort', 'head', 'tail'];
+  if (fileCommands.some(cmd => command === cmd || command.startsWith(`${cmd} `))) {
+    return 'WORKING';
+  }
+  
+  // Strategy 3: Analyze title for additional context
+  if (title) {
+    // Check for error indicators in title
+    if (/error|failed|exception|timeout/i.test(title)) {
+      return 'BLOCKED';
+    }
+    
+    // Check for completion indicators
+    if (/complete|finished|done|success/i.test(title)) {
+      return 'DONE';
+    }
+    
+    // Check for activity indicators
+    if (/loading|processing|running|executing/i.test(title)) {
+      return 'WORKING';
+    }
+  }
+  
+    // Default: if command is not recognized but exists, assume working
+    if (command && command !== 'zsh' && command !== 'bash' && command !== 'sh') {
+      return 'WORKING';
+    }
+    
+    return 'UNKNOWN';
+  } catch (error) {
+    logError(`Error in determineStatus for pane ${paneDetail?.paneId || 'unknown'}:`, error);
+    return 'UNKNOWN';
+  }
 }
 
 /**
@@ -544,80 +698,52 @@ class PaneManager {
 }
 
 /**
- * Pane Status Tracker Class
+ * Pane Status Manager Class
  */
-class PaneStatusTracker {
-  private statusMap: Map<string, PaneStatusInfo> = new Map();
-  
-  constructor() {}
-  
-  /**
-   * Update pane status and return true if status changed
-   */
+class PaneStatusManager {
+  private statusMap: Map<string, { current: StatusKey; previous?: StatusKey }> = new Map();
+
   updateStatus(paneId: string, newStatus: StatusKey): boolean {
     const existing = this.statusMap.get(paneId);
     
     if (!existing) {
-      // First time tracking this pane
-      this.statusMap.set(paneId, {
-        paneId,
-        currentStatus: newStatus,
-        lastUpdated: new Date()
-      });
-      return true; // New pane is considered a change
+      this.statusMap.set(paneId, { current: newStatus });
+      return true; // New pane is a change
     }
     
-    if (existing.currentStatus !== newStatus) {
-      // Status changed
-      this.statusMap.set(paneId, {
-        paneId,
-        currentStatus: newStatus,
-        previousStatus: existing.currentStatus,
-        lastUpdated: new Date()
+    if (existing.current !== newStatus) {
+      this.statusMap.set(paneId, { 
+        current: newStatus, 
+        previous: existing.current 
       });
-      return true;
+      return true; // Status changed
     }
     
     return false; // No change
   }
-  
-  /**
-   * Get panes that had status changes
-   */
-  getChangedPanes(): PaneStatusInfo[] {
-    const result: PaneStatusInfo[] = [];
+
+  getChangedPanes(): Array<{ paneId: string; status: StatusKey }> {
+    const result: Array<{ paneId: string; status: StatusKey }> = [];
     
     for (const [paneId, info] of this.statusMap.entries()) {
-      // Only include panes that have a previous status (indicating a change occurred)
-      if (info.previousStatus) {
-        result.push(info);
+      if (info.previous !== undefined) {
+        result.push({ paneId, status: info.current });
       }
     }
     
     return result;
   }
-  
-  /**
-   * Get current status for a pane
-   */
-  getCurrentStatus(paneId: string): StatusKey | undefined {
-    return this.statusMap.get(paneId)?.currentStatus;
-  }
-  
-  /**
-   * Clear change flags (call after reporting)
-   */
+
   clearChangeFlags(): void {
     for (const [paneId, info] of this.statusMap.entries()) {
-      if (info.previousStatus) {
-        this.statusMap.set(paneId, {
-          ...info,
-          previousStatus: undefined
-        });
-      }
+      this.statusMap.set(paneId, { current: info.current });
     }
   }
 }
+
+/**
+ * Pane Communication Class
+ */
 class PaneCommunicator {
   constructor() {}
   
@@ -633,11 +759,11 @@ class PaneCommunicator {
     }
 
     if (isNodeCommand(paneDetail.currentCommand)) {
-      // Case: Node command - send script and status detection instructions
-      logInfo(`Pane ${paneId} node, sending`);
+      // Case: Node command
+      logInfo(`Pane ${paneId} node, sending instruction`);
       await this.sendNodeInstruction(paneId);
     } else {
-      // Case: Non-node command - send "cld" command
+      // Case: Non-node command
       logInfo(`Pane ${paneId} ${paneDetail.currentCommand}, sending cld`);
       await this.sendNonNodeInstruction(paneId);
     }
@@ -649,15 +775,13 @@ class PaneCommunicator {
   private async sendNodeInstruction(paneId: string): Promise<void> {
     const instruction = generateInstructionMessage();
     
-    // Send according to instruction template format (updated to 0.3 seconds per requirements)
+    // Send instruction and wait 0.2 seconds, then send Enter
     const escapedInstruction = instruction.replace(/'/g, "'\"'\"'");
-    await executeTmuxCommand(`tmux send-keys -t ${paneId} '${escapedInstruction}' && sleep 0.3 && tmux send-keys -t ${paneId} Enter`);
-    
-    // Send additional Enter as specified in requirements (sleep 0.3 && tmux send-keys Enter)
-    await sleep(TIMING.ENTER_KEY_DELAY);
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} '${escapedInstruction}'`);
+    await sleep(TIMING.INSTRUCTION_DELAY);
     await executeTmuxCommand(`tmux send-keys -t ${paneId} Enter`);
     
-    // Wait for pane processing
+    // Wait 1 second after Enter
     await sleep(TIMING.PANE_PROCESSING_DELAY);
   }
 
@@ -675,14 +799,13 @@ class PaneCommunicator {
   /**
    * Send status change report to main pane
    */
-  async sendStatusChangeReport(mainPaneId: string, changedPanes: PaneStatusInfo[]): Promise<void> {
+  async sendStatusChangeReport(mainPaneId: string, changedPanes: Array<{ paneId: string; status: StatusKey }>): Promise<void> {
     if (changedPanes.length === 0) {
-      logInfo("No status changes to report");
       return;
     }
 
     // Format as specified in requirements: #{pane_id} : #{status}
-    const reportLines = changedPanes.map(pane => `${pane.paneId} : ${pane.currentStatus}`);
+    const reportLines = changedPanes.map(pane => `${pane.paneId} : ${pane.status}`);
     const report = reportLines.join('\n');
     
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}'`);
@@ -733,7 +856,7 @@ class TmuxMonitor {
   private paneManager: PaneManager;
   private communicator: PaneCommunicator;
   private displayer: PaneDisplayer;
-  private statusTracker: PaneStatusTracker;
+  private statusManager: PaneStatusManager;
   private scheduledTime: Date | null = null;
   private instructionFile: string | null = null;
   
@@ -742,7 +865,7 @@ class TmuxMonitor {
     this.paneManager = new PaneManager();
     this.communicator = new PaneCommunicator();
     this.displayer = new PaneDisplayer();
-    this.statusTracker = new PaneStatusTracker();
+    this.statusManager = new PaneStatusManager();
     this.scheduledTime = scheduledTime || null;
     this.instructionFile = instructionFile || null;
   }
@@ -794,7 +917,10 @@ class TmuxMonitor {
     logInfo(`Sending instruction file to main pane: ${this.instructionFile}`);
     
     // Send instruction file message to main pane with exact format from requirements
-    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${instructionMessage}' && sleep 0.3 && tmux send-keys -t ${mainPane.id} Enter`);
+    const escapedMessage = instructionMessage.replace(/'/g, "'\"'\"'");
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${escapedMessage}'`);
+    await sleep(TIMING.ENTER_KEY_DELAY);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} Enter`);
     
     logInfo("Instruction file sent to main pane");
   }
@@ -805,10 +931,12 @@ class TmuxMonitor {
       return;
     }
 
-    logInfo("Sending 'deno task ci' instruction to main pane");
+    const message = `deno task ci を実行する。その後、一番最初の指示を思い出し、チームを構成する。その後、エラー修正を行う。deno task ci が passしたらpane全てをclearさせる。`;
+    logInfo("Sending CI instruction to main pane");
     
-    // Send 'deno task ci' to main pane
-    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} 'deno task ci' and worki with your team.`);
+    // Send instruction to main pane
+    const escapedMessage = message.replace(/'/g, "'\"'\"'");
+    await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} '${escapedMessage}'`);
     await executeTmuxCommand(`tmux send-keys -t ${mainPane.id} Enter`);
     
     // Send additional Enter as specified
@@ -825,7 +953,7 @@ class TmuxMonitor {
     logInfo("Sending additional Enter to all panes...");
     
     const targetPanes = this.paneManager.getTargetPanes();
-    for (const pane of targetPanes) {      // Send additional Enter as specified: sleep 0.3 && tmux send-keys Enter
+    for (const pane of targetPanes) {
       await sleep(TIMING.ENTER_KEY_DELAY);
       await executeTmuxCommand(`tmux send-keys -t ${pane.id} Enter`);
     }
@@ -857,11 +985,7 @@ class TmuxMonitor {
       const paneDetail = await getPaneDetail(pane.id);
       if (paneDetail) {
         const currentStatus = extractStatusFromTitle(paneDetail.title);
-        const hasChanged = this.statusTracker.updateStatus(pane.id, currentStatus);
-        
-        if (hasChanged) {
-          logInfo(`Status change detected for pane ${pane.id}: ${currentStatus}`);
-        }
+        this.statusManager.updateStatus(pane.id, currentStatus);
       }
     }
   }
@@ -876,11 +1000,11 @@ class TmuxMonitor {
       return;
     }
 
-    const changedPanes = this.statusTracker.getChangedPanes();
+    const changedPanes = this.statusManager.getChangedPanes();
     await this.communicator.sendStatusChangeReport(mainPane.id, changedPanes);
     
     // Clear change flags after reporting
-    this.statusTracker.clearChangeFlags();
+    this.statusManager.clearChangeFlags();
   }
   
   /**
@@ -904,82 +1028,70 @@ class TmuxMonitor {
    * Main monitoring loop with CI error checking
    */
   public async monitor(): Promise<void> {
-    // If scheduled time is set, wait for it first before starting monitoring (only once)
+    // If scheduled time is set, wait for it first
     if (this.scheduledTime) {
       const interrupted = await waitUntilScheduledTime(this.scheduledTime);
       if (interrupted) {
         logInfo("Monitoring cancelled by user input. Exiting...");
         return;
       }
-      // Clear scheduled time after first execution - no more scheduling
-      this.scheduledTime = null;
+      this.scheduledTime = null; // Clear after first use
     }
     
     while (true) {
       try {
         logInfo("Starting tmux monitoring...");
         
-        // 1. Identify latest session
+        // 1. Get session and panes
         await this.session.discover();
-        
-        // 2. Get pane list
         const allPanes = await this.session.getPanes();
-        
-        // 3. Separate main pane from other panes
         this.paneManager.separate(allPanes);
         
-        // 3.5. Send instruction file to main pane if specified (only on first execution)
-        // For scheduled execution, this happens after the scheduled time is reached
+        // 2. Send instruction file to main pane (only once)
         if (this.instructionFile) {
           await this.sendInstructionFileToMainPane();
-          // Clear instruction file after first execution to prevent repeated sending
           this.instructionFile = null;
         }
         
-        // 4. Update status tracking before processing
-        await this.updateStatusTracking();
-        
-        // 5. Send status report instructions to each pane
+        // 3. Process all panes
         await this.processAllPanes();
         
-        // 6. Display list
+        // 4. Update status tracking and report changes
+        await this.updateStatusTracking();
+        
+        // 5. Display list
         await this.displayer.display();
         
-        // 7. Send additional Enter to all panes
+        // 6. Send additional Enter to all panes
         await this.sendAdditionalEnterToAllPanes();
         
-        // 8. Report status changes to main pane
+        // 7. Report status changes and general report to main pane
         await this.reportStatusChanges();
-        
-        // 8.5. Send pane list report to main pane
         await this.reportToMainPane();
         
-        // 9. Wait for 5 minutes with keyboard interrupt (no more scheduled waits)
-        logInfo("Waiting for 5 minutes (300 seconds)...");
+        // 7. Wait 5 minutes
+        logInfo("Waiting for 5 minutes...");
         const interrupted = await sleepWithKeyboardInterrupt(TIMING.MONITORING_CYCLE_DELAY);
-        
         if (interrupted) {
           logInfo("Monitoring cancelled by user input. Exiting...");
           break;
         }
         
-        // 10. Execute CI and check for errors
+        // 8. Execute CI and check for errors
         const hasErrors = await this.executeCIAndCheckErrors();
         
         if (hasErrors) {
-          // 11. If errors exist, send CI instruction to main pane
+          // If errors exist, send CI instruction and continue loop
           await this.sendCIInstructionToMainPane();
-          // Continue loop (back to step 1)
           continue;
         } else {
-          // No errors, exit the process
+          // No errors, exit
           logInfo("No errors detected, exiting monitoring");
           break;
         }
         
       } catch (error) {
         logError("Monitoring error:", error);
-        // Continue loop on error
         continue;
       }
     }
