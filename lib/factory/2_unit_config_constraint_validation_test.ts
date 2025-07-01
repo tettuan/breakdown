@@ -14,7 +14,7 @@ import {
   TypeFactory,
   type TypePatternProvider,
   DirectiveType,
-  NewLayerType,
+  LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
 } from "../types/mod.ts";
@@ -87,13 +87,13 @@ function createTestConfig(scenario: {
   
   if (scenario.hasPromptDir) {
     config.app_prompt = {
-      base_dir: scenario.promptDirValue || "lib/prompts"
+      base_dir: scenario.promptDirValue ?? "lib/prompts"
     };
   }
   
   if (scenario.hasSchemaDir) {
     config.app_schema = {
-      base_dir: scenario.schemaDirValue || "lib/schemas"
+      base_dir: scenario.schemaDirValue ?? "lib/schemas"
     };
   }
   
@@ -101,10 +101,10 @@ function createTestConfig(scenario: {
     config.params = {
       two: {
         demonstrativeType: {
-          pattern: scenario.directivePattern || "to|summary|defect"
+          pattern: scenario.directivePattern ?? "to|summary|defect"
         },
         layerType: {
-          pattern: scenario.layerPattern || "project|issue|task"
+          pattern: scenario.layerPattern ?? "project|issue|task"
         }
       }
     };
@@ -420,13 +420,13 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         constructor(private config: Record<string, unknown>) {}
         
         getDirectivePattern() {
-          const pattern = this.config.params?.two?.demonstrativeType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.demonstrativeType?.pattern as string;
           return pattern ? TwoParamsDirectivePattern.create(pattern) : 
                  TwoParamsDirectivePattern.create("to|summary|defect|init|find");
         }
         
         getLayerTypePattern() {
-          const pattern = this.config.params?.two?.layerType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.layerType?.pattern as string;
           return pattern ? TwoParamsLayerTypePattern.create(pattern) :
                  TwoParamsLayerTypePattern.create("project|issue|task|bugs|temp");
         }
@@ -512,14 +512,14 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         constructor(private config: Record<string, unknown>) {}
         
         getDirectivePattern() {
-          const pattern = this.config.params?.two?.demonstrativeType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.demonstrativeType?.pattern as string;
           if (pattern === "") return null; // Empty pattern
           return pattern ? TwoParamsDirectivePattern.create(pattern) : 
                  TwoParamsDirectivePattern.create("to|summary|defect|init|find");
         }
         
         getLayerTypePattern() {
-          const pattern = this.config.params?.two?.layerType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.layerType?.pattern as string;
           if (pattern === "") return null; // Empty pattern
           return pattern ? TwoParamsLayerTypePattern.create(pattern) :
                  TwoParamsLayerTypePattern.create("project|issue|task|bugs|temp");

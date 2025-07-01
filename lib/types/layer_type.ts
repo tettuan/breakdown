@@ -48,7 +48,15 @@ export class TwoParamsLayerTypePattern {
    * @returns 正規表現の文字列
    */
   toString(): string {
-    return this.pattern.toString();
+    return this.pattern.source;
+  }
+
+  /**
+   * パターンの文字列表現を取得（getPatternメソッド）
+   * @returns 正規表現の文字列
+   */
+  getPattern(): string {
+    return this.pattern.source;
   }
 
   /**
@@ -174,6 +182,18 @@ export class LayerType {
   isStandardHierarchy(): boolean {
     const standardTypes = ["project", "issue", "task"];
     return standardTypes.includes(this.value);
+  }
+
+  /**
+   * String representation of LayerType
+   * 
+   * デバッグや表示用の文字列表現を返す。
+   * フォーマット: "LayerType(value)"
+   * 
+   * @returns LayerType の文字列表現
+   */
+  toString(): string {
+    return `LayerType(${this.value})`;
   }
 
   /**

@@ -14,7 +14,6 @@ import { TwoParamsVariableProcessor } from "../processors/two_params_variable_pr
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
-import { TwoParamsOutputWriter } from "../writers/two_params_output_writer.ts";
 
 /**
  * Error types for TwoParamsHandler - maintains backward compatibility
@@ -30,6 +29,23 @@ export type TwoParamsHandlerError =
   | { kind: "OutputWriteError"; error: string };
 
 /**
+ * Type guards for error checking
+ */
+interface ValidationError {
+  kind: string;
+  received?: number;
+  expected?: number;
+  value?: string;
+  validTypes?: string[];
+}
+
+interface PromptError {
+  kind: string;
+  errors?: string[];
+  message?: string;
+}
+
+/**
  * Internal orchestrator for two params processing
  * This class encapsulates the orchestration logic while keeping it internal
  */
@@ -38,7 +54,6 @@ class TwoParamsOrchestrator {
   private readonly stdinProcessor: TwoParamsStdinProcessor;
   private readonly variableProcessor: TwoParamsVariableProcessor;
   private readonly promptGenerator: TwoParamsPromptGenerator;
-  private readonly outputWriter: TwoParamsOutputWriter;
 
   constructor() {
     // Initialize all components
@@ -46,7 +61,6 @@ class TwoParamsOrchestrator {
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
-    this.outputWriter = new TwoParamsOutputWriter();
   }
 
   /**
@@ -83,7 +97,18 @@ class TwoParamsOrchestrator {
     if (!variablesResult.ok) {
       return error({
         kind: "VariablesBuilderError",
-        errors: variablesResult.error.map(e => `${e.kind}: ${e.key || e.message || ''}`)
+        errors: variablesResult.error.map(e => {
+          if (e.kind === "InvalidVariablePrefix") {
+            return `${e.kind}: ${e.key} (expected prefix: ${e.expectedPrefix})`;
+          } else if (e.kind === "ReservedVariableName") {
+            return `${e.kind}: ${e.key}`;
+          } else if (e.kind === "EmptyVariableValue") {
+            return `${e.kind}: ${e.key}`;
+          } else if (e.kind === "InvalidOptions") {
+            return `${e.kind}: ${e.message}`;
+          }
+          return String(e);
+        })
       });
     }
 
@@ -99,11 +124,14 @@ class TwoParamsOrchestrator {
     }
 
     // 5. Write output
-    const outputResult = await this.outputWriter.write(promptResult.data);
-    if (!outputResult.ok) {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(promptResult.data);
+      await Deno.stdout.write(data);
+    } catch (err) {
       return error({
         kind: "OutputWriteError",
-        error: outputResult.error.message
+        error: err instanceof Error ? err.message : String(err)
       });
     }
 
@@ -113,12 +141,30 @@ class TwoParamsOrchestrator {
   /**
    * Map validation errors to handler errors
    */
-  private mapValidationError(error: any): TwoParamsHandlerError {
-    if (error.kind === "InvalidParameterCount") {
-      return error;
-    }
-    if (error.kind === "InvalidDemonstrativeType" || error.kind === "InvalidLayerType") {
-      return error;
+  private mapValidationError(error: unknown): TwoParamsHandlerError {
+    const validationError = error as ValidationError;
+    if (error && typeof error === "object" && "kind" in error) {
+      if (validationError.kind === "InvalidParameterCount") {
+        return {
+          kind: "InvalidParameterCount",
+          received: validationError.received ?? 0,
+          expected: validationError.expected ?? 2
+        };
+      }
+      if (validationError.kind === "InvalidDemonstrativeType") {
+        return {
+          kind: "InvalidDemonstrativeType",
+          value: validationError.value ?? "",
+          validTypes: validationError.validTypes ?? []
+        };
+      }
+      if (validationError.kind === "InvalidLayerType") {
+        return {
+          kind: "InvalidLayerType",
+          value: validationError.value ?? "",
+          validTypes: validationError.validTypes ?? []
+        };
+      }
     }
     return {
       kind: "FactoryValidationError",
@@ -129,16 +175,17 @@ class TwoParamsOrchestrator {
   /**
    * Map prompt generation errors to handler errors
    */
-  private mapPromptError(error: any): TwoParamsHandlerError {
-    if (error.kind === "FactoryValidationError") {
+  private mapPromptError(error: unknown): TwoParamsHandlerError {
+    const promptError = error as PromptError;
+    if (error && typeof error === "object" && "kind" in error && promptError.kind === "FactoryValidationError") {
       return {
         kind: "FactoryValidationError",
-        errors: error.errors || [error.message]
+        errors: promptError.errors || [promptError.message || "Unknown error"]
       };
     }
     return {
       kind: "PromptGenerationError",
-      error: error.message || String(error)
+      error: (error instanceof Error ? error.message : String(error))
     };
   }
 }

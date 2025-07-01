@@ -32,4 +32,19 @@ export { initWorkspace } from "./workspace/workspace.ts";
  *
  * @see {@link ./types/mod.ts}
  */
-export type { DemonstrativeType, LayerType } from "./types/mod.ts";
+export type { DemonstrativeType } from "./types/mod.ts";
+
+// Export core types and utilities
+export {
+  DirectiveType,
+  LayerType,
+  TwoParamsDirectivePattern,
+  TwoParamsLayerTypePattern,
+  TypeFactory,
+  type TypePatternProvider,
+  type TypeCreationResult,
+  type TypeCreationError
+} from "./types/mod.ts";
+
+// Export Result types
+export { type Result, ok, error } from "./types/result.ts";

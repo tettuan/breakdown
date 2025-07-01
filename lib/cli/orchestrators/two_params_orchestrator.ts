@@ -18,7 +18,6 @@ import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
 // Import components
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import { TwoParamsOutputWriter } from "../writers/two_params_output_writer.ts";
 
 /**
  * Orchestrates two params handler components
@@ -26,16 +25,13 @@ import { TwoParamsOutputWriter } from "../writers/two_params_output_writer.ts";
 export class TwoParamsOrchestrator {
   private readonly validator: TwoParamsValidator;
   private readonly stdinProcessor: TwoParamsStdinProcessor;
-  private readonly outputWriter: TwoParamsOutputWriter;
 
   constructor(
     validator?: TwoParamsValidator,
-    stdinProcessor?: TwoParamsStdinProcessor,
-    outputWriter?: TwoParamsOutputWriter
+    stdinProcessor?: TwoParamsStdinProcessor
   ) {
     this.validator = validator || new TwoParamsValidator();
     this.stdinProcessor = stdinProcessor || new TwoParamsStdinProcessor();
-    this.outputWriter = outputWriter || new TwoParamsOutputWriter();
   }
 
   /**
@@ -47,7 +43,7 @@ export class TwoParamsOrchestrator {
     options: Record<string, unknown>
   ): Promise<Result<void, TwoParamsHandlerError>> {
     // 1. Validate parameters
-    const validationResult = this.validator.validate(params);
+    const validationResult = await this.validator.validate(params);
     if (!validationResult.ok) {
       return error(validationResult.error);
     }
@@ -55,12 +51,15 @@ export class TwoParamsOrchestrator {
     const { demonstrativeType, layerType } = validationResult.data;
 
     // 2. Read STDIN
-    const stdinResult = await this.stdinProcessor.read(
+    const stdinResult = await this.stdinProcessor.process(
       config as BreakdownConfigCompatible,
       options
     );
     if (!stdinResult.ok) {
-      return error(stdinResult.error);
+      return error({
+        kind: "StdinReadError",
+        error: stdinResult.error.message
+      });
     }
 
     // 3. Extract and process variables
@@ -92,9 +91,16 @@ export class TwoParamsOrchestrator {
     }
 
     // 6. Write output
-    const outputResult = await this.outputWriter.write(promptResult.data);
-    if (!outputResult.ok) {
-      return error(outputResult.error);
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(promptResult.data);
+      await Deno.stdout.write(data);
+    } catch (err) {
+      return error({
+        kind: "OutputWriteError",
+        error: err instanceof Error ? err.message : String(err),
+        cause: err
+      });
     }
 
     return ok(undefined);
@@ -175,7 +181,7 @@ export class TwoParamsOrchestrator {
     customVariables: Record<string, string>
   ): Promise<Result<string, TwoParamsHandlerError>> {
     try {
-      const factory = PromptVariablesFactory.createWithConfig(config, cliParams);
+      const factory = await PromptVariablesFactory.create(cliParams);
       
       // Validate factory
       factory.validateAll();

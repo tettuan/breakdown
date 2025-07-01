@@ -1,18 +1,18 @@
 /**
  * @fileoverview ParameterValidator for validating parsed parameters
- * 
+ *
  * This module provides comprehensive parameter validation following the Totality principle.
  * It validates parameters from BreakdownParams (TwoParamsResult, OneParamsResult, ZeroParamsResult)
  * and produces ValidatedParams with full type safety and Result-based error handling.
- * 
+ *
  * @module validator/parameter_validator
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 import { DirectiveType } from "../types/directive_type.ts";
 import { LayerType } from "../types/layer_type.ts";
-import type { TwoParamsResult, OneParamsResult, ZeroParamsResult } from "../deps.ts";
+import type { OneParamsResult, TwoParamsResult, ZeroParamsResult } from "../deps.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 
 /**
@@ -68,14 +68,14 @@ export interface ConfigValidator {
 
 /**
  * ParameterValidator - Comprehensive parameter validation
- * 
+ *
  * Validates parsed parameters from BreakdownParams and produces
  * ValidatedParams with full type safety and error handling.
- * 
+ *
  * @example
  * ```typescript
  * const validator = new ParameterValidator(patternProvider, configValidator);
- * 
+ *
  * const result = validator.validateTwoParams(twoParamsResult);
  * if (result.ok) {
  *   const { directive, layer, options } = result.data;
@@ -86,12 +86,12 @@ export interface ConfigValidator {
 export class ParameterValidator {
   constructor(
     private readonly patternProvider: TypePatternProvider,
-    private readonly configValidator: ConfigValidator
+    private readonly configValidator: ConfigValidator,
   ) {}
 
   /**
    * Validate TwoParamsResult
-   * 
+   *
    * @param result - Parsed two parameters result
    * @returns Result containing ValidatedParams or ValidationError
    */
@@ -101,7 +101,7 @@ export class ParameterValidator {
       return error({
         kind: "InvalidParamsType",
         expected: "two",
-        received: result.type
+        received: result.type,
       });
     }
 
@@ -110,7 +110,7 @@ export class ParameterValidator {
       return error({
         kind: "MissingRequiredField",
         field: "demonstrativeType",
-        source: "TwoParamsResult"
+        source: "TwoParamsResult",
       });
     }
 
@@ -118,7 +118,7 @@ export class ParameterValidator {
       return error({
         kind: "MissingRequiredField",
         field: "layerType",
-        source: "TwoParamsResult"
+        source: "TwoParamsResult",
       });
     }
 
@@ -128,7 +128,7 @@ export class ParameterValidator {
       return error({
         kind: "InvalidDirectiveType",
         value: result.demonstrativeType,
-        validPattern: directivePattern ? directivePattern.toString() : "undefined"
+        validPattern: directivePattern ? directivePattern.getPattern() : "undefined",
       });
     }
 
@@ -138,7 +138,7 @@ export class ParameterValidator {
       return error({
         kind: "InvalidLayerType",
         value: result.layerType,
-        validPattern: layerPattern ? layerPattern.toString() : "undefined"
+        validPattern: layerPattern ? layerPattern.getPattern() : "undefined",
       });
     }
 
@@ -162,7 +162,7 @@ export class ParameterValidator {
     const metadata: ValidationMetadata = {
       validatedAt: new Date(),
       source: "TwoParamsResult",
-      profileName: this.extractProfileName(result.options)
+      profileName: this.extractProfileName(result.options),
     };
 
     return ok({
@@ -170,13 +170,13 @@ export class ParameterValidator {
       layer,
       options: optionsResult.data,
       customVariables: customVariablesResult.data,
-      metadata
+      metadata,
     });
   }
 
   /**
    * Validate OneParamsResult
-   * 
+   *
    * @param result - Parsed one parameter result
    * @returns Result containing ValidatedParams or ValidationError
    */
@@ -186,7 +186,7 @@ export class ParameterValidator {
       return error({
         kind: "InvalidParamsType",
         expected: "one",
-        received: result.type
+        received: result.type,
       });
     }
 
@@ -196,7 +196,7 @@ export class ParameterValidator {
       return error({
         kind: "MissingRequiredField",
         field: "params",
-        source: "OneParamsResult"
+        source: "OneParamsResult",
       });
     }
 
@@ -207,16 +207,24 @@ export class ParameterValidator {
       demonstrativeType: "init", // Default directive for one param
       layerType: result.params[0], // Use the single param as layer
       params: ["init", result.params[0]],
-      options: result.options
+      options: result.options,
     };
 
-    // Validate as two params with defaults
-    return this.validateTwoParams(defaultTwoParams);
+    // Validate as two params with defaults, but preserve original source
+    const validationResult = this.validateTwoParams(defaultTwoParams);
+    if (validationResult.ok) {
+      // Update metadata to reflect original source
+      validationResult.data.metadata = {
+        ...validationResult.data.metadata,
+        source: "OneParamsResult",
+      };
+    }
+    return validationResult;
   }
 
   /**
    * Validate ZeroParamsResult
-   * 
+   *
    * @param result - Parsed zero parameters result
    * @returns Result containing ValidatedParams or ValidationError
    */
@@ -226,7 +234,7 @@ export class ParameterValidator {
       return error({
         kind: "InvalidParamsType",
         expected: "zero",
-        received: result.type
+        received: result.type,
       });
     }
 
@@ -236,20 +244,30 @@ export class ParameterValidator {
       demonstrativeType: "init", // Default directive
       layerType: "project", // Default layer
       params: ["init", "project"],
-      options: result.options
+      options: result.options,
     };
 
-    // Validate as two params with defaults
-    return this.validateTwoParams(defaultTwoParams);
+    // Validate as two params with defaults, but preserve original source
+    const validationResult = this.validateTwoParams(defaultTwoParams);
+    if (validationResult.ok) {
+      // Update metadata to reflect original source
+      validationResult.data.metadata = {
+        ...validationResult.data.metadata,
+        source: "ZeroParamsResult",
+      };
+    }
+    return validationResult;
   }
 
   /**
    * Extract and validate options
    */
-  private extractValidatedOptions(options: Record<string, unknown>): Result<ValidatedOptions, ValidationError> {
+  private extractValidatedOptions(
+    options: Record<string, unknown>,
+  ): Result<ValidatedOptions, ValidationError> {
     const inputPath = this.normalizeInputPath(options);
     const outputPath = this.normalizeOutputPath(options);
-    
+
     // Validate paths if needed
     const inputValidation = this.validatePath(inputPath, "input");
     if (!inputValidation.ok) {
@@ -266,7 +284,7 @@ export class ParameterValidator {
       outputPath,
       schemaPath: this.extractOptionalPath(options, ["schemaFile", "schema"]),
       promptPath: this.extractOptionalPath(options, ["promptFile", "prompt", "template"]),
-      stdin: this.extractStdin(options)
+      stdin: this.extractStdin(options),
     };
 
     return ok(validatedOptions);
@@ -275,7 +293,9 @@ export class ParameterValidator {
   /**
    * Extract custom variables with uv- prefix
    */
-  private extractCustomVariables(options: Record<string, unknown>): Result<Record<string, string>, ValidationError> {
+  private extractCustomVariables(
+    options: Record<string, unknown>,
+  ): Result<Record<string, string>, ValidationError> {
     const customVariables: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(options)) {
@@ -285,7 +305,7 @@ export class ParameterValidator {
           return error({
             kind: "CustomVariableInvalid",
             key,
-            reason: "Value must be string, number, or boolean"
+            reason: "Value must be string, number, or boolean",
           });
         }
         customVariables[key] = String(value);
@@ -314,7 +334,10 @@ export class ParameterValidator {
   /**
    * Extract optional path from multiple possible keys
    */
-  private extractOptionalPath(options: Record<string, unknown>, keys: string[]): string | undefined {
+  private extractOptionalPath(
+    options: Record<string, unknown>,
+    keys: string[],
+  ): string | undefined {
     for (const key of keys) {
       const value = options[key];
       if (value && typeof value === "string") {
@@ -355,7 +378,7 @@ export class ParameterValidator {
       return error({
         kind: "PathValidationFailed",
         path,
-        reason: "Path contains null character"
+        reason: "Path contains null character",
       });
     }
 
@@ -364,7 +387,7 @@ export class ParameterValidator {
       return error({
         kind: "PathValidationFailed",
         path,
-        reason: `${type} path cannot be empty`
+        reason: `${type} path cannot be empty`,
       });
     }
 

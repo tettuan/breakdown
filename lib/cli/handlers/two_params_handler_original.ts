@@ -74,9 +74,9 @@ function validateDemonstrativeType(value: string): Result<DemonstrativeType, Two
 /**
  * Validate layer type without type assertion
  */
-function validateLayerType(value: string): Result<LayerType, TwoParamsHandlerError> {
+function validateLayerType(value: string): Result<string, TwoParamsHandlerError> {
   if (VALID_LAYER_TYPES.includes(value as any)) {
-    return ok(value as LayerType);
+    return ok(value);
   }
   
   return error({
@@ -106,10 +106,10 @@ async function readStdinSafely(
     }
     
     return ok(""); // No stdin available, return empty string
-  } catch (error) {
+  } catch (err) {
     return error({
       kind: "StdinReadError",
-      error: error instanceof Error ? error.message : String(error)
+      error: err instanceof Error ? err.message : String(err)
     });
   }
 }
@@ -134,7 +134,7 @@ function extractCustomVariables(options: Record<string, unknown>): Record<string
  */
 function createCliParams(
   demonstrativeType: DemonstrativeType,
-  layerType: LayerType,
+  layerType: string,
   options: Record<string, unknown>,
   inputText: string,
   customVariables: Record<string, string>
@@ -169,10 +169,10 @@ async function processPromptGeneration(
   // Validate factory parameters
   try {
     factory.validateAll();
-  } catch (error) {
+  } catch (err) {
     return error({
       kind: "FactoryValidationError",
-      errors: [error instanceof Error ? error.message : String(error)]
+      errors: [err instanceof Error ? err.message : String(err)]
     });
   }
 
@@ -238,10 +238,10 @@ async function processPromptGeneration(
     }
 
     return ok(content);
-  } catch (error) {
+  } catch (err) {
     return error({
       kind: "PromptGenerationError",
-      error: error instanceof Error ? error.message : String(error)
+      error: err instanceof Error ? err.message : String(err)
     });
   }
 }
@@ -253,10 +253,10 @@ async function writeOutput(content: string): Promise<Result<void, TwoParamsHandl
   try {
     await Deno.stdout.write(new TextEncoder().encode(content));
     return ok(undefined);
-  } catch (error) {
+  } catch (err) {
     return error({
       kind: "OutputWriteError",
-      error: error instanceof Error ? error.message : String(error)
+      error: err instanceof Error ? err.message : String(err)
     });
   }
 }
@@ -323,7 +323,7 @@ export async function handleTwoParams(
 
   // 6. Create factory and process prompt generation
   try {
-    const factory = PromptVariablesFactory.createWithConfig(config, cliParams);
+    const factory = await PromptVariablesFactory.create(cliParams);
     
     const contentResult = await processPromptGeneration(
       factory,
@@ -342,10 +342,10 @@ export async function handleTwoParams(
     }
 
     return ok(undefined);
-  } catch (error) {
+  } catch (err) {
     return error({
       kind: "FactoryValidationError",
-      errors: [error instanceof Error ? error.message : String(error)]
+      errors: [err instanceof Error ? err.message : String(err)]
     });
   }
 }

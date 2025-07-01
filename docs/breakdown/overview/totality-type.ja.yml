@@ -120,3 +120,87 @@ UserVariable: {
   name: string, # ユーザー変数の名前（空文字列以外、--uv-*等）
   value: string # ユーザー変数の値（空文字列以外）
 } # PromptVariablesの一部、カスタム設定用（CLI --uv-key=value形式）
+
+# 全域性原則に基づく作業ディレクトリ型定義
+# 「未検証の文字列」から「検証済みの作業ディレクトリ」への変換を型で表現
+WorkingDirectoryResult: # Smart Constructorで作成される検証済み作業ディレクトリ
+  ValidWorkingDirectory:
+    - path: AbsolutePath # 絶対パス（検証済み）
+    - exists: true # ディレクトリの存在を保証
+    - platform: PlatformType # プラットフォーム固有の情報
+  InvalidWorkingDirectory:
+    - error: WorkingDirectoryError # 検証失敗理由
+
+# 作業ディレクトリの生パス入力型（未検証）
+WorkingDirectoryInput:
+  受け入れ可能型:
+    - string # 相対パスまたは絶対パス文字列
+  受け入れ不可型:
+    - 値なし # 空文字列、null、undefined等は全て拒否
+
+# 検証済み絶対パス型
+AbsolutePath:
+  受け入れ可能型:
+    - ValidWorkingDirectory.path # Smart Constructorで検証されたパス
+  受け入れ不可型:
+    - 値なし # 未検証の文字列は受け入れない
+
+# プラットフォーム型
+PlatformType:
+  Unix:
+    - separator: "/" # パス区切り文字
+    - caseSensitive: true # 大文字小文字区別
+  Windows:
+    - separator: "\\" # パス区切り文字  
+    - caseSensitive: false # 大文字小文字区別なし
+
+# 作業ディレクトリエラー型
+WorkingDirectoryError:
+  PathNotFound:
+    - inputPath: string # 入力されたパス
+    - message: "指定されたパスが存在しません"
+  NotDirectory:
+    - inputPath: string # 入力されたパス
+    - message: "指定されたパスはディレクトリではありません"
+  PermissionDenied:
+    - inputPath: string # 入力されたパス
+    - message: "指定されたディレクトリにアクセス権限がありません"
+  InvalidPath:
+    - inputPath: string # 入力されたパス
+    - message: "無効なパス形式です"
+
+# Smart Constructorパターンの実装指針:
+# WorkingDirectory.create(input: string): WorkingDirectoryResult
+# 1. パス形式検証（相対/絶対パス判定）
+# 2. 絶対パス変換（相対パスの場合はCWDベース）
+# 3. ディレクトリ存在確認
+# 4. アクセス権限確認
+# 5. プラットフォーム固有処理
+# 6. 成功時はValidWorkingDirectory、失敗時はInvalidWorkingDirectoryを返す
+
+# ディレクトリ操作結果型
+DirectoryOperationResult: # ディレクトリ作成・削除等の操作結果
+  Success:
+    - path: AbsolutePath # 操作対象パス
+    - operation: DirectoryOperation # 実行された操作
+  Failure:
+    - path: string # 操作対象パス（未検証でも可）
+    - operation: DirectoryOperation # 実行しようとした操作
+    - error: DirectoryOperationError # 失敗理由
+
+DirectoryOperation:
+  受け入れ可能型:
+    - "create" # ディレクトリ作成
+    - "remove" # ディレクトリ削除
+    - "ensure" # ディレクトリ存在確保
+  受け入れ不可型:
+    - 値なし # その他の文字列は全て拒否
+
+DirectoryOperationError:
+  CreateFailed:
+    - reason: string # 作成失敗理由
+  RemoveFailed:
+    - reason: string # 削除失敗理由
+  EnsureFailed:
+    - reason: string # 存在確保失敗理由
+

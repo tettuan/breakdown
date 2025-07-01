@@ -28,7 +28,11 @@ export class PromptFileGenerator {
     if (!path) {
       return Promise.resolve();
     }
-    return Deno.stat(path).then(() => {}, () => {
+    return Deno.stat(path).then((stat) => {
+      if (!stat.isFile) {
+        throw new Error(`No such file: ${path}`);
+      }
+    }, () => {
       throw new Error(`No such file: ${path}`);
     });
   }
@@ -58,7 +62,7 @@ export class PromptFileGenerator {
     const cliParams = {
       demonstrativeType:
         (options?.demonstrativeType || "to") as import("../types/mod.ts").DemonstrativeType,
-      layerType: format as import("../types/mod.ts").LayerType,
+      layerType: format,
       options: {
         fromFile,
         destinationFile: toFile,
@@ -66,9 +70,26 @@ export class PromptFileGenerator {
         input_text: options?.input_text,
       },
     };
-    const factory = await PromptVariablesFactory.create(cliParams);
-    factory.validateAll();
-    const { promptFilePath, inputFilePath } = factory.getAllParams();
+    let factory;
+    let promptFilePath;
+    let inputFilePath;
+    
+    try {
+      factory = await PromptVariablesFactory.create(cliParams);
+      factory.validateAll();
+      const params = factory.getAllParams();
+      promptFilePath = params.promptFilePath;
+      inputFilePath = params.inputFilePath;
+    } catch (e) {
+      return {
+        success: false,
+        output: "",
+        error: {
+          type: PromptFileErrorType.Unknown,
+          message: `Configuration error: ${e instanceof Error ? e.message : String(e)}`,
+        },
+      };
+    }
 
     // Handle stdin input
     if (fromFile === "-") {

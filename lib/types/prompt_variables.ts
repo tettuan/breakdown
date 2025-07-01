@@ -7,7 +7,7 @@
  * @example Usage
  * ```ts
  * import { PromptVariables, StandardVariable } from "./prompt_variables.ts";
- * 
+ *
  * const standardVar = StandardVariable.create("input_text_file", "/path/to/file");
  * if (standardVar) {
  *   const variables: PromptVariables = [standardVar];
@@ -19,11 +19,7 @@
 
 import type { PromptParams } from "@tettuan/breakdownprompt";
 import type { VariableResult } from "./variable_result.ts";
-import { 
-  createSuccess, 
-  createInvalidNameError, 
-  createEmptyValueError 
-} from "./variable_result.ts";
+import { createEmptyValueError, createInvalidNameError, createSuccess } from "./variable_result.ts";
 
 // === Base Interface for Duck Typing ===
 
@@ -42,7 +38,7 @@ export interface PromptVariableBase {
 export class StandardVariable implements PromptVariableBase {
   private constructor(
     readonly name: StandardVariableName,
-    readonly value: string
+    readonly value: string,
   ) {}
 
   static create(name: string, value: string): VariableResult<StandardVariable> {
@@ -50,11 +46,11 @@ export class StandardVariable implements PromptVariableBase {
     if (!nameResult.ok) {
       return nameResult;
     }
-    
+
     if (!value || value.trim().length === 0) {
       return createEmptyValueError(name, "Standard variable value cannot be empty");
     }
-    
+
     return createSuccess(new StandardVariable(nameResult.data, value));
   }
 
@@ -69,7 +65,7 @@ export class StandardVariable implements PromptVariableBase {
 export class FilePathVariable implements PromptVariableBase {
   private constructor(
     readonly name: FilePathVariableName,
-    readonly value: string
+    readonly value: string,
   ) {}
 
   static create(name: string, value: string): VariableResult<FilePathVariable> {
@@ -82,7 +78,7 @@ export class FilePathVariable implements PromptVariableBase {
     if (!value || value.trim().length === 0) {
       return createEmptyValueError(name, "File path cannot be empty");
     }
-    
+
     return createSuccess(new FilePathVariable(nameResult.data, value));
   }
 
@@ -97,7 +93,7 @@ export class FilePathVariable implements PromptVariableBase {
 export class StdinVariable implements PromptVariableBase {
   private constructor(
     readonly name: StdinVariableName,
-    readonly value: string
+    readonly value: string,
   ) {}
 
   static create(name: string, value: string): VariableResult<StdinVariable> {
@@ -105,7 +101,11 @@ export class StdinVariable implements PromptVariableBase {
     if (!nameResult.ok) {
       return nameResult;
     }
-    
+
+    if (!value || value.trim().length === 0) {
+      return createEmptyValueError(name, "Stdin variable value cannot be empty");
+    }
+
     return createSuccess(new StdinVariable(nameResult.data, value));
   }
 
@@ -120,22 +120,25 @@ export class StdinVariable implements PromptVariableBase {
 export class UserVariable implements PromptVariableBase {
   private constructor(
     readonly name: string,
-    readonly value: string
+    readonly value: string,
   ) {}
 
   static create(name: string, value: string): VariableResult<UserVariable> {
     if (!name || name.trim().length === 0) {
       return createEmptyValueError("UserVariable", "Variable name cannot be empty");
     }
-    if (!value || value.trim().length === 0) {
-      return createEmptyValueError(name, "Variable value cannot be empty");
+    // Allow empty string values for custom variables (CLI requirement)
+    if (value === null || value === undefined) {
+      return createEmptyValueError(name, "Variable value cannot be null or undefined");
     }
-    
+
     return createSuccess(new UserVariable(name.trim(), value));
   }
 
   toRecord(): Record<string, string> {
-    return { [this.name]: this.value };
+    // Remove uv- prefix for the actual variable name
+    const variableName = this.name.startsWith("uv-") ? this.name.substring(3) : this.name;
+    return { [variableName]: this.value };
   }
 }
 
@@ -145,12 +148,12 @@ export class UserVariable implements PromptVariableBase {
  * Valid standard variable names following totality principle
  */
 export class StandardVariableName {
-  private static readonly VALID_NAMES = ["input_text_file", "destination_path"] as const;
-  
+  private static readonly VALID_NAMES = ["input_text_file", "destination_path", "demonstrative_type", "layer_type"] as const;
+
   private constructor(readonly value: typeof StandardVariableName.VALID_NAMES[number]) {}
 
   static create(name: string): VariableResult<StandardVariableName> {
-    const validName = StandardVariableName.VALID_NAMES.find(valid => valid === name);
+    const validName = StandardVariableName.VALID_NAMES.find((valid) => valid === name);
     if (validName) {
       return createSuccess(new StandardVariableName(validName));
     }
@@ -167,11 +170,11 @@ export class StandardVariableName {
  */
 export class FilePathVariableName {
   private static readonly VALID_NAMES = ["schema_file"] as const;
-  
+
   private constructor(readonly value: typeof FilePathVariableName.VALID_NAMES[number]) {}
 
   static create(name: string): VariableResult<FilePathVariableName> {
-    const validName = FilePathVariableName.VALID_NAMES.find(valid => valid === name);
+    const validName = FilePathVariableName.VALID_NAMES.find((valid) => valid === name);
     if (validName) {
       return createSuccess(new FilePathVariableName(validName));
     }
@@ -188,11 +191,11 @@ export class FilePathVariableName {
  */
 export class StdinVariableName {
   private static readonly VALID_NAMES = ["input_text"] as const;
-  
+
   private constructor(readonly value: typeof StdinVariableName.VALID_NAMES[number]) {}
 
   static create(name: string): VariableResult<StdinVariableName> {
-    const validName = StdinVariableName.VALID_NAMES.find(valid => valid === name);
+    const validName = StdinVariableName.VALID_NAMES.find((valid) => valid === name);
     if (validName) {
       return createSuccess(new StdinVariableName(validName));
     }
@@ -223,11 +226,11 @@ export type PromptVariables = PromptVariable[];
  */
 export function toPromptParamsVariables(variables: PromptVariables): Record<string, string> {
   const result: Record<string, string> = {};
-  
+
   for (const variable of variables) {
     Object.assign(result, variable.toRecord());
   }
-  
+
   return result;
 }
 
@@ -236,10 +239,10 @@ export function toPromptParamsVariables(variables: PromptVariables): Record<stri
  */
 export function createPromptParams(
   templateFile: string,
-  variables: PromptVariables
+  variables: PromptVariables,
 ): PromptParams {
   return {
     template_file: templateFile,
-    variables: toPromptParamsVariables(variables)
+    variables: toPromptParamsVariables(variables),
   };
 }

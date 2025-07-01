@@ -9,6 +9,6 @@
 
 export {
   TwoParamsValidator,
-  type TwoParamsValidationError,
-  type ValidatedTwoParams
+  type ValidationError,
+  type ValidatedParams
 } from "./two_params_validator.ts";

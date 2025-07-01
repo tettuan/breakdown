@@ -75,6 +75,10 @@ export class TwoParamsProcessor {
     // Create VariablesBuilder from factory values
     const builder = VariablesBuilder.fromFactoryValues(factoryValuesResult.data);
     
+    // Add base variables as standard variables (not user variables)
+    builder.addStandardVariable("demonstrative_type", twoParamsResult.demonstrativeType);
+    builder.addStandardVariable("layer_type", twoParamsResult.layerType);
+    
     // Validate the builder state
     const buildResult = builder.build();
     if (!buildResult.ok) {
@@ -94,6 +98,22 @@ export class TwoParamsProcessor {
    * @returns Validation result
    */
   private validateTwoParamsResult(twoParamsResult: TwoParamsResult): ProcessorResult<void> {
+    // Check if the entire result object is null or undefined
+    if (twoParamsResult === null || twoParamsResult === undefined) {
+      return error({
+        kind: "InvalidParams",
+        message: "TwoParamsResult cannot be null or undefined"
+      });
+    }
+
+    // Validate type field
+    if (!twoParamsResult.type) {
+      return error({
+        kind: "MissingRequiredField",
+        field: "type"
+      });
+    }
+    
     if (twoParamsResult.type !== "two") {
       return error({
         kind: "InvalidParams",
@@ -101,24 +121,43 @@ export class TwoParamsProcessor {
       });
     }
 
-    if (!twoParamsResult.demonstrativeType) {
+    // Validate demonstrativeType property (empty string is treated as missing)
+    if (!twoParamsResult.demonstrativeType || twoParamsResult.demonstrativeType.trim() === "") {
       return error({
         kind: "MissingRequiredField",
         field: "demonstrativeType"
       });
     }
 
-    if (!twoParamsResult.layerType) {
+    // Validate layerType property (empty string is treated as missing)
+    if (!twoParamsResult.layerType || twoParamsResult.layerType.trim() === "") {
       return error({
         kind: "MissingRequiredField",
         field: "layerType"
       });
     }
 
-    if (!twoParamsResult.params || twoParamsResult.params.length < 2) {
+    // Validate params array
+    if (!twoParamsResult.params || !Array.isArray(twoParamsResult.params)) {
+      return error({
+        kind: "InvalidParams",
+        message: "TwoParamsResult must have a params array"
+      });
+    }
+
+    // Validate params array length
+    if (twoParamsResult.params.length < 2) {
       return error({
         kind: "InvalidParams",
         message: "TwoParamsResult must have at least 2 parameters"
+      });
+    }
+
+    // Validate options property
+    if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
+      return error({
+        kind: "MissingRequiredField",
+        field: "options"
       });
     }
 
@@ -132,7 +171,15 @@ export class TwoParamsProcessor {
    * @returns Conversion result
    */
   private convertToFactoryValues(twoParamsResult: TwoParamsResult): ProcessorResult<FactoryResolvedValues> {
-    const options = twoParamsResult.options || {};
+    // Additional null check for options
+    if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
+      return error({
+        kind: "MissingRequiredField",
+        field: "options"
+      });
+    }
+
+    const options = twoParamsResult.options;
     
     // Extract file paths from options
     const inputFilePath = this.extractInputFilePath(options);
@@ -162,6 +209,10 @@ export class TwoParamsProcessor {
    * Extract input file path from options
    */
   private extractInputFilePath(options: Record<string, unknown>): string {
+    if (!options) {
+      return "stdin";
+    }
+    
     return (options.fromFile as string) || 
            (options.from as string) || 
            (options.input as string) || 
@@ -172,6 +223,10 @@ export class TwoParamsProcessor {
    * Extract output file path from options
    */
   private extractOutputFilePath(options: Record<string, unknown>): string {
+    if (!options) {
+      return "stdout";
+    }
+    
     return (options.destinationFile as string) || 
            (options.destination as string) || 
            (options.output as string) || 
@@ -182,6 +237,10 @@ export class TwoParamsProcessor {
    * Extract schema file path from options
    */
   private extractSchemaFilePath(options: Record<string, unknown>): string {
+    if (!options) {
+      return "";
+    }
+    
     return (options.schemaFile as string) || 
            (options.schema as string) || 
            "";
@@ -191,6 +250,10 @@ export class TwoParamsProcessor {
    * Extract prompt file path from options
    */
   private extractPromptFilePath(options: Record<string, unknown>): string {
+    if (!options) {
+      return "";
+    }
+    
     return (options.promptFile as string) || 
            (options.prompt as string) || 
            (options.template as string) || 
@@ -201,10 +264,15 @@ export class TwoParamsProcessor {
    * Extract custom variables with uv- prefix
    */
   private extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
+    if (!options) {
+      return {};
+    }
+    
     const customVariables: Record<string, string> = {};
     
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
+        // Keep the "uv-" prefix as required by VariablesBuilder
         customVariables[key] = String(value);
       }
     }
@@ -216,6 +284,10 @@ export class TwoParamsProcessor {
    * Extract input text from options
    */
   private extractInputText(options: Record<string, unknown>): string | undefined {
+    if (!options) {
+      return undefined;
+    }
+    
     const inputText = options.input_text as string;
     return inputText && inputText.trim() !== "" ? inputText : undefined;
   }

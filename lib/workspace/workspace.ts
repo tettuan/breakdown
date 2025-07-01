@@ -57,9 +57,23 @@ export class WorkspaceImpl implements Workspace {
    * @param config The workspace configuration.
    */
   constructor(config: WorkspaceConfigInterface) {
-    this.config = config;
+    // Deep copy to ensure immutability
+    this.config = this.deepCopyConfig(config);
     this.structure = new WorkspaceStructureImpl(config);
     this.pathResolver = new WorkspacePathResolverImpl(new DefaultPathResolutionStrategy());
+  }
+
+  /**
+   * Deep copy workspace configuration manually to avoid JSON.parse
+   * @param config - The workspace configuration to copy
+   * @returns Deep copy of the workspace configuration
+   */
+  private deepCopyConfig(config: WorkspaceConfigInterface): WorkspaceConfigInterface {
+    return {
+      workingDir: config.workingDir,
+      promptBaseDir: config.promptBaseDir,
+      schemaBaseDir: config.schemaBaseDir
+    };
   }
 
   /**

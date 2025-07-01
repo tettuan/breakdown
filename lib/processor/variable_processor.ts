@@ -14,11 +14,11 @@
  * @module lib/processor/variable_processor
  */
 
-import type { Result } from "$lib/types/result.ts";
-import { ok, error } from "$lib/types/result.ts";
-import { VariablesBuilder, type FactoryResolvedValues } from "$lib/builder/variables_builder.ts";
-import { StdinVariableFactory } from "$lib/factory/stdin_variable_factory.ts";
-import type { PromptVariable } from "$lib/types/prompt_variables.ts";
+import type { Result } from "../types/result.ts";
+import { ok, error } from "../types/result.ts";
+import { VariablesBuilder, type FactoryResolvedValues } from "../builder/variables_builder.ts";
+import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
+import type { PromptVariable } from "../types/prompt_variables.ts";
 
 /**
  * Error types for Variable Processor
@@ -88,16 +88,16 @@ export interface ProcessorResult {
  * ```
  */
 export class TwoParamsVariableProcessor {
-  private stdinFactory: StdinVariableFactory;
+  #stdinFactory: StdinVariableFactory;
 
   constructor() {
-    this.stdinFactory = new StdinVariableFactory();
+    this.#stdinFactory = new StdinVariableFactory();
   }
 
   /**
    * Process variables from options and content
    */
-  async process(params: ProcessorOptions): Promise<Result<ProcessorResult, VariableProcessorError>> {
+  process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
     // 1. Extract custom variables
     const customVarsResult = this.extractCustomVariables(params.options);
     if (!customVarsResult.ok) {
@@ -105,29 +105,29 @@ export class TwoParamsVariableProcessor {
     }
 
     // 2. Process standard variables
-    const standardVarsResult = this.processStandardVariables(params);
+    const standardVarsResult = this.#processStandardVariables(params);
     if (!standardVarsResult.ok) {
       return error(standardVarsResult.error);
     }
 
     // 3. Merge all variables
-    const allCustomVariables = {
+    const _allCustomVariables = {
       ...customVarsResult.data,
       ...standardVarsResult.data.standardVariables,
     };
 
     // 4. Create factory values for builder
     const factoryValues: FactoryResolvedValues = {
-      promptFilePath: params.promptFile || "",
-      inputFilePath: params.inputFile || "",
-      outputFilePath: params.outputFile || "output.md",
+      promptFilePath: params.promptFile || "default.md",
+      inputFilePath: this.#resolveInputTextFile(params),
+      outputFilePath: this.#resolveDestinationPath(params),
       schemaFilePath: params.schemaFile || "",
       customVariables: customVarsResult.data,
       inputText: params.stdinContent,
     };
 
     // 5. Build variables using VariablesBuilder
-    const builderResult = this.buildVariables(factoryValues, standardVarsResult.data.stdinVariable);
+    const builderResult = this.#buildVariables(factoryValues, standardVarsResult.data.stdinVariable);
     if (!builderResult.ok) {
       return error(builderResult.error);
     }
@@ -174,7 +174,7 @@ export class TwoParamsVariableProcessor {
   /**
    * Process standard variables including STDIN
    */
-  private processStandardVariables(
+  #processStandardVariables(
     params: ProcessorOptions
   ): Result<{
     standardVariables: {
@@ -186,14 +186,14 @@ export class TwoParamsVariableProcessor {
   }, VariableProcessorError> {
     const standardVariables = {
       input_text: params.stdinContent,
-      input_text_file: this.resolveInputTextFile(params),
-      destination_path: this.resolveDestinationPath(params),
+      input_text_file: this.#resolveInputTextFile(params),
+      destination_path: this.#resolveDestinationPath(params),
     };
 
     // Create STDIN variable if content exists
     let stdinVariable: PromptVariable | undefined;
     if (params.stdinContent) {
-      const stdinResult = this.stdinFactory.createFromText(params.stdinContent);
+      const stdinResult = this.#stdinFactory.createFromText(params.stdinContent);
       if (!stdinResult.ok) {
         return error({
           kind: "StdinVariableError",
@@ -212,7 +212,7 @@ export class TwoParamsVariableProcessor {
   /**
    * Resolve input_text_file value from options
    */
-  private resolveInputTextFile(params: ProcessorOptions): string {
+  #resolveInputTextFile(params: ProcessorOptions): string {
     const { options } = params;
     
     // Check various option keys
@@ -232,7 +232,7 @@ export class TwoParamsVariableProcessor {
   /**
    * Resolve destination_path value from options
    */
-  private resolveDestinationPath(params: ProcessorOptions): string {
+  #resolveDestinationPath(params: ProcessorOptions): string {
     const { options } = params;
     
     // Check various option keys
@@ -255,7 +255,7 @@ export class TwoParamsVariableProcessor {
   /**
    * Build variables using VariablesBuilder
    */
-  private buildVariables(
+  #buildVariables(
     factoryValues: FactoryResolvedValues,
     stdinVariable?: PromptVariable
   ): Result<VariablesBuilder, VariableProcessorError> {
@@ -273,9 +273,9 @@ export class TwoParamsVariableProcessor {
     // Add factory values
     builder.addFromFactoryValues(factoryValues);
 
-    // Add STDIN variable if exists
-    if (stdinVariable) {
-      builder.addVariable(stdinVariable);
+    // Add STDIN variable if exists (only if not already handled by factory values)
+    if (stdinVariable && !factoryValues.inputText) {
+      builder.addStdinVariable(stdinVariable.value);
     }
 
     // Build final variables

@@ -160,7 +160,8 @@ export class TemplateErrorHandler {
     }
 
     // Template validation errors
-    if (message.includes("invalid template") || message.includes("malformed")) {
+    if (message.includes("invalid template") || message.includes("malformed") || 
+        message.includes("template validation") || message.includes("invalid syntax")) {
       return new TemplateError(
         `Invalid template format: ${templatePath || "unknown"}`,
         TemplateErrorType.TEMPLATE_INVALID,

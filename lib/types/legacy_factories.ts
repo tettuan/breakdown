@@ -1,7 +1,7 @@
 /**
  * Legacy factory implementations for backward compatibility with existing code.
  * 
- * This module provides the missing DemonstrativeTypeFactory, LayerTypeFactory,
+ * This module provides the missing DemonstrativeTypeFactory, LegacyLayerTypeFactory,
  * and associated type guards that are referenced in temporary PoC files.
  * These implementations bridge the gap between legacy string-based types
  * and new Totality-compliant type systems.
@@ -12,7 +12,7 @@
  * @module
  */
 
-import type { DemonstrativeType, LayerType } from "./mod.ts";
+import type { DemonstrativeType, LegacyLayerType } from "./mod.ts";
 
 /**
  * Legacy factory for creating DemonstrativeType instances
@@ -80,10 +80,10 @@ export const DemonstrativeTypeFactory = {
 } as const;
 
 /**
- * Legacy factory for creating LayerType instances
- * @deprecated Use NewLayerType and TypeFactory instead
+ * Legacy factory for creating LegacyLayerType instances
+ * @deprecated Use LegacyLayerType and TypeFactory instead
  */
-export const LayerTypeFactory = {
+export const LegacyLayerTypeFactory = {
   /**
    * Create a "project" layer type
    */
@@ -120,12 +120,12 @@ export const LayerTypeFactory = {
   },
 
   /**
-   * Create a LayerType from string
+   * Create a LegacyLayerType from string
    * @param input String representation of the layer
-   * @returns LayerType object or null if invalid
+   * @returns LegacyLayerType object or null if invalid
    */
-  fromString(input: string): { kind: LayerType; value: LayerType } | null {
-    const normalized = input.trim().toLowerCase() as LayerType;
+  fromString(input: string): { kind: LegacyLayerType; value: LegacyLayerType } | null {
+    const normalized = input.trim().toLowerCase() as LegacyLayerType;
     
     switch (normalized) {
       case "project":
@@ -186,42 +186,42 @@ export const DemonstrativeTypeGuards = {
 } as const;
 
 /**
- * Legacy type guards for LayerType
- * @deprecated Use NewLayerType guards instead
+ * Legacy type guards for LegacyLayerType
+ * @deprecated Use LegacyLayerType guards instead
  */
-export const LayerTypeGuards = {
+export const LegacyLayerTypeGuards = {
   /**
    * Check if layer is "project"
    */
-  isProject(layer: { kind: LayerType; value: LayerType }): boolean {
+  isProject(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
     return layer.kind === "project";
   },
 
   /**
    * Check if layer is "issue"
    */
-  isIssue(layer: { kind: LayerType; value: LayerType }): boolean {
+  isIssue(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
     return layer.kind === "issue";
   },
 
   /**
    * Check if layer is "task"
    */
-  isTask(layer: { kind: LayerType; value: LayerType }): boolean {
+  isTask(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
     return layer.kind === "task";
   },
 
   /**
    * Check if layer is "bugs"
    */
-  isBugs(layer: { kind: LayerType; value: LayerType }): boolean {
+  isBugs(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
     return layer.kind === "bugs";
   },
 
   /**
    * Check if layer is "temp"
    */
-  isTemp(layer: { kind: LayerType; value: LayerType }): boolean {
+  isTemp(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
     return layer.kind === "temp";
   },
 } as const;

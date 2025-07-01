@@ -2,13 +2,13 @@ import { assertEquals, assertMatch } from "@std/assert";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
-import type { DemonstrativeType, LayerType } from "../types/mod.ts";
+import type { DemonstrativeType } from "../types/mod.ts";
 
 describe("OutputFilePathResolver: path resolution", () => {
   it("returns default path if destinationFile is not provided", () => {
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "project" as LayerType,
+      layerType: "project",
       options: {},
     });
     const result = resolver.getPath();
@@ -18,7 +18,7 @@ describe("OutputFilePathResolver: path resolution", () => {
     const absPath = resolve(Deno.cwd(), "foo", "bar", "output.md");
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "project" as LayerType,
+      layerType: "project",
       options: { destinationFile: absPath },
     });
     assertEquals(resolver.getPath(), absPath);
@@ -28,7 +28,7 @@ describe("OutputFilePathResolver: path resolution", () => {
     const expected = resolve(Deno.cwd(), relPath);
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "task" as LayerType,
+      layerType: "task",
       options: { destinationFile: relPath },
     });
     assertEquals(resolver.getPath(), expected);
@@ -41,7 +41,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
     await Deno.mkdir(dir, { recursive: true });
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "issue" as LayerType,
+      layerType: "issue",
       options: { destinationFile: dir },
     });
     const result = resolver.getPath();
@@ -51,7 +51,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
   it("returns path in layerType dir if destinationFile is filename only with extension", () => {
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "task" as LayerType,
+      layerType: "task",
       options: { destinationFile: "output.md" },
     });
     const expected = resolve(Deno.cwd(), "task", "output.md");
@@ -62,7 +62,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
     await Deno.mkdir(dir, { recursive: true });
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "issue" as LayerType,
+      layerType: "issue",
       options: { destinationFile: dir },
     });
     const result = resolver.getPath();
@@ -77,7 +77,7 @@ describe("OutputFilePathResolver: Windows/ambiguous cases", () => {
     const expected = resolve(Deno.cwd(), "foo", "bar", "output.md");
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "project" as LayerType,
+      layerType: "project",
       options: { destinationFile: winPath },
     });
     assertEquals(resolver.getPath(), expected);
@@ -87,7 +87,7 @@ describe("OutputFilePathResolver: Windows/ambiguous cases", () => {
     await Deno.mkdir(dirName, { recursive: true });
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "issue" as LayerType,
+      layerType: "issue",
       options: { destinationFile: dirName },
     });
     // Should resolve to <cwd>/ambiguous.md/<generated>.md
@@ -102,7 +102,7 @@ describe("OutputFilePathResolver: unique filename generation", () => {
   it("generates unique filenames for default output (hash collision test)", () => {
     const resolver = new OutputFilePathResolver({}, {
       demonstrativeType: "to" as DemonstrativeType,
-      layerType: "project" as LayerType,
+      layerType: "project",
       options: {},
     });
     const results = new Set<string>();

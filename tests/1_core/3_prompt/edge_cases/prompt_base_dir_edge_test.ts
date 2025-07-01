@@ -69,7 +69,7 @@ describe("Prompt baseDir edge cases", () => {
       });
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "project" as LayerType,
+        layerType: "project",
         options: {
           fromFile: inputFile,
           destinationFile: "output.md",
@@ -124,7 +124,7 @@ describe("Prompt baseDir edge cases", () => {
         logger.debug("[TEST] PromptAdapterImpl with empty promptBaseDir", { cwd: Deno.cwd() });
         const cliParams = {
           demonstrativeType: "to" as DemonstrativeType,
-          layerType: "project" as LayerType,
+          layerType: "project",
           options: {
             fromFile: inputFile,
             destinationFile: "output.md",
@@ -181,7 +181,7 @@ describe("Prompt baseDir edge cases", () => {
           logger.debug("[TEST] promptBaseDir (relative path)", { _relPromptBaseDir });
           const cliParamsRel = {
             demonstrativeType: "to" as DemonstrativeType,
-            layerType: "project" as LayerType,
+            layerType: "project",
             options: {
               fromFile: inputFile,
               destinationFile: "output.md",
@@ -230,7 +230,7 @@ describe("Prompt baseDir edge cases", () => {
           });
           const cliParamsAbs = {
             demonstrativeType: "to" as DemonstrativeType,
-            layerType: "project" as LayerType,
+            layerType: "project",
             options: {
               fromFile: inputFile,
               destinationFile: "output.md",
@@ -269,7 +269,7 @@ describe("Prompt baseDir edge cases", () => {
           `working_dir: .\napp_prompt:\n  base_dir: custom_prompts\napp_schema:\n  base_dir: schema\n`,
         );
         // Load config before creating factory
-        const configResult = await BreakdownConfig.create("test-prompt-edge", testDir);
+        const configResult = await BreakdownConfig.create("test-prompt-edge", ".");
         if (!configResult.success) {
           throw new Error("Failed to create BreakdownConfig");
         }
@@ -290,7 +290,7 @@ describe("Prompt baseDir edge cases", () => {
         });
         const cliParamsConfig = {
           demonstrativeType: "to" as DemonstrativeType,
-          layerType: "project" as LayerType,
+          layerType: "project",
           options: {
             fromFile: inputFile,
             destinationFile: "output.md",

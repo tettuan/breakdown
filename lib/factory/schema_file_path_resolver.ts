@@ -75,7 +75,70 @@ export class SchemaFilePathResolver {
   constructor(
     private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
     private cliParams: DoubleParamsResult | TwoParamsResult,
-  ) {}
+  ) {
+    // Deep copy to ensure immutability
+    this.config = this.deepCopyConfig(config);
+    this.cliParams = this.deepCopyCliParams(cliParams);
+  }
+
+  /**
+   * Deep copy configuration object manually to avoid JSON.parse
+   * @param config - The configuration object to copy
+   * @returns Deep copy of the configuration
+   */
+  private deepCopyConfig(config: { app_schema?: { base_dir?: string } } & Record<string, unknown>): { app_schema?: { base_dir?: string } } & Record<string, unknown> {
+    const copy: any = {};
+    
+    // Copy app_schema
+    if (config.app_schema) {
+      copy.app_schema = {};
+      if (config.app_schema.base_dir !== undefined) {
+        copy.app_schema.base_dir = config.app_schema.base_dir;
+      }
+    }
+    
+    // Copy other properties shallowly (should be primitive or immutable)
+    for (const [key, value] of Object.entries(config)) {
+      if (key !== 'app_schema') {
+        copy[key] = value;
+      }
+    }
+    
+    return copy;
+  }
+
+  /**
+   * Deep copy CLI parameters manually to avoid JSON.parse
+   * @param cliParams - The CLI parameters to copy
+   * @returns Deep copy of the CLI parameters
+   */
+  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
+    if ('type' in cliParams && cliParams.type === 'two') {
+      // TwoParamsResult
+      const twoParams = cliParams as TwoParamsResult;
+      const copy: TwoParamsResult = {
+        type: twoParams.type,
+        params: [...twoParams.params],
+        demonstrativeType: twoParams.demonstrativeType,
+        layerType: twoParams.layerType,
+        options: { ...twoParams.options }
+      };
+      return copy;
+    } else {
+      // DoubleParamsResult (PromptCliParams)
+      const doubleParams = cliParams as DoubleParamsResult;
+      const copy: any = {
+        demonstrativeType: doubleParams.demonstrativeType,
+        layerType: doubleParams.layerType
+      };
+      
+      if (doubleParams.options) {
+        copy.options = { ...doubleParams.options };
+      }
+      
+      return copy;
+    }
+  }
 
 
 

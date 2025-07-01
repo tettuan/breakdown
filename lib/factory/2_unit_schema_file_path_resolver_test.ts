@@ -11,7 +11,7 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       { app_schema: { base_dir: baseDir } },
       {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "project" as LayerType,
+        layerType: "project",
         options: {},
       },
     );
@@ -25,7 +25,7 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       { app_schema: { base_dir: relBaseDir } },
       {
         demonstrativeType: "summary" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {},
       },
     );
@@ -38,7 +38,7 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       {},
       {
         demonstrativeType: "defect" as DemonstrativeType,
-        layerType: "task" as LayerType,
+        layerType: "task",
         options: {},
       },
     );
@@ -54,7 +54,7 @@ describe("SchemaFilePathResolver: absolute path check", () => {
       { app_schema: { base_dir: relBaseDir } },
       {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {},
       },
     );

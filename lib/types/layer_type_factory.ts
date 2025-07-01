@@ -90,13 +90,13 @@ export class LayerTypeFactory {
         error: {
           kind: "ValidationFailed",
           input: normalized,
-          pattern: pattern.toString()
+          pattern: pattern.getPattern()
         }
       };
     }
 
     // Create appropriate LayerType based on input
-    if (LayerTypeFactory.KNOWN_LAYERS.includes(normalized as any)) {
+    if (LayerTypeFactory.KNOWN_LAYERS.includes(normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number])) {
       // Create TwoParamsResult for LayerType.create()
       const twoParamsResult: TwoParamsResult = {
         type: "two",
@@ -137,7 +137,7 @@ export class LayerTypeFactory {
         ok: true,
         data: layerType
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         ok: false,
         error: {
@@ -179,7 +179,7 @@ export class LayerTypeFactory {
    */
   static isValidLayer(input: string): boolean {
     const normalized = input.trim().toLowerCase();
-    return LayerTypeFactory.KNOWN_LAYERS.includes(normalized as any);
+    return LayerTypeFactory.KNOWN_LAYERS.includes(normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number]);
   }
 
   /**

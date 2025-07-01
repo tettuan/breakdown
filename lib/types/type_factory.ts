@@ -10,7 +10,7 @@
 
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
+import { DefaultTypePatternProvider as _DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
 import type { TwoParamsResult } from "../deps.ts";
 
 /**
@@ -107,7 +107,7 @@ export class TypeFactory {
         error: {
           kind: "ValidationFailed",
           value,
-          pattern: pattern.toString()
+          pattern: pattern.getPattern()
         }
       };
     }
@@ -157,7 +157,7 @@ export class TypeFactory {
         error: {
           kind: "ValidationFailed",
           value,
-          pattern: pattern.toString()
+          pattern: pattern.getPattern()
         }
       };
     }

@@ -19,12 +19,15 @@ import { showHelp, showUsage, showVersion } from "$lib/cli/help.ts";
 export function handleZeroParams(
   _args: string[],
   _config: Record<string, unknown>,
-  options: Record<string, unknown>,
+  options: Record<string, unknown> | null | undefined,
 ): void {
+  // Handle null/undefined options gracefully
+  const safeOptions = options || {};
+  
   // Use options from BreakdownParams result instead of checking args directly
-  if (options.help) {
+  if (safeOptions.help) {
     showHelp();
-  } else if (options.version) {
+  } else if (safeOptions.version) {
     showVersion();
   } else {
     showUsage();

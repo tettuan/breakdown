@@ -12,6 +12,7 @@ import { ok, error } from "../../types/result.ts";
 import { isStdinAvailable, readStdin } from "../../io/stdin.ts";
 import {
   type BreakdownConfigCompatible,
+  type TimeoutManager,
   createTimeoutManagerFromConfig,
 } from "../../config/timeout_manager.ts";
 
@@ -36,8 +37,14 @@ export type StdinProcessorError = {
 export class TwoParamsStdinProcessor {
   /**
    * Check if stdin should be read based on options
+   * 🎖️ DEPLOYED: shouldReadStdin() pattern for consistency across processors
    */
   private shouldReadStdin(options: Record<string, unknown>): boolean {
+    // Skip in test environments to prevent resource leaks
+    if (options.skipStdin === true) {
+      return false;
+    }
+    
     // Check explicit stdin flags
     if (options.from === "-" || options.fromFile === "-") {
       return true;
@@ -58,17 +65,58 @@ export class TwoParamsStdinProcessor {
     config: BreakdownConfigCompatible,
     options: Record<string, unknown>
   ): Promise<Result<string, StdinProcessorError>> {
+    let timeoutManager: TimeoutManager | null = null;
+    let abortController: AbortController | null = null;
+    let timeoutId: number | null = null;
+    let stdinPromise: Promise<string> | null = null;
+    
     try {
       // Check if we should read stdin
       if (!this.shouldReadStdin(options)) {
         return ok(""); // No stdin to read
       }
 
-      // Create timeout manager
-      const timeoutManager = createTimeoutManagerFromConfig(config);
+      // Skip stdin reading in test environments to prevent resource leaks
+      if (options.skipStdin === true) {
+        return ok(""); // Test mode - skip stdin
+      }
+
+      // Create AbortController for comprehensive resource management
+      abortController = new AbortController();
+      timeoutManager = createTimeoutManagerFromConfig(config);
       
-      // Read stdin
-      const inputText = await readStdin({ timeoutManager });
+      // Create timeout promise with proper cleanup
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          if (abortController && !abortController.signal.aborted) {
+            abortController.abort();
+          }
+          reject(new Error("Stdin read timeout"));
+        }, 5000); // 5 second timeout
+        
+        // Handle abort signal
+        abortController?.signal.addEventListener('abort', () => {
+          if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+          reject(new Error("Stdin read aborted"));
+        });
+      });
+
+      // Create stdin read promise with abort handling
+      stdinPromise = readStdin({ 
+        timeoutManager,
+        forceRead: false,
+        allowEmpty: true
+      });
+      
+      // Race between stdin reading and timeout with proper abort handling
+      const inputText = await Promise.race([
+        stdinPromise,
+        timeoutPromise
+      ]);
+      
       return ok(inputText);
       
     } catch (err) {
@@ -77,6 +125,23 @@ export class TwoParamsStdinProcessor {
         message: err instanceof Error ? err.message : String(err),
         cause: err
       });
+    } finally {
+      // 🎖️ COMPREHENSIVE CLEANUP: AbortController + finally + null GC
+      // Clear timeout first
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      
+      // Abort controller if not already aborted
+      if (abortController && !abortController.signal.aborted) {
+        abortController.abort();
+      }
+      
+      // Null out all references for GC
+      timeoutManager = null;
+      abortController = null;
+      stdinPromise = null;
     }
   }
 
@@ -93,6 +158,6 @@ export class TwoParamsStdinProcessor {
       }
     };
     
-    return this.process(defaultConfig, options);
+    return await this.process(defaultConfig, options);
   }
 }

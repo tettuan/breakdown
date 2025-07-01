@@ -4,6 +4,7 @@ import { ensureDir } from "@std/fs";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import type { DemonstrativeType, LayerType } from "../types/mod.ts";
+import type { TwoParamsResult } from "../deps.ts";
 
 /*
  * IMPORTANT: All path resolution is based on config/app_prompt.base_dir (and app_schema.base_dir).
@@ -216,7 +217,7 @@ describe("PromptTemplatePathResolver: file existence and edge cases", () => {
     const baseDir = "somewhere";
     const resolver = new PromptTemplatePathResolver(
       { app_prompt: { base_dir: baseDir } },
-      { demonstrativeType: "" as DemonstrativeType, layerType: "" as LayerType, options: {} },
+      { demonstrativeType: "" as DemonstrativeType, layerType: "", options: {} },
     );
     const expected = resolve(Deno.cwd(), baseDir, "", "", "f_.md");
     const result = resolver.getPath();
@@ -321,7 +322,7 @@ describe("PromptTemplatePathResolver: demonstrativeType/layerType combinations",
           { app_prompt: { base_dir: baseDir } },
           {
             demonstrativeType: demonstrativeType as DemonstrativeType,
-            layerType: layerType as LayerType,
+            layerType: layerType,
             options: {},
           },
         );

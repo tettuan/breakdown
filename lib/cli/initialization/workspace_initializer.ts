@@ -17,7 +17,8 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // TODO: If BreakdownConfig had write functionality, baseDir definition would be unnecessary
   // BreakdownConfig already knows the appropriate paths and should handle initialization
-  const baseDir = `${Deno.cwd()}/.agent/breakdown`;
+  const cwd = Deno.cwd?.() || ".";
+  const baseDir = `${cwd}/.agent/breakdown`;
 
   // Create directory structure
   // TODO: Layer-specific directories should be derived from BreakdownParams

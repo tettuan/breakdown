@@ -12,10 +12,8 @@ import type { Result } from "../../types/result.ts";
 import { ok, error } from "../../types/result.ts";
 import type { DemonstrativeType, LayerType } from "../../types/mod.ts";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
-import {
-  type PromptCliParams,
-  PromptVariablesFactory,
-} from "../../factory/prompt_variables_factory.ts";
+import { PromptVariablesFactory } from "../../factory/prompt_variables_factory.ts";
+import type { PromptCliParams } from "../../types/mod.ts";
 import { VariablesBuilder, type FactoryResolvedValues } from "../../builder/variables_builder.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
 
@@ -27,14 +25,15 @@ export type PromptGeneratorError =
   | { kind: "FactoryValidationError"; errors: string[] }
   | { kind: "VariablesBuilderError"; errors: string[] }
   | { kind: "PromptGenerationError"; error: string }
-  | { kind: "InvalidConfiguration"; message: string };
+  | { kind: "InvalidConfiguration"; message: string }
+  | { kind: "ConfigurationValidationError"; message: string; missingProperties: string[] };
 
 /**
  * Validated parameters from TwoParamsValidator
  */
 export interface ValidatedParams {
   demonstrativeType: DemonstrativeType;
-  layerType: LayerType;
+  layerType: string;
 }
 
 /**
@@ -196,13 +195,19 @@ export class TwoParamsPromptGenerator {
       });
     }
 
+    // Validate required configuration properties
+    const configValidation = this.validateConfiguration(config);
+    if (!configValidation.ok) {
+      return error(configValidation.error);
+    }
+
     // Create CLI parameters
     const cliParams = this.createCliParams(params, options, variables);
 
     // Create factory
     let factory: PromptVariablesFactory;
     try {
-      factory = PromptVariablesFactory.createWithConfig(config, cliParams);
+      factory = await PromptVariablesFactory.create(cliParams);
     } catch (err) {
       return error({
         kind: "FactoryCreationError",
@@ -228,5 +233,26 @@ export class TwoParamsPromptGenerator {
       allParams.promptFilePath,
       variablesResult.data
     );
+  }
+
+  /**
+   * Validates configuration for required properties
+   * @param config - Configuration object to validate
+   * @returns Result indicating validation success or failure
+   */
+  private validateConfiguration(config: Record<string, unknown>): Result<void, PromptGeneratorError> {
+    // Check for prompt directory configuration
+    const hasPromptConfig = config.promptDir || 
+                           (config.app_prompt && (config.app_prompt as any).base_dir);
+    
+    if (!hasPromptConfig) {
+      return error({
+        kind: "ConfigurationValidationError",
+        message: "Missing required configuration: promptDir or app_prompt.base_dir must be specified",
+        missingProperties: ["promptDir", "app_prompt.base_dir"]
+      });
+    }
+
+    return ok(undefined);
   }
 }

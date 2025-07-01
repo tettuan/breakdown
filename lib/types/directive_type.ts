@@ -55,6 +55,14 @@ export class TwoParamsDirectivePattern {
   }
 
   /**
+   * パターンの文字列表現を取得（getPatternメソッド）
+   * @returns 正規表現の文字列
+   */
+  getPattern(): string {
+    return this.pattern.source;
+  }
+
+  /**
    * TypePatternProvider インターフェース準拠のためのメソッド
    * @returns 自身を返す（TypePatternProvider.getDirectivePattern用）
    */
@@ -163,6 +171,18 @@ export class DirectiveType {
    */
   equals(other: DirectiveType): boolean {
     return this.value === other.value;
+  }
+
+  /**
+   * String representation of DirectiveType
+   * 
+   * デバッグや表示用の文字列表現を返す。
+   * フォーマット: "DirectiveType(value)"
+   * 
+   * @returns DirectiveType の文字列表現
+   */
+  toString(): string {
+    return `DirectiveType(${this.value})`;
   }
 
   /**

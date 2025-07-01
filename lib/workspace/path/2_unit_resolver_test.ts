@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { WorkspacePathResolverImpl } from "./resolver.ts";
 import { PlatformAgnosticPathStrategy } from "./strategies.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";

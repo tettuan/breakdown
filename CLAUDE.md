@@ -4,6 +4,7 @@
   -  JSR, deno, git, renovate関連は配置してOK
 - 一時ファイルはプロジェクト直下の tmp/ へ配置
 - テストファイル: @docs/tests/testing.ja.md 
+- About: @docs/breakdown/index.ja.md
 
 # Project
 - Project: Deno, JSR publish

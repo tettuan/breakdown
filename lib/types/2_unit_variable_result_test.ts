@@ -6,7 +6,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  type VariableResult,
+  type VariableResult as _VariableResult,
   type VariableError,
   createSuccess,
   createError,

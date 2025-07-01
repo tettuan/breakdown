@@ -8,7 +8,7 @@
  * @module factory/stdin_variable_factory
  */
 
-import { Result } from "../types/result.ts";
+import { error, ok, Result } from "../types/result.ts";
 import { StdinVariable } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";
 
@@ -75,30 +75,30 @@ export class StdinVariableFactory {
    */
   create(input: StdinFactoryInput): Result<StdinVariable, StdinVariableFactoryError> {
     // Validate input structure
-    if (!input.inputText) {
-      return Result.error({
+    if (input.inputText === undefined) {
+      return error({
         kind: "NoStdinData",
-        context: input.context || "No stdin data provided in factory input"
+        context: input.context || "No stdin data provided in factory input",
       });
     }
 
     // Validate source if provided
     if (input.source && !["cli", "pipe", "file"].includes(input.source)) {
-      return Result.error({
+      return error({
         kind: "InvalidStdinSource",
-        source: input.source
+        source: input.source,
       });
     }
 
     // Use StdinVariable's Smart Constructor
     const result = StdinVariable.create("input_text", input.inputText);
-    
+
     if (!result.ok) {
       // Convert StdinVariable error to factory error
-      return Result.error(result.error);
+      return error(result.error);
     }
 
-    return Result.ok(result.data);
+    return ok(result.data);
   }
 
   /**
@@ -109,13 +109,13 @@ export class StdinVariableFactory {
    * @returns Result containing StdinVariable or error
    */
   createFromText(
-    text: string, 
-    source: "cli" | "pipe" | "file" = "cli"
+    text: string,
+    source: "cli" | "pipe" | "file" = "cli",
   ): Result<StdinVariable, StdinVariableFactoryError> {
     return this.create({
       inputText: text,
       source,
-      context: `Direct text input from ${source}`
+      context: `Direct text input from ${source}`,
     });
   }
 
@@ -126,7 +126,7 @@ export class StdinVariableFactory {
    * @returns Result containing array of StdinVariables or array of errors
    */
   createBatch(
-    inputs: StdinFactoryInput[]
+    inputs: StdinFactoryInput[],
   ): Result<StdinVariable[], StdinVariableFactoryError[]> {
     const variables: StdinVariable[] = [];
     const errors: StdinVariableFactoryError[] = [];
@@ -141,10 +141,10 @@ export class StdinVariableFactory {
     }
 
     if (errors.length > 0) {
-      return Result.error(errors);
+      return error(errors);
     }
 
-    return Result.ok(variables);
+    return ok(variables);
   }
 
   /**
@@ -156,9 +156,9 @@ export class StdinVariableFactory {
   validate(input: StdinFactoryInput): Result<void, StdinVariableFactoryError> {
     const result = this.create(input);
     if (result.ok) {
-      return Result.ok(undefined);
+      return ok(undefined);
     }
-    return Result.error(result.error);
+    return error(result.error);
   }
 }
 

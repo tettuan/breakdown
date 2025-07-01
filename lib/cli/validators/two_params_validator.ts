@@ -24,7 +24,7 @@ export type ValidationError =
  */
 export interface ValidatedParams {
   demonstrativeType: DemonstrativeType;
-  layerType: LayerType;
+  layerType: string;
 }
 
 /**
@@ -101,9 +101,9 @@ export class TwoParamsValidator {
   /**
    * Validate layer type
    */
-  private validateLayerType(value: string): Result<LayerType, ValidationError> {
-    if (VALID_LAYER_TYPES.includes(value as LayerType)) {
-      return ok(value as LayerType);
+  private validateLayerType(value: string): Result<string, ValidationError> {
+    if (VALID_LAYER_TYPES.includes(value as any)) {
+      return ok(value);
     }
 
     return error({

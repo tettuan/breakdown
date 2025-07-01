@@ -77,7 +77,65 @@ export class InputFilePathResolver {
   constructor(
     private config: Record<string, unknown>, 
     private cliParams: DoubleParamsResult | TwoParamsResult
-  ) {}
+  ) {
+    // Deep copy to ensure immutability
+    this.config = this.deepCopyConfig(config);
+    this.cliParams = this.deepCopyCliParams(cliParams);
+  }
+
+  /**
+   * Deep copy configuration object manually to avoid JSON.parse
+   * @param config - The configuration object to copy
+   * @returns Deep copy of the configuration
+   */
+  private deepCopyConfig(config: Record<string, unknown>): Record<string, unknown> {
+    const copy: Record<string, unknown> = {};
+    
+    // Copy properties shallowly (should be primitive or immutable)
+    for (const [key, value] of Object.entries(config)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        // Shallow copy nested objects
+        copy[key] = { ...value as Record<string, unknown> };
+      } else {
+        copy[key] = value;
+      }
+    }
+    
+    return copy;
+  }
+
+  /**
+   * Deep copy CLI parameters manually to avoid JSON.parse
+   * @param cliParams - The CLI parameters to copy
+   * @returns Deep copy of the CLI parameters
+   */
+  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
+    if ('type' in cliParams && cliParams.type === 'two') {
+      // TwoParamsResult
+      const twoParams = cliParams as TwoParamsResult;
+      const copy: TwoParamsResult = {
+        type: twoParams.type,
+        params: [...twoParams.params],
+        demonstrativeType: twoParams.demonstrativeType,
+        layerType: twoParams.layerType,
+        options: { ...twoParams.options }
+      };
+      return copy;
+    } else {
+      // DoubleParamsResult (PromptCliParams)
+      const doubleParams = cliParams as DoubleParamsResult;
+      const copy: any = {
+        demonstrativeType: doubleParams.demonstrativeType,
+        layerType: doubleParams.layerType
+      };
+      
+      if (doubleParams.options) {
+        copy.options = { ...doubleParams.options };
+      }
+      
+      return copy;
+    }
+  }
 
   /**
    * Resolves the input file path according to CLI parameters and configuration.

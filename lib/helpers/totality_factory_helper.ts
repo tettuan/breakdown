@@ -13,7 +13,7 @@ import { TypeFactory } from "../types/type_factory.ts";
 import { ConfigPatternProvider } from "../config/pattern_provider.ts";
 import type { 
   DirectiveType, 
-  NewLayerType as LayerType,
+  LayerType as LayerType,
   TotalityPromptCliParams,
   TypeCreationResult
 } from "../types/mod.ts";
@@ -118,11 +118,11 @@ export async function createTotalityFactory(
     }
     
     if (!preloadedConfig) {
-      await config.loadConfig();
+      await config!.loadConfig();
     }
 
     // Create pattern provider with config integration
-    const patternProvider = new ConfigPatternProvider(config);
+    const patternProvider = new ConfigPatternProvider(config!);
 
     // Validate that patterns are available
     if (!patternProvider.hasValidPatterns()) {
@@ -138,7 +138,7 @@ export async function createTotalityFactory(
 
     // Create helper function for PromptVariablesFactory
     const createPromptFactory = async (params: TotalityPromptCliParams): Promise<TotalityPromptVariablesFactory> => {
-      const configData = await config.getConfig();
+      const configData = await config!.getConfig();
       return TotalityPromptVariablesFactory.createWithConfig(configData, params);
     };
 
@@ -147,7 +147,7 @@ export async function createTotalityFactory(
       data: {
         typeFactory,
         patternProvider,
-        config,
+        config: config!,
         createPromptFactory
       }
     };
@@ -200,11 +200,25 @@ export async function createValidatedCliParams(
   const typesResult = factoryBundle.typeFactory.createBothTypes(directiveValue, layerValue);
   
   if (!typesResult.ok) {
+    const errorMessage = (() => {
+      const err = typesResult.error;
+      switch (err.kind) {
+        case "PatternNotFound":
+          return err.message;
+        case "ValidationFailed":
+          return `Validation failed for value "${err.value}" with pattern "${err.pattern}"`;
+        case "InvalidPattern":
+          return `Invalid pattern "${err.pattern}": ${err.cause}`;
+        default:
+          return `Type validation failed`;
+      }
+    })();
+    
     return {
       ok: false,
       error: {
-        kind: typesResult.error.kind,
-        message: typesResult.error.message || `Type validation failed`
+        kind: "PatternNotFound",
+        message: errorMessage
       }
     };
   }
@@ -268,9 +282,23 @@ export async function createTotalityPromptFactory(
   );
   
   if (!paramsResult.ok) {
+    const errorMessage = (() => {
+      const err = paramsResult.error;
+      switch (err.kind) {
+        case "PatternNotFound":
+          return err.message;
+        case "ValidationFailed":
+          return `Validation failed for value "${err.value}" with pattern "${err.pattern}"`;
+        case "InvalidPattern":
+          return `Invalid pattern "${err.pattern}": ${err.cause}`;
+        default:
+          return `Type validation failed`;
+      }
+    })();
+    
     return {
       ok: false,
-      error: `Parameter validation failed: ${paramsResult.error.message}`,
+      error: `Parameter validation failed: ${errorMessage}`,
       details: paramsResult.error.kind
     };
   }
@@ -312,13 +340,13 @@ export async function validateConfigurationPatterns(
     if (!directivePattern) {
       details.push("DirectiveType pattern not found or invalid");
     } else {
-      details.push(`DirectiveType pattern: ${directivePattern.toString()}`);
+      details.push(`DirectiveType pattern: ${directivePattern.getPattern()}`);
     }
     
     if (!layerPattern) {
       details.push("LayerType pattern not found or invalid");  
     } else {
-      details.push(`LayerType pattern: ${layerPattern.toString()}`);
+      details.push(`LayerType pattern: ${layerPattern.getPattern()}`);
     }
     
     return {
@@ -328,7 +356,7 @@ export async function validateConfigurationPatterns(
   } catch (error) {
     return {
       valid: false,
-      details: [`Configuration validation failed: ${error.message}`]
+      details: [`Configuration validation failed: ${error instanceof Error ? error.message : String(error)}`]
     };
   }
 }

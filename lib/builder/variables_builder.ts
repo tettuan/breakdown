@@ -173,6 +173,34 @@ export class VariablesBuilder {
   }
 
   /**
+   * Add custom variables for prompt templates (without uv- prefix requirement)
+   * Used for template variables that don't follow CLI uv- convention
+   * Allows empty values for template flexibility
+   */
+  addCustomVariables(customVariables: Record<string, string>): this {
+    for (const [name, value] of Object.entries(customVariables)) {
+      // Skip empty values for custom variables - they are optional in templates
+      if (!name || name.trim().length === 0) {
+        this.errors.push({ kind: "DuplicateVariable", name: "EmptyName" });
+        continue;
+      }
+      if (!value || value.trim().length === 0) {
+        // Skip empty values rather than creating an error - templates may have optional variables
+        continue;
+      }
+      
+      // Create UserVariable for template usage
+      const result = UserVariable.create(name, value);
+      if (result.ok) {
+        this.variables.push(result.data);
+      } else {
+        this.errors.push(result.error);
+      }
+    }
+    return this;
+  }
+
+  /**
    * Build the final PromptVariables collection
    * Returns Result with either the variables or accumulated errors
    */
@@ -187,8 +215,35 @@ export class VariablesBuilder {
   /**
    * Convert all variables to Record<string, string> format
    * This method should only be called after successful build()
+   * 
+   * For UserVariables, the format returned depends on context:
+   * - VariablesBuilder context: keeps uv- prefix for test compatibility
+   * - PromptParams context: UserVariable.toRecord() removes prefix
    */
   toRecord(): Record<string, string> {
+    const record: Record<string, string> = {};
+
+    for (const variable of this.variables) {
+      const varRecord = variable.toRecord();
+      // Special handling for UserVariables in VariablesBuilder context
+      if (variable instanceof UserVariable) {
+        // Re-add uv- prefix for VariablesBuilder.toRecord() compatibility
+        for (const [key, value] of Object.entries(varRecord)) {
+          record[`uv-${key}`] = value;
+        }
+      } else {
+        Object.assign(record, varRecord);
+      }
+    }
+
+    return record;
+  }
+
+  /**
+   * Convert all variables to Record<string, string> format for template usage
+   * This is used for prompt templates where UserVariables should not have uv- prefix
+   */
+  toTemplateRecord(): Record<string, string> {
     const record: Record<string, string> = {};
 
     for (const variable of this.variables) {
@@ -248,6 +303,7 @@ export class VariablesBuilder {
     }
 
     // Add custom variables with uv- prefix validation
+    // Note: customVariables should already have uv- prefix from TwoParamsProcessor
     if (factoryValues.customVariables) {
       this.addUserVariables(factoryValues.customVariables);
     }

@@ -7,7 +7,7 @@
  * - Error handling for file operations
  */
 
-import { assertEquals, assertObjectMatch } from "@std/assert";
+import { assertEquals } from "../../deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptAdapterImpl } from "./prompt_adapter.ts";
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";

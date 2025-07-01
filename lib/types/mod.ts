@@ -30,7 +30,7 @@
 
 // === New Totality-compliant types ===
 export { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
-export { LayerType as NewLayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+export { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
 export { 
   TypeFactory, 
@@ -40,7 +40,7 @@ export {
 } from "./type_factory.ts";
 
 // === Factory types (temporary re-export from factory module) ===
-export { type TotalityPromptCliParams } from "../factory/prompt_variables_factory.ts";
+export { type TotalityPromptCliParams, type PromptCliParams } from "../factory/prompt_variables_factory.ts";
 
 // === PromptVariables types ===
 export {
@@ -81,7 +81,22 @@ export {
 } from "./params_custom_config.ts";
 
 // === BreakdownParams types (re-export) ===
-export type { CustomConfig } from "@tettuan/breakdownparams";
+export type { CustomConfig, TwoParamsResult as BaseTwoParamsResult } from "@tettuan/breakdownparams";
+import type { TwoParamsResult as InternalBaseTwoParamsResult } from "@tettuan/breakdownparams";
+
+// === Extended types for local use ===
+/**
+ * Extended TwoParamsResult interface with additional options for type safety.
+ * Extends the base TwoParamsResult from @tettuan/breakdownparams with proper options override.
+ */
+export interface ExtendedTwoParamsResult extends Omit<InternalBaseTwoParamsResult, 'options'> {
+  options?: {
+    adaptation?: string;
+    fromLayerType?: string;
+    fromFile?: string;
+    useSchema?: boolean;
+  } & Record<string, unknown>;
+}
 
 // === Legacy types (DEPRECATED) ===
 // These will be removed after migration completion
@@ -105,7 +120,7 @@ export type { CustomConfig } from "@tettuan/breakdownparams";
 export type DemonstrativeType = "to" | "summary" | "defect" | "init" | "find";
 
 /**
- * @deprecated Use NewLayerType class instead
+ * @deprecated Use LayerType class instead
  * Type representing the available layer types for Breakdown.
  * These layers define the hierarchical structure of the breakdown process.
  *
@@ -117,15 +132,15 @@ export type DemonstrativeType = "to" | "summary" | "defect" | "init" | "find";
  *
  * @example
  * ```ts
- * const layer: LayerType = "project";
+ * const layer: LegacyLayerType = "project";
  * ```
  */
-export type LayerType = "project" | "issue" | "task" | "bugs" | "temp";
+export type LegacyLayerType = "project" | "issue" | "task" | "bugs" | "temp";
 
 // === Legacy factory exports (DEPRECATED) ===
 export {
   DemonstrativeTypeFactory,
-  LayerTypeFactory,
+  LegacyLayerTypeFactory,
   DemonstrativeTypeGuards,
-  LayerTypeGuards,
+  LegacyLayerTypeGuards,
 } from "./legacy_factories.ts";

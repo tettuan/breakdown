@@ -16,7 +16,7 @@ import {
   type TypeCreationResult,
   type TypeCreationError,
   DirectiveType,
-  NewLayerType,
+  LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
 } from "../types/mod.ts";

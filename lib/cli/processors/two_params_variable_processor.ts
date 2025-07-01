@@ -110,15 +110,15 @@ export class TwoParamsVariableProcessor {
     }
 
     // Add input file name (from -f/--from option)
-    const inputFile = (options.from as string) || (options.fromFile as string);
-    standardVariables.input_text_file = inputFile || "stdin";
+    const inputFile = options.from ?? options.fromFile;
+    standardVariables.input_text_file = inputFile !== undefined ? String(inputFile) : "stdin";
 
     // Add destination path (from -o/--destination option)
     const destinationPath = 
-      (options.destination as string) || 
-      (options.destinationFile as string) || 
-      (options.output as string);
-    standardVariables.destination_path = destinationPath || "stdout";
+      options.destination ?? 
+      options.destinationFile ?? 
+      options.output;
+    standardVariables.destination_path = destinationPath !== undefined ? String(destinationPath) : "stdout";
 
     return standardVariables;
   }

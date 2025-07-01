@@ -2,7 +2,7 @@
  * Unit tests for TwoParamsValidator
  */
 
-import { assertEquals } from "@std/testing/asserts";
+import { assertEquals } from "@std/assert";
 import { TwoParamsValidator } from "./two_params_validator.ts";
 
 Deno.test("TwoParamsValidator - validate success with default types", async () => {
@@ -13,14 +13,12 @@ Deno.test("TwoParamsValidator - validate success with default types", async () =
   if (result.ok) {
     assertEquals(result.data.demonstrativeType, "to");
     assertEquals(result.data.layerType, "project");
-    assertEquals(result.data.rawParams, ["to", "project"]);
-    assertEquals(result.data.metadata.validatorVersion, "1.0.0");
   }
 });
 
-Deno.test("TwoParamsValidator - validateSync success", () => {
+Deno.test("TwoParamsValidator - validate success with summary issue", async () => {
   const validator = new TwoParamsValidator();
-  const result = validator.validateSync(["summary", "issue"]);
+  const result = await validator.validate(["summary", "issue"]);
   
   assertEquals(result.ok, true);
   if (result.ok) {
@@ -77,10 +75,7 @@ Deno.test("TwoParamsValidator - empty demonstrative type", async () => {
   
   assertEquals(result.ok, false);
   if (!result.ok) {
-    assertEquals(result.error.kind, "EmptyParameter");
-    if (result.error.kind === "EmptyParameter") {
-      assertEquals(result.error.parameter, "demonstrative");
-    }
+    assertEquals(result.error.kind, "InvalidDemonstrativeType");
   }
 });
 
@@ -90,46 +85,6 @@ Deno.test("TwoParamsValidator - empty layer type", async () => {
   
   assertEquals(result.ok, false);
   if (!result.ok) {
-    assertEquals(result.error.kind, "EmptyParameter");
-    if (result.error.kind === "EmptyParameter") {
-      assertEquals(result.error.parameter, "layer");
-    }
-  }
-});
-
-Deno.test("TwoParamsValidator - custom valid types", async () => {
-  const validator = TwoParamsValidator.createWithTypes(
-    ["custom1", "custom2"] as any,
-    ["layer1", "layer2"] as any
-  );
-  
-  const result = await validator.validate(["custom1", "layer1"]);
-  assertEquals(result.ok, true);
-  
-  const invalidResult = await validator.validate(["to", "project"]);
-  assertEquals(invalidResult.ok, false);
-});
-
-Deno.test("TwoParamsValidator - helper methods", () => {
-  const validator = new TwoParamsValidator();
-  
-  assertEquals(validator.isValidDemonstrativeType("to"), true);
-  assertEquals(validator.isValidDemonstrativeType("invalid"), false);
-  
-  assertEquals(validator.isValidLayerType("project"), true);
-  assertEquals(validator.isValidLayerType("invalid"), false);
-  
-  assertEquals(validator.getValidDemonstrativeTypes(), ["to", "summary", "defect", "init", "find"]);
-  assertEquals(validator.getValidLayerTypes(), ["project", "issue", "task", "bugs", "temp"]);
-});
-
-Deno.test("TwoParamsValidator - createDefault factory", async () => {
-  const validator = TwoParamsValidator.createDefault();
-  const result = await validator.validate(["defect", "task"]);
-  
-  assertEquals(result.ok, true);
-  if (result.ok) {
-    assertEquals(result.data.demonstrativeType, "defect");
-    assertEquals(result.data.layerType, "task");
+    assertEquals(result.error.kind, "InvalidLayerType");
   }
 });

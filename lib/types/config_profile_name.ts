@@ -68,7 +68,7 @@ export class ConfigProfileName {
    * - アンダースコア（_）
    * - 1文字以上50文字以内
    */
-  private static readonly PROFILE_NAME_PATTERN = /^[a-z0-9_-]{1,50}$/;
+  static #PROFILE_NAME_PATTERN = /^[a-z0-9_-]{1,50}$/;
 
   /**
    * プライベートコンストラクタ
@@ -78,7 +78,18 @@ export class ConfigProfileName {
    * 
    * @param value - 設定プロファイル名（有効な値またはnull）
    */
-  private constructor(public readonly value: string | null) {}
+  private constructor(private readonly _value: string | null) {
+    // 完全な不変性を保証するために Object.freeze を適用
+    Object.freeze(this);
+  }
+
+  /**
+   * 設定プロファイル名の値を取得
+   * 読み取り専用のゲッターで、完全な不変性を保証
+   */
+  get value(): string | null {
+    return this._value;
+  }
 
   /**
    * 設定プロファイル名を作成する
@@ -116,7 +127,7 @@ export class ConfigProfileName {
     }
 
     // プロファイル名のバリデーション
-    if (!this.PROFILE_NAME_PATTERN.test(value)) {
+    if (!ConfigProfileName.#PROFILE_NAME_PATTERN.test(value)) {
       return new ConfigProfileName(null);
     }
 

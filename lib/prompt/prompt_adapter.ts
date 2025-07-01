@@ -104,9 +104,9 @@ export class PromptAdapterImpl {
       builder.addStdinVariable(inputText);
     }
     
-    // Add custom variables
+    // Add custom variables for template usage (without uv- prefix requirement)
     const customVariables = this.factory.customVariables;
-    builder.addUserVariables(customVariables);
+    builder.addCustomVariables(customVariables);
     
     // Debug information in development
     if (Deno.env.get("DEBUG")) {
@@ -115,7 +115,7 @@ export class PromptAdapterImpl {
       console.debug(`Has schema_file: ${builder.hasVariable("schema_file")}`);
     }
     
-    return builder.toRecord();
+    return builder.toTemplateRecord();
   }
 
   /**
@@ -178,7 +178,7 @@ export class PromptAdapterImpl {
     }
     const validation = await this.validatePaths();
     if (!validation.success) {
-      return { success: false, content: validation.errors.join("\n") };
+      return { success: false, content: validation.errors.reduce((acc, err, i) => acc + (i > 0 ? "\n" : "") + err, "") };
     }
     return await this.generatePrompt();
   }
@@ -192,3 +192,6 @@ export class PromptAdapterImpl {
     return await validator.validateFile(inputFilePath, "Input file");
   }
 }
+
+// Export type alias for architectural consistency
+export type PromptAdapter = PromptAdapterImpl;

@@ -22,12 +22,12 @@ import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import * as path from "@std/path";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import type { DemonstrativeType } from "$lib/types/mod.ts";
 
 function makeCliParams(
   { demonstrativeType, layerType, fromFile, destinationFile, fromLayerType, adaptation, config }: {
     demonstrativeType: DemonstrativeType;
-    layerType: LayerType;
+    layerType: string;
     fromFile?: string;
     destinationFile?: string;
     fromLayerType?: string;
@@ -107,7 +107,7 @@ describe("Input Path: fromFile hierarchy", () => {
       const cliParams = makeCliParams(
         {
           demonstrativeType: "to" as DemonstrativeType,
-          layerType: "issue" as LayerType,
+          layerType: "issue",
           fromFile,
           config: "test-path-resolver",
         },
@@ -152,7 +152,7 @@ describe("Input Path: fromLayerType vs layerType", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         fromFile: "file.md",
         fromLayerType: "project",
         config: "test-path-resolver",
@@ -190,7 +190,7 @@ describe("Input Path: fromLayerType vs layerType", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         fromFile: "file.md",
         config: "test-path-resolver",
       }, _testDir);
@@ -230,7 +230,7 @@ describe("Input Path: fromFile edge cases", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         config: "test-path-resolver",
       }, _testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
@@ -266,7 +266,7 @@ describe("Input Path: fromFile edge cases", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         fromFile: "path\\to\\file.md",
         config: "test-path-resolver",
       }, _testDir);
@@ -306,7 +306,7 @@ describe("Output Path: destinationFile patterns", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         config: "test-path-resolver",
       }, _testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
@@ -347,7 +347,7 @@ describe("Output Path: destinationFile patterns", () => {
       const destinationFile = join("path", "to", "file.md");
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         destinationFile,
         config: "test-path-resolver",
       }, _testDir);
@@ -384,7 +384,7 @@ describe("Output Path: destinationFile patterns", () => {
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         destinationFile: "file.md",
         config: "test-path-resolver",
       }, _testDir);
@@ -426,7 +426,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       await Deno.mkdir(join(_testDir, destinationDir), { recursive: true });
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         destinationFile: destinationDir,
         config: "test-path-resolver",
       }, _testDir);
@@ -469,7 +469,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       await Deno.mkdir(ambiguousPath);
       const cliParams = makeCliParams({
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         destinationFile: ambiguousPath,
         config: "test-path-resolver",
       }, _testDir);
@@ -515,11 +515,11 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
         for (let i = 0; i < 10; i++) {
           const cliParams = makeCliParams({
             demonstrativeType: "to" as DemonstrativeType,
-            layerType: "issue" as LayerType,
+            layerType: "issue",
             config: "test-path-resolver",
           }, _testDir);
           cliParams.demonstrativeType = "to" as DemonstrativeType;
-          cliParams.layerType = "issue" as LayerType;
+          cliParams.layerType = "issue";
           const factory = await PromptVariablesFactory.create(cliParams);
           paths.add(factory.outputFilePath);
         }
@@ -566,7 +566,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       };
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {
           fromFile: "project.md",
           destinationFile: "issue.md",
@@ -616,7 +616,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       };
       const cliParams = {
         demonstrativeType: "summary" as DemonstrativeType,
-        layerType: "project" as LayerType,
+        layerType: "project",
         options: {
           fromFile: "input.md",
           destinationFile: "output.md",
@@ -667,7 +667,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       const absDest = path.resolve("tmp/defect_task.md");
       const cliParams = {
         demonstrativeType: "defect" as DemonstrativeType,
-        layerType: "task" as LayerType,
+        layerType: "task",
         options: {
           fromFile: "task_input.md",
           destinationFile: absDest,

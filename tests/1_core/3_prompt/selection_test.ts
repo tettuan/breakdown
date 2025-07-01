@@ -152,7 +152,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -199,7 +199,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "task" as LayerType,
+        layerType: "task",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -253,7 +253,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -306,7 +306,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "task" as LayerType,
+        layerType: "task",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -359,7 +359,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "task" as LayerType,
+        layerType: "task",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -405,7 +405,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
       const cliParams = {
         demonstrativeType: "invalid" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {
           fromFile: relInputFile,
           destinationFile: relOutputFile,
@@ -476,7 +476,7 @@ describe("Prompt Selection: CLI integration adaptation option", () => {
 
       const cliParams = {
         demonstrativeType: "to" as DemonstrativeType,
-        layerType: "issue" as LayerType,
+        layerType: "issue",
         options: {
           fromFile: "input.md",
           destinationFile: "output.md",

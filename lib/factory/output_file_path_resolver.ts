@@ -78,7 +78,65 @@ export class OutputFilePathResolver {
   constructor(
     private config: Record<string, unknown>, 
     private cliParams: DoubleParamsResult | TwoParamsResult
-  ) {}
+  ) {
+    // Deep copy to ensure immutability
+    this.config = this.deepCopyConfig(config);
+    this.cliParams = this.deepCopyCliParams(cliParams);
+  }
+
+  /**
+   * Deep copy configuration object manually to avoid JSON.parse
+   * @param config - The configuration object to copy
+   * @returns Deep copy of the configuration
+   */
+  private deepCopyConfig(config: Record<string, unknown>): Record<string, unknown> {
+    const copy: Record<string, unknown> = {};
+    
+    // Copy properties shallowly (should be primitive or immutable)
+    for (const [key, value] of Object.entries(config)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        // Shallow copy nested objects
+        copy[key] = { ...value as Record<string, unknown> };
+      } else {
+        copy[key] = value;
+      }
+    }
+    
+    return copy;
+  }
+
+  /**
+   * Deep copy CLI parameters manually to avoid JSON.parse
+   * @param cliParams - The CLI parameters to copy
+   * @returns Deep copy of the CLI parameters
+   */
+  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
+    if ('type' in cliParams && cliParams.type === 'two') {
+      // TwoParamsResult
+      const twoParams = cliParams as TwoParamsResult;
+      const copy: TwoParamsResult = {
+        type: twoParams.type,
+        params: [...twoParams.params],
+        demonstrativeType: twoParams.demonstrativeType,
+        layerType: twoParams.layerType,
+        options: { ...twoParams.options }
+      };
+      return copy;
+    } else {
+      // DoubleParamsResult (PromptCliParams)
+      const doubleParams = cliParams as DoubleParamsResult;
+      const copy: any = {
+        demonstrativeType: doubleParams.demonstrativeType,
+        layerType: doubleParams.layerType
+      };
+      
+      if (doubleParams.options) {
+        copy.options = { ...doubleParams.options };
+      }
+      
+      return copy;
+    }
+  }
 
   /**
    * Resolves the output file path according to CLI parameters and configuration.
@@ -136,6 +194,10 @@ export class OutputFilePathResolver {
     }
     if (this.hasExtension(normalizedDest)) {
       const layerType = this.getLayerType();
+      // Ensure all path components are valid strings
+      if (!cwd || !layerType || !normalizedDest) {
+        return join(Deno.cwd(), layerType || "task", normalizedDest || "output.md");
+      }
       return join(cwd, layerType, normalizedDest);
     }
     return join(absDest, this.generateDefaultFilename());
@@ -169,7 +231,18 @@ export class OutputFilePathResolver {
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
-    return (twoParams as unknown as { layerType?: string }).layerType || "";
+    const layerType = (twoParams as unknown as { layerType?: string }).layerType;
+    if (layerType) {
+      return layerType;
+    }
+    
+    // Handle mock objects with getValue method
+    const layerObj = (twoParams as any).layer;
+    if (layerObj && typeof layerObj.getValue === 'function') {
+      return layerObj.getValue();
+    }
+    
+    return "task"; // Default fallback
   }
 
   public getDestinationFile(): string | undefined {
@@ -209,6 +282,7 @@ export class OutputFilePathResolver {
    *
    * This method creates a filename using the current date (YYYYMMDD format)
    * and a random hash to ensure uniqueness and avoid file conflicts.
+   * Enhanced with performance.now() for microsecond precision to prevent collisions.
    *
    * @returns string - The generated filename in format "YYYYMMDD_hash.md"
    *
@@ -224,8 +298,13 @@ export class OutputFilePathResolver {
     const dateStr = date.getFullYear().toString() +
       (date.getMonth() + 1).toString().padStart(2, "0") +
       date.getDate().toString().padStart(2, "0");
-    const hash = Math.random().toString(16).slice(2, 9);
-    return `${dateStr}_${hash}.md`;
+    
+    // Use performance.now() for microsecond precision to prevent collisions
+    const timestampHash = Math.floor(performance.now() * 1000).toString(16).slice(-4);
+    const randomHash = Math.random().toString(16).slice(2, 5);
+    const combinedHash = `${timestampHash}${randomHash}`;
+    
+    return `${dateStr}_${combinedHash}.md`;
   }
 
   /**

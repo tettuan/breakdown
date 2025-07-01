@@ -21,7 +21,6 @@ import { TwoParamsVariableProcessor } from "../processors/two_params_variable_pr
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
-import { TwoParamsOutputWriter } from "../writers/two_params_output_writer.ts";
 
 /**
  * Error types for TwoParamsHandler - maintains backward compatibility
@@ -45,7 +44,6 @@ class TwoParamsOrchestrator {
   private readonly stdinProcessor: TwoParamsStdinProcessor;
   private readonly variableProcessor: TwoParamsVariableProcessor;
   private readonly promptGenerator: TwoParamsPromptGenerator;
-  private readonly outputWriter: TwoParamsOutputWriter;
 
   constructor() {
     // Initialize all components
@@ -53,7 +51,6 @@ class TwoParamsOrchestrator {
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
-    this.outputWriter = new TwoParamsOutputWriter();
   }
 
   /**
@@ -120,11 +117,14 @@ class TwoParamsOrchestrator {
     }
 
     // 5. Write output
-    const outputResult = await this.outputWriter.write(promptResult.data);
-    if (!outputResult.ok) {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(promptResult.data);
+      await Deno.stdout.write(data);
+    } catch (err) {
       return error({
         kind: "OutputWriteError",
-        error: outputResult.error.error
+        error: err instanceof Error ? err.message : String(err)
       });
     }
 

@@ -19,6 +19,7 @@ export {
   assert,
   assertEquals,
   assertExists,
+  assertNotEquals,
   assertRejects,
   assertStringIncludes,
   assertThrows,

@@ -26,8 +26,8 @@ import { WorkspaceInitError } from "./errors.ts";
  * @implements {WorkspaceStructure}
  */
 export class WorkspaceStructureImpl implements WorkspaceStructure {
-  private config: WorkspaceConfig;
-  private directories: string[];
+  #config: WorkspaceConfig;
+  #directories: string[];
 
   /**
    * Creates a new WorkspaceStructureImpl instance with the specified configuration.
@@ -47,8 +47,8 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   constructor(config: WorkspaceConfig) {
-    this.config = config;
-    this.directories = [
+    this.#config = config;
+    this.#directories = [
       ".agent/breakdown/projects",
       ".agent/breakdown/issues",
       ".agent/breakdown/tasks",
@@ -101,8 +101,8 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   async ensureDirectories(): Promise<void> {
-    for (const dir of this.directories) {
-      const path = join(this.config.workingDir, dir);
+    for (const dir of this.#directories) {
+      const path = join(this.#config.workingDir, dir);
       try {
         const stat = await Deno.stat(path);
         if (!stat.isDirectory) {
@@ -142,7 +142,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    */
   async exists(path?: string): Promise<boolean> {
     try {
-      const targetPath = path ? join(this.config.workingDir, path) : this.config.workingDir;
+      const targetPath = path ? join(this.#config.workingDir, path) : this.#config.workingDir;
       await Deno.stat(targetPath);
       return true;
     } catch {
@@ -174,7 +174,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   async createDirectory(path: string): Promise<void> {
-    const targetPath = join(this.config.workingDir, path);
+    const targetPath = join(this.#config.workingDir, path);
     await ensureDir(targetPath);
   }
 
@@ -202,7 +202,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   async removeDirectory(path: string): Promise<void> {
-    const targetPath = join(this.config.workingDir, path);
+    const targetPath = join(this.#config.workingDir, path);
     await Deno.remove(targetPath, { recursive: true });
   }
 }

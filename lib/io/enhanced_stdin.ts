@@ -296,8 +296,14 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
         } catch (_error) {
           // Ensure readAll is cancelled on abort
           if (_error instanceof DOMException && _error.name === "AbortError") {
-            // Try to cancel the stdin read
-            Deno.stdin.readable.cancel().catch(() => {});
+            // Try to cancel the stdin read - ignore errors from double cancel
+            try {
+              Deno.stdin.readable.cancel().catch(() => {
+                // Ignore already cancelled stream errors
+              });
+            } catch {
+              // Ignore if stream is already cancelled or unavailable
+            }
           }
           throw _error;
         }
@@ -312,8 +318,14 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
         } catch (_error) {
           // Ensure readAll is cancelled on abort
           if (_error instanceof DOMException && _error.name === "AbortError") {
-            // Try to cancel the stdin read
-            Deno.stdin.readable.cancel().catch(() => {});
+            // Try to cancel the stdin read - ignore errors from double cancel
+            try {
+              Deno.stdin.readable.cancel().catch(() => {
+                // Ignore already cancelled stream errors
+              });
+            } catch {
+              // Ignore if stream is already cancelled or unavailable
+            }
           }
           throw _error;
         }

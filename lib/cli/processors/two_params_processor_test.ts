@@ -3,11 +3,11 @@
  * Tests the conversion of TwoParamsResult to VariablesBuilder with Result type safety
  */
 
-import { assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
-import { TwoParamsProcessor, type ProcessorResult, type ProcessorError } from "./two_params_processor.ts";
+import { assertEquals, assertExists } from "@std/assert";
+import { TwoParamsProcessor } from "./two_params_processor.ts";
 import type { TwoParamsResult } from "../../deps.ts";
 
-Deno.test("TwoParamsProcessor - Valid input conversion", async () => {
+Deno.test("TwoParamsProcessor - Valid input conversion", () => {
   const processor = new TwoParamsProcessor();
   
   const twoParamsResult: TwoParamsResult = {
@@ -40,7 +40,7 @@ Deno.test("TwoParamsProcessor - Invalid type error", () => {
     layerType: "project",
     params: ["to", "project"],
     options: {}
-  } as any;
+  } as unknown as TwoParamsResult;
 
   const result = processor.process(twoParamsResult);
   
@@ -62,7 +62,7 @@ Deno.test("TwoParamsProcessor - Missing demonstrativeType error", () => {
     layerType: "project", 
     params: ["to", "project"],
     options: {}
-  } as any;
+  } as unknown as TwoParamsResult;
 
   const result = processor.process(twoParamsResult);
   
@@ -84,7 +84,7 @@ Deno.test("TwoParamsProcessor - Missing layerType error", () => {
     layerType: "",
     params: ["to", "project"],
     options: {}
-  } as any;
+  } as unknown as TwoParamsResult;
 
   const result = processor.process(twoParamsResult);
   
@@ -228,7 +228,7 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
     layerType: "project", 
     params: ["to", "project"],
     options: {}
-  } as any;
+  } as unknown as TwoParamsResult;
 
   const invalidValidationResult = processor.validateOnly(invalidResult);
   assertEquals(invalidValidationResult.ok, false);
