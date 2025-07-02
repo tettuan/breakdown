@@ -59,9 +59,8 @@ export class PromptFileGenerator {
       input_text?: string;
     },
   ): Promise<CommandResult> {
-    const cliParams = {
-      demonstrativeType:
-        (options?.demonstrativeType || "to") as import("../types/mod.ts").DemonstrativeType,
+    const _cliParams = {
+      demonstrativeType: options?.demonstrativeType || "to",
       layerType: format,
       options: {
         fromFile,
@@ -73,7 +72,7 @@ export class PromptFileGenerator {
     let factory;
     let promptFilePath;
     let inputFilePath;
-    
+
     try {
       factory = await PromptVariablesFactory.create(cliParams);
       factory.validateAll();
@@ -157,7 +156,7 @@ export class PromptFileGenerator {
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
     const adapter = new PromptAdapterImpl(factory);
     const result = await adapter.validateAndGenerate();
-    if (result.success) {
+    if (_result.success) {
       return {
         success: true,
         output: result.content,

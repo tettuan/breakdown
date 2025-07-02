@@ -1,13 +1,13 @@
 /**
  * @fileoverview Architecture test for LayerType
- * 
+ *
  * このテストはLayerTypeのアーキテクチャ制約を検証します：
  * - TwoParamsResultとの依存関係の妥当性
  * - 階層間境界の適切性
  * - TypePatternProvider連携の妥当性
  * - 循環参照の有無
  * - Totality原則準拠のアーキテクチャ設計
- * 
+ *
  * アーキテクチャテストは、LayerTypeが階層管理の責務を適切に果たし、
  * システム全体の安定性を保つことを保証します。
  */
@@ -16,13 +16,13 @@ import { assertEquals, assertExists, BreakdownLogger } from "../../deps.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
 import type { TwoParamsResult } from "../deps.ts";
 
-const logger = new BreakdownLogger("test-architecture-layer");
+const _logger = new BreakdownLogger("test-architecture-layer");
 
-Deno.test("LayerType - Architecture: TwoParamsResult dependency constraints", async () => {
-  logger.debug("テスト開始: LayerType TwoParamsResult依存関係制約検証", {
+Deno.test("LayerType - Architecture: TwoParamsResult dependency constraints", () => {
+  _logger.debug("テスト開始: LayerType TwoParamsResult依存関係制約検証", {
     testType: "architecture",
     target: "LayerType",
-    constraint: "dependencies"
+    constraint: "dependencies",
   });
 
   // TwoParamsResultとの適切な依存関係確認
@@ -31,7 +31,7 @@ Deno.test("LayerType - Architecture: TwoParamsResult dependency constraints", as
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
-    options: {}
+    options: {},
   };
 
   // LayerTypeが正常に構築できることを確認（依存関係が正しい）
@@ -43,19 +43,19 @@ Deno.test("LayerType - Architecture: TwoParamsResult dependency constraints", as
   assertEquals(layerType.originalResult.type, "two");
   assertEquals(layerType.originalResult.layerType, "project");
 
-  logger.debug("TwoParamsResult依存関係制約検証完了", {
+  _logger.debug("TwoParamsResult依存関係制約検証完了", {
     success: true,
     dependencies: ["TwoParamsResult"],
     layer_value: "project",
-    violations: "none"
+    violations: "none",
   });
 });
 
-Deno.test("LayerType - Architecture: No circular dependencies", async () => {
-  logger.debug("テスト開始: LayerType循環参照検証", {
+Deno.test("LayerType - Architecture: No circular dependencies", () => {
+  _logger.debug("テスト開始: LayerType循環参照検証", {
     testType: "architecture",
-    target: "LayerType", 
-    constraint: "circular_dependencies"
+    target: "LayerType",
+    constraint: "circular_dependencies",
   });
 
   // LayerTypeクラスの存在確認（循環参照があるとインポートできない）
@@ -72,27 +72,27 @@ Deno.test("LayerType - Architecture: No circular dependencies", async () => {
 
   const result: TwoParamsResult = {
     type: "two",
-    demonstrativeType: "to", 
+    demonstrativeType: "to",
     layerType: "issue",
     params: ["to", "issue"],
-    options: {}
+    options: {},
   };
-  const layerType = LayerType.create(result);
+  const layerType = LayerType.create(_result);
   assertExists(layerType);
 
-  logger.debug("循環参照検証完了", {
+  _logger.debug("循環参照検証完了", {
     success: true,
     classes: ["LayerType", "TwoParamsLayerTypePattern"],
     circular_dependencies: "none",
-    independence: true
+    independence: true,
   });
 });
 
-Deno.test("LayerType - Architecture: Hierarchical boundary appropriateness", async () => {
-  logger.debug("テスト開始: LayerType階層間境界適切性検証", {
+Deno.test("LayerType - Architecture: Hierarchical boundary appropriateness", () => {
+  _logger.debug("テスト開始: LayerType階層間境界適切性検証", {
     testType: "architecture",
     target: "LayerType",
-    constraint: "hierarchical_boundaries"
+    constraint: "hierarchical_boundaries",
   });
 
   // 標準的な階層の境界確認
@@ -106,18 +106,18 @@ Deno.test("LayerType - Architecture: Hierarchical boundary appropriateness", asy
       demonstrativeType: "to",
       layerType: layer,
       params: ["to", layer],
-      options: {}
+      options: {},
     };
 
-    const layerType = LayerType.create(result);
+    const layerType = LayerType.create(_result);
     assertExists(layerType);
     assertEquals(layerType.value, layer);
     assertEquals(layerType.isStandardHierarchy(), true);
 
-    logger.debug("標準階層境界確認", {
+    _logger.debug("標準階層境界確認", {
       layer,
       standard: true,
-      hierarchy_level: layerType.getHierarchyLevel()
+      hierarchy_level: layerType.getHierarchyLevel(),
     });
   }
 
@@ -128,34 +128,34 @@ Deno.test("LayerType - Architecture: Hierarchical boundary appropriateness", asy
       demonstrativeType: "find",
       layerType: layer,
       params: ["find", layer],
-      options: {}
+      options: {},
     };
 
-    const layerType = LayerType.create(result);
+    const layerType = LayerType.create(_result);
     assertExists(layerType);
     assertEquals(layerType.value, layer);
     assertEquals(layerType.isStandardHierarchy(), false);
 
-    logger.debug("特別階層境界確認", {
+    _logger.debug("特別階層境界確認", {
       layer,
       standard: false,
-      hierarchy_level: layerType.getHierarchyLevel()
+      hierarchy_level: layerType.getHierarchyLevel(),
     });
   }
 
-  logger.debug("階層間境界適切性検証完了", {
+  _logger.debug("階層間境界適切性検証完了", {
     success: true,
     standard_layers: hierarchicalLayers.length,
     special_layers: specialLayers.length,
-    boundary_handling: "appropriate"
+    boundary_handling: "appropriate",
   });
 });
 
-Deno.test("LayerType - Architecture: TypePatternProvider integration", async () => {
-  logger.debug("テスト開始: LayerType TypePatternProvider連携検証", {
+Deno.test("LayerType - Architecture: TypePatternProvider integration", () => {
+  _logger.debug("テスト開始: LayerType TypePatternProvider連携検証", {
     testType: "architecture",
     target: "LayerType",
-    constraint: "pattern_provider_integration"
+    constraint: "pattern_provider_integration",
   });
 
   // TwoParamsLayerTypePatternのTypePatternProvider準拠確認
@@ -178,21 +178,21 @@ Deno.test("LayerType - Architecture: TypePatternProvider integration", async () 
     assertEquals(pattern.getPattern(), "project|issue|task|bugs|temp");
   }
 
-  logger.debug("TypePatternProvider連携検証完了", {
+  _logger.debug("TypePatternProvider連携検証完了", {
     success: true,
     integration: {
       interface_compliance: true,
       pattern_matching: true,
-      self_reference: true
-    }
+      self_reference: true,
+    },
   });
 });
 
-Deno.test("LayerType - Architecture: Package boundary compliance", async () => {
-  logger.debug("テスト開始: LayerTypeパッケージ境界遵守検証", {
+Deno.test("LayerType - Architecture: Package boundary compliance", () => {
+  _logger.debug("テスト開始: LayerTypeパッケージ境界遵守検証", {
     testType: "architecture",
     target: "LayerType",
-    constraint: "package_boundary"
+    constraint: "package_boundary",
   });
 
   // バリデーション責任の分離確認
@@ -202,7 +202,7 @@ Deno.test("LayerType - Architecture: Package boundary compliance", async () => {
     demonstrativeType: "summary",
     layerType: "task",
     params: ["summary", "task"],
-    options: {}
+    options: {},
   };
 
   const layerType = LayerType.create(preValidatedResult);
@@ -218,22 +218,22 @@ Deno.test("LayerType - Architecture: Package boundary compliance", async () => {
   // バリデーション: BreakdownParamsが担当
   // パターンマッチング: TwoParamsLayerTypePatternが担当
 
-  logger.debug("パッケージ境界遵守検証完了", {
+  _logger.debug("パッケージ境界遵守検証完了", {
     success: true,
     responsibilities: {
       LayerType: "hierarchical_value_management",
       BreakdownParams: "validation",
-      TwoParamsLayerTypePattern: "pattern_matching"
+      TwoParamsLayerTypePattern: "pattern_matching",
     },
-    boundary_violations: "none"
+    boundary_violations: "none",
   });
 });
 
-Deno.test("LayerType - Architecture: Totality principle compliance", async () => {
-  logger.debug("テスト開始: LayerType Totality原則準拠検証", {
+Deno.test("LayerType - Architecture: Totality principle compliance", () => {
+  _logger.debug("テスト開始: LayerType Totality原則準拠検証", {
     testType: "architecture",
     target: "LayerType",
-    constraint: "totality_principle"
+    constraint: "totality_principle",
   });
 
   // Totality原則の要素確認
@@ -243,11 +243,11 @@ Deno.test("LayerType - Architecture: Totality principle compliance", async () =>
     demonstrativeType: "defect",
     layerType: "issue",
     params: ["defect", "issue"],
-    options: {}
+    options: {},
   };
 
   // 2. 全域関数性（TwoParamsResultに対して常に成功）
-  const layerType = LayerType.create(result);
+  const layerType = LayerType.create(_result);
   assertExists(layerType);
 
   // 3. Immutable（値の変更不可）
@@ -261,23 +261,23 @@ Deno.test("LayerType - Architecture: Totality principle compliance", async () =>
   assertEquals(layerType.getHierarchyLevel(), 2); // issueは階層レベル2
   assertEquals(layerType.isStandardHierarchy(), true);
 
-  logger.debug("Totality原則準拠検証完了", {
+  _logger.debug("Totality原則準拠検証完了", {
     success: true,
     totality_elements: {
       smart_constructor: true,
       total_function: true,
       immutable: true,
       type_safe: true,
-      hierarchical_consistency: true
-    }
+      hierarchical_consistency: true,
+    },
   });
 });
 
-Deno.test("TwoParamsLayerTypePattern - Architecture: Pattern system integration", async () => {
-  logger.debug("テスト開始: TwoParamsLayerTypePatternパターンシステム統合検証", {
+Deno.test("TwoParamsLayerTypePattern - Architecture: Pattern system integration", () => {
+  _logger.debug("テスト開始: TwoParamsLayerTypePatternパターンシステム統合検証", {
     testType: "architecture",
-    target: "TwoParamsLayerTypePattern", 
-    constraint: "pattern_system_integration"
+    target: "TwoParamsLayerTypePattern",
+    constraint: "pattern_system_integration",
   });
 
   // パターンシステムとの適切な統合確認
@@ -304,13 +304,13 @@ Deno.test("TwoParamsLayerTypePattern - Architecture: Pattern system integration"
     assertEquals(customPattern.test("project"), false);
   }
 
-  logger.debug("パターンシステム統合検証完了", {
+  _logger.debug("パターンシステム統合検証完了", {
     success: true,
     pattern_types: {
       standard: "project|issue|task",
-      extended: "project|issue|task|epic|system", 
-      custom: "bugs|todos|notes"
+      extended: "project|issue|task|epic|system",
+      custom: "bugs|todos|notes",
     },
-    integration: "proper"
+    integration: "proper",
   });
 });

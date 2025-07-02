@@ -5,7 +5,7 @@
  * to ensure consistency across the project.
  */
 
-export const JSR_VERSIONS = {
+export const _JSR_VERSIONS = {
   BREAKDOWN_CONFIG: "^1.1.4",
   BREAKDOWN_PARAMS: "^1.0.3",
   BREAKDOWN_PROMPT: "1.2.3",

@@ -1,16 +1,14 @@
 /**
  * @fileoverview TwoParamsValidator - Parameter validation with Totality principle
- * 
+ *
  * This module handles validation of two-parameter commands,
  * ensuring demonstrative type and layer type are valid.
- * 
+ *
  * @module cli/validators/two_params_validator
  */
 
-import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
-import type { DemonstrativeType, LayerType } from "../../types/mod.ts";
-
+import type { Result } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 /**
  * Validation error types
  */
@@ -23,7 +21,7 @@ export type ValidationError =
  * Validated parameters result
  */
 export interface ValidatedParams {
-  demonstrativeType: DemonstrativeType;
+  demonstrativeType: string;
   layerType: string;
 }
 
@@ -39,7 +37,7 @@ const VALID_LAYER_TYPES = ["project", "issue", "task", "bugs", "temp"] as const;
 
 /**
  * TwoParamsValidator - Validates two-parameter commands
- * 
+ *
  * Responsibilities:
  * - Check parameter count
  * - Validate demonstrative type
@@ -49,17 +47,17 @@ const VALID_LAYER_TYPES = ["project", "issue", "task", "bugs", "temp"] as const;
 export class TwoParamsValidator {
   /**
    * Validate two parameters
-   * 
+   *
    * @param params - Array of string parameters
    * @returns Result with validated parameters or error
    */
-  async validate(params: string[]): Promise<Result<ValidatedParams, ValidationError>> {
+  validate(params: string[]): Result<ValidatedParams, ValidationError> {
     // Check parameter count
     if (params.length < 2) {
       return error({
         kind: "InvalidParameterCount",
         received: params.length,
-        expected: 2
+        expected: 2,
       });
     }
 
@@ -79,22 +77,22 @@ export class TwoParamsValidator {
 
     return ok({
       demonstrativeType: demonstrativeResult.data,
-      layerType: layerResult.data
+      layerType: layerResult.data,
     });
   }
 
   /**
    * Validate demonstrative type
    */
-  private validateDemonstrativeType(value: string): Result<DemonstrativeType, ValidationError> {
-    if (VALID_DEMONSTRATIVE_TYPES.includes(value as DemonstrativeType)) {
-      return ok(value as DemonstrativeType);
+  private validateDemonstrativeType(value: string): Result<string, ValidationError> {
+    if (VALID_DEMONSTRATIVE_TYPES.includes(value as typeof VALID_DEMONSTRATIVE_TYPES[number])) {
+      return ok(value);
     }
 
     return error({
       kind: "InvalidDemonstrativeType",
       value,
-      validTypes: [...VALID_DEMONSTRATIVE_TYPES]
+      validTypes: [...VALID_DEMONSTRATIVE_TYPES],
     });
   }
 
@@ -102,14 +100,14 @@ export class TwoParamsValidator {
    * Validate layer type
    */
   private validateLayerType(value: string): Result<string, ValidationError> {
-    if (VALID_LAYER_TYPES.includes(value as any)) {
+    if (VALID_LAYER_TYPES.includes(value as typeof VALID_LAYER_TYPES[number])) {
       return ok(value);
     }
 
     return error({
       kind: "InvalidLayerType",
       value,
-      validTypes: [...VALID_LAYER_TYPES]
+      validTypes: [...VALID_LAYER_TYPES],
     });
   }
 }

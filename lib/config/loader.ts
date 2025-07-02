@@ -46,8 +46,8 @@ export interface CustomConfig {
  */
 export async function loadConfig(filePath: string): Promise<CustomConfig> {
   try {
-    const content = await Deno.readTextFile(filePath);
-    const config = parse(content) as CustomConfig;
+    const _content = await Deno.readTextFile(filePath);
+    const config = parse(_content) as CustomConfig;
     return config;
   } catch (error) {
     throw new Error(

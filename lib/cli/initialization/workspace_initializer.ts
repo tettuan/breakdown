@@ -1,9 +1,9 @@
 /**
  * Workspace initialization functionality
- * 
+ *
  * This module handles the initialization of the breakdown workspace,
  * creating directory structures and configuration files.
- * 
+ *
  * @module lib/cli/initialization/workspace_initializer
  */
 
@@ -17,8 +17,8 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // TODO: If BreakdownConfig had write functionality, baseDir definition would be unnecessary
   // BreakdownConfig already knows the appropriate paths and should handle initialization
-  const cwd = Deno.cwd?.() || ".";
-  const baseDir = `${cwd}/.agent/breakdown`;
+  const _cwd = Deno.cwd?.() || ".";
+  const baseDir = `${_cwd}/.agent/breakdown`;
 
   // Create directory structure
   // TODO: Layer-specific directories should be derived from BreakdownParams
@@ -48,10 +48,11 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   //   - getDefaultLayerTypes() => ["project", "issue", "task"]
   // This ensures consistency across the ecosystem
   const configContent = `# Breakdown Configuration
+working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: "lib/breakdown/prompts"
+  base_dir: ".agent/breakdown/prompts"
 app_schema:
-  base_dir: "lib/breakdown/schema"
+  base_dir: ".agent/breakdown/schema"
 params:
   two:
     demonstrativeType:

@@ -1,19 +1,20 @@
 /**
  * @fileoverview Two Params Orchestrator - Internal implementation
- * 
+ *
  * Orchestrates the two params handler components following the
  * Orchestrator pattern while maintaining the existing interface.
- * 
+ *
  * @module lib/cli/orchestrators/two_params_orchestrator
  */
 
 import type { Result } from "$lib/types/result.ts";
-import { ok, error } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import { VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
 import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
+import type { PromptCliParams } from "$lib/factory/prompt_variables_factory.ts";
 
 // Import components
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
@@ -28,7 +29,7 @@ export class TwoParamsOrchestrator {
 
   constructor(
     validator?: TwoParamsValidator,
-    stdinProcessor?: TwoParamsStdinProcessor
+    stdinProcessor?: TwoParamsStdinProcessor,
   ) {
     this.validator = validator || new TwoParamsValidator();
     this.stdinProcessor = stdinProcessor || new TwoParamsStdinProcessor();
@@ -40,7 +41,7 @@ export class TwoParamsOrchestrator {
   async execute(
     params: string[],
     config: Record<string, unknown>,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Promise<Result<void, TwoParamsHandlerError>> {
     // 1. Validate parameters
     const validationResult = await this.validator.validate(params);
@@ -53,12 +54,12 @@ export class TwoParamsOrchestrator {
     // 2. Read STDIN
     const stdinResult = await this.stdinProcessor.process(
       config as BreakdownConfigCompatible,
-      options
+      options,
     );
     if (!stdinResult.ok) {
       return error({
         kind: "StdinReadError",
-        error: stdinResult.error.message
+        error: stdinResult.error.message,
       });
     }
 
@@ -67,7 +68,7 @@ export class TwoParamsOrchestrator {
     const processedVariables = this.processVariables(
       customVariables,
       stdinResult.data,
-      options
+      options,
     );
 
     // 4. Create CLI parameters
@@ -76,7 +77,7 @@ export class TwoParamsOrchestrator {
       layerType,
       options,
       stdinResult.data,
-      processedVariables
+      processedVariables,
     );
 
     // 5. Generate prompt
@@ -84,7 +85,7 @@ export class TwoParamsOrchestrator {
       config,
       cliParams,
       stdinResult.data,
-      processedVariables
+      processedVariables,
     );
     if (!promptResult.ok) {
       return error(promptResult.error);
@@ -99,7 +100,7 @@ export class TwoParamsOrchestrator {
       return error({
         kind: "OutputWriteError",
         error: err instanceof Error ? err.message : String(err),
-        cause: err
+        cause: err,
       });
     }
 
@@ -111,13 +112,13 @@ export class TwoParamsOrchestrator {
    */
   private extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
     const customVariables: Record<string, string> = {};
-    
+
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
         customVariables[key] = String(value);
       }
     }
-    
+
     return customVariables;
   }
 
@@ -127,17 +128,17 @@ export class TwoParamsOrchestrator {
   private processVariables(
     customVariables: Record<string, string>,
     inputText: string,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Record<string, string> {
     const processed = { ...customVariables };
-    
+
     if (inputText) {
       processed.input_text = inputText;
     }
     processed.input_text_file = (options.fromFile as string) || "stdin";
-    processed.destination_path = (options.destinationFile as string) || 
-                                (options.output as string) || "stdout";
-    
+    processed.destination_path = (options.destinationFile as string) ||
+      (options.output as string) || "stdout";
+
     return processed;
   }
 
@@ -149,15 +150,15 @@ export class TwoParamsOrchestrator {
     layerType: string,
     options: Record<string, unknown>,
     inputText: string,
-    customVariables: Record<string, string>
-  ): any {
+    customVariables: Record<string, string>,
+  ): PromptCliParams {
     return {
       demonstrativeType,
       layerType,
       options: {
         fromFile: (options.from as string) || (options.fromFile as string),
-        destinationFile: (options.destination as string) || 
-                        (options.output as string) || "output.md",
+        destinationFile: (options.destination as string) ||
+          (options.output as string) || "output.md",
         adaptation: options.adaptation as string,
         promptDir: options.promptDir as string,
         fromLayerType: options.input as string,
@@ -176,18 +177,30 @@ export class TwoParamsOrchestrator {
    */
   private async generatePrompt(
     config: Record<string, unknown>,
-    cliParams: any,
+    cliParams: PromptCliParams,
     inputText: string,
-    customVariables: Record<string, string>
+    customVariables: Record<string, string>,
   ): Promise<Result<string, TwoParamsHandlerError>> {
     try {
-      const factory = await PromptVariablesFactory.create(cliParams);
-      
+      // Create factory with robust fallback mechanisms
+      let factory;
+      try {
+        factory = await PromptVariablesFactory.create(cliParams);
+      } catch (configError) {
+        // Fallback: Use minimal config when main config loading fails
+        const fallbackConfig = {
+          working_dir: ".agent/breakdown",
+          app_prompt: { base_dir: ".agent/breakdown/prompts" },
+          app_schema: { base_dir: ".agent/breakdown/schema" },
+        };
+        factory = PromptVariablesFactory.createWithConfig(fallbackConfig, cliParams);
+      }
+
       // Validate factory
       factory.validateAll();
-      
+
       const allParams = factory.getAllParams();
-      
+
       // Create factory values
       const factoryValues = {
         promptFilePath: allParams.promptFilePath,
@@ -195,27 +208,27 @@ export class TwoParamsOrchestrator {
         outputFilePath: allParams.outputFilePath || "output.md",
         schemaFilePath: allParams.schemaFilePath || "",
         customVariables,
-        inputText: inputText || undefined
+        inputText: inputText || undefined,
       };
 
       // Build variables
       const builder = new VariablesBuilder();
       const validationResult = builder.validateFactoryValues(factoryValues);
-      
+
       if (!validationResult.ok) {
         return error({
           kind: "VariablesBuilderError",
-          errors: validationResult.error.map(e => JSON.stringify(e))
+          errors: validationResult.error.map((e) => JSON.stringify(e)),
         });
       }
 
       builder.addFromFactoryValues(factoryValues);
       const buildResult = builder.build();
-      
+
       if (!buildResult.ok) {
         return error({
           kind: "VariablesBuilderError",
-          errors: buildResult.error.map(e => JSON.stringify(e))
+          errors: buildResult.error.map((e) => JSON.stringify(e)),
         });
       }
 
@@ -224,7 +237,7 @@ export class TwoParamsOrchestrator {
       const promptManager = new PromptManager();
       const result = await promptManager.generatePrompt(
         allParams.promptFilePath,
-        variablesRecord
+        variablesRecord,
       );
 
       // Extract content
@@ -236,7 +249,7 @@ export class TwoParamsOrchestrator {
         } else {
           return error({
             kind: "PromptGenerationError",
-            error: res.error || "Prompt generation failed"
+            error: res.error || "Prompt generation failed",
           });
         }
       } else {
@@ -247,7 +260,7 @@ export class TwoParamsOrchestrator {
     } catch (err) {
       return error({
         kind: "FactoryValidationError",
-        errors: [err instanceof Error ? err.message : String(err)]
+        errors: [err instanceof Error ? err.message : String(err)],
       });
     }
   }

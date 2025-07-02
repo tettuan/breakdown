@@ -1,15 +1,23 @@
 /**
  * @fileoverview Unit tests for ParameterValidator
- * 
+ *
  * These tests validate functional behavior of ParameterValidator methods,
  * covering success cases, error cases, edge cases, and validation logic.
  */
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { ParameterValidator } from "./parameter_validator.ts";
-import type { ValidationError as _ValidationError, ValidatedParams as _ValidatedParams, ConfigValidator } from "./parameter_validator.ts";
+import type {
+  ConfigValidator,
+  ValidatedParams as _ValidatedParams,
+  ValidationError as _ValidationError,
+} from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import type { TwoParamsResult, OneParamsResult as _OneParamsResult, ZeroParamsResult as _ZeroParamsResult } from "../deps.ts";
+import type {
+  OneParamsResult as _OneParamsResult,
+  TwoParamsResult,
+  ZeroParamsResult as _ZeroParamsResult,
+} from "../deps.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
@@ -17,13 +25,13 @@ import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 class MockPatternProvider implements TypePatternProvider {
   constructor(
     private directivePattern: TwoParamsDirectivePattern | null = null,
-    private layerPattern: TwoParamsLayerTypePattern | null = null
+    private layerPattern: TwoParamsLayerTypePattern | null = null,
   ) {}
 
   getDirectivePattern() {
     return this.directivePattern || TwoParamsDirectivePattern.create("^(to|from|summary|init)$");
   }
-  
+
   getLayerTypePattern() {
     return this.layerPattern || TwoParamsLayerTypePattern.create("^(project|issue|task)$");
   }
@@ -43,14 +51,14 @@ class MockConfigValidator implements ConfigValidator {
 
 /**
  * Unit Test: validateTwoParams Success Cases
- * 
+ *
  * Tests that validateTwoParams correctly validates and transforms
  * valid TwoParamsResult inputs into ValidatedParams.
  */
 Deno.test("Unit: validateTwoParams success cases", () => {
-  const validator = new ParameterValidator(
+  const _validator = new ParameterValidator(
     new MockPatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
 
   // Test case 1: Complete valid parameters
@@ -67,25 +75,25 @@ Deno.test("Unit: validateTwoParams success cases", () => {
     },
   };
 
-  const result = validator.validateTwoParams(validParams);
-  assertEquals(result.ok, true);
-  
-  if (result.ok) {
+  const _result = _validator.validateTwoParams(validParams);
+  assertEquals(_result.ok, true);
+
+  if (_result.ok) {
     // Validate directive and layer creation
-    assertExists(result.data.directive);
-    assertExists(result.data.layer);
-    
+    assertExists(_result.data.directive);
+    assertExists(_result.data.layer);
+
     // Validate options normalization
-    assertEquals(result.data.options.inputPath, "input.md");
-    assertEquals(result.data.options.outputPath, "output.md");
-    
+    assertEquals(_result.data.options.inputPath, "input.md");
+    assertEquals(_result.data.options.outputPath, "output.md");
+
     // Validate custom variables extraction
-    assertEquals(result.data.customVariables["uv-projectName"], "TestProject");
-    
+    assertEquals(_result.data.customVariables["uv-projectName"], "TestProject");
+
     // Validate metadata
-    assertEquals(result.data.metadata.source, "TwoParamsResult");
-    assertEquals(result.data.metadata.profileName, "development");
-    assertExists(result.data.metadata.validatedAt);
+    assertEquals(_result.data.metadata.source, "TwoParamsResult");
+    assertEquals(_result.data.metadata.profileName, "development");
+    assertExists(_result.data.metadata.validatedAt);
   }
 
   // Test case 2: Minimal valid parameters
@@ -97,9 +105,9 @@ Deno.test("Unit: validateTwoParams success cases", () => {
     options: {},
   };
 
-  const minimalResult = validator.validateTwoParams(minimalParams);
+  const minimalResult = _validator.validateTwoParams(minimalParams);
   assertEquals(minimalResult.ok, true);
-  
+
   if (minimalResult.ok) {
     // Should use defaults for missing options
     assertEquals(minimalResult.data.options.inputPath, "stdin");
@@ -110,14 +118,14 @@ Deno.test("Unit: validateTwoParams success cases", () => {
 
 /**
  * Unit Test: validateTwoParams Error Cases
- * 
+ *
  * Tests that validateTwoParams correctly identifies and reports
  * various validation errors with appropriate error details.
  */
 Deno.test("Unit: validateTwoParams error cases", () => {
-  const validator = new ParameterValidator(
+  const _validator = new ParameterValidator(
     new MockPatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
 
   // Error case 1: Wrong type - use proper type construction instead of casting
@@ -128,11 +136,13 @@ Deno.test("Unit: validateTwoParams error cases", () => {
     params: ["to", "project"],
     options: {},
   };
-  
+
   // Simulate wrong type by creating params with wrong type field
   const wrongTypeParamsWithError = { ...wrongTypeParams, type: "one" };
 
-  const wrongTypeResult = validator.validateTwoParams(wrongTypeParamsWithError as unknown as TwoParamsResult);
+  const wrongTypeResult = _validator.validateTwoParams(
+    wrongTypeParamsWithError as unknown as TwoParamsResult,
+  );
   assertEquals(wrongTypeResult.ok, false);
   if (!wrongTypeResult.ok) {
     // Type-safe property access with proper discriminated union handling
@@ -154,7 +164,7 @@ Deno.test("Unit: validateTwoParams error cases", () => {
     options: {},
   };
 
-  const missingDemoResult = validator.validateTwoParams(missingDemoParams);
+  const missingDemoResult = _validator.validateTwoParams(missingDemoParams);
   assertEquals(missingDemoResult.ok, false);
   if (!missingDemoResult.ok) {
     // Type-safe property access with proper discriminated union handling
@@ -176,10 +186,10 @@ Deno.test("Unit: validateTwoParams error cases", () => {
     options: {},
   };
 
-  const invalidDemoResult = validator.validateTwoParams(invalidDemoParams);
+  const invalidDemoResult = _validator.validateTwoParams(invalidDemoParams);
   assertEquals(invalidDemoResult.ok, false);
   if (!invalidDemoResult.ok) {
-    // Type-safe property access with proper discriminated union handling  
+    // Type-safe property access with proper discriminated union handling
     if (invalidDemoResult.error.kind === "InvalidDirectiveType") {
       assertEquals(invalidDemoResult.error.value, "invalid");
       assertExists(invalidDemoResult.error.validPattern);
@@ -192,7 +202,7 @@ Deno.test("Unit: validateTwoParams error cases", () => {
 
 /**
  * Unit Test: validateOneParams Functional Behavior
- * 
+ *
  * Tests that validateOneParams correctly transforms one parameter
  * input into valid two-parameter format with appropriate defaults.
  */
@@ -201,12 +211,12 @@ Deno.test("Unit: validateOneParams functional behavior", () => {
   const initDirectivePattern = TwoParamsDirectivePattern.create("init");
   const initOnlyPattern = new MockPatternProvider(
     initDirectivePattern,
-    null
+    null,
   );
-  
-  const validator = new ParameterValidator(
+
+  const _validator = new ParameterValidator(
     initOnlyPattern,
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
 
   // Success case: Valid one parameter
@@ -217,28 +227,28 @@ Deno.test("Unit: validateOneParams functional behavior", () => {
     options: { input: "test.md" },
   };
 
-  const result = validator.validateOneParams(validOneParams);
-  assertEquals(result.ok, true);
-  
-  if (result.ok) {
+  const _result = _validator.validateOneParams(validOneParams);
+  assertEquals(_result.ok, true);
+
+  if (_result.ok) {
     // Should use "init" as default directive
-    assertExists(result.data.directive);
-    assertExists(result.data.layer);
-    assertEquals(result.data.options.inputPath, "test.md");
-    assertEquals(result.data.metadata.source, "OneParamsResult");
+    assertExists(_result.data.directive);
+    assertExists(_result.data.layer);
+    assertEquals(_result.data.options.inputPath, "test.md");
+    assertEquals(_result.data.metadata.source, "OneParamsResult");
   }
 });
 
 /**
  * Unit Test: Custom Variables Validation Logic
- * 
+ *
  * Tests the complete custom variables extraction and validation logic
  * including edge cases and type conversions.
  */
 Deno.test("Unit: Custom variables validation logic", () => {
-  const validator = new ParameterValidator(
+  const _validator = new ParameterValidator(
     new MockPatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
 
   // Success case: Various custom variable types
@@ -260,12 +270,12 @@ Deno.test("Unit: Custom variables validation logic", () => {
     },
   };
 
-  const result = validator.validateTwoParams(validCustomVarsParams);
-  assertEquals(result.ok, true);
-  
-  if (result.ok) {
-    const customVars = result.data.customVariables;
-    
+  const _result = _validator.validateTwoParams(validCustomVarsParams);
+  assertEquals(_result.ok, true);
+
+  if (_result.ok) {
+    const customVars = _result.data.customVariables;
+
     // String conversion tests
     assertEquals(customVars["uv-stringVar"], "hello");
     assertEquals(customVars["uv-numberVar"], "123");
@@ -274,7 +284,7 @@ Deno.test("Unit: Custom variables validation logic", () => {
     assertEquals(customVars["uv-falseBool"], "false");
     assertEquals(customVars["uv-emptyString"], "");
     assertEquals(customVars["uv-"], "emptyName");
-    
+
     // Should not include non-uv- prefixed options
     assertEquals(customVars["regularOption"], undefined);
     assertEquals(customVars["uv"], undefined);
@@ -291,7 +301,7 @@ Deno.test("Unit: Custom variables validation logic", () => {
     },
   };
 
-  const objectResult = validator.validateTwoParams(invalidObjectVarParams);
+  const objectResult = _validator.validateTwoParams(invalidObjectVarParams);
   assertEquals(objectResult.ok, false);
   if (!objectResult.ok) {
     // Type-safe property access with proper discriminated union handling
@@ -307,14 +317,14 @@ Deno.test("Unit: Custom variables validation logic", () => {
 
 /**
  * Unit Test: Path Validation Logic
- * 
+ *
  * Tests the path validation functionality including edge cases
  * and special path values like "stdin" and "stdout".
  */
 Deno.test("Unit: Path validation logic", () => {
-  const validator = new ParameterValidator(
+  const _validator = new ParameterValidator(
     new MockPatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
 
   // Success case: Valid paths including special values
@@ -329,7 +339,7 @@ Deno.test("Unit: Path validation logic", () => {
     },
   };
 
-  const validResult = validator.validateTwoParams(validPathsParams);
+  const validResult = _validator.validateTwoParams(validPathsParams);
   assertEquals(validResult.ok, true);
 
   // Error case: Path with null character
@@ -343,7 +353,7 @@ Deno.test("Unit: Path validation logic", () => {
     },
   };
 
-  const nullResult = validator.validateTwoParams(nullPathParams);
+  const nullResult = _validator.validateTwoParams(nullPathParams);
   assertEquals(nullResult.ok, false);
   if (!nullResult.ok) {
     // Type-safe property access with proper discriminated union handling
@@ -360,14 +370,14 @@ Deno.test("Unit: Path validation logic", () => {
   const emptyPathParams: TwoParamsResult = {
     type: "two",
     demonstrativeType: "to",
-    layerType: "project", 
+    layerType: "project",
     params: ["to", "project"],
     options: {
       fromFile: "   ", // Whitespace only
     },
   };
 
-  const emptyResult = validator.validateTwoParams(emptyPathParams);
+  const emptyResult = _validator.validateTwoParams(emptyPathParams);
   assertEquals(emptyResult.ok, false);
   if (!emptyResult.ok) {
     // Type-safe property access with proper discriminated union handling

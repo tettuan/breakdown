@@ -79,6 +79,7 @@ export function hasStdinContent(): boolean {
  */
 export function writeStdout(content: string): void {
   try {
+    const _encoder = new TextEncoder();
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
     Deno.stdout.writeSync(data);
@@ -247,3 +248,13 @@ export function isStdinAvailable(opts?: { isTerminal?: boolean }): boolean {
   const isTerminal = opts?.isTerminal ?? Deno.stdin.isTerminal();
   return !isTerminal;
 }
+
+// Re-export StdinProvider types and factory for enhanced integration
+export {
+  type ExtendedStdinOptions,
+  type MockStdinConfig,
+  MockStdinProvider,
+  ProductionStdinProvider,
+  type StdinProvider,
+  StdinProviderFactory,
+} from "./stdin_provider.ts";

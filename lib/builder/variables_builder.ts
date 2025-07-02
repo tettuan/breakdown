@@ -10,11 +10,8 @@
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
-import type {
-  PromptVariable,
-  PromptVariables,
-} from "../types/prompt_variables.ts";
+import { error, ok } from "../types/result.ts";
+import type { PromptVariable, PromptVariables } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";
 import { basename } from "jsr:@std/path@1";
 
@@ -42,7 +39,7 @@ export interface FactoryResolvedValues {
  * Builder-specific error types for variable creation following Totality Principle
  */
 export type BuilderVariableError =
-  | VariableError  // From variable_result.ts
+  | VariableError // From variable_result.ts
   | { kind: "DuplicateVariable"; name: string }
   | { kind: "InvalidPrefix"; name: string; expectedPrefix: string }
   | { kind: "FactoryValueMissing"; field: string };
@@ -52,7 +49,7 @@ export type BuilderVariableError =
  *
  * @example
  * ```typescript
- * const builder = new VariablesBuilder();
+ * const _builder = new VariablesBuilder();
  * const result = builder
  *   .addStandardVariable("input_text_file", "/path/to/file.txt")
  *   .addFilePathVariable("schema_file", "/path/to/schema.json")
@@ -188,7 +185,7 @@ export class VariablesBuilder {
         // Skip empty values rather than creating an error - templates may have optional variables
         continue;
       }
-      
+
       // Create UserVariable for template usage
       const result = UserVariable.create(name, value);
       if (result.ok) {
@@ -215,7 +212,7 @@ export class VariablesBuilder {
   /**
    * Convert all variables to Record<string, string> format
    * This method should only be called after successful build()
-   * 
+   *
    * For UserVariables, the format returned depends on context:
    * - VariablesBuilder context: keeps uv- prefix for test compatibility
    * - PromptParams context: UserVariable.toRecord() removes prefix
@@ -283,7 +280,10 @@ export class VariablesBuilder {
    */
   addFromFactoryValues(factoryValues: FactoryResolvedValues): this {
     // Add input file path as standard variable (if not stdin)
-    if (factoryValues.inputFilePath && factoryValues.inputFilePath !== "-" && factoryValues.inputFilePath !== "") {
+    if (
+      factoryValues.inputFilePath && factoryValues.inputFilePath !== "-" &&
+      factoryValues.inputFilePath !== ""
+    ) {
       this.addStandardVariable("input_text_file", basename(factoryValues.inputFilePath));
     }
 
@@ -323,7 +323,10 @@ export class VariablesBuilder {
    */
   addFromPartialFactoryValues(partialValues: Partial<FactoryResolvedValues>): this {
     if (partialValues.inputFilePath !== undefined) {
-      if (partialValues.inputFilePath && partialValues.inputFilePath !== "-" && partialValues.inputFilePath !== "") {
+      if (
+        partialValues.inputFilePath && partialValues.inputFilePath !== "-" &&
+        partialValues.inputFilePath !== ""
+      ) {
         this.addStandardVariable("input_text_file", basename(partialValues.inputFilePath));
       }
     }
@@ -350,7 +353,9 @@ export class VariablesBuilder {
   /**
    * Validate Factory values before processing
    */
-  validateFactoryValues(factoryValues: FactoryResolvedValues): Result<void, BuilderVariableError[]> {
+  validateFactoryValues(
+    factoryValues: FactoryResolvedValues,
+  ): Result<void, BuilderVariableError[]> {
     const errors: BuilderVariableError[] = [];
 
     // Check required fields
@@ -370,7 +375,7 @@ export class VariablesBuilder {
           errors.push({
             kind: "InvalidPrefix",
             name,
-            expectedPrefix: "uv-"
+            expectedPrefix: "uv-",
           });
         }
       }

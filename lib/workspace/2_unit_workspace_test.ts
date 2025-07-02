@@ -1,44 +1,43 @@
 /**
- * Unit tests for workspace.ts
- * 
+ * Unit tests for _workspace.ts
+ *
  * These tests verify individual method functionality, error handling scenarios,
  * edge cases, and boundary conditions for the workspace module.
  */
 
-import { assertEquals, assertRejects, assertExists } from "@std/assert";
-import { WorkspaceImpl } from "./workspace.ts";
-import { WorkspaceInitError, WorkspaceConfigError } from "./errors.ts";
+import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { WorkspaceImpl } from "./_workspace.ts";
+import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { join, resolve } from "@std/path";
 import { exists } from "@std/fs";
 
 Deno.test("Workspace Unit Tests", async (t) => {
-  const logger = new BreakdownLogger("unit-test");
-  
+  const _logger = new BreakdownLogger("unit-test");
+
   await t.step("Initialization Tests", async (t) => {
-    
     await t.step("should initialize workspace successfully", async () => {
-      logger.debug("Testing successful workspace initialization");
-      
+      _logger.debug("Testing successful workspace initialization");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
-        await workspace.initialize();
-        
+        await _workspace.initialize();
+
         // Verify directories were created
-        const workspaceExists = await workspace.exists();
+        const workspaceExists = await _workspace.exists();
         assertEquals(workspaceExists, true);
-        
+
         // Verify config file was created
         const configPath = join(tempDir, ".agent", "breakdown", "config", "app.yml");
         const configExists = await exists(configPath);
         assertEquals(configExists, true);
-        
+
         // Verify template directories were created
         const promptDir = join(tempDir, ".agent", "breakdown", "prompts");
         const schemaDir = join(tempDir, ".agent", "breakdown", "schema");
@@ -46,54 +45,52 @@ Deno.test("Workspace Unit Tests", async (t) => {
         const schemaExists = await exists(schemaDir);
         assertEquals(promptExists, true);
         assertEquals(schemaExists, true);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should handle permission denied errors", async () => {
-      logger.debug("Testing permission denied error handling");
-      
+      _logger.debug("Testing permission denied error handling");
+
       // Create workspace with invalid directory (simulate permission denied)
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: "/root/restricted", // This should fail on most systems
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       // Should throw WorkspaceInitError for permission issues
       await assertRejects(
-        () => workspace.initialize(),
+        () => _workspace.initialize(),
         Error, // Could be WorkspaceInitError or PermissionDenied
-        undefined // Don't specify exact message as it varies by system
+        undefined, // Don't specify exact message as it varies by system
       );
     });
 
     await t.step("should not overwrite existing config file", async () => {
-      logger.debug("Testing config file preservation");
-      
+      _logger.debug("Testing config file preservation");
+
       const tempDir = await Deno.makeTempDir();
       const configDir = join(tempDir, ".agent", "breakdown", "config");
       const configFile = join(configDir, "app.yml");
-      
+
       try {
         // Create config directory and file first
         await Deno.mkdir(configDir, { recursive: true });
         await Deno.writeTextFile(configFile, "existing: config");
-        
-        const workspace = new WorkspaceImpl({
+
+        const _workspace = new WorkspaceImpl({
           workingDir: tempDir,
           promptBaseDir: "prompts",
           schemaBaseDir: "schema",
         });
-        
-        await workspace.initialize();
-        
+
+        await _workspace.initialize();
+
         // Verify existing config was preserved
         const configContent = await Deno.readTextFile(configFile);
         assertEquals(configContent, "existing: config");
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
@@ -101,19 +98,18 @@ Deno.test("Workspace Unit Tests", async (t) => {
   });
 
   await t.step("Path Resolution Tests", async (t) => {
-    
     await t.step("should resolve paths correctly", async () => {
-      logger.debug("Testing path resolution");
-      
+      _logger.debug("Testing path resolution");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
-        const resolvedPath = await workspace.resolvePath("test/path");
+        const resolvedPath = await _workspace.resolvePath("test/path");
         assertEquals(resolvedPath, ".agent/breakdown/test/path");
       } finally {
         await Deno.remove(tempDir, { recursive: true });
@@ -121,24 +117,23 @@ Deno.test("Workspace Unit Tests", async (t) => {
     });
 
     await t.step("should get correct base directories", async () => {
-      logger.debug("Testing base directory getters");
-      
+      _logger.debug("Testing base directory getters");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "custom-prompts",
         schemaBaseDir: "custom-schema",
       });
-      
+
       try {
-        const promptDir = await workspace.getPromptBaseDir();
-        const schemaDir = await workspace.getSchemaBaseDir();
-        const workingDir = await workspace.getWorkingDir();
-        
+        const promptDir = await _workspace.getPromptBaseDir();
+        const schemaDir = await _workspace.getSchemaBaseDir();
+        const workingDir = await _workspace.getWorkingDir();
+
         assertEquals(promptDir, resolve(tempDir, "custom-prompts"));
         assertEquals(schemaDir, resolve(tempDir, "custom-schema"));
         assertEquals(workingDir, tempDir);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
@@ -146,49 +141,46 @@ Deno.test("Workspace Unit Tests", async (t) => {
   });
 
   await t.step("Directory Operations Tests", async (t) => {
-    
     await t.step("should handle directory operations correctly", async () => {
-      logger.debug("Testing directory operations");
-      
+      _logger.debug("Testing directory operations");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
-        await workspace.initialize();
-        
+        await _workspace.initialize();
+
         // Test directory creation
-        await workspace.createDirectory("test/nested/dir");
-        const dirExists = await workspace.exists("test/nested/dir");
+        await _workspace.createDirectory("test/nested/dir");
+        const dirExists = await _workspace.exists("test/nested/dir");
         assertEquals(dirExists, true);
-        
+
         // Test directory removal
-        await workspace.removeDirectory("test");
-        const dirRemoved = !(await workspace.exists("test"));
+        await _workspace.removeDirectory("test");
+        const dirRemoved = !(await _workspace.exists("test"));
         assertEquals(dirRemoved, true);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should handle exists check for non-existent paths", async () => {
-      logger.debug("Testing exists check for non-existent paths");
-      
+      _logger.debug("Testing exists check for non-existent paths");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
-        const nonExistentExists = await workspace.exists("non/existent/path");
+        const nonExistentExists = await _workspace.exists("non/existent/path");
         assertEquals(nonExistentExists, false);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
@@ -196,55 +188,53 @@ Deno.test("Workspace Unit Tests", async (t) => {
   });
 
   await t.step("Configuration Management Tests", async (t) => {
-    
     await t.step("should validate config successfully", async () => {
-      logger.debug("Testing config validation");
-      
+      _logger.debug("Testing config validation");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
         // Should pass validation for existing directory
-        await workspace.validateConfig();
-        
+        await _workspace.validateConfig();
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should fail validation for non-existent working directory", async () => {
-      logger.debug("Testing config validation failure");
-      
-      const workspace = new WorkspaceImpl({
+      _logger.debug("Testing config validation failure");
+
+      const _workspace = new WorkspaceImpl({
         workingDir: "/non/existent/directory",
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       await assertRejects(
-        () => workspace.validateConfig(),
+        () => _workspace.validateConfig(),
         WorkspaceConfigError,
-        "Working directory does not exist"
+        "Working directory does not exist",
       );
     });
 
     await t.step("should reload config from file", async () => {
-      logger.debug("Testing config reload");
-      
+      _logger.debug("Testing config reload");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
-        await workspace.initialize();
-        
+        await _workspace.initialize();
+
         // Modify config file
         const configFile = join(tempDir, ".agent", "breakdown", "config", "app.yml");
         const newConfig = `
@@ -255,39 +245,37 @@ app_schema:
   base_dir: "modified-schema"
 `;
         await Deno.writeTextFile(configFile, newConfig);
-        
+
         // Reload config
-        await workspace.reloadConfig();
-        
+        await _workspace.reloadConfig();
+
         // Verify config was reloaded (indirectly through getters)
-        const promptDir = await workspace.getPromptBaseDir();
-        const schemaDir = await workspace.getSchemaBaseDir();
-        
+        const promptDir = await _workspace.getPromptBaseDir();
+        const schemaDir = await _workspace.getSchemaBaseDir();
+
         assertEquals(promptDir, resolve(tempDir, "modified-prompts"));
         assertEquals(schemaDir, resolve(tempDir, "modified-schema"));
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should fail to reload missing config file", async () => {
-      logger.debug("Testing config reload failure");
-      
+      _logger.debug("Testing config reload failure");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
         await assertRejects(
-          () => workspace.reloadConfig(),
+          () => _workspace.reloadConfig(),
           WorkspaceConfigError,
-          "Configuration file not found"
+          "Configuration file not found",
         );
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
@@ -295,54 +283,51 @@ app_schema:
   });
 
   await t.step("Edge Cases and Error Handling", async (t) => {
-    
     await t.step("should handle empty path in exists check", async () => {
-      logger.debug("Testing exists check with no path parameter");
-      
+      _logger.debug("Testing exists check with no path parameter");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
         // Should check working directory when no path provided
-        const workspaceExists = await workspace.exists();
+        const workspaceExists = await _workspace.exists();
         assertEquals(workspaceExists, true);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should handle special characters in paths", async () => {
-      logger.debug("Testing special characters in paths");
-      
+      _logger.debug("Testing special characters in paths");
+
       const tempDir = await Deno.makeTempDir();
-      const workspace = new WorkspaceImpl({
+      const _workspace = new WorkspaceImpl({
         workingDir: tempDir,
         promptBaseDir: "prompts with spaces",
         schemaBaseDir: "schema-with-dashes",
       });
-      
+
       try {
-        await workspace.initialize();
-        
-        const promptDir = await workspace.getPromptBaseDir();
-        const schemaDir = await workspace.getSchemaBaseDir();
-        
+        await _workspace.initialize();
+
+        const promptDir = await _workspace.getPromptBaseDir();
+        const schemaDir = await _workspace.getSchemaBaseDir();
+
         assertEquals(promptDir, resolve(tempDir, "prompts with spaces"));
         assertEquals(schemaDir, resolve(tempDir, "schema-with-dashes"));
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }
     });
 
     await t.step("should handle concurrent initialization attempts", async () => {
-      logger.debug("Testing concurrent initialization");
-      
+      _logger.debug("Testing concurrent initialization");
+
       const tempDir = await Deno.makeTempDir();
       const workspace1 = new WorkspaceImpl({
         workingDir: tempDir,
@@ -354,19 +339,18 @@ app_schema:
         promptBaseDir: "prompts",
         schemaBaseDir: "schema",
       });
-      
+
       try {
         // Both should succeed without conflict
         await Promise.all([
           workspace1.initialize(),
-          workspace2.initialize()
+          workspace2.initialize(),
         ]);
-        
+
         const exists1 = await workspace1.exists();
         const exists2 = await workspace2.exists();
         assertEquals(exists1, true);
         assertEquals(exists2, true);
-        
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }

@@ -33,7 +33,7 @@ import {
 } from "../helpers/setup.ts";
 import { join } from "@std/path";
 
-const logger = new BreakdownLogger("breakdown-config-profile-integration");
+const _logger = new BreakdownLogger("breakdown-config-profile-integration");
 
 /**
  * Test configuration for profile switching scenarios
@@ -125,7 +125,7 @@ logging:
   await Deno.writeTextFile(appConfigPath, appConfigContent);
   await Deno.writeTextFile(userConfigPath, userConfigContent);
 
-  logger.debug("Created profile configuration", {
+  _logger.debug("Created profile configuration", {
     profile: config.profileName,
     appConfig: appConfigPath,
     userConfig: userConfigPath,
@@ -138,7 +138,7 @@ logging:
  */
 Deno.test("BreakdownConfig Profile Integration - ConfigProfileName validation", async (t) => {
   await t.step("should create valid ConfigProfileName instances", () => {
-    logger.debug("Testing ConfigProfileName creation with valid values");
+    _logger.debug("Testing ConfigProfileName creation with valid values");
 
     // Test valid profile names
     const breakdownProfile = ConfigProfileName.create("breakdown");
@@ -153,11 +153,11 @@ Deno.test("BreakdownConfig Profile Integration - ConfigProfileName validation", 
     const devProfile = ConfigProfileName.create("dev_profile");
     assertEquals(devProfile.value, "dev_profile");
 
-    logger.info("ConfigProfileName validation tests passed");
+    _logger.info("ConfigProfileName validation tests passed");
   });
 
   await t.step("should reject invalid ConfigProfileName instances", () => {
-    logger.debug("Testing ConfigProfileName creation with invalid values");
+    _logger.debug("Testing ConfigProfileName creation with invalid values");
 
     // Test invalid profile names
     const invalidChars = ConfigProfileName.create("INVALID");
@@ -175,7 +175,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigProfileName validation", 
     const withSpaces = ConfigProfileName.create("invalid profile");
     assertEquals(withSpaces.value, null);
 
-    logger.info("ConfigProfileName rejection tests passed");
+    _logger.info("ConfigProfileName rejection tests passed");
   });
 });
 
@@ -191,13 +191,13 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
       workingDir: "./tmp/profile-integration-test",
       skipDefaultConfig: true, // We'll create our own configs
     });
-    logger.debug("Test environment set up", { workingDir: testEnv.workingDir });
+    _logger.debug("Test environment set up", { workingDir: testEnv.workingDir });
   });
 
   await t.step(
     "should integrate BreakdownConfig with ConfigPatternProvider for breakdown profile",
     async () => {
-      logger.debug("Testing breakdown profile integration");
+      _logger.debug("Testing breakdown profile integration");
 
       // Create breakdown profile configuration
       const breakdownConfig = PROFILE_TEST_CONFIGS[0]; // breakdown profile
@@ -207,7 +207,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
       const configResult = await BreakdownConfig.create("breakdown", testEnv.workingDir);
 
       if (!configResult.success) {
-        logger.error("BreakdownConfig creation failed", { error: "Config creation failed" });
+        _logger.error("BreakdownConfig creation failed", { error: "Config creation failed" });
         // For now, document the expected behavior even if config creation fails
         assert(
           true,
@@ -233,7 +233,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
         const findTest = directivePattern.test("find");
 
         // Log what patterns are actually being used
-        logger.debug("Breakdown profile pattern tests", {
+        _logger.debug("Breakdown profile pattern tests", {
           toValid: toTest,
           summaryValid: summaryTest,
           findValid: findTest,
@@ -251,15 +251,15 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
 
         // If using custom patterns, test exclusions; if fallback, just document
         if (summaryTest && !findTest) {
-          logger.info("Using custom breakdown patterns");
+          _logger.info("Using custom breakdown patterns");
           assertFalse(findTest, "Custom pattern should reject 'find'");
         } else {
-          logger.info("Using fallback patterns for breakdown profile");
+          _logger.info("Using fallback patterns for breakdown profile");
         }
 
-        logger.info("Breakdown profile pattern validation successful");
+        _logger.info("Breakdown profile pattern validation successful");
       } else {
-        logger.warn("Pattern retrieval failed, using fallback assertion");
+        _logger.warn("Pattern retrieval failed, using fallback assertion");
         assert(true, "Pattern integration documented - patterns may use fallbacks");
       }
     },
@@ -268,7 +268,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
   await t.step(
     "should integrate BreakdownConfig with ConfigPatternProvider for search profile",
     async () => {
-      logger.debug("Testing search profile integration");
+      _logger.debug("Testing search profile integration");
 
       // Create search profile configuration
       const searchConfig = PROFILE_TEST_CONFIGS[1]; // search profile
@@ -278,7 +278,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
       const configResult = await BreakdownConfig.create("search", testEnv.workingDir);
 
       if (!configResult.success) {
-        logger.error("BreakdownConfig creation failed for search profile", {
+        _logger.error("BreakdownConfig creation failed for search profile", {
           error: "Search config creation failed",
         });
         assert(true, "Search profile config creation documented");
@@ -302,7 +302,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
         const toTest = directivePattern.test("to");
 
         // Log what patterns are actually being used
-        logger.debug("Search profile pattern tests", {
+        _logger.debug("Search profile pattern tests", {
           findValid: findTest,
           searchValid: searchTest,
           toValid: toTest,
@@ -312,16 +312,16 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
 
         // If using fallback patterns, "to" might be valid instead of "find"
         if (toTest && !findTest) {
-          logger.info("Using fallback patterns for search profile");
+          _logger.info("Using fallback patterns for search profile");
           assert(toTest, "Fallback pattern accepts 'to'");
         } else if (findTest) {
-          logger.info("Using custom search patterns");
+          _logger.info("Using custom search patterns");
           assert(findTest, "Custom pattern accepts 'find'");
         }
 
-        logger.info("Search profile pattern validation completed");
+        _logger.info("Search profile pattern validation completed");
       } else {
-        logger.warn("Search pattern retrieval failed, using fallback assertion");
+        _logger.warn("Search pattern retrieval failed, using fallback assertion");
         assert(true, "Search profile pattern integration documented");
       }
     },
@@ -329,7 +329,7 @@ Deno.test("BreakdownConfig Profile Integration - ConfigPatternProvider integrati
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Test environment cleaned up");
+    _logger.debug("Test environment cleaned up");
   });
 });
 
@@ -345,15 +345,15 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
       workingDir: "./tmp/typefactory-profile-test",
       skipDefaultConfig: true,
     });
-    logger.debug("TypeFactory test environment set up");
+    _logger.debug("TypeFactory test environment set up");
   });
 
   await t.step("should switch TypeFactory patterns based on profile configuration", async () => {
-    logger.debug("Testing TypeFactory pattern switching");
+    _logger.debug("Testing TypeFactory pattern switching");
 
     // Test each profile configuration
     for (const profileConfig of PROFILE_TEST_CONFIGS) {
-      logger.debug("Testing profile", { profile: profileConfig.profileName });
+      _logger.debug("Testing profile", { profile: profileConfig.profileName });
 
       // Create configuration for this profile
       await createProfileConfig(testEnv, profileConfig);
@@ -374,9 +374,9 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         // Test valid directives for this profile
         for (const validDirective of profileConfig.validDirectives) {
           const result = factory.createDirectiveType(validDirective);
-          if (result.ok) {
+          if (_result.ok) {
             assertEquals(result.data.getValue(), validDirective);
-            logger.debug("Valid directive accepted", {
+            _logger.debug("Valid directive accepted", {
               profile: profileConfig.profileName,
               directive: validDirective,
             });
@@ -386,9 +386,9 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         // Test invalid directives for this profile
         for (const invalidDirective of profileConfig.invalidDirectives) {
           const result = factory.createDirectiveType(invalidDirective);
-          if (!result.ok) {
-            assertEquals(result.error.kind, "ValidationFailed");
-            logger.debug("Invalid directive rejected", {
+          if (!_result.ok) {
+            assertEquals(_result.error.kind, "ValidationFailed");
+            _logger.debug("Invalid directive rejected", {
               profile: profileConfig.profileName,
               directive: invalidDirective,
             });
@@ -398,9 +398,9 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         // Test valid layers for this profile
         for (const validLayer of profileConfig.validLayers) {
           const result = factory.createLayerType(validLayer);
-          if (result.ok) {
+          if (_result.ok) {
             assertEquals(result.data.getValue(), validLayer);
-            logger.debug("Valid layer accepted", {
+            _logger.debug("Valid layer accepted", {
               profile: profileConfig.profileName,
               layer: validLayer,
             });
@@ -410,16 +410,16 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         // Test invalid layers for this profile
         for (const invalidLayer of profileConfig.invalidLayers) {
           const result = factory.createLayerType(invalidLayer);
-          if (!result.ok) {
-            assertEquals(result.error.kind, "ValidationFailed");
-            logger.debug("Invalid layer rejected", {
+          if (!_result.ok) {
+            assertEquals(_result.error.kind, "ValidationFailed");
+            _logger.debug("Invalid layer rejected", {
               profile: profileConfig.profileName,
               layer: invalidLayer,
             });
           }
         }
       } else {
-        logger.warn("Profile config creation failed, documenting expected behavior", {
+        _logger.warn("Profile config creation failed, documenting expected behavior", {
           profile: profileConfig.profileName,
           error: "Config creation failed",
         });
@@ -427,11 +427,11 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
       }
     }
 
-    logger.info("TypeFactory profile switching tests completed");
+    _logger.info("TypeFactory profile switching tests completed");
   });
 
   await t.step("should handle profile switching with createBothTypes", async () => {
-    logger.debug("Testing createBothTypes profile switching");
+    _logger.debug("Testing createBothTypes profile switching");
 
     // Test breakdown profile
     const breakdownConfig = PROFILE_TEST_CONFIGS[0];
@@ -451,24 +451,24 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
       if (validResult.ok) {
         assertEquals(validResult.data.directive.getValue(), "to");
         assertEquals(validResult.data.layer.getValue(), "project");
-        logger.debug("Valid breakdown combination created successfully");
+        _logger.debug("Valid breakdown combination created successfully");
       }
 
       // Test invalid combination (search terms in breakdown profile)
       const invalidResult = factory.createBothTypes("find", "bugs");
       if (!invalidResult.ok) {
         assertEquals(invalidResult.error.kind, "ValidationFailed");
-        logger.debug("Invalid combination properly rejected");
+        _logger.debug("Invalid combination properly rejected");
       }
     } else {
-      logger.warn("createBothTypes test documented - config creation failed");
+      _logger.warn("createBothTypes test documented - config creation failed");
       assert(true, "createBothTypes profile switching documented");
     }
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("TypeFactory test environment cleaned up");
+    _logger.debug("TypeFactory test environment cleaned up");
   });
 });
 
@@ -484,11 +484,11 @@ Deno.test("BreakdownConfig Profile Integration - configuration hierarchy", async
       workingDir: "./tmp/hierarchy-integration-test",
       skipDefaultConfig: true,
     });
-    logger.debug("Configuration hierarchy test environment set up");
+    _logger.debug("Configuration hierarchy test environment set up");
   });
 
   await t.step("should handle configuration hierarchy and overrides", async () => {
-    logger.debug("Testing configuration hierarchy");
+    _logger.debug("Testing configuration hierarchy");
 
     const configDir = join(testEnv.workingDir, ".agent", "breakdown", "config");
 
@@ -535,7 +535,7 @@ features:
         const overrideTest = directivePattern.test("override");
         const baseTest = directivePattern.test("base");
 
-        logger.debug("Hierarchy pattern tests", {
+        _logger.debug("Hierarchy pattern tests", {
           toValid: toTest,
           overrideValid: overrideTest,
           baseValid: baseTest,
@@ -550,19 +550,19 @@ features:
         const layerOverrideTest = layerPattern.test("override");
         assert(projectTest || layerOverrideTest, "Some layer patterns should be valid");
 
-        logger.info("Configuration hierarchy validation successful");
+        _logger.info("Configuration hierarchy validation successful");
       } else {
-        logger.warn("Configuration hierarchy test using fallback assertion");
+        _logger.warn("Configuration hierarchy test using fallback assertion");
         assert(true, "Configuration hierarchy behavior documented");
       }
     } else {
-      logger.warn("Configuration hierarchy test documented - config creation failed");
+      _logger.warn("Configuration hierarchy test documented - config creation failed");
       assert(true, "Configuration hierarchy integration documented");
     }
   });
 
   await t.step("should fallback to DefaultTypePatternProvider when config fails", async () => {
-    logger.debug("Testing fallback to DefaultTypePatternProvider");
+    _logger.debug("Testing fallback to DefaultTypePatternProvider");
 
     // Test with invalid/missing configuration
     const configResult = await BreakdownConfig.create("nonexistent", testEnv.workingDir);
@@ -584,16 +584,16 @@ features:
         assertEquals(layerResult.data.getValue(), "project");
       }
 
-      logger.info("Fallback to DefaultTypePatternProvider successful");
+      _logger.info("Fallback to DefaultTypePatternProvider successful");
     } else {
-      logger.warn("Fallback test - unexpected config success");
+      _logger.warn("Fallback test - unexpected config success");
       assert(true, "Fallback behavior documented");
     }
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Configuration hierarchy test environment cleaned up");
+    _logger.debug("Configuration hierarchy test environment cleaned up");
   });
 });
 
@@ -609,11 +609,11 @@ Deno.test("BreakdownConfig Profile Integration - edge cases and error handling",
       workingDir: "./tmp/edge-cases-integration-test",
       skipDefaultConfig: true,
     });
-    logger.debug("Edge cases test environment set up");
+    _logger.debug("Edge cases test environment set up");
   });
 
   await t.step("should handle malformed configuration gracefully", async () => {
-    logger.debug("Testing malformed configuration handling");
+    _logger.debug("Testing malformed configuration handling");
 
     const configDir = join(testEnv.workingDir, ".agent", "breakdown", "config");
 
@@ -634,7 +634,7 @@ layerTypePattern: 123  # Wrong type
 
       if (!configResult.success) {
         // Expected - should fail gracefully
-        logger.debug("Malformed config properly rejected");
+        _logger.debug("Malformed config properly rejected");
       } else {
         // If it succeeds, should still provide working patterns (fallback)
         const config = configResult.data;
@@ -644,19 +644,19 @@ layerTypePattern: 123  # Wrong type
         const patterns = provider.debug();
         assertExists(patterns.configSetName);
 
-        logger.debug("Malformed config handled with fallback patterns");
+        _logger.debug("Malformed config handled with fallback patterns");
       }
 
-      logger.info("Malformed configuration handling test passed");
+      _logger.info("Malformed configuration handling test passed");
     } catch (error) {
       // Expected - error should be caught and handled
-      logger.debug("Malformed config error caught", { error });
+      _logger.debug("Malformed config error caught", { error });
       assert(true, "Error handling working correctly");
     }
   });
 
   await t.step("should handle empty and minimal configurations", async () => {
-    logger.debug("Testing empty configuration handling");
+    _logger.debug("Testing empty configuration handling");
 
     const configDir = join(testEnv.workingDir, ".agent", "breakdown", "config");
 
@@ -690,18 +690,18 @@ app_schema:
       if (directiveResult.ok && layerResult.ok) {
         assertEquals(directiveResult.data.getValue(), "to");
         assertEquals(layerResult.data.getValue(), "project");
-        logger.debug("Minimal config working with fallback patterns");
+        _logger.debug("Minimal config working with fallback patterns");
       }
 
-      logger.info("Minimal configuration handling successful");
+      _logger.info("Minimal configuration handling successful");
     } else {
-      logger.warn("Minimal config test documented - creation failed");
+      _logger.warn("Minimal config test documented - creation failed");
       assert(true, "Minimal configuration behavior documented");
     }
   });
 
   await t.step("should handle provider cache behavior correctly", async () => {
-    logger.debug("Testing provider cache behavior");
+    _logger.debug("Testing provider cache behavior");
 
     // Create basic configuration
     const basicConfig = PROFILE_TEST_CONFIGS[0];
@@ -736,16 +736,16 @@ app_schema:
       assertExists(debugInfo.hasDirectivePattern);
       assertExists(debugInfo.hasLayerTypePattern);
 
-      logger.info("Provider cache behavior test successful");
+      _logger.info("Provider cache behavior test successful");
     } else {
-      logger.warn("Cache behavior test documented - config creation failed");
+      _logger.warn("Cache behavior test documented - config creation failed");
       assert(true, "Cache behavior documented");
     }
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Edge cases test environment cleaned up");
+    _logger.debug("Edge cases test environment cleaned up");
   });
 });
 
@@ -761,11 +761,11 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
       workingDir: "./tmp/performance-integration-test",
       skipDefaultConfig: true,
     });
-    logger.debug("Performance test environment set up");
+    _logger.debug("Performance test environment set up");
   });
 
   await t.step("should handle rapid profile switching efficiently", async () => {
-    logger.debug("Testing rapid profile switching performance");
+    _logger.debug("Testing rapid profile switching performance");
 
     // Create configurations for both profiles
     for (const profileConfig of PROFILE_TEST_CONFIGS) {
@@ -791,11 +791,11 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
           // Perform quick validation
           const result = factory.createDirectiveType("to");
           // Result will depend on profile - just ensure no crash
-          assertExists(result);
+          assertExists(_result);
         }
       } catch (error) {
         // Document performance under error conditions
-        logger.debug("Profile switching error during performance test", {
+        _logger.debug("Profile switching error during performance test", {
           iteration: i,
           profile: profileName,
           error,
@@ -807,7 +807,7 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
     const duration = end - start;
     const avgTime = duration / iterations;
 
-    logger.info("Profile switching performance test results", {
+    _logger.info("Profile switching performance test results", {
       iterations,
       totalDuration: `${duration.toFixed(2)}ms`,
       avgTimePerSwitch: `${avgTime.toFixed(4)}ms`,
@@ -818,7 +818,7 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
   });
 
   await t.step("should handle concurrent profile access", async () => {
-    logger.debug("Testing concurrent profile access");
+    _logger.debug("Testing concurrent profile access");
 
     // Create configuration
     const breakdownConfig = PROFILE_TEST_CONFIGS[0];
@@ -846,7 +846,7 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
     const results = await Promise.all(concurrentTasks);
     const successCount = results.filter((r) => r.success).length;
 
-    logger.info("Concurrent access test results", {
+    _logger.info("Concurrent access test results", {
       totalTasks: concurrentTasks.length,
       successCount,
       successRate: `${(successCount / concurrentTasks.length * 100).toFixed(1)}%`,
@@ -858,8 +858,8 @@ Deno.test("BreakdownConfig Profile Integration - performance and stress testing"
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Performance test environment cleaned up");
+    _logger.debug("Performance test environment cleaned up");
   });
 });
 
-logger.info("All BreakdownConfig profile integration tests completed");
+_logger.info("All BreakdownConfig profile integration tests completed");

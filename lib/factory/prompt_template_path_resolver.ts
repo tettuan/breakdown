@@ -18,7 +18,7 @@ import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParamsResult } from "../deps.ts";
 import type { ExtendedTwoParamsResult } from "../types/mod.ts";
-import { DirectiveType } from "../types/directive_type.ts";
+import { DirectiveType as _DirectiveType } from "../types/directive_type.ts";
 import { LayerType as LayerType } from "../types/layer_type.ts";
 
 // Legacy type alias for backward compatibility during migration
@@ -28,7 +28,7 @@ type DoubleParamsResult = PromptCliParams;
  * TypeCreationResult - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -61,7 +61,9 @@ export type TypeCreationResult<T> =
  * ```
  */
 export class PromptTemplatePathResolver {
-  private config: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown>;
+  private config:
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown>;
   private cliParams: DoubleParamsResult | TwoParamsResult;
 
   /**
@@ -84,7 +86,9 @@ export class PromptTemplatePathResolver {
    * ```
    */
   constructor(
-    config: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown>,
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
     cliParams: DoubleParamsResult | TwoParamsResult,
   ) {
     // Deep copy to ensure immutability using dedicated methods
@@ -97,9 +101,15 @@ export class PromptTemplatePathResolver {
    * @param config - The configuration object to copy
    * @returns Deep copy of the configuration
    */
-  private deepCopyConfig(config: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown>): { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown> {
+  private deepCopyConfig(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+  ):
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown> {
     const copy: any = {};
-    
+
     // Copy app_prompt
     if (config.app_prompt) {
       copy.app_prompt = {};
@@ -107,7 +117,7 @@ export class PromptTemplatePathResolver {
         copy.app_prompt.base_dir = config.app_prompt.base_dir;
       }
     }
-    
+
     // Copy app_schema
     if (config.app_schema) {
       copy.app_schema = {};
@@ -115,14 +125,14 @@ export class PromptTemplatePathResolver {
         copy.app_schema.base_dir = config.app_schema.base_dir;
       }
     }
-    
+
     // Copy other properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (key !== 'app_prompt' && key !== 'app_schema') {
+      if (key !== "app_prompt" && key !== "app_schema") {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -131,8 +141,10 @@ export class PromptTemplatePathResolver {
    * @param cliParams - The CLI parameters to copy
    * @returns Deep copy of the CLI parameters
    */
-  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
-    if ('type' in cliParams && cliParams.type === 'two') {
+  private deepCopyCliParams(
+    cliParams: DoubleParamsResult | TwoParamsResult,
+  ): DoubleParamsResult | TwoParamsResult {
+    if ("type" in cliParams && cliParams.type === "two") {
       // TwoParamsResult
       const twoParams = cliParams as TwoParamsResult;
       const copy: TwoParamsResult = {
@@ -140,7 +152,7 @@ export class PromptTemplatePathResolver {
         params: [...twoParams.params],
         demonstrativeType: twoParams.demonstrativeType,
         layerType: twoParams.layerType,
-        options: { ...twoParams.options }
+        options: { ...twoParams.options },
       };
       return copy;
     } else {
@@ -148,13 +160,13 @@ export class PromptTemplatePathResolver {
       const doubleParams = cliParams as DoubleParamsResult;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
-        layerType: doubleParams.layerType
+        layerType: doubleParams.layerType,
       };
-      
+
       if (doubleParams.options) {
         copy.options = { ...doubleParams.options };
       }
-      
+
       return copy;
     }
   }
@@ -225,13 +237,13 @@ export class PromptTemplatePathResolver {
     // Check if schema path should be used based on options
     const useSchema = this.getUseSchemaFlag();
     let baseDir: string;
-    
+
     if (useSchema && this.config.app_schema?.base_dir) {
       baseDir = this.config.app_schema.base_dir;
     } else {
       baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
     }
-    
+
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
     }
@@ -245,12 +257,12 @@ export class PromptTemplatePathResolver {
   public buildFileName(): string {
     const useSchema = this.getUseSchemaFlag();
     const fromLayerType = this.resolveFromLayerType();
-    
+
     if (useSchema) {
       // Schema files use .json extension and no adaptation suffix
       return `f_${fromLayerType}.json`;
     }
-    
+
     // Prompt files use .md extension and may have adaptation suffix
     const adaptation = this.getAdaptation();
     const adaptationSuffix = adaptation ? `_${adaptation}` : "";
@@ -263,12 +275,14 @@ export class PromptTemplatePathResolver {
    */
   private getUseSchemaFlag(): boolean {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
-      return Boolean((this.cliParams.options as any)?.useSchema);
+    if ("options" in this.cliParams) {
+      return Boolean((this.cliParams.options as Record<string, unknown>)?.useSchema);
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
-    return Boolean((twoParams as unknown as { options?: { useSchema?: boolean } }).options?.useSchema);
+    return Boolean(
+      (twoParams as unknown as { options?: { useSchema?: boolean } }).options?.useSchema,
+    );
   }
 
   /**
@@ -277,8 +291,8 @@ export class PromptTemplatePathResolver {
    */
   private getAdaptation(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
-      return (this.cliParams.options as any)?.adaptation as string | undefined;
+    if ("options" in this.cliParams) {
+      return (this.cliParams.options as Record<string, unknown>)?.adaptation as string | undefined;
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
@@ -312,12 +326,12 @@ export class PromptTemplatePathResolver {
    */
   private getDemonstrativeType(): string {
     // Handle both legacy and new parameter structures
-    if ('demonstrativeType' in this.cliParams) {
+    if ("demonstrativeType" in this.cliParams) {
       return this.cliParams.demonstrativeType;
     }
     // For TwoParamsResult structure, create DirectiveType and get value
     const twoParams = this.cliParams as TwoParamsResult;
-    const directiveType = DirectiveType.create(twoParams);
+    const directiveType = _DirectiveType.create(twoParams);
     return directiveType.value;
   }
 
@@ -327,7 +341,7 @@ export class PromptTemplatePathResolver {
    */
   private getLayerType(): string {
     // Handle both legacy and new parameter structures
-    if ('layerType' in this.cliParams) {
+    if ("layerType" in this.cliParams) {
       return this.cliParams.layerType;
     }
     // For TwoParamsResult structure, create LayerType and get value
@@ -378,12 +392,13 @@ export class PromptTemplatePathResolver {
    */
   private getFromLayerType(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
-      return (this.cliParams.options as any)?.fromLayerType;
+    if ("options" in this.cliParams) {
+      return (this.cliParams.options as unknown as { fromLayerType?: string })?.fromLayerType;
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
-    return (twoParams as unknown as { options?: { fromLayerType?: string } }).options?.fromLayerType;
+    return (twoParams as unknown as { options?: { fromLayerType?: string } }).options
+      ?.fromLayerType;
   }
 
   /**
@@ -392,8 +407,8 @@ export class PromptTemplatePathResolver {
    */
   private getFromFile(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
-      return (this.cliParams.options as any)?.fromFile as string | undefined;
+    if ("options" in this.cliParams) {
+      return (this.cliParams.options as unknown as { fromFile?: string })?.fromFile;
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;

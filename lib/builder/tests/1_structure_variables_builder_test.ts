@@ -14,23 +14,23 @@ import { VariablesBuilder } from "../variables_builder.ts";
  * Verify single responsibility - builder only builds, doesn't validate internals
  */
 Deno.test("VariablesBuilder - maintains single responsibility", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Builder delegates validation to variable types' Smart Constructors
   // It only orchestrates the building process
-  const result = builder
+  const _result = builder
     .addStandardVariable("invalid", "value")
     .build();
 
   // Builder captures the error but doesn't perform validation itself
-  assertEquals(result.ok, false);
+  assertEquals(_result.ok, false);
 });
 
 /**
  * Verify proper separation of concerns
  */
 Deno.test("VariablesBuilder - separates building from validation", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Adding variables doesn't immediately fail
   builder
@@ -38,12 +38,12 @@ Deno.test("VariablesBuilder - separates building from validation", () => {
     .addUserVariable("wrong", "value");
 
   // Errors are only revealed during build
-  const result = builder.build();
-  assertEquals(result.ok, false);
+  const _result = _builder.build();
+  assertEquals(_result.ok, false);
 
   // This separation allows for error accumulation
-  if (!result.ok) {
-    assertEquals(result.error.length, 2);
+  if (!_result.ok) {
+    assertEquals(_result.error.length, 2);
   }
 });
 
@@ -62,12 +62,12 @@ Deno.test("VariablesBuilder - error types cover all failure modes", () => {
   // - InvalidPrefix
 
   // Each error kind should have appropriate context
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Test InvalidName error structure
-  builder.addStandardVariable("wrong", "value");
-  const result1 = builder.build();
-  if (!result1.ok) {
+  _builder.addStandardVariable("wrong", "value");
+  const result1 = _builder.build();
+  if (!_result1.ok) {
     const error = result1.error[0];
     assertEquals(error.kind, "InvalidName");
     if (error.kind === "InvalidName") {
@@ -77,9 +77,9 @@ Deno.test("VariablesBuilder - error types cover all failure modes", () => {
   }
 
   // Test EmptyValue error structure
-  builder.clear().addStandardVariable("input_text_file", "");
-  const result2 = builder.build();
-  if (!result2.ok) {
+  _builder.clear().addStandardVariable("input_text_file", "");
+  const result2 = _builder.build();
+  if (!_result2.ok) {
     const error = result2.error[0];
     assertEquals(error.kind, "EmptyValue");
     if (error.kind === "EmptyValue") {
@@ -92,39 +92,39 @@ Deno.test("VariablesBuilder - error types cover all failure modes", () => {
  * Verify methods have appropriate granularity
  */
 Deno.test("VariablesBuilder - methods have single clear purpose", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Each add method handles one variable type
   // This is good separation - not too fine, not too coarse
 
   // Standard variables
-  assertEquals(typeof builder.addStandardVariable, "function");
+  assertEquals(typeof _builder.addStandardVariable, "function");
 
   // File path variables
-  assertEquals(typeof builder.addFilePathVariable, "function");
+  assertEquals(typeof _builder.addFilePathVariable, "function");
 
   // Stdin variables
-  assertEquals(typeof builder.addStdinVariable, "function");
+  assertEquals(typeof _builder.addStdinVariable, "function");
 
   // User variables
-  assertEquals(typeof builder.addUserVariable, "function");
+  assertEquals(typeof _builder.addUserVariable, "function");
 
   // Utility methods also have clear single purposes
-  assertEquals(typeof builder.build, "function");
-  assertEquals(typeof builder.toRecord, "function");
-  assertEquals(typeof builder.clear, "function");
+  assertEquals(typeof _builder.build, "function");
+  assertEquals(typeof _builder.toRecord, "function");
+  assertEquals(typeof _builder.clear, "function");
 });
 
 /**
  * Verify state management is encapsulated properly
  */
 Deno.test("VariablesBuilder - encapsulates internal state", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // TypeScript private fields exist at runtime but shouldn't be accessed
   // The fact that they're private is enforced at compile time
   // deno-lint-ignore no-explicit-any
-  const builderAny = builder as any;
+  const builderAny = builder as unknown;
 
   // Private fields exist but should not be used directly
   assertExists(builderAny.variables);
@@ -135,28 +135,28 @@ Deno.test("VariablesBuilder - encapsulates internal state", () => {
   assertEquals(Array.isArray(builderAny.errors), true);
 
   // State is only accessible through proper methods
-  assertEquals(typeof builder.getVariableCount(), "number");
-  assertEquals(typeof builder.getErrorCount(), "number");
+  assertEquals(typeof _builder.getVariableCount(), "number");
+  assertEquals(typeof _builder.getErrorCount(), "number");
 });
 
 /**
  * Verify builder provides consistent interface for all variable types
  */
 Deno.test("VariablesBuilder - consistent interface across variable types", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // All add methods follow same pattern: (name, value) => this
   // Except stdin which only needs value
-  const standard = builder.addStandardVariable("input_text_file", "value");
+  const standard = _builder.addStandardVariable("input_text_file", "value");
   assertEquals(standard, builder);
 
-  const filePath = builder.addFilePathVariable("schema_file", "value");
+  const filePath = _builder.addFilePathVariable("schema_file", "value");
   assertEquals(filePath, builder);
 
-  const stdin = builder.addStdinVariable("value");
+  const stdin = _builder.addStdinVariable("value");
   assertEquals(stdin, builder);
 
-  const user = builder.addUserVariable("uv-test", "value");
+  const user = _builder.addUserVariable("uv-test", "value");
   assertEquals(user, builder);
 });
 
@@ -164,7 +164,7 @@ Deno.test("VariablesBuilder - consistent interface across variable types", () =>
  * Verify cohesion - all methods work together towards building variables
  */
 Deno.test("VariablesBuilder - high cohesion in functionality", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // All methods contribute to the building process
   builder
@@ -172,15 +172,15 @@ Deno.test("VariablesBuilder - high cohesion in functionality", () => {
     .addFilePathVariable("schema_file", "schema.json");
 
   // Intermediate state queries
-  assertEquals(builder.getVariableCount(), 2);
-  assertEquals(builder.getErrorCount(), 0);
+  assertEquals(_builder.getVariableCount(), 2);
+  assertEquals(_builder.getErrorCount(), 0);
 
   // Final build uses accumulated state
-  const result = builder.build();
-  assertEquals(result.ok, true);
+  const _result = _builder.build();
+  assertEquals(_result.ok, true);
 
   // toRecord uses the built variables
-  const record = builder.toRecord();
+  const record = _builder.toRecord();
   assertEquals(Object.keys(record).length, 2);
 });
 
@@ -188,22 +188,22 @@ Deno.test("VariablesBuilder - high cohesion in functionality", () => {
  * Verify no responsibility overlap with variable types
  */
 Deno.test("VariablesBuilder - delegates validation to variable types", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Builder doesn't duplicate validation logic from variable types
   // It only checks for basics like empty values and duplicates
 
   // Basic validation in builder
-  builder.addStandardVariable("input_text_file", "");
-  const result1 = builder.build();
-  if (!result1.ok) {
+  _builder.addStandardVariable("input_text_file", "");
+  const result1 = _builder.build();
+  if (!_result1.ok) {
     assertEquals(result1.error[0].kind, "EmptyValue");
   }
 
   // Name validation delegated to variable type
-  builder.clear().addStandardVariable("invalid_name", "value");
-  const result2 = builder.build();
-  if (!result2.ok) {
+  _builder.clear().addStandardVariable("invalid_name", "value");
+  const result2 = _builder.build();
+  if (!_result2.ok) {
     assertEquals(result2.error[0].kind, "InvalidName");
   }
 });

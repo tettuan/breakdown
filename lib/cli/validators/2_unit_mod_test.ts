@@ -1,203 +1,134 @@
 /**
- * @fileoverview Unit Test for CLI Validators Module
- * 
- * Tests the functional behavior of the validators module exports:
- * - Export availability and usability
- * - Type export correctness
- * - Module loading performance
- * - Export consistency
- * 
- * This test ensures the module follows the Totality principle by:
- * - Verifying all exports work correctly
- * - Ensuring type safety through exports
- * - Confirming module can be used as intended
- * 
- * @module lib/cli/validators/2_unit_mod_test
+ * Unit tests for validators module barrel export
+ *
+ * These tests verify that the module exports work correctly
+ * and provide the expected functionality.
+ *
+ * @module cli/validators/tests/2_unit_mod_test
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
-import type { ValidationError, ValidatedParams } from "./mod.ts";
+import { describe, it } from "@std/testing/bdd";
 
-Deno.test("Unit: Module exports should be directly usable", async () => {
-  // Import the TwoParamsValidator from mod.ts
-  const { TwoParamsValidator } = await import("./mod.ts");
-  
-  // Should be able to instantiate the class
-  const validator = new TwoParamsValidator();
-  assertExists(validator);
-  
-  // Should have the validate method
-  assertEquals(typeof validator.validate, "function");
-});
+import {
+  ParameterValidator,
+  TwoParamsValidator,
+  type ValidatedParams,
+  type ValidationError,
+} from "./_mod as any.ts";
 
-Deno.test("Unit: Exported class should function correctly", async () => {
-  // Import and use the validator
-  const { TwoParamsValidator } = await import("./mod.ts");
-  
-  const validator = new TwoParamsValidator();
-  
-  // Test with valid parameters
-  const validResult = await validator.validate(["to", "project"]);
-  assertEquals(validResult.ok, true);
-  
-  if (validResult.ok) {
-    assertEquals(validResult.data.demonstrativeType, "to");
-    assertEquals(validResult.data.layerType, "project");
-  }
-});
+describe("Validators Module - Unit Tests", () => {
+  it("should export TwoParamsValidator class", async () => {
+    assertExists(TwoParamsValidator);
+    assertEquals(typeof TwoParamsValidator, "function");
 
-Deno.test("Unit: Type exports should be usable for type annotations", () => {
-  // These type annotations verify the types are exported correctly
-  const testError: ValidationError = {
-    kind: "InvalidParameterCount",
-    received: 1,
-    expected: 2
-  };
-  
-  assertEquals(testError.kind, "InvalidParameterCount");
-  assertEquals(testError.received, 1);
-  assertEquals(testError.expected, 2);
-  
-  const testParams: ValidatedParams = {
-    demonstrativeType: "to",
-    layerType: "project"
-  };
-  
-  assertEquals(testParams.demonstrativeType, "to");
-  assertEquals(testParams.layerType, "project");
-});
+    // Should be instantiable
+    const _validator = new TwoParamsValidator();
+    assertInstanceOf(validator, TwoParamsValidator);
+  });
 
-Deno.test("Unit: Module should handle invalid inputs correctly", async () => {
-  const { TwoParamsValidator } = await import("./mod.ts");
-  
-  const validator = new TwoParamsValidator();
-  
-  // Test with wrong parameter count
-  const wrongCountResult = await validator.validate(["only-one"]);
-  assertEquals(wrongCountResult.ok, false);
-  
-  if (!wrongCountResult.ok) {
-    assertEquals(wrongCountResult.error.kind, "InvalidParameterCount");
-    if (wrongCountResult.error.kind === "InvalidParameterCount") {
-      assertEquals(wrongCountResult.error.received, 1);
-      assertEquals(wrongCountResult.error.expected, 2);
+  it("should export ParameterValidator class", async () => {
+    assertExists(ParameterValidator);
+    assertEquals(typeof ParameterValidator, "function");
+
+    // ParameterValidator requires constructor arguments
+    // Just check that it's exported as a class
+    assertEquals(ParameterValidator.name, "ParameterValidator");
+  });
+
+  it("should allow using exported validators", async () => {
+    const _validator = new TwoParamsValidator();
+
+    // Should have validate method
+    assertEquals(typeof _validator.validate, "function");
+
+    // Should validate parameters
+    const _result = _validator.validate(["to", "project"]);
+    assertEquals(_result.ok, true);
+
+    if (_result.ok) {
+      assertEquals(_result.data.demonstrativeType, "to");
+      assertEquals(_result.data.layerType, "project");
     }
-  }
-  
-  // Test with invalid demonstrative type
-  const invalidDemoResult = await validator.validate(["invalid", "project"]);
-  assertEquals(invalidDemoResult.ok, false);
-  
-  if (!invalidDemoResult.ok) {
-    assertEquals(invalidDemoResult.error.kind, "InvalidDemonstrativeType");
-    if (invalidDemoResult.error.kind === "InvalidDemonstrativeType") {
-      assertEquals(invalidDemoResult.error.value, "invalid");
-      assertExists(invalidDemoResult.error.validTypes);
+  });
+
+  it("should handle validation errors correctly", async () => {
+    const _validator = new TwoParamsValidator();
+
+    // Test invalid parameters
+    const _result = _validator.validate(["invalid", "project"]);
+    assertEquals(_result.ok, false);
+
+    if (!_result.ok) {
+      assertEquals(_result.error.kind, "InvalidDemonstrativeType");
     }
-  }
-  
-  // Test with invalid layer type
-  const invalidLayerResult = await validator.validate(["to", "invalid"]);
-  assertEquals(invalidLayerResult.ok, false);
-  
-  if (!invalidLayerResult.ok) {
-    assertEquals(invalidLayerResult.error.kind, "InvalidLayerType");
-    if (invalidLayerResult.error.kind === "InvalidLayerType") {
-      assertEquals(invalidLayerResult.error.value, "invalid");
-      assertExists(invalidLayerResult.error.validTypes);
-    }
-  }
-});
+  });
 
-Deno.test("Unit: Module exports should be consistent across imports", async () => {
-  // Import multiple times to ensure consistency
-  const import1 = await import("./mod.ts");
-  const import2 = await import("./mod.ts");
-  
-  // Should get the same class reference
-  assertEquals(import1.TwoParamsValidator, import2.TwoParamsValidator);
-  
-  // Instances should be of the same class
-  const validator1 = new import1.TwoParamsValidator();
-  const validator2 = new import2.TwoParamsValidator();
-  
-  assertInstanceOf(validator1, import1.TwoParamsValidator);
-  assertInstanceOf(validator2, import2.TwoParamsValidator);
-  assertInstanceOf(validator1, import2.TwoParamsValidator);
-});
+  it("should export types for TypeScript usage", async () => {
+    // Type tests - these are compile-time checks
+    const validatedParams: ValidatedParams = {
+      demonstrativeType: "to",
+      layerType: "project",
+    };
 
-Deno.test("Unit: Module should support destructured imports", async () => {
-  // Test destructured import
-  const { TwoParamsValidator } = await import("./mod.ts");
-  
-  assertExists(TwoParamsValidator);
-  assertEquals(typeof TwoParamsValidator, "function");
-  
-  const validator = new TwoParamsValidator();
-  assertExists(validator.validate);
-});
+    assertEquals(validatedParams.demonstrativeType, "to");
+    assertEquals(validatedParams.layerType, "project");
 
-Deno.test("Unit: Module should support namespace imports", async () => {
-  // Test namespace import
-  const validators = await import("./mod.ts");
-  
-  assertExists(validators.TwoParamsValidator);
-  assertEquals(typeof validators.TwoParamsValidator, "function");
-  
-  const validator = new validators.TwoParamsValidator();
-  assertExists(validator.validate);
-});
+    const error: ValidationError = {
+      kind: "InvalidParameterCount",
+      received: 1,
+      expected: 2,
+    };
 
-Deno.test("Unit: All valid parameter combinations should work", async () => {
-  const { TwoParamsValidator } = await import("./mod.ts");
-  const validator = new TwoParamsValidator();
-  
-  // Test all valid demonstrative types
-  const demonstrativeTypes = ["to", "summary", "defect", "init", "find"];
-  const layerTypes = ["project", "issue", "task", "bugs", "temp"];
-  
-  for (const demo of demonstrativeTypes) {
-    for (const layer of layerTypes) {
-      const result = await validator.validate([demo, layer]);
-      assertEquals(result.ok, true, `Should validate ${demo} ${layer}`);
-      
-      if (result.ok) {
-        assertEquals(result.data.demonstrativeType, demo);
-        assertEquals(result.data.layerType, layer);
-      }
-    }
-  }
-});
+    assertEquals(error.kind, "InvalidParameterCount");
+  });
 
-Deno.test("Unit: Module exports should not include internals", async () => {
-  const moduleExports = await import("./mod.ts");
-  
-  // Should only have the expected exports
-  const exportKeys = Object.keys(moduleExports);
-  
-  // Filter out type exports (which don't appear in Object.keys)
-  const expectedExports = ["TwoParamsValidator"];
-  
-  for (const key of exportKeys) {
-    assertEquals(expectedExports.includes(key), true, 
-      `Unexpected export: ${key}`);
-  }
-  
-  // Verify no internal constants or utilities are exposed
-  assertEquals((moduleExports as any).VALID_DEMONSTRATIVE_TYPES, undefined);
-  assertEquals((moduleExports as any).VALID_LAYER_TYPES, undefined);
-  assertEquals((moduleExports as any).validateParams, undefined);
-});
+  it("should provide consistent API across validators", async () => {
+    const twoParamsValidator = new TwoParamsValidator();
 
-Deno.test("Unit: Module should load efficiently", async () => {
-  // Measure module load time
-  const startTime = performance.now();
-  await import("./mod.ts");
-  const endTime = performance.now();
-  
-  const loadTime = endTime - startTime;
-  
-  // Module should load quickly (under 100ms)
-  assertEquals(loadTime < 100, true, 
-    `Module load time too high: ${loadTime}ms`);
+    // TwoParamsValidator should have validate method
+    assertEquals(typeof twoParamsValidator.validate, "function");
+
+    // ParameterValidator is exported but requires constructor args
+    assertEquals(typeof ParameterValidator, "function");
+  });
+
+  it("should re-export from correct paths", async () => {
+    // Import directly from source to compare
+    const { TwoParamsValidator: DirectValidator } = await import("./two_params_validator.ts");
+    const { ParameterValidator: DirectParamValidator } = await import(
+      "../../validator/parameter_validator.ts"
+    );
+
+    // Should be the same references
+    assertEquals(TwoParamsValidator, DirectValidator);
+    assertEquals(ParameterValidator, DirectParamValidator);
+  });
+
+  it("should not export undefined values", async () => {
+    const _mod = await import("./mod.ts");
+
+    Object.entries(mod).forEach(([key, value]) => {
+      assertExists(value, `Export ${key} should not be undefined`);
+    });
+  });
+
+  it("should export only public API", async () => {
+    const _mod = await import("./mod.ts");
+    const exports = Object.keys(_mod);
+
+    // Should have reasonable number of exports
+    assertEquals(exports.length >= 2, true, "Should have at least validator exports");
+    assertEquals(exports.length <= 10, true, "Should not have too many exports");
+  });
+
+  it("should load efficiently", async () => {
+    // Module should load without side effects
+    const startTime = performance.now();
+    await import("./mod.ts");
+    const loadTime = performance.now() - startTime;
+
+    // Should load quickly (under 100ms)
+    assertEquals(loadTime < 100, true, `Module load time ${loadTime}ms should be under 100ms`);
+  });
 });

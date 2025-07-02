@@ -10,7 +10,7 @@
  * ```ts
  * import { Workspace } from "@tettuan/breakdown/lib/workspace/workspace.ts";
  *
- * const workspace = new Workspace({ workingDir: "." });
+ * const _workspace = new Workspace({ workingDir: "." });
  * await workspace.initialize();
  * ```
  *
@@ -27,8 +27,8 @@ import { WorkspaceStructureImpl } from "./structure.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
 import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
 import { resolve } from "jsr:@std/path@1.0.0";
-import { prompts } from "../templates/prompts.ts";
-import { schema } from "../templates/schema.ts";
+import { _prompts } from "../templates/prompts.ts";
+import { _schema } from "../templates/schema.ts";
 import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 
 /**
@@ -72,7 +72,7 @@ export class WorkspaceImpl implements Workspace {
     return {
       workingDir: config.workingDir,
       promptBaseDir: config.promptBaseDir,
-      schemaBaseDir: config.schemaBaseDir
+      schemaBaseDir: config.schemaBaseDir,
     };
   }
 
@@ -129,7 +129,7 @@ export class WorkspaceImpl implements Workspace {
       await ensureDir(customSchemaDir);
 
       // 展開: prompts テンプレート
-      for (const [relPath, content] of Object.entries(prompts)) {
+      for (const [relPath, content] of Object.entries(_prompts)) {
         const destPath = join(customPromptDir, relPath);
         try {
           await Deno.stat(destPath);
@@ -144,7 +144,7 @@ export class WorkspaceImpl implements Workspace {
       }
 
       // 展開: schema テンプレート
-      for (const [relPath, content] of Object.entries(schema)) {
+      for (const [relPath, content] of Object.entries(_schema)) {
         const destPath = join(customSchemaDir, relPath);
         try {
           await Deno.stat(destPath);

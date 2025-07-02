@@ -10,7 +10,7 @@
  * import { processWithPrompt, initWorkspace } from "@tettuan/breakdown/lib/mod.ts";
  *
  * // Initialize a new workspace
- * const workspace = await initWorkspace();
+ * const _workspace = await initWorkspace();
  * ```
  *
  * @module
@@ -40,11 +40,11 @@ export {
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
+  type TypeCreationError,
+  type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
-  type TypeCreationResult,
-  type TypeCreationError
 } from "./types/mod.ts";
 
 // Export Result types
-export { type Result, ok, error } from "./types/result.ts";
+export { error, ok, type Result } from "./types/result.ts";

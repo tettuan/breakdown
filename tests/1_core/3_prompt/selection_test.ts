@@ -21,9 +21,12 @@ import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { PromptAdapterImpl } from "../../../lib/prompt/prompt_adapter.ts";
 import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import type {
+  DemonstrativeType as _DemonstrativeType,
+  LayerType as _LayerType,
+} from "$lib/types/mod.ts";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 
 interface SetupResult {
   inputContent: string;
@@ -40,7 +43,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     testDir = await Deno.makeTempDir();
     outputDir = join(testDir, "output");
     await Deno.mkdir(outputDir, { recursive: true });
-    logger.debug("Created test directories", { testDir, outputDir });
+    _logger.debug("Created test directories", { testDir, outputDir });
     originalCwd = Deno.cwd();
     Deno.chdir(testDir);
 
@@ -67,12 +70,12 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       join(schemaDir, "implementation.json"),
       JSON.stringify(schema, null, 2),
     );
-    logger.debug("Created schema file", { schemaDir });
+    _logger.debug("Created schema file", { schemaDir });
 
     // Create test prompt files
     const projectPromptDir = join(testDir, "prompts", "to", "issue");
     await Deno.mkdir(projectPromptDir, { recursive: true });
-    logger.debug("Created project prompt directory", { projectPromptDir });
+    _logger.debug("Created project prompt directory", { projectPromptDir });
 
     await Deno.writeTextFile(
       join(projectPromptDir, "f_project.md"),
@@ -90,11 +93,11 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       join(projectPromptDir, "f_issue_strict.md"),
       "# Issue Prompt (Strict, from project)\nOutput directory: {destination_path}",
     );
-    logger.debug("Created project prompt files");
+    _logger.debug("Created project prompt files");
 
     const issuePromptDir = join(testDir, "prompts", "to", "task");
     await Deno.mkdir(issuePromptDir, { recursive: true });
-    logger.debug("Created issue prompt directory", { issuePromptDir });
+    _logger.debug("Created issue prompt directory", { issuePromptDir });
 
     await Deno.writeTextFile(
       join(issuePromptDir, "f_issue.md"),
@@ -116,7 +119,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       join(issuePromptDir, "f_task_nonexistent.md"),
       "# Task Prompt (Nonexistent adaptation)\nOutput directory: {destination_path}",
     );
-    logger.debug("Created issue prompt files");
+    _logger.debug("Created issue prompt files");
 
     // Create test input files
     const inputDir = join(testDir, "input");
@@ -129,18 +132,18 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       join(inputDir, "issue.md"),
       "# Test Issue\nDescription: Test issue description",
     );
-    logger.debug("Created test input files");
+    _logger.debug("Created test input files");
   });
 
   afterEach(async () => {
-    logger.debug("Cleaning up test directory", { testDir });
+    _logger.debug("Cleaning up test directory", { testDir });
     await Deno.remove(testDir, { recursive: true });
     Deno.chdir(originalCwd);
   });
 
   describe("PromptAdapterImpl: core prompt processing", () => {
     it("should process project to issue prompt", async () => {
-      logger.debug("Testing project to issue prompt processing", {
+      _logger.debug("Testing project to issue prompt processing", {
         inputFile: join(testDir, "input", "project.md"),
         outputFile: join(outputDir, "issue.md"),
         promptDir: join(testDir, "prompts", "to", "issue"),
@@ -151,7 +154,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relInputFile = relative(testDir, inputFile);
       const relOutputFile = relative(testDir, outputFile);
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         options: {
           fromFile: relInputFile,
@@ -163,17 +166,17 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("PromptAdapterImpl success", {
+        _logger.debug("PromptAdapterImpl success", {
           key: "selection_test.ts#L168#validation-success",
-          content: result.content,
+          content: _result.content,
         });
 
-        assert(result.success);
+        assert(_result.success);
         assertEquals(result.content.includes("# Project Summary"), true);
       } catch (e) {
-        logger.error("PromptAdapterImpl error", {
+        _logger.error("PromptAdapterImpl error", {
           key: "selection_test.ts#L177#error-handling",
           error: e instanceof Error ? e.message : String(e),
           inputFile,
@@ -184,7 +187,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     });
 
     it("should process issue to task prompt", async () => {
-      logger.debug("Testing issue to task prompt processing", {
+      _logger.debug("Testing issue to task prompt processing", {
         key: "selection_test.ts#L206#execution-issue-to-task",
         inputFile: join(testDir, "input", "issue.md"),
         outputFile: join(outputDir, "task.md"),
@@ -198,7 +201,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
 
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "task",
         options: {
           fromFile: relInputFile,
@@ -211,24 +214,24 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("Issue to task prompt success", {
+        _logger.debug("Issue to task prompt success", {
           key: "selection_test.ts#L235#validation-success",
-          content: result.content,
+          content: _result.content,
         });
 
-        assert(result.success);
+        assert(_result.success);
 
-        logger.debug("Issue to task test result content", {
+        _logger.debug("Issue to task test result content", {
           key: "selection_test.ts#L220#debug-content",
-          actualContent: result.content,
+          actualContent: _result.content,
           expectedToContain: "# Issue 1",
         });
 
         assertEquals(result.content.includes("# Issue 1"), true);
       } catch (e) {
-        logger.error("Issue to task prompt error", {
+        _logger.error("Issue to task prompt error", {
           key: "selection_test.ts#L242#error-handling",
           error: e instanceof Error ? e.message : String(e),
           inputFile,
@@ -239,7 +242,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     });
 
     it("should process project to issue prompt with strict adaptation", async () => {
-      logger.debug("Testing project to issue prompt with strict adaptation", {
+      _logger.debug("Testing project to issue prompt with strict adaptation", {
         key: "selection_test.ts#L252#execution-strict-adaptation",
         adaptation: "strict",
         expectedPrompt: "f_project_strict.md",
@@ -252,7 +255,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
 
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         options: {
           fromFile: relInputFile,
@@ -266,24 +269,24 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("Strict adaptation success", {
+        _logger.debug("Strict adaptation success", {
           key: "selection_test.ts#L279#validation-strict-success",
-          content: result.content,
+          content: _result.content,
         });
 
-        assert(result.success);
+        assert(_result.success);
 
-        logger.debug("Strict adaptation test result content", {
+        _logger.debug("Strict adaptation test result content", {
           key: "selection_test.ts#L267#debug-content",
-          actualContent: result.content,
+          actualContent: _result.content,
           expectedToContain: "# Project Summary (Strict)",
         });
 
         assertEquals(result.content.includes("# Project Summary (Strict)"), true);
       } catch (e) {
-        logger.error("Strict adaptation error", {
+        _logger.error("Strict adaptation error", {
           key: "selection_test.ts#L286#error-strict",
           error: e instanceof Error ? e.message : String(e),
         });
@@ -292,7 +295,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     });
 
     it("should process issue to task prompt with 'a' adaptation", async () => {
-      logger.debug("Testing issue to task prompt with 'a' adaptation", {
+      _logger.debug("Testing issue to task prompt with 'a' adaptation", {
         key: "selection_test.ts#L294#execution-a-adaptation",
         adaptation: "a",
         expectedPrompt: "f_issue_a.md",
@@ -305,7 +308,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
 
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "task",
         options: {
           fromFile: relInputFile,
@@ -319,24 +322,24 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("'a' adaptation success", {
+        _logger.debug("'a' adaptation success", {
           key: "selection_test.ts#L321#validation-a-success",
-          content: result.content,
+          content: _result.content,
         });
 
-        assert(result.success);
+        assert(_result.success);
 
-        logger.debug("'a' adaptation test result content", {
+        _logger.debug("'a' adaptation test result content", {
           key: "selection_test.ts#L312#debug-content",
-          actualContent: result.content,
+          actualContent: _result.content,
           expectedToContain: "# Issue 1 (Alternative)",
         });
 
         assertEquals(result.content.includes("# Issue 1 (Alternative)"), true);
       } catch (e) {
-        logger.error("'a' adaptation error", {
+        _logger.error("'a' adaptation error", {
           key: "selection_test.ts#L328#error-a-adaptation",
           error: e instanceof Error ? e.message : String(e),
         });
@@ -345,7 +348,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     });
 
     it("should fall back to default prompt if adaptation variant doesn't exist", async () => {
-      logger.debug("Testing fallback to default prompt", {
+      _logger.debug("Testing fallback to default prompt", {
         key: "selection_test.ts#L336#execution-fallback-test",
         adaptation: "nonexistent",
         expectedFallback: "f_issue.md",
@@ -358,7 +361,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
 
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "task",
         options: {
           fromFile: relInputFile,
@@ -372,17 +375,17 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("Fallback mechanism success", {
+        _logger.debug("Fallback mechanism success", {
           key: "selection_test.ts#L363#validation-fallback-success",
-          content: result.content,
+          content: _result.content,
         });
 
-        assert(result.success);
+        assert(_result.success);
         assertEquals(result.content.includes("# Issue 1"), true);
       } catch (e) {
-        logger.error("Fallback mechanism error", {
+        _logger.error("Fallback mechanism error", {
           key: "selection_test.ts#L370#error-fallback",
           error: e instanceof Error ? e.message : String(e),
         });
@@ -391,7 +394,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
     });
 
     it("should throw error for invalid demonstrative type", async () => {
-      logger.debug("Testing invalid demonstrative type error handling", {
+      _logger.debug("Testing invalid demonstrative type error handling", {
         key: "selection_test.ts#L378#execution-invalid-type",
         invalidType: "invalid",
         expectedBehavior: "error or validation failure",
@@ -404,7 +407,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       const relOutputFile = relative(testDir, outputFile);
 
       const cliParams = {
-        demonstrativeType: "invalid" as DemonstrativeType,
+        demonstrativeType: "invalid",
         layerType: "issue",
         options: {
           fromFile: relInputFile,
@@ -416,18 +419,18 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       try {
         const factory = await PromptVariablesFactory.create(cliParams);
         const adapter = new PromptAdapterImpl(factory);
-        const result = await adapter.validateAndGenerate();
+        const _result = await adapter.validateAndGenerate();
 
-        logger.debug("Invalid type handling result", {
+        _logger.debug("Invalid type handling result", {
           key: "selection_test.ts#L405#validation-invalid-result",
-          success: result.success,
-          hasError: !result.success,
+          success: _result.success,
+          hasError: !_result.success,
         });
 
         // Either the result should fail, or an error should be thrown
-        assert(!result.success || result.content.includes("error"));
+        assert(!_result.success || _result.content.includes("error"));
       } catch (e) {
-        logger.debug("Expected error for invalid demonstrative type", {
+        _logger.debug("Expected error for invalid demonstrative type", {
           key: "selection_test.ts#L414#expected-error",
           error: e instanceof Error ? e.message : String(e),
         });
@@ -440,7 +443,7 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
 
 describe("Prompt Selection: CLI integration adaptation option", () => {
   it("should generate correct prompt content via CLI adaptation option", async () => {
-    logger.debug("Testing CLI integration with adaptation options", {
+    _logger.debug("Testing CLI integration with adaptation options", {
       key: "selection_test.ts#L424#execution-cli-integration",
       testScope: "CLI parameter processing with adaptation",
     });
@@ -475,7 +478,7 @@ describe("Prompt Selection: CLI integration adaptation option", () => {
       await Deno.writeTextFile(inputFile, "# CLI Test Input");
 
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         options: {
           fromFile: "input.md",
@@ -488,25 +491,25 @@ describe("Prompt Selection: CLI integration adaptation option", () => {
 
       const factory = await PromptVariablesFactory.create(cliParams);
       const adapter = new PromptAdapterImpl(factory);
-      const result = await adapter.validateAndGenerate();
+      const _result = await adapter.validateAndGenerate();
 
-      logger.debug("CLI integration success", {
+      _logger.debug("CLI integration success", {
         key: "selection_test.ts#L466#validation-cli-success",
-        content: result.content,
-        adaptationApplied: result.content.includes("Strict"),
+        content: _result.content,
+        adaptationApplied: _result.content.includes("Strict"),
       });
 
-      assert(result.success);
+      assert(_result.success);
 
-      logger.debug("CLI integration test result content", {
+      _logger.debug("CLI integration test result content", {
         key: "selection_test.ts#L472#debug-content",
-        actualContent: result.content,
+        actualContent: _result.content,
         expectedToContain: "# CLI Integration Test (Strict)",
       });
 
       assertEquals(result.content.includes("# CLI Integration Test (Strict)"), true);
     } catch (e) {
-      logger.error("CLI integration error", {
+      _logger.error("CLI integration error", {
         key: "selection_test.ts#L475#error-cli-integration",
         error: e instanceof Error ? e.message : String(e),
       });

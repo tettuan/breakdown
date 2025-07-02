@@ -1,13 +1,13 @@
 /**
  * @fileoverview Architecture test for DirectiveType
- * 
+ *
  * このテストはDirectiveTypeのアーキテクチャ制約を検証します：
  * - 依存関係の妥当性（TwoParamsResultのみに依存）
  * - 循環参照の有無
  * - インターフェース一貫性
  * - パッケージ境界の遵守
  * - Totality原則準拠のアーキテクチャ設計
- * 
+ *
  * アーキテクチャテストの目的は、設計制約が正しく実装され、
  * 将来の変更に対して安定性を保つことを保証することです。
  */
@@ -16,13 +16,13 @@ import { assertEquals, assertExists, BreakdownLogger } from "../../deps.ts";
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import type { TwoParamsResult } from "../deps.ts";
 
-const logger = new BreakdownLogger("test-architecture-directive");
+const _logger = new BreakdownLogger("test-architecture-directive");
 
-Deno.test("DirectiveType - Architecture: Dependency constraints", async () => {
-  logger.debug("テスト開始: DirectiveType依存関係制約検証", { 
+Deno.test("DirectiveType - Architecture: Dependency constraints", () => {
+  _logger.debug("テスト開始: DirectiveType依存関係制約検証", {
     testType: "architecture",
     target: "DirectiveType",
-    constraint: "dependencies"
+    constraint: "dependencies",
   });
 
   // TwoParamsResultのみに依存していることを確認
@@ -31,7 +31,7 @@ Deno.test("DirectiveType - Architecture: Dependency constraints", async () => {
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
-    options: {}
+    options: {},
   };
 
   // DirectiveTypeが正常に構築できることを確認（依存関係が正しい）
@@ -39,18 +39,18 @@ Deno.test("DirectiveType - Architecture: Dependency constraints", async () => {
   assertExists(directiveType);
   assertEquals(directiveType.value, "to");
 
-  logger.debug("依存関係制約検証完了", { 
+  _logger.debug("依存関係制約検証完了", {
     success: true,
     dependencies: ["TwoParamsResult"],
-    violations: "none"
+    violations: "none",
   });
 });
 
-Deno.test("DirectiveType - Architecture: No circular dependencies", async () => {
-  logger.debug("テスト開始: DirectiveType循環参照検証", {
-    testType: "architecture", 
+Deno.test("DirectiveType - Architecture: No circular dependencies", () => {
+  _logger.debug("テスト開始: DirectiveType循環参照検証", {
+    testType: "architecture",
     target: "DirectiveType",
-    constraint: "circular_dependencies"
+    constraint: "circular_dependencies",
   });
 
   // DirectiveTypeクラスの存在確認（循環参照があるとインポートできない）
@@ -61,18 +61,18 @@ Deno.test("DirectiveType - Architecture: No circular dependencies", async () => 
   assertExists(TwoParamsDirectivePattern);
   assertExists(TwoParamsDirectivePattern.create);
 
-  logger.debug("循環参照検証完了", {
+  _logger.debug("循環参照検証完了", {
     success: true,
     classes: ["DirectiveType", "TwoParamsDirectivePattern"],
-    circular_dependencies: "none"
+    circular_dependencies: "none",
   });
 });
 
-Deno.test("DirectiveType - Architecture: Interface consistency", async () => {
-  logger.debug("テスト開始: DirectiveTypeインターフェース一貫性検証", {
+Deno.test("DirectiveType - Architecture: Interface consistency", () => {
+  _logger.debug("テスト開始: DirectiveTypeインターフェース一貫性検証", {
     testType: "architecture",
-    target: "DirectiveType", 
-    constraint: "interface_consistency"
+    target: "DirectiveType",
+    constraint: "interface_consistency",
   });
 
   const testResult: TwoParamsResult = {
@@ -80,7 +80,7 @@ Deno.test("DirectiveType - Architecture: Interface consistency", async () => {
     demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
-    options: {}
+    options: {},
   };
 
   const directiveType = DirectiveType.create(testResult);
@@ -102,32 +102,32 @@ Deno.test("DirectiveType - Architecture: Interface consistency", async () => {
   assertExists(directiveType.toString);
   assertExists(directiveType.equals);
 
-  logger.debug("インターフェース一貫性検証完了", {
+  _logger.debug("インターフェース一貫性検証完了", {
     success: true,
     methods: ["create", "value", "originalResult", "toString", "equals"],
-    smart_constructor: true
+    smart_constructor: true,
   });
 });
 
-Deno.test("DirectiveType - Architecture: Package boundary compliance", async () => {
-  logger.debug("テスト開始: DirectiveTypeパッケージ境界遵守検証", {
+Deno.test("DirectiveType - Architecture: Package boundary compliance", () => {
+  _logger.debug("テスト開始: DirectiveTypeパッケージ境界遵守検証", {
     testType: "architecture",
     target: "DirectiveType",
-    constraint: "package_boundary" 
+    constraint: "package_boundary",
   });
 
   // バリデーション責任の分離確認
   // DirectiveTypeはバリデーション済みのTwoParamsResultのみを受け入れる
   const preValidatedResult: TwoParamsResult = {
     type: "two",
-    demonstrativeType: "defect", 
+    demonstrativeType: "defect",
     layerType: "task",
     params: ["defect", "task"],
-    options: {}
+    options: {},
   };
 
   const directiveType = DirectiveType.create(preValidatedResult);
-  
+
   // DirectiveType自体にバリデーション機能がないことを確認
   // （すべてのバリデーションはBreakdownParamsで実行済みと想定）
   assertEquals(directiveType.value, "defect");
@@ -136,60 +136,60 @@ Deno.test("DirectiveType - Architecture: Package boundary compliance", async () 
   // バリデーション: BreakdownParamsが担当
   // この分離により、単一責任原則が守られている
 
-  logger.debug("パッケージ境界遵守検証完了", {
+  _logger.debug("パッケージ境界遵守検証完了", {
     success: true,
     responsibilities: {
       DirectiveType: "type_safe_value_holding",
-      BreakdownParams: "validation"
+      BreakdownParams: "validation",
     },
-    boundary_violations: "none"
+    boundary_violations: "none",
   });
 });
 
-Deno.test("DirectiveType - Architecture: Totality principle compliance", async () => {
-  logger.debug("テスト開始: DirectiveTotality原則準拠検証", {
+Deno.test("DirectiveType - Architecture: Totality principle compliance", () => {
+  _logger.debug("テスト開始: DirectiveTotality原則準拠検証", {
     testType: "architecture",
     target: "DirectiveType",
-    constraint: "totality_principle"
+    constraint: "totality_principle",
   });
 
   // Totality原則の要素確認
   // 1. Smart Constructor（private constructor + static create）
   const result: TwoParamsResult = {
-    type: "two", 
+    type: "two",
     demonstrativeType: "init",
     layerType: "project",
     params: ["init", "project"],
-    options: {}
+    options: {},
   };
 
   // 2. 全域関数性（TwoParamsResultに対して常に成功）
-  const directiveType = DirectiveType.create(result);
+  const directiveType = DirectiveType.create(_result);
   assertExists(directiveType);
 
   // 3. Immutable（値の変更不可）
   const originalValue = directiveType.value;
   assertEquals(originalValue, "init");
-  
+
   // 4. 型安全性（TypeScriptコンパイルが成功している）
   assertEquals(typeof directiveType.value, "string");
 
-  logger.debug("Totality原則準拠検証完了", {
+  _logger.debug("Totality原則準拠検証完了", {
     success: true,
     totality_elements: {
       smart_constructor: true,
-      total_function: true, 
+      total_function: true,
       immutable: true,
-      type_safe: true
-    }
+      type_safe: true,
+    },
   });
 });
 
-Deno.test("TwoParamsDirectivePattern - Architecture: Pattern encapsulation", async () => {
-  logger.debug("テスト開始: TwoParamsDirectivePatternカプセル化検証", {
+Deno.test("TwoParamsDirectivePattern - Architecture: Pattern encapsulation", () => {
+  _logger.debug("テスト開始: TwoParamsDirectivePatternカプセル化検証", {
     testType: "architecture",
     target: "TwoParamsDirectivePattern",
-    constraint: "encapsulation"
+    constraint: "encapsulation",
   });
 
   // Smart Constructorによる安全なパターン作成
@@ -207,9 +207,9 @@ Deno.test("TwoParamsDirectivePattern - Architecture: Pattern encapsulation", asy
     assertEquals(typeof validPattern.test("to"), "boolean");
   }
 
-  logger.debug("パターンカプセル化検証完了", {
+  _logger.debug("パターンカプセル化検証完了", {
     success: true,
     encapsulation: "proper",
-    error_handling: "null_return"
+    error_handling: "null_return",
   });
 });

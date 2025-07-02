@@ -1,15 +1,15 @@
 /**
  * @fileoverview TwoParamsVariableProcessor - Custom variable processing with Totality principle
- * 
+ *
  * This module handles the extraction of custom variables and addition of standard variables
  * following the single responsibility principle. It processes both user-defined variables
  * (with uv- prefix) and standard variables (input_text, input_text_file, destination_path).
- * 
+ *
  * @module cli/processors/two_params_variable_processor
  */
 
-import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
+import type { Result } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 
 /**
  * Processed variables structure
@@ -35,7 +35,7 @@ export type VariableProcessorError =
 /**
  * Reserved variable names that cannot be used as custom variables
  */
-const RESERVED_VARIABLE_NAMES = new Set([
+const _RESERVED_VARIABLE_NAMES = new Set([
   "input_text",
   "input_text_file",
   "destination_path",
@@ -44,7 +44,7 @@ const RESERVED_VARIABLE_NAMES = new Set([
 
 /**
  * TwoParamsVariableProcessor - Processes variables with single responsibility
- * 
+ *
  * Responsibilities:
  * - Extract custom variables from options (uv- prefix)
  * - Add standard variables (input_text, input_text_file, destination_path)
@@ -57,7 +57,7 @@ export class TwoParamsVariableProcessor {
    * Only processes keys with "uv-" prefix
    */
   private extractCustomVariables(
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Result<Record<string, string>, VariableProcessorError[]> {
     const customVariables: Record<string, string> = {};
     const errors: VariableProcessorError[] = [];
@@ -66,7 +66,7 @@ export class TwoParamsVariableProcessor {
       if (key.startsWith("uv-")) {
         // Validate against reserved names
         const varName = key.substring(3); // Remove "uv-" prefix
-        if (RESERVED_VARIABLE_NAMES.has(varName)) {
+        if (_RESERVED_VARIABLE_NAMES.has(varName)) {
           errors.push({
             kind: "ReservedVariableName",
             key,
@@ -100,7 +100,7 @@ export class TwoParamsVariableProcessor {
    */
   private buildStandardVariables(
     options: Record<string, unknown>,
-    stdinContent: string
+    stdinContent: string,
   ): Record<string, string> {
     const standardVariables: Record<string, string> = {};
 
@@ -114,25 +114,26 @@ export class TwoParamsVariableProcessor {
     standardVariables.input_text_file = inputFile !== undefined ? String(inputFile) : "stdin";
 
     // Add destination path (from -o/--destination option)
-    const destinationPath = 
-      options.destination ?? 
-      options.destinationFile ?? 
+    const destinationPath = options.destination ??
+      options.destinationFile ??
       options.output;
-    standardVariables.destination_path = destinationPath !== undefined ? String(destinationPath) : "stdout";
+    standardVariables.destination_path = destinationPath !== undefined
+      ? String(destinationPath)
+      : "stdout";
 
     return standardVariables;
   }
 
   /**
    * Process all variables (custom + standard)
-   * 
+   *
    * @param options - Command line options
    * @param stdinContent - Content from stdin (if available)
    * @returns Result with processed variables or errors
    */
   processVariables(
     options: Record<string, unknown>,
-    stdinContent: string
+    stdinContent: string,
   ): Result<ProcessedVariables, VariableProcessorError[]> {
     if (!options || typeof options !== "object") {
       return error([{
@@ -168,7 +169,7 @@ export class TwoParamsVariableProcessor {
    * Convenience method for cases where stdin is not yet available
    */
   processVariablesWithoutStdin(
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Result<ProcessedVariables, VariableProcessorError[]> {
     return this.processVariables(options, "");
   }

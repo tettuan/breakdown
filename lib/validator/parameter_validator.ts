@@ -74,7 +74,7 @@ export interface ConfigValidator {
  *
  * @example
  * ```typescript
- * const validator = new ParameterValidator(patternProvider, configValidator);
+ * const _validator = new ParameterValidator(patternProvider, configValidator);
  *
  * const result = validator.validateTwoParams(twoParamsResult);
  * if (result.ok) {
@@ -97,7 +97,7 @@ export class ParameterValidator {
    */
   validateTwoParams(result: TwoParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (result.type !== "two") {
+    if (_result.type !== "two") {
       return error({
         kind: "InvalidParamsType",
         expected: "two",
@@ -182,7 +182,7 @@ export class ParameterValidator {
    */
   validateOneParams(result: OneParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (result.type !== "one") {
+    if (_result.type !== "one") {
       return error({
         kind: "InvalidParamsType",
         expected: "one",
@@ -230,7 +230,7 @@ export class ParameterValidator {
    */
   validateZeroParams(result: ZeroParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (result.type !== "zero") {
+    if (_result.type !== "zero") {
       return error({
         kind: "InvalidParamsType",
         expected: "zero",

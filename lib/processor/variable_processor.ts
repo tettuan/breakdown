@@ -1,22 +1,22 @@
 /**
  * @fileoverview Two Params Variable Processor
- * 
+ *
  * This module provides enhanced variable processing for two-parameter commands,
  * extracting and managing custom variables, standard variables, and STDIN data
  * using the Result type pattern for error handling.
- * 
+ *
  * Key features:
  * - Extracts custom variables from CLI options (uv- prefixed)
  * - Manages standard variables (input_text, input_text_file, destination_path)
  * - Integrates with VariablesBuilder for consistent variable management
  * - Full Result type error handling
- * 
+ *
  * @module lib/processor/variable_processor
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
-import { VariablesBuilder, type FactoryResolvedValues } from "../builder/variables_builder.ts";
+import { error, ok } from "../types/result.ts";
+import { type FactoryResolvedValues, VariablesBuilder } from "../builder/variables_builder.ts";
 import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
 import type { PromptVariable } from "../types/prompt_variables.ts";
 
@@ -67,10 +67,10 @@ export interface ProcessorResult {
 
 /**
  * Two Params Variable Processor class
- * 
+ *
  * @example Basic usage
  * ```typescript
- * const processor = new TwoParamsVariableProcessor();
+ * const _processor = new TwoParamsVariableProcessor();
  * const result = await processor.process({
  *   options: {
  *     "uv-project": "my-project",
@@ -80,7 +80,7 @@ export interface ProcessorResult {
  *   },
  *   stdinContent: "Hello, world!"
  * });
- * 
+ *
  * if (result.ok) {
  *   console.log(result.data.variables);
  *   // { "uv-project": "my-project", "uv-version": "1.0.0", ... }
@@ -127,7 +127,10 @@ export class TwoParamsVariableProcessor {
     };
 
     // 5. Build variables using VariablesBuilder
-    const builderResult = this.#buildVariables(factoryValues, standardVarsResult.data.stdinVariable);
+    const builderResult = this.#buildVariables(
+      factoryValues,
+      standardVarsResult.data.stdinVariable,
+    );
     if (!builderResult.ok) {
       return error(builderResult.error);
     }
@@ -147,10 +150,10 @@ export class TwoParamsVariableProcessor {
    * Extract custom variables from options (uv- prefixed)
    */
   extractCustomVariables(
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Result<Record<string, string>, VariableProcessorError> {
     const customVariables: Record<string, string> = {};
-    
+
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
         // Validate value type
@@ -167,7 +170,7 @@ export class TwoParamsVariableProcessor {
         customVariables[key] = String(value);
       }
     }
-    
+
     return ok(customVariables);
   }
 
@@ -175,7 +178,7 @@ export class TwoParamsVariableProcessor {
    * Process standard variables including STDIN
    */
   #processStandardVariables(
-    params: ProcessorOptions
+    params: ProcessorOptions,
   ): Result<{
     standardVariables: {
       input_text?: string;
@@ -214,7 +217,7 @@ export class TwoParamsVariableProcessor {
    */
   #resolveInputTextFile(params: ProcessorOptions): string {
     const { options } = params;
-    
+
     // Check various option keys
     if (options.fromFile && options.fromFile !== "-") {
       return String(options.fromFile);
@@ -225,7 +228,7 @@ export class TwoParamsVariableProcessor {
     if (params.inputFile) {
       return params.inputFile;
     }
-    
+
     return "stdin";
   }
 
@@ -234,7 +237,7 @@ export class TwoParamsVariableProcessor {
    */
   #resolveDestinationPath(params: ProcessorOptions): string {
     const { options } = params;
-    
+
     // Check various option keys
     if (options.destinationFile) {
       return String(options.destinationFile);
@@ -248,7 +251,7 @@ export class TwoParamsVariableProcessor {
     if (params.outputFile) {
       return params.outputFile;
     }
-    
+
     return "stdout";
   }
 
@@ -257,7 +260,7 @@ export class TwoParamsVariableProcessor {
    */
   #buildVariables(
     factoryValues: FactoryResolvedValues,
-    stdinVariable?: PromptVariable
+    stdinVariable?: PromptVariable,
   ): Result<VariablesBuilder, VariableProcessorError> {
     const builder = new VariablesBuilder();
 
@@ -297,7 +300,7 @@ export class TwoParamsVariableProcessor {
   static extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
     const processor = new TwoParamsVariableProcessor();
     const result = processor.extractCustomVariables(options);
-    
+
     // Return empty object on error for backward compatibility
     return result.ok ? result.data : {};
   }

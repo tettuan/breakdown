@@ -1,4 +1,4 @@
-export const defaultConfigTwoParams = {
+export const _defaultConfigTwoParams = {
   params: {
     two: {
       demonstrativeType: {

@@ -34,7 +34,7 @@ export class WorkspacePathResolverImpl implements WorkspacePathResolver {
    *
    * @example
    * ```typescript
-   * const unixStrategy = new UnixPathStrategy('/home/user/workspace');
+   * const _unixStrategy = new UnixPathStrategy('/home/user/workspace');
    * const resolver = new WorkspacePathResolverImpl(unixStrategy);
    *
    * const absolutePath = await resolver.resolve('projects/my-app');

@@ -1,56 +1,69 @@
 /**
  * Legacy factory implementations for backward compatibility with existing code.
- * 
+ *
  * This module provides the missing DemonstrativeTypeFactory, LegacyLayerTypeFactory,
  * and associated type guards that are referenced in temporary PoC files.
  * These implementations bridge the gap between legacy string-based types
  * and new Totality-compliant type systems.
- * 
+ *
  * @deprecated These factories are for backward compatibility only.
  * Use the new Totality-compliant TypeFactory instead.
- * 
+ *
  * @module
  */
 
-import type { DemonstrativeType, LegacyLayerType } from "./mod.ts";
+// Legacy type definitions for backward compatibility
+export type DemonstrativeType =
+  | { kind: "to"; value: "to" }
+  | { kind: "summary"; value: "summary" }
+  | { kind: "defect"; value: "defect" }
+  | { kind: "init"; value: "init" }
+  | { kind: "find"; value: "find" };
+
+export type LegacyLayerType =
+  | { kind: "project"; value: "project" }
+  | { kind: "issue"; value: "issue" }
+  | { kind: "task"; value: "task" }
+  | { kind: "bugs"; value: "bugs" }
+  | { kind: "temp"; value: "temp" };
 
 /**
  * Legacy factory for creating DemonstrativeType instances
  * @deprecated Use DirectiveType and TypeFactory instead
  */
-export const DemonstrativeTypeFactory = {
+export const _DemonstrativeTypeFactory = {
   /**
    * Create a "to" directive type
    */
-  to(): { kind: "to"; value: "to" } {
+  to(): DemonstrativeType {
     return { kind: "to", value: "to" };
   },
 
   /**
    * Create a "summary" directive type
    */
-  summary(): { kind: "summary"; value: "summary" } {
+  summary(): DemonstrativeType {
     return { kind: "summary", value: "summary" };
   },
 
   /**
    * Create a "defect" directive type
    */
-  defect(): { kind: "defect"; value: "defect" } {
+  defect(): DemonstrativeType {
     return { kind: "defect", value: "defect" };
   },
 
   /**
    * Create an "init" directive type
    */
-  init(): { kind: "init"; value: "init" } {
+  init(): DemonstrativeType {
     return { kind: "init", value: "init" };
   },
 
   /**
    * Create a "find" directive type
    */
-  find(): { kind: "find"; value: "find" } {
+  find(): DemonstrativeType {
     return { kind: "find", value: "find" };
   },
 
@@ -59,9 +72,9 @@ export const DemonstrativeTypeFactory = {
    * @param input String representation of the directive
    * @returns DemonstrativeType object or null if invalid
    */
-  fromString(input: string): { kind: DemonstrativeType; value: DemonstrativeType } | null {
-    const normalized = input.trim().toLowerCase() as DemonstrativeType;
-    
+  fromString(input: string): DemonstrativeType | null {
+    const normalized = input.trim().toLowerCase();
+
     switch (normalized) {
       case "to":
         return this.to();
@@ -87,35 +100,35 @@ export const LegacyLayerTypeFactory = {
   /**
    * Create a "project" layer type
    */
-  project(): { kind: "project"; value: "project" } {
+  project(): LegacyLayerType {
     return { kind: "project", value: "project" };
   },
 
   /**
    * Create an "issue" layer type
    */
-  issue(): { kind: "issue"; value: "issue" } {
+  issue(): LegacyLayerType {
     return { kind: "issue", value: "issue" };
   },
 
   /**
    * Create a "task" layer type
    */
-  task(): { kind: "task"; value: "task" } {
+  task(): LegacyLayerType {
     return { kind: "task", value: "task" };
   },
 
   /**
    * Create a "bugs" layer type
    */
-  bugs(): { kind: "bugs"; value: "bugs" } {
+  bugs(): LegacyLayerType {
     return { kind: "bugs", value: "bugs" };
   },
 
   /**
    * Create a "temp" layer type
    */
-  temp(): { kind: "temp"; value: "temp" } {
+  temp(): LegacyLayerType {
     return { kind: "temp", value: "temp" };
   },
 
@@ -124,9 +137,9 @@ export const LegacyLayerTypeFactory = {
    * @param input String representation of the layer
    * @returns LegacyLayerType object or null if invalid
    */
-  fromString(input: string): { kind: LegacyLayerType; value: LegacyLayerType } | null {
-    const normalized = input.trim().toLowerCase() as LegacyLayerType;
-    
+  fromString(input: string): LegacyLayerType | null {
+    const normalized = input.trim().toLowerCase();
+
     switch (normalized) {
       case "project":
         return this.project();
@@ -152,35 +165,35 @@ export const DemonstrativeTypeGuards = {
   /**
    * Check if directive is "to"
    */
-  isTo(directive: { kind: DemonstrativeType; value: DemonstrativeType }): boolean {
+  isTo(directive: DemonstrativeType): boolean {
     return directive.kind === "to";
   },
 
   /**
    * Check if directive is "summary"
    */
-  isSummary(directive: { kind: DemonstrativeType; value: DemonstrativeType }): boolean {
+  isSummary(directive: DemonstrativeType): boolean {
     return directive.kind === "summary";
   },
 
   /**
    * Check if directive is "defect"
    */
-  isDefect(directive: { kind: DemonstrativeType; value: DemonstrativeType }): boolean {
+  isDefect(directive: DemonstrativeType): boolean {
     return directive.kind === "defect";
   },
 
   /**
    * Check if directive is "init"
    */
-  isInit(directive: { kind: DemonstrativeType; value: DemonstrativeType }): boolean {
+  isInit(directive: DemonstrativeType): boolean {
     return directive.kind === "init";
   },
 
   /**
    * Check if directive is "find"
    */
-  isFind(directive: { kind: DemonstrativeType; value: DemonstrativeType }): boolean {
+  isFind(directive: DemonstrativeType): boolean {
     return directive.kind === "find";
   },
 } as const;
@@ -193,35 +206,64 @@ export const LegacyLayerTypeGuards = {
   /**
    * Check if layer is "project"
    */
-  isProject(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
+  isProject(layer: LegacyLayerType): boolean {
     return layer.kind === "project";
   },
 
   /**
    * Check if layer is "issue"
    */
-  isIssue(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
+  isIssue(layer: LegacyLayerType): boolean {
     return layer.kind === "issue";
   },
 
   /**
    * Check if layer is "task"
    */
-  isTask(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
+  isTask(layer: LegacyLayerType): boolean {
     return layer.kind === "task";
   },
 
   /**
    * Check if layer is "bugs"
    */
-  isBugs(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
+  isBugs(layer: LegacyLayerType): boolean {
     return layer.kind === "bugs";
   },
 
   /**
    * Check if layer is "temp"
    */
-  isTemp(layer: { kind: LegacyLayerType; value: LegacyLayerType }): boolean {
+  isTemp(layer: LegacyLayerType): boolean {
     return layer.kind === "temp";
   },
 } as const;
+
+/**
+ * Legacy DirectiveFactory for backward compatibility
+ * @deprecated Use DirectiveType and TypeFactory instead
+ */
+export const DirectiveFactory = _DemonstrativeTypeFactory;
+
+/**
+ * Legacy LayerFactory for backward compatibility
+ * @deprecated Use LayerType and TypeFactory instead
+ */
+export const LayerFactory = LegacyLayerTypeFactory;
+
+/**
+ * Legacy TwoParamsConfigFactory (placeholder)
+ * @deprecated Use TypeFactory for new code
+ */
+export const TwoParamsConfigFactory = {
+  create: () => ({}),
+};
+
+/**
+ * Legacy VariableResultFactory (placeholder)
+ * @deprecated Use VariableResult functions directly
+ */
+export const VariableResultFactory = {
+  createSuccess: <T>(data: T) => ({ ok: true, data }),
+  createError: <E>(error: E) => ({ ok: false, error }),
+};

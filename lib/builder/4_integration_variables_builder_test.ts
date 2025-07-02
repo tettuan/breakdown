@@ -5,7 +5,7 @@
  * VariablesBuilder and TwoParamsProcessor, ensuring that the variables_builder
  * correctly handles real-world data flows and factory patterns.
  *
- * @module builder/4_integration_variables_builder_test  
+ * @module builder/4_integration_variables_builder_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
@@ -14,7 +14,7 @@ import type { FactoryResolvedValues } from "./variables_builder.ts";
 
 /**
  * Integration Test Suite: VariablesBuilder with TwoParamsProcessor
- * 
+ *
  * These tests verify the complete integration workflow from TwoParamsProcessor
  * output through VariablesBuilder to final prompt variable generation.
  */
@@ -24,7 +24,7 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
     // Simulate realistic TwoParamsProcessor output
     const factoryValues: FactoryResolvedValues = {
       promptFilePath: "/prompts/to_project.md",
-      inputFilePath: "/workspace/input.txt", 
+      inputFilePath: "/workspace/input.txt",
       outputFilePath: "/workspace/output/project_analysis.md",
       schemaFilePath: "/config/schema.json",
       customVariables: {
@@ -35,24 +35,36 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
       inputText: "Sample project code for analysis",
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const buildResult = builder.build();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const buildResult = _builder.build();
 
     assertEquals(buildResult.ok, true, "Should build successfully from TwoParamsProcessor output");
-    
+
     if (buildResult.ok) {
-      const record = builder.toRecord();
-      
+      const record = _builder.toRecord();
+
       // Verify core variables are present
       assertEquals(record.input_text_file, "input.txt", "Should extract basename from input path");
-      assertEquals(record.destination_path, "/workspace/output/project_analysis.md", "Should preserve output path");
+      assertEquals(
+        record.destination_path,
+        "/workspace/output/project_analysis.md",
+        "Should preserve output path",
+      );
       assertEquals(record.schema_file, "/config/schema.json", "Should include schema file");
-      assertEquals(record.input_text, "Sample project code for analysis", "Should include input text");
-      
+      assertEquals(
+        record.input_text,
+        "Sample project code for analysis",
+        "Should include input text",
+      );
+
       // Custom variables may not be created if validation fails
       const hasCustomVars = Object.prototype.hasOwnProperty.call(record, "uv-project-type");
       if (hasCustomVars) {
-        assertEquals(record["uv-project-type"], "breakdown", "Should include custom variables when valid");
+        assertEquals(
+          record["uv-project-type"],
+          "breakdown",
+          "Should include custom variables when valid",
+        );
         assertEquals(record["uv-environment"], "development", "Should include environment config");
         assertEquals(record["uv-version"], "1.0.0", "Should include version info");
       }
@@ -73,24 +85,32 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
       inputText: "Task description from stdin",
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const record = builder.toRecord();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const record = _builder.toRecord();
 
     // Should not create input_text_file for stdin
     assertEquals(
       Object.prototype.hasOwnProperty.call(record, "input_text_file"),
       false,
-      "Should not create input_text_file for stdin input"
+      "Should not create input_text_file for stdin input",
     );
-    
+
     // Should create input_text from stdin content
     assertEquals(record.input_text, "Task description from stdin", "Should include stdin content");
-    assertEquals(record.destination_path, "/workspace/task_result.md", "Should include output path");
-    
+    assertEquals(
+      record.destination_path,
+      "/workspace/task_result.md",
+      "Should include output path",
+    );
+
     // Custom variables may not be created if validation fails
     const hasTaskVars = Object.prototype.hasOwnProperty.call(record, "uv-task-priority");
     if (hasTaskVars) {
-      assertEquals(record["uv-task-priority"], "high", "Should include task-specific variables when valid");
+      assertEquals(
+        record["uv-task-priority"],
+        "high",
+        "Should include task-specific variables when valid",
+      );
     }
   });
 
@@ -103,22 +123,30 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
       schemaFilePath: "/schema/minimal.json",
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const buildResult = builder.build();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const buildResult = _builder.build();
 
     assertEquals(buildResult.ok, true, "Should handle minimal TwoParamsProcessor output");
-    
+
     if (buildResult.ok) {
-      const record = builder.toRecord();
-      assertEquals(record.input_text_file, "minimal.txt", "Should create basic input file variable");
-      assertEquals(record.destination_path, "/output/minimal.md", "Should create basic output path");
+      const record = _builder.toRecord();
+      assertEquals(
+        record.input_text_file,
+        "minimal.txt",
+        "Should create basic input file variable",
+      );
+      assertEquals(
+        record.destination_path,
+        "/output/minimal.md",
+        "Should create basic output path",
+      );
       assertEquals(record.schema_file, "/schema/minimal.json", "Should create basic schema file");
-      
+
       // Should not have input_text or custom variables
       assertEquals(
         Object.prototype.hasOwnProperty.call(record, "input_text"),
         false,
-        "Should not create input_text without inputText"
+        "Should not create input_text without inputText",
       );
     }
   });
@@ -130,7 +158,7 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
     const factoryValues: FactoryResolvedValues = {
       promptFilePath: "/prompts/test.md",
       inputFilePath: "/input/test.txt",
-      outputFilePath: "/output/test.md", 
+      outputFilePath: "/output/test.md",
       schemaFilePath: "/schema/test.json",
       customVariables: {
         "uv-valid": "good",
@@ -139,11 +167,11 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
       },
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const buildResult = builder.build();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const buildResult = _builder.build();
 
     assertEquals(buildResult.ok, false, "Should fail with invalid custom variable prefixes");
-    
+
     if (!buildResult.ok) {
       const errors = buildResult.error;
       assertEquals(Array.isArray(errors), true, "Should provide error array");
@@ -153,15 +181,15 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
 
   await t.step("Conflicting variable names from processor", () => {
     // Test duplicate variable handling
-    const builder = new VariablesBuilder();
-    
+    const _builder = new VariablesBuilder();
+
     // Add initial variables
-    builder.addStandardVariable("input_text_file", "original.txt");
-    builder.addUserVariable("uv-environment", "test");
+    _builder.addStandardVariable("input_text_file", "original.txt");
+    _builder.addUserVariable("uv-environment", "test");
 
     // Simulate TwoParamsProcessor adding conflicting values
     const factoryValues: FactoryResolvedValues = {
-      promptFilePath: "/prompts/conflict.md", 
+      promptFilePath: "/prompts/conflict.md",
       inputFilePath: "/input/conflict.txt", // Will create input_text_file = "conflict.txt"
       outputFilePath: "/output/conflict.md",
       schemaFilePath: "/schema/conflict.json",
@@ -170,11 +198,11 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
       },
     };
 
-    builder.addFromFactoryValues(factoryValues);
-    const buildResult = builder.build();
+    _builder.addFromFactoryValues(factoryValues);
+    const buildResult = _builder.build();
 
     assertEquals(buildResult.ok, false, "Should detect conflicts from TwoParamsProcessor output");
-    assertEquals(builder.getErrorCount() > 0, true, "Should accumulate conflict errors");
+    assertEquals(_builder.getErrorCount() > 0, true, "Should accumulate conflict errors");
   });
 
   await t.step("Missing required factory values", () => {
@@ -185,17 +213,17 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
       schemaFilePath: "/schema/test.json",
     };
 
-    const builder = new VariablesBuilder();
-    const validationResult = builder.validateFactoryValues(incompleteValues);
+    const _builder = new VariablesBuilder();
+    const validationResult = _builder.validateFactoryValues(incompleteValues);
 
     assertEquals(validationResult.ok, false, "Should fail validation for missing required fields");
-    
+
     if (!validationResult.ok) {
       const errors = validationResult.error;
       assertEquals(
-        errors.some(e => e.kind === "FactoryValueMissing"),
+        errors.some((e) => e.kind === "FactoryValueMissing"),
         true,
-        "Should identify missing factory values"
+        "Should identify missing factory values",
       );
     }
   });
@@ -221,11 +249,11 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
         inputText: `Batch processing content ${i}`,
       };
 
-      const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-      const result = builder.build();
-      
-      assertEquals(result.ok, true, `Batch ${i} should process successfully`);
-      results.push(result);
+      const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+      const _result = _builder.build();
+
+      assertEquals(_result.ok, true, `Batch ${i} should process successfully`);
+      results.push(_result);
     }
 
     const endTime = performance.now();
@@ -234,8 +262,8 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
     assertEquals(results.length, iterations, "Should process all batches");
     assertEquals(
       duration < 2000,
-      true, 
-      `Bulk processing should complete in reasonable time: ${duration}ms for ${iterations} iterations`
+      true,
+      `Bulk processing should complete in reasonable time: ${duration}ms for ${iterations} iterations`,
     );
   });
 
@@ -255,14 +283,14 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
 
     // Create multiple builders with same factory values
     for (let i = 0; i < 20; i++) {
-      const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-      builders.push(builder);
-      
-      const result = builder.build();
-      assertEquals(result.ok, true, `Memory test ${i} should build successfully`);
-      
-      if (result.ok) {
-        records.push(builder.toRecord());
+      const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+      builders.push(_builder);
+
+      const _result = _builder.build();
+      assertEquals(_result.ok, true, `Memory test ${i} should build successfully`);
+
+      if (_result.ok) {
+        records.push(_builder.toRecord());
       }
     }
 
@@ -271,7 +299,7 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
       assertEquals(
         JSON.stringify(records[i]),
         JSON.stringify(records[0]),
-        `Record ${i} should match the first record`
+        `Record ${i} should match the first record`,
       );
     }
   });
@@ -279,7 +307,7 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
 
 Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t) => {
   await t.step("Multi-stage processing with incremental builds", () => {
-    const builder = new VariablesBuilder();
+    const _builder = new VariablesBuilder();
 
     // Stage 1: Initial factory values
     const stage1Values: FactoryResolvedValues = {
@@ -293,8 +321,8 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
       },
     };
 
-    builder.addFromFactoryValues(stage1Values);
-    assertEquals(builder.getVariableCount() > 0, true, "Should add stage 1 variables");
+    _builder.addFromFactoryValues(stage1Values);
+    assertEquals(_builder.getVariableCount() > 0, true, "Should add stage 1 variables");
 
     // Stage 2: Additional partial values (simulating processor updates)
     const stage2Partial = {
@@ -305,12 +333,12 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
       inputText: "Additional processing context",
     };
 
-    builder.addFromPartialFactoryValues(stage2Partial);
-    
-    // May or may not have conflict errors depending on variable creation
-    assertEquals(builder.getErrorCount() >= 0, true, "Should handle stage conflicts appropriately");
+    _builder.addFromPartialFactoryValues(stage2Partial);
 
-    const buildResult = builder.build();
+    // May or may not have conflict errors depending on variable creation
+    assertEquals(_builder.getErrorCount() >= 0, true, "Should handle stage conflicts appropriately");
+
+    const buildResult = _builder.build();
     // Build may succeed or fail depending on variable creation
     assertEquals(typeof buildResult.ok, "boolean", "Should return build result");
   });
@@ -326,11 +354,11 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
         // Processor module variables
         "uv-processor-version": "2.1.0",
         "uv-processor-mode": "enhanced",
-        
+
         // Config module variables
         "uv-config-env": "production",
         "uv-config-debug": "false",
-        
+
         // Handler module variables
         "uv-handler-type": "async",
         "uv-handler-timeout": "30000",
@@ -338,22 +366,26 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
       inputText: "Cross-module processing data",
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const result = builder.build();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const _result = _builder.build();
 
-    assertEquals(result.ok, true, "Should handle cross-module variables successfully");
-    
-    if (result.ok) {
-      const record = builder.toRecord();
-      
+    assertEquals(_result.ok, true, "Should handle cross-module variables successfully");
+
+    if (_result.ok) {
+      const record = _builder.toRecord();
+
       // Check if module variables are present
       const hasProcessorVars = Object.prototype.hasOwnProperty.call(record, "uv-processor-version");
       if (hasProcessorVars) {
-        assertEquals(record["uv-processor-version"], "2.1.0", "Should include processor variables when valid");
+        assertEquals(
+          record["uv-processor-version"],
+          "2.1.0",
+          "Should include processor variables when valid",
+        );
         assertEquals(record["uv-config-env"], "production", "Should include config variables");
         assertEquals(record["uv-handler-type"], "async", "Should include handler variables");
       }
-      
+
       // Verify basic variables are always present
       const totalVars = Object.keys(record).length;
       assertEquals(totalVars >= 4, true, `Should have basic variable set: ${totalVars} variables`);
@@ -361,7 +393,7 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
   });
 
   await t.step("Factory validation with processor constraints", () => {
-    const builder = new VariablesBuilder();
+    const _builder = new VariablesBuilder();
 
     // Test comprehensive validation scenario
     const validationScenarios = [
@@ -405,8 +437,8 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
     ];
 
     for (const scenario of validationScenarios) {
-      const validationResult = builder.validateFactoryValues(scenario.values);
-      
+      const validationResult = _builder.validateFactoryValues(scenario.values);
+
       if (scenario.shouldPass) {
         assertEquals(validationResult.ok, true, `${scenario.name} should pass validation`);
       } else {

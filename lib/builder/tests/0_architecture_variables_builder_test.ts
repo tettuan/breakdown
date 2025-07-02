@@ -15,31 +15,31 @@ import { VariablesBuilder } from "../variables_builder.ts";
  */
 Deno.test("VariablesBuilder - follows dependency inversion principle", () => {
   // Builder should depend on abstractions (interfaces) from types module
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // The builder should work with any variable that implements PromptVariableBase
   // This is verified by the type system at compile time
-  assertExists(builder);
+  assertExists(_builder);
 });
 
 /**
  * Verify Result type is used consistently for error handling
  */
 Deno.test("VariablesBuilder - uses Result type for all operations", () => {
-  const builder = new VariablesBuilder();
-  const result = builder.build();
+  const _builder = new VariablesBuilder();
+  const _result = _builder.build();
 
   // Result must have ok property (discriminated union)
-  assertExists(result.ok);
-  assertEquals(typeof result.ok, "boolean");
+  assertExists(_result.ok);
+  assertEquals(typeof _result.ok, "boolean");
 
   // Result must have either data or error, never both
-  if (result.ok) {
-    assertExists(result.data);
-    assertEquals("error" in result, false);
+  if (_result.ok) {
+    assertExists(_result.data);
+    assertEquals("error" in _result, false);
   } else {
-    assertExists(result.error);
-    assertEquals("data" in result, false);
+    assertExists(_result.error);
+    assertEquals("data" in _result, false);
   }
 });
 
@@ -56,22 +56,22 @@ Deno.test("VariablesBuilder - no circular dependencies", () => {
  * Verify builder pattern is properly implemented
  */
 Deno.test("VariablesBuilder - implements fluent builder pattern", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // All add methods should return 'this' for chaining
-  const result1 = builder.addStandardVariable("input_text_file", "test");
+  const result1 = _builder.addStandardVariable("input_text_file", "test");
   assertEquals(result1, builder);
 
-  const result2 = builder.addFilePathVariable("schema_file", "test");
+  const result2 = _builder.addFilePathVariable("schema_file", "test");
   assertEquals(result2, builder);
 
-  const result3 = builder.addStdinVariable("test");
+  const result3 = _builder.addStdinVariable("test");
   assertEquals(result3, builder);
 
-  const result4 = builder.addUserVariable("uv-test", "test");
+  const result4 = _builder.addUserVariable("uv-test", "test");
   assertEquals(result4, builder);
 
-  const result5 = builder.clear();
+  const result5 = _builder.clear();
   assertEquals(result5, builder);
 });
 
@@ -79,7 +79,7 @@ Deno.test("VariablesBuilder - implements fluent builder pattern", () => {
  * Verify error accumulation follows Totality Principle
  */
 Deno.test("VariablesBuilder - accumulates all errors instead of throwing", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Add multiple invalid operations
   builder
@@ -88,13 +88,13 @@ Deno.test("VariablesBuilder - accumulates all errors instead of throwing", () =>
     .addUserVariable("invalid", "test");
 
   // Should not throw, but accumulate errors
-  const result = builder.build();
-  assertEquals(result.ok, false);
+  const _result = _builder.build();
+  assertEquals(_result.ok, false);
 
-  if (!result.ok) {
+  if (!_result.ok) {
     // Should have multiple errors
-    assertEquals(Array.isArray(result.error), true);
-    assertEquals(result.error.length, 3);
+    assertEquals(Array.isArray(_result.error), true);
+    assertEquals(_result.error.length, 3);
   }
 });
 
@@ -102,15 +102,15 @@ Deno.test("VariablesBuilder - accumulates all errors instead of throwing", () =>
  * Verify type safety through Smart Constructors
  */
 Deno.test("VariablesBuilder - uses Smart Constructors for type safety", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // The builder internally uses Smart Constructors from variable types
   // This is verified by successful creation with valid inputs
-  const result = builder
+  const _result = builder
     .addStandardVariable("input_text_file", "valid")
     .build();
 
-  assertEquals(result.ok, true);
+  assertEquals(_result.ok, true);
 
   // And failure with invalid inputs
   const errorResult = builder
@@ -125,7 +125,7 @@ Deno.test("VariablesBuilder - uses Smart Constructors for type safety", () => {
  * Verify interface segregation - builder only exposes necessary methods
  */
 Deno.test("VariablesBuilder - follows interface segregation principle", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Public interface should only include necessary methods
   const publicMethods = [

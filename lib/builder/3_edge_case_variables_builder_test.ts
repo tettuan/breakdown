@@ -14,7 +14,7 @@ import type { BuilderVariableError, FactoryResolvedValues } from "./variables_bu
 
 /**
  * Edge Case Test Suite: fromFactoryValues Function
- * 
+ *
  * These tests specifically target edge cases and boundary conditions
  * that could cause failures in the TwoParamsProcessor integration.
  */
@@ -29,28 +29,28 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - empty string handl
     inputText: "",
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
   // Empty inputFilePath should not create input_text_file
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "input_text_file"),
     false,
-    "Empty inputFilePath should not create input_text_file variable"
+    "Empty inputFilePath should not create input_text_file variable",
   );
 
   // Empty schemaFilePath should not create schema_file
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "schema_file"),
     false,
-    "Empty schemaFilePath should not create schema_file variable"
+    "Empty schemaFilePath should not create schema_file variable",
   );
 
   // Empty inputText should not create input_text variable
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "input_text"),
     false,
-    "Empty inputText should not create input_text variable"
+    "Empty inputText should not create input_text variable",
   );
 });
 
@@ -64,14 +64,14 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - null/undefined han
     inputText: undefined, // Undefined input text
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
-  assertEquals(builder.getErrorCount(), 0, "Should handle undefined values without errors");
+  assertEquals(_builder.getErrorCount(), 0, "Should handle undefined values without errors");
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "input_text"),
     false,
-    "Undefined inputText should not create input_text variable"
+    "Undefined inputText should not create input_text variable",
   );
 });
 
@@ -84,14 +84,14 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - whitespace-only va
     inputText: "  \n  ", // Whitespace-only text
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
   // Whitespace-only paths should be treated as empty
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "input_text_file"),
     false,
-    "Whitespace-only inputFilePath should not create variable"
+    "Whitespace-only inputFilePath should not create variable",
   );
 
   // Whitespace-only output path behavior depends on StandardVariable validation
@@ -100,7 +100,11 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - whitespace-only va
     assertEquals(record.destination_path, "\t\n", "Should preserve whitespace in output path");
   } else {
     // StandardVariable validation may reject whitespace-only values
-    assertEquals(builder.getErrorCount() > 0, true, "Should have validation errors for whitespace-only path");
+    assertEquals(
+      _builder.getErrorCount() > 0,
+      true,
+      "Should have validation errors for whitespace-only path",
+    );
   }
 
   // Whitespace-only inputText behavior depends on StdinVariable validation
@@ -108,7 +112,11 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - whitespace-only va
     assertEquals(record.input_text, "  \n  ", "Should preserve whitespace in input text");
   } else {
     // May be rejected by validation or not added due to empty content
-    assertEquals(builder.getErrorCount() >= 0, true, "Should handle whitespace-only input text appropriately");
+    assertEquals(
+      _builder.getErrorCount() >= 0,
+      true,
+      "Should handle whitespace-only input text appropriately",
+    );
   }
 });
 
@@ -120,12 +128,20 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - special path chara
     schemaFilePath: "/path/with/special-chars!@#$.json",
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
   assertEquals(record.input_text_file, "file.txt", "Should handle paths with spaces");
-  assertEquals(record.destination_path, "/path/with/unicode-文字.txt", "Should handle unicode characters");
-  assertEquals(record.schema_file, "/path/with/special-chars!@#$.json", "Should handle special characters");
+  assertEquals(
+    record.destination_path,
+    "/path/with/unicode-文字.txt",
+    "Should handle unicode characters",
+  );
+  assertEquals(
+    record.schema_file,
+    "/path/with/special-chars!@#$.json",
+    "Should handle special characters",
+  );
 });
 
 Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - very long paths", () => {
@@ -140,12 +156,12 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - very long paths", 
     inputText: longText,
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
   assertEquals(record.input_text_file, "file.txt", "Should handle very long paths correctly");
   assertEquals(record.input_text, longText, "Should handle very long input text");
-  assertEquals(builder.getErrorCount(), 0, "Should not generate errors for long values");
+  assertEquals(_builder.getErrorCount(), 0, "Should not generate errors for long values");
 });
 
 Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - custom variables prefix conflicts", () => {
@@ -161,30 +177,34 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - custom variables p
     },
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-  const record = builder.toRecord();
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const record = _builder.toRecord();
 
   // Check actual behavior - variables may not be created if validation fails
   const hasCustom1 = Object.prototype.hasOwnProperty.call(record, "uv-custom1");
   const hasCustom2 = Object.prototype.hasOwnProperty.call(record, "uv-custom2");
   const hasNested = Object.prototype.hasOwnProperty.call(record, "uv-nested-var");
-  
+
   if (hasCustom1 && hasCustom2 && hasNested) {
     assertEquals(record["uv-custom1"], "value1", "Should preserve uv- prefix for custom1");
-    assertEquals(record["uv-custom2"], "value2", "Should preserve uv- prefix for custom2");  
+    assertEquals(record["uv-custom2"], "value2", "Should preserve uv- prefix for custom2");
     assertEquals(record["uv-nested-var"], "nested value", "Should handle hyphenated names");
-    assertEquals(builder.getErrorCount(), 0, "Should not generate errors for valid prefixes");
+    assertEquals(_builder.getErrorCount(), 0, "Should not generate errors for valid prefixes");
   } else {
     // Variables may not be created due to validation issues
-    assertEquals(builder.getErrorCount() >= 0, true, "Should handle custom variable creation appropriately");
+    assertEquals(
+      _builder.getErrorCount() >= 0,
+      true,
+      "Should handle custom variable creation appropriately",
+    );
   }
 });
 
 Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - duplicate custom variable names", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // First, add a user variable directly
-  builder.addUserVariable("uv-shared", "original value");
+  _builder.addUserVariable("uv-shared", "original value");
 
   // Then add factory values with same name
   const factoryValues: FactoryResolvedValues = {
@@ -197,12 +217,16 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - duplicate custom v
     },
   };
 
-  builder.addFromFactoryValues(factoryValues);
+  _builder.addFromFactoryValues(factoryValues);
 
   // Should detect duplicate (or may not create variables due to other validation)
-  assertEquals(builder.getErrorCount() >= 0, true, "Should handle duplicate custom variable appropriately");
+  assertEquals(
+    _builder.getErrorCount() >= 0,
+    true,
+    "Should handle duplicate custom variable appropriately",
+  );
 
-  const buildResult = builder.build();
+  const buildResult = _builder.build();
   // Build may succeed or fail depending on whether variables were actually created
   assertEquals(typeof buildResult.ok, "boolean", "Should return build result");
 });
@@ -227,20 +251,20 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - basename extractio
       schemaFilePath: "/schema.json",
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const record = builder.toRecord();
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const record = _builder.toRecord();
 
     if (testCase.expected && testCase.path !== "-" && testCase.path !== "") {
       assertEquals(
         record.input_text_file,
         testCase.expected,
-        `Should extract basename correctly for path: ${testCase.path}`
+        `Should extract basename correctly for path: ${testCase.path}`,
       );
     } else {
       assertEquals(
         Object.prototype.hasOwnProperty.call(record, "input_text_file"),
         false,
-        `Should not create input_text_file for path: ${testCase.path}`
+        `Should not create input_text_file for path: ${testCase.path}`,
       );
     }
   }
@@ -263,11 +287,11 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - memory and perform
       inputText: `Test input content ${i}`,
     };
 
-    const builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const result = builder.build();
-    
-    assertEquals(result.ok, true, `Iteration ${i} should build successfully`);
-    assertEquals(builder.getErrorCount(), 0, `Iteration ${i} should have no errors`);
+    const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
+    const _result = _builder.build();
+
+    assertEquals(_result.ok, true, `Iteration ${i} should build successfully`);
+    assertEquals(_builder.getErrorCount(), 0, `Iteration ${i} should have no errors`);
   }
 
   const endTime = performance.now();
@@ -277,7 +301,7 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - memory and perform
   assertEquals(
     duration < 1000,
     true,
-    `Performance test: ${duration}ms for ${iterations} iterations should be under 1000ms`
+    `Performance test: ${duration}ms for ${iterations} iterations should be under 1000ms`,
   );
 });
 
@@ -292,29 +316,29 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - concurrent modific
     },
   };
 
-  const builder = VariablesBuilder.fromFactoryValues(factoryValues);
+  const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
 
   // Modify the original object after passing to factory
   factoryValues.customVariables!["modified"] = "new value";
   factoryValues.inputText = "modified text";
 
-  const record = builder.toRecord();
+  const record = _builder.toRecord();
 
   // Should not be affected by external modifications
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "uv-modified"),
     false,
-    "Should not be affected by post-creation modifications"
+    "Should not be affected by post-creation modifications",
   );
   assertEquals(
     Object.prototype.hasOwnProperty.call(record, "input_text"),
     false,
-    "Should not include post-creation input text"
+    "Should not include post-creation input text",
   );
 });
 
 Deno.test("VariablesBuilder - Edge Cases: validateFactoryValues - comprehensive validation", () => {
-  const builder = new VariablesBuilder();
+  const _builder = new VariablesBuilder();
 
   // Test various invalid scenarios
   const invalidScenarios = [
@@ -355,15 +379,15 @@ Deno.test("VariablesBuilder - Edge Cases: validateFactoryValues - comprehensive 
   ];
 
   for (const scenario of invalidScenarios) {
-    const result = builder.validateFactoryValues(scenario.values);
-    assertEquals(result.ok, false, `${scenario.name} should fail validation`);
+    const _result = _builder.validateFactoryValues(scenario.values);
+    assertEquals(_result.ok, false, `${scenario.name} should fail validation`);
 
-    if (!result.ok) {
-      const errors = result.error as BuilderVariableError[];
+    if (!_result.ok) {
+      const errors = _result.error as BuilderVariableError[];
       assertEquals(
         errors.some((e) => e.kind === scenario.expectedError),
         true,
-        `${scenario.name} should contain ${scenario.expectedError} error`
+        `${scenario.name} should contain ${scenario.expectedError} error`,
       );
     }
   }

@@ -34,7 +34,7 @@ export class UnixPathStrategy implements PathResolutionStrategy {
    *
    * @example
    * ```typescript
-   * const strategy = new UnixPathStrategy('/home/user/workspace');
+   * const _strategy = new UnixPathStrategy('/home/user/workspace');
    * const resolved = await strategy.resolve('projects/my-app');
    * // Result: /home/user/workspace/projects/my-app
    * ```

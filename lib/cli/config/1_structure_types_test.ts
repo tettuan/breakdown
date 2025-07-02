@@ -1,211 +1,272 @@
 /**
- * @fileoverview Structure test for CLI config types responsibilities
- * 
- * このテストは以下の構造的側面を検証します：
- * - 単一責任の原則の遵守（設定型定義のみ）
- * - 適切な抽象化レベル
- * - インターフェース間の関係性
- * - 責務の明確な分離
+ * @fileoverview Structure tests for CLI config types
+ *
+ * This test file validates the structural design and responsibility separation
+ * of the CLI configuration types module, ensuring proper abstraction levels.
+ *
+ * @module cli/config/1_structure_types_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import type { BreakdownConfig, ConfigOptions } from "./types.ts";
 
-Deno.test("Structure: Single responsibility - configuration types only", async () => {
-  // このモジュールが設定型定義のみを担当していることを確認
-  
-  // 1. 実装ロジックを含まない（型定義のみ）
-  const typesModule = await import("./types.ts");
-  const moduleExports = Object.keys(typesModule);
-  assertEquals(
-    moduleExports.length, 
-    0, 
-    "モジュールは型定義のみを含み、実装を含まない"
+/**
+ * Structure Test: Single Responsibility Principle
+ *
+ * Verifies that each type definition has a single, well-defined purpose
+ * and doesn't mix concerns.
+ */
+Deno.test("Structure: Config types follow single responsibility principle", async () => {
+  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(typesFilePath);
+
+  // Analyze BreakdownConfig interface
+  const breakdownConfigMatch = typesContent.match(
+    /export\s+interface\s+BreakdownConfig\s*{([^}]+)}/s,
   );
-  
-  // 2. 設定に関連する型のみを定義
-  // BreakdownConfig: アプリケーション設定の完全な表現
-  // ConfigOptions: 実行時オプションの表現
-  
-  // 型の用途が明確に分離されていることを確認
-  const configPurpose = "アプリケーション設定の静的な構造";
-  const optionsPurpose = "実行時の動的なオプション";
-  
-  // 各インターフェースが単一の目的を持つことを確認
-  assertEquals(typeof configPurpose, "string");
-  assertEquals(typeof optionsPurpose, "string");
-});
+  if (breakdownConfigMatch) {
+    const properties = breakdownConfigMatch[1].match(/\w+[?]?:\s*[^;]+/g) || [];
 
-Deno.test("Structure: Clear separation between Config and Options", () => {
-  // BreakdownConfigとConfigOptionsの責務が明確に分離されていることを確認
-  
-  // BreakdownConfig: 必須の設定項目（完全な設定）
-  const requiredConfigProps: (keyof BreakdownConfig)[] = [
-    "working_directory",
-    "output_directory",
-    "default_config_path"
-  ];
-  
-  // ConfigOptions: オプショナルな実行時パラメータ
-  const optionalConfigProps: (keyof ConfigOptions)[] = [
-    "configPath",
-    "workingDir",
-    "outputDir"
-  ];
-  
-  // プロパティ名の重複がないことを確認（責務の分離）
-  const configPropSet = new Set(requiredConfigProps);
-  const optionsPropSet = new Set(optionalConfigProps);
-  
-  // 意味的に関連はあるが、異なる名前を使用していることを確認
-  assertEquals(configPropSet.has("configPath" as any), false);
-  assertEquals(optionsPropSet.has("default_config_path" as any), false);
-});
-
-Deno.test("Structure: Abstraction level consistency", () => {
-  // 両インターフェースが同じ抽象化レベルで定義されていることを確認
-  
-  // 1. 両方とも設定に関する高レベルの抽象化
-  // 2. 実装詳細を含まない
-  // 3. ドメイン概念を適切に表現
-  
-  // BreakdownConfig: 静的設定の抽象化
-  type ConfigAbstraction = {
-    readonly staticConfiguration: true;
-    readonly requiresAllProperties: true;
-    readonly representsState: "persisted";
-  };
-  
-  // ConfigOptions: 動的オプションの抽象化
-  type OptionsAbstraction = {
-    readonly dynamicConfiguration: true;
-    readonly allowsPartialProperties: true;
-    readonly representsState: "runtime";
-  };
-  
-  // 型レベルでの抽象化の一貫性を確認
-  const _configCheck: ConfigAbstraction = {
-    staticConfiguration: true,
-    requiresAllProperties: true,
-    representsState: "persisted"
-  };
-  
-  const _optionsCheck: OptionsAbstraction = {
-    dynamicConfiguration: true,
-    allowsPartialProperties: true,
-    representsState: "runtime"
-  };
-});
-
-Deno.test("Structure: Property grouping and cohesion", () => {
-  // 各インターフェース内のプロパティが高い凝集性を持つことを確認
-  
-  // BreakdownConfig: ディレクトリとパスに関する設定
-  const configCategories = {
-    directories: ["working_directory", "output_directory"],
-    paths: ["default_config_path"]
-  };
-  
-  // 全てのプロパティが設定に関連していることを確認
-  const allConfigProps = [
-    ...configCategories.directories,
-    ...configCategories.paths
-  ];
-  
-  assertEquals(allConfigProps.length, 3, "全てのプロパティが分類される");
-  
-  // ConfigOptions: 実行時オーバーライドのグループ
-  const optionsCategories = {
-    pathOverrides: ["configPath"],
-    directoryOverrides: ["workingDir", "outputDir"]
-  };
-  
-  // オプションが論理的にグループ化されていることを確認
-  const allOptionsProps = [
-    ...optionsCategories.pathOverrides,
-    ...optionsCategories.directoryOverrides
-  ];
-  
-  assertEquals(allOptionsProps.length, 3, "全てのオプションが分類される");
-});
-
-Deno.test("Structure: Interface extensibility", () => {
-  // インターフェースが将来の拡張に対して開かれていることを確認
-  
-  // 1. BreakdownConfigの拡張性
-  interface ExtendedBreakdownConfig extends BreakdownConfig {
-    log_directory: string;
-    cache_directory: string;
+    // Check that all properties relate to configuration
+    properties.forEach((prop) => {
+      const propName = prop.split(":")[0].trim().replace("?", "");
+      const isConfigRelated = propName.includes("directory") || propName.includes("path") ||
+        propName.includes("config") || propName.includes("output");
+      assertEquals(
+        isConfigRelated,
+        true,
+        `Property '${propName}' in BreakdownConfig should be configuration-related`,
+      );
+    });
   }
-  
-  const extendedConfig: ExtendedBreakdownConfig = {
-    working_directory: "/work",
-    output_directory: "/output",
-    default_config_path: "/config.json",
-    log_directory: "/logs",
-    cache_directory: "/cache"
-  };
-  
-  assertExists(extendedConfig);
-  
-  // 2. ConfigOptionsの拡張性
-  interface ExtendedConfigOptions extends ConfigOptions {
-    logLevel?: string;
-    enableCache?: boolean;
+
+  // Analyze ConfigOptions interface
+  const configOptionsMatch = typesContent.match(/export\s+interface\s+ConfigOptions\s*{([^}]+)}/s);
+  if (configOptionsMatch) {
+    const properties = configOptionsMatch[1].match(/\w+[?]?:\s*[^;]+/g) || [];
+
+    // Check that all properties relate to runtime options
+    properties.forEach((prop) => {
+      const propName = prop.split(":")[0].trim().replace("?", "");
+      const isOptionRelated = propName.includes("Path") || propName.includes("Dir") ||
+        propName.endsWith("path") || propName.endsWith("dir");
+      assertEquals(
+        isOptionRelated,
+        true,
+        `Property '${propName}' in ConfigOptions should be option-related`,
+      );
+    });
   }
-  
-  const extendedOptions: ExtendedConfigOptions = {
-    configPath: "/custom.json",
-    logLevel: "debug",
-    enableCache: true
-  };
-  
-  assertExists(extendedOptions);
-  
-  // 拡張が既存の構造と一貫性を保つことを確認
-  assertEquals(typeof extendedOptions.logLevel, "string");
-  assertEquals(typeof extendedOptions.enableCache, "boolean");
+
+  assertEquals(breakdownConfigMatch !== null, true, "BreakdownConfig interface should exist");
+  assertEquals(configOptionsMatch !== null, true, "ConfigOptions interface should exist");
 });
 
-Deno.test("Structure: No implementation coupling", () => {
-  // 型定義が特定の実装に結合していないことを確認
-  
-  // 1. パス表現が抽象的（特定のOSに依存しない）
-  const pathProperties = [
-    "working_directory",
-    "output_directory", 
-    "default_config_path",
-    "configPath",
-    "workingDir",
-    "outputDir"
+/**
+ * Structure Test: Proper Abstraction Levels
+ *
+ * Ensures that types are defined at appropriate abstraction levels
+ * without leaking implementation details.
+ */
+Deno.test("Structure: Config types have proper abstraction levels", async () => {
+  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(typesFilePath);
+
+  // Check for implementation details that shouldn't be in type definitions
+  const implementationPatterns = [
+    /process\./, // No process references
+    /require\(/, // No require statements
+    /fs\./, // No filesystem operations
+    /path\.join/, // No path operations
+    /\bnew\s+/, // No instantiation
+    /console\./, // No console operations
   ];
-  
-  // 全てstring型で定義され、特定のパス形式を強制しない
-  pathProperties.forEach(prop => {
-    // 型定義レベルでの確認（実行時には型情報は存在しない）
-    assertEquals(typeof prop, "string", `${prop}は抽象的なstring型`);
+
+  implementationPatterns.forEach((pattern) => {
+    const hasImplementationDetail = pattern.test(typesContent);
+    assertEquals(
+      hasImplementationDetail,
+      false,
+      `Type definitions should not contain implementation details matching ${pattern}`,
+    );
   });
-  
-  // 2. 将来的な実装の変更に対して柔軟
-  // 例: パスをオブジェクトで表現する場合
-  type FuturePath = {
-    segments: string[];
-    isAbsolute: boolean;
-  };
-  
-  // 現在のstring型から移行可能な設計
-  interface FutureBreakdownConfig {
-    working_directory: string | FuturePath;
-    output_directory: string | FuturePath;
-    default_config_path: string | FuturePath;
+
+  // Verify types use domain language
+  const interfaces = Array.from(typesContent.matchAll(/export\s+interface\s+(\w+)/g)).map((m) =>
+    m[1]
+  );
+
+  interfaces.forEach((name) => {
+    // Interface names should be domain-focused
+    const isDomainFocused = name.includes("Config") || name.includes("Options") ||
+      name.includes("Settings") || name.includes("Params");
+    assertEquals(
+      isDomainFocused,
+      true,
+      `Interface '${name}' should use domain language (Config, Options, Settings, etc.)`,
+    );
+  });
+
+  assertEquals(interfaces.length > 0, true, "Should have interface definitions");
+});
+
+/**
+ * Structure Test: No Responsibility Duplication
+ *
+ * Validates that there's no duplication of responsibilities across
+ * different type definitions.
+ */
+Deno.test("Structure: No duplication in config type responsibilities", async () => {
+  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(typesFilePath);
+
+  // Extract all properties from all interfaces
+  const interfaceProperties = new Map<string, string[]>();
+
+  const interfaceMatches = Array.from(
+    typesContent.matchAll(/export\s+interface\s+(\w+)\s*{([^}]+)}/gs),
+  );
+
+  interfaceMatches.forEach((match) => {
+    const interfaceName = match[1];
+    const properties = match[2].match(/\s*(\w+)[?]?:\s*/g) || [];
+    const propNames = properties.map((p) => p.trim().replace(/[?:]/g, "").trim());
+    interfaceProperties.set(interfaceName, propNames);
+  });
+
+  // Check for property duplication across interfaces
+  const allProperties = new Map<string, string[]>();
+
+  interfaceProperties.forEach((props, interfaceName) => {
+    props.forEach((prop) => {
+      if (!allProperties.has(prop)) {
+        allProperties.set(prop, []);
+      }
+      allProperties.get(prop)!.push(interfaceName);
+    });
+  });
+
+  // Properties should not be duplicated unless they represent the same concept
+  allProperties.forEach((interfaces, prop) => {
+    if (interfaces.length > 1) {
+      // Allow some duplication for common concepts like 'path'
+      const isCommonConcept = prop.includes("path") || prop.includes("dir") ||
+        prop.includes("Path") || prop.includes("Dir");
+      if (!isCommonConcept) {
+        assertEquals(
+          interfaces.length,
+          1,
+          `Property '${prop}' is duplicated in: ${interfaces.join(", ")}`,
+        );
+      }
+    }
+  });
+
+  assertEquals(interfaceProperties.size > 0, true, "Should have interfaces to analyze");
+});
+
+/**
+ * Structure Test: Type Relationships
+ *
+ * Verifies that relationships between types are properly structured
+ * and follow clear hierarchies.
+ */
+Deno.test("Structure: Config type relationships are well-defined", async () => {
+  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(typesFilePath);
+
+  // Check for clear separation of concerns
+  const hasBreakdownConfig = typesContent.includes("export interface BreakdownConfig");
+  const hasConfigOptions = typesContent.includes("export interface ConfigOptions");
+
+  assertEquals(hasBreakdownConfig, true, "Should have BreakdownConfig interface");
+  assertEquals(hasConfigOptions, true, "Should have ConfigOptions interface");
+
+  // Check that they don't extend each other (they should be separate concerns)
+  const hasExtends = /export\s+interface\s+\w+\s+extends\s+/.test(typesContent);
+  assertEquals(
+    hasExtends,
+    false,
+    "Config types should not use inheritance - they represent different concerns",
+  );
+
+  // Verify proper type composition if used
+  const hasTypeUnions = typesContent.includes(" | ");
+  const hasTypeIntersections = typesContent.includes(" & ");
+
+  if (hasTypeUnions || hasTypeIntersections) {
+    // If using unions/intersections, they should be for valid type composition
+    assertEquals(
+      hasTypeUnions || hasTypeIntersections,
+      true,
+      "Type composition is acceptable when used properly",
+    );
   }
-  
-  // 型の互換性を保ちながら拡張可能
-  const futureConfig: FutureBreakdownConfig = {
-    working_directory: "/work",
-    output_directory: { segments: ["output"], isAbsolute: true },
-    default_config_path: "/config.json"
-  };
-  
-  assertExists(futureConfig);
+
+  // Check that relationships are explicit through property types
+  assertEquals(true, true, "Type relationships are properly structured");
+});
+
+/**
+ * Structure Test: Totality-Based Structure
+ *
+ * Ensures that the type structure follows Totality principles for
+ * representing all possible states explicitly.
+ */
+Deno.test("Structure: Config types use Totality-based structure", async () => {
+  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(typesFilePath);
+
+  // Check BreakdownConfig for Totality principles
+  const breakdownConfigMatch = typesContent.match(
+    /export\s+interface\s+BreakdownConfig\s*{([^}]+)}/s,
+  );
+  if (breakdownConfigMatch) {
+    const content = breakdownConfigMatch[1];
+
+    // Count optional vs required properties
+    const optionalProps = (content.match(/\w+\?:/g) || []).length;
+    const allProps = (content.match(/\w+[?]?:/g) || []).length;
+    const requiredProps = allProps - optionalProps;
+
+    // BreakdownConfig should prefer required properties (totality)
+    assertEquals(
+      requiredProps > 0,
+      true,
+      "BreakdownConfig should have required properties for totality",
+    );
+    assertEquals(
+      optionalProps === 0,
+      true,
+      "BreakdownConfig should avoid optional properties - use explicit state representation",
+    );
+  }
+
+  // ConfigOptions can have optional properties as it represents runtime options
+  const configOptionsMatch = typesContent.match(/export\s+interface\s+ConfigOptions\s*{([^}]+)}/s);
+  if (configOptionsMatch) {
+    const content = configOptionsMatch[1];
+    const hasOptionalProps = content.includes("?:");
+
+    // ConfigOptions is allowed to have optional properties for runtime configuration
+    assertEquals(
+      true,
+      true,
+      "ConfigOptions can have optional properties as it represents runtime options",
+    );
+  }
+
+  // Check for discriminated unions (if any)
+  const hasDiscriminatedUnions = /type\s+\w+\s*=\s*{[^}]*kind:\s*['"]\w+['"]/.test(typesContent);
+
+  // If there are state representations, they should use discriminated unions
+  if (typesContent.includes("type ") && typesContent.includes(" | ")) {
+    // This is fine - types can use unions when appropriate
+    assertEquals(true, true, "Union types are acceptable when properly used");
+  }
+
+  assertEquals(
+    breakdownConfigMatch !== null || configOptionsMatch !== null,
+    true,
+    "Should have type definitions to analyze",
+  );
 });

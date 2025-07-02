@@ -22,11 +22,10 @@ import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import * as path from "@std/path";
-import type { DemonstrativeType } from "$lib/types/mod.ts";
 
 function makeCliParams(
   { demonstrativeType, layerType, fromFile, destinationFile, fromLayerType, adaptation, config }: {
-    demonstrativeType: DemonstrativeType;
+    demonstrativeType: string;
     layerType: string;
     fromFile?: string;
     destinationFile?: string;
@@ -54,7 +53,7 @@ function makeCliParams(
 
 describe("Input Path: fromFile hierarchy", () => {
   it("should resolve relative path correctly", async () => {
-    const logger = new BreakdownLogger();
+    const _logger = new BreakdownLogger();
     const env = await setupTestEnvironment({
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
@@ -101,12 +100,12 @@ describe("Input Path: fromFile hierarchy", () => {
     Deno.chdir(_testDir);
     try {
       const fromFile = join("path", "to", "file.md");
-      logger.debug(`Deno.cwd() before: ${originalCwd}`);
-      logger.debug(`Deno.cwd() after: ${Deno.cwd()}`);
-      logger.debug(`fromFile param: ${fromFile}`);
+      _logger.debug(`Deno.cwd() before: ${originalCwd}`);
+      _logger.debug(`Deno.cwd() after: ${Deno.cwd()}`);
+      _logger.debug(`fromFile param: ${fromFile}`);
       const cliParams = makeCliParams(
         {
-          demonstrativeType: "to" as DemonstrativeType,
+          demonstrativeType: "to",
           layerType: "issue",
           fromFile,
           config: "test-path-resolver",
@@ -115,8 +114,8 @@ describe("Input Path: fromFile hierarchy", () => {
       );
       const factory = await PromptVariablesFactory.create(cliParams);
       const resolved = factory.inputFilePath;
-      logger.debug(`resolved path: ${resolved}`);
-      logger.debug(`expected path: ${path.resolve("path/to/file.md")}`);
+      _logger.debug(`resolved path: ${resolved}`);
+      _logger.debug(`expected path: ${path.resolve("path/to/file.md")}`);
       assertEquals(resolved, path.resolve("path/to/file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -151,7 +150,7 @@ describe("Input Path: fromLayerType vs layerType", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         fromFile: "file.md",
         fromLayerType: "project",
@@ -189,7 +188,7 @@ describe("Input Path: fromLayerType vs layerType", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         fromFile: "file.md",
         config: "test-path-resolver",
@@ -229,7 +228,7 @@ describe("Input Path: fromFile edge cases", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         config: "test-path-resolver",
       }, _testDir);
@@ -265,7 +264,7 @@ describe("Input Path: fromFile edge cases", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         fromFile: "path\\to\\file.md",
         config: "test-path-resolver",
@@ -305,7 +304,7 @@ describe("Output Path: destinationFile patterns", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         config: "test-path-resolver",
       }, _testDir);
@@ -346,7 +345,7 @@ describe("Output Path: destinationFile patterns", () => {
     try {
       const destinationFile = join("path", "to", "file.md");
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         destinationFile,
         config: "test-path-resolver",
@@ -383,7 +382,7 @@ describe("Output Path: destinationFile patterns", () => {
     Deno.chdir(_testDir);
     try {
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         destinationFile: "file.md",
         config: "test-path-resolver",
@@ -425,7 +424,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       const destinationDir = join("path", "to", "dir");
       await Deno.mkdir(join(_testDir, destinationDir), { recursive: true });
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         destinationFile: destinationDir,
         config: "test-path-resolver",
@@ -468,7 +467,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       const ambiguousPath = "test.md";
       await Deno.mkdir(ambiguousPath);
       const cliParams = makeCliParams({
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         destinationFile: ambiguousPath,
         config: "test-path-resolver",
@@ -514,11 +513,11 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
         const paths = new Set();
         for (let i = 0; i < 10; i++) {
           const cliParams = makeCliParams({
-            demonstrativeType: "to" as DemonstrativeType,
+            demonstrativeType: "to",
             layerType: "issue",
             config: "test-path-resolver",
           }, _testDir);
-          cliParams.demonstrativeType = "to" as DemonstrativeType;
+          cliParams.demonstrativeType = "to";
           cliParams.layerType = "issue";
           const factory = await PromptVariablesFactory.create(cliParams);
           paths.add(factory.outputFilePath);
@@ -565,7 +564,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
         app_schema: { base_dir: "schema" },
       };
       const cliParams = {
-        demonstrativeType: "to" as DemonstrativeType,
+        demonstrativeType: "to",
         layerType: "issue",
         options: {
           fromFile: "project.md",
@@ -615,7 +614,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
         app_schema: { base_dir: "schema" },
       };
       const cliParams = {
-        demonstrativeType: "summary" as DemonstrativeType,
+        demonstrativeType: "summary",
         layerType: "project",
         options: {
           fromFile: "input.md",
@@ -666,7 +665,7 @@ describe("Factory Combination: resolves all subclass paths", () => {
       };
       const absDest = path.resolve("tmp/defect_task.md");
       const cliParams = {
-        demonstrativeType: "defect" as DemonstrativeType,
+        demonstrativeType: "defect",
         layerType: "task",
         options: {
           fromFile: "task_input.md",

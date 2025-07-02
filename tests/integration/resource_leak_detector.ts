@@ -1,19 +1,19 @@
 /**
  * @fileoverview Resource Leak Detector for Integration Tests
- * 
+ *
  * Comprehensive resource monitoring and leak detection system:
  * - Memory usage tracking and leak detection
  * - File handle monitoring and cleanup
  * - Test isolation validation
  * - Resource constraint enforcement
  * - Automatic cleanup mechanisms
- * 
+ *
  * @module tests/integration/resource_leak_detector
  */
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const logger = new BreakdownLogger("resource-leak-detector");
+const _logger = new BreakdownLogger("resource-leak-detector");
 
 /**
  * Resource usage snapshot for monitoring
@@ -69,7 +69,7 @@ export class ResourceLeakDetector {
       maxFileHandleIncrease: 10,
       maxTimerIncrease: 5,
       maxTestDuration: 30000, // 30 seconds
-      ...thresholds
+      ...thresholds,
     };
   }
 
@@ -83,16 +83,16 @@ export class ResourceLeakDetector {
       openFileHandles: this.getFileHandleCount(),
       activeTimers: this.getActiveTimerCount(),
       testName,
-      phase
+      phase,
     };
 
     this.snapshots.push(snapshot);
-    logger.debug("Resource snapshot taken", {
+    _logger.debug("Resource snapshot taken", {
       testName,
       phase,
       memory: `${snapshot.memoryUsage.toFixed(2)}MB`,
       fileHandles: snapshot.openFileHandles,
-      timers: snapshot.activeTimers
+      timers: snapshot.activeTimers,
     });
 
     return snapshot;
@@ -103,7 +103,7 @@ export class ResourceLeakDetector {
    */
   registerResource(resourceId: string, cleanupCallback?: () => Promise<void> | void): void {
     this.activeResources.add(resourceId);
-    
+
     if (cleanupCallback) {
       if (!this.cleanupCallbacks.has(resourceId)) {
         this.cleanupCallbacks.set(resourceId, []);
@@ -111,7 +111,7 @@ export class ResourceLeakDetector {
       this.cleanupCallbacks.get(resourceId)!.push(cleanupCallback);
     }
 
-    logger.debug("Resource registered", { resourceId, hasCleanup: !!cleanupCallback });
+    _logger.debug("Resource registered", { resourceId, hasCleanup: !!cleanupCallback });
   }
 
   /**
@@ -120,7 +120,7 @@ export class ResourceLeakDetector {
   unregisterResource(resourceId: string): void {
     this.activeResources.delete(resourceId);
     this.cleanupCallbacks.delete(resourceId);
-    logger.debug("Resource unregistered", { resourceId });
+    _logger.debug("Resource unregistered", { resourceId });
   }
 
   /**
@@ -135,7 +135,7 @@ export class ResourceLeakDetector {
         } catch (error) {
           logger.debug("Resource cleanup error", {
             resourceId,
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
           });
         }
       }
@@ -148,15 +148,15 @@ export class ResourceLeakDetector {
    */
   async cleanupAllResources(): Promise<void> {
     const resourceIds = Array.from(this.activeResources);
-    logger.debug("Cleaning up all resources", { count: resourceIds.length });
+    _logger.debug("Cleaning up all resources", { count: resourceIds.length });
 
     for (const resourceId of resourceIds) {
       await this.cleanupResource(resourceId);
     }
 
     // Force garbage collection if available
-    if (typeof (globalThis as any).gc === "function") {
-      (globalThis as any).gc();
+    if (typeof (globalThis as unknown).gc === "function") {
+      (globalThis as unknown).gc();
       logger.debug("Garbage collection triggered");
     }
   }
@@ -165,10 +165,10 @@ export class ResourceLeakDetector {
    * Detect resource leaks between snapshots
    */
   detectLeaks(testName: string): LeakDetectionResult {
-    const beforeSnapshot = this.snapshots.find(s => 
+    const beforeSnapshot = this.snapshots.find((s) =>
       s.testName === testName && s.phase === "before"
     );
-    const afterSnapshot = this.snapshots.find(s => 
+    const afterSnapshot = this.snapshots.find((s) =>
       s.testName === testName && s.phase === "after"
     );
 
@@ -182,9 +182,9 @@ export class ResourceLeakDetector {
           memoryDelta: 0,
           fileHandleDelta: 0,
           timerDelta: 0,
-          threshold: this.resourceThresholds
+          threshold: this.resourceThresholds,
         },
-        recommendations: ["Unable to detect leaks - missing snapshots"]
+        recommendations: ["Unable to detect leaks - missing snapshots"],
       };
     }
 
@@ -218,7 +218,7 @@ export class ResourceLeakDetector {
         memoryDelta: `${memoryDelta.toFixed(2)}MB`,
         fileHandleDelta,
         timerDelta,
-        recommendations
+        recommendations,
       });
     }
 
@@ -231,9 +231,9 @@ export class ResourceLeakDetector {
         memoryDelta,
         fileHandleDelta,
         timerDelta,
-        threshold: this.resourceThresholds
+        threshold: this.resourceThresholds,
       },
-      recommendations
+      recommendations,
     };
   }
 
@@ -261,7 +261,7 @@ export class ResourceLeakDetector {
    */
   private getActiveTimerCount(): number {
     // Approximate timer count based on tracked resources
-    return Array.from(this.activeResources).filter(id => 
+    return Array.from(this.activeResources).filter((id) =>
       id.includes("timer") || id.includes("interval")
     ).length;
   }
@@ -273,7 +273,7 @@ export class ResourceLeakDetector {
     this.snapshots = [];
     this.activeResources.clear();
     this.cleanupCallbacks.clear();
-    logger.debug("Resource detector reset");
+    _logger.debug("Resource detector reset");
   }
 
   /**
@@ -286,15 +286,15 @@ export class ResourceLeakDetector {
     recentLeaks: LeakDetectionResult[];
   } {
     // Get leaks from last 5 tests
-    const recentTests = [...new Set(this.snapshots.slice(-10).map(s => s.testName))];
-    const recentLeaks = recentTests.map(testName => this.detectLeaks(testName))
-      .filter(result => result.hasLeaks);
+    const recentTests = [...new Set(this.snapshots.slice(-10).map((s) => s.testName))];
+    const recentLeaks = recentTests.map((testName) => this.detectLeaks(testName))
+      .filter((result) => result.hasLeaks);
 
     return {
       totalSnapshots: this.snapshots.length,
       activeResources: this.activeResources.size,
       pendingCleanups: this.cleanupCallbacks.size,
-      recentLeaks
+      recentLeaks,
     };
   }
 }
@@ -311,7 +311,7 @@ export class TestIsolationManager {
    * Setup test isolation
    */
   async setupIsolation(testName: string): Promise<void> {
-    logger.debug("Setting up test isolation", { testName });
+    _logger.debug("Setting up test isolation", { testName });
 
     // Store original environment variables
     this.storeEnvironmentState();
@@ -325,7 +325,7 @@ export class TestIsolationManager {
    * Teardown test isolation
    */
   async teardownIsolation(testName: string): Promise<void> {
-    logger.debug("Tearing down test isolation", { testName });
+    _logger.debug("Tearing down test isolation", { testName });
 
     // Restore environment variables
     this.restoreEnvironmentState();
@@ -342,10 +342,10 @@ export class TestIsolationManager {
    */
   private async createIsolatedTempDir(testName: string): Promise<string> {
     const tempDir = await Deno.makeTempDir({
-      prefix: `test_${testName.replace(/[^a-zA-Z0-9]/g, "_")}_`
+      prefix: `test_${testName.replace(/[^a-zA-Z0-9]/g, "_")}_`,
     });
-    
-    logger.debug("Created isolated temp directory", { testName, tempDir });
+
+    _logger.debug("Created isolated temp directory", { testName, tempDir });
     return tempDir;
   }
 
@@ -355,7 +355,7 @@ export class TestIsolationManager {
   private storeEnvironmentState(): void {
     // Store LOG_LEVEL and other test-relevant env vars
     const envVarsToTrack = ["LOG_LEVEL", "LOG_KEY", "LOG_LENGTH"];
-    
+
     for (const varName of envVarsToTrack) {
       this.originalEnvVars.set(varName, Deno.env.get(varName));
     }
@@ -386,7 +386,7 @@ export class TestIsolationManager {
       } catch (error) {
         logger.debug("Failed to cleanup temp directory", {
           tempDir,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -404,7 +404,7 @@ export function withResourceLeakDetection<T>(
     thresholds?: Partial<ResourceThresholds>;
     enableIsolation?: boolean;
     enforceCleanup?: boolean;
-  } = {}
+  } = {},
 ): () => Promise<T> {
   const detector = new ResourceLeakDetector(options.thresholds);
   const isolation = options.enableIsolation ? new TestIsolationManager() : null;
@@ -429,11 +429,11 @@ export function withResourceLeakDetection<T>(
       // Cleanup phase
       try {
         detector.takeSnapshot(testName, "after");
-        
+
         if (isolation) {
           await isolation.teardownIsolation(testName);
         }
-        
+
         await detector.cleanupAllResources();
         detector.takeSnapshot(testName, "cleanup");
 
@@ -443,19 +443,21 @@ export function withResourceLeakDetection<T>(
           logger.debug("Resource leaks detected in test", {
             testName,
             leaks: leakResult,
-            enforcement: options.enforceCleanup ? "strict" : "warning"
+            enforcement: options.enforceCleanup ? "strict" : "warning",
           });
 
           if (options.enforceCleanup) {
-            throw new Error(`Resource leaks detected in ${testName}: ${leakResult.recommendations.join(", ")}`);
+            throw new Error(
+              `Resource leaks detected in ${testName}: ${leakResult.recommendations.join(", ")}`,
+            );
           }
         }
       } catch (cleanupError) {
         logger.debug("Cleanup error", {
           testName,
-          error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
+          error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
         });
-        
+
         if (!testError) {
           throw cleanupError;
         }
@@ -471,5 +473,5 @@ export const globalResourceDetector = new ResourceLeakDetector();
 export const globalIsolationManager = new TestIsolationManager();
 
 logger.debug("Resource leak detector initialized", {
-  componentsLoaded: ["ResourceLeakDetector", "TestIsolationManager", "withResourceLeakDetection"]
+  componentsLoaded: ["ResourceLeakDetector", "TestIsolationManager", "withResourceLeakDetection"],
 });

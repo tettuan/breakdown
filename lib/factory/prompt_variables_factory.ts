@@ -16,7 +16,7 @@
 
 // Temporarily commenting out BreakdownConfig import to avoid errors during development
 // TODO: Re-enable BreakdownConfig when external dependency issues are resolved
-// import { BreakdownConfig } from "@tettuan/breakdownconfig";
+// import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 
 // Legacy imports for backward compatibility during migration
 import type { DemonstrativeType, LegacyLayerType } from "../types/mod.ts";
@@ -24,14 +24,14 @@ import type { DemonstrativeType, LegacyLayerType } from "../types/mod.ts";
 import {
   DirectiveType,
   LayerType,
-  type TypePatternProvider,
   TwoParamsDirectivePattern,
-  TwoParamsLayerTypePattern
+  TwoParamsLayerTypePattern,
+  type TypePatternProvider,
 } from "../types/mod.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.
- * 
+ *
  * Shared options interface used by both legacy PromptCliParams and
  * new TotalityPromptCliParams for consistent option handling.
  */
@@ -165,7 +165,7 @@ export interface PromptCliParams {
    * @property demonstrativeType - Specifies the type of operation (e.g., 'to', 'summary', 'defect')
    * that determines the prompt template and processing behavior
    */
-  demonstrativeType: DemonstrativeType;
+  demonstrativeType: string;
 
   /**
    * @deprecated Use LayerType class instead
@@ -185,7 +185,7 @@ export interface PromptCliParams {
 
 /**
  * Totality-compliant parameters for CLI prompt operations.
- * 
+ *
  * This interface replaces PromptCliParams with type-safe, validated types
  * following the Totality principle. All types are constructed through
  * validation and cannot represent invalid states.
@@ -193,10 +193,10 @@ export interface PromptCliParams {
  * @example Basic usage with Totality types
  * ```typescript
  * // Types must be created through TypeFactory
- * const factory = new TypeFactory(patternProvider);
+ * const _factory = new TypeFactory(patternProvider);
  * const directiveResult = factory.createDirectiveType("to");
  * const layerResult = factory.createLayerType("project");
- * 
+ *
  * if (directiveResult.ok && layerResult.ok) {
  *   const params: TotalityPromptCliParams = {
  *     directive: directiveResult.data,
@@ -213,12 +213,12 @@ export interface PromptCliParams {
  * ```typescript
  * const factory = new TypeFactory(patternProvider);
  * const bothResult = factory.createBothTypes("summary", "issue");
- * 
+ *
  * if (!bothResult.ok) {
  *   console.error("Type creation failed:", bothResult.error.message);
  *   return;
  * }
- * 
+ *
  * const params: TotalityPromptCliParams = {
  *   directive: bothResult.data.directive,
  *   layer: bothResult.data.layer,
@@ -259,10 +259,10 @@ type DoubleParamsResult = PromptCliParams;
  */
 export type TwoParamsResult = TotalityPromptCliParams;
 
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
-import { InputFilePathResolver } from "./input_file_path_resolver.ts";
-import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
-import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
+import { PromptTemplatePathResolver as _PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { InputFilePathResolver as _InputFilePathResolver } from "./input_file_path_resolver.ts";
+import { OutputFilePathResolver as _OutputFilePathResolver } from "./output_file_path_resolver.ts";
+import { SchemaFilePathResolver as _SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 /**
  * Simple configuration-based TypePatternProvider implementation
@@ -291,21 +291,22 @@ class _SimplePatternProvider implements TypePatternProvider {
 function createDefaultConfig(): Record<string, unknown> {
   return {
     app_prompt: {
-      base_dir: "prompts"
+      base_dir: "prompts",
     },
     app_schema: {
-      base_dir: "schema"
+      base_dir: "schema",
     },
+    working_dir: Deno.cwd(),
     params: {
       two: {
         demonstrativeType: {
-          pattern: "to|summary|defect|init|find"
+          pattern: "to|summary|defect|init|find",
         },
         layerType: {
-          pattern: "project|issue|task|bugs|temp"
-        }
-      }
-    }
+          pattern: "project|issue|task|bugs|temp",
+        },
+      },
+    },
   };
 }
 
@@ -329,7 +330,7 @@ export interface PromptVariablesFactoryOptions {
  * const factory = new TypeFactory(patternProvider);
  * const directiveResult = factory.createDirectiveType("to");
  * const layerResult = factory.createLayerType("project");
- * 
+ *
  * if (directiveResult.ok && layerResult.ok) {
  *   const options: TotalityPromptVariablesFactoryOptions = {
  *     config: await breakdownConfig.getConfig(),
@@ -376,10 +377,10 @@ export class PromptVariablesFactory {
   private baseDirOverride?: string;
   private _baseDirError?: string;
 
-  private promptPathResolver: PromptTemplatePathResolver;
-  private inputPathResolver: InputFilePathResolver;
-  private outputPathResolver: OutputFilePathResolver;
-  private schemaPathResolver: SchemaFilePathResolver;
+  private promptPathResolver: _PromptTemplatePathResolver;
+  private inputPathResolver: _InputFilePathResolver;
+  private outputPathResolver: _OutputFilePathResolver;
+  private schemaPathResolver: _SchemaFilePathResolver;
 
   /**
    * Private constructor for PromptVariablesFactory.
@@ -412,10 +413,10 @@ export class PromptVariablesFactory {
       this._baseDirError = "Prompt base_dir must be set in configuration";
     }
 
-    this.promptPathResolver = new PromptTemplatePathResolver(config, cliParams);
-    this.inputPathResolver = new InputFilePathResolver(config, cliParams);
-    this.outputPathResolver = new OutputFilePathResolver(config, cliParams);
-    this.schemaPathResolver = new SchemaFilePathResolver(config, cliParams);
+    this.promptPathResolver = new _PromptTemplatePathResolver(config, cliParams);
+    this.inputPathResolver = new _InputFilePathResolver(config, cliParams);
+    this.outputPathResolver = new _OutputFilePathResolver(config, cliParams);
+    this.schemaPathResolver = new _SchemaFilePathResolver(config, cliParams);
   }
 
   /**
@@ -424,10 +425,14 @@ export class PromptVariablesFactory {
    * @returns Deep copy of the configuration
    */
   private deepCopyConfig(
-    config: & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown>
-  ): & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown> {
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+  ):
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown> {
     const copy: any = {};
-    
+
     // Copy app_prompt
     if (config.app_prompt) {
       copy.app_prompt = {};
@@ -435,7 +440,7 @@ export class PromptVariablesFactory {
         copy.app_prompt.base_dir = config.app_prompt.base_dir;
       }
     }
-    
+
     // Copy app_schema
     if (config.app_schema) {
       copy.app_schema = {};
@@ -443,14 +448,14 @@ export class PromptVariablesFactory {
         copy.app_schema.base_dir = config.app_schema.base_dir;
       }
     }
-    
+
     // Copy other properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (key !== 'app_prompt' && key !== 'app_schema') {
+      if (key !== "app_prompt" && key !== "app_schema") {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -463,13 +468,13 @@ export class PromptVariablesFactory {
     // PromptCliParams
     const copy: any = {
       demonstrativeType: cliParams.demonstrativeType,
-      layerType: cliParams.layerType
+      layerType: cliParams.layerType,
     };
-    
+
     if (cliParams.options) {
       copy.options = { ...cliParams.options };
     }
-    
+
     return copy;
   }
 
@@ -514,13 +519,14 @@ export class PromptVariablesFactory {
     try {
       const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
       const configSetName = cliParams.options?.config || "default";
-      
+
       // Check if we're in a test environment with absolute paths
       const currentDir = Deno.cwd();
-      const isTestEnvironment = currentDir.includes('/tmp/') || currentDir.includes('/var/folders/') || 
-                                 Deno.env.get("DENO_TESTING") === "true" ||
-                                 currentDir.includes('/github/breakdown');
-      
+      const isTestEnvironment = currentDir.includes("/tmp/") ||
+        currentDir.includes("/var/folders/") ||
+        Deno.env.get("DENO_TESTING") === "true" ||
+        currentDir.includes("/github/breakdown");
+
       let breakdownConfigResult;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
@@ -529,21 +535,25 @@ export class PromptVariablesFactory {
         // For production environments, use current working directory
         breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
       }
-      
+
       if (!breakdownConfigResult.success) {
-        throw new Error(`BreakdownConfig creation failed: ${breakdownConfigResult.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `BreakdownConfig creation failed: ${
+            breakdownConfigResult.error?.message || "Unknown error"
+          }`,
+        );
       }
       const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new PromptVariablesFactory(config, cliParams);
     } catch (error) {
-      // Check if this is a configuration validation error (should be thrown) 
+      // Check if this is a configuration validation error (should be thrown)
       // vs. a missing config file (should fall back)
-      if (error instanceof Error && error.message.includes('Configuration validation failed')) {
+      if (error instanceof Error && error.message.includes("Configuration validation failed")) {
         throw new Error(`Invalid application configuration: ${error.message}`);
       }
-      
+
       // Fallback to default configuration only for missing config files
       console.warn("BreakdownConfig not available, using default config:", error);
       const config = createDefaultConfig();
@@ -567,14 +577,14 @@ export class PromptVariablesFactory {
    * ```typescript
    * const breakdownConfig = new BreakdownConfig("development");
    * await breakdownConfig.loadConfig();
-   * const config = await breakdownConfig.getConfig();
+   * const _config = await breakdownConfig.getConfig();
    *
    * const factory = PromptVariablesFactory.createWithConfig(config, cliParams);
    * ```
    *
    * @example Reusing configuration for multiple factories
    * ```typescript
-   * const config = await loadSharedConfig();
+   * const _config = await loadSharedConfig();
    *
    * const factory1 = PromptVariablesFactory.createWithConfig(config, params1);
    * const factory2 = PromptVariablesFactory.createWithConfig(config, params2);
@@ -976,7 +986,7 @@ export class PromptVariablesFactory {
 
 /**
  * Totality-compliant factory for resolving paths and constructing parameters.
- * 
+ *
  * This factory uses validated DirectiveType and LayerType instances, ensuring
  * type safety through the Totality principle. All types must be constructed
  * through TypeFactory with proper validation patterns.
@@ -985,21 +995,21 @@ export class PromptVariablesFactory {
  * ```typescript
  * // Create TypeFactory with pattern provider
  * const typeFactory = new TypeFactory(patternProvider);
- * 
+ *
  * // Create validated types
  * const typesResult = typeFactory.createBothTypes("to", "project");
  * if (!typesResult.ok) {
  *   console.error("Type validation failed:", typesResult.error);
  *   return;
  * }
- * 
+ *
  * // Create Totality-compliant parameters
  * const totalityParams: TotalityPromptCliParams = {
  *   directive: typesResult.data.directive,
  *   layer: typesResult.data.layer,
  *   options: { fromFile: "input.md" }
  * };
- * 
+ *
  * // Create factory with validated parameters
  * const factory = await TotalityPromptVariablesFactory.create(totalityParams);
  * ```
@@ -1015,14 +1025,14 @@ export class TotalityPromptVariablesFactory {
   private baseDirOverride?: string;
   private _baseDirError?: string;
 
-  private promptPathResolver: PromptTemplatePathResolver;
-  private inputPathResolver: InputFilePathResolver;
-  private outputPathResolver: OutputFilePathResolver;
-  private schemaPathResolver: SchemaFilePathResolver;
+  private promptPathResolver: _PromptTemplatePathResolver;
+  private inputPathResolver: _InputFilePathResolver;
+  private outputPathResolver: _OutputFilePathResolver;
+  private schemaPathResolver: _SchemaFilePathResolver;
 
   /**
    * Private constructor for TotalityPromptVariablesFactory.
-   * 
+   *
    * @param config - Application configuration with prompt and schema settings
    * @param cliParams - Validated CLI parameters using Totality types
    * @param baseDirOverride - Optional override for the base directory
@@ -1046,15 +1056,15 @@ export class TotalityPromptVariablesFactory {
 
     // Create legacy-compatible params for existing resolvers
     const legacyParams: PromptCliParams = {
-      demonstrativeType: cliParams.directive.value as DemonstrativeType,
+      demonstrativeType: cliParams.directive.value,
       layerType: cliParams.layer.value,
       options: cliParams.options,
     };
 
-    this.promptPathResolver = new PromptTemplatePathResolver(config, legacyParams);
-    this.inputPathResolver = new InputFilePathResolver(config, legacyParams);
-    this.outputPathResolver = new OutputFilePathResolver(config, legacyParams);
-    this.schemaPathResolver = new SchemaFilePathResolver(config, legacyParams);
+    this.promptPathResolver = new _PromptTemplatePathResolver(config, legacyParams);
+    this.inputPathResolver = new _InputFilePathResolver(config, legacyParams);
+    this.outputPathResolver = new _OutputFilePathResolver(config, legacyParams);
+    this.schemaPathResolver = new _SchemaFilePathResolver(config, legacyParams);
   }
 
   /**
@@ -1063,10 +1073,14 @@ export class TotalityPromptVariablesFactory {
    * @returns Deep copy of the configuration
    */
   private deepCopyConfig(
-    config: & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown>
-  ): & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } } & Record<string, unknown> {
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+  ):
+    & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+    & Record<string, unknown> {
     const copy: any = {};
-    
+
     // Copy app_prompt
     if (config.app_prompt) {
       copy.app_prompt = {};
@@ -1074,7 +1088,7 @@ export class TotalityPromptVariablesFactory {
         copy.app_prompt.base_dir = config.app_prompt.base_dir;
       }
     }
-    
+
     // Copy app_schema
     if (config.app_schema) {
       copy.app_schema = {};
@@ -1082,14 +1096,14 @@ export class TotalityPromptVariablesFactory {
         copy.app_schema.base_dir = config.app_schema.base_dir;
       }
     }
-    
+
     // Copy other properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (key !== 'app_prompt' && key !== 'app_schema') {
+      if (key !== "app_prompt" && key !== "app_schema") {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -1101,16 +1115,16 @@ export class TotalityPromptVariablesFactory {
   private deepCopyTotalityCliParams(cliParams: TotalityPromptCliParams): TotalityPromptCliParams {
     const copy: TotalityPromptCliParams = {
       directive: cliParams.directive, // Keep original instance to preserve methods
-      layer: cliParams.layer,         // Keep original instance to preserve methods
-      options: cliParams.options ? { ...cliParams.options } : {}
+      layer: cliParams.layer, // Keep original instance to preserve methods
+      options: cliParams.options ? { ...cliParams.options } : {},
     };
-    
+
     return copy;
   }
 
   /**
    * Factory method to create TotalityPromptVariablesFactory with automatic configuration loading.
-   * 
+   *
    * @param cliParams - Validated CLI parameters using Totality types
    * @returns Promise<TotalityPromptVariablesFactory> - Fully initialized factory instance
    */
@@ -1119,13 +1133,14 @@ export class TotalityPromptVariablesFactory {
     try {
       const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
       const configSetName = cliParams.options.config || "default";
-      
+
       // Check if we're in a test environment with absolute paths
       const currentDir = Deno.cwd();
-      const isTestEnvironment = currentDir.includes('/tmp/') || currentDir.includes('/var/folders/') || 
-                                 Deno.env.get("DENO_TESTING") === "true" ||
-                                 currentDir.includes('/github/breakdown');
-      
+      const isTestEnvironment = currentDir.includes("/tmp/") ||
+        currentDir.includes("/var/folders/") ||
+        Deno.env.get("DENO_TESTING") === "true" ||
+        currentDir.includes("/github/breakdown");
+
       let breakdownConfigResult;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
@@ -1134,21 +1149,25 @@ export class TotalityPromptVariablesFactory {
         // For production environments, use current working directory
         breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
       }
-      
+
       if (!breakdownConfigResult.success) {
-        throw new Error(`BreakdownConfig creation failed: ${breakdownConfigResult.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `BreakdownConfig creation failed: ${
+            breakdownConfigResult.error?.message || "Unknown error"
+          }`,
+        );
       }
       const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new TotalityPromptVariablesFactory(config, cliParams);
     } catch (error) {
-      // Check if this is a configuration validation error (should be thrown) 
+      // Check if this is a configuration validation error (should be thrown)
       // vs. a missing config file (should fall back)
-      if (error instanceof Error && error.message.includes('Configuration validation failed')) {
+      if (error instanceof Error && error.message.includes("Configuration validation failed")) {
         throw new Error(`Invalid application configuration: ${error.message}`);
       }
-      
+
       // Fallback to default configuration only for missing config files
       console.warn("BreakdownConfig not available, using default config:", error);
       const config = createDefaultConfig();
@@ -1158,7 +1177,7 @@ export class TotalityPromptVariablesFactory {
 
   /**
    * Factory method to create TotalityPromptVariablesFactory with pre-loaded configuration.
-   * 
+   *
    * @param config - Pre-loaded configuration object
    * @param cliParams - Validated CLI parameters using Totality types
    * @returns TotalityPromptVariablesFactory - Initialized factory instance
@@ -1174,7 +1193,7 @@ export class TotalityPromptVariablesFactory {
 
   /**
    * Retrieves all main parameters required for prompt processing.
-   * 
+   *
    * @returns Object containing all resolved file paths and custom variables
    */
   public getAllParams(): {
@@ -1224,7 +1243,9 @@ export class TotalityPromptVariablesFactory {
   public validateAll(): void {
     if (!this.cliParams) throw new Error("cliParams is required");
     if (!this.config) throw new Error("config is required");
-    if (!this.hasValidBaseDir()) throw new Error(`Invalid base directory: ${this.getBaseDirError()}`);
+    if (!this.hasValidBaseDir()) {
+      throw new Error(`Invalid base directory: ${this.getBaseDirError()}`);
+    }
     if (!this.promptFilePath) throw new Error("Prompt file path is required");
     if (!this.schemaFilePath) throw new Error("Schema file path is required");
   }

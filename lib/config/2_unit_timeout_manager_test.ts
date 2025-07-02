@@ -16,13 +16,13 @@ import {
 } from "./timeout_manager.ts";
 
 Deno.test("TimeoutManager - Default Configuration", () => {
-  const manager = createDefaultTimeoutManager();
+  const _manager = createDefaultTimeoutManager();
 
-  assertExists(manager);
+  assertExists(_manager);
   // 環境タイプは実際の検出結果に依存するため、値の存在のみ確認
-  assertExists(manager.getEnvironmentType());
-  assertExists(manager.getTimeout());
-  assertExists(manager.getStdinTimeout());
+  assertExists(_manager.getEnvironmentType());
+  assertExists(_manager.getTimeout());
+  assertExists(_manager.getStdinTimeout());
 });
 
 Deno.test("TimeoutManager - Custom Configuration", () => {
@@ -35,26 +35,26 @@ Deno.test("TimeoutManager - Custom Configuration", () => {
     },
   };
 
-  const manager = new TimeoutManager(customConfig);
+  const _manager = new TimeoutManager(customConfig);
 
   // カスタム設定が適用されていることを確認（具体的な値は環境に依存）
-  assertExists(manager.getTimeout());
-  assertExists(manager.getStdinTimeout());
-  assert(manager.getTimeout() > 0);
-  assert(manager.getStdinTimeout() > 0);
+  assertExists(_manager.getTimeout());
+  assertExists(_manager.getStdinTimeout());
+  assert(_manager.getTimeout() > 0);
+  assert(_manager.getStdinTimeout() > 0);
 });
 
 Deno.test("TimeoutManager - Environment Type Override", () => {
-  const manager = new TimeoutManager(undefined, "ci");
+  const _manager = new TimeoutManager(undefined, "ci");
 
-  assertEquals(manager.getEnvironmentType(), "ci");
-  assertEquals(manager.getTimeout(), DEFAULT_TIMEOUT_CONFIG.timeouts.ci);
-  assertEquals(manager.getStdinTimeout(), DEFAULT_TIMEOUT_CONFIG.stdin.environments.ci.timeout);
+  assertEquals(_manager.getEnvironmentType(), "ci");
+  assertEquals(_manager.getTimeout(), DEFAULT_TIMEOUT_CONFIG.timeouts.ci);
+  assertEquals(_manager.getStdinTimeout(), DEFAULT_TIMEOUT_CONFIG.stdin.environments.ci.timeout);
 });
 
 Deno.test("TimeoutManager - STDIN Configuration", () => {
-  const manager = new TimeoutManager(undefined, "interactive");
-  const stdinConfig = manager.getStdinConfig();
+  const _manager = new TimeoutManager(undefined, "interactive");
+  const stdinConfig = _manager.getStdinConfig();
 
   assertExists(stdinConfig);
   assertEquals(stdinConfig.timeout, 30000);
@@ -64,8 +64,8 @@ Deno.test("TimeoutManager - STDIN Configuration", () => {
 });
 
 Deno.test("TimeoutManager - CI Environment STDIN Configuration", () => {
-  const manager = new TimeoutManager(undefined, "ci");
-  const stdinConfig = manager.getStdinConfig();
+  const _manager = new TimeoutManager(undefined, "ci");
+  const stdinConfig = _manager.getStdinConfig();
 
   assertEquals(stdinConfig.timeout, 5000);
   assertEquals(stdinConfig.allowEmpty, true);
@@ -74,17 +74,17 @@ Deno.test("TimeoutManager - CI Environment STDIN Configuration", () => {
 });
 
 Deno.test("TimeoutManager - Custom Timeout Application", () => {
-  const manager = createDefaultTimeoutManager();
+  const _manager = createDefaultTimeoutManager();
 
-  assertEquals(manager.applyCustomTimeout(), manager.getTimeout());
-  assertEquals(manager.applyCustomTimeout(15000), 15000);
+  assertEquals(_manager.applyCustomTimeout(), _manager.getTimeout());
+  assertEquals(_manager.applyCustomTimeout(15000), 15000);
   // 0はfalsyなので、デフォルト値が返される
-  assertEquals(manager.applyCustomTimeout(0), manager.getTimeout());
+  assertEquals(_manager.applyCustomTimeout(0), _manager.getTimeout());
 });
 
 Deno.test("TimeoutManager - Configuration Validation - Valid", () => {
-  const manager = createDefaultTimeoutManager();
-  const validation = manager.validateConfig();
+  const _manager = createDefaultTimeoutManager();
+  const validation = _manager.validateConfig();
 
   assert(validation.valid);
   assertEquals(validation.errors.length, 0);
@@ -100,8 +100,8 @@ Deno.test("TimeoutManager - Configuration Validation - Invalid", () => {
     },
   };
 
-  const manager = new TimeoutManager(invalidConfig);
-  const validation = manager.validateConfig();
+  const _manager = new TimeoutManager(invalidConfig);
+  const validation = _manager.validateConfig();
 
   assert(!validation.valid);
   assert(validation.errors.length > 0);
@@ -109,8 +109,8 @@ Deno.test("TimeoutManager - Configuration Validation - Invalid", () => {
 });
 
 Deno.test("TimeoutManager - Debug Information", () => {
-  const manager = new TimeoutManager(undefined, "test", true);
-  const debugInfo = manager.getDebugInfo();
+  const _manager = new TimeoutManager(undefined, "test", true);
+  const debugInfo = _manager.getDebugInfo();
 
   assertExists(debugInfo);
   assertEquals(debugInfo.environmentType, "test");
@@ -123,10 +123,10 @@ Deno.test("TimeoutManager - Debug Information", () => {
 });
 
 Deno.test("TimeoutManager - Configuration Update", () => {
-  const manager = createDefaultTimeoutManager();
-  const originalTimeout = manager.getTimeout();
+  const _manager = createDefaultTimeoutManager();
+  const originalTimeout = _manager.getTimeout();
 
-  manager.updateConfig({
+  _manager.updateConfig({
     timeouts: {
       default: 50000,
       ci: 2000,
@@ -135,17 +135,17 @@ Deno.test("TimeoutManager - Configuration Update", () => {
     },
   });
 
-  assertEquals(manager.getTimeout(), 2000);
-  assert(manager.getTimeout() !== originalTimeout);
+  assertEquals(_manager.getTimeout(), 2000);
+  assert(_manager.getTimeout() !== originalTimeout);
 });
 
 Deno.test("TimeoutManager - Environment Type Change", () => {
-  const manager = new TimeoutManager(undefined, "test");
-  assertEquals(manager.getEnvironmentType(), "test");
+  const _manager = new TimeoutManager(undefined, "test");
+  assertEquals(_manager.getEnvironmentType(), "test");
 
-  manager.setEnvironmentType("ci");
-  assertEquals(manager.getEnvironmentType(), "ci");
-  assertEquals(manager.getTimeout(), DEFAULT_TIMEOUT_CONFIG.timeouts.ci);
+  _manager.setEnvironmentType("ci");
+  assertEquals(_manager.getEnvironmentType(), "ci");
+  assertEquals(_manager.getTimeout(), DEFAULT_TIMEOUT_CONFIG.timeouts.ci);
 });
 
 Deno.test("TimeoutManager - YAML Config Factory", () => {
@@ -172,32 +172,32 @@ Deno.test("TimeoutManager - YAML Config Factory", () => {
     },
   };
 
-  const manager = createTimeoutManagerFromConfig(yamlConfig);
+  const _manager = createTimeoutManagerFromConfig(yamlConfig);
 
   // YAML設定が適用されていることを確認
-  assertExists(manager.getTimeout());
-  assert(manager.getTimeout() > 0);
+  assertExists(_manager.getTimeout());
+  assert(_manager.getTimeout() > 0);
 
   // CI環境での確認
-  manager.setEnvironmentType("ci");
-  assertEquals(manager.getTimeout(), 4000);
+  _manager.setEnvironmentType("ci");
+  assertEquals(_manager.getTimeout(), 4000);
 
   // STDIN設定の確認
-  manager.setEnvironmentType("test");
-  const stdinConfig = manager.getStdinConfig();
+  _manager.setEnvironmentType("test");
+  const stdinConfig = _manager.getStdinConfig();
   assertEquals(stdinConfig.timeout, 800);
   assertEquals(stdinConfig.allowEmpty, false);
   assertEquals(stdinConfig.debug, false);
 });
 
 Deno.test("TimeoutManager - Empty YAML Config", () => {
-  const manager = createTimeoutManagerFromConfig({});
+  const _manager = createTimeoutManagerFromConfig({});
 
   // デフォルト設定が使用されることを確認
-  assertExists(manager.getTimeout());
-  assertExists(manager.getStdinTimeout());
-  assert(manager.getTimeout() > 0);
-  assert(manager.getStdinTimeout() > 0);
+  assertExists(_manager.getTimeout());
+  assertExists(_manager.getStdinTimeout());
+  assert(_manager.getTimeout() > 0);
+  assert(_manager.getStdinTimeout() > 0);
 });
 
 Deno.test("TimeoutManager - Partial YAML Config", () => {
@@ -207,26 +207,26 @@ Deno.test("TimeoutManager - Partial YAML Config", () => {
     },
   };
 
-  const manager = createTimeoutManagerFromConfig(yamlConfig);
+  const _manager = createTimeoutManagerFromConfig(yamlConfig);
 
   // カスタムデフォルト値が使用され、他はデフォルト設定
-  assertExists(manager.getTimeout());
-  assert(manager.getTimeout() > 0);
+  assertExists(_manager.getTimeout());
+  assert(_manager.getTimeout() > 0);
 
-  manager.setEnvironmentType("interactive");
-  assertExists(manager.getTimeout());
-  assert(manager.getTimeout() > 0);
+  _manager.setEnvironmentType("interactive");
+  assertExists(_manager.getTimeout());
+  assert(_manager.getTimeout() > 0);
 });
 
 Deno.test("TimeoutManager - Debug Mode Toggle", () => {
-  const manager = createDefaultTimeoutManager();
+  const _manager = createDefaultTimeoutManager();
 
   // デバッグモードの切り替えテスト（出力は検証しないが、エラーが発生しないことを確認）
-  manager.setDebugMode(true);
-  manager.setDebugMode(false);
+  _manager.setDebugMode(true);
+  _manager.setDebugMode(false);
 
   // デバッグ情報の取得でエラーが発生しないことを確認
-  const debugInfo = manager.getDebugInfo();
+  const debugInfo = _manager.getDebugInfo();
   assertExists(debugInfo);
 });
 
@@ -266,19 +266,19 @@ Deno.test("TimeoutManager - Complex Configuration Merge", () => {
     },
   };
 
-  const manager = new TimeoutManager(complexConfig, "test");
+  const _manager = new TimeoutManager(complexConfig, "test");
 
-  assertEquals(manager.getTimeout(), 600);
+  assertEquals(_manager.getTimeout(), 600);
 
-  const stdinConfig = manager.getStdinConfig();
+  const stdinConfig = _manager.getStdinConfig();
   assertEquals(stdinConfig.timeout, 400);
   assertEquals(stdinConfig.allowEmpty, true);
   assertEquals(stdinConfig.forceRead, false);
   assertEquals(stdinConfig.debug, true);
 
   // 他の環境での確認
-  manager.setEnvironmentType("ci");
-  const ciStdinConfig = manager.getStdinConfig();
+  _manager.setEnvironmentType("ci");
+  const ciStdinConfig = _manager.getStdinConfig();
   assertEquals(ciStdinConfig.timeout, 2000);
   assertEquals(ciStdinConfig.allowEmpty, false);
   assertEquals(ciStdinConfig.forceRead, true);

@@ -1,19 +1,23 @@
 /**
  * @fileoverview Architecture tests for StdinVariableFactory
- * 
+ *
  * アーキテクチャテストは以下を検証します：
  * - 依存関係の方向性
  * - 循環参照の有無
  * - レイヤー間の境界
  * - インターフェースの一貫性
- * 
+ *
  * StdinVariableFactoryは、Factory層としてTypes層に依存し、
  * CLI層から使用される中間層の位置にあります。
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { StdinVariableFactory, StdinVariableFactoryError, StdinFactoryInput } from "./stdin_variable_factory.ts";
-import type { Result } from "../types/result.ts";
+import {
+  StdinFactoryInput,
+  StdinVariableFactory,
+  StdinVariableFactoryError,
+} from "./stdin_variable_factory.ts";
+import type { Result } from "../types/_result.ts";
 import type { StdinVariable } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";
 
@@ -23,27 +27,27 @@ import type { VariableError } from "../types/variable_result.ts";
  */
 Deno.test("Architecture: StdinVariableFactory依存関係の方向性", () => {
   // Factory実装がTypes層の型を正しく使用していることを確認
-  const factory = new StdinVariableFactory();
-  assertExists(factory);
-  
+  const _factory = new StdinVariableFactory();
+  assertExists(_factory);
+
   // 型レベルでの依存関係確認
   const testInput: StdinFactoryInput = {
     inputText: "test",
     source: "cli",
-    context: "test context"
+    context: "test context",
   };
-  
-  const result = factory.create(testInput);
-  
+
+  const _result = _factory.create(testInput);
+
   // ResultがTypes層の型であることを確認
-  assertEquals(typeof result.ok, "boolean");
-  
-  if (result.ok) {
+  assertEquals(typeof _result.ok, "boolean");
+
+  if (_result.ok) {
     // StdinVariableがTypes層の型であることを確認
-    assertEquals(typeof result.data.toRecord, "function");
+    assertEquals(typeof _result.data.toRecord, "function");
   } else {
     // ErrorがTypes層の型であることを確認
-    assertExists(result.error.kind);
+    assertExists(_result.error.kind);
   }
 });
 
@@ -53,13 +57,13 @@ Deno.test("Architecture: StdinVariableFactory依存関係の方向性", () => {
  */
 Deno.test("Architecture: 循環参照の回避確認", () => {
   // StdinVariableFactoryが他のFactory実装に依存していないことを確認
-  const factory = new StdinVariableFactory();
-  
+  const _factory = new StdinVariableFactory();
+
   // インスタンス生成が成功することで循環参照がないことを間接的に確認
-  assertExists(factory);
-  
+  assertExists(_factory);
+
   // メソッドが正常に呼び出せることで内部循環がないことを確認
-  const validateResult = factory.validate({});
+  const validateResult = _factory.validate({});
   assertEquals(typeof validateResult.ok, "boolean");
 });
 
@@ -68,25 +72,25 @@ Deno.test("Architecture: 循環参照の回避確認", () => {
  * Factory層がCLI層のインターフェースを適切に提供していることを確認
  */
 Deno.test("Architecture: Factory層インターフェースの一貫性", () => {
-  const factory = new StdinVariableFactory();
-  
+  const _factory = new StdinVariableFactory();
+
   // Factory層として期待されるメソッドが存在することを確認
-  assertEquals(typeof factory.create, "function");
-  assertEquals(typeof factory.createFromText, "function");
-  assertEquals(typeof factory.createBatch, "function");
-  assertEquals(typeof factory.validate, "function");
-  
+  assertEquals(typeof _factory.create, "function");
+  assertEquals(typeof _factory.createFromText, "function");
+  assertEquals(typeof _factory.createBatch, "function");
+  assertEquals(typeof _factory.validate, "function");
+
   // すべてのメソッドがResult型を返すことを確認（Factory層の責務）
-  const createResult = factory.create({});
+  const createResult = _factory.create({});
   assertEquals(typeof createResult.ok, "boolean");
-  
-  const createFromTextResult = factory.createFromText("");
+
+  const createFromTextResult = _factory.createFromText("");
   assertEquals(typeof createFromTextResult.ok, "boolean");
-  
-  const createBatchResult = factory.createBatch([]);
+
+  const createBatchResult = _factory.createBatch([]);
   assertEquals(typeof createBatchResult.ok, "boolean");
-  
-  const validateResult = factory.validate({});
+
+  const validateResult = _factory.validate({});
   assertEquals(typeof validateResult.ok, "boolean");
 });
 
@@ -95,20 +99,20 @@ Deno.test("Architecture: Factory層インターフェースの一貫性", () => 
  * StdinVariableFactoryErrorがVariableErrorを拡張していることを確認
  */
 Deno.test("Architecture: エラー型の階層性確認", () => {
-  const factory = new StdinVariableFactory();
-  
+  const _factory = new StdinVariableFactory();
+
   // 各種エラーパターンでエラー型の構造を確認
-  const noDataResult = factory.create({});
+  const noDataResult = _factory.create({});
   if (!noDataResult.ok) {
     assertEquals(noDataResult.error.kind, "NoStdinData");
     if (noDataResult.error.kind === "NoStdinData") {
       assertExists(noDataResult.error.context);
     }
   }
-  
-  const invalidSourceResult = factory.create({
+
+  const invalidSourceResult = _factory.create({
     inputText: "test",
-    source: "invalid" as any
+    source: "invalid" as unknown,
   });
   if (!invalidSourceResult.ok) {
     assertEquals(invalidSourceResult.error.kind, "InvalidStdinSource");
@@ -116,9 +120,9 @@ Deno.test("Architecture: エラー型の階層性確認", () => {
       assertExists(invalidSourceResult.error.source);
     }
   }
-  
+
   // VariableErrorも適切に処理されることを確認
-  const emptyTextResult = factory.create({ inputText: "" });
+  const emptyTextResult = _factory.create({ inputText: "" });
   if (!emptyTextResult.ok) {
     // StdinVariable.createから返されるVariableErrorが適切に伝播することを確認
     assertExists(emptyTextResult.error.kind);
@@ -130,23 +134,23 @@ Deno.test("Architecture: エラー型の階層性確認", () => {
  * Factory層がSmart Constructorパターンを適切に実装していることを確認
  */
 Deno.test("Architecture: Smart Constructor パターンの実装確認", () => {
-  const factory = new StdinVariableFactory();
-  
+  const _factory = new StdinVariableFactory();
+
   // 有効な入力での成功パターン
-  const validResult = factory.create({
+  const validResult = _factory.create({
     inputText: "valid input",
-    source: "cli"
+    source: "cli",
   });
-  
+
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
     // Smart Constructorにより作成されたインスタンスが適切な状態であることを確認
     const record = validResult.data.toRecord();
     assertEquals(record.input_text, "valid input");
   }
-  
+
   // 無効な入力でのエラーパターン
-  const invalidResult = factory.create({});
+  const invalidResult = _factory.create({});
   assertEquals(invalidResult.ok, false);
   if (!invalidResult.ok) {
     // Smart Constructorにより適切なエラーが返されることを確認
@@ -159,8 +163,8 @@ Deno.test("Architecture: Smart Constructor パターンの実装確認", () => {
  * 全ての入力パターンに対して明示的な処理が存在することを確認
  */
 Deno.test("Architecture: Totality原則の適用確認", () => {
-  const factory = new StdinVariableFactory();
-  
+  const _factory = new StdinVariableFactory();
+
   // 全ての可能な入力パターンのテストケース
   const testCases: Array<{
     input: StdinFactoryInput;
@@ -170,38 +174,38 @@ Deno.test("Architecture: Totality原則の適用確認", () => {
     {
       input: { inputText: "valid", source: "cli" },
       expectedOutcome: "success",
-      description: "有効な完全入力"
+      description: "有効な完全入力",
     },
     {
       input: { inputText: "valid" },
-      expectedOutcome: "success", 
-      description: "source省略の有効入力"
+      expectedOutcome: "success",
+      description: "source省略の有効入力",
     },
     {
       input: {},
       expectedOutcome: "error",
-      description: "空の入力"
+      description: "空の入力",
     },
     {
       input: { inputText: "" },
       expectedOutcome: "error",
-      description: "空文字列"
+      description: "空文字列",
     },
     {
-      input: { inputText: "valid", source: "invalid" as any },
+      input: { inputText: "valid", source: "invalid" as unknown },
       expectedOutcome: "error",
-      description: "無効なsource"
-    }
+      description: "無効なsource",
+    },
   ];
-  
+
   // 全てのパターンが適切に処理されることを確認
   for (const testCase of testCases) {
-    const result = factory.create(testCase.input);
-    
+    const _result = _factory.create(testCase.input);
+
     if (testCase.expectedOutcome === "success") {
-      assertEquals(result.ok, true, `${testCase.description}で成功すべき`);
+      assertEquals(_result.ok, true, `${testCase.description}で成功すべき`);
     } else {
-      assertEquals(result.ok, false, `${testCase.description}でエラーになるべき`);
+      assertEquals(_result.ok, false, `${testCase.description}でエラーになるべき`);
     }
   }
 });

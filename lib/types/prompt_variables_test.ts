@@ -8,20 +8,20 @@
 import { assertEquals, assertExists } from "../../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import {
-  StandardVariable,
+  createPromptParams,
   FilePathVariable,
-  StdinVariable,
-  UserVariable,
-  StandardVariableName,
   type PromptVariables,
+  StandardVariable,
+  StandardVariableName,
+  StdinVariable,
   toPromptParamsVariables,
-  createPromptParams
+  UserVariable,
 } from "./prompt_variables.ts";
 
 describe("PromptVariables - Unit Tests", () => {
   describe("StandardVariableName", () => {
     it("should create valid names", () => {
-      const inputTextFile = StandardVariableName.create("input_text_file");
+      const _inputTextFile = StandardVariableName.create("input_text_file");
       assertExists(inputTextFile);
       if (inputTextFile.ok) {
         assertEquals(inputTextFile.data.getValue(), "input_text_file");
@@ -44,7 +44,7 @@ describe("PromptVariables - Unit Tests", () => {
     it("should handle creation and conversion", () => {
       const variable = StandardVariable.create("input_text_file", "/path/to/file.txt");
       assertExists(variable);
-      
+
       if (variable.ok) {
         const record = variable.data.toRecord();
         assertEquals(record, { "input_text_file": "/path/to/file.txt" });
@@ -70,16 +70,16 @@ describe("PromptVariables - Unit Tests", () => {
         standardVar.data,
         filePathVar.data,
         stdinVar.data,
-        userVar.data
+        userVar.data,
       ];
 
-      const result = toPromptParamsVariables(variables);
-      
-      assertEquals(result, {
+      const _result = toPromptParamsVariables(variables);
+
+      assertEquals(_result, {
         "input_text_file": "/path/to/input.txt",
-        "schema_file": "/path/to/schema.json", 
+        "schema_file": "/path/to/schema.json",
         "input_text": "Hello world",
-        "custom_option": "custom_value"
+        "custom_option": "custom_value",
       });
     });
   });
@@ -110,24 +110,24 @@ describe("PromptVariables - Unit Tests", () => {
     it("should provide simplified interface", () => {
       const standardVar = StandardVariable.create("input_text_file", "/path/to/input.txt");
       const stdinVar = StdinVariable.create("input_text", "Sample input");
-      
+
       if (!standardVar.ok || !stdinVar.ok) {
         throw new Error("Variable creation failed");
       }
 
       const variables: PromptVariables = [
         standardVar.data,
-        stdinVar.data
+        stdinVar.data,
       ];
 
       const promptParams = createPromptParams("/path/to/template.md", variables);
-      
+
       assertEquals(promptParams, {
         template_file: "/path/to/template.md",
         variables: {
           "input_text_file": "/path/to/input.txt",
-          "input_text": "Sample input"
-        }
+          "input_text": "Sample input",
+        },
       });
     });
   });

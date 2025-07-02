@@ -7,7 +7,7 @@
  * - Ensure consistent logging patterns across test files
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Phases for test logging
@@ -41,7 +41,7 @@ export function createLogKey(
   description: string,
 ): string {
   // Remove path if included, keep only filename
-  const baseFilename = filename.split("/").pop() || filename;
+  const _baseFilename = filename.split("/").pop() || filename;
   // Sanitize description to be URL-friendly
   const sanitizedDescription = description
     .toLowerCase()

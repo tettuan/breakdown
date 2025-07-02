@@ -1,20 +1,19 @@
 /**
  * @fileoverview TwoParamsPromptGenerator - Prompt generation with Totality principle
- * 
+ *
  * This module handles prompt generation following the single responsibility principle.
  * It manages the creation of PromptVariablesFactory, integration with VariablesBuilder,
  * and final prompt generation through PromptManager.
- * 
+ *
  * @module cli/generators/two_params_prompt_generator
  */
 
-import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
-import type { DemonstrativeType, LayerType } from "../../types/mod.ts";
+import type { Result } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
-import { PromptVariablesFactory } from "../../factory/prompt_variables_factory.ts";
-import type { PromptCliParams } from "../../types/mod.ts";
-import { VariablesBuilder, type FactoryResolvedValues } from "../../builder/variables_builder.ts";
+import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
+import type { PromptCliParams } from "$lib/types/mod.ts";
+import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
 
 /**
@@ -32,13 +31,13 @@ export type PromptGeneratorError =
  * Validated parameters from TwoParamsValidator
  */
 export interface ValidatedParams {
-  demonstrativeType: DemonstrativeType;
+  demonstrativeType: string;
   layerType: string;
 }
 
 /**
  * TwoParamsPromptGenerator - Generates prompts with single responsibility
- * 
+ *
  * Responsibilities:
  * - Create and manage PromptVariablesFactory
  * - Coordinate with VariablesBuilder
@@ -52,14 +51,15 @@ export class TwoParamsPromptGenerator {
   private createCliParams(
     params: ValidatedParams,
     options: Record<string, unknown>,
-    variables: ProcessedVariables
+    variables: ProcessedVariables,
   ): PromptCliParams {
     return {
       demonstrativeType: params.demonstrativeType,
       layerType: params.layerType,
       options: {
         fromFile: (options.from as string) || (options.fromFile as string),
-        destinationFile: (options.destination as string) || (options.output as string) || "output.md",
+        destinationFile: (options.destination as string) || (options.output as string) ||
+          "output.md",
         adaptation: options.adaptation as string,
         promptDir: options.promptDir as string,
         fromLayerType: options.input as string,
@@ -77,7 +77,7 @@ export class TwoParamsPromptGenerator {
    * Validate factory parameters
    */
   private validateFactory(
-    factory: PromptVariablesFactory
+    factory: PromptVariablesFactory,
   ): Result<void, PromptGeneratorError> {
     try {
       factory.validateAll();
@@ -85,7 +85,7 @@ export class TwoParamsPromptGenerator {
     } catch (err) {
       return error({
         kind: "FactoryValidationError",
-        errors: [err instanceof Error ? err.message : String(err)]
+        errors: [err instanceof Error ? err.message : String(err)],
       });
     }
   }
@@ -95,10 +95,10 @@ export class TwoParamsPromptGenerator {
    */
   private buildVariables(
     factory: PromptVariablesFactory,
-    variables: ProcessedVariables
+    variables: ProcessedVariables,
   ): Result<Record<string, string>, PromptGeneratorError> {
     const allParams = factory.getAllParams();
-    
+
     // Create factory values for VariablesBuilder
     const factoryValues: FactoryResolvedValues = {
       promptFilePath: allParams.promptFilePath,
@@ -112,21 +112,21 @@ export class TwoParamsPromptGenerator {
     // Use VariablesBuilder to construct variables
     const builder = new VariablesBuilder();
     const validationResult = builder.validateFactoryValues(factoryValues);
-    
+
     if (!validationResult.ok) {
       return error({
         kind: "VariablesBuilderError",
-        errors: validationResult.error.map(e => JSON.stringify(e))
+        errors: validationResult.error.map((e) => JSON.stringify(e)),
       });
     }
 
     builder.addFromFactoryValues(factoryValues);
     const buildResult = builder.build();
-    
+
     if (!buildResult.ok) {
       return error({
         kind: "VariablesBuilderError",
-        errors: buildResult.error.map(e => JSON.stringify(e))
+        errors: buildResult.error.map((e) => JSON.stringify(e)),
       });
     }
 
@@ -138,13 +138,13 @@ export class TwoParamsPromptGenerator {
    */
   private async generateWithPromptManager(
     promptFilePath: string,
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): Promise<Result<string, PromptGeneratorError>> {
     try {
       const promptManager = new PromptManager();
       const result = await promptManager.generatePrompt(
         promptFilePath,
-        variables
+        variables,
       );
 
       // Extract content from result
@@ -156,7 +156,7 @@ export class TwoParamsPromptGenerator {
         } else {
           return error({
             kind: "PromptGenerationError",
-            error: res.error || "Prompt generation failed"
+            error: res.error || "Prompt generation failed",
           });
         }
       } else {
@@ -167,14 +167,14 @@ export class TwoParamsPromptGenerator {
     } catch (err) {
       return error({
         kind: "PromptGenerationError",
-        error: err instanceof Error ? err.message : String(err)
+        error: err instanceof Error ? err.message : String(err),
       });
     }
   }
 
   /**
    * Generate prompt with all dependencies
-   * 
+   *
    * @param config - Configuration object
    * @param params - Validated parameters
    * @param options - Command line options
@@ -185,13 +185,13 @@ export class TwoParamsPromptGenerator {
     config: Record<string, unknown>,
     params: ValidatedParams,
     options: Record<string, unknown>,
-    variables: ProcessedVariables
+    variables: ProcessedVariables,
   ): Promise<Result<string, PromptGeneratorError>> {
     // Validate configuration
     if (!config || typeof config !== "object") {
       return error({
         kind: "InvalidConfiguration",
-        message: "Configuration must be a valid object"
+        message: "Configuration must be a valid object",
       });
     }
 
@@ -204,14 +204,15 @@ export class TwoParamsPromptGenerator {
     // Create CLI parameters
     const cliParams = this.createCliParams(params, options, variables);
 
-    // Create factory
+    // Create factory using provided config
     let factory: PromptVariablesFactory;
     try {
-      factory = await PromptVariablesFactory.create(cliParams);
+      // Use the provided config instead of loading from filesystem
+      factory = PromptVariablesFactory.createWithConfig(config, cliParams);
     } catch (err) {
       return error({
         kind: "FactoryCreationError",
-        message: err instanceof Error ? err.message : String(err)
+        message: err instanceof Error ? err.message : String(err),
       });
     }
 
@@ -231,7 +232,7 @@ export class TwoParamsPromptGenerator {
     const allParams = factory.getAllParams();
     return await this.generateWithPromptManager(
       allParams.promptFilePath,
-      variablesResult.data
+      variablesResult.data,
     );
   }
 
@@ -240,16 +241,19 @@ export class TwoParamsPromptGenerator {
    * @param config - Configuration object to validate
    * @returns Result indicating validation success or failure
    */
-  private validateConfiguration(config: Record<string, unknown>): Result<void, PromptGeneratorError> {
+  private validateConfiguration(
+    config: Record<string, unknown>,
+  ): Result<void, PromptGeneratorError> {
     // Check for prompt directory configuration
-    const hasPromptConfig = config.promptDir || 
-                           (config.app_prompt && (config.app_prompt as any).base_dir);
-    
+    const hasPromptConfig = config.promptDir ||
+      (config.app_prompt && (config.app_prompt as Record<string, unknown>).base_dir);
+
     if (!hasPromptConfig) {
       return error({
         kind: "ConfigurationValidationError",
-        message: "Missing required configuration: promptDir or app_prompt.base_dir must be specified",
-        missingProperties: ["promptDir", "app_prompt.base_dir"]
+        message:
+          "Missing required configuration: promptDir or app_prompt.base_dir must be specified",
+        missingProperties: ["promptDir", "app_prompt.base_dir"],
       });
     }
 

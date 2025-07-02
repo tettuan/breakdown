@@ -1,17 +1,17 @@
 /**
  * @fileoverview TwoParamsProcessor for converting TwoParamsResult to VariablesBuilder
- * 
+ *
  * This module provides a processor that transforms TwoParamsResult from BreakdownParams
  * into VariablesBuilder following the Totality principle. It handles the conversion
  * process with proper error handling and Result type patterns.
- * 
+ *
  * @module cli/processors/two_params_processor
  */
 
-import { Result, ok, error } from "../../types/result.ts";
-import { VariablesBuilder, type FactoryResolvedValues } from "../../builder/variables_builder.ts";
-import type { TwoParamsResult } from "../../deps.ts";
-import type { BuilderVariableError } from "../../builder/variables_builder.ts";
+import { error, ok, Result } from "$lib/types/result.ts";
+import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
+import type { TwoParamsResult } from "$lib/deps.ts";
+import type { BuilderVariableError } from "$lib/builder/variables_builder.ts";
 
 /**
  * Processor result type following Totality principle
@@ -21,22 +21,22 @@ export type ProcessorResult<T> = Result<T, ProcessorError>;
 /**
  * Processor-specific error types
  */
-export type ProcessorError = 
+export type ProcessorError =
   | { kind: "InvalidParams"; message: string }
   | { kind: "ConversionFailed"; cause: BuilderVariableError[] }
   | { kind: "MissingRequiredField"; field: string };
 
 /**
  * TwoParamsProcessor - Converts TwoParamsResult to VariablesBuilder
- * 
+ *
  * This processor handles the transformation of parsed command-line parameters
  * into a structured VariablesBuilder instance, following the Totality principle
  * for comprehensive error handling.
- * 
+ *
  * @example
  * ```typescript
- * const processor = new TwoParamsProcessor();
- * 
+ * const _processor = new TwoParamsProcessor();
+ *
  * const twoParamsResult: TwoParamsResult = {
  *   type: "two",
  *   demonstrativeType: "to",
@@ -44,7 +44,7 @@ export type ProcessorError =
  *   params: ["to", "project"],
  *   options: { output: "result.md" }
  * };
- * 
+ *
  * const result = processor.process(twoParamsResult);
  * if (result.ok) {
  *   const builder = result.data;
@@ -55,7 +55,7 @@ export type ProcessorError =
 export class TwoParamsProcessor {
   /**
    * Process TwoParamsResult into VariablesBuilder
-   * 
+   *
    * @param twoParamsResult - The parsed two parameters result from BreakdownParams
    * @returns ProcessorResult containing VariablesBuilder or errors
    */
@@ -74,17 +74,17 @@ export class TwoParamsProcessor {
 
     // Create VariablesBuilder from factory values
     const builder = VariablesBuilder.fromFactoryValues(factoryValuesResult.data);
-    
+
     // Add base variables as standard variables (not user variables)
     builder.addStandardVariable("demonstrative_type", twoParamsResult.demonstrativeType);
     builder.addStandardVariable("layer_type", twoParamsResult.layerType);
-    
+
     // Validate the builder state
     const buildResult = builder.build();
     if (!buildResult.ok) {
       return error({
         kind: "ConversionFailed",
-        cause: buildResult.error
+        cause: buildResult.error,
       });
     }
 
@@ -93,7 +93,7 @@ export class TwoParamsProcessor {
 
   /**
    * Validate TwoParamsResult structure
-   * 
+   *
    * @param twoParamsResult - Result to validate
    * @returns Validation result
    */
@@ -102,7 +102,7 @@ export class TwoParamsProcessor {
     if (twoParamsResult === null || twoParamsResult === undefined) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult cannot be null or undefined"
+        message: "TwoParamsResult cannot be null or undefined",
       });
     }
 
@@ -110,14 +110,14 @@ export class TwoParamsProcessor {
     if (!twoParamsResult.type) {
       return error({
         kind: "MissingRequiredField",
-        field: "type"
+        field: "type",
       });
     }
-    
+
     if (twoParamsResult.type !== "two") {
       return error({
         kind: "InvalidParams",
-        message: `Expected type "two", got "${twoParamsResult.type}"`
+        message: `Expected type "two", got "${twoParamsResult.type}"`,
       });
     }
 
@@ -125,7 +125,7 @@ export class TwoParamsProcessor {
     if (!twoParamsResult.demonstrativeType || twoParamsResult.demonstrativeType.trim() === "") {
       return error({
         kind: "MissingRequiredField",
-        field: "demonstrativeType"
+        field: "demonstrativeType",
       });
     }
 
@@ -133,7 +133,7 @@ export class TwoParamsProcessor {
     if (!twoParamsResult.layerType || twoParamsResult.layerType.trim() === "") {
       return error({
         kind: "MissingRequiredField",
-        field: "layerType"
+        field: "layerType",
       });
     }
 
@@ -141,7 +141,7 @@ export class TwoParamsProcessor {
     if (!twoParamsResult.params || !Array.isArray(twoParamsResult.params)) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult must have a params array"
+        message: "TwoParamsResult must have a params array",
       });
     }
 
@@ -149,7 +149,7 @@ export class TwoParamsProcessor {
     if (twoParamsResult.params.length < 2) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult must have at least 2 parameters"
+        message: "TwoParamsResult must have at least 2 parameters",
       });
     }
 
@@ -157,7 +157,7 @@ export class TwoParamsProcessor {
     if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
       return error({
         kind: "MissingRequiredField",
-        field: "options"
+        field: "options",
       });
     }
 
@@ -166,21 +166,23 @@ export class TwoParamsProcessor {
 
   /**
    * Convert TwoParamsResult to FactoryResolvedValues
-   * 
+   *
    * @param twoParamsResult - Input parameters
    * @returns Conversion result
    */
-  private convertToFactoryValues(twoParamsResult: TwoParamsResult): ProcessorResult<FactoryResolvedValues> {
+  private convertToFactoryValues(
+    twoParamsResult: TwoParamsResult,
+  ): ProcessorResult<FactoryResolvedValues> {
     // Additional null check for options
     if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
       return error({
         kind: "MissingRequiredField",
-        field: "options"
+        field: "options",
       });
     }
 
     const options = twoParamsResult.options;
-    
+
     // Extract file paths from options
     const inputFilePath = this.extractInputFilePath(options);
     const outputFilePath = this.extractOutputFilePath(options);
@@ -212,11 +214,11 @@ export class TwoParamsProcessor {
     if (!options) {
       return "stdin";
     }
-    
-    return (options.fromFile as string) || 
-           (options.from as string) || 
-           (options.input as string) || 
-           "stdin";
+
+    return (options.fromFile as string) ||
+      (options.from as string) ||
+      (options.input as string) ||
+      "stdin";
   }
 
   /**
@@ -226,11 +228,11 @@ export class TwoParamsProcessor {
     if (!options) {
       return "stdout";
     }
-    
-    return (options.destinationFile as string) || 
-           (options.destination as string) || 
-           (options.output as string) || 
-           "stdout";
+
+    return (options.destinationFile as string) ||
+      (options.destination as string) ||
+      (options.output as string) ||
+      "stdout";
   }
 
   /**
@@ -240,10 +242,10 @@ export class TwoParamsProcessor {
     if (!options) {
       return "";
     }
-    
-    return (options.schemaFile as string) || 
-           (options.schema as string) || 
-           "";
+
+    return (options.schemaFile as string) ||
+      (options.schema as string) ||
+      "";
   }
 
   /**
@@ -253,11 +255,11 @@ export class TwoParamsProcessor {
     if (!options) {
       return "";
     }
-    
-    return (options.promptFile as string) || 
-           (options.prompt as string) || 
-           (options.template as string) || 
-           "";
+
+    return (options.promptFile as string) ||
+      (options.prompt as string) ||
+      (options.template as string) ||
+      "";
   }
 
   /**
@@ -267,9 +269,9 @@ export class TwoParamsProcessor {
     if (!options) {
       return {};
     }
-    
+
     const customVariables: Record<string, string> = {};
-    
+
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
         // Keep the "uv-" prefix as required by VariablesBuilder
@@ -287,17 +289,17 @@ export class TwoParamsProcessor {
     if (!options) {
       return undefined;
     }
-    
+
     const inputText = options.input_text as string;
     return inputText && inputText.trim() !== "" ? inputText : undefined;
   }
 
   /**
    * Create processor with validation-only mode
-   * 
+   *
    * This method validates the TwoParamsResult without creating a VariablesBuilder,
    * useful for pre-validation scenarios.
-   * 
+   *
    * @param twoParamsResult - Parameters to validate
    * @returns Validation result
    */
@@ -315,11 +317,11 @@ export class TwoParamsProcessor {
     // Create temporary builder for validation
     const builder = new VariablesBuilder();
     const validateResult = builder.validateFactoryValues(factoryValuesResult.data);
-    
+
     if (!validateResult.ok) {
       return error({
         kind: "ConversionFailed",
-        cause: validateResult.error
+        cause: validateResult.error,
       });
     }
 
@@ -328,7 +330,7 @@ export class TwoParamsProcessor {
 
   /**
    * Get processor information for debugging
-   * 
+   *
    * @returns Processor metadata
    */
   getProcessorInfo(): {
@@ -341,7 +343,7 @@ export class TwoParamsProcessor {
       name: "TwoParamsProcessor",
       version: "1.0.0",
       supportedInputType: "TwoParamsResult",
-      outputType: "VariablesBuilder"
+      outputType: "VariablesBuilder",
     };
   }
 }

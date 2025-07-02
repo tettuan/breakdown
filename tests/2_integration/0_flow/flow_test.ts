@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { exists } from "@std/fs";
-import { Workspace } from "$lib/workspace/mod.ts";
-import { WorkspaceConfigError } from "$lib/workspace/errors.ts";
+import { Workspace as _Workspace } from "$lib/workspace/mod.ts";
+import { WorkspaceConfigError as _WorkspaceConfigError } from "$lib/workspace/errors.ts";
 import { join } from "@std/path/join";
 // import { resolve } from "@std/path/resolve";
 
@@ -11,7 +11,7 @@ import { join } from "@std/path/join";
  * and ensure they work together correctly.
  */
 
-const TEST_DIR = ".agent/breakdown";
+const _TEST_DIR = ".agent/breakdown";
 
 // Setup test environment
 Deno.test({

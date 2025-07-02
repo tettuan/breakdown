@@ -1,21 +1,30 @@
 /**
  * @fileoverview Structure tests for ParameterValidator
- * 
+ *
  * These tests validate responsibility separation, method boundaries,
  * and appropriate abstraction levels in the ParameterValidator design.
  */
 
-import { assertEquals, assertExists, assertNotEquals as _assertNotEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertNotEquals as _assertNotEquals,
+} from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { ParameterValidator } from "./parameter_validator.ts";
-import type { ValidationError as _ValidationError, ValidatedParams as _ValidatedParams, ConfigValidator, ValidatedOptions as _ValidatedOptions } from "./parameter_validator.ts";
+import type {
+  ConfigValidator,
+  ValidatedOptions as _ValidatedOptions,
+  ValidatedParams as _ValidatedParams,
+  ValidationError as _ValidationError,
+} from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
-import type { TwoParamsResult, OneParamsResult, ZeroParamsResult } from "../deps.ts";
+import type { OneParamsResult, TwoParamsResult, ZeroParamsResult } from "../deps.ts";
 
 /**
  * Structure Test: validateTwoParams Method Responsibility Boundary
- * 
+ *
  * Validates that validateTwoParams has clear responsibility boundaries
  * and handles only TwoParamsResult-specific validation logic.
  */
@@ -29,7 +38,7 @@ Deno.test("Structure: validateTwoParams responsibility boundary", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Responsibility boundary: Should only accept TwoParamsResult
   const validTwoParams: TwoParamsResult = {
@@ -41,8 +50,8 @@ Deno.test("Structure: validateTwoParams responsibility boundary", () => {
   };
 
   // Should handle TwoParamsResult successfully
-  const result = validator.validateTwoParams(validTwoParams);
-  assertEquals(typeof result.ok, "boolean");
+  const _result = _validator.validateTwoParams(validTwoParams);
+  assertEquals(typeof _result.ok, "boolean");
 
   // Responsibility boundary: Should validate type field specifically
   const invalidTypeParams = {
@@ -50,7 +59,9 @@ Deno.test("Structure: validateTwoParams responsibility boundary", () => {
     type: "one" as const, // Wrong type for this method
   };
 
-  const invalidResult = validator.validateTwoParams(invalidTypeParams as unknown as TwoParamsResult);
+  const invalidResult = _validator.validateTwoParams(
+    invalidTypeParams as unknown as TwoParamsResult,
+  );
   assertEquals(invalidResult.ok, false);
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "InvalidParamsType");
@@ -63,7 +74,7 @@ Deno.test("Structure: validateTwoParams responsibility boundary", () => {
 
 /**
  * Structure Test: validateOneParams Method Responsibility Boundary
- * 
+ *
  * Validates that validateOneParams has distinct responsibility
  * from validateTwoParams and handles one-parameter transformation logic.
  */
@@ -77,7 +88,7 @@ Deno.test("Structure: validateOneParams responsibility boundary", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Responsibility boundary: Should only accept OneParamsResult
   const validOneParams: OneParamsResult = {
@@ -87,16 +98,16 @@ Deno.test("Structure: validateOneParams responsibility boundary", () => {
     options: { input: "test.md" },
   };
 
-  const result = validator.validateOneParams(validOneParams);
-  assertEquals(typeof result.ok, "boolean");
+  const _result = _validator.validateOneParams(validOneParams);
+  assertEquals(typeof _result.ok, "boolean");
 
   // Responsibility boundary: Should transform one param to two params internally
   // This validates the abstraction level - one param validation delegates to two param logic
-  if (result.ok) {
+  if (_result.ok) {
     // Should have directive and layer derived from the single parameter
-    assertExists(result.data.directive);
-    assertExists(result.data.layer);
-    assertEquals(result.data.metadata.source, "OneParamsResult");
+    assertExists(_result.data.directive);
+    assertExists(_result.data.layer);
+    assertEquals(_result.data.metadata.source, "OneParamsResult");
   }
 
   // Responsibility boundary: Should validate type field specifically
@@ -105,7 +116,9 @@ Deno.test("Structure: validateOneParams responsibility boundary", () => {
     type: "zero" as const,
   };
 
-  const invalidResult = validator.validateOneParams(invalidTypeParams as unknown as OneParamsResult);
+  const invalidResult = _validator.validateOneParams(
+    invalidTypeParams as unknown as OneParamsResult,
+  );
   assertEquals(invalidResult.ok, false);
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "InvalidParamsType");
@@ -118,7 +131,7 @@ Deno.test("Structure: validateOneParams responsibility boundary", () => {
 
 /**
  * Structure Test: validateZeroParams Method Responsibility Boundary
- * 
+ *
  * Validates that validateZeroParams has minimal responsibility
  * and properly delegates to the core validation logic.
  */
@@ -132,7 +145,7 @@ Deno.test("Structure: validateZeroParams responsibility boundary", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Responsibility boundary: Should only accept ZeroParamsResult
   const validZeroParams: ZeroParamsResult = {
@@ -141,15 +154,15 @@ Deno.test("Structure: validateZeroParams responsibility boundary", () => {
     options: {},
   };
 
-  const result = validator.validateZeroParams(validZeroParams);
-  assertEquals(typeof result.ok, "boolean");
+  const _result = _validator.validateZeroParams(validZeroParams);
+  assertEquals(typeof _result.ok, "boolean");
 
   // Responsibility boundary: Should use complete defaults
-  if (result.ok) {
+  if (_result.ok) {
     // Should have default directive and layer
-    assertExists(result.data.directive);
-    assertExists(result.data.layer);
-    assertEquals(result.data.metadata.source, "ZeroParamsResult");
+    assertExists(_result.data.directive);
+    assertExists(_result.data.layer);
+    assertEquals(_result.data.metadata.source, "ZeroParamsResult");
   }
 
   // Responsibility boundary: Should validate type field specifically
@@ -158,7 +171,9 @@ Deno.test("Structure: validateZeroParams responsibility boundary", () => {
     type: "two" as const,
   };
 
-  const invalidResult = validator.validateZeroParams(invalidTypeParams as unknown as ZeroParamsResult);
+  const invalidResult = _validator.validateZeroParams(
+    invalidTypeParams as unknown as ZeroParamsResult,
+  );
   assertEquals(invalidResult.ok, false);
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "InvalidParamsType");
@@ -171,7 +186,7 @@ Deno.test("Structure: validateZeroParams responsibility boundary", () => {
 
 /**
  * Structure Test: ValidatedParams Type Design Coherence
- * 
+ *
  * Validates that ValidatedParams type design maintains proper
  * responsibility separation and semantic coherence.
  */
@@ -185,7 +200,7 @@ Deno.test("Structure: ValidatedParams type design coherence", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   const validParams: TwoParamsResult = {
     type: "two",
@@ -195,13 +210,13 @@ Deno.test("Structure: ValidatedParams type design coherence", () => {
     options: { input: "test.md", "uv-custom": "value" },
   };
 
-  const result = validator.validateTwoParams(validParams);
-  if (!result.ok) return;
+  const _result = _validator.validateTwoParams(validParams);
+  if (!_result.ok) return;
 
-  const validatedParams = result.data;
+  const validatedParams = _result.data;
 
   // Structure: ValidatedParams should have clear responsibility separation
-  
+
   // Core validation results
   assertExists(validatedParams.directive);
   assertExists(validatedParams.layer);
@@ -226,7 +241,7 @@ Deno.test("Structure: ValidatedParams type design coherence", () => {
 
 /**
  * Structure Test: ValidationError Type Design Appropriateness
- * 
+ *
  * Validates that ValidationError types have appropriate specificity
  * and maintain clear error responsibility boundaries.
  */
@@ -240,7 +255,7 @@ Deno.test("Structure: ValidationError type design appropriateness", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Test different error types for appropriate specificity
 
@@ -253,7 +268,7 @@ Deno.test("Structure: ValidationError type design appropriateness", () => {
     options: {},
   };
 
-  const missingFieldResult = validator.validateTwoParams(missingFieldParams);
+  const missingFieldResult = _validator.validateTwoParams(missingFieldParams);
   assertEquals(missingFieldResult.ok, false);
   if (!missingFieldResult.ok) {
     assertEquals(missingFieldResult.error.kind, "MissingRequiredField");
@@ -267,12 +282,12 @@ Deno.test("Structure: ValidationError type design appropriateness", () => {
   const invalidDirectiveParams: TwoParamsResult = {
     type: "two",
     demonstrativeType: "invalid",
-    layerType: "project", 
+    layerType: "project",
     params: ["invalid", "project"],
     options: {},
   };
 
-  const invalidDirectiveResult = validator.validateTwoParams(invalidDirectiveParams);
+  const invalidDirectiveResult = _validator.validateTwoParams(invalidDirectiveParams);
   assertEquals(invalidDirectiveResult.ok, false);
   if (!invalidDirectiveResult.ok) {
     assertEquals(invalidDirectiveResult.error.kind, "InvalidDirectiveType");
@@ -285,7 +300,7 @@ Deno.test("Structure: ValidationError type design appropriateness", () => {
 
 /**
  * Structure Test: Private Methods Abstraction Level Validation
- * 
+ *
  * Validates that the abstraction level of internal operations
  * is appropriate and maintains proper separation of concerns.
  */
@@ -299,7 +314,7 @@ Deno.test("Structure: Private methods abstraction level appropriateness", () => 
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Test that different option formats are normalized consistently
   // This validates that private normalization methods maintain appropriate abstraction
@@ -311,7 +326,7 @@ Deno.test("Structure: Private methods abstraction level appropriateness", () => 
     { options: { input: "input3.md" }, expectedInput: "input3.md" },
     { options: {}, expectedInput: "stdin" }, // Default case
 
-    // Different output path formats should be normalized consistently  
+    // Different output path formats should be normalized consistently
     { options: { destinationFile: "output1.md" }, expectedOutput: "output1.md" },
     { options: { destination: "output2.md" }, expectedOutput: "output2.md" },
     { options: { output: "output3.md" }, expectedOutput: "output3.md" },
@@ -326,26 +341,32 @@ Deno.test("Structure: Private methods abstraction level appropriateness", () => 
       options: testCase.options,
     };
 
-    const result = validator.validateTwoParams(params);
-    if (!result.ok) {
-      throw new Error(`Test case ${index} failed validation: ${JSON.stringify(result.error)}`);
+    const _result = _validator.validateTwoParams(params);
+    if (!_result.ok) {
+      throw new Error(`Test case ${index} failed validation: ${JSON.stringify(_result.error)}`);
     }
 
     // Validate appropriate abstraction - different input formats normalize to consistent output
     if (testCase.expectedInput) {
-      assertEquals(result.data.options.inputPath, testCase.expectedInput, 
-        `Input normalization failed for case ${index}`);
+      assertEquals(
+        _result.data.options.inputPath,
+        testCase.expectedInput,
+        `Input normalization failed for case ${index}`,
+      );
     }
     if (testCase.expectedOutput) {
-      assertEquals(result.data.options.outputPath, testCase.expectedOutput,
-        `Output normalization failed for case ${index}`);
+      assertEquals(
+        _result.data.options.outputPath,
+        testCase.expectedOutput,
+        `Output normalization failed for case ${index}`,
+      );
     }
   });
 });
 
 /**
  * Structure Test: Custom Variables Processing Responsibility
- * 
+ *
  * Validates that custom variable processing maintains clear
  * responsibility boundaries and appropriate validation logic.
  */
@@ -359,7 +380,7 @@ Deno.test("Structure: Custom variables processing responsibility boundary", () =
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Test custom variable extraction and validation responsibility
   const paramsWithCustomVars: TwoParamsResult = {
@@ -376,15 +397,15 @@ Deno.test("Structure: Custom variables processing responsibility boundary", () =
     },
   };
 
-  const result = validator.validateTwoParams(paramsWithCustomVars);
-  
+  const _result = _validator.validateTwoParams(paramsWithCustomVars);
+
   // Should fail due to invalid custom variable type
-  assertEquals(result.ok, false);
-  if (!result.ok) {
-    assertEquals(result.error.kind, "CustomVariableInvalid");
-    if (result.error.kind === "CustomVariableInvalid") {
-      assertEquals(result.error.key, "uv-invalidVar");
-      assertEquals(result.error.reason, "Value must be string, number, or boolean");
+  assertEquals(_result.ok, false);
+  if (!_result.ok) {
+    assertEquals(_result.error.kind, "CustomVariableInvalid");
+    if (_result.error.kind === "CustomVariableInvalid") {
+      assertEquals(_result.error.key, "uv-invalidVar");
+      assertEquals(_result.error.reason, "Value must be string, number, or boolean");
     }
   }
 
@@ -402,14 +423,14 @@ Deno.test("Structure: Custom variables processing responsibility boundary", () =
     },
   };
 
-  const validResult = validator.validateTwoParams(validCustomVarsParams);
+  const validResult = _validator.validateTwoParams(validCustomVarsParams);
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
     // Custom variables should be extracted and converted to strings
     assertEquals(validResult.data.customVariables["uv-stringVar"], "stringValue");
     assertEquals(validResult.data.customVariables["uv-numberVar"], "42");
     assertEquals(validResult.data.customVariables["uv-boolVar"], "true");
-    
+
     // Regular options should not be in custom variables
     assertEquals(validResult.data.customVariables["regularOption"], undefined);
   }
@@ -417,7 +438,7 @@ Deno.test("Structure: Custom variables processing responsibility boundary", () =
 
 /**
  * Structure Test: Metadata Generation Responsibility
- * 
+ *
  * Validates that metadata generation maintains appropriate
  * responsibility and provides necessary traceability information.
  */
@@ -431,7 +452,7 @@ Deno.test("Structure: Metadata generation responsibility appropriateness", () =>
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Test metadata generation for different parameter types
   const testCases = [
@@ -462,37 +483,45 @@ Deno.test("Structure: Metadata generation responsibility appropriateness", () =>
         params: [],
         options: { configProfile: "zeroProfile" },
       },
-      expectedSource: "ZeroParamsResult", 
+      expectedSource: "ZeroParamsResult",
       hasProfile: true,
     },
   ];
 
   testCases.forEach((testCase, index) => {
-    let result;
+    let _result;
     if (testCase.params.type === "two") {
-      result = validator.validateTwoParams(testCase.params as TwoParamsResult);
+      result = _validator.validateTwoParams(testCase.params as TwoParamsResult);
     } else if (testCase.params.type === "one") {
-      result = validator.validateOneParams(testCase.params as OneParamsResult);
+      result = _validator.validateOneParams(testCase.params as OneParamsResult);
     } else {
-      result = validator.validateZeroParams(testCase.params as ZeroParamsResult);
+      result = _validator.validateZeroParams(testCase.params as ZeroParamsResult);
     }
 
-    if (!result.ok) {
-      throw new Error(`Test case ${index} failed: ${JSON.stringify(result.error)}`);
+    if (!_result.ok) {
+      throw new Error(`Test case ${index} failed: ${JSON.stringify(_result.error)}`);
     }
 
     // Metadata should provide appropriate traceability
-    assertEquals(result.data.metadata.source, testCase.expectedSource,
-      `Source metadata incorrect for case ${index}`);
-    
-    assertExists(result.data.metadata.validatedAt);
-    assertEquals(result.data.metadata.validatedAt instanceof Date, true,
-      `Validation timestamp should be a Date for case ${index}`);
+    assertEquals(
+      _result.data.metadata.source,
+      testCase.expectedSource,
+      `Source metadata incorrect for case ${index}`,
+    );
+
+    assertExists(_result.data.metadata.validatedAt);
+    assertEquals(
+      _result.data.metadata.validatedAt instanceof Date,
+      true,
+      `Validation timestamp should be a Date for case ${index}`,
+    );
 
     // Profile extraction should work appropriately
     if (testCase.hasProfile) {
-      assertExists(result.data.metadata.profileName,
-        `Profile should be extracted for case ${index}`);
+      assertExists(
+        _result.data.metadata.profileName,
+        `Profile should be extracted for case ${index}`,
+      );
     }
   });
 });

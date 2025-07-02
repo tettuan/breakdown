@@ -12,10 +12,10 @@
  * - Provides sensible defaults for test scenarios
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { MockStdinConfig, StdinReader, StdinReaderFactory } from "./interfaces.ts";
 import type { StdinTestResourceManager } from "./resource_manager.ts";
-import { MockStdinReader } from "./mock_stdin_reader.ts";
+import { MockStdinReader as _MockStdinReader } from "./mock_stdin_reader.ts";
 
 const logger = new BreakdownLogger("stdin-reader-factory");
 
@@ -39,7 +39,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
   private createdReaders: MockStdinReader[] = [];
 
   constructor(private resourceManager: StdinTestResourceManager) {
-    logger.debug("TestStdinReaderFactory created");
+    _logger.debug("TestStdinReaderFactory created");
   }
 
   /**
@@ -53,12 +53,12 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
       ...config,
     };
 
-    logger.debug("Creating mock STDIN reader", { config: mergedConfig });
+    _logger.debug("Creating mock STDIN reader", { config: mergedConfig });
 
     const reader = new MockStdinReader(mergedConfig, this.resourceManager);
     this.createdReaders.push(reader);
 
-    logger.debug("Mock STDIN reader created", {
+    _logger.debug("Mock STDIN reader created", {
       totalReaders: this.createdReaders.length,
     });
 
@@ -148,7 +148,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
    */
   resetStatistics(): void {
     this.createdReaders.forEach((reader) => reader.resetReadCount());
-    logger.debug("Reader statistics reset");
+    _logger.debug("Reader statistics reset");
   }
 
   /**
@@ -157,7 +157,7 @@ export class TestStdinReaderFactory implements StdinReaderFactory {
    */
   clearReaders(): void {
     this.createdReaders = [];
-    logger.debug("Reader list cleared");
+    _logger.debug("Reader list cleared");
   }
 }
 

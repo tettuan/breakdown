@@ -30,7 +30,7 @@ import { assertCommandOutput as _assertCommandOutput } from "$test/helpers/asser
 import { assertEquals } from "@std/assert";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 
 // Test the core functionality: graceful execution and error handling
 Deno.test("core functionality - new implementation integration", async () => {
@@ -39,11 +39,11 @@ Deno.test("core functionality - new implementation integration", async () => {
     workingDir: "./tmp/test/core-integration",
   });
 
-  logger.debug("Starting new implementation integration test", {
+  _logger.debug("Starting new implementation integration test", {
     key: "commands_test.ts#L39#scenario-start",
   });
   const envInfo = { workingDir: env.workingDir };
-  logger.debug("Test environment info", {
+  _logger.debug("Test environment info", {
     key: "commands_test.ts#L41#scenario-env",
     ...envInfo,
   });
@@ -54,7 +54,7 @@ Deno.test("core functionality - new implementation integration", async () => {
   try {
     // Test initialization command
     const configResult = await runCommand(["init"], undefined, env.workingDir);
-    logger.debug("Init command result", {
+    _logger.debug("Init command result", {
       key: "commands_test.ts#L51#scenario-init",
       configResult,
     });
@@ -62,7 +62,7 @@ Deno.test("core functionality - new implementation integration", async () => {
 
     // Test help functionality
     const paramsResult = await runCommand(["--help"], undefined, env.workingDir);
-    logger.debug("Help command result", {
+    _logger.debug("Help command result", {
       key: "commands_test.ts#L56#scenario-help",
       paramsResult,
     });
@@ -78,20 +78,20 @@ Deno.test("core functionality - new implementation integration", async () => {
       undefined,
       env.workingDir,
     );
-    logger.debug("Two parameter processing result", {
+    _logger.debug("Two parameter processing result", {
       key: "commands_test.ts#L72#scenario-two-param",
       promptResult,
     });
     // The current implementation may fail due to template/config issues, but shouldn't crash
     // We just verify that it doesn't crash the system
-    logger.debug("Command executed without system crash", {
+    _logger.debug("Command executed without system crash", {
       key: "commands_test.ts#L75#scenario-crash-check",
       success: promptResult.success,
       hasOutput: promptResult.output.length > 0,
       hasError: promptResult.error.length > 0,
     });
   } finally {
-    logger.debug("Cleaning up test environment", {
+    _logger.debug("Cleaning up test environment", {
       key: "commands_test.ts#L81#scenario-cleanup",
     });
     await cleanupTestEnvironment(env);

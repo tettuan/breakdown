@@ -203,7 +203,7 @@ export interface WorkspaceStructure {
  * // Implement configuration management
  * class FileBasedConfigManager implements WorkspaceConfigManager {
  *   async getConfig(): Promise<WorkspaceConfig> {
- *     const config = await loadConfigFromFile("app.yml");
+ *     const _config = await loadConfigFromFile("app.yml");
  *     await this.validateConfig();
  *     return config;
  *   }

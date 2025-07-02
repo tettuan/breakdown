@@ -1,15 +1,15 @@
 /**
  * @fileoverview Refactored Two Params Handler with internal orchestration
- * 
+ *
  * This module maintains the same external interface as the original handler
  * but uses internal orchestration pattern for better separation of concerns.
- * 
+ *
  * @module lib/cli/handlers/two_params_handler_refactored
  */
 
-import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
-import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
+import type { Result } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
+import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
@@ -18,7 +18,7 @@ import { TwoParamsValidator } from "../validators/two_params_validator.ts";
 /**
  * Error types for TwoParamsHandler - maintains backward compatibility
  */
-export type TwoParamsHandlerError = 
+export type TwoParamsHandlerError =
   | { kind: "InvalidParameterCount"; received: number; expected: number }
   | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
   | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
@@ -69,10 +69,10 @@ class TwoParamsOrchestrator {
   async execute(
     params: string[],
     config: Record<string, unknown>,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Promise<Result<void, TwoParamsHandlerError>> {
     // 1. Validate parameters
-    const validationResult = await this.validator.validate(params);
+    const _validationResult = await this.validator.validate(params);
     if (!validationResult.ok) {
       return error(this.mapValidationError(validationResult.error));
     }
@@ -80,24 +80,24 @@ class TwoParamsOrchestrator {
     // 2. Read STDIN
     const stdinResult = await this.stdinProcessor.process(
       config as BreakdownConfigCompatible,
-      options
+      options,
     );
     if (!stdinResult.ok) {
       return error({
         kind: "StdinReadError",
-        error: stdinResult.error.message
+        error: stdinResult.error.message,
       });
     }
 
     // 3. Process variables
     const variablesResult = this.variableProcessor.processVariables(
       options,
-      stdinResult.data
+      stdinResult.data,
     );
     if (!variablesResult.ok) {
       return error({
         kind: "VariablesBuilderError",
-        errors: variablesResult.error.map(e => {
+        errors: variablesResult.error.map((e) => {
           if (e.kind === "InvalidVariablePrefix") {
             return `${e.kind}: ${e.key} (expected prefix: ${e.expectedPrefix})`;
           } else if (e.kind === "ReservedVariableName") {
@@ -108,7 +108,7 @@ class TwoParamsOrchestrator {
             return `${e.kind}: ${e.message}`;
           }
           return String(e);
-        })
+        }),
       });
     }
 
@@ -117,7 +117,7 @@ class TwoParamsOrchestrator {
       config,
       validationResult.data,
       options,
-      variablesResult.data
+      variablesResult.data,
     );
     if (!promptResult.ok) {
       return error(this.mapPromptError(promptResult.error));
@@ -131,7 +131,7 @@ class TwoParamsOrchestrator {
     } catch (err) {
       return error({
         kind: "OutputWriteError",
-        error: err instanceof Error ? err.message : String(err)
+        error: err instanceof Error ? err.message : String(err),
       });
     }
 
@@ -148,27 +148,27 @@ class TwoParamsOrchestrator {
         return {
           kind: "InvalidParameterCount",
           received: validationError.received ?? 0,
-          expected: validationError.expected ?? 2
+          expected: validationError.expected ?? 2,
         };
       }
       if (validationError.kind === "InvalidDemonstrativeType") {
         return {
           kind: "InvalidDemonstrativeType",
           value: validationError.value ?? "",
-          validTypes: validationError.validTypes ?? []
+          validTypes: validationError.validTypes ?? [],
         };
       }
       if (validationError.kind === "InvalidLayerType") {
         return {
           kind: "InvalidLayerType",
           value: validationError.value ?? "",
-          validTypes: validationError.validTypes ?? []
+          validTypes: validationError.validTypes ?? [],
         };
       }
     }
     return {
       kind: "FactoryValidationError",
-      errors: [String(error)]
+      errors: [String(error)],
     };
   }
 
@@ -177,15 +177,18 @@ class TwoParamsOrchestrator {
    */
   private mapPromptError(error: unknown): TwoParamsHandlerError {
     const promptError = error as PromptError;
-    if (error && typeof error === "object" && "kind" in error && promptError.kind === "FactoryValidationError") {
+    if (
+      error && typeof error === "object" && "kind" in error &&
+      promptError.kind === "FactoryValidationError"
+    ) {
       return {
         kind: "FactoryValidationError",
-        errors: promptError.errors || [promptError.message || "Unknown error"]
+        errors: promptError.errors || [promptError.message || "Unknown error"],
       };
     }
     return {
       kind: "PromptGenerationError",
-      error: (error instanceof Error ? error.message : String(error))
+      error: (error instanceof Error ? error.message : String(error)),
     };
   }
 }
@@ -195,10 +198,10 @@ let orchestratorInstance: TwoParamsOrchestrator | null = null;
 
 /**
  * Handle two parameters case with internal orchestration
- * 
+ *
  * Maintains the same external interface as the original handleTwoParams
  * but uses orchestration pattern internally for better maintainability.
- * 
+ *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
  * @param options - Parsed options from BreakdownParams

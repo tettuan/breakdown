@@ -24,7 +24,7 @@ async function runCommand(cmd: string[]): Promise<string> {
       stdout: "piped",
       stderr: "piped",
     });
-    
+
     const { stdout } = await process.output();
     return new TextDecoder().decode(stdout).trim();
   } catch {
@@ -38,11 +38,11 @@ async function getPaneList(): Promise<PaneInfo[]> {
     "list-panes",
     "-a",
     "-F",
-    "#{pane_id}|#{pane_index}|#{pane_current_command}|#{pane_pid}"
+    "#{pane_id}|#{pane_index}|#{pane_current_command}|#{pane_pid}",
   ]);
-  
-  return output.split('\n').filter(line => line).map(line => {
-    const [paneId, paneIndex, command, pid] = line.split('|');
+
+  return output.split("\n").filter((line) => line).map((line) => {
+    const [paneId, paneIndex, command, pid] = line.split("|");
     return { paneId, paneIndex, command, pid };
   });
 }
@@ -57,55 +57,61 @@ async function getProcessInfo(pane: PaneInfo): Promise<ProcessInfo> {
       pane.paneId,
       "-p",
       "-S",
-      "-10"
+      "-10",
     ]);
-    
+
     const content = paneContent.toLowerCase();
-    
+
     // Determine script type (Node or Other)
     let scriptType: "Node" | "Other" = "Other";
-    
+
     // Check for Node.js related content
-    if (content.includes("node") || content.includes("npm") || content.includes("deno") || 
-        content.includes("yarn") || content.includes("npx") || content.includes("typescript") ||
-        pane.command.includes("node") || pane.command.includes("deno")) {
+    if (
+      content.includes("node") || content.includes("npm") || content.includes("deno") ||
+      content.includes("yarn") || content.includes("npx") || content.includes("typescript") ||
+      pane.command.includes("node") || pane.command.includes("deno")
+    ) {
       scriptType = "Node";
     }
-    
+
     // Determine status based on content indicators
     let status: "IDLE" | "WORKING" | "BLOCKED" | "DONE" | "TERMINATED" | "UNKNOWN" = "UNKNOWN";
-    
+
     // WORKING indicators
-    if (content.includes("✳") || content.includes("✶") || content.includes("✽") ||
-        content.includes("✢") || content.includes("·") || content.includes("⏺") ||
-        content.includes("tokens") || content.includes("esc to interrupt") ||
-        content.includes("importing") || content.includes("processing") ||
-        content.includes("analyzing") || content.includes("investigating") ||
-        content.includes("creating") || content.includes("writing") ||
-        content.includes("reading") || content.includes("searching")) {
+    if (
+      content.includes("✳") || content.includes("✶") || content.includes("✽") ||
+      content.includes("✢") || content.includes("·") || content.includes("⏺") ||
+      content.includes("tokens") || content.includes("esc to interrupt") ||
+      content.includes("importing") || content.includes("processing") ||
+      content.includes("analyzing") || content.includes("investigating") ||
+      content.includes("creating") || content.includes("writing") ||
+      content.includes("reading") || content.includes("searching")
+    ) {
       status = "WORKING";
-    }
-    // BLOCKED indicators  
+    } // BLOCKED indicators
     else if (content.includes("╭─") && content.includes("╰─")) {
       status = "BLOCKED"; // Waiting for input
-    }
-    // DONE indicators
-    else if (content.includes("completed") || content.includes("done") || 
-             content.includes("finished") || content.includes("success") ||
-             content.includes("✓") || content.includes("passed")) {
+    } // DONE indicators
+    else if (
+      content.includes("completed") || content.includes("done") ||
+      content.includes("finished") || content.includes("success") ||
+      content.includes("✓") || content.includes("passed")
+    ) {
       status = "DONE";
-    }
-    // TERMINATED indicators
-    else if (content.includes("terminated") || content.includes("exited") ||
-             content.includes("killed") || content.includes("stopped")) {
+    } // TERMINATED indicators
+    else if (
+      content.includes("terminated") || content.includes("exited") ||
+      content.includes("killed") || content.includes("stopped")
+    ) {
       status = "TERMINATED";
-    }
-    // IDLE indicators
-    else if (content.includes("human:") || content.includes("assistant:") ||
-             content.includes("awaiting") || content.length < 30) {
+    } // IDLE indicators
+    else if (
+      content.includes("human:") || content.includes("assistant:") ||
+      content.includes("awaiting") || content.length < 30
+    ) {
       status = "IDLE";
     }
-    
+
     return { scriptType, status };
   } catch (error) {
     return { scriptType: "Other", status: "UNKNOWN" };
@@ -119,17 +125,17 @@ async function updatePaneTitle(paneId: string, title: string): Promise<void> {
     "-t",
     paneId,
     "-T",
-    title
+    title,
   ]);
 }
 
 async function main() {
   const panes = await getPaneList();
-  
+
   for (const pane of panes) {
     const processInfo = await getProcessInfo(pane);
     const title = `Script(${processInfo.scriptType}) + Status(${processInfo.status})`;
-    
+
     await updatePaneTitle(pane.paneId, title);
     console.log(`Updated pane ${pane.paneIndex} (${pane.paneId}): ${title}`);
   }

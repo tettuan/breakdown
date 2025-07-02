@@ -1,28 +1,33 @@
 /**
  * @fileoverview Structure test for DirectiveType
- * 
+ *
  * このテストはDirectiveTypeの構造と責務分離を検証します：
  * - Smart Constructorパターンの正しい実装
  * - 単一責任原則の遵守（バリデーション責任分離）
  * - クラス設計の適切性
  * - Immutable設計の検証
  * - 適切な抽象化レベル
- * 
+ *
  * 構造テストの目的は、クラスの設計が適切であり、
  * 保守性と拡張性を持つことを保証することです。
  */
 
-import { assertEquals, assertExists, assertThrows, BreakdownLogger } from "../../deps.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertThrows as _assertThrows,
+  BreakdownLogger,
+} from "../../deps.ts";
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import type { TwoParamsResult } from "../deps.ts";
 
-const logger = new BreakdownLogger("test-structure-directive");
+const _logger = new BreakdownLogger("test-structure-directive");
 
-Deno.test("DirectiveType - Structure: Smart Constructor pattern implementation", async () => {
-  logger.debug("テスト開始: DirectiveType Smart Constructorパターン検証", {
+Deno.test("DirectiveType - Structure: Smart Constructor pattern implementation", () => {
+  _logger.debug("テスト開始: DirectiveType Smart Constructorパターン検証", {
     testType: "structure",
-    target: "DirectiveType", 
-    pattern: "smart_constructor"
+    target: "DirectiveType",
+    pattern: "smart_constructor",
   });
 
   const testResult: TwoParamsResult = {
@@ -30,7 +35,7 @@ Deno.test("DirectiveType - Structure: Smart Constructor pattern implementation",
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
-    options: {}
+    options: {},
   };
 
   // 1. static create()メソッドが唯一の作成方法であることを確認
@@ -45,19 +50,19 @@ Deno.test("DirectiveType - Structure: Smart Constructor pattern implementation",
   // 3. create()メソッドが適切な型を返すことを確認
   assertEquals(directiveType instanceof DirectiveType, true);
 
-  logger.debug("Smart Constructor実装検証完了", {
+  _logger.debug("Smart Constructor実装検証完了", {
     success: true,
     creation_method: "static_create_only",
     direct_instantiation: "blocked",
-    type_safety: true
+    type_safety: true,
   });
 });
 
-Deno.test("DirectiveType - Structure: Single Responsibility Principle", async () => {
-  logger.debug("テスト開始: DirectiveType単一責任原則検証", {
-    testType: "structure", 
+Deno.test("DirectiveType - Structure: Single Responsibility Principle", () => {
+  _logger.debug("テスト開始: DirectiveType単一責任原則検証", {
+    testType: "structure",
     target: "DirectiveType",
-    principle: "single_responsibility"
+    principle: "single_responsibility",
   });
 
   const testResult: TwoParamsResult = {
@@ -65,7 +70,7 @@ Deno.test("DirectiveType - Structure: Single Responsibility Principle", async ()
     demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
-    options: {}
+    options: {},
   };
 
   const directiveType = DirectiveType.create(testResult);
@@ -83,29 +88,29 @@ Deno.test("DirectiveType - Structure: Single Responsibility Principle", async ()
   assertExists(directiveType.originalResult);
   assertEquals(directiveType.originalResult.demonstrativeType, "summary");
 
-  logger.debug("単一責任原則検証完了", {
+  _logger.debug("単一責任原則検証完了", {
     success: true,
     responsibilities: {
       primary: "type_safe_value_holding",
-      excluded: ["validation", "transformation", "business_logic"]
+      excluded: ["validation", "transformation", "business_logic"],
     },
-    encapsulation: "proper"
+    encapsulation: "proper",
   });
 });
 
-Deno.test("DirectiveType - Structure: Immutable design verification", async () => {
-  logger.debug("テスト開始: DirectiveType Immutable設計検証", {
+Deno.test("DirectiveType - Structure: Immutable design verification", () => {
+  _logger.debug("テスト開始: DirectiveType Immutable設計検証", {
     testType: "structure",
     target: "DirectiveType",
-    design: "immutable"
+    design: "immutable",
   });
 
   const testResult: TwoParamsResult = {
-    type: "two", 
+    type: "two",
     demonstrativeType: "defect",
     layerType: "task",
     params: ["defect", "task"],
-    options: {}
+    options: {},
   };
 
   const directiveType = DirectiveType.create(testResult);
@@ -127,31 +132,49 @@ Deno.test("DirectiveType - Structure: Immutable design verification", async () =
   assertEquals(stringRepresentation, directiveType.toString());
   assertEquals(stringRepresentation.includes("defect"), true);
 
-  logger.debug("Immutable設計検証完了", {
+  _logger.debug("Immutable設計検証完了", {
     success: true,
     immutability: {
       value_consistency: true,
       readonly_access: true,
-      state_preservation: true
-    }
+      state_preservation: true,
+    },
   });
 });
 
-Deno.test("DirectiveType - Structure: Appropriate abstraction level", async () => {
-  logger.debug("テスト開始: DirectiveType適切な抽象化レベル検証", {
+Deno.test("DirectiveType - Structure: Appropriate abstraction level", () => {
+  _logger.debug("テスト開始: DirectiveType適切な抽象化レベル検証", {
     testType: "structure",
     target: "DirectiveType",
-    aspect: "abstraction_level"
+    aspect: "abstraction_level",
   });
 
   // 1. 異なるdemonstrativeTypeで複数のインスタンス作成
   const results = [
-    { type: "two" as const, demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} },
-    { type: "two" as const, demonstrativeType: "summary", layerType: "issue", params: ["summary", "issue"], options: {} },
-    { type: "two" as const, demonstrativeType: "defect", layerType: "task", params: ["defect", "task"], options: {} }
+    {
+      type: "two" as const,
+      demonstrativeType: "to",
+      layerType: "project",
+      params: ["to", "project"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "summary",
+      layerType: "issue",
+      params: ["summary", "issue"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "defect",
+      layerType: "task",
+      params: ["defect", "task"],
+      options: {},
+    },
   ];
 
-  const directiveTypes = results.map(result => DirectiveType.create(result));
+  const directiveTypes = results.map((_result) => DirectiveType.create(_result));
 
   // 2. 各インスタンスが適切な抽象化レベルを持つことを確認
   assertEquals(directiveTypes.length, 3);
@@ -172,21 +195,21 @@ Deno.test("DirectiveType - Structure: Appropriate abstraction level", async () =
   assertExists(directiveType1.originalResult);
   assertExists(directiveType1.toString);
 
-  logger.debug("適切な抽象化レベル検証完了", {
+  _logger.debug("適切な抽象化レベル検証完了", {
     success: true,
     abstraction: {
       level: "appropriate",
       functionality: "sufficient",
-      comparison: "supported"
-    }
+      comparison: "supported",
+    },
   });
 });
 
-Deno.test("TwoParamsDirectivePattern - Structure: Validation responsibility separation", async () => {
-  logger.debug("テスト開始: TwoParamsDirectivePatternバリデーション責任分離検証", {
+Deno.test("TwoParamsDirectivePattern - Structure: Validation responsibility separation", () => {
+  _logger.debug("テスト開始: TwoParamsDirectivePatternバリデーション責任分離検証", {
     testType: "structure",
     target: "TwoParamsDirectivePattern",
-    aspect: "responsibility_separation"
+    aspect: "responsibility_separation",
   });
 
   // 1. パターン作成の責務分離
@@ -199,7 +222,7 @@ Deno.test("TwoParamsDirectivePattern - Structure: Validation responsibility sepa
   // 2. パターンマッチングの責務
   if (validPattern) {
     assertEquals(validPattern.test("to"), true);
-    assertEquals(validPattern.test("summary"), true); 
+    assertEquals(validPattern.test("summary"), true);
     assertEquals(validPattern.test("invalid"), false);
 
     // 3. パターン情報の適切な提供
@@ -214,21 +237,21 @@ Deno.test("TwoParamsDirectivePattern - Structure: Validation responsibility sepa
     assertEquals(validPattern.getDirectivePattern(), validPattern);
   }
 
-  logger.debug("バリデーション責任分離検証完了", {
+  _logger.debug("バリデーション責任分離検証完了", {
     success: true,
     separation: {
       pattern_creation: "isolated",
-      pattern_matching: "isolated", 
-      interface_compliance: "proper"
-    }
+      pattern_matching: "isolated",
+      interface_compliance: "proper",
+    },
   });
 });
 
-Deno.test("DirectiveType - Structure: Error handling design", async () => {
-  logger.debug("テスト開始: DirectiveTypeエラーハンドリング設計検証", {
-    testType: "structure", 
+Deno.test("DirectiveType - Structure: Error handling design", () => {
+  _logger.debug("テスト開始: DirectiveTypeエラーハンドリング設計検証", {
+    testType: "structure",
     target: "DirectiveType",
-    aspect: "error_handling"
+    aspect: "error_handling",
   });
 
   // 1. Totality原則に従ったエラーハンドリング
@@ -240,7 +263,7 @@ Deno.test("DirectiveType - Structure: Error handling design", async () => {
     demonstrativeType: "init",
     layerType: "project",
     params: ["init", "project"],
-    options: {}
+    options: {},
   };
 
   // 2. 正常な作成が常に成功することを確認
@@ -251,22 +274,22 @@ Deno.test("DirectiveType - Structure: Error handling design", async () => {
   // 3. 例外が発生しないことを確認（Totality原則）
   const anotherResult: TwoParamsResult = {
     type: "two",
-    demonstrativeType: "find", 
+    demonstrativeType: "find",
     layerType: "bugs",
     params: ["find", "bugs"],
-    options: {}
+    options: {},
   };
 
   const anotherDirective = DirectiveType.create(anotherResult);
   assertExists(anotherDirective);
   assertEquals(anotherDirective.value, "find");
 
-  logger.debug("エラーハンドリング設計検証完了", {
+  _logger.debug("エラーハンドリング設計検証完了", {
     success: true,
     error_handling: {
       totality_principle: true,
       no_exceptions: true,
-      validated_input_assumption: true
-    }
+      validated_input_assumption: true,
+    },
   });
 });

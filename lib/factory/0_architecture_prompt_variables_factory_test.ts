@@ -1,6 +1,6 @@
 /**
  * Architecture tests for PromptVariablesFactory Totality principle compliance
- * 
+ *
  * These tests verify that the PromptVariablesFactory system follows the Totality principle:
  * - All possible states are handled explicitly without default cases
  * - All error conditions are represented as values
@@ -11,24 +11,24 @@
 
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
-  TypeFactory,
-  type TypePatternProvider,
   DirectiveType,
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
+  TypeFactory,
+  type TypePatternProvider,
 } from "../types/mod.ts";
 import {
+  type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-  type PromptCliOptions,
 } from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const logger = new BreakdownLogger("architecture-prompt-factory");
+const _logger = new BreakdownLogger("architecture-prompt-_factory");
 
 /**
  * Test pattern provider for architecture validation
@@ -36,7 +36,7 @@ const logger = new BreakdownLogger("architecture-prompt-factory");
 class ArchitectureTestPatternProvider implements TypePatternProvider {
   constructor(
     private directivePatterns: string[] = ["to", "summary", "defect", "init", "find"],
-    private layerPatterns: string[] = ["project", "issue", "task", "bugs", "temp"]
+    private layerPatterns: string[] = ["project", "issue", "task", "bugs", "temp"],
   ) {}
 
   getDirectivePattern(): TwoParamsDirectivePattern | null {
@@ -59,148 +59,148 @@ class ArchitectureTestPatternProvider implements TypePatternProvider {
 }
 
 describe("PromptVariablesFactory Architecture - Dependency Relationships", () => {
-  it("should maintain clear separation between legacy and Totality implementations", () => {
-    logger.debug("Testing architectural separation between legacy and Totality factories");
-    
+  it("should maintain clear separation between legacy and Totality implementations", async () => {
+    _logger.debug("Testing architectural separation between legacy and Totality factories");
+
     // Legacy factory should not depend on Totality types directly
     const legacyParams: PromptCliParams = {
       demonstrativeType: "to",
       layerType: "project",
-      options: {}
+      options: {},
     };
-    
+
     // Totality factory should use validated types
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
-        options: {}
+        options: {},
       };
-      
+
       // Both should be createable independently
       assertExists(legacyParams);
       assertExists(totalityParams);
-      
+
       // Types should be distinct
       assertEquals(typeof legacyParams.demonstrativeType, "string");
       assertEquals(typeof totalityParams.directive, "object");
     }
   });
 
-  it("should enforce proper dependency direction in path resolvers", () => {
-    logger.debug("Testing dependency direction in path resolver integration");
-    
+  it("should enforce proper dependency direction in path resolvers", async () => {
+    _logger.debug("Testing dependency direction in path resolver integration");
+
     // Factory should depend on resolvers, not vice versa
     // This test ensures resolvers don't have circular dependencies back to factory
-    
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
-        options: {}
+        options: {},
       };
-      
+
       // Factory creation should succeed without resolver-to-factory dependencies
-      TotalityPromptVariablesFactory.create(params).then(factory => {
-        assertExists(factory);
-        
+      TotalityPromptVariablesFactory.create(params).then((_factory) => {
+        assertExists(_factory);
+
         // All path getters should be accessible
-        assertExists(factory.promptFilePath);
-        assertExists(factory.inputFilePath);
-        assertExists(factory.outputFilePath);
-        assertExists(factory.schemaFilePath);
+        assertExists(_factory.promptFilePath);
+        assertExists(_factory.inputFilePath);
+        assertExists(_factory.outputFilePath);
+        assertExists(_factory.schemaFilePath);
       });
     }
   });
 
-  it("should maintain proper abstraction levels across factory layers", () => {
-    logger.debug("Testing abstraction layer compliance");
-    
+  it("should maintain proper abstraction levels across factory layers", async () => {
+    _logger.debug("Testing abstraction layer compliance");
+
     // Configuration layer should be at lowest level
-    const config = {
+    const _config = {
       app_prompt: { base_dir: "prompts" },
-      app_schema: { base_dir: "schemas" }
+      app_schema: { base_dir: "schemas" },
     };
-    
+
     // Type layer should be above configuration
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
-    
+
     // Factory layer should be at highest level
     const typesResult = typeFactory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
-    
+
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
-        options: {}
+        options: {},
       };
-      
-      const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
-      
+
+      const _factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+
       // Factory should orchestrate lower layers without exposing implementation details
-      assertExists(factory.getAllParams());
-      assertExists(factory.validateAll);
+      assertExists(_factory.getAllParams());
+      assertExists(_factory.validateAll);
     }
   });
 });
 
 describe("PromptVariablesFactory Architecture - Configuration State Exhaustiveness", () => {
-  it("should handle all possible configuration states without default case", () => {
-    logger.debug("Testing exhaustive configuration state handling");
-    
+  it("should handle all possible configuration states without default case", async () => {
+    _logger.debug("Testing exhaustive configuration state handling");
+
     const configStates = [
-      { 
+      {
         config: { app_prompt: { base_dir: "prompts" }, app_schema: { base_dir: "schemas" } },
         hasPromptDir: true,
         hasSchemaDir: true,
-        shouldBeValid: true
+        shouldBeValid: true,
       },
-      { 
+      {
         config: { app_prompt: { base_dir: "prompts" }, app_schema: {} },
         hasPromptDir: true,
         hasSchemaDir: false,
-        shouldBeValid: false
+        shouldBeValid: false,
       },
-      { 
+      {
         config: { app_prompt: {}, app_schema: { base_dir: "schemas" } },
         hasPromptDir: false,
         hasSchemaDir: true,
-        shouldBeValid: false
+        shouldBeValid: false,
       },
-      { 
+      {
         config: { app_prompt: {}, app_schema: {} },
         hasPromptDir: false,
         hasSchemaDir: false,
-        shouldBeValid: false
+        shouldBeValid: false,
       },
-      { 
+      {
         config: { app_prompt: { base_dir: "" }, app_schema: { base_dir: "schemas" } },
         hasPromptDir: false, // empty string counts as invalid
         hasSchemaDir: true,
-        shouldBeValid: false
-      }
+        shouldBeValid: false,
+      },
     ];
-    
+
     configStates.forEach((state, index) => {
-      logger.debug(`Testing config state ${index}`, { state });
-      
-      const promptDirExists = !!(state.config.app_prompt?.base_dir?.trim());
-      const schemaDirExists = !!(state.config.app_schema?.base_dir?.trim());
-      
-      let handled = false;
-      
+      _logger.debug(`Testing config state ${index}`, { state });
+
+      const promptDirExists = !!(state._config.app_prompt?.base_dir?.trim());
+      const schemaDirExists = !!(state._config.app_schema?.base_dir?.trim());
+
+      const handled = false;
+
       // Handle all configuration states without default case
       if (promptDirExists && schemaDirExists) {
         assertEquals(state.shouldBeValid, true);
@@ -223,46 +223,46 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
         assertEquals(state.hasSchemaDir, false);
         handled = true;
       }
-      
+
       assertEquals(handled, true, `Configuration state ${index} should be handled`);
     });
   });
 
   it("should handle all factory creation scenarios without default case", async () => {
-    logger.debug("Testing exhaustive factory creation scenario handling");
-    
+    _logger.debug("Testing exhaustive factory creation scenario handling");
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
-    
+
     const creationScenarios = [
       { directiveValue: "to", layerValue: "project", shouldSucceed: true },
       { directiveValue: "summary", layerValue: "issue", shouldSucceed: true },
       { directiveValue: "defect", layerValue: "task", shouldSucceed: true },
       { directiveValue: "init", layerValue: "bugs", shouldSucceed: true },
-      { directiveValue: "find", layerValue: "temp", shouldSucceed: true }
+      { directiveValue: "find", layerValue: "temp", shouldSucceed: true },
     ];
-    
+
     for (const scenario of creationScenarios) {
-      logger.debug("Testing creation scenario", { scenario });
-      
+      _logger.debug("Testing creation scenario", { scenario });
+
       const typesResult = typeFactory.createBothTypes(scenario.directiveValue, scenario.layerValue);
-      
-      let handled = false;
-      
+
+      const handled = false;
+
       // Handle all type creation results without default case
       switch (typesResult.ok) {
         case true:
           assertEquals(scenario.shouldSucceed, true);
           assertExists(typesResult.data);
-          
+
           const params: TotalityPromptCliParams = {
             directive: typesResult.data.directive,
             layer: typesResult.data.layer,
-            options: {}
+            options: {},
           };
-          
-          const factory = await TotalityPromptVariablesFactory.create(params);
-          assertExists(factory);
+
+          const _factory = await TotalityPromptVariablesFactory.create(params);
+          assertExists(_factory);
           handled = true;
           break;
         case false:
@@ -271,36 +271,44 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
           handled = true;
           break;
       }
-      
-      assertEquals(handled, true, `Creation scenario ${scenario.directiveValue}/${scenario.layerValue} should be handled`);
+
+      assertEquals(
+        handled,
+        true,
+        `Creation scenario ${scenario.directiveValue}/${scenario.layerValue} should be handled`,
+      );
     }
   });
 });
 
 describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness", () => {
   it("should handle all error format options without default case", async () => {
-    logger.debug("Testing exhaustive error format option handling");
-    
+    _logger.debug("Testing exhaustive error format option handling");
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
-      const errorFormatOptions: Array<"simple" | "detailed" | "json"> = ["simple", "detailed", "json"];
-      
+      const errorFormatOptions: Array<"simple" | "detailed" | "json"> = [
+        "simple",
+        "detailed",
+        "json",
+      ];
+
       for (const errorFormat of errorFormatOptions) {
         const params: TotalityPromptCliParams = {
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
-          options: { errorFormat }
+          options: { errorFormat },
         };
-        
-        const factory = await TotalityPromptVariablesFactory.create(params);
-        const retrievedFormat = factory.errorFormat;
-        
-        let handled = false;
-        
+
+        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const retrievedFormat = _factory.errorFormat;
+
+        const handled = false;
+
         // Handle all error format options without default case
         switch (retrievedFormat) {
           case "simple":
@@ -316,59 +324,63 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
             handled = true;
             break;
         }
-        
+
         assertEquals(handled, true, `Error format ${errorFormat} should be handled`);
       }
     }
   });
 
   it("should handle all boolean option combinations without default case", async () => {
-    logger.debug("Testing exhaustive boolean option combination handling");
-    
+    _logger.debug("Testing exhaustive boolean option combination handling");
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const booleanCombinations = [
         { extended: true, customValidation: true },
         { extended: true, customValidation: false },
         { extended: false, customValidation: true },
-        { extended: false, customValidation: false }
+        { extended: false, customValidation: false },
       ];
-      
+
       for (const combination of booleanCombinations) {
         const params: TotalityPromptCliParams = {
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
-          options: combination
+          options: combination,
         };
-        
-        const factory = await TotalityPromptVariablesFactory.create(params);
-        
-        let handled = false;
-        
+
+        const _factory = await TotalityPromptVariablesFactory.create(params);
+
+        const handled = false;
+
         // Handle all boolean combinations without default case
-        if (factory.extended && factory.customValidation) {
+        if (_factory.extended && _factory.customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (factory.extended && !factory.customValidation) {
+        } else if (_factory.extended && !_factory.customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, false);
           handled = true;
-        } else if (!factory.extended && factory.customValidation) {
+        } else if (!_factory.extended && _factory.customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (!factory.extended && !factory.customValidation) {
+        } else if (!_factory.extended && !_factory.customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, false);
           handled = true;
         }
-        
-        assertEquals(handled, true, `Boolean combination should be handled: ${JSON.stringify(combination)}`);
+
+        assertEquals(
+          handled,
+          true,
+          `Boolean combination should be handled: ${JSON.stringify(combination)}`,
+        );
       }
     }
   });
@@ -376,28 +388,28 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
 
 describe("PromptVariablesFactory Architecture - Validation State Coverage", () => {
   it("should handle all validation states without default case", async () => {
-    logger.debug("Testing exhaustive validation state handling");
-    
+    _logger.debug("Testing exhaustive validation state handling");
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
-        options: {}
+        options: {},
       };
-      
-      const factory = await TotalityPromptVariablesFactory.create(params);
-      
+
+      const _factory = await TotalityPromptVariablesFactory.create(params);
+
       // Test base directory validation states
-      const hasValidBaseDir = factory.hasValidBaseDir();
-      const baseDirError = factory.getBaseDirError();
-      
-      let validationHandled = false;
-      
+      const hasValidBaseDir = _factory.hasValidBaseDir();
+      const baseDirError = _factory.getBaseDirError();
+
+      const validationHandled = false;
+
       // Handle all base directory validation states without default case
       switch (hasValidBaseDir) {
         case true:
@@ -409,14 +421,14 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
           validationHandled = true;
           break;
       }
-      
+
       assertEquals(validationHandled, true, "Base directory validation state should be handled");
-      
+
       // Test overall validation
-      let overallValidationHandled = false;
-      
+      const overallValidationHandled = false;
+
       try {
-        factory.validateAll();
+        _factory.validateAll();
         // If no exception thrown, validation passed
         overallValidationHandled = true;
       } catch (error) {
@@ -424,39 +436,39 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
         assertExists(error);
         overallValidationHandled = true;
       }
-      
+
       assertEquals(overallValidationHandled, true, "Overall validation state should be handled");
     }
   });
 
   it("should enforce architectural constraints on path resolution", async () => {
-    logger.debug("Testing architectural constraints on path resolution");
-    
+    _logger.debug("Testing architectural constraints on path resolution");
+
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
     const typesResult = typeFactory.createBothTypes("to", "project");
-    
+
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
-        options: {}
+        options: {},
       };
-      
-      const factory = await TotalityPromptVariablesFactory.create(params);
-      
+
+      const _factory = await TotalityPromptVariablesFactory.create(params);
+
       // All path types should be resolvable
       const pathTypes = [
-        { name: "promptFilePath", path: factory.promptFilePath },
-        { name: "inputFilePath", path: factory.inputFilePath },
-        { name: "outputFilePath", path: factory.outputFilePath },
-        { name: "schemaFilePath", path: factory.schemaFilePath }
+        { name: "promptFilePath", path: _factory.promptFilePath },
+        { name: "inputFilePath", path: _factory.inputFilePath },
+        { name: "outputFilePath", path: _factory.outputFilePath },
+        { name: "schemaFilePath", path: _factory.schemaFilePath },
       ];
-      
-      pathTypes.forEach(pathType => {
-        let pathHandled = false;
-        
+
+      pathTypes.forEach((pathType) => {
+        const pathHandled = false;
+
         // Handle all path resolution outcomes without default case
         if (typeof pathType.path === "string") {
           pathHandled = true;
@@ -464,7 +476,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
           // Some paths may be legitimately empty
           pathHandled = true;
         }
-        
+
         assertEquals(pathHandled, true, `Path type ${pathType.name} should be handled`);
       });
     }

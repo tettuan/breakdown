@@ -1,145 +1,139 @@
 /**
- * @fileoverview Architecture Test for CLI Validators Module
- * 
- * Verifies architectural constraints for the validators module index:
- * - Module export patterns and re-export consistency
- * - Dependency direction compliance (no circular dependencies)
- * - Layer boundary adherence (validators layer constraints)
- * - Public API surface control
- * 
- * This test ensures the module follows the Totality principle by:
- * - Properly encapsulating validator implementations
- * - Maintaining clean module boundaries
- * - Following consistent export patterns
- * 
- * @module lib/cli/validators/0_architecture_mod_test
+ * Architecture tests for validators module barrel export
+ *
+ * These tests verify that the module follows architectural patterns
+ * and maintains proper exports structure.
+ *
+ * @module cli/validators/tests/0_architecture_mod_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { describe, it } from "@std/testing/bdd";
 
-Deno.test("Architecture: Validators module should export required types and classes", async () => {
-  // Import the module exports
-  const validatorsModule = await import("./mod.ts");
-  
-  // Verify required exports exist
-  assertExists(validatorsModule.TwoParamsValidator);
-  assertEquals(typeof validatorsModule.TwoParamsValidator, "function");
-  
-  // Type exports should be available (verified by successful import compilation)
-  // These are type exports, so we can't check them at runtime
-  // Their presence is verified by the module compiling without errors
-});
+describe("Validators Module - Architecture", () => {
+  it("should export all public validators", async () => {
+    const _mod = await import("./mod.ts");
 
-Deno.test("Architecture: Module should follow barrel export pattern", async () => {
-  // The mod.ts should act as a barrel, re-exporting from internal modules
-  const modContent = await Deno.readTextFile("./lib/cli/validators/mod.ts");
-  
-  // Should use export statements, not direct implementations
-  assertEquals(modContent.includes("export {"), true);
-  assertEquals(modContent.includes("class "), false, "mod.ts should not contain class implementations");
-  assertEquals(modContent.includes("function "), false, "mod.ts should not contain function implementations");
-});
+    // Core validators
+    assertExists(_mod.TwoParamsValidator);
+    assertExists(_mod.ParameterValidator);
+  });
 
-Deno.test("Architecture: Module should maintain proper dependency hierarchy", async () => {
-  // Validators should only depend on lower-level modules
-  const modContent = await Deno.readTextFile("./lib/cli/validators/mod.ts");
-  
-  // Should not import from higher-level modules
-  assertEquals(modContent.includes("from \"../handlers/"), false, "Should not import from handlers");
-  assertEquals(modContent.includes("from \"../orchestrators/"), false, "Should not import from orchestrators");
-  assertEquals(modContent.includes("from \"../processors/"), false, "Should not import from processors");
-  
-  // Should only import from its own directory
-  assertEquals(modContent.includes("from \"./"), true, "Should import from local modules");
-});
+  it("should export all type definitions", async () => {
+    const _mod = await import("./mod.ts");
 
-Deno.test("Architecture: Module exports should be consistent with implementation", async () => {
-  // Import both the module and the implementation
-  const modExports = await import("./mod.ts");
-  const implExports = await import("./two_params_validator.ts");
-  
-  // Verify that exports match
-  assertEquals(modExports.TwoParamsValidator, implExports.TwoParamsValidator);
-  
-  // Both should have the same class constructor
-  assertEquals(
-    modExports.TwoParamsValidator.prototype.constructor,
-    implExports.TwoParamsValidator.prototype.constructor
-  );
-});
+    // Check that types are available (via type checking)
+    const typeExports = Object.keys(_mod as Record<string, unknown>);
 
-Deno.test("Architecture: Module should control public API surface", () => {
-  // The module should only export what's necessary for external use
-  // This is verified by checking the export statement structure
-  const expectedExports = [
-    "TwoParamsValidator",
-    "ValidationError", // type export
-    "ValidatedParams" // type export
-  ];
-  
-  // This test ensures we're not accidentally exposing internal utilities
-  assertEquals(expectedExports.length, 3, "Should only export necessary public API");
-});
+    // Should have validator classes
+    assertEquals(typeExports.includes("TwoParamsValidator"), true);
+    assertEquals(typeExports.includes("ParameterValidator"), true);
+  });
 
-Deno.test("Architecture: Module should support future extensibility", async () => {
-  // The module structure should allow adding new validators without breaking changes
-  const modContent = await Deno.readTextFile("./lib/cli/validators/mod.ts");
-  
-  // Should use named exports for extensibility
-  assertEquals(modContent.includes("export {"), true);
-  
-  // Should be able to add new exports without modifying existing ones
-  const exportPattern = /export\s*{[\s\S]*?}\s*from/;
-  assertEquals(exportPattern.test(modContent), true, "Should use extensible export pattern");
-});
+  it("should not export internal implementations", async () => {
+    const _mod = await import("./mod.ts");
+    const exports = Object.keys(_mod);
 
-Deno.test("Architecture: Module should not leak implementation details", async () => {
-  const modExports = await import("./mod.ts");
-  
-  // Internal constants should not be exported
-  assertEquals((modExports as { VALID_DEMONSTRATIVE_TYPES?: unknown }).VALID_DEMONSTRATIVE_TYPES, undefined);
-  assertEquals((modExports as { VALID_LAYER_TYPES?: unknown }).VALID_LAYER_TYPES, undefined);
-  
-  // Internal functions should not be exported
-  assertEquals((modExports as { isDemonstrativeType?: unknown }).isDemonstrativeType, undefined);
-  assertEquals((modExports as { isLayerType?: unknown }).isLayerType, undefined);
-});
+    // Should not export internal helpers or private functions
+    exports.forEach((exp) => {
+      assertEquals(exp.startsWith("_"), false, `Should not export private member: ${exp}`);
+      assertEquals(exp.includes("Internal"), false, `Should not export internal member: ${exp}`);
+      assertEquals(exp.includes("Helper"), false, `Should not export helper member: ${exp}`);
+    });
+  });
 
-Deno.test("Architecture: Module should follow naming conventions", async () => {
-  // Verify the module follows standard naming conventions
-  const modPath = "./lib/cli/validators/mod.ts";
-  
-  // mod.ts is the standard name for index modules in Deno
-  assertEquals(modPath.endsWith("mod.ts"), true);
-  
-  // Directory structure should be logical
-  assertEquals(modPath.includes("/cli/validators/"), true);
-});
+  it("should follow barrel export pattern", async () => {
+    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
 
-Deno.test("Architecture: Type exports should maintain consistency", async () => {
-  // Verify that type exports are properly structured
-  const modContent = await Deno.readTextFile("./lib/cli/validators/mod.ts");
-  
-  // Should export types along with implementations
-  assertEquals(modContent.includes("type ValidationError"), true);
-  assertEquals(modContent.includes("type ValidatedParams"), true);
-  
-  // Types should be exported from the same module as their implementations
-  const hasConsistentExport = modContent.includes("TwoParamsValidator") && 
-                              modContent.includes("ValidationError") &&
-                              modContent.includes("ValidatedParams");
-  assertEquals(hasConsistentExport, true, "Types and implementations should be co-located");
-});
+    // Should only contain exports, no implementations
+    assertEquals(
+      modContent.includes("function"),
+      false,
+      "Barrel file should not contain function implementations",
+    );
+    assertEquals(
+      modContent.includes("class"),
+      false,
+      "Barrel file should not contain class definitions",
+    );
+    assertEquals(
+      modContent.includes("const "),
+      false,
+      "Barrel file should not contain const definitions (except re-exports)",
+    );
+  });
 
-Deno.test("Architecture: Module should support tree-shaking", async () => {
-  // The module structure should support tree-shaking for optimal bundle size
-  const modContent = await Deno.readTextFile("./lib/cli/validators/mod.ts");
-  
-  // Should use named exports (better for tree-shaking than default exports)
-  assertEquals(modContent.includes("export {"), true);
-  assertEquals(modContent.includes("export default"), false, "Should not use default exports");
-  
-  // Each export should be individually importable
-  const { TwoParamsValidator } = await import("./mod.ts");
-  assertExists(TwoParamsValidator);
+  it("should maintain proper dependency hierarchy", async () => {
+    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+
+    // Should only import from subdirectories or siblings, not from parent
+    assertEquals(
+      modContent.includes('from "../'),
+      true,
+      "Can import from parent directories for cross-module dependencies",
+    );
+    assertEquals(modContent.includes('from "./'), true, "Should import from current directory");
+    assertEquals(
+      modContent.includes('from "@'),
+      false,
+      "Should not directly import external packages in barrel",
+    );
+  });
+
+  it("should export consistent interfaces", async () => {
+    const _mod = await import("./mod.ts");
+
+    // All validators should follow consistent naming
+    const validators = Object.keys(_mod).filter((k) => k.includes("Validator"));
+    validators.forEach((v) => {
+      assertEquals(v.endsWith("Validator"), true, `Validator ${v} should end with 'Validator'`);
+    });
+  });
+
+  it("should support future extensibility", async () => {
+    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+
+    // Should have clear sections for different export types
+    assertEquals(modContent.includes("// Core validator exports"), true);
+    assertEquals(modContent.includes("// Type exports"), true);
+  });
+
+  it("should not leak implementation details", async () => {
+    const _mod = await import("./mod.ts");
+    const exports = Object.keys(_mod);
+
+    // Should not export test utilities or mocks
+    exports.forEach((exp) => {
+      assertEquals(exp.includes("Mock"), false, `Should not export mock: ${exp}`);
+      assertEquals(exp.includes("Test"), false, `Should not export test utility: ${exp}`);
+      assertEquals(exp.includes("Stub"), false, `Should not export stub: ${exp}`);
+    });
+  });
+
+  it("should maintain module cohesion", async () => {
+    const _mod = await import("./mod.ts");
+    const exports = Object.keys(_mod);
+
+    // All exports should be related to validation
+    exports.forEach((exp) => {
+      const isValidationRelated = exp.includes("Validator") ||
+        exp.includes("Validation") ||
+        exp.includes("Validated") ||
+        exp === "ParameterValidator"; // Exception for imported validator
+
+      assertEquals(isValidationRelated, true, `Export ${exp} should be validation-related`);
+    });
+  });
+
+  it("should support tree-shaking", async () => {
+    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+
+    // Should use named exports for tree-shaking
+    assertEquals(modContent.includes("export {"), true, "Should use named exports");
+    assertEquals(
+      modContent.includes("export *"),
+      false,
+      "Should not use wildcard exports for better tree-shaking",
+    );
+  });
 });

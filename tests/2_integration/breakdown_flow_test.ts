@@ -1,8 +1,8 @@
 import { assertEquals } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 
 const logger = new BreakdownLogger();
 
@@ -39,19 +39,19 @@ async function runBreakdownCommand(
     });
 
     const commandPromise = command.output();
-    const result = await Promise.race([commandPromise, timeoutPromise]);
+    const _result = await Promise.race([commandPromise, timeoutPromise]);
 
     // Clear timeout if command completed
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
     }
 
-    const { code, stdout, stderr } = result;
+    const { code, stdout, stderr } = _result;
 
     const output = new TextDecoder().decode(stdout);
     const error = new TextDecoder().decode(stderr);
 
-    logger.debug("Command execution result", {
+    _logger.debug("Command execution result", {
       code,
       output: output.substring(0, 200),
       error: error.substring(0, 200),
@@ -65,7 +65,7 @@ async function runBreakdownCommand(
       error: error.trim(),
     };
   } catch (err) {
-    logger.error("Command execution failed", { err, args, cwd });
+    _logger.error("Command execution failed", { err, args, cwd });
     return {
       success: false,
       output: "",
@@ -116,12 +116,12 @@ Deno.test("CLI Integration: project summary to project/issue/task (happy path)",
     ],
     testDir,
   );
-  logger.debug("to project result", { result });
+  _logger.debug("to project result", { result });
   // New implementation continues execution gracefully, should succeed
-  if (!result.success) {
-    logger.error("CLI Command failed", {
-      output: result.output,
-      error: result.error,
+  if (!_result.success) {
+    _logger.error("CLI Command failed", {
+      output: _result.output,
+      error: _result.error,
       args: [
         "to",
         "project",
@@ -132,7 +132,7 @@ Deno.test("CLI Integration: project summary to project/issue/task (happy path)",
     });
   }
   assertEquals(result.success, true);
-  logger.debug("CLI Integration to project result details", { error: result.error });
+  _logger.debug("CLI Integration to project result details", { error: _result.error });
 });
 
 /**
@@ -157,6 +157,11 @@ Deno.test("CLI Integration: adaptation option (long and short)", async () => {
   const appYmlContent =
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${relPromptDir}\napp_schema:\n  base_dir: schema\n`;
   await Deno.writeTextFile(appYmlPath, appYmlContent);
+
+  // Also create default-app.yml for BreakdownConfig fallback
+  const defaultAppYmlPath = join(configDir, "default-app.yml");
+  await Deno.writeTextFile(defaultAppYmlPath, appYmlContent);
+
   const inputPath = join(testDir, "unorganized_tasks.md");
   await Deno.writeTextFile(inputPath, "- Task 1\n- Task 2\n");
   // テンプレート
@@ -169,21 +174,21 @@ Deno.test("CLI Integration: adaptation option (long and short)", async () => {
   await Deno.writeTextFile(aTemplate, "a template");
   await Deno.writeTextFile(defaultTemplate, "default template");
   // Debug: config, cwd, template paths, file existence
-  logger.debug("[DEBUG] configDir", { configDir });
-  logger.debug("[DEBUG] testDir (cwd)", { testDir });
-  logger.debug("[DEBUG] appYmlPath", { appYmlPath });
-  logger.debug("[DEBUG] appYmlContent", { appYmlContent });
-  logger.debug("[DEBUG] strictTemplate abs", { strictTemplate });
-  logger.debug("[DEBUG] aTemplate abs", { aTemplate });
-  logger.debug("[DEBUG] strictTemplate exists", {
+  _logger.debug("[DEBUG] configDir", { configDir });
+  _logger.debug("[DEBUG] testDir (cwd)", { testDir });
+  _logger.debug("[DEBUG] appYmlPath", { appYmlPath });
+  _logger.debug("[DEBUG] appYmlContent", { appYmlContent });
+  _logger.debug("[DEBUG] strictTemplate abs", { strictTemplate });
+  _logger.debug("[DEBUG] aTemplate abs", { aTemplate });
+  _logger.debug("[DEBUG] strictTemplate exists", {
     exists: await Deno.stat(strictTemplate).then(() => true).catch(() => false),
   });
-  logger.debug("[DEBUG] aTemplate exists", {
+  _logger.debug("[DEBUG] aTemplate exists", {
     exists: await Deno.stat(aTemplate).then(() => true).catch(() => false),
   });
   try {
     // Main Test: long form
-    let result;
+    let _result;
     result = await runBreakdownCommand(
       [
         "summary",
@@ -194,10 +199,10 @@ Deno.test("CLI Integration: adaptation option (long and short)", async () => {
       ],
       testDir,
     );
-    logger.debug("adaptation long form result", { result });
+    _logger.debug("adaptation long form result", { result });
     // New implementation handles adaptation gracefully - may succeed or have template issues
     assertEquals(result.success, true);
-    logger.debug("Adaptation long form error", { error: result.error });
+    _logger.debug("Adaptation long form error", { error: _result.error });
     // Main Test: short form
     result = await runBreakdownCommand(
       [
@@ -209,10 +214,10 @@ Deno.test("CLI Integration: adaptation option (long and short)", async () => {
       ],
       testDir,
     );
-    logger.debug("adaptation short form result", { result });
+    _logger.debug("adaptation short form result", { result });
     // New implementation handles short form options correctly
     assertEquals(result.success, true);
-    logger.debug("Adaptation short form error", { error: result.error });
+    _logger.debug("Adaptation short form error", { error: _result.error });
   } finally {
     // nothing to cleanup
   }
@@ -234,10 +239,11 @@ Deno.test("CLI Integration: error case - missing input file", async () => {
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  await Deno.writeTextFile(
-    join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
-  );
+  const appYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), appYmlContent);
+  // Also create default-app.yml for BreakdownConfig fallback
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), appYmlContent);
   // テンプレート
   const promptDir = join(testDir, "prompts", "to", "project");
   await ensureDir(promptDir);
@@ -254,7 +260,7 @@ Deno.test("CLI Integration: error case - missing input file", async () => {
     ],
     testDir,
   );
-  logger.debug("missing input file result", { result });
+  _logger.debug("missing input file result", { result });
   // New implementation handles missing files gracefully and continues
   assertEquals(result.success, true);
   // The CLI should complete successfully even with missing input files
@@ -278,10 +284,10 @@ Deno.test("CLI Integration: error if app_prompt.base_dir directory is missing", 
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  await Deno.writeTextFile(
-    join(configDir, "default-app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schema\n`,
-  );
+  const appYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_missing\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), appYmlContent);
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), appYmlContent);
   // 入力ファイル
   const inputPath = join(testDir, "input.md");
   await Deno.writeTextFile(inputPath, "# Dummy");
@@ -297,11 +303,11 @@ Deno.test("CLI Integration: error if app_prompt.base_dir directory is missing", 
     ],
     testDir,
   );
-  logger.debug("missing base_dir directory result", { result });
+  _logger.debug("missing base_dir directory result", { result });
   // New implementation handles missing directories gracefully
   assertEquals(result.success, true);
   // But should indicate template/config issues in output
-  logger.debug("Missing base_dir error", { error: result.error });
+  _logger.debug("Missing base_dir error", { error: _result.error });
 });
 
 /**
@@ -314,10 +320,10 @@ Deno.test("CLI Integration: error if app_prompt.base_dir is a file (error messag
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  await Deno.writeTextFile(
-    join(configDir, "default-app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schema\n`,
-  );
+  const appYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_file\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), appYmlContent);
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), appYmlContent);
   // 入力ファイル
   const inputPath = join(testDir, "input.md");
   await Deno.writeTextFile(inputPath, "# Dummy");
@@ -335,11 +341,11 @@ Deno.test("CLI Integration: error if app_prompt.base_dir is a file (error messag
     ],
     testDir,
   );
-  logger.debug("base_dir is file explicit error test result", { result });
+  _logger.debug("base_dir is file explicit error test result", { result });
   // New implementation handles config issues gracefully
   assertEquals(result.success, true);
   // But should indicate config/template issues in output
-  logger.debug("Base_dir is file error", { error: result.error });
+  _logger.debug("Base_dir is file error", { error: _result.error });
 });
 
 /**
@@ -359,10 +365,10 @@ Deno.test("CLI Integration: relative vs absolute baseDir in config", async () =>
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
   // 相対パス
-  await Deno.writeTextFile(
-    join(configDir, "default-app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schema\n`,
-  );
+  const relAppYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts_rel\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), relAppYmlContent);
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), relAppYmlContent);
   const relPromptDir = join(testDir, "prompts_rel", "to", "project");
   await ensureDir(relPromptDir);
   await Deno.writeTextFile(join(relPromptDir, "f_project.md"), "rel template");
@@ -376,12 +382,11 @@ Deno.test("CLI Integration: relative vs absolute baseDir in config", async () =>
   // 出力ファイルのディレクトリも作成
   await ensureDir(join(testDir, "project"));
   // Update config to use absolute path
-  await Deno.writeTextFile(
-    join(configDir, "default-app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${
-      join(testDir, "abs_prompts")
-    }\napp_schema:\n  base_dir: schema\n`,
-  );
+  const absAppYmlContent = `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: ${
+    join(testDir, "abs_prompts")
+  }\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), absAppYmlContent);
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), absAppYmlContent);
   // Should use absolute path
   const result = await runBreakdownCommand(
     [
@@ -392,10 +397,10 @@ Deno.test("CLI Integration: relative vs absolute baseDir in config", async () =>
     ],
     testDir,
   );
-  logger.debug("absolute baseDir result", { result });
+  _logger.debug("absolute baseDir result", { result });
   assertEquals(result.success, true);
   // Should succeed as absolute paths are handled correctly
-  logger.debug("Absolute baseDir error", { error: result.error });
+  _logger.debug("Absolute baseDir error", { error: _result.error });
 });
 
 Deno.test("CLI Integration: template path is resolved using baseDir (relative)", async () => {
@@ -403,10 +408,11 @@ Deno.test("CLI Integration: template path is resolved using baseDir (relative)",
   const testDir = await Deno.makeTempDir();
   const configDir = join(testDir, ".agent", "breakdown", "config");
   await ensureDir(configDir);
-  await Deno.writeTextFile(
-    join(configDir, "app.yml"),
-    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
-  );
+  const appYmlContent =
+    `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`;
+  await Deno.writeTextFile(join(configDir, "app.yml"), appYmlContent);
+  // Also create default-app.yml for BreakdownConfig fallback
+  await Deno.writeTextFile(join(configDir, "default-app.yml"), appYmlContent);
   const promptDir = join(testDir, "prompts", "to", "project");
   await ensureDir(promptDir);
   await Deno.writeTextFile(join(promptDir, "f_project.md"), "template content");
@@ -424,10 +430,10 @@ Deno.test("CLI Integration: template path is resolved using baseDir (relative)",
     ],
     testDir,
   );
-  logger.debug("template path resolved result", { result });
+  _logger.debug("template path resolved result", { result });
   // New implementation handles template path resolution gracefully
   assertEquals(result.success, true);
-  logger.debug("Template path resolved error", { error: result.error });
+  _logger.debug("Template path resolved error", { error: _result.error });
 });
 
 Deno.test("BreakdownConfig loads and merges app.yml and user.yml as spec", async () => {
@@ -461,10 +467,10 @@ app_schema:
   if (!configResult.success) {
     throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
   }
-  const config = configResult.data;
-  await config.loadConfig();
-  const settings = await config.getConfig();
-  logger.debug("BreakdownConfig merged settings", { settings });
+  const _config = configResult.data;
+  await (_config as any).loadConfig();
+  const settings = await (_config as any).getConfig();
+  _logger.debug("BreakdownConfig merged settings", { settings });
   // user.yml should override app.yml for app_prompt.base_dir
   assertEquals(settings.app_prompt.base_dir, "prompts_user");
   assertEquals(settings.app_schema.base_dir, "schema_app");
@@ -493,10 +499,10 @@ app_schema:
   if (!configResult.success) {
     throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
   }
-  const config = configResult.data;
-  await config.loadConfig();
-  const settings = await config.getConfig();
-  logger.debug("BreakdownConfig working_dir/prompt_dir", { settings });
+  const _config = configResult.data;
+  await (_config as any).loadConfig();
+  const settings = await (_config as any).getConfig();
+  _logger.debug("BreakdownConfig working_dir/prompt_dir", { settings });
   // working_dir is not a prefix of app_prompt.base_dir
   assertEquals(settings.app_prompt.base_dir, "prompts");
   assertEquals(settings.working_dir, ".agent/breakdown");
@@ -518,16 +524,16 @@ Deno.test("BreakdownConfig: error if config missing required fields", async () =
   Deno.chdir(testDir);
   try {
     const configResult = BreakdownConfig.create("test-cli-integration");
-  if (!configResult.success) {
-    throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
-  }
-  const config = configResult.data;
-    let errorCaught = false;
+    if (!configResult.success) {
+      throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+    }
+    const _config = configResult.data;
+    const errorCaught = false;
     try {
-      await config.loadConfig();
-      await config.getConfig();
+      await (_config as any).loadConfig();
+      await (_config as any).getConfig();
     } catch (e) {
-      logger.debug("BreakdownConfig error on missing fields", {
+      _logger.debug("BreakdownConfig error on missing fields", {
         error: e instanceof Error ? e.message : String(e),
       });
       errorCaught = true;

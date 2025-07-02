@@ -1,6 +1,6 @@
 /**
  * @fileoverview Integration Test Optimization Manager
- * 
+ *
  * Provides performance optimization strategies for integration tests:
  * - Parallel execution scheduling
  * - Resource pooling and reuse
@@ -8,20 +8,20 @@
  * - Test execution monitoring and analytics
  * - Resource leak detection and prevention
  * - Comprehensive cleanup mechanisms
- * 
+ *
  * @module tests/integration/test_optimization_manager
  */
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
-  ResourceLeakDetector, 
-  TestIsolationManager, 
-  withResourceLeakDetection,
+import {
+  type LeakDetectionResult,
+  ResourceLeakDetector,
   type ResourceSnapshot,
-  type LeakDetectionResult 
+  TestIsolationManager,
+  withResourceLeakDetection,
 } from "./resource_leak_detector.ts";
 
-const logger = new BreakdownLogger("test-optimization");
+const _logger = new BreakdownLogger("test-optimization");
 
 /**
  * Test execution metrics for performance monitoring
@@ -66,7 +66,7 @@ export class TestResourcePool {
     const resource = factory();
     this.resourceCache.set(key, resource);
     this.creationCounters.set(key, 1);
-    logger.debug("Resource created and cached", { key });
+    _logger.debug("Resource created and cached", { key });
     return resource;
   }
 
@@ -76,12 +76,15 @@ export class TestResourcePool {
   clear(pattern?: string): void {
     if (pattern) {
       const keysToDelete = Array.from(this.resourceCache.keys())
-        .filter(key => key.includes(pattern));
-      keysToDelete.forEach(key => {
+        .filter((key) => key.includes(pattern));
+      keysToDelete.forEach((key) => {
         this.resourceCache.delete(key);
         this.creationCounters.delete(key);
       });
-      logger.debug("Partial resource cache cleared", { pattern, clearedCount: keysToDelete.length });
+      logger.debug("Partial resource cache cleared", {
+        pattern,
+        clearedCount: keysToDelete.length,
+      });
     } else {
       this.resourceCache.clear();
       this.creationCounters.clear();
@@ -108,7 +111,7 @@ export class OptimizedTestDataFactory {
   private static readonly COMMON_OPTIONS_TEMPLATE = {
     "uv-environment": "test",
     "uv-version": "1.0.0",
-    "skipStdin": true
+    "skipStdin": true,
   };
 
   /**
@@ -122,8 +125,8 @@ export class OptimizedTestDataFactory {
       params: ["to", "project"],
       options: {
         ...OptimizedTestDataFactory.COMMON_OPTIONS_TEMPLATE,
-        ...overrides
-      }
+        ...overrides,
+      },
     };
   }
 
@@ -132,15 +135,14 @@ export class OptimizedTestDataFactory {
    */
   static createBatchTestData(count: number, baseKey: string): unknown[] {
     const pool = TestResourcePool.getInstance();
-    
+
     return Array.from({ length: count }, (_, i) => {
       const key = `${baseKey}-${i}`;
-      return pool.getOrCreate(key, () => 
+      return pool.getOrCreate(key, () =>
         OptimizedTestDataFactory.createLightweightTwoParamsResult({
           [`uv-batch-${i}`]: `value-${i}`,
-          [`uv-index`]: i.toString()
-        })
-      );
+          [`uv-index`]: i.toString(),
+        }));
     });
   }
 
@@ -148,15 +150,15 @@ export class OptimizedTestDataFactory {
    * Create stress test data with controlled memory usage
    */
   static createStressTestData(variableCount: number): Record<string, unknown> {
-    const options: Record<string, unknown> = { 
-      ...OptimizedTestDataFactory.COMMON_OPTIONS_TEMPLATE 
+    const options: Record<string, unknown> = {
+      ...OptimizedTestDataFactory.COMMON_OPTIONS_TEMPLATE,
     };
-    
+
     // Use efficient string generation to avoid memory bloat
     for (let i = 0; i < variableCount; i++) {
       options[`uv-var${i}`] = `val${i}`;
     }
-    
+
     return options;
   }
 }
@@ -178,7 +180,7 @@ export class TestExecutionScheduler {
       maxMemoryIncrease: 30, // Stricter memory limits for integration tests
       maxFileHandleIncrease: 5,
       maxTimerIncrease: 3,
-      maxTestDuration: 60000 // 60 seconds for integration tests
+      maxTestDuration: 60000, // 60 seconds for integration tests
     });
     this.isolationManager = new TestIsolationManager();
   }
@@ -188,26 +190,27 @@ export class TestExecutionScheduler {
    */
   async executeParallel<T>(
     tasks: Array<{ name: string; fn: () => Promise<T> }>,
-    options: { batchSize?: number; timeout?: number; enableLeakDetection?: boolean } = {}
+    options: { batchSize?: number; timeout?: number; enableLeakDetection?: boolean } = {},
   ): Promise<T[]> {
-    const { batchSize = this.concurrencyLimit, timeout = 30000, enableLeakDetection = true } = options;
+    const { batchSize = this.concurrencyLimit, timeout = 30000, enableLeakDetection = true } =
+      options;
     const results: T[] = [];
-    
+
     for (let i = 0; i < tasks.length; i += batchSize) {
       const batch = tasks.slice(i, i + batchSize);
       const batchStartTime = performance.now();
-      
-      logger.debug("Executing test batch with resource monitoring", { 
+
+      logger.debug("Executing test batch with resource monitoring", {
         batchIndex: Math.floor(i / batchSize) + 1,
         batchSize: batch.length,
         totalBatches: Math.ceil(tasks.length / batchSize),
-        leakDetectionEnabled: enableLeakDetection
+        leakDetectionEnabled: enableLeakDetection,
       });
 
       const batchPromises = batch.map(async (task) => {
         const testStartTime = performance.now();
         this.activeTests.add(task.name);
-        
+
         // Take pre-test resource snapshot
         let preSnapshot: ResourceSnapshot | null = null;
         if (enableLeakDetection) {
@@ -215,29 +218,29 @@ export class TestExecutionScheduler {
           preSnapshot = this.resourceDetector.takeSnapshot(task.name, "before");
           this.resourceSnapshots.push(preSnapshot);
         }
-        
+
         try {
           const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error(`Test timeout: ${task.name}`)), timeout)
           );
-          
+
           const result = await Promise.race([task.fn(), timeoutPromise]);
           const duration = performance.now() - testStartTime;
-          
+
           this.metrics.push({
             testName: task.name,
             duration,
             setupTime: 0,
             teardownTime: 0,
-            status: "passed"
+            status: "passed",
           });
-          
-          logger.debug("Test completed", { 
-            name: task.name, 
+
+          logger.debug("Test completed", {
+            name: task.name,
             duration: `${duration.toFixed(2)}ms`,
-            resourceMonitoring: enableLeakDetection ? "enabled" : "disabled"
+            resourceMonitoring: enableLeakDetection ? "enabled" : "disabled",
           });
-          return result;
+          return _result;
         } catch (error) {
           const duration = performance.now() - testStartTime;
           this.metrics.push({
@@ -245,13 +248,13 @@ export class TestExecutionScheduler {
             duration,
             setupTime: 0,
             teardownTime: 0,
-            status: "failed"
+            status: "failed",
           });
-          
-          logger.debug("Test failed", { 
-            name: task.name, 
+
+          logger.debug("Test failed", {
+            name: task.name,
             duration: `${duration.toFixed(2)}ms`,
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
           });
           throw error;
         } finally {
@@ -260,13 +263,13 @@ export class TestExecutionScheduler {
             try {
               const postSnapshot = this.resourceDetector.takeSnapshot(task.name, "after");
               this.resourceSnapshots.push(postSnapshot);
-              
+
               await this.isolationManager.teardownIsolation(task.name);
               await this.resourceDetector.cleanupAllResources();
-              
+
               const cleanupSnapshot = this.resourceDetector.takeSnapshot(task.name, "cleanup");
               this.resourceSnapshots.push(cleanupSnapshot);
-              
+
               // Detect and log leaks
               const leakResult = this.resourceDetector.detectLeaks(task.name);
               if (leakResult.hasLeaks) {
@@ -275,34 +278,34 @@ export class TestExecutionScheduler {
                   memoryLeak: leakResult.memoryLeak,
                   fileHandleLeak: leakResult.fileHandleLeak,
                   timerLeak: leakResult.timerLeak,
-                  recommendations: leakResult.recommendations
+                  recommendations: leakResult.recommendations,
                 });
               }
             } catch (cleanupError) {
               logger.debug("Resource cleanup error", {
                 testName: task.name,
-                error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
+                error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
               });
             }
           }
-          
+
           this.activeTests.delete(task.name);
         }
       });
 
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
-      
+
       const batchDuration = performance.now() - batchStartTime;
-      logger.debug("Batch completed", { 
+      logger.debug("Batch completed", {
         batchIndex: Math.floor(i / batchSize) + 1,
         duration: `${batchDuration.toFixed(2)}ms`,
-        avgTestTime: `${(batchDuration / batch.length).toFixed(2)}ms`
+        avgTestTime: `${(batchDuration / batch.length).toFixed(2)}ms`,
       });
 
       // Force garbage collection between batches to prevent memory buildup
-      if (typeof (globalThis as any).gc === "function") {
-        (globalThis as any).gc();
+      if (typeof (globalThis as unknown).gc === "function") {
+        (globalThis as unknown).gc();
         logger.debug("Garbage collection triggered between batches");
       }
     }
@@ -323,17 +326,17 @@ export class TestExecutionScheduler {
   } {
     const totalTests = this.metrics.length;
     const totalDuration = this.metrics.reduce((sum, m) => sum + m.duration, 0);
-    const passedTests = this.metrics.filter(m => m.status === "passed").length;
-    
+    const passedTests = this.metrics.filter((m) => m.status === "passed").length;
+
     const sortedByDuration = [...this.metrics].sort((a, b) => a.duration - b.duration);
-    
+
     return {
       totalTests,
       totalDuration,
       averageDuration: totalTests > 0 ? totalDuration / totalTests : 0,
       successRate: totalTests > 0 ? (passedTests / totalTests) * 100 : 0,
       fastestTest: sortedByDuration[0] || null,
-      slowestTest: sortedByDuration[sortedByDuration.length - 1] || null
+      slowestTest: sortedByDuration[sortedByDuration.length - 1] || null,
     };
   }
 
@@ -357,22 +360,22 @@ export class TestExecutionScheduler {
   } {
     const summary = this.resourceDetector.getSummary();
     const leaksWithDetails = summary.recentLeaks;
-    
+
     const testsWithLeaks = leaksWithDetails.length;
     const totalTests = this.metrics.length;
     const leakRate = totalTests > 0 ? (testsWithLeaks / totalTests) * 100 : 0;
-    
+
     const leakTypes = new Map<string, number>();
     const allRecommendations = new Set<string>();
-    
-    leaksWithDetails.forEach(leak => {
+
+    leaksWithDetails.forEach((leak) => {
       if (leak.memoryLeak) leakTypes.set("memory", (leakTypes.get("memory") || 0) + 1);
       if (leak.fileHandleLeak) leakTypes.set("fileHandle", (leakTypes.get("fileHandle") || 0) + 1);
       if (leak.timerLeak) leakTypes.set("timer", (leakTypes.get("timer") || 0) + 1);
-      
-      leak.recommendations.forEach(rec => allRecommendations.add(rec));
+
+      leak.recommendations.forEach((rec) => allRecommendations.add(rec));
     });
-    
+
     const commonLeakTypes = Array.from(leakTypes.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([type]) => type);
@@ -383,7 +386,7 @@ export class TestExecutionScheduler {
       leakRate,
       commonLeakTypes,
       totalSnapshots: this.resourceSnapshots.length,
-      recommendations: Array.from(allRecommendations)
+      recommendations: Array.from(allRecommendations),
     };
   }
 }
@@ -404,7 +407,7 @@ export class EfficientMockFactory {
 
     const mock = { ...template };
     EfficientMockFactory.mockInstances.set(template, mock);
-    logger.debug("Mock created", { key, type: typeof template });
+    _logger.debug("Mock created", { key, type: typeof template });
     return mock;
   }
 
@@ -417,15 +420,15 @@ export class EfficientMockFactory {
       switch (type) {
         case "TwoParams":
           return {
-            process: (data: unknown) => ({ ok: true, data: "processed" })
+            process: (data: unknown) => ({ ok: true, data: "processed" }),
           };
         case "Stdin":
           return {
-            process: async (data: unknown, options: unknown) => ({ ok: true, data: "" })
+            process: async (data: unknown, options: unknown) => ({ ok: true, data: "" }),
           };
         case "Variable":
           return {
-            process: async (data: unknown) => ({ ok: true, data: [] })
+            process: async (data: unknown) => ({ ok: true, data: [] }),
           };
         default:
           throw new Error(`Unknown processor type: ${type}`);
@@ -446,7 +449,7 @@ export class PerformanceMonitor {
    */
   setBaseline(testName: string, duration: number): void {
     this.baselines.set(testName, duration);
-    logger.debug("Performance baseline set", { testName, duration: `${duration.toFixed(2)}ms` });
+    _logger.debug("Performance baseline set", { testName, duration: `${duration.toFixed(2)}ms` });
   }
 
   /**
@@ -470,7 +473,7 @@ export class PerformanceMonitor {
         testName,
         baseline: `${baseline.toFixed(2)}ms`,
         current: `${currentDuration.toFixed(2)}ms`,
-        degradation: `${((performanceRatio - 1) * 100).toFixed(1)}%`
+        degradation: `${((performanceRatio - 1) * 100).toFixed(1)}%`,
       });
     }
 
@@ -494,5 +497,5 @@ performanceMonitor.setBaseline("processor-pipeline-integration", 14);
 performanceMonitor.setBaseline("integration-suite-total", 33);
 
 logger.debug("Test optimization manager initialized", {
-  componentsLoaded: ["ResourcePool", "TestDataFactory", "ExecutionScheduler", "PerformanceMonitor"]
+  componentsLoaded: ["ResourcePool", "TestDataFactory", "ExecutionScheduler", "PerformanceMonitor"],
 });

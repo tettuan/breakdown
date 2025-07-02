@@ -8,7 +8,7 @@
  * ```ts
  * import { PromptVariables, StandardVariable } from "./prompt_variables.ts";
  *
- * const standardVar = StandardVariable.create("input_text_file", "/path/to/file");
+ * const _standardVar = StandardVariable.create("input_text_file", "/path/to/file");
  * if (standardVar) {
  *   const variables: PromptVariables = [standardVar];
  * }
@@ -148,7 +148,12 @@ export class UserVariable implements PromptVariableBase {
  * Valid standard variable names following totality principle
  */
 export class StandardVariableName {
-  private static readonly VALID_NAMES = ["input_text_file", "destination_path", "demonstrative_type", "layer_type"] as const;
+  private static readonly VALID_NAMES = [
+    "input_text_file",
+    "destination_path",
+    "demonstrative_type",
+    "layer_type",
+  ] as const;
 
   private constructor(readonly value: typeof StandardVariableName.VALID_NAMES[number]) {}
 
@@ -218,6 +223,28 @@ export type PromptVariable = StandardVariable | FilePathVariable | StdinVariable
  * Collection of prompt variables
  */
 export type PromptVariables = PromptVariable[];
+
+/**
+ * CLI parameters for prompt generation
+ * @deprecated Use proper types from @tettuan/breakdownparams
+ */
+export type PromptCliParams = {
+  demonstrativeType: string;
+  layerType: string;
+  options: {
+    fromFile?: string;
+    destinationFile?: string;
+    adaptation?: string;
+    promptDir?: string;
+    fromLayerType?: string;
+    input_text?: string;
+    customVariables?: Record<string, string>;
+    extended?: boolean;
+    customValidation?: boolean;
+    errorFormat?: "simple" | "detailed" | "json";
+    config?: string;
+  };
+};
 
 // === Integration with PromptParams ===
 

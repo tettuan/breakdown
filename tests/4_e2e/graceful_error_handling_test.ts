@@ -13,10 +13,10 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
-const logger = new BreakdownLogger("graceful-error-test");
+const _logger = new BreakdownLogger("graceful-error-test");
 
 Deno.test("E2E: Graceful handling of missing configuration", async () => {
   const env = await setupTestEnvironment({
@@ -27,9 +27,9 @@ Deno.test("E2E: Graceful handling of missing configuration", async () => {
   try {
     // Run without any configuration files
     const result = await runCommand(["--help"], undefined, env.workingDir);
-    logger.debug("Missing config result", {
+    _logger.debug("Missing config result", {
       key: "graceful_error_handling_test.ts#L30#e2e-missing-config",
-      result,
+      _result,
     });
 
     // Should complete successfully with default configuration fallback
@@ -52,16 +52,16 @@ Deno.test("E2E: Graceful handling of two parameters without templates", async ()
       undefined,
       env.workingDir,
     );
-    logger.debug("No templates result", {
+    _logger.debug("No templates result", {
       key: "graceful_error_handling_test.ts#L52#e2e-no-templates",
-      result,
+      _result,
     });
 
     // Current implementation may fail due to parameter parsing, but shouldn't crash
     // The key test is that we get a structured response, not a system crash
-    assertEquals(typeof result.success, "boolean", "Should return valid result");
-    assertEquals(typeof result.output, "string", "Should return output");
-    assertEquals(typeof result.error, "string", "Should return error info");
+    assertEquals(typeof _result.success, "boolean", "Should return valid result");
+    assertEquals(typeof _result.output, "string", "Should return output");
+    assertEquals(typeof _result.error, "string", "Should return error info");
   } finally {
     await cleanupTestEnvironment(env);
   }
@@ -101,17 +101,17 @@ Deno.test("E2E: Graceful handling of invalid parameter combinations", async () =
 
     for (const args of testCases) {
       const result = await runCommand(args, undefined, env.workingDir);
-      logger.debug(`Invalid params test: ${args.join(" ")}`, {
+      _logger.debug(`Invalid params test: ${args.join(" ")}`, {
         key: "graceful_error_handling_test.ts#L98#e2e-invalid-params",
         args: args.join(" "),
-        result,
+        _result,
       });
 
       // Should not crash the system (exit code might be 1, but process should complete)
       // The key is that we get a response, not a system crash
-      assertEquals(typeof result.success, "boolean", "Should return a valid result");
-      assertEquals(typeof result.output, "string", "Should return output string");
-      assertEquals(typeof result.error, "string", "Should return error string");
+      assertEquals(typeof _result.success, "boolean", "Should return a valid result");
+      assertEquals(typeof _result.output, "string", "Should return output string");
+      assertEquals(typeof _result.error, "string", "Should return error string");
     }
   } finally {
     await cleanupTestEnvironment(env);
@@ -130,16 +130,16 @@ Deno.test("E2E: Graceful handling of file system errors", async () => {
       undefined,
       env.workingDir,
     );
-    logger.debug("Non-existent file result", {
+    _logger.debug("Non-existent file result", {
       key: "graceful_error_handling_test.ts#L123#e2e-fs-errors",
-      result,
+      _result,
     });
 
     // Current implementation may fail but should not crash the system
     // The key test is graceful error handling
-    assertEquals(typeof result.success, "boolean", "Should return valid result");
-    assertEquals(typeof result.output, "string", "Should return output");
-    assertEquals(typeof result.error, "string", "Should return error info");
+    assertEquals(typeof _result.success, "boolean", "Should return valid result");
+    assertEquals(typeof _result.output, "string", "Should return output");
+    assertEquals(typeof _result.error, "string", "Should return error info");
   } finally {
     await cleanupTestEnvironment(env);
   }
@@ -162,7 +162,7 @@ Deno.test("E2E: Robust execution under various conditions", async () => {
     assertStringIncludes(helpResult.output, "Usage:");
 
     // Test that the CLI is consistently responsive
-    logger.debug("All robust execution tests completed successfully", {
+    _logger.debug("All robust execution tests completed successfully", {
       key: "graceful_error_handling_test.ts#L152#e2e-robust-complete",
     });
   } finally {

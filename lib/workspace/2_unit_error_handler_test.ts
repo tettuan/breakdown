@@ -5,36 +5,36 @@ import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspaceErrorHandler", async (t) => {
   // Pre-processing and Preparing Part
-  const handler = new WorkspaceErrorHandlerImpl();
-  const logger = new BreakdownLogger();
+  const _handler = new WorkspaceErrorHandlerImpl();
+  const _logger = new BreakdownLogger();
 
   // Main Test
   await t.step("should handle workspace-specific errors", () => {
-    logger.debug("Testing workspace error handling");
+    _logger.debug("Testing workspace error handling");
     const error = new WorkspaceInitError("Initialization failed");
-    const output = captureConsoleOutput(() => {
+    const _output = captureConsoleOutput(() => {
       handler.handleError(error, "INIT");
     });
-    assertEquals(output, "[INIT] WorkspaceInitError: Initialization failed\n");
+    assertEquals(_output, "[INIT] WorkspaceInitError: Initialization failed\n");
   });
 
   await t.step("should handle unexpected errors", () => {
-    logger.debug("Testing unexpected error handling");
+    _logger.debug("Testing unexpected error handling");
     const error = new Error("Unexpected error");
-    const output = captureConsoleOutput(() => {
+    const _output = captureConsoleOutput(() => {
       handler.handleError(error, "UNKNOWN");
     });
-    assertEquals(output, "[UNKNOWN] Unexpected error: Unexpected error\n");
+    assertEquals(_output, "[UNKNOWN] Unexpected error: Unexpected error\n");
   });
 
   await t.step("should log errors with context", () => {
-    logger.debug("Testing error logging with context");
+    _logger.debug("Testing error logging with context");
     const error = new WorkspaceError("Test error", "TEST_ERROR");
     const context = { test: "value" };
-    const output = captureConsoleOutput(() => {
+    const _output = captureConsoleOutput(() => {
       handler.logError(error, context);
     });
-    const logged = JSON.parse(output);
+    const logged = JSON.parse(_output);
     assertEquals(logged.name, "WorkspaceError");
     assertEquals(logged.message, "Test error");
     assertEquals(logged.context, context);
@@ -45,7 +45,7 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
 function captureConsoleOutput(fn: () => void): string {
   const testLogger = new BreakdownLogger();
   const originalConsoleError = console.error;
-  let output = "";
+  const _output = "";
   console.error = (...args: unknown[]) => {
     output += args.join(" ") + "\n";
     // Also log with BreakdownLogger for consistency

@@ -6,7 +6,7 @@
  * @module
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Template error types
@@ -54,7 +54,7 @@ export class TemplateError extends Error {
    * Get user-friendly error message with suggestions
    */
   getDetailedMessage(): string {
-    let message = `❌ ${this.message}`;
+    const _message = `❌ ${this.message}`;
 
     if (this.templatePath) {
       message += `\n   Template: ${this.templatePath}`;
@@ -160,8 +160,10 @@ export class TemplateErrorHandler {
     }
 
     // Template validation errors
-    if (message.includes("invalid template") || message.includes("malformed") || 
-        message.includes("template validation") || message.includes("invalid syntax")) {
+    if (
+      message.includes("invalid template") || message.includes("malformed") ||
+      message.includes("template validation") || message.includes("invalid syntax")
+    ) {
       return new TemplateError(
         `Invalid template format: ${templatePath || "unknown"}`,
         TemplateErrorType.TEMPLATE_INVALID,
@@ -251,7 +253,7 @@ export class TemplateErrorHandler {
 
     const result = await process.output();
 
-    if (result.success) {
+    if (_result.success) {
       return {
         resolved: true,
         message: "✅ Templates generated successfully",
@@ -280,7 +282,7 @@ export class TemplateErrorHandler {
 
     const result = await process.output();
 
-    if (result.success) {
+    if (_result.success) {
       return {
         resolved: true,
         message: "✅ Template validation and fixes completed",
@@ -323,13 +325,13 @@ export async function withTemplateErrorHandling<T>(
         autoResolve: context?.autoResolve,
       });
 
-      if (result.resolved) {
+      if (_result.resolved) {
         logger.info(result.message);
         // Retry the operation after resolution
         return await operation();
       } else {
         logger.error(result.message);
-        if (result.commands) {
+        if (_result.commands) {
           logger.error("\n🔧 Recovery commands:");
           for (const command of result.commands) {
             logger.error(`   ${command}`);

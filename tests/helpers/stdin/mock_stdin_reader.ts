@@ -12,7 +12,7 @@
  * - Supports configurable behaviors for different test scenarios
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { MockStdinConfig, StdinReader, StdinReadOptions } from "./interfaces.ts";
 import type { StdinTestResourceManager } from "./resource_manager.ts";
 
@@ -29,7 +29,7 @@ export class MockStdinReader implements StdinReader {
     private config: MockStdinConfig,
     private resourceManager: StdinTestResourceManager,
   ) {
-    logger.debug("MockStdinReader created", { config });
+    _logger.debug("MockStdinReader created", { config });
   }
 
   /**
@@ -40,7 +40,7 @@ export class MockStdinReader implements StdinReader {
     const resourceId = `read-${Date.now()}-${this.readCount}`;
     const resource = await this.resourceManager.createResource(resourceId);
 
-    logger.debug("Starting mock read", {
+    _logger.debug("Starting mock read", {
       resourceId,
       options,
       config: this.config,
@@ -59,7 +59,7 @@ export class MockStdinReader implements StdinReader {
       });
 
       // Handle timeout with consideration for BREAKDOWN_TIMEOUT env var
-      let effectiveTimeout = options?.timeout;
+      const effectiveTimeout = options?.timeout;
 
       // Check for BREAKDOWN_TIMEOUT environment variable (highest priority)
       const envTimeout = Deno.env.get("BREAKDOWN_TIMEOUT");
@@ -86,10 +86,10 @@ export class MockStdinReader implements StdinReader {
       }
 
       // Simulate read operation
-      const result = await this.simulateRead(abortController.signal, resourceId);
+      const _result = await this.simulateRead(abortController.signal, resourceId);
 
       logger.debug("Mock read completed", { resourceId, resultLength: result.length });
-      return result;
+      return _result;
     } finally {
       // Ensure resource cleanup
       await this.resourceManager.cleanupResource(resourceId);
@@ -101,7 +101,7 @@ export class MockStdinReader implements StdinReader {
    */
   isAvailable(): boolean {
     const available = this.config.isAvailable ?? true;
-    logger.debug("isAvailable called", { result: available });
+    _logger.debug("isAvailable called", { result: available });
     return available;
   }
 
@@ -110,7 +110,7 @@ export class MockStdinReader implements StdinReader {
    */
   isTerminal(): boolean {
     const terminal = this.config.isTerminal ?? false;
-    logger.debug("isTerminal called", { result: terminal });
+    _logger.debug("isTerminal called", { result: terminal });
     return terminal;
   }
 
@@ -118,7 +118,7 @@ export class MockStdinReader implements StdinReader {
    * Simulates the actual read operation with delays and errors
    */
   private async simulateRead(signal: AbortSignal, resourceId: string): Promise<string> {
-    logger.debug("Simulating read", { resourceId, config: this.config });
+    _logger.debug("Simulating read", { resourceId, config: this.config });
 
     // Check if we should throw an error
     if (this.config.throwError) {
@@ -179,7 +179,7 @@ export class MockStdinReader implements StdinReader {
       logger.debug("Returning empty data", { resourceId });
     }
 
-    logger.debug("Returning mock data", { resourceId, dataLength: data.length });
+    _logger.debug("Returning mock data", { resourceId, dataLength: data.length });
     return data;
   }
 
@@ -197,6 +197,6 @@ export class MockStdinReader implements StdinReader {
    */
   resetReadCount(): void {
     this.readCount = 0;
-    logger.debug("Read count reset");
+    _logger.debug("Read count reset");
   }
 }

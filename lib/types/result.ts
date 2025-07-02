@@ -1,33 +1,33 @@
 /**
  * @fileoverview Result type for Totality principle implementation
- * 
+ *
  * This module provides the Result type for explicit error handling
  * following the Totality principle. All operations that can fail
  * return Result instead of throwing exceptions or returning null.
- * 
+ *
  * @module types/result
  */
 
 /**
  * Result type for explicit error handling
- * 
+ *
  * Represents either success with data or failure with error.
  * This follows the Totality principle by making all possible
  * outcomes explicit in the type system.
- * 
+ *
  * @template T Success data type
  * @template E Error type
- * 
+ *
  * @example Basic usage
  * ```typescript
  * function parseNumber(input: string): Result<number, string> {
- *   const num = parseInt(input);
+ *   const _num = parseInt(input);
  *   if (isNaN(num)) {
  *     return { ok: false, error: "Invalid number format" };
  *   }
  *   return { ok: true, data: num };
  * }
- * 
+ *
  * const result = parseNumber("42");
  * if (result.ok) {
  *   console.log(result.data); // 42
@@ -36,7 +36,7 @@
  * }
  * ```
  */
-export type Result<T, E = Error> = 
+export type Result<T, E = Error> =
   | { ok: true; data: T }
   | { ok: false; error: E };
 
@@ -73,7 +73,7 @@ export function isError<T, E>(result: Result<T, E>): result is { ok: false; erro
  */
 export function map<T, U, E>(
   result: Result<T, E>,
-  fn: (data: T) => U
+  fn: (data: T) => U,
 ): Result<U, E> {
   if (result.ok) {
     return { ok: true, data: fn(result.data) };
@@ -86,7 +86,7 @@ export function map<T, U, E>(
  */
 export function chain<T, U, E>(
   result: Result<T, E>,
-  fn: (data: T) => Result<U, E>
+  fn: (data: T) => Result<U, E>,
 ): Result<U, E> {
   if (result.ok) {
     return fn(result.data);
@@ -99,7 +99,7 @@ export function chain<T, U, E>(
  */
 export function getOrElse<T, E>(
   result: Result<T, E>,
-  defaultValue: T
+  defaultValue: T,
 ): T {
   return result.ok ? result.data : defaultValue;
 }
@@ -109,7 +109,7 @@ export function getOrElse<T, E>(
  * Fails if any result fails
  */
 export function all<T, E>(
-  results: Result<T, E>[]
+  results: Result<T, E>[],
 ): Result<T[], E> {
   const data: T[] = [];
   for (const result of results) {

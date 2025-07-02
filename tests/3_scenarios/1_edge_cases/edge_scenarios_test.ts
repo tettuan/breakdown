@@ -21,18 +21,18 @@ import { runCommand } from "$test/helpers/setup.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { assert as _assert } from "@std/assert";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 
-async function logDirStructure(dir: string, label: string) {
+function logDirStructure(dir: string, label: string) {
   const { walk } = await import("@std/fs/walk");
   const files: string[] = [];
   for await (const entry of walk(dir, { includeDirs: true, followSymlinks: false })) {
     files.push(entry.path);
   }
-  logger.debug(label, { files });
+  _logger.debug(label, { files });
 }
 
-async function logRealPaths(label: string, paths: Record<string, string>) {
+function logRealPaths(label: string, paths: Record<string, string>) {
   const realPaths: Record<string, string> = {};
   for (const [k, v] of Object.entries(paths)) {
     try {
@@ -41,7 +41,7 @@ async function logRealPaths(label: string, paths: Record<string, string>) {
       realPaths[k] = `[not exist] ${v}`;
     }
   }
-  logger.debug(label, realPaths);
+  _logger.debug(label, realPaths);
 }
 
 function comparePaths(pathA: string, pathB: string): number {
@@ -86,10 +86,10 @@ Deno.test("CLI error scenario when baseDir is unset", async () => {
     undefined,
     testDir,
   );
-  logger.debug("CLI result (baseDir unset)", { result });
+  _logger.debug("CLI result (baseDir unset)", { result });
   assertEquals(result.success, false);
   // Should fail with config error due to empty baseDir
-  logger.debug("BaseDir unset error", { error: result.error });
+  _logger.debug("BaseDir unset error", { error: _result.error });
 });
 
 Deno.test("Recovery scenario when app.yml and actual directory mismatch", async () => {
@@ -103,15 +103,15 @@ Deno.test("Recovery scenario when app.yml and actual directory mismatch", async 
   // input.md を testDir/input.md に作成
   await Deno.writeTextFile(join(testDir, "input.md"), "dummy input");
   await logDirStructure(testDir, "[dir mismatch] testDir構成(before)");
-  let result = await runCommand(
+  const result = await runCommand(
     ["to", "project", "--from", "input.md", "--destination", "output.md"],
     undefined,
     testDir,
   );
-  logger.debug("CLI result (dir mismatch, before recovery)", { result });
+  _logger.debug("CLI result (dir mismatch, before recovery)", { result });
   assertEquals(result.success, false);
   // Should fail with directory not found error
-  logger.debug("Dir mismatch error (before recovery)", { error: result.error });
+  _logger.debug("Dir mismatch error (before recovery)", { error: _result.error });
   await ensureDir(join(testDir, "not_exist_dir"));
   // テンプレートは作成しない
   await logDirStructure(testDir, "[dir mismatch] testDir構成(after recovery)");
@@ -120,10 +120,10 @@ Deno.test("Recovery scenario when app.yml and actual directory mismatch", async 
     undefined,
     testDir,
   );
-  logger.debug("CLI result (dir mismatch, after recovery)", { result });
+  _logger.debug("CLI result (dir mismatch, after recovery)", { result });
   assertEquals(result.success, false);
   // Should still fail due to missing templates
-  logger.debug("Dir mismatch error (after recovery)", { error: result.error });
+  _logger.debug("Dir mismatch error (after recovery)", { error: _result.error });
 });
 
 Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async () => {
@@ -166,24 +166,24 @@ Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async 
     });
     // prompts_user/to/projectまでの各階層を親から順にstat + realPath（CLI直前）
     const pathParts = [realTestDir, ".agent", "breakdown", "prompts_user", "to", "project"];
-    let currentPath = "";
+    const currentPath = "";
     for (let i = 0; i < pathParts.length; i++) {
       currentPath = i === 0 ? pathParts[0] : join(currentPath, pathParts[i]);
       try {
         const stat = await Deno.stat(currentPath);
-        let realPath = "";
+        const realPath = "";
         try {
           realPath = await Deno.realPath(currentPath);
         } catch (_e) {
           realPath = `[not exist] ${currentPath}`;
         }
-        logger.debug(`[stat階層(CLI直前)] ${i}階層目: ${currentPath}`, {
+        _logger.debug(`[stat階層(CLI直前)] ${i}階層目: ${currentPath}`, {
           isDirectory: stat.isDirectory,
           isFile: stat.isFile,
           realPath,
         });
       } catch (_e) {
-        logger.error(`[stat階層(CLI直前)] ${i}階層目: ${currentPath} stat失敗`, {
+        _logger.error(`[stat階層(CLI直前)] ${i}階層目: ${currentPath} stat失敗`, {
           error: _e instanceof Error ? _e.message : String(_e),
         });
         break;
@@ -192,7 +192,7 @@ Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async 
     // runCommand実行
     const originalCwd = Deno.cwd();
     Deno.chdir(realTestDir);
-    let result;
+    let _result;
     try {
       result = await runCommand(
         ["to", "project", "--from", "input.md", "--destination", "output.md"],
@@ -208,25 +208,25 @@ Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async 
       currentPath = i === 0 ? pathParts[0] : join(currentPath, pathParts[i]);
       try {
         const stat = await Deno.stat(currentPath);
-        let realPath = "";
+        const realPath = "";
         try {
           realPath = await Deno.realPath(currentPath);
         } catch (_e) {
           realPath = `[not exist] ${currentPath}`;
         }
-        logger.debug(`[stat階層(CLI直後)] ${i}階層目: ${currentPath}`, {
+        _logger.debug(`[stat階層(CLI直後)] ${i}階層目: ${currentPath}`, {
           isDirectory: stat.isDirectory,
           isFile: stat.isFile,
           realPath,
         });
       } catch (_e) {
-        logger.error(`[stat階層(CLI直後)] ${i}階層目: ${currentPath} stat失敗`, {
+        _logger.error(`[stat階層(CLI直後)] ${i}階層目: ${currentPath} stat失敗`, {
           error: _e instanceof Error ? _e.message : String(_e),
         });
         break;
       }
     }
-    logger.debug("[user/app baseDir conflict] Deno.cwd() after runCommand", { cwd: Deno.cwd() });
+    _logger.debug("[user/app baseDir conflict] Deno.cwd() after runCommand", { cwd: Deno.cwd() });
     await logRealPaths("[user/app baseDir conflict] realPaths after runCommand", {
       testDir: realTestDir,
       cwd: Deno.cwd(),
@@ -241,7 +241,7 @@ Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async 
     const expectedDir = join(realTestDir, ".agent", "breakdown", "prompts_user", "to", "project");
     const actualDir = join(realTestDir, ".agent", "breakdown", "prompts_user", "to", "project");
     const mismatchIndex = comparePaths(expectedDir, actualDir);
-    logger.debug("[user/app baseDir conflict] パス階層比較", {
+    _logger.debug("[user/app baseDir conflict] パス階層比較", {
       expectedDir,
       actualDir,
       mismatchIndex,
@@ -251,13 +251,13 @@ Deno.test.ignore("Precedence when user.yml and app.yml baseDir conflict", async 
         ? "全階層一致"
         : `不一致: ${mismatchIndex}階層目`,
     });
-    logger.debug("CLI result (user/app baseDir conflict)", { result });
+    _logger.debug("CLI result (user/app baseDir conflict)", { result });
     // New implementation handles baseDir conflicts gracefully
     // It may succeed with user.yml precedence or continue with fallback behavior
-    const isGracefulHandling = result.success ||
-      result.output.includes("Breakdown execution completed");
+    const isGracefulHandling = _result.success ||
+      _result.output.includes("Breakdown execution completed");
     assertEquals(isGracefulHandling, true, "Should handle baseDir conflicts gracefully");
-    logger.debug("User/app baseDir conflict error", { error: result.error });
+    _logger.debug("User/app baseDir conflict error", { error: _result.error });
   });
 });
 
@@ -274,10 +274,10 @@ Deno.test("E2E: baseDir is used for template lookup", async () => {
   await Deno.writeTextFile(join(templatePath, "f_project.md"), "E2E template");
   await Deno.writeTextFile(join(testDir, "input.md"), "dummy input");
   await logDirStructure(testDir, "[E2E baseDir lookup] testDir構成(before)");
-  logger.debug("[E2E baseDir lookup] custom_prompts絶対パス", {
+  _logger.debug("[E2E baseDir lookup] custom_prompts絶対パス", {
     path: join(testDir, ".agent", "breakdown", "custom_prompts"),
   });
-  logger.debug("[E2E baseDir lookup] テンプレートファイル存在確認", {
+  _logger.debug("[E2E baseDir lookup] テンプレートファイル存在確認", {
     exists: await exists(join(templatePath, "f_project.md")),
   });
   const result = await runCommand(
@@ -289,7 +289,7 @@ Deno.test("E2E: baseDir is used for template lookup", async () => {
   const expectedDir = join(testDir, ".agent", "breakdown", "custom_prompts", "to", "project");
   const actualDir = join(testDir, ".agent", "breakdown", "custom_prompts", "to", "project");
   const mismatchIndex = comparePaths(expectedDir, actualDir);
-  logger.debug("[E2E baseDir lookup] パス階層比較", {
+  _logger.debug("[E2E baseDir lookup] パス階層比較", {
     expectedDir,
     actualDir,
     mismatchIndex,
@@ -299,10 +299,10 @@ Deno.test("E2E: baseDir is used for template lookup", async () => {
       ? "全階層一致"
       : `不一致: ${mismatchIndex}階層目`,
   });
-  logger.debug("CLI result (E2E baseDir lookup)", { result });
+  _logger.debug("CLI result (E2E baseDir lookup)", { result });
   assertEquals(result.success, false);
   // Should process normally or fail with template processing
-  logger.debug("E2E baseDir lookup error", { error: result.error });
+  _logger.debug("E2E baseDir lookup error", { error: _result.error });
 });
 
 Deno.test("Retry/recovery scenario on error", async () => {
@@ -316,12 +316,12 @@ Deno.test("Retry/recovery scenario on error", async () => {
   const promptDir = join(testDir, ".agent", "breakdown", "retry_prompts", "to", "project");
   await ensureDir(promptDir);
   await logDirStructure(testDir, "[retry scenario] testDir構成(before 1st run)");
-  let result = await runCommand(
+  const result = await runCommand(
     ["to", "project", "--from", "input.md", "--destination", "output.md"],
     undefined,
     testDir,
   );
-  logger.debug("CLI result (retry, first run)", { result });
+  _logger.debug("CLI result (retry, first run)", { result });
   await Deno.writeTextFile(join(promptDir, "f_project.md"), "retry template");
   await Deno.writeTextFile(join(testDir, "input.md"), "dummy input");
   await logDirStructure(testDir, "[retry scenario] testDir構成(before 2nd run)");
@@ -334,7 +334,7 @@ Deno.test("Retry/recovery scenario on error", async () => {
   const expectedDir = join(testDir, ".agent", "breakdown", "retry_prompts", "to", "project");
   const actualDir = join(testDir, ".agent", "breakdown", "retry_prompts", "to", "project");
   const mismatchIndex = comparePaths(expectedDir, actualDir);
-  logger.debug("[retry scenario] パス階層比較", {
+  _logger.debug("[retry scenario] パス階層比較", {
     expectedDir,
     actualDir,
     mismatchIndex,
@@ -344,8 +344,8 @@ Deno.test("Retry/recovery scenario on error", async () => {
       ? "全階層一致"
       : `不一致: ${mismatchIndex}階層目`,
   });
-  logger.debug("CLI result (retry, second run)", { result });
+  _logger.debug("CLI result (retry, second run)", { result });
   assertEquals(result.success, false);
   // Should process normally or fail with template processing
-  logger.debug("Retry scenario error", { error: result.error });
+  _logger.debug("Retry scenario error", { error: _result.error });
 });

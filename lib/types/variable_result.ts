@@ -78,3 +78,15 @@ export function createValidationFailedError<T>(
     constraint,
   });
 }
+
+/**
+ * Extended two params result type for internal use
+ * @deprecated Use TwoParamsResult from @tettuan/breakdownparams instead
+ */
+export type ExtendedTwoParamsResult = {
+  type: "two";
+  demonstrativeType: string;
+  layerType: string;
+  params: [string, string];
+  options: Record<string, unknown>;
+};

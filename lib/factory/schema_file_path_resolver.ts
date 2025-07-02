@@ -23,7 +23,7 @@ type DoubleParamsResult = PromptCliParams;
  * TypeCreationResult - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -86,9 +86,11 @@ export class SchemaFilePathResolver {
    * @param config - The configuration object to copy
    * @returns Deep copy of the configuration
    */
-  private deepCopyConfig(config: { app_schema?: { base_dir?: string } } & Record<string, unknown>): { app_schema?: { base_dir?: string } } & Record<string, unknown> {
+  private deepCopyConfig(
+    config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
+  ): { app_schema?: { base_dir?: string } } & Record<string, unknown> {
     const copy: any = {};
-    
+
     // Copy app_schema
     if (config.app_schema) {
       copy.app_schema = {};
@@ -96,14 +98,14 @@ export class SchemaFilePathResolver {
         copy.app_schema.base_dir = config.app_schema.base_dir;
       }
     }
-    
+
     // Copy other properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (key !== 'app_schema') {
+      if (key !== "app_schema") {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -112,8 +114,10 @@ export class SchemaFilePathResolver {
    * @param cliParams - The CLI parameters to copy
    * @returns Deep copy of the CLI parameters
    */
-  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
-    if ('type' in cliParams && cliParams.type === 'two') {
+  private deepCopyCliParams(
+    cliParams: DoubleParamsResult | TwoParamsResult,
+  ): DoubleParamsResult | TwoParamsResult {
+    if ("type" in cliParams && cliParams.type === "two") {
       // TwoParamsResult
       const twoParams = cliParams as TwoParamsResult;
       const copy: TwoParamsResult = {
@@ -121,7 +125,7 @@ export class SchemaFilePathResolver {
         params: [...twoParams.params],
         demonstrativeType: twoParams.demonstrativeType,
         layerType: twoParams.layerType,
-        options: { ...twoParams.options }
+        options: { ...twoParams.options },
       };
       return copy;
     } else {
@@ -129,18 +133,16 @@ export class SchemaFilePathResolver {
       const doubleParams = cliParams as DoubleParamsResult;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
-        layerType: doubleParams.layerType
+        layerType: doubleParams.layerType,
       };
-      
+
       if (doubleParams.options) {
         copy.options = { ...doubleParams.options };
       }
-      
+
       return copy;
     }
   }
-
-
 
   /**
    * Resolves the complete schema file path according to CLI parameters and configuration.
@@ -255,7 +257,7 @@ export class SchemaFilePathResolver {
    */
   private getDemonstrativeType(): string {
     // Handle both legacy and new parameter structures
-    if ('demonstrativeType' in this.cliParams) {
+    if ("demonstrativeType" in this.cliParams) {
       return this.cliParams.demonstrativeType;
     }
     // For TwoParamsResult structure, adapt to legacy interface
@@ -269,7 +271,7 @@ export class SchemaFilePathResolver {
    */
   private getLayerType(): string {
     // Handle both legacy and new parameter structures
-    if ('layerType' in this.cliParams) {
+    if ("layerType" in this.cliParams) {
       return this.cliParams.layerType;
     }
     // For TwoParamsResult structure, adapt to legacy interface

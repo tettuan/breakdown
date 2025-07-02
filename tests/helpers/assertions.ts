@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger();
 
@@ -96,7 +96,7 @@ export async function assertFileExists(path: string): Promise<void> {
  */
 export function assertCommandSuccess(result: { output: string; error: string }): void {
   logger.debug("Checking command success", { result });
-  assertEquals(result.error, "", "Command should not have error output");
+  assertEquals(_result.error, "", "Command should not have error output");
 }
 
 /**
@@ -117,8 +117,8 @@ export function assertCommandOutput(
 
   if (expected.error !== undefined) {
     assert(
-      result.error.includes(expected.error),
-      `Command error does not contain expected: ${expected.error}\nActual error: ${result.error}`,
+      _result.error.includes(expected.error),
+      `Command error does not contain expected: ${expected.error}\nActual error: ${_result.error}`,
     );
   }
 }

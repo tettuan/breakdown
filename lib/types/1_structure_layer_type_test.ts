@@ -1,13 +1,13 @@
 /**
  * @fileoverview Structure test for LayerType
- * 
+ *
  * このテストはLayerTypeの構造と責務分離を検証します：
  * - Smart Constructorパターンの正しい実装
  * - 階層管理責務の適切性
  * - TwoParamsLayerTypePattern設計の妥当性
  * - Immutable設計の検証
  * - 適切な抽象化レベル
- * 
+ *
  * 構造テストの目的は、LayerTypeクラスの設計が適切であり、
  * 階層管理の責務を正しく果たすことを保証することです。
  */
@@ -16,13 +16,13 @@ import { assertEquals, assertExists, BreakdownLogger } from "../../deps.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
 import type { TwoParamsResult } from "../deps.ts";
 
-const logger = new BreakdownLogger("test-structure-layer");
+const _logger = new BreakdownLogger("test-structure-layer");
 
-Deno.test("LayerType - Structure: Smart Constructor pattern implementation", async () => {
-  logger.debug("テスト開始: LayerType Smart Constructorパターン検証", {
+Deno.test("LayerType - Structure: Smart Constructor pattern implementation", () => {
+  _logger.debug("テスト開始: LayerType Smart Constructorパターン検証", {
     testType: "structure",
     target: "LayerType",
-    pattern: "smart_constructor"
+    pattern: "smart_constructor",
   });
 
   const testResult: TwoParamsResult = {
@@ -30,7 +30,7 @@ Deno.test("LayerType - Structure: Smart Constructor pattern implementation", asy
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
-    options: {}
+    options: {},
   };
 
   // 1. static create()メソッドが唯一の作成方法であることを確認
@@ -45,28 +45,28 @@ Deno.test("LayerType - Structure: Smart Constructor pattern implementation", asy
   assertEquals(layerType.getHierarchyLevel(), 1); // projectは階層レベル1
   assertEquals(layerType.isStandardHierarchy(), true);
 
-  logger.debug("Smart Constructor実装検証完了", {
+  _logger.debug("Smart Constructor実装検証完了", {
     success: true,
     creation_method: "static_create_only",
     hierarchical_info: {
       level: layerType.getHierarchyLevel(),
-      standard: layerType.isStandardHierarchy()
-    }
+      standard: layerType.isStandardHierarchy(),
+    },
   });
 });
 
-Deno.test("LayerType - Structure: Hierarchical management responsibility", async () => {
-  logger.debug("テスト開始: LayerType階層管理責務検証", {
+Deno.test("LayerType - Structure: Hierarchical management responsibility", () => {
+  _logger.debug("テスト開始: LayerType階層管理責務検証", {
     testType: "structure",
     target: "LayerType",
-    responsibility: "hierarchical_management"
+    responsibility: "hierarchical_management",
   });
 
   // 1. 標準階層の適切な管理
   const standardLayers = [
     { name: "project", level: 1, standard: true },
     { name: "issue", level: 2, standard: true },
-    { name: "task", level: 3, standard: true }
+    { name: "task", level: 3, standard: true },
   ];
 
   for (const layer of standardLayers) {
@@ -75,25 +75,25 @@ Deno.test("LayerType - Structure: Hierarchical management responsibility", async
       demonstrativeType: "to",
       layerType: layer.name,
       params: ["to", layer.name],
-      options: {}
+      options: {},
     };
 
-    const layerType = LayerType.create(result);
+    const layerType = LayerType.create(_result);
     assertEquals(layerType.value, layer.name);
     assertEquals(layerType.getHierarchyLevel(), layer.level);
     assertEquals(layerType.isStandardHierarchy(), layer.standard);
 
-    logger.debug("標準階層管理確認", {
+    _logger.debug("標準階層管理確認", {
       layer: layer.name,
       level: layer.level,
-      standard: layer.standard
+      standard: layer.standard,
     });
   }
 
   // 2. 特別階層の適切な管理
   const specialLayers = [
     { name: "bugs", level: 0, standard: false },
-    { name: "temp", level: 0, standard: false }
+    { name: "temp", level: 0, standard: false },
   ];
 
   for (const layer of specialLayers) {
@@ -102,33 +102,33 @@ Deno.test("LayerType - Structure: Hierarchical management responsibility", async
       demonstrativeType: "find",
       layerType: layer.name,
       params: ["find", layer.name],
-      options: {}
+      options: {},
     };
 
-    const layerType = LayerType.create(result);
+    const layerType = LayerType.create(_result);
     assertEquals(layerType.value, layer.name);
     assertEquals(layerType.getHierarchyLevel(), layer.level);
     assertEquals(layerType.isStandardHierarchy(), layer.standard);
 
-    logger.debug("特別階層管理確認", {
+    _logger.debug("特別階層管理確認", {
       layer: layer.name,
       level: layer.level,
-      standard: layer.standard
+      standard: layer.standard,
     });
   }
 
-  logger.debug("階層管理責務検証完了", {
+  _logger.debug("階層管理責務検証完了", {
     success: true,
     standard_layers: standardLayers.length,
-    special_layers: specialLayers.length
+    special_layers: specialLayers.length,
   });
 });
 
-Deno.test("LayerType - Structure: TwoParamsLayerTypePattern design validity", async () => {
-  logger.debug("テスト開始: TwoParamsLayerTypePattern設計妥当性検証", {
+Deno.test("LayerType - Structure: TwoParamsLayerTypePattern design validity", () => {
+  _logger.debug("テスト開始: TwoParamsLayerTypePattern設計妥当性検証", {
     testType: "structure",
     target: "TwoParamsLayerTypePattern",
-    aspect: "design_validity"
+    aspect: "design_validity",
   });
 
   // 1. パターン作成の設計適切性
@@ -153,19 +153,19 @@ Deno.test("LayerType - Structure: TwoParamsLayerTypePattern design validity", as
     assertEquals(validPattern.getLayerTypePattern(), validPattern);
   }
 
-  logger.debug("TwoParamsLayerTypePattern設計妥当性検証完了", {
+  _logger.debug("TwoParamsLayerTypePattern設計妥当性検証完了", {
     success: true,
     pattern_creation: "valid",
     pattern_matching: "accurate",
-    interface_compliance: "proper"
+    interface_compliance: "proper",
   });
 });
 
-Deno.test("LayerType - Structure: Immutable design verification", async () => {
-  logger.debug("テスト開始: LayerType Immutable設計検証", {
+Deno.test("LayerType - Structure: Immutable design verification", () => {
+  _logger.debug("テスト開始: LayerType Immutable設計検証", {
     testType: "structure",
     target: "LayerType",
-    design: "immutable"
+    design: "immutable",
   });
 
   const testResult: TwoParamsResult = {
@@ -173,7 +173,7 @@ Deno.test("LayerType - Structure: Immutable design verification", async () => {
     demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
-    options: {}
+    options: {},
   };
 
   const layerType = LayerType.create(testResult);
@@ -200,32 +200,56 @@ Deno.test("LayerType - Structure: Immutable design verification", async () => {
   assertEquals(stringRepresentation, layerType.toString());
   assertEquals(stringRepresentation.includes("issue"), true);
 
-  logger.debug("Immutable設計検証完了", {
+  _logger.debug("Immutable設計検証完了", {
     success: true,
     immutability: {
       value_consistency: true,
       hierarchy_consistency: true,
-      readonly_access: true
-    }
+      readonly_access: true,
+    },
   });
 });
 
-Deno.test("LayerType - Structure: Appropriate abstraction level", async () => {
-  logger.debug("テスト開始: LayerType適切な抽象化レベル検証", {
+Deno.test("LayerType - Structure: Appropriate abstraction level", () => {
+  _logger.debug("テスト開始: LayerType適切な抽象化レベル検証", {
     testType: "structure",
     target: "LayerType",
-    aspect: "abstraction_level"
+    aspect: "abstraction_level",
   });
 
   // 1. 異なるlayerTypeで複数のインスタンス作成
   const layerResults = [
-    { type: "two" as const, demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} },
-    { type: "two" as const, demonstrativeType: "summary", layerType: "issue", params: ["summary", "issue"], options: {} },
-    { type: "two" as const, demonstrativeType: "defect", layerType: "task", params: ["defect", "task"], options: {} },
-    { type: "two" as const, demonstrativeType: "find", layerType: "bugs", params: ["find", "bugs"], options: {} }
+    {
+      type: "two" as const,
+      demonstrativeType: "to",
+      layerType: "project",
+      params: ["to", "project"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "summary",
+      layerType: "issue",
+      params: ["summary", "issue"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "defect",
+      layerType: "task",
+      params: ["defect", "task"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "find",
+      layerType: "bugs",
+      params: ["find", "bugs"],
+      options: {},
+    },
   ];
 
-  const layerTypes = layerResults.map(result => LayerType.create(result));
+  const layerTypes = layerResults.map((_result) => LayerType.create(_result));
 
   // 2. 各インスタンスが適切な階層情報を持つことを確認
   assertEquals(layerTypes.length, 4);
@@ -248,21 +272,21 @@ Deno.test("LayerType - Structure: Appropriate abstraction level", async () => {
   assertEquals(layerType1.equals(layerType2), true);
   assertEquals(layerType1.equals(layerType3), false);
 
-  logger.debug("適切な抽象化レベル検証完了", {
+  _logger.debug("適切な抽象化レベル検証完了", {
     success: true,
     abstraction: {
       level: "appropriate",
       hierarchy_support: true,
-      comparison: "supported"
-    }
+      comparison: "supported",
+    },
   });
 });
 
-Deno.test("LayerType - Structure: Single responsibility adherence", async () => {
-  logger.debug("テスト開始: LayerType単一責任原則遵守検証", {
+Deno.test("LayerType - Structure: Single responsibility adherence", () => {
+  _logger.debug("テスト開始: LayerType単一責任原則遵守検証", {
     testType: "structure",
     target: "LayerType",
-    principle: "single_responsibility"
+    principle: "single_responsibility",
   });
 
   const testResult: TwoParamsResult = {
@@ -270,7 +294,7 @@ Deno.test("LayerType - Structure: Single responsibility adherence", async () => 
     demonstrativeType: "to",
     layerType: "task",
     params: ["to", "task"],
-    options: {}
+    options: {},
   };
 
   const layerType = LayerType.create(testResult);
@@ -291,21 +315,21 @@ Deno.test("LayerType - Structure: Single responsibility adherence", async () => 
   assertExists(layerType.originalResult);
   assertEquals(layerType.originalResult.layerType, "task");
 
-  logger.debug("単一責任原則遵守検証完了", {
+  _logger.debug("単一責任原則遵守検証完了", {
     success: true,
     responsibilities: {
       primary: "hierarchical_value_management",
-      excluded: ["validation", "transformation", "business_logic"]
+      excluded: ["validation", "transformation", "business_logic"],
     },
-    encapsulation: "proper"
+    encapsulation: "proper",
   });
 });
 
-Deno.test("LayerType - Structure: Error handling design", async () => {
-  logger.debug("テスト開始: LayerTypeエラーハンドリング設計検証", {
+Deno.test("LayerType - Structure: Error handling design", () => {
+  _logger.debug("テスト開始: LayerTypeエラーハンドリング設計検証", {
     testType: "structure",
     target: "LayerType",
-    aspect: "error_handling"
+    aspect: "error_handling",
   });
 
   // 1. Totality原則に従ったエラーハンドリング
@@ -313,29 +337,47 @@ Deno.test("LayerType - Structure: Error handling design", async () => {
   // バリデーションエラーは発生しない設計
 
   const validResults = [
-    { type: "two" as const, demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} },
-    { type: "two" as const, demonstrativeType: "summary", layerType: "issue", params: ["summary", "issue"], options: {} },
-    { type: "two" as const, demonstrativeType: "find", layerType: "bugs", params: ["find", "bugs"], options: {} }
+    {
+      type: "two" as const,
+      demonstrativeType: "to",
+      layerType: "project",
+      params: ["to", "project"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "summary",
+      layerType: "issue",
+      params: ["summary", "issue"],
+      options: {},
+    },
+    {
+      type: "two" as const,
+      demonstrativeType: "find",
+      layerType: "bugs",
+      params: ["find", "bugs"],
+      options: {},
+    },
   ];
 
   // 2. 正常な作成が常に成功することを確認
   for (const result of validResults) {
-    const layerType = LayerType.create(result);
+    const layerType = LayerType.create(_result);
     assertExists(layerType);
-    assertEquals(layerType.value, result.layerType);
+    assertEquals(layerType.value, _result.layerType);
 
-    logger.debug("正常作成確認", {
-      layerType: result.layerType,
-      success: true
+    _logger.debug("正常作成確認", {
+      layerType: _result.layerType,
+      success: true,
     });
   }
 
-  logger.debug("エラーハンドリング設計検証完了", {
+  _logger.debug("エラーハンドリング設計検証完了", {
     success: true,
     error_handling: {
       totality_principle: true,
       no_exceptions: true,
-      validated_input_assumption: true
-    }
+      validated_input_assumption: true,
+    },
   });
 });

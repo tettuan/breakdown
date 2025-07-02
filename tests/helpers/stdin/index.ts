@@ -27,14 +27,14 @@ export type {
 
 // Resource management
 export { type StdinTestResource, StdinTestResourceManager } from "./resource_manager.ts";
-import { StdinTestResourceManager } from "./resource_manager.ts";
+import { StdinTestResourceManager as _StdinTestResourceManager } from "./resource_manager.ts";
 
 // Mock implementation
 export { MockStdinReader } from "./mock_stdin_reader.ts";
 
 // Factory pattern
 export { createTestFactory, TestStdinReaderFactory } from "./factory.ts";
-import { TestStdinReaderFactory } from "./factory.ts";
+import { TestStdinReaderFactory as _TestStdinReaderFactory } from "./factory.ts";
 
 /**
  * Quick setup helper for common test scenarios

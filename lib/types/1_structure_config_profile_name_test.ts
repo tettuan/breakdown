@@ -1,12 +1,12 @@
 /**
  * @fileoverview Structure tests for ConfigProfileName
- * 
+ *
  * Tests class structure and responsibility separation:
  * - Single Responsibility Principle verification
  * - Constraint type responsibility boundaries
  * - Proper encapsulation structure
  * - Class design pattern compliance
- * 
+ *
  * @module types/config_profile_name_structure_test
  */
 
@@ -14,10 +14,10 @@ import { assertEquals, assertExists } from "../../deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigProfileName } from "./config_profile_name.ts";
 
-const logger = new BreakdownLogger("config-profile-name-structure");
+const _logger = new BreakdownLogger("config-profile-name-structure");
 
 Deno.test("Structure: Single Responsibility Principle verification", () => {
-  logger.debug("Testing Single Responsibility Principle adherence");
+  _logger.debug("Testing Single Responsibility Principle adherence");
 
   // ConfigProfileName should only be responsible for:
   // 1. Profile name validation
@@ -28,7 +28,7 @@ Deno.test("Structure: Single Responsibility Principle verification", () => {
   // - External service communication
 
   const profileName = ConfigProfileName.create("test-profile");
-  
+
   // Verify it only has the essential property
   const properties = Object.getOwnPropertyNames(profileName);
   assertEquals(properties.length, 1, "Should have exactly one property");
@@ -36,23 +36,23 @@ Deno.test("Structure: Single Responsibility Principle verification", () => {
 
   // Verify it only has the essential static method
   const staticMethods = Object.getOwnPropertyNames(ConfigProfileName).filter(
-    name => typeof (ConfigProfileName as unknown as Record<string, unknown>)[name] === "function"
+    (name) => typeof (ConfigProfileName as unknown as Record<string, unknown>)[name] === "function",
   );
   assertEquals(staticMethods.length, 1, "Should have exactly one static method");
   assertEquals(staticMethods[0], "create", "Should only have create static method");
 
   // Verify only essential instance methods (getter for value)
   const instanceMethods = Object.getOwnPropertyNames(ConfigProfileName.prototype).filter(
-    name => name !== "constructor"
+    (name) => name !== "constructor",
   );
   assertEquals(instanceMethods.length, 1, "Should have exactly one custom instance method");
   assertEquals(instanceMethods[0], "value", "Should only have value getter method");
 
-  logger.debug("Single Responsibility Principle verification completed");
+  _logger.debug("Single Responsibility Principle verification completed");
 });
 
 Deno.test("Structure: Constraint type responsibility boundaries", () => {
-  logger.debug("Testing constraint type responsibility boundaries");
+  _logger.debug("Testing constraint type responsibility boundaries");
 
   // Constraint types should:
   // 1. Encapsulate validation logic
@@ -68,7 +68,7 @@ Deno.test("Structure: Constraint type responsibility boundaries", () => {
   assertEquals(
     (ConfigProfileName as unknown as Record<string, unknown>).PROFILE_NAME_PATTERN,
     undefined,
-    "Validation pattern should be private"
+    "Validation pattern should be private",
   );
 
   // Should provide clear valid/invalid state through value
@@ -79,19 +79,19 @@ Deno.test("Structure: Constraint type responsibility boundaries", () => {
   assertEquals(
     (validProfile as unknown as Record<string, unknown>).validate,
     undefined,
-    "Should not expose validation methods"
+    "Should not expose validation methods",
   );
   assertEquals(
     (validProfile as unknown as Record<string, unknown>).isValid,
     undefined,
-    "Should not expose isValid methods"
+    "Should not expose isValid methods",
   );
 
-  logger.debug("Constraint type responsibility boundaries verified");
+  _logger.debug("Constraint type responsibility boundaries verified");
 });
 
 Deno.test("Structure: Proper encapsulation verification", () => {
-  logger.debug("Testing proper encapsulation");
+  _logger.debug("Testing proper encapsulation");
 
   const profileName = ConfigProfileName.create("staging");
 
@@ -105,7 +105,9 @@ Deno.test("Structure: Proper encapsulation verification", () => {
   // This is enforced at TypeScript level, but we can verify instance creation
   const _directInstantiation = () => {
     try {
-      return new (ConfigProfileName as unknown as Record<string, unknown> & { new (value: string): unknown })("test");
+      return new (ConfigProfileName as unknown as Record<string, unknown> & {
+        new (value: string): unknown;
+      })("test");
     } catch {
       return null;
     }
@@ -115,11 +117,11 @@ Deno.test("Structure: Proper encapsulation verification", () => {
   const factoryCreated = ConfigProfileName.create("test");
   assertExists(factoryCreated, "Factory method should work");
 
-  logger.debug("Proper encapsulation verification completed");
+  _logger.debug("Proper encapsulation verification completed");
 });
 
 Deno.test("Structure: Value object pattern compliance", () => {
-  logger.debug("Testing value object pattern compliance");
+  _logger.debug("Testing value object pattern compliance");
 
   // Value objects should be:
   // 1. Immutable
@@ -142,7 +144,11 @@ Deno.test("Structure: Value object pattern compliance", () => {
 
   // Test value-based equality (same input produces same value)
   assertEquals(profile1.value, profile2.value, "Same input should produce same value");
-  assertEquals(profile1.value !== profile3.value, true, "Different input should produce different value");
+  assertEquals(
+    profile1.value !== profile3.value,
+    true,
+    "Different input should produce different value",
+  );
 
   // Test side-effect free creation
   // Multiple calls with same input should produce same result
@@ -150,11 +156,11 @@ Deno.test("Structure: Value object pattern compliance", () => {
   const sideEffect2 = ConfigProfileName.create("side-effect-test");
   assertEquals(sideEffect1.value, sideEffect2.value, "Multiple calls should produce same result");
 
-  logger.debug("Value object pattern compliance verified");
+  _logger.debug("Value object pattern compliance verified");
 });
 
 Deno.test("Structure: Type constraint enforcement structure", () => {
-  logger.debug("Testing type constraint enforcement structure");
+  _logger.debug("Testing type constraint enforcement structure");
 
   // Test the structure enforces constraints at the type level
   const constraintTests = [
@@ -186,36 +192,36 @@ Deno.test("Structure: Type constraint enforcement structure", () => {
   ];
 
   for (const test of constraintTests) {
-    const result = ConfigProfileName.create(test.input);
-    const isValid = result.value !== null;
-    
+    const _result = ConfigProfileName.create(test.input);
+    const isValid = _result.value !== null;
+
     assertEquals(
       isValid,
       test.expectedValid,
-      `${test.description}: Expected ${test.expectedValid}, got ${isValid}`
+      `${test.description}: Expected ${test.expectedValid}, got ${isValid}`,
     );
 
     // Verify constraint enforcement is consistent
     if (test.expectedValid) {
       assertEquals(
-        typeof result.value,
+        typeof _result.value,
         "string",
-        `${test.description}: Valid input should have string value`
+        `${test.description}: Valid input should have string value`,
       );
     } else {
       assertEquals(
-        result.value,
+        _result.value,
         null,
-        `${test.description}: Invalid input should have null value`
+        `${test.description}: Invalid input should have null value`,
       );
     }
   }
 
-  logger.debug("Type constraint enforcement structure verified");
+  _logger.debug("Type constraint enforcement structure verified");
 });
 
 Deno.test("Structure: Domain modeling appropriateness", () => {
-  logger.debug("Testing domain modeling appropriateness");
+  _logger.debug("Testing domain modeling appropriateness");
 
   // ConfigProfileName should model the domain concept appropriately
   // It represents configuration profiles used in BreakdownConfig
@@ -223,7 +229,7 @@ Deno.test("Structure: Domain modeling appropriateness", () => {
   // Should handle typical configuration profile scenarios
   const commonProfiles = [
     "production",
-    "staging", 
+    "staging",
     "development",
     "test",
     "local",
@@ -235,11 +241,11 @@ Deno.test("Structure: Domain modeling appropriateness", () => {
   ];
 
   for (const profile of commonProfiles) {
-    const result = ConfigProfileName.create(profile);
+    const _result = ConfigProfileName.create(profile);
     assertEquals(
-      typeof result.value,
+      typeof _result.value,
       "string",
-      `Common profile ${profile} should be valid`
+      `Common profile ${profile} should be valid`,
     );
   }
 
@@ -253,19 +259,19 @@ Deno.test("Structure: Domain modeling appropriateness", () => {
   ];
 
   for (const input of inappropriateInputs) {
-    const result = ConfigProfileName.create(input);
+    const _result = ConfigProfileName.create(input);
     assertEquals(
-      result.value,
+      _result.value,
       null,
-      `Inappropriate input ${input} should be invalid`
+      `Inappropriate input ${input} should be invalid`,
     );
   }
 
-  logger.debug("Domain modeling appropriateness verified");
+  _logger.debug("Domain modeling appropriateness verified");
 });
 
 Deno.test("Structure: Error handling responsibility", () => {
-  logger.debug("Testing error handling responsibility");
+  _logger.debug("Testing error handling responsibility");
 
   // ConfigProfileName should handle errors by returning null values,
   // not by throwing exceptions (graceful degradation)
@@ -282,28 +288,28 @@ Deno.test("Structure: Error handling responsibility", () => {
   ];
 
   for (const input of errorProneInputs) {
-    const inputStr = typeof input === 'symbol' ? 'Symbol' : String(input);
+    const inputStr = typeof input === "symbol" ? "Symbol" : String(input);
     try {
-      const result = ConfigProfileName.create(input as string | null);
-      
+      const _result = ConfigProfileName.create(input as string | null);
+
       // Should always return an instance, never throw
-      assertExists(result, `Input ${inputStr} should return instance, not throw`);
+      assertExists(_result, `Input ${inputStr} should return instance, not throw`);
       assertEquals(
-        result.constructor.name,
+        _result.constructor.name,
         "ConfigProfileName",
-        "Should return ConfigProfileName instance"
+        "Should return ConfigProfileName instance",
       );
-      
+
       // Invalid inputs should result in null value
       assertEquals(
-        result.value,
+        _result.value,
         null,
-        `Invalid input ${inputStr} should have null value`
+        `Invalid input ${inputStr} should have null value`,
       );
     } catch (error) {
       throw new Error(`ConfigProfileName.create should not throw for any input: ${error}`);
     }
   }
 
-  logger.debug("Error handling responsibility verified");
+  _logger.debug("Error handling responsibility verified");
 });

@@ -276,7 +276,7 @@ export async function globalTestCleanup(): Promise<void> {
  * Calculate directory size in bytes
  */
 async function getTmpDirectorySize(dirPath: string): Promise<number> {
-  let totalSize = 0;
+  const totalSize = 0;
 
   try {
     for await (const entry of Deno.readDir(dirPath)) {
@@ -316,7 +316,7 @@ export async function runCommand(
   const absoluteCwd = cwd ? (cwd.startsWith("/") ? cwd : join(Deno.cwd(), cwd)) : undefined;
 
   if (logger) {
-    logger.debug("[runCommand] invoked", {
+    _logger.debug("[runCommand] invoked", {
       cwd: Deno.cwd(),
       args,
       breakdownPath,

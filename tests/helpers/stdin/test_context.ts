@@ -144,7 +144,7 @@ import {
   StdinTestResourceManager,
   TestStdinReaderFactory,
 } from "./mock_factory.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 /**
  * StdinTestContext
@@ -233,8 +233,8 @@ export function defineStdinTests(cases: StdinTestCase[]): void {
               testCase.expectedError,
             );
           } else {
-            const result = await reader.read({ timeout: testCase.timeout });
-            assertEquals(result, testCase.expectedOutput);
+            const _result = await reader.read({ timeout: testCase.timeout });
+            assertEquals(_result, testCase.expectedOutput);
           }
         });
       },

@@ -1,13 +1,13 @@
 /**
  * @fileoverview Unit test for workspace/errors module
- * 
+ *
  * このテストはワークスペースエラーモジュールの機能動作を検証します：
  * - 各エラークラスのインスタンス化と基本動作
  * - エラーメッセージとコードの正確性
  * - エラープロパティの設定と取得
  * - 継承チェーンの動作確認
  * - エラー固有の振る舞い
- * 
+ *
  * 単体テストの目的は、各エラークラスが仕様通りに動作し、
  * 期待される結果を返すことを保証することです。
  */
@@ -15,22 +15,22 @@
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
-  WorkspaceError, 
-  WorkspaceInitError, 
-  WorkspaceConfigError, 
-  WorkspacePathError, 
-  WorkspaceDirectoryError 
+import {
+  WorkspaceConfigError,
+  WorkspaceDirectoryError,
+  WorkspaceError,
+  WorkspaceInitError,
+  WorkspacePathError,
 } from "./errors.ts";
 
-const logger = new BreakdownLogger("test-unit-errors");
+const _logger = new BreakdownLogger("test-unit-errors");
 
-describe("Workspace Errors - Unit Tests", () => {
-  describe("WorkspaceError (Base Class)", () => {
+describe("Workspace Errors - Unit Tests", async () => {
+  describe("WorkspaceError (Base Class)", async () => {
     it("should create WorkspaceError with message and code", async () => {
-      logger.debug("Testing WorkspaceError instantiation", {
+      _logger.debug("Testing WorkspaceError instantiation", {
         testType: "unit",
-        target: "WorkspaceError"
+        target: "WorkspaceError",
       });
 
       const { WorkspaceError } = await import("./errors.ts");
@@ -44,65 +44,65 @@ describe("Workspace Errors - Unit Tests", () => {
       assertInstanceOf(error, Error);
       assertInstanceOf(error, WorkspaceError);
 
-      logger.debug("WorkspaceError created successfully", {
+      _logger.debug("WorkspaceError created successfully", {
         message,
         code,
-        name: error.name
+        name: error.name,
       });
     });
 
     it("should have proper stack trace", async () => {
-      logger.debug("Testing stack trace generation", {
+      _logger.debug("Testing stack trace generation", {
         testType: "unit",
-        target: "WorkspaceError.stack"
+        target: "WorkspaceError.stack",
       });
 
       const { WorkspaceError } = await import("./errors.ts");
       const error = new WorkspaceError("Stack trace test", "STACK_TEST");
-      
+
       assertExists(error.stack);
       assertEquals(typeof error.stack, "string");
       assertEquals(error.stack.includes("WorkspaceError"), true);
       assertEquals(error.stack.includes("Stack trace test"), true);
 
-      logger.debug("Stack trace verified", {
+      _logger.debug("Stack trace verified", {
         hasStack: true,
         includesErrorType: true,
-        includesMessage: true
+        includesMessage: true,
       });
     });
 
     it("should handle empty message and code", async () => {
-      logger.debug("Testing empty values handling", {
+      _logger.debug("Testing empty values handling", {
         testType: "unit",
         target: "WorkspaceError",
-        edge: "empty_values"
+        edge: "empty_values",
       });
 
       const { WorkspaceError } = await import("./errors.ts");
       const error = new WorkspaceError("", "");
-      
+
       assertEquals(error.message, "");
       assertEquals(error.code, "");
       assertEquals(error.name, "WorkspaceError");
       assertExists(error.stack);
 
-      logger.debug("Empty values handled correctly", {
+      _logger.debug("Empty values handled correctly", {
         emptyMessage: true,
         emptyCode: true,
-        stillValid: true
+        stillValid: true,
       });
     });
 
     it("should be throwable and catchable", async () => {
-      logger.debug("Testing throw/catch behavior", {
+      _logger.debug("Testing throw/catch behavior", {
         testType: "unit",
         target: "WorkspaceError",
-        behavior: "throwable"
+        behavior: "throwable",
       });
 
       const { WorkspaceError } = await import("./errors.ts");
-      let caught = false;
+      const caught = false;
       let caughtError: InstanceType<typeof WorkspaceError> | null = null;
 
       try {
@@ -119,19 +119,19 @@ describe("Workspace Errors - Unit Tests", () => {
       assertEquals(caughtError?.message, "Thrown error");
       assertEquals(caughtError?.code, "THROW_TEST");
 
-      logger.debug("Throw/catch behavior verified", {
+      _logger.debug("Throw/catch behavior verified", {
         throwable: true,
         catchable: true,
-        properInstance: true
+        properInstance: true,
       });
     });
   });
 
-  describe("WorkspaceInitError", () => {
+  describe("WorkspaceInitError", async () => {
     it("should create WorkspaceInitError with proper defaults", async () => {
-      logger.debug("Testing WorkspaceInitError instantiation", {
+      _logger.debug("Testing WorkspaceInitError instantiation", {
         testType: "unit",
-        target: "WorkspaceInitError"
+        target: "WorkspaceInitError",
       });
 
       const { WorkspaceError, WorkspaceInitError } = await import("./errors.ts");
@@ -145,18 +145,18 @@ describe("Workspace Errors - Unit Tests", () => {
       assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceInitError);
 
-      logger.debug("WorkspaceInitError created successfully", {
+      _logger.debug("WorkspaceInitError created successfully", {
         message,
         code: error.code,
-        properInheritance: true
+        properInheritance: true,
       });
     });
 
-    it("should handle various initialization failure messages", () => {
-      logger.debug("Testing various init failure scenarios", {
+    it("should handle various initialization failure messages", async () => {
+      _logger.debug("Testing various init failure scenarios", {
         testType: "unit",
         target: "WorkspaceInitError",
-        scenarios: "multiple"
+        scenarios: "multiple",
       });
 
       const initScenarios = [
@@ -165,59 +165,59 @@ describe("Workspace Errors - Unit Tests", () => {
         "Workspace already exists at specified location",
         "Parent directory does not exist",
         "Disk quota exceeded",
-        "Invalid workspace configuration during initialization"
+        "Invalid workspace configuration during initialization",
       ];
 
       for (const scenario of initScenarios) {
         const error = new WorkspaceInitError(scenario);
-        
+
         assertEquals(error.message, scenario);
         assertEquals(error.code, "WORKSPACE_INIT_ERROR");
         assertEquals(error.name, "WorkspaceInitError");
-        
-        logger.debug("Init scenario handled", {
+
+        _logger.debug("Init scenario handled", {
           scenario,
-          errorCreated: true
+          errorCreated: true,
         });
       }
 
-      logger.debug("All init scenarios tested", {
+      _logger.debug("All init scenarios tested", {
         scenarioCount: initScenarios.length,
-        allHandled: true
+        allHandled: true,
       });
     });
 
-    it("should be distinguishable from other error types", () => {
-      logger.debug("Testing error type distinction", {
+    it("should be distinguishable from other error types", async () => {
+      _logger.debug("Testing error type distinction", {
         testType: "unit",
         target: "WorkspaceInitError",
-        aspect: "type_checking"
+        aspect: "type_checking",
       });
 
       const initError = new WorkspaceInitError("Init error");
       const configError = new WorkspaceConfigError("Config error");
-      
+
       // Positive checks
       assertInstanceOf(initError, WorkspaceInitError);
       assertInstanceOf(initError, WorkspaceError);
-      
+
       // Negative checks
       assertEquals(initError instanceof WorkspaceConfigError, false);
       assertEquals(initError instanceof WorkspacePathError, false);
       assertEquals(initError instanceof WorkspaceDirectoryError, false);
 
-      logger.debug("Error type distinction verified", {
+      _logger.debug("Error type distinction verified", {
         correctType: true,
-        notOtherTypes: true
+        notOtherTypes: true,
       });
     });
   });
 
-  describe("WorkspaceConfigError", () => {
-    it("should create WorkspaceConfigError with proper defaults", () => {
-      logger.debug("Testing WorkspaceConfigError instantiation", {
+  describe("WorkspaceConfigError", async () => {
+    it("should create WorkspaceConfigError with proper defaults", async () => {
+      _logger.debug("Testing WorkspaceConfigError instantiation", {
         testType: "unit",
-        target: "WorkspaceConfigError"
+        target: "WorkspaceConfigError",
       });
 
       const message = "Invalid configuration format";
@@ -230,18 +230,18 @@ describe("Workspace Errors - Unit Tests", () => {
       assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceConfigError);
 
-      logger.debug("WorkspaceConfigError created successfully", {
+      _logger.debug("WorkspaceConfigError created successfully", {
         message,
         code: error.code,
-        properInheritance: true
+        properInheritance: true,
       });
     });
 
-    it("should handle various configuration error messages", () => {
-      logger.debug("Testing various config error scenarios", {
+    it("should handle various configuration error messages", async () => {
+      _logger.debug("Testing various config error scenarios", {
         testType: "unit",
         target: "WorkspaceConfigError",
-        scenarios: "multiple"
+        scenarios: "multiple",
       });
 
       const configScenarios = [
@@ -250,65 +250,65 @@ describe("Workspace Errors - Unit Tests", () => {
         "Configuration file not found: .breakdown/config.json",
         "Malformed JSON in configuration file",
         "Unsupported configuration version: 3.0",
-        "Conflicting configuration options: debug and production"
+        "Conflicting configuration options: debug and production",
       ];
 
       for (const scenario of configScenarios) {
         const error = new WorkspaceConfigError(scenario);
-        
+
         assertEquals(error.message, scenario);
         assertEquals(error.code, "WORKSPACE_CONFIG_ERROR");
         assertEquals(error.name, "WorkspaceConfigError");
-        
-        logger.debug("Config scenario handled", {
+
+        _logger.debug("Config scenario handled", {
           scenario,
-          errorCreated: true
+          errorCreated: true,
         });
       }
 
-      logger.debug("All config scenarios tested", {
+      _logger.debug("All config scenarios tested", {
         scenarioCount: configScenarios.length,
-        allHandled: true
+        allHandled: true,
       });
     });
 
     it("should properly stringify for logging", async () => {
-      logger.debug("Testing error stringification", {
+      _logger.debug("Testing error stringification", {
         testType: "unit",
         target: "WorkspaceConfigError",
-        aspect: "toString"
+        aspect: "toString",
       });
 
       const { WorkspaceConfigError } = await import("./errors.ts");
       const error = new WorkspaceConfigError("Test config error");
       const stringified = error.toString();
-      
+
       assertEquals(typeof stringified, "string");
       assertEquals(stringified.includes("WorkspaceConfigError"), true);
       assertEquals(stringified.includes("Test config error"), true);
-      
+
       // JSON stringification
       const jsonStringified = JSON.stringify({
         name: error.name,
         message: error.message,
-        code: error.code
+        code: error.code,
       });
-      
+
       assertEquals(jsonStringified.includes("WorkspaceConfigError"), true);
       assertEquals(jsonStringified.includes("WORKSPACE_CONFIG_ERROR"), true);
 
-      logger.debug("Stringification verified", {
+      _logger.debug("Stringification verified", {
         toString: true,
-        jsonStringify: true
+        jsonStringify: true,
       });
     });
   });
 
-  describe("WorkspacePathError", () => {
+  describe("WorkspacePathError", async () => {
     it("should create WorkspacePathError with proper defaults", async () => {
-      logger.debug("Testing WorkspacePathError instantiation", {
+      _logger.debug("Testing WorkspacePathError instantiation", {
         testType: "unit",
-        target: "WorkspacePathError"
+        target: "WorkspacePathError",
       });
 
       const { WorkspaceError, WorkspacePathError } = await import("./errors.ts");
@@ -322,18 +322,18 @@ describe("Workspace Errors - Unit Tests", () => {
       assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspacePathError);
 
-      logger.debug("WorkspacePathError created successfully", {
+      _logger.debug("WorkspacePathError created successfully", {
         message,
         code: error.code,
-        properInheritance: true
+        properInheritance: true,
       });
     });
 
     it("should handle various path error scenarios", async () => {
-      logger.debug("Testing various path error scenarios", {
+      _logger.debug("Testing various path error scenarios", {
         testType: "unit",
         target: "WorkspacePathError",
-        scenarios: "multiple"
+        scenarios: "multiple",
       });
 
       const { WorkspacePathError } = await import("./errors.ts");
@@ -344,33 +344,33 @@ describe("Workspace Errors - Unit Tests", () => {
         "Circular symbolic link detected",
         "Path not found: projects/nonexistent/file.ts",
         "Access denied: insufficient permissions for path",
-        "Invalid characters in path: <|>*?"
+        "Invalid characters in path: <|>*?",
       ];
 
       for (const scenario of pathScenarios) {
         const error = new WorkspacePathError(scenario);
-        
+
         assertEquals(error.message, scenario);
         assertEquals(error.code, "WORKSPACE_PATH_ERROR");
         assertEquals(error.name, "WorkspacePathError");
-        
-        logger.debug("Path scenario handled", {
+
+        _logger.debug("Path scenario handled", {
           scenario,
-          errorCreated: true
+          errorCreated: true,
         });
       }
 
-      logger.debug("All path scenarios tested", {
+      _logger.debug("All path scenarios tested", {
         scenarioCount: pathScenarios.length,
-        allHandled: true
+        allHandled: true,
       });
     });
 
     it("should handle edge cases for paths", async () => {
-      logger.debug("Testing path edge cases", {
+      _logger.debug("Testing path edge cases", {
         testType: "unit",
         target: "WorkspacePathError",
-        edge: "paths"
+        edge: "paths",
       });
 
       const { WorkspacePathError } = await import("./errors.ts");
@@ -381,34 +381,34 @@ describe("Workspace Errors - Unit Tests", () => {
         { path: "~", message: "Home directory expansion not supported" },
         { path: "/", message: "Root directory access not allowed" },
         { path: "//", message: "Double slash in path" },
-        { path: "\\", message: "Backslash not supported" }
+        { path: "\\", message: "Backslash not supported" },
       ];
 
       for (const { path, message } of edgeCases) {
         const error = new WorkspacePathError(`${message}: '${path}'`);
-        
+
         assertEquals(error.message.includes(path), true);
         assertEquals(error.message.includes(message), true);
         assertEquals(error.code, "WORKSPACE_PATH_ERROR");
-        
-        logger.debug("Path edge case handled", {
+
+        _logger.debug("Path edge case handled", {
           path,
           message,
-          handled: true
+          handled: true,
         });
       }
 
-      logger.debug("All path edge cases tested", {
-        edgeCaseCount: edgeCases.length
+      _logger.debug("All path edge cases tested", {
+        edgeCaseCount: edgeCases.length,
       });
     });
   });
 
-  describe("WorkspaceDirectoryError", () => {
+  describe("WorkspaceDirectoryError", async () => {
     it("should create WorkspaceDirectoryError with proper defaults", async () => {
-      logger.debug("Testing WorkspaceDirectoryError instantiation", {
+      _logger.debug("Testing WorkspaceDirectoryError instantiation", {
         testType: "unit",
-        target: "WorkspaceDirectoryError"
+        target: "WorkspaceDirectoryError",
       });
 
       const { WorkspaceError, WorkspaceDirectoryError } = await import("./errors.ts");
@@ -422,18 +422,18 @@ describe("Workspace Errors - Unit Tests", () => {
       assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceDirectoryError);
 
-      logger.debug("WorkspaceDirectoryError created successfully", {
+      _logger.debug("WorkspaceDirectoryError created successfully", {
         message,
         code: error.code,
-        properInheritance: true
+        properInheritance: true,
       });
     });
 
     it("should handle various directory operation errors", async () => {
-      logger.debug("Testing various directory operation scenarios", {
+      _logger.debug("Testing various directory operation scenarios", {
         testType: "unit",
         target: "WorkspaceDirectoryError",
-        scenarios: "multiple"
+        scenarios: "multiple",
       });
 
       const { WorkspaceDirectoryError } = await import("./errors.ts");
@@ -445,33 +445,33 @@ describe("Workspace Errors - Unit Tests", () => {
         "Directory name contains invalid characters",
         "Maximum directory depth exceeded",
         "Disk quota exceeded while creating directory",
-        "Directory is read-only"
+        "Directory is read-only",
       ];
 
       for (const scenario of directoryScenarios) {
         const error = new WorkspaceDirectoryError(scenario);
-        
+
         assertEquals(error.message, scenario);
         assertEquals(error.code, "WORKSPACE_DIRECTORY_ERROR");
         assertEquals(error.name, "WorkspaceDirectoryError");
-        
-        logger.debug("Directory scenario handled", {
+
+        _logger.debug("Directory scenario handled", {
           scenario,
-          errorCreated: true
+          errorCreated: true,
         });
       }
 
-      logger.debug("All directory scenarios tested", {
+      _logger.debug("All directory scenarios tested", {
         scenarioCount: directoryScenarios.length,
-        allHandled: true
+        allHandled: true,
       });
     });
 
     it("should handle complex directory operation failures", async () => {
-      logger.debug("Testing complex directory operations", {
+      _logger.debug("Testing complex directory operations", {
         testType: "unit",
         target: "WorkspaceDirectoryError",
-        complexity: "high"
+        complexity: "high",
       });
 
       const { WorkspaceDirectoryError } = await import("./errors.ts");
@@ -479,45 +479,45 @@ describe("Workspace Errors - Unit Tests", () => {
         {
           operation: "recursive create",
           message: "Failed to create nested directories: a/b/c/d/e",
-          expectation: "handles deep nesting"
+          expectation: "handles deep nesting",
         },
         {
           operation: "atomic rename",
           message: "Cannot rename directory: source and target on different filesystems",
-          expectation: "filesystem boundaries"
+          expectation: "filesystem boundaries",
         },
         {
           operation: "permission cascade",
           message: "Failed to set permissions recursively: some files inaccessible",
-          expectation: "partial failures"
-        }
+          expectation: "partial failures",
+        },
       ];
 
       for (const { operation, message, expectation } of complexOperations) {
         const error = new WorkspaceDirectoryError(message);
-        
+
         assertEquals(error.message, message);
         assertEquals(error.code, "WORKSPACE_DIRECTORY_ERROR");
-        
-        logger.debug("Complex operation handled", {
+
+        _logger.debug("Complex operation handled", {
           operation,
           expectation,
-          handled: true
+          handled: true,
         });
       }
 
-      logger.debug("Complex operations tested", {
+      _logger.debug("Complex operations tested", {
         operationCount: complexOperations.length,
-        allHandled: true
+        allHandled: true,
       });
     });
   });
 
-  describe("Error interoperability", () => {
+  describe("Error interoperability", async () => {
     it("should work with standard error handling", async () => {
-      logger.debug("Testing standard error handling compatibility", {
+      _logger.debug("Testing standard error handling compatibility", {
         testType: "unit",
-        aspect: "interoperability"
+        aspect: "interoperability",
       });
 
       const { WorkspaceError, WorkspaceInitError } = await import("./errors.ts");
@@ -525,9 +525,9 @@ describe("Workspace Errors - Unit Tests", () => {
         throw new WorkspaceInitError("Simulated failure");
       }
 
-      let errorMessage = "";
-      let errorCode = "";
-      let isWorkspaceError = false;
+      const errorMessage = "";
+      const errorCode = "";
+      const isWorkspaceError = false;
 
       try {
         riskyOperation();
@@ -545,17 +545,17 @@ describe("Workspace Errors - Unit Tests", () => {
       assertEquals(errorCode, "WORKSPACE_INIT_ERROR");
       assertEquals(isWorkspaceError, true);
 
-      logger.debug("Standard error handling verified", {
+      _logger.debug("Standard error handling verified", {
         catchesAsError: true,
         catchesAsWorkspaceError: true,
-        preservesProperties: true
+        preservesProperties: true,
       });
     });
 
     it("should work with Promise rejections", async () => {
-      logger.debug("Testing Promise rejection handling", {
+      _logger.debug("Testing Promise rejection handling", {
         testType: "unit",
-        aspect: "promise_compatibility"
+        aspect: "promise_compatibility",
       });
 
       const { WorkspaceConfigError } = await import("./errors.ts");
@@ -563,7 +563,7 @@ describe("Workspace Errors - Unit Tests", () => {
         throw new WorkspaceConfigError("Async config error");
       }
 
-      let caught = false;
+      const caught = false;
       let error: InstanceType<typeof WorkspaceConfigError> | null = null;
 
       try {
@@ -580,24 +580,29 @@ describe("Workspace Errors - Unit Tests", () => {
       assertEquals(error?.message, "Async config error");
       assertEquals(error?.code, "WORKSPACE_CONFIG_ERROR");
 
-      logger.debug("Promise rejection handling verified", {
+      _logger.debug("Promise rejection handling verified", {
         asyncCompatible: true,
-        properError: true
+        properError: true,
       });
     });
 
     it("should provide useful debugging information", async () => {
-      logger.debug("Testing debugging information availability", {
+      _logger.debug("Testing debugging information availability", {
         testType: "unit",
-        aspect: "debugging"
+        aspect: "debugging",
       });
 
-      const { WorkspaceInitError, WorkspaceConfigError, WorkspacePathError, WorkspaceDirectoryError } = await import("./errors.ts");
+      const {
+        WorkspaceInitError,
+        WorkspaceConfigError,
+        WorkspacePathError,
+        WorkspaceDirectoryError,
+      } = await import("./errors.ts");
       const errors = [
         new WorkspaceInitError("Init debug test"),
         new WorkspaceConfigError("Config debug test"),
         new WorkspacePathError("Path debug test"),
-        new WorkspaceDirectoryError("Directory debug test")
+        new WorkspaceDirectoryError("Directory debug test"),
       ];
 
       for (const error of errors) {
@@ -606,24 +611,24 @@ describe("Workspace Errors - Unit Tests", () => {
         assertExists(error.message);
         assertExists(error.code);
         assertExists(error.stack);
-        
+
         // Verify error is distinguishable
         assertEquals(error.name !== "Error", true);
         assertEquals(error.code !== "", true);
-        
+
         // Verify stack trace contains useful info
         assertEquals(error.stack?.includes(error.name), true);
-        
-        logger.debug("Debugging info verified", {
+
+        _logger.debug("Debugging info verified", {
           errorType: error.name,
           hasAllProperties: true,
-          distinguishable: true
+          distinguishable: true,
         });
       }
 
-      logger.debug("All errors provide debugging information", {
+      _logger.debug("All errors provide debugging information", {
         errorCount: errors.length,
-        debuggable: true
+        debuggable: true,
       });
     });
   });

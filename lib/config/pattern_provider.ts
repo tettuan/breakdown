@@ -1,10 +1,10 @@
 /**
  * @fileoverview TypePatternProvider implementation for BreakdownConfig integration
- * 
+ *
  * This module provides the concrete implementation of TypePatternProvider that
  * integrates with BreakdownConfig to retrieve validation patterns for DirectiveType
  * and LayerType from configuration files (user.yml).
- * 
+ *
  * @module config/pattern_provider
  */
 
@@ -20,7 +20,7 @@ import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 interface PatternConfig {
   /** Regular expression pattern for DirectiveType validation */
   directivePattern?: string;
-  /** Regular expression pattern for LayerType validation */  
+  /** Regular expression pattern for LayerType validation */
   layerTypePattern?: string;
   /** Alternative nested structure for two-param validation rules */
   twoParamsRules?: {
@@ -37,34 +37,34 @@ interface PatternConfig {
 
 /**
  * BreakdownConfig-based implementation of TypePatternProvider
- * 
+ *
  * This class integrates with BreakdownConfig to retrieve validation patterns
  * from configuration files, supporting multiple configuration formats and
  * environments (development, staging, production).
- * 
+ *
  * @example Basic usage with BreakdownConfig
  * ```typescript
- * const configResult = await BreakdownConfig.create("production", "/workspace");
+ * const _configResult = await BreakdownConfig.create("production", "/workspace");
  * if (!configResult.success || !configResult.data) {
  *   throw new Error(`Config creation failed: ${configResult.error}`);
  * }
- * 
+ *
  * const provider = new ConfigPatternProvider(configResult.data);
  * const directivePattern = provider.getDirectivePattern();
  * const layerPattern = provider.getLayerTypePattern();
- * 
+ *
  * if (directivePattern && layerPattern) {
  *   const factory = new TypeFactory(provider);
  *   // Use factory with validated patterns
  * }
  * ```
- * 
+ *
  * @example Custom pattern configuration in user.yml
  * ```yaml
  * # Basic pattern configuration
  * directivePattern: "^(to|summary|defect|init|find)$"
  * layerTypePattern: "^(project|issue|task|bugs|temp)$"
- * 
+ *
  * # Alternative nested structure
  * twoParamsRules:
  *   directive:
@@ -87,7 +87,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Creates a new ConfigPatternProvider instance
-   * 
+   *
    * @param config - Initialized BreakdownConfig instance with loaded configuration
    */
   constructor(config: BreakdownConfig) {
@@ -103,14 +103,14 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Factory method to create ConfigPatternProvider with automatic config loading
-   * 
+   *
    * @param configSetName - Configuration set name (e.g., "default", "production")
    * @param workspacePath - Workspace path for configuration resolution
    * @returns Promise<ConfigPatternProvider> - Initialized provider instance
    */
   static async create(
     configSetName: string = "default",
-    workspacePath: string = Deno.cwd()
+    workspacePath: string = Deno.cwd(),
   ): Promise<ConfigPatternProvider> {
     const configResult = await BreakdownConfig.create(configSetName, workspacePath);
     if (!configResult.success) {
@@ -123,7 +123,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Retrieves DirectiveType validation pattern from configuration
-   * 
+   *
    * @returns TwoParamsDirectivePattern | null - Pattern if configured and valid, null otherwise
    */
   getDirectivePattern(): TwoParamsDirectivePattern | null {
@@ -135,7 +135,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
       // For now, use sync method to avoid breaking interface
       const configData = this.getConfigDataSync();
       const patternString = this.extractDirectivePatternString(configData);
-      
+
       if (!patternString) {
         this.patternCache.directive = null;
         return null;
@@ -153,7 +153,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Retrieves LayerType validation pattern from configuration
-   * 
+   *
    * @returns TwoParamsLayerTypePattern | null - Pattern if configured and valid, null otherwise
    */
   getLayerTypePattern(): TwoParamsLayerTypePattern | null {
@@ -165,7 +165,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
       // For now, use sync method to avoid breaking interface
       const configData = this.getConfigDataSync();
       const patternString = this.extractLayerTypePatternString(configData);
-      
+
       if (!patternString) {
         this.patternCache.layer = null;
         return null;
@@ -183,7 +183,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Checks if both patterns are available and valid
-   * 
+   *
    * @returns boolean - True if both directive and layer patterns are available
    */
   hasValidPatterns(): boolean {
@@ -201,21 +201,25 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Gets configuration data from BreakdownConfig
-   * 
+   *
    * @returns Record<string, unknown> - Configuration data object
    */
   private async getConfigData(): Promise<Record<string, unknown>> {
     try {
       return await this.config.getConfig();
     } catch (error) {
-      throw new Error(`Failed to get configuration data: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get configuration data: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
   /**
    * Gets configuration data from BreakdownConfig synchronously
    * This is a temporary solution to avoid breaking the interface
-   * 
+   *
    * @returns Record<string, unknown> - Configuration data object
    */
   private getConfigDataSync(): Record<string, unknown> {
@@ -227,7 +231,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
   /**
    * Extracts directive pattern string from configuration data
    * Supports multiple configuration formats and fallbacks
-   * 
+   *
    * @param configData - Configuration data object
    * @returns string | null - Pattern string if found, null otherwise
    */
@@ -239,7 +243,9 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
     // Try nested structure
     const twoParamsRules = configData.twoParamsRules as PatternConfig["twoParamsRules"];
-    if (twoParamsRules?.directive?.pattern && typeof twoParamsRules.directive.pattern === "string") {
+    if (
+      twoParamsRules?.directive?.pattern && typeof twoParamsRules.directive.pattern === "string"
+    ) {
       return twoParamsRules.directive.pattern;
     }
 
@@ -259,7 +265,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
   /**
    * Extracts layer type pattern string from configuration data
    * Supports multiple configuration formats and fallbacks
-   * 
+   *
    * @param configData - Configuration data object
    * @returns string | null - Pattern string if found, null otherwise
    */
@@ -290,7 +296,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Gets debug information about the pattern provider state
-   * 
+   *
    * @returns Debug information object
    */
   debug(): {
@@ -307,16 +313,16 @@ export class ConfigPatternProvider implements TypePatternProvider {
       hasDirectivePattern: this.getDirectivePattern() !== null,
       hasLayerTypePattern: this.getLayerTypePattern() !== null,
       cacheStatus: {
-        directive: this.patternCache.directive === undefined 
-          ? "not_loaded" 
-          : this.patternCache.directive === null 
-            ? "null" 
-            : "cached",
-        layer: this.patternCache.layer === undefined 
-          ? "not_loaded" 
-          : this.patternCache.layer === null 
-            ? "null" 
-            : "cached",
+        directive: this.patternCache.directive === undefined
+          ? "not_loaded"
+          : this.patternCache.directive === null
+          ? "null"
+          : "cached",
+        layer: this.patternCache.layer === undefined
+          ? "not_loaded"
+          : this.patternCache.layer === null
+          ? "null"
+          : "cached",
       },
     };
   }

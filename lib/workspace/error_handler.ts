@@ -41,7 +41,7 @@ export class WorkspaceErrorHandlerImpl implements WorkspaceErrorHandler {
    *
    * @example
    * ```typescript
-   * const handler = new WorkspaceErrorHandlerImpl();
+   * const _handler = new WorkspaceErrorHandlerImpl();
    *
    * // Handle a workspace-specific error
    * const initError = new WorkspaceInitError("Failed to create directory");

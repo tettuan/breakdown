@@ -1,146 +1,143 @@
 /**
- * Type definitions for the Breakdown tool.
+ * @fileoverview Types module barrel export
  *
- * This module contains core type definitions used throughout the Breakdown tool.
- * It defines the fundamental types for commands and layers that structure the
- * application's functionality, following the Totality principle for type safety.
+ * This module provides centralized exports for all type definitions,
+ * interfaces, and type utilities used throughout the Breakdown application.
  *
- * @example Basic usage with new Totality-compliant types
- * ```ts
- * import { TypeFactory, TypePatternProvider } from "@tettuan/breakdown/lib/types/mod.ts";
+ * ## Totality Principle
  *
- * // Totality-compliant type construction
- * const factory = new TypeFactory(patternProvider);
- * const directiveResult = factory.createDirectiveType("to");
- * if (directiveResult.ok) {
- *   console.log(directiveResult.data.getValue()); // "to"
+ * The types in this module follow the Totality principle:
+ * - All functions are total (no exceptions, undefined returns)
+ * - All error cases are represented as values using Result types
+ * - Exhaustive pattern matching is enforced through discriminated unions
+ *
+ * New types (DirectiveType, LayerType, etc.) are Totality-compliant and provide
+ * type-safe creation and validation. Legacy types are maintained for backward
+ * compatibility but are deprecated in favor of the new approach.
+ *
+ * @example Basic Usage - Creating Totality-compliant types
+ * ```typescript
+ * import { DirectiveType, LayerType, TypeFactory } from "./mod.ts";
+ *
+ * // Create type factory with pattern provider
+ * const _factory = new TypeFactory(patternProvider);
+ *
+ * // Create validated types
+ * const directive = DirectiveType.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ * const layer = LayerType.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ * ```
+ *
+ * @example Error Handling with Result Types
+ * ```typescript
+ * import { ok, error, isOk, isError, map } from "./mod.ts";
+ *
+ * // Create a success result
+ * const successResult = ok({ value: 42 });
+ *
+ * // Create an error result
+ * const errorResult = error("Invalid input");
+ *
+ * // Check result status
+ * if (isOk(successResult)) {
+ *   console.log("Success:", successResult.value);
+ * }
+ *
+ * // Transform results functionally
+ * const doubled = map(successResult, (val) => val.value * 2);
+ * ```
+ *
+ * @example Working with PromptVariables
+ * ```typescript
+ * import { createPromptParams, StandardVariable, FilePathVariable } from "./mod.ts";
+ *
+ * // Create prompt parameters with different variable types
+ * const params = createPromptParams({
+ *   directive: StandardVariable.create("directive", "to"),
+ *   layer: StandardVariable.create("layer", "project"),
+ *   inputFile: FilePathVariable.create("inputFile", "/path/to/input.md"),
+ * });
+ * ```
+ *
+ * @example Using ConfigProfileName for profile management
+ * ```typescript
+ * import { ConfigProfileName } from "./mod.ts";
+ *
+ * // Create a profile name (Totality-compliant with validation)
+ * const profileResult = ConfigProfileName.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ *
+ * if (profileResult.value) {
+ *   console.log("Profile:", profileResult.value);
  * }
  * ```
  *
- * @example Legacy usage (deprecated)
- * ```ts
- * import { DemonstrativeType, LayerType } from "@tettuan/breakdown/lib/types/mod.ts";
- *
- * const command: DemonstrativeType = "to"; // DEPRECATED: Use DirectiveType instead
- * const layer: LayerType = "project";      // DEPRECATED: Use new LayerType class instead
- * ```
- *
- * @module
+ * @module types
  */
 
-// === New Totality-compliant types ===
-export { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
-export { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+// Core type definitions
+export { DirectiveType } from "./directive_type.ts";
+export { LayerType } from "./layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
-export { 
-  TypeFactory, 
-  type TypePatternProvider, 
-  type TypeCreationResult, 
-  type TypeCreationError 
-} from "./type_factory.ts";
 
-// === Factory types (temporary re-export from factory module) ===
-export { type TotalityPromptCliParams, type PromptCliParams } from "../factory/prompt_variables_factory.ts";
+// Factory and creation utilities
+export { TypeFactory } from "./type_factory.ts";
+export type { TypeCreationError, TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
 
-// === PromptVariables types ===
+// Pattern types
+export { TwoParamsDirectivePattern } from "./directive_type.ts";
+export { TwoParamsLayerTypePattern } from "./layer_type.ts";
+
+// Result type for error handling
+export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.ts";
+export type { Result, Result as ResultType } from "./result.ts";
+
+// Variable types
 export {
-  StandardVariable,
+  createEmptyValueError,
+  createError,
+  createInvalidNameError,
+  createSuccess,
+  createValidationFailedError,
+} from "./variable_result.ts";
+export type { VariableError, VariableResult } from "./variable_result.ts";
+export {
+  createPromptParams,
   FilePathVariable,
-  StdinVariable,
-  UserVariable,
-  StandardVariableName,
   FilePathVariableName,
+  StandardVariable,
+  StandardVariableName,
+  StdinVariable,
   StdinVariableName,
-  type PromptVariable,
-  type PromptVariables,
   toPromptParamsVariables,
-  createPromptParams
+  UserVariable,
 } from "./prompt_variables.ts";
+export type { PromptVariable, PromptVariables } from "./prompt_variables.ts";
 
-// === Enums and Result types ===
+// Deprecated legacy types (for backward compatibility)
+export type { DemonstrativeType, LegacyLayerType } from "./legacy_factories.ts";
 export {
-  ResultStatus
-} from "./enums.ts";
-
-export {
-  type Result,
-  ok,
-  error,
-  isOk,
-  isError,
-  map,
-  chain,
-  getOrElse,
-  all
-} from "./result.ts";
-
-// === ParamsCustomConfig types ===
-export {
-  ConfigError,
-  ParamsCustomConfig
-} from "./params_custom_config.ts";
-
-// === BreakdownParams types (re-export) ===
-export type { CustomConfig, TwoParamsResult as BaseTwoParamsResult } from "@tettuan/breakdownparams";
-import type { TwoParamsResult as InternalBaseTwoParamsResult } from "@tettuan/breakdownparams";
-
-// === Extended types for local use ===
-/**
- * Extended TwoParamsResult interface with additional options for type safety.
- * Extends the base TwoParamsResult from @tettuan/breakdownparams with proper options override.
- */
-export interface ExtendedTwoParamsResult extends Omit<InternalBaseTwoParamsResult, 'options'> {
-  options?: {
-    adaptation?: string;
-    fromLayerType?: string;
-    fromFile?: string;
-    useSchema?: boolean;
-  } & Record<string, unknown>;
-}
-
-// === Legacy types (DEPRECATED) ===
-// These will be removed after migration completion
-
-/**
- * @deprecated Use DirectiveType class instead
- * Type representing the available demonstrative command types for Breakdown.
- * These commands define the core operations that can be performed by the tool.
- *
- * @property {"to"} - Convert to next layer
- * @property {"summary"} - Summarize the current layer
- * @property {"defect"} - Analyze defects in the current layer
- * @property {"init"} - Initialize the workspace
- * @property {"find"} - Find and analyze specific patterns (e.g., bugs)
- *
- * @example
- * ```ts
- * const command: DemonstrativeType = "to";
- * ```
- */
-export type DemonstrativeType = "to" | "summary" | "defect" | "init" | "find";
-
-/**
- * @deprecated Use LayerType class instead
- * Type representing the available layer types for Breakdown.
- * These layers define the hierarchical structure of the breakdown process.
- *
- * @property {"project"} - Project layer, top-level organizational unit
- * @property {"issue"} - Issue layer, represents specific problems or features
- * @property {"task"} - Task layer, represents actionable items
- * @property {"bugs"} - Bugs layer, for tracking and analyzing bugs or defects
- * @property {"temp"} - Temporary layer, for intermediate or temporary data
- *
- * @example
- * ```ts
- * const layer: LegacyLayerType = "project";
- * ```
- */
-export type LegacyLayerType = "project" | "issue" | "task" | "bugs" | "temp";
-
-// === Legacy factory exports (DEPRECATED) ===
-export {
-  DemonstrativeTypeFactory,
-  LegacyLayerTypeFactory,
+  _DemonstrativeTypeFactory,
   DemonstrativeTypeGuards,
+  DirectiveFactory,
+  LayerFactory,
+  LegacyLayerTypeFactory,
   LegacyLayerTypeGuards,
+  TwoParamsConfigFactory,
+  VariableResultFactory,
 } from "./legacy_factories.ts";
+export type { PromptCliParams } from "./prompt_variables.ts";
+export type { ExtendedTwoParamsResult } from "./variable_result.ts";
+
+// Layer type utilities
+export { LayerTypeFactory } from "./layer_type_factory.ts";
+
+// Default implementations
+export { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
+export { _defaultConfigTwoParams } from "./defaults/config_two_params.ts";
+
+// Configuration types
+export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
+export { ResultStatus } from "./enums.ts";
+export type { Result as EnumResult } from "./enums.ts";
+
+// Re-export TotalityPromptCliParams from factory
+export type { TotalityPromptCliParams } from "../factory/prompt_variables_factory.ts";

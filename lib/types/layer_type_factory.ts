@@ -1,9 +1,9 @@
 /**
  * @fileoverview LayerTypeFactory for creating LayerType instances
- * 
+ *
  * This module provides a factory for creating LayerType instances following
  * Totality principle with proper error handling and validation.
- * 
+ *
  * @module types/layer_type_factory
  */
 
@@ -33,7 +33,7 @@ export type LayerTypeResult<T> = {
 
 /**
  * LayerTypeFactory - Factory for creating LayerType instances
- * 
+ *
  * Provides safe LayerType construction with comprehensive error handling
  * following the Totality principle.
  */
@@ -48,13 +48,13 @@ export class LayerTypeFactory {
    */
   static fromString(
     input: unknown,
-    pattern?: TwoParamsLayerTypePattern
+    pattern?: TwoParamsLayerTypePattern,
   ): LayerTypeResult<LayerType> {
     // Handle null/undefined
     if (input === null || input === undefined) {
       return {
         ok: false,
-        error: { kind: "NullInput" }
+        error: { kind: "NullInput" },
       };
     }
 
@@ -65,8 +65,8 @@ export class LayerTypeFactory {
         error: {
           kind: "InvalidInput",
           input,
-          actualType: typeof input
-        }
+          actualType: typeof input,
+        },
       };
     }
 
@@ -76,8 +76,8 @@ export class LayerTypeFactory {
         ok: false,
         error: {
           kind: "EmptyInput",
-          input
-        }
+          input,
+        },
       };
     }
 
@@ -90,26 +90,30 @@ export class LayerTypeFactory {
         error: {
           kind: "ValidationFailed",
           input: normalized,
-          pattern: pattern.getPattern()
-        }
+          pattern: pattern.getPattern(),
+        },
       };
     }
 
     // Create appropriate LayerType based on input
-    if (LayerTypeFactory.KNOWN_LAYERS.includes(normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number])) {
+    if (
+      LayerTypeFactory.KNOWN_LAYERS.includes(
+        normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number],
+      )
+    ) {
       // Create TwoParamsResult for LayerType.create()
       const twoParamsResult: TwoParamsResult = {
         type: "two",
         demonstrativeType: "to", // Default directive
         layerType: normalized,
         params: ["to", normalized],
-        options: {}
+        options: {},
       };
 
       const layerType = LayerType.create(twoParamsResult);
       return {
         ok: true,
-        data: layerType
+        data: layerType,
       };
     }
 
@@ -120,8 +124,8 @@ export class LayerTypeFactory {
       error: {
         kind: "UnknownLayer",
         input: normalized,
-        suggestions
-      }
+        suggestions,
+      },
     };
   }
 
@@ -135,7 +139,7 @@ export class LayerTypeFactory {
       const layerType = LayerType.create(result);
       return {
         ok: true,
-        data: layerType
+        data: layerType,
       };
     } catch (_error) {
       return {
@@ -143,8 +147,8 @@ export class LayerTypeFactory {
         error: {
           kind: "ValidationFailed",
           input: result.layerType,
-          pattern: "TwoParamsResult validation"
-        }
+          pattern: "TwoParamsResult validation",
+        },
       };
     }
   }
@@ -156,7 +160,7 @@ export class LayerTypeFactory {
    */
   private static calculateSuggestions(input: string): readonly string[] {
     const suggestions: string[] = [];
-    
+
     for (const known of LayerTypeFactory.KNOWN_LAYERS) {
       // Simple similarity: starts with or contains
       if (known.startsWith(input) || input.startsWith(known) || known.includes(input)) {
@@ -179,7 +183,9 @@ export class LayerTypeFactory {
    */
   static isValidLayer(input: string): boolean {
     const normalized = input.trim().toLowerCase();
-    return LayerTypeFactory.KNOWN_LAYERS.includes(normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number]);
+    return LayerTypeFactory.KNOWN_LAYERS.includes(
+      normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number],
+    );
   }
 
   /**

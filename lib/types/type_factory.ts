@@ -1,10 +1,10 @@
 /**
  * @fileoverview TypeFactory implementation for safe type construction
- * 
+ *
  * This module provides a factory for creating DirectiveType and LayerType instances
  * with proper validation patterns from configuration. It ensures Totality principle
  * compliance by centralizing type construction with validation.
- * 
+ *
  * @module types/type_factory
  */
 
@@ -46,21 +46,21 @@ export type TypeCreationResult<T> = {
 /**
  * 型構築時のエラー種別
  */
-export type TypeCreationError = 
+export type TypeCreationError =
   | { kind: "PatternNotFound"; message: string }
   | { kind: "ValidationFailed"; value: string; pattern: string }
   | { kind: "InvalidPattern"; pattern: string; cause: string };
 
 /**
  * TypeFactory - 型構築のためのファクトリー
- * 
+ *
  * 設定と連携して安全な型構築を提供。Totality原則に従い、
  * 型構築の失敗も明示的にResult型で表現する。
- * 
+ *
  * @example 基本的な使用例
  * ```typescript
- * const factory = new TypeFactory(patternProvider);
- * 
+ * const _factory = new TypeFactory(patternProvider);
+ *
  * const directiveResult = factory.createDirectiveType("to");
  * if (directiveResult.ok) {
  *   console.log(directiveResult.data.getValue()); // "to"
@@ -68,7 +68,7 @@ export type TypeCreationError =
  *   console.error(directiveResult.error.message);
  * }
  * ```
- * 
+ *
  * @example 一括構築
  * ```typescript
  * const bothResult = factory.createBothTypes("summary", "project");
@@ -88,14 +88,14 @@ export class TypeFactory {
    */
   createDirectiveType(value: string): TypeCreationResult<DirectiveType> {
     const pattern = this.patternProvider.getDirectivePattern();
-    
+
     if (!pattern) {
       return {
         ok: false,
         error: {
           kind: "PatternNotFound",
-          message: "DirectiveType validation pattern not found in configuration"
-        }
+          message: "DirectiveType validation pattern not found in configuration",
+        },
       };
     }
 
@@ -107,8 +107,8 @@ export class TypeFactory {
         error: {
           kind: "ValidationFailed",
           value,
-          pattern: pattern.getPattern()
-        }
+          pattern: pattern.getPattern(),
+        },
       };
     }
 
@@ -118,16 +118,16 @@ export class TypeFactory {
       demonstrativeType: value,
       layerType: "project", // デフォルト値
       params: [value, "project"],
-      options: {}
+      options: {},
     };
-    
+
     const directiveType = DirectiveType.create(twoParamsResult);
-    
+
     // DirectiveType.create() は常に成功する（TwoParamsResult前提のため）
 
     return {
       ok: true,
-      data: directiveType
+      data: directiveType,
     };
   }
 
@@ -138,14 +138,14 @@ export class TypeFactory {
    */
   createLayerType(value: string): TypeCreationResult<LayerType> {
     const pattern = this.patternProvider.getLayerTypePattern();
-    
+
     if (!pattern) {
       return {
         ok: false,
         error: {
           kind: "PatternNotFound",
-          message: "LayerType validation pattern not found in configuration"
-        }
+          message: "LayerType validation pattern not found in configuration",
+        },
       };
     }
 
@@ -157,8 +157,8 @@ export class TypeFactory {
         error: {
           kind: "ValidationFailed",
           value,
-          pattern: pattern.getPattern()
-        }
+          pattern: pattern.getPattern(),
+        },
       };
     }
 
@@ -168,32 +168,32 @@ export class TypeFactory {
       demonstrativeType: "to", // デフォルト値
       layerType: value,
       params: ["to", value],
-      options: {}
+      options: {},
     };
-    
+
     const layerType = LayerType.create(twoParamsResult);
-    
+
     // LayerType.create() は常に成功する（TwoParamsResult前提のため）
 
     return {
       ok: true,
-      data: layerType
+      data: layerType,
     };
   }
 
   /**
    * DirectiveType と LayerType を同時に構築
-   * 
+   *
    * 両方の型が必要な場合の便利メソッド。
    * どちらか一方でも失敗した場合は全体が失敗となる。
-   * 
+   *
    * @param directiveValue DirectiveType の値
    * @param layerValue LayerType の値
    * @returns 両方成功した場合は両型、失敗した場合は Error
    */
   createBothTypes(
-    directiveValue: string, 
-    layerValue: string
+    directiveValue: string,
+    layerValue: string,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
     const directiveResult = this.createDirectiveType(directiveValue);
     if (!directiveResult.ok) {
@@ -209,16 +209,16 @@ export class TypeFactory {
       ok: true,
       data: {
         directive: directiveResult.data,
-        layer: layerResult.data
-      }
+        layer: layerResult.data,
+      },
     };
   }
 
   /**
    * パターン検証のみ実行（型構築なし）
-   * 
+   *
    * 型を構築する前に検証のみ行いたい場合に使用。
-   * 
+   *
    * @param directiveValue DirectiveType の値
    * @param layerValue LayerType の値
    * @returns 両方が有効な場合 true
@@ -226,7 +226,7 @@ export class TypeFactory {
   validateBothValues(directiveValue: string, layerValue: string): boolean {
     const directivePattern = this.patternProvider.getDirectivePattern();
     const layerPattern = this.patternProvider.getLayerTypePattern();
-    
+
     if (!directivePattern || !layerPattern) {
       return false;
     }
@@ -245,11 +245,11 @@ export class TypeFactory {
   } {
     const directivePattern = this.patternProvider.getDirectivePattern();
     const layerPattern = this.patternProvider.getLayerTypePattern();
-    
+
     return {
       directive: directivePattern !== null,
       layer: layerPattern !== null,
-      both: directivePattern !== null && layerPattern !== null
+      both: directivePattern !== null && layerPattern !== null,
     };
   }
 
@@ -263,7 +263,7 @@ export class TypeFactory {
   } {
     return {
       patternProvider: this.patternProvider.constructor.name,
-      availability: this.getPatternAvailability()
+      availability: this.getPatternAvailability(),
     };
   }
 }

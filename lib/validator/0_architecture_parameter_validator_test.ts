@@ -1,23 +1,37 @@
 /**
  * @fileoverview Architecture tests for ParameterValidator
- * 
+ *
  * These tests validate architectural constraints and dependencies
  * according to the Totality principle and architectural boundaries.
  */
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { ParameterValidator } from "./parameter_validator.ts";
-import type { ValidationError as _ValidationError, ValidatedParams as _ValidatedParams, ConfigValidator } from "./parameter_validator.ts";
+import type {
+  ConfigValidator,
+  ValidatedParams as _ValidatedParams,
+  ValidationError as _ValidationError,
+} from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
-import { MockPatternCreator, TestUtilities as _TestUtilities } from "../../tmp/type-compatibility-bridge.ts";
-import type { TwoParamsResult, OneParamsResult as _OneParamsResult, ZeroParamsResult as _ZeroParamsResult } from "../deps.ts";
-import type { Result as _Result } from "../types/result.ts";
+// Temporary mock implementations for testing
+const _MockPatternCreator = {
+  createMockPatternProvider: (): TypePatternProvider => ({
+    getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary|defect"),
+    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("project|issue|task"),
+  }),
+};
+import type {
+  OneParamsResult as _OneParamsResult,
+  TwoParamsResult,
+  ZeroParamsResult as _ZeroParamsResult,
+} from "../deps.ts";
+import type { Result as _Result } from "../types/_result.ts";
 
 /**
  * Architecture Test: Dependency Direction Validation
- * 
+ *
  * Validates that ParameterValidator follows proper dependency direction
  * and maintains architectural boundaries.
  */
@@ -29,21 +43,21 @@ Deno.test("Architecture: ParameterValidator dependency direction compliance", ()
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  // Architecture constraint: ParameterValidator should be constructable 
+  // Architecture constraint: ParameterValidator should be constructable
   // with injected dependencies following dependency inversion principle
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
-  assertExists(validator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  assertExists(_validator);
 
   // Architecture constraint: Dependencies should be properly injected, not created internally
   // This validates the Inversion of Control principle
-  assertEquals(typeof validator.validateTwoParams, "function");
-  assertEquals(typeof validator.validateOneParams, "function");
-  assertEquals(typeof validator.validateZeroParams, "function");
+  assertEquals(typeof _validator.validateTwoParams, "function");
+  assertEquals(typeof _validator.validateOneParams, "function");
+  assertEquals(typeof _validator.validateZeroParams, "function");
 });
 
 /**
  * Architecture Test: Result Type Pattern Compliance
- * 
+ *
  * Validates that all public methods follow the Result<T, E> pattern
  * for comprehensive error handling without exceptions.
  */
@@ -57,7 +71,7 @@ Deno.test("Architecture: Result type pattern compliance", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   // Valid TwoParamsResult for testing
   const validTwoParams: TwoParamsResult = {
@@ -69,9 +83,9 @@ Deno.test("Architecture: Result type pattern compliance", () => {
   };
 
   // Architecture constraint: All validation methods must return Result<T, E>
-  const twoParamsResult = validator.validateTwoParams(validTwoParams);
+  const twoParamsResult = _validator.validateTwoParams(validTwoParams);
   assertEquals(typeof twoParamsResult.ok, "boolean");
-  
+
   // Result should have either 'data' or 'error' property based on success/failure
   if (twoParamsResult.ok) {
     assertExists(twoParamsResult.data);
@@ -84,33 +98,33 @@ Deno.test("Architecture: Result type pattern compliance", () => {
 
 /**
  * Architecture Test: Totality Principle - ValidationError Exhaustiveness
- * 
+ *
  * Validates that all ValidationError variants are properly defined
  * and follow discriminated union pattern without default cases.
  */
 Deno.test("Architecture: ValidationError totality compliance", () => {
   // Architecture constraint: ValidationError must be a discriminated union
   // with exhaustive error kinds without requiring default cases
-  
+
   const errorKinds = [
     "InvalidParamsType",
-    "MissingRequiredField", 
+    "MissingRequiredField",
     "InvalidDirectiveType",
     "InvalidLayerType",
     "PathValidationFailed",
     "CustomVariableInvalid",
     "ConfigValidationFailed",
-    "UnsupportedParamsType"
+    "UnsupportedParamsType",
   ] as const;
 
   // Validate that each error kind is properly typed
-  errorKinds.forEach(kind => {
+  errorKinds.forEach((kind) => {
     const error = {
       kind,
       // Using assertion for compile-time totality check
-      ...getErrorPropertiesForKind(kind)
+      ...getErrorPropertiesForKind(kind),
     } as _ValidationError;
-    
+
     assertEquals(error.kind, kind);
     assertExists(error);
   });
@@ -118,7 +132,7 @@ Deno.test("Architecture: ValidationError totality compliance", () => {
 
 /**
  * Architecture Test: Immutability and Type Safety
- * 
+ *
  * Validates that ParameterValidator operations are immutable
  * and maintain type safety throughout the validation pipeline.
  */
@@ -132,45 +146,45 @@ Deno.test("Architecture: Immutability and type safety compliance", () => {
     validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
+  const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
   const originalParams: TwoParamsResult = {
     type: "two",
     demonstrativeType: "test",
-    layerType: "project", 
+    layerType: "project",
     params: ["test", "project"],
     options: { input: "test.md" },
   };
 
   // Architecture constraint: Validation should not mutate input parameters
   const paramsCopy = structuredClone(originalParams);
-  validator.validateTwoParams(originalParams);
-  
+  _validator.validateTwoParams(originalParams);
+
   // Verify original parameters are unchanged (immutability)
   assertEquals(originalParams, paramsCopy);
-  
+
   // Architecture constraint: Results should be strongly typed
-  const result = validator.validateTwoParams(originalParams);
-  if (result.ok) {
+  const _result = _validator.validateTwoParams(originalParams);
+  if (_result.ok) {
     // ValidatedParams should have required typed properties
-    assertExists(result.data.directive);
-    assertExists(result.data.layer);
-    assertExists(result.data.options);
-    assertExists(result.data.customVariables);
-    assertExists(result.data.metadata);
+    assertExists(_result.data.directive);
+    assertExists(_result.data.layer);
+    assertExists(_result.data.options);
+    assertExists(_result.data.customVariables);
+    assertExists(_result.data.metadata);
   }
 });
 
 /**
  * Architecture Test: Dependency Injection Pattern
- * 
+ *
  * Validates that ParameterValidator follows proper dependency injection
  * without creating concrete dependencies internally.
  */
 Deno.test("Architecture: Dependency injection pattern compliance", () => {
   // Architecture constraint: Validator should accept interface dependencies
   // and not instantiate concrete implementations internally
-  
+
   const customPatternProvider: TypePatternProvider = {
     getDirectivePattern: () => TwoParamsDirectivePattern.create("custom"),
     getLayerTypePattern: () => TwoParamsLayerTypePattern.create("layer"),
@@ -182,7 +196,7 @@ Deno.test("Architecture: Dependency injection pattern compliance", () => {
         return { ok: true, data: undefined };
       }
       return { ok: false, error: ["Custom validation failed"] };
-    }
+    },
   };
 
   // Architecture constraint: Different implementations can be injected
@@ -198,13 +212,13 @@ Deno.test("Architecture: Dependency injection pattern compliance", () => {
     options: {},
   };
 
-  const result = customValidator.validateTwoParams(testParams);
-  assertEquals(result.ok, true);
+  const _result = customValidator.validateTwoParams(testParams);
+  assertEquals(_result.ok, true);
 });
 
 /**
  * Architecture Test: Interface Segregation Compliance
- * 
+ *
  * Validates that ParameterValidator interfaces are properly segregated
  * and follow single responsibility principle.
  */
@@ -254,6 +268,6 @@ function getErrorPropertiesForKind(kind: _ValidationError["kind"]): Partial<_Val
       return { errors: ["test"] };
     case "UnsupportedParamsType":
       return { type: "test" };
-    // Note: No default case - this enforces totality at compile time
+      // Note: No default case - this enforces totality at compile time
   }
 }

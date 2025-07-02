@@ -111,7 +111,7 @@ export class TemplateValidator {
     for (const mapping of this.templateMappings) {
       if (!mapping.required) continue;
 
-      const destinationPath = join(this.projectRoot, mapping.destination);
+      const _destinationPath = join(this.projectRoot, mapping.destination);
       const templateExists = await exists(destinationPath);
 
       if (templateExists) {

@@ -92,21 +92,21 @@ DefaultApplicationConfig: {} # default_application_config.jsonの内容を表す
 
 StandardVariable: {
   name: string, # 標準変数の名前
-  value: string # 標準変数の値
+  value: string, # 標準変数の値
 } # PromptVariablesの一部
 
 StandardVariable.name: string "input_text_file" | "destination_path" # 標準変数の名前
 
 FilePathVariable: {
   name: string, # ファイルパス変数の名前
-  value: FilePath # ファイルパス変数の値
+  value: FilePath, # ファイルパス変数の値
 } # PromptVariablesの一部
 
 FilePathVariable.name: string "schema_file" # ファイルパス変数の名前
 
 StdinVariable: {
   name: string, # 標準入力変数の名前
-  value: string # 標準入力変数の値
+  value: string, # 標準入力変数の値
 } # PromptVariablesの一部
 
 StdinVariable.name: StdinVariableName # 型安全な標準入力変数名
@@ -118,7 +118,7 @@ StdinVariableName:
 
 UserVariable: {
   name: string, # ユーザー変数の名前（空文字列以外、--uv-*等）
-  value: string # ユーザー変数の値（空文字列以外）
+  value: string, # ユーザー変数の値（空文字列以外）
 } # PromptVariablesの一部、カスタム設定用（CLI --uv-key=value形式）
 
 # 全域性原則に基づく作業ディレクトリ型定義
@@ -151,7 +151,7 @@ PlatformType:
     - separator: "/" # パス区切り文字
     - caseSensitive: true # 大文字小文字区別
   Windows:
-    - separator: "\\" # パス区切り文字  
+    - separator: "\\" # パス区切り文字
     - caseSensitive: false # 大文字小文字区別なし
 
 # 作業ディレクトリエラー型
@@ -203,4 +203,3 @@ DirectoryOperationError:
     - reason: string # 削除失敗理由
   EnsureFailed:
     - reason: string # 存在確保失敗理由
-

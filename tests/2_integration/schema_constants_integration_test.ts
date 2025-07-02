@@ -4,16 +4,22 @@
  */
 
 import { assert, assertEquals, assertExists } from "jsr:@std/assert";
-import { join } from "jsr:@std/path";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
+import { join, resolve } from "jsr:@std/path";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 import {
   DEFAULT_SCHEMA_BASE_DIR,
   DEFAULT_WORKSPACE_STRUCTURE,
 } from "../../lib/config/constants.ts";
 
-const BASE_DIR = Deno.cwd();
+// プロジェクトルートを確実に取得
+const _BASE_DIR = await (async () => {
+  // このファイルから2階層上がプロジェクトルート
+  const currentFile = new URL(import.meta.url).pathname;
+  const projectRoot = resolve(currentFile, "../../../");
+  return projectRoot;
+})();
 
-Deno.test("Schema constants integration - 修正前の状態確認", () => {
+Deno.test("Schema constants integration - 修正前の状態確認", async () => {
   // constants.tsの設定値確認
   assertEquals(DEFAULT_SCHEMA_BASE_DIR, "lib/breakdown/schema");
   assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.issues, "issues");
@@ -21,20 +27,50 @@ Deno.test("Schema constants integration - 修正前の状態確認", () => {
   assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.projects, "projects");
 
   const logger = new BreakdownLogger();
-  logger.info("constants.ts設定確認完了");
+  _logger.info("constants.ts設定確認完了");
 });
 
 Deno.test("Schema directory structure - 実際の構造確認", async () => {
   const logger = new BreakdownLogger();
   const schemaBaseDir = join(BASE_DIR, DEFAULT_SCHEMA_BASE_DIR);
 
+  // デバッグ情報を出力
+  _logger.debug("テスト環境情報", {
+    BASE_DIR,
+    DEFAULT_SCHEMA_BASE_DIR,
+    schemaBaseDir,
+    cwd: Deno.cwd(),
+  });
+
   try {
+    // ディレクトリの存在を確認
+    const schemaDirStat = await Deno.stat(schemaBaseDir);
+    if (!schemaDirStat.isDirectory) {
+      _logger.error("schema パスはディレクトリではありません", { schemaBaseDir });
+      throw new Error(`${schemaBaseDir} is not a directory`);
+    }
+
     // 実際のディレクトリ構造を確認
     const dirEntries: string[] = [];
     for await (const entry of Deno.readDir(schemaBaseDir)) {
       if (entry.isDirectory) {
         dirEntries.push(entry.name);
       }
+    }
+
+    // ディレクトリが読み込めたかログ出力
+    _logger.debug("読み込んだディレクトリ一覧", {
+      schemaBaseDir,
+      dirEntries,
+      count: dirEntries.length,
+    });
+
+    // dirEntriesが空の場合の詳細確認
+    if (dirEntries.length === 0) {
+      _logger.error("ディレクトリが空です", {
+        schemaBaseDir,
+        allEntries: await Array.fromAsync(Deno.readDir(schemaBaseDir)),
+      });
     }
 
     // 実際にgitで追跡されているディレクトリのみチェック
@@ -51,18 +87,29 @@ Deno.test("Schema directory structure - 実際の構造確認", async () => {
     const allExpectedDirs = ["defect", "find", "summary", "to"];
     const missingDirs = allExpectedDirs.filter((dir) => !dirEntries.includes(dir));
     if (missingDirs.length > 0) {
-      logger.warn("存在しないディレクトリ（空のディレクトリの可能性）", {
+      _logger.warn("存在しないディレクトリ（空のディレクトリの可能性）", {
         missingDirs,
       });
     }
 
-    logger.debug("実際のschema構造", { dirEntries });
+    _logger.debug("実際のschema構造", { dirEntries });
   } catch (error) {
     // ディレクトリが存在しない場合はテストをスキップ
     if (error instanceof Deno.errors.NotFound) {
-      logger.warn("schema ディレクトリが存在しません - テストスキップ");
+      _logger.warn("schema ディレクトリが存在しません - テストスキップ", {
+        schemaBaseDir,
+        cwd: Deno.cwd(),
+        BASE_DIR,
+        fullPath: schemaBaseDir,
+      });
       return;
     }
+    _logger.error("テスト中にエラーが発生", {
+      error: error instanceof Error ? error.message : String(error),
+      schemaBaseDir,
+      cwd: Deno.cwd(),
+      BASE_DIR,
+    });
     throw error;
   }
 });
@@ -89,10 +136,10 @@ Deno.test("Schema file access - constants設定でのファイルアクセステ
     }
   }
 
-  logger.debug("パスアクセス結果", { pathAccessResults });
+  _logger.debug("パスアクセス結果", { pathAccessResults });
 
   // 修正前は全てfalseになるはず（不整合の証明）
-  const allPathsExist = pathAccessResults.every((result) => result.exists);
+  const allPathsExist = pathAccessResults.every((_result) => _result.exists);
   assertEquals(
     allPathsExist,
     false,
@@ -116,19 +163,19 @@ Deno.test("Actual schema files access - 実際の構造でのファイル確認"
     try {
       const stat = await Deno.stat(path);
       assertExists(stat, `ファイルが存在しません: ${path}`);
-      logger.debug("ファイル確認", { path });
+      _logger.debug("ファイル確認", { path });
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-        logger.warn("ファイルが存在しません (テストスキップ)", { path });
+        _logger.warn("ファイルが存在しません (テストスキップ)", { path });
         continue;
       }
-      logger.error("ファイルアクセスエラー", { path, error });
+      _logger.error("ファイルアクセスエラー", { path, error });
       throw error;
     }
   }
 });
 
-Deno.test("Directory naming consistency check - 命名規則の一致確認", () => {
+Deno.test("Directory naming consistency check - 命名規則の一致確認", async () => {
   const logger = new BreakdownLogger();
   // constants.tsは複数形、実際のschemaは単数形の不整合を確認
   const constantsNames = Object.values(DEFAULT_WORKSPACE_STRUCTURE.directories);
@@ -146,5 +193,5 @@ Deno.test("Directory naming consistency check - 命名規則の一致確認", ()
     );
   });
 
-  logger.info("命名規則の不整合を確認完了");
+  _logger.info("命名規則の不整合を確認完了");
 });

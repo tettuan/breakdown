@@ -1,17 +1,17 @@
 /**
  * Validator module exports
- * 
+ *
  * This module provides parameter validation functionality following
  * the Totality principle with comprehensive error handling.
- * 
+ *
  * @module validator
  */
 
 export {
+  type ConfigValidator,
   ParameterValidator,
-  type ValidatedParams,
   type ValidatedOptions,
-  type ValidationMetadata,
+  type ValidatedParams,
   type ValidationError,
-  type ConfigValidator
+  type ValidationMetadata,
 } from "./parameter_validator.ts";

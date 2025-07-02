@@ -255,7 +255,7 @@ export interface WorkspaceEventEmitter {
  *
  * @example Basic workspace initialization
  * ```typescript
- * const workspace = new WorkspaceImpl(config);
+ * const _workspace = new WorkspaceImpl(config);
  * await workspace.initialize();
  *
  * // Check if workspace is ready

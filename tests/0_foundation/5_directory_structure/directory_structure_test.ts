@@ -36,25 +36,25 @@
  * - Configuration loading is tested separately
  */
 
-import { assertEquals, assertRejects } from "../../../deps.ts";
-import { join } from "@std/path";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "../../../deps.ts";
+import { join as _join } from "@std/path";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  cleanupTestEnvironment,
-  setupTestEnvironment,
-  type TestEnvironment,
+  cleanupTestEnvironment as _cleanupTestEnvironment,
+  setupTestEnvironment as _setupTestEnvironment,
+  type TestEnvironment as _TestEnvironment,
 } from "$test/helpers/setup.ts";
-import { Workspace } from "../../../lib/workspace/workspace.ts";
-import { WorkspaceInitError } from "../../../lib/workspace/errors.ts";
+import { Workspace as _Workspace } from "../../../lib/workspace/workspace.ts";
+import { WorkspaceInitError as _WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 
-const logger = new BreakdownLogger();
+const _logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
 
 // Setup test environment
 Deno.test({
-  name: "setup",
-  fn: async () => {
-    logger.debug("Setting up test environment", {
+  _name: "setup",
+  _fn: async () => {
+    _logger.debug("Setting up test environment", {
       purpose: "Create test directory for structure testing",
       step: "Initial setup",
     });
@@ -66,9 +66,9 @@ Deno.test({
 
 // Cleanup after tests
 Deno.test({
-  name: "cleanup",
-  fn: async () => {
-    logger.debug("Cleaning up test environment", {
+  _name: "cleanup",
+  _fn: async () => {
+    _logger.debug("Cleaning up test environment", {
       step: "Cleanup",
     });
     await cleanupTestEnvironment(TEST_ENV);
@@ -82,7 +82,7 @@ Deno.test({
 // Remove old tests: 'directory - edge cases - directory operations'.
 
 Deno.test("should throw permission denied error when creating workspace in read-only directory", async () => {
-  const readOnlyDir = await Deno.makeTempDir();
+  const _readOnlyDir = await Deno.makeTempDir();
   await Deno.chmod(readOnlyDir, 0o444);
 
   try {
@@ -104,11 +104,11 @@ Deno.test("should throw permission denied error when creating workspace in read-
 
 // --- NEW TEST: Default config only ---
 Deno.test("directory - structure with default config only", async () => {
-  const tempDir = await Deno.makeTempDir();
+  const _tempDir = await Deno.makeTempDir();
   try {
-    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    const _configDir = join(tempDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
-    const workingDir = join(tempDir, ".agent", "breakdown");
+    const _workingDir = join(tempDir, ".agent", "breakdown");
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
       `working_dir: ${workingDir}\napp_prompt:\n  base_dir: ${
@@ -116,7 +116,7 @@ Deno.test("directory - structure with default config only", async () => {
       }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
     );
     // 3. Confirm required dirs under working_dir
-    const requiredDirs = [
+    const _requiredDirs = [
       "projects",
       "issues",
       "tasks",
@@ -125,10 +125,10 @@ Deno.test("directory - structure with default config only", async () => {
       "prompts",
       "schema",
     ];
-    for (const dir of requiredDirs) {
-      const dirPath = join(workingDir, dir);
+    for (const dir of _requiredDirs) {
+      const _dirPath = join(workingDir, dir);
       await Deno.mkdir(dirPath, { recursive: true });
-      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      const _exists = await Deno.stat(dirPath).then((_stat) => stat.isDirectory, () => false);
       assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
     }
   } finally {
@@ -138,11 +138,11 @@ Deno.test("directory - structure with default config only", async () => {
 
 // --- NEW TEST: User config overrides working_dir ---
 Deno.test("directory - structure with user config working_dir override", async () => {
-  const tempDir = await Deno.makeTempDir();
+  const _tempDir = await Deno.makeTempDir();
   try {
-    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    const _configDir = join(tempDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
-    const defaultWorkingDir = join(tempDir, ".agent", "breakdown");
+    const _defaultWorkingDir = join(tempDir, ".agent", "breakdown");
     await Deno.writeTextFile(
       join(configDir, "app.yml"),
       `working_dir: ${defaultWorkingDir}\napp_prompt:\n  base_dir: ${
@@ -150,7 +150,7 @@ Deno.test("directory - structure with user config working_dir override", async (
       }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
     );
     // 2. Create user.yml with different working_dir
-    const userWorkingDir = join(tempDir, "custom_workspace");
+    const _userWorkingDir = join(tempDir, "custom_workspace");
     await Deno.writeTextFile(
       join(configDir, "user.yml"),
       `working_dir: ${userWorkingDir}\napp_prompt:\n  base_dir: ${
@@ -158,7 +158,7 @@ Deno.test("directory - structure with user config working_dir override", async (
       }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
     );
     // 3. Simulate config loading (merge user config)
-    const requiredDirs = [
+    const _requiredDirs = [
       "projects",
       "issues",
       "tasks",
@@ -167,10 +167,10 @@ Deno.test("directory - structure with user config working_dir override", async (
       "prompts",
       "schema",
     ];
-    for (const dir of requiredDirs) {
-      const dirPath = join(userWorkingDir, dir);
+    for (const dir of _requiredDirs) {
+      const _dirPath = join(userWorkingDir, dir);
       await Deno.mkdir(dirPath, { recursive: true });
-      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      const _exists = await Deno.stat(dirPath).then((_stat) => stat.isDirectory, () => false);
       assertEquals(exists, true, `Directory ${dir} should exist under user working_dir`);
     }
   } finally {

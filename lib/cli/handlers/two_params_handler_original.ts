@@ -1,21 +1,21 @@
 /**
  * @fileoverview Two Params Handler following Totality Principle
- * 
+ *
  * This module handles the main breakdown functionality when two parameters
  * are provided (demonstrative type + layer type), managing STDIN processing,
  * prompt generation, and output using Result type and VariablesBuilder.
- * 
+ *
  * Key Totality improvements:
  * - Uses Result type instead of exceptions
  * - Eliminates type assertions through proper validation
  * - Integrates VariablesBuilder for variable management
  * - Follows Totality principle throughout
- * 
+ *
  * @module lib/cli/handlers/two_params_handler
  */
 
 import type { Result } from "$lib/types/result.ts";
-import { ok, error } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 import { isStdinAvailable, readStdin } from "$lib/io/stdin.ts";
 import {
   type BreakdownConfigCompatible,
@@ -26,13 +26,17 @@ import {
   type PromptCliParams,
   PromptVariablesFactory,
 } from "$lib/factory/prompt_variables_factory.ts";
-import { VariablesBuilder, type FactoryResolvedValues } from "$lib/builder/variables_builder.ts";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
+import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
+import {
+  type DemonstrativeType,
+  DemonstrativeTypeFactory,
+  type LayerType,
+} from "$lib/types/mod.ts";
 
 /**
  * Error types for TwoParamsHandler
  */
-export type TwoParamsHandlerError = 
+export type TwoParamsHandlerError =
   | { kind: "InvalidParameterCount"; received: number; expected: number }
   | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
   | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
@@ -45,29 +49,43 @@ export type TwoParamsHandlerError =
 /**
  * Valid demonstrative types (should match actual enum values)
  */
-const VALID_DEMONSTRATIVE_TYPES = [
-  "specification", "architecture", "example", "document"
+const _VALID_DEMONSTRATIVE_TYPES = [
+  "to",
+  "summary",
+  "defect",
+  "init",
+  "find",
 ] as const;
 
 /**
  * Valid layer types (should match actual enum values)
  */
 const VALID_LAYER_TYPES = [
-  "foundation", "core", "integration", "scenarios"
+  "project",
+  "issue",
+  "task",
+  "bugs",
+  "temp",
 ] as const;
 
 /**
  * Validate demonstrative type without type assertion
  */
-function validateDemonstrativeType(value: string): Result<DemonstrativeType, TwoParamsHandlerError> {
-  if (VALID_DEMONSTRATIVE_TYPES.includes(value as any)) {
-    return ok(value as DemonstrativeType);
+function validateDemonstrativeType(
+  value: string,
+): Result<DemonstrativeType, TwoParamsHandlerError> {
+  if (VALID_DEMONSTRATIVE_TYPES.includes(value as unknown)) {
+    // Create the proper DemonstrativeType object
+    const demonstrativeType = DemonstrativeTypeFactory.fromString(value);
+    if (demonstrativeType) {
+      return ok(demonstrativeType);
+    }
   }
-  
+
   return error({
     kind: "InvalidDemonstrativeType",
     value,
-    validTypes: [...VALID_DEMONSTRATIVE_TYPES]
+    validTypes: [...VALID_DEMONSTRATIVE_TYPES],
   });
 }
 
@@ -75,14 +93,14 @@ function validateDemonstrativeType(value: string): Result<DemonstrativeType, Two
  * Validate layer type without type assertion
  */
 function validateLayerType(value: string): Result<string, TwoParamsHandlerError> {
-  if (VALID_LAYER_TYPES.includes(value as any)) {
+  if (VALID_LAYER_TYPES.includes(value as unknown)) {
     return ok(value);
   }
-  
+
   return error({
     kind: "InvalidLayerType",
     value,
-    validTypes: [...VALID_LAYER_TYPES]
+    validTypes: [...VALID_LAYER_TYPES],
   });
 }
 
@@ -91,11 +109,11 @@ function validateLayerType(value: string): Result<string, TwoParamsHandlerError>
  */
 async function readStdinSafely(
   config: BreakdownConfigCompatible,
-  options: Record<string, unknown>
+  options: Record<string, unknown>,
 ): Promise<Result<string, TwoParamsHandlerError>> {
   try {
     const timeoutManager = createTimeoutManagerFromConfig(config);
-    
+
     // Check if fromFile option specifies stdin ("-")
     if (options.from === "-" || options.fromFile === "-") {
       const inputText = await readStdin({ timeoutManager });
@@ -104,12 +122,12 @@ async function readStdinSafely(
       const inputText = await readStdin({ timeoutManager });
       return ok(inputText);
     }
-    
+
     return ok(""); // No stdin available, return empty string
   } catch (err) {
     return error({
       kind: "StdinReadError",
-      error: err instanceof Error ? err.message : String(err)
+      error: err instanceof Error ? err.message : String(err),
     });
   }
 }
@@ -119,13 +137,13 @@ async function readStdinSafely(
  */
 function extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
   const customVariables: Record<string, string> = {};
-  
+
   for (const [key, value] of Object.entries(options)) {
     if (key.startsWith("uv-")) {
       customVariables[key] = String(value);
     }
   }
-  
+
   return customVariables;
 }
 
@@ -137,10 +155,12 @@ function createCliParams(
   layerType: string,
   options: Record<string, unknown>,
   inputText: string,
-  customVariables: Record<string, string>
+  customVariables: Record<string, string>,
 ): PromptCliParams {
   return {
-    demonstrativeType,
+    demonstrativeType: typeof demonstrativeType === "string"
+      ? demonstrativeType
+      : demonstrativeType.value,
     layerType,
     options: {
       fromFile: (options.from as string) || (options.fromFile as string),
@@ -164,7 +184,7 @@ function createCliParams(
 async function processPromptGeneration(
   factory: PromptVariablesFactory,
   inputText: string,
-  customVariables: Record<string, string>
+  customVariables: Record<string, string>,
 ): Promise<Result<string, TwoParamsHandlerError>> {
   // Validate factory parameters
   try {
@@ -172,13 +192,13 @@ async function processPromptGeneration(
   } catch (err) {
     return error({
       kind: "FactoryValidationError",
-      errors: [err instanceof Error ? err.message : String(err)]
+      errors: [err instanceof Error ? err.message : String(err)],
     });
   }
 
   // Get resolved parameters from factory
   const allParams = factory.getAllParams();
-  
+
   // Create factory values for VariablesBuilder
   const factoryValues: FactoryResolvedValues = {
     promptFilePath: allParams.promptFilePath,
@@ -186,27 +206,27 @@ async function processPromptGeneration(
     outputFilePath: allParams.outputFilePath || "output.md",
     schemaFilePath: allParams.schemaFilePath || "",
     customVariables,
-    inputText: inputText || undefined
+    inputText: inputText || undefined,
   };
 
   // Use VariablesBuilder to construct variables
   const builder = new VariablesBuilder();
   const validationResult = builder.validateFactoryValues(factoryValues);
-  
+
   if (!validationResult.ok) {
     return error({
       kind: "VariablesBuilderError",
-      errors: validationResult.error.map(e => JSON.stringify(e))
+      errors: validationResult.error.map((e) => JSON.stringify(e)),
     });
   }
 
   builder.addFromFactoryValues(factoryValues);
   const buildResult = builder.build();
-  
+
   if (!buildResult.ok) {
     return error({
       kind: "VariablesBuilderError",
-      errors: buildResult.error.map(e => JSON.stringify(e))
+      errors: buildResult.error.map((e) => JSON.stringify(e)),
     });
   }
 
@@ -218,7 +238,7 @@ async function processPromptGeneration(
     const promptManager = new PromptManager();
     const result = await promptManager.generatePrompt(
       allParams.promptFilePath,
-      variablesRecord
+      variablesRecord,
     );
 
     // Extract content from result
@@ -230,7 +250,7 @@ async function processPromptGeneration(
       } else {
         return error({
           kind: "PromptGenerationError",
-          error: res.error || "Prompt generation failed"
+          error: res.error || "Prompt generation failed",
         });
       }
     } else {
@@ -241,7 +261,7 @@ async function processPromptGeneration(
   } catch (err) {
     return error({
       kind: "PromptGenerationError",
-      error: err instanceof Error ? err.message : String(err)
+      error: err instanceof Error ? err.message : String(err),
     });
   }
 }
@@ -256,14 +276,14 @@ async function writeOutput(content: string): Promise<Result<void, TwoParamsHandl
   } catch (err) {
     return error({
       kind: "OutputWriteError",
-      error: err instanceof Error ? err.message : String(err)
+      error: err instanceof Error ? err.message : String(err),
     });
   }
 }
 
 /**
  * Handle two parameters case with Totality principle
- * 
+ *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
  * @param options - Parsed options from BreakdownParams
@@ -279,18 +299,18 @@ export async function handleTwoParams(
     return error({
       kind: "InvalidParameterCount",
       received: params.length,
-      expected: 2
+      expected: 2,
     });
   }
 
   // 2. Validate demonstrative type and layer type
   const [demonstrativeTypeStr, layerTypeStr] = params;
-  
+
   const demonstrativeTypeResult = validateDemonstrativeType(demonstrativeTypeStr);
   if (!demonstrativeTypeResult.ok) {
     return error(demonstrativeTypeResult.error);
   }
-  
+
   const layerTypeResult = validateLayerType(layerTypeStr);
   if (!layerTypeResult.ok) {
     return error(layerTypeResult.error);
@@ -304,13 +324,14 @@ export async function handleTwoParams(
 
   // 4. Extract custom variables
   const customVariables = extractCustomVariables(options);
-  
+
   // Add standard variables to custom variables
   if (stdinResult.data) {
     customVariables.input_text = stdinResult.data;
   }
   customVariables.input_text_file = (options.fromFile as string) || "stdin";
-  customVariables.destination_path = (options.destinationFile as string) || (options.output as string) || "stdout";
+  customVariables.destination_path = (options.destinationFile as string) ||
+    (options.output as string) || "stdout";
 
   // 5. Create CLI parameters
   const cliParams = createCliParams(
@@ -318,19 +339,19 @@ export async function handleTwoParams(
     layerTypeResult.data,
     options,
     stdinResult.data,
-    customVariables
+    customVariables,
   );
 
   // 6. Create factory and process prompt generation
   try {
     const factory = await PromptVariablesFactory.create(cliParams);
-    
+
     const contentResult = await processPromptGeneration(
       factory,
       stdinResult.data,
-      customVariables
+      customVariables,
     );
-    
+
     if (!contentResult.ok) {
       return error(contentResult.error);
     }
@@ -345,7 +366,7 @@ export async function handleTwoParams(
   } catch (err) {
     return error({
       kind: "FactoryValidationError",
-      errors: [err instanceof Error ? err.message : String(err)]
+      errors: [err instanceof Error ? err.message : String(err)],
     });
   }
 }

@@ -60,7 +60,7 @@ export class PromptAdapterImpl {
    */
   async validatePaths(): Promise<{ success: boolean; errors: string[] }> {
     const { promptFilePath, inputFilePath } = this.factory.getAllParams();
-    const validator = new PromptAdapterValidator();
+    const _validator = new PromptAdapterValidator();
     const errors: string[] = [];
     // Validate prompt file
     const promptResult = await validator.validateFile(promptFilePath, "Prompt file");
@@ -85,7 +85,7 @@ export class PromptAdapterImpl {
   private buildVariables(inputText: string): Record<string, string> {
     const { inputFilePath, outputFilePath, schemaFilePath } = this.factory.getAllParams();
     const builder = new VariablesBuilder();
-    
+
     // Add standard variables
     if (inputFilePath) {
       builder.addStandardVariable("input_text_file", basename(inputFilePath));
@@ -93,28 +93,28 @@ export class PromptAdapterImpl {
     if (outputFilePath) {
       builder.addStandardVariable("destination_path", outputFilePath);
     }
-    
+
     // Add file path variables
     if (schemaFilePath) {
       builder.addFilePathVariable("schema_file", schemaFilePath);
     }
-    
+
     // Add stdin variable
     if (inputText) {
       builder.addStdinVariable(inputText);
     }
-    
+
     // Add custom variables for template usage (without uv- prefix requirement)
     const customVariables = this.factory.customVariables;
     builder.addCustomVariables(customVariables);
-    
+
     // Debug information in development
     if (Deno.env.get("DEBUG")) {
       console.debug(`Variables built: ${builder.getVariableCount()} variables`);
       console.debug(`Has input_text: ${builder.hasVariable("input_text")}`);
       console.debug(`Has schema_file: ${builder.hasVariable("schema_file")}`);
     }
-    
+
     return builder.toTemplateRecord();
   }
 
@@ -126,7 +126,7 @@ export class PromptAdapterImpl {
   async generatePrompt(): Promise<{ success: boolean; content: string }> {
     const { promptFilePath, inputFilePath } = this.factory.getAllParams();
     // Read the template file content
-    let template = "";
+    const template = "";
     try {
       template = await Deno.readTextFile(promptFilePath);
     } catch (e) {
@@ -134,7 +134,7 @@ export class PromptAdapterImpl {
       return { success: false, content: `[ReadError] Failed to read template: ${msg}` };
     }
     // Get input text from stdin or file
-    let inputText = "";
+    const inputText = "";
     if (template.includes("{input_text}")) {
       // First try to get input_text from options (stdin)
       const options = this.factory.getOptions();
@@ -152,7 +152,7 @@ export class PromptAdapterImpl {
     }
     // Build variables using separated method
     const variables = this.buildVariables(inputText);
-    
+
     const prompt = new PromptManager();
     const genResult = await prompt.generatePrompt(template, variables);
     if (genResult && typeof genResult === "object" && "success" in genResult) {
@@ -178,7 +178,10 @@ export class PromptAdapterImpl {
     }
     const validation = await this.validatePaths();
     if (!validation.success) {
-      return { success: false, content: validation.errors.reduce((acc, err, i) => acc + (i > 0 ? "\n" : "") + err, "") };
+      return {
+        success: false,
+        content: validation.errors.reduce((acc, err, i) => acc + (i > 0 ? "\n" : "") + err, ""),
+      };
     }
     return await this.generatePrompt();
   }

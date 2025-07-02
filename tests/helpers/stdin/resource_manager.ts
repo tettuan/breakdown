@@ -12,7 +12,7 @@
  * - Guarantees cleanup execution even on test failures
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("stdin-resource-manager");
 
@@ -45,7 +45,7 @@ export class StdinTestResourceManager {
    * @returns The created resource with AbortController and cleanup tracking
    */
   async createResource(id: string): Promise<StdinTestResource> {
-    logger.debug("Creating resource", { id });
+    _logger.debug("Creating resource", { id });
 
     // Check for duplicate IDs
     if (this.resources.has(id)) {
@@ -61,7 +61,7 @@ export class StdinTestResourceManager {
     };
 
     this.resources.set(id, resource);
-    logger.debug("Resource created", { id, resourceCount: this.resources.size });
+    _logger.debug("Resource created", { id, resourceCount: this.resources.size });
 
     return resource;
   }
@@ -71,7 +71,7 @@ export class StdinTestResourceManager {
    * @param id The resource ID to clean up
    */
   async cleanupResource(id: string): Promise<void> {
-    logger.debug("Cleaning up resource", { id });
+    _logger.debug("Cleaning up resource", { id });
 
     const resource = this.resources.get(id);
     if (!resource) {
@@ -111,7 +111,7 @@ export class StdinTestResourceManager {
 
     // 3. Remove from registry
     this.resources.delete(id);
-    logger.debug("Resource cleaned up", { id, remainingResources: this.resources.size });
+    _logger.debug("Resource cleaned up", { id, remainingResources: this.resources.size });
   }
 
   /**
@@ -125,7 +125,7 @@ export class StdinTestResourceManager {
       return;
     }
 
-    logger.debug("Cleaning up all resources", { count: resourceCount });
+    _logger.debug("Cleaning up all resources", { count: resourceCount });
 
     // Get all IDs before starting cleanup to avoid concurrent modification
     const ids = Array.from(this.resources.keys());
@@ -144,7 +144,7 @@ export class StdinTestResourceManager {
       });
     }
 
-    logger.debug("All resources cleaned up", {
+    _logger.debug("All resources cleaned up", {
       successCount: results.filter((r) => r.status === "fulfilled").length,
       failureCount: failures.length,
     });
@@ -184,7 +184,7 @@ export class StdinTestResourceManager {
     }
 
     resource.cleanupCallbacks.push(callback);
-    logger.debug("Cleanup callback registered", {
+    _logger.debug("Cleanup callback registered", {
       resourceId,
       totalCallbacks: resource.cleanupCallbacks.length,
     });

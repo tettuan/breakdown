@@ -1,8 +1,8 @@
 /**
  * Handler for one parameter case
- * 
+ *
  * This module handles commands with a single parameter, such as 'init'.
- * 
+ *
  * @module lib/cli/handlers/one_params_handler
  */
 
@@ -10,7 +10,7 @@ import { initializeBreakdownConfiguration } from "../initialization/workspace_in
 
 /**
  * Handle one parameter case
- * 
+ *
  * @param params - Command line parameters from BreakdownParams
  * @param _config - Configuration object from BreakdownConfig
  * @param _options - Parsed options from BreakdownParams

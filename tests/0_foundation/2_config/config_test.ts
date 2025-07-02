@@ -15,20 +15,20 @@
  * - Required directories exist and are accessible
  */
 
-import { assertEquals } from "jsr:@std/assert";
-import { join } from "jsr:@std/path/join";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
+import { assertEquals as _assertEquals } from "jsr:@std/assert";
+import { join as _join } from "jsr:@std/path/join";
+import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
+import { cleanupTestEnvironment as _cleanupTestEnvironment, setupTestEnvironment as _setupTestEnvironment } from "$test/helpers/setup.ts";
 
-const TEST_ENV = await setupTestEnvironment({
+const _TEST_ENV = await setupTestEnvironment({
   workingDir: "./tmp/test/config",
   configSetName: "test-config",
 });
 
 // Cleanup after all tests
 Deno.test({
-  name: "cleanup",
-  fn: async () => {
+  _name: "cleanup",
+  _fn: async () => {
     await cleanupTestEnvironment(TEST_ENV);
   },
   sanitizeResources: false,
@@ -41,20 +41,20 @@ Deno.test({
  * All config access must use BreakdownConfig, not direct file reads.
  */
 Deno.test("config - default settings", async () => {
-  const env = await setupTestEnvironment({
+  const _env = await setupTestEnvironment({
     workingDir: "./tmp/test/config",
     configSetName: "test-config-default",
     skipDefaultConfig: true,
   });
-  const originalCwd = Deno.cwd();
+  const _originalCwd = Deno.cwd();
 
   try {
     // Create config file in the project root location
-    const configDir = join(originalCwd, ".agent", "breakdown", "config");
+    const _configDir = join(originalCwd, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
 
     // Save existing config if present
-    const configPath = join(configDir, "app.yml");
+    const _configPath = join(configDir, "app.yml");
     let savedConfig: string | null = null;
     try {
       savedConfig = await Deno.readTextFile(configPath);
@@ -76,16 +76,16 @@ app_schema:
     if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
-    const config = configResult.data;
-    await config.loadConfig();
-    const settings = await config.getConfig();
+    const _config = configResult.data;
+    await (_config as any).loadConfig();
+    const _settings = await (_config as any).getConfig();
 
     assertEquals(settings.working_dir, ".");
     assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
     assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
-    if (savedConfig !== null) {
+    if (savedConfig !== _null) {
       await Deno.writeTextFile(configPath, savedConfig);
     } else {
       await Deno.remove(configPath);
@@ -102,20 +102,20 @@ app_schema:
  * All config access must use BreakdownConfig, not direct file reads.
  */
 Deno.test("config - custom working directory", async () => {
-  const env = await setupTestEnvironment({
+  const _env = await setupTestEnvironment({
     workingDir: "./tmp/test/config-custom",
     configSetName: "test-config-custom",
     skipDefaultConfig: true,
   });
-  const originalCwd = Deno.cwd();
+  const _originalCwd = Deno.cwd();
 
   try {
     // Create config file in the project root location
-    const configDir = join(originalCwd, ".agent", "breakdown", "config");
+    const _configDir = join(originalCwd, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
 
     // Save existing config if present
-    const configPath = join(configDir, "app.yml");
+    const _configPath = join(configDir, "app.yml");
     let savedConfig: string | null = null;
     try {
       savedConfig = await Deno.readTextFile(configPath);
@@ -137,16 +137,16 @@ app_schema:
     if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
-    const config = configResult.data;
-    await config.loadConfig();
-    const settings = await config.getConfig();
+    const _config = configResult.data;
+    await (_config as any).loadConfig();
+    const _settings = await (_config as any).getConfig();
 
     assertEquals(settings.working_dir, ".");
     assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
     assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
-    if (savedConfig !== null) {
+    if (savedConfig !== _null) {
       await Deno.writeTextFile(configPath, savedConfig);
     } else {
       await Deno.remove(configPath);
@@ -164,21 +164,21 @@ app_schema:
  */
 Deno.test("config - invalid configuration handling", async () => {
   // Change directory to a non-existent location to test missing config
-  const originalCwd = Deno.cwd();
-  const tempDir = await Deno.makeTempDir();
+  const _originalCwd = Deno.cwd();
+  const _tempDir = await Deno.makeTempDir();
   Deno.chdir(tempDir);
   try {
     const configResult = await BreakdownConfig.create();
     if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
-    const config = configResult.data;
+    const _config = configResult.data;
 
     try {
-      await config.loadConfig();
+      await (_config as any).loadConfig();
       throw new Error("Should have thrown an error for missing config");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
+    } catch (_error: _unknown) {
+      if (error instanceof _Error) {
         assertEquals(error.message.includes("Application configuration file not found"), true);
       } else {
         throw new Error("Unexpected error type");
@@ -196,22 +196,22 @@ Deno.test("config - invalid configuration handling", async () => {
  * All config access must use BreakdownConfig, not direct file reads.
  */
 Deno.test({
-  name: "config - basic functionality",
+  _name: "config - basic functionality",
   async fn() {
-    const env = await setupTestEnvironment({
+    const _env = await setupTestEnvironment({
       workingDir: "./tmp/test/config-basic",
       configSetName: "test-config-basic",
       skipDefaultConfig: true,
     });
-    const originalCwd = Deno.cwd();
+    const _originalCwd = Deno.cwd();
 
     try {
       // Create config file in the project root location
-      const configDir = join(originalCwd, ".agent", "breakdown", "config");
+      const _configDir = join(originalCwd, ".agent", "breakdown", "config");
       await Deno.mkdir(configDir, { recursive: true });
 
       // Save existing config if present
-      const configPath = join(configDir, "app.yml");
+      const _configPath = join(configDir, "app.yml");
       let savedConfig: string | null = null;
       try {
         savedConfig = await Deno.readTextFile(configPath);
@@ -233,9 +233,9 @@ app_schema:
       if (!configResult.success) {
         throw new Error("Failed to create BreakdownConfig");
       }
-      const config = configResult.data;
-      await config.loadConfig();
-      const settings = await config.getConfig();
+      const _config = configResult.data;
+      await (_config as any).loadConfig();
+      const _settings = await (_config as any).getConfig();
 
       // Verify basic functionality
       assertEquals(typeof settings, "object");
@@ -246,7 +246,7 @@ app_schema:
       assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
       // Restore original config
-      if (savedConfig !== null) {
+      if (savedConfig !== _null) {
         await Deno.writeTextFile(configPath, savedConfig);
       } else {
         await Deno.remove(configPath);
@@ -262,21 +262,21 @@ app_schema:
 
 Deno.test("config - error if no config file and different cwd", async () => {
   // Create a temp directory and chdir into it
-  const tempDir = await Deno.makeTempDir();
-  const originalCwd = Deno.cwd();
+  const _tempDir = await Deno.makeTempDir();
+  const _originalCwd = Deno.cwd();
   Deno.chdir(tempDir);
   try {
     const configResult = await BreakdownConfig.create(); // No config file created
     if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
-    const config = configResult.data;
-    let errorCaught = false;
+    const _config = configResult.data;
+    const _errorCaught = false;
     try {
-      await config.loadConfig();
-    } catch (error) {
+      await (_config as any).loadConfig();
+    } catch (_error) {
       errorCaught = true;
-      if (error instanceof Error) {
+      if (error instanceof _Error) {
         // Should mention missing config
         if (!error.message.includes("Application configuration file not found")) {
           throw new Error("Unexpected error message: " + error.message);
@@ -285,7 +285,7 @@ Deno.test("config - error if no config file and different cwd", async () => {
         throw new Error("Unexpected error type");
       }
     }
-    if (!errorCaught) {
+    if (!_errorCaught) {
       throw new Error("Should have thrown an error for missing config");
     }
   } finally {

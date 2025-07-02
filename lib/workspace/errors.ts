@@ -52,7 +52,7 @@ export class WorkspaceError extends Error {
    *
    * @example
    * ```typescript
-   * const error = new WorkspaceError("Directory not found", "WORKSPACE_DIR_NOT_FOUND");
+   * const _error = new WorkspaceError("Directory not found", "WORKSPACE_DIR_NOT_FOUND");
    * console.log(error.message); // "Directory not found"
    * console.log(error.code);    // "WORKSPACE_DIR_NOT_FOUND"
    * ```

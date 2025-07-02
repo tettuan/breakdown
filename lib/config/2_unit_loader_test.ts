@@ -1,34 +1,34 @@
 /**
  * Unit tests for Configuration Loader
- * 
+ *
  * Tests functional behavior and edge cases:
  * - File loading and parsing
  * - Error handling
  * - Configuration merging
  * - Edge cases and boundaries
- * 
+ *
  * @module config/loader_unit_test
  */
 
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import { describe, it, beforeEach, afterEach } from "@std/testing/bdd";
+import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { loadConfig, loadBreakdownConfig, type CustomConfig as _CustomConfig } from "./loader.ts";
+import { type CustomConfig as _CustomConfig, loadBreakdownConfig, loadConfig } from "./loader.ts";
 import { join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
-const logger = new BreakdownLogger("loader-unit");
+const _logger = new BreakdownLogger("loader-unit");
 
 describe("Unit: loadConfig YAML File Loading", () => {
   const testDir = Deno.makeTempDirSync();
   const testFiles: string[] = [];
 
   beforeEach(() => {
-    logger.debug("Setting up test files");
+    _logger.debug("Setting up test files");
   });
 
   afterEach(() => {
-    logger.debug("Cleaning up test files");
+    _logger.debug("Cleaning up test files");
     for (const file of testFiles) {
       try {
         Deno.removeSync(file);
@@ -40,9 +40,9 @@ describe("Unit: loadConfig YAML File Loading", () => {
   });
 
   it("should successfully load and parse valid YAML file", async () => {
-    logger.debug("Testing valid YAML loading");
-    
-    const testFile = join(testDir, "valid-config.yml");
+    _logger.debug("Testing valid YAML loading");
+
+    const testFile = join(testDir, "valid-_config.yml");
     const testContent = `
 customConfig:
   findBugs:
@@ -57,41 +57,41 @@ breakdownParams:
   customParams:
     feature: enabled
 `;
-    
+
     Deno.writeTextFileSync(testFile, testContent);
     testFiles.push(testFile);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     assertExists(config, "Config should be loaded");
-    assertEquals(config.customConfig?.findBugs?.enabled, true);
-    assertEquals(config.customConfig?.findBugs?.sensitivity, "high");
-    assertEquals(config.customConfig?.findBugs?.patterns?.length, 2);
-    assertEquals(config.customConfig?.findBugs?.maxResults, 100);
-    assertEquals(config.breakdownParams?.version, "1.0.0");
-    assertEquals(config.breakdownParams?.customParams?.feature, "enabled");
-    
-    logger.debug("Valid YAML loading verified");
+    assertEquals(_config.customConfig?.findBugs?.enabled, true);
+    assertEquals(_config.customConfig?.findBugs?.sensitivity, "high");
+    assertEquals(_config.customConfig?.findBugs?.patterns?.length, 2);
+    assertEquals(_config.customConfig?.findBugs?.maxResults, 100);
+    assertEquals(_config.breakdownParams?.version, "1.0.0");
+    assertEquals(_config.breakdownParams?.customParams?.feature, "enabled");
+
+    _logger.debug("Valid YAML loading verified");
   });
 
   it("should handle empty YAML file", async () => {
-    logger.debug("Testing empty YAML file");
-    
-    const testFile = join(testDir, "empty-config.yml");
+    _logger.debug("Testing empty YAML file");
+
+    const testFile = join(testDir, "empty-_config.yml");
     Deno.writeTextFileSync(testFile, "");
     testFiles.push(testFile);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     // Empty YAML should parse to null or empty object
     assertExists(config !== undefined, "Config should not be undefined");
-    
-    logger.debug("Empty YAML handling verified");
+
+    _logger.debug("Empty YAML handling verified");
   });
 
   it("should handle YAML with only comments", async () => {
-    logger.debug("Testing YAML with only comments");
-    
+    _logger.debug("Testing YAML with only comments");
+
     const testFile = join(testDir, "comments-only.yml");
     const content = `
 # This is a comment
@@ -100,17 +100,17 @@ breakdownParams:
 `;
     Deno.writeTextFileSync(testFile, content);
     testFiles.push(testFile);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     assertExists(config !== undefined, "Config should not be undefined");
-    
-    logger.debug("Comments-only YAML handling verified");
+
+    _logger.debug("Comments-only YAML handling verified");
   });
 
   it("should reject invalid YAML syntax", async () => {
-    logger.debug("Testing invalid YAML syntax");
-    
+    _logger.debug("Testing invalid YAML syntax");
+
     const testFile = join(testDir, "invalid-syntax.yml");
     const invalidContent = `
 customConfig:
@@ -122,21 +122,21 @@ customConfig:
 `;
     Deno.writeTextFileSync(testFile, invalidContent);
     testFiles.push(testFile);
-    
+
     await assertRejects(
       async () => await loadConfig(testFile),
       Error,
       "Failed to load config from",
-      "Should throw error for invalid YAML syntax"
+      "Should throw error for invalid YAML syntax",
     );
-    
-    logger.debug("Invalid YAML syntax rejection verified");
+
+    _logger.debug("Invalid YAML syntax rejection verified");
   });
 
   it("should handle nested configuration structures", async () => {
-    logger.debug("Testing nested configuration structures");
-    
-    const testFile = join(testDir, "nested-config.yml");
+    _logger.debug("Testing nested configuration structures");
+
+    const testFile = join(testDir, "nested-_config.yml");
     const nestedContent = `
 customConfig:
   findBugs:
@@ -183,30 +183,36 @@ additionalTopLevel:
         level3:
           value: 42
 `;
-    
+
     Deno.writeTextFileSync(testFile, nestedContent);
     testFiles.push(testFile);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     // Verify deep nesting
-    assertEquals(config.customConfig?.findBugs?.includeExtensions?.length, 4);
-    assertEquals(config.customConfig?.findBugs?.excludeDirectories?.[0], "node_modules");
-    assertEquals(config.breakdownParams?.customConfig?.validation?.strict, true);
-    assertEquals(config.breakdownParams?.customConfig?.params?.maxDepth, 10);
-    assertEquals((config.breakdownParams?.customParams?.features as Record<string, unknown>[])?.length, 3);
+    assertEquals(_config.customConfig?.findBugs?.includeExtensions?.length, 4);
+    assertEquals(_config.customConfig?.findBugs?.excludeDirectories?.[0], "node_modules");
+    assertEquals(_config.breakdownParams?.customConfig?.validation?.strict, true);
+    assertEquals(_config.breakdownParams?.customConfig?.params?.maxDepth, 10);
     assertEquals(
-      (config.additionalTopLevel as Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>)?.deeplyNested?.level1?.level2?.level3?.value,
-      42
+      (_config.breakdownParams?.customParams?.features as Record<string, unknown>[])?.length,
+      3,
     );
-    
-    logger.debug("Nested configuration handling verified");
+    assertEquals(
+      (_config.additionalTopLevel as Record<
+        string,
+        Record<string, Record<string, Record<string, Record<string, unknown>>>>
+      >)?.deeplyNested?.level1?.level2?.level3?.value,
+      42,
+    );
+
+    _logger.debug("Nested configuration handling verified");
   });
 
   it("should preserve YAML data types", async () => {
-    logger.debug("Testing YAML data type preservation");
-    
-    const testFile = join(testDir, "types-config.yml");
+    _logger.debug("Testing YAML data type preservation");
+
+    const testFile = join(testDir, "types-_config.yml");
     const typesContent = `
 stringValue: "hello world"
 numberValue: 42
@@ -225,48 +231,51 @@ objectValue:
   nested:
     deep: true
 `;
-    
+
     Deno.writeTextFileSync(testFile, typesContent);
     testFiles.push(testFile);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     // Verify type preservation
-    assertEquals(typeof config.stringValue, "string");
-    assertEquals(config.stringValue, "hello world");
-    assertEquals(typeof config.numberValue, "number");
-    assertEquals(config.numberValue, 42);
-    assertEquals(typeof config.floatValue, "number");
-    assertEquals(config.floatValue, 3.14);
-    assertEquals(typeof config.booleanTrue, "boolean");
-    assertEquals(config.booleanTrue, true);
-    assertEquals(typeof config.booleanFalse, "boolean");
-    assertEquals(config.booleanFalse, false);
-    assertEquals(config.nullValue, null);
-    assertEquals(config.emptyString, "");
-    assertEquals(config.zeroNumber, 0);
-    assertEquals(Array.isArray(config.arrayValue), true);
-    assertEquals((config.arrayValue as Record<string, unknown>[])?.length, 3);
-    assertEquals(typeof config.objectValue, "object");
-    assertEquals((config.objectValue as Record<string, Record<string, unknown>>)?.nested?.deep, true);
-    
-    logger.debug("YAML data type preservation verified");
+    assertEquals(typeof _config.stringValue, "string");
+    assertEquals(_config.stringValue, "hello world");
+    assertEquals(typeof _config.numberValue, "number");
+    assertEquals(_config.numberValue, 42);
+    assertEquals(typeof _config.floatValue, "number");
+    assertEquals(_config.floatValue, 3.14);
+    assertEquals(typeof _config.booleanTrue, "boolean");
+    assertEquals(_config.booleanTrue, true);
+    assertEquals(typeof _config.booleanFalse, "boolean");
+    assertEquals(_config.booleanFalse, false);
+    assertEquals(_config.nullValue, null);
+    assertEquals(_config.emptyString, "");
+    assertEquals(_config.zeroNumber, 0);
+    assertEquals(Array.isArray(_config.arrayValue), true);
+    assertEquals((_config.arrayValue as Record<string, unknown>[])?.length, 3);
+    assertEquals(typeof _config.objectValue, "object");
+    assertEquals(
+      (_config.objectValue as Record<string, Record<string, unknown>>)?.nested?.deep,
+      true,
+    );
+
+    _logger.debug("YAML data type preservation verified");
   });
 });
 
 describe("Unit: loadConfig Error Handling", () => {
   it("should handle file not found error", async () => {
-    logger.debug("Testing file not found error");
-    
-    const nonExistentFile = "/definitely/does/not/exist/config.yml";
-    
+    _logger.debug("Testing file not found error");
+
+    const nonExistentFile = "/definitely/does/not/exist/_config.yml";
+
     await assertRejects(
       async () => await loadConfig(nonExistentFile),
       Error,
       "Failed to load config from",
-      "Should throw error for non-existent file"
+      "Should throw error for non-existent file",
     );
-    
+
     try {
       await loadConfig(nonExistentFile);
     } catch (error) {
@@ -274,41 +283,41 @@ describe("Unit: loadConfig Error Handling", () => {
         assertEquals(
           error.message.includes(nonExistentFile),
           true,
-          "Error message should contain file path"
+          "Error message should contain file path",
         );
         assertEquals(
           error.message.includes("No such file or directory") ||
-          error.message.includes("The system cannot find"),
+            error.message.includes("The system cannot find"),
           true,
-          "Error message should contain OS-specific file not found message"
+          "Error message should contain OS-specific file not found message",
         );
       }
     }
-    
-    logger.debug("File not found error handling verified");
+
+    _logger.debug("File not found error handling verified");
   });
 
   it("should handle permission denied error", async () => {
-    logger.debug("Testing permission denied error");
-    
+    _logger.debug("Testing permission denied error");
+
     // Create a file with no read permissions
     const tempDir = Deno.makeTempDirSync();
     const restrictedFile = join(tempDir, "restricted.yml");
     Deno.writeTextFileSync(restrictedFile, "test: value");
-    
+
     // Note: Changing file permissions might not work on all platforms
     try {
       Deno.chmodSync(restrictedFile, 0o000);
-      
+
       await assertRejects(
         async () => await loadConfig(restrictedFile),
         Error,
         "Failed to load config from",
-        "Should throw error for permission denied"
+        "Should throw error for permission denied",
       );
     } catch {
       // Skip test if chmod is not supported
-      logger.debug("Skipping permission test - chmod not supported");
+      _logger.debug("Skipping permission test - chmod not supported");
     } finally {
       try {
         Deno.chmodSync(restrictedFile, 0o644);
@@ -318,91 +327,91 @@ describe("Unit: loadConfig Error Handling", () => {
         // Ignore cleanup errors
       }
     }
-    
-    logger.debug("Permission denied error handling verified");
+
+    _logger.debug("Permission denied error handling verified");
   });
 
   it("should handle directory instead of file", async () => {
-    logger.debug("Testing directory instead of file");
-    
+    _logger.debug("Testing directory instead of file");
+
     const tempDir = Deno.makeTempDirSync();
-    
+
     await assertRejects(
       async () => await loadConfig(tempDir),
       Error,
       "Failed to load config from",
-      "Should throw error when path is a directory"
+      "Should throw error when path is a directory",
     );
-    
+
     try {
       Deno.removeSync(tempDir);
     } catch {
       // Ignore cleanup errors
     }
-    
-    logger.debug("Directory error handling verified");
+
+    _logger.debug("Directory error handling verified");
   });
 });
 
 describe("Unit: loadBreakdownConfig Integration", () => {
   it("should handle successful BreakdownConfig creation", async () => {
-    logger.debug("Testing successful BreakdownConfig creation");
-    
+    _logger.debug("Testing successful BreakdownConfig creation");
+
     // Note: This test requires actual BreakdownConfig to be available
     // In a real test environment, we might mock the import
-    
+
     try {
       // Test with no parameters
       const config1 = await loadBreakdownConfig();
       assertExists(config1, "Should return config object");
       assertEquals(typeof config1, "object", "Should return an object");
-      
+
       // Test with null prefix
       const config2 = await loadBreakdownConfig(null);
       assertExists(config2, "Should handle null prefix");
       assertEquals(typeof config2, "object", "Should return an object");
-      
-      logger.debug("Successful BreakdownConfig creation verified");
+
+      _logger.debug("Successful BreakdownConfig creation verified");
     } catch (error) {
       // If BreakdownConfig is not available, verify error structure
       if (error instanceof Error) {
-        logger.debug("BreakdownConfig not available, verifying error handling");
+        _logger.debug("BreakdownConfig not available, verifying error handling");
         assertExists(error.message, "Error should have a message");
       }
     }
   });
 
-  it("should convert null prefix to undefined", () => {
-    logger.debug("Testing null to undefined conversion");
-    
+  it("should convert null prefix to undefined", async () => {
+    _logger.debug("Testing null to undefined conversion");
+
     // This is verified through code inspection
     const functionString = loadBreakdownConfig.toString();
-    
+
     // Check for nullish coalescing pattern
     const hasNullishCoalescing = functionString.includes("configPrefix ?? undefined");
     assertEquals(
       hasNullishCoalescing,
       true,
-      "Should use ?? operator to convert null to undefined"
+      "Should use ?? operator to convert null to undefined",
     );
-    
-    logger.debug("Null to undefined conversion verified");
+
+    _logger.debug("Null to undefined conversion verified");
   });
 
-  it("should maintain version compatibility", () => {
-    logger.debug("Testing version compatibility maintenance");
-    
+  it("should maintain version compatibility", async () => {
+    _logger.debug("Testing version compatibility maintenance");
+
     const functionString = loadBreakdownConfig.toString();
-    
+
     // Check for version specification
     const versionPattern = /@\^1\.1\.4/;
     assertEquals(
       versionPattern.test(functionString),
       true,
-      "Should specify version ^1.1.4 for BreakdownConfig"
+      "Should specify version ^1.1.4 for BreakdownConfig",
     );
-    
-    logger.debug("Version compatibility verified");
+
+    _logger.debug("Version compatibility verified");
   });
 });
 
@@ -410,38 +419,38 @@ describe("Unit: Edge Cases and Boundaries", () => {
   const testDir = Deno.makeTempDirSync();
 
   it("should handle very large configuration files", async () => {
-    logger.debug("Testing large configuration file handling");
-    
+    _logger.debug("Testing large configuration file handling");
+
     ensureDirSync(testDir);
-    const testFile = join(testDir, "large-config.yml");
-    
+    const testFile = join(testDir, "large-_config.yml");
+
     // Generate a large YAML file
-    let content = "largeConfig:\n";
+    const content = "largeConfig:\n";
     for (let i = 0; i < 1000; i++) {
       content += `  item${i}:\n`;
       content += `    value: "test value ${i}"\n`;
       content += `    enabled: ${i % 2 === 0}\n`;
       content += `    count: ${i}\n`;
     }
-    
+
     Deno.writeTextFileSync(testFile, content);
-    
-    const config = await loadConfig(testFile);
-    
-    assertExists(config.largeConfig, "Should load large configuration");
+
+    const _config = await loadConfig(testFile);
+
+    assertExists(_config.largeConfig, "Should load large configuration");
     assertEquals(
-      Object.keys(config.largeConfig as Record<string, unknown>).length,
+      Object.keys(_config.largeConfig as Record<string, unknown>).length,
       1000,
-      "Should have all 1000 items"
+      "Should have all 1000 items",
     );
-    
+
     Deno.removeSync(testFile);
-    logger.debug("Large configuration file handling verified");
+    _logger.debug("Large configuration file handling verified");
   });
 
   it("should handle special characters in configuration", async () => {
-    logger.debug("Testing special characters handling");
-    
+    _logger.debug("Testing special characters handling");
+
     ensureDirSync(testDir);
     const testFile = join(testDir, "special-chars.yml");
     const content = `
@@ -455,26 +464,41 @@ specialChars:
   empty: ""
   spaces: "   spaces at start and end   "
 `;
-    
+
     Deno.writeTextFileSync(testFile, content);
-    
-    const config = await loadConfig(testFile);
-    
-    assertEquals((config.specialChars as Record<string, unknown>)?.unicode, "Hello 世界 🌍");
-    assertEquals((config.specialChars as Record<string, unknown>)?.escaped, "Line 1\nLine 2\tTabbed");
-    assertEquals((config.specialChars as Record<string, unknown>)?.quotes, 'Single quotes with "double quotes" inside');
-    assertEquals((config.specialChars as Record<string, unknown>)?.symbols, "!@#$%^&*()_+-=[]{}|;:,.<>?");
-    assertEquals((config.specialChars as Record<string, unknown>)?.backslash, "C:\\Windows\\System32");
-    assertEquals((config.specialChars as Record<string, unknown>)?.empty, "");
-    assertEquals((config.specialChars as Record<string, unknown>)?.spaces, "   spaces at start and end   ");
-    
+
+    const _config = await loadConfig(testFile);
+
+    assertEquals((_config.specialChars as Record<string, unknown>)?.unicode, "Hello 世界 🌍");
+    assertEquals(
+      (_config.specialChars as Record<string, unknown>)?.escaped,
+      "Line 1\nLine 2\tTabbed",
+    );
+    assertEquals(
+      (_config.specialChars as Record<string, unknown>)?.quotes,
+      'Single quotes with "double quotes" inside',
+    );
+    assertEquals(
+      (_config.specialChars as Record<string, unknown>)?.symbols,
+      "!@#$%^&*()_+-=[]{}|;:,.<>?",
+    );
+    assertEquals(
+      (_config.specialChars as Record<string, unknown>)?.backslash,
+      "C:\\Windows\\System32",
+    );
+    assertEquals((_config.specialChars as Record<string, unknown>)?.empty, "");
+    assertEquals(
+      (_config.specialChars as Record<string, unknown>)?.spaces,
+      "   spaces at start and end   ",
+    );
+
     Deno.removeSync(testFile);
-    logger.debug("Special characters handling verified");
+    _logger.debug("Special characters handling verified");
   });
 
   it("should handle YAML anchors and aliases", async () => {
-    logger.debug("Testing YAML anchors and aliases");
-    
+    _logger.debug("Testing YAML anchors and aliases");
+
     ensureDirSync(testDir);
     const testFile = join(testDir, "anchors.yml");
     const content = `
@@ -492,24 +516,24 @@ production:
   debug: false
   timeout: 10000
 `;
-    
+
     Deno.writeTextFileSync(testFile, content);
-    
-    const config = await loadConfig(testFile);
-    
+
+    const _config = await loadConfig(testFile);
+
     // Verify anchor expansion
-    assertEquals((config.development as Record<string, unknown>)?.timeout, 5000);
-    assertEquals((config.development as Record<string, unknown>)?.retries, 3);
-    assertEquals((config.development as Record<string, unknown>)?.verbose, true);
-    assertEquals((config.development as Record<string, unknown>)?.debug, true);
-    
-    assertEquals((config.production as Record<string, unknown>)?.timeout, 10000); // Overridden
-    assertEquals((config.production as Record<string, unknown>)?.retries, 3);
-    assertEquals((config.production as Record<string, unknown>)?.verbose, true);
-    assertEquals((config.production as Record<string, unknown>)?.debug, false);
-    
+    assertEquals((_config.development as Record<string, unknown>)?.timeout, 5000);
+    assertEquals((_config.development as Record<string, unknown>)?.retries, 3);
+    assertEquals((_config.development as Record<string, unknown>)?.verbose, true);
+    assertEquals((_config.development as Record<string, unknown>)?.debug, true);
+
+    assertEquals((_config.production as Record<string, unknown>)?.timeout, 10000); // Overridden
+    assertEquals((_config.production as Record<string, unknown>)?.retries, 3);
+    assertEquals((_config.production as Record<string, unknown>)?.verbose, true);
+    assertEquals((_config.production as Record<string, unknown>)?.debug, false);
+
     Deno.removeSync(testFile);
-    logger.debug("YAML anchors and aliases handling verified");
+    _logger.debug("YAML anchors and aliases handling verified");
   });
 
   afterEach(() => {

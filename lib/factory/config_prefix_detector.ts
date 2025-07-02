@@ -30,7 +30,7 @@
  * @example Basic usage
  * ```typescript
  * // Detect equals format
- * const config1 = ConfigPrefixDetector.detect(['--config=production']);
+ * const _config1 = ConfigPrefixDetector.detect(['--config=production']);
  * // Result: 'production'
  *
  * // Detect space-separated format

@@ -1,20 +1,20 @@
 /**
  * @fileoverview TwoParamsOrchestrator - Orchestrates two params processing with Totality principle
- * 
+ *
  * This module serves as the orchestrator for handleTwoParams functionality,
  * coordinating all specialized components while maintaining single responsibility.
  * It replaces the monolithic handleTwoParams function with a clean separation of concerns.
- * 
+ *
  * @module cli/handlers/two_params_orchestrator
  */
 
-import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
+import type { Result } from "$lib/types/result.ts";
+import { error, ok } from "$lib/types/result.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
-import type { DemonstrativeType, LayerType } from "../../types/mod.ts";
+import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
+import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 import type { ValidatedParams } from "../generators/two_params_prompt_generator.ts";
 
 /**
@@ -39,7 +39,7 @@ interface ValidatedTwoParams {
 
 /**
  * TwoParamsOrchestrator - Coordinates all components for two params processing
- * 
+ *
  * Responsibilities:
  * - Coordinate component execution order
  * - Handle error propagation
@@ -63,7 +63,7 @@ export class TwoParamsOrchestrator {
       return error({
         kind: "InvalidParameterCount",
         received: params?.length ?? 0,
-        expected: 2
+        expected: 2,
       });
     }
     return ok(undefined);
@@ -83,8 +83,8 @@ export class TwoParamsOrchestrator {
    */
   #convertToValidatedParams(params: ValidatedTwoParams): ValidatedParams {
     return {
-      demonstrativeType: params.demonstrativeType as DemonstrativeType,
-      layerType: params.layerType
+      demonstrativeType: params.demonstrativeType,
+      layerType: params.layerType,
     };
   }
 
@@ -98,14 +98,14 @@ export class TwoParamsOrchestrator {
     } catch (err) {
       return error({
         kind: "OutputWriteError",
-        error: err instanceof Error ? err.message : String(err)
+        error: err instanceof Error ? err.message : String(err),
       });
     }
   }
 
   /**
    * Orchestrate the entire two params processing flow
-   * 
+   *
    * @param params - Command line parameters
    * @param config - Configuration object
    * @param options - Command line options
@@ -114,10 +114,10 @@ export class TwoParamsOrchestrator {
   async orchestrate(
     params: string[] | null,
     config: Record<string, unknown>,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
   ): Promise<Result<void, OrchestratorError>> {
     // 1. Validate parameter count
-    const countResult = this.#validateParameterCount(params);
+    const _countResult = this.#validateParameterCount(params);
     if (!countResult.ok) {
       return error(countResult.error);
     }
@@ -129,24 +129,24 @@ export class TwoParamsOrchestrator {
     const stdinProcessor = new TwoParamsStdinProcessor();
     const stdinResult = await stdinProcessor.process(
       config as BreakdownConfigCompatible,
-      options
+      options,
     );
     if (!stdinResult.ok) {
       return error({
         kind: "StdinReadError",
-        error: stdinResult.error.message
+        error: stdinResult.error.message,
       });
     }
 
     // 4. Process variables
     const variablesResult = this.variableProcessor.processVariables(
       options,
-      stdinResult.data
+      stdinResult.data,
     );
     if (!variablesResult.ok) {
       return error({
         kind: "VariableProcessingError",
-        errors: variablesResult.error.map((e: any) => {
+        errors: variablesResult.error.map((e: unknown) => {
           if (e.kind === "InvalidOptions") {
             return `${e.kind}: ${e.message}`;
           } else if ("key" in e) {
@@ -163,7 +163,7 @@ export class TwoParamsOrchestrator {
       config,
       convertedParams,
       options,
-      variablesResult.data
+      variablesResult.data,
     );
     if (!promptResult.ok) {
       return error({
@@ -172,13 +172,15 @@ export class TwoParamsOrchestrator {
           const err = promptResult.error;
           if (err.kind === "InvalidConfiguration" || err.kind === "FactoryCreationError") {
             return `${err.kind}: ${err.message}`;
-          } else if (err.kind === "FactoryValidationError" || err.kind === "VariablesBuilderError") {
+          } else if (
+            err.kind === "FactoryValidationError" || err.kind === "VariablesBuilderError"
+          ) {
             return `${err.kind}: ${err.errors.join(", ")}`;
           } else if (err.kind === "PromptGenerationError") {
             return `${err.kind}: ${err.error}`;
           }
-          return String((err as any).kind);
-        })()
+          return String((err as unknown).kind);
+        })(),
       });
     }
 

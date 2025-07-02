@@ -23,7 +23,7 @@ type DoubleParamsResult = PromptCliParams;
  * TypeCreationResult - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -45,7 +45,7 @@ export type TypeCreationResult<T> =
  *
  * @example
  * ```typescript
- * const resolver = new OutputFilePathResolver(config, cliParams);
+ * const _resolver = new OutputFilePathResolver(config, cliParams);
  *
  * // Auto-generated in layer directory
  * const autoPath = resolver.getPath(); // "./project/20241222_abc123.md"
@@ -66,7 +66,7 @@ export class OutputFilePathResolver {
    *
    * @example
    * ```typescript
-   * const config = { working_dir: ".agent/breakdown" };
+   * const _config = { working_dir: ".agent/breakdown" };
    * const cliParams = {
    *   demonstrativeType: "to",
    *   layerType: "project",
@@ -76,8 +76,8 @@ export class OutputFilePathResolver {
    * ```
    */
   constructor(
-    private config: Record<string, unknown>, 
-    private cliParams: DoubleParamsResult | TwoParamsResult
+    private config: Record<string, unknown>,
+    private cliParams: DoubleParamsResult | TwoParamsResult,
   ) {
     // Deep copy to ensure immutability
     this.config = this.deepCopyConfig(config);
@@ -91,17 +91,17 @@ export class OutputFilePathResolver {
    */
   private deepCopyConfig(config: Record<string, unknown>): Record<string, unknown> {
     const copy: Record<string, unknown> = {};
-    
+
     // Copy properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         // Shallow copy nested objects
         copy[key] = { ...value as Record<string, unknown> };
       } else {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -110,8 +110,10 @@ export class OutputFilePathResolver {
    * @param cliParams - The CLI parameters to copy
    * @returns Deep copy of the CLI parameters
    */
-  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
-    if ('type' in cliParams && cliParams.type === 'two') {
+  private deepCopyCliParams(
+    cliParams: DoubleParamsResult | TwoParamsResult,
+  ): DoubleParamsResult | TwoParamsResult {
+    if ("type" in cliParams && cliParams.type === "two") {
       // TwoParamsResult
       const twoParams = cliParams as TwoParamsResult;
       const copy: TwoParamsResult = {
@@ -119,7 +121,7 @@ export class OutputFilePathResolver {
         params: [...twoParams.params],
         demonstrativeType: twoParams.demonstrativeType,
         layerType: twoParams.layerType,
-        options: { ...twoParams.options }
+        options: { ...twoParams.options },
       };
       return copy;
     } else {
@@ -127,13 +129,13 @@ export class OutputFilePathResolver {
       const doubleParams = cliParams as DoubleParamsResult;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
-        layerType: doubleParams.layerType
+        layerType: doubleParams.layerType,
       };
-      
+
       if (doubleParams.options) {
         copy.options = { ...doubleParams.options };
       }
-      
+
       return copy;
     }
   }
@@ -169,7 +171,6 @@ export class OutputFilePathResolver {
    *
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
-
 
   public getPath(): string {
     const destinationFile = this.getDestinationFile();
@@ -226,7 +227,7 @@ export class OutputFilePathResolver {
    */
   private getLayerType(): string {
     // Handle both legacy and new parameter structures
-    if ('layerType' in this.cliParams) {
+    if ("layerType" in this.cliParams) {
       return this.cliParams.layerType;
     }
     // For TwoParamsResult structure, adapt to legacy interface
@@ -235,24 +236,25 @@ export class OutputFilePathResolver {
     if (layerType) {
       return layerType;
     }
-    
+
     // Handle mock objects with getValue method
-    const layerObj = (twoParams as any).layer;
-    if (layerObj && typeof layerObj.getValue === 'function') {
-      return layerObj.getValue();
+    const layerObj = (twoParams as unknown as Record<string, unknown>).layer;
+    if (layerObj && typeof (layerObj as Record<string, unknown>).getValue === "function") {
+      return (layerObj as { getValue: () => string }).getValue();
     }
-    
+
     return "task"; // Default fallback
   }
 
   public getDestinationFile(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
+    if ("options" in this.cliParams) {
       return this.cliParams.options?.destinationFile as string | undefined;
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
-    return (twoParams as unknown as { options?: { destinationFile?: string } }).options?.destinationFile;
+    return (twoParams as unknown as { options?: { destinationFile?: string } }).options
+      ?.destinationFile;
   }
 
   /**
@@ -298,12 +300,12 @@ export class OutputFilePathResolver {
     const dateStr = date.getFullYear().toString() +
       (date.getMonth() + 1).toString().padStart(2, "0") +
       date.getDate().toString().padStart(2, "0");
-    
+
     // Use performance.now() for microsecond precision to prevent collisions
     const timestampHash = Math.floor(performance.now() * 1000).toString(16).slice(-4);
     const randomHash = Math.random().toString(16).slice(2, 5);
     const combinedHash = `${timestampHash}${randomHash}`;
-    
+
     return `${dateStr}_${combinedHash}.md`;
   }
 

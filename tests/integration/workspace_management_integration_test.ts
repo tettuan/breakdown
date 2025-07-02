@@ -23,8 +23,11 @@ import {
 } from "https://deno.land/std@0.210.0/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { WorkspaceImpl } from "../../lib/workspace/workspace.ts";
-import { WorkspaceStructureImpl } from "../../lib/workspace/structure.ts";
-import { WorkspaceInitError, WorkspaceConfigError } from "../../lib/workspace/errors.ts";
+import { WorkspaceStructureImpl as _WorkspaceStructureImpl } from "../../lib/workspace/structure.ts";
+import {
+  WorkspaceConfigError,
+  WorkspaceInitError as _WorkspaceInitError,
+} from "../../lib/workspace/errors.ts";
 import { join, resolve } from "@std/path";
 import { exists } from "@std/fs";
 import {
@@ -33,7 +36,7 @@ import {
   type TestEnvironment,
 } from "../helpers/setup.ts";
 
-const logger = new BreakdownLogger("workspace-management-integration");
+const _logger = new BreakdownLogger("workspace-management-integration");
 
 /**
  * Test configuration for workspace integration scenarios
@@ -63,11 +66,11 @@ const WORKSPACE_TEST_CONFIGS: WorkspaceTestConfig[] = [
       ".agent/breakdown/temp",
       ".agent/breakdown/config",
       ".agent/breakdown/prompts",
-      ".agent/breakdown/schema"
+      ".agent/breakdown/schema",
     ],
     expectedFiles: [
-      ".agent/breakdown/config/app.yml"
-    ]
+      ".agent/breakdown/config/app.yml",
+    ],
   },
   {
     name: "custom-workspace",
@@ -76,17 +79,17 @@ const WORKSPACE_TEST_CONFIGS: WorkspaceTestConfig[] = [
     schemaBaseDir: "custom-schema",
     expectedDirectories: [
       ".agent/breakdown/projects",
-      ".agent/breakdown/issues", 
+      ".agent/breakdown/issues",
       ".agent/breakdown/tasks",
       ".agent/breakdown/temp",
       ".agent/breakdown/config",
       ".agent/breakdown/custom-prompts",
-      ".agent/breakdown/custom-schema"
+      ".agent/breakdown/custom-schema",
     ],
     expectedFiles: [
-      ".agent/breakdown/config/app.yml"
-    ]
-  }
+      ".agent/breakdown/config/app.yml",
+    ],
+  },
 ];
 
 /**
@@ -101,11 +104,11 @@ Deno.test("Workspace Integration - Workspace × Structure component integration"
       workingDir: "./tmp/workspace-structure-integration",
       skipDefaultConfig: true,
     });
-    logger.debug("Workspace structure integration test environment set up");
+    _logger.debug("Workspace structure integration test environment set up");
   });
 
   await t.step("should integrate workspace initialization with structure management", async () => {
-    logger.debug("Testing workspace × structure integration");
+    _logger.debug("Testing workspace × structure integration");
 
     const config = WORKSPACE_TEST_CONFIGS[0];
     const absoluteWorkingDir = resolve(testEnv.workingDir, config.name);
@@ -148,11 +151,11 @@ Deno.test("Workspace Integration - Workspace × Structure component integration"
     const testRemoved = !(await workspace.exists("test"));
     assertEquals(testRemoved, true);
 
-    logger.info("Workspace × Structure integration successful");
+    _logger.info("Workspace × Structure integration successful");
   });
 
   await t.step("should handle workspace-structure collaboration in error scenarios", async () => {
-    logger.debug("Testing workspace-structure error handling integration");
+    _logger.debug("Testing workspace-structure error handling integration");
 
     const invalidConfig = {
       workingDir: "/root/invalid-permissions",
@@ -166,14 +169,14 @@ Deno.test("Workspace Integration - Workspace × Structure component integration"
     await assertRejects(
       () => workspace.initialize(),
       Error, // Could be WorkspaceInitError or permission error
-      undefined // Error message varies by system
+      undefined, // Error message varies by system
     );
 
-    logger.info("Workspace-structure error handling integration verified");
+    _logger.info("Workspace-structure error handling integration verified");
   });
 
   await t.step("should integrate path resolution across workspace components", async () => {
-    logger.debug("Testing workspace path resolution integration");
+    _logger.debug("Testing workspace path resolution integration");
 
     const config = WORKSPACE_TEST_CONFIGS[1]; // custom workspace
     const absoluteWorkingDir = resolve(testEnv.workingDir, config.name);
@@ -199,12 +202,12 @@ Deno.test("Workspace Integration - Workspace × Structure component integration"
     const resolvedPath = await workspace.resolvePath("custom/test/path");
     assertEquals(resolvedPath, ".agent/breakdown/custom/test/path");
 
-    logger.info("Workspace path resolution integration successful");
+    _logger.info("Workspace path resolution integration successful");
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Workspace structure integration test environment cleaned up");
+    _logger.debug("Workspace structure integration test environment cleaned up");
   });
 });
 
@@ -220,11 +223,11 @@ Deno.test("Workspace Integration - Configuration hierarchy and template deployme
       workingDir: "./tmp/workspace-config-integration",
       skipDefaultConfig: true,
     });
-    logger.debug("Workspace configuration integration test environment set up");
+    _logger.debug("Workspace configuration integration test environment set up");
   });
 
   await t.step("should integrate configuration management with workspace operations", async () => {
-    logger.debug("Testing workspace configuration integration");
+    _logger.debug("Testing workspace configuration integration");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "config-test");
     const workspace = new WorkspaceImpl({
@@ -266,11 +269,11 @@ app_schema:
     assertEquals(promptDir, resolve(absoluteWorkingDir, "modified-prompts"));
     assertEquals(schemaDir, resolve(absoluteWorkingDir, "modified-schema"));
 
-    logger.info("Workspace configuration integration successful");
+    _logger.info("Workspace configuration integration successful");
   });
 
   await t.step("should integrate template deployment with directory structure", async () => {
-    logger.debug("Testing template deployment integration");
+    _logger.debug("Testing template deployment integration");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "template-test");
     const workspace = new WorkspaceImpl({
@@ -301,11 +304,11 @@ app_schema:
     const content = await Deno.readTextFile(testFile);
     assertEquals(content, "existing content");
 
-    logger.info("Template deployment integration successful");
+    _logger.info("Template deployment integration successful");
   });
 
   await t.step("should handle configuration validation errors appropriately", async () => {
-    logger.debug("Testing configuration validation error integration");
+    _logger.debug("Testing configuration validation error integration");
 
     const workspace = new WorkspaceImpl({
       workingDir: "/nonexistent/directory",
@@ -317,15 +320,15 @@ app_schema:
     await assertRejects(
       () => workspace.validateConfig(),
       WorkspaceConfigError,
-      "Working directory does not exist"
+      "Working directory does not exist",
     );
 
-    logger.info("Configuration validation error handling verified");
+    _logger.info("Configuration validation error handling verified");
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Workspace configuration integration test environment cleaned up");
+    _logger.debug("Workspace configuration integration test environment cleaned up");
   });
 });
 
@@ -341,11 +344,11 @@ Deno.test("Workspace Integration - File system operations and permission managem
       workingDir: "./tmp/workspace-filesystem-integration",
       skipDefaultConfig: true,
     });
-    logger.debug("Workspace file system integration test environment set up");
+    _logger.debug("Workspace file system integration test environment set up");
   });
 
   await t.step("should integrate complex directory operations across components", async () => {
-    logger.debug("Testing complex directory operations integration");
+    _logger.debug("Testing complex directory operations integration");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "filesystem-test");
     const workspace = new WorkspaceImpl({
@@ -365,13 +368,13 @@ Deno.test("Workspace Integration - File system operations and permission managem
     // Test multiple concurrent directory operations
     const concurrentPaths = [
       "projects/project-b/issues/issue-002",
-      "projects/project-c/issues/issue-003", 
+      "projects/project-c/issues/issue-003",
       "temp/analysis/data-001",
-      "temp/analysis/data-002"
+      "temp/analysis/data-002",
     ];
 
     await Promise.all(
-      concurrentPaths.map(path => workspace.createDirectory(path))
+      concurrentPaths.map((path) => workspace.createDirectory(path)),
     );
 
     // Verify all concurrent operations succeeded
@@ -389,11 +392,11 @@ Deno.test("Workspace Integration - File system operations and permission managem
     const stillExists = await workspace.exists("projects/project-a");
     assertEquals(stillExists, true);
 
-    logger.info("Complex directory operations integration successful");
+    _logger.info("Complex directory operations integration successful");
   });
 
   await t.step("should handle file system edge cases and error recovery", async () => {
-    logger.debug("Testing file system edge cases integration");
+    _logger.debug("Testing file system edge cases integration");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "edge-cases-test");
     const workspace = new WorkspaceImpl({
@@ -419,11 +422,11 @@ Deno.test("Workspace Integration - File system operations and permission managem
     // Test file vs directory conflict detection
     const conflictPath = "conflict-test";
     await workspace.createDirectory(conflictPath);
-    
+
     // Create a file where a directory should go
     const filePath = join(absoluteWorkingDir, conflictPath, "file-conflict");
     await Deno.writeTextFile(filePath, "test content");
-    
+
     // Verify file exists and is detected
     const fileExists = await workspace.exists(join(conflictPath, "file-conflict"));
     assertEquals(fileExists, true);
@@ -433,11 +436,11 @@ Deno.test("Workspace Integration - File system operations and permission managem
     const conflictRemoved = !(await workspace.exists(conflictPath));
     assertEquals(conflictRemoved, true);
 
-    logger.info("File system edge cases integration successful");
+    _logger.info("File system edge cases integration successful");
   });
 
   await t.step("should handle permission errors and recovery scenarios", async () => {
-    logger.debug("Testing permission error handling integration");
+    _logger.debug("Testing permission error handling integration");
 
     // Test workspace with valid directory
     const validWorkingDir = resolve(testEnv.workingDir, "permission-test");
@@ -462,7 +465,7 @@ Deno.test("Workspace Integration - File system operations and permission managem
     } catch (error) {
       // Should handle removal errors gracefully
       assert(error instanceof Deno.errors.NotFound);
-      logger.debug("Expected error for nonexistent directory removal", { error });
+      _logger.debug("Expected error for nonexistent directory removal", { error });
     }
 
     // Verify workspace is still functional after error
@@ -470,12 +473,12 @@ Deno.test("Workspace Integration - File system operations and permission managem
     const afterErrorExists = await workspace.exists("test/after/error");
     assertEquals(afterErrorExists, true);
 
-    logger.info("Permission error handling integration successful");
+    _logger.info("Permission error handling integration successful");
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Workspace file system integration test environment cleaned up");
+    _logger.debug("Workspace file system integration test environment cleaned up");
   });
 });
 
@@ -491,82 +494,85 @@ Deno.test("Workspace Integration - Complete workspace lifecycle management", asy
       workingDir: "./tmp/workspace-lifecycle-integration",
       skipDefaultConfig: true,
     });
-    logger.debug("Workspace lifecycle integration test environment set up");
+    _logger.debug("Workspace lifecycle integration test environment set up");
   });
 
-  await t.step("should handle complete workspace initialization to destruction lifecycle", async () => {
-    logger.debug("Testing complete workspace lifecycle");
+  await t.step(
+    "should handle complete workspace initialization to destruction lifecycle",
+    async () => {
+      _logger.debug("Testing complete workspace lifecycle");
 
-    const absoluteWorkingDir = resolve(testEnv.workingDir, "lifecycle-test");
+      const absoluteWorkingDir = resolve(testEnv.workingDir, "lifecycle-test");
 
-    // Phase 1: Initial workspace creation
-    const workspace = new WorkspaceImpl({
-      workingDir: absoluteWorkingDir,
-      promptBaseDir: "prompts",
-      schemaBaseDir: "schema",
-    });
+      // Phase 1: Initial workspace creation
+      const workspace = new WorkspaceImpl({
+        workingDir: absoluteWorkingDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schema",
+      });
 
-    await workspace.initialize();
-    
-    // Verify initial state
-    const initialExists = await workspace.exists();
-    assertEquals(initialExists, true);
+      await workspace.initialize();
 
-    // Phase 2: Active workspace usage
-    await workspace.createDirectory("projects/active-project");
-    await workspace.createDirectory("issues/active-issue");
-    await workspace.createDirectory("tasks/active-task");
+      // Verify initial state
+      const initialExists = await workspace.exists();
+      assertEquals(initialExists, true);
 
-    // Verify active usage
-    const projectExists = await workspace.exists("projects/active-project");
-    const issueExists = await workspace.exists("issues/active-issue");
-    const taskExists = await workspace.exists("tasks/active-task");
-    assertEquals(projectExists, true);
-    assertEquals(issueExists, true);
-    assertEquals(taskExists, true);
+      // Phase 2: Active workspace usage
+      await workspace.createDirectory("projects/active-project");
+      await workspace.createDirectory("issues/active-issue");
+      await workspace.createDirectory("tasks/active-task");
 
-    // Phase 3: Configuration updates
-    const configFile = join(absoluteWorkingDir, ".agent", "breakdown", "config", "app.yml");
-    const updatedConfig = `working_dir: .agent/breakdown
+      // Verify active usage
+      const projectExists = await workspace.exists("projects/active-project");
+      const issueExists = await workspace.exists("issues/active-issue");
+      const taskExists = await workspace.exists("tasks/active-task");
+      assertEquals(projectExists, true);
+      assertEquals(issueExists, true);
+      assertEquals(taskExists, true);
+
+      // Phase 3: Configuration updates
+      const configFile = join(absoluteWorkingDir, ".agent", "breakdown", "config", "app.yml");
+      const updatedConfig = `working_dir: .agent/breakdown
 app_prompt:
   base_dir: updated-prompts
 app_schema:
   base_dir: updated-schema
 `;
-    await Deno.writeTextFile(configFile, updatedConfig);
-    await workspace.reloadConfig();
+      await Deno.writeTextFile(configFile, updatedConfig);
+      await workspace.reloadConfig();
 
-    // Verify configuration updates
-    const promptDir = await workspace.getPromptBaseDir();
-    const schemaDir = await workspace.getSchemaBaseDir();
-    assertEquals(promptDir, resolve(absoluteWorkingDir, "updated-prompts"));
-    assertEquals(schemaDir, resolve(absoluteWorkingDir, "updated-schema"));
+      // Verify configuration updates
+      const promptDir = await workspace.getPromptBaseDir();
+      const schemaDir = await workspace.getSchemaBaseDir();
+      assertEquals(promptDir, resolve(absoluteWorkingDir, "updated-prompts"));
+      assertEquals(schemaDir, resolve(absoluteWorkingDir, "updated-schema"));
 
-    // Phase 4: Workspace validation and maintenance
-    await workspace.validateConfig();
+      // Phase 4: Workspace validation and maintenance
+      await workspace.validateConfig();
 
-    // Phase 5: Cleanup phase
-    await workspace.removeDirectory("projects");
-    await workspace.removeDirectory("issues");
-    await workspace.removeDirectory("tasks");
+      // Phase 5: Cleanup phase
+      await workspace.removeDirectory("projects");
+      await workspace.removeDirectory("issues");
+      await workspace.removeDirectory("tasks");
 
-    // Verify cleanup
-    const cleanedProject = !(await workspace.exists("projects"));
-    const cleanedIssue = !(await workspace.exists("issues"));
-    const cleanedTask = !(await workspace.exists("tasks"));
-    assertEquals(cleanedProject, true);
-    assertEquals(cleanedIssue, true);
-    assertEquals(cleanedTask, true);
+      // Verify cleanup
+      const cleanedProject = !(await workspace.exists("projects"));
+      const cleanedIssue = !(await workspace.exists("issues"));
+      const cleanedTask = !(await workspace.exists("tasks"));
+      assertEquals(cleanedProject, true);
+      assertEquals(cleanedIssue, true);
+      assertEquals(cleanedTask, true);
 
-    // Workspace core structure should still exist
-    const coreExists = await workspace.exists();
-    assertEquals(coreExists, true);
+      // Workspace core structure should still exist
+      const coreExists = await workspace.exists();
+      assertEquals(coreExists, true);
 
-    logger.info("Complete workspace lifecycle integration successful");
-  });
+      _logger.info("Complete workspace lifecycle integration successful");
+    },
+  );
 
   await t.step("should handle multiple workspace instances and concurrent operations", async () => {
-    logger.debug("Testing multiple workspace instances integration");
+    _logger.debug("Testing multiple workspace instances integration");
 
     // Create multiple workspace instances
     const workspace1 = new WorkspaceImpl({
@@ -584,7 +590,7 @@ app_schema:
     // Initialize both workspaces concurrently
     await Promise.all([
       workspace1.initialize(),
-      workspace2.initialize()
+      workspace2.initialize(),
     ]);
 
     // Verify both workspaces exist independently
@@ -596,7 +602,7 @@ app_schema:
     // Perform concurrent operations
     await Promise.all([
       workspace1.createDirectory("workspace1/specific/directory"),
-      workspace2.createDirectory("workspace2/specific/directory")
+      workspace2.createDirectory("workspace2/specific/directory"),
     ]);
 
     // Verify operations succeeded independently
@@ -611,11 +617,11 @@ app_schema:
     assertEquals(ws1DoesntHaveWs2, true);
     assertEquals(ws2DoesntHaveWs1, true);
 
-    logger.info("Multiple workspace instances integration successful");
+    _logger.info("Multiple workspace instances integration successful");
   });
 
   await t.step("should integrate error recovery across full workspace operations", async () => {
-    logger.debug("Testing comprehensive error recovery integration");
+    _logger.debug("Testing comprehensive error recovery integration");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "error-recovery-test");
     const workspace = new WorkspaceImpl({
@@ -644,10 +650,10 @@ app_schema:
         // Try invalid path resolution
         try {
           const result = await workspace.resolvePath("");
-          assertExists(result); // Should handle gracefully
+          assertExists(_result); // Should handle gracefully
         } catch (error) {
           // Error handling should be graceful
-          logger.debug("Path resolution error handled", { error });
+          _logger.debug("Path resolution error handled", { error });
         }
       },
       async () => {
@@ -658,13 +664,13 @@ app_schema:
           assertEquals(exists, true);
         } catch (error) {
           // Should handle gracefully
-          logger.debug("Directory creation error handled", { error });
+          _logger.debug("Directory creation error handled", { error });
         }
-      }
+      },
     ];
 
     // Run error scenarios
-    await Promise.all(errorScenarios.map(scenario => scenario()));
+    await Promise.all(errorScenarios.map((scenario) => scenario()));
 
     // Verify workspace is still functional after errors
     await workspace.createDirectory("recovery/test");
@@ -677,12 +683,12 @@ app_schema:
     assertEquals(projectExists, true);
     assertEquals(issueExists, true);
 
-    logger.info("Comprehensive error recovery integration successful");
+    _logger.info("Comprehensive error recovery integration successful");
   });
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Workspace lifecycle integration test environment cleaned up");
+    _logger.debug("Workspace lifecycle integration test environment cleaned up");
   });
 });
 
@@ -698,11 +704,11 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
       workingDir: "./tmp/workspace-performance-integration",
       skipDefaultConfig: true,
     });
-    logger.debug("Workspace performance integration test environment set up");
+    _logger.debug("Workspace performance integration test environment set up");
   });
 
   await t.step("should handle high-volume directory operations efficiently", async () => {
-    logger.debug("Testing high-volume directory operations performance");
+    _logger.debug("Testing high-volume directory operations performance");
 
     const absoluteWorkingDir = resolve(testEnv.workingDir, "performance-test");
     const workspace = new WorkspaceImpl({
@@ -717,8 +723,9 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
     const start = performance.now();
 
     // Create many directories concurrently
-    const createOperations = Array.from({ length: operationCount }, (_, i) =>
-      workspace.createDirectory(`performance/test-${i}/nested/deep`)
+    const createOperations = Array.from(
+      { length: operationCount },
+      (_, i) => workspace.createDirectory(`performance/test-${i}/nested/deep`),
     );
 
     await Promise.all(createOperations);
@@ -727,7 +734,7 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
     const createDuration = createEnd - start;
 
     // Verify all directories exist
-    let existCount = 0;
+    const existCount = 0;
     for (let i = 0; i < operationCount; i++) {
       const exists = await workspace.exists(`performance/test-${i}/nested/deep`);
       if (exists) existCount++;
@@ -741,7 +748,7 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
     const removeEnd = performance.now();
     const removeDuration = removeEnd - removeStart;
 
-    logger.info("High-volume operations performance results", {
+    _logger.info("High-volume operations performance results", {
       operationCount,
       createDuration: `${createDuration.toFixed(2)}ms`,
       avgCreateTime: `${(createDuration / operationCount).toFixed(4)}ms`,
@@ -752,48 +759,51 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
     const avgCreateTime = createDuration / operationCount;
     assert(avgCreateTime < 10, `Directory creation too slow: ${avgCreateTime}ms per operation`);
 
-    logger.info("High-volume directory operations performance successful");
+    _logger.info("High-volume directory operations performance successful");
   });
 
-  await t.step("should handle rapid workspace initialization and configuration changes", async () => {
-    logger.debug("Testing rapid workspace operations performance");
+  await t.step(
+    "should handle rapid workspace initialization and configuration changes",
+    async () => {
+      _logger.debug("Testing rapid workspace operations performance");
 
-    const iterations = 50;
-    const start = performance.now();
+      const iterations = 50;
+      const start = performance.now();
 
-    // Test rapid workspace creation and configuration changes
-    for (let i = 0; i < iterations; i++) {
-      const workspaceDir = resolve(testEnv.workingDir, `rapid-test-${i}`);
-      const workspace = new WorkspaceImpl({
-        workingDir: workspaceDir,
-        promptBaseDir: `prompts-${i}`,
-        schemaBaseDir: `schema-${i}`,
+      // Test rapid workspace creation and configuration changes
+      for (let i = 0; i < iterations; i++) {
+        const workspaceDir = resolve(testEnv.workingDir, `rapid-test-${i}`);
+        const workspace = new WorkspaceImpl({
+          workingDir: workspaceDir,
+          promptBaseDir: `prompts-${i}`,
+          schemaBaseDir: `schema-${i}`,
+        });
+
+        await workspace.initialize();
+        await workspace.validateConfig();
+      }
+
+      const end = performance.now();
+      const duration = end - start;
+      const avgTime = duration / iterations;
+
+      _logger.info("Rapid workspace operations performance results", {
+        iterations,
+        totalDuration: `${duration.toFixed(2)}ms`,
+        avgTimePerWorkspace: `${avgTime.toFixed(4)}ms`,
       });
 
-      await workspace.initialize();
-      await workspace.validateConfig();
-    }
+      // Should be reasonably fast (less than 100ms per workspace)
+      assert(avgTime < 100, `Workspace operations too slow: ${avgTime}ms per workspace`);
 
-    const end = performance.now();
-    const duration = end - start;
-    const avgTime = duration / iterations;
-
-    logger.info("Rapid workspace operations performance results", {
-      iterations,
-      totalDuration: `${duration.toFixed(2)}ms`,
-      avgTimePerWorkspace: `${avgTime.toFixed(4)}ms`,
-    });
-
-    // Should be reasonably fast (less than 100ms per workspace)
-    assert(avgTime < 100, `Workspace operations too slow: ${avgTime}ms per workspace`);
-
-    logger.info("Rapid workspace operations performance successful");
-  });
+      _logger.info("Rapid workspace operations performance successful");
+    },
+  );
 
   await t.step("cleanup test environment", async () => {
     await cleanupTestEnvironment(testEnv);
-    logger.debug("Workspace performance integration test environment cleaned up");
+    _logger.debug("Workspace performance integration test environment cleaned up");
   });
 });
 
-logger.info("All Workspace Management integration tests completed");
+_logger.info("All Workspace Management integration tests completed");

@@ -28,7 +28,7 @@ export class StdinTestUtils {
     testName: string,
     testFunction: (scenario: StdinTestScenario, mockConfig: StdinMockConfig) => Promise<T>,
   ): Promise<void> {
-    const scenarios = this.framework.createTestScenarios();
+    const _scenarios = this.framework.createTestScenarios();
 
     for (const config of scenarios) {
       await Deno.test(`${testName} - ${config.scenario}`, async () => {
@@ -92,7 +92,7 @@ export class StdinTestUtils {
       };
 
       await this.framework.runStdinTest(config, () => {
-        const result = EnhancedTerminalDetector.detectTerminalState();
+        const _result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.envInfo.isCI, true);
         assertEquals(result.isTerminal, true);
         return Promise.resolve();
@@ -108,7 +108,7 @@ export class StdinTestUtils {
       };
 
       await this.framework.runStdinTest(config, () => {
-        const result = EnhancedTerminalDetector.detectTerminalState();
+        const _result = EnhancedTerminalDetector.detectTerminalState();
         assertEquals(result.isTerminal, false);
         assertEquals(result.confidence, "high");
         return Promise.resolve();
@@ -121,7 +121,7 @@ export class StdinTestUtils {
    */
   static validateEnvironmentConfig(): void {
     Deno.test("Environment configuration validation", () => {
-      const config = StdinEnvironmentController.getEnvironmentConfig();
+      const _config = StdinEnvironmentController.getEnvironmentConfig();
 
       // Validate structure
       assertEquals(typeof config.ci.enabled, "boolean");

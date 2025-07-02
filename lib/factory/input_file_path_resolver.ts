@@ -23,7 +23,7 @@ type DoubleParamsResult = PromptCliParams;
  * TypeCreationResult - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -65,7 +65,7 @@ export class InputFilePathResolver {
    *
    * @example
    * ```typescript
-   * const config = { working_dir: ".agent/breakdown" };
+   * const _config = { working_dir: ".agent/breakdown" };
    * const cliParams = {
    *   demonstrativeType: "to",
    *   layerType: "project",
@@ -75,8 +75,8 @@ export class InputFilePathResolver {
    * ```
    */
   constructor(
-    private config: Record<string, unknown>, 
-    private cliParams: DoubleParamsResult | TwoParamsResult
+    private config: Record<string, unknown>,
+    private cliParams: DoubleParamsResult | TwoParamsResult,
   ) {
     // Deep copy to ensure immutability
     this.config = this.deepCopyConfig(config);
@@ -90,17 +90,17 @@ export class InputFilePathResolver {
    */
   private deepCopyConfig(config: Record<string, unknown>): Record<string, unknown> {
     const copy: Record<string, unknown> = {};
-    
+
     // Copy properties shallowly (should be primitive or immutable)
     for (const [key, value] of Object.entries(config)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         // Shallow copy nested objects
         copy[key] = { ...value as Record<string, unknown> };
       } else {
         copy[key] = value;
       }
     }
-    
+
     return copy;
   }
 
@@ -109,8 +109,10 @@ export class InputFilePathResolver {
    * @param cliParams - The CLI parameters to copy
    * @returns Deep copy of the CLI parameters
    */
-  private deepCopyCliParams(cliParams: DoubleParamsResult | TwoParamsResult): DoubleParamsResult | TwoParamsResult {
-    if ('type' in cliParams && cliParams.type === 'two') {
+  private deepCopyCliParams(
+    cliParams: DoubleParamsResult | TwoParamsResult,
+  ): DoubleParamsResult | TwoParamsResult {
+    if ("type" in cliParams && cliParams.type === "two") {
       // TwoParamsResult
       const twoParams = cliParams as TwoParamsResult;
       const copy: TwoParamsResult = {
@@ -118,7 +120,7 @@ export class InputFilePathResolver {
         params: [...twoParams.params],
         demonstrativeType: twoParams.demonstrativeType,
         layerType: twoParams.layerType,
-        options: { ...twoParams.options }
+        options: { ...twoParams.options },
       };
       return copy;
     } else {
@@ -126,13 +128,13 @@ export class InputFilePathResolver {
       const doubleParams = cliParams as DoubleParamsResult;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
-        layerType: doubleParams.layerType
+        layerType: doubleParams.layerType,
       };
-      
+
       if (doubleParams.options) {
         copy.options = { ...doubleParams.options };
       }
-      
+
       return copy;
     }
   }
@@ -170,7 +172,6 @@ export class InputFilePathResolver {
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
 
-
   public getPath(): string {
     const fromFile = this.getFromFile();
     if (!fromFile) return "";
@@ -205,7 +206,7 @@ export class InputFilePathResolver {
    */
   private getFromFile(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
+    if ("options" in this.cliParams) {
       return this.cliParams.options?.fromFile as string | undefined;
     }
     // For TwoParamsResult structure, adapt to legacy interface
@@ -312,12 +313,13 @@ export class InputFilePathResolver {
    */
   private getDirectory(): string {
     // Handle both legacy and new parameter structures
-    if ('options' in this.cliParams) {
+    if ("options" in this.cliParams) {
       return (this.cliParams.options?.fromLayerType as string) || this.cliParams.layerType;
     }
     // For TwoParamsResult structure, adapt to legacy interface
     const twoParams = this.cliParams as TwoParamsResult;
-    const fromLayerType = (twoParams as unknown as { options?: { fromLayerType?: string } }).options?.fromLayerType;
+    const fromLayerType = (twoParams as unknown as { options?: { fromLayerType?: string } }).options
+      ?.fromLayerType;
     const layerType = (twoParams as unknown as { layerType?: string }).layerType;
     return fromLayerType || layerType || "";
   }
