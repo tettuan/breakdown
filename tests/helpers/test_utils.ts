@@ -3,7 +3,7 @@ import { join } from "@std/path/join";
 /**
  * Base directory for all test files
  */
-export const _TEST_BASE_DIR = "./tmp/test";
+export const TEST_BASE_DIR = "./tmp/test";
 
 /**
  * Gets test environment options for a specific test module
