@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ============================================================================
+# ===============================================================================
 # local_ci.sh
 #
 # Purpose:
@@ -38,7 +38,7 @@
 #   # or, with debug output:
 #   LOG_LEVEL=debug bash scripts/local_ci.sh
 #   # or, run tests one file at a time in debug mode:
-#   bash scripts/local_ci.sh --single-file
+#   deno task ci --single-file
 #
 # Maintenance:
 #   - If you encounter an error:
@@ -524,7 +524,7 @@ Tests in tests/ directory will not be executed.
 Please fix the error in the failing test before proceeding.
 
 To retry:
-  bash scripts/local_ci.sh --single-file
+  deno task ci --single-file
 ==============================================================================="
                         return 1
                     fi
@@ -561,7 +561,7 @@ Remaining tests in tests/ directory have been skipped.
 Please fix the error in the failing test before proceeding.
 
 To retry:
-  bash scripts/local_ci.sh --single-file
+  deno task ci --single-file
 ==============================================================================="
                         return 1
                     fi
