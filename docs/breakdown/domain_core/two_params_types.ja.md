@@ -27,8 +27,12 @@ type TwoParams = {
   // ドメイン操作
   toCommand(): BreakdownCommand;
   validate(): Result<void, TwoParamsValidationError>;
-  getPromptPath(): PromptPath;
+  
+  // パス解決機能（プロンプト・スキーマファイル）
+  getPromptPath(fromLayerType?: string, adaptation?: string): PromptPath;
   getSchemaPath(): SchemaPath;
+  resolvePromptFilePath(baseDir: string, fromLayerType?: string, adaptation?: string): string;
+  resolveSchemaFilePath(baseDir: string): string;
   
   // 型安全な比較
   equals(other: TwoParams): boolean;
@@ -42,7 +46,7 @@ type TwoParams = {
  * - BreakdownConfigのパターンで検証されたCLI args値（to, summary, defect, web, rag, db）
  * - ProfileNameによってパターンが決定される
  * - アプリケーションライフサイクル全体で不変
- * - プロンプトテンプレートの選択に使用
+ * - プロンプトテンプレートとスキーマファイルのディレクトリ階層決定に使用
  */
 type DirectiveType = {
   readonly value: string;
@@ -51,6 +55,11 @@ type DirectiveType = {
   
   // ドメイン操作
   isValidForProfile(profile: ConfigProfileName): boolean;
+  
+  // パス解決専用ドメイン操作
+  getPromptDirectory(baseDir: string, layer: LayerType): string;
+  getSchemaDirectory(baseDir: string, layer: LayerType): string;
+  isValidForResourcePath(): boolean;
   
   // 型安全な比較
   equals(other: DirectiveType): boolean;
@@ -64,7 +73,7 @@ type DirectiveType = {
  * - BreakdownConfigのパターンで検証されたCLI args値（project, issue, task）
  * - ProfileNameによってパターンが決定される
  * - アプリケーションライフサイクル全体で不変
- * - DirectiveTypeと組み合わせて処理を特定
+ * - DirectiveTypeと組み合わせてプロンプトテンプレートとスキーマファイルのパス特定に使用
  */
 type LayerType = {
   readonly value: string;
@@ -72,6 +81,11 @@ type LayerType = {
   
   // ドメイン操作
   isValidForDirective(directive: DirectiveType): boolean;
+  
+  // パス解決専用ドメイン操作
+  getPromptFilename(fromLayerType: string, adaptation?: string): string;
+  getSchemaFilename(): string;
+  isValidForResourcePath(): boolean;
   
   // 型安全な比較
   equals(other: LayerType): boolean;
@@ -183,12 +197,162 @@ if (profile.ok) {
   // 3. TwoParamsResultからTwoParams作成
   if (paramsResult.type === "two") {
     const twoParams = TwoParams.fromResult(paramsResult);
+    
+    // 基本的なドメイン操作
     const command = twoParams.data.toCommand();
-    const promptPath = twoParams.data.getPromptPath();
+    
+    // プロンプトテンプレートパス解決
+    const promptPath = twoParams.data.getPromptPath("issue");
+    // 結果: PromptPath { baseDir: "prompts", directive: "to", layer: "issue", fromLayer: "issue" }
+    
+    const promptFilePath = twoParams.data.resolvePromptFilePath("prompts", "issue");
+    // 結果: "prompts/to/issue/f_issue.md"
+    
+    const adaptedPromptPath = twoParams.data.resolvePromptFilePath("prompts", "issue", "strict");
+    // 結果: "prompts/to/issue/f_issue_strict.md"
+    
+    // スキーマファイルパス解決
     const schemaPath = twoParams.data.getSchemaPath();
+    // 結果: SchemaPath { baseDir: "schemas", directive: "to", layer: "issue", schemaFile: "base.schema.json" }
+    
+    const schemaFilePath = twoParams.data.resolveSchemaFilePath("schemas");
+    // 結果: "schemas/to/issue/base.schema.json"
   }
 }
 ```
+
+## プロンプトテンプレートとスキーマファイルのパス解決
+
+### DirectiveTypeとLayerTypeの役割
+
+LayerTypeとDirectiveTypeは、プロンプトテンプレートやスキーマファイルの**パス解決において重要なドメイン用語**です。これらの値は、バリデーションを経た後に、ファイルシステム上の具体的なリソースへのパスを特定するために使用されます。
+
+### パス解決の構造
+
+プロンプトテンプレートとスキーマファイルのパスは、以下の4つの変数の組み合わせによって決定されます：
+
+1. **設定値（base_dir）** - `app_prompt.base_dir` または `app_schema.base_dir`
+2. **DirectiveType** - 処理方向（to, summary, defect など）
+3. **LayerType** - 階層レベル（project, issue, task など）
+4. **その他の修飾子** - fromLayerType, adaptation など
+
+```typescript
+/**
+ * プロンプトテンプレートパス解決
+ * 
+ * パス構成: {app_prompt.base_dir}/{directiveType}/{layerType}/f_{fromLayerType}.md
+ * 例: prompts/to/issue/f_issue.md
+ */
+type PromptPath = {
+  readonly baseDir: string;           // app_prompt.base_dir (cwd起点)
+  readonly directive: DirectiveType;  // "to", "summary", "defect" など
+  readonly layer: LayerType;          // "project", "issue", "task" など
+  readonly fromLayer: string;         // fromLayerType
+  readonly adaptation?: string;       // adaptation修飾子（オプション）
+  
+  // パス構築
+  resolve(): string;
+  resolveWithAdaptation(adaptation: string): string;
+}
+
+/**
+ * スキーマファイルパス解決
+ * 
+ * パス構成: {app_schema.base_dir}/{directiveType}/{layerType}/base.schema.json
+ * 例: schemas/to/issue/base.schema.json
+ */
+type SchemaPath = {
+  readonly baseDir: string;           // app_schema.base_dir (cwd起点)
+  readonly directive: DirectiveType;  // "to", "summary", "defect" など
+  readonly layer: LayerType;          // "project", "issue", "task" など
+  readonly schemaFile: string;        // デフォルト: "base.schema.json"
+  
+  // パス構築
+  resolve(): string;
+}
+```
+
+### パス解決フロー
+
+```
+TwoParams (pattern-validated)
+├── DirectiveType → ディレクトリ階層の決定
+└── LayerType → ディレクトリ階層の決定
+     ↓
+{base_dir}/{directive}/{layer}/filename
+     ↓
+プロンプトテンプレート: prompts/to/issue/f_issue.md
+スキーマファイル: schemas/to/issue/base.schema.json
+```
+
+### ドメイン固有の処理
+
+DirectiveTypeとLayerTypeは、単なる文字列値ではなく、**ファイルシステム上のリソース配置と密接に関連したドメイン概念**です：
+
+```typescript
+// DirectiveTypeとLayerTypeの拡張ドメイン操作
+type DirectiveType = {
+  // ...existing code...
+  
+  // パス解決専用ドメイン操作
+  getPromptDirectory(baseDir: string, layer: LayerType): string;
+  getSchemaDirectory(baseDir: string, layer: LayerType): string;
+  isValidForResourcePath(): boolean;
+}
+
+type LayerType = {
+  // ...existing code...
+  
+  // パス解決専用ドメイン操作
+  getPromptFilename(fromLayerType: string, adaptation?: string): string;
+  getSchemaFilename(): string;
+  isValidForResourcePath(): boolean;
+}
+```
+
+### 実際の使用例
+
+```typescript
+// パス解決の実際の使用例
+const twoParams = TwoParams.create("to", "issue", profileName);
+if (twoParams.ok) {
+  const params = twoParams.data;
+  
+  // プロンプトテンプレートパス解決
+  const promptPath = params.getPromptPath();
+  // 結果: "prompts/to/issue/f_issue.md"
+  
+  // スキーマファイルパス解決
+  const schemaPath = params.getSchemaPath();
+  // 結果: "schemas/to/issue/base.schema.json"
+  
+  // adaptation修飾子付きの場合
+  const adaptedPrompt = params.getPromptPath("strict");
+  // 結果: "prompts/to/issue/f_issue_strict.md"
+}
+```
+
+### ディレクトリ構造との対応
+
+```
+プロジェクトルート/
+├── prompts/           # app_prompt.base_dir
+│   ├── to/           # DirectiveType
+│   │   ├── project/  # LayerType
+│   │   ├── issue/    # LayerType
+│   │   └── task/     # LayerType
+│   ├── summary/      # DirectiveType
+│   └── defect/       # DirectiveType
+└── schemas/          # app_schema.base_dir
+    ├── to/           # DirectiveType
+    │   ├── project/  # LayerType
+    │   ├── issue/    # LayerType
+    │   └── task/     # LayerType
+    ├── summary/      # DirectiveType
+    └── defect/       # DirectiveType
+```
+
+このように、DirectiveTypeとLayerTypeは、バリデーションを経た信頼性の高いドメイン値として、プロンプトテンプレートとスキーマファイルの**物理的な配置を決定する重要な役割**を担っています。
 
 ## ドメイン関係性
 
@@ -235,20 +399,25 @@ TwoParams (値オブジェクト)
 - ライフサイクル全体で一貫して使用
 ```
 
-### 依存関係 - ConfigパターンDriven
+### 依存関係 - ConfigパターンDriven + パス解決
 
 ```
 ProfileName → BreakdownConfig → CustomConfig.two.ParamsConfig
      ↓              ↓                      ↓
 CLI args → BreakdownParams (pattern validation) → TwoParamsResult
      ↓                                                    ↓
-TwoParams → DirectiveType (pattern-validated)
-TwoParams → LayerType (pattern-validated)
+TwoParams → DirectiveType (pattern-validated) → プロンプトディレクトリ階層
+TwoParams → LayerType (pattern-validated) → プロンプトディレクトリ階層
 TwoParams → ConfigProfileName (設定コンテキスト)
+     ↓
+パス解決システム:
+├── PromptPath: {base_dir}/{directive}/{layer}/f_{fromLayer}.md
+├── SchemaPath: {base_dir}/{directive}/{layer}/base.schema.json
+└── ファイルシステム上の物理リソース
 
-DirectiveType ←→ LayerType (組み合わせ検証のみ)
+DirectiveType ←→ LayerType (組み合わせ検証 + パス構築)
 ```
 
-このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、BreakdownConfigのパターンによるバリデーションを経た信頼性の高いドメインオブジェクトとして機能します。ProfileNameによるパターン切り替えにより、柔軟な設定管理が実現されています。
+このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、BreakdownConfigのパターンによるバリデーションを経た信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ProfileNameによるパターン切り替えにより、柔軟な設定管理とリソース配置の両方が実現されています。
 
 
