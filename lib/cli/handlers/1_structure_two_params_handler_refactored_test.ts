@@ -17,7 +17,7 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   handleTwoParams,
@@ -25,7 +25,7 @@ import {
   type TwoParamsHandlerError,
 } from "./two_params_handler_refactored.ts";
 
-const _logger = new BreakdownLogger("structure-two-params-handler-refactored");
+const _logger = new _BreakdownLogger("structure-two-params-handler-refactored");
 
 describe("TwoParamsHandler Refactored - Structure Analysis", () => {
   it("should maintain proper function structure and delegation", async () => {
@@ -47,7 +47,7 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     assertEquals(result1.ok, false);
     assertEquals(result2.ok, false);
 
-    if (!_result1.ok && !_result2.ok) {
+    if (!result1.ok && !result2.ok) {
       assertEquals(result1.error.kind, result2.error.kind);
     }
   });
@@ -65,8 +65,8 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     const results = await Promise.all(calls);
 
     // All calls should complete with consistent structure
-    results.forEach((_result, index) => {
-      assert("ok" in _result, `Call ${index} should have ok property`);
+    results.forEach((result, index) => {
+      assert("ok" in result, `Call ${index} should have ok property`);
     });
   });
 
@@ -102,11 +102,11 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     ];
 
     for (const test of errorMappingTests) {
-      const _result = await handleTwoParams(test.input, {}, { skipStdin: true });
-      assertEquals(_result.ok, false);
+      const result = await handleTwoParams(test.input, {}, { skipStdin: true });
+      assertEquals(result.ok, false);
 
-      if (!_result.ok) {
-        const error = _result.error;
+      if (!result.ok) {
+        const error = result.error;
         assertEquals(error.kind, test.expectedErrorStructure.kind);
 
         // Check expected properties exist
@@ -137,7 +137,7 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     _logger.debug("Testing orchestration flow structure");
 
     // Test with valid parameters to see full flow structure
-    const _result = await handleTwoParams(
+    const result = await handleTwoParams(
       ["to", "project"],
       { timeout: 5000 },
       { skipStdin: true, "uv-test": "value" },
@@ -147,7 +147,7 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     assert("ok" in result);
 
     // If it fails, should be at a specific orchestration step
-    if (!_result.ok) {
+    if (!result.ok) {
       const validFailurePoints = [
         "StdinReadError",
         "VariablesBuilderError",
@@ -157,8 +157,8 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
       ];
 
       assert(
-        validFailurePoints.includes(_result.error.kind),
-        `Unexpected failure point: ${_result.error.kind}`,
+        validFailurePoints.includes(result.error.kind),
+        `Unexpected failure point: ${result.error.kind}`,
       );
     }
   });
@@ -265,7 +265,7 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     assert("ok" in result2);
 
     // Results should be independent (not affected by the other call)
-    if (!_result1.ok && !_result2.ok) {
+    if (!result1.ok && !result2.ok) {
       // Errors might be the same type but should be independent instances
       _logger.debug("Both calls failed independently", {
         error1: result1.error.kind,
@@ -296,20 +296,20 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     ];
 
     for (const test of layerTests) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         test.input.params,
         test.input.config,
         test.input.options,
       );
 
-      assertEquals(_result.ok, false, `${test.description} should fail`);
+      assertEquals(result.ok, false, `${test.description} should fail`);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         assert(
-          test.expectedErrorCategories.includes(_result.error.kind),
+          test.expectedErrorCategories.includes(result.error.kind),
           `${test.description} should return error in categories: ${
             test.expectedErrorCategories.join(", ")
-          }, got: ${_result.error.kind}`,
+          }, got: ${result.error.kind}`,
         );
       }
     }
@@ -353,8 +353,8 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     ]);
 
     // All should have consistent behavior
-    multipleCallResults.forEach((_result, index) => {
-      assert("ok" in _result, `Call ${index} should have proper Result structure`);
+    multipleCallResults.forEach((result, index) => {
+      assert("ok" in result, `Call ${index} should have proper Result structure`);
     });
 
     // If all succeed or all fail, they should be consistent
@@ -374,16 +374,16 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
   it("should maintain proper error detail structure", async () => {
     _logger.debug("Testing error detail structure");
 
-    const _result = await handleTwoParams(
+    const result = await handleTwoParams(
       ["invalid_demo", "also_invalid"],
       {},
       { skipStdin: true },
     );
 
-    assertEquals(_result.ok, false);
+    assertEquals(result.ok, false);
 
-    if (!_result.ok) {
-      const error = _result.error;
+    if (!result.ok) {
+      const error = result.error;
 
       // Error should have proper detailed structure
       assertExists(error.kind);
@@ -426,12 +426,12 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     const results = await Promise.all(concurrentCalls);
 
     // All results should have proper structure
-    results.forEach((_result, index) => {
-      assert("ok" in _result, `Concurrent call ${index} should have proper structure`);
+    results.forEach((result, index) => {
+      assert("ok" in result, `Concurrent call ${index} should have proper structure`);
 
-      if (!_result.ok) {
-        assertExists(_result.error.kind);
-        assert(typeof _result.error.kind === "string");
+      if (!result.ok) {
+        assertExists(result.error.kind);
+        assert(typeof result.error.kind === "string");
       }
     });
 

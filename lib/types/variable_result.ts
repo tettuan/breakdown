@@ -81,9 +81,9 @@ export function createValidationFailedError<T>(
 
 /**
  * Extended two params result type for internal use
- * @deprecated Use TwoParamsResult from @tettuan/breakdownparams instead
+ * @deprecated Use TwoParams_Result from @tettuan/breakdownparams instead
  */
-export type ExtendedTwoParamsResult = {
+export type ExtendedTwoParams_Result = {
   type: "two";
   demonstrativeType: string;
   layerType: string;

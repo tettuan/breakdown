@@ -2,7 +2,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import {
   DEFAULT_PROMPT_BASE_DIR,
   DEFAULT_SCHEMA_BASE_DIR,
-  DEFAULT_WORKSPACE_STRUCTURE,
+  _DEFAULT_WORKSPACE_STRUCTURE,
   type DirectoryType,
 } from "./constants.ts";
 
@@ -19,7 +19,7 @@ import {
 Deno.test("Architecture: constants module has no external dependencies", () => {
   // constants.ts should be a leaf module with no imports
   // This test passes if the module loads without import errors
-  assertExists(DEFAULT_WORKSPACE_STRUCTURE);
+  assertExists(_DEFAULT_WORKSPACE_STRUCTURE);
   assertExists(DEFAULT_PROMPT_BASE_DIR);
   assertExists(DEFAULT_SCHEMA_BASE_DIR);
 });
@@ -29,27 +29,27 @@ Deno.test("Architecture: constants are immutable at compile time", () => {
   // These tests verify the type system enforces immutability
 
   // Save original values
-  const _originalRoot = DEFAULT_WORKSPACE_STRUCTURE.root;
-  const originalIssues = DEFAULT_WORKSPACE_STRUCTURE.directories.issues;
+  const _originalRoot = _DEFAULT_WORKSPACE_STRUCTURE.root;
+  const _originalIssues = _DEFAULT_WORKSPACE_STRUCTURE.directories.issues;
 
   // Attempt mutations (these should fail at runtime if not truly immutable)
   try {
     // @ts-expect-error - Should not allow mutation of const object
-    DEFAULT_WORKSPACE_STRUCTURE.root = "modified";
+    _DEFAULT_WORKSPACE_STRUCTURE.root = "modified";
   } catch {
     // Expected to fail
   }
 
   try {
     // @ts-expect-error - Should not allow mutation of nested properties
-    DEFAULT_WORKSPACE_STRUCTURE.directories.issues = "modified";
+    _DEFAULT_WORKSPACE_STRUCTURE.directories.issues = "modified";
   } catch {
     // Expected to fail
   }
 
   // Verify actual values remain unchanged
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.root, originalRoot);
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.issues, originalIssues);
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.root, _originalRoot);
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.directories.issues, _originalIssues);
 });
 
 Deno.test("Architecture: DirectoryType is a discriminated union", () => {
@@ -89,23 +89,23 @@ Deno.test("Architecture: constants follow Result type pattern for validation", (
       return { success: false, error: "Root path cannot be empty" };
     }
 
-    if (!DEFAULT_WORKSPACE_STRUCTURE.directories[directory]) {
+    if (!_DEFAULT_WORKSPACE_STRUCTURE.directories[directory]) {
       return { success: false, error: `Invalid directory type: ${directory}` };
     }
 
     return {
       success: true,
-      value: `${root}/${DEFAULT_WORKSPACE_STRUCTURE.directories[directory]}`,
+      value: `${root}/${_DEFAULT_WORKSPACE_STRUCTURE.directories[directory]}`,
     };
   };
 
   // Test success case
-  const successResult = createDirectoryPath(DEFAULT_WORKSPACE_STRUCTURE.root, "issues");
+  const successResult = createDirectoryPath(_DEFAULT_WORKSPACE_STRUCTURE.root, "issues");
   assertEquals(successResult.success, true);
   if (successResult.success) {
     assertEquals(
       successResult.value,
-      `${DEFAULT_WORKSPACE_STRUCTURE.root}/${DEFAULT_WORKSPACE_STRUCTURE.directories.issues}`,
+      `${_DEFAULT_WORKSPACE_STRUCTURE.root}/${_DEFAULT_WORKSPACE_STRUCTURE.directories.issues}`,
     );
   }
 
@@ -126,6 +126,6 @@ Deno.test("Architecture: constants module exports are properly typed", () => {
   assertEquals(validDirectories.length, 3);
 
   // Test that constants maintain their literal types
-  const workspaceRoot: ".agent/breakdown" = DEFAULT_WORKSPACE_STRUCTURE.root;
+  const workspaceRoot: ".agent/breakdown" = _DEFAULT_WORKSPACE_STRUCTURE.root;
   assertEquals(workspaceRoot, ".agent/breakdown");
 });

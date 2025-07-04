@@ -19,7 +19,7 @@ import type { CommandResult } from "./mod.ts";
 import { dirname, join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
-const _logger = new BreakdownLogger("prompt-file-generator-integration-test");
+const logger = new BreakdownLogger("prompt-file-generator-integration-test");
 
 describe("Integration: PromptFileGenerator complete workflow", () => {
   let generator: PromptFileGenerator;
@@ -30,7 +30,7 @@ describe("Integration: PromptFileGenerator complete workflow", () => {
   let outputDir: string;
 
   beforeEach(async () => {
-    _logger.debug("Setting up integration test environment");
+    logger.debug("Setting up integration test environment");
 
     generator = new PromptFileGenerator();
     tempDir = await Deno.makeTempDir({ prefix: "prompt_generator_integration_" });
@@ -46,20 +46,20 @@ describe("Integration: PromptFileGenerator complete workflow", () => {
     ensureDirSync(inputDir);
     ensureDirSync(outputDir);
 
-    _logger.debug("Test environment created", { tempDir });
+    logger.debug("Test environment created", { tempDir });
   });
 
   afterEach(async () => {
-    _logger.debug("Cleaning up test environment");
+    logger.debug("Cleaning up test environment");
     try {
       await Deno.remove(tempDir, { recursive: true });
     } catch (error) {
-      _logger.debug("Cleanup error (ignored)", { error });
+      logger.debug("Cleanup error (ignored)", { error });
     }
   });
 
   it("should generate prompt with real file system integration", async () => {
-    _logger.debug("Testing real file system integration");
+    logger.debug("Testing real file system integration");
 
     // Create test prompt template
     const toDir = join(promptDir, "to", "project");
@@ -102,7 +102,7 @@ Convert the input into a project structure.
     );
 
     // Run generation
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       inputFile,
       join(outputDir, "project-plan.md"),
       "project",
@@ -113,30 +113,30 @@ Convert the input into a project structure.
       },
     );
 
-    _logger.debug("Generation result", {
-      success: _result.success,
-      hasOutput: !!_result.output,
-      errorType: _result.error ? (_result.error as unknown).type : "none",
+    logger.debug("Generation result", {
+      success: result.success,
+      hasOutput: !!result.output,
+      errorType: result.error ? (result.error as any).type : "none",
     });
 
     // May fail due to missing PromptAdapterImpl implementation
-    if (!_result.success && _result.error) {
-      _logger.debug("Expected integration failure", { error: _result.error });
+    if (!result.success && result.error) {
+      logger.debug("Expected integration failure", { error: result.error });
       // Verify proper error structure
-      assertExists(_result.error, "Should have error on failure");
-      if (_result.error && typeof _result.error === "object" && "type" in _result.error) {
-        assertExists(_result.error.type, "Error should have type");
-        assertExists(_result.error.message, "Error should have message");
+      assertExists(result.error, "Should have error on failure");
+      if (result.error && typeof result.error === "object" && "type" in result.error) {
+        assertExists(result.error.type, "Error should have type");
+        assertExists(result.error.message, "Error should have message");
       }
-    } else if (_result.success) {
+    } else if (result.success) {
       // If successful, verify output
-      assertExists(_result.output, "Should have output on success");
-      assertEquals(_result.error, null, "Should have null error on success");
+      assertExists(result.output, "Should have output on success");
+      assertEquals(result.error, null, "Should have null error on success");
     }
   });
 
   it("should handle stdin input with full integration", async () => {
-    _logger.debug("Testing stdin input integration");
+    logger.debug("Testing stdin input integration");
 
     // Create minimal prompt structure for stdin
     const summaryDir = join(promptDir, "summary", "task");
@@ -154,7 +154,7 @@ Layer: {{layer_type}}
     );
 
     // Test stdin input
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       "-",
       join(outputDir, "summary.md"),
       "task",
@@ -166,22 +166,22 @@ Layer: {{layer_type}}
       },
     );
 
-    _logger.debug("Stdin integration result", {
-      success: _result.success,
-      errorType: _result.error ? (_result.error as unknown).type : "none",
+    logger.debug("Stdin integration result", {
+      success: result.success,
+      errorType: result.error ? (result.error as any).type : "none",
     });
 
     // Verify result structure
-    assertEquals(typeof _result.success, "boolean", "Should have boolean success");
-    assertExists(_result.output !== undefined, "Should have output field");
-    assertExists(_result.error !== undefined, "Should have error field");
+    assertEquals(typeof result.success, "boolean", "Should have boolean success");
+    assertExists(result.output !== undefined, "Should have output field");
+    assertExists(result.error !== undefined, "Should have error field");
   });
 
   it("should propagate input file validation errors", async () => {
-    _logger.debug("Testing input file validation error propagation");
+    logger.debug("Testing input file validation error propagation");
 
     // Try to generate with non-existent input file
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       join(inputDir, "non-existent.md"),
       join(outputDir, "output.md"),
       "project",
@@ -190,17 +190,17 @@ Layer: {{layer_type}}
     );
 
     // Should fail with appropriate error
-    assertEquals(_result.success, false, "Should fail for non-existent input");
-    assertExists(_result.error, "Should have error");
+    assertEquals(result.success, false, "Should fail for non-existent input");
+    assertExists(result.error, "Should have error");
 
-    if (_result.error && typeof _result.error === "object" && "type" in _result.error) {
+    if (result.error && typeof result.error === "object" && "type" in result.error) {
       // Could be InputFileNotFound or Unknown depending on when validation occurs
       const validErrorTypes = [
         PromptFileErrorType.InputFileNotFound,
         PromptFileErrorType.Unknown,
       ];
       assertEquals(
-        validErrorTypes.includes(_result.error.type as PromptFileErrorType),
+        validErrorTypes.includes(result.error.type as PromptFileErrorType),
         true,
         `Error type should be one of: ${validErrorTypes.join(", ")}`,
       );
@@ -208,13 +208,13 @@ Layer: {{layer_type}}
   });
 
   it("should handle prompt directory validation with fallback", async () => {
-    _logger.debug("Testing prompt directory validation with fallback behavior");
+    logger.debug("Testing prompt directory validation with fallback behavior");
 
     // Create input file but use non-existent prompt directory
     const inputFile = join(inputDir, "input.md");
     await Deno.writeTextFile(inputFile, "Test content");
 
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       inputFile,
       join(outputDir, "output.md"),
       "project",
@@ -226,17 +226,17 @@ Layer: {{layer_type}}
     );
 
     // System uses fallback configuration, may succeed or fail depending on template availability
-    _logger.debug("Prompt dir validation result", {
-      success: _result.success,
-      errorType: _result.error ? (_result.error as unknown).type : "none",
+    logger.debug("Prompt dir validation result", {
+      success: result.success,
+      errorType: result.error ? (result.error as any).type : "none",
     });
 
     // Test passes regardless of success/failure since system is designed to be resilient
-    assertEquals(typeof _result.success, "boolean", "Should return a boolean success");
+    assertEquals(typeof result.success, "boolean", "Should return a boolean success");
   });
 
   it("should handle complex multi-step workflow", async () => {
-    _logger.debug("Testing complex multi-step workflow");
+    logger.debug("Testing complex multi-step workflow");
 
     // Step 1: Create elaborate directory structure
     const demonstrativeTypes = ["to", "summary", "find"];
@@ -293,7 +293,7 @@ ${demo === "find" ? "Finding: {{finding_type || 'general'}}" : ""}
       const inputFile = join(inputDir, testCase.input);
       await Deno.writeTextFile(inputFile, testCase.content);
 
-      const _result = await generator.generateWithPrompt(
+      const result = await generator.generateWithPrompt(
         inputFile,
         join(outputDir, testCase.output),
         testCase.format,
@@ -304,24 +304,24 @@ ${demo === "find" ? "Finding: {{finding_type || 'general'}}" : ""}
         },
       );
 
-      results.push(_result);
+      results.push(result);
 
-      _logger.debug(`Test case result: ${testCase.demo}/${testCase.format}`, {
-        success: _result.success,
-        hasOutput: !!_result.output,
+      logger.debug(`Test case result: ${testCase.demo}/${testCase.format}`, {
+        success: result.success,
+        hasOutput: !!result.output,
       });
     }
 
     // Verify all results have consistent structure
     for (const result of results) {
-      assertEquals(typeof _result.success, "boolean", "Should have boolean success");
-      assertExists(_result.output !== undefined, "Should have output field");
-      assertExists(_result.error !== undefined, "Should have error field");
+      assertEquals(typeof result.success, "boolean", "Should have boolean success");
+      assertExists(result.output !== undefined, "Should have output field");
+      assertExists(result.error !== undefined, "Should have error field");
     }
   });
 
   it("should integrate with custom options and variables", async () => {
-    _logger.debug("Testing custom options and variables integration");
+    logger.debug("Testing custom options and variables integration");
 
     // Create prompt with custom variables
     const customDir = join(promptDir, "to", "custom");
@@ -350,7 +350,7 @@ Adaptation: {{adaptation}}
     await Deno.writeTextFile(inputFile, "Add dark mode support");
 
     // Run with custom options
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       inputFile,
       join(outputDir, "custom-output.md"),
       "custom",
@@ -362,18 +362,18 @@ Adaptation: {{adaptation}}
       },
     );
 
-    _logger.debug("Custom options result", {
-      success: _result.success,
+    logger.debug("Custom options result", {
+      success: result.success,
       force: true,
       adaptation: "strict",
     });
 
     // Verify handling of all options
-    assertExists(_result, "Should handle custom options");
+    assertExists(result, "Should handle custom options");
   });
 
   it("should handle concurrent generation requests", async () => {
-    _logger.debug("Testing concurrent generation handling");
+    logger.debug("Testing concurrent generation handling");
 
     // Create simple template
     const concurrentDir = join(promptDir, "to", "test");
@@ -405,7 +405,7 @@ Adaptation: {{adaptation}}
 
     const results = await Promise.all(promises);
 
-    _logger.debug("Concurrent generation results", {
+    logger.debug("Concurrent generation results", {
       totalRequests: results.length,
       successCount: results.filter((r) => r.success).length,
     });
@@ -415,14 +415,14 @@ Adaptation: {{adaptation}}
 
     // Verify each result structure
     for (const result of results) {
-      assertEquals(typeof _result.success, "boolean");
-      assertExists(_result.output !== undefined);
-      assertExists(_result.error !== undefined);
+      assertEquals(typeof result.success, "boolean");
+      assertExists(result.output !== undefined);
+      assertExists(result.error !== undefined);
     }
   });
 
   it("should handle template file scenarios", async () => {
-    _logger.debug("Testing template file scenarios");
+    logger.debug("Testing template file scenarios");
 
     // Create input but no matching template
     const inputFile = join(inputDir, "input.md");
@@ -432,7 +432,7 @@ Adaptation: {{adaptation}}
     const emptyDir = join(promptDir, "to", "missing");
     ensureDirSync(emptyDir);
 
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       inputFile,
       join(outputDir, "output.md"),
       "missing",
@@ -444,20 +444,20 @@ Adaptation: {{adaptation}}
     );
 
     // System may fail or succeed depending on fallback behavior
-    _logger.debug("Template file scenario result", {
-      success: _result.success,
-      errorType: _result.error ? (_result.error as unknown).type : "none",
+    logger.debug("Template file scenario result", {
+      success: result.success,
+      errorType: result.error ? (result.error as any).type : "none",
     });
 
     // Test verifies the result structure is consistent
-    assertEquals(typeof _result.success, "boolean", "Should return boolean success");
-    if (!_result.success && _result.error) {
-      assertEquals(typeof _result.error, "object", "Error should be an object when present");
+    assertEquals(typeof result.success, "boolean", "Should return boolean success");
+    if (!result.success && result.error) {
+      assertEquals(typeof result.error, "object", "Error should be an object when present");
     }
   });
 
   it("should validate integration with PromptVariablesFactory", async () => {
-    _logger.debug("Testing PromptVariablesFactory integration");
+    logger.debug("Testing PromptVariablesFactory integration");
 
     // This test verifies the factory is created and used correctly
     // even if the full workflow fails
@@ -473,7 +473,7 @@ Adaptation: {{adaptation}}
     const inputFile = join(inputDir, "factory-test.md");
     await Deno.writeTextFile(inputFile, "Factory validation content");
 
-    const _result = await generator.generateWithPrompt(
+    const result = await generator.generateWithPrompt(
       inputFile,
       join(outputDir, "factory-output.md"),
       "validation",
@@ -485,16 +485,16 @@ Adaptation: {{adaptation}}
     );
 
     // Factory creation should succeed even if later steps fail
-    _logger.debug("Factory integration result", {
-      success: _result.success,
-      hasError: !!_result.error,
+    logger.debug("Factory integration result", {
+      success: result.success,
+      hasError: !!result.error,
     });
 
     // Verify consistent result structure
-    assertExists(_result.success !== undefined);
-    assertExists(_result.output !== undefined);
-    assertExists(_result.error !== undefined);
+    assertExists(result.success !== undefined);
+    assertExists(result.output !== undefined);
+    assertExists(result.error !== undefined);
   });
 });
 
-_logger.debug("Integration tests defined for PromptFileGenerator");
+logger.debug("Integration tests defined for PromptFileGenerator");

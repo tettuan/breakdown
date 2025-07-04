@@ -8,7 +8,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -21,9 +21,9 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "./prompt_variables__factory.ts";
 
-const _logger = new BreakdownLogger("config-constraint-validation");
+const logger = new BreakdownLogger("config-constraint-validation");
 
 /**
  * Mock configuration provider for testing various config states
@@ -86,19 +86,19 @@ function createTestConfig(scenario: {
   const config: Record<string, unknown> = {};
 
   if (scenario.hasPromptDir) {
-    _config.app_prompt = {
+    config.app_prompt = {
       base_dir: scenario.promptDirValue ?? "lib/prompts",
     };
   }
 
   if (scenario.hasSchemaDir) {
-    _config.app_schema = {
+    config.app_schema = {
       base_dir: scenario.schemaDirValue ?? "lib/schemas",
     };
   }
 
   if (scenario.hasParams) {
-    _config.params = {
+    config.params = {
       two: {
         demonstrativeType: {
           pattern: scenario.directivePattern ?? "to|summary|defect",
@@ -115,7 +115,7 @@ function createTestConfig(scenario: {
 
 describe("Config Constraint Validation - Pattern Validation", () => {
   it("should validate all directive pattern constraint scenarios", () => {
-    _logger.debug("Testing directive pattern constraint validation");
+    logger.debug("Testing directive pattern constraint validation");
 
     const patternScenarios = [
       { pattern: "to|summary|defect", valid: true, description: "Standard patterns" },
@@ -145,7 +145,7 @@ describe("Config Constraint Validation - Pattern Validation", () => {
   });
 
   it("should validate all layer pattern constraint scenarios", () => {
-    _logger.debug("Testing layer pattern constraint validation");
+    logger.debug("Testing layer pattern constraint validation");
 
     const layerScenarios = [
       { pattern: "project|issue|task", valid: true, description: "Standard hierarchy" },
@@ -175,7 +175,7 @@ describe("Config Constraint Validation - Pattern Validation", () => {
   });
 
   it("should handle pattern combination constraint scenarios", () => {
-    _logger.debug("Testing pattern combination constraints");
+    logger.debug("Testing pattern combination constraints");
 
     const combinationScenarios = [
       {
@@ -218,7 +218,7 @@ describe("Config Constraint Validation - Pattern Validation", () => {
 
 describe("Config Constraint Validation - Directory Validation", () => {
   it("should validate all directory configuration constraint scenarios", () => {
-    _logger.debug("Testing directory configuration constraints");
+    logger.debug("Testing directory configuration constraints");
 
     const directoryScenarios = [
       {
@@ -314,7 +314,7 @@ describe("Config Constraint Validation - Directory Validation", () => {
   });
 
   it("should validate directory path constraint patterns", () => {
-    _logger.debug("Testing directory path constraint patterns");
+    logger.debug("Testing directory path constraint patterns");
 
     const pathScenarios = [
       { path: "lib/prompts", valid: true, description: "Relative path" },
@@ -330,7 +330,7 @@ describe("Config Constraint Validation - Directory Validation", () => {
     ];
 
     for (const scenario of pathScenarios) {
-      const _config = createTestConfig({
+      const config = createTestConfig({
         hasPromptDir: true,
         hasSchemaDir: true,
         promptDirValue: scenario.path,
@@ -361,7 +361,7 @@ describe("Config Constraint Validation - Directory Validation", () => {
 
 describe("Config Constraint Validation - Parameter Integration", () => {
   it("should validate parameter constraint integration scenarios", () => {
-    _logger.debug("Testing parameter constraint integration");
+    logger.debug("Testing parameter constraint integration");
 
     const integrationScenarios = [
       {
@@ -420,7 +420,7 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         constructor(private config: Record<string, unknown>) {}
 
         getDirectivePattern() {
-          const pattern = (this._config.params as unknown)?.two?.demonstrativeType
+          const pattern = (this.config.params as any)?.two?.demonstrativeType
             ?.pattern as string;
           return pattern
             ? TwoParamsDirectivePattern.create(pattern)
@@ -428,7 +428,7 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         }
 
         getLayerTypePattern() {
-          const pattern = (this._config.params as unknown)?.two?.layerType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.layerType?.pattern as string;
           return pattern
             ? TwoParamsLayerTypePattern.create(pattern)
             : TwoParamsLayerTypePattern.create("project|issue|task|bugs|temp");
@@ -438,24 +438,24 @@ describe("Config Constraint Validation - Parameter Integration", () => {
       const provider = new ConfigBasedProvider(scenario.config);
       const _factory = new TypeFactory(provider);
 
-      const _result = _factory.createBothTypes(
+      const result = _factory.createBothTypes(
         scenario.testValues.directive,
         scenario.testValues.layer,
       );
 
-      assertEquals(_result.ok, scenario.expectValid, scenario.description);
+      assertEquals(result.ok, scenario.expectValid, scenario.description);
 
-      if (scenario.expectValid && _result.ok) {
-        assertEquals(_result.data.directive.getValue(), scenario.testValues.directive);
-        assertEquals(_result.data.layer.getValue(), scenario.testValues.layer);
-      } else if (!scenario.expectValid && !_result.ok) {
-        assertEquals(_result.error.kind, "ValidationFailed");
+      if (scenario.expectValid && result.ok) {
+        assertEquals(result.data.directive.getValue(), scenario.testValues.directive);
+        assertEquals(result.data.layer.getValue(), scenario.testValues.layer);
+      } else if (!scenario.expectValid && !result.ok) {
+        assertEquals(result.error.kind, "ValidationFailed");
       }
     });
   });
 
   it("should handle configuration constraint edge cases", () => {
-    _logger.debug("Testing configuration constraint edge cases");
+    logger.debug("Testing configuration constraint edge cases");
 
     const edgeCases = [
       {
@@ -515,7 +515,7 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         constructor(private config: Record<string, unknown>) {}
 
         getDirectivePattern() {
-          const pattern = (this._config.params as unknown)?.two?.demonstrativeType
+          const pattern = (this.config.params as any)?.two?.demonstrativeType
             ?.pattern as string;
           if (pattern === "") return null; // Empty pattern
           return pattern
@@ -524,7 +524,7 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         }
 
         getLayerTypePattern() {
-          const pattern = (this._config.params as unknown)?.two?.layerType?.pattern as string;
+          const pattern = (this.config.params as any)?.two?.layerType?.pattern as string;
           if (pattern === "") return null; // Empty pattern
           return pattern
             ? TwoParamsLayerTypePattern.create(pattern)

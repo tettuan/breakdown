@@ -13,14 +13,14 @@ Deno.test("VariableResult architecture - follows Totality principle", () => {
   // This is enforced by the discriminated union design
 
   const _checkTotality = (result: VariableResult<string>) => {
-    if (_result.ok) {
+    if (result.ok) {
       // Success case: must have data
       assertExists(result.data);
       return "success";
     } else {
       // Error case: must have error
-      assertExists(_result.error);
-      assertExists(_result.error.kind);
+      assertExists(result.error);
+      assertExists(result.error.kind);
       return "error";
     }
   };
@@ -32,8 +32,8 @@ Deno.test("VariableResult architecture - follows Totality principle", () => {
     error: { kind: "InvalidName", name: "bad", validNames: [] },
   };
 
-  assertEquals(checkTotality(successCase), "success");
-  assertEquals(checkTotality(errorCase), "error");
+  assertEquals(_checkTotality(successCase), "success");
+  assertEquals(_checkTotality(errorCase), "error");
 });
 
 Deno.test("VariableResult architecture - no implicit error states", () => {
@@ -43,13 +43,13 @@ Deno.test("VariableResult architecture - no implicit error states", () => {
   const checkNoImplicitErrors = (result: VariableResult<number>) => {
     // Should never be able to have both ok=true and error present
     // Should never be able to have both ok=false and data present
-    if (_result.ok) {
+    if (result.ok) {
       // Success case: should not have error property
-      assertEquals("error" in _result, false);
+      assertEquals("error" in result, false);
       return true;
     } else {
       // Error case: should not have data property
-      assertEquals("data" in _result, false);
+      assertEquals("data" in result, false);
       return true;
     }
   };
@@ -76,7 +76,9 @@ Deno.test("VariableResult architecture - error discriminated union completeness"
         return `Empty value for ${error.variableName}`;
       case "ValidationFailed":
         return `Validation failed: ${error.value}`;
-        // Note: No default case - TypeSpace will complain if we miss a case
+      default:
+        // This should never happen if all cases are handled
+        return `Unknown error: ${JSON.stringify(error)}`;
     }
   };
 
@@ -108,12 +110,12 @@ Deno.test("VariableResult architecture - type safety at compile time", () => {
   // This test verifies that the design supports proper type inference
 
   const processResult = <T>(result: VariableResult<T>): T | string => {
-    if (_result.ok) {
-      // TypeScript should infer that _result.data is of type T
-      return _result.data;
+    if (result.ok) {
+      // TypeScript should infer that result.data is of type T
+      return result.data;
     } else {
-      // TypeScript should infer that _result.error is VariableError
-      return `Error: ${_result.error.kind}`;
+      // TypeScript should infer that result.error is VariableError
+      return `Error: ${result.error.kind}`;
     }
   };
 

@@ -22,7 +22,7 @@ import { dirname, join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("template-error-handler-integration-test");
+const logger = new BreakdownLogger("template-error-handler-integration-test");
 
 Deno.test("Integration: TemplateErrorHandler with real file system errors", async () => {
   const tempDir = await Deno.makeTempDir({ prefix: "template_error_test_" });
@@ -54,7 +54,7 @@ Deno.test("Integration: TemplateErrorHandler with real file system errors", asyn
         { templatePath: attemptedPath },
       );
 
-      _logger.debug("File system error handled", {
+      logger.debug("File system error handled", {
         originalError: (fsError as Error).message,
         templateError: templateError?.message,
         suggestions: templateError?.suggestions.length,
@@ -288,14 +288,14 @@ Deno.test("Integration: Error handler with logger integration", async () => {
   );
 
   // Test error handling with logging
-  const _result = await TemplateErrorHandler.handleTemplateError(templateError, {
+  const result = await TemplateErrorHandler.handleTemplateError(templateError, {
     autoResolve: false, // Don't actually try to run scripts in test
   });
 
   // Verify error handling result
-  assertEquals(_result.resolved, false, "Should not resolve in test mode");
-  assertEquals(_result.message, "Manual intervention required");
-  assertExists(_result.commands, "Should provide recovery commands");
+  assertEquals(result.resolved, false, "Should not resolve in test mode");
+  assertEquals(result.message, "Manual intervention required");
+  assertExists(result.commands, "Should provide recovery commands");
 
   // Verify error structure is logging-friendly
   const errorData = {
@@ -363,7 +363,7 @@ Deno.test("Integration: Template error recovery workflow simulation", async () =
     const fileExists = await Deno.stat(missingPath);
     assertEquals(fileExists.isFile, true, "Template file should now exist");
 
-    _logger.debug("Recovery workflow completed", {
+    logger.debug("Recovery workflow completed", {
       initialError: templateError.errorType,
       recovered: true,
       templateCreated: missingPath,
@@ -401,10 +401,10 @@ Deno.test("Integration: Concurrent error handling with real operations", async (
     assertEquals(errorResults.length, 3);
 
     for (const result of errorResults) {
-      assertEquals(_result.status, "fulfilled", "Should handle errors gracefully");
+      assertEquals(result.status, "fulfilled", "Should handle errors gracefully");
 
-      if (_result.status === "fulfilled") {
-        const error = _result.value;
+      if (result.status === "fulfilled") {
+        const error = result.value;
         assertEquals(error instanceof TemplateError, true, "Should be TemplateError");
         assertEquals((error as TemplateError).errorType, TemplateErrorType.TEMPLATE_NOT_FOUND);
         assertExists((error as TemplateError).suggestions);

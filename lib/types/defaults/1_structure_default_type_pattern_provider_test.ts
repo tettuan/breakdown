@@ -17,7 +17,7 @@ import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern } from "../directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../layer_type.ts";
-import { defaultConfigTwoParams } from "./config_two_params.ts";
+import { __defaultConfigTwoParams } from "./config_twoparams.ts";
 
 /**
  * 構造テスト: クラスの単一責任
@@ -26,7 +26,7 @@ import { defaultConfigTwoParams } from "./config_two_params.ts";
  * 責任: デフォルト設定から型パターンを提供する
  */
 Deno.test("1_structure - DefaultTypePatternProvider has single responsibility", () => {
-  const _provider = new DefaultTypePatternProvider();
+  const provider = new DefaultTypePatternProvider();
 
   // クラスの責任: デフォルト設定からパターンを提供
   // 以下の責任に限定されていることを確認:
@@ -97,10 +97,10 @@ Deno.test("1_structure - DefaultTypePatternProvider methods have clear responsib
   }
 
   // getDefaultConfig: 設定オブジェクトの取得のみ
-  const _config = provider.getDefaultConfig();
+  const config = provider.getDefaultConfig();
   assertEquals(
     config,
-    defaultConfigTwoParams,
+    _defaultConfigTwoParams,
     "getDefaultConfig should return the default config object",
   );
 
@@ -144,7 +144,7 @@ Deno.test("1_structure - DefaultTypePatternProvider maintains consistent abstrac
   const layerPattern = provider.getLayerTypePattern();
 
   // 中レベル抽象化: 設定と有効値の取得
-  const _config = provider.getDefaultConfig();
+  const config = provider.getDefaultConfig();
   const directiveValues = provider.getValidDirectiveValues();
   const layerValues = provider.getValidLayerValues();
 
@@ -177,12 +177,12 @@ Deno.test("1_structure - DefaultTypePatternProvider has cohesive data and behavi
     "Provider should be stateless (no instance data)",
   );
 
-  // 振る舞いは外部データ（defaultConfigTwoParams）に依存
-  const _config = provider.getDefaultConfig();
-  assertExists(_config.params, "Should access external config data");
-  assertExists(_config.params.two, "Should access two params config");
-  assertExists(_config.params.two.demonstrativeType, "Should access directive config");
-  assertExists(_config.params.two.layerType, "Should access layer config");
+  // 振る舞いは外部データ（_defaultConfigTwoParams）に依存
+  const config = provider.getDefaultConfig();
+  assertExists(config.params, "Should access external config data");
+  assertExists(config.params.two, "Should access two params config");
+  assertExists(config.params.two.demonstrativeType, "Should access directive config");
+  assertExists(config.params.two.layerType, "Should access layer config");
 
   // データアクセスメソッドが一貫した形式で提供されている
   const directiveValues = provider.getValidDirectiveValues();
@@ -303,7 +303,7 @@ Deno.test("1_structure - DefaultTypePatternProvider has appropriate class relati
   // 依存関係:
   // - TwoParamsDirectivePattern (使用)
   // - TwoParamsLayerTypePattern (使用)
-  // - defaultConfigTwoParams (使用)
+  // - _defaultConfigTwoParams (使用)
   // - TypePatternProvider (実装)
 
   // パターンクラスとの関係（使用関係）
@@ -333,9 +333,9 @@ Deno.test("1_structure - DefaultTypePatternProvider has appropriate class relati
   }
 
   // 設定オブジェクトとの関係（参照関係）
-  const _config = provider.getDefaultConfig();
+  const config = provider.getDefaultConfig();
   assertEquals(
-    config === defaultConfigTwoParams,
+    config === _defaultConfigTwoParams,
     true,
     "Should reference the same config object",
   );
@@ -369,9 +369,9 @@ Deno.test("1_structure - DefaultTypePatternProvider has consistent method signat
       `${method} should take no parameters`,
     );
 
-    const _result = provider[method as keyof typeof provider]();
+    const result = provider[method as keyof typeof provider]();
     assertEquals(
-      Array.isArray(_result),
+      Array.isArray(result),
       true,
       `${method} should return an array`,
     );
@@ -386,9 +386,9 @@ Deno.test("1_structure - DefaultTypePatternProvider has consistent method signat
       `${method} should take no parameters`,
     );
 
-    const _result = provider[method as keyof typeof provider]();
+    const result = provider[method as keyof typeof provider]();
     assertEquals(
-      typeof _result === "object" && result !== null,
+      typeof result === "object" && result !== null,
       true,
       `${method} should return an object`,
     );

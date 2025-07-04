@@ -184,6 +184,11 @@ export interface PromptCliParams {
 }
 
 /**
+ * @deprecated Use PromptPath and PromptVariables from prompt_types.ts instead.
+ * This type will be removed in the next major version. Migrate to PromptManagerAdapter
+ * which uses the new type system. See lib/migration/prompt_migration_utils.ts for
+ * migration utilities.
+ *
  * Totality-compliant parameters for CLI prompt operations.
  *
  * This interface replaces PromptCliParams with type-safe, validated types
@@ -194,13 +199,13 @@ export interface PromptCliParams {
  * ```typescript
  * // Types must be created through TypeFactory
  * const _factory = new TypeFactory(patternProvider);
- * const directiveResult = factory.createDirectiveType("to");
- * const layerResult = factory.createLayerType("project");
+ * const directive_Result = factory.createDirectiveType("to");
+ * const layer_Result = factory.createLayerType("project");
  *
- * if (directiveResult.ok && layerResult.ok) {
+ * if (directive_Result.ok && layer_Result.ok) {
  *   const params: TotalityPromptCliParams = {
- *     directive: directiveResult.data,
- *     layer: layerResult.data,
+ *     directive: directive_Result.data,
+ *     layer: layer_Result.data,
  *     options: {
  *       fromFile: "requirements.md",
  *       destinationFile: "output/"
@@ -212,21 +217,45 @@ export interface PromptCliParams {
  * @example Error handling with Result types
  * ```typescript
  * const factory = new TypeFactory(patternProvider);
- * const bothResult = factory.createBothTypes("summary", "issue");
+ * const both_Result = factory.createBothTypes("summary", "issue");
  *
- * if (!bothResult.ok) {
- *   console.error("Type creation failed:", bothResult.error.message);
+ * if (!both_Result.ok) {
+ *   console.error("Type creation failed:", both_Result.error.message);
  *   return;
  * }
  *
  * const params: TotalityPromptCliParams = {
- *   directive: bothResult.data.directive,
- *   layer: bothResult.data.layer,
+ *   directive: both_Result.data.directive,
+ *   layer: both_Result.data.layer,
  *   options: { extended: true }
  * };
  * ```
  */
 export interface TotalityPromptCliParams {
+  /**
+   * Type identifier for parameter structure compatibility.
+   * Used to distinguish between different parameter formats.
+   */
+  type?: string;
+
+  /**
+   * Array of parameter values for compatibility with legacy interfaces.
+   * Contains the directive and layer values in array format.
+   */
+  params?: string[];
+
+  /**
+   * Legacy demonstrative type property for backward compatibility.
+   * @deprecated Use directive property instead.
+   */
+  demonstrativeType?: string;
+
+  /**
+   * Legacy layer type property for backward compatibility.
+   * @deprecated Use layer property instead.
+   */
+  layerType?: string;
+
   /**
    * The validated directive type for the prompt operation.
    * Must be created through DirectiveType.create() with proper validation.
@@ -248,21 +277,27 @@ export interface TotalityPromptCliParams {
 }
 
 /**
- * @deprecated Use TwoParamsResult instead
+ * @deprecated Use TwoParams_Result instead
  * Legacy type alias for backward compatibility during migration
  */
-type DoubleParamsResult = PromptCliParams;
+type DoubleParams_Result = PromptCliParams;
 
 /**
  * Totality-compliant result type for two-parameter operations
- * Replaces DoubleParamsResult with type-safe, validated types
+ * This type is used internally for type-safe operations
  */
 export type TwoParamsResult = TotalityPromptCliParams;
 
-import { PromptTemplatePathResolver as _PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
-import { InputFilePathResolver as _InputFilePathResolver } from "./input_file_path_resolver.ts";
-import { OutputFilePathResolver as _OutputFilePathResolver } from "./output_file_path_resolver.ts";
-import { SchemaFilePathResolver as _SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
+/**
+ * Re-export TwoParams_Result from breakdownparams
+ * This is the canonical type definition from the external package
+ */
+export type { TwoParams_Result } from "../deps.ts";
+
+import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { InputFilePathResolver } from "./input_file_path_resolver.ts";
+import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
+import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 /**
  * Simple configuration-based TypePatternProvider implementation
@@ -328,15 +363,15 @@ export interface PromptVariablesFactoryOptions {
  * @example Factory initialization with Totality types
  * ```typescript
  * const factory = new TypeFactory(patternProvider);
- * const directiveResult = factory.createDirectiveType("to");
- * const layerResult = factory.createLayerType("project");
+ * const directive_Result = factory.createDirectiveType("to");
+ * const layer_Result = factory.createLayerType("project");
  *
- * if (directiveResult.ok && layerResult.ok) {
+ * if (directive_Result.ok && layer_Result.ok) {
  *   const options: TotalityPromptVariablesFactoryOptions = {
  *     config: await breakdownConfig.getConfig(),
  *     cliParams: {
- *       directive: directiveResult.data,
- *       layer: layerResult.data,
+ *       directive: directive_Result.data,
+ *       layer: layer_Result.data,
  *       options: {}
  *     }
  *   };
@@ -367,20 +402,26 @@ export interface TotalityPromptVariablesFactoryOptions {
  * For new implementations, consider using TotalityPromptVariablesFactory with validated types.
  */
 export class PromptVariablesFactory {
-  private config:
+  private _config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   /**
    * The CLI parameters used for prompt generation and file resolution.
    */
-  public readonly cliParams: PromptCliParams;
-  private baseDirOverride?: string;
+  public readonly cliParams!: PromptCliParams;
+
+  /**
+   * Private copy of CLI parameters to ensure immutability
+   */
+  private _cliParams: PromptCliParams;
+  
+  private _baseDirOverride?: string;
   private _baseDirError?: string;
 
-  private promptPathResolver: _PromptTemplatePathResolver;
-  private inputPathResolver: _InputFilePathResolver;
-  private outputPathResolver: _OutputFilePathResolver;
-  private schemaPathResolver: _SchemaFilePathResolver;
+  private _promptPathResolver: PromptTemplatePathResolver;
+  private _inputPathResolver: InputFilePathResolver;
+  private _outputPathResolver: OutputFilePathResolver;
+  private _schemaPathResolver: SchemaFilePathResolver;
 
   /**
    * Private constructor for PromptVariablesFactory.
@@ -404,19 +445,21 @@ export class PromptVariablesFactory {
     baseDirOverride?: string,
   ) {
     // Deep copy to ensure immutability without JSON.parse
-    this.config = this.deepCopyConfig(config);
-    this.cliParams = this.deepCopyCliParams(cliParams);
-    this.baseDirOverride = baseDirOverride;
+    this._config = this.deepCopyConfig(config);
+    this._cliParams = this.deepCopyCliParams(cliParams);
+    // Initialize the public readonly property
+    (this as any).cliParams = this._cliParams;
+    this._baseDirOverride = baseDirOverride;
 
     // Validate base_dir configuration
     if (!config.app_prompt?.base_dir || !config.app_prompt.base_dir.trim()) {
       this._baseDirError = "Prompt base_dir must be set in configuration";
     }
 
-    this.promptPathResolver = new _PromptTemplatePathResolver(config, cliParams);
-    this.inputPathResolver = new _InputFilePathResolver(config, cliParams);
-    this.outputPathResolver = new _OutputFilePathResolver(config, cliParams);
-    this.schemaPathResolver = new _SchemaFilePathResolver(config, cliParams);
+    this._promptPathResolver = new PromptTemplatePathResolver(config, cliParams);
+    this._inputPathResolver = new InputFilePathResolver(config, cliParams);
+    this._outputPathResolver = new OutputFilePathResolver(config, cliParams);
+    this._schemaPathResolver = new SchemaFilePathResolver(config, cliParams);
   }
 
   /**
@@ -527,23 +570,23 @@ export class PromptVariablesFactory {
         Deno.env.get("DENO_TESTING") === "true" ||
         currentDir.includes("/github/breakdown");
 
-      let breakdownConfigResult;
+      let breakdownConfig_Result;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
-        breakdownConfigResult = await BreakdownConfig.create(configSetName, ".");
+        breakdownConfig_Result = await BreakdownConfig.create(configSetName, ".");
       } else {
         // For production environments, use current working directory
-        breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
+        breakdownConfig_Result = await BreakdownConfig.create(configSetName, currentDir);
       }
 
-      if (!breakdownConfigResult.success) {
+      if (!breakdownConfig_Result.success) {
         throw new Error(
           `BreakdownConfig creation failed: ${
-            breakdownConfigResult.error?.message || "Unknown error"
+            breakdownConfig_Result.error?.message || "Unknown error"
           }`,
         );
       }
-      const breakdownConfig = breakdownConfigResult.data;
+      const breakdownConfig = breakdownConfig_Result.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new PromptVariablesFactory(config, cliParams);
@@ -715,7 +758,7 @@ export class PromptVariablesFactory {
    */
   public validateAll(): void {
     if (!this.cliParams) throw new Error("cliParams is required");
-    if (!this.config) throw new Error("config is required");
+    if (!this._config) throw new Error("config is required");
     if (!this.promptFilePath) throw new Error("Prompt file path is required");
     if (!this.schemaFilePath) throw new Error("Schema file path is required");
     // Input and output file paths may be empty - this is acceptable
@@ -741,7 +784,7 @@ export class PromptVariablesFactory {
    * ```
    */
   public get promptFilePath(): string {
-    return this.promptPathResolver.getPath();
+    return this._promptPathResolver.getPath();
   }
   /**
    * Gets the resolved path to the input file.
@@ -765,7 +808,7 @@ export class PromptVariablesFactory {
    * ```
    */
   public get inputFilePath(): string {
-    return this.inputPathResolver.getPath();
+    return this._inputPathResolver.getPath();
   }
   /**
    * Gets the resolved path for output destination.
@@ -787,7 +830,7 @@ export class PromptVariablesFactory {
    * ```
    */
   public get outputFilePath(): string {
-    return this.outputPathResolver.getPath();
+    return this._outputPathResolver.getPath();
   }
   /**
    * Gets the resolved path to the JSON schema file.
@@ -808,7 +851,7 @@ export class PromptVariablesFactory {
    * ```
    */
   public get schemaFilePath(): string {
-    return this.schemaPathResolver.getPath();
+    return this._schemaPathResolver.getPath();
   }
 
   /**
@@ -997,16 +1040,16 @@ export class PromptVariablesFactory {
  * const typeFactory = new TypeFactory(patternProvider);
  *
  * // Create validated types
- * const typesResult = typeFactory.createBothTypes("to", "project");
- * if (!typesResult.ok) {
- *   console.error("Type validation failed:", typesResult.error);
+ * const types_Result = typeFactory.createBothTypes("to", "project");
+ * if (!types_Result.ok) {
+ *   console.error("Type validation failed:", types_Result.error);
  *   return;
  * }
  *
  * // Create Totality-compliant parameters
  * const totalityParams: TotalityPromptCliParams = {
- *   directive: typesResult.data.directive,
- *   layer: typesResult.data.layer,
+ *   directive: types_Result.data.directive,
+ *   layer: types_Result.data.layer,
  *   options: { fromFile: "input.md" }
  * };
  *
@@ -1015,20 +1058,21 @@ export class PromptVariablesFactory {
  * ```
  */
 export class TotalityPromptVariablesFactory {
-  private config:
+  private _config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   /**
    * The validated CLI parameters using Totality-compliant types.
    */
-  public readonly cliParams: TotalityPromptCliParams;
-  private baseDirOverride?: string;
+  private readonly _cliParams!: TotalityPromptCliParams;
+  
+  private _baseDirOverride?: string;
   private _baseDirError?: string;
 
-  private promptPathResolver: _PromptTemplatePathResolver;
-  private inputPathResolver: _InputFilePathResolver;
-  private outputPathResolver: _OutputFilePathResolver;
-  private schemaPathResolver: _SchemaFilePathResolver;
+  private _promptPathResolver: PromptTemplatePathResolver;
+  private _inputPathResolver: InputFilePathResolver;
+  private _outputPathResolver: OutputFilePathResolver;
+  private _schemaPathResolver: SchemaFilePathResolver;
 
   /**
    * Private constructor for TotalityPromptVariablesFactory.
@@ -1045,9 +1089,9 @@ export class TotalityPromptVariablesFactory {
     baseDirOverride?: string,
   ) {
     // Deep copy to ensure immutability without JSON.parse
-    this.config = this.deepCopyConfig(config);
-    this.cliParams = this.deepCopyTotalityCliParams(cliParams);
-    this.baseDirOverride = baseDirOverride;
+    this._config = this.deepCopyConfig(config);
+    this._cliParams = this.deepCopyTotalityCliParams(cliParams);
+    this._baseDirOverride = baseDirOverride;
 
     // Validate base_dir configuration
     if (!config.app_prompt?.base_dir || !config.app_prompt.base_dir.trim()) {
@@ -1061,10 +1105,10 @@ export class TotalityPromptVariablesFactory {
       options: cliParams.options,
     };
 
-    this.promptPathResolver = new _PromptTemplatePathResolver(config, legacyParams);
-    this.inputPathResolver = new _InputFilePathResolver(config, legacyParams);
-    this.outputPathResolver = new _OutputFilePathResolver(config, legacyParams);
-    this.schemaPathResolver = new _SchemaFilePathResolver(config, legacyParams);
+    this._promptPathResolver = new PromptTemplatePathResolver(config, legacyParams);
+    this._inputPathResolver = new InputFilePathResolver(config, legacyParams);
+    this._outputPathResolver = new OutputFilePathResolver(config, legacyParams);
+    this._schemaPathResolver = new SchemaFilePathResolver(config, legacyParams);
   }
 
   /**
@@ -1141,23 +1185,23 @@ export class TotalityPromptVariablesFactory {
         Deno.env.get("DENO_TESTING") === "true" ||
         currentDir.includes("/github/breakdown");
 
-      let breakdownConfigResult;
+      let breakdownConfig_Result;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
-        breakdownConfigResult = await BreakdownConfig.create(configSetName, ".");
+        breakdownConfig_Result = await BreakdownConfig.create(configSetName, ".");
       } else {
         // For production environments, use current working directory
-        breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
+        breakdownConfig_Result = await BreakdownConfig.create(configSetName, currentDir);
       }
 
-      if (!breakdownConfigResult.success) {
+      if (!breakdownConfig_Result.success) {
         throw new Error(
           `BreakdownConfig creation failed: ${
-            breakdownConfigResult.error?.message || "Unknown error"
+            breakdownConfig_Result.error?.message || "Unknown error"
           }`,
         );
       }
-      const breakdownConfig = breakdownConfigResult.data;
+      const breakdownConfig = breakdownConfig_Result.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new TotalityPromptVariablesFactory(config, cliParams);
@@ -1211,8 +1255,8 @@ export class TotalityPromptVariablesFactory {
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
       customVariables: this.customVariables,
-      directive: this.cliParams.directive,
-      layer: this.cliParams.layer,
+      directive: this._cliParams.directive,
+      layer: this._cliParams.layer,
     };
   }
 
@@ -1220,29 +1264,29 @@ export class TotalityPromptVariablesFactory {
    * Gets the validated DirectiveType instance.
    */
   public get directive(): DirectiveType {
-    return this.cliParams.directive;
+    return this._cliParams.directive;
   }
 
   /**
    * Gets the validated LayerType instance.
    */
   public get layer(): LayerType {
-    return this.cliParams.layer;
+    return this._cliParams.layer;
   }
 
   /**
    * Gets the CLI options from the current parameters.
    */
   public getOptions(): PromptCliOptions {
-    return this.cliParams.options;
+    return this._cliParams.options;
   }
 
   /**
    * Validates all parameters and paths for completeness and correctness.
    */
   public validateAll(): void {
-    if (!this.cliParams) throw new Error("cliParams is required");
-    if (!this.config) throw new Error("config is required");
+    if (!this._cliParams) throw new Error("cliParams is required");
+    if (!this._config) throw new Error("config is required");
     if (!this.hasValidBaseDir()) {
       throw new Error(`Invalid base directory: ${this.getBaseDirError()}`);
     }
@@ -1254,56 +1298,56 @@ export class TotalityPromptVariablesFactory {
    * Gets the resolved path to the prompt template file.
    */
   public get promptFilePath(): string {
-    return this.promptPathResolver.getPath();
+    return this._promptPathResolver.getPath();
   }
 
   /**
    * Gets the resolved path to the input file.
    */
   public get inputFilePath(): string {
-    return this.inputPathResolver.getPath();
+    return this._inputPathResolver.getPath();
   }
 
   /**
    * Gets the resolved path for output destination.
    */
   public get outputFilePath(): string {
-    return this.outputPathResolver.getPath();
+    return this._outputPathResolver.getPath();
   }
 
   /**
    * Gets the resolved path to the JSON schema file.
    */
   public get schemaFilePath(): string {
-    return this.schemaPathResolver.getPath();
+    return this._schemaPathResolver.getPath();
   }
 
   /**
    * Gets the custom variables specified via CLI options.
    */
   public get customVariables(): Record<string, string> {
-    return this.cliParams.options.customVariables || {};
+    return this._cliParams.options.customVariables || {};
   }
 
   /**
    * Gets the extended mode flag status.
    */
   public get extended(): boolean {
-    return this.cliParams.options.extended || false;
+    return this._cliParams.options.extended || false;
   }
 
   /**
    * Gets the custom validation flag status.
    */
   public get customValidation(): boolean {
-    return this.cliParams.options.customValidation || false;
+    return this._cliParams.options.customValidation || false;
   }
 
   /**
    * Gets the error format specification.
    */
   public get errorFormat(): "simple" | "detailed" | "json" {
-    return this.cliParams.options.errorFormat || "simple";
+    return this._cliParams.options.errorFormat || "simple";
   }
 
   /**

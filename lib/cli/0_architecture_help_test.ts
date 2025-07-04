@@ -30,21 +30,25 @@ Deno.test("Help Module Architecture", async (t) => {
     const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Should only depend on version module
-    const importMatches = helpContent.match(/import.*from/g) || [];
+    const importMatches = _helpContent.match(/import.*from/g) || [];
     assertEquals(importMatches.length, 1, "Should have exactly one import");
 
     // Verify the only dependency is version.ts
     assertEquals(
-      helpContent.includes('from "../version.ts"'),
+      _helpContent.includes('from "../version.ts"'),
       true,
       "Should only import from version.ts",
     );
 
     // Should not depend on other CLI modules
-    assertEquals(helpContent.includes('from "./'), false, "Should not import from sibling modules");
-    assertEquals(helpContent.includes('from "../params'), false, "Should not depend on params");
-    assertEquals(helpContent.includes('from "../config'), false, "Should not depend on config");
-    assertEquals(helpContent.includes('from "../prompt'), false, "Should not depend on prompt");
+    assertEquals(
+      _helpContent.includes('from "./'),
+      false,
+      "Should not import from sibling modules",
+    );
+    assertEquals(_helpContent.includes('from "../params'), false, "Should not depend on params");
+    assertEquals(_helpContent.includes('from "../config'), false, "Should not depend on config");
+    assertEquals(_helpContent.includes('from "../prompt'), false, "Should not depend on prompt");
   });
 
   await t.step("maintains proper dependency direction", async () => {
@@ -83,7 +87,7 @@ Deno.test("Help Module Architecture", async (t) => {
   });
 
   await t.step("defines clear module boundaries", async () => {
-    const { showHelp, showVersion, showUsage, HELP_TEXT, VERSION, APP_NAME, ...otherExports } =
+    const { showHelp, showVersion, showUsage, HELP_TEXT, _VERSION, APP_NAME, ...otherExports } =
       await import("./help.ts");
 
     // Should export specific help-related functionality
@@ -91,18 +95,18 @@ Deno.test("Help Module Architecture", async (t) => {
     assertExists(showVersion, "Should export showVersion function");
     assertExists(showUsage, "Should export showUsage function");
     assertExists(HELP_TEXT, "Should export HELP_TEXT constant");
-    assertExists(VERSION, "Should export VERSION");
+    assertExists(_VERSION, "Should export _VERSION");
     assertExists(APP_NAME, "Should export APP_NAME");
     // Note: TypeScript interfaces are not available at runtime, so we can't check HelpTextConfig
 
     // Should not export internal implementation
     assertEquals(
-      (otherExports as unknown).generateHelpText,
+      (otherExports as any).generateHelpText,
       undefined,
       "Should not export internal generateHelpText",
     );
     assertEquals(
-      (otherExports as unknown).DEFAULT_HELP_CONFIG,
+      (otherExports as any).DEFAULT_HELP_CONFIG,
       undefined,
       "Should not export internal config",
     );

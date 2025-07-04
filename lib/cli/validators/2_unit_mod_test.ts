@@ -15,19 +15,19 @@ import {
   TwoParamsValidator,
   type ValidatedParams,
   type ValidationError,
-} from "./_mod as any.ts";
+} from "./mod.ts";
 
 describe("Validators Module - Unit Tests", () => {
-  it("should export TwoParamsValidator class", async () => {
+  it("should export TwoParamsValidator class", () => {
     assertExists(TwoParamsValidator);
     assertEquals(typeof TwoParamsValidator, "function");
 
     // Should be instantiable
     const _validator = new TwoParamsValidator();
-    assertInstanceOf(validator, TwoParamsValidator);
+    assertInstanceOf(_validator, TwoParamsValidator);
   });
 
-  it("should export ParameterValidator class", async () => {
+  it("should export ParameterValidator class", () => {
     assertExists(ParameterValidator);
     assertEquals(typeof ParameterValidator, "function");
 
@@ -36,35 +36,35 @@ describe("Validators Module - Unit Tests", () => {
     assertEquals(ParameterValidator.name, "ParameterValidator");
   });
 
-  it("should allow using exported validators", async () => {
+  it("should allow using exported validators", () => {
     const _validator = new TwoParamsValidator();
 
     // Should have validate method
     assertEquals(typeof _validator.validate, "function");
 
     // Should validate parameters
-    const _result = _validator.validate(["to", "project"]);
-    assertEquals(_result.ok, true);
+    const result = _validator.validate(["to", "project"]);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      assertEquals(_result.data.demonstrativeType, "to");
-      assertEquals(_result.data.layerType, "project");
+    if (result.ok) {
+      assertEquals(result.data.demonstrativeType, "to");
+      assertEquals(result.data.layerType, "project");
     }
   });
 
-  it("should handle validation errors correctly", async () => {
+  it("should handle validation errors correctly", () => {
     const _validator = new TwoParamsValidator();
 
     // Test invalid parameters
-    const _result = _validator.validate(["invalid", "project"]);
-    assertEquals(_result.ok, false);
+    const result = _validator.validate(["invalid", "project"]);
+    assertEquals(result.ok, false);
 
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidDemonstrativeType");
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidDemonstrativeType");
     }
   });
 
-  it("should export types for TypeScript usage", async () => {
+  it("should export types for TypeScript usage", () => {
     // Type tests - these are compile-time checks
     const validatedParams: ValidatedParams = {
       demonstrativeType: "to",
@@ -83,7 +83,7 @@ describe("Validators Module - Unit Tests", () => {
     assertEquals(error.kind, "InvalidParameterCount");
   });
 
-  it("should provide consistent API across validators", async () => {
+  it("should provide consistent API across validators", () => {
     const twoParamsValidator = new TwoParamsValidator();
 
     // TwoParamsValidator should have validate method
@@ -108,7 +108,7 @@ describe("Validators Module - Unit Tests", () => {
   it("should not export undefined values", async () => {
     const _mod = await import("./mod.ts");
 
-    Object.entries(mod).forEach(([key, value]) => {
+    Object.entries(_mod).forEach(([key, value]) => {
       assertExists(value, `Export ${key} should not be undefined`);
     });
   });

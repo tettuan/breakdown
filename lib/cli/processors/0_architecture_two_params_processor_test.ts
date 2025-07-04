@@ -15,7 +15,7 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { type ProcessorError, TwoParamsProcessor } from "./two_params_processor.ts";
-import type { TwoParamsResult } from "../../deps.ts";
+import type { TwoParams_Result } from "../../deps.ts";
 
 /**
  * Architecture Test Suite: TwoParamsProcessor
@@ -33,7 +33,7 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Test that invalid operations return Result.error instead of throwing
-    const invalidResult = _processor.process(null as unknown);
+    const invalidResult = _processor.process(null as any as TwoParams_Result);
     assert(!invalidResult.ok);
     assertEquals(typeof invalidResult.error, "object");
   });
@@ -41,7 +41,7 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
   await t.step("uses Discriminated Union for error types", () => {
     const _processor = new TwoParamsProcessor();
 
-    const invalidResult = _processor.process({} as TwoParamsResult);
+    const invalidResult = _processor.process({} as TwoParams_Result);
     assert(!invalidResult.ok);
 
     if (!invalidResult.ok) {
@@ -62,7 +62,7 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
   });
 
   await t.step("maintains single responsibility principle", () => {
-    // Processor should only handle TwoParamsResult -> VariablesBuilder conversion
+    // Processor should only handle TwoParams_Result -> VariablesBuilder conversion
     // It should NOT handle:
     // - CLI parsing (BreakdownParams responsibility)
     // - Variable building (VariablesBuilder responsibility)
@@ -79,7 +79,7 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
 
   await t.step("maintains dependency direction constraints", () => {
     // Architecture constraint: Processor should depend on:
-    // - TwoParamsResult (from BreakdownParams)
+    // - TwoParams_Result (from BreakdownParams)
     // - VariablesBuilder (for output)
     // - Result types (for error handling)
     //
@@ -95,10 +95,10 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Test graceful handling of invalid input types
-    const nullResult = _processor.process(null as unknown as TwoParamsResult);
+    const nullResult = _processor.process(null as any as TwoParams_Result);
     assert(!nullResult.ok);
 
-    const undefinedResult = _processor.process(undefined as unknown as TwoParamsResult);
+    const undefinedResult = _processor.process(undefined as any as TwoParams_Result);
     assert(!undefinedResult.ok);
 
     // Both should return structured errors, not throw
@@ -112,12 +112,12 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
 
   await t.step("implements correct transformation pattern", () => {
     // Transformation should follow the pattern:
-    // TwoParamsResult -> Validation -> FactoryResolvedValues -> VariablesBuilder
+    // TwoParams_Result -> Validation -> FactoryResolvedValues -> VariablesBuilder
 
     const _processor = new TwoParamsProcessor();
 
     // Valid input structure should be transformable
-    const validInput: TwoParamsResult = {
+    const validInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -128,16 +128,16 @@ Deno.test("TwoParamsProcessor Architecture", async (t) => {
     const result = _processor.process(validInput);
 
     // Should either succeed or fail with structured error
-    assert(typeof _result === "object");
+    assert(typeof result === "object");
     assert("ok" in result);
 
-    if (_result.ok) {
+    if (result.ok) {
       // Success should produce VariablesBuilder
-      assert(_result.data);
-      assert(typeof _result.data === "object");
+      assert(result.data);
+      assert(typeof result.data === "object");
     } else {
       // Failure should have structured error
-      assert("kind" in _result.error);
+      assert("kind" in result.error);
     }
   });
 });
@@ -152,7 +152,7 @@ Deno.test("TwoParamsProcessor Transformation Architecture", async (t) => {
     // Transformation should not modify input data
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -173,7 +173,7 @@ Deno.test("TwoParamsProcessor Transformation Architecture", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Test with input that might cause downstream errors
-    const problematicInput: TwoParamsResult = {
+    const problematicInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "", // Empty string might cause issues
       layerType: "",
@@ -181,10 +181,10 @@ Deno.test("TwoParamsProcessor Transformation Architecture", async (t) => {
       options: {},
     };
 
-    const _result = _processor.process(problematicInput);
+    const result = _processor.process(problematicInput);
 
-    if (!_result.ok) {
-      const error = _result.error as ProcessorError;
+    if (!result.ok) {
+      const error = result.error as ProcessorError;
 
       // Error should be properly categorized
       assert(
@@ -212,7 +212,7 @@ Deno.test("TwoParamsProcessor Transformation Architecture", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Test with various valid inputs
-    const testCases: TwoParamsResult[] = [
+    const testCases: TwoParams_Result[] = [
       {
         type: "two",
         demonstrativeType: "to",
@@ -233,14 +233,14 @@ Deno.test("TwoParamsProcessor Transformation Architecture", async (t) => {
       const result = _processor.process(testCase);
 
       // Result should always be properly typed
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
 
       // Either success with VariablesBuilder or failure with ProcessorError
-      if (_result.ok) {
-        assert(_result.data);
+      if (result.ok) {
+        assert(result.data);
       } else {
-        assert("kind" in _result.error);
+        assert("kind" in result.error);
       }
     }
   });

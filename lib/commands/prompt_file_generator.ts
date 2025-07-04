@@ -59,7 +59,7 @@ export class PromptFileGenerator {
       input_text?: string;
     },
   ): Promise<CommandResult> {
-    const _cliParams = {
+    const cliParams = {
       demonstrativeType: options?.demonstrativeType || "to",
       layerType: format,
       options: {
@@ -154,9 +154,10 @@ export class PromptFileGenerator {
 
     // 6. テンプレート処理
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
-    const adapter = new PromptAdapterImpl(factory);
-    const result = await adapter.validateAndGenerate();
-    if (_result.success) {
+    // PromptVariablesFactory implements PromptVariablesProvider interface
+    const _adapter = new PromptAdapterImpl(factory);
+    const result = await _adapter.validateAndGenerate();
+    if (result.success) {
       return {
         success: true,
         output: result.content,

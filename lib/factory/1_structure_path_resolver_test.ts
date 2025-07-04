@@ -36,14 +36,14 @@ Deno.test("PathResolver Structure", async (t) => {
 
     for (const resolver of resolverTypes) {
       try {
-        const content = await Deno.readTextFile(`./lib/factory/${_resolver.file}`);
+        const content = await Deno.readTextFile(`./lib/factory/${resolver.file}`);
 
         // Should focus on single responsibility
         const classMatches = content.match(/class\s+(\w+)/g) || [];
-        assertEquals(classMatches.length, 1, `${_resolver.file} should define exactly one class`);
+        assertEquals(classMatches.length, 1, `${resolver.file} should define exactly one class`);
 
         // Should not handle multiple types of resolution
-        const otherResolverTypes = resolverTypes.filter((r) => r.file !== _resolver.file);
+        const otherResolverTypes = resolverTypes.filter((r) => r.file !== resolver.file);
         for (const other of otherResolverTypes) {
           const otherKeywords = other.purpose.split(" ").filter((word) => word.length > 3);
           for (const keyword of otherKeywords) {
@@ -57,7 +57,7 @@ Deno.test("PathResolver Structure", async (t) => {
                 assertEquals(
                   concernCount <= 2,
                   true,
-                  `${_resolver.file} should not heavily focus on ${keyword} (${concernCount} occurrences)`,
+                  `${resolver.file} should not heavily focus on ${keyword} (${concernCount} occurrences)`,
                 );
               }
             }
@@ -65,7 +65,7 @@ Deno.test("PathResolver Structure", async (t) => {
         }
       } catch (error) {
         console.warn(
-          `Skipping responsibility test for ${_resolver.file}: ${(error as Error).message}`,
+          `Skipping responsibility test for ${resolver.file}: ${(error as Error).message}`,
         );
       }
     }
@@ -83,11 +83,11 @@ Deno.test("PathResolver Structure", async (t) => {
         params: ["to", "project"],
         options: {},
       };
-      const _resolver = new PromptTemplatePathResolver(mockConfig, mockCliParams);
+      const resolver = new PromptTemplatePathResolver(mockConfig, mockCliParams);
 
       // Should have consistent method naming
-      assertExists(_resolver.getPath, "Should have getPath method");
-      assertEquals(typeof _resolver.getPath, "function");
+      assertExists(resolver.getPath, "Should have getPath method");
+      assertEquals(typeof resolver.getPath, "function");
 
       // Should not expose internal implementation details
       const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(_resolver))
@@ -313,15 +313,15 @@ Deno.test("PathResolver Algorithm Structure", async (t) => {
         params: ["to", "project"],
         options: {},
       };
-      const _resolver = new PromptTemplatePathResolver(mockConfig, mockCliParams);
+      const resolver = new PromptTemplatePathResolver(mockConfig, mockCliParams);
       assertExists(_resolver);
 
       // Constructor should be type-safe
       assertEquals(typeof resolver, "object");
-      assertEquals(_resolver.constructor.name, "PromptTemplatePathResolver");
+      assertEquals(resolver.constructor.name, "PromptTemplatePathResolver");
 
       // Methods should return proper types
-      assertEquals(typeof _resolver.getPath, "function");
+      assertEquals(typeof resolver.getPath, "function");
     } catch (error) {
       console.warn(`Type safety test skipped: ${(error as Error).message}`);
     }

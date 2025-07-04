@@ -37,17 +37,17 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../tests/helpers/setup.ts";
-import { assertCommandOutput as _assertCommandOutput } from "../../tests/helpers/assertions.ts";
+import { assertCommandOutput } from "../../tests/helpers/assertions.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { ensureDir } from "@std/fs";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_cli_io";
 let originalCwd: string;
 
 Deno.test("CLI I/O Handling", async (t) => {
   await t.step("setup", async () => {
-    _logger.debug("Setting up test environment", {
+    logger.debug("Setting up test environment", {
       purpose: "Prepare test directory for I/O tests",
       dir: TEST_DIR,
     });
@@ -88,50 +88,50 @@ Deno.test("CLI I/O Handling", async (t) => {
   });
 
   await t.step("pipe input through stdin", async () => {
-    _logger.debug("Testing stdin input", {
+    logger.debug("Testing stdin input", {
       purpose: "Verify processing of piped input data",
     });
     const input = "# Test Project\n- Task 1\n- Task 2";
     const outputFile = "stdin_output.md";
-    const _result = await runCommand(
+    const result = await runCommand(
       ["to", "project", "--from=-", `--destination=${outputFile}`],
       input,
     );
     // New implementation: may fail due to parameter parsing but should not crash
-    _logger.debug("Stdin input result", { result });
+    logger.debug("Stdin input result", { result });
     // The key test is that the system doesn't crash and returns a structured response
-    assertEquals(typeof _result.success, "boolean", "Should return valid result");
-    assertEquals(typeof _result.output, "string", "Should return output");
-    assertEquals(typeof _result.error, "string", "Should return error info");
+    assertEquals(typeof result.success, "boolean", "Should return valid result");
+    assertEquals(typeof result.output, "string", "Should return output");
+    assertEquals(typeof result.error, "string", "Should return error info");
   });
 
   await t.step("error level logging", async () => {
-    _logger.debug("Testing error level output", {
+    logger.debug("Testing error level output", {
       purpose: "Verify error level log messages",
     });
-    const _result = await runCommand([
+    const result = await runCommand([
       "to",
       "project",
       "--from=nonexistent.md",
       "--destination=output.md",
     ]);
     // New implementation: may fail but should handle errors gracefully
-    _logger.debug("Error level logging result", { result });
+    logger.debug("Error level logging result", { result });
     // The key test is graceful error handling - no system crashes
-    assertEquals(typeof _result.success, "boolean", "Should return valid result");
-    assertEquals(typeof _result.output, "string", "Should return output");
-    assertEquals(typeof _result.error, "string", "Should return error info");
+    assertEquals(typeof result.success, "boolean", "Should return valid result");
+    assertEquals(typeof result.output, "string", "Should return output");
+    assertEquals(typeof result.error, "string", "Should return error info");
   });
 
   await t.step("cleanup", async () => {
-    _logger.debug("Cleaning up test environment", {
+    logger.debug("Cleaning up test environment", {
       purpose: "Remove test directory and files",
       dir: TEST_DIR,
     });
     try {
       await Deno.remove(TEST_DIR, { recursive: true });
     } catch (error) {
-      _logger.error("Failed to clean up test directory", { error });
+      logger.error("Failed to clean up test directory", { error });
     }
     // Restore original working directory
     Deno.chdir(originalCwd);

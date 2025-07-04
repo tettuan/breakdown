@@ -18,12 +18,12 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { ConfigProfileName } from "./config_profile_name.ts";
 
-const _logger = new BreakdownLogger("config-profile-name-unit");
+const logger = new BreakdownLogger("config-profile-name-unit");
 
 describe("ConfigProfileName - Unit Tests", () => {
   describe("create() - Valid profile names", () => {
     it("should create ConfigProfileName with valid lowercase letters", () => {
-      _logger.debug("Testing valid lowercase profile names");
+      logger.debug("Testing valid lowercase profile names");
 
       const profiles = ["production", "staging", "development", "test"];
 
@@ -35,7 +35,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should create ConfigProfileName with numbers", () => {
-      _logger.debug("Testing profile names with numbers");
+      logger.debug("Testing profile names with numbers");
 
       const profiles = ["prod1", "test2", "v3", "123"];
 
@@ -47,7 +47,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should create ConfigProfileName with hyphens and underscores", () => {
-      _logger.debug("Testing profile names with special characters");
+      logger.debug("Testing profile names with special characters");
 
       const profiles = ["prod-env", "test_env", "feature-123", "branch_456"];
 
@@ -59,7 +59,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should create ConfigProfileName with mixed valid characters", () => {
-      _logger.debug("Testing profile names with mixed characters");
+      logger.debug("Testing profile names with mixed characters");
 
       const profiles = ["prod-v2_final", "test_123-beta", "feature_branch-01"];
 
@@ -71,7 +71,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should accept single character profile names", () => {
-      _logger.debug("Testing single character profile names");
+      logger.debug("Testing single character profile names");
 
       const profiles = ["a", "z", "0", "9", "-", "_"];
 
@@ -83,7 +83,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should accept maximum length profile names", () => {
-      _logger.debug("Testing maximum length profile names");
+      logger.debug("Testing maximum length profile names");
 
       const maxLength = "a".repeat(50);
       const profile = ConfigProfileName.create(maxLength);
@@ -95,7 +95,7 @@ describe("ConfigProfileName - Unit Tests", () => {
 
   describe("create() - Invalid profile names", () => {
     it("should return empty for uppercase letters", () => {
-      _logger.debug("Testing uppercase profile names");
+      logger.debug("Testing uppercase profile names");
 
       const profiles = ["PRODUCTION", "Production", "productioN", "PROD"];
 
@@ -107,7 +107,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should return empty for special characters", () => {
-      _logger.debug("Testing special character profile names");
+      logger.debug("Testing special character profile names");
 
       const profiles = [
         "prod@env",
@@ -126,7 +126,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should return empty for whitespace", () => {
-      _logger.debug("Testing whitespace in profile names");
+      logger.debug("Testing whitespace in profile names");
 
       const profiles = ["prod env", " prod", "prod ", "prod\tenv", "prod\nenv", "  "];
 
@@ -138,7 +138,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should return empty for empty string", () => {
-      _logger.debug("Testing empty string");
+      logger.debug("Testing empty string");
 
       const profile = ConfigProfileName.create("");
       assertEquals(profile.value, null);
@@ -146,7 +146,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should return empty for exceeding maximum length", () => {
-      _logger.debug("Testing profile names exceeding maximum length");
+      logger.debug("Testing profile names exceeding maximum length");
 
       const tooLong = "a".repeat(51);
       const profile = ConfigProfileName.create(tooLong);
@@ -155,7 +155,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should return empty for non-string values", () => {
-      _logger.debug("Testing non-string values");
+      logger.debug("Testing non-string values");
 
       // @ts-ignore - Testing runtime behavior
       const profile1 = ConfigProfileName.create(null);
@@ -186,14 +186,14 @@ describe("ConfigProfileName - Unit Tests", () => {
 
   describe("Null handling for invalid cases", () => {
     it("should return null for empty string", () => {
-      _logger.debug("Testing null return for empty string");
+      logger.debug("Testing null return for empty string");
 
       const profile = ConfigProfileName.create("");
       assertEquals(profile.value, null);
     });
 
     it("should consistently return null for invalid inputs", () => {
-      _logger.debug("Testing consistent null returns");
+      logger.debug("Testing consistent null returns");
 
       const profile1 = ConfigProfileName.create("");
       const profile2 = ConfigProfileName.create("INVALID");
@@ -205,7 +205,7 @@ describe("ConfigProfileName - Unit Tests", () => {
 
   describe("Edge cases", () => {
     it("should handle boundary length values", () => {
-      _logger.debug("Testing boundary length values");
+      logger.debug("Testing boundary length values");
 
       // Length 49 - valid
       const length49 = "a".repeat(49);
@@ -227,7 +227,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should handle unicode and non-ASCII characters", () => {
-      _logger.debug("Testing unicode and non-ASCII characters");
+      logger.debug("Testing unicode and non-ASCII characters");
 
       const profiles = ["café", "日本語", "🚀", "test™", "prod©"];
 
@@ -239,7 +239,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should handle numeric strings at boundaries", () => {
-      _logger.debug("Testing numeric strings");
+      logger.debug("Testing numeric strings");
 
       // Pure numbers are valid
       const numeric = ConfigProfileName.create("12345");
@@ -255,7 +255,7 @@ describe("ConfigProfileName - Unit Tests", () => {
 
   describe("Common usage patterns", () => {
     it("should handle typical production profile names", () => {
-      _logger.debug("Testing typical production profile names");
+      logger.debug("Testing typical production profile names");
 
       const profiles = [
         { input: "prod", expected: "prod" },
@@ -272,7 +272,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should handle typical development profile names", () => {
-      _logger.debug("Testing typical development profile names");
+      logger.debug("Testing typical development profile names");
 
       const profiles = [
         { input: "dev", expected: "dev" },
@@ -290,7 +290,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     });
 
     it("should handle feature branch profile names", () => {
-      _logger.debug("Testing feature branch profile names");
+      logger.debug("Testing feature branch profile names");
 
       const profiles = [
         { input: "feature-123", expected: "feature-123" },

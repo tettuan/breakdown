@@ -15,179 +15,182 @@
 
 import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "@std/assert";
 import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
-import { cleanupTestEnvironment as _cleanupTestEnvironment, setupTestEnvironment as _setupTestEnvironment } from "../../helpers/setup.ts";
+import {
+  cleanupTestEnvironment as _cleanupTestEnvironment,
+  setupTestEnvironment as _setupTestEnvironment,
+} from "../../helpers/setup.ts";
 import { getTestEnvOptions as _getTestEnvOptions } from "../../helpers/test_utils.ts";
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger();
 
 // Helper function to simulate stdin input
-async function withStdinInput(_input: _string, _fn: () => Promise<void>): Promise<void> {
-  const _originalStdin = Deno.stdin;
-  const _encoder = new TextEncoder();
-  const _bytes = encoder.encode(input);
+async function withStdinInput(_input: string, fn: () => Promise<void>): Promise<void> {
+  const originalStdin = Deno.stdin;
+  const encoder = new TextEncoder();
+  const bytes = _encoder.encode(_input);
 
-  const _tempFile = await Deno.makeTempFile();
-  await Deno.writeFile(tempFile, bytes);
-  const _file = await Deno.open(tempFile, { read: true });
+  const tempFile = await Deno.makeTempFile();
+  await Deno.writeFile(_tempFile, _bytes);
+  const file = await Deno.open(_tempFile, { read: true });
 
   // @ts-ignore: Override stdin for testing
-  Deno.stdin = file;
+  Deno.stdin = _file;
 
   try {
     await fn();
   } finally {
     // Ensure file is properly closed
     try {
-      file.close();
+      _file.close();
     } catch (_e) {
       // File might already be closed
     }
 
     // Clean up temp file
     try {
-      await Deno.remove(tempFile);
+      await Deno.remove(_tempFile);
     } catch (_e) {
       // File might already be removed
     }
 
     // @ts-ignore: Restore original stdin
-    Deno.stdin = originalStdin;
+    Deno.stdin = _originalStdin;
   }
 }
 
 Deno.test({
-  _name: "stdin - basic input",
-  _ignore: _true, // _TODO: Fix stdin test environment issues
-  _fn: async () => {
-    const _env = await setupTestEnvironment(getTestEnvOptions("stdin-basic"));
-    _logger.debug("Starting basic input reading test");
+  name: "stdin - basic input",
+  ignore: true, // _TODO: Fix stdin test environment issues
+  fn: async () => {
+    const env = await _setupTestEnvironment(_getTestEnvOptions("stdin-basic"));
+    logger.debug("Starting basic input reading test");
 
     // Skip actual stdin reading in CI environments
-    const _isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
+    const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
 
     try {
       if (_isCI) {
-        _logger.debug("Skipping stdin reading test in CI environment");
+        logger.debug("Skipping stdin reading test in CI environment");
         // Test parameter structure validation instead
-        const _options = { allowEmpty: false };
-        assertEquals(typeof options.allowEmpty, "boolean");
-        _logger.debug("Parameter validation completed in CI mode");
+        const options = { allowEmpty: false };
+        _assertEquals(typeof _options.allowEmpty, "boolean");
+        logger.debug("Parameter validation completed in CI mode");
       } else {
         await withStdinInput("test input\n", async () => {
-          const _content = await readStdin();
-          assertEquals(content, "test input");
+          const content = await _readStdin();
+          _assertEquals(_content, "test input");
         });
 
-        _logger.debug("Basic input reading test completed successfully");
+        logger.debug("Basic input reading test completed successfully");
       }
     } catch (_error) {
-      _logger.error("Basic input reading test failed", { error });
-      throw error;
+      logger.error("Basic input reading test failed", _error);
+      throw _error;
     } finally {
-      await cleanupTestEnvironment(env);
+      await _cleanupTestEnvironment(env);
     }
   },
 });
 
 Deno.test({
-  _name: "stdin - empty input handling",
-  _ignore: _true, // _TODO: Fix stdin test environment issues
-  _fn: async () => {
-    const _env = await setupTestEnvironment(getTestEnvOptions("stdin-empty"));
-    _logger.debug("Starting empty input handling test");
+  name: "stdin - empty input handling",
+  ignore: true, // _TODO: Fix stdin test environment issues
+  fn: async () => {
+    const env = await _setupTestEnvironment(_getTestEnvOptions("stdin-empty"));
+    logger.debug("Starting empty input handling test");
 
     try {
       await withStdinInput("", async () => {
-        await assertRejects(
-          () => readStdin(),
-          StdinError,
+        await _assertRejects(
+          () => _readStdin(),
+          _StdinError,
           "Stdin not available in test environment",
         );
       });
 
       await withStdinInput("  \n  ", async () => {
-        await assertRejects(
-          () => readStdin(),
-          StdinError,
+        await _assertRejects(
+          () => _readStdin(),
+          _StdinError,
           "Stdin not available in test environment",
         );
       });
 
       // Test with allowEmpty option
       await withStdinInput("", async () => {
-        const _content = await readStdin({ allowEmpty: true });
-        assertEquals(content, "");
+        const content = await _readStdin({ allowEmpty: true });
+        _assertEquals(_content, "");
       });
 
-      _logger.debug("Empty input handling test completed successfully");
+      logger.debug("Empty input handling test completed successfully");
     } catch (_error) {
-      _logger.error("Empty input handling test failed", { error });
-      throw error;
+      logger.error("Empty input handling test failed", _error);
+      throw _error;
     } finally {
-      await cleanupTestEnvironment(env);
+      await _cleanupTestEnvironment(env);
     }
   },
 });
 
 Deno.test({
-  _name: "stdin - multiline input",
-  _ignore: _true, // _TODO: Fix stdin test environment issues
-  _fn: async () => {
-    const _env = await setupTestEnvironment(getTestEnvOptions("stdin-multiline"));
-    _logger.debug("Starting multiline input test");
+  name: "stdin - multiline input",
+  ignore: true, // _TODO: Fix stdin test environment issues
+  fn: async () => {
+    const env = await _setupTestEnvironment(_getTestEnvOptions("stdin-multiline"));
+    logger.debug("Starting multiline input test");
 
     try {
-      const _multilineInput = `Line 1
+      const multilineInput = `Line 1
 Line 2
 Line 3
 `;
 
       await withStdinInput(_multilineInput, async () => {
-        const _content = await readStdin();
-        assertEquals(content, multilineInput.trim());
+        const content = await _readStdin();
+        _assertEquals(_content, _multilineInput.trim());
       });
 
-      _logger.debug("Multiline input test completed successfully");
+      logger.debug("Multiline input test completed successfully");
     } catch (_error) {
-      _logger.error("Multiline input test failed", { error });
-      throw error;
+      logger.error("Multiline input test failed", _error);
+      throw _error;
     } finally {
-      await cleanupTestEnvironment(env);
+      await _cleanupTestEnvironment(env);
     }
   },
 });
 
 Deno.test({
-  _name: "stdin - special characters",
-  _ignore: _true, // _TODO: Fix stdin test environment issues
-  _fn: async () => {
-    const _env = await setupTestEnvironment(getTestEnvOptions("stdin-special"));
-    _logger.debug("Starting special characters test");
+  name: "stdin - special characters",
+  ignore: true, // _TODO: Fix stdin test environment issues
+  fn: async () => {
+    const env = await _setupTestEnvironment(_getTestEnvOptions("stdin-special"));
+    logger.debug("Starting special characters test");
 
     try {
-      const _specialChars = "Special chars: !@#$%^&*()_+-=[]{}|;:'\",.<>?`~\n";
+      const specialChars = "Special chars: !@#$%^&*()_+-=[]{}|;:'\",.<>?`~\n";
 
       await withStdinInput(_specialChars, async () => {
-        const _content = await readStdin();
-        assertEquals(content, specialChars.trim());
+        const content = await _readStdin();
+        _assertEquals(_content, _specialChars.trim());
       });
 
-      _logger.debug("Special characters test completed successfully");
+      logger.debug("Special characters test completed successfully");
     } catch (_error) {
-      _logger.error("Special characters test failed", { error });
-      throw error;
+      logger.error("Special characters test failed", _error);
+      throw _error;
     } finally {
-      await cleanupTestEnvironment(env);
+      await _cleanupTestEnvironment(env);
     }
   },
 });
 
 Deno.test("stdin - error handling", async () => {
-  const _env = await setupTestEnvironment(getTestEnvOptions("stdin-error"));
+  const env = await _setupTestEnvironment(_getTestEnvOptions("stdin-error"));
   try {
     // Test implementation
   } finally {
-    await cleanupTestEnvironment(env);
+    await _cleanupTestEnvironment(env);
   }
 });

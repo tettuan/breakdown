@@ -21,7 +21,7 @@
 
 import { assertEquals as _assertEquals, assertExists as _assertExists } from "../../../deps.ts";
 import { join as _join } from "@std/path";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type OneParamsResult as _OneParamsResult,
   ParamsParser as _ParamsParser,
@@ -32,93 +32,97 @@ import {
   setupTestEnvironment as _setupTestEnvironment,
   type TestEnvironment as _TestEnvironment,
 } from "$test/helpers/setup.ts";
-import { displayHelp as _displayHelp, displayVersion as _displayVersion, initWorkspace as _initWorkspace } from "../../../lib/commands/mod.ts";
+import {
+  displayHelp as _displayHelp,
+  displayVersion as _displayVersion,
+  initWorkspace as _initWorkspace,
+} from "../../../lib/commands/mod.ts";
 // validateCommandOptions integrated into enhancedPreprocessCommandLine in breakdown.ts
 // import { validateCommandOptions as _validateCommandOptions } from "../../../lib/cli/breakdown.ts";
 import { VERSION as _VERSION } from "../../../lib/version.ts";
 import { exists as _exists } from "jsr:@std/fs";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger();
 let TEST_ENV: TestEnvironment;
 
 // Setup test environment before running tests
 Deno.test({
-  _name: "setup",
+  name: "setup",
   _fn: async () => {
-    _logger.debug("Setting up test environment", { test: "setup" });
-    TEST_ENV = await setupTestEnvironment({
+    logger.debug("Setting up test environment", { test: "setup" });
+    TEST_ENV = await _setupTestEnvironment({
       workingDir: "./tmp/test_commands",
     });
-    _logger.debug("Test environment setup complete", { workingDir: TEST_ENV.workingDir });
+    logger.debug("Test environment setup complete", { workingDir: TEST_ENV.workingDir });
   },
 });
 
 // Cleanup after all tests
 Deno.test({
-  _name: "cleanup",
+  name: "cleanup",
   _fn: async () => {
-    _logger.debug("Cleaning up test environment", { test: "cleanup" });
-    await cleanupTestEnvironment(TEST_ENV);
-    _logger.debug("Test environment cleanup complete");
+    logger.debug("Cleaning up test environment", { test: "cleanup" });
+    await _cleanupTestEnvironment(TEST_ENV);
+    logger.debug("Test environment cleanup complete");
   },
 });
 
 // Group 1: Simple Pattern - Flag Commands
 Deno.test("parseParams - help command", async () => {
-  _logger.debug("Testing help flag parsing", {
+  logger.debug("Testing help flag parsing", {
     purpose: "Verify help flag recognition",
     step: "Simple pattern",
     args: ["--help"],
   });
-  const _args = ["--help"];
-  const _parser = new ParamsParser();
-  const _result = parser.parse(args);
-  if (_result.type !== "zero") {
+  const args = ["--help"];
+  const parser = new ParamsParser();
+  const result = parser.parse(args);
+  if (result.type !== "zero") {
     throw new Error("Expected zero result type");
   }
-  const _noParamsResult = result as ZeroParamsResult;
+  const noParamsResult = result as ZeroParamsResult;
   assertEquals(noParamsResult.options.help, true);
-  _logger.debug("Help flag parsing test complete", { result: noParamsResult });
+  logger.debug("Help flag parsing test complete", { result: noParamsResult });
 });
 
 Deno.test("parseParams - version command", async () => {
-  _logger.debug("Testing version flag parsing", {
+  logger.debug("Testing version flag parsing", {
     purpose: "Verify version flag recognition",
     step: "Simple pattern",
     args: ["--version"],
   });
-  const _args = ["--version"];
-  const _parser = new ParamsParser();
-  const _result = parser.parse(args);
-  if (_result.type !== "zero") {
+  const args = ["--version"];
+  const parser = new ParamsParser();
+  const result = parser.parse(args);
+  if (result.type !== "zero") {
     throw new Error("Expected zero result type");
   }
-  const _noParamsResult = result as ZeroParamsResult;
+  const noParamsResult = result as ZeroParamsResult;
   assertEquals(noParamsResult.options.version, true);
-  _logger.debug("Version flag parsing test complete", { result: noParamsResult });
+  logger.debug("Version flag parsing test complete", { result: noParamsResult });
 });
 
 // Group 2: Normal Pattern - Basic Commands
 Deno.test("parseParams - init command", async () => {
-  _logger.debug("Testing init command parsing", {
+  logger.debug("Testing init command parsing", {
     purpose: "Verify init command recognition",
     step: "Normal pattern",
     args: ["init"],
   });
-  const _args = ["init"];
-  const _parser = new ParamsParser();
-  const _result = parser.parse(args);
-  if (_result.type !== "one") {
+  const args = ["init"];
+  const parser = new ParamsParser();
+  const result = parser.parse(args);
+  if (result.type !== "one") {
     throw new Error("Expected one result type");
   }
-  const _singleResult = result as OneParamsResult;
+  const singleResult = result as OneParamsResult;
   assertEquals(singleResult.demonstrativeType, "init");
-  _logger.debug("Init command parsing test complete", { result: singleResult });
+  logger.debug("Init command parsing test complete", { result: singleResult });
 });
 
 // Group 3: Command Options Tests
 Deno.test("parseParams - adaptation option (long form)", async () => {
-  _logger.debug("Testing adaptation option parsing", {
+  logger.debug("Testing adaptation option parsing", {
     purpose: "Verify --adaptation flag recognition",
     step: "Command options",
     args: [
@@ -132,7 +136,7 @@ Deno.test("parseParams - adaptation option (long form)", async () => {
       "strict",
     ],
   });
-  const _args = [
+  const args = [
     "summary",
     "task",
     "--from",
@@ -144,28 +148,28 @@ Deno.test("parseParams - adaptation option (long form)", async () => {
   ];
   // Test moved to integration test since validateCommandOptions is now integrated
   // TODO: Update this test to use ParamsParser directly or move to integration
-  _logger.debug("Adaptation option parsing test complete (placeholder)", {
+  logger.debug("Adaptation option parsing test complete (placeholder)", {
     note: "validateCommandOptions integrated into breakdown.ts enhancedPreprocessCommandLine",
   });
 });
 
 Deno.test("parseParams - adaptation option (short form)", async () => {
-  _logger.debug("Testing adaptation short option parsing", {
+  logger.debug("Testing adaptation short option parsing", {
     purpose: "Verify -a flag recognition",
     step: "Command options",
     args: ["summary", "task", "--from=input.md", "--destination=output.md", "-a=a"],
   });
-  const _args = ["summary", "task", "--from=input.md", "--destination=output.md", "-a=a"];
+  const args = ["summary", "task", "--from=input.md", "--destination=output.md", "-a=a"];
   // Test moved to integration test since validateCommandOptions is now integrated
   // TODO: Update this test to use ParamsParser directly or move to integration
-  _logger.debug("Adaptation short option parsing test complete (placeholder)", {
+  logger.debug("Adaptation short option parsing test complete (placeholder)", {
     note: "validateCommandOptions integrated into breakdown.ts enhancedPreprocessCommandLine",
   });
 });
 
-Deno.test("Command Module Tests", async (_t) => {
-  const _TEST_DIR = await Deno.makeTempDir();
-  const _originalCwd = Deno.cwd();
+Deno.test("Command Module Tests", async (t) => {
+  const TEST_DIR = await Deno.makeTempDir();
+  const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
   try {
     await t.step("setup", async () => {
@@ -175,16 +179,16 @@ Deno.test("Command Module Tests", async (_t) => {
     });
 
     await t.step("initWorkspace should create required directories", async () => {
-      const _result = await initWorkspace(TEST_DIR);
-      assertEquals(result.success, true);
-      assertEquals(_result.error, "");
+      const result = await initWorkspace(TEST_DIR);
+      assertEquals(result.ok, true);
+      assertEquals(result.error, "");
       // Verify .agent/breakdown directory exists
-      const _breakdownDir = join(TEST_DIR, ".agent/breakdown");
-      const _breakdownDirInfo = await Deno.stat(breakdownDir);
+      const breakdownDir = join(TEST_DIR, ".agent/breakdown");
+      const breakdownDirInfo = await Deno.stat(breakdownDir);
       assertExists(breakdownDirInfo);
       assertEquals(breakdownDirInfo.isDirectory, true);
       // Verify required subdirectories exist
-      const _requiredDirs = [
+      const requiredDirs = [
         "projects",
         "issues",
         "tasks",
@@ -193,9 +197,9 @@ Deno.test("Command Module Tests", async (_t) => {
         "prompts",
         "schema",
       ];
-      for (const dir of _requiredDirs) {
-        const _dirPath = join(TEST_DIR, ".agent", "breakdown", dir);
-        const _dirInfo = await Deno.stat(dirPath);
+      for (const dir of requiredDirs) {
+        const dirPath = join(TEST_DIR, ".agent", "breakdown", dir);
+        const dirInfo = await Deno.stat(dirPath);
         assertExists(dirInfo);
         assertEquals(dirInfo.isDirectory, true);
       }
@@ -208,8 +212,8 @@ Deno.test("Command Module Tests", async (_t) => {
     });
 
     await t.step("displayVersion should not throw and output correct version", () => {
-      const _result = displayVersion();
-      assertEquals(result.success, true);
+      const result = displayVersion();
+      assertEquals(result.ok, true);
       assertEquals(result.output, `Breakdown v${VERSION}`);
     });
 
@@ -224,27 +228,27 @@ Deno.test("Command Module Tests", async (_t) => {
 });
 
 Deno.test("cli - init command should finish and create config", async () => {
-  const _logger = new BreakdownLogger();
-  const _testDir = await Deno.makeTempDir();
-  _logger.debug("[CLI INIT TEST] Cleaning up test dir", { testDir });
+  const logger = new BreakdownLogger();
+  const testDir = await Deno.makeTempDir();
+  logger.debug("[CLI INIT TEST] Cleaning up test dir", { testDir });
   try {
     await Deno.remove(testDir, { recursive: true });
   } catch { /* ignore */ }
   await Deno.mkdir(testDir, { recursive: true });
-  _logger.debug("[CLI INIT TEST] Running CLI init command", { testDir });
-  const _cliPath = new URL("../../../cli/breakdown.ts", import.meta.url).pathname;
-  const _cmd = new Deno.Command("deno", {
+  logger.debug("[CLI INIT TEST] Running CLI init command", { testDir });
+  const cliPath = new URL("../../../cli/breakdown.ts", import.meta.url).pathname;
+  const cmd = new Deno.Command("deno", {
     args: ["run", "--allow-all", cliPath, "init"],
     cwd: testDir,
     stdout: "piped",
     stderr: "piped",
   });
   const { code, stdout, stderr } = await cmd.output();
-  const _out = new TextDecoder().decode(stdout);
-  const _err = new TextDecoder().decode(stderr);
-  _logger.debug("[CLI INIT TEST] CLI finished", { code, out, err });
-  if (code !== _0) {
-    _logger.error("[CLI INIT TEST] CLI failed", {
+  const out = new TextDecoder().decode(stdout);
+  const err = new TextDecoder().decode(stderr);
+  logger.debug("[CLI INIT TEST] CLI finished", { code, out, err });
+  if (code !== 0) {
+    logger.error("[CLI INIT TEST] CLI failed", {
       output: out,
       error: err,
       exitCode: code,
@@ -255,25 +259,25 @@ Deno.test("cli - init command should finish and create config", async () => {
   // Check exit code
   assertEquals(code, 0);
   // Check config file exists
-  const _configFile = `${testDir}/.agent/breakdown/config/app.yml`;
-  const _existsConfig = await exists(configFile);
-  _logger.debug("[CLI INIT TEST] Config file exists?", { configFile, existsConfig });
+  const configFile = `${testDir}/.agent/breakdown/config/app.yml`;
+  const existsConfig = await exists(configFile);
+  logger.debug("[CLI INIT TEST] Config file exists?", { configFile, existsConfig });
   assertEquals(existsConfig, true);
   // Check main directories
   for (const dir of ["projects", "issues", "tasks", "temp", "config", "prompts", "schema"]) {
-    const _dirPath = `${testDir}/.agent/breakdown/${dir}`;
-    const _existsDir = await exists(dirPath);
-    _logger.debug("[CLI INIT TEST] Directory exists?", { dirPath, existsDir });
+    const dirPath = `${testDir}/.agent/breakdown/${dir}`;
+    const existsDir = await exists(dirPath);
+    logger.debug("[CLI INIT TEST] Directory exists?", { dirPath, existsDir });
     assertEquals(existsDir, true);
   }
   // Cleanup
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("CLI Command Execution", async (_t) => {
-  const _TEST_DIR = await Deno.makeTempDir();
+Deno.test("CLI Command Execution", async (t) => {
+  const TEST_DIR = await Deno.makeTempDir();
   await Deno.mkdir(TEST_DIR, { recursive: true });
-  const _originalCwd = Deno.cwd();
+  const originalCwd = Deno.cwd();
   Deno.chdir(TEST_DIR);
   try {
     await t.step("setup", async () => {

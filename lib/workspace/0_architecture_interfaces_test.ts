@@ -11,7 +11,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import type {
   PathResolutionStrategy,
   Workspace,
@@ -24,7 +24,7 @@ import type {
 } from "./interfaces.ts";
 
 Deno.test.ignore("Workspace Interfaces Architecture", async (t) => {
-  const _logger = new BreakdownLogger("architecture-interfaces-test");
+  const _logger = new _BreakdownLogger("architecture-interfaces-test");
   const interfaces = await import("./interfaces.ts");
 
   await t.step("should define all core workspace interfaces", async () => {
@@ -221,7 +221,7 @@ Deno.test.ignore("Workspace Interfaces Architecture", async (t) => {
 });
 
 Deno.test.ignore("Interface Consistency and Completeness", async (t) => {
-  const _logger = new BreakdownLogger("architecture-consistency-test");
+  const _logger = new _BreakdownLogger("architecture-consistency-test");
 
   await t.step("should maintain consistent method naming patterns", () => {
     _logger.debug("Testing method naming consistency");
@@ -296,7 +296,7 @@ Deno.test.ignore("Interface Consistency and Completeness", async (t) => {
 });
 
 Deno.test.ignore("Module Boundary and Integration Points", async (t) => {
-  const _logger = new BreakdownLogger("architecture-boundaries-test");
+  const _logger = new _BreakdownLogger("architecture-boundaries-test");
 
   await t.step("should define clear integration points between interfaces", () => {
     _logger.debug("Testing integration point clarity");

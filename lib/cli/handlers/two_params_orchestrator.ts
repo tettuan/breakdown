@@ -118,8 +118,8 @@ export class TwoParamsOrchestrator {
   ): Promise<Result<void, OrchestratorError>> {
     // 1. Validate parameter count
     const _countResult = this.#validateParameterCount(params);
-    if (!countResult.ok) {
-      return error(countResult.error);
+    if (!_countResult.ok) {
+      return error(_countResult.error);
     }
 
     // 2. Extract parameters (TODO: Add validation with ParameterValidator)
@@ -146,7 +146,7 @@ export class TwoParamsOrchestrator {
     if (!variablesResult.ok) {
       return error({
         kind: "VariableProcessingError",
-        errors: variablesResult.error.map((e: unknown) => {
+        errors: variablesResult.error.map((e: any) => {
           if (e.kind === "InvalidOptions") {
             return `${e.kind}: ${e.message}`;
           } else if ("key" in e) {
@@ -179,7 +179,7 @@ export class TwoParamsOrchestrator {
           } else if (err.kind === "PromptGenerationError") {
             return `${err.kind}: ${err.error}`;
           }
-          return String((err as unknown).kind);
+          return String((err as any).kind);
         })(),
       });
     }

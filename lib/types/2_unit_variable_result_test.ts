@@ -20,11 +20,11 @@ type TestData = { id: number; name: string };
 
 Deno.test("VariableResult - createSuccess creates valid success result", () => {
   const testData: TestData = { id: 1, name: "test" };
-  const _result = createSuccess(testData);
+  const result = createSuccess(testData);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data, testData);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data, testData);
   }
 });
 
@@ -34,49 +34,49 @@ Deno.test("VariableResult - createError creates valid error result", () => {
     name: "badName",
     validNames: ["goodName1", "goodName2"],
   };
-  const _result = createError<TestData>(error);
+  const result = createError<TestData>(error);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error, error);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error, error);
   }
 });
 
 Deno.test("VariableResult - createInvalidNameError creates proper error", () => {
-  const _result = createInvalidNameError<TestData>("badName", ["valid1", "valid2"]);
+  const result = createInvalidNameError<TestData>("badName", ["valid1", "valid2"]);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidName");
-    if (_result.error.kind === "InvalidName") {
-      assertEquals(_result.error.name, "badName");
-      assertEquals(_result.error.validNames, ["valid1", "valid2"]);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidName");
+    if (result.error.kind === "InvalidName") {
+      assertEquals(result.error.name, "badName");
+      assertEquals(result.error.validNames, ["valid1", "valid2"]);
     }
   }
 });
 
 Deno.test("VariableResult - createEmptyValueError creates proper error", () => {
-  const _result = createEmptyValueError<TestData>("testVar", "Value cannot be empty");
+  const result = createEmptyValueError<TestData>("testVar", "Value cannot be empty");
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "EmptyValue");
-    if (_result.error.kind === "EmptyValue") {
-      assertEquals(_result.error.variableName, "testVar");
-      assertEquals(_result.error.reason, "Value cannot be empty");
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "EmptyValue");
+    if (result.error.kind === "EmptyValue") {
+      assertEquals(result.error.variableName, "testVar");
+      assertEquals(result.error.reason, "Value cannot be empty");
     }
   }
 });
 
 Deno.test("VariableResult - createValidationFailedError creates proper error", () => {
-  const _result = createValidationFailedError<TestData>("invalid", "must be numeric");
+  const result = createValidationFailedError<TestData>("invalid", "must be numeric");
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "ValidationFailed");
-    if (_result.error.kind === "ValidationFailed") {
-      assertEquals(_result.error.value, "invalid");
-      assertEquals(_result.error.constraint, "must be numeric");
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "ValidationFailed");
+    if (result.error.kind === "ValidationFailed") {
+      assertEquals(result.error.value, "invalid");
+      assertEquals(result.error.constraint, "must be numeric");
     }
   }
 });
@@ -123,14 +123,14 @@ Deno.test("VariableResult - error types are properly discriminated", () => {
 });
 
 Deno.test("VariableResult - readonly validNames array", () => {
-  const _result = createInvalidNameError<string>("test", ["a", "b", "c"]);
+  const result = createInvalidNameError<string>("test", ["a", "b", "c"]);
 
-  if (!_result.ok && _result.error.kind === "InvalidName") {
+  if (!result.ok && result.error.kind === "InvalidName") {
     // validNames should be readonly
-    assertEquals(_result.error.validNames.length, 3);
-    assertEquals(_result.error.validNames[0], "a");
-    assertEquals(_result.error.validNames[1], "b");
-    assertEquals(_result.error.validNames[2], "c");
+    assertEquals(result.error.validNames.length, 3);
+    assertEquals(result.error.validNames[0], "a");
+    assertEquals(result.error.validNames[1], "b");
+    assertEquals(result.error.validNames[2], "c");
   }
 });
 

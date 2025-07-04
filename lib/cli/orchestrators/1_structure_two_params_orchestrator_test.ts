@@ -16,14 +16,14 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsOrchestrator } from "./two_params_orchestrator.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import { error, ok } from "$lib/types/_result.ts";
+import { error, ok } from "$lib/types/result.ts";
 
-const _logger = new BreakdownLogger("structure-two-params-orchestrator");
+const _logger = new _BreakdownLogger("structure-two-params-orchestrator");
 
 describe("TwoParamsOrchestrator - Component Structure", async () => {
   it("should properly initialize all required components", async () => {
@@ -32,16 +32,16 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     const orchestrator = new TwoParamsOrchestrator();
 
     // Check that all required components are initialized
-    assertExists((orchestrator as unknown as Record<string, unknown>).validator);
-    assertExists((orchestrator as unknown as Record<string, unknown>).stdinProcessor);
+    assertExists((orchestrator as any as Record<string, unknown>).validator);
+    assertExists((orchestrator as any as Record<string, unknown>).stdinProcessor);
     // Note: outputWriter component not present in current implementation
 
     // Components should be of correct types
     assert(
-      (orchestrator as unknown as Record<string, unknown>).validator instanceof TwoParamsValidator,
+      (orchestrator as any as Record<string, unknown>).validator instanceof TwoParamsValidator,
     );
     assert(
-      (orchestrator as unknown as Record<string, unknown>).stdinProcessor instanceof
+      (orchestrator as any as Record<string, unknown>).stdinProcessor instanceof
         TwoParamsStdinProcessor,
     );
     // Note: Current implementation only has validator and stdinProcessor components
@@ -62,9 +62,9 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     );
 
     // Verify injected components are used
-    assertEquals((orchestrator as unknown as Record<string, unknown>).validator, mockValidator);
+    assertEquals((orchestrator as any as Record<string, unknown>).validator, mockValidator);
     assertEquals(
-      (orchestrator as unknown as Record<string, unknown>).stdinProcessor,
+      (orchestrator as any as Record<string, unknown>).stdinProcessor,
       mockStdinProcessor,
     );
     // Note: outputWriter not present in current implementation
@@ -74,8 +74,8 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     _logger.debug("Testing data flow structure");
 
     // Create orchestrator with mock components to trace data flow
-    const validatorCalled = false;
-    const stdinProcessorCalled = false;
+    let validatorCalled = false;
+    let stdinProcessorCalled = false;
 
     const mockValidator = {
       validate: (_params: string[]) => {
@@ -94,12 +94,12 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const orchestrator = new TwoParamsOrchestrator(
-      mockValidator as unknown as TwoParamsValidator,
-      mockStdinProcessor as unknown as TwoParamsStdinProcessor,
+      mockValidator as any as TwoParamsValidator,
+      mockStdinProcessor as any as TwoParamsStdinProcessor,
     );
 
     // Execute should flow through components
-    const _result = await orchestrator.execute(["to", "project"], {}, {});
+    const result = await orchestrator.execute(["to", "project"], {}, {});
 
     // Components should be called based on flow
     assert(validatorCalled, "Validator should be called");
@@ -107,10 +107,10 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     // Output writer may not be called if prompt generation fails
     // This is expected behavior - early exit on errors
-    if (_result.ok) {
+    if (result.ok) {
       // Note: OutputWriter not part of current implementation
     } else {
-      _logger.debug("Execution failed at prompt generation", { error: _result.error });
+      _logger.debug("Execution failed at prompt generation", { error: result.error });
     }
   });
 
@@ -121,21 +121,21 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     // Check that helper methods exist and are cohesive
     const helperMethods = [
-      "extractCustomVariables",
-      "processVariables",
-      "createCliParams",
-      "generatePrompt",
+      "_extractCustomVariables",
+      "_processVariables",
+      "_createCliParams",
+      "_generatePrompt",
     ];
 
     helperMethods.forEach((method) => {
       assert(
-        typeof (orchestrator as unknown as Record<string, unknown>)[method] === "function",
+        typeof (orchestrator as any as Record<string, unknown>)[method] === "function",
         `Helper method ${method} should exist`,
       );
     });
 
-    // Test extractCustomVariables cohesion
-    const customVars = (orchestrator as unknown).extractCustomVariables({
+    // Test _extractCustomVariables cohesion
+    const customVars = (orchestrator as any)._extractCustomVariables({
       "uv-test": "value",
       "other": "ignored",
       "uv-another": "included",
@@ -159,14 +159,14 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const orchestrator = new TwoParamsOrchestrator(
-      alternativeValidator as unknown as TwoParamsValidator,
+      alternativeValidator as any as TwoParamsValidator,
       undefined,
     );
 
-    const _result = await orchestrator.execute([], {}, {});
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParameterCount");
+    const result = await orchestrator.execute([], {}, {});
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParameterCount");
     }
   });
 
@@ -184,13 +184,13 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const orchestrator1 = new TwoParamsOrchestrator(
-      errorValidator as unknown as TwoParamsValidator,
+      errorValidator as any as TwoParamsValidator,
       undefined,
     );
 
     const result1 = await orchestrator1.execute(["invalid", "project"], {}, {});
     assertEquals(result1.ok, false);
-    if (!_result1.ok) {
+    if (!result1.ok) {
       assertEquals(result1.error.kind, "InvalidDemonstrativeType");
     }
 
@@ -201,12 +201,12 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     const orchestrator2 = new TwoParamsOrchestrator(
       undefined,
-      errorStdinProcessor as unknown as TwoParamsStdinProcessor,
+      errorStdinProcessor as any as TwoParamsStdinProcessor,
     );
 
     const result2 = await orchestrator2.execute(["to", "project"], {}, {});
     assertEquals(result2.ok, false);
-    if (!_result2.ok) {
+    if (!result2.ok) {
       assertEquals(result2.error.kind, "StdinReadError");
     }
 
@@ -232,13 +232,13 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const orchestrator3 = new TwoParamsOrchestrator(
-      mockValidator as unknown as TwoParamsValidator,
-      mockStdinProcessor as unknown as TwoParamsStdinProcessor,
+      mockValidator as any as TwoParamsValidator,
+      mockStdinProcessor as any as TwoParamsStdinProcessor,
     );
 
     const result3 = await orchestrator3.execute(["to", "project"], {}, {});
     assertEquals(result3.ok, false);
-    if (!_result3.ok) {
+    if (!result3.ok) {
       // The error might be from prompt generation failing before output writing
       assert(
         result3.error.kind === "OutputWriteError" ||
@@ -264,14 +264,17 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     // Internal orchestration methods should exist but be conceptually private
     const internalMethods = [
-      "extractCustomVariables",
-      "processVariables",
-      "createCliParams",
-      "generatePrompt",
+      "_extractCustomVariables",
+      "_processVariables",
+      "_createCliParams",
+      "_generatePrompt",
     ];
 
     internalMethods.forEach((method) => {
-      assert(publicMethods.includes(method), `${method} should exist`);
+      assert(
+        typeof (orchestrator as any)[method] === "function",
+        `${method} should exist as a function`
+      );
     });
   });
 
@@ -280,8 +283,8 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     const orchestrator = new TwoParamsOrchestrator();
 
-    // Test processVariables structure
-    const processed = (orchestrator as unknown).processVariables(
+    // Test _processVariables structure
+    const processed = (orchestrator as any)._processVariables(
       { "uv-custom": "value" },
       "input text",
       { fromFile: "input.txt", destinationFile: "output.md" },
@@ -299,7 +302,7 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     const orchestrator = new TwoParamsOrchestrator();
 
-    const cliParams = (orchestrator as unknown).createCliParams(
+    const cliParams = (orchestrator as any)._createCliParams(
       "to",
       "project",
       {
@@ -351,12 +354,12 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const fullOrchestrator = new TwoParamsOrchestrator(
-      mockValidator as unknown as TwoParamsValidator,
-      mockStdinProcessor as unknown as TwoParamsStdinProcessor,
+      mockValidator as any as TwoParamsValidator,
+      mockStdinProcessor as any as TwoParamsStdinProcessor,
     );
 
     // This will fail in prompt generation but tests the structure
-    const _result = await fullOrchestrator.execute(
+    const result = await fullOrchestrator.execute(
       ["to", "project"],
       {},
       { "uv-test": "value" },
@@ -364,8 +367,8 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
 
     // Result should have proper structure regardless of success/failure
     assert("ok" in result);
-    if (!_result.ok) {
-      assert("kind" in _result.error);
+    if (!result.ok) {
+      assert("kind" in result.error);
     }
   });
 
@@ -422,9 +425,9 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
       // Error structure should be preserved or properly transformed
       if (scenario.component === "stdinProcessor") {
         // StdinProcessor errors are wrapped
-        const _result = await orchestrator.execute(["to", "project"], { timeout: 1 }, {});
-        if (!_result.ok && _result.error.kind === "StdinReadError") {
-          assertExists(_result.error.error);
+        const stdinResult = await orchestrator.execute(["to", "project"], { timeout: 1 }, {});
+        if (!stdinResult.ok && stdinResult.error.kind === "StdinReadError") {
+          assertExists(stdinResult.error.error);
         }
       }
     }

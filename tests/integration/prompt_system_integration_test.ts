@@ -31,7 +31,7 @@ import type { ProcessedVariables } from "../../lib/cli/processors/two_params_var
 import { error, ok } from "../../lib/types/result.ts";
 import { join } from "@std/path";
 
-const _logger = new BreakdownLogger("prompt-system-integration");
+const logger = new BreakdownLogger("prompt-system-integration");
 
 /**
  * Mock implementation of PromptVariablesProvider for testing
@@ -137,7 +137,7 @@ Schema: {{schema_file}}
     try {
       await Deno.remove(tempDir, { recursive: true });
     } catch (err) {
-      _logger.warn("Failed to cleanup temp directory", { error: err });
+      logger.warn("Failed to cleanup temp directory", { error: err });
     }
   };
 
@@ -151,7 +151,7 @@ Schema: {{schema_file}}
  * ensuring proper parameter passing and variable resolution.
  */
 Deno.test("Integration: PromptAdapter × VariablesFactory basic coordination", async () => {
-  _logger.debug("Testing PromptAdapter × VariablesFactory basic coordination");
+  logger.debug("Testing PromptAdapter × VariablesFactory basic coordination");
 
   const { promptFile, inputFile, schemaFile, cleanup } = await createTempTestFiles();
 
@@ -183,7 +183,7 @@ Deno.test("Integration: PromptAdapter × VariablesFactory basic coordination", a
       "Custom variables should be preserved",
     );
 
-    _logger.debug("PromptAdapter × VariablesFactory coordination test passed", { params });
+    logger.debug("PromptAdapter × VariablesFactory coordination test passed", { params });
   } finally {
     await cleanup();
   }
@@ -196,7 +196,7 @@ Deno.test("Integration: PromptAdapter × VariablesFactory basic coordination", a
  * covering the factory creation, validation, and prompt generation flow.
  */
 Deno.test("Integration: VariablesFactory × TwoParamsPromptGenerator coordination", async () => {
-  _logger.debug("Testing VariablesFactory × TwoParamsPromptGenerator coordination");
+  logger.debug("Testing VariablesFactory × TwoParamsPromptGenerator coordination");
 
   const { promptFile, inputFile, cleanup } = await createTempTestFiles();
 
@@ -210,8 +210,8 @@ Deno.test("Integration: VariablesFactory × TwoParamsPromptGenerator coordinatio
 
     // Create validated parameters
     const validatedParams: ValidatedParams = {
-      demonstrativeType: "to" as unknown, // Mock type for testing
-      layerType: "project" as unknown, // Mock type for testing
+      demonstrativeType: "to" as any, // Mock type for testing
+      layerType: "project" as any, // Mock type for testing
     };
 
     // Create CLI options
@@ -250,16 +250,16 @@ Deno.test("Integration: VariablesFactory × TwoParamsPromptGenerator coordinatio
       processedVariables,
     );
 
-    if (!_result.ok) {
-      _logger.warn("Generator coordination test failed", { error: _result.error });
+    if (!result.ok) {
+      logger.warn("Generator coordination test failed", { error: result.error });
       // For now, accept that the generation might fail due to missing templates
       // but ensure the coordination structure is correct
-      assertExists(_result.error, "Error should be structured");
-      assertExists(_result.error.kind, "Error should have a kind");
+      assertExists(result.error, "Error should be structured");
+      assertExists(result.error.kind, "Error should have a kind");
     } else {
       assertExists(result.data, "Generated prompt should exist");
-      assertEquals(typeof _result.data, "string", "Generated prompt should be a string");
-      _logger.debug("Generator coordination test passed", { promptLength: _result.data.length });
+      assertEquals(typeof result.data, "string", "Generated prompt should be a string");
+      logger.debug("Generator coordination test passed", { promptLength: result.data.length });
     }
 
     // Cleanup config temp dir
@@ -281,14 +281,14 @@ Deno.test("Integration: VariablesFactory × TwoParamsPromptGenerator coordinatio
  * in a realistic end-to-end scenario.
  */
 Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
-  _logger.debug("Testing complete Prompt System End-to-End flow");
+  logger.debug("Testing complete Prompt System End-to-End flow");
 
   const { promptFile, inputFile, schemaFile, cleanup } = await createTempTestFiles();
 
   try {
     // Step 1: PromptAdapter setup and validation
     const customVariables = {
-      project_name: "test_project",
+      projectname: "test_project",
       author: "integration_test",
       version: "1.0.0",
     };
@@ -324,7 +324,7 @@ Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
       assertEquals(Array.isArray(builtVariables.data), true, "Should return array of variables");
       assertEquals(builtVariables.data.length > 0, true, "Should have variables");
     } else {
-      _logger.warn("Variable building failed", { errors: builtVariables.error });
+      logger.warn("Variable building failed", { errors: builtVariables.error });
     }
 
     // Step 3: Prepare for generator integration
@@ -335,8 +335,8 @@ Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
     };
 
     const validatedParams: ValidatedParams = {
-      demonstrativeType: "summary" as unknown,
-      layerType: "issue" as unknown,
+      demonstrativeType: "summary" as any,
+      layerType: "issue" as any,
     };
 
     const options = {
@@ -363,27 +363,27 @@ Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
     );
 
     // Verify the integration structure (even if generation fails due to missing templates)
-    if (!_result.ok) {
-      _logger.debug("End-to-end generation failed as expected", {
-        error: _result.error,
+    if (!result.ok) {
+      logger.debug("End-to-end generation failed as expected", {
+        error: result.error,
         reason: "Missing template files in test environment",
       });
       // Verify error structure is correct
-      assertExists(_result.error.kind, "Error should have structured kind");
-      assertExists(_result.error, "Error should provide detailed information");
+      assertExists(result.error.kind, "Error should have structured kind");
+      assertExists(result.error, "Error should provide detailed information");
     } else {
       // If generation succeeds, verify the output
       assertExists(result.data, "Generated content should exist");
-      assertEquals(typeof _result.data, "string", "Generated content should be string");
-      _logger.debug("End-to-end generation succeeded", {
-        contentLength: _result.data.length,
-        preview: _result.data.substring(0, 100),
+      assertEquals(typeof result.data, "string", "Generated content should be string");
+      logger.debug("End-to-end generation succeeded", {
+        contentLength: result.data.length,
+        preview: result.data.substring(0, 100),
       });
     }
 
     // Get variables as record for logging
     const variableRecord = builder.toRecord();
-    _logger.debug("Complete End-to-End flow test completed", {
+    logger.debug("Complete End-to-End flow test completed", {
       pathValidation: pathValidation.success,
       variablesBuilt: builtVariables.ok ? builtVariables.data.length : 0,
       variableRecord: Object.keys(variableRecord).length,
@@ -407,7 +407,7 @@ Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
  * the integrated prompt system components.
  */
 Deno.test("Integration: Error propagation across Prompt System components", async () => {
-  _logger.debug("Testing error propagation across Prompt System components");
+  logger.debug("Testing error propagation across Prompt System components");
 
   // Test 1: Invalid file paths through PromptAdapter
   const invalidProvider = new MockPromptVariablesProvider(
@@ -429,11 +429,11 @@ Deno.test("Integration: Error propagation across Prompt System components", asyn
   // Test 2: Invalid configuration through TwoParamsPromptGenerator
   const generator = new TwoParamsPromptGenerator();
   const validatedParams: ValidatedParams = {
-    demonstrativeType: "to" as unknown,
-    layerType: "project" as unknown,
+    demonstrativeType: "to" as any,
+    layerType: "project" as any,
   };
 
-  const invalidConfig = null as unknown; // Invalid configuration
+  const invalidConfig = null as any; // Invalid configuration
   const options = {};
   const variables: ProcessedVariables = {
     standardVariables: {},
@@ -463,7 +463,7 @@ Deno.test("Integration: Error propagation across Prompt System components", asyn
     );
   }
 
-  _logger.debug("Error propagation test completed", {
+  logger.debug("Error propagation test completed", {
     pathErrors: pathValidation.errors.length,
     configError: !configResult.ok ? configResult.error.kind : "none",
   });
@@ -476,14 +476,14 @@ Deno.test("Integration: Error propagation across Prompt System components", asyn
  * Raw inputs → VariablesBuilder → ProcessedVariables → PromptGeneration
  */
 Deno.test("Integration: Variable transformation flow through system", async () => {
-  _logger.debug("Testing variable transformation flow");
+  logger.debug("Testing variable transformation flow");
 
   const { promptFile, inputFile, schemaFile, cleanup } = await createTempTestFiles();
 
   try {
     // Step 1: Start with raw variables
     const rawVariables = {
-      user_name: "test_user",
+      username: "test_user",
       project_type: "web_app",
       technology: "typescript",
     };
@@ -562,7 +562,7 @@ Deno.test("Integration: Variable transformation flow through system", async () =
       "Variables should be preserved through provider",
     );
 
-    _logger.debug("Variable transformation flow completed", {
+    logger.debug("Variable transformation flow completed", {
       rawVariablesCount: Object.keys(rawVariables).length,
       standardVariablesCount: Object.keys(builder.toRecord()).filter((k) =>
         !k.startsWith("uv-")
@@ -586,7 +586,7 @@ Deno.test("Integration: Variable transformation flow through system", async () =
  * of the integrated prompt system components.
  */
 Deno.test("Integration: Performance and caching behavior across components", async () => {
-  _logger.debug("Testing performance and caching behavior");
+  logger.debug("Testing performance and caching behavior");
 
   const { promptFile, inputFile, schemaFile, cleanup } = await createTempTestFiles();
 
@@ -638,7 +638,7 @@ Deno.test("Integration: Performance and caching behavior across components", asy
     );
     assertEquals(builderTime < 100, true, "Variable building should be fast (< 100ms)");
 
-    _logger.debug("Performance test completed", {
+    logger.debug("Performance test completed", {
       validationTime: totalTime,
       builderTime: builderTime,
       variablesCount: Object.keys(builder.toRecord()).filter((k) => k.startsWith("uv-")).length,
@@ -655,7 +655,7 @@ Deno.test("Integration: Performance and caching behavior across components", asy
  * nested variables, and realistic prompt generation requirements.
  */
 Deno.test("Integration: Complex scenario with multiple file types and nested variables", async () => {
-  _logger.debug("Testing complex scenario with multiple file types");
+  logger.debug("Testing complex scenario with multiple file types");
 
   // Create a more complex test environment
   const tempDir = await Deno.makeTempDir({ prefix: "complex_prompt_test_" });
@@ -786,7 +786,7 @@ This is a complex input document for testing the prompt system integration.
 
     // Create complex variables
     const complexVariables = {
-      project_name: "Complex Integration Test",
+      projectname: "Complex Integration Test",
       project_type: "prompt_system_test",
       author: "Integration Test Suite",
       version: "2.0.0",
@@ -851,7 +851,7 @@ This is a complex input document for testing the prompt system integration.
       "JSON string variables should be preserved",
     );
 
-    _logger.debug("Complex scenario test completed", {
+    logger.debug("Complex scenario test completed", {
       standardVarsCount: Object.keys(builder.toRecord()).filter((k) => !k.startsWith("uv-")).length,
       customVarsCount: Object.keys(builder.toRecord()).filter((k) => k.startsWith("uv-")).length,
       filePathVarsCount: Object.keys(builder.toRecord()).filter((k) => k.includes("file")).length,
@@ -862,7 +862,7 @@ This is a complex input document for testing the prompt system integration.
     try {
       await Deno.remove(tempDir, { recursive: true });
     } catch (err) {
-      _logger.warn("Failed to cleanup complex test directory", { error: err });
+      logger.warn("Failed to cleanup complex test directory", { error: err });
     }
   }
 });

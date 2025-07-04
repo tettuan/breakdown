@@ -13,12 +13,12 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsStdinProcessor } from "./two_params_stdin_processor.ts";
 import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
 
-const _logger = new BreakdownLogger("architecture-stdin-processor");
+const _logger = new _BreakdownLogger("architecture-stdin-processor");
 
 describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
   it("should handle all Result states without default case", async () => {
@@ -29,20 +29,20 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
       stdin: { timeout_ms: 1000 },
     };
 
-    const _result = await _processor.process(config, {});
+    const result = await _processor.process(config, {});
 
-    const handled = false;
+    let handled = false;
 
     // Handle all Result states without default case
-    switch (_result.ok) {
+    switch (result.ok) {
       case true:
-        assertExists(_result.data);
-        assertEquals(typeof _result.data, "string");
+        assertExists(result.data);
+        assertEquals(typeof result.data, "string");
         assertEquals(typeof (result as { error?: unknown }).error, "undefined");
         handled = true;
         break;
       case false:
-        assertExists(_result.error);
+        assertExists(result.error);
         assertEquals(typeof (result as { data?: unknown }).data, "undefined");
         handled = true;
         break;
@@ -57,14 +57,14 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     const _processor = new TwoParamsStdinProcessor();
 
     // Force error by using invalid config
-    const _result = await _processor.process({} as BreakdownConfigCompatible, {
+    const result = await _processor.process({} as BreakdownConfigCompatible, {
       from: "-",
       skipStdin: true,
     });
 
-    if (!_result.ok) {
-      const error = _result.error;
-      const errorHandled = false;
+    if (!result.ok) {
+      const error = result.error;
+      let errorHandled = false;
 
       // Handle all error kinds without default case
       switch (error.kind) {
@@ -104,24 +104,24 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     ];
 
     for (const options of optionCombinations) {
-      const _result = await _processor.process(config, options);
+      const result = await _processor.process(config, options);
 
-      const resultHandled = false;
+      let resultHandled = false;
 
       // Each combination should produce a valid Result
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
-          assertEquals(typeof _result.data, "string");
+          assertEquals(typeof result.data, "string");
 
           // When skipStdin is true, should always return empty string
           if (options.skipStdin === true) {
-            assertEquals(_result.data, "");
+            assertEquals(result.data, "");
           }
           resultHandled = true;
           break;
         case false:
-          assertExists(_result.error);
-          assertEquals(_result.error.kind, "StdinReadError");
+          assertExists(result.error);
+          assertEquals(result.error.kind, "StdinReadError");
           resultHandled = true;
           break;
       }
@@ -149,18 +149,18 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     ];
 
     for (const state of configStates) {
-      const _result = await _processor.process(state.config as BreakdownConfigCompatible, {});
+      const result = await _processor.process(state.config as BreakdownConfigCompatible, {});
 
-      const stateHandled = false;
+      let stateHandled = false;
 
       // Handle config validation outcomes without default case
       if (state.valid) {
         // Valid configs should produce a Result (success or failure)
-        assertEquals(typeof _result.ok, "boolean");
+        assertEquals(typeof result.ok, "boolean");
         stateHandled = true;
       } else {
         // Invalid configs should still produce a Result, not throw
-        assertEquals(typeof _result.ok, "boolean");
+        assertEquals(typeof result.ok, "boolean");
         stateHandled = true;
       }
 
@@ -185,16 +185,16 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     ];
 
     for (const { options } of cleanupScenarios) {
-      const _result = await _processor.process(config, options);
+      const result = await _processor.process(config, options);
 
       // All scenarios should complete with proper cleanup
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Verify no hanging resources (indicated by successful completion)
-      if (_result.ok) {
-        assertEquals(typeof _result.data, "string");
+      if (result.ok) {
+        assertEquals(typeof result.data, "string");
       } else {
-        assertEquals(_result.error.kind, "StdinReadError");
+        assertEquals(result.error.kind, "StdinReadError");
       }
     }
   });
@@ -216,18 +216,18 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
         stdin: { timeout_ms: scenario.timeout_ms as number | undefined },
       };
 
-      const _result = await _processor.process(config, { skipStdin: true });
+      const result = await _processor.process(config, { skipStdin: true });
 
-      const timeoutHandled = false;
+      let timeoutHandled = false;
 
       // All timeout scenarios should produce valid Results
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
-          assertEquals(_result.data, ""); // skipStdin always returns empty
+          assertEquals(result.data, ""); // skipStdin always returns empty
           timeoutHandled = true;
           break;
         case false:
-          assertEquals(_result.error.kind, "StdinReadError");
+          assertEquals(result.error.kind, "StdinReadError");
           timeoutHandled = true;
           break;
       }
@@ -293,18 +293,18 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     ];
 
     for (const state of availabilityStates) {
-      const _result = await _processor.process(config, { ...state, skipStdin: true });
+      const result = await _processor.process(config, { ...state, skipStdin: true });
 
-      const availabilityHandled = false;
+      let availabilityHandled = false;
 
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
           // With skipStdin, should always return empty regardless of flags
-          assertEquals(_result.data, "");
+          assertEquals(result.data, "");
           availabilityHandled = true;
           break;
         case false:
-          assertExists(_result.error);
+          assertExists(result.error);
           availabilityHandled = true;
           break;
       }
@@ -331,15 +331,15 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
     ];
 
     for (const { config, options } of errorScenarios) {
-      const _result = await _processor.process(config as BreakdownConfigCompatible, options);
+      const result = await _processor.process(config as BreakdownConfigCompatible, options);
 
       // All errors should be contained in Result type
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Should not throw, errors should be in Result.error
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "StdinReadError");
-        assertExists(_result.error.message);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "StdinReadError");
+        assertExists(result.error.message);
       }
     }
   });
@@ -367,7 +367,7 @@ describe("TwoParamsStdinProcessor Architecture - Totality Principle", () => {
       message: "Test error",
     };
 
-    const _result = handleStdinError(testError);
-    assertEquals(_result, "STDIN read failed: Test error");
+    const result = handleStdinError(testError);
+    assertEquals(result, "STDIN read failed: Test error");
   });
 });

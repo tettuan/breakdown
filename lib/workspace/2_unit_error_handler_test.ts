@@ -1,19 +1,19 @@
 import { assertEquals } from "@std/assert";
 import { WorkspaceErrorHandlerImpl } from "./error_handler.ts";
 import { WorkspaceError, WorkspaceInitError } from "./errors.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspaceErrorHandler", async (t) => {
   // Pre-processing and Preparing Part
   const _handler = new WorkspaceErrorHandlerImpl();
-  const _logger = new BreakdownLogger();
+  const _logger = new _BreakdownLogger();
 
   // Main Test
   await t.step("should handle workspace-specific errors", () => {
     _logger.debug("Testing workspace error handling");
     const error = new WorkspaceInitError("Initialization failed");
     const _output = captureConsoleOutput(() => {
-      handler.handleError(error, "INIT");
+      _handler.handleError(error, "INIT");
     });
     assertEquals(_output, "[INIT] WorkspaceInitError: Initialization failed\n");
   });
@@ -22,7 +22,7 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
     _logger.debug("Testing unexpected error handling");
     const error = new Error("Unexpected error");
     const _output = captureConsoleOutput(() => {
-      handler.handleError(error, "UNKNOWN");
+      _handler.handleError(error, "UNKNOWN");
     });
     assertEquals(_output, "[UNKNOWN] Unexpected error: Unexpected error\n");
   });
@@ -32,7 +32,7 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
     const error = new WorkspaceError("Test error", "TEST_ERROR");
     const context = { test: "value" };
     const _output = captureConsoleOutput(() => {
-      handler.logError(error, context);
+      _handler.logError(error, context);
     });
     const logged = JSON.parse(_output);
     assertEquals(logged.name, "WorkspaceError");
@@ -43,15 +43,15 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
 
 // Helper function to capture console output
 function captureConsoleOutput(fn: () => void): string {
-  const testLogger = new BreakdownLogger();
+  const testLogger = new _BreakdownLogger();
   const originalConsoleError = console.error;
-  const _output = "";
+  let _output = "";
   console.error = (...args: unknown[]) => {
-    output += args.join(" ") + "\n";
+    _output += args.join(" ") + "\n";
     // Also log with BreakdownLogger for consistency
     testLogger.warn("Console error captured", { args });
   };
   fn();
   console.error = originalConsoleError;
-  return output;
+  return _output;
 }

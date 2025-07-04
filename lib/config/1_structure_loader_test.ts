@@ -25,12 +25,12 @@ describe("Structure: loadConfig Function Contract", () => {
     assertEquals(loadConfig.length, 1, "loadConfig should accept one parameter");
 
     // Function returns Promise<CustomConfig> - test with immediate catch to avoid uncaught error
-    const _result = loadConfig("nonexistent.yml").catch(() => ({}));
-    assertExists(_result.then, "loadConfig should return a Promise");
-    assertExists(_result.catch, "loadConfig should return a rejectable Promise");
+    const result = loadConfig("nonexistent.yml").catch(() => ({}));
+    assertExists(result.then, "loadConfig should return a Promise");
+    assertExists(result.catch, "loadConfig should return a rejectable Promise");
 
     // Wait for the promise to resolve to avoid dangling promise
-    await _result;
+    await result;
 
     _logger.debug("Function signature verification completed");
   });

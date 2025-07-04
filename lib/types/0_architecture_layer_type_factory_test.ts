@@ -18,13 +18,13 @@ import {
   type LayerTypeResult,
 } from "./layer_type_factory.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
-const _logger = new BreakdownLogger("layer-type-factory-architecture");
+const logger = new BreakdownLogger("layer-type-factory-architecture");
 
 describe("LayerTypeFactory - Totality Principle Architecture", () => {
   it("should enforce Totality principle through Result types", () => {
-    _logger.debug("Verifying Totality principle implementation");
+    logger.debug("Verifying Totality principle implementation");
 
     // All factory methods should return Result types, never throw
     const testCases: Array<() => LayerTypeResult<any>> = [
@@ -33,7 +33,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
       () => LayerTypeFactory.fromString(123),
       () => LayerTypeFactory.fromString(""),
       () =>
-        LayerTypeFactory.fromTwoParamsResult({
+        LayerTypeFactory.fromTwoParams_Result({
           type: "two",
           demonstrativeType: "to",
           layerType: "project",
@@ -68,7 +68,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
   });
 
   it("should provide exhaustive error handling", () => {
-    _logger.debug("Testing exhaustive error handling");
+    logger.debug("Testing exhaustive error handling");
 
     // All error kinds should be handled exhaustively
     const errorCases: Array<[unknown, string]> = [
@@ -83,35 +83,35 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
     ];
 
     errorCases.forEach(([input, expectedKind]) => {
-      const _result = LayerTypeFactory.fromString(input);
-      assertEquals(_result.ok, false);
+      const result = LayerTypeFactory.fromString(input);
+      assertEquals(result.ok, false);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, expectedKind);
+      if (!result.ok) {
+        assertEquals(result.error.kind, expectedKind);
 
         // Each error type should provide appropriate context
-        switch (_result.error.kind) {
+        switch (result.error.kind) {
           case "NullInput":
             // No additional context needed
             break;
           case "EmptyInput":
-            assertExists(_result.error.input);
+            assertExists(result.error.input);
             break;
           case "InvalidInput":
-            assertExists(_result.error.input);
-            assertExists(_result.error.actualType);
+            assertExists(result.error.input);
+            assertExists(result.error.actualType);
             break;
           case "UnknownLayer":
-            assertExists(_result.error.input);
-            assertExists(_result.error.suggestions);
+            assertExists(result.error.input);
+            assertExists(result.error.suggestions);
             break;
           case "ValidationFailed":
-            assertExists(_result.error.input);
-            assertExists(_result.error.pattern);
+            assertExists(result.error.input);
+            assertExists(result.error.pattern);
             break;
           default:
             // TypeScript exhaustiveness check
-            const _exhaustive: never = _result.error;
+            const _exhaustive: never = result.error;
             throw new Error(`Unhandled error kind: ${(_exhaustive as unknown).kind}`);
         }
       }
@@ -119,41 +119,41 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
   });
 
   it("should follow Smart Constructor pattern", () => {
-    _logger.debug("Verifying Smart Constructor pattern");
+    logger.debug("Verifying Smart Constructor pattern");
 
     // LayerType should only be constructible through factory
-    const _result = LayerTypeFactory.fromString("project");
-    assertEquals(_result.ok, true);
+    const result = LayerTypeFactory.fromString("project");
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
+    if (result.ok) {
       // Should produce valid LayerType instance
-      assert(_result.data instanceof LayerType);
+      assert(result.data instanceof LayerType);
 
       // LayerType constructor should not be directly accessible
       // (This is enforced by TypeScript's private constructor)
       assertEquals(typeof (LayerType as unknown).new, "undefined");
 
       // But factory methods should work
-      assertEquals(_result.data.getValue(), "project");
+      assertEquals(result.data.getValue(), "project");
     }
   });
 });
 
 describe("LayerTypeFactory - Dependency Architecture", () => {
   it("should maintain proper dependency direction", () => {
-    _logger.debug("Testing dependency direction");
+    logger.debug("Testing dependency direction");
 
     // LayerTypeFactory should depend on LayerType, not vice versa
     // This is verified by import structure
 
     // Factory should create LayerType instances
-    const _result = LayerTypeFactory.fromString("issue");
-    if (_result.ok) {
-      assert(_result.data instanceof LayerType);
+    const result = LayerTypeFactory.fromString("issue");
+    if (result.ok) {
+      assert(result.data instanceof LayerType);
     }
 
     // LayerType should not have references to factory
-    const layerTypeProto = Object.getPrototypeOf(_result.ok ? _result.data : {});
+    const layerTypeProto = Object.getPrototypeOf(result.ok ? result.data : {});
     const layerTypeMethods = Object.getOwnPropertyNames(layerTypeProto);
 
     layerTypeMethods.forEach((method) => {
@@ -165,7 +165,7 @@ describe("LayerTypeFactory - Dependency Architecture", () => {
   });
 
   it("should isolate pattern validation concerns", () => {
-    _logger.debug("Testing pattern validation isolation");
+    logger.debug("Testing pattern validation isolation");
 
     // Pattern validation should be delegated to TwoParamsLayerTypePattern
     const pattern = TwoParamsLayerTypePattern.create("project|issue");
@@ -185,11 +185,11 @@ describe("LayerTypeFactory - Dependency Architecture", () => {
     }
   });
 
-  it("should handle TwoParamsResult integration properly", () => {
-    _logger.debug("Testing TwoParamsResult integration");
+  it("should handle TwoParams_Result integration properly", () => {
+    logger.debug("Testing TwoParams_Result integration");
 
-    // Should accept valid TwoParamsResult
-    const validResult: TwoParamsResult = {
+    // Should accept valid TwoParams_Result
+    const validResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "bugs",
@@ -197,14 +197,14 @@ describe("LayerTypeFactory - Dependency Architecture", () => {
       options: { verbose: true },
     };
 
-    const _result = LayerTypeFactory.fromTwoParamsResult(validResult);
-    assertEquals(_result.ok, true);
+    const result = LayerTypeFactory.fromTwoParams_Result(validResult);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "bugs");
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "bugs");
 
       // Should preserve original result data
-      const originalResult = _result.data.originalResult;
+      const originalResult = result.data.originalResult;
       assertExists(originalResult);
       assertEquals(originalResult.layerType, "bugs");
       assertEquals(originalResult.demonstrativeType, "to");
@@ -214,7 +214,7 @@ describe("LayerTypeFactory - Dependency Architecture", () => {
 
 describe("LayerTypeFactory - Performance Architecture", () => {
   it("should minimize object allocations", () => {
-    _logger.debug("Testing object allocation efficiency");
+    logger.debug("Testing object allocation efficiency");
 
     // Multiple calls with same input should be efficient
     const iterations = 100;
@@ -232,7 +232,7 @@ describe("LayerTypeFactory - Performance Architecture", () => {
   });
 
   it("should handle known layers efficiently", () => {
-    _logger.debug("Testing known layers lookup efficiency");
+    logger.debug("Testing known layers lookup efficiency");
 
     // getKnownLayers should return cached/constant data
     const layers1 = LayerTypeFactory.getKnownLayers();
@@ -259,7 +259,7 @@ describe("LayerTypeFactory - Performance Architecture", () => {
 
 describe("LayerTypeFactory - Extension Architecture", () => {
   it("should support pattern-based extensibility", () => {
-    _logger.debug("Testing pattern-based extensibility");
+    logger.debug("Testing pattern-based extensibility");
 
     // Factory should work with custom patterns
     const customPattern = TwoParamsLayerTypePattern.create("epic|story|subtask");
@@ -278,22 +278,22 @@ describe("LayerTypeFactory - Extension Architecture", () => {
   });
 
   it("should maintain backward compatibility", () => {
-    _logger.debug("Testing backward compatibility");
+    logger.debug("Testing backward compatibility");
 
     // All standard layers should work without patterns
     const standardLayers = ["project", "issue", "task", "bugs", "temp"];
 
     standardLayers.forEach((layer) => {
-      const _result = LayerTypeFactory.fromString(layer);
-      assertEquals(_result.ok, true, `Standard layer '${layer}' should be valid`);
+      const result = LayerTypeFactory.fromString(layer);
+      assertEquals(result.ok, true, `Standard layer '${layer}' should be valid`);
 
-      if (_result.ok) {
-        assertEquals(_result.data.getValue(), layer);
+      if (result.ok) {
+        assertEquals(result.data.getValue(), layer);
       }
     });
 
-    // Should also work with TwoParamsResult
-    const legacyResult: TwoParamsResult = {
+    // Should also work with TwoParams_Result
+    const legacyResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -301,7 +301,7 @@ describe("LayerTypeFactory - Extension Architecture", () => {
       options: {},
     };
 
-    const _result = LayerTypeFactory.fromTwoParamsResult(legacyResult);
-    assertEquals(_result.ok, true);
+    const result = LayerTypeFactory.fromTwoParams_Result(legacyResult);
+    assertEquals(result.ok, true);
   });
 });

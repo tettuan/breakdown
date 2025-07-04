@@ -2,7 +2,7 @@
  * @fileoverview ParameterValidator for validating parsed parameters
  *
  * This module provides comprehensive parameter validation following the Totality principle.
- * It validates parameters from BreakdownParams (TwoParamsResult, OneParamsResult, ZeroParamsResult)
+ * It validates parameters from BreakdownParams (TwoParams_Result, OneParamsResult, ZeroParamsResult)
  * and produces ValidatedParams with full type safety and Result-based error handling.
  *
  * @module validator/parameter_validator
@@ -12,7 +12,7 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import { DirectiveType } from "../types/directive_type.ts";
 import { LayerType } from "../types/layer_type.ts";
-import type { OneParamsResult, TwoParamsResult, ZeroParamsResult } from "../deps.ts";
+import type { TwoParams_Result, OneParamsResult, ZeroParamsResult } from "../deps.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 
 /**
@@ -42,7 +42,7 @@ export type ValidatedOptions = {
  */
 export type ValidationMetadata = {
   validatedAt: Date;
-  source: "TwoParamsResult" | "OneParamsResult" | "ZeroParamsResult";
+  source: "TwoParams_Result" | "OneParamsResult" | "ZeroParamsResult";
   profileName?: string;
 };
 
@@ -90,14 +90,14 @@ export class ParameterValidator {
   ) {}
 
   /**
-   * Validate TwoParamsResult
+   * Validate TwoParams_Result
    *
    * @param result - Parsed two parameters result
    * @returns Result containing ValidatedParams or ValidationError
    */
-  validateTwoParams(result: TwoParamsResult): Result<ValidatedParams, ValidationError> {
+  validateTwoParams(result: TwoParams_Result): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (_result.type !== "two") {
+    if (result.type !== "two") {
       return error({
         kind: "InvalidParamsType",
         expected: "two",
@@ -110,7 +110,7 @@ export class ParameterValidator {
       return error({
         kind: "MissingRequiredField",
         field: "demonstrativeType",
-        source: "TwoParamsResult",
+        source: "TwoParams_Result",
       });
     }
 
@@ -118,7 +118,7 @@ export class ParameterValidator {
       return error({
         kind: "MissingRequiredField",
         field: "layerType",
-        source: "TwoParamsResult",
+        source: "TwoParams_Result",
       });
     }
 
@@ -161,7 +161,7 @@ export class ParameterValidator {
     // Create metadata
     const metadata: ValidationMetadata = {
       validatedAt: new Date(),
-      source: "TwoParamsResult",
+      source: "TwoParams_Result",
       profileName: this.extractProfileName(result.options),
     };
 
@@ -182,7 +182,7 @@ export class ParameterValidator {
    */
   validateOneParams(result: OneParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (_result.type !== "one") {
+    if (result.type !== "one") {
       return error({
         kind: "InvalidParamsType",
         expected: "one",
@@ -202,7 +202,7 @@ export class ParameterValidator {
 
     // Create default directive and layer for one param case
     // In real implementation, this would involve more complex logic
-    const defaultTwoParams: TwoParamsResult = {
+    const defaultTwoParams: TwoParams_Result = {
       type: "two",
       demonstrativeType: "init", // Default directive for one param
       layerType: result.params[0], // Use the single param as layer
@@ -230,7 +230,7 @@ export class ParameterValidator {
    */
   validateZeroParams(result: ZeroParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
-    if (_result.type !== "zero") {
+    if (result.type !== "zero") {
       return error({
         kind: "InvalidParamsType",
         expected: "zero",
@@ -239,7 +239,7 @@ export class ParameterValidator {
     }
 
     // For zero params, use complete defaults
-    const defaultTwoParams: TwoParamsResult = {
+    const defaultTwoParams: TwoParams_Result = {
       type: "two",
       demonstrativeType: "init", // Default directive
       layerType: "project", // Default layer

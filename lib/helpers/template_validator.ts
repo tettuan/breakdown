@@ -13,7 +13,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 /**
  * Template validation result
  */
-export interface TemplateValidationResult {
+export interface TemplateValidation_Result {
   /** Whether all required templates exist */
   isValid: boolean;
   /** List of missing template files */
@@ -104,14 +104,14 @@ export class TemplateValidator {
   /**
    * Validate all required templates exist
    */
-  async validateTemplates(): Promise<TemplateValidationResult> {
+  async validateTemplates(): Promise<TemplateValidation_Result> {
     const missingTemplates: string[] = [];
     const existingTemplates: string[] = [];
 
     for (const mapping of this.templateMappings) {
       if (!mapping.required) continue;
 
-      const _destinationPath = join(this.projectRoot, mapping.destination);
+      const destinationPath = join(this.projectRoot, mapping.destination);
       const templateExists = await exists(destinationPath);
 
       if (templateExists) {

@@ -8,7 +8,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -25,10 +25,10 @@ import {
   PromptVariablesFactory,
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-  type TwoParamsResult,
-} from "./prompt_variables_factory.ts";
+  type TwoParams_Result,
+} from "./prompt_variables__factory.ts";
 
-const _logger = new BreakdownLogger("totality-compliance");
+const logger = new BreakdownLogger("totality-compliance");
 
 /**
  * Comprehensive pattern provider for testing all scenarios
@@ -61,7 +61,7 @@ class ComprehensivePatternProvider implements TypePatternProvider {
 
 describe("Totality Principle - Exhaustive State Coverage", () => {
   it("should handle all possible TypeCreationError kinds without default case", async () => {
-    _logger.debug("Testing exhaustive TypeCreationError handling");
+    logger.debug("Testing exhaustive TypeCreationError handling");
 
     const provider = new ComprehensivePatternProvider();
     const _factory = new TypeFactory(provider);
@@ -75,7 +75,7 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
 
     // Test exhaustive switch without default
     errors.forEach((error) => {
-      const handled = false;
+      let handled = false;
 
       // This switch should handle all cases without default
       switch (error.kind) {
@@ -84,13 +84,13 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
           handled = true;
           break;
         case "ValidationFailed":
-          assertExists((error as unknown).value);
-          assertExists((error as unknown).pattern);
+          assertExists((error as any).value);
+          assertExists((error as any).pattern);
           handled = true;
           break;
         case "InvalidPattern":
-          assertExists((error as unknown).pattern);
-          assertExists((error as unknown).cause);
+          assertExists((error as any).pattern);
+          assertExists((error as any).cause);
           handled = true;
           break;
       }
@@ -100,19 +100,19 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
   });
 
   it("should handle all directive types without default case", async () => {
-    _logger.debug("Testing exhaustive directive type handling");
+    logger.debug("Testing exhaustive directive type handling");
 
     const provider = new ComprehensivePatternProvider();
     const _factory = new TypeFactory(provider);
     const allDirectives = provider.getAllDirectiveValues();
 
     allDirectives.forEach((directiveValue) => {
-      const _result = _factory.createDirectiveType(directiveValue);
-      assertEquals(_result.ok, true);
+      const result = _factory.createDirectiveType(directiveValue);
+      assertEquals(result.ok, true);
 
-      if (_result.ok) {
-        const directive = _result.data;
-        const handled = false;
+      if (result.ok) {
+        const directive = result.data;
+        let handled = false;
 
         // This switch should handle all known directive types without default
         switch (directive.getValue()) {
@@ -144,19 +144,19 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
   });
 
   it("should handle all layer types without default case", async () => {
-    _logger.debug("Testing exhaustive layer type handling");
+    logger.debug("Testing exhaustive layer type handling");
 
     const provider = new ComprehensivePatternProvider();
     const _factory = new TypeFactory(provider);
     const allLayers = provider.getAllLayerValues();
 
     allLayers.forEach((layerValue) => {
-      const _result = _factory.createLayerType(layerValue);
-      assertEquals(_result.ok, true);
+      const result = _factory.createLayerType(layerValue);
+      assertEquals(result.ok, true);
 
-      if (_result.ok) {
-        const layer = _result.data;
-        const handled = false;
+      if (result.ok) {
+        const layer = result.data;
+        let handled = false;
 
         // This switch should handle all known layer types without default
         switch (layer.getValue()) {
@@ -195,24 +195,24 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
 
 describe("Totality Principle - Result Type Exhaustive Handling", () => {
   it("should handle all TypeCreationResult states without default case", async () => {
-    _logger.debug("Testing exhaustive TypeCreationResult state handling");
+    logger.debug("Testing exhaustive TypeCreationResult state handling");
 
     const provider = new ComprehensivePatternProvider();
     const _factory = new TypeFactory(provider);
 
     // Test success case
     const successResult = _factory.createDirectiveType("to");
-    const successHandled = false;
+    let successHandled = false;
 
     switch (successResult.ok) {
       case true:
         assertExists(successResult.data);
-        assertEquals(typeof (successResult as unknown).error, "undefined");
+        assertEquals(typeof (successResult as any).error, "undefined");
         successHandled = true;
         break;
       case false:
         assertExists(successResult.error);
-        assertEquals(typeof (successResult as unknown).data, "undefined");
+        assertEquals(typeof (successResult as any).data, "undefined");
         break;
     }
 
@@ -220,16 +220,16 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
 
     // Test failure case
     const failureResult = _factory.createDirectiveType("invalid");
-    const failureHandled = false;
+    let failureHandled = false;
 
     switch (failureResult.ok) {
       case true:
         assertExists(failureResult.data);
-        assertEquals(typeof (failureResult as unknown).error, "undefined");
+        assertEquals(typeof (failureResult as any).error, "undefined");
         break;
       case false:
         assertExists(failureResult.error);
-        assertEquals(typeof (failureResult as unknown).data, "undefined");
+        assertEquals(typeof (failureResult as any).data, "undefined");
         failureHandled = true;
         break;
     }
@@ -238,7 +238,7 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
   });
 
   it("should handle pattern availability states without default case", async () => {
-    _logger.debug("Testing exhaustive pattern availability handling");
+    logger.debug("Testing exhaustive pattern availability handling");
 
     // Test all possible availability combinations
     const availabilityCombinations = [
@@ -267,7 +267,7 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
       const testFactory = new TypeFactory(testProvider);
       const availability = testFactory.getPatternAvailability();
 
-      const handled = false;
+      let handled = false;
 
       // Handle all combinations without default
       if (availability.directive && availability.layer) {
@@ -295,7 +295,7 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
 
 describe("Totality Principle - Error Format Exhaustive Handling", () => {
   it("should handle all error format types without default case", async () => {
-    _logger.debug("Testing exhaustive error format handling");
+    logger.debug("Testing exhaustive error format handling");
 
     const provider = new ComprehensivePatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -317,7 +317,7 @@ describe("Totality Principle - Error Format Exhaustive Handling", () => {
         const _factory = await TotalityPromptVariablesFactory.create(params);
         const format = _factory.errorFormat;
 
-        const handled = false;
+        let handled = false;
 
         // Handle all error formats without default
         switch (format) {
@@ -343,7 +343,7 @@ describe("Totality Principle - Error Format Exhaustive Handling", () => {
 
 describe("Totality Principle - Configuration State Exhaustive Handling", () => {
   it("should handle all configuration validation states without default case", async () => {
-    _logger.debug("Testing exhaustive configuration validation handling");
+    logger.debug("Testing exhaustive configuration validation handling");
 
     const configStates = [
       { hasPromptDir: true, hasSchemaDir: true, valid: true },
@@ -353,16 +353,16 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
     ];
 
     configStates.forEach((state) => {
-      const _config = {
+      const config = {
         app_prompt: state.hasPromptDir ? { base_dir: "prompts" } : {},
         app_schema: state.hasSchemaDir ? { base_dir: "schemas" } : {},
       };
 
       // Validate configuration state
-      const promptDirExists = !!_config.app_prompt?.base_dir;
-      const schemaDirExists = !!_config.app_schema?.base_dir;
+      const promptDirExists = !!config.app_prompt?.base_dir;
+      const schemaDirExists = !!config.app_schema?.base_dir;
 
-      const handled = false;
+      let handled = false;
 
       // Handle all configuration states without default
       if (promptDirExists && schemaDirExists) {
@@ -388,7 +388,7 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
   });
 
   it("should handle directory validation states without default case", async () => {
-    _logger.debug("Testing exhaustive directory validation handling");
+    logger.debug("Testing exhaustive directory validation handling");
 
     const provider = new ComprehensivePatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -407,7 +407,7 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
       const hasValidBaseDir = _factory.hasValidBaseDir();
       const baseDirError = _factory.getBaseDirError();
 
-      const handled = false;
+      let handled = false;
 
       // Handle base directory validation states without default
       switch (hasValidBaseDir) {
@@ -428,7 +428,7 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
 
 describe("Totality Principle - Factory State Machine Coverage", () => {
   it("should handle all _factory creation states without default case", async () => {
-    _logger.debug("Testing exhaustive _factory creation state handling");
+    logger.debug("Testing exhaustive _factory creation state handling");
 
     const provider = new ComprehensivePatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -443,20 +443,20 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
     ];
 
     for (const [directiveValue, layerValue] of validCombinations) {
-      const _result = typeFactory.createBothTypes(directiveValue, layerValue);
+      const result = typeFactory.createBothTypes(directiveValue, layerValue);
 
-      const handled = false;
+      let handled = false;
 
       // Handle result states without default
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
           assertExists(result.data);
           assertExists(result.data.directive);
           assertExists(result.data.layer);
 
           const params: TotalityPromptCliParams = {
-            directive: _result.data.directive,
-            layer: _result.data.layer,
+            directive: result.data.directive,
+            layer: result.data.layer,
             options: {},
           };
 
@@ -465,7 +465,7 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
           handled = true;
           break;
         case false:
-          assertExists(_result.error);
+          assertExists(result.error);
           handled = true;
           break;
       }
@@ -479,17 +479,17 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
   });
 
   it("should enforce compile-time exhaustiveness checking", async () => {
-    _logger.debug("Testing compile-time exhaustiveness enforcement");
+    logger.debug("Testing compile-time exhaustiveness enforcement");
 
     // This test documents that our switch statements are exhaustive
     // by ensuring TypeScript compiler would catch missing cases
 
     const provider = new ComprehensivePatternProvider();
     const _factory = new TypeFactory(provider);
-    const _result = _factory.createDirectiveType("to");
+    const result = _factory.createDirectiveType("to");
 
-    if (_result.ok) {
-      const directive = _result.data;
+    if (result.ok) {
+      const directive = result.data;
 
       // This function should handle all DirectiveType values
       function handleDirective(d: DirectiveType): string {

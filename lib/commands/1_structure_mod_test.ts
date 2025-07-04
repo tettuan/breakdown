@@ -22,11 +22,11 @@ import {
   initWorkspace,
 } from "./mod.ts";
 
-const _logger = new BreakdownLogger("mod-structure");
+const logger = new BreakdownLogger("mod-structure");
 
 describe("Structure: initWorkspace Implementation", async () => {
   it("should handle parameter transformation correctly", async () => {
-    _logger.debug("Testing initWorkspace parameter transformation");
+    logger.debug("Testing initWorkspace parameter transformation");
 
     const functionString = initWorkspace.toString();
 
@@ -61,11 +61,11 @@ describe("Structure: initWorkspace Implementation", async () => {
       "Should pass schemaBaseDir to Workspace",
     );
 
-    _logger.debug("Parameter transformation verification completed");
+    logger.debug("Parameter transformation verification completed");
   });
 
   it("should structure default value handling", async () => {
-    _logger.debug("Testing default value handling structure");
+    logger.debug("Testing default value handling structure");
 
     const functionString = initWorkspace.toString();
 
@@ -88,11 +88,11 @@ describe("Structure: initWorkspace Implementation", async () => {
       "Should use logical operators for default values",
     );
 
-    _logger.debug("Default value handling structure verified");
+    logger.debug("Default value handling structure verified");
   });
 
   it("should implement proper async flow", async () => {
-    _logger.debug("Testing async flow implementation");
+    logger.debug("Testing async flow implementation");
 
     const functionString = initWorkspace.toString();
 
@@ -122,11 +122,11 @@ describe("Structure: initWorkspace Implementation", async () => {
       "Should return failure result on error",
     );
 
-    _logger.debug("Async flow implementation verified");
+    logger.debug("Async flow implementation verified");
   });
 
   it("should structure success and error response patterns", async () => {
-    _logger.debug("Testing response structure patterns");
+    logger.debug("Testing response structure patterns");
 
     const functionString = initWorkspace.toString();
 
@@ -154,13 +154,13 @@ describe("Structure: initWorkspace Implementation", async () => {
       "Should have descriptive error message",
     );
 
-    _logger.debug("Response structure patterns verified");
+    logger.debug("Response structure patterns verified");
   });
 });
 
 describe("Structure: generateWithPrompt Implementation", async () => {
   it("should delegate to internal processing correctly", async () => {
-    _logger.debug("Testing delegation structure");
+    logger.debug("Testing delegation structure");
 
     const functionString = generateWithPrompt.toString();
 
@@ -205,11 +205,11 @@ describe("Structure: generateWithPrompt Implementation", async () => {
       "Should await runPromptProcessing result",
     );
 
-    _logger.debug("Delegation structure verification completed");
+    logger.debug("Delegation structure verification completed");
   });
 
   it("should handle default parameters appropriately", async () => {
-    _logger.debug("Testing default parameter handling");
+    logger.debug("Testing default parameter handling");
 
     const functionString = generateWithPrompt.toString();
 
@@ -227,11 +227,11 @@ describe("Structure: generateWithPrompt Implementation", async () => {
       "Options parameter should be present",
     );
 
-    _logger.debug("Default parameter handling verified");
+    logger.debug("Default parameter handling verified");
   });
 
   it("should maintain parameter order consistency", async () => {
-    _logger.debug("Testing parameter order consistency");
+    logger.debug("Testing parameter order consistency");
 
     // Function signature should match expected order
     assertEquals(generateWithPrompt.length, 3, "Should have 3 required parameters");
@@ -251,13 +251,13 @@ describe("Structure: generateWithPrompt Implementation", async () => {
       "Parameters should appear in declaration order",
     );
 
-    _logger.debug("Parameter order consistency verified");
+    logger.debug("Parameter order consistency verified");
   });
 });
 
 describe("Structure: Display Functions Implementation", async () => {
   it("should structure help text properly", async () => {
-    _logger.debug("Testing help text structure");
+    logger.debug("Testing help text structure");
 
     const helpResult = displayHelp();
     const helpText = helpResult.output;
@@ -280,11 +280,11 @@ describe("Structure: Display Functions Implementation", async () => {
     assertEquals(helpText.includes("--version"), true, "Should document version option");
     assertEquals(helpText.includes("--working-dir"), true, "Should document working-dir option");
 
-    _logger.debug("Help text structure verified");
+    logger.debug("Help text structure verified");
   });
 
   it("should structure version output correctly", async () => {
-    _logger.debug("Testing version output structure");
+    logger.debug("Testing version output structure");
 
     const versionResult = displayVersion();
     const versionText = versionResult.output;
@@ -296,11 +296,11 @@ describe("Structure: Display Functions Implementation", async () => {
     const lines = versionText.trim().split("\n");
     assertEquals(lines.length, 1, "Version output should be single line");
 
-    _logger.debug("Version output structure verified");
+    logger.debug("Version output structure verified");
   });
 
   it("should return consistent CommandResult structure", async () => {
-    _logger.debug("Testing CommandResult consistency");
+    logger.debug("Testing CommandResult consistency");
 
     const helpResult = displayHelp();
     const versionResult = displayVersion();
@@ -325,13 +325,13 @@ describe("Structure: Display Functions Implementation", async () => {
     assertEquals(typeof helpResult.output, "string", "Help output should be string");
     assertEquals(typeof versionResult.output, "string", "Version output should be string");
 
-    _logger.debug("CommandResult consistency verified");
+    logger.debug("CommandResult consistency verified");
   });
 });
 
 describe("Structure: Error Handling Patterns", async () => {
   it("should implement consistent error transformation", async () => {
-    _logger.debug("Testing error transformation patterns");
+    logger.debug("Testing error transformation patterns");
 
     const initWorkspaceString = initWorkspace.toString();
 
@@ -361,11 +361,11 @@ describe("Structure: Error Handling Patterns", async () => {
       "Should add context to error messages",
     );
 
-    _logger.debug("Error transformation patterns verified");
+    logger.debug("Error transformation patterns verified");
   });
 
   it("should structure error responses consistently", async () => {
-    _logger.debug("Testing error response structure");
+    logger.debug("Testing error response structure");
 
     const initWorkspaceString = initWorkspace.toString();
 
@@ -377,13 +377,13 @@ describe("Structure: Error Handling Patterns", async () => {
       "Error responses should follow CommandResult pattern",
     );
 
-    _logger.debug("Error response structure verified");
+    logger.debug("Error response structure verified");
   });
 });
 
 describe("Structure: Interface Implementation Consistency", async () => {
   it("should implement CommandResult interface consistently", async () => {
-    _logger.debug("Testing CommandResult implementation consistency");
+    logger.debug("Testing CommandResult implementation consistency");
 
     // Test all public functions return CommandResult
     const helpResult = displayHelp();
@@ -404,11 +404,11 @@ describe("Structure: Interface Implementation Consistency", async () => {
     assertEquals(typeof versionResult.success, "boolean", "Success should be boolean");
     assertEquals(typeof versionResult.output, "string", "Output should be string");
 
-    _logger.debug("CommandResult implementation consistency verified");
+    logger.debug("CommandResult implementation consistency verified");
   });
 
   it("should handle GenerateWithPromptOptions interface properly", async () => {
-    _logger.debug("Testing GenerateWithPromptOptions handling");
+    logger.debug("Testing GenerateWithPromptOptions handling");
 
     // Function should accept the options interface
     assertEquals(generateWithPrompt.length, 3, "Should accept options as 5th parameter");
@@ -422,11 +422,11 @@ describe("Structure: Interface Implementation Consistency", async () => {
       "Should handle options parameter",
     );
 
-    _logger.debug("GenerateWithPromptOptions handling verified");
+    logger.debug("GenerateWithPromptOptions handling verified");
   });
 
   it("should maintain type safety across function boundaries", async () => {
-    _logger.debug("Testing type safety maintenance");
+    logger.debug("Testing type safety maintenance");
 
     // Async functions should return Promise<CommandResult>
     const initPromise = initWorkspace();
@@ -459,6 +459,6 @@ describe("Structure: Interface Implementation Consistency", async () => {
     assertEquals(typeof helpResult, "object", "displayHelp should return object");
     assertEquals(typeof versionResult, "object", "displayVersion should return object");
 
-    _logger.debug("Type safety maintenance verified");
+    logger.debug("Type safety maintenance verified");
   });
 });

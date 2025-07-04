@@ -22,14 +22,12 @@ import {
   createTimeoutManagerFromConfig,
 } from "$lib/config/timeout_manager.ts";
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
-import {
-  type PromptCliParams,
-  PromptVariablesFactory,
-} from "$lib/factory/prompt_variables_factory.ts";
+import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
+import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import {
+  _DemonstrativeTypeFactory,
   type DemonstrativeType,
-  DemonstrativeTypeFactory,
   type LayerType,
 } from "$lib/types/mod.ts";
 
@@ -74,9 +72,9 @@ const VALID_LAYER_TYPES = [
 function validateDemonstrativeType(
   value: string,
 ): Result<DemonstrativeType, TwoParamsHandlerError> {
-  if (VALID_DEMONSTRATIVE_TYPES.includes(value as unknown)) {
+  if (_VALID_DEMONSTRATIVE_TYPES.includes(value as any)) {
     // Create the proper DemonstrativeType object
-    const demonstrativeType = DemonstrativeTypeFactory.fromString(value);
+    const demonstrativeType = _DemonstrativeTypeFactory.fromString(value);
     if (demonstrativeType) {
       return ok(demonstrativeType);
     }
@@ -85,7 +83,7 @@ function validateDemonstrativeType(
   return error({
     kind: "InvalidDemonstrativeType",
     value,
-    validTypes: [...VALID_DEMONSTRATIVE_TYPES],
+    validTypes: [..._VALID_DEMONSTRATIVE_TYPES],
   });
 }
 
@@ -93,7 +91,7 @@ function validateDemonstrativeType(
  * Validate layer type without type assertion
  */
 function validateLayerType(value: string): Result<string, TwoParamsHandlerError> {
-  if (VALID_LAYER_TYPES.includes(value as unknown)) {
+  if (VALID_LAYER_TYPES.includes(value as any)) {
     return ok(value);
   }
 

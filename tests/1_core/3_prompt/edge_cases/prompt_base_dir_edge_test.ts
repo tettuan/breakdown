@@ -33,13 +33,13 @@ import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 function createLoggerAdapter(logger: BreakdownLogger) {
   return {
-    debug: (...args: unknown[]) => _logger.debug(String(args[0]), args[1]),
-    error: (...args: unknown[]) => _logger.error(String(args[0]), args[1]),
+    debug: (...args: unknown[]) => logger.debug(String(args[0]), args[1]),
+    error: (...args: unknown[]) => logger.error(String(args[0]), args[1]),
   };
 }
 
 // Enhanced logger with standard key format
-const __enhancedLogger = new BreakdownLogger();
+const logger = new BreakdownLogger();
 
 describe("Prompt baseDir edge cases", () => {
   it("should match test-created and implementation-resolved prompt directory (relative path)", async () => {
@@ -64,7 +64,7 @@ describe("Prompt baseDir edge cases", () => {
       );
       const inputFile = join(testDir, "input.md");
       await Deno.writeTextFile(inputFile, "# Example\n- Feature");
-      _logger.debug("[TEST] promptBaseDir (relative path)", {
+      logger.debug("[TEST] promptBaseDir (relative path)", {
         promptDir: join(testDir, "custom_prompts"),
       });
       const cliParams = {
@@ -77,10 +77,12 @@ describe("Prompt baseDir edge cases", () => {
       };
       const factory = await PromptVariablesFactory.create(cliParams);
       const adapter = new PromptAdapterImpl(factory);
-      const _result = await adapter.validateAndGenerate();
-      _logger.debug("[TEST] result (relative path)", { result });
+      const result = await adapter.validateAndGenerate();
+      logger.debug("[TEST] result (relative path)", { result });
       assertEquals(result.success, true);
-      assertExists(result.content);
+      if (result.success) {
+        assertExists(result.content);
+      }
 
       // Verify that prompt base directory is resolved from Deno.cwd()
       // See: docs/breakdown/glossary.ja.md - working_dir specification
@@ -121,7 +123,7 @@ describe("Prompt baseDir edge cases", () => {
         );
         const inputFile = join(testDir, "input.md");
         await Deno.writeTextFile(inputFile, "# Example\n- Feature");
-        _logger.debug("[TEST] PromptAdapterImpl with empty promptBaseDir", { cwd: Deno.cwd() });
+        logger.debug("[TEST] PromptAdapterImpl with empty promptBaseDir", { cwd: Deno.cwd() });
         const cliParams = {
           demonstrativeType: "to",
           layerType: "project",
@@ -130,7 +132,7 @@ describe("Prompt baseDir edge cases", () => {
             destinationFile: "output.md",
           },
         };
-        const errorCaught = false;
+        let errorCaught = false;
         try {
           await PromptVariablesFactory.create(cliParams);
         } catch (e) {
@@ -178,7 +180,7 @@ describe("Prompt baseDir edge cases", () => {
           const inputFile = join(testDir, "input.md");
           await Deno.writeTextFile(inputFile, "# Example\n- Feature");
           const _relPromptBaseDir = relative(testDir, join(testDir, "custom_prompts"));
-          _logger.debug("[TEST] promptBaseDir (relative path)", { _relPromptBaseDir });
+          logger.debug("[TEST] promptBaseDir (relative path)", { _relPromptBaseDir });
           const cliParamsRel = {
             demonstrativeType: "to",
             layerType: "project",
@@ -190,7 +192,7 @@ describe("Prompt baseDir edge cases", () => {
           const factoryRel = await PromptVariablesFactory.create(cliParamsRel);
           const adapterRel = new PromptAdapterImpl(factoryRel);
           const resultRel = await adapterRel.validateAndGenerate();
-          _logger.debug("[TEST] result (relative path)", { resultRel });
+          logger.debug("[TEST] result (relative path)", { resultRel });
           assertEquals(resultRel.success, true);
           assertExists(resultRel.content);
         } finally {
@@ -225,7 +227,7 @@ describe("Prompt baseDir edge cases", () => {
           );
           const inputFile = join(testDir, "input.md");
           await Deno.writeTextFile(inputFile, "# Example\n- Feature");
-          _logger.debug("[TEST] promptBaseDir (absolute path)", {
+          logger.debug("[TEST] promptBaseDir (absolute path)", {
             promptDir: join(testDir, "custom_prompts"),
           });
           const cliParamsAbs = {
@@ -239,7 +241,7 @@ describe("Prompt baseDir edge cases", () => {
           const factoryAbs = await PromptVariablesFactory.create(cliParamsAbs);
           const adapterAbs = new PromptAdapterImpl(factoryAbs);
           const resultAbs = await adapterAbs.validateAndGenerate();
-          _logger.debug("[TEST] result (absolute path)", { resultAbs });
+          logger.debug("[TEST] result (absolute path)", { resultAbs });
           assertEquals(resultAbs.success, true);
           assertExists(resultAbs.content);
         } finally {
@@ -285,7 +287,7 @@ describe("Prompt baseDir edge cases", () => {
           promptFile,
           "# {input_text_file}\nContent: {input_text}\nOutput to: {destination_path}",
         );
-        _logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", {
+        logger.debug("[TEST] PromptAdapterImpl with config promptBaseDir", {
           promptBaseDir: join(testDir, "custom_prompts"),
         });
         const cliParamsConfig = {
@@ -300,7 +302,7 @@ describe("Prompt baseDir edge cases", () => {
         const factoryConfig = await PromptVariablesFactory.create(cliParamsConfig);
         const adapterConfig = new PromptAdapterImpl(factoryConfig);
         const resultConfig = await adapterConfig.validateAndGenerate();
-        _logger.debug("[TEST] result (config promptBaseDir)", { resultConfig });
+        logger.debug("[TEST] result (config promptBaseDir)", { resultConfig });
         assertEquals(resultConfig.success, true);
         assertExists(resultConfig.content);
       } finally {

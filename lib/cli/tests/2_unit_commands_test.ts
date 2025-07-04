@@ -21,12 +21,12 @@
 
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand } from "../../../tests/helpers/setup.ts";
 import { assertCommandSuccess } from "../../../tests/helpers/assertions.ts";
 import { ensureDir } from "@std/fs";
 
-const _logger = new BreakdownLogger();
+const _logger = new _BreakdownLogger();
 const TEST_DIR = "tmp/test-cli";
 let absTestDir: string;
 
@@ -67,7 +67,7 @@ Deno.test("CLI Command Execution", async (t) => {
       join(configDir, "app.yml"),
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
-    const _result = await runCommand(
+    const result = await runCommand(
       [
         "to",
         "project",
@@ -79,11 +79,11 @@ Deno.test("CLI Command Execution", async (t) => {
     _logger.debug("[DEBUG] Parameter error test result", result);
     // New implementation: may fail due to parameter parsing but should not crash
     // The key is graceful error handling, not success/failure
-    assertEquals(typeof _result.success, "boolean", "Should return valid result");
-    assertEquals(typeof _result.output, "string", "Should return output");
-    assertEquals(typeof _result.error, "string", "Should return error info");
+    assertEquals(typeof result.success, "boolean", "Should return valid result");
+    assertEquals(typeof result.output, "string", "Should return output");
+    assertEquals(typeof result.error, "string", "Should return error info");
     // Optionally, check that help text is not shown
-    // assert(!_result.output.includes("Usage:"), "Help text should not be shown when input is missing");
+    // assert(!result.output.includes("Usage:"), "Help text should not be shown when input is missing");
   });
 
   // Template test DISABLED (implementation simplification)
@@ -96,13 +96,13 @@ Deno.test("CLI Command Execution", async (t) => {
     _logger.debug("Testing configuration integration");
 
     // Test configuration loading
-    const _result = await runCommand(["init"], undefined, absTestDir);
+    const result = await runCommand(["init"], undefined, absTestDir);
     // Handle possible --allow-run permission issue
-    if (_result.error && _result.error.includes("Requires run access")) {
+    if (result.error && result.error.includes("Requires run access")) {
       _logger.debug("Skipping test due to permission requirements");
       return; // Skip this test if running without --allow-run
     }
-    assertCommandSuccess(_result);
+    assertCommandSuccess(result);
 
     // 構成ファイルが作成されていることを検証
     const configPath = join(absTestDir, ".agent", "breakdown", "config", "app.yml");

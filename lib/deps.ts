@@ -53,7 +53,7 @@ export {
   type ParamsParser,
   ParamsParser as BreakdownParams,
   type ParamsResult,
-  type TwoParamsResult,
+  type TwoParamsResult as TwoParams_Result,
   type ZeroParamsResult,
 } from "jsr:@tettuan/breakdownparams@^1.0.3";
 
@@ -66,3 +66,16 @@ export * from "jsr:@tettuan/breakdownprompt@1.2.3";
  * Logging utilities for Breakdown. Re-exported from @tettuan/breakdownlogger.
  */
 export * from "jsr:@tettuan/breakdownlogger@^1.0.0";
+
+/**
+ * Testing assertion utilities. Re-exported from @std/assert.
+ */
+export {
+  assert,
+  assertEquals,
+  assertExists,
+  assertFalse,
+  assertInstanceOf,
+  assertRejects,
+  assertThrows,
+} from "@std/assert";

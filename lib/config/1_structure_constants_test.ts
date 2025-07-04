@@ -2,7 +2,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import {
   DEFAULT_PROMPT_BASE_DIR,
   DEFAULT_SCHEMA_BASE_DIR,
-  DEFAULT_WORKSPACE_STRUCTURE,
+  _DEFAULT_WORKSPACE_STRUCTURE,
   type DirectoryType,
 } from "./constants.ts";
 
@@ -17,22 +17,22 @@ import {
  */
 
 Deno.test("Structure: workspace structure has single responsibility", () => {
-  // DEFAULT_WORKSPACE_STRUCTURE should only define workspace layout
+  // _DEFAULT_WORKSPACE_STRUCTURE should only define workspace layout
   // It should not contain logic, validation, or other concerns
 
-  const _keys = Object.keys(DEFAULT_WORKSPACE_STRUCTURE);
-  assertEquals(keys.length, 2); // Only 'root' and 'directories'
-  assertEquals(keys.includes("root"), true);
-  assertEquals(keys.includes("directories"), true);
+  const _keys = Object.keys(_DEFAULT_WORKSPACE_STRUCTURE);
+  assertEquals(_keys.length, 2); // Only 'root' and 'directories'
+  assertEquals(_keys.includes("root"), true);
+  assertEquals(_keys.includes("directories"), true);
 
   // Verify it only contains structural data
-  assertEquals(typeof DEFAULT_WORKSPACE_STRUCTURE.root, "string");
-  assertEquals(typeof DEFAULT_WORKSPACE_STRUCTURE.directories, "object");
+  assertEquals(typeof _DEFAULT_WORKSPACE_STRUCTURE.root, "string");
+  assertEquals(typeof _DEFAULT_WORKSPACE_STRUCTURE.directories, "object");
 });
 
 Deno.test("Structure: directory constants follow consistent naming pattern", () => {
   // All directory names should be lowercase and plural
-  const directories = Object.values(DEFAULT_WORKSPACE_STRUCTURE.directories);
+  const directories = Object.values(_DEFAULT_WORKSPACE_STRUCTURE.directories);
 
   for (const dir of directories) {
     // Check lowercase
@@ -51,7 +51,7 @@ Deno.test("Structure: constants are properly grouped by concern", () => {
   // Constants should be grouped by their functional area
 
   // Workspace-related constants
-  assertExists(DEFAULT_WORKSPACE_STRUCTURE);
+  assertExists(_DEFAULT_WORKSPACE_STRUCTURE);
 
   // Prompt-related constants
   assertExists(DEFAULT_PROMPT_BASE_DIR);
@@ -93,7 +93,7 @@ Deno.test("Structure: constants module has clear boundaries", () => {
 
   // Create a totality-checking function to ensure all exports are accounted for
   type ConstantsExport =
-    | typeof DEFAULT_WORKSPACE_STRUCTURE
+    | typeof _DEFAULT_WORKSPACE_STRUCTURE
     | typeof DEFAULT_PROMPT_BASE_DIR
     | typeof DEFAULT_SCHEMA_BASE_DIR
     | DirectoryType;
@@ -101,7 +101,7 @@ Deno.test("Structure: constants module has clear boundaries", () => {
   // This pattern ensures we handle all exports
   const checkExportType = (name: string): "constant" | "type" => {
     switch (name) {
-      case "DEFAULT_WORKSPACE_STRUCTURE":
+      case "_DEFAULT_WORKSPACE_STRUCTURE":
       case "DEFAULT_PROMPT_BASE_DIR":
       case "DEFAULT_SCHEMA_BASE_DIR":
         return "constant";
@@ -113,7 +113,7 @@ Deno.test("Structure: constants module has clear boundaries", () => {
     }
   };
 
-  assertEquals(checkExportType("DEFAULT_WORKSPACE_STRUCTURE"), "constant");
+  assertEquals(checkExportType("_DEFAULT_WORKSPACE_STRUCTURE"), "constant");
   assertEquals(checkExportType("DirectoryType"), "type");
 });
 
@@ -126,7 +126,7 @@ Deno.test("Structure: workspace directories form complete set", () => {
     | { type: "projects"; path: string };
 
   const createWorkspaceArea = (dirType: DirectoryType): WorkspaceArea => {
-    const path = DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
+    const path = _DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
 
     switch (dirType) {
       case "issues":

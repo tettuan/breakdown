@@ -10,18 +10,18 @@
  * @module workspace/2_unit_mod_test
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("unit-workspace-mod");
+const _logger = new _BreakdownLogger("unit-workspace-mod");
 
 describe("Workspace Module - Unit Tests", async () => {
   it("should successfully import the module", async () => {
     _logger.debug("Testing module import");
 
     const _mod = await import("./mod.ts");
-    assertExists(mod);
+    assertExists(_mod);
   });
 
   it("should re-export all items from types.ts", async () => {
@@ -34,7 +34,7 @@ describe("Workspace Module - Unit Tests", async () => {
     // Note: TypeScript types aren't available at runtime, but we can check other exports
     Object.keys(types).forEach((key) => {
       if (key !== "default") {
-        assertEquals(key in mod, true, `${key} should be re-exported from types.ts`);
+        assertEquals(key in _mod, true, `${key} should be re-exported from types.ts`);
       }
     });
   });
@@ -47,11 +47,11 @@ describe("Workspace Module - Unit Tests", async () => {
 
     // All error classes should be re-exported
     Object.keys(errors).forEach((key) => {
-      if (key !== "default" && (errors as unknown)[key]?.prototype instanceof Error) {
-        assertExists((mod as unknown)[key], `Error class ${key} should be re-exported`);
+      if (key !== "default" && typeof (errors as Record<string, unknown>)[key] === "function" && ((errors as any)[key]?.prototype instanceof Error)) {
+        assertExists((_mod as Record<string, unknown>)[key], `Error class ${key} should be re-exported`);
         assertEquals(
-          (mod as unknown)[key],
-          (errors as unknown)[key],
+          (_mod as Record<string, unknown>)[key],
+          (errors as Record<string, unknown>)[key],
           `${key} should be the same reference`,
         );
       }
@@ -67,10 +67,10 @@ describe("Workspace Module - Unit Tests", async () => {
     // All workspace exports should be available
     Object.keys(_workspace).forEach((key) => {
       if (key !== "default") {
-        assertExists((mod as unknown)[key], `${key} should be re-exported from _workspace.ts`);
+        assertExists((_mod as Record<string, unknown>)[key], `${key} should be re-exported from _workspace.ts`);
         assertEquals(
-          (mod as unknown)[key],
-          (workspace as unknown)[key],
+          (_mod as Record<string, unknown>)[key],
+          (_workspace as Record<string, unknown>)[key],
           `${key} should be the same reference`,
         );
       }
@@ -124,8 +124,8 @@ describe("Workspace Module - Unit Tests", async () => {
     Object.keys(mod1).forEach((key) => {
       if (key !== "default") {
         assertEquals(
-          (mod1 as unknown)[key],
-          (mod2 as unknown)[key],
+          (mod1 as Record<string, unknown>)[key],
+          (mod2 as Record<string, unknown>)[key],
           `Export ${key} should maintain reference equality`,
         );
       }
@@ -152,7 +152,7 @@ describe("Workspace Module - Unit Tests", async () => {
     _logger.debug("Testing error handling");
 
     // Test that the module can be imported without throwing
-    const error = null;
+    let error = null;
     try {
       await import("./mod.ts");
     } catch (e) {
@@ -174,7 +174,7 @@ describe("Workspace Module - Unit Tests", async () => {
     ];
 
     stableAPI.forEach((apiItem) => {
-      assertExists((mod as unknown)[apiItem], `Stable API item ${apiItem} should exist`);
+      assertExists((_mod as Record<string, unknown>)[apiItem], `Stable API item ${apiItem} should exist`);
     });
   });
 });

@@ -1,0 +1,62 @@
+# Breakdown 設定プロファイル検出型フロー
+# CLI引数から設定プロファイル名への変換
+
+# 核心的な型変換フロー
+type_flow:
+  name: "Config Profile Detection Flow"
+  description: "CLI引数からConfigProfileNameへの変換"
+  
+  steps:
+    - step: 1
+      from: "string[] (CLI args)"
+      to: "string | null"
+      operation: "ConfigPrefixDetector.detect()"
+      principle: "全てのCLI引数パターンを網羅"
+      
+    - step: 2
+      from: "string | null"
+      to: "ConfigProfileName"
+      operation: "ConfigProfileName.create()"
+      principle: "Smart Constructor による制約と検証"
+
+# 主要型
+key_types:
+  ConfigPrefixDetector:
+    pattern: "Static Utility"
+    responsibility: "CLI引数からの設定プレフィックス抽出"
+    supported_formats:
+      - "--config=filename"
+      - "-c=filename"
+      - "--config filename"
+      - "-c filename"
+    
+  ConfigProfileName:
+    pattern: "Smart Constructor"
+    responsibility: "設定プロファイル名の制約と検証"
+    validation_rule: "/^[a-z0-9_-]{1,50}$/"
+    immutability: "Object.freeze適用"
+
+# CLI引数パターン
+cli_patterns:
+  equals_format:
+    - "--config=production"
+    - "-c=staging"
+  space_separated:
+    - "--config development"
+    - "-c testing"
+  edge_cases:
+    - "フラグとの混同防止"
+    - "境界値チェック"
+    - "空文字列処理"
+
+# 設計パターン
+patterns:
+  factory: "ConfigPrefixDetector による統一的な生成"
+  smart_constructor: "ConfigProfileName による制約"
+  immutable_object: "生成後の変更不可"
+
+# 境界
+boundaries:
+  scope: "CLI引数解析から設定プロファイル名生成"
+  next_phase: "設定ファイル読み込み"
+  responsibility: "設定プロファイル名の抽出と検証"

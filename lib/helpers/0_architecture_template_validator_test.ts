@@ -8,14 +8,14 @@
 import { assertEquals, assertExists } from "@std/assert";
 import {
   TemplateMapping,
-  TemplateValidationResult,
+  TemplateValidation_Result,
   TemplateValidator,
 } from "./template_validator.ts";
 
 Deno.test("Architecture: TemplateValidator follows Totality pattern with Smart Constructor", () => {
   // Smart Constructor pattern: constructorで必要な依存を注入
   const _projectRoot = "/test/project";
-  const _validator = new TemplateValidator(projectRoot);
+  const _validator = new TemplateValidator(_projectRoot);
 
   // インスタンスが正しく生成されることを確認
   assertExists(_validator);
@@ -26,20 +26,20 @@ Deno.test("Architecture: TemplateValidator follows Totality pattern with Smart C
     destination: "dest/template.md",
     required: true,
   }];
-  const customValidator = new TemplateValidator(projectRoot, customMappings);
+  const customValidator = new TemplateValidator(_projectRoot, customMappings);
   assertExists(customValidator);
 });
 
 Deno.test("Architecture: TemplateValidationResult follows Result type pattern", () => {
   // Result型パターン: 成功/失敗を明示的に表現
-  const successResult: TemplateValidationResult = {
+  const successResult: TemplateValidation_Result = {
     isValid: true,
     missingTemplates: [],
     existingTemplates: ["template1.md", "template2.md"],
     totalRequired: 2,
   };
 
-  const failureResult: TemplateValidationResult = {
+  const failureResult: TemplateValidation_Result = {
     isValid: false,
     missingTemplates: ["template3.md"],
     existingTemplates: ["template1.md", "template2.md"],

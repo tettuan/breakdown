@@ -1,7 +1,7 @@
 /**
- * @fileoverview TwoParamsProcessor for converting TwoParamsResult to VariablesBuilder
+ * @fileoverview TwoParamsProcessor for converting TwoParams_Result to VariablesBuilder
  *
- * This module provides a processor that transforms TwoParamsResult from BreakdownParams
+ * This module provides a processor that transforms TwoParams_Result from BreakdownParams
  * into VariablesBuilder following the Totality principle. It handles the conversion
  * process with proper error handling and Result type patterns.
  *
@@ -10,7 +10,7 @@
 
 import { error, ok, Result } from "$lib/types/result.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
-import type { TwoParamsResult } from "$lib/deps.ts";
+import type { TwoParams_Result } from "$lib/deps.ts";
 import type { BuilderVariableError } from "$lib/builder/variables_builder.ts";
 
 /**
@@ -27,7 +27,7 @@ export type ProcessorError =
   | { kind: "MissingRequiredField"; field: string };
 
 /**
- * TwoParamsProcessor - Converts TwoParamsResult to VariablesBuilder
+ * TwoParamsProcessor - Converts TwoParams_Result to VariablesBuilder
  *
  * This processor handles the transformation of parsed command-line parameters
  * into a structured VariablesBuilder instance, following the Totality principle
@@ -37,7 +37,7 @@ export type ProcessorError =
  * ```typescript
  * const _processor = new TwoParamsProcessor();
  *
- * const twoParamsResult: TwoParamsResult = {
+ * const twoParamsResult: TwoParams_Result = {
  *   type: "two",
  *   demonstrativeType: "to",
  *   layerType: "project",
@@ -54,14 +54,14 @@ export type ProcessorError =
  */
 export class TwoParamsProcessor {
   /**
-   * Process TwoParamsResult into VariablesBuilder
+   * Process TwoParams_Result into VariablesBuilder
    *
    * @param twoParamsResult - The parsed two parameters result from BreakdownParams
    * @returns ProcessorResult containing VariablesBuilder or errors
    */
-  process(twoParamsResult: TwoParamsResult): ProcessorResult<VariablesBuilder> {
+  process(twoParamsResult: TwoParams_Result): ProcessorResult<VariablesBuilder> {
     // Validate input parameters
-    const validationResult = this.validateTwoParamsResult(twoParamsResult);
+    const validationResult = this.validateTwoParams_Result(twoParamsResult);
     if (!validationResult.ok) {
       return validationResult;
     }
@@ -92,17 +92,17 @@ export class TwoParamsProcessor {
   }
 
   /**
-   * Validate TwoParamsResult structure
+   * Validate TwoParams_Result structure
    *
    * @param twoParamsResult - Result to validate
    * @returns Validation result
    */
-  private validateTwoParamsResult(twoParamsResult: TwoParamsResult): ProcessorResult<void> {
+  private validateTwoParams_Result(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
     // Check if the entire result object is null or undefined
     if (twoParamsResult === null || twoParamsResult === undefined) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult cannot be null or undefined",
+        message: "TwoParams_Result cannot be null or undefined",
       });
     }
 
@@ -141,7 +141,7 @@ export class TwoParamsProcessor {
     if (!twoParamsResult.params || !Array.isArray(twoParamsResult.params)) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult must have a params array",
+        message: "TwoParams_Result must have a params array",
       });
     }
 
@@ -149,7 +149,7 @@ export class TwoParamsProcessor {
     if (twoParamsResult.params.length < 2) {
       return error({
         kind: "InvalidParams",
-        message: "TwoParamsResult must have at least 2 parameters",
+        message: "TwoParams_Result must have at least 2 parameters",
       });
     }
 
@@ -165,13 +165,13 @@ export class TwoParamsProcessor {
   }
 
   /**
-   * Convert TwoParamsResult to FactoryResolvedValues
+   * Convert TwoParams_Result to FactoryResolvedValues
    *
    * @param twoParamsResult - Input parameters
    * @returns Conversion result
    */
   private convertToFactoryValues(
-    twoParamsResult: TwoParamsResult,
+    twoParamsResult: TwoParams_Result,
   ): ProcessorResult<FactoryResolvedValues> {
     // Additional null check for options
     if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
@@ -297,14 +297,14 @@ export class TwoParamsProcessor {
   /**
    * Create processor with validation-only mode
    *
-   * This method validates the TwoParamsResult without creating a VariablesBuilder,
+   * This method validates the TwoParams_Result without creating a VariablesBuilder,
    * useful for pre-validation scenarios.
    *
    * @param twoParamsResult - Parameters to validate
    * @returns Validation result
    */
-  validateOnly(twoParamsResult: TwoParamsResult): ProcessorResult<void> {
-    const validationResult = this.validateTwoParamsResult(twoParamsResult);
+  validateOnly(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
+    const validationResult = this.validateTwoParams_Result(twoParamsResult);
     if (!validationResult.ok) {
       return validationResult;
     }
@@ -342,7 +342,7 @@ export class TwoParamsProcessor {
     return {
       name: "TwoParamsProcessor",
       version: "1.0.0",
-      supportedInputType: "TwoParamsResult",
+      supportedInputType: "TwoParams_Result",
       outputType: "VariablesBuilder",
     };
   }

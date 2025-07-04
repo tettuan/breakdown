@@ -14,16 +14,16 @@
 
 import { isAbsolute, join } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 
 // Legacy type alias for backward compatibility during migration
-type DoubleParamsResult = PromptCliParams;
+type DoubleParams_Result = PromptCliParams;
 
 /**
- * TypeCreationResult - Unified error handling for type creation operations
+ * TypeCreation_Result - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> =
+export type TypeCreation_Result<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -76,12 +76,12 @@ export class OutputFilePathResolver {
    * ```
    */
   constructor(
-    private config: Record<string, unknown>,
-    private cliParams: DoubleParamsResult | TwoParamsResult,
+    private _config: Record<string, unknown>,
+    private _cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this.config = this.deepCopyConfig(config);
-    this.cliParams = this.deepCopyCliParams(cliParams);
+    this._config = this.deepCopyConfig(_config);
+    this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
   /**
@@ -111,22 +111,22 @@ export class OutputFilePathResolver {
    * @returns Deep copy of the CLI parameters
    */
   private deepCopyCliParams(
-    cliParams: DoubleParamsResult | TwoParamsResult,
-  ): DoubleParamsResult | TwoParamsResult {
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): DoubleParams_Result | TwoParams_Result {
     if ("type" in cliParams && cliParams.type === "two") {
-      // TwoParamsResult
-      const twoParams = cliParams as TwoParamsResult;
-      const copy: TwoParamsResult = {
+      // TwoParams_Result from breakdownparams
+      const twoParams = cliParams as TwoParams_Result;
+      const copy: any = {
         type: twoParams.type,
-        params: [...twoParams.params],
+        params: twoParams.params ? [...twoParams.params] : [],
         demonstrativeType: twoParams.demonstrativeType,
         layerType: twoParams.layerType,
         options: { ...twoParams.options },
       };
       return copy;
     } else {
-      // DoubleParamsResult (PromptCliParams)
-      const doubleParams = cliParams as DoubleParamsResult;
+      // DoubleParams_Result (PromptCliParams)
+      const doubleParams = cliParams as DoubleParams_Result;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
@@ -227,20 +227,17 @@ export class OutputFilePathResolver {
    */
   private getLayerType(): string {
     // Handle both legacy and new parameter structures
-    if ("layerType" in this.cliParams) {
-      return this.cliParams.layerType;
+    if ("layerType" in this._cliParams && this._cliParams.layerType) {
+      return this._cliParams.layerType;
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
-    const layerType = (twoParams as unknown as { layerType?: string }).layerType;
-    if (layerType) {
-      return layerType;
-    }
-
-    // Handle mock objects with getValue method
-    const layerObj = (twoParams as unknown as Record<string, unknown>).layer;
-    if (layerObj && typeof (layerObj as Record<string, unknown>).getValue === "function") {
-      return (layerObj as { getValue: () => string }).getValue();
+    
+    // For TwoParams_Result from breakdownparams
+    if ("type" in this._cliParams && this._cliParams.type === "two") {
+      const twoParams = this._cliParams as TwoParams_Result;
+      // TwoParams_Result has layerType property
+      if (twoParams.layerType) {
+        return twoParams.layerType;
+      }
     }
 
     return "task"; // Default fallback
@@ -248,11 +245,11 @@ export class OutputFilePathResolver {
 
   public getDestinationFile(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ("options" in this.cliParams) {
-      return this.cliParams.options?.destinationFile as string | undefined;
+    if ("options" in this._cliParams) {
+      return this._cliParams.options?.destinationFile as string | undefined;
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
+    // For TwoParams_Result structure, adapt to legacy interface
+    const twoParams = this._cliParams as TwoParams_Result;
     return (twoParams as unknown as { options?: { destinationFile?: string } }).options
       ?.destinationFile;
   }

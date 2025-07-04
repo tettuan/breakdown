@@ -77,7 +77,7 @@ export class StdinIntegrationWrapper {
   }): Result<boolean, string> {
     try {
       if (this.config.forceFallback) {
-        const _result = originalIsStdinAvailable(options);
+        const result = originalIsStdinAvailable(options);
         return ok(result);
       }
 
@@ -237,7 +237,7 @@ export function isStdinAvailable(options?: {
 }): boolean {
   const wrapper = new StdinIntegrationWrapper(options?.migrationConfig);
   const result = wrapper.isStdinAvailable(options);
-  return _result.ok ? result.data : false;
+  return result.ok ? result.data : false;
 }
 
 /**
@@ -250,10 +250,10 @@ export async function readStdin(options: StdinOptions & {
 } = {}): Promise<string> {
   const wrapper = new StdinIntegrationWrapper(options.migrationConfig);
   const result = await wrapper.readStdin(options);
-  if (_result.ok) {
-    return _result.data;
+  if (result.ok) {
+    return result.data;
   } else {
-    throw new Error(_result.error);
+    throw new Error(result.error);
   }
 }
 
@@ -274,7 +274,7 @@ export async function readStdinSafe(options: StdinOptions & {
   const wrapper = new StdinIntegrationWrapper(options.migrationConfig);
   const result = await wrapper.readStdinSafe(options);
 
-  if (_result.ok) {
+  if (result.ok) {
     return {
       success: true,
       content: result.data.content,
@@ -288,7 +288,7 @@ export async function readStdinSafe(options: StdinOptions & {
       success: false,
       content: "",
       skipped: false,
-      reason: _result.error,
+      reason: result.error,
       environmentInfo: envInfo,
     };
   }
@@ -301,10 +301,10 @@ export async function readStdinSafe(options: StdinOptions & {
 export function getEnvironmentInfo(): EnvironmentInfo {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.getEnvironmentInfo();
-  if (_result.ok) {
-    return _result.data;
+  if (result.ok) {
+    return result.data;
   } else {
-    throw new Error(_result.error);
+    throw new Error(result.error);
   }
 }
 
@@ -318,7 +318,7 @@ export function shouldSkipStdin(options?: {
 }): boolean {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.shouldSkipStdin(options);
-  return _result.ok ? result.data : false;
+  return result.ok ? result.data : false;
 }
 
 /**
@@ -351,11 +351,11 @@ export async function handleStdinForCLI(options: {
         forceRead: true, // Force read when explicitly requested
       });
 
-      if (_result.ok) {
+      if (result.ok) {
         return ok({ inputText: result.data, skipped: false, warnings });
       } else {
         warnings.push(
-          `Failed to read from explicitly requested stdin: ${_result.error}`,
+          `Failed to read from explicitly requested stdin: ${result.error}`,
         );
         return ok({ inputText: "", skipped: false, warnings });
       }
@@ -403,9 +403,9 @@ export async function handleStdinForCLILegacy(options: {
   warnings: string[];
 }> {
   const result = await handleStdinForCLI(options);
-  if (_result.ok) {
-    return _result.data;
+  if (result.ok) {
+    return result.data;
   } else {
-    return { inputText: "", skipped: true, warnings: [_result.error] };
+    return { inputText: "", skipped: true, warnings: [result.error] };
   }
 }

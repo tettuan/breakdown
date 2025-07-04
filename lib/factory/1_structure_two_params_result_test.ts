@@ -1,13 +1,13 @@
 /**
- * Structure tests for TwoParamsResult and comprehensive validation patterns
+ * Structure tests for TwoParams_Result and comprehensive validation patterns
  *
- * These tests verify the structural integrity of the new TwoParamsResult type
+ * These tests verify the structural integrity of the new TwoParams_Result type
  * and ensure proper integration with the Totality pattern implementation.
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -21,10 +21,10 @@ import {
   type PromptCliOptions,
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-  type TwoParamsResult,
-} from "./prompt_variables_factory.ts";
+  type TwoParams_Result,
+} from "./prompt_variables__factory.ts";
 
-const _logger = new BreakdownLogger("two-params-structure");
+const logger = new BreakdownLogger("two-params-structure");
 
 /**
  * Configurable pattern provider for testing different scenarios
@@ -53,7 +53,7 @@ class ConfigurablePatternProvider implements TypePatternProvider {
   }
 }
 
-describe("TwoParamsResult - Type Structure Validation", () => {
+describe("TwoParams_Result - Type Structure Validation", () => {
   let provider: ConfigurablePatternProvider;
   let factory: TypeFactory;
 
@@ -62,16 +62,18 @@ describe("TwoParamsResult - Type Structure Validation", () => {
     factory = new TypeFactory(provider);
   });
 
-  it("should maintain strict type structure for TwoParamsResult", async () => {
-    _logger.debug("Testing TwoParamsResult type structure");
+  it("should maintain strict type structure for TwoParams_Result", async () => {
+    logger.debug("Testing TwoParams_Result type structure");
 
     const typesResult = _factory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
 
     if (typesResult.ok) {
-      const twoParamsResult: TwoParamsResult = {
-        directive: typesResult.data.directive,
-        layer: typesResult.data.layer,
+      const twoParamsResult: TwoParams_Result = {
+        type: "two",
+        params: ["to", "project"],
+        demonstrativeType: typesResult.data.directive.value,
+        layerType: typesResult.data.layer.value,
         options: {
           fromFile: "input.md",
           destinationFile: "output.md",
@@ -83,10 +85,10 @@ describe("TwoParamsResult - Type Structure Validation", () => {
       };
 
       // Verify structure integrity
-      // Note: DirectiveType has private constructor, checking method existence instead
-      assertEquals(typeof twoParamsResult.directive.getValue, "function");
-      // Note: LayerType has private constructor, checking method existence instead
-      assertEquals(typeof twoParamsResult.layer.getValue, "function");
+      assertEquals(twoParamsResult.type, "two");
+      assertEquals(twoParamsResult.params, ["to", "project"]);
+      assertEquals(twoParamsResult.demonstrativeType, "to");
+      assertEquals(twoParamsResult.layerType, "project");
       assertExists(twoParamsResult.options);
 
       // Verify option types
@@ -100,7 +102,7 @@ describe("TwoParamsResult - Type Structure Validation", () => {
   });
 
   it("should enforce type safety for PromptCliOptions", async () => {
-    _logger.debug("Testing PromptCliOptions type safety");
+    logger.debug("Testing PromptCliOptions type safety");
 
     const validOptions: PromptCliOptions = {
       fromFile: "test.md",
@@ -136,7 +138,7 @@ describe("TwoParamsResult - Type Structure Validation", () => {
   });
 
   it("should maintain type consistency across parameter structures", async () => {
-    _logger.debug("Testing type consistency across parameter structures");
+    logger.debug("Testing type consistency across parameter structures");
 
     const typesResult = _factory.createBothTypes("summary", "issue");
     assertEquals(typesResult.ok, true);
@@ -162,9 +164,9 @@ describe("TwoParamsResult - Type Structure Validation", () => {
   });
 });
 
-describe("TwoParamsResult - Validation Pattern Integration", () => {
+describe("TwoParams_Result - Validation Pattern Integration", () => {
   it("should integrate with all directive validation patterns", async () => {
-    _logger.debug("Testing directive pattern integration");
+    logger.debug("Testing directive pattern integration");
 
     const customPatterns = [
       "web|api|db",
@@ -179,10 +181,10 @@ describe("TwoParamsResult - Validation Pattern Integration", () => {
 
       const directives = pattern.split("|");
       directives.forEach((directive) => {
-        const _result = _factory.createDirectiveType(directive);
-        assertEquals(_result.ok, true);
+        const result = _factory.createDirectiveType(directive);
+        assertEquals(result.ok, true);
 
-        if (_result.ok) {
+        if (result.ok) {
           assertEquals(result.data.getValue(), directive);
         }
       });
@@ -190,7 +192,7 @@ describe("TwoParamsResult - Validation Pattern Integration", () => {
   });
 
   it("should integrate with all layer validation patterns", async () => {
-    _logger.debug("Testing layer pattern integration");
+    logger.debug("Testing layer pattern integration");
 
     const customPatterns = [
       "service|controller|model",
@@ -205,10 +207,10 @@ describe("TwoParamsResult - Validation Pattern Integration", () => {
 
       const layers = pattern.split("|");
       layers.forEach((layer) => {
-        const _result = _factory.createLayerType(layer);
-        assertEquals(_result.ok, true);
+        const result = _factory.createLayerType(layer);
+        assertEquals(result.ok, true);
 
-        if (_result.ok) {
+        if (result.ok) {
           assertEquals(result.data.getValue(), layer);
         }
       });
@@ -216,7 +218,7 @@ describe("TwoParamsResult - Validation Pattern Integration", () => {
   });
 
   it("should handle pattern validation failures gracefully", async () => {
-    _logger.debug("Testing pattern validation failure handling");
+    logger.debug("Testing pattern validation failure handling");
 
     // Test with restrictive patterns
     const restrictiveProvider = new ConfigurablePatternProvider("only_one", "single");
@@ -243,9 +245,9 @@ describe("TwoParamsResult - Validation Pattern Integration", () => {
   });
 });
 
-describe("TwoParamsResult - Factory Integration Patterns", () => {
+describe("TwoParams_Result - Factory Integration Patterns", () => {
   it("should support all _factory creation patterns", async () => {
-    _logger.debug("Testing comprehensive _factory creation patterns");
+    logger.debug("Testing comprehensive _factory creation patterns");
 
     const provider = new ConfigurablePatternProvider();
     const _factory = new TypeFactory(provider);
@@ -281,7 +283,7 @@ describe("TwoParamsResult - Factory Integration Patterns", () => {
   });
 
   it("should handle complex option combinations", async () => {
-    _logger.debug("Testing complex option combinations");
+    logger.debug("Testing complex option combinations");
 
     const provider = new ConfigurablePatternProvider();
     const _factory = new TypeFactory(provider);
@@ -335,8 +337,8 @@ describe("TwoParamsResult - Factory Integration Patterns", () => {
     }
   });
 
-  it("should maintain immutability of TwoParamsResult instances", async () => {
-    _logger.debug("Testing TwoParamsResult immutability");
+  it("should maintain immutability of TwoParams_Result instances", async () => {
+    logger.debug("Testing TwoParams_Result immutability");
 
     const provider = new ConfigurablePatternProvider();
     const _factory = new TypeFactory(provider);
@@ -369,15 +371,15 @@ describe("TwoParamsResult - Factory Integration Patterns", () => {
       );
 
       // Parameters should be immutable
-      assertEquals(typeof (originalParams.directive as unknown).setValue, "undefined");
-      assertEquals(typeof (originalParams.layer as unknown).setValue, "undefined");
+      assertEquals(typeof (originalParams.directive as any).setValue, "undefined");
+      assertEquals(typeof (originalParams.layer as any).setValue, "undefined");
     }
   });
 });
 
-describe("TwoParamsResult - Error Boundary Testing", () => {
+describe("TwoParams_Result - Error Boundary Testing", () => {
   it("should handle all error scenarios without exceptions", async () => {
-    _logger.debug("Testing comprehensive error boundary handling");
+    logger.debug("Testing comprehensive error boundary handling");
 
     // Test all possible error conditions
     const errorScenarios = [
@@ -409,33 +411,33 @@ describe("TwoParamsResult - Error Boundary Testing", () => {
 
     errorScenarios.forEach((scenario, index) => {
       const _factory = new TypeFactory(scenario.provider);
-      const _result = _factory.createBothTypes(scenario.directive, scenario.layer);
+      const result = _factory.createBothTypes(scenario.directive, scenario.layer);
 
-      assertEquals(_result.ok, false, `Scenario ${index} should fail`);
+      assertEquals(result.ok, false, `Scenario ${index} should fail`);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, scenario.expectedError);
+      if (!result.ok) {
+        assertEquals(result.error.kind, scenario.expectedError);
         // Note: TypeCreationError uses discriminated union, checking available properties
-        assertExists((_result.error as unknown).value || (_result.error as unknown).message);
+        assertExists((result.error as any).value || (result.error as any).message);
       }
     });
   });
 
   it("should provide comprehensive error information", async () => {
-    _logger.debug("Testing comprehensive error information provision");
+    logger.debug("Testing comprehensive error information provision");
 
     const provider = new ConfigurablePatternProvider("to|summary", "project|issue");
     const _factory = new TypeFactory(provider);
 
     // Test validation failure with detailed error info
-    const _result = _factory.createBothTypes("invalid_directive", "invalid_layer");
-    assertEquals(_result.ok, false);
+    const result = _factory.createBothTypes("invalid_directive", "invalid_layer");
+    assertEquals(result.ok, false);
 
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
 
       // Error should include the invalid value
-      const errorWithValue = _result.error as unknown;
+      const errorWithValue = result.error as any;
       assertEquals(errorWithValue.value, "invalid_directive");
       assertExists(errorWithValue.pattern);
     }

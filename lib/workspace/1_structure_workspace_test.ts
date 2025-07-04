@@ -7,13 +7,13 @@
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { WorkspaceImpl } from "./_workspace.ts";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { WorkspaceImpl } from "./workspace.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
 
 Deno.test("Workspace Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-test");
+  const _logger = new _BreakdownLogger("structure-test");
 
   await t.step("should have proper class composition", () => {
     _logger.debug("Testing class composition structure");
@@ -29,7 +29,7 @@ Deno.test("Workspace Structure", async (t) => {
 
     // WorkspaceImpl should compose other services, not inherit from them
     // This ensures loose coupling and testability
-    assertInstanceOf(workspace, WorkspaceImpl);
+    assertInstanceOf(_workspace, WorkspaceImpl);
   });
 
   await t.step("should delegate directory operations properly", () => {
@@ -156,7 +156,7 @@ Deno.test("Workspace Structure", async (t) => {
     assertExists(_workspace);
 
     // Should not require external dependency injection beyond config
-    assertInstanceOf(workspace, WorkspaceImpl);
+    assertInstanceOf(_workspace, WorkspaceImpl);
   });
 
   await t.step("should expose only necessary public methods", () => {
@@ -183,8 +183,8 @@ Deno.test("Workspace Structure", async (t) => {
     ];
 
     publicMethods.forEach((method) => {
-      assertExists((workspace as unknown)[method]);
-      assertEquals(typeof (workspace as unknown)[method], "function");
+      assertExists((_workspace as any)[method]);
+      assertEquals(typeof (_workspace as any)[method], "function");
     });
   });
 });

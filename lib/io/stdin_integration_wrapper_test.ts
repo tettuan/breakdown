@@ -17,7 +17,7 @@ import {
 
 Deno.test("StdinIntegrationWrapper - Basic instantiation", async () => {
   const _wrapper = new StdinIntegrationWrapper();
-  assertExists(wrapper);
+  assertExists(_wrapper);
 });
 
 Deno.test("StdinIntegrationWrapper - Custom config instantiation", async () => {
@@ -33,23 +33,23 @@ Deno.test("StdinIntegrationWrapper - Custom config instantiation", async () => {
 
 Deno.test("StdinIntegrationWrapper - isStdinAvailable returns Result", async () => {
   const wrapper = new StdinIntegrationWrapper();
-  const _result = wrapper.isStdinAvailable();
+  const result = wrapper.isStdinAvailable();
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertEquals(typeof _result.data, "boolean");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertEquals(typeof result.data, "boolean");
   } else {
-    assertEquals(typeof _result.error, "string");
+    assertEquals(typeof result.error, "string");
   }
 });
 
 Deno.test("StdinIntegrationWrapper - isStdinAvailable with terminal option", async () => {
   const wrapper = new StdinIntegrationWrapper();
-  const _result = wrapper.isStdinAvailable({ isTerminal: true });
+  const result = wrapper.isStdinAvailable({ isTerminal: true });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertEquals(typeof _result.data, "boolean");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertEquals(typeof result.data, "boolean");
   }
 });
 
@@ -57,71 +57,71 @@ Deno.test("StdinIntegrationWrapper - readStdin returns Result", async () => {
   const wrapper = new StdinIntegrationWrapper();
 
   // Test with allowEmpty to avoid hanging on empty stdin
-  const _result = await wrapper.readStdin({
+  const result = await wrapper.readStdin({
     allowEmpty: true,
     timeout: 100, // Short timeout for test
   });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertEquals(typeof _result.data, "string");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertEquals(typeof result.data, "string");
   } else {
-    assertEquals(typeof _result.error, "string");
+    assertEquals(typeof result.error, "string");
   }
 });
 
 Deno.test("StdinIntegrationWrapper - readStdinSafe returns comprehensive Result", async () => {
   const wrapper = new StdinIntegrationWrapper();
 
-  const _result = await wrapper.readStdinSafe({
+  const result = await wrapper.readStdinSafe({
     allowEmpty: true,
     timeout: 100,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals(typeof _result.data.content, "string");
-    assertEquals(typeof _result.data.skipped, "boolean");
-    if (_result.data.reason) {
-      assertEquals(typeof _result.data.reason, "string");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(typeof result.data.content, "string");
+    assertEquals(typeof result.data.skipped, "boolean");
+    if (result.data.reason) {
+      assertEquals(typeof result.data.reason, "string");
     }
-    if (_result.data.environmentInfo) {
-      assertExists(_result.data.environmentInfo);
+    if (result.data.environmentInfo) {
+      assertExists(result.data.environmentInfo);
     }
   }
 });
 
 Deno.test("StdinIntegrationWrapper - getEnvironmentInfo returns Result", async () => {
   const wrapper = new StdinIntegrationWrapper();
-  const _result = wrapper.getEnvironmentInfo();
+  const result = wrapper.getEnvironmentInfo();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals(typeof _result.data.isTerminal, "boolean");
-    assertEquals(typeof _result.data.isCI, "boolean");
-    assertEquals(typeof _result.data.isTest, "boolean");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(typeof result.data.isTerminal, "boolean");
+    assertEquals(typeof result.data.isCI, "boolean");
+    assertEquals(typeof result.data.isTest, "boolean");
   }
 });
 
 Deno.test("StdinIntegrationWrapper - shouldSkipStdin returns Result", async () => {
   const wrapper = new StdinIntegrationWrapper();
-  const _result = wrapper.shouldSkipStdin();
+  const result = wrapper.shouldSkipStdin();
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertEquals(typeof _result.data, "boolean");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertEquals(typeof result.data, "boolean");
   }
 });
 
 Deno.test("StdinIntegrationWrapper - shouldSkipStdin with forceRead", async () => {
   const wrapper = new StdinIntegrationWrapper();
-  const _result = wrapper.shouldSkipStdin({ forceRead: true });
+  const result = wrapper.shouldSkipStdin({ forceRead: true });
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(typeof _result.data, "boolean");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(typeof result.data, "boolean");
   }
 });
 
@@ -132,9 +132,9 @@ Deno.test("StdinIntegrationWrapper - forceFallback configuration", async () => {
   };
 
   const wrapper = new StdinIntegrationWrapper(config);
-  const _result = wrapper.isStdinAvailable();
+  const result = wrapper.isStdinAvailable();
 
-  assertEquals(typeof _result.ok, "boolean");
+  assertEquals(typeof result.ok, "boolean");
 });
 
 Deno.test("StdinIntegrationWrapper - environment overrides", async () => {
@@ -161,14 +161,14 @@ Deno.test("StdinIntegrationWrapper - environment overrides", async () => {
 
 // Test deprecated backward compatibility functions
 Deno.test("Backward compatibility - isStdinAvailable function", async () => {
-  const _result = isStdinAvailable();
-  assertEquals(typeof _result, "boolean");
+  const result = isStdinAvailable();
+  assertEquals(typeof result, "boolean");
 });
 
 Deno.test("Backward compatibility - readStdin function", async () => {
   try {
-    const _result = await readStdin({ allowEmpty: true, timeout: 100 });
-    assertEquals(typeof _result, "string");
+    const result = await readStdin({ allowEmpty: true, timeout: 100 });
+    assertEquals(typeof result, "string");
   } catch (error) {
     // Expected for some environments
     assertExists(error);
@@ -176,83 +176,83 @@ Deno.test("Backward compatibility - readStdin function", async () => {
 });
 
 Deno.test("Backward compatibility - readStdinSafe function", async () => {
-  const _result = await readStdinSafe({ allowEmpty: true, timeout: 100 });
+  const result = await readStdinSafe({ allowEmpty: true, timeout: 100 });
 
-  assertExists(_result);
-  assertEquals(typeof _result.success, "boolean");
-  assertEquals(typeof _result.content, "string");
-  assertEquals(typeof _result.skipped, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.success, "boolean");
+  assertEquals(typeof result.content, "string");
+  assertEquals(typeof result.skipped, "boolean");
 });
 
 Deno.test("Backward compatibility - getEnvironmentInfo function", async () => {
-  const _result = getEnvironmentInfo();
+  const result = getEnvironmentInfo();
 
-  assertExists(_result);
-  assertEquals(typeof _result.isTerminal, "boolean");
-  assertEquals(typeof _result.isCI, "boolean");
-  assertEquals(typeof _result.isTest, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.isTerminal, "boolean");
+  assertEquals(typeof result.isCI, "boolean");
+  assertEquals(typeof result.isTest, "boolean");
 });
 
 Deno.test("Backward compatibility - shouldSkipStdin function", async () => {
-  const _result = shouldSkipStdin();
-  assertEquals(typeof _result, "boolean");
+  const result = shouldSkipStdin();
+  assertEquals(typeof result, "boolean");
 });
 
 // Test CLI integration helper
 Deno.test("handleStdinForCLI - explicit stdin with dash", async () => {
-  const _result = await handleStdinForCLI({
+  const result = await handleStdinForCLI({
     from: "-",
     allowEmpty: true,
     timeout: 100,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals(typeof _result.data.inputText, "string");
-    assertEquals(typeof _result.data.skipped, "boolean");
-    assertEquals(Array.isArray(_result.data.warnings), true);
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(typeof result.data.inputText, "string");
+    assertEquals(typeof result.data.skipped, "boolean");
+    assertEquals(Array.isArray(result.data.warnings), true);
   }
 });
 
 Deno.test("handleStdinForCLI - fromFile with dash", async () => {
-  const _result = await handleStdinForCLI({
+  const result = await handleStdinForCLI({
     fromFile: "-",
     allowEmpty: true,
     timeout: 100,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals(typeof _result.data.inputText, "string");
-    assertEquals(typeof _result.data.skipped, "boolean");
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(typeof result.data.inputText, "string");
+    assertEquals(typeof result.data.skipped, "boolean");
   }
 });
 
 Deno.test("handleStdinForCLI - auto-detection", async () => {
-  const _result = await handleStdinForCLI({
+  const result = await handleStdinForCLI({
     allowEmpty: true,
     timeout: 100,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals(typeof _result.data.inputText, "string");
-    assertEquals(typeof _result.data.skipped, "boolean");
-    assertEquals(Array.isArray(_result.data.warnings), true);
+  assertEquals(typeof result.ok, "boolean");
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(typeof result.data.inputText, "string");
+    assertEquals(typeof result.data.skipped, "boolean");
+    assertEquals(Array.isArray(result.data.warnings), true);
   }
 });
 
 Deno.test("handleStdinForCLI - with debug option", async () => {
-  const _result = await handleStdinForCLI({
+  const result = await handleStdinForCLI({
     debug: true,
     allowEmpty: true,
     timeout: 100,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
+  assertEquals(typeof result.ok, "boolean");
 });
 
 // Error handling tests
@@ -260,16 +260,16 @@ Deno.test("StdinIntegrationWrapper - error handling in readStdinSafe", async () 
   const wrapper = new StdinIntegrationWrapper();
 
   // Test with very short timeout to potentially trigger timeout error
-  const _result = await wrapper.readStdinSafe({
+  const result = await wrapper.readStdinSafe({
     allowEmpty: false,
     timeout: 1, // Very short timeout
     forceRead: false,
   });
 
   // Should either succeed or handle error gracefully
-  assertEquals(typeof _result.ok, "boolean");
-  if (!_result.ok) {
-    assertEquals(typeof _result.error, "string");
+  assertEquals(typeof result.ok, "boolean");
+  if (!result.ok) {
+    assertEquals(typeof result.error, "string");
   }
 });
 
@@ -296,11 +296,11 @@ Deno.test("StdinIntegrationWrapper - comprehensive option handling", async () =>
     },
   });
 
-  const _result = await wrapper.readStdinSafe({
+  const result = await wrapper.readStdinSafe({
     allowEmpty: true,
     timeout: 100,
     forceRead: false,
   });
 
-  assertEquals(typeof _result.ok, "boolean");
+  assertEquals(typeof result.ok, "boolean");
 });

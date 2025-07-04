@@ -15,11 +15,11 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";
 
-const _logger = new BreakdownLogger("prompt-generator-architecture");
+const logger = new BreakdownLogger("prompt-generator-architecture");
 
 describe("Architecture: PromptFileGenerator Class Structure", () => {
   it("should export required public interfaces", () => {
-    _logger.debug("Testing module exports");
+    logger.debug("Testing module exports");
 
     // Required class export
     assertExists(PromptFileGenerator, "PromptFileGenerator class must be exported");
@@ -39,48 +39,48 @@ describe("Architecture: PromptFileGenerator Class Structure", () => {
     );
     assertExists(PromptFileErrorType.Unknown, "Unknown error type must exist");
 
-    _logger.debug("Module exports verification completed");
+    logger.debug("Module exports verification completed");
   });
 
   it("should maintain proper class method boundaries", () => {
-    _logger.debug("Testing class method boundaries");
+    logger.debug("Testing class method boundaries");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Public methods
-    assertExists(_generator.validateInputFile, "validateInputFile method must be public");
-    assertExists(_generator.generateWithPrompt, "generateWithPrompt method must be public");
+    assertExists(generator.validateInputFile, "validateInputFile method must be public");
+    assertExists(generator.generateWithPrompt, "generateWithPrompt method must be public");
 
     // Method types
     assertEquals(
-      typeof _generator.validateInputFile,
+      typeof generator.validateInputFile,
       "function",
       "validateInputFile must be a method",
     );
     assertEquals(
-      typeof _generator.generateWithPrompt,
+      typeof generator.generateWithPrompt,
       "function",
       "generateWithPrompt must be a method",
     );
 
     // No exposed internal state
-    const publicProps = Object.getOwnPropertyNames(_generator);
+    const publicProps = Object.getOwnPropertyNames(generator);
     assertEquals(
       publicProps.length,
       0,
       "Should not expose internal state as public properties",
     );
 
-    _logger.debug("Class method boundaries verification completed");
+    logger.debug("Class method boundaries verification completed");
   });
 
   it("should follow single responsibility principle", () => {
-    _logger.debug("Testing single responsibility principle");
+    logger.debug("Testing single responsibility principle");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Method count check - should have focused responsibilities
-    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(_generator))
+    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(generator))
       .filter((name) =>
         name !== "constructor" && typeof generator[name as keyof typeof generator] === "function"
       );
@@ -93,40 +93,40 @@ describe("Architecture: PromptFileGenerator Class Structure", () => {
 
     // Validate method signatures align with responsibilities
     assertEquals(
-      _generator.validateInputFile.length,
+      generator.validateInputFile.length,
       1,
       "validateInputFile should take 1 parameter",
     );
     assertEquals(
-      _generator.generateWithPrompt.length,
+      generator.generateWithPrompt.length,
       3,
       "generateWithPrompt should take 3 required parameters (plus defaults)",
     );
 
-    _logger.debug("Single responsibility principle verification completed");
+    logger.debug("Single responsibility principle verification completed");
   });
 
   it("should properly manage external dependencies", () => {
-    _logger.debug("Testing external dependency management");
+    logger.debug("Testing external dependency management");
 
     // Check class doesn't directly expose dependencies
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Should not expose factory or adapter instances
     assertEquals(
-      (generator as unknown).factory,
+      (generator as any).factory,
       undefined,
       "Should not expose factory instance",
     );
     assertEquals(
-      (generator as unknown).adapter,
+      (generator as any).adapter,
       undefined,
       "Should not expose adapter instance",
     );
 
     // Verify dependency imports through code inspection
     const classString = PromptFileGenerator.toString();
-    const methodString = _generator.generateWithPrompt.toString();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Should use dynamic imports for heavy dependencies
     assertEquals(
@@ -147,13 +147,13 @@ describe("Architecture: PromptFileGenerator Class Structure", () => {
       "Should create adapter within method",
     );
 
-    _logger.debug("External dependency management verification completed");
+    logger.debug("External dependency management verification completed");
   });
 });
 
 describe("Architecture: Error Handling Design", () => {
   it("should use typed error enum for categorization", () => {
-    _logger.debug("Testing typed error enum design");
+    logger.debug("Testing typed error enum design");
 
     // Verify enum values
     const errorTypes = Object.values(PromptFileErrorType);
@@ -165,14 +165,14 @@ describe("Architecture: Error Handling Design", () => {
     assertEquals(PromptFileErrorType.PromptFileNotFound, "PromptFileNotFound");
     assertEquals(PromptFileErrorType.Unknown, "Unknown");
 
-    _logger.debug("Typed error enum design verification completed");
+    logger.debug("Typed error enum design verification completed");
   });
 
   it("should maintain consistent error return structure", () => {
-    _logger.debug("Testing error return structure consistency");
+    logger.debug("Testing error return structure consistency");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify consistent error return pattern
     const errorReturns = methodString.match(/success:\s*false/g);
@@ -195,57 +195,57 @@ describe("Architecture: Error Handling Design", () => {
       "Error returns should include message",
     );
 
-    _logger.debug("Error return structure consistency verified");
+    logger.debug("Error return structure consistency verified");
   });
 
   it("should handle async operations properly", () => {
-    _logger.debug("Testing async operation handling");
+    logger.debug("Testing async operation handling");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Both public methods should be async
     assertEquals(
-      _generator.validateInputFile.constructor.name,
+      generator.validateInputFile.constructor.name,
       "Function", // Regular function that returns Promise
       "validateInputFile should return a Promise",
     );
     assertEquals(
-      _generator.generateWithPrompt.constructor.name,
+      generator.generateWithPrompt.constructor.name,
       "AsyncFunction",
       "generateWithPrompt should be async",
     );
 
     // Verify Promise handling
-    const validateResult = _generator.validateInputFile("");
+    const validateResult = generator.validateInputFile("");
     assertExists(validateResult.then, "validateInputFile should return a Promise");
     assertExists(validateResult.catch, "validateInputFile should return a catchable Promise");
 
-    _logger.debug("Async operation handling verification completed");
+    logger.debug("Async operation handling verification completed");
   });
 });
 
 describe("Architecture: Interface Contracts", () => {
   it("should maintain clear parameter contracts", () => {
-    _logger.debug("Testing parameter contracts");
+    logger.debug("Testing parameter contracts");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // validateInputFile contract
     assertEquals(
-      _generator.validateInputFile.length,
+      generator.validateInputFile.length,
       1,
       "validateInputFile should accept exactly 1 parameter",
     );
 
     // generateWithPrompt contract (length counts only required params before defaults)
     assertEquals(
-      _generator.generateWithPrompt.length,
+      generator.generateWithPrompt.length,
       3,
       "generateWithPrompt should accept exactly 3 required parameters",
     );
 
     // Verify optional parameters handling
-    const generateString = _generator.generateWithPrompt.toString();
+    const generateString = generator.generateWithPrompt.toString();
     assertEquals(
       generateString.includes("_force = false"),
       true,
@@ -257,14 +257,14 @@ describe("Architecture: Interface Contracts", () => {
       "Options parameter should be optional",
     );
 
-    _logger.debug("Parameter contracts verification completed");
+    logger.debug("Parameter contracts verification completed");
   });
 
   it("should return consistent CommandResult structure", () => {
-    _logger.debug("Testing CommandResult structure consistency");
+    logger.debug("Testing CommandResult structure consistency");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify all return paths follow CommandResult interface
     const successReturns = methodString.match(/success:\s*true/g);
@@ -292,18 +292,18 @@ describe("Architecture: Interface Contracts", () => {
       "Success returns should have null error",
     );
 
-    _logger.debug("CommandResult structure consistency verified");
+    logger.debug("CommandResult structure consistency verified");
   });
 });
 
 describe("Architecture: Separation of Concerns", () => {
   it("should separate validation from generation logic", () => {
-    _logger.debug("Testing validation/generation separation");
+    logger.debug("Testing validation/generation separation");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // validateInputFile focuses only on file validation
-    const validateString = _generator.validateInputFile.toString();
+    const validateString = generator.validateInputFile.toString();
     assertEquals(
       validateString.includes("Deno.stat"),
       true,
@@ -316,7 +316,7 @@ describe("Architecture: Separation of Concerns", () => {
     );
 
     // generateWithPrompt orchestrates the full flow
-    const generateString = _generator.generateWithPrompt.toString();
+    const generateString = generator.generateWithPrompt.toString();
     assertEquals(
       generateString.includes("validateInputFile"),
       true,
@@ -328,14 +328,14 @@ describe("Architecture: Separation of Concerns", () => {
       "generateWithPrompt should handle factory creation",
     );
 
-    _logger.debug("Validation/generation separation verified");
+    logger.debug("Validation/generation separation verified");
   });
 
   it("should delegate template processing to adapter", () => {
-    _logger.debug("Testing template processing delegation");
+    logger.debug("Testing template processing delegation");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify delegation pattern
     assertEquals(
@@ -356,14 +356,14 @@ describe("Architecture: Separation of Concerns", () => {
       "Should reference template processing (but delegate actual implementation)",
     );
 
-    _logger.debug("Template processing delegation verified");
+    logger.debug("Template processing delegation verified");
   });
 
   it("should handle stdin input separately from file input", () => {
-    _logger.debug("Testing stdin/file input separation");
+    logger.debug("Testing stdin/file input separation");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify stdin handling branch
     assertEquals(
@@ -384,6 +384,6 @@ describe("Architecture: Separation of Concerns", () => {
       "Should validate file path for non-stdin input",
     );
 
-    _logger.debug("Stdin/file input separation verified");
+    logger.debug("Stdin/file input separation verified");
   });
 });

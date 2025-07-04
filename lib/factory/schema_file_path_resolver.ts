@@ -14,16 +14,16 @@
 
 import { isAbsolute, join, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
 // Legacy type alias for backward compatibility during migration
-type DoubleParamsResult = PromptCliParams;
+type DoubleParams_Result = PromptCliParams;
 
 /**
- * TypeCreationResult - Unified error handling for type creation operations
+ * TypeCreation_Result - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> =
+export type TypeCreation_Result<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -73,12 +73,12 @@ export class SchemaFilePathResolver {
    * ```
    */
   constructor(
-    private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
-    private cliParams: DoubleParamsResult | TwoParamsResult,
+    private _config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
+    private _cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this.config = this.deepCopyConfig(config);
-    this.cliParams = this.deepCopyCliParams(cliParams);
+    this._config = this.deepCopyConfig(_config);
+    this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
   /**
@@ -115,22 +115,22 @@ export class SchemaFilePathResolver {
    * @returns Deep copy of the CLI parameters
    */
   private deepCopyCliParams(
-    cliParams: DoubleParamsResult | TwoParamsResult,
-  ): DoubleParamsResult | TwoParamsResult {
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): DoubleParams_Result | TwoParams_Result {
     if ("type" in cliParams && cliParams.type === "two") {
-      // TwoParamsResult
-      const twoParams = cliParams as TwoParamsResult;
-      const copy: TwoParamsResult = {
-        type: twoParams.type,
-        params: [...twoParams.params],
-        demonstrativeType: twoParams.demonstrativeType,
-        layerType: twoParams.layerType,
-        options: { ...twoParams.options },
+      // TwoParams_Result from breakdownparams
+      const twoParams = cliParams as TwoParams_Result;
+      const copy: TwoParams_Result = {
+        type: "two",
+        params: twoParams.params || [],
+        demonstrativeType: twoParams.params?.[0] || "",
+        layerType: twoParams.params?.[1] || "",
+        options: {}
       };
       return copy;
     } else {
-      // DoubleParamsResult (PromptCliParams)
-      const doubleParams = cliParams as DoubleParamsResult;
+      // DoubleParams_Result (PromptCliParams)
+      const doubleParams = cliParams as DoubleParams_Result;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
@@ -195,7 +195,7 @@ export class SchemaFilePathResolver {
    * ```
    */
   public resolveBaseDir(): string {
-    let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schema";
+    let baseDir = this._config.app_schema?.base_dir || ".agent/breakdown/schema";
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
     }
@@ -246,8 +246,8 @@ export class SchemaFilePathResolver {
    * ```
    */
   public buildSchemaPath(baseDir: string, fileName: string): string {
-    const demonstrativeType = this.getDemonstrativeType();
-    const layerType = this.getLayerType();
+    const demonstrativeType = this.getDemonstrativeType() || "";
+    const layerType = this.getLayerType() || "";
     return join(baseDir, demonstrativeType, layerType, fileName);
   }
 
@@ -257,12 +257,15 @@ export class SchemaFilePathResolver {
    */
   private getDemonstrativeType(): string {
     // Handle both legacy and new parameter structures
-    if ("demonstrativeType" in this.cliParams) {
-      return this.cliParams.demonstrativeType;
+    if ("demonstrativeType" in this._cliParams) {
+      return this._cliParams.demonstrativeType || "";
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
-    return (twoParams as unknown as { demonstrativeType?: string }).demonstrativeType || "";
+    // For TwoParams_Result structure from breakdownparams
+    const twoParams = this._cliParams as TwoParams_Result;
+    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 0) {
+      return twoParams.params[0] || "";
+    }
+    return "";
   }
 
   /**
@@ -271,11 +274,14 @@ export class SchemaFilePathResolver {
    */
   private getLayerType(): string {
     // Handle both legacy and new parameter structures
-    if ("layerType" in this.cliParams) {
-      return this.cliParams.layerType;
+    if ("layerType" in this._cliParams) {
+      return this._cliParams.layerType || "";
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
-    return (twoParams as unknown as { layerType?: string }).layerType || "";
+    // For TwoParams_Result structure from breakdownparams
+    const twoParams = this._cliParams as TwoParams_Result;
+    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 1) {
+      return twoParams.params[1] || "";
+    }
+    return "";
   }
 }

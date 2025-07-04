@@ -71,18 +71,22 @@ Deno.test("HELP_TEXT has proper formatting and alignment", async () => {
   const _lines = HELP_TEXT.split("\n");
 
   // Check for proper indentation
-  const commandLines = lines.filter((line) => line.includes("init") || line.includes("to <type>"));
-  commandLines.forEach((line) => {
+  const commandLines = _lines.filter((line: string) =>
+    line.includes("init") || line.includes("to <type>")
+  );
+  commandLines.forEach((line: string) => {
     assertEquals(line.startsWith("  "), true, "Command lines should be indented with 2 spaces");
   });
 
-  const optionLines = lines.filter((line) => line.includes("--"));
-  optionLines.forEach((line) => {
+  const optionLines = _lines.filter((line: string) => line.includes("--"));
+  optionLines.forEach((line: string) => {
     assertEquals(line.startsWith("  "), true, "Option lines should be indented with 2 spaces");
   });
 
-  const exampleLines = lines.filter((line) => line.includes("breakdown ") && line.startsWith("  "));
-  exampleLines.forEach((line) => {
+  const exampleLines = _lines.filter((line: string) =>
+    line.includes("breakdown ") && line.startsWith("  ")
+  );
+  exampleLines.forEach((line: string) => {
     assertEquals(line.startsWith("  "), true, "Example lines should be indented with 2 spaces");
   });
 });
@@ -91,7 +95,7 @@ Deno.test("HELP_TEXT has proper formatting and alignment", async () => {
  * Test showVersion function output
  */
 Deno.test("showVersion displays correct version information", async () => {
-  const { showVersion, VERSION, APP_NAME } = await import("./help.ts");
+  const { showVersion, _VERSION, APP_NAME } = await import("./help.ts");
 
   // Capture console.log output
   const originalLog = console.log;
@@ -102,7 +106,7 @@ Deno.test("showVersion displays correct version information", async () => {
     showVersion();
 
     assertEquals(logs.length, 2);
-    assertEquals(logs[0], `Breakdown v${VERSION}`);
+    assertEquals(logs[0], `Breakdown v${_VERSION}`);
     assertEquals(logs[1], APP_NAME);
   } finally {
     console.log = originalLog;
@@ -157,9 +161,9 @@ Deno.test("showUsage displays minimal usage information", async () => {
  * Test constants are properly exported
  */
 Deno.test("Exported constants have correct values", async () => {
-  const { VERSION, APP_NAME } = await import("./help.ts");
-  assertEquals(VERSION.constructor.name, "String", "VERSION should be a string");
-  assertEquals(VERSION.length > 0, true, "VERSION should not be empty");
+  const { _VERSION, APP_NAME } = await import("./help.ts");
+  assertEquals(_VERSION.constructor.name, "String", "_VERSION should be a string");
+  assertEquals(_VERSION.length > 0, true, "_VERSION should not be empty");
   assertEquals(APP_NAME, "Breakdown - AI Development Instruction Tool");
 });
 

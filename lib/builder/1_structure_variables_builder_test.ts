@@ -142,8 +142,8 @@ Deno.test("VariablesBuilder - Structure: Error handling separation", () => {
   assertEquals(_builder.getVariableCount() >= 0, true, "Should track variables appropriately");
 
   // Build should handle error state appropriately
-  const _result = _builder.build();
-  assertEquals(_result.ok, false, "Should return error result when errors exist");
+  const result = _builder.build();
+  assertEquals(result.ok, false, "Should return error result when errors exist");
 });
 
 Deno.test("VariablesBuilder - Structure: Factory integration abstraction", () => {
@@ -163,7 +163,11 @@ Deno.test("VariablesBuilder - Structure: Factory integration abstraction", () =>
   _builder.addFromFactoryValues(mockValues);
 
   // Should translate Factory values to appropriate variable types
-  assertEquals(_builder.getVariableCount() > 0, true, "Should create variables from factory values");
+  assertEquals(
+    _builder.getVariableCount() > 0,
+    true,
+    "Should create variables from factory values",
+  );
 
   // Should handle partial values gracefully
   const builder2 = new VariablesBuilder();
@@ -252,10 +256,10 @@ Deno.test("VariablesBuilder - Structure: Output format abstraction", () => {
   _builder.addUserVariable("uv-custom", "value");
 
   // PromptVariables array format
-  const _result = _builder.build();
-  assertEquals(_result.ok, true, "Should build successfully");
-  if (_result.ok) {
-    assertEquals(Array.isArray(_result.data), true, "Should return PromptVariables array");
+  const result = _builder.build();
+  assertEquals(result.ok, true, "Should build successfully");
+  if (result.ok) {
+    assertEquals(Array.isArray(result.data), true, "Should return PromptVariables array");
   }
 
   // Record format

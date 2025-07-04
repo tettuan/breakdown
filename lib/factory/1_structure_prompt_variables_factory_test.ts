@@ -17,7 +17,7 @@ import {
   assertInstanceOf as _assertInstanceOf,
 } from "@std/assert";
 import { beforeEach as _beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType as _DirectiveType,
@@ -30,13 +30,13 @@ import {
 import {
   type PromptCliOptions,
   PromptVariablesFactory,
-  type PromptVariablesFactoryOptions as _PromptVariablesFactoryOptions,
+  type PromptVariablesFactoryOptions as PromptVariablesFactoryOptions,
   TotalityPromptVariablesFactory,
   type TotalityPromptVariablesFactoryOptions as _TotalityPromptVariablesFactoryOptions,
-} from "./prompt_variables_factory.ts";
+} from "./prompt_variables__factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const _logger = new BreakdownLogger("structure-prompt-_factory");
+const logger = new BreakdownLogger("structure-prompt-_factory");
 
 /**
  * Test pattern provider for structure validation
@@ -68,7 +68,7 @@ class StructureTestPatternProvider implements TypePatternProvider {
 
 describe("PromptVariablesFactory Structure - Class Design Principles", () => {
   it("should adhere to single responsibility principle", async () => {
-    _logger.debug("Testing single responsibility principle adherence");
+    logger.debug("Testing single responsibility principle adherence");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -106,26 +106,26 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
 
       // Factory should not expose internal resolver instances
       assertEquals(
-        typeof (factory as unknown as { promptPathResolver?: unknown }).promptPathResolver,
+        typeof (_factory as any as { promptPathResolver?: unknown }).promptPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { inputPathResolver?: unknown }).inputPathResolver,
+        typeof (_factory as any as { inputPathResolver?: unknown }).inputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { outputPathResolver?: unknown }).outputPathResolver,
+        typeof (_factory as any as { outputPathResolver?: unknown }).outputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { schemaPathResolver?: unknown }).schemaPathResolver,
+        typeof (_factory as any as { schemaPathResolver?: unknown }).schemaPathResolver,
         "object",
       );
     }
   });
 
   it("should maintain clear separation of concerns between legacy and Totality factories", async () => {
-    _logger.debug("Testing separation of concerns between factory types");
+    logger.debug("Testing separation of concerns between factory types");
 
     // Legacy factory should handle string-based types
     const legacyParams: PromptCliParams = {
@@ -168,7 +168,7 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
   });
 
   it("should properly encapsulate internal state and dependencies", async () => {
-    _logger.debug("Testing proper encapsulation of internal state");
+    logger.debug("Testing proper encapsulation of internal state");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -195,26 +195,26 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
       // Internal resolvers should exist but not be directly accessible
       // (they exist as private fields)
       assertEquals(
-        typeof (factory as unknown as { promptPathResolver?: unknown }).promptPathResolver,
+        typeof (_factory as any as { promptPathResolver?: unknown }).promptPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { inputPathResolver?: unknown }).inputPathResolver,
+        typeof (_factory as any as { inputPathResolver?: unknown }).inputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { outputPathResolver?: unknown }).outputPathResolver,
+        typeof (_factory as any as { outputPathResolver?: unknown }).outputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (factory as unknown as { schemaPathResolver?: unknown }).schemaPathResolver,
+        typeof (_factory as any as { schemaPathResolver?: unknown }).schemaPathResolver,
         "object",
       );
 
       // Configuration should be private but effects should be observable
-      assertEquals(typeof (factory as unknown as { config?: unknown }).config, "object");
+      assertEquals(typeof (_factory as any as { config?: unknown }).config, "object");
       assertEquals(
-        typeof (factory as unknown as { baseDirOverride?: unknown }).baseDirOverride,
+        typeof (_factory as any as { baseDirOverride?: unknown }).baseDirOverride,
         "undefined",
       );
 
@@ -234,7 +234,7 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
 
 describe("PromptVariablesFactory Structure - Interface Consistency", () => {
   it("should maintain consistent interface patterns across factory types", async () => {
-    _logger.debug("Testing interface consistency across factory types");
+    logger.debug("Testing interface consistency across factory types");
 
     // Both factories should support similar creation patterns
     const legacyParams: PromptCliParams = {
@@ -283,7 +283,7 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
   });
 
   it("should support consistent factory configuration patterns", async () => {
-    _logger.debug("Testing consistent factory configuration patterns");
+    logger.debug("Testing consistent factory configuration patterns");
 
     const baseConfig = {
       app_prompt: { base_dir: "prompts" },
@@ -327,7 +327,7 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
   });
 
   it("should provide consistent error handling interfaces", async () => {
-    _logger.debug("Testing consistent error handling interfaces");
+    logger.debug("Testing consistent error handling interfaces");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -358,7 +358,7 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
 
 describe("PromptVariablesFactory Structure - Dependency Management", () => {
   it("should properly inject and manage path resolver dependencies", async () => {
-    _logger.debug("Testing path resolver dependency injection");
+    logger.debug("Testing path resolver dependency injection");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -376,13 +376,13 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
 
       // All path resolvers should be properly initialized
       const promptResolver =
-        (factory as unknown as { promptPathResolver?: { getPath(): string } }).promptPathResolver;
+        (_factory as any as { promptPathResolver?: { getPath(): string } }).promptPathResolver;
       const inputResolver =
-        (factory as unknown as { inputPathResolver?: { getPath(): string } }).inputPathResolver;
+        (_factory as any as { inputPathResolver?: { getPath(): string } }).inputPathResolver;
       const outputResolver =
-        (factory as unknown as { outputPathResolver?: { getPath(): string } }).outputPathResolver;
+        (_factory as any as { outputPathResolver?: { getPath(): string } }).outputPathResolver;
       const schemaResolver =
-        (factory as unknown as { schemaPathResolver?: { getPath(): string } }).schemaPathResolver;
+        (_factory as any as { schemaPathResolver?: { getPath(): string } }).schemaPathResolver;
 
       assertExists(promptResolver);
       assertExists(inputResolver);
@@ -411,7 +411,7 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
   });
 
   it("should handle configuration dependency properly", async () => {
-    _logger.debug("Testing configuration dependency handling");
+    logger.debug("Testing configuration dependency handling");
 
     const customConfig = {
       app_prompt: { base_dir: "custom_prompts" },
@@ -434,7 +434,7 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
       const _factory = TotalityPromptVariablesFactory.createWithConfig(customConfig, params);
 
       // Configuration should be properly stored and accessible
-      const internalConfig = (factory as unknown as { config?: Record<string, unknown> }).config;
+      const internalConfig = (_factory as any as { config?: Record<string, unknown> }).config;
       assertExists(internalConfig);
       const appPrompt = internalConfig as { app_prompt?: { base_dir?: string } };
       const appSchema = internalConfig as { app_schema?: { base_dir?: string } };
@@ -450,7 +450,7 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
   });
 
   it("should manage type conversion between legacy and Totality systems", async () => {
-    _logger.debug("Testing type conversion management");
+    logger.debug("Testing type conversion management");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -474,7 +474,7 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
 
       // Internal conversion should happen for legacy resolvers
       // but not be exposed in public interface
-      const legacyParams = (factory as unknown as {
+      const legacyParams = (_factory as any as {
         legacyParams?: { demonstrativeType?: string; layerType?: string };
       }).legacyParams;
       if (legacyParams) {
@@ -487,7 +487,7 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
 
 describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
   it("should follow consistent data flow from input to output", async () => {
-    _logger.debug("Testing consistent data flow patterns");
+    logger.debug("Testing consistent data flow patterns");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -534,7 +534,7 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
   });
 
   it("should maintain data integrity across factory operations", async () => {
-    _logger.debug("Testing data integrity across operations");
+    logger.debug("Testing data integrity across operations");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -581,7 +581,7 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
   });
 
   it("should handle validation flow properly", async () => {
-    _logger.debug("Testing validation flow patterns");
+    logger.debug("Testing validation flow patterns");
 
     const provider = new StructureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);

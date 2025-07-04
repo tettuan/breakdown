@@ -17,12 +17,12 @@ import { assertEquals, assertExists } from "@std/assert";
  * be accidentally modified at runtime.
  */
 Deno.test("Architecture: Config two params defaults are immutable", async () => {
-  const _moduleSource = await Deno.readTextFile(
+  const moduleSource = await Deno.readTextFile(
     new URL("./config_two_params.ts", import.meta.url).pathname,
   );
 
   // Check for const declaration
-  const hasConstDeclaration = moduleSource.includes("export const defaultConfigTwoParams");
+  const hasConstDeclaration = moduleSource.includes("export const _defaultConfigTwoParams");
   assertEquals(hasConstDeclaration, true, "Should use const for immutable default");
 
   // Check that object is not explicitly frozen (this is a design choice)
@@ -77,12 +77,12 @@ Deno.test("Architecture: Config defaults maintain type safety", async () => {
  * and domain constraints.
  */
 Deno.test("Architecture: Config defaults follow domain constraints", async () => {
-  const { defaultConfigTwoParams } = await import("./config_two_params.ts");
+  const { _defaultConfigTwoParams } = await import("./config_two_params.ts");
 
   // Verify pattern strings are valid regex
   const patterns = [
-    defaultConfigTwoParams.params.two.demonstrativeType.pattern,
-    defaultConfigTwoParams.params.two.layerType.pattern,
+    _defaultConfigTwoParams.params.two.demonstrativeType.pattern,
+    _defaultConfigTwoParams.params.two.layerType.pattern,
   ];
 
   patterns.forEach((pattern, i) => {
@@ -95,7 +95,7 @@ Deno.test("Architecture: Config defaults follow domain constraints", async () =>
   });
 
   // Check demonstrativeType matches expected values
-  const demonstrativePattern = defaultConfigTwoParams.params.two.demonstrativeType.pattern;
+  const demonstrativePattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
   assertEquals(demonstrativePattern.includes("to"), true, "Should include 'to' directive");
   assertEquals(
     demonstrativePattern.includes("summary"),
@@ -105,15 +105,15 @@ Deno.test("Architecture: Config defaults follow domain constraints", async () =>
   assertEquals(demonstrativePattern.includes("defect"), true, "Should include 'defect' directive");
 
   // Check layerType matches expected values
-  const layerPattern = defaultConfigTwoParams.params.two.layerType.pattern;
+  const layerPattern = _defaultConfigTwoParams.params.two.layerType.pattern;
   assertEquals(layerPattern.includes("project"), true, "Should include 'project' layer");
   assertEquals(layerPattern.includes("issue"), true, "Should include 'issue' layer");
   assertEquals(layerPattern.includes("task"), true, "Should include 'task' layer");
 
   // Verify required fields exist
-  assertExists(defaultConfigTwoParams.params, "Should have params");
-  assertExists(defaultConfigTwoParams.params.two, "Should have two params config");
-  assertExists(defaultConfigTwoParams.params.two.validation, "Should have validation config");
+  assertExists(_defaultConfigTwoParams.params, "Should have params");
+  assertExists(_defaultConfigTwoParams.params.two, "Should have two params config");
+  assertExists(_defaultConfigTwoParams.params.two.validation, "Should have validation config");
 });
 
 /**
@@ -154,11 +154,11 @@ Deno.test("Architecture: Config defaults are independent", async () => {
  * for DirectiveType and LayerType patterns.
  */
 Deno.test("Architecture: Config defaults align with type system", async () => {
-  const { defaultConfigTwoParams } = await import("./config_two_params.ts");
+  const { _defaultConfigTwoParams } = await import("./config_two_params.ts");
 
   // Check that patterns follow the expected format for DirectiveType and LayerType
-  const demonstrativeType = defaultConfigTwoParams.params.two.demonstrativeType;
-  const layerType = defaultConfigTwoParams.params.two.layerType;
+  const demonstrativeType = _defaultConfigTwoParams.params.two.demonstrativeType;
+  const layerType = _defaultConfigTwoParams.params.two.layerType;
 
   // Verify pattern structure (regex with alternation)
   const demonstrativeRegex = new RegExp(demonstrativeType.pattern);
@@ -178,13 +178,13 @@ Deno.test("Architecture: Config defaults align with type system", async () => {
   });
 
   // Verify validation options are strings (type-safe)
-  const valueOptions = defaultConfigTwoParams.params.two.validation.allowedValueOptions;
-  valueOptions.forEach((opt) => {
+  const valueOptions = _defaultConfigTwoParams.params.two.validation.allowedValueOptions;
+  valueOptions.forEach((opt: string) => {
     assertEquals(typeof opt, "string", `Option '${opt}' should be string`);
   });
 
   // Check boolean flags are actually boolean
-  const { userVariableOption, stdinAllowed } = defaultConfigTwoParams.params.two.validation;
+  const { userVariableOption, stdinAllowed } = _defaultConfigTwoParams.params.two.validation;
   assertEquals(typeof userVariableOption, "boolean", "userVariableOption should be boolean");
   assertEquals(typeof stdinAllowed, "boolean", "stdinAllowed should be boolean");
 });

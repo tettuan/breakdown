@@ -14,7 +14,7 @@
 
 import { assertEquals, assertExists, assertRejects, assertThrows } from "@std/assert";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -28,10 +28,10 @@ import {
   type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "./prompt_variables__factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const _logger = new BreakdownLogger("unit-prompt-_factory");
+const logger = new BreakdownLogger("unit-prompt-_factory");
 
 /**
  * Test pattern provider for unit testing
@@ -105,7 +105,7 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
   });
 
   it("should create legacy factory with basic parameters", async () => {
-    _logger.debug("Testing legacy factory creation with basic parameters");
+    logger.debug("Testing legacy factory creation with basic parameters");
 
     const params: PromptCliParams = {
       demonstrativeType: "to",
@@ -123,7 +123,7 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
   });
 
   it("should create Totality factory with validated types", async () => {
-    _logger.debug("Testing Totality factory creation with validated types");
+    logger.debug("Testing Totality factory creation with validated types");
 
     const provider = new UnitTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -150,9 +150,9 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
   });
 
   it("should create factory with pre-loaded configuration", async () => {
-    _logger.debug("Testing factory creation with pre-loaded configuration");
+    logger.debug("Testing factory creation with pre-loaded configuration");
 
-    const _config = {
+    const config = {
       app_prompt: { base_dir: "custom_prompts" },
       app_schema: { base_dir: "custom_schemas" },
     };
@@ -178,7 +178,7 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
   });
 
   it("should handle factory creation failure gracefully", async () => {
-    _logger.debug("Testing factory creation failure handling");
+    logger.debug("Testing factory creation failure handling");
 
     // Test with invalid configuration
     const invalidConfig = {
@@ -278,7 +278,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should resolve prompt file path correctly", async () => {
-    _logger.debug("Testing prompt file path resolution");
+    logger.debug("Testing prompt file path resolution");
 
     const promptPath = _factory.promptFilePath;
 
@@ -288,7 +288,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should resolve input file path correctly", async () => {
-    _logger.debug("Testing input file path resolution");
+    logger.debug("Testing input file path resolution");
 
     const inputPath = _factory.inputFilePath;
 
@@ -297,7 +297,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should resolve output file path correctly", async () => {
-    _logger.debug("Testing output file path resolution");
+    logger.debug("Testing output file path resolution");
 
     const outputPath = _factory.outputFilePath;
 
@@ -306,7 +306,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should resolve schema file path correctly", async () => {
-    _logger.debug("Testing schema file path resolution");
+    logger.debug("Testing schema file path resolution");
 
     const schemaPath = _factory.schemaFilePath;
 
@@ -316,7 +316,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should handle empty input file path gracefully", async () => {
-    _logger.debug("Testing empty input file path handling");
+    logger.debug("Testing empty input file path handling");
 
     const provider = new UnitTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -339,7 +339,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   });
 
   it("should get all parameters in single call", async () => {
-    _logger.debug("Testing getAllParams method");
+    logger.debug("Testing getAllParams method");
 
     const allParams = _factory.getAllParams();
 
@@ -363,7 +363,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
   });
 
   it("should handle all CLI options correctly", async () => {
-    _logger.debug("Testing comprehensive CLI options handling");
+    logger.debug("Testing comprehensive CLI options handling");
 
     const typesResult = typeFactory.createBothTypes("defect", "task");
     assertEquals(typesResult.ok, true);
@@ -421,7 +421,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
   });
 
   it("should handle boolean flags correctly", async () => {
-    _logger.debug("Testing boolean flag handling");
+    logger.debug("Testing boolean flag handling");
 
     const typesResult = typeFactory.createBothTypes("init", "bugs");
     assertEquals(typesResult.ok, true);
@@ -452,7 +452,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
   });
 
   it("should handle error format options correctly", async () => {
-    _logger.debug("Testing error format option handling");
+    logger.debug("Testing error format option handling");
 
     const typesResult = typeFactory.createBothTypes("find", "temp");
     assertEquals(typesResult.ok, true);
@@ -480,7 +480,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
   });
 
   it("should handle empty and undefined custom variables", async () => {
-    _logger.debug("Testing empty and undefined custom variables");
+    logger.debug("Testing empty and undefined custom variables");
 
     const typesResult = typeFactory.createBothTypes("summary", "issue");
     assertEquals(typesResult.ok, true);
@@ -519,7 +519,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
   });
 
   it("should validate all required parameters", async () => {
-    _logger.debug("Testing comprehensive parameter validation");
+    logger.debug("Testing comprehensive parameter validation");
 
     const typesResult = typeFactory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
@@ -547,7 +547,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
   });
 
   it("should detect and report base directory errors", async () => {
-    _logger.debug("Testing base directory error detection");
+    logger.debug("Testing base directory error detection");
 
     const invalidConfigs = [
       { app_prompt: {}, app_schema: { base_dir: "schemas" } }, // Missing prompt base_dir
@@ -578,7 +578,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
   });
 
   it("should handle validation failures gracefully", async () => {
-    _logger.debug("Testing validation failure handling");
+    logger.debug("Testing validation failure handling");
 
     const typesResult = typeFactory.createBothTypes("defect", "task");
     assertEquals(typesResult.ok, true);
@@ -605,7 +605,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
   });
 
   it("should provide meaningful error messages", async () => {
-    _logger.debug("Testing meaningful error message provision");
+    logger.debug("Testing meaningful error message provision");
 
     const typesResult = typeFactory.createBothTypes("init", "bugs");
     assertEquals(typesResult.ok, true);
@@ -642,7 +642,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
   });
 
   it("should analyze path traversal vulnerability in schema resolution", async () => {
-    _logger.debug("Testing path traversal vulnerability analysis");
+    logger.debug("Testing path traversal vulnerability analysis");
 
     const typesResult = typeFactory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
@@ -668,7 +668,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
         assertEquals(typeof schemaPath, "string");
         assertEquals(schemaPath.length > 0, true);
 
-        _logger.debug(`Schema path generated: ${schemaPath}`);
+        logger.debug(`Schema path generated: ${schemaPath}`);
 
         // Document current behavior for security review
         // NOTE: This test documents the current vulnerability -
@@ -679,7 +679,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
   });
 
   it("should validate file path components for security", async () => {
-    _logger.debug("Testing file path component validation");
+    logger.debug("Testing file path component validation");
 
     const typesResult = typeFactory.createBothTypes("summary", "issue");
     assertEquals(typesResult.ok, true);
@@ -715,7 +715,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
 
         // Log what paths are actually generated for analysis
         allPaths.forEach((path, index) => {
-          _logger.debug(`Path ${index}: ${path}`);
+          logger.debug(`Path ${index}: ${path}`);
 
           // Verify paths are resolved and don't contain raw traversal sequences
           assertEquals(typeof path, "string");
@@ -727,7 +727,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
   });
 
   it("should handle null and undefined path components safely", async () => {
-    _logger.debug("Testing null/undefined path component safety");
+    logger.debug("Testing null/undefined path component safety");
 
     const typesResult = typeFactory.createBothTypes("defect", "task");
     assertEquals(typesResult.ok, true);
@@ -748,14 +748,14 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options: {},
         };
 
-        const _factory = TotalityPromptVariablesFactory.createWithConfig(config as unknown, params);
+        const _factory = TotalityPromptVariablesFactory.createWithConfig(config as any, params);
 
         // Should not throw and should handle null/undefined gracefully
         assertEquals(typeof _factory.schemaFilePath, "string");
         assertEquals(_factory.schemaFilePath.length > 0, true);
 
         // Should provide meaningful error indication for invalid base directories
-        if (_config.app_prompt?.base_dir === null || _config.app_prompt?.base_dir === undefined) {
+        if (config.app_prompt?.base_dir === null || config.app_prompt?.base_dir === undefined) {
           assertEquals(_factory.hasValidBaseDir(), false);
           assertExists(_factory.getBaseDirError());
         }
@@ -764,7 +764,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
   });
 
   it("should sanitize custom variables to prevent injection attacks", async () => {
-    _logger.debug("Testing custom variable sanitization");
+    logger.debug("Testing custom variable sanitization");
 
     const typesResult = typeFactory.createBothTypes("init", "bugs");
     assertEquals(typesResult.ok, true);
@@ -804,7 +804,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
   });
 
   it("should handle path length validation safely", async () => {
-    _logger.debug("Testing path length handling");
+    logger.debug("Testing path length handling");
 
     const typesResult = typeFactory.createBothTypes("find", "temp");
     assertEquals(typesResult.ok, true);
@@ -842,7 +842,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
       ];
 
       allPaths.forEach((path, index) => {
-        _logger.debug(`Path ${index} length: ${path.length}`);
+        logger.debug(`Path ${index} length: ${path.length}`);
         assertEquals(typeof path, "string");
         assertEquals(path.length > 0, true);
       });
@@ -860,7 +860,7 @@ describe("PromptVariablesFactory Unit Tests - Cryptographic Security", () => {
   });
 
   it("should identify Math.random() cryptographic weakness", async () => {
-    _logger.debug("Testing cryptographic random number generation weakness");
+    logger.debug("Testing cryptographic random number generation weakness");
 
     const typesResult = typeFactory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
@@ -885,7 +885,7 @@ describe("PromptVariablesFactory Unit Tests - Cryptographic Security", () => {
 
       // Analyze filename patterns
       outputPaths.forEach((path, index) => {
-        _logger.debug(`Generated path ${index}: ${path}`);
+        logger.debug(`Generated path ${index}: ${path}`);
         assertEquals(typeof path, "string");
 
         // Extract filename portion for analysis
@@ -919,7 +919,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
   });
 
   it("should maintain type safety with DirectiveType instances", async () => {
-    _logger.debug("Testing DirectiveType instance type safety");
+    logger.debug("Testing DirectiveType instance type safety");
 
     const directiveResult = typeFactory.createDirectiveType("to");
     const layerResult = typeFactory.createLayerType("project");
@@ -944,7 +944,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
   });
 
   it("should maintain type safety with LayerType instances", async () => {
-    _logger.debug("Testing LayerType instance type safety");
+    logger.debug("Testing LayerType instance type safety");
 
     const directiveResult = typeFactory.createDirectiveType("summary");
     const layerResult = typeFactory.createLayerType("issue");
@@ -971,7 +971,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
   });
 
   it("should handle pattern provider integration correctly", async () => {
-    _logger.debug("Testing pattern provider integration");
+    logger.debug("Testing pattern provider integration");
 
     // Test with different pattern configurations
     const customProvider = new UnitTestPatternProvider(
@@ -993,7 +993,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
   });
 
   it("should demonstrate comprehensive factory functionality", async () => {
-    _logger.debug("Testing comprehensive factory functionality demonstration");
+    logger.debug("Testing comprehensive factory functionality demonstration");
 
     const typesResult = typeFactory.createBothTypes("find", "temp");
     assertEquals(typesResult.ok, true);

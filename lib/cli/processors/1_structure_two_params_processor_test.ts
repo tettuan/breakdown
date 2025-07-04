@@ -20,7 +20,7 @@ import {
   type ProcessorResult,
   TwoParamsProcessor,
 } from "./two_params_processor.ts";
-import type { TwoParamsResult } from "../../deps.ts";
+import type { TwoParams_Result } from "../../deps.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
 
 /**
@@ -47,14 +47,14 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
 
     // Should be able to create multiple instances
     const processor2 = new TwoParamsProcessor();
-    assert(processor !== processor2, "Should create separate instances");
+    assert(_processor !== processor2, "Should create separate instances");
   });
 
   await t.step("maintains consistent Result type structure", () => {
     const _processor = new TwoParamsProcessor();
 
     // Test with valid input
-    const validInput: TwoParamsResult = {
+    const validInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -75,7 +75,7 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
     }
 
     // Test with invalid input
-    const invalidResult = _processor.process(null as unknown as TwoParamsResult);
+    const invalidResult = _processor.process(null as any as TwoParams_Result);
     assert("ok" in invalidResult);
     if (!invalidResult.ok) {
       assert("error" in invalidResult);
@@ -90,7 +90,7 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
     const errorScenarios = [
       { input: null, expectedKind: "InvalidParams" },
       { input: undefined, expectedKind: "InvalidParams" },
-      { input: {} as TwoParamsResult, expectedKind: "MissingRequiredField" },
+      { input: {} as TwoParams_Result, expectedKind: "MissingRequiredField" },
       {
         input: { type: "two", demonstrativeType: "", layerType: "", params: [], options: {} },
         expectedKind: "MissingRequiredField",
@@ -98,10 +98,10 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
     ];
 
     for (const scenario of errorScenarios) {
-      const _result = _processor.process(scenario.input as TwoParamsResult);
+      const result = _processor.process(scenario.input as TwoParams_Result);
 
-      if (!_result.ok) {
-        const error = _result.error;
+      if (!result.ok) {
+        const error = result.error;
 
         // All errors should have 'kind' property
         assert("kind" in error);
@@ -143,7 +143,7 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
 
     // Common private method patterns
     const expectedPrivateMethods = [
-      "validateTwoParamsResult",
+      "validateTwoParams_Result",
       "convertToFactoryValues",
       "extractInputFilePath",
       "extractOutputFilePath",
@@ -168,7 +168,7 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Process method should have clear single responsibility
-    const validInput: TwoParamsResult = {
+    const validInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -176,16 +176,16 @@ Deno.test("TwoParamsProcessor Structure", async (t) => {
       options: {},
     };
 
-    const _result = _processor.process(validInput);
+    const result = _processor.process(validInput);
 
     // Result should be either VariablesBuilder or ProcessorError
-    if (_result.ok) {
+    if (result.ok) {
       // Success case should return VariablesBuilder
-      assert(_result.data instanceof VariablesBuilder);
+      assert(result.data instanceof VariablesBuilder);
     } else {
       // Error case should return ProcessorError
       const validErrorKinds = ["InvalidParams", "ConversionFailed", "MissingRequiredField"];
-      assert(validErrorKinds.includes(_result.error.kind));
+      assert(validErrorKinds.includes(result.error.kind));
     }
   });
 });
@@ -201,7 +201,7 @@ Deno.test("ProcessorError Type Structure", async (t) => {
     const _processor = new TwoParamsProcessor();
 
     // Force different error types
-    const nullResult = _processor.process(null as unknown as TwoParamsResult);
+    const nullResult = _processor.process(null as any as TwoParams_Result);
     const emptyResult = _processor.process(
       {
         type: "two",
@@ -209,7 +209,7 @@ Deno.test("ProcessorError Type Structure", async (t) => {
         layerType: "project",
         params: [],
         options: {},
-      } as TwoParamsResult,
+      } as TwoParams_Result,
     );
 
     const errors: ProcessorError[] = [];
@@ -268,29 +268,29 @@ Deno.test("ProcessorResult Type Structure", async (t) => {
           layerType: "project",
           params: ["to", "project"],
           options: {},
-        } as TwoParamsResult,
+        } as TwoParams_Result,
         expectSuccess: true,
       },
       {
-        input: null as unknown as TwoParamsResult,
+        input: null as any as TwoParams_Result,
         expectSuccess: false,
       },
     ];
 
     for (const scenario of scenarios) {
-      const _result = _processor.process(scenario.input);
+      const result = _processor.process(scenario.input);
 
       // Verify Result structure
       assert("ok" in result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
-      if (scenario.expectSuccess && _result.ok) {
+      if (scenario.expectSuccess && result.ok) {
         assert("data" in result);
-        assert(_result.data instanceof VariablesBuilder);
+        assert(result.data instanceof VariablesBuilder);
         assert(!("error" in result));
-      } else if (!scenario.expectSuccess && !_result.ok) {
+      } else if (!scenario.expectSuccess && !result.ok) {
         assert("error" in result);
-        assert("kind" in _result.error);
+        assert("kind" in result.error);
         assert(!("data" in result));
       }
     }
@@ -299,7 +299,7 @@ Deno.test("ProcessorResult Type Structure", async (t) => {
   await t.step("maintains type safety in Result usage", () => {
     const _processor = new TwoParamsProcessor();
 
-    const validInput: TwoParamsResult = {
+    const validInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "summary",
       layerType: "issue",
@@ -310,17 +310,17 @@ Deno.test("ProcessorResult Type Structure", async (t) => {
     const result: ProcessorResult<VariablesBuilder> = _processor.process(validInput);
 
     // Type guard should work correctly
-    if (_result.ok) {
-      // TypeScript should know _result.data is VariablesBuilder
-      const builder: VariablesBuilder = _result.data;
+    if (result.ok) {
+      // TypeScript should know result.data is VariablesBuilder
+      const builder: VariablesBuilder = result.data;
       assertExists(builder);
 
       // Should be able to call VariablesBuilder methods
       const buildResult = builder.build();
       assertExists(buildResult);
     } else {
-      // TypeScript should know _result.error is ProcessorError
-      const error: ProcessorError = _result.error;
+      // TypeScript should know result.error is ProcessorError
+      const error: ProcessorError = result.error;
       assertExists(error.kind);
     }
   });

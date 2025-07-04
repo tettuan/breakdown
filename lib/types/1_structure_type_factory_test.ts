@@ -20,7 +20,7 @@ import {
   type TypePatternProvider,
 } from "./mod.ts";
 
-const _logger = new BreakdownLogger("type-factory-structure");
+const logger = new BreakdownLogger("type-factory-structure");
 
 // Minimal provider for structure testing
 class StructureTestProvider implements TypePatternProvider {
@@ -40,10 +40,10 @@ class StructureTestProvider implements TypePatternProvider {
 
 describe("TypeFactory - Component Structure", () => {
   it("should encapsulate pattern provider dependency properly", () => {
-    _logger.debug("Testing pattern provider encapsulation");
+    logger.debug("Testing pattern provider encapsulation");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Factory should not expose provider directly
     assertEquals(
@@ -56,21 +56,21 @@ describe("TypeFactory - Component Structure", () => {
     ); // no public accessor
 
     // Factory should only expose methods for type creation and validation
-    assertExists(_factory.createDirectiveType);
-    assertExists(_factory.createLayerType);
-    assertExists(_factory.createBothTypes);
-    assertExists(_factory.validateBothValues);
-    assertExists(_factory.getPatternAvailability);
+    assertExists(factory.createDirectiveType);
+    assertExists(factory.createLayerType);
+    assertExists(factory.createBothTypes);
+    assertExists(factory.validateBothValues);
+    assertExists(factory.getPatternAvailability);
   });
 
   it("should maintain cohesive TypeCreationResult structure", () => {
-    _logger.debug("Testing TypeCreationResult structure cohesion");
+    logger.debug("Testing TypeCreationResult structure cohesion");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Success result structure
-    const successResult = _factory.createDirectiveType("to");
+    const successResult = factory.createDirectiveType("to");
     assertEquals(successResult.ok, true);
 
     if (successResult.ok) {
@@ -81,7 +81,7 @@ describe("TypeFactory - Component Structure", () => {
     }
 
     // Failure result structure
-    const failureResult = _factory.createDirectiveType("invalid");
+    const failureResult = factory.createDirectiveType("invalid");
     assertEquals(failureResult.ok, false);
 
     if (!failureResult.ok) {
@@ -92,7 +92,7 @@ describe("TypeFactory - Component Structure", () => {
   });
 
   it("should maintain consistent error structure across all methods", () => {
-    _logger.debug("Testing consistent error structure");
+    logger.debug("Testing consistent error structure");
 
     const disabledProvider = new StructureTestProvider(false, false);
     const enabledProvider = new StructureTestProvider(true, true);
@@ -132,15 +132,15 @@ describe("TypeFactory - Component Structure", () => {
   });
 
   it("should maintain proper coupling between createBothTypes and individual creators", () => {
-    _logger.debug("Testing coupling between createBothTypes and individual creators");
+    logger.debug("Testing coupling between createBothTypes and individual creators");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // createBothTypes should behave consistently with individual creators
-    const individualDirective = _factory.createDirectiveType("summary");
-    const individualLayer = _factory.createLayerType("project");
-    const bothResult = _factory.createBothTypes("summary", "project");
+    const individualDirective = factory.createDirectiveType("summary");
+    const individualLayer = factory.createLayerType("project");
+    const bothResult = factory.createBothTypes("summary", "project");
 
     assertEquals(individualDirective.ok, true);
     assertEquals(individualLayer.ok, true);
@@ -159,7 +159,7 @@ describe("TypeFactory - Component Structure", () => {
   });
 
   it("should maintain loose coupling with TypePatternProvider interface", () => {
-    _logger.debug("Testing loose coupling with TypePatternProvider");
+    logger.debug("Testing loose coupling with TypePatternProvider");
 
     // Factory should work with any implementation of TypePatternProvider
     class CustomProvider implements TypePatternProvider {
@@ -197,28 +197,28 @@ describe("TypeFactory - Component Structure", () => {
 
 describe("TypeFactory - Method Cohesion", () => {
   it("should maintain cohesive validation methods", () => {
-    _logger.debug("Testing validation method cohesion");
+    logger.debug("Testing validation method cohesion");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // validateBothValues should be consistent with createBothTypes
-    const validationResult = _factory.validateBothValues("to", "project");
-    const creationResult = _factory.createBothTypes("to", "project");
+    const validationResult = factory.validateBothValues("to", "project");
+    const creationResult = factory.createBothTypes("to", "project");
 
     assertEquals(validationResult, true);
     assertEquals(creationResult.ok, true);
 
     // Invalid validation should be consistent
-    const invalidValidation = _factory.validateBothValues("invalid", "invalid");
-    const invalidCreation = _factory.createBothTypes("invalid", "invalid");
+    const invalidValidation = factory.validateBothValues("invalid", "invalid");
+    const invalidCreation = factory.createBothTypes("invalid", "invalid");
 
     assertEquals(invalidValidation, false);
     assertEquals(invalidCreation.ok, false);
   });
 
   it("should maintain cohesive availability reporting", () => {
-    _logger.debug("Testing availability reporting cohesion");
+    logger.debug("Testing availability reporting cohesion");
 
     // Full availability
     const fullProvider = new StructureTestProvider(true, true);
@@ -249,12 +249,12 @@ describe("TypeFactory - Method Cohesion", () => {
   });
 
   it("should maintain cohesive debug information structure", () => {
-    _logger.debug("Testing debug information structure cohesion");
+    logger.debug("Testing debug information structure cohesion");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const debugInfo = _factory.debug();
+    const debugInfo = factory.debug();
 
     // Debug info should have consistent structure
     assertExists(debugInfo.patternProvider);
@@ -263,7 +263,7 @@ describe("TypeFactory - Method Cohesion", () => {
     assertEquals(typeof debugInfo.availability, "object");
 
     // Availability in debug should match getPatternAvailability
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
     assertEquals(debugInfo.availability.directive, availability.directive);
     assertEquals(debugInfo.availability.layer, availability.layer);
     assertEquals(debugInfo.availability.both, availability.both);
@@ -272,7 +272,7 @@ describe("TypeFactory - Method Cohesion", () => {
 
 describe("TypeFactory - Error Structure Integrity", () => {
   it("should maintain error type discrimination", () => {
-    _logger.debug("Testing error type discrimination");
+    logger.debug("Testing error type discrimination");
 
     const noPatternProvider = new StructureTestProvider(false, false);
     const invalidPatternProvider = new StructureTestProvider(true, true);
@@ -302,13 +302,13 @@ describe("TypeFactory - Error Structure Integrity", () => {
   });
 
   it("should maintain error propagation in composite operations", () => {
-    _logger.debug("Testing error propagation in composite operations");
+    logger.debug("Testing error propagation in composite operations");
 
     const provider = new StructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // If directive fails, both should fail with directive error
-    const bothFailDirective = _factory.createBothTypes("invalid", "project");
+    const bothFailDirective = factory.createBothTypes("invalid", "project");
     assertEquals(bothFailDirective.ok, false);
 
     if (!bothFailDirective.ok) {
@@ -317,7 +317,7 @@ describe("TypeFactory - Error Structure Integrity", () => {
     }
 
     // If layer fails, both should fail with layer error
-    const bothFailLayer = _factory.createBothTypes("to", "invalid");
+    const bothFailLayer = factory.createBothTypes("to", "invalid");
     assertEquals(bothFailLayer.ok, false);
 
     if (!bothFailLayer.ok) {

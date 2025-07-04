@@ -16,7 +16,7 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsOrchestrator } from "./two_params_orchestrator.ts";
 import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
@@ -24,7 +24,7 @@ import type { TwoParamsValidator } from "../validators/two_params_validator.ts";
 import type { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { isError } from "$lib/types/result.ts";
 
-const _logger = new BreakdownLogger("architecture-two-params-orchestrator");
+const _logger = new _BreakdownLogger("architecture-two-params-orchestrator");
 
 describe("TwoParamsOrchestrator - Architecture Constraints", () => {
   it("should follow Totality principle with Result types (no exceptions)", async () => {
@@ -44,7 +44,7 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
         const result = await orchestrator.execute(params, config, options);
         // Should return Result type
         assert("ok" in result);
-        assertEquals(_result.ok, false); // All test cases should fail
+        assertEquals(result.ok, false); // All test cases should fail
       } catch (e) {
         // Should never throw - violates Totality
         throw new Error(`Totality violation: threw exception instead of returning Result: ${e}`);
@@ -106,15 +106,15 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
 
     // Private methods should be for orchestration steps
     const privateMethods = [
-      "extractCustomVariables",
-      "processVariables",
-      "createCliParams",
-      "generatePrompt",
+      "_extractCustomVariables",
+      "_processVariables",
+      "_createCliParams",
+      "_generatePrompt",
     ];
 
     privateMethods.forEach((method) => {
       assert(
-        typeof (orchestrator as unknown as Record<string, unknown>)[method] === "function",
+        typeof (orchestrator as any as Record<string, unknown>)[method] === "function",
         `Missing orchestration method: ${method}`,
       );
     });
@@ -138,17 +138,17 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     const orchestrator = new TwoParamsOrchestrator();
 
     // Verify components are injected/created in constructor
-    assert((orchestrator as unknown as { validator?: unknown }).validator);
-    assert((orchestrator as unknown as { stdinProcessor?: unknown }).stdinProcessor);
+    assert((orchestrator as any as { validator?: unknown }).validator);
+    assert((orchestrator as any as { stdinProcessor?: unknown }).stdinProcessor);
 
     // Components should be instances of expected types
     assertEquals(
-      (orchestrator as unknown as { validator?: { constructor: { name: string } } }).validator
+      (orchestrator as any as { validator?: { constructor: { name: string } } }).validator
         ?.constructor.name,
       "TwoParamsValidator",
     );
     assertEquals(
-      (orchestrator as unknown as { stdinProcessor?: { constructor: { name: string } } })
+      (orchestrator as any as { stdinProcessor?: { constructor: { name: string } } })
         .stdinProcessor?.constructor.name,
       "TwoParamsStdinProcessor",
     );
@@ -174,13 +174,13 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
 
     // Should accept injected dependencies
     const orchestrator = new TwoParamsOrchestrator(
-      mockValidator as unknown as TwoParamsValidator,
-      mockStdinProcessor as unknown as TwoParamsStdinProcessor,
+      mockValidator as any as TwoParamsValidator,
+      mockStdinProcessor as any as TwoParamsStdinProcessor,
     );
 
-    assert((orchestrator as unknown as { validator?: unknown }).validator === mockValidator);
+    assert((orchestrator as any as { validator?: unknown }).validator === mockValidator);
     assert(
-      (orchestrator as unknown as { stdinProcessor?: unknown }).stdinProcessor ===
+      (orchestrator as any as { stdinProcessor?: unknown }).stdinProcessor ===
         mockStdinProcessor,
     );
   });
@@ -198,7 +198,7 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     ];
 
     for (const { params, config, options } of unsafeInputs) {
-      const _result = await orchestrator.execute(params, config, options);
+      const result = await orchestrator.execute(params, config, options);
       // Should handle gracefully without type errors
       assert("ok" in result);
     }
@@ -289,7 +289,7 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
 
     // Test validation error propagation
     const validationOrchestrator = new TwoParamsOrchestrator(
-      errorValidator as unknown as TwoParamsValidator,
+      errorValidator as any as TwoParamsValidator,
       undefined,
     );
     const validationResult = await validationOrchestrator.execute(["to", "project"], {}, {});
@@ -301,7 +301,7 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     // Test stdin error transformation
     const stdinOrchestrator = new TwoParamsOrchestrator(
       undefined,
-      errorStdinProcessor as unknown as TwoParamsStdinProcessor,
+      errorStdinProcessor as any as TwoParamsStdinProcessor,
     );
     const stdinResult = await stdinOrchestrator.execute(["to", "project"], {}, {});
     assertEquals(stdinResult.ok, false);
@@ -320,11 +320,11 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     const options = { option: "test" };
 
     // Store original values
-    const originalParams = [...params];
-    const originalConfig = { ...config };
+    const originalParams = [..._params];
+    const originalConfig = { ..._config };
     const originalOptions = { ...options };
 
-    await orchestrator.execute(params, config, options);
+    await orchestrator.execute(_params, _config, options);
 
     // Inputs should not be mutated
     assertEquals(_params, originalParams);
@@ -338,20 +338,20 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     const orchestrator = new TwoParamsOrchestrator();
 
     // Test that errors provide sufficient context
-    const _result = await orchestrator.execute(["invalid_demo", "invalid_layer"], {}, {});
+    const result = await orchestrator.execute(["invalid_demo", "invalid_layer"], {}, {});
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Error should indicate what failed
-      assert("kind" in _result.error);
+      assert("kind" in result.error);
 
       // Depending on error type, should have relevant context
-      if ("message" in _result.error) {
-        assert(typeof _result.error.message === "string");
-        assert(_result.error.message.length > 0);
+      if ("message" in result.error) {
+        assert(typeof result.error.message === "string");
+        assert(result.error.message.length > 0);
       }
 
-      if ("errors" in _result.error) {
-        assert(Array.isArray(_result.error.errors));
+      if ("errors" in result.error) {
+        assert(Array.isArray(result.error.errors));
       }
     }
   });

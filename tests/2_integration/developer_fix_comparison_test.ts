@@ -5,14 +5,14 @@
 
 import { assertEquals, assertExists, assertNotEquals } from "jsr:@std/assert";
 import { join } from "jsr:@std/path";
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 import { DEFAULT_PROMPT_BASE_DIR } from "../../lib/config/constants.ts";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateValidator,
 } from "../../lib/helpers/template_validator.ts";
 
-const _BASE_DIR = Deno.cwd();
+const BASE_DIR = Deno.cwd();
 
 Deno.test("修正前: ハードコーディング状態の確認", async () => {
   // template_validator.tsのハードコード確認
@@ -26,7 +26,7 @@ Deno.test("修正前: ハードコーディング状態の確認", async () => {
   assertEquals(firstMapping.source, expectedPath, "現在はハードコードとconstants.tsが一致している");
 
   const logger = new BreakdownLogger();
-  _logger.info("ハードコーディング状態確認完了");
+  logger.info("ハードコーディング状態確認完了");
 });
 
 Deno.test("修正前: constants.ts変更による影響テスト", async () => {
@@ -41,7 +41,7 @@ Deno.test("修正前: constants.ts変更による影響テスト", async () => {
   const firstMapping = DEFAULT_TEMPLATE_MAPPINGS[0];
   assertNotEquals(firstMapping.source, `${simulatedNewPath}/summary/issue/f_issue.md`);
 
-  _logger.info("constants.ts変更時の不整合を確認（修正前の問題）");
+  logger.info("constants.ts変更時の不整合を確認（修正前の問題）");
 });
 
 Deno.test("修正後想定: constants.ts参照による整合性テスト", async () => {
@@ -64,7 +64,7 @@ Deno.test("修正後想定: constants.ts参照による整合性テスト", asyn
   const updatedMapping = createDynamicMapping(newBasePath);
   assertEquals(updatedMapping.source, "lib/templates/prompts/summary/issue/f_issue.md");
 
-  _logger.info("修正後の動的パス生成をシミュレーション");
+  logger.info("修正後の動的パス生成をシミュレーション");
 });
 
 Deno.test("修正前: template_validator実際のファイルアクセステスト", async () => {
@@ -75,7 +75,7 @@ Deno.test("修正前: template_validator実際のファイルアクセステス�
   // 現在のハードコードされたパスでのバリデーション
   const validation = await validator.validateTemplates();
 
-  _logger.info("テンプレート検証結果", {
+  logger.info("テンプレート検証結果", {
     totalRequired: validation.totalRequired,
     missing: validation.missingTemplates.length,
     existing: validation.existingTemplates.length,
@@ -95,7 +95,7 @@ Deno.test("ハードコード箇所の網羅的確認", async () => {
   // ハードコード検出パターン
   const hardcodedPattern = /^lib\/breakdown\/prompts\//;
 
-  const hardcodedCount = 0;
+  let hardcodedCount = 0;
   for (const path of hardcodedPaths) {
     if (hardcodedPattern.test(path)) {
       hardcodedCount++;
@@ -103,7 +103,7 @@ Deno.test("ハードコード箇所の網羅的確認", async () => {
   }
 
   assertEquals(hardcodedCount, hardcodedPaths.length, "全てのパスがハードコードされている");
-  _logger.info("ハードコードされたパスを確認", { count: hardcodedCount });
+  logger.info("ハードコードされたパスを確認", { count: hardcodedCount });
 });
 
 Deno.test("修正提案: 動的パス生成の実装例", async () => {
@@ -137,7 +137,7 @@ Deno.test("修正提案: 動的パス生成の実装例", async () => {
   const updatedMapping = createTemplateMapping(newBaseDir, "summary", "issue", "f_issue.md");
   assertEquals(updatedMapping.source, "lib/templates/prompts/summary/issue/f_issue.md");
 
-  _logger.info("動的パス生成の実装例を検証");
+  logger.info("動的パス生成の実装例を検証");
 });
 
 Deno.test("lib/templates/ディレクトリ構造確認", async () => {
@@ -158,11 +158,11 @@ Deno.test("lib/templates/ディレクトリ構造確認", async () => {
     assertEquals(entries.includes("prompts.ts"), true);
     assertEquals(entries.includes("schema.ts"), true);
 
-    _logger.debug("lib/templates/内容", { entries });
+    logger.debug("lib/templates/内容", { entries });
   } catch (error) {
     // ディレクトリが存在しない場合はテストをスキップ
     if (error instanceof Deno.errors.NotFound) {
-      _logger.warn("lib/templates/ ディレクトリが存在しません - テストスキップ");
+      logger.warn("lib/templates/ ディレクトリが存在しません - テストスキップ");
       return;
     }
     throw error;

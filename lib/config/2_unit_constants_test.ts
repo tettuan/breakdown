@@ -2,7 +2,7 @@ import { assertEquals, assertThrows } from "@std/assert";
 import {
   DEFAULT_PROMPT_BASE_DIR,
   DEFAULT_SCHEMA_BASE_DIR,
-  DEFAULT_WORKSPACE_STRUCTURE,
+  _DEFAULT_WORKSPACE_STRUCTURE,
   type DirectoryType,
 } from "./constants.ts";
 
@@ -16,11 +16,11 @@ import {
  * - Result type handling
  */
 
-Deno.test("Unit: DEFAULT_WORKSPACE_STRUCTURE has correct values", () => {
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.root, ".agent/breakdown");
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.issues, "issues");
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.tasks, "tasks");
-  assertEquals(DEFAULT_WORKSPACE_STRUCTURE.directories.projects, "projects");
+Deno.test("Unit: _DEFAULT_WORKSPACE_STRUCTURE has correct values", () => {
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.root, ".agent/breakdown");
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.directories.issues, "issues");
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.directories.tasks, "tasks");
+  assertEquals(_DEFAULT_WORKSPACE_STRUCTURE.directories.projects, "projects");
 });
 
 Deno.test("Unit: DEFAULT_PROMPT_BASE_DIR has correct value", () => {
@@ -40,9 +40,9 @@ Deno.test("Unit: DirectoryType allows only valid directory keys", () => {
   const validTypes: DirectoryType[] = ["issues", "tasks", "projects"];
 
   validTypes.forEach((dirType) => {
-    const _dirPath = DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
-    assertEquals(typeof dirPath, "string");
-    assertEquals(dirPath.length > 0, true);
+    const _dirPath = _DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
+    assertEquals(typeof _dirPath, "string");
+    assertEquals(_dirPath.length > 0, true);
   });
 
   // TypeScript prevents invalid types at compile time
@@ -72,7 +72,7 @@ Deno.test("Unit: Smart Constructor pattern for workspace paths", () => {
       }
 
       // Validate directory type exists
-      const dirName = DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
+      const dirName = _DEFAULT_WORKSPACE_STRUCTURE.directories[dirType];
       if (!dirName) {
         return { success: false, error: `Unknown directory type: ${dirType}` };
       }
@@ -123,7 +123,7 @@ Deno.test("Unit: Discriminated Union for configuration types", () => {
     | {
       type: "workspace";
       root: string;
-      directories: typeof DEFAULT_WORKSPACE_STRUCTURE.directories;
+      directories: typeof _DEFAULT_WORKSPACE_STRUCTURE.directories;
     }
     | { type: "prompt"; baseDir: string }
     | { type: "schema"; baseDir: string };
@@ -134,8 +134,8 @@ Deno.test("Unit: Discriminated Union for configuration types", () => {
       case "workspace":
         return {
           type: "workspace",
-          root: DEFAULT_WORKSPACE_STRUCTURE.root,
-          directories: DEFAULT_WORKSPACE_STRUCTURE.directories,
+          root: _DEFAULT_WORKSPACE_STRUCTURE.root,
+          directories: _DEFAULT_WORKSPACE_STRUCTURE.directories,
         };
       case "prompt":
         return {
@@ -178,8 +178,8 @@ Deno.test("Unit: Complete path construction with all directory types", () => {
   const allDirectoryTypes: DirectoryType[] = ["issues", "tasks", "projects"];
 
   const constructedPaths = allDirectoryTypes.map((dirType) => {
-    const path = `${DEFAULT_WORKSPACE_STRUCTURE.root}/${
-      DEFAULT_WORKSPACE_STRUCTURE.directories[dirType]
+    const path = `${_DEFAULT_WORKSPACE_STRUCTURE.root}/${
+      _DEFAULT_WORKSPACE_STRUCTURE.directories[dirType]
     }`;
     return { dirType, path };
   });
@@ -191,6 +191,6 @@ Deno.test("Unit: Complete path construction with all directory types", () => {
   assertEquals(constructedPaths[2], { dirType: "projects", path: ".agent/breakdown/projects" });
 
   // Ensure no directory type is missed
-  const directoryKeys = Object.keys(DEFAULT_WORKSPACE_STRUCTURE.directories);
+  const directoryKeys = Object.keys(_DEFAULT_WORKSPACE_STRUCTURE.directories);
   assertEquals(directoryKeys.length, allDirectoryTypes.length);
 });

@@ -88,12 +88,12 @@ Deno.test("OneParamsHandler Unit Tests", async (t) => {
       {},
       { some: "config" },
       { complex: { nested: "value" } },
-      null as unknown,
-      undefined as unknown,
+      null as any,
+      undefined as any,
     ];
 
     for (const config of configs) {
-      await handleOneParams(["init"], config, {});
+      await handleOneParams(["init"], config as Record<string, unknown>, {});
       // Should handle all config variations
     }
 
@@ -108,12 +108,12 @@ Deno.test("OneParamsHandler Unit Tests", async (t) => {
       {},
       { "some": "option" },
       { "complex": { "nested": "value" } },
-      null as unknown,
-      undefined as unknown,
+      null as any,
+      undefined as any,
     ];
 
     for (const option of options) {
-      await handleOneParams(["init"], {}, option);
+      await handleOneParams(["init"], {}, option as Record<string, unknown>);
       // Should handle all option variations
     }
 
@@ -216,7 +216,7 @@ Deno.test("OneParamsHandler Edge Cases", async (t) => {
   await t.step("handles empty string parameters", async () => {
     await handleOneParams([""], {}, {});
 
-    // Empty string should be handled as unknown command
+    // Empty string should be handled as any command
     assert(true, "Empty string parameter handled");
   });
 
@@ -226,7 +226,7 @@ Deno.test("OneParamsHandler Edge Cases", async (t) => {
     await handleOneParams(["\t"], {}, {});
     await handleOneParams(["\n"], {}, {});
 
-    // Whitespace-only should be handled as unknown commands
+    // Whitespace-only should be handled as any commands
     assert(true, "Whitespace-only parameters handled");
   });
 

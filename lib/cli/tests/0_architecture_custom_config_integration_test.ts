@@ -10,11 +10,11 @@
 
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { resolve } from "@std/path";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 // Test logger for debugging
-const _logger = new BreakdownLogger("custom-config-test");
+const _logger = new _BreakdownLogger("custom-config-test");
 
 // CustomConfig interface matching production configuration
 interface CustomConfigStructure {
@@ -105,7 +105,7 @@ async function loadCustomConfig(configPath: string): Promise<CustomConfigStructu
     });
 
     // Explicitly cast through unknown first to avoid type overlap issues
-    return config as unknown as CustomConfigStructure;
+    return _config as any as CustomConfigStructure;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     _logger.error("Failed to load custom config", { path: configPath, error: message });
@@ -203,7 +203,7 @@ Deno.test({
 
     await t.step("should validate two-parameter command patterns", async () => {
       const _config = await loadCustomConfig(configPath);
-      const _params = _config.breakdownParams.customConfig._params.two;
+      const _params = _config.breakdownParams.customConfig.params.two;
 
       assertExists(_params.demonstrativeType);
       assertExists(_params.layerType);
@@ -294,7 +294,7 @@ Deno.test({
       assertEquals(_config.customConfig.findBugs.includeExtensions.length > 0, true);
 
       // Verify BreakdownParams supports find and bugs patterns
-      const _params = _config.breakdownParams.customConfig._params.two;
+      const _params = _config.breakdownParams.customConfig.params.two;
       assertEquals(_params.demonstrativeType.pattern.includes("find"), true);
       assertEquals(_params.layerType.pattern.includes("bugs"), true);
 

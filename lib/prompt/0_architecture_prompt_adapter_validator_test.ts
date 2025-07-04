@@ -10,9 +10,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("architecture-prompt-adapter-validator");
+const _logger = new _BreakdownLogger("architecture-prompt-adapter-validator");
 
 describe("PromptAdapterValidator Architecture - Module Dependencies", () => {
   it("should have minimal external dependencies", async () => {

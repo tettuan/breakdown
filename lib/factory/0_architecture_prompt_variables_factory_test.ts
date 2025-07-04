@@ -11,7 +11,7 @@
 
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -25,10 +25,10 @@ import {
   type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "./prompt_variables__factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const _logger = new BreakdownLogger("architecture-prompt-_factory");
+const logger = new BreakdownLogger("architecture-prompt-_factory");
 
 /**
  * Test pattern provider for architecture validation
@@ -60,7 +60,7 @@ class ArchitectureTestPatternProvider implements TypePatternProvider {
 
 describe("PromptVariablesFactory Architecture - Dependency Relationships", () => {
   it("should maintain clear separation between legacy and Totality implementations", async () => {
-    _logger.debug("Testing architectural separation between legacy and Totality factories");
+    logger.debug("Testing architectural separation between legacy and Totality factories");
 
     // Legacy factory should not depend on Totality types directly
     const legacyParams: PromptCliParams = {
@@ -93,7 +93,7 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
   });
 
   it("should enforce proper dependency direction in path resolvers", async () => {
-    _logger.debug("Testing dependency direction in path resolver integration");
+    logger.debug("Testing dependency direction in path resolver integration");
 
     // Factory should depend on resolvers, not vice versa
     // This test ensures resolvers don't have circular dependencies back to factory
@@ -124,10 +124,10 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
   });
 
   it("should maintain proper abstraction levels across factory layers", async () => {
-    _logger.debug("Testing abstraction layer compliance");
+    logger.debug("Testing abstraction layer compliance");
 
     // Configuration layer should be at lowest level
-    const _config = {
+    const config = {
       app_prompt: { base_dir: "prompts" },
       app_schema: { base_dir: "schemas" },
     };
@@ -158,7 +158,7 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
 
 describe("PromptVariablesFactory Architecture - Configuration State Exhaustiveness", () => {
   it("should handle all possible configuration states without default case", async () => {
-    _logger.debug("Testing exhaustive configuration state handling");
+    logger.debug("Testing exhaustive configuration state handling");
 
     const configStates = [
       {
@@ -194,12 +194,12 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
     ];
 
     configStates.forEach((state, index) => {
-      _logger.debug(`Testing config state ${index}`, { state });
+      logger.debug(`Testing config state ${index}`, { state });
 
-      const promptDirExists = !!(state._config.app_prompt?.base_dir?.trim());
-      const schemaDirExists = !!(state._config.app_schema?.base_dir?.trim());
+      const promptDirExists = !!(state.config.app_prompt?.base_dir?.trim());
+      const schemaDirExists = !!(state.config.app_schema?.base_dir?.trim());
 
-      const handled = false;
+      let handled = false;
 
       // Handle all configuration states without default case
       if (promptDirExists && schemaDirExists) {
@@ -229,7 +229,7 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
   });
 
   it("should handle all factory creation scenarios without default case", async () => {
-    _logger.debug("Testing exhaustive factory creation scenario handling");
+    logger.debug("Testing exhaustive factory creation scenario handling");
 
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -243,11 +243,11 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
     ];
 
     for (const scenario of creationScenarios) {
-      _logger.debug("Testing creation scenario", { scenario });
+      logger.debug("Testing creation scenario", { scenario });
 
       const typesResult = typeFactory.createBothTypes(scenario.directiveValue, scenario.layerValue);
 
-      const handled = false;
+      let handled = false;
 
       // Handle all type creation results without default case
       switch (typesResult.ok) {
@@ -283,7 +283,7 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
 
 describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness", () => {
   it("should handle all error format options without default case", async () => {
-    _logger.debug("Testing exhaustive error format option handling");
+    logger.debug("Testing exhaustive error format option handling");
 
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -307,7 +307,7 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
         const _factory = await TotalityPromptVariablesFactory.create(params);
         const retrievedFormat = _factory.errorFormat;
 
-        const handled = false;
+        let handled = false;
 
         // Handle all error format options without default case
         switch (retrievedFormat) {
@@ -331,7 +331,7 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
   });
 
   it("should handle all boolean option combinations without default case", async () => {
-    _logger.debug("Testing exhaustive boolean option combination handling");
+    logger.debug("Testing exhaustive boolean option combination handling");
 
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -355,7 +355,7 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
 
         const _factory = await TotalityPromptVariablesFactory.create(params);
 
-        const handled = false;
+        let handled = false;
 
         // Handle all boolean combinations without default case
         if (_factory.extended && _factory.customValidation) {
@@ -388,7 +388,7 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
 
 describe("PromptVariablesFactory Architecture - Validation State Coverage", () => {
   it("should handle all validation states without default case", async () => {
-    _logger.debug("Testing exhaustive validation state handling");
+    logger.debug("Testing exhaustive validation state handling");
 
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -408,7 +408,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       const hasValidBaseDir = _factory.hasValidBaseDir();
       const baseDirError = _factory.getBaseDirError();
 
-      const validationHandled = false;
+      let validationHandled = false;
 
       // Handle all base directory validation states without default case
       switch (hasValidBaseDir) {
@@ -425,7 +425,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       assertEquals(validationHandled, true, "Base directory validation state should be handled");
 
       // Test overall validation
-      const overallValidationHandled = false;
+      let overallValidationHandled = false;
 
       try {
         _factory.validateAll();
@@ -442,7 +442,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
   });
 
   it("should enforce architectural constraints on path resolution", async () => {
-    _logger.debug("Testing architectural constraints on path resolution");
+    logger.debug("Testing architectural constraints on path resolution");
 
     const provider = new ArchitectureTestPatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -467,7 +467,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       ];
 
       pathTypes.forEach((pathType) => {
-        const pathHandled = false;
+        let pathHandled = false;
 
         // Handle all path resolution outcomes without default case
         if (typeof pathType.path === "string") {

@@ -10,40 +10,43 @@
  * @module
  */
 
-import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "jsr:@std/assert@1.0.7";
+import {
+  assertEquals as _assertEquals,
+  assertRejects as _assertRejects,
+} from "jsr:@std/assert@1.0.7";
 import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("stdin-timeout-test");
+const logger = new BreakdownLogger("stdin-timeout-test");
 
 Deno.test("STDIN timeout - timeout value handling", async () => {
-  _logger.debug("Testing timeout parameter handling");
+  logger.debug("Testing timeout parameter handling");
 
   // Test that timeout parameter is properly handled in readStdin function
   // Use reasonable timeout for CI environments (100ms)
-  const _shortTimeout = 100;
+  const shortTimeout = 100;
 
   // Skip timeout test in CI environments where stdin behavior is unpredictable
-  const _isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
+  const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
   if (_isCI) {
-    _logger.debug("Skipping timeout test in CI environment");
+    logger.debug("Skipping timeout test in CI environment");
     return;
   }
 
   // Test timeout functionality only when not in TTY mode
   if (Deno.stdin.isTerminal()) {
-    _logger.debug("Skipping timeout test in terminal mode");
+    logger.debug("Skipping timeout test in terminal mode");
     return;
   }
 
   try {
     // Create a stdin mock that doesn't respond
-    const _originalStdin = Deno.stdin;
-    const _abortController = new AbortController();
+    const originalStdin = Deno.stdin;
+    const abortController = new AbortController();
     let streamController: ReadableStreamDefaultController<Uint8Array> | undefined;
 
-    const _mockStdin = {
-      ...originalStdin,
+    const mockStdin = {
+      ..._originalStdin,
       readable: new ReadableStream({
         start(_controller) {
           // Store controller for cleanup
@@ -76,7 +79,7 @@ Deno.test("STDIN timeout - timeout value handling", async () => {
         StdinError,
         "Stdin reading timed out",
       );
-      _logger.debug("Timeout handling test passed");
+      logger.debug("Timeout handling test passed");
     } finally {
       // Ensure complete cleanup
       abortController.abort();
@@ -98,42 +101,42 @@ Deno.test("STDIN timeout - timeout value handling", async () => {
       }
 
       // @ts-ignore: Restore original stdin
-      Deno.stdin = originalStdin;
+      Deno.stdin = _originalStdin;
     }
   } catch (_error) {
     // If mocking fails or system behavior is unpredictable, that's acceptable
-    _logger.debug("Timeout test skipped due to environment limitations");
+    logger.debug("Timeout test skipped due to environment limitations");
   }
 });
 
 Deno.test("STDIN timeout - production config value validation", async () => {
-  _logger.debug("Testing production timeout configuration");
+  logger.debug("Testing production timeout configuration");
 
   // Test that production timeout value (30000ms) is reasonable
-  const _productionTimeout = 30000;
+  const productionTimeout = 30000;
 
   // Verify timeout is positive number and reasonable
   assertEquals(typeof productionTimeout, "number");
   assertEquals(productionTimeout > 0, true);
   assertEquals(productionTimeout <= 60000, true); // Should be <= 1 minute
 
-  _logger.debug("Production timeout value validation passed");
+  logger.debug("Production timeout value validation passed");
 });
 
 Deno.test("STDIN timeout - parameter propagation test", async () => {
-  _logger.debug("Testing timeout parameter propagation");
+  logger.debug("Testing timeout parameter propagation");
 
   // This test verifies that timeout parameter is correctly accepted by readStdin
   // Focus on parameter validation rather than actual stdin reading
 
   // Skip actual stdin reading to avoid async leaks
   // Just validate parameter structure
-  const _validOptions = { allowEmpty: true, timeout: 1000 };
+  const validOptions = { allowEmpty: true, timeout: 1000 };
   assertEquals(typeof validOptions.timeout, "number");
   assertEquals(validOptions.timeout > 0, true);
 
   // Test timeout extraction from config structure
-  const _mockStdinOptions = {
+  const mockStdinOptions = {
     allowEmpty: true,
     timeout: 1000,
     timeoutManager: undefined,
@@ -144,22 +147,22 @@ Deno.test("STDIN timeout - parameter propagation test", async () => {
   assertEquals(typeof mockStdinOptions.timeout, "number");
   assertEquals(mockStdinOptions.timeout > 0, true);
 
-  _logger.debug("Parameter structure validation completed");
+  logger.debug("Parameter structure validation completed");
 });
 
 Deno.test("STDIN timeout - integration with CLI configuration", async () => {
-  _logger.debug("Testing CLI timeout configuration integration");
+  logger.debug("Testing CLI timeout configuration integration");
 
   // Simulate the configuration structure from breakdown.ts
-  const _mockConfig = {
+  const mockConfig = {
     performance: {
       timeout: 30000,
     },
   };
 
   // Test the timeout extraction logic from cli/breakdown.ts:47
-  const _timeout = (mockConfig?.performance as { timeout?: number })?.timeout || 30000;
+  const timeout = (mockConfig?.performance as { timeout?: number })?.timeout || 30000;
 
   assertEquals(timeout, 30000);
-  _logger.debug("CLI configuration integration test passed");
+  logger.debug("CLI configuration integration test passed");
 });

@@ -14,12 +14,12 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsStdinProcessor } from "./two_params_stdin_processor.ts";
 import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
 
-const _logger = new BreakdownLogger("unit-stdin-processor");
+const _logger = new _BreakdownLogger("unit-stdin-processor");
 
 describe("TwoParamsStdinProcessor Unit Tests - STDIN Detection Logic", () => {
   let processor: TwoParamsStdinProcessor;
@@ -61,18 +61,18 @@ describe("TwoParamsStdinProcessor Unit Tests - STDIN Detection Logic", () => {
     ];
 
     for (const test of stdinFlagTests) {
-      const _result = await processor.process(config, test.options);
+      const result = await processor.process(config, test.options);
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
       if (test.shouldReadStdin) {
         // When stdin should be read, result depends on actual availability
         // But structure should handle it
       } else {
         // When stdin should NOT be read, always return empty
-        if (_result.ok) {
-          assertEquals(_result.data, "", `Failed for: ${test.desc}`);
+        if (result.ok) {
+          assertEquals(result.data, "", `Failed for: ${test.desc}`);
         }
       }
     }
@@ -95,15 +95,15 @@ describe("TwoParamsStdinProcessor Unit Tests - STDIN Detection Logic", () => {
     ];
 
     for (const test of skipStdinTests) {
-      const _result = await processor.process(config, test.options);
+      const result = await processor.process(config, test.options);
 
-      assertExists(_result);
+      assertExists(result);
 
       if (test.options.skipStdin === true) {
         // Should always return empty when skipStdin is true
-        assertEquals(_result.ok, true);
-        if (_result.ok) {
-          assertEquals(_result.data, "", `Failed for: ${test.desc}`);
+        assertEquals(result.ok, true);
+        if (result.ok) {
+          assertEquals(result.data, "", `Failed for: ${test.desc}`);
         }
       }
     }
@@ -124,23 +124,23 @@ describe("TwoParamsStdinProcessor Unit Tests - STDIN Detection Logic", () => {
       { options: { from: "file-.txt" }, shouldReadStdin: false, desc: "dash in name" },
       { options: { from: "-.txt" }, shouldReadStdin: false, desc: "dash dot" },
       { options: { from: "--" }, shouldReadStdin: false, desc: "double dash" },
-      { options: { from: null as unknown as string }, shouldReadStdin: false, desc: "null" },
+      { options: { from: null as any as string }, shouldReadStdin: false, desc: "null" },
       {
-        options: { from: undefined as unknown as string },
+        options: { from: undefined as any as string },
         shouldReadStdin: false,
         desc: "undefined",
       },
-      { options: { from: 0 as unknown as string }, shouldReadStdin: false, desc: "zero" },
-      { options: { from: false as unknown as string }, shouldReadStdin: false, desc: "false" },
+      { options: { from: 0 as any as string }, shouldReadStdin: false, desc: "zero" },
+      { options: { from: false as any as string }, shouldReadStdin: false, desc: "false" },
     ];
 
     for (const test of edgeCaseTests) {
-      const _result = await processor.process(config, test.options);
+      const result = await processor.process(config, test.options);
 
-      assertExists(_result);
+      assertExists(result);
 
-      if (!test.shouldReadStdin && _result.ok) {
-        assertEquals(_result.data, "", `Failed for: ${test.desc}`);
+      if (!test.shouldReadStdin && result.ok) {
+        assertEquals(result.data, "", `Failed for: ${test.desc}`);
       }
     }
   });
@@ -169,12 +169,12 @@ describe("TwoParamsStdinProcessor Unit Tests - Timeout Configuration", () => {
         stdin: { timeout_ms: test.timeout },
       };
 
-      const _result = await processor.process(config, { skipStdin: true });
+      const result = await processor.process(config, { skipStdin: true });
 
-      assertExists(_result);
-      assertEquals(_result.ok, true);
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      assertExists(result);
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        assertEquals(result.data, "");
       }
     }
   });
@@ -185,10 +185,10 @@ describe("TwoParamsStdinProcessor Unit Tests - Timeout Configuration", () => {
     const invalidTimeoutTests = [
       { config: { stdin: {} }, desc: "missing timeout_ms" },
       { config: {}, desc: "missing stdin section" },
-      { config: { stdin: { timeout_ms: "1000" as unknown as number } }, desc: "string timeout" },
-      { config: { stdin: { timeout_ms: null as unknown as number } }, desc: "null timeout" },
+      { config: { stdin: { timeout_ms: "1000" as any as number } }, desc: "string timeout" },
+      { config: { stdin: { timeout_ms: null as any as number } }, desc: "null timeout" },
       {
-        config: { stdin: { timeout_ms: undefined as unknown as number } },
+        config: { stdin: { timeout_ms: undefined as any as number } },
         desc: "undefined timeout",
       },
       { config: { stdin: { timeout_ms: NaN } }, desc: "NaN timeout" },
@@ -197,19 +197,19 @@ describe("TwoParamsStdinProcessor Unit Tests - Timeout Configuration", () => {
     ];
 
     for (const test of invalidTimeoutTests) {
-      const _result = await processor.process(
+      const result = await processor.process(
         test.config as BreakdownConfigCompatible,
         { skipStdin: true },
       );
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean", `Failed for: ${test.desc}`);
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean", `Failed for: ${test.desc}`);
 
       // Should handle gracefully, either with defaults or error
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      if (result.ok) {
+        assertEquals(result.data, "");
       } else {
-        assertEquals(_result.error.kind, "StdinReadError");
+        assertEquals(result.error.kind, "StdinReadError");
       }
     }
   });
@@ -217,12 +217,12 @@ describe("TwoParamsStdinProcessor Unit Tests - Timeout Configuration", () => {
   it("should use correct default timeout in convenience method", async () => {
     _logger.debug("Testing default timeout in convenience method");
 
-    const _result = await processor.processWithDefaultTimeout({ skipStdin: true });
+    const result = await processor.processWithDefaultTimeout({ skipStdin: true });
 
-    assertExists(_result);
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data, "");
+    assertExists(result);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data, "");
     }
 
     // Test that it's equivalent to explicit 5000ms timeout
@@ -232,8 +232,8 @@ describe("TwoParamsStdinProcessor Unit Tests - Timeout Configuration", () => {
 
     const explicitResult = await processor.process(explicitConfig, { skipStdin: true });
 
-    if (_result.ok && explicitResult.ok) {
-      assertEquals(_result.data, explicitResult.data);
+    if (result.ok && explicitResult.ok) {
+      assertEquals(result.data, explicitResult.data);
     }
   });
 });
@@ -250,22 +250,22 @@ describe("TwoParamsStdinProcessor Unit Tests - Error Handling", () => {
 
     const errorScenarios = [
       {
-        config: null as unknown,
+        config: null as any,
         options: { from: "-" },
         desc: "null config with stdin",
       },
       {
-        config: undefined as unknown,
+        config: undefined as any,
         options: { fromFile: "-" },
         desc: "undefined config with stdin",
       },
       {
-        config: "invalid" as unknown as BreakdownConfigCompatible,
+        config: "invalid" as any as BreakdownConfigCompatible,
         options: { from: "-" },
         desc: "string config with stdin",
       },
       {
-        config: { stdin: null as unknown as { timeout_ms: number } },
+        config: { stdin: null as any as { timeout_ms: number } },
         options: { from: "-" },
         desc: "null stdin section",
       },
@@ -277,17 +277,17 @@ describe("TwoParamsStdinProcessor Unit Tests - Error Handling", () => {
     ];
 
     for (const scenario of errorScenarios) {
-      const _result = await processor.process(scenario.config, scenario.options);
+      const result = await processor.process(scenario.config as BreakdownConfigCompatible, scenario.options);
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean", `Failed for: ${scenario.desc}`);
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean", `Failed for: ${scenario.desc}`);
 
       // All errors should be contained in Result type
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "StdinReadError");
-        assertExists(_result.error.message);
-        assertEquals(typeof _result.error.message, "string");
-        assertEquals(_result.error.message.length > 0, true);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "StdinReadError");
+        assertExists(result.error.message);
+        assertEquals(typeof result.error.message, "string");
+        assertEquals(result.error.message.length > 0, true);
       }
     }
   });
@@ -299,15 +299,15 @@ describe("TwoParamsStdinProcessor Unit Tests - Error Handling", () => {
       stdin: { timeout_ms: 1 }, // Very short to trigger timeout
     };
 
-    const _result = await processor.process(config, { from: "-" });
+    const result = await processor.process(config, { from: "-" });
 
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "StdinReadError");
-      assertExists(_result.error.message);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "StdinReadError");
+      assertExists(result.error.message);
 
       // Check if cause is preserved when available
-      if (_result.error.cause) {
-        assertExists(_result.error.cause);
+      if (result.error.cause) {
+        assertExists(result.error.cause);
       }
     }
   });
@@ -326,11 +326,11 @@ describe("TwoParamsStdinProcessor Unit Tests - Error Handling", () => {
 
     // All should complete without throwing
     for (const result of results) {
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "StdinReadError");
+      if (!result.ok) {
+        assertEquals(result.error.kind, "StdinReadError");
       }
     }
   });
@@ -352,11 +352,11 @@ describe("TwoParamsStdinProcessor Unit Tests - Resource Management", () => {
 
     // Multiple successful operations
     for (let i = 0; i < 5; i++) {
-      const _result = await processor.process(config, { skipStdin: true });
+      const result = await processor.process(config, { skipStdin: true });
 
-      assertEquals(_result.ok, true);
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        assertEquals(result.data, "");
       }
     }
 
@@ -372,9 +372,9 @@ describe("TwoParamsStdinProcessor Unit Tests - Resource Management", () => {
 
     // Multiple timeout scenarios
     for (let i = 0; i < 3; i++) {
-      const _result = await processor.process(config, { from: "-" });
+      const result = await processor.process(config, { from: "-" });
 
-      assertExists(_result);
+      assertExists(result);
       // May succeed or timeout, but should always clean up
     }
   });
@@ -394,9 +394,9 @@ describe("TwoParamsStdinProcessor Unit Tests - Resource Management", () => {
     ];
 
     for (const scenario of scenarios) {
-      const _result = await processor.process(config, scenario.options);
+      const result = await processor.process(config, scenario.options);
 
-      assertExists(_result);
+      assertExists(result);
       // Abort controller should be cleaned up in all cases
     }
   });
@@ -431,7 +431,7 @@ describe("TwoParamsStdinProcessor Unit Tests - State Management", () => {
     // Results should be consistent for same inputs
     if (result1.ok && result4.ok) {
       // Both might be empty or have content, but should be consistent
-      assertEquals(typeof _result1.data, typeof _result4.data);
+      assertEquals(typeof result1.data, typeof result4.data);
     }
   });
 
@@ -455,13 +455,13 @@ describe("TwoParamsStdinProcessor Unit Tests - State Management", () => {
 
     // All should complete successfully (no file or stdin operations)
     for (const result of results) {
-      assertExists(_result);
-      if (!_result.ok) {
-        _logger.debug("Unexpected error in concurrent test", { error: _result.error });
+      assertExists(result);
+      if (!result.ok) {
+        _logger.debug("Unexpected error in concurrent test", { error: result.error });
       }
-      assertEquals(_result.ok, true);
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        assertEquals(result.data, "");
       }
     }
   });
@@ -523,14 +523,14 @@ describe("TwoParamsStdinProcessor Unit Tests - Integration Scenarios", () => {
     ];
 
     for (const pattern of cliPatterns) {
-      const _result = await processor.process(config, pattern.options);
+      const result = await processor.process(config, pattern.options);
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
       // All patterns should be handled
-      if (_result.ok) {
-        assertEquals(typeof _result.data, "string");
+      if (result.ok) {
+        assertEquals(typeof result.data, "string");
       }
     }
   });
@@ -561,15 +561,15 @@ describe("TwoParamsStdinProcessor Unit Tests - Integration Scenarios", () => {
     ];
 
     for (const source of configSources) {
-      const _result = await processor.process(
+      const result = await processor.process(
         source.config as BreakdownConfigCompatible,
         { skipStdin: true },
       );
 
-      assertExists(_result);
-      assertEquals(_result.ok, true, `Failed for: ${source.desc}`);
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      assertExists(result);
+      assertEquals(result.ok, true, `Failed for: ${source.desc}`);
+      if (result.ok) {
+        assertEquals(result.data, "");
       }
     }
   });
@@ -608,7 +608,7 @@ describe("TwoParamsStdinProcessor Unit Tests - Integration Scenarios", () => {
     }
 
     // 4. Error handling
-    const errorResult = await processor.process(null as unknown as BreakdownConfigCompatible, {
+    const errorResult = await processor.process(null as any as BreakdownConfigCompatible, {
       from: "-",
     });
     assertExists(errorResult);

@@ -15,16 +15,16 @@
  */
 
 import { assertEquals, assertExists } from "jsr:@std/assert@1.0.8";
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 
-const _logger = new BreakdownLogger("file-cleanup-safety");
+const logger = new BreakdownLogger("file-cleanup-safety");
 
 /**
  * ファイル競合状態の検証テスト
  */
 Deno.test("File Cleanup Safety Analysis", async (t) => {
   await t.step("app.ymlファイルの競合状態発生箇所特定", () => {
-    _logger.debug("競合状態分析開始");
+    logger.debug("競合状態分析開始");
 
     // 競合が発生する主要な箇所を特定
     const conflictScenarios = [
@@ -49,7 +49,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
     ];
 
     for (const scenario of conflictScenarios) {
-      _logger.debug("競合シナリオ", scenario);
+      logger.debug("競合シナリオ", scenario);
       assertEquals(
         scenario.risk === "high" || scenario.risk === "medium",
         true,
@@ -69,7 +69,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
   });
 
   await t.step("テストファイル間のクリーンアップ順序問題調査", () => {
-    _logger.debug("クリーンアップ順序分析");
+    logger.debug("クリーンアップ順序分析");
 
     // 現在のクリーンアップ処理の問題点
     const cleanupIssues = [
@@ -91,7 +91,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
     ];
 
     for (const issue of cleanupIssues) {
-      _logger.debug("クリーンアップ問題", issue);
+      logger.debug("クリーンアップ問題", issue);
       assertEquals(typeof issue.impact, "string", "影響が記述されている");
     }
 
@@ -99,7 +99,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
   });
 
   await t.step("並列実行時のファイルロック状況確認", () => {
-    _logger.debug("ファイルロック分析");
+    logger.debug("ファイルロック分析");
 
     // ファイルロックが発生する条件
     const lockConditions = [
@@ -121,7 +121,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
     ];
 
     for (const condition of lockConditions) {
-      _logger.debug("ロック条件", condition);
+      logger.debug("ロック条件", condition);
       assertExists(condition.files, "対象ファイルが特定されている");
     }
 
@@ -138,7 +138,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
   });
 
   await t.step("テスト実行前後のファイル状態比較", () => {
-    _logger.debug("ファイル状態比較分析");
+    logger.debug("ファイル状態比較分析");
 
     // テスト実行前の状態
     const beforeTest = {
@@ -159,8 +159,8 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
       noOrphanedFiles: true, // 取り残しファイルなし
     };
 
-    _logger.debug("実行前状態", beforeTest);
-    _logger.debug("実行後期待状態", afterTest);
+    logger.debug("実行前状態", beforeTest);
+    logger.debug("実行後期待状態", afterTest);
 
     assertEquals(afterTest.mainConfigIntact, true, "メイン設定の保護");
     assertEquals(afterTest.tmpConfigsCleaned, true, "一時ファイルのクリーンアップ");
@@ -172,7 +172,7 @@ Deno.test("File Cleanup Safety Analysis", async (t) => {
  */
 Deno.test("Safe Cleanup Procedure Design", async (t) => {
   await t.step("ファイルクリーンアップの安全な実行順序設計", () => {
-    _logger.debug("安全なクリーンアップ順序設計");
+    logger.debug("安全なクリーンアップ順序設計");
 
     // 推奨されるクリーンアップ順序
     const safeCleanupOrder = [
@@ -209,7 +209,7 @@ Deno.test("Safe Cleanup Procedure Design", async (t) => {
     ];
 
     for (const step of safeCleanupOrder) {
-      _logger.debug("クリーンアップステップ", step);
+      logger.debug("クリーンアップステップ", step);
       assertEquals(typeof step.timeout, "string", "タイムアウトが設定されている");
     }
 
@@ -217,7 +217,7 @@ Deno.test("Safe Cleanup Procedure Design", async (t) => {
   });
 
   await t.step("競合回避策の設計", () => {
-    _logger.debug("競合回避策設計");
+    logger.debug("競合回避策設計");
 
     // 競合回避のための対策
     const conflictAvoidanceStrategies = [
@@ -244,7 +244,7 @@ Deno.test("Safe Cleanup Procedure Design", async (t) => {
     ];
 
     for (const strategy of conflictAvoidanceStrategies) {
-      _logger.debug("競合回避策", strategy);
+      logger.debug("競合回避策", strategy);
       assertEquals(typeof strategy.benefit, "string", "効果が明記されている");
     }
 
@@ -252,7 +252,7 @@ Deno.test("Safe Cleanup Procedure Design", async (t) => {
   });
 
   await t.step("推奨実装パターン", () => {
-    _logger.debug("推奨実装パターン");
+    logger.debug("推奨実装パターン");
 
     // 実装すべきパターン
     const recommendedPatterns = [
@@ -283,7 +283,7 @@ Deno.test("Safe Cleanup Procedure Design", async (t) => {
     ];
 
     for (const pattern of recommendedPatterns) {
-      _logger.debug("推奨パターン", pattern);
+      logger.debug("推奨パターン", pattern);
       assertEquals(
         pattern.priority === "high" || pattern.priority === "medium",
         true,

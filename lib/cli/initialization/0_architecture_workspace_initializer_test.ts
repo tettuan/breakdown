@@ -8,9 +8,9 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("test-architecture-workspace-initializer");
+const _logger = new _BreakdownLogger("test-architecture-workspace-initializer");
 
 Deno.test("Architecture: workspace_initializer - dependency direction", async () => {
   _logger.debug("アーキテクチャテスト開始: 依存関係の方向性確認", {

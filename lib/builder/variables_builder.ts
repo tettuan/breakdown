@@ -64,8 +64,8 @@ export type BuilderVariableError =
  * ```
  */
 export class VariablesBuilder {
-  private variables: PromptVariable[] = [];
-  private errors: BuilderVariableError[] = [];
+  private _variables: PromptVariable[] = [];
+  private _errors: BuilderVariableError[] = [];
 
   /**
    * Add a standard variable (input_text_file or destination_path)
@@ -73,15 +73,15 @@ export class VariablesBuilder {
   addStandardVariable(name: string, value: string): this {
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this.errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "DuplicateVariable", name });
       return this;
     }
 
     const result = StandardVariable.create(name, value);
     if (result.ok) {
-      this.variables.push(result.data);
+      this._variables.push(result.data);
     } else {
-      this.errors.push(result.error);
+      this._errors.push(result.error);
     }
 
     return this;
@@ -93,15 +93,15 @@ export class VariablesBuilder {
   addFilePathVariable(name: string, path: string): this {
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this.errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "DuplicateVariable", name });
       return this;
     }
 
     const result = FilePathVariable.create(name, path);
     if (result.ok) {
-      this.variables.push(result.data);
+      this._variables.push(result.data);
     } else {
-      this.errors.push(result.error);
+      this._errors.push(result.error);
     }
 
     return this;
@@ -115,15 +115,15 @@ export class VariablesBuilder {
 
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this.errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "DuplicateVariable", name });
       return this;
     }
 
     const result = StdinVariable.create(name, text);
     if (result.ok) {
-      this.variables.push(result.data);
+      this._variables.push(result.data);
     } else {
-      this.errors.push(result.error);
+      this._errors.push(result.error);
     }
 
     return this;
@@ -135,7 +135,7 @@ export class VariablesBuilder {
   addUserVariable(name: string, value: string): this {
     // Check for uv- prefix
     if (!name.startsWith("uv-")) {
-      this.errors.push({
+      this._errors.push({
         kind: "InvalidPrefix",
         name,
         expectedPrefix: "uv-",
@@ -145,15 +145,15 @@ export class VariablesBuilder {
 
     // Check for duplicates
     if (this.hasVariable(name)) {
-      this.errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "DuplicateVariable", name });
       return this;
     }
 
     const result = UserVariable.create(name, value);
     if (result.ok) {
-      this.variables.push(result.data);
+      this._variables.push(result.data);
     } else {
-      this.errors.push(result.error);
+      this._errors.push(result.error);
     }
 
     return this;
@@ -178,7 +178,7 @@ export class VariablesBuilder {
     for (const [name, value] of Object.entries(customVariables)) {
       // Skip empty values for custom variables - they are optional in templates
       if (!name || name.trim().length === 0) {
-        this.errors.push({ kind: "DuplicateVariable", name: "EmptyName" });
+        this._errors.push({ kind: "DuplicateVariable", name: "EmptyName" });
         continue;
       }
       if (!value || value.trim().length === 0) {
@@ -189,9 +189,9 @@ export class VariablesBuilder {
       // Create UserVariable for template usage
       const result = UserVariable.create(name, value);
       if (result.ok) {
-        this.variables.push(result.data);
+        this._variables.push(result.data);
       } else {
-        this.errors.push(result.error);
+        this._errors.push(result.error);
       }
     }
     return this;
@@ -202,11 +202,11 @@ export class VariablesBuilder {
    * Returns Result with either the variables or accumulated errors
    */
   build(): Result<PromptVariables, BuilderVariableError[]> {
-    if (this.errors.length > 0) {
-      return error(this.errors);
+    if (this._errors.length > 0) {
+      return error(this._errors);
     }
 
-    return ok(this.variables);
+    return ok(this._variables);
   }
 
   /**
@@ -220,7 +220,7 @@ export class VariablesBuilder {
   toRecord(): Record<string, string> {
     const record: Record<string, string> = {};
 
-    for (const variable of this.variables) {
+    for (const variable of this._variables) {
       const varRecord = variable.toRecord();
       // Special handling for UserVariables in VariablesBuilder context
       if (variable instanceof UserVariable) {
@@ -243,7 +243,7 @@ export class VariablesBuilder {
   toTemplateRecord(): Record<string, string> {
     const record: Record<string, string> = {};
 
-    for (const variable of this.variables) {
+    for (const variable of this._variables) {
       Object.assign(record, variable.toRecord());
     }
 
@@ -254,7 +254,7 @@ export class VariablesBuilder {
    * Check if a variable with given name already exists
    */
   hasVariable(name: string): boolean {
-    return this.variables.some((v) => {
+    return this._variables.some((v) => {
       const record = v.toRecord();
       return Object.prototype.hasOwnProperty.call(record, name);
     });
@@ -264,14 +264,14 @@ export class VariablesBuilder {
    * Get current error count
    */
   getErrorCount(): number {
-    return this.errors.length;
+    return this._errors.length;
   }
 
   /**
    * Get current variable count
    */
   getVariableCount(): number {
-    return this.variables.length;
+    return this._variables.length;
   }
 
   /**
@@ -392,8 +392,8 @@ export class VariablesBuilder {
    * Clear all variables and errors (reset builder)
    */
   clear(): this {
-    this.variables = [];
-    this.errors = [];
+    this._variables = [];
+    this._errors = [];
     return this;
   }
 }

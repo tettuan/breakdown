@@ -9,7 +9,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateMapping,
-  TemplateValidationResult,
+  TemplateValidation_Result,
   TemplateValidator,
 } from "./template_validator.ts";
 
@@ -24,7 +24,7 @@ Deno.test("Structure: TemplateValidator class has proper encapsulation", () => {
   // @ts-expect-error: private field - TypeScript prevents access at compile time
   const _templateMappings = _validator.templateMappings;
   // @ts-expect-error: private field - TypeScript prevents access at compile time
-  const _logger = _validator.logger;
+  const logger = _validator.logger;
 
   // パブリックメソッドのみアクセス可能
   assertExists(_validator.validateTemplates);
@@ -98,7 +98,7 @@ Deno.test("Structure: Return types follow consistent Result pattern", () => {
   // 戻り値の型が一貫したResultパターンに従う
 
   // TemplateValidationResult
-  const validationResult: TemplateValidationResult = {
+  const validationResult: TemplateValidation_Result = {
     isValid: true,
     missingTemplates: [],
     existingTemplates: [],

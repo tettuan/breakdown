@@ -92,16 +92,16 @@ Deno.test({
       ];
 
       for (const input of inputs) {
-        const _result = await orchestrator.orchestrate(input.params, input.config, input.options);
+        const result = await orchestrator.orchestrate(input.params, input.config, input.options);
 
         // Should handle all inputs at appropriate abstraction level
-        assert(typeof _result === "object");
+        assert(typeof result === "object");
         assert("ok" in result);
 
-        if (!_result.ok) {
+        if (!result.ok) {
           // Errors should be abstracted appropriately
-          assert("kind" in _result.error);
-          assert(typeof _result.error.kind === "string");
+          assert("kind" in result.error);
+          assert(typeof result.error.kind === "string");
         }
       }
     });
@@ -161,20 +161,20 @@ Deno.test({
       ];
 
       for (const scenario of errorScenarios) {
-        const _result = await orchestrator.orchestrate(
+        const result = await orchestrator.orchestrate(
           scenario.params,
           {},
           scenario.options || {},
         );
 
         // Error handling should be consistent
-        if (!_result.ok) {
-          assert("kind" in _result.error, `Failed for ${scenario.description}`);
+        if (!result.ok) {
+          assert("kind" in result.error, `Failed for ${scenario.description}`);
 
           // May match expected kind or be handled differently by components
           assert(
-            _result.error.kind === scenario.expectedKind ||
-              typeof _result.error.kind === "string",
+            result.error.kind === scenario.expectedKind ||
+              typeof result.error.kind === "string",
             `Invalid error kind for ${scenario.description}`,
           );
         }
@@ -204,21 +204,21 @@ Deno.test({
       ];
 
       for (const testCase of testCases) {
-        const _result = await orchestrator.orchestrate(
+        const result = await orchestrator.orchestrate(
           testCase.params,
           testCase.config,
           testCase.options,
         );
 
         // Data flow should be consistent regardless of input
-        assert(typeof _result === "object");
+        assert(typeof result === "object");
         assert("ok" in result);
 
-        if (_result.ok) {
-          assertEquals(_result.data, undefined); // Success returns void
+        if (result.ok) {
+          assertEquals(result.data, undefined); // Success returns void
         } else {
-          assert(typeof _result.error === "object");
-          assert("kind" in _result.error);
+          assert(typeof result.error === "object");
+          assert("kind" in result.error);
         }
       }
     });
@@ -273,10 +273,10 @@ Deno.test({
       assertEquals(handleTwoParamsWithOrchestrator.length, 3);
 
       // Should return Promise<Result<void, OrchestratorError>>
-      const _result = await handleTwoParamsWithOrchestrator(["demo", "layer"], {}, {
+      const result = await handleTwoParamsWithOrchestrator(["demo", "layer"], {}, {
         skipStdin: true,
       });
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
     });
 

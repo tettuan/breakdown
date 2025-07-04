@@ -10,7 +10,7 @@
 
 import { ensureDir } from "@std/fs";
 import { join, resolve } from "@std/path";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 export interface IsolationOptions {
   /** Base directory for isolated tests */

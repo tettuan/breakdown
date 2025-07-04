@@ -27,7 +27,7 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
 
     // Test that invalid operations return Result.error instead of throwing
     const invalidResult = _processor.processVariables(
-      null as unknown as Record<string, unknown>,
+      null as any as Record<string, unknown>,
       "",
     );
     assertEquals(invalidResult.ok, false);
@@ -41,10 +41,10 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Test that error types have discriminated 'kind' field
-    const _result = _processor.processVariables({ "invalid-prefix": "value" }, "");
+    const result = _processor.processVariables({ "invalid-prefix": "value" }, "");
 
-    if (!_result.ok) {
-      for (const error of _result.error) {
+    if (!result.ok) {
+      for (const error of result.error) {
         assert("kind" in error);
         assert(typeof error.kind === "string");
 
@@ -90,7 +90,7 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
 
   await t.step("has no circular dependencies", () => {
     // Verify that TwoParamsVariableProcessor only depends on:
-    // - Result types (lib/types/_result.ts)
+    // - Result types (lib/types/result.ts)
     // - No other processors, handlers, or orchestrators
 
     // This test ensures architectural layer separation
@@ -115,11 +115,11 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
     assertEquals(unknownTypeResult.ok, true);
 
     // Test with undefined/null inputs
-    const nullResult = _processor.processVariables(null as unknown as Record<string, unknown>, "");
+    const nullResult = _processor.processVariables(null as any as Record<string, unknown>, "");
     assertEquals(nullResult.ok, false);
 
     const undefinedResult = _processor.processVariables(
-      undefined as unknown as Record<string, unknown>,
+      undefined as any as Record<string, unknown>,
       "",
     );
     assertEquals(undefinedResult.ok, false);
@@ -129,34 +129,34 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Architecture constraint: custom variables MUST have uv- prefix
-    const _result = _processor.processVariables({
+    const result = _processor.processVariables({
       "custom-var": "value", // Invalid prefix
       "uv-valid": "value", // Valid prefix
     }, "");
 
-    assertEquals(_result.ok, true);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
+    if (result.ok) {
       // Only uv-prefixed variables should be in customVariables
-      assertEquals(Object.keys(_result.data.customVariables).length, 1);
-      assert("uv-valid" in _result.data.customVariables);
-      assert(!("custom-var" in _result.data.customVariables));
+      assertEquals(Object.keys(result.data.customVariables).length, 1);
+      assert("uv-valid" in result.data.customVariables);
+      assert(!("custom-var" in result.data.customVariables));
     }
   });
 
   await t.step("separates concerns between custom and standard variables", () => {
     const _processor = new TwoParamsVariableProcessor();
 
-    const _result = _processor.processVariables({
+    const result = _processor.processVariables({
       "uv-custom": "custom_value",
       "from": "input.txt",
       "destination": "output.txt",
     }, "stdin content");
 
-    assertEquals(_result.ok, true);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const { customVariables, standardVariables, allVariables } = _result.data;
+    if (result.ok) {
+      const { customVariables, standardVariables, allVariables } = result.data;
 
       // Custom variables should only contain uv- prefixed items
       assertEquals(Object.keys(customVariables).length, 1);
@@ -177,16 +177,16 @@ Deno.test("TwoParamsVariableProcessor Architecture", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Architecture constraint: prevent conflicts with reserved names
-    const _result = _processor.processVariables({
+    const result = _processor.processVariables({
       "uv-input_text": "should_fail", // Reserved name with uv- prefix
       "uv-safe": "should_work",
     }, "");
 
-    assertEquals(_result.ok, false);
+    assertEquals(result.ok, false);
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Should have ReservedVariableName error
-      const hasReservedError = _result.error.some(
+      const hasReservedError = result.error.some(
         (err: VariableProcessorError) => err.kind === "ReservedVariableName",
       );
       assert(hasReservedError);

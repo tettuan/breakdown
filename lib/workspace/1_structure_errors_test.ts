@@ -14,7 +14,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   WorkspaceConfigError,
   WorkspaceDirectoryError,
@@ -23,7 +23,7 @@ import {
   WorkspacePathError,
 } from "./errors.ts";
 
-const _logger = new BreakdownLogger("test-structure-errors");
+const _logger = new _BreakdownLogger("test-structure-errors");
 
 describe("Workspace Errors - Structure Tests", async () => {
   describe("Single Responsibility Principle", async () => {

@@ -18,7 +18,7 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   handleTwoParams,
@@ -26,7 +26,7 @@ import {
   type TwoParamsHandlerError,
 } from "./two_params_handler_refactored.ts";
 
-const _logger = new BreakdownLogger("unit-two-params-handler-refactored");
+const _logger = new _BreakdownLogger("unit-two-params-handler-refactored");
 
 describe("TwoParamsHandler Refactored - Unit Tests", () => {
   describe("handleTwoParams function", () => {
@@ -42,7 +42,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const { demo, layer } of validCombinations) {
-        const _result = await handleTwoParams(
+        const result = await handleTwoParams(
           [demo, layer],
           { timeout: 5000 },
           { skipStdin: true },
@@ -51,7 +51,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
         // Should complete orchestration (may fail at prompt generation)
         assert("ok" in result);
 
-        if (!_result.ok) {
+        if (!result.ok) {
           // Valid params should fail at orchestration steps, not validation
           const validFailurePoints = [
             "StdinReadError",
@@ -62,8 +62,8 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
           ];
 
           assert(
-            validFailurePoints.includes(_result.error.kind),
-            `Valid params [${demo}, ${layer}] should fail at orchestration, not validation. Got: ${_result.error.kind}`,
+            validFailurePoints.includes(result.error.kind),
+            `Valid params [${demo}, ${layer}] should fail at orchestration, not validation. Got: ${result.error.kind}`,
           );
         }
       }
@@ -80,17 +80,17 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const test of countTests) {
-        const _result = await handleTwoParams(test.params, {}, {});
-        assertEquals(_result.ok, false);
+        const result = await handleTwoParams(test.params, {}, {});
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          if (_result.error.kind === "InvalidParameterCount") {
-            assertEquals(_result.error.received, test.expected.received);
-            assertEquals(_result.error.expected, test.expected.expected);
+        if (!result.ok) {
+          if (result.error.kind === "InvalidParameterCount") {
+            assertEquals(result.error.received, test.expected.received);
+            assertEquals(result.error.expected, test.expected.expected);
           } else {
             // For 3+ params, might validate demonstrative type first
             assert(
-              ["InvalidDemonstrativeType", "InvalidParameterCount"].includes(_result.error.kind),
+              ["InvalidDemonstrativeType", "InvalidParameterCount"].includes(result.error.kind),
             );
           }
         }
@@ -104,17 +104,17 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       const invalidTypes = ["invalid", "convert", "transform", "analyze", ""];
 
       for (const invalidType of invalidTypes) {
-        const _result = await handleTwoParams([invalidType, "project"], {}, { skipStdin: true });
-        assertEquals(_result.ok, false);
+        const result = await handleTwoParams([invalidType, "project"], {}, { skipStdin: true });
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "InvalidDemonstrativeType");
+        if (!result.ok) {
+          assertEquals(result.error.kind, "InvalidDemonstrativeType");
 
           // Type-safe property access with proper discriminated union handling
-          if (_result.error.kind === "InvalidDemonstrativeType") {
-            assertEquals(_result.error.value, invalidType);
-            assertExists(_result.error.validTypes);
-            assert(_result.error.validTypes.every((type: string) => validTypes.includes(type)));
+          if (result.error.kind === "InvalidDemonstrativeType") {
+            assertEquals(result.error.value, invalidType);
+            assertExists(result.error.validTypes);
+            assert(result.error.validTypes.every((type: string) => validTypes.includes(type)));
           }
         }
       }
@@ -127,17 +127,17 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       const invalidTypes = ["invalid", "system", "component", "module", ""];
 
       for (const invalidType of invalidTypes) {
-        const _result = await handleTwoParams(["to", invalidType], {}, { skipStdin: true });
-        assertEquals(_result.ok, false);
+        const result = await handleTwoParams(["to", invalidType], {}, { skipStdin: true });
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "InvalidLayerType");
+        if (!result.ok) {
+          assertEquals(result.error.kind, "InvalidLayerType");
 
           // Type-safe property access with proper discriminated union handling
-          if (_result.error.kind === "InvalidLayerType") {
-            assertEquals(_result.error.value, invalidType);
-            assertExists(_result.error.validTypes);
-            assert(_result.error.validTypes.every((type: string) => validTypes.includes(type)));
+          if (result.error.kind === "InvalidLayerType") {
+            assertEquals(result.error.value, invalidType);
+            assertExists(result.error.validTypes);
+            assert(result.error.validTypes.every((type: string) => validTypes.includes(type)));
           }
         }
       }
@@ -195,7 +195,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const test of variableTests) {
-        const _result = await handleTwoParams(
+        const result = await handleTwoParams(
           ["to", "project"],
           {},
           test.options,
@@ -205,9 +205,9 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
           // May succeed or fail at later stages
           assert("ok" in result);
         } else {
-          assertEquals(_result.ok, false);
-          if (!_result.ok && test.expectedError) {
-            assertEquals(_result.error.kind, test.expectedError);
+          assertEquals(result.ok, false);
+          if (!result.ok && test.expectedError) {
+            assertEquals(result.error.kind, test.expectedError);
           }
         }
       }
@@ -224,16 +224,16 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const { config, description } of configTests) {
-        const _result = await handleTwoParams(
+        const result = await handleTwoParams(
           ["to", "project"],
           config,
           { skipStdin: true },
         );
 
         // Should handle all configs gracefully
-        assert("ok" in _result, `Should handle ${description} gracefully`);
+        assert("ok" in result, `Should handle ${description} gracefully`);
 
-        if (!_result.ok) {
+        if (!result.ok) {
           // Should fail at orchestration, not config processing
           const validErrors = [
             "VariablesBuilderError",
@@ -242,8 +242,8 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
             "OutputWriteError",
           ];
           assert(
-            validErrors.includes(_result.error.kind),
-            `Config ${description} should not cause validation errors. Got: ${_result.error.kind}`,
+            validErrors.includes(result.error.kind),
+            `Config ${description} should not cause validation errors. Got: ${result.error.kind}`,
           );
         }
       }
@@ -277,7 +277,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
         // Results should be equivalent
         assertEquals(result1.ok, result2.ok);
 
-        if (!_result1.ok && !_result2.ok) {
+        if (!result1.ok && !result2.ok) {
           assertEquals(result1.error.kind, result2.error.kind);
 
           // Check specific error details are equivalent
@@ -303,8 +303,8 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ]);
 
       // All should complete independently
-      results.forEach((_result, index) => {
-        assert("ok" in _result, `Clean call ${index} should complete`);
+      results.forEach((result, index) => {
+        assert("ok" in result, `Clean call ${index} should complete`);
       });
     });
   });
@@ -316,7 +316,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       // Note: Current implementation throws on null params (not Totality compliant)
       // This documents the current behavior
       try {
-        await handleTwoParams(null as unknown, {}, {});
+        await handleTwoParams(null as any as string[], {}, {});
         assert(false, "Should have thrown or returned error result");
       } catch (e) {
         _logger.debug("Current implementation throws on null params", {
@@ -325,7 +325,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       }
 
       try {
-        await handleTwoParams(undefined as unknown, {}, {});
+        await handleTwoParams(undefined as any as string[], {}, {});
         assert(false, "Should have thrown or returned error result");
       } catch (e) {
         _logger.debug("Current implementation throws on undefined params", {
@@ -334,10 +334,18 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       }
 
       // These should handle gracefully
-      const result3 = await handleTwoParams(["to", "project"], null as unknown, {});
+      const result3 = await handleTwoParams(
+        ["to", "project"],
+        null as any as Record<string, unknown>,
+        {},
+      );
       assert("ok" in result3); // Should handle gracefully
 
-      const result4 = await handleTwoParams(["to", "project"], {}, null as unknown);
+      const result4 = await handleTwoParams(
+        ["to", "project"],
+        {},
+        null as any as Record<string, unknown>,
+      );
       assert("ok" in result4); // Should handle gracefully
     });
 
@@ -353,22 +361,22 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       const results = await Promise.all(concurrentCalls);
 
       // All should complete without interference
-      results.forEach((_result, index) => {
-        assert("ok" in _result, `Concurrent call ${index} should complete`);
+      results.forEach((result, index) => {
+        assert("ok" in result, `Concurrent call ${index} should complete`);
       });
 
       // Results should be consistent
       const firstResult = results[0];
-      results.forEach((_result, index) => {
+      results.forEach((result, index) => {
         assertEquals(
-          _result.ok,
+          result.ok,
           firstResult.ok,
           `Call ${index} should have consistent success/failure`,
         );
 
-        if (!_result.ok && !firstResult.ok) {
+        if (!result.ok && !firstResult.ok) {
           assertEquals(
-            _result.error.kind,
+            result.error.kind,
             firstResult.error.kind,
             `Call ${index} should have consistent error kind`,
           );
@@ -417,7 +425,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
         skipStdin: true, // Skip stdin to avoid file reading issues in tests
       };
 
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         { timeout: 5000, customConfig: true },
         complexOptions,
@@ -426,7 +434,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       // Should handle complex options gracefully
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // Should fail at orchestration, not option processing
         const validErrors = [
           "VariablesBuilderError",
@@ -437,10 +445,10 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
           "StdinReadError", // Add this as a valid error for file reading issues
         ];
         assert(
-          validErrors.includes(_result.error.kind),
+          validErrors.includes(result.error.kind),
           `Expected error kind to be one of ${
             validErrors.join(", ")
-          }, but got: ${_result.error.kind}`,
+          }, but got: ${result.error.kind}`,
         );
       }
     });
@@ -457,11 +465,11 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const test of whitespaceTests) {
-        const _result = await handleTwoParams(test.params, {}, { skipStdin: true });
-        assertEquals(_result.ok, false);
+        const result = await handleTwoParams(test.params, {}, { skipStdin: true });
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, test.expectedError);
+        if (!result.ok) {
+          assertEquals(result.error.kind, test.expectedError);
         }
       }
     });
@@ -493,18 +501,18 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       ];
 
       for (const workflow of workflows) {
-        const _result = await handleTwoParams(
+        const result = await handleTwoParams(
           workflow.params,
           workflow.config,
           workflow.options,
         );
 
         // Should complete workflow processing
-        assert("ok" in _result, `${workflow.name} should complete processing`);
+        assert("ok" in result, `${workflow.name} should complete processing`);
 
-        if (!_result.ok) {
+        if (!result.ok) {
           _logger.debug(`${workflow.name} failed at orchestration`, {
-            error: _result.error.kind,
+            error: result.error.kind,
           });
         }
       }
@@ -523,8 +531,8 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       const results = await Promise.all(workflows);
 
       // Each workflow should complete independently
-      results.forEach((_result, index) => {
-        assert("ok" in _result, `Workflow ${index} should complete independently`);
+      results.forEach((result, index) => {
+        assert("ok" in result, `Workflow ${index} should complete independently`);
       });
     });
   });

@@ -20,7 +20,7 @@ import {
 
 Deno.test("Structure: TemplateError constructor parameters", async () => {
   // Test required parameters
-  const _error1 = new TemplateError("Message", TemplateErrorType.TEMPLATE_NOT_FOUND);
+  const error1 = new TemplateError("Message", TemplateErrorType.TEMPLATE_NOT_FOUND);
   assertEquals(error1.message, "Message", "Should set message");
   assertEquals(error1.errorType, TemplateErrorType.TEMPLATE_NOT_FOUND, "Should set error type");
   assertEquals(error1.suggestions.length, 0, "Should have empty suggestions by default");
@@ -173,12 +173,12 @@ Deno.test("Structure: Error detection logic structure", async () => {
   ];
 
   for (const testCase of testCases) {
-    const _result = TemplateErrorHandler.detectTemplateError(testCase.error);
+    const result = TemplateErrorHandler.detectTemplateError(testCase.error);
 
     if (testCase.expectedType === null) {
-      assertEquals(_result, null, "Should not detect non-template errors");
+      assertEquals(result, null, "Should not detect non-template errors");
     } else {
-      assertExists(_result, "Should detect template error");
+      assertExists(result, "Should detect template error");
       assertEquals(
         result?.errorType,
         testCase.expectedType,
@@ -195,11 +195,11 @@ Deno.test("Structure: Error context parameter structure", async () => {
   };
 
   const error = new Error("Test error");
-  const _result = TemplateErrorHandler.detectTemplateError(error, context);
+  const result = TemplateErrorHandler.detectTemplateError(error, context);
 
-  if (_result) {
+  if (result) {
     assertEquals(
-      _result.templatePath,
+      result.templatePath,
       context.templatePath,
       "Should preserve template path from context",
     );
@@ -217,13 +217,13 @@ Deno.test("Structure: Error handler return types", async () => {
   );
 
   // handleTemplateError returns Promise with specific structure
-  const _result = await TemplateErrorHandler.handleTemplateError(templateError);
+  const result = await TemplateErrorHandler.handleTemplateError(templateError);
 
-  assertEquals(typeof _result.resolved, "boolean", "Should have resolved field");
-  assertEquals(typeof _result.message, "string", "Should have message field");
+  assertEquals(typeof result.resolved, "boolean", "Should have resolved field");
+  assertEquals(typeof result.message, "string", "Should have message field");
 
-  if (_result.commands) {
-    assertEquals(Array.isArray(_result.commands), true, "Commands should be array");
+  if (result.commands) {
+    assertEquals(Array.isArray(result.commands), true, "Commands should be array");
   }
 });
 
@@ -237,8 +237,8 @@ Deno.test("Structure: withTemplateErrorHandling wrapper structure", async () => 
   };
 
   // Should return Promise
-  const _result = withTemplateErrorHandling(operation, context);
-  assertExists(_result.then, "Should return Promise");
+  const result = withTemplateErrorHandling(operation, context);
+  assertExists(result.then, "Should return Promise");
 });
 
 Deno.test("Structure: Auto-resolution options structure", async () => {
@@ -254,11 +254,11 @@ Deno.test("Structure: Auto-resolution options structure", async () => {
     projectRoot: "/test/project",
   };
 
-  const _result = await TemplateErrorHandler.handleTemplateError(templateError, options);
+  const result = await TemplateErrorHandler.handleTemplateError(templateError, options);
 
   // Should respect options structure
-  assertEquals(typeof _result.resolved, "boolean");
-  assertEquals(typeof _result.message, "string");
+  assertEquals(typeof result.resolved, "boolean");
+  assertEquals(typeof result.message, "string");
 });
 
 Deno.test("Structure: Error suggestions follow consistent format", async () => {

@@ -12,9 +12,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("architecture-workspace-types");
+const _logger = new _BreakdownLogger("architecture-workspace-types");
 
 describe.ignore("Workspace Types - Architecture", () => {
   it("should define a clear type hierarchy", async () => {
@@ -82,7 +82,7 @@ describe.ignore("Workspace Types - Architecture", () => {
     _logger.debug("Testing for circular dependencies");
 
     // Attempt to import - circular deps would cause errors
-    const importError = null;
+    let importError = null;
     try {
       await import("./types.ts");
     } catch (error) {

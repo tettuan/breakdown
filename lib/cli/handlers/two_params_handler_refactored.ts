@@ -73,8 +73,8 @@ class TwoParamsOrchestrator {
   ): Promise<Result<void, TwoParamsHandlerError>> {
     // 1. Validate parameters
     const _validationResult = await this.validator.validate(params);
-    if (!validationResult.ok) {
-      return error(this.mapValidationError(validationResult.error));
+    if (!_validationResult.ok) {
+      return error(this.mapValidationError(_validationResult.error));
     }
 
     // 2. Read STDIN
@@ -115,7 +115,7 @@ class TwoParamsOrchestrator {
     // 4. Generate prompt
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
-      validationResult.data,
+      _validationResult.data,
       options,
       variablesResult.data,
     );

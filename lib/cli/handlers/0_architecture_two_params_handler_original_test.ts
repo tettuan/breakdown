@@ -13,12 +13,12 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler_original.ts";
-import type { Result } from "../../types/_result.ts";
+import type { Result } from "../../types/result.ts";
 
-const _logger = new BreakdownLogger("architecture-handler");
+const _logger = new _BreakdownLogger("architecture-handler");
 
 describe("TwoParamsHandler Architecture - Totality Principle", () => {
   it("should handle all error types without default case", async () => {
@@ -47,12 +47,12 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const scenario of errorScenarios) {
-      const _result = await handleTwoParams(scenario.params, scenario.config, scenario.options);
+      const result = await handleTwoParams(scenario.params, scenario.config, scenario.options);
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        const error = _result.error;
-        const errorHandled = false;
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        const error = result.error;
+        let errorHandled = false;
 
         // Handle all error kinds without default case
         switch (error.kind) {
@@ -111,33 +111,33 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
 
     // Test valid types
     for (const validType of validDemonstrativeTypes) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         [validType, "project"],
         { app_prompt: { base_dir: "prompts" } },
         {},
       );
 
       // May succeed or fail for other reasons, but not due to demonstrative type
-      if (!_result.ok) {
-        assert(_result.error.kind !== "InvalidDemonstrativeType");
+      if (!result.ok) {
+        assert(result.error.kind !== "InvalidDemonstrativeType");
       }
     }
 
     // Test invalid types
     for (const invalidType of invalidDemonstrativeTypes) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         [invalidType, "project"],
         {},
         {},
       );
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "InvalidDemonstrativeType");
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "InvalidDemonstrativeType");
 
         // Type-safe property access with proper discriminated union handling
-        if (_result.error.kind === "InvalidDemonstrativeType") {
-          assertEquals(_result.error.value, invalidType);
+        if (result.error.kind === "InvalidDemonstrativeType") {
+          assertEquals(result.error.value, invalidType);
         }
       }
     }
@@ -151,33 +151,33 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
 
     // Test valid types
     for (const validType of validLayerTypes) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", validType],
         { app_prompt: { base_dir: "prompts" } },
         {},
       );
 
       // May succeed or fail for other reasons, but not due to layer type
-      if (!_result.ok) {
-        assert(_result.error.kind !== "InvalidLayerType");
+      if (!result.ok) {
+        assert(result.error.kind !== "InvalidLayerType");
       }
     }
 
     // Test invalid types
     for (const invalidType of invalidLayerTypes) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", invalidType],
         {},
         {},
       );
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "InvalidLayerType");
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "InvalidLayerType");
 
         // Type-safe property access with proper discriminated union handling
-        if (_result.error.kind === "InvalidLayerType") {
-          assertEquals(_result.error.value, invalidType);
+        if (result.error.kind === "InvalidLayerType") {
+          assertEquals(result.error.value, invalidType);
         }
       }
     }
@@ -194,20 +194,20 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const test of parameterCountTests) {
-      const _result = await handleTwoParams(test.params, {}, {});
+      const result = await handleTwoParams(test.params, {}, {});
 
-      const countHandled = false;
+      let countHandled = false;
 
       // Handle parameter count validation without default case
       if (test.params.length < 2) {
-        assertEquals(_result.ok, false);
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "InvalidParameterCount");
+        assertEquals(result.ok, false);
+        if (!result.ok) {
+          assertEquals(result.error.kind, "InvalidParameterCount");
 
           // Type-safe property access with proper discriminated union handling
-          if (_result.error.kind === "InvalidParameterCount") {
-            assertEquals(_result.error.received, test.params.length);
-            assertEquals(_result.error.expected, 2);
+          if (result.error.kind === "InvalidParameterCount") {
+            assertEquals(result.error.received, test.params.length);
+            assertEquals(result.error.expected, 2);
           }
         }
         countHandled = true;
@@ -230,18 +230,18 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
       {},
     );
 
-    const resultHandled = false;
+    let resultHandled = false;
 
     // Handle all Result states without default case
     switch (successResult.ok) {
       case true:
         assertEquals(successResult.data, undefined);
-        assertEquals(typeof (successResult as unknown).error, "undefined");
+        assertEquals(typeof (successResult as any).error, "undefined");
         resultHandled = true;
         break;
       case false:
         assertExists(successResult.error);
-        assertEquals(typeof (successResult as unknown).data, "undefined");
+        assertEquals(typeof (successResult as any).data, "undefined");
         resultHandled = true;
         break;
     }
@@ -261,18 +261,18 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const test of stdinOptionTests) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         { app_prompt: { base_dir: "prompts" } },
         test.options,
       );
 
       // All options should be processed without throwing
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // If stdin reading fails, should be proper error
-      if (!_result.ok && _result.error.kind === "StdinReadError") {
-        assertExists(_result.error.error);
+      if (!result.ok && result.error.kind === "StdinReadError") {
+        assertExists(result.error.error);
       }
     }
   });
@@ -312,14 +312,14 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const stage of pipelineStages) {
-      const _result = await handleTwoParams(stage.params, stage.config, stage.options);
+      const result = await handleTwoParams(stage.params, stage.config, stage.options);
 
-      const stageHandled = false;
+      let stageHandled = false;
 
       // Each stage should be handled properly
-      if (!_result.ok) {
+      if (!result.ok) {
         // Verify we get expected error or later stage error
-        switch (_result.error.kind) {
+        switch (result.error.kind) {
           case "InvalidParameterCount":
           case "InvalidDemonstrativeType":
           case "InvalidLayerType":
@@ -368,11 +368,11 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const test of errorTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        const error = _result.error;
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        const error = result.error;
 
         // Verify all expected fields are present
         for (const field of test.expectedFields) {
@@ -424,8 +424,8 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
       expected: 2,
     };
 
-    const _result = handleTwoParamsError(testError);
-    assertEquals(_result, "Invalid parameter count: got 1, expected 2");
+    const result = handleTwoParamsError(testError);
+    assertEquals(result, "Invalid parameter count: got 1, expected 2");
   });
 
   it("should handle all configuration states without default case", async () => {
@@ -441,13 +441,13 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
     ];
 
     for (const state of configStates) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
-        state.config as unknown,
+        state.config as Record<string, unknown>,
         {},
       );
 
-      const configHandled = false;
+      let configHandled = false;
 
       // All config states should be handled
       switch (typeof state.config) {
@@ -471,7 +471,7 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
       }
 
       assertEquals(configHandled, true, `Config state should be handled: ${state.desc}`);
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
     }
   });
 
@@ -506,15 +506,15 @@ describe("TwoParamsHandler Architecture - Totality Principle", () => {
 
     for (const test of constraintTests) {
       try {
-        const _result = await handleTwoParams(test.params, test.config, test.options);
+        const result = await handleTwoParams(test.params, test.config, test.options);
 
         // Should always return Result type, never throw
-        assertEquals(typeof _result.ok, "boolean");
+        assertEquals(typeof result.ok, "boolean");
 
-        if (!_result.ok) {
+        if (!result.ok) {
           // Error should be properly structured
-          assertExists(_result.error);
-          assertExists(_result.error.kind);
+          assertExists(result.error);
+          assertExists(result.error.kind);
         }
       } catch (error) {
         // Should never throw - this would violate architectural constraints

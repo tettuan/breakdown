@@ -10,7 +10,7 @@ import { join } from "@std/path";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateMapping,
-  TemplateValidationResult,
+  TemplateValidation_Result,
   TemplateValidator,
   validateTemplatesForExamples,
 } from "./template_validator.ts";
@@ -18,7 +18,7 @@ import {
 // テスト用の一時ディレクトリを作成
 async function createTestDirectory(): Promise<string> {
   const _tempDir = await Deno.makeTempDir();
-  return tempDir;
+  return _tempDir;
 }
 
 // テスト用のテンプレートファイルを作成
@@ -57,13 +57,13 @@ Deno.test("Unit: TemplateValidator validates existing templates correctly", asyn
     await createTestTemplate(testDir, "dest/template2.md", "Template 2 content");
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.validateTemplates();
+    const result = await _validator.validateTemplates();
 
     // すべての必須テンプレートが存在する場合
-    assertEquals(_result.isValid, true);
-    assertEquals(_result.missingTemplates.length, 0);
-    assertEquals(_result.existingTemplates.length, 2);
-    assertEquals(_result.totalRequired, 2);
+    assertEquals(result.isValid, true);
+    assertEquals(result.missingTemplates.length, 0);
+    assertEquals(result.existingTemplates.length, 2);
+    assertEquals(result.totalRequired, 2);
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }
@@ -90,14 +90,14 @@ Deno.test("Unit: TemplateValidator detects missing templates", async () => {
     await createTestTemplate(testDir, "dest/template1.md", "Template 1 content");
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.validateTemplates();
+    const result = await _validator.validateTemplates();
 
     // 不足テンプレートが検出される
-    assertEquals(_result.isValid, false);
-    assertEquals(_result.missingTemplates.length, 1);
-    assertEquals(_result.missingTemplates[0], "dest/template2.md");
-    assertEquals(_result.existingTemplates.length, 1);
-    assertEquals(_result.totalRequired, 2);
+    assertEquals(result.isValid, false);
+    assertEquals(result.missingTemplates.length, 1);
+    assertEquals(result.missingTemplates[0], "dest/template2.md");
+    assertEquals(result.existingTemplates.length, 1);
+    assertEquals(result.totalRequired, 2);
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }
@@ -125,11 +125,11 @@ Deno.test("Unit: TemplateValidator generates missing templates", async () => {
     await createTestTemplate(testDir, "src/template2.md", "Source template 2");
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.generateMissingTemplates();
+    const result = await _validator.generateMissingTemplates();
 
     // テンプレートが正常に生成される
-    assertEquals(_result.generated.length, 2);
-    assertEquals(_result.failed.length, 0);
+    assertEquals(result.generated.length, 2);
+    assertEquals(result.failed.length, 0);
 
     // 生成されたファイルの内容を確認
     const content1 = await Deno.readTextFile(join(testDir, "dest/template1.md"));
@@ -152,13 +152,13 @@ Deno.test("Unit: TemplateValidator handles source template not found", async () 
     ];
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.generateMissingTemplates();
+    const result = await _validator.generateMissingTemplates();
 
     // ソースが見つからない場合のエラー処理
-    assertEquals(_result.generated.length, 0);
-    assertEquals(_result.failed.length, 1);
-    assertEquals(_result.failed[0].template, "dest/template.md");
-    assertEquals(_result.failed[0].error.includes("Source template not found"), true);
+    assertEquals(result.generated.length, 0);
+    assertEquals(result.failed.length, 1);
+    assertEquals(result.failed[0].template, "dest/template.md");
+    assertEquals(result.failed[0].error.includes("Source template not found"), true);
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }
@@ -181,11 +181,11 @@ Deno.test("Unit: TemplateValidator skips already existing destination templates"
     await createTestTemplate(testDir, "dest/template.md", "Existing content");
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.generateMissingTemplates();
+    const result = await _validator.generateMissingTemplates();
 
     // 既存のファイルはスキップされる
-    assertEquals(_result.generated.length, 0);
-    assertEquals(_result.failed.length, 0);
+    assertEquals(result.generated.length, 0);
+    assertEquals(result.failed.length, 0);
 
     // 既存のファイルは上書きされない
     const content = await Deno.readTextFile(join(testDir, "dest/template.md"));
@@ -201,15 +201,15 @@ Deno.test("Unit: TemplateValidator preflight check detects all issues", async ()
   try {
     // 最小限の構造のみ作成
     const _validator = new TemplateValidator(testDir, DEFAULT_TEMPLATE_MAPPINGS);
-    const _result = await _validator.preflightCheck();
+    const result = await _validator.preflightCheck();
 
     // 問題が検出される
-    assertEquals(_result.ready, false);
-    assertEquals(_result.issues.length > 0, true);
-    assertEquals(_result.recommendations.length > 0, true);
+    assertEquals(result.ready, false);
+    assertEquals(result.issues.length > 0, true);
+    assertEquals(result.recommendations.length > 0, true);
 
     // 推奨事項が含まれる
-    const hasTemplateGenRecommendation = _result.recommendations.some((r) =>
+    const hasTemplateGenRecommendation = result.recommendations.some((r) =>
       r.includes("bash scripts/template_generator.sh generate")
     );
     assertEquals(hasTemplateGenRecommendation, true);
@@ -238,12 +238,12 @@ Deno.test("Unit: TemplateValidator preflight check passes with complete setup", 
     await createTestTemplate(testDir, "dest/template.md", "Template content");
 
     const _validator = new TemplateValidator(testDir, mappings);
-    const _result = await _validator.preflightCheck();
+    const result = await _validator.preflightCheck();
 
     // すべてのチェックをパス
-    assertEquals(_result.ready, true);
-    assertEquals(_result.issues.length, 0);
-    assertEquals(_result.recommendations.length, 0);
+    assertEquals(result.ready, true);
+    assertEquals(result.issues.length, 0);
+    assertEquals(result.recommendations.length, 0);
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }

@@ -1,5 +1,5 @@
 import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
-import { prompts } from "./prompts.ts";
+import { _prompts as prompts } from "./prompts.ts";
 
 /**
  * 単体テスト：prompts.ts
@@ -13,7 +13,7 @@ import { prompts } from "./prompts.ts";
 
 Deno.test("Unit: prompts should contain all required prompt templates", () => {
   // 必須のプロンプトテンプレートが存在することを確認
-  const _requiredPrompts = [
+  const requiredPrompts = [
     "to/project/f_project.md",
     "to/issue/f_issue.md",
     "to/task/f_task.md",

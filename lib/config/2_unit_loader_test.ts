@@ -63,7 +63,7 @@ breakdownParams:
 
     const _config = await loadConfig(testFile);
 
-    assertExists(config, "Config should be loaded");
+    assertExists(_config, "Config should be loaded");
     assertEquals(_config.customConfig?.findBugs?.enabled, true);
     assertEquals(_config.customConfig?.findBugs?.sensitivity, "high");
     assertEquals(_config.customConfig?.findBugs?.patterns?.length, 2);
@@ -84,7 +84,7 @@ breakdownParams:
     const _config = await loadConfig(testFile);
 
     // Empty YAML should parse to null or empty object
-    assertExists(config !== undefined, "Config should not be undefined");
+    assertExists(_config !== undefined, "Config should not be undefined");
 
     _logger.debug("Empty YAML handling verified");
   });
@@ -103,7 +103,7 @@ breakdownParams:
 
     const _config = await loadConfig(testFile);
 
-    assertExists(config !== undefined, "Config should not be undefined");
+    assertExists(_config !== undefined, "Config should not be undefined");
 
     _logger.debug("Comments-only YAML handling verified");
   });
@@ -425,7 +425,7 @@ describe("Unit: Edge Cases and Boundaries", () => {
     const testFile = join(testDir, "large-_config.yml");
 
     // Generate a large YAML file
-    const content = "largeConfig:\n";
+    let content = "largeConfig:\n";
     for (let i = 0; i < 1000; i++) {
       content += `  item${i}:\n`;
       content += `    value: "test value ${i}"\n`;

@@ -22,7 +22,7 @@ Deno.test("Architecture: Stdin provider isolates system dependencies", async () 
   );
 
   // Check that interface doesn't expose Deno-specific types directly
-  const interfaceSection = moduleSource.match(/export interface StdinProvider\s*{[^}]+}/s);
+  const interfaceSection = _moduleSource.match(/export interface StdinProvider\s*{[^}]+}/s);
   assertExists(interfaceSection, "Should have StdinProvider interface");
 
   const interfaceContent = interfaceSection[0];
@@ -32,7 +32,7 @@ Deno.test("Architecture: Stdin provider isolates system dependencies", async () 
   assertEquals(hasDenoTypes, false, "Interface should not expose Deno-specific types");
 
   // Check that MockStdinProvider doesn't use actual I/O
-  const mockProviderSection = moduleSource.match(/export class MockStdinProvider[^{]+{[\s\S]+?^}/m);
+  const mockProviderSection = _moduleSource.match(/export class MockStdinProvider[^{]+{[\s\S]+?^}/m);
   if (mockProviderSection) {
     const hasActualIO = mockProviderSection[0].includes("Deno.stdin") ||
       mockProviderSection[0].includes("readAll(Deno.stdin)");

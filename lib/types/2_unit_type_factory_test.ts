@@ -18,7 +18,7 @@ import {
   type TypePatternProvider,
 } from "./mod.ts";
 
-const _logger = new BreakdownLogger("type-factory-unit");
+const logger = new BreakdownLogger("type-factory-unit");
 
 class UnitTestProvider implements TypePatternProvider {
   constructor(
@@ -45,87 +45,87 @@ describe("TypeFactory - createDirectiveType Method", () => {
   });
 
   it("should create valid DirectiveType for 'to'", () => {
-    _logger.debug("Testing DirectiveType creation for 'to'");
+    logger.debug("Testing DirectiveType creation for 'to'");
 
-    const _result = _factory.createDirectiveType("to");
+    const result = factory.createDirectiveType("to");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "to");
-      assertEquals(_result.data.toString(), "DirectiveType(to)");
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "to");
+      assertEquals(result.data.toString(), "DirectiveType(to)");
     }
   });
 
   it("should create valid DirectiveType for 'summary'", () => {
-    _logger.debug("Testing DirectiveType creation for 'summary'");
+    logger.debug("Testing DirectiveType creation for 'summary'");
 
-    const _result = _factory.createDirectiveType("summary");
+    const result = factory.createDirectiveType("summary");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "summary");
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "summary");
     }
   });
 
   it("should create valid DirectiveType for 'defect'", () => {
-    _logger.debug("Testing DirectiveType creation for 'defect'");
+    logger.debug("Testing DirectiveType creation for 'defect'");
 
-    const _result = _factory.createDirectiveType("defect");
+    const result = factory.createDirectiveType("defect");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "defect");
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "defect");
     }
   });
 
   it("should fail for invalid DirectiveType 'invalid'", () => {
-    _logger.debug("Testing DirectiveType creation failure for 'invalid'");
+    logger.debug("Testing DirectiveType creation failure for 'invalid'");
 
-    const _result = _factory.createDirectiveType("invalid");
+    const result = factory.createDirectiveType("invalid");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "invalid");
-      assertExists((_result.error as unknown).pattern);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "invalid");
+      assertExists((result.error as unknown).pattern);
     }
   });
 
   it("should fail when no directive pattern is available", () => {
-    _logger.debug("Testing DirectiveType creation with no pattern");
+    logger.debug("Testing DirectiveType creation with no pattern");
 
     const noPatternProvider = new UnitTestProvider(null, "project|issue|task");
     const noPatternFactory = new TypeFactory(noPatternProvider);
 
-    const _result = noPatternFactory.createDirectiveType("to");
+    const result = noPatternFactory.createDirectiveType("to");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "PatternNotFound");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "PatternNotFound");
     }
   });
 
   it("should handle empty string input", () => {
-    _logger.debug("Testing DirectiveType creation with empty string");
+    logger.debug("Testing DirectiveType creation with empty string");
 
-    const _result = _factory.createDirectiveType("");
+    const result = factory.createDirectiveType("");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "");
     }
   });
 
   it("should handle whitespace-only input", () => {
-    _logger.debug("Testing DirectiveType creation with whitespace");
+    logger.debug("Testing DirectiveType creation with whitespace");
 
-    const _result = _factory.createDirectiveType("   ");
+    const result = factory.createDirectiveType("   ");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "   ");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "   ");
     }
   });
 });
@@ -140,81 +140,81 @@ describe("TypeFactory - createLayerType Method", () => {
   });
 
   it("should create valid LayerType for 'project'", () => {
-    _logger.debug("Testing LayerType creation for 'project'");
+    logger.debug("Testing LayerType creation for 'project'");
 
-    const _result = _factory.createLayerType("project");
+    const result = factory.createLayerType("project");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "project");
-      assertEquals(_result.data.toString(), "LayerType(project)");
-      assertEquals(_result.data.getHierarchyLevel(), 1);
-      assertEquals(_result.data.isStandardHierarchy(), true);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "project");
+      assertEquals(result.data.toString(), "LayerType(project)");
+      assertEquals(result.data.getHierarchyLevel(), 1);
+      assertEquals(result.data.isStandardHierarchy(), true);
     }
   });
 
   it("should create valid LayerType for 'issue'", () => {
-    _logger.debug("Testing LayerType creation for 'issue'");
+    logger.debug("Testing LayerType creation for 'issue'");
 
-    const _result = _factory.createLayerType("issue");
+    const result = factory.createLayerType("issue");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "issue");
-      assertEquals(_result.data.getHierarchyLevel(), 2);
-      assertEquals(_result.data.isStandardHierarchy(), true);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "issue");
+      assertEquals(result.data.getHierarchyLevel(), 2);
+      assertEquals(result.data.isStandardHierarchy(), true);
     }
   });
 
   it("should create valid LayerType for 'task'", () => {
-    _logger.debug("Testing LayerType creation for 'task'");
+    logger.debug("Testing LayerType creation for 'task'");
 
-    const _result = _factory.createLayerType("task");
+    const result = factory.createLayerType("task");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "task");
-      assertEquals(_result.data.getHierarchyLevel(), 3);
-      assertEquals(_result.data.isStandardHierarchy(), true);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "task");
+      assertEquals(result.data.getHierarchyLevel(), 3);
+      assertEquals(result.data.isStandardHierarchy(), true);
     }
   });
 
   it("should create valid LayerType for non-standard 'bugs'", () => {
-    _logger.debug("Testing LayerType creation for 'bugs'");
+    logger.debug("Testing LayerType creation for 'bugs'");
 
-    const _result = _factory.createLayerType("bugs");
+    const result = factory.createLayerType("bugs");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "bugs");
-      assertEquals(_result.data.getHierarchyLevel(), 0); // Non-standard
-      assertEquals(_result.data.isStandardHierarchy(), false);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "bugs");
+      assertEquals(result.data.getHierarchyLevel(), 0); // Non-standard
+      assertEquals(result.data.isStandardHierarchy(), false);
     }
   });
 
   it("should fail for invalid LayerType", () => {
-    _logger.debug("Testing LayerType creation failure");
+    logger.debug("Testing LayerType creation failure");
 
-    const _result = _factory.createLayerType("invalid");
+    const result = factory.createLayerType("invalid");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "invalid");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "invalid");
     }
   });
 
   it("should fail when no layer pattern is available", () => {
-    _logger.debug("Testing LayerType creation with no pattern");
+    logger.debug("Testing LayerType creation with no pattern");
 
     const noPatternProvider = new UnitTestProvider("to|summary|defect", null);
     const noPatternFactory = new TypeFactory(noPatternProvider);
 
-    const _result = noPatternFactory.createLayerType("project");
+    const result = noPatternFactory.createLayerType("project");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "PatternNotFound");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "PatternNotFound");
     }
   });
 });
@@ -229,60 +229,60 @@ describe("TypeFactory - createBothTypes Method", () => {
   });
 
   it("should create both valid types successfully", () => {
-    _logger.debug("Testing successful createBothTypes");
+    logger.debug("Testing successful createBothTypes");
 
-    const _result = _factory.createBothTypes("summary", "project");
+    const result = factory.createBothTypes("summary", "project");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.directive.getValue(), "summary");
-      assertEquals(_result.data.layer.getValue(), "project");
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.directive.getValue(), "summary");
+      assertEquals(result.data.layer.getValue(), "project");
     }
   });
 
   it("should fail if directive is invalid", () => {
-    _logger.debug("Testing createBothTypes with invalid directive");
+    logger.debug("Testing createBothTypes with invalid directive");
 
-    const _result = _factory.createBothTypes("invalid", "project");
+    const result = factory.createBothTypes("invalid", "project");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "invalid");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "invalid");
     }
   });
 
   it("should fail if layer is invalid", () => {
-    _logger.debug("Testing createBothTypes with invalid layer");
+    logger.debug("Testing createBothTypes with invalid layer");
 
-    const _result = _factory.createBothTypes("summary", "invalid");
+    const result = factory.createBothTypes("summary", "invalid");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
-      assertEquals((_result.error as unknown).value, "invalid");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals((result.error as unknown).value, "invalid");
     }
   });
 
   it("should fail if both are invalid", () => {
-    _logger.debug("Testing createBothTypes with both invalid");
+    logger.debug("Testing createBothTypes with both invalid");
 
-    const _result = _factory.createBothTypes("invalid1", "invalid2");
+    const result = factory.createBothTypes("invalid1", "invalid2");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "ValidationFailed");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ValidationFailed");
       // Should fail on directive first
-      assertEquals((_result.error as unknown).value, "invalid1");
+      assertEquals((result.error as unknown).value, "invalid1");
     }
   });
 
   it("should create types that are equal to individually created types", () => {
-    _logger.debug("Testing equivalence with individual creation");
+    logger.debug("Testing equivalence with individual creation");
 
-    const directiveResult = _factory.createDirectiveType("defect");
-    const layerResult = _factory.createLayerType("issue");
-    const bothResult = _factory.createBothTypes("defect", "issue");
+    const directiveResult = factory.createDirectiveType("defect");
+    const layerResult = factory.createLayerType("issue");
+    const bothResult = factory.createBothTypes("defect", "issue");
 
     assertEquals(directiveResult.ok, true);
     assertEquals(layerResult.ok, true);
@@ -311,33 +311,33 @@ describe("TypeFactory - validateBothValues Method", () => {
   });
 
   it("should validate correct values", () => {
-    _logger.debug("Testing validateBothValues with correct values");
+    logger.debug("Testing validateBothValues with correct values");
 
-    assertEquals(_factory.validateBothValues("to", "project"), true);
-    assertEquals(_factory.validateBothValues("summary", "issue"), true);
-    assertEquals(_factory.validateBothValues("defect", "task"), true);
+    assertEquals(factory.validateBothValues("to", "project"), true);
+    assertEquals(factory.validateBothValues("summary", "issue"), true);
+    assertEquals(factory.validateBothValues("defect", "task"), true);
   });
 
   it("should reject invalid directive", () => {
-    _logger.debug("Testing validateBothValues with invalid directive");
+    logger.debug("Testing validateBothValues with invalid directive");
 
-    assertEquals(_factory.validateBothValues("invalid", "project"), false);
+    assertEquals(factory.validateBothValues("invalid", "project"), false);
   });
 
   it("should reject invalid layer", () => {
-    _logger.debug("Testing validateBothValues with invalid layer");
+    logger.debug("Testing validateBothValues with invalid layer");
 
-    assertEquals(_factory.validateBothValues("to", "invalid"), false);
+    assertEquals(factory.validateBothValues("to", "invalid"), false);
   });
 
   it("should reject both invalid", () => {
-    _logger.debug("Testing validateBothValues with both invalid");
+    logger.debug("Testing validateBothValues with both invalid");
 
-    assertEquals(_factory.validateBothValues("invalid1", "invalid2"), false);
+    assertEquals(factory.validateBothValues("invalid1", "invalid2"), false);
   });
 
   it("should return false when patterns are not available", () => {
-    _logger.debug("Testing validateBothValues with no patterns");
+    logger.debug("Testing validateBothValues with no patterns");
 
     const noPatternProvider = new UnitTestProvider(null, null);
     const noPatternFactory = new TypeFactory(noPatternProvider);
@@ -346,7 +346,7 @@ describe("TypeFactory - validateBothValues Method", () => {
   });
 
   it("should be consistent with createBothTypes success", () => {
-    _logger.debug("Testing consistency between validateBothValues and createBothTypes");
+    logger.debug("Testing consistency between validateBothValues and createBothTypes");
 
     const testCases = [
       ["to", "project"],
@@ -358,8 +358,8 @@ describe("TypeFactory - validateBothValues Method", () => {
     ];
 
     testCases.forEach(([directive, layer]) => {
-      const validationResult = _factory.validateBothValues(directive, layer);
-      const creationResult = _factory.createBothTypes(directive, layer);
+      const validationResult = factory.validateBothValues(directive, layer);
+      const creationResult = factory.createBothTypes(directive, layer);
 
       assertEquals(validationResult, creationResult.ok);
     });
@@ -368,12 +368,12 @@ describe("TypeFactory - validateBothValues Method", () => {
 
 describe("TypeFactory - getPatternAvailability Method", () => {
   it("should report full availability with both patterns", () => {
-    _logger.debug("Testing full pattern availability");
+    logger.debug("Testing full pattern availability");
 
     const provider = new UnitTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
 
     assertEquals(availability.directive, true);
     assertEquals(availability.layer, true);
@@ -381,12 +381,12 @@ describe("TypeFactory - getPatternAvailability Method", () => {
   });
 
   it("should report partial availability with directive only", () => {
-    _logger.debug("Testing directive-only pattern availability");
+    logger.debug("Testing directive-only pattern availability");
 
     const provider = new UnitTestProvider("to|summary|defect", null);
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
 
     assertEquals(availability.directive, true);
     assertEquals(availability.layer, false);
@@ -394,12 +394,12 @@ describe("TypeFactory - getPatternAvailability Method", () => {
   });
 
   it("should report partial availability with layer only", () => {
-    _logger.debug("Testing layer-only pattern availability");
+    logger.debug("Testing layer-only pattern availability");
 
     const provider = new UnitTestProvider(null, "project|issue|task");
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
 
     assertEquals(availability.directive, false);
     assertEquals(availability.layer, true);
@@ -407,12 +407,12 @@ describe("TypeFactory - getPatternAvailability Method", () => {
   });
 
   it("should report no availability with no patterns", () => {
-    _logger.debug("Testing no pattern availability");
+    logger.debug("Testing no pattern availability");
 
     const provider = new UnitTestProvider(null, null);
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
 
     assertEquals(availability.directive, false);
     assertEquals(availability.layer, false);
@@ -422,12 +422,12 @@ describe("TypeFactory - getPatternAvailability Method", () => {
 
 describe("TypeFactory - debug Method", () => {
   it("should provide comprehensive debug information", () => {
-    _logger.debug("Testing debug information provision");
+    logger.debug("Testing debug information provision");
 
     const provider = new UnitTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const debugInfo = _factory.debug();
+    const debugInfo = factory.debug();
 
     assertExists(debugInfo.patternProvider);
     assertExists(debugInfo.availability);
@@ -435,14 +435,14 @@ describe("TypeFactory - debug Method", () => {
     assertEquals(debugInfo.patternProvider, "UnitTestProvider");
 
     // Availability should match getPatternAvailability
-    const availability = _factory.getPatternAvailability();
+    const availability = factory.getPatternAvailability();
     assertEquals(debugInfo.availability.directive, availability.directive);
     assertEquals(debugInfo.availability.layer, availability.layer);
     assertEquals(debugInfo.availability.both, availability.both);
   });
 
   it("should reflect current state accurately", () => {
-    _logger.debug("Testing debug information accuracy");
+    logger.debug("Testing debug information accuracy");
 
     const noPatternProvider = new UnitTestProvider(null, null);
     const noPatternFactory = new TypeFactory(noPatternProvider);

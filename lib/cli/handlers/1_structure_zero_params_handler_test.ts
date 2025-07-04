@@ -202,8 +202,8 @@ Deno.test("ZeroParamsHandler Component Structure", async (t) => {
     assertEquals(func.length, 3);
 
     // Synchronous execution (no complex async patterns)
-    const _result = func([], {}, {});
-    assertEquals(_result, undefined);
+    const result = func([], {}, {});
+    assertEquals(result, undefined);
 
     // No complex return types
     assert(true, "Structural simplicity maintained");
@@ -250,8 +250,8 @@ Deno.test("ZeroParamsHandler Totality Structure", async (t) => {
     // Every decision path should execute without structural failures
     for (const path of decisionPaths) {
       try {
-        const _result = handleZeroParams([], {}, path.options as unknown);
-        assertEquals(_result, undefined, `Decision path ${path.pathType} should complete`);
+        const result = handleZeroParams([], {}, path.options as Record<string, unknown>);
+        assertEquals(result, undefined, `Decision path ${path.pathType} should complete`);
       } catch (error) {
         assert(false, `Structural gap in ${path.pathType}: ${error}`);
       }
@@ -284,12 +284,12 @@ Deno.test("ZeroParamsHandler Totality Structure", async (t) => {
     // Structure should handle all combinations gracefully
     for (const combo of structuralCombinations) {
       try {
-        const _result = handleZeroParams(
-          combo.args as unknown,
-          combo.config as unknown,
-          combo.options as unknown,
+        const result = handleZeroParams(
+          combo.args as string[],
+          combo.config as Record<string, unknown>,
+          combo.options as Record<string, unknown>,
         );
-        assertEquals(_result, undefined, `Combination should be handled: ${JSON.stringify(combo)}`);
+        assertEquals(result, undefined, `Combination should be handled: ${JSON.stringify(combo)}`);
       } catch (error) {
         assert(false, `Structural exhaustiveness violated: ${JSON.stringify(combo)} - ${error}`);
       }
@@ -320,9 +320,9 @@ Deno.test("ZeroParamsHandler Totality Structure", async (t) => {
     // Every case should complete delegation without structural issues
     for (const delegationCase of delegationCases) {
       try {
-        const _result = handleZeroParams([], {}, delegationCase.options);
+        const result = handleZeroParams([], {}, delegationCase.options);
         assertEquals(
-          _result,
+          result,
           undefined,
           `Delegation to ${delegationCase.expectedDelegation} should complete`,
         );
@@ -355,8 +355,8 @@ Deno.test("ZeroParamsHandler Totality Structure", async (t) => {
           // Execute one branch
           handleZeroParams([], {}, isolationTests[i].options);
           // Execute another branch - should not be affected
-          const _result = handleZeroParams([], {}, isolationTests[j].options);
-          assertEquals(_result, undefined, "Branches should be isolated");
+          const result = handleZeroParams([], {}, isolationTests[j].options);
+          assertEquals(result, undefined, "Branches should be isolated");
         } catch (error) {
           assert(false, `Structural isolation violated between branches ${i} and ${j}: ${error}`);
         }

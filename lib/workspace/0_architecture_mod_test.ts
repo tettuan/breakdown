@@ -12,9 +12,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("architecture-workspace-mod");
+const _logger = new _BreakdownLogger("architecture-workspace-mod");
 
 describe("Workspace Module - Architecture", async () => {
   it("should export all required types from types.ts", async () => {
@@ -33,7 +33,7 @@ describe("Workspace Module - Architecture", async () => {
 
     // Since these are TypeScript types, we can't check them at runtime
     // But we ensure the module exports from types.ts
-    assertExists(mod);
+    assertExists(_mod);
   });
 
   it("should export all error types from errors.ts", async () => {
@@ -112,10 +112,10 @@ describe("Workspace Module - Architecture", async () => {
 
       // If we can successfully import and all exports are defined,
       // there are no circular dependency issues
-      assertExists(mod);
+      assertExists(_mod);
 
       // Check that exported items are not undefined (sign of circular deps)
-      const exports = Object.entries(mod);
+      const exports = Object.entries(_mod);
       exports.forEach(([key, value]) => {
         if (key !== "default") {
           assertExists(value, `Export ${key} should not be undefined`);
@@ -145,7 +145,7 @@ describe("Workspace Module - Architecture", async () => {
     ];
 
     essentialExports.forEach((exportName) => {
-      const exportValue = (mod as unknown)[exportName];
+      const exportValue = (_mod as Record<string, unknown>)[exportName];
       assertExists(exportValue, `Missing essential export: ${exportName}`);
     });
   });

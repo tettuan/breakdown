@@ -21,11 +21,11 @@ import { ConfigError, ParamsCustomConfig, type Result as _Result, ResultStatus }
 
 import type { CustomConfig as _CustomConfig } from "@tettuan/breakdownparams";
 
-const _logger = new BreakdownLogger("params-custom-config-structure");
+const logger = new BreakdownLogger("params-custom-config-structure");
 
 describe("ParamsCustomConfig - Class Structure", () => {
   it("should expose only essential public API methods", () => {
-    _logger.debug("Testing public API surface");
+    logger.debug("Testing public API surface");
 
     // Should only expose static create method
     assertEquals(typeof ParamsCustomConfig.create, "function");
@@ -46,7 +46,7 @@ describe("ParamsCustomConfig - Class Structure", () => {
   });
 
   it("should maintain clear method responsibilities", () => {
-    _logger.debug("Testing method responsibility separation");
+    logger.debug("Testing method responsibility separation");
 
     // create() method should handle:
     // 1. Missing config detection
@@ -66,18 +66,18 @@ describe("ParamsCustomConfig - Class Structure", () => {
       },
     };
 
-    const _result = ParamsCustomConfig.create(testConfig);
+    const result = ParamsCustomConfig.create(testConfig);
 
     // Should return properly structured result
-    assertExists(_result.status);
-    if (_result.status === ResultStatus.SUCCESS) {
+    assertExists(result.status);
+    if (result.status === ResultStatus.SUCCESS) {
       // Create method handled all aspects properly
-      assertExists(_result.data);
+      assertExists(result.data);
     }
   });
 
   it("should structure ConfigError with consistent properties", () => {
-    _logger.debug("Testing ConfigError structure");
+    logger.debug("Testing ConfigError structure");
 
     const error = new ConfigError("Test message", "TEST_CODE");
 
@@ -97,7 +97,7 @@ describe("ParamsCustomConfig - Class Structure", () => {
   });
 
   it("should maintain cohesive data flow structure", () => {
-    _logger.debug("Testing data flow cohesion");
+    logger.debug("Testing data flow cohesion");
 
     // Data should flow: input -> missing check -> extraction -> merging -> result
 
@@ -137,7 +137,7 @@ describe("ParamsCustomConfig - Class Structure", () => {
 
 describe("ParamsCustomConfig - Helper Method Structure", () => {
   it("should structure config detection logic cohesively", () => {
-    _logger.debug("Testing config detection structure");
+    logger.debug("Testing config detection structure");
 
     // Various "missing" configurations
     const missingConfigs = [
@@ -151,9 +151,9 @@ describe("ParamsCustomConfig - Helper Method Structure", () => {
 
     // All should be detected as missing
     missingConfigs.forEach((config, index) => {
-      const _result = ParamsCustomConfig.create(config as unknown as Record<string, unknown>);
+      const result = ParamsCustomConfig.create(config as unknown as Record<string, unknown>);
       assertEquals(
-        _result.status === ResultStatus.SUCCESS && _result.data === undefined,
+        result.status === ResultStatus.SUCCESS && result.data === undefined,
         true,
         `Config ${index} should be detected as missing`,
       );
@@ -169,10 +169,10 @@ describe("ParamsCustomConfig - Helper Method Structure", () => {
 
     // All should be detected as present
     presentConfigs.forEach((config, index) => {
-      const _result = ParamsCustomConfig.create(config);
-      if (_result.status === ResultStatus.SUCCESS) {
+      const result = ParamsCustomConfig.create(config);
+      if (result.status === ResultStatus.SUCCESS) {
         assertEquals(
-          _result.data !== undefined,
+          result.data !== undefined,
           true,
           `Config ${index} should be detected as present`,
         );
@@ -181,7 +181,7 @@ describe("ParamsCustomConfig - Helper Method Structure", () => {
   });
 
   it("should structure override extraction with clear section separation", () => {
-    _logger.debug("Testing override extraction structure");
+    logger.debug("Testing override extraction structure");
 
     // Each section should be extracted independently
     const fullConfig = {
@@ -206,22 +206,22 @@ describe("ParamsCustomConfig - Helper Method Structure", () => {
       },
     };
 
-    const _result = ParamsCustomConfig.create(fullConfig);
+    const result = ParamsCustomConfig.create(fullConfig);
 
-    if (_result.status === ResultStatus.SUCCESS && _result.data) {
+    if (result.status === ResultStatus.SUCCESS && result.data) {
       // Each section should be properly extracted
-      assertEquals(_result.data.params.two.demonstrativeType.pattern, "^(a)$");
-      assertEquals(_result.data.params.two.layerType.pattern, "^(b)$");
-      assertEquals(_result.data.options.customVariables.pattern, "test");
-      assertEquals(_result.data.validation.zero.allowedOptions[0], "test");
-      assertEquals(_result.data.validation.one.allowedOptions[0], "test2");
-      assertEquals(_result.data.errorHandling.unknownOption, "ignore");
-      assertEquals(_result.data.errorHandling.duplicateOption, "warn");
+      assertEquals(result.data.params.two.demonstrativeType.pattern, "^(a)$");
+      assertEquals(result.data.params.two.layerType.pattern, "^(b)$");
+      assertEquals(result.data.options.customVariables.pattern, "test");
+      assertEquals(result.data.validation.zero.allowedOptions[0], "test");
+      assertEquals(result.data.validation.one.allowedOptions[0], "test2");
+      assertEquals(result.data.errorHandling.unknownOption, "ignore");
+      assertEquals(result.data.errorHandling.duplicateOption, "warn");
     }
   });
 
   it("should maintain structural integrity with partial overrides", () => {
-    _logger.debug("Testing partial override structure");
+    logger.debug("Testing partial override structure");
 
     // Only override specific nested values
     const partialConfig = {
@@ -241,20 +241,20 @@ describe("ParamsCustomConfig - Helper Method Structure", () => {
       },
     };
 
-    const _result = ParamsCustomConfig.create(partialConfig);
+    const result = ParamsCustomConfig.create(partialConfig);
 
-    if (_result.status === ResultStatus.SUCCESS && _result.data) {
+    if (result.status === ResultStatus.SUCCESS && result.data) {
       // Should maintain structure even with partial data
-      assertExists(_result.data.params.two.demonstrativeType.errorMessage);
-      assertExists(_result.data.errorHandling.duplicateOption);
-      assertExists(_result.data.errorHandling.emptyValue);
+      assertExists(result.data.params.two.demonstrativeType.errorMessage);
+      assertExists(result.data.errorHandling.duplicateOption);
+      assertExists(result.data.errorHandling.emptyValue);
     }
   });
 });
 
 describe("ParamsCustomConfig - Error Handling Structure", () => {
   it("should structure error cases consistently", () => {
-    _logger.debug("Testing error case structure");
+    logger.debug("Testing error case structure");
 
     // Test with malformed config that triggers extraction error
     const createMalformedConfig = () => {
@@ -269,18 +269,18 @@ describe("ParamsCustomConfig - Error Handling Structure", () => {
     };
 
     // Should handle gracefully without exposing internals
-    const _result = ParamsCustomConfig.create(createMalformedConfig());
+    const result = ParamsCustomConfig.create(createMalformedConfig());
 
     // Even with errors, should maintain Result structure
-    assertExists(_result.status);
+    assertExists(result.status);
     assertEquals(
-      _result.status === ResultStatus.SUCCESS || _result.status === ResultStatus.ERROR,
+      result.status === ResultStatus.SUCCESS || result.status === ResultStatus.ERROR,
       true,
     );
   });
 
   it("should maintain error information structure", () => {
-    _logger.debug("Testing error information structure");
+    logger.debug("Testing error information structure");
 
     // When an error occurs, it should have consistent structure
     const error = new ConfigError("Extraction failed", "CONFIG_EXTRACTION_ERROR");
@@ -306,7 +306,7 @@ describe("ParamsCustomConfig - Error Handling Structure", () => {
 
 describe("ParamsCustomConfig - Type Safety Structure", () => {
   it("should maintain type safety through proper guards", () => {
-    _logger.debug("Testing type guard structure");
+    logger.debug("Testing type guard structure");
 
     const configs = [
       {
@@ -323,20 +323,20 @@ describe("ParamsCustomConfig - Type Safety Structure", () => {
     ];
 
     configs.forEach((config, index) => {
-      const _result = ParamsCustomConfig.create(config as unknown as Record<string, unknown>);
+      const result = ParamsCustomConfig.create(config as unknown as Record<string, unknown>);
 
       // All should return valid Result structure
-      assertExists(_result.status);
+      assertExists(result.status);
 
-      if (index === 0 && _result.status === ResultStatus.SUCCESS && _result.data) {
+      if (index === 0 && result.status === ResultStatus.SUCCESS && result.data) {
         // First config is valid
-        assertEquals(_result.data.params.two.demonstrativeType.pattern, "test");
+        assertEquals(result.data.params.two.demonstrativeType.pattern, "test");
       }
     });
   });
 
   it("should structure validation levels appropriately", () => {
-    _logger.debug("Testing validation structure levels");
+    logger.debug("Testing validation structure levels");
 
     const validationConfig = {
       breakdown: {
@@ -357,22 +357,22 @@ describe("ParamsCustomConfig - Type Safety Structure", () => {
       },
     };
 
-    const _result = ParamsCustomConfig.create(validationConfig);
+    const result = ParamsCustomConfig.create(validationConfig);
 
-    if (_result.status === ResultStatus.SUCCESS && _result.data) {
+    if (result.status === ResultStatus.SUCCESS && result.data) {
       // Zero: fully specified
-      assertEquals(_result.data.validation.zero.allowedOptions.length, 2);
-      assertEquals(_result.data.validation.zero.allowCustomVariables, false);
+      assertEquals(result.data.validation.zero.allowedOptions.length, 2);
+      assertEquals(result.data.validation.zero.allowCustomVariables, false);
 
       // One: partially specified
-      assertEquals(_result.data.validation.one.allowedOptions.includes("output"), true);
-      assertExists(_result.data.validation.one.allowedValueOptions); // default
-      assertExists(_result.data.validation.one.allowCustomVariables); // default
+      assertEquals(result.data.validation.one.allowedOptions.includes("output"), true);
+      assertExists(result.data.validation.one.allowedValueOptions); // default
+      assertExists(result.data.validation.one.allowCustomVariables); // default
 
       // Two: all defaults
-      assertExists(_result.data.validation.two.allowedOptions);
-      assertExists(_result.data.validation.two.allowedValueOptions);
-      assertExists(_result.data.validation.two.allowCustomVariables);
+      assertExists(result.data.validation.two.allowedOptions);
+      assertExists(result.data.validation.two.allowedValueOptions);
+      assertExists(result.data.validation.two.allowCustomVariables);
     }
   });
 });

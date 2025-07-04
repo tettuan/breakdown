@@ -43,8 +43,8 @@ Deno.test("Structure: Variable classes follow consistent design pattern", () => 
   ];
 
   for (const result of variables) {
-    if (_result.ok) {
-      const variable = _result.data;
+    if (result.ok) {
+      const variable = result.data;
 
       // Should have name property
       assertExists(variable.name);
@@ -74,9 +74,9 @@ Deno.test("Structure: Name classes maintain consistent structure", () => {
   ];
 
   for (const nameClass of nameClasses) {
-    const _result = nameClass.create(nameClass.validName);
-    if (_result.ok) {
-      const name = _result.data;
+    const result = nameClass.create(nameClass.validName);
+    if (result.ok) {
+      const name = result.data;
 
       // Should have getValue method
       assertEquals(typeof name.getValue, "function");
@@ -108,7 +108,7 @@ Deno.test("Structure: Smart constructors prevent invalid states", () => {
   ];
 
   for (const test of emptyValueTests) {
-    assertEquals(test._result.ok, !test.shouldFail, `Empty values handling should be consistent`);
+    assertEquals(test.result.ok, !test.shouldFail, `Empty values handling should be consistent`);
   }
 
   // Test whitespace-only values
@@ -119,7 +119,7 @@ Deno.test("Structure: Smart constructors prevent invalid states", () => {
 
   for (const test of whitespaceTests) {
     assertEquals(
-      test._result.ok,
+      test.result.ok,
       !test.shouldFail,
       "Whitespace-only values handling should be consistent",
     );
@@ -129,9 +129,9 @@ Deno.test("Structure: Smart constructors prevent invalid states", () => {
 Deno.test("Structure: Variable encapsulation prevents mutation", () => {
   // Variables should be immutable after creation
 
-  const _result = StandardVariable.create("input_text_file", "original");
-  if (_result.ok) {
-    const variable = _result.data;
+  const result = StandardVariable.create("input_text_file", "original");
+  if (result.ok) {
+    const variable = result.data;
     const originalValue = variable.value;
     const originalNameValue = variable.name.getValue();
 
@@ -191,13 +191,13 @@ Deno.test("Structure: Name validation maintains type safety", () => {
   const stdInvalid = ["invalid", "schema_file", "input_text"];
 
   for (const name of stdValid) {
-    const _result = StandardVariableName.create(name);
-    assertEquals(_result.ok, true, `${name} should be valid for StandardVariableName`);
+    const result = StandardVariableName.create(name);
+    assertEquals(result.ok, true, `${name} should be valid for StandardVariableName`);
   }
 
   for (const name of stdInvalid) {
-    const _result = StandardVariableName.create(name);
-    assertEquals(_result.ok, false, `${name} should be invalid for StandardVariableName`);
+    const result = StandardVariableName.create(name);
+    assertEquals(result.ok, false, `${name} should be invalid for StandardVariableName`);
   }
 
   // FilePathVariableName validation
@@ -205,13 +205,13 @@ Deno.test("Structure: Name validation maintains type safety", () => {
   const fileInvalid = ["input_text_file", "destination_path", "input_text"];
 
   for (const name of fileValid) {
-    const _result = FilePathVariableName.create(name);
-    assertEquals(_result.ok, true, `${name} should be valid for FilePathVariableName`);
+    const result = FilePathVariableName.create(name);
+    assertEquals(result.ok, true, `${name} should be valid for FilePathVariableName`);
   }
 
   for (const name of fileInvalid) {
-    const _result = FilePathVariableName.create(name);
-    assertEquals(_result.ok, false, `${name} should be invalid for FilePathVariableName`);
+    const result = FilePathVariableName.create(name);
+    assertEquals(result.ok, false, `${name} should be invalid for FilePathVariableName`);
   }
 
   // StdinVariableName validation
@@ -219,13 +219,13 @@ Deno.test("Structure: Name validation maintains type safety", () => {
   const stdinInvalid = ["input_text_file", "destination_path", "schema_file"];
 
   for (const name of stdinValid) {
-    const _result = StdinVariableName.create(name);
-    assertEquals(_result.ok, true, `${name} should be valid for StdinVariableName`);
+    const result = StdinVariableName.create(name);
+    assertEquals(result.ok, true, `${name} should be valid for StdinVariableName`);
   }
 
   for (const name of stdinInvalid) {
-    const _result = StdinVariableName.create(name);
-    assertEquals(_result.ok, false, `${name} should be invalid for StdinVariableName`);
+    const result = StdinVariableName.create(name);
+    assertEquals(result.ok, false, `${name} should be invalid for StdinVariableName`);
   }
 });
 
@@ -244,8 +244,8 @@ Deno.test("Structure: Integration functions maintain separation", () => {
     assertEquals(Object.keys(emptyResult).length, 0);
 
     // Should work with multiple variables
-    const _result = toPromptParamsVariables(variables);
-    assertEquals(Object.keys(_result).length, 2);
+    const result = toPromptParamsVariables(variables);
+    assertEquals(Object.keys(result).length, 2);
     assertEquals(result["input_text_file"], "test.txt");
     assertEquals(result["custom"], "value");
 
@@ -255,11 +255,11 @@ Deno.test("Structure: Integration functions maintain separation", () => {
 
   // createPromptParams should be pure function
   if (var1.ok) {
-    const _params = createPromptParams("template.md", [var1.data]);
+    const params = createPromptParams("template.md", [var1.data]);
 
-    assertEquals(_params.template_file, "template.md");
-    assertEquals(Object.keys(_params.variables).length, 1);
-    assertEquals(_params.variables["input_text_file"], "test.txt");
+    assertEquals(params.template_file, "template.md");
+    assertEquals(Object.keys(params.variables).length, 1);
+    assertEquals(params.variables["input_text_file"], "test.txt");
 
     // Should work with empty variables
     const emptyParams = createPromptParams("empty.md", []);
@@ -280,22 +280,22 @@ Deno.test("Structure: Error handling maintains consistency", () => {
   ];
 
   for (const result of errorTests) {
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
+    assertEquals(result.ok, false);
+    if (!result.ok) {
       // Error should have kind discriminator
-      assertExists(_result.error.kind);
-      assertEquals(typeof _result.error.kind, "string");
+      assertExists(result.error.kind);
+      assertEquals(typeof result.error.kind, "string");
 
       // Error should have additional context based on kind
-      switch (_result.error.kind) {
+      switch (result.error.kind) {
         case "InvalidName":
-          assertExists(_result.error.name);
-          assertExists(_result.error.validNames);
-          assertEquals(Array.isArray(_result.error.validNames), true);
+          assertExists(result.error.name);
+          assertExists(result.error.validNames);
+          assertEquals(Array.isArray(result.error.validNames), true);
           break;
         case "EmptyValue":
-          assertExists(_result.error.variableName);
-          assertExists(_result.error.reason);
+          assertExists(result.error.variableName);
+          assertExists(result.error.reason);
           break;
       }
     }
@@ -316,8 +316,8 @@ Deno.test("Structure: Variable composition works correctly", () => {
 
   const variables: PromptVariables = [];
   for (const result of results) {
-    if (_result.ok) {
-      variables.push(_result.data);
+    if (result.ok) {
+      variables.push(result.data);
     }
   }
 

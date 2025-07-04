@@ -27,7 +27,7 @@ Deno.test("TwoParamsOrchestrator - validateParameterCount success with valid par
   const orchestrator = new TwoParamsOrchestrator();
 
   // Test with exactly 2 parameters and skipStdin to prevent resource leaks
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["to", "project"],
     { stdin: { timeout_ms: 100 } },
     { skipStdin: true }, // Prevent stdin resource leak in tests
@@ -35,25 +35,25 @@ Deno.test("TwoParamsOrchestrator - validateParameterCount success with valid par
 
   // Should not fail at parameter count validation step
   // Note: May fail later due to missing components, but not at validation
-  assertExists(_result);
+  assertExists(result);
 });
 
 Deno.test("TwoParamsOrchestrator - validateParameterCount fails with insufficient params", async () => {
   const orchestrator = new TwoParamsOrchestrator();
 
   // Test with only 1 parameter
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["to"],
     {},
     {},
   );
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidParameterCount");
-    if (_result.error.kind === "InvalidParameterCount") {
-      assertEquals(_result.error.received, 1);
-      assertEquals(_result.error.expected, 2);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidParameterCount");
+    if (result.error.kind === "InvalidParameterCount") {
+      assertEquals(result.error.received, 1);
+      assertEquals(result.error.expected, 2);
     }
   }
 });
@@ -62,18 +62,18 @@ Deno.test("TwoParamsOrchestrator - validateParameterCount fails with zero params
   const orchestrator = new TwoParamsOrchestrator();
 
   // Test with no parameters
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     [],
     {},
     {},
   );
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidParameterCount");
-    if (_result.error.kind === "InvalidParameterCount") {
-      assertEquals(_result.error.received, 0);
-      assertEquals(_result.error.expected, 2);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidParameterCount");
+    if (result.error.kind === "InvalidParameterCount") {
+      assertEquals(result.error.received, 0);
+      assertEquals(result.error.expected, 2);
     }
   }
 });
@@ -86,14 +86,14 @@ Deno.test({
     const orchestrator = new TwoParamsOrchestrator();
 
     // Test parameter extraction with valid inputs
-    const _result = await orchestrator.orchestrate(
+    const result = await orchestrator.orchestrate(
       ["summary", "issue"],
       {},
       { skipStdin: true },
     );
 
     // Should not fail at parameter extraction (may fail later in pipeline)
-    assertExists(_result);
+    assertExists(result);
     // Parameter extraction is private, so we verify indirectly through error types
   },
 });
@@ -106,14 +106,14 @@ Deno.test({
     const orchestrator = new TwoParamsOrchestrator();
 
     // Test with more than 2 parameters - should still extract first two
-    const _result = await orchestrator.orchestrate(
+    const result = await orchestrator.orchestrate(
       ["to", "project", "extra"],
       {},
       { skipStdin: true },
     );
 
     // Should not fail at parameter extraction step
-    assertExists(_result);
+    assertExists(result);
     // Parameter count validation only checks minimum, not maximum
   },
 });
@@ -144,17 +144,17 @@ Deno.test("TwoParamsOrchestrator - error propagation from components", async () 
 
   // Test error propagation through the pipeline
   // Using insufficient parameters to trigger early error
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["to"], // Too few parameters
     {},
     {},
   );
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // Verify error structure matches expected type
-    assertExists(_result.error.kind);
-    assertEquals(_result.error.kind, "InvalidParameterCount");
+    assertExists(result.error.kind);
+    assertEquals(result.error.kind, "InvalidParameterCount");
   }
 });
 
@@ -164,16 +164,16 @@ Deno.test("TwoParamsOrchestrator - writeOutput error handling", async () => {
   // Test writeOutput method indirectly through orchestration
   // Note: Direct testing of writeOutput is not possible as it's private
   // This test verifies the method exists in the pipeline
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     [], // Will fail early, before writeOutput
     {},
     {},
   );
 
   // Should fail at parameter validation, not writeOutput
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidParameterCount");
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidParameterCount");
   }
 });
 
@@ -189,16 +189,16 @@ Deno.test("TwoParamsOrchestrator - component coordination order", async () => {
   // 6. Output writing
 
   // Using invalid parameter count to test early stage
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["single"], // Invalid count
     {},
     {},
   );
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // Should fail at step 1 (parameter validation)
-    assertEquals(_result.error.kind, "InvalidParameterCount");
+    assertEquals(result.error.kind, "InvalidParameterCount");
     // This proves the order is correct - validation happens first
   }
 });
@@ -210,28 +210,28 @@ Deno.test("TwoParamsOrchestrator - configuration parameter handling", async () =
   const _config = { timeout: 5000, debug: true };
   const options = { verbose: true };
 
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["to", "project"],
-    config,
+    _config,
     { ...options, skipStdin: true },
   );
 
   // Configuration and options are passed through pipeline
   // May fail at later stages, but should accept the parameters
-  assertExists(_result);
+  assertExists(result);
 });
 
 Deno.test("TwoParamsOrchestrator - backward compatibility with handleTwoParamsWithOrchestrator", async () => {
   // Test the backward compatible function
-  const _result = await handleTwoParamsWithOrchestrator(
+  const result = await handleTwoParamsWithOrchestrator(
     ["summary", "task"],
     { config: "test" },
     { option: "test", skipStdin: true },
   );
 
   // Function should exist and return proper Result type
-  assertExists(_result);
-  assertExists(_result.ok);
+  assertExists(result);
+  assertExists(result.ok);
 
   // The function creates orchestrator internally and delegates
   // Testing that the interface is maintained
@@ -239,18 +239,18 @@ Deno.test("TwoParamsOrchestrator - backward compatibility with handleTwoParamsWi
 
 Deno.test("TwoParamsOrchestrator - handleTwoParamsWithOrchestrator parameter validation", async () => {
   // Test backward compatible function with invalid parameters
-  const _result = await handleTwoParamsWithOrchestrator(
+  const result = await handleTwoParamsWithOrchestrator(
     [], // No parameters
     {},
     {},
   );
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidParameterCount");
-    if (_result.error.kind === "InvalidParameterCount") {
-      assertEquals(_result.error.received, 0);
-      assertEquals(_result.error.expected, 2);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidParameterCount");
+    if (result.error.kind === "InvalidParameterCount") {
+      assertEquals(result.error.received, 0);
+      assertEquals(result.error.expected, 2);
     }
   }
 });
@@ -287,14 +287,14 @@ Deno.test("TwoParamsOrchestrator - type safety: ValidatedTwoParams interface", a
 
   // Parameters should be extracted into ValidatedTwoParams structure
   // Testing indirectly through successful parameter count validation
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["demonstrative", "layer"],
     {},
     {},
   );
 
   // Should pass parameter validation and extraction
-  assertExists(_result);
+  assertExists(result);
   // May fail later in pipeline, but parameters should be properly typed
 });
 
@@ -316,13 +316,13 @@ Deno.test("TwoParamsOrchestrator - pipeline data flow integrity", async () => {
 
   // Each step should receive output from previous step
   // Testing with valid parameters to ensure pipeline structure
-  const _result = await orchestrator.orchestrate(
+  const result = await orchestrator.orchestrate(
     ["valid", "params"],
     { someConfig: true },
     { someOption: true },
   );
 
   // Data should flow: params -> validation -> extraction -> components
-  assertExists(_result);
+  assertExists(result);
   // Pipeline integrity verified through result structure
 });

@@ -15,13 +15,13 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
+  _VERSION,
   APP_NAME,
   HELP_TEXT,
   type HelpTextConfig,
   showHelp,
   showUsage,
   showVersion,
-  VERSION,
 } from "./help.ts";
 
 /**
@@ -39,10 +39,10 @@ Deno.test("Help Module Structure", async (t) => {
     const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Each function should have a single, clear purpose
-    const functionDefinitions = helpContent.match(/export function (\w+)[^{]*\{([^}]+)\}/g) || [];
+    const functionDefinitions = _helpContent.match(/export function (\w+)[^{]*\{([^}]+)\}/g) || [];
 
     // Check showVersion function
-    const showVersionMatch = helpContent.match(/export function showVersion[^{]*\{([\s\S]*?)\n\}/);
+    const showVersionMatch = _helpContent.match(/export function showVersion[^{]*\{([\s\S]*?)\n\}/);
     assertExists(showVersionMatch);
     const showVersionBody = showVersionMatch[1];
 
@@ -53,47 +53,49 @@ Deno.test("Help Module Structure", async (t) => {
       true,
     );
     assertEquals(showVersionBody.includes("APP_NAME"), true);
-    const showVersionLines = showVersionBody.trim().split("\n").filter((l) => l.trim()).length;
+    const showVersionLines = showVersionBody.trim().split("\n").filter((l: string) =>
+      l.trim()
+    ).length;
     assertEquals(showVersionLines <= 4, true, "showVersion should be concise");
 
     // Check showHelp function
-    const showHelpMatch = helpContent.match(/export function showHelp[^{]*\{([\s\S]*?)\n\}/);
+    const showHelpMatch = _helpContent.match(/export function showHelp[^{]*\{([\s\S]*?)\n\}/);
     assertExists(showHelpMatch);
     const showHelpBody = showHelpMatch[1];
 
     // Should only display help text
     assertEquals(showHelpBody.includes("console.log"), true);
     assertEquals(showHelpBody.includes("HELP_TEXT"), true);
-    const showHelpLines = showHelpBody.trim().split("\n").filter((l) => l.trim()).length;
+    const showHelpLines = showHelpBody.trim().split("\n").filter((l: string) => l.trim()).length;
     assertEquals(showHelpLines <= 3, true, "showHelp should be concise");
 
     // Check showUsage function
-    const showUsageMatch = helpContent.match(/export function showUsage[^{]*\{([\s\S]*?)\n\}/);
+    const showUsageMatch = _helpContent.match(/export function showUsage[^{]*\{([\s\S]*?)\n\}/);
     assertExists(showUsageMatch);
     const showUsageBody = showUsageMatch[1];
 
     // Should only display usage info
     assertEquals(showUsageBody.includes("console.log"), true);
-    const showUsageLines = showUsageBody.trim().split("\n").filter((l) => l.trim()).length;
+    const showUsageLines = showUsageBody.trim().split("\n").filter((l: string) => l.trim()).length;
     assertEquals(showUsageLines <= 3, true, "showUsage should be concise");
   });
 
   await t.step("separates data from presentation logic", async () => {
-    const helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Data should be defined separately from display logic
     assertEquals(
-      helpContent.includes("const DEFAULT_HELP_CONFIG"),
+      _helpContent.includes("const DEFAULT_HELP_CONFIG"),
       true,
       "Should define help config data",
     );
     assertEquals(
-      helpContent.includes("function generateHelpText"),
+      _helpContent.includes("function generateHelpText"),
       true,
       "Should have text generation function",
     );
     assertEquals(
-      helpContent.includes("export const HELP_TEXT"),
+      _helpContent.includes("export const HELP_TEXT"),
       true,
       "Should export generated text",
     );
@@ -101,7 +103,7 @@ Deno.test("Help Module Structure", async (t) => {
     // Display functions should not contain data
     const displayFunctions = ["showHelp", "showVersion", "showUsage"];
     for (const fn of displayFunctions) {
-      const fnMatch = helpContent.match(new RegExp(`export function ${fn}[^{]*\{([^}]+)\}`));
+      const fnMatch = _helpContent.match(new RegExp(`export function ${fn}[^{]*\{([^}]+)\}`));
       if (fnMatch) {
         const body = fnMatch[1];
         // Should not define complex data structures
@@ -143,31 +145,31 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("maintains proper encapsulation", async () => {
-    const helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Internal functions should not be exported
     assertEquals(
-      helpContent.includes("export function generateHelpText"),
+      _helpContent.includes("export function generateHelpText"),
       false,
       "generateHelpText should be private",
     );
 
     // Internal data should not be exported
     assertEquals(
-      helpContent.includes("export const DEFAULT_HELP_CONFIG"),
+      _helpContent.includes("export const DEFAULT_HELP_CONFIG"),
       false,
       "DEFAULT_HELP_CONFIG should be private",
     );
 
     // Only public API should be exported
-    const exports = helpContent.match(/export (?:const|function|interface|type) (\w+)/g) || [];
+    const exports = _helpContent.match(/export (?:const|function|interface|type) (\w+)/g) || [];
     const publicAPI = [
       "showHelp",
       "showVersion",
       "showUsage",
       "HELP_TEXT",
       "APP_NAME",
-      "VERSION",
+      "_VERSION",
       "HelpTextConfig",
     ];
 
@@ -182,20 +184,20 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("follows composition pattern", async () => {
-    const helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // generateHelpText should compose from configuration
-    const generateMatch = helpContent.match(/function generateHelpText[\s\S]*?\n\}/);
+    const generateMatch = _helpContent.match(/function generateHelpText[\s\S]*?\n\}/);
     assertExists(generateMatch);
 
     // Should use configuration object
-    assertEquals(helpContent.includes("config: HelpTextConfig"), true);
-    assertEquals(helpContent.includes("DEFAULT_HELP_CONFIG"), true);
+    assertEquals(_helpContent.includes("config: HelpTextConfig"), true);
+    assertEquals(_helpContent.includes("DEFAULT_HELP_CONFIG"), true);
 
     // Should compose text from parts
-    assertEquals(helpContent.includes("Commands:"), true);
-    assertEquals(helpContent.includes("Options:"), true);
-    assertEquals(helpContent.includes("Examples:"), true);
+    assertEquals(_helpContent.includes("Commands:"), true);
+    assertEquals(_helpContent.includes("Options:"), true);
+    assertEquals(_helpContent.includes("Examples:"), true);
   });
 
   await t.step("maintains consistent abstraction level", () => {
@@ -214,11 +216,11 @@ Deno.test("Help Module Structure", async (t) => {
     // Constants should be at appropriate level
     assertEquals(typeof HELP_TEXT, "string");
     assertEquals(typeof APP_NAME, "string");
-    assertEquals(typeof VERSION, "string");
+    assertEquals(typeof _VERSION, "string");
   });
 
   await t.step("provides clear and focused public API", async () => {
-    const { showHelp, showVersion, showUsage, HELP_TEXT, APP_NAME, VERSION, ...otherExports } =
+    const { showHelp, showVersion, showUsage, HELP_TEXT, APP_NAME, _VERSION, ...otherExports } =
       await import("./help.ts");
 
     // Verify main exports exist
@@ -227,7 +229,7 @@ Deno.test("Help Module Structure", async (t) => {
     assertExists(showUsage);
     assertExists(HELP_TEXT);
     assertExists(APP_NAME);
-    assertExists(VERSION);
+    assertExists(_VERSION);
 
     // Count exported items (HelpTextConfig is a type, not available at runtime)
     const exportedKeys = Object.keys({
@@ -236,7 +238,7 @@ Deno.test("Help Module Structure", async (t) => {
       showUsage,
       HELP_TEXT,
       APP_NAME,
-      VERSION,
+      _VERSION,
       ...otherExports,
     });
     assertEquals(exportedKeys.length, 6, "Should have exactly 6 runtime exports");
@@ -248,7 +250,7 @@ Deno.test("Help Module Structure", async (t) => {
       showUsage: "Display minimal usage hint",
       HELP_TEXT: "Pre-generated help text",
       APP_NAME: "Application name constant",
-      VERSION: "Version number",
+      _VERSION: "Version number",
     };
 
     for (const key of exportedKeys) {
@@ -257,26 +259,26 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("uses functional programming principles", async () => {
-    const helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Should not use classes
-    assertEquals(helpContent.includes("class "), false, "Should not use classes");
+    assertEquals(_helpContent.includes("class "), false, "Should not use classes");
 
     // Should not use this keyword
-    assertEquals(helpContent.includes("this."), false, "Should not use this");
+    assertEquals(_helpContent.includes("this."), false, "Should not use this");
 
     // Should use const for immutability
-    const constCount = (helpContent.match(/const /g) || []).length;
-    const letCount = (helpContent.match(/let /g) || []).length;
+    const constCount = (_helpContent.match(/const /g) || []).length;
+    const letCount = (_helpContent.match(/let /g) || []).length;
     assertEquals(letCount, 1, "Should minimize mutable variables"); // Only 'let text' in generateHelpText
     assertEquals(constCount > letCount, true, "Should prefer const over let");
   });
 
   await t.step("separates configuration from implementation", async () => {
-    const helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Configuration should be separate from logic
-    const configMatch = helpContent.match(/const DEFAULT_HELP_CONFIG[^}]+\}/s);
+    const configMatch = _helpContent.match(/const DEFAULT_HELP_CONFIG[^}]+\}/s);
     assertExists(configMatch);
 
     // Config should be pure data
@@ -285,7 +287,7 @@ Deno.test("Help Module Structure", async (t) => {
     assertEquals(configString.includes("=>"), false, "Config should not contain arrow functions");
 
     // Implementation should use configuration
-    assertEquals(helpContent.includes("config: HelpTextConfig = DEFAULT_HELP_CONFIG"), true);
+    assertEquals(_helpContent.includes("config: HelpTextConfig = DEFAULT_HELP_CONFIG"), true);
   });
 });
 
@@ -336,7 +338,7 @@ Deno.test("Help Module Output Structure", async (t) => {
       showVersion();
       assertEquals(outputs.length >= 2, true, "showVersion should output at least 2 lines");
       assertEquals(outputs.some((o) => o.includes("Breakdown")), true);
-      assertEquals(outputs.some((o) => o.includes(VERSION)), true);
+      assertEquals(outputs.some((o) => o.includes(_VERSION)), true);
 
       outputs = [];
       showHelp();

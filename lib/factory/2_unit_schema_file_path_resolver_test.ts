@@ -6,8 +6,8 @@ import type { DemonstrativeType, LayerType } from "../types/mod.ts";
 
 describe("SchemaFilePathResolver: base_dir resolution", () => {
   it("resolves with config.app_schema.base_dir (absolute)", () => {
-    const _baseDir = resolve(Deno.cwd(), "tmp", "schema");
-    const _resolver = new SchemaFilePathResolver(
+    const baseDir = resolve(Deno.cwd(), "tmp", "schema");
+    const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: baseDir } },
       {
         demonstrativeType: "to",
@@ -16,12 +16,12 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       },
     );
     const expected = join(baseDir, "to", "project", "base.schema.md");
-    assertEquals(_resolver.getPath(), expected);
+    assertEquals(resolver.getPath(), expected);
   });
   it("resolves with config.app_schema.base_dir (relative)", () => {
     const relBaseDir = "./tmp/rel_schema";
     const absBaseDir = resolve(Deno.cwd(), relBaseDir);
-    const _resolver = new SchemaFilePathResolver(
+    const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: relBaseDir } },
       {
         demonstrativeType: "summary",
@@ -30,11 +30,11 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       },
     );
     const expected = join(absBaseDir, "summary", "issue", "base.schema.md");
-    assertEquals(_resolver.getPath(), expected);
+    assertEquals(resolver.getPath(), expected);
   });
   it("falls back to default if config.app_schema.base_dir is not set", () => {
     const defaultBaseDir = resolve(Deno.cwd(), ".agent/breakdown/schema");
-    const _resolver = new SchemaFilePathResolver(
+    const resolver = new SchemaFilePathResolver(
       {},
       {
         demonstrativeType: "defect",
@@ -43,14 +43,14 @@ describe("SchemaFilePathResolver: base_dir resolution", () => {
       },
     );
     const expected = join(defaultBaseDir, "defect", "task", "base.schema.md");
-    assertEquals(_resolver.getPath(), expected);
+    assertEquals(resolver.getPath(), expected);
   });
 });
 
 describe("SchemaFilePathResolver: absolute path check", () => {
   it("returns absolute path", () => {
     const relBaseDir = "./tmp/abs_schema";
-    const _resolver = new SchemaFilePathResolver(
+    const resolver = new SchemaFilePathResolver(
       { app_schema: { base_dir: relBaseDir } },
       {
         demonstrativeType: "to",
@@ -58,7 +58,7 @@ describe("SchemaFilePathResolver: absolute path check", () => {
         options: {},
       },
     );
-    const _result = _resolver.getPath();
-    assertEquals(isAbsolute(_result), true);
+    const result = resolver.getPath();
+    assertEquals(isAbsolute(result), true);
   });
 });

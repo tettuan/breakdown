@@ -27,8 +27,8 @@ import {
   type PromptVariablesProvider,
 } from "../../lib/prompt/prompt_adapter.ts";
 import {
-  type PromptCliParams as _PromptCliParams,
-  PromptVariablesFactory as _PromptVariablesFactory,
+  type PromptCliParams,
+  PromptVariablesFactory,
 } from "../../lib/factory/prompt_variables_factory.ts";
 import { TwoParamsPromptGenerator } from "../../lib/cli/generators/two_params_prompt_generator.ts";
 import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
@@ -37,7 +37,7 @@ import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../../lib/cli/processors/two_params_variable_processor.ts";
 import type { ValidatedParams } from "../../lib/cli/generators/two_params_prompt_generator.ts";
 
-const _logger = new BreakdownLogger("prompt-pipeline-integration");
+const logger = new BreakdownLogger("prompt-pipeline-integration");
 
 /**
  * Mock implementation of PromptVariablesProvider for pipeline testing
@@ -377,7 +377,7 @@ The pipeline should:
     try {
       await Deno.remove(tempDir, { recursive: true });
     } catch (err) {
-      _logger.warn("Failed to cleanup pipeline test directory", { error: err });
+      logger.warn("Failed to cleanup pipeline test directory", { error: err });
     }
   };
 
@@ -398,7 +398,7 @@ The pipeline should:
  * Tests the first stage of the pipeline: from type pattern validation through template selection
  */
 Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Template Selection", async () => {
-  _logger.debug("Testing Pipeline Stage 1: Type validation and template selection");
+  logger.debug("Testing Pipeline Stage 1: Type validation and template selection");
 
   const { promptFiles, cleanup } = await createPipelineTestEnvironment();
 
@@ -443,7 +443,7 @@ Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Temp
           `Template should exist for ${testCase.directive}/${testCase.layer}`,
         );
 
-        _logger.debug("Pipeline Stage 1 validation passed", {
+        logger.debug("Pipeline Stage 1 validation passed", {
           directive: testCase.directive,
           layer: testCase.layer,
           template: testCase.expectedTemplate.split("/").slice(-3).join("/"),
@@ -468,14 +468,14 @@ Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Temp
  * Tests variable collection, processing, and preparation for prompt generation
  */
 Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Processing", async () => {
-  _logger.debug("Testing Pipeline Stage 2: Variable processing");
+  logger.debug("Testing Pipeline Stage 2: Variable processing");
 
   const { promptFiles, inputFile, schemaFiles, cleanup } = await createPipelineTestEnvironment();
 
   try {
     // Step 1: Create comprehensive variable set
     const customVariables = {
-      project_name: "Pipeline Integration Test",
+      projectname: "Pipeline Integration Test",
       author: "Integration Test Suite",
       version: "2.0.0",
       issue_id: "INT-001",
@@ -526,14 +526,14 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
       assertEquals(Array.isArray(variablesResult.data), true, "Should return variables array");
       assertEquals(variablesResult.data.length > 0, true, "Should have variables");
 
-      _logger.debug("Variable processing successful", {
+      logger.debug("Variable processing successful", {
         variablesCount: variablesResult.data.length,
         standardVars: 3,
         filePathVars: 2,
         userVars: Object.keys(customVariables).length,
       });
     } else {
-      _logger.error("Variable building failed", {
+      logger.error("Variable building failed", {
         errors: variablesResult.error,
         errorCount: variablesResult.error.length,
         errorDetails: variablesResult.error.map((e) => ({ kind: e.kind, details: e })),
@@ -541,7 +541,7 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
 
       // Log individual error details for debugging
       variablesResult.error.forEach((err, index) => {
-        _logger.error(`Error ${index + 1}`, err);
+        logger.error(`Error ${index + 1}`, err);
       });
 
       assertFalse(
@@ -566,13 +566,13 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
  * Tests template loading, variable substitution, and content generation
  */
 Deno.test("Pipeline Stage 3: PromptAdapter → Template Processing and Generation", async () => {
-  _logger.debug("Testing Pipeline Stage 3: Template processing and generation");
+  logger.debug("Testing Pipeline Stage 3: Template processing and generation");
 
   const { promptFiles, inputFile, schemaFiles, cleanup } = await createPipelineTestEnvironment();
 
   try {
     const customVariables = {
-      project_name: "Template Integration Test",
+      projectname: "Template Integration Test",
       author: "Pipeline Test",
       version: "3.0.0",
     };
@@ -611,13 +611,13 @@ Deno.test("Pipeline Stage 3: PromptAdapter → Template Processing and Generatio
         "Should contain template header",
       );
 
-      _logger.debug("Template generation succeeded", {
+      logger.debug("Template generation succeeded", {
         contentLength: generationResult.content.length,
         preview: generationResult.content.substring(0, 100),
       });
     } else {
       // Expected failure due to missing PromptManager dependency
-      _logger.debug("Template generation failed as expected", {
+      logger.debug("Template generation failed as expected", {
         reason: "Missing PromptManager integration",
         error: generationResult.content,
       });
@@ -655,7 +655,7 @@ Deno.test("Pipeline Stage 3: PromptAdapter → Template Processing and Generatio
  * Tests the complete pipeline from DefaultTypePatternProvider through final generation
  */
 Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
-  _logger.debug("Testing Pipeline Stage 4: Complete end-to-end integration");
+  logger.debug("Testing Pipeline Stage 4: Complete end-to-end integration");
 
   const { promptFiles, inputFile, schemaFiles, tempDir: _tempDir, cleanup } =
     await createPipelineTestEnvironment();
@@ -679,7 +679,7 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
 
     // Step 3: Setup comprehensive variables
     const customVariables = {
-      project_name: "End-to-End Pipeline Test",
+      projectname: "End-to-End Pipeline Test",
       author: "Complete Integration",
       version: "4.0.0",
       environment: "test",
@@ -746,7 +746,7 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
       assertExists(generatorResult.data, "E2E generation should produce content");
       assertEquals(typeof generatorResult.data, "string", "Generated content should be string");
 
-      _logger.debug("Complete E2E pipeline succeeded", {
+      logger.debug("Complete E2E pipeline succeeded", {
         directiveType: directiveResult.data.getValue(),
         layerType: layerResult.data.getValue(),
         contentLength: generatorResult.data.length,
@@ -754,7 +754,7 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
       });
     } else {
       // Expected potential failure due to external dependencies
-      _logger.debug("E2E generation completed with expected limitations", {
+      logger.debug("E2E generation completed with expected limitations", {
         errorKind: generatorResult.error.kind,
         message: "message" in generatorResult.error
           ? generatorResult.error.message
@@ -782,7 +782,7 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
  * Tests how errors propagate through the pipeline and recovery mechanisms
  */
 Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
-  _logger.debug("Testing Pipeline Stage 5: Error propagation and recovery");
+  logger.debug("Testing Pipeline Stage 5: Error propagation and recovery");
 
   const { cleanup } = await createPipelineTestEnvironment();
 
@@ -836,7 +836,7 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
 
     if (!configResult.ok) {
       assertExists(configResult.error.kind, "Should have structured error");
-      _logger.debug("Error propagation test passed", {
+      logger.debug("Error propagation test passed", {
         errorKind: configResult.error.kind,
         hasMessage: "message" in configResult.error,
       });
@@ -852,7 +852,7 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
  * Tests performance characteristics of the integrated pipeline
  */
 Deno.test("Pipeline Stage 6: Performance and Scalability", async () => {
-  _logger.debug("Testing Pipeline Stage 6: Performance and scalability");
+  logger.debug("Testing Pipeline Stage 6: Performance and scalability");
 
   const { promptFiles, inputFile, schemaFiles, cleanup } = await createPipelineTestEnvironment();
 
@@ -871,7 +871,7 @@ Deno.test("Pipeline Stage 6: Performance and Scalability", async () => {
       const layerResult = typeFactory.createLayerType("project");
 
       const customVariables = {
-        project_name: `Performance Test ${i}`,
+        projectname: `Performance Test ${i}`,
         run_number: i.toString(),
       };
 
@@ -904,7 +904,7 @@ Deno.test("Pipeline Stage 6: Performance and Scalability", async () => {
     assertEquals(totalTime < 1000, true, "Total time should be under 1 second");
     assertEquals(averageTime < 200, true, "Average time per run should be under 200ms");
 
-    _logger.debug("Performance test completed", {
+    logger.debug("Performance test completed", {
       totalRuns: testRuns,
       totalTimeMs: totalTime,
       averageTimeMs: averageTime,
@@ -922,7 +922,7 @@ Deno.test("Pipeline Stage 6: Performance and Scalability", async () => {
  * PromptManager, template processing, and variable substitution
  */
 Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", async () => {
-  _logger.debug("Testing Pipeline Stage 7: BreakdownPrompts external package integration");
+  logger.debug("Testing Pipeline Stage 7: BreakdownPrompts external package integration");
 
   const { promptFiles, inputFile, schemaFiles, tempDir: _tempDir, cleanup } =
     await createPipelineTestEnvironment();
@@ -933,7 +933,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
 
     // Step 2: Create comprehensive variables for template processing
     const customVariables = {
-      project_name: "BreakdownPrompts Integration Test",
+      projectname: "BreakdownPrompts Integration Test",
       author: "External Package Integration",
       version: "1.0.0",
       environment: "integration_test",
@@ -957,7 +957,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
     const variablesResult = builder.build();
 
     if (!variablesResult.ok) {
-      _logger.warn("Variable building failed in external package test", {
+      logger.warn("Variable building failed in external package test", {
         errors: variablesResult.error,
       });
       return; // Skip external package test if variables fail
@@ -978,7 +978,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
       );
 
       // Verify successful generation
-      assertExists(_result, "PromptManager should return result");
+      assertExists(result, "PromptManager should return result");
 
       // Handle PromptResult object structure
       const resultContent = typeof result === "string"
@@ -1014,14 +1014,14 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
         "Should preserve template header",
       );
 
-      _logger.debug("BreakdownPrompts integration successful", {
+      logger.debug("BreakdownPrompts integration successful", {
         templateLength: templateContent.length,
         resultLength: resultContent.length,
         variablesCount: Object.keys(variableRecord).length,
         substitutionSuccess: resultContent.includes("BreakdownPrompts Integration Test"),
       });
     } catch (promptError) {
-      _logger.warn("PromptManager integration test failed", {
+      logger.warn("PromptManager integration test failed", {
         error: promptError,
         reason: "External package version compatibility or missing features",
       });
@@ -1030,16 +1030,16 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
       assertExists(promptError, "Error should be defined");
 
       // This is acceptable in integration tests as external package versions may vary
-      _logger.debug("External package integration completed with expected limitations");
+      logger.debug("External package integration completed with expected limitations");
     }
   } catch (importError) {
-    _logger.warn("BreakdownPrompts package import failed", {
+    logger.warn("BreakdownPrompts package import failed", {
       error: importError,
       reason: "External package may not be available in test environment",
     });
 
     // This is acceptable in CI environments where external packages may not be available
-    _logger.debug("Skipping external package test due to import limitations");
+    logger.debug("Skipping external package test due to import limitations");
   } finally {
     await cleanup();
   }
@@ -1052,7 +1052,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
  * conditional logic, and nested variable resolution
  */
 Deno.test("Pipeline Stage 8: Advanced Template Integration with Variable Expansion", async () => {
-  _logger.debug("Testing Pipeline Stage 8: Advanced template integration");
+  logger.debug("Testing Pipeline Stage 8: Advanced template integration");
 
   const tempDir = await Deno.makeTempDir({ prefix: "advanced_template_test_" });
 
@@ -1218,7 +1218,7 @@ Templates should:
     const lineCount = inputText.split("\n").length;
 
     const advancedCustomVariables = {
-      project_name: "Advanced Template Integration",
+      projectname: "Advanced Template Integration",
       version: "2.0.0-advanced",
       environment: "test",
       template_version: "advanced-v1.0",
@@ -1300,7 +1300,7 @@ Templates should:
           "Should substitute calculated word count",
         );
 
-        _logger.debug("Advanced template integration successful", {
+        logger.debug("Advanced template integration successful", {
           templateComplexity: "high",
           variablesProcessed: Object.keys(advancedCustomVariables).length,
           contentLength: generationResult.content.length,
@@ -1308,7 +1308,7 @@ Templates should:
           iterationLogicPresent: templateContent.includes("{{#each"),
         });
       } else {
-        _logger.debug("Advanced template generation completed with limitations", {
+        logger.debug("Advanced template generation completed with limitations", {
           error: generationResult.content,
           reason: "Complex template features may require specific PromptManager configuration",
           templateFeatures: ["conditional logic", "iteration", "nested variables"],
@@ -1318,7 +1318,7 @@ Templates should:
         assertExists(generationResult.content, "Should provide error details");
       }
     } else {
-      _logger.warn("Advanced variable building failed", { errors: variablesResult.error });
+      logger.warn("Advanced variable building failed", { errors: variablesResult.error });
     }
   } finally {
     await Deno.remove(tempDir, { recursive: true }).catch(() => {});
@@ -1331,7 +1331,7 @@ Templates should:
  * Tests coordination between multiple external packages and version compatibility
  */
 Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", async () => {
-  _logger.debug("Testing Pipeline Stage 9: External package coordination");
+  logger.debug("Testing Pipeline Stage 9: External package coordination");
 
   try {
     // Step 1: Test BreakdownPrompts package availability and version
@@ -1389,7 +1389,7 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
 
     // Step 6: Test package interaction compatibility
     if (promptPackageResult.available && typePatternResult.available) {
-      _logger.debug("Full external package coordination successful", {
+      logger.debug("Full external package coordination successful", {
         breakdownPrompts: promptPackageResult.version,
         breakdownLogger: "available",
         typePattern: "functioning",
@@ -1418,10 +1418,10 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
 
       const coordination = await coordinationTest();
       if (coordination.coordination) {
-        _logger.debug("Package coordination validated successfully");
+        logger.debug("Package coordination validated successfully");
       }
     } else {
-      _logger.debug("External package coordination completed with limitations", {
+      logger.debug("External package coordination completed with limitations", {
         breakdownPrompts: promptPackageResult.available ? "available" : "limited",
         typePattern: typePatternResult.available ? "available" : "limited",
         reason: "Some external packages may not be available in all environments",
@@ -1432,13 +1432,13 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
     assertExists(loggerResult, "Logger integration should be testable");
     assertExists(typePatternResult, "Type pattern system should be testable");
 
-    _logger.debug("External package coordination test completed", {
+    logger.debug("External package coordination test completed", {
       totalPackagesTested: 3,
       corePackagesAvailable: 2, // Logger and TypePattern always available
       externalPackagesAvailable: promptPackageResult.available ? 1 : 0,
     });
   } catch (coordinationError) {
-    _logger.warn("Package coordination test encountered unexpected error", {
+    logger.warn("Package coordination test encountered unexpected error", {
       error: coordinationError,
     });
     assertExists(coordinationError, "Coordination errors should be defined");

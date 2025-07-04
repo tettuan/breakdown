@@ -13,9 +13,9 @@
 
 import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
 import { CliError, CliErrorCode } from "./errors.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("cli-errors-integration-test");
+const _logger = new _BreakdownLogger("cli-errors-integration-test");
 
 Deno.test("Integration: CliError with command line argument simulation", async () => {
   // Simulate real CLI scenarios that would produce these errors

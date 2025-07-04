@@ -38,7 +38,7 @@ Deno.test("OneParamsHandler Structure", async (t) => {
     assertEquals(func.length, 3); // params, config, options
 
     // Return type should be Promise<void> (simple, no complex Result type)
-    const _result = func(["init"], {}, {});
+    const result = func(["init"], {}, {});
     assert(result instanceof Promise);
   });
 
@@ -88,7 +88,7 @@ Deno.test("OneParamsHandler Structure", async (t) => {
     assertEquals(func.length, 3); // params, config, options
 
     // Should provide simple interface
-    const _result = func(["init"], {}, {});
+    const result = func(["init"], {}, {});
     assert(result instanceof Promise);
   });
 
@@ -220,7 +220,7 @@ Deno.test("OneParamsHandler Interface Structure", async (t) => {
     const func = handleOneParams;
     assertEquals(func.length, 3); // Same as TwoParamsHandler
 
-    const _result = func(["init"], {}, {});
+    const result = func(["init"], {}, {});
     assert(result instanceof Promise); // Same return pattern
   });
 

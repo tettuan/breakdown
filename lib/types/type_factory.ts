@@ -10,8 +10,8 @@
 
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import { DefaultTypePatternProvider as _DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
 /**
  * 設定ファイルからバリデーションパターンを提供するインターフェース
@@ -99,7 +99,7 @@ export class TypeFactory {
       };
     }
 
-    // DirectiveType.create() は TwoParamsResult のみを受け取る
+    // DirectiveType.create() は TwoParams_Result のみを受け取る
     // パターンバリデーションは事前に実行する必要がある
     if (!pattern.test(value)) {
       return {
@@ -112,8 +112,8 @@ export class TypeFactory {
       };
     }
 
-    // 仮の TwoParamsResult を作成（実際にはBreakdownParamsから取得すべき）
-    const twoParamsResult: TwoParamsResult = {
+    // 仮の TwoParams_Result を作成（実際にはBreakdownParamsから取得すべき）
+    const twoParamsResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: value,
       layerType: "project", // デフォルト値
@@ -123,7 +123,7 @@ export class TypeFactory {
 
     const directiveType = DirectiveType.create(twoParamsResult);
 
-    // DirectiveType.create() は常に成功する（TwoParamsResult前提のため）
+    // DirectiveType.create() は常に成功する（TwoParams_Result前提のため）
 
     return {
       ok: true,
@@ -149,7 +149,7 @@ export class TypeFactory {
       };
     }
 
-    // LayerType.create() は TwoParamsResult のみを受け取る
+    // LayerType.create() は TwoParams_Result のみを受け取る
     // パターンバリデーションは事前に実行する必要がある
     if (!pattern.test(value)) {
       return {
@@ -162,8 +162,8 @@ export class TypeFactory {
       };
     }
 
-    // 仮の TwoParamsResult を作成（実際にはBreakdownParamsから取得すべき）
-    const twoParamsResult: TwoParamsResult = {
+    // 仮の TwoParams_Result を作成（実際にはBreakdownParamsから取得すべき）
+    const twoParamsResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to", // デフォルト値
       layerType: value,
@@ -173,7 +173,7 @@ export class TypeFactory {
 
     const layerType = LayerType.create(twoParamsResult);
 
-    // LayerType.create() は常に成功する（TwoParamsResult前提のため）
+    // LayerType.create() は常に成功する（TwoParams_Result前提のため）
 
     return {
       ok: true,

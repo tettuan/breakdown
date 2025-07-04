@@ -21,14 +21,14 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParamsDirectivePattern } from "../../lib/types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../../lib/types/layer_type.ts";
 
-const _logger = new BreakdownLogger("type-factory-integration-test");
+const logger = new BreakdownLogger("type-factory-integration-test");
 
 /**
  * Test suite for TypeFactory with DefaultTypePatternProvider
  * Validates basic functionality with default patterns
  */
 Deno.test("TypeFactory with DefaultTypePatternProvider - basic operations", async () => {
-  _logger.debug("Testing TypeFactory with DefaultTypePatternProvider");
+  logger.debug("Testing TypeFactory with DefaultTypePatternProvider");
 
   const provider = new DefaultTypePatternProvider();
   const factory = new TypeFactory(provider);
@@ -67,7 +67,7 @@ Deno.test("TypeFactory with DefaultTypePatternProvider - basic operations", asyn
   assertEquals(availability.layer, true);
   assertEquals(availability.both, true);
 
-  _logger.info("DefaultTypePatternProvider tests completed successfully");
+  logger.info("DefaultTypePatternProvider tests completed successfully");
 });
 
 /**
@@ -75,7 +75,7 @@ Deno.test("TypeFactory with DefaultTypePatternProvider - basic operations", asyn
  * Validates integration with BreakdownConfig
  */
 Deno.test("TypeFactory with ConfigPatternProvider - mock configuration", async () => {
-  _logger.debug("Testing TypeFactory with ConfigPatternProvider (mock)");
+  logger.debug("Testing TypeFactory with ConfigPatternProvider (mock)");
 
   // Create a mock BreakdownConfig for testing
   // Since we can't easily mock the actual BreakdownConfig, we'll test the provider directly
@@ -87,21 +87,21 @@ Deno.test("TypeFactory with ConfigPatternProvider - mock configuration", async (
 
     // Test pattern availability (may be null if no config)
     const availability = factory.getPatternAvailability();
-    _logger.debug("ConfigPatternProvider availability", availability);
+    logger.debug("ConfigPatternProvider availability", availability);
 
     // Test with fallback patterns
     if (availability.directive) {
       const directiveResult = factory.createDirectiveType("to");
-      _logger.debug("Directive creation result", { ok: directiveResult.ok });
+      logger.debug("Directive creation result", { ok: directiveResult.ok });
     }
 
     if (availability.layer) {
       const layerResult = factory.createLayerType("project");
-      _logger.debug("Layer creation result", { ok: layerResult.ok });
+      logger.debug("Layer creation result", { ok: layerResult.ok });
     }
   }
 
-  _logger.info("ConfigPatternProvider tests completed");
+  logger.info("ConfigPatternProvider tests completed");
 });
 
 /**
@@ -109,11 +109,11 @@ Deno.test("TypeFactory with ConfigPatternProvider - mock configuration", async (
  * Validates that TypeFactory works correctly when switching between providers
  */
 Deno.test("TypeFactory - provider switching", async () => {
-  _logger.debug("Testing provider switching scenarios");
+  logger.debug("Testing provider switching scenarios");
 
   // Start with DefaultTypePatternProvider
   const defaultProvider = new DefaultTypePatternProvider();
-  const factory = new TypeFactory(defaultProvider);
+  let factory = new TypeFactory(defaultProvider);
 
   const result1 = factory.createDirectiveType("to");
   assertEquals(result1.ok, true);
@@ -128,11 +128,11 @@ Deno.test("TypeFactory - provider switching", async () => {
 
   const result2 = factory.createDirectiveType("to");
   assertEquals(result2.ok, false);
-  if (!_result2.ok) {
+  if (!result2.ok) {
     assertEquals(result2.error.kind, "PatternNotFound");
   }
 
-  _logger.info("Provider switching tests completed");
+  logger.info("Provider switching tests completed");
 });
 
 /**
@@ -140,7 +140,7 @@ Deno.test("TypeFactory - provider switching", async () => {
  * Validates proper error handling and propagation
  */
 Deno.test("TypeFactory - error propagation", async () => {
-  _logger.debug("Testing error propagation scenarios");
+  logger.debug("Testing error propagation scenarios");
 
   // Test with provider that returns null patterns
   const nullProvider = {
@@ -167,7 +167,7 @@ Deno.test("TypeFactory - error propagation", async () => {
   const bothResult = factory.createBothTypes("to", "project");
   assertEquals(bothResult.ok, false);
 
-  _logger.info("Error propagation tests completed");
+  logger.info("Error propagation tests completed");
 });
 
 /**
@@ -175,7 +175,7 @@ Deno.test("TypeFactory - error propagation", async () => {
  * Ensures pattern validation is efficient
  */
 Deno.test("TypeFactory - validation performance", async () => {
-  _logger.debug("Testing validation performance");
+  logger.debug("Testing validation performance");
 
   const provider = new DefaultTypePatternProvider();
   const factory = new TypeFactory(provider);
@@ -193,7 +193,7 @@ Deno.test("TypeFactory - validation performance", async () => {
   const duration = end - start;
   const avgTime = duration / (iterations * 2);
 
-  _logger.info("Performance test results", {
+  logger.info("Performance test results", {
     totalDuration: `${duration.toFixed(2)}ms`,
     iterations: iterations * 2,
     avgTimePerValidation: `${avgTime.toFixed(4)}ms`,
@@ -208,7 +208,7 @@ Deno.test("TypeFactory - validation performance", async () => {
  * Validates atomic creation of both types
  */
 Deno.test("TypeFactory - createBothTypes atomic operation", async () => {
-  _logger.debug("Testing createBothTypes atomic operation");
+  logger.debug("Testing createBothTypes atomic operation");
 
   const provider = new DefaultTypePatternProvider();
   const factory = new TypeFactory(provider);
@@ -239,7 +239,7 @@ Deno.test("TypeFactory - createBothTypes atomic operation", async () => {
   const failBoth = factory.createBothTypes("invalid", "invalid");
   assertEquals(failBoth.ok, false);
 
-  _logger.info("createBothTypes tests completed");
+  logger.info("createBothTypes tests completed");
 });
 
 /**
@@ -247,7 +247,7 @@ Deno.test("TypeFactory - createBothTypes atomic operation", async () => {
  * Validates debug information availability
  */
 Deno.test("TypeFactory - debug information", async () => {
-  _logger.debug("Testing debug information");
+  logger.debug("Testing debug information");
 
   const defaultProvider = new DefaultTypePatternProvider();
   const factory1 = new TypeFactory(defaultProvider);
@@ -268,7 +268,7 @@ Deno.test("TypeFactory - debug information", async () => {
   assertFalse(debug2.availability.directive);
   assertFalse(debug2.availability.layer);
 
-  _logger.info("Debug information tests completed");
+  logger.info("Debug information tests completed");
 });
 
 /**
@@ -276,7 +276,7 @@ Deno.test("TypeFactory - debug information", async () => {
  * Validates that pattern caching works correctly
  */
 Deno.test("ConfigPatternProvider - cache behavior", async () => {
-  _logger.debug("Testing ConfigPatternProvider cache behavior");
+  logger.debug("Testing ConfigPatternProvider cache behavior");
 
   const configResult = await BreakdownConfig.create("default", Deno.cwd());
 
@@ -297,7 +297,7 @@ Deno.test("ConfigPatternProvider - cache behavior", async () => {
     const pattern3 = provider.getDirectivePattern();
 
     // Verify cache was cleared (may be same value but different instance)
-    _logger.debug("Cache behavior verified");
+    logger.debug("Cache behavior verified");
 
     // Test debug info
     const debugInfo = provider.debug();
@@ -305,7 +305,7 @@ Deno.test("ConfigPatternProvider - cache behavior", async () => {
     assertExists(debugInfo.cacheStatus);
   }
 
-  _logger.info("ConfigPatternProvider cache tests completed");
+  logger.info("ConfigPatternProvider cache tests completed");
 });
 
 /**
@@ -313,7 +313,7 @@ Deno.test("ConfigPatternProvider - cache behavior", async () => {
  * Validates support for various regex patterns
  */
 Deno.test("TypeFactory - complex pattern support", async () => {
-  _logger.debug("Testing complex pattern support");
+  logger.debug("Testing complex pattern support");
 
   // Create a custom provider with complex patterns
   const complexProvider = {
@@ -362,7 +362,7 @@ Deno.test("TypeFactory - complex pattern support", async () => {
   const invalidLayer = factory.createLayerType("invalid-layer");
   assertEquals(invalidLayer.ok, false);
 
-  _logger.info("Complex pattern tests completed");
+  logger.info("Complex pattern tests completed");
 });
 
-_logger.info("All TypeFactory integration tests completed");
+logger.info("All TypeFactory integration tests completed");

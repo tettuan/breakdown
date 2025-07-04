@@ -24,10 +24,10 @@ const _MockPatternCreator = {
 };
 import type {
   OneParamsResult as _OneParamsResult,
-  TwoParamsResult,
+  TwoParams_Result,
   ZeroParamsResult as _ZeroParamsResult,
 } from "../deps.ts";
-import type { Result as _Result } from "../types/_result.ts";
+import type { Result as _Result } from "../types/result.ts";
 
 /**
  * Architecture Test: Dependency Direction Validation
@@ -37,7 +37,7 @@ import type { Result as _Result } from "../types/_result.ts";
  */
 Deno.test("Architecture: ParameterValidator dependency direction compliance", () => {
   // Mock dependencies to validate architectural constraints
-  const mockPatternProvider = MockPatternCreator.createMockPatternProvider();
+  const mockPatternProvider = _MockPatternCreator.createMockPatternProvider();
 
   const mockConfigValidator: ConfigValidator = {
     validateConfig: () => ({ ok: true, data: undefined }),
@@ -73,8 +73,8 @@ Deno.test("Architecture: Result type pattern compliance", () => {
 
   const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
-  // Valid TwoParamsResult for testing
-  const validTwoParams: TwoParamsResult = {
+  // Valid TwoParams_Result for testing
+  const validTwoParams: TwoParams_Result = {
     type: "two",
     demonstrativeType: "test",
     layerType: "project",
@@ -148,7 +148,7 @@ Deno.test("Architecture: Immutability and type safety compliance", () => {
 
   const _validator = new ParameterValidator(mockPatternProvider, mockConfigValidator);
 
-  const originalParams: TwoParamsResult = {
+  const originalParams: TwoParams_Result = {
     type: "two",
     demonstrativeType: "test",
     layerType: "project",
@@ -164,14 +164,14 @@ Deno.test("Architecture: Immutability and type safety compliance", () => {
   assertEquals(originalParams, paramsCopy);
 
   // Architecture constraint: Results should be strongly typed
-  const _result = _validator.validateTwoParams(originalParams);
-  if (_result.ok) {
+  const result = _validator.validateTwoParams(originalParams);
+  if (result.ok) {
     // ValidatedParams should have required typed properties
-    assertExists(_result.data.directive);
-    assertExists(_result.data.layer);
-    assertExists(_result.data.options);
-    assertExists(_result.data.customVariables);
-    assertExists(_result.data.metadata);
+    assertExists(result.data.directive);
+    assertExists(result.data.layer);
+    assertExists(result.data.options);
+    assertExists(result.data.customVariables);
+    assertExists(result.data.metadata);
   }
 });
 
@@ -204,7 +204,7 @@ Deno.test("Architecture: Dependency injection pattern compliance", () => {
   assertExists(customValidator);
 
   // Verify that injected dependencies are used (not hardcoded implementations)
-  const testParams: TwoParamsResult = {
+  const testParams: TwoParams_Result = {
     type: "two",
     demonstrativeType: "custom", // Should match custom pattern
     layerType: "layer", // Should match custom layer pattern
@@ -212,8 +212,8 @@ Deno.test("Architecture: Dependency injection pattern compliance", () => {
     options: {},
   };
 
-  const _result = customValidator.validateTwoParams(testParams);
-  assertEquals(_result.ok, true);
+  const result = customValidator.validateTwoParams(testParams);
+  assertEquals(result.ok, true);
 });
 
 /**

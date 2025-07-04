@@ -144,7 +144,7 @@ import {
   StdinTestResourceManager,
   TestStdinReaderFactory,
 } from "./mock_factory.ts";
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 /**
  * StdinTestContext

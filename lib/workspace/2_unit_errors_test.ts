@@ -14,7 +14,7 @@
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   WorkspaceConfigError,
   WorkspaceDirectoryError,
@@ -23,7 +23,7 @@ import {
   WorkspacePathError,
 } from "./errors.ts";
 
-const _logger = new BreakdownLogger("test-unit-errors");
+const _logger = new _BreakdownLogger("test-unit-errors");
 
 describe("Workspace Errors - Unit Tests", async () => {
   describe("WorkspaceError (Base Class)", async () => {
@@ -102,7 +102,7 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
 
       const { WorkspaceError } = await import("./errors.ts");
-      const caught = false;
+      let caught = false;
       let caughtError: InstanceType<typeof WorkspaceError> | null = null;
 
       try {
@@ -525,9 +525,9 @@ describe("Workspace Errors - Unit Tests", async () => {
         throw new WorkspaceInitError("Simulated failure");
       }
 
-      const errorMessage = "";
-      const errorCode = "";
-      const isWorkspaceError = false;
+      let errorMessage = "";
+      let errorCode = "";
+      let isWorkspaceError = false;
 
       try {
         riskyOperation();
@@ -563,7 +563,7 @@ describe("Workspace Errors - Unit Tests", async () => {
         throw new WorkspaceConfigError("Async config error");
       }
 
-      const caught = false;
+      let caught = false;
       let error: InstanceType<typeof WorkspaceConfigError> | null = null;
 
       try {

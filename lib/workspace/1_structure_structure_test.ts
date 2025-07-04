@@ -7,11 +7,11 @@
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { WorkspaceStructureImpl } from "./structure.ts";
 
 Deno.test("WorkspaceStructure Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-test");
+  const _logger = new _BreakdownLogger("structure-test");
 
   await t.step("should have proper class design", () => {
     _logger.debug("Testing class design structure");

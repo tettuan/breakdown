@@ -21,7 +21,7 @@ import {
   type LayerTypeResult,
 } from "../../../lib/types/layer_type_factory.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../lib/types/layer_type.ts";
-import type { TwoParamsResult } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 /**
  * Integration Test Suite: LayerTypeFactory Complete System Validation
@@ -32,7 +32,7 @@ import type { TwoParamsResult } from "../../../lib/deps.ts";
 
 Deno.test("Integration: Complete LayerTypeFactory workflow - string to LayerType", async (t) => {
   await t.step("End-to-end string processing for all known layers", () => {
-    const _knownLayers = LayerTypeFactory.getKnownLayers();
+    const knownLayers = LayerTypeFactory.getKnownLayers();
 
     for (const layer of knownLayers) {
       // Test various input formats
@@ -45,14 +45,14 @@ Deno.test("Integration: Complete LayerTypeFactory workflow - string to LayerType
 
       for (const input of inputVariations) {
         const result = LayerTypeFactory.fromString(input);
-        assertEquals(_result.ok, true, `Should handle ${layer} in format: "${input}"`);
+        assertEquals(result.ok, true, `Should handle ${layer} in format: "${input}"`);
 
-        if (_result.ok) {
+        if (result.ok) {
           assertExists(result.data);
           assertEquals(result.data.getValue(), layer);
 
           // Verify the LayerType is fully functional
-          const originalResult = _result.data.originalResult;
+          const originalResult = result.data.originalResult;
           assertEquals(originalResult.layerType, layer);
           assertEquals(originalResult.type, "two");
         }
@@ -74,22 +74,22 @@ Deno.test("Integration: Complete LayerTypeFactory workflow - string to LayerType
 
     for (const scenario of errorScenarios) {
       const result = LayerTypeFactory.fromString(scenario.input);
-      assertEquals(_result.ok, false, `Should fail for: ${scenario.input}`);
+      assertEquals(result.ok, false, `Should fail for: ${scenario.input}`);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, scenario.expectedKind);
+      if (!result.ok) {
+        assertEquals(result.error.kind, scenario.expectedKind);
 
         // Verify error contains helpful information
-        switch (_result.error.kind) {
+        switch (result.error.kind) {
           case "UnknownLayer":
-            if (_result.error.kind === "UnknownLayer") {
-              assertExists(_result.error.suggestions);
-              assertEquals(_result.error.suggestions.length > 0, true);
+            if (result.error.kind === "UnknownLayer") {
+              assertExists(result.error.suggestions);
+              assertEquals(result.error.suggestions.length > 0, true);
             }
             break;
           case "InvalidInput":
-            if (_result.error.kind === "InvalidInput") {
-              assertExists(_result.error.actualType);
+            if (result.error.kind === "InvalidInput") {
+              assertExists(result.error.actualType);
             }
             break;
         }
@@ -119,7 +119,7 @@ Deno.test("Integration: Pattern validation workflow", async (t) => {
       for (const validInput of testCase.valid) {
         const result = LayerTypeFactory.fromString(validInput, pattern);
         assertEquals(
-          _result.ok,
+          result.ok,
           true,
           `Should accept ${validInput} with pattern ${testCase.pattern}`,
         );
@@ -129,13 +129,13 @@ Deno.test("Integration: Pattern validation workflow", async (t) => {
       for (const invalidInput of testCase.invalid) {
         const result = LayerTypeFactory.fromString(invalidInput, pattern);
         assertEquals(
-          _result.ok,
+          result.ok,
           false,
           `Should reject ${invalidInput} with pattern ${testCase.pattern}`,
         );
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "ValidationFailed");
+        if (!result.ok) {
+          assertEquals(result.error.kind, "ValidationFailed");
         }
       }
     }
@@ -151,12 +151,12 @@ Deno.test("Integration: Pattern validation workflow", async (t) => {
   });
 });
 
-Deno.test("Integration: TwoParamsResult integration workflow", async (t) => {
-  await t.step("Complete TwoParamsResult to LayerType conversion", () => {
+Deno.test("Integration: TwoParams_Result integration workflow", async (t) => {
+  await t.step("Complete TwoParams_Result to LayerType conversion", () => {
     const knownLayers = LayerTypeFactory.getKnownLayers();
 
     for (const layer of knownLayers) {
-      const twoParamsResult: TwoParamsResult = {
+      const twoParamsResult: TwoParams_Result = {
         type: "two",
         demonstrativeType: "to",
         layerType: layer,
@@ -168,14 +168,14 @@ Deno.test("Integration: TwoParamsResult integration workflow", async (t) => {
         },
       };
 
-      const result = LayerTypeFactory.fromTwoParamsResult(twoParamsResult);
-      assertEquals(_result.ok, true, `Should create LayerType from TwoParamsResult for ${layer}`);
+      const result = LayerTypeFactory.fromTwoParams_Result(twoParamsResult);
+      assertEquals(result.ok, true, `Should create LayerType from TwoParams_Result for ${layer}`);
 
-      if (_result.ok) {
+      if (result.ok) {
         // Verify complete integration
         assertEquals(result.data.getValue(), layer);
 
-        const originalResult = _result.data.originalResult;
+        const originalResult = result.data.originalResult;
         assertEquals(originalResult.type, "two");
         assertEquals(originalResult.demonstrativeType, "to");
         assertEquals(originalResult.layerType, layer);
@@ -190,11 +190,11 @@ Deno.test("Integration: TwoParamsResult integration workflow", async (t) => {
     }
   });
 
-  await t.step("TwoParamsResult conversion behavior", () => {
-    // LayerType.create() accepts any TwoParamsResult because it assumes
+  await t.step("TwoParams_Result conversion behavior", () => {
+    // LayerType.create() accepts any TwoParams_Result because it assumes
     // validation was already done by BreakdownParams. The factory wraps
     // this in a try-catch for safety, but normally it would succeed.
-    const invalidResult: TwoParamsResult = {
+    const invalidResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "invalid_layer_name",
@@ -202,11 +202,11 @@ Deno.test("Integration: TwoParamsResult integration workflow", async (t) => {
       options: {},
     };
 
-    const result = LayerTypeFactory.fromTwoParamsResult(invalidResult);
+    const result = LayerTypeFactory.fromTwoParams_Result(invalidResult);
     // This actually succeeds because LayerType.create() doesn't validate
-    assertEquals(_result.ok, true, "LayerType.create accepts any TwoParamsResult");
+    assertEquals(result.ok, true, "LayerType.create accepts any TwoParams_Result");
 
-    if (_result.ok) {
+    if (result.ok) {
       assertEquals(result.data.getValue(), "invalid_layer_name");
     }
   });
@@ -260,10 +260,10 @@ Deno.test("Integration: Suggestion system validation", async (t) => {
 
     for (const testCase of testCases) {
       const result = LayerTypeFactory.fromString(testCase.input);
-      assertEquals(_result.ok, false, `Should fail for partial match: ${testCase.input}`);
+      assertEquals(result.ok, false, `Should fail for partial match: ${testCase.input}`);
 
-      if (!_result.ok && _result.error.kind === "UnknownLayer") {
-        const suggestions = _result.error.suggestions;
+      if (!result.ok && result.error.kind === "UnknownLayer") {
+        const suggestions = result.error.suggestions;
         for (const expected of testCase.expectedSuggestions) {
           assertEquals(
             suggestions.includes(expected),
@@ -280,10 +280,10 @@ Deno.test("Integration: Suggestion system validation", async (t) => {
 
     for (const input of unknownInputs) {
       const result = LayerTypeFactory.fromString(input);
-      assertEquals(_result.ok, false);
+      assertEquals(result.ok, false);
 
-      if (!_result.ok && _result.error.kind === "UnknownLayer") {
-        const suggestions = _result.error.suggestions;
+      if (!result.ok && result.error.kind === "UnknownLayer") {
+        const suggestions = result.error.suggestions;
         // Should suggest all known layers as fallback
         assertEquals(suggestions.length >= 5, true);
         assertEquals(suggestions.includes("project"), true);
@@ -306,7 +306,7 @@ Deno.test("Integration: Performance and reliability testing", async (t) => {
     for (let i = 0; i < iterations; i++) {
       for (const layer of knownLayers) {
         const result = LayerTypeFactory.fromString(layer);
-        assertEquals(_result.ok, true);
+        assertEquals(result.ok, true);
       }
     }
 
@@ -328,15 +328,15 @@ Deno.test("Integration: Performance and reliability testing", async (t) => {
     // Create many instances
     for (let i = 0; i < 100; i++) {
       const result = LayerTypeFactory.fromString(testInput);
-      assertEquals(_result.ok, true);
-      if (_result.ok) {
-        results.push(_result);
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        results.push(result);
       }
     }
 
     // All results should be consistent
     for (const result of results) {
-      if (_result.ok) {
+      if (result.ok) {
         assertEquals(result.data.getValue(), "project");
       }
     }
@@ -357,12 +357,12 @@ Deno.test("Integration: Edge case handling robustness", async (t) => {
 
     for (const input of specialInputs) {
       const result = LayerTypeFactory.fromString(input);
-      assertEquals(_result.ok, false, `Should handle unicode input: ${input}`);
+      assertEquals(result.ok, false, `Should handle unicode input: ${input}`);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "UnknownLayer");
-        if (_result.error.kind === "UnknownLayer") {
-          assertExists(_result.error.suggestions);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "UnknownLayer");
+        if (result.error.kind === "UnknownLayer") {
+          assertExists(result.error.suggestions);
         }
       }
     }
@@ -372,9 +372,9 @@ Deno.test("Integration: Edge case handling robustness", async (t) => {
     const longInput = "a".repeat(10000);
     const result = LayerTypeFactory.fromString(longInput);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "UnknownLayer");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "UnknownLayer");
     }
   });
 
@@ -393,15 +393,15 @@ Deno.test("Integration: Edge case handling robustness", async (t) => {
       const result = LayerTypeFactory.fromString(input);
 
       if (input.trim() === "") {
-        assertEquals(_result.ok, false);
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "EmptyInput");
+        assertEquals(result.ok, false);
+        if (!result.ok) {
+          assertEquals(result.error.kind, "EmptyInput");
         }
       } else {
         // Non-empty but unknown inputs
-        assertEquals(_result.ok, false);
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "UnknownLayer");
+        assertEquals(result.ok, false);
+        if (!result.ok) {
+          assertEquals(result.error.kind, "UnknownLayer");
         }
       }
     }
@@ -420,9 +420,9 @@ Deno.test("Integration: System coherence validation", async (t) => {
       assertEquals(stringResult.ok, true);
 
       if (stringResult.ok) {
-        // Verify fromTwoParamsResult produces same result
+        // Verify fromTwoParams_Result produces same result
         const originalResult = stringResult.data.originalResult;
-        const twoParamsResult = LayerTypeFactory.fromTwoParamsResult(originalResult);
+        const twoParamsResult = LayerTypeFactory.fromTwoParams_Result(originalResult);
 
         assertEquals(twoParamsResult.ok, true);
         if (twoParamsResult.ok) {

@@ -30,13 +30,13 @@ Deno.test("OneParamsHandler Architecture", async (t) => {
   await t.step("follows simple function-based architecture", () => {
     // OneParamsHandler should be a simple function, not a class
     const _func = handleOneParams;
-    assertEquals(typeof func, "function");
+    assertEquals(typeof _func, "function");
 
     // Function should accept exactly 3 parameters (params, config, options)
-    assertEquals(func.length, 3);
+    assertEquals(_func.length, 3);
 
     // Function should be async and return Promise<void>
-    const _result = func(["init"], {}, {});
+    const result = _func(["init"], {}, {});
     assert(result instanceof Promise);
   });
 
@@ -105,7 +105,7 @@ Deno.test({
 
       // Test that function accepts 'init' command without throwing
       try {
-        const _result = await handleOneParams(["init"], {}, {});
+        const result = await handleOneParams(["init"], {}, {});
         // Ensure all async operations complete
         await new Promise((resolve) => setTimeout(resolve, 10));
         assert(true, "Init command delegation successful");
@@ -124,7 +124,7 @@ Deno.test({
       // (currently silent, future enhancement may add error handling)
 
       try {
-        const _result = await handleOneParams(["unknown_command"], {}, {});
+        const result = await handleOneParams(["unknown_command"], {}, {});
         // Ensure all async operations complete
         await new Promise((resolve) => setTimeout(resolve, 10));
         assert(true, "Unknown command handled gracefully");

@@ -14,9 +14,9 @@ import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
 import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
 import type { ValidatedParams } from "./two_params_prompt_generator.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("two-params-prompt-generator-test");
+const _logger = new _BreakdownLogger("two-params-prompt-generator-test");
 
 Deno.test("Unit: TwoParamsPromptGenerator generates prompt successfully with valid inputs", async () => {
   const _generator = new TwoParamsPromptGenerator();
@@ -58,46 +58,50 @@ Deno.test("Unit: TwoParamsPromptGenerator generates prompt successfully with val
     },
   };
 
-  const _result = await _generator.generatePrompt(
-    config,
+  const result = await _generator.generatePrompt(
+    _config,
     validatedParams,
     options,
     processedVariables,
   );
 
-  _logger.debug("Prompt generation result", { success: _result.ok });
+  _logger.debug("Prompt generation result", { success: result.ok });
 
   // May fail due to missing prompt files in test environment
-  if (!_result.ok) {
-    assertExists(_result.error, "Should have error on failure");
-    assertExists(_result.error.kind, "Error should have kind");
-    _logger.debug("Expected failure in test environment", { errorKind: _result.error.kind });
+  if (!result.ok) {
+    assertExists(result.error, "Should have error on failure");
+    assertExists(result.error.kind, "Error should have kind");
+    _logger.debug("Expected failure in test environment", { errorKind: result.error.kind });
   }
 });
 
 Deno.test("Unit: TwoParamsPromptGenerator handles invalid configuration", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const invalidConfig = null as unknown;
+  const invalidConfig = null as any;
 
   const validatedParams: ValidatedParams = {
     demonstrativeType: "to",
     layerType: "project",
   };
 
-  const _result = await _generator.generatePrompt(
-    invalidConfig,
+  const result = await _generator.generatePrompt(
+    invalidConfig as Record<string, unknown>,
     validatedParams,
     {},
     { standardVariables: {}, customVariables: {}, allVariables: {} },
   );
 
-  assertEquals(_result.ok, false, "Should fail with invalid config");
+  assertEquals(result.ok, false, "Should fail with invalid config");
 
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidConfiguration", "Should be InvalidConfiguration error");
-    if (_result.error.kind === "InvalidConfiguration") {
-      assertStringIncludes(_result.error.message, "Configuration must be a valid object");
+  if (!result.ok) {
+    assertEquals(
+      result.error.kind,
+      "InvalidConfiguration",
+      "Should be InvalidConfiguration error",
+    );
+    if (result.error.kind === "InvalidConfiguration") {
+      assertStringIncludes(result.error.message, "Configuration must be a valid object");
     }
   }
 });
@@ -115,27 +119,27 @@ Deno.test("Unit: TwoParamsPromptGenerator handles missing required configuration
     layerType: "project",
   };
 
-  const _result = await _generator.generatePrompt(
+  const result = await _generator.generatePrompt(
     incompleteConfig,
     validatedParams,
     {},
     { standardVariables: {}, customVariables: {}, allVariables: {} },
   );
 
-  assertEquals(_result.ok, false, "Should fail with incomplete config");
+  assertEquals(result.ok, false, "Should fail with incomplete config");
 
-  if (!_result.ok) {
+  if (!result.ok) {
     // Should fail with ConfigurationValidationError due to missing required properties
     assertEquals(
-      _result.error.kind,
+      result.error.kind,
       "ConfigurationValidationError",
       "Should be ConfigurationValidationError due to missing config",
     );
-    if (_result.error.kind === "ConfigurationValidationError") {
-      assertExists(_result.error.message, "Should have error message");
-      assertExists(_result.error.missingProperties, "Should have missing properties list");
+    if (result.error.kind === "ConfigurationValidationError") {
+      assertExists(result.error.message, "Should have error message");
+      assertExists(result.error.missingProperties, "Should have missing properties list");
       assertEquals(
-        Array.isArray(_result.error.missingProperties),
+        Array.isArray(result.error.missingProperties),
         true,
         "Missing properties should be array",
       );
@@ -187,17 +191,17 @@ Deno.test("Unit: TwoParamsPromptGenerator processes custom variables correctly",
     },
   };
 
-  const _result = await _generator.generatePrompt(
-    config,
+  const result = await _generator.generatePrompt(
+    _config,
     validatedParams,
     options,
     processedVariables,
   );
 
   // Verify custom variables are passed through
-  if (!_result.ok) {
+  if (!result.ok) {
     _logger.debug("Custom variables test", {
-      errorKind: _result.error.kind,
+      errorKind: result.error.kind,
       customVarsCount: Object.keys(processedVariables.customVariables).length,
     });
   }
@@ -217,16 +221,16 @@ Deno.test("Unit: TwoParamsPromptGenerator handles factory creation errors", asyn
     layerType: "unknown-layer", // May cause factory creation error
   };
 
-  const _result = await _generator.generatePrompt(
-    config,
+  const result = await _generator.generatePrompt(
+    _config,
     validatedParams,
     {},
     { standardVariables: {}, customVariables: {}, allVariables: {} },
   );
 
-  if (!_result.ok) {
-    _logger.debug("Factory creation error test", { errorKind: _result.error.kind });
-    assertExists(_result.error.kind, "Should have error kind");
+  if (!result.ok) {
+    _logger.debug("Factory creation error test", { errorKind: result.error.kind });
+    assertExists(result.error.kind, "Should have error kind");
     // Could be FactoryCreationError or FactoryValidationError
   }
 });
@@ -272,17 +276,17 @@ Deno.test("Unit: TwoParamsPromptGenerator integrates with VariablesBuilder", asy
     },
   };
 
-  const _result = await _generator.generatePrompt(
-    config,
+  const result = await _generator.generatePrompt(
+    _config,
     validatedParams,
     options,
     processedVariables,
   );
 
   // Verify builder integration
-  if (!_result.ok && _result.error.kind === "VariablesBuilderError") {
-    assertExists(_result.error.errors, "Builder errors should be array");
-    assertEquals(Array.isArray(_result.error.errors), true, "Should have errors array");
+  if (!result.ok && result.error.kind === "VariablesBuilderError") {
+    assertExists(result.error.errors, "Builder errors should be array");
+    assertEquals(Array.isArray(result.error.errors), true, "Should have errors array");
   }
 });
 
@@ -301,19 +305,19 @@ Deno.test("Unit: TwoParamsPromptGenerator handles all demonstrative types", asyn
   for (const demonstrativeType of demonstrativeTypes) {
     for (const layerType of layerTypes) {
       const validatedParams: ValidatedParams = {
-        demonstrativeType: demonstrativeType as unknown,
+        demonstrativeType: demonstrativeType as string,
         layerType,
       };
 
-      const _result = await _generator.generatePrompt(
-        config,
+      const result = await _generator.generatePrompt(
+        _config,
         validatedParams,
         {},
         { standardVariables: {}, customVariables: {}, allVariables: {} },
       );
 
       // Should attempt to generate for all combinations
-      assertExists(_result.ok !== undefined, `Should handle ${demonstrativeType}/${layerType}`);
+      assertExists(result.ok !== undefined, `Should handle ${demonstrativeType}/${layerType}`);
     }
   }
 });

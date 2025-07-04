@@ -1,0 +1,87 @@
+# Breakdown パラメータ処理型フロー
+# パラメータ解析から最終出力までの処理フロー
+
+# 核心的な型変換フロー
+type_flow:
+  name: "Parameter Processing Flow"
+  description: "パラメータ解析から最終出力までの処理"
+  
+  steps:
+    - step: 1
+      from: "string[] (CLI args)"
+      to: "ParamsResult"
+      operation: "ParamsParser.parse()"
+      principle: "zero/one/two/error の完全な分類"
+      
+    - step: 2
+      from: "ParamsResult"
+      to: "HandlerFunction"
+      operation: "type-based dispatch"
+      principle: "全てのパラメータタイプに対応"
+      
+    - step: 3
+      from: "TwoParamsResult"
+      to: "Result<void, TwoParamsHandlerError>"
+      operation: "handleTwoParams()"
+      principle: "オーケストレーションによる段階的処理"
+
+# 主要型
+key_types:
+  ParamsResult:
+    pattern: "Discriminated Union"
+    variants:
+      - "{ type: 'zero', options: Record<string, unknown> }"
+      - "{ type: 'one', params: string[], options: Record<string, unknown> }"
+      - "{ type: 'two', params: string[], options: Record<string, unknown> }"
+      - "{ type: 'error', error: Error }"
+    
+  TwoParamsHandlerError:
+    pattern: "Discriminated Union Error"
+    variants:
+      - "InvalidParameterCount"
+      - "InvalidDemonstrativeType"
+      - "InvalidLayerType"
+      - "StdinReadError"
+      - "PromptGenerationError"
+      - "OutputWriteError"
+    
+  TwoParamsOrchestrator:
+    pattern: "Orchestrator with Result Chain"
+    components:
+      - "TwoParamsValidator"
+      - "TwoParamsStdinProcessor"
+      - "TwoParamsVariableProcessor"
+      - "TwoParamsPromptGenerator"
+
+# パラメータ処理フロー
+processing_flow:
+  zero_params:
+    description: "ヘルプ・バージョン表示"
+    handler: "handleZeroParams"
+    
+  one_params:
+    description: "初期化などの単一コマンド"
+    handler: "handleOneParams"
+    
+  two_params:
+    description: "プロンプト生成（メイン処理）"
+    handler: "handleTwoParams"
+    orchestration_steps:
+      - "パラメータバリデーション"
+      - "STDIN処理"
+      - "変数処理"
+      - "プロンプト生成"
+      - "出力書き込み"
+
+# 設計パターン
+patterns:
+  command_pattern: "パラメータタイプに基づくハンドラー選択"
+  orchestrator_pattern: "複雑な処理フローの管理"
+  result_pattern: "エラーハンドリングの統一"
+  singleton_pattern: "Orchestrator の再利用"
+
+# 境界
+boundaries:
+  scope: "パラメータ解析から最終出力"
+  next_phase: "処理完了またはエラー終了"
+  responsibility: "パラメータ処理のオーケストレーション"

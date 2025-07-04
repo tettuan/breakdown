@@ -7,14 +7,17 @@
  * @module lib/cli/orchestrators/two_params_orchestrator
  */
 
-import type { Result } from "$lib/types/result.ts";
-import { error, ok } from "$lib/types/result.ts";
-import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
-import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { VariablesBuilder } from "$lib/builder/variables_builder.ts";
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
+import type { Result } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
+import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
+import { PromptVariablesFactory } from "../../factory/prompt_variables_factory.ts";
+import { VariablesBuilder } from "../../builder/variables_builder.ts";
 import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
-import type { PromptCliParams } from "$lib/factory/prompt_variables_factory.ts";
+import type { PromptCliParams } from "../../types/mod.ts";
+import { PromptManagerAdapter } from "../../prompt/prompt_manager_adapter.ts";
+import { PromptPath } from "../../types/prompt_types.ts";
+import { convertPromptCliParamsToPromptVariables } from "../../migration/prompt_migration_utils.ts";
+import { CompositePromptVariables } from "../../prompt/variables/composite_prompt_variables.ts";
 
 // Import components
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
@@ -64,15 +67,15 @@ export class TwoParamsOrchestrator {
     }
 
     // 3. Extract and process variables
-    const customVariables = this.extractCustomVariables(options);
-    const processedVariables = this.processVariables(
+    const customVariables = this._extractCustomVariables(options);
+    const processedVariables = this._processVariables(
       customVariables,
       stdinResult.data,
       options,
     );
 
     // 4. Create CLI parameters
-    const cliParams = this.createCliParams(
+    const cliParams = this._createCliParams(
       demonstrativeType,
       layerType,
       options,
@@ -81,7 +84,7 @@ export class TwoParamsOrchestrator {
     );
 
     // 5. Generate prompt
-    const promptResult = await this.generatePrompt(
+    const promptResult = await this._generatePrompt(
       config,
       cliParams,
       stdinResult.data,
@@ -110,7 +113,7 @@ export class TwoParamsOrchestrator {
   /**
    * Extract custom variables from options
    */
-  private extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
+  private _extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
     const customVariables: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(options)) {
@@ -125,7 +128,7 @@ export class TwoParamsOrchestrator {
   /**
    * Process variables (including standard variables)
    */
-  private processVariables(
+  private _processVariables(
     customVariables: Record<string, string>,
     inputText: string,
     options: Record<string, unknown>,
@@ -145,7 +148,7 @@ export class TwoParamsOrchestrator {
   /**
    * Create CLI parameters
    */
-  private createCliParams(
+  private _createCliParams(
     demonstrativeType: string,
     layerType: string,
     options: Record<string, unknown>,
@@ -175,7 +178,7 @@ export class TwoParamsOrchestrator {
   /**
    * Generate prompt using factory and builder
    */
-  private async generatePrompt(
+  private async _generatePrompt(
     config: Record<string, unknown>,
     cliParams: PromptCliParams,
     inputText: string,
@@ -232,29 +235,41 @@ export class TwoParamsOrchestrator {
         });
       }
 
-      // Generate prompt
-      const variablesRecord = builder.toRecord();
-      const promptManager = new PromptManager();
-      const result = await promptManager.generatePrompt(
-        allParams.promptFilePath,
-        variablesRecord,
+      // Convert PromptCliParams to PromptVariables using migration utility
+      const variablesResult = convertPromptCliParamsToPromptVariables(cliParams);
+      if (!variablesResult.ok) {
+        return error({
+          kind: "VariablesBuilderError",
+          errors: variablesResult.error.details,
+        });
+      }
+
+      // Create PromptPath
+      const pathResult = PromptPath.create(allParams.promptFilePath);
+      if (!pathResult.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          error: pathResult.error.message,
+        });
+      }
+
+      // Generate prompt using PromptManagerAdapter
+      const promptAdapter = new PromptManagerAdapter();
+      const compositeVariables = new CompositePromptVariables(variablesResult.data);
+      const result = await promptAdapter.generatePrompt(
+        pathResult.data,
+        compositeVariables,
       );
 
       // Extract content
-      let content: string;
-      if (result && typeof result === "object" && "success" in result) {
-        const res = result as { success: boolean; content?: string; error?: string };
-        if (res.success) {
-          content = res.content || "";
-        } else {
-          return error({
-            kind: "PromptGenerationError",
-            error: res.error || "Prompt generation failed",
-          });
-        }
-      } else {
-        content = String(result);
+      if (!result.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          error: `${result.error.kind}: ${this._formatPromptError(result.error)}`,
+        });
       }
+
+      const content = result.data.content;
 
       return ok(content);
     } catch (err) {
@@ -262,6 +277,26 @@ export class TwoParamsOrchestrator {
         kind: "FactoryValidationError",
         errors: [err instanceof Error ? err.message : String(err)],
       });
+    }
+  }
+
+  /**
+   * Format PromptError for display
+   */
+  private _formatPromptError(error: import("../../types/prompt_types.ts").PromptError): string {
+    switch (error.kind) {
+      case "TemplateNotFound":
+        return `Template not found: ${error.path}`;
+      case "InvalidVariables":
+        return `Invalid variables: ${error.details.join(", ")}`;
+      case "SchemaError":
+        return `Schema error in ${error.schema}: ${error.error}`;
+      case "InvalidPath":
+        return `Invalid path: ${error.message}`;
+      case "TemplateParseError":
+        return `Failed to parse template ${error.template}: ${error.error}`;
+      case "ConfigurationError":
+        return `Configuration error: ${error.message}`;
     }
   }
 }

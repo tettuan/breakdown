@@ -11,7 +11,7 @@
 import { assertEquals, assertExists, assertStringIncludes } from "jsr:@std/assert@1";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("e2e-integration");
+const logger = new BreakdownLogger("e2e-integration");
 
 // Test configuration
 const TEST_TIMEOUT = 30000; // 30 seconds for E2E tests
@@ -26,7 +26,7 @@ async function runBreakdownCommand(
   input?: string,
   timeout = TEST_TIMEOUT,
 ): Promise<{ success: boolean; stdout: string; stderr: string; code: number }> {
-  _logger.debug("Running breakdown command", { args, hasInput: !!input });
+  logger.debug("Running breakdown command", { args, hasInput: !!input });
 
   const cmd = new Deno.Command("deno", {
     args: ["run", "--allow-all", "./mod.ts", ...args],
@@ -59,10 +59,10 @@ async function runBreakdownCommand(
     }
 
     return {
-      success: _result.code === 0,
+      success: result.code === 0,
       stdout: new TextDecoder().decode(result.stdout),
       stderr: new TextDecoder().decode(result.stderr),
-      code: _result.code,
+      code: result.code,
     };
   } catch (error) {
     // Clear timeout on error/timeout
@@ -90,9 +90,9 @@ async function runBreakdownCommand(
 async function setupTestEnvironment(): Promise<void> {
   try {
     await Deno.mkdir(TEST_BASE_DIR, { recursive: true });
-    _logger.debug("Test environment setup completed", { baseDir: TEST_BASE_DIR });
+    logger.debug("Test environment setup completed", { baseDir: TEST_BASE_DIR });
   } catch (error) {
-    _logger.error("Failed to setup test environment", { error });
+    logger.error("Failed to setup test environment", { error });
     throw error;
   }
 }
@@ -103,9 +103,9 @@ async function setupTestEnvironment(): Promise<void> {
 async function cleanupTestEnvironment(): Promise<void> {
   try {
     await Deno.remove(TEST_BASE_DIR, { recursive: true });
-    _logger.debug("Test environment cleanup completed");
+    logger.debug("Test environment cleanup completed");
   } catch (error) {
-    _logger.debug("Test environment cleanup failed (may not exist)", { error });
+    logger.debug("Test environment cleanup failed (may not exist)", { error });
   }
 }
 
@@ -126,28 +126,28 @@ Deno.test("E2E Integration - Complete CLI workflow: file input to output", async
       outputFile,
     ]);
 
-    _logger.debug("CLI workflow result", {
-      success: _result.success,
-      code: _result.code,
-      stdoutLength: _result.stdout.length,
-      stderrLength: _result.stderr.length,
+    logger.debug("CLI workflow result", {
+      success: result.success,
+      code: result.code,
+      stdoutLength: result.stdout.length,
+      stderrLength: result.stderr.length,
     });
 
-    if (_result.success) {
+    if (result.success) {
       assertEquals(result.code, 0, "Command should exit with code 0");
 
       // Verify output file was created
       try {
         const outputContent = await Deno.readTextFile(outputFile);
         assertEquals(outputContent.length > 0, true, "Output file should have content");
-        _logger.debug("Output file validation passed", { contentLength: outputContent.length });
+        logger.debug("Output file validation passed", { contentLength: outputContent.length });
       } catch {
-        _logger.error("Output file was not created or not readable");
+        logger.error("Output file was not created or not readable");
         // This may be expected if the command failed for configuration reasons
       }
     } else {
-      _logger.debug("Command failed as expected (may be due to configuration)", {
-        stderr: _result.stderr,
+      logger.debug("Command failed as expected (may be due to configuration)", {
+        stderr: result.stderr,
       });
     }
   } finally {
@@ -169,13 +169,13 @@ Deno.test("E2E Integration - STDIN input workflow", async () => {
       outputFile,
     ], stdinInput);
 
-    _logger.debug("STDIN workflow result", {
-      success: _result.success,
-      code: _result.code,
-      hasStdout: _result.stdout.length > 0,
+    logger.debug("STDIN workflow result", {
+      success: result.success,
+      code: result.code,
+      hasStdout: result.stdout.length > 0,
     });
 
-    if (_result.success) {
+    if (result.success) {
       assertEquals(result.code, 0, "STDIN command should exit with code 0");
 
       // Verify output was generated
@@ -183,11 +183,11 @@ Deno.test("E2E Integration - STDIN input workflow", async () => {
         const outputContent = await Deno.readTextFile(outputFile);
         assertEquals(outputContent.length > 0, true, "STDIN output should have content");
       } catch {
-        _logger.debug("STDIN output file not created (may be expected)");
+        logger.debug("STDIN output file not created (may be expected)");
       }
     } else {
       // STDIN processing may fail due to configuration - log for debugging
-      _logger.debug("STDIN command failed", { stderr: _result.stderr });
+      logger.debug("STDIN command failed", { stderr: result.stderr });
     }
   } finally {
     await cleanupTestEnvironment();
@@ -198,9 +198,9 @@ Deno.test("E2E Integration - Help command accessibility", async () => {
   // Help should always work regardless of configuration
   const result = await runBreakdownCommand(["--help"]);
 
-  _logger.debug("Help command result", {
-    success: _result.success,
-    stdoutLength: _result.stdout.length,
+  logger.debug("Help command result", {
+    success: result.success,
+    stdoutLength: result.stdout.length,
   });
 
   // Help command should succeed
@@ -209,7 +209,7 @@ Deno.test("E2E Integration - Help command accessibility", async () => {
 
   // Help output should contain usage information
   assertStringIncludes(
-    _result.stdout.toLowerCase(),
+    result.stdout.toLowerCase(),
     "usage",
     "Help should contain usage information",
   );
@@ -219,17 +219,17 @@ Deno.test("E2E Integration - Version command accessibility", async () => {
   // Version should always work
   const result = await runBreakdownCommand(["--version"]);
 
-  _logger.debug("Version command result", {
-    success: _result.success,
-    stdout: _result.stdout,
+  logger.debug("Version command result", {
+    success: result.success,
+    stdout: result.stdout,
   });
 
   // Version command should succeed or be handled gracefully
-  if (_result.success) {
+  if (result.success) {
     assertEquals(result.stdout.length > 0, true, "Version should provide output");
   } else {
     // Version command may not be implemented yet - log for debugging
-    _logger.debug("Version command not implemented or failed", { stderr: _result.stderr });
+    logger.debug("Version command not implemented or failed", { stderr: result.stderr });
   }
 });
 
@@ -237,17 +237,17 @@ Deno.test("E2E Integration - Invalid command error handling", async () => {
   // Test error handling for invalid commands
   const result = await runBreakdownCommand(["invalid_command_xyz123"]);
 
-  _logger.debug("Invalid command result", {
-    success: _result.success,
-    code: _result.code,
-    stderr: _result.stderr,
+  logger.debug("Invalid command result", {
+    success: result.success,
+    code: result.code,
+    stderr: result.stderr,
   });
 
   assertEquals(result.success, false, "Invalid command should fail");
   assertEquals(result.code !== 0, true, "Invalid command should exit with non-zero code");
 
   // Should provide helpful error message
-  const errorOutput = _result.stderr || _result.stdout;
+  const errorOutput = result.stderr || result.stdout;
   assertEquals(errorOutput.length > 0, true, "Should provide error message");
 });
 
@@ -255,16 +255,16 @@ Deno.test("E2E Integration - Missing required arguments error handling", async (
   // Test error handling for missing arguments
   const result = await runBreakdownCommand(["to"]);
 
-  _logger.debug("Missing arguments result", {
-    success: _result.success,
-    code: _result.code,
+  logger.debug("Missing arguments result", {
+    success: result.success,
+    code: result.code,
   });
 
   assertEquals(result.success, false, "Missing arguments should fail");
   assertEquals(result.code !== 0, true, "Should exit with error code");
 
   // Should provide helpful error about missing arguments
-  const errorOutput = _result.stderr || _result.stdout;
+  const errorOutput = result.stderr || result.stdout;
   assertEquals(errorOutput.length > 0, true, "Should provide error message for missing args");
 });
 
@@ -285,15 +285,15 @@ Deno.test("E2E Integration - File permission error handling", async () => {
       invalidOutputFile,
     ]);
 
-    _logger.debug("File permission error result", {
-      success: _result.success,
-      stderr: _result.stderr,
+    logger.debug("File permission error result", {
+      success: result.success,
+      stderr: result.stderr,
     });
 
     assertEquals(result.success, false, "Should fail for invalid output path");
 
     // Should handle file errors gracefully
-    const errorOutput = _result.stderr || _result.stdout;
+    const errorOutput = result.stderr || result.stdout;
     assertEquals(errorOutput.length > 0, true, "Should provide file error message");
   } finally {
     await cleanupTestEnvironment();
@@ -315,14 +315,14 @@ Deno.test("E2E Integration - Configuration error handling", async () => {
       "/dev/null",
     ]);
 
-    _logger.debug("Configuration error result", {
-      success: _result.success,
-      stderr: _result.stderr,
+    logger.debug("Configuration error result", {
+      success: result.success,
+      stderr: result.stderr,
     });
 
     // Should handle missing configuration gracefully
-    if (!_result.success) {
-      const errorOutput = _result.stderr || _result.stdout;
+    if (!result.success) {
+      const errorOutput = result.stderr || result.stdout;
       assertEquals(errorOutput.length > 0, true, "Should provide configuration error message");
     }
   } finally {
@@ -350,16 +350,16 @@ Deno.test("E2E Integration - Large input processing", async () => {
       45000,
     ); // Extended timeout for large input
 
-    _logger.debug("Large input processing result", {
-      success: _result.success,
+    logger.debug("Large input processing result", {
+      success: result.success,
       inputSize: largeInput.length,
       processingTime: "within timeout",
     });
 
-    if (_result.success) {
+    if (result.success) {
       assertEquals(result.code, 0, "Large input should be processed successfully");
     } else {
-      _logger.debug("Large input processing failed", { stderr: _result.stderr });
+      logger.debug("Large input processing failed", { stderr: result.stderr });
     }
   } finally {
     await cleanupTestEnvironment();
@@ -379,7 +379,7 @@ Deno.test("E2E Integration - Concurrent command execution", async () => {
 
     const results = await Promise.all(commands);
 
-    _logger.debug("Concurrent execution results", {
+    logger.debug("Concurrent execution results", {
       successCount: results.filter((r) => r.success).length,
       totalCount: results.length,
     });
@@ -405,13 +405,13 @@ Deno.test("E2E Integration - Command timeout behavior", async () => {
     100,
   ); // Very short timeout
 
-  _logger.debug("Timeout behavior result", {
-    success: _result.success,
-    stderr: _result.stderr,
+  logger.debug("Timeout behavior result", {
+    success: result.success,
+    stderr: result.stderr,
   });
 
   // Should handle timeout gracefully
-  if (!_result.success && _result.stderr.includes("timeout")) {
+  if (!result.success && result.stderr.includes("timeout")) {
     assertEquals(result.code, -1, "Timeout should result in -1 exit code");
   }
 });
@@ -442,13 +442,13 @@ Deno.test("E2E Integration - Signal handling", async () => {
       // Ignore errors if already closed
     }
 
-    _logger.debug("Signal handling result", {
-      code: _result.code,
-      killedBySignal: _result.code !== 0,
+    logger.debug("Signal handling result", {
+      code: result.code,
+      killedBySignal: result.code !== 0,
     });
 
     // Process should exit (either normally or by signal)
-    assertExists(_result, "Process should complete after signal");
+    assertExists(result, "Process should complete after signal");
   } catch (error) {
     // Close process streams even on error
     try {
@@ -457,7 +457,7 @@ Deno.test("E2E Integration - Signal handling", async () => {
     } catch {
       // Ignore errors if already closed
     }
-    _logger.debug("Signal handling test completed", { error });
+    logger.debug("Signal handling test completed", { error });
   }
 });
 
@@ -469,15 +469,15 @@ Deno.test("E2E Integration - Performance benchmark", async () => {
 
   const duration = performance.now() - startTime;
 
-  _logger.debug("Performance benchmark", {
+  logger.debug("Performance benchmark", {
     duration: `${duration.toFixed(2)}ms`,
-    success: _result.success,
+    success: result.success,
   });
 
   // Help command should complete within reasonable time
   assertEquals(duration < 5000, true, "Help command should complete within 5 seconds");
 
-  if (_result.success) {
+  if (result.success) {
     assertEquals(result.code, 0, "Performance test should succeed");
   }
 });

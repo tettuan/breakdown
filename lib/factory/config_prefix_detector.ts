@@ -31,11 +31,11 @@
  * ```typescript
  * // Detect equals format
  * const _config1 = ConfigPrefixDetector.detect(['--config=production']);
- * // Result: 'production'
+ * // _Result: 'production'
  *
  * // Detect space-separated format
  * const config2 = ConfigPrefixDetector.detect(['--config', 'development']);
- * // Result: 'development'
+ * // _Result: 'development'
  * ```
  *
  * @example Integration with CLI processing

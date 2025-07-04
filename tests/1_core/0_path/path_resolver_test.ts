@@ -33,7 +33,7 @@ function makeCliParams(
     adaptation?: string;
     config?: string;
   },
-  _testDir: string,
+  testDir: string,
 ) {
   return {
     demonstrativeType,
@@ -53,56 +53,56 @@ function makeCliParams(
 
 describe("Input Path: fromFile hierarchy", () => {
   it("should resolve relative path correctly", async () => {
-    const _logger = new BreakdownLogger();
+    const logger = new BreakdownLogger();
     const env = await setupTestEnvironment({
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "prompts", "summary", "project"));
-    await ensureDir(join(_testDir, "prompts", "defect", "task"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "summary", "project"));
-    await ensureDir(join(_testDir, "schema", "defect", "task"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "summary", "project"));
+    await ensureDir(join(testDir, "prompts", "defect", "task"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "summary", "project"));
+    await ensureDir(join(testDir, "schema", "defect", "task"));
 
     // Create required prompt files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_project_strict.md"),
+      join(testDir, "prompts", "to", "issue", "f_project_strict.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "summary", "project", "f_project.md"),
+      join(testDir, "prompts", "summary", "project", "f_project.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "defect", "task", "f_task.md"),
+      join(testDir, "prompts", "defect", "task", "f_task.md"),
       "# Test prompt",
     );
 
     // Create required schema files
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "summary", "project", "base.schema.md"),
+      join(testDir, "schema", "summary", "project", "base.schema.md"),
       "# Test schema",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "defect", "task", "base.schema.md"),
+      join(testDir, "schema", "defect", "task", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const fromFile = join("path", "to", "file.md");
-      _logger.debug(`Deno.cwd() before: ${originalCwd}`);
-      _logger.debug(`Deno.cwd() after: ${Deno.cwd()}`);
-      _logger.debug(`fromFile param: ${fromFile}`);
+      logger.debug(`Deno.cwd() before: ${originalCwd}`);
+      logger.debug(`Deno.cwd() after: ${Deno.cwd()}`);
+      logger.debug(`fromFile param: ${fromFile}`);
       const cliParams = makeCliParams(
         {
           demonstrativeType: "to",
@@ -110,12 +110,12 @@ describe("Input Path: fromFile hierarchy", () => {
           fromFile,
           config: "test-path-resolver",
         },
-        _testDir,
+        testDir,
       );
       const factory = await PromptVariablesFactory.create(cliParams);
       const resolved = factory.inputFilePath;
-      _logger.debug(`resolved path: ${resolved}`);
-      _logger.debug(`expected path: ${path.resolve("path/to/file.md")}`);
+      logger.debug(`resolved path: ${resolved}`);
+      logger.debug(`expected path: ${path.resolve("path/to/file.md")}`);
       assertEquals(resolved, path.resolve("path/to/file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -130,24 +130,24 @@ describe("Input Path: fromLayerType vs layerType", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_project.md"),
+      join(testDir, "prompts", "to", "issue", "f_project.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
@@ -155,7 +155,7 @@ describe("Input Path: fromLayerType vs layerType", () => {
         fromFile: "file.md",
         fromLayerType: "project",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.inputFilePath, path.resolve("file.md"));
     } finally {
@@ -168,31 +168,31 @@ describe("Input Path: fromLayerType vs layerType", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         fromFile: "file.md",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.inputFilePath, path.resolve("file.md"));
     } finally {
@@ -208,30 +208,30 @@ describe("Input Path: fromFile edge cases", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.inputFilePath, "");
     } finally {
@@ -244,31 +244,31 @@ describe("Input Path: fromFile edge cases", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         fromFile: "path\\to\\file.md",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.inputFilePath, path.resolve("path/to/file.md"));
     } finally {
@@ -284,30 +284,30 @@ describe("Output Path: destinationFile patterns", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       const pathVal = factory.outputFilePath;
       const expectedDir = path.resolve("issue");
@@ -324,24 +324,24 @@ describe("Output Path: destinationFile patterns", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const destinationFile = join("path", "to", "file.md");
       const cliParams = makeCliParams({
@@ -349,7 +349,7 @@ describe("Output Path: destinationFile patterns", () => {
         layerType: "issue",
         destinationFile,
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.outputFilePath, path.resolve("path/to/file.md"));
     } finally {
@@ -362,31 +362,31 @@ describe("Output Path: destinationFile patterns", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         destinationFile: "file.md",
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       assertEquals(factory.outputFilePath, path.resolve("issue/file.md"));
     } finally {
@@ -402,33 +402,33 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const destinationDir = join("path", "to", "dir");
-      await Deno.mkdir(join(_testDir, destinationDir), { recursive: true });
+      await Deno.mkdir(join(testDir, destinationDir), { recursive: true });
       const cliParams = makeCliParams({
         demonstrativeType: "to",
         layerType: "issue",
         destinationFile: destinationDir,
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       const pathVal = factory.outputFilePath;
       const pattern = new RegExp(
@@ -445,24 +445,24 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const ambiguousPath = "test.md";
       await Deno.mkdir(ambiguousPath);
@@ -471,7 +471,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
         layerType: "issue",
         destinationFile: ambiguousPath,
         config: "test-path-resolver",
-      }, _testDir);
+      }, testDir);
       const factory = await PromptVariablesFactory.create(cliParams);
       const pathVal = factory.outputFilePath;
       const pattern = new RegExp(
@@ -488,24 +488,24 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_issue.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const realNow = Date.now;
       Date.now = () => new Date("2025-01-01").getTime();
@@ -516,7 +516,7 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
             demonstrativeType: "to",
             layerType: "issue",
             config: "test-path-resolver",
-          }, _testDir);
+          }, testDir);
           cliParams.demonstrativeType = "to";
           cliParams.layerType = "issue";
           const factory = await PromptVariablesFactory.create(cliParams);
@@ -539,25 +539,25 @@ describe("Factory Combination: resolves all subclass paths", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "to", "issue"));
-    await ensureDir(join(_testDir, "schema", "to", "issue"));
-    await ensureDir(join(_testDir, "issue")); // output directory
+    await ensureDir(join(testDir, "prompts", "to", "issue"));
+    await ensureDir(join(testDir, "schema", "to", "issue"));
+    await ensureDir(join(testDir, "issue")); // output directory
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "to", "issue", "f_project_strict.md"),
+      join(testDir, "prompts", "to", "issue", "f_project_strict.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "to", "issue", "base.schema.md"),
+      join(testDir, "schema", "to", "issue", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },
@@ -589,25 +589,25 @@ describe("Factory Combination: resolves all subclass paths", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "summary", "project"));
-    await ensureDir(join(_testDir, "schema", "summary", "project"));
-    await ensureDir(join(_testDir, "project")); // output directory
+    await ensureDir(join(testDir, "prompts", "summary", "project"));
+    await ensureDir(join(testDir, "schema", "summary", "project"));
+    await ensureDir(join(testDir, "project")); // output directory
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "summary", "project", "f_project.md"),
+      join(testDir, "prompts", "summary", "project", "f_project.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "summary", "project", "base.schema.md"),
+      join(testDir, "schema", "summary", "project", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },
@@ -639,25 +639,25 @@ describe("Factory Combination: resolves all subclass paths", () => {
       workingDir: "./tmp/test_path_resolver",
       configSetName: "test-path-resolver",
     });
-    const _testDir = env.workingDir;
+    const testDir = env.workingDir;
 
     // Create required prompt and schema directory structure
-    await ensureDir(join(_testDir, "prompts", "defect", "task"));
-    await ensureDir(join(_testDir, "schema", "defect", "task"));
-    await ensureDir(join(_testDir, "tmp")); // for absolute destination
+    await ensureDir(join(testDir, "prompts", "defect", "task"));
+    await ensureDir(join(testDir, "schema", "defect", "task"));
+    await ensureDir(join(testDir, "tmp")); // for absolute destination
 
     // Create required files
     await Deno.writeTextFile(
-      join(_testDir, "prompts", "defect", "task", "f_task.md"),
+      join(testDir, "prompts", "defect", "task", "f_task.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
-      join(_testDir, "schema", "defect", "task", "base.schema.md"),
+      join(testDir, "schema", "defect", "task", "base.schema.md"),
       "# Test schema",
     );
 
     const originalCwd = Deno.cwd();
-    Deno.chdir(_testDir);
+    Deno.chdir(testDir);
     try {
       const _ = {
         app_prompt: { base_dir: "prompts" },

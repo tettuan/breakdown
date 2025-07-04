@@ -129,15 +129,15 @@ Deno.test("PathResolver Architecture", async (t) => {
       // Should exist and be instantiable
       assertExists(PromptTemplatePathResolver);
 
-      const _resolver = new PromptTemplatePathResolver({}, {
+      const resolver = new PromptTemplatePathResolver({}, {
         demonstrativeType: "to",
         layerType: "project",
         options: {},
-      } as unknown);
+      } as any);
       assertExists(_resolver);
 
       // Should have safe methods that return results, not throw
-      assertEquals(typeof _resolver.getPath, "function");
+      assertEquals(typeof resolver.getPath, "function");
     } catch (error) {
       console.warn(
         `PromptTemplatePathResolver import test skipped: ${
@@ -302,15 +302,15 @@ Deno.test("PathResolver Security Architecture", async (t) => {
     try {
       const { PromptTemplatePathResolver } = await import("./prompt_template_path_resolver.ts");
 
-      const _resolver = new PromptTemplatePathResolver({}, {
+      const resolver = new PromptTemplatePathResolver({}, {
         demonstrativeType: "to",
         layerType: "project",
         options: {},
-      } as unknown);
+      } as any);
 
       // Should handle invalid inputs gracefully
       // This is testing the architecture, not the specific behavior
-      assertEquals(typeof _resolver.getPath, "function");
+      assertEquals(typeof resolver.getPath, "function");
     } catch (error) {
       console.warn(
         `Input validation test skipped: ${error instanceof Error ? error.message : String(error)}`,

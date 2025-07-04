@@ -8,12 +8,12 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { WorkspaceStructureImpl } from "./structure.ts";
 import { WorkspaceInitError } from "./errors.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { join } from "@std/path";
 import { exists } from "@std/fs";
 
 Deno.test("WorkspaceStructure Unit Tests", async (t) => {
-  const _logger = new BreakdownLogger("unit-test");
+  const _logger = new _BreakdownLogger("unit-test");
 
   await t.step("Initialization Tests", async (t) => {
     await t.step("should initialize workspace structure successfully", async () => {

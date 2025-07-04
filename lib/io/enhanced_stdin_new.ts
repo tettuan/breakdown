@@ -115,11 +115,11 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
     "HEROKU",
   ];
 
-  const isCI = false;
+  let isCI = false;
   let ciProvider: string | undefined;
 
   for (const indicator of ciIndicators) {
-    const value = getEnvVar(indicator);
+    const value = _getEnvVar(indicator);
     if (value) {
       envVars[indicator] = value;
       if (value === "true" || value === "1" || indicator === "JENKINS_URL") {
@@ -133,13 +133,13 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
 
   // Test environment detection
   const isTest = config?.isTest ?? !!(
-    getEnvVar("DENO_TESTING") === "true" ||
-    getEnvVar("TEST") === "true" ||
+    _getEnvVar("DENO_TESTING") === "true" ||
+    _getEnvVar("TEST") === "true" ||
     globalThis.Deno?.test
   );
 
   // Terminal detection with fallback
-  const isTerminal = false;
+  let isTerminal = false;
   if (config?.isTerminal !== undefined) {
     isTerminal = config.isTerminal;
   } else {

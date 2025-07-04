@@ -41,8 +41,8 @@ import { TestStdinReaderFactory as _TestStdinReaderFactory } from "./factory.ts"
  * Creates a resource manager and factory for immediate use
  */
 export function setupStdinTest() {
-  const resourceManager = new StdinTestResourceManager();
-  const factory = new TestStdinReaderFactory(resourceManager);
+  const resourceManager = new _StdinTestResourceManager();
+  const factory = new _TestStdinReaderFactory(resourceManager);
 
   return {
     resourceManager,

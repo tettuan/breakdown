@@ -125,7 +125,7 @@ export {
   VariableResultFactory,
 } from "./legacy_factories.ts";
 export type { PromptCliParams } from "./prompt_variables.ts";
-export type { ExtendedTwoParamsResult } from "./variable_result.ts";
+export type { ExtendedTwoParams_Result as ExtendedTwoParams_Result } from "./variable_result.ts";
 
 // Layer type utilities
 export { LayerTypeFactory } from "./layer_type_factory.ts";
@@ -139,5 +139,5 @@ export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
-// Re-export TotalityPromptCliParams from factory
-export type { TotalityPromptCliParams } from "../factory/prompt_variables_factory.ts";
+// Re-export TotalityPromptCliParams and TwoParams_Result from factory
+export type { TotalityPromptCliParams, TwoParams_Result } from "../factory/prompt_variables_factory.ts";

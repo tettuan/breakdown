@@ -18,17 +18,17 @@ async function testHandlerInterface() {
 }
 
 Deno.test("TwoParamsHandler - Interface compatibility check", async () => {
-  const _result = await testHandlerInterface();
+  const result = await testHandlerInterface();
 
-  if (!_result.success) {
-    console.log("Handler import failed:", _result.error);
+  if (!result.success) {
+    console.log("Handler import failed:", result.error);
     // Test that the import attempt at least tries to import
-    assertExists(_result.error);
+    assertExists(result.error);
     return;
   }
 
   // Test function signature compatibility
-  const { handleTwoParams } = _result;
+  const { handleTwoParams } = result;
   assertEquals(typeof handleTwoParams, "function");
 
   // Test with minimal parameters to check interface
@@ -53,14 +53,14 @@ Deno.test("TwoParamsHandler - Interface compatibility check", async () => {
 });
 
 Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
-  const _result = await testHandlerInterface();
+  const result = await testHandlerInterface();
 
-  if (!_result.success) {
+  if (!result.success) {
     console.log("Skipping error structure test - handler import failed");
     return;
   }
 
-  const { handleTwoParams } = _result;
+  const { handleTwoParams } = result;
 
   // Test parameter validation errors
   const testCases = [
@@ -87,13 +87,13 @@ Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
       if (!handleTwoParams) {
         throw new Error("handleTwoParams is undefined");
       }
-      const _result = await handleTwoParams(testCase.params, {}, {});
+      const result = await handleTwoParams(testCase.params, {}, {});
 
       // Should return error Result for invalid inputs
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        assertExists(_result.error);
-        assertExists(_result.error.kind);
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        assertExists(result.error);
+        assertExists(result.error.kind);
 
         // Verify error kind is one of the expected types
         const validErrorKinds = [
@@ -108,9 +108,9 @@ Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
         ];
 
         assertEquals(
-          validErrorKinds.includes(_result.error.kind),
+          validErrorKinds.includes(result.error.kind),
           true,
-          `Unexpected error kind: ${_result.error.kind} for ${testCase.description}`,
+          `Unexpected error kind: ${result.error.kind} for ${testCase.description}`,
         );
       }
     } catch (error) {
@@ -120,14 +120,14 @@ Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
 });
 
 Deno.test("TwoParamsHandler - Valid parameters processing", async () => {
-  const _result = await testHandlerInterface();
+  const result = await testHandlerInterface();
 
-  if (!_result.success) {
+  if (!result.success) {
     console.log("Skipping valid parameters test - handler import failed");
     return;
   }
 
-  const { handleTwoParams } = _result;
+  const { handleTwoParams } = result;
 
   // Test with valid parameters (even if components fail)
   const validParams = ["to", "project"];
@@ -138,22 +138,22 @@ Deno.test("TwoParamsHandler - Valid parameters processing", async () => {
     if (!handleTwoParams) {
       throw new Error("handleTwoParams is undefined");
     }
-    const _result = await handleTwoParams(validParams, config, options);
+    const result = await handleTwoParams(validParams, _config, options);
 
-    assertExists(_result);
-    assertEquals(typeof _result.ok, "boolean");
+    assertExists(result);
+    assertEquals(typeof result.ok, "boolean");
 
-    if (_result.ok) {
-      assertEquals(_result.data, undefined);
+    if (result.ok) {
+      assertEquals(result.data, undefined);
     } else {
-      assertExists(_result.error);
+      assertExists(result.error);
       // Should not fail on parameter validation with valid inputs
       assertEquals(
-        _result.error.kind !== "InvalidParameterCount" &&
-          _result.error.kind !== "InvalidDemonstrativeType" &&
-          _result.error.kind !== "InvalidLayerType",
+        result.error.kind !== "InvalidParameterCount" &&
+          result.error.kind !== "InvalidDemonstrativeType" &&
+          result.error.kind !== "InvalidLayerType",
         true,
-        `Unexpected validation error with valid parameters: ${_result.error.kind}`,
+        `Unexpected validation error with valid parameters: ${result.error.kind}`,
       );
     }
   } catch (error) {
@@ -162,14 +162,14 @@ Deno.test("TwoParamsHandler - Valid parameters processing", async () => {
 });
 
 Deno.test("TwoParamsHandler - Orchestrator singleton behavior", async () => {
-  const _result = await testHandlerInterface();
+  const result = await testHandlerInterface();
 
-  if (!_result.success) {
+  if (!result.success) {
     console.log("Skipping singleton test - handler import failed");
     return;
   }
 
-  const { handleTwoParams } = _result;
+  const { handleTwoParams } = result;
 
   // Multiple calls should work (testing singleton pattern)
   const calls = [];
@@ -185,9 +185,9 @@ Deno.test("TwoParamsHandler - Orchestrator singleton behavior", async () => {
     assertEquals(results.length, 3);
 
     // All should have consistent structure
-    for (const result of results) {
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+    for (const _loopResult of results) {
+      assertExists(_loopResult);
+      assertEquals(typeof _loopResult.ok, "boolean");
     }
   } catch (error) {
     console.log("Error in singleton test:", error);

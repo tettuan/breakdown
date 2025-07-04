@@ -1,0 +1,73 @@
+# Breakdown 統合型フロー概要
+# 完全なエンドツーエンドフロー
+
+# 全体フロー
+complete_flow:
+  name: "Complete Breakdown Type Flow"
+  description: "mod.ts から最終出力までの完全なフロー"
+  
+  phases:
+    - phase: "CLI Entry"
+      description: "実行コンテキスト判定と委譲"
+      yaml_file: "breakdown-cli-entry-flow.yml"
+      key_transformation: "import.meta.main → runBreakdown()"
+      
+    - phase: "Config Detection"
+      description: "CLI引数からの設定プロファイル抽出"
+      yaml_file: "breakdown-config-profile-detection.yml"
+      key_transformation: "string[] → ConfigProfileName"
+      
+    - phase: "Config Loading"
+      description: "設定プロファイルに基づく設定読み込み"
+      yaml_file: "breakdown-config-loading-flow.yml"
+      key_transformation: "ConfigProfileName → CustomConfig | undefined"
+      
+    - phase: "Params Processing"
+      description: "パラメータ解析からプロンプト生成"
+      yaml_file: "breakdown-params-processing-flow.yml"
+      key_transformation: "string[] → void | Error"
+
+# 主要コンポーネント
+key_components:
+  external_libraries:
+    - "BreakdownParams: CLI引数解析"
+    - "BreakdownConfig: 設定管理" 
+    - "BreakdownPrompt: プロンプト生成"
+    - "BreakdownLogger: ログ出力"
+    
+  internal_modules:
+    - "ConfigPrefixDetector: 設定プレフィックス検出"
+    - "ConfigProfileName: 設定プロファイル名型"
+    - "ParamsCustomConfig: 設定変換"
+    - "TwoParamsOrchestrator: 処理オーケストレーション"
+
+# アーキテクチャパターン
+architectural_patterns:
+  separation_of_concerns: "各フェーズの責務分離"
+  smart_constructors: "型による制約"
+  result_types: "エラーハンドリング統一"
+  orchestration: "複雑処理の段階的実行"
+
+# データフロー
+data_flow:
+  input: "CLI引数"
+  processing: "設定読み込み → パラメータ解析 → プロンプト生成"
+  output: "生成プロンプト または エラーメッセージ"
+
+# エラー戦略
+error_strategy:
+  fail_fast: "致命的エラー時の即座停止"
+  graceful_degradation: "設定不存在時のデフォルト使用"
+  error_as_values: "例外ではなく型によるエラー表現"
+
+# 品質保証
+quality_assurance:
+  type_safety: "TypeScript型システムによる静的検証"
+  totality_principle: "全状態の型による表現"
+  test_coverage: "各フェーズのテストカバレッジ"
+
+# 関連ドキュメント
+related_docs:
+  - "docs/breakdown/overview/processing-flow.ja.md"
+  - "docs/breakdown/overview/architecture.ja.md"
+  - "docs/breakdown/overview/totality.ja.md"

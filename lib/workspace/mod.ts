@@ -27,11 +27,11 @@
  *   createIfNotExists: true
  * };
  *
- * const _result = await initWorkspace(options);
- * if (_result.success) {
+ * const result = await initWorkspace(options);
+ * if (result.success) {
  *   console.log("Workspace initialized:", result.workspace);
  * } else {
- *   console.error("Failed to initialize:", _result.error);
+ *   console.error("Failed to initialize:", result.error);
  * }
  * ```
  *

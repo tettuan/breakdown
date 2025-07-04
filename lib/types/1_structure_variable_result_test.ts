@@ -18,7 +18,7 @@ Deno.test("VariableResult structure - module exports", () => {
     "createValidationFailedError",
   ];
 
-  for (const exportName of expectedExports) {
+  for (const exportName of _expectedExports) {
     assertEquals(
       typeof VariableResultModule[exportName as keyof typeof VariableResultModule],
       "function",
@@ -35,11 +35,11 @@ Deno.test("VariableResult structure - helper function consistency", () => {
   ];
 
   for (const helper of testHelpers) {
-    const _result = helper();
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(typeof _result.error, "object");
-      assertEquals(typeof _result.error.kind, "string");
+    const result = helper();
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(typeof result.error, "object");
+      assertEquals(typeof result.error.kind, "string");
     }
   }
 });
@@ -113,11 +113,11 @@ Deno.test("VariableResult structure - no extra properties", () => {
 
 Deno.test("VariableResult structure - immutable error data", () => {
   // Error data should be structured to support immutability
-  const _result = VariableResultModule.createInvalidNameError<string>("test", ["a", "b", "c"]);
+  const result = VariableResultModule.createInvalidNameError<string>("test", ["a", "b", "c"]);
 
-  if (!_result.ok && _result.error.kind === "InvalidName") {
+  if (!result.ok && result.error.kind === "InvalidName") {
     // validNames should be readonly array
-    const validNames = _result.error.validNames;
+    const validNames = result.error.validNames;
     assertEquals(Array.isArray(validNames), true);
     assertEquals(validNames.length, 3);
 

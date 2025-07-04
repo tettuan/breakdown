@@ -17,7 +17,7 @@ import {
   TwoParamsVariableProcessor,
   type VariableProcessorError,
 } from "./variable_processor.ts";
-import type { Result } from "../types/_result.ts";
+import type { Result } from "../types/result.ts";
 import type { PromptVariable } from "../types/prompt_variables.ts";
 
 /**
@@ -44,14 +44,14 @@ Deno.test("Architecture: Variable Processor should use Result type pattern", () 
   const _processor = new TwoParamsVariableProcessor();
 
   // Test that extractCustomVariables returns Result type
-  const _result = _processor.extractCustomVariables({});
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  const result = _processor.extractCustomVariables({});
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 
   // Verify error handling structure
-  if (!_result.ok) {
-    assertExists(_result.error);
-    assertEquals(typeof _result.error.kind, "string");
+  if (!result.ok) {
+    assertExists(result.error);
+    assertEquals(typeof result.error.kind, "string");
   }
 });
 
@@ -113,7 +113,7 @@ Deno.test("Architecture: Variable Processor should follow single responsibility"
   ];
 
   publicMethods.forEach((method) => {
-    assertEquals(typeof (processor as unknown)[method], "function");
+    assertEquals(typeof (_processor as any)[method], "function");
   });
 
   // Should not have methods that belong to other layers
@@ -125,7 +125,7 @@ Deno.test("Architecture: Variable Processor should follow single responsibility"
   ];
 
   shouldNotHave.forEach((method) => {
-    assertEquals((processor as unknown)[method], undefined);
+    assertEquals((_processor as any)[method], undefined);
   });
 });
 
@@ -136,13 +136,13 @@ Deno.test("Architecture: Variable Processor should use dependency injection patt
   const _processor = new TwoParamsVariableProcessor();
 
   // Should be able to process without requiring external configuration
-  const _result = _processor.extractCustomVariables({
+  const result = _processor.extractCustomVariables({
     "uv-test": "value",
   });
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data["uv-test"], "value");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data["uv-test"], "value");
   }
 });
 
@@ -176,18 +176,18 @@ Deno.test("Architecture: Variable Processor should not leak implementation detai
 
   internalMethods.forEach((method) => {
     // Private methods should not be accessible
-    assertEquals((processor as unknown)[method], undefined);
+    assertEquals((_processor as any)[method], undefined);
   });
 });
 
 Deno.test("Architecture: Static factory methods should maintain consistency", () => {
   // Test static factory method
-  const _result = TwoParamsVariableProcessor.extractCustomVariables({
+  const result = TwoParamsVariableProcessor.extractCustomVariables({
     "uv-test": "value",
     "normal": "ignored",
   });
 
-  assertEquals(typeof _result, "object");
+  assertEquals(typeof result, "object");
   assertEquals(result["uv-test"], "value");
   assertEquals(result["normal"], undefined);
 });

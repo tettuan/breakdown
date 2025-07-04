@@ -10,13 +10,13 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("architecture-input-file-path-resolver");
+const logger = new BreakdownLogger("architecture-input-file-path-resolver");
 
 describe("InputFilePathResolver - Architectural Constraints", () => {
   it("should not have circular dependencies with other resolvers", async () => {
-    _logger.debug("Testing for circular dependencies");
+    logger.debug("Testing for circular dependencies");
 
     // Verify InputFilePathResolver doesn't import other resolvers that might import it back
     const moduleContent = await Deno.readTextFile(
@@ -40,7 +40,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should only depend on allowed external modules", async () => {
-    _logger.debug("Testing external dependencies");
+    logger.debug("Testing external dependencies");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -59,7 +59,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
     const allowedPrefixes = [
       "@std/", // Standard library
       "../deps.ts", // Project dependencies
-      "./prompt_variables_factory.ts", // Factory types
+      "./prompt_variables__factory.ts", // Factory types
       "../types/", // Type definitions
     ];
 
@@ -74,7 +74,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should maintain consistent interface with TypeCreationResult pattern", async () => {
-    _logger.debug("Testing TypeCreationResult pattern consistency");
+    logger.debug("Testing TypeCreationResult pattern consistency");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -93,7 +93,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should respect layer boundaries and not access lower-level implementation details", async () => {
-    _logger.debug("Testing layer boundary respect");
+    logger.debug("Testing layer boundary respect");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -128,7 +128,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should follow single responsibility principle", async () => {
-    _logger.debug("Testing single responsibility principle");
+    logger.debug("Testing single responsibility principle");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -158,7 +158,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should use proper abstraction for cross-cutting concerns", async () => {
-    _logger.debug("Testing abstraction usage");
+    logger.debug("Testing abstraction usage");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -174,30 +174,30 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
   });
 
   it("should handle both legacy and new parameter structures consistently", async () => {
-    _logger.debug("Testing parameter structure handling consistency");
+    logger.debug("Testing parameter structure handling consistency");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
     );
 
-    // Verify it handles both DoubleParamsResult and TwoParamsResult
+    // Verify it handles both DoubleParamsResult and TwoParams_Result
     const hasLegacyType = moduleContent.includes("type DoubleParamsResult = PromptCliParams");
-    const hasTwoParamsImport = moduleContent.includes("type { TwoParamsResult }");
+    const hasTwoParamsImport = moduleContent.includes("type { TwoParams_Result }");
 
     assertEquals(hasLegacyType, true, "Should have legacy type alias for compatibility");
-    assertEquals(hasTwoParamsImport, true, "Should import new TwoParamsResult type");
+    assertEquals(hasTwoParamsImport, true, "Should import new TwoParams_Result type");
 
     // Verify constructor accepts both types
     const constructorMatch = moduleContent.match(/constructor\s*\([^)]*\)/s);
     assertExists(constructorMatch, "Should have constructor");
 
     const constructorParams = constructorMatch[0];
-    const acceptsBothTypes = constructorParams.includes("DoubleParamsResult | TwoParamsResult");
+    const acceptsBothTypes = constructorParams.includes("DoubleParamsResult | TwoParams_Result");
     assertEquals(acceptsBothTypes, true, "Constructor should accept both parameter types");
   });
 
   it("should not expose internal implementation details", async () => {
-    _logger.debug("Testing encapsulation");
+    logger.debug("Testing encapsulation");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -237,7 +237,7 @@ describe("InputFilePathResolver - Architectural Constraints", () => {
 
 describe("InputFilePathResolver - Integration Points", () => {
   it("should properly integrate with configuration structure", async () => {
-    _logger.debug("Testing configuration integration");
+    logger.debug("Testing configuration integration");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -262,7 +262,7 @@ describe("InputFilePathResolver - Integration Points", () => {
   });
 
   it("should maintain consistent error handling patterns", async () => {
-    _logger.debug("Testing error handling patterns");
+    logger.debug("Testing error handling patterns");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,
@@ -295,7 +295,7 @@ describe("InputFilePathResolver - Integration Points", () => {
 
 describe("InputFilePathResolver - Dependency Graph Validation", () => {
   it("should form a proper dependency tree without cycles", async () => {
-    _logger.debug("Testing dependency tree structure");
+    logger.debug("Testing dependency tree structure");
 
     // Map out the dependency relationships
     const dependencies = new Map<string, Set<string>>();
@@ -327,7 +327,7 @@ describe("InputFilePathResolver - Dependency Graph Validation", () => {
   });
 
   it("should follow the established module hierarchy", async () => {
-    _logger.debug("Testing module hierarchy compliance");
+    logger.debug("Testing module hierarchy compliance");
 
     const moduleContent = await Deno.readTextFile(
       new URL("./input_file_path_resolver.ts", import.meta.url).pathname,

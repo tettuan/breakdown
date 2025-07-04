@@ -16,7 +16,7 @@
 
 import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import { defaultConfigTwoParams } from "./config_two_params.ts";
+import { __defaultConfigTwoParams } from "./config_twoparams.ts";
 
 /**
  * 単体テスト: getDirectivePattern の正常系
@@ -25,7 +25,7 @@ import { defaultConfigTwoParams } from "./config_two_params.ts";
  * デフォルト: "^(to|summary|defect)$"
  */
 Deno.test("2_unit - DefaultTypePatternProvider.getDirectivePattern returns valid pattern", () => {
-  const _provider = new DefaultTypePatternProvider();
+  const provider = new DefaultTypePatternProvider();
   const pattern = provider.getDirectivePattern();
 
   assertExists(pattern, "Should return DirectivePattern object");
@@ -83,27 +83,27 @@ Deno.test("2_unit - DefaultTypePatternProvider.getLayerTypePattern returns valid
  *
  * デフォルト設定オブジェクトが正しく返されることを確認
  */
-Deno.test("2_unit - DefaultTypePatternProvider.getDefaultConfig returns defaultConfigTwoParams", () => {
+Deno.test("2_unit - DefaultTypePatternProvider.getDefaultConfig returns _defaultConfigTwoParams", () => {
   const provider = new DefaultTypePatternProvider();
-  const _config = provider.getDefaultConfig();
+  const config = provider.getDefaultConfig();
 
   // 同一オブジェクトを返すことを確認
-  assertEquals(_config, defaultConfigTwoParams, "Should return defaultConfigTwoParams");
+  assertEquals(config, _defaultConfigTwoParams, "Should return _defaultConfigTwoParams");
 
   // 設定の構造を確認
-  assertExists(_config.params, "Config should have params");
-  assertExists(_config.params.two, "Config should have two params");
-  assertExists(_config.params.two.demonstrativeType, "Config should have demonstrativeType");
-  assertExists(_config.params.two.layerType, "Config should have layerType");
+  assertExists(config.params, "Config should have params");
+  assertExists(config.params.two, "Config should have two params");
+  assertExists(config.params.two.demonstrativeType, "Config should have demonstrativeType");
+  assertExists(config.params.two.layerType, "Config should have layerType");
 
   // パターン文字列の確認
   assertEquals(
-    _config.params.two.demonstrativeType.pattern,
+    config.params.two.demonstrativeType.pattern,
     "^(to|summary|defect)$",
     "DirectiveType pattern should match expected",
   );
   assertEquals(
-    _config.params.two.layerType.pattern,
+    config.params.two.layerType.pattern,
     "^(project|issue|task)$",
     "LayerType pattern should match expected",
   );

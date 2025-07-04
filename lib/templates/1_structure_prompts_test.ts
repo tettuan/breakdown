@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { prompts } from "./prompts.ts";
+import { _prompts as prompts } from "./prompts.ts";
 
 /**
  * 構造テスト：prompts.ts
@@ -13,7 +13,7 @@ import { prompts } from "./prompts.ts";
 
 Deno.test("Structure: prompts should have single responsibility", () => {
   // promptsオブジェクトはプロンプトデータの提供のみを責務とする
-  const _keys = Object.keys(prompts);
+  const keys = Object.keys(prompts);
 
   // すべてのエントリがプロンプトデータであることを確認
   keys.forEach((key) => {

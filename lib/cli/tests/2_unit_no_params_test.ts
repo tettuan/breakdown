@@ -10,9 +10,9 @@
  */
 
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger();
+const _logger = new _BreakdownLogger();
 
 // Basic functionality tests - BreakdownParams delegation focused
 Deno.test("CLI basic no-params behavior", async () => {

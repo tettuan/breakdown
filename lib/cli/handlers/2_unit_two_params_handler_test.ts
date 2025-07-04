@@ -15,7 +15,7 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler.ts";
-import { isError } from "../../types/_result.ts";
+import { isError } from "../../types/result.ts";
 
 /**
  * Unit Test Suite: TwoParamsHandler
@@ -77,10 +77,10 @@ Deno.test({
       const validTypes = ["to", "summary", "defect", "init", "find"];
 
       for (const validType of validTypes) {
-        const _result = await handleTwoParams([validType, "project"], {}, { skipStdin: true });
+        const result = await handleTwoParams([validType, "project"], {}, { skipStdin: true });
         // May fail for other reasons, but not due to invalid demonstrative type
-        if (!_result.ok) {
-          const error = _result.error as TwoParamsHandlerError;
+        if (!result.ok) {
+          const error = result.error as TwoParamsHandlerError;
           assert(error.kind !== "InvalidDemonstrativeType");
         }
       }
@@ -104,10 +104,10 @@ Deno.test({
       const validTypes = ["project", "issue", "task", "bugs", "temp"];
 
       for (const validType of validTypes) {
-        const _result = await handleTwoParams(["to", validType], {}, { skipStdin: true });
+        const result = await handleTwoParams(["to", validType], {}, { skipStdin: true });
         // May fail for other reasons, but not due to invalid layer type
-        if (!_result.ok) {
-          const error = _result.error as TwoParamsHandlerError;
+        if (!result.ok) {
+          const error = result.error as TwoParamsHandlerError;
           assert(error.kind !== "InvalidLayerType");
         }
       }
@@ -129,10 +129,10 @@ Deno.test({
       // Note: Actual STDIN mocking would require proper test setup
 
       const _config = {}; // Empty config might cause STDIN processing issues
-      const _result = await handleTwoParams(["to", "project"], config, { skipStdin: true });
+      const result = await handleTwoParams(["to", "project"], _config, { skipStdin: true });
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         // STDIN errors should be properly categorized
         if (error.kind === "StdinReadError") {
           assert("error" in error);
@@ -149,14 +149,14 @@ Deno.test({
         "uv-input_text": "reserved", // Reserved variable name
       };
 
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         {},
         invalidOptions,
       );
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         if (error.kind === "VariablesBuilderError") {
           assert("errors" in error);
           assert(Array.isArray(error.errors));
@@ -172,14 +172,14 @@ Deno.test({
         // Missing required configuration for prompt generation
       };
 
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         invalidConfig,
         {},
       );
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         if (error.kind === "PromptGenerationError") {
           assert("error" in error);
           assertEquals(typeof error.error, "string");
@@ -192,10 +192,10 @@ Deno.test({
       // Note: This would require specific conditions that cause write failures
 
       // For now, verify error structure if it occurs
-      const _result = await handleTwoParams(["to", "project"], {}, { skipStdin: true });
+      const result = await handleTwoParams(["to", "project"], {}, { skipStdin: true });
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         if (error.kind === "OutputWriteError") {
           assert("error" in error);
           assertEquals(typeof error.error, "string");
@@ -214,11 +214,11 @@ Deno.test({
   sanitizeOps: false, // Disable async ops leak detection for unit tests
   async fn(t) {
     await t.step("handles empty string parameters", async () => {
-      const _result = await handleTwoParams(["", ""], {}, { skipStdin: true });
-      assert(!_result.ok);
+      const result = await handleTwoParams(["", ""], {}, { skipStdin: true });
+      assert(!result.ok);
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         assert(
           error.kind === "InvalidDemonstrativeType" ||
             error.kind === "InvalidLayerType" ||
@@ -228,11 +228,11 @@ Deno.test({
     });
 
     await t.step("handles whitespace-only parameters", async () => {
-      const _result = await handleTwoParams([" ", "  "], {}, { skipStdin: true });
-      assert(!_result.ok);
+      const result = await handleTwoParams([" ", "  "], {}, { skipStdin: true });
+      assert(!result.ok);
 
-      if (!_result.ok) {
-        const error = _result.error as TwoParamsHandlerError;
+      if (!result.ok) {
+        const error = result.error as TwoParamsHandlerError;
         assert(
           error.kind === "InvalidDemonstrativeType" ||
             error.kind === "InvalidLayerType" ||
@@ -296,18 +296,18 @@ Deno.test({
       // This test would require a proper minimal configuration
       // For now, we verify the structure if success occurs
 
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         {/* minimal valid config */},
         { skipStdin: true /* minimal valid options */ },
       );
 
       // Whether success or failure, result should be properly structured
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
 
-      if (_result.ok) {
-        assertEquals(_result.data, undefined); // Success returns void
+      if (result.ok) {
+        assertEquals(result.data, undefined); // Success returns void
       }
     });
   },

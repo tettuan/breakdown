@@ -22,8 +22,8 @@ import type { TypePatternProvider } from "../types/type_factory.ts";
  */
 Deno.test("Architecture: Import statement analysis and dependency graph", async () => {
   // pattern_provider.tsのソースコードを読み込む
-  const _filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
-  const sourceCode = await Deno.readTextFile(filePath);
+  const __filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
+  const sourceCode = await Deno.readTextFile(__filePath);
 
   // import文を抽出
   const importRegex = /import\s+(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
@@ -116,14 +116,14 @@ Deno.test("Architecture: No circular dependencies", async () => {
   // 依存関係マップの構築
   const dependencyMap = new Map<string, Set<string>>();
 
-  async function analyzeDependencies(filePath: string, visited = new Set<string>()): Promise<void> {
-    if (visited.has(filePath)) {
+  async function analyzeDependencies(_filePath: string, visited = new Set<string>()): Promise<void> {
+    if (visited.has(_filePath)) {
       return; // 既に訪問済み
     }
-    visited.add(filePath);
+    visited.add(_filePath);
 
     try {
-      const sourceCode = await Deno.readTextFile(filePath);
+      const sourceCode = await Deno.readTextFile(_filePath);
       const importRegex = /import\s+(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
       const deps = new Set<string>();
 
@@ -136,7 +136,7 @@ Deno.test("Architecture: No circular dependencies", async () => {
         }
       }
 
-      dependencyMap.set(filePath, deps);
+      dependencyMap.set(_filePath, deps);
     } catch {
       // ファイルが読めない場合はスキップ
     }
@@ -304,17 +304,17 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
   );
 
   // ソースコードを読み込んでエラー処理パターンを検証
-  const filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
-  const sourceCode = await Deno.readTextFile(filePath);
+  const _filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
+  const sourceCode = await Deno.readTextFile(_filePath);
 
   // getDirectivePatternとgetLayerTypePatternがcatch節でnullを返すことを確認
   // より単純な検証方法を使用
   const lines = sourceCode.split("\n");
-  const inGetDirectivePattern = false;
-  const inGetLayerTypePattern = false;
-  const inCatchBlock = false;
-  const directivePatternReturnsNull = false;
-  const layerPatternReturnsNull = false;
+  let inGetDirectivePattern = false;
+  let inGetLayerTypePattern = false;
+  let inCatchBlock = false;
+  let directivePatternReturnsNull = false;
+  let layerPatternReturnsNull = false;
 
   for (const line of lines) {
     // メソッドの開始を検出

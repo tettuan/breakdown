@@ -8,11 +8,11 @@
  */
 
 import { assertEquals } from "../../deps.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptAdapterImpl } from "./prompt_adapter.ts";
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 
-const _logger = new BreakdownLogger("prompt-adapter");
+const _logger = new _BreakdownLogger("prompt-adapter");
 
 // Test factory mock that provides custom variables
 class TestPromptVariablesFactory {
@@ -93,20 +93,20 @@ Deno.test({
       };
 
       const _factory = new TestPromptVariablesFactory(customVariables);
-      _factory._allParams.promptFilePath = promptPath;
-      _factory._allParams.inputFilePath = inputPath;
+      (_factory._allParams as any).promptFilePath = promptPath;
+      (_factory._allParams as any).inputFilePath = inputPath;
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(factory as unknown);
-      const _result = await _adapter.generatePrompt();
+      const _adapter = new PromptAdapterImpl(_factory as any);
+      const result = await _adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with custom variables", result);
 
       // Verify result includes custom variables
-      assertEquals(_result.success, true);
-      assertEquals(_result.content.includes("Hello TestProject"), true);
-      assertEquals(_result.content.includes("version 1.0.0"), true);
-      assertEquals(_result.content.includes("Input: Test input content"), true);
+      assertEquals(result.success, true);
+      assertEquals(result.content.includes("Hello TestProject"), true);
+      assertEquals(result.content.includes("version 1.0.0"), true);
+      assertEquals(result.content.includes("Input: Test input content"), true);
     } finally {
       await Deno.remove(tempDir, { recursive: true });
     }
@@ -125,18 +125,18 @@ Deno.test({
 
       // Create factory without custom variables
       const _factory = new TestPromptVariablesFactory({});
-      _factory._allParams.promptFilePath = promptPath;
-      _factory._allParams.inputFilePath = "";
+      (_factory._allParams as any).promptFilePath = promptPath;
+      (_factory._allParams as any).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(factory as unknown);
-      const _result = await _adapter.generatePrompt();
+      const _adapter = new PromptAdapterImpl(_factory as any);
+      const result = await _adapter.generatePrompt();
 
       _logger.debug("generatePrompt result without custom variables", result);
 
       // Verify result
-      assertEquals(_result.success, true);
-      assertEquals(_result.content, "Simple prompt without variables");
+      assertEquals(result.success, true);
+      assertEquals(result.content, "Simple prompt without variables");
     } finally {
       await Deno.remove(tempDir, { recursive: true });
     }
@@ -165,21 +165,21 @@ Deno.test({
       };
 
       const _factory = new TestPromptVariablesFactory(customVariables);
-      _factory._allParams.promptFilePath = promptPath;
-      _factory._allParams.inputFilePath = "";
+      (_factory._allParams as any).promptFilePath = promptPath;
+      (_factory._allParams as any).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(factory as unknown);
-      const _result = await _adapter.generatePrompt();
+      const _adapter = new PromptAdapterImpl(_factory as any);
+      const result = await _adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with multiple custom variables", result);
 
       // Verify all variables are replaced
-      assertEquals(_result.success, true);
-      assertEquals(_result.content.includes("Project: MyApp"), true);
-      assertEquals(_result.content.includes("Author: John Doe"), true);
-      assertEquals(_result.content.includes("Date: 2024-01-01"), true);
-      assertEquals(_result.content.includes("Custom: CustomValue"), true);
+      assertEquals(result.success, true);
+      assertEquals(result.content.includes("Project: MyApp"), true);
+      assertEquals(result.content.includes("Author: John Doe"), true);
+      assertEquals(result.content.includes("Date: 2024-01-01"), true);
+      assertEquals(result.content.includes("Custom: CustomValue"), true);
     } finally {
       await Deno.remove(tempDir, { recursive: true });
     }
@@ -208,20 +208,20 @@ Deno.test({
       };
 
       const _factory = new TestPromptVariablesFactory(customVariables);
-      _factory._allParams.promptFilePath = promptPath;
-      _factory._allParams.inputFilePath = inputPath;
-      _factory._allParams.outputFilePath = "/default/output.md";
+      (_factory._allParams as any).promptFilePath = promptPath;
+      (_factory._allParams as any).inputFilePath = inputPath;
+      (_factory._allParams as any).outputFilePath = "/default/output.md";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(factory as unknown);
-      const _result = await _adapter.generatePrompt();
+      const _adapter = new PromptAdapterImpl(_factory as any);
+      const result = await _adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with overriding custom variables", result);
 
       // Verify custom variables override defaults
-      assertEquals(_result.success, true);
-      assertEquals(_result.content.includes("Input file: custom_input.txt"), true);
-      assertEquals(_result.content.includes("Destination: /custom/path"), true);
+      assertEquals(result.success, true);
+      assertEquals(result.content.includes("Input file: custom_input.txt"), true);
+      assertEquals(result.content.includes("Destination: /custom/path"), true);
     } finally {
       await Deno.remove(tempDir, { recursive: true });
     }

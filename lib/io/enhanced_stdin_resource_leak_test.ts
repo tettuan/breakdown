@@ -10,24 +10,24 @@ import { MockStdinReader } from "./stdin_reader_interface.ts";
 import { readStdinEnhanced } from "./enhanced_stdin.ts";
 
 Deno.test("Enhanced stdin with MockStdinReader - no resource leaks", async () => {
-  const _mockReader = new MockStdinReader({
+  const ___mockReader = new MockStdinReader({
     data: "test input",
     terminal: false,
     delay: 0,
   });
 
-  const _result = await readStdinEnhanced({
-    stdinReader: mockReader,
+  const result = await readStdinEnhanced({
+    stdinReader: ___mockReader,
     timeout: 1000,
     allowEmpty: false,
   });
 
-  assertEquals(_result, "test input");
-  assertEquals(mockReader.getReadCount(), 1);
+  assertEquals(result, "test input");
+  assertEquals(___mockReader.getReadCount(), 1);
 });
 
 Deno.test("Enhanced stdin timeout with MockStdinReader - proper cleanup", async () => {
-  const mockReader = new MockStdinReader({
+  const __mockReader = new MockStdinReader({
     data: "slow input",
     terminal: false,
     delay: 2000, // Longer than timeout
@@ -36,7 +36,7 @@ Deno.test("Enhanced stdin timeout with MockStdinReader - proper cleanup", async 
   await assertRejects(
     () =>
       readStdinEnhanced({
-        stdinReader: mockReader,
+        stdinReader: __mockReader,
         timeout: 100,
       }),
     Error,
@@ -44,11 +44,11 @@ Deno.test("Enhanced stdin timeout with MockStdinReader - proper cleanup", async 
   );
 
   // Reader should be properly cleaned up
-  assertEquals(mockReader.getInfo().isCancelled, true);
+  assertEquals(__mockReader.getInfo().isCancelled, true);
 });
 
 Deno.test("Enhanced stdin AbortSignal integration - explicit reader", async () => {
-  const mockReader = new MockStdinReader({
+  const __mockReader = new MockStdinReader({
     data: "abortable input",
     terminal: false,
     delay: 500,
@@ -58,7 +58,7 @@ Deno.test("Enhanced stdin AbortSignal integration - explicit reader", async () =
   await assertRejects(
     () =>
       readStdinEnhanced({
-        stdinReader: mockReader,
+        stdinReader: __mockReader,
         timeout: 100, // Shorter than delay (500ms)
       }),
     Error,
@@ -67,26 +67,26 @@ Deno.test("Enhanced stdin AbortSignal integration - explicit reader", async () =
 });
 
 Deno.test("Enhanced stdin timer cleanup verification", async () => {
-  const mockReader = new MockStdinReader({
+  const __mockReader = new MockStdinReader({
     data: "timer test",
     terminal: false,
     delay: 50,
   });
 
   // This should complete successfully and clean up timers
-  const _result = await readStdinEnhanced({
-    stdinReader: mockReader,
+  const result = await readStdinEnhanced({
+    stdinReader: __mockReader,
     timeout: 1000,
   });
 
-  assertEquals(_result, "timer test");
+  assertEquals(result, "timer test");
   // No assertions about timers since they're internal,
   // but this test ensures completion doesn't leave timers hanging
 });
 
 Deno.test("Enhanced stdin empty input handling", async () => {
   // Create separate readers for each test case
-  const mockReader1 = new MockStdinReader({
+  const __mockReader1 = new MockStdinReader({
     data: "",
     terminal: false,
   });
@@ -95,7 +95,7 @@ Deno.test("Enhanced stdin empty input handling", async () => {
   await assertRejects(
     () =>
       readStdinEnhanced({
-        stdinReader: mockReader1,
+        stdinReader: __mockReader1,
         allowEmpty: false,
       }),
     Error,
@@ -103,18 +103,18 @@ Deno.test("Enhanced stdin empty input handling", async () => {
   );
 
   // Create fresh reader for the second test
-  const mockReader2 = new MockStdinReader({
+  const __mockReader2 = new MockStdinReader({
     data: "",
     terminal: false,
   });
 
   // Should succeed with allowEmpty: true
-  const _result = await readStdinEnhanced({
-    stdinReader: mockReader2,
+  const result = await readStdinEnhanced({
+    stdinReader: __mockReader2,
     allowEmpty: true,
   });
 
-  assertEquals(_result, "");
+  assertEquals(result, "");
 });
 
 Deno.test("Enhanced stdin test environment handling", async () => {

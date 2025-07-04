@@ -1,8 +1,8 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { schema } from "./schema.ts";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { _schema as schema } from "./schema.ts";
 
-const _logger = new BreakdownLogger("test-structure-schema");
+const _logger = new _BreakdownLogger("test-structure-schema");
 
 Deno.test("Structure: schema object has proper type structure", () => {
   _logger.debug("構造テスト開始: schema型構造", {
@@ -112,10 +112,10 @@ Deno.test("Structure: schema follows Totality pattern with Result type", () => {
 
   // schemaオブジェクトはReadonlyで安全にアクセス可能
   const testKey = Object.keys(schema)[0];
-  const _result = schema[testKey as keyof typeof schema];
+  const result = schema[testKey as keyof typeof schema];
 
   // 型安全性の確認（TypeScriptにより保証）
-  assertEquals(typeof _result, "string");
+  assertEquals(typeof result, "string");
 
   // const assertionによる不変性の確認
   const moduleCode = Deno.readTextFileSync(new URL("./schema.ts", import.meta.url).pathname);

@@ -76,8 +76,8 @@ interface PatternConfig {
  * ```
  */
 export class ConfigPatternProvider implements TypePatternProvider {
-  private config: BreakdownConfig;
-  private patternCache: {
+  private _config: BreakdownConfig;
+  private _patternCache: {
     directive: TwoParamsDirectivePattern | null | undefined;
     layer: TwoParamsLayerTypePattern | null | undefined;
   } = {
@@ -94,10 +94,10 @@ export class ConfigPatternProvider implements TypePatternProvider {
     // Create defensive copy to ensure immutability
     // Note: BreakdownConfig may contain methods, so use structuredClone or shallow copy
     try {
-      this.config = structuredClone(config);
+      this._config = structuredClone(config);
     } catch {
       // Fallback to shallow copy if structuredClone fails with methods
-      this.config = Object.assign(Object.create(Object.getPrototypeOf(config)), config);
+      this._config = Object.assign(Object.create(Object.getPrototypeOf(config)), config);
     }
   }
 
@@ -127,8 +127,8 @@ export class ConfigPatternProvider implements TypePatternProvider {
    * @returns TwoParamsDirectivePattern | null - Pattern if configured and valid, null otherwise
    */
   getDirectivePattern(): TwoParamsDirectivePattern | null {
-    if (this.patternCache.directive !== undefined) {
-      return this.patternCache.directive;
+    if (this._patternCache.directive !== undefined) {
+      return this._patternCache.directive;
     }
 
     try {
@@ -137,16 +137,16 @@ export class ConfigPatternProvider implements TypePatternProvider {
       const patternString = this.extractDirectivePatternString(configData);
 
       if (!patternString) {
-        this.patternCache.directive = null;
+        this._patternCache.directive = null;
         return null;
       }
 
       const pattern = TwoParamsDirectivePattern.create(patternString);
-      this.patternCache.directive = pattern;
+      this._patternCache.directive = pattern;
       return pattern;
     } catch (error) {
       console.warn("Failed to load directive pattern from config:", error);
-      this.patternCache.directive = null;
+      this._patternCache.directive = null;
       return null;
     }
   }
@@ -157,8 +157,8 @@ export class ConfigPatternProvider implements TypePatternProvider {
    * @returns TwoParamsLayerTypePattern | null - Pattern if configured and valid, null otherwise
    */
   getLayerTypePattern(): TwoParamsLayerTypePattern | null {
-    if (this.patternCache.layer !== undefined) {
-      return this.patternCache.layer;
+    if (this._patternCache.layer !== undefined) {
+      return this._patternCache.layer;
     }
 
     try {
@@ -167,16 +167,16 @@ export class ConfigPatternProvider implements TypePatternProvider {
       const patternString = this.extractLayerTypePatternString(configData);
 
       if (!patternString) {
-        this.patternCache.layer = null;
+        this._patternCache.layer = null;
         return null;
       }
 
       const pattern = TwoParamsLayerTypePattern.create(patternString);
-      this.patternCache.layer = pattern;
+      this._patternCache.layer = pattern;
       return pattern;
     } catch (error) {
       console.warn("Failed to load layer type pattern from config:", error);
-      this.patternCache.layer = null;
+      this._patternCache.layer = null;
       return null;
     }
   }
@@ -195,8 +195,8 @@ export class ConfigPatternProvider implements TypePatternProvider {
    * Useful when configuration has been reloaded
    */
   clearCache(): void {
-    this.patternCache.directive = undefined;
-    this.patternCache.layer = undefined;
+    this._patternCache.directive = undefined;
+    this._patternCache.layer = undefined;
   }
 
   /**
@@ -206,7 +206,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
    */
   private async getConfigData(): Promise<Record<string, unknown>> {
     try {
-      return await this.config.getConfig();
+      return await this._config.getConfig();
     } catch (error) {
       throw new Error(
         `Failed to get configuration data: ${
@@ -313,14 +313,14 @@ export class ConfigPatternProvider implements TypePatternProvider {
       hasDirectivePattern: this.getDirectivePattern() !== null,
       hasLayerTypePattern: this.getLayerTypePattern() !== null,
       cacheStatus: {
-        directive: this.patternCache.directive === undefined
+        directive: this._patternCache.directive === undefined
           ? "not_loaded"
-          : this.patternCache.directive === null
+          : this._patternCache.directive === null
           ? "null"
           : "cached",
-        layer: this.patternCache.layer === undefined
+        layer: this._patternCache.layer === undefined
           ? "not_loaded"
-          : this.patternCache.layer === null
+          : this._patternCache.layer === null
           ? "null"
           : "cached",
       },

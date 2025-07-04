@@ -10,21 +10,21 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterValidator,
   ValidationErrorType,
   type ValidationResult,
 } from "./prompt_adapter_validator.ts";
 
-const _logger = new BreakdownLogger("structure-prompt-adapter-validator");
+const _logger = new _BreakdownLogger("structure-prompt-adapter-validator");
 
 describe("PromptAdapterValidator Structure - Class Design", () => {
   it("should instantiate without configuration", async () => {
     _logger.debug("Testing instantiation");
 
     const _validator = new PromptAdapterValidator();
-    assertExists(validator, "Should create instance without parameters");
+    assertExists(_validator, "Should create instance without parameters");
 
     // Should have validation methods available
     assertExists(_validator.validateFile, "Should have validateFile method");
@@ -44,7 +44,7 @@ describe("PromptAdapterValidator Structure - Class Design", () => {
     ];
 
     validationMethods.forEach((method) => {
-      if (method in validator) {
+      if (method in _validator) {
         assertEquals(
           method.startsWith("validate"),
           true,

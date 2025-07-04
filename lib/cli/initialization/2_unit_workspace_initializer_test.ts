@@ -11,23 +11,23 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { exists } from "@std/fs";
 import { join } from "@std/path";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { initializeBreakdownConfiguration } from "./workspace_initializer.ts";
 
-const _logger = new BreakdownLogger("test-unit-workspace-initializer");
+const _logger = new _BreakdownLogger("test-unit-workspace-initializer");
 
 // テスト用の一時ディレクトリ
 const testBaseDir = join(Deno.cwd(), "tmp", "test-workspace-init");
 const breakdownDir = join(testBaseDir, ".agent", "breakdown");
 
-function setupTestEnvironment() {
+async function setupTestEnvironment() {
   // テスト用ディレクトリを作成
   await Deno.mkdir(testBaseDir, { recursive: true });
   // 作業ディレクトリを変更
   Deno.chdir(testBaseDir);
 }
 
-function cleanupTestEnvironment() {
+async function cleanupTestEnvironment() {
   // 元のディレクトリに戻る
   Deno.chdir("..");
   // テスト用ディレクトリを削除
@@ -318,7 +318,7 @@ Deno.test("Unit: workspace_initializer - configuration validation", async () => 
 
     // YAMLの基本的な構文チェック
     const lines = configContent.split("\n");
-    const indentationErrors = 0;
+    let indentationErrors = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];

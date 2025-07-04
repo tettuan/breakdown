@@ -33,9 +33,9 @@ export interface TotalityFactoryOptions {
 }
 
 /**
- * Result type for factory creation operations
+ * _Result type for factory creation operations
  */
-export type FactoryCreationResult<T> = {
+export type FactoryCreation_Result<T> = {
   ok: true;
   data: T;
 } | {
@@ -65,18 +65,18 @@ export interface TotalityFactoryBundle {
  * It handles configuration loading, pattern provider setup, and TypeFactory initialization.
  *
  * @param options - Configuration options for factory setup
- * @returns Promise<FactoryCreationResult<TotalityFactoryBundle>> - Complete factory bundle or error
+ * @returns Promise<FactoryCreation_Result<TotalityFactoryBundle>> - Complete factory bundle or error
  *
  * @example Basic usage
  * ```typescript
- * const _factoryResult = await createTotalityFactory();
- * if (factoryResult.ok) {
- *   const { typeFactory, patternProvider } = factoryResult.data;
+ * const _factory_Result = await createTotalityFactory();
+ * if (factory_Result.ok) {
+ *   const { typeFactory, patternProvider } = factory_Result.data;
  *
  *   // Create validated types
- *   const typesResult = typeFactory.createBothTypes("to", "project");
- *   if (typesResult.ok) {
- *     const { directive, layer } = typesResult.data;
+ *   const types_Result = typeFactory.createBothTypes("to", "project");
+ *   if (types_Result.ok) {
+ *     const { directive, layer } = types_Result.data;
  *     console.log(`Created: ${directive.getValue()}, ${layer.getValue()}`);
  *   }
  * }
@@ -84,13 +84,13 @@ export interface TotalityFactoryBundle {
  *
  * @example With custom configuration
  * ```typescript
- * const factoryResult = await createTotalityFactory({
+ * const factory_Result = await createTotalityFactory({
  *   configSetName: "production",
  *   workspacePath: "/workspace"
  * });
  *
- * if (factoryResult.ok) {
- *   const bundle = factoryResult.data;
+ * if (factory_Result.ok) {
+ *   const bundle = factory_Result.data;
  *
  *   // Check pattern availability
  *   const availability = bundle.typeFactory.getPatternAvailability();
@@ -100,7 +100,7 @@ export interface TotalityFactoryBundle {
  */
 export async function createTotalityFactory(
   options: TotalityFactoryOptions = {},
-): Promise<FactoryCreationResult<TotalityFactoryBundle>> {
+): Promise<FactoryCreation_Result<TotalityFactoryBundle>> {
   try {
     const {
       configSetName = "default",
@@ -109,13 +109,13 @@ export async function createTotalityFactory(
     } = options;
 
     // Initialize or use provided BreakdownConfig
-    const config = preloadedConfig;
+    let config = preloadedConfig;
     if (!preloadedConfig) {
-      const configResult = await BreakdownConfig.create(configSetName, workspacePath);
-      if (!configResult.success) {
-        throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+      const config_Result = await BreakdownConfig.create(configSetName, workspacePath);
+      if (!config_Result.success) {
+        throw new Error(`Failed to create BreakdownConfig: ${config_Result.error}`);
       }
-      config = configResult.data;
+      config = config_Result.data;
     }
 
     if (!preloadedConfig) {
@@ -173,21 +173,21 @@ export async function createTotalityFactory(
  * @param layerValue - Raw layer string (e.g., "project", "issue")
  * @param options - CLI options object
  * @param factoryBundle - Initialized factory bundle from createTotalityFactory
- * @returns TypeCreationResult<PromptCliParams> - Validated parameters or error
+ * @returns TypeCreation_Result<PromptCliParams> - Validated parameters or error
  *
  * @example Creating CLI parameters
  * ```typescript
- * const factoryResult = await createTotalityFactory();
- * if (factoryResult.ok) {
- *   const paramsResult = await createValidatedCliParams(
+ * const factory_Result = await createTotalityFactory();
+ * if (factory_Result.ok) {
+ *   const params_Result = await createValidatedCliParams(
  *     "to",
  *     "project",
  *     { fromFile: "input.md" },
- *     factoryResult.data
+ *     factory_Result.data
  *   );
  *
- *   if (paramsResult.ok) {
- *     const factory = await factoryResult.data.createPromptFactory(paramsResult.data);
+ *   if (params_Result.ok) {
+ *     const factory = await factory_Result.data.createPromptFactory(params_Result.data);
  *     console.log("All paths resolved:", factory.getAllParams());
  *   }
  * }
@@ -199,11 +199,11 @@ export function createValidatedCliParams(
   options: PromptCliParams["options"],
   factoryBundle: TotalityFactoryBundle,
 ): TypeCreationResult<TotalityPromptCliParams> {
-  const typesResult = factoryBundle.typeFactory.createBothTypes(directiveValue, layerValue);
+  const types_Result = factoryBundle.typeFactory.createBothTypes(directiveValue, layerValue);
 
-  if (!typesResult.ok) {
+  if (!types_Result.ok) {
     const errorMessage = (() => {
-      const err = typesResult.error;
+      const err = types_Result.error;
       switch (err.kind) {
         case "PatternNotFound":
           return err.message;
@@ -228,8 +228,8 @@ export function createValidatedCliParams(
   return {
     ok: true,
     data: {
-      directive: typesResult.data.directive,
-      layer: typesResult.data.layer,
+      directive: types_Result.data.directive,
+      layer: types_Result.data.layer,
       options,
     },
   };
@@ -245,7 +245,7 @@ export function createValidatedCliParams(
  * @param layerValue - Raw layer string
  * @param options - CLI options
  * @param factoryOptions - Factory configuration options
- * @returns Promise<FactoryCreationResult<TotalityPromptVariablesFactory>> - Ready-to-use factory
+ * @returns Promise<FactoryCreation_Result<TotalityPromptVariablesFactory>> - Ready-to-use factory
  *
  * @example One-step factory creation
  * ```typescript
@@ -268,24 +268,24 @@ export async function createTotalityPromptFactory(
   layerValue: string,
   options: PromptCliParams["options"],
   factoryOptions: TotalityFactoryOptions = {},
-): Promise<FactoryCreationResult<TotalityPromptVariablesFactory>> {
+): Promise<FactoryCreation_Result<TotalityPromptVariablesFactory>> {
   // Create factory bundle
-  const bundleResult = await createTotalityFactory(factoryOptions);
-  if (!bundleResult.ok) {
-    return bundleResult;
+  const bundle_Result = await createTotalityFactory(factoryOptions);
+  if (!bundle_Result.ok) {
+    return bundle_Result;
   }
 
   // Create validated CLI parameters
-  const paramsResult = await createValidatedCliParams(
+  const params_Result = await createValidatedCliParams(
     directiveValue,
     layerValue,
     options,
-    bundleResult.data,
+    bundle_Result.data,
   );
 
-  if (!paramsResult.ok) {
+  if (!params_Result.ok) {
     const errorMessage = (() => {
-      const err = paramsResult.error;
+      const err = params_Result.error;
       switch (err.kind) {
         case "PatternNotFound":
           return err.message;
@@ -301,13 +301,13 @@ export async function createTotalityPromptFactory(
     return {
       ok: false,
       error: `Parameter validation failed: ${errorMessage}`,
-      details: paramsResult.error.kind,
+      details: params_Result.error.kind,
     };
   }
 
   // Create PromptVariablesFactory
   try {
-    const promptFactory = await bundleResult.data.createPromptFactory(paramsResult.data);
+    const promptFactory = await bundle_Result.data.createPromptFactory(params_Result.data);
     return {
       ok: true,
       data: promptFactory,

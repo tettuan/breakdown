@@ -9,7 +9,7 @@
  * @module types/layer_type
  */
 
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
 /**
  * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン
@@ -71,10 +71,10 @@ export class TwoParamsLayerTypePattern {
 /**
  * LayerType - 階層型
  *
- * Totality原則に準拠した制約型。TwoParamsResult を受け取る制約を持ち、
+ * Totality原則に準拠した制約型。TwoParams_Result を受け取る制約を持ち、
  * バリデーション経由でのみ構築可能。
  * 処理対象の階層（project, issue, task, bugs, temp等）を表現し、
- * TwoParamsResult.layerType の値として検証される。
+ * TwoParams_Result.layerType の値として検証される。
  *
  * バリデーションパターンは BreakdownParams 呼び出し時に適用される。
  *
@@ -91,7 +91,7 @@ export class TwoParamsLayerTypePattern {
  *
  * @example 基本的な使用例
  * ```typescript
- * const twoParamsResult: TwoParamsResult = {
+ * const twoParamsResult: TwoParams_Result = {
  *   type: "two",
  *   demonstrativeType: "to",
  *   layerType: "project",
@@ -104,11 +104,11 @@ export class TwoParamsLayerTypePattern {
  * @example 環境別設定での使用
  * ```typescript
  * // staging環境での拡張パターン
- * const epicResult: TwoParamsResult = { type: "two", demonstrativeType: "to", layerType: "epic", options: {} };
+ * const epicResult: TwoParams_Result = { type: "two", demonstrativeType: "to", layerType: "epic", options: {} };
  * const epicLayer = LayerType.create(epicResult);
  *
  * // production環境での特化パターン
- * const issuesResult: TwoParamsResult = { type: "two", demonstrativeType: "to", layerType: "issues", options: {} };
+ * const issuesResult: TwoParams_Result = { type: "two", demonstrativeType: "to", layerType: "issues", options: {} };
  * const issuesLayer = LayerType.create(issuesResult);
  * ```
  */
@@ -117,19 +117,19 @@ export class LayerType {
    * Private constructor - Smart Constructor パターンの実装
    * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制
    */
-  private constructor(private readonly result: TwoParamsResult) {}
+  private constructor(private readonly result: TwoParams_Result) {}
 
   /**
-   * TwoParamsResult からバリデーション済み LayerType を構築
+   * TwoParams_Result からバリデーション済み LayerType を構築
    *
    * この静的メソッドは Totality 原則の核心部分。
-   * TwoParamsResult を受け取り、既にバリデーション済みの値のみが LayerType として構築される。
+   * TwoParams_Result を受け取り、既にバリデーション済みの値のみが LayerType として構築される。
    * バリデーションは BreakdownParams 側で実行済み。
    *
-   * @param result TwoParamsResult 型の検証済みデータ
-   * @returns LayerType インスタンス（TwoParamsResult は既にバリデーション済みのため常に成功）
+   * @param result TwoParams_Result 型の検証済みデータ
+   * @returns LayerType インスタンス（TwoParams_Result は既にバリデーション済みのため常に成功）
    */
-  static create(result: TwoParamsResult): LayerType {
+  static create(result: TwoParams_Result): LayerType {
     return new LayerType(result);
   }
 
@@ -137,9 +137,9 @@ export class LayerType {
    * 検証済み layerType 値を取得
    *
    * このプロパティで取得される値は必ずバリデーション済みのため、
-   * 安全に使用することができる。TwoParamsResult.layerType を返す。
+   * 安全に使用することができる。TwoParams_Result.layerType を返す。
    *
-   * @returns TwoParamsResult.layerType の検証済み文字列値
+   * @returns TwoParams_Result.layerType の検証済み文字列値
    */
   get value(): string {
     return this.result.layerType;
@@ -197,14 +197,14 @@ export class LayerType {
   }
 
   /**
-   * 元の TwoParamsResult への読み取り専用アクセス
+   * 元の TwoParams_Result への読み取り専用アクセス
    *
    * デバッグや詳細情報が必要な場合に使用。
    * Immutable なので安全に公開可能。
    *
-   * @returns 元の TwoParamsResult（読み取り専用）
+   * @returns 元の TwoParams_Result（読み取り専用）
    */
-  get originalResult(): Readonly<TwoParamsResult> {
+  get originalResult(): Readonly<TwoParams_Result> {
     return this.result;
   }
 }

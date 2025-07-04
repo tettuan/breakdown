@@ -17,7 +17,7 @@ import { assertEquals, assertExists } from "@std/assert";
  * Strategy pattern for path resolution.
  */
 Deno.test("Architecture: Path strategies follow Strategy pattern", async () => {
-  const _moduleSource = await Deno.readTextFile(
+  const moduleSource = await Deno.readTextFile(
     new URL("./strategies.ts", import.meta.url).pathname,
   );
 
@@ -35,11 +35,11 @@ Deno.test("Architecture: Path strategies follow Strategy pattern", async () => {
 
   // Check no cross-dependencies between strategies
   const classDefinitions = moduleSource.split("export class");
-  classDefinitions.forEach((classDef, i) => {
+  classDefinitions.forEach((classDef: string, i: number) => {
     if (i === 0) return; // Skip content before first class
 
     // Check that no strategy references another strategy
-    strategyClasses.forEach((strategyClass) => {
+    strategyClasses.forEach((strategyClass: string) => {
       const className = strategyClass.replace("export class ", "");
       if (classDef.includes(className) && !classDef.startsWith(" " + className)) {
         assertEquals(false, true, `Strategy should not depend on ${className}`);

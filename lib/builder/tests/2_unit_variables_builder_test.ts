@@ -8,21 +8,21 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { VariablesBuilder } from "../variables_builder.ts";
+import { type BuilderVariableError, VariablesBuilder } from "../variables_builder.ts";
 
 /**
  * Test successful variable creation scenarios
  */
 Deno.test("VariablesBuilder - successful standard variable creation", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("input_text_file", "/path/to/file.txt")
     .addStandardVariable("destination_path", "/output/path")
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 2);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 2);
     const record = _builder.toRecord();
     assertEquals(record["input_text_file"], "/path/to/file.txt");
     assertEquals(record["destination_path"], "/output/path");
@@ -31,13 +31,13 @@ Deno.test("VariablesBuilder - successful standard variable creation", () => {
 
 Deno.test("VariablesBuilder - successful file path variable creation", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addFilePathVariable("schema_file", "/path/to/schema.json")
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 1);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 1);
     const record = _builder.toRecord();
     assertEquals(record["schema_file"], "/path/to/schema.json");
   }
@@ -45,13 +45,13 @@ Deno.test("VariablesBuilder - successful file path variable creation", () => {
 
 Deno.test("VariablesBuilder - successful stdin variable creation", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStdinVariable("This is input text from stdin")
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 1);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 1);
     const record = _builder.toRecord();
     assertEquals(record["input_text"], "This is input text from stdin");
   }
@@ -59,14 +59,14 @@ Deno.test("VariablesBuilder - successful stdin variable creation", () => {
 
 Deno.test("VariablesBuilder - successful user variable creation", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addUserVariable("uv-custom", "custom value")
     .addUserVariable("uv-another", "another value")
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 2);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 2);
     const record = _builder.toRecord();
     assertEquals(record["uv-custom"], "custom value");
     assertEquals(record["uv-another"], "another value");
@@ -75,16 +75,16 @@ Deno.test("VariablesBuilder - successful user variable creation", () => {
 
 Deno.test("VariablesBuilder - mixed variable types", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("input_text_file", "/input.txt")
     .addFilePathVariable("schema_file", "/schema.json")
     .addStdinVariable("stdin content")
     .addUserVariable("uv-option", "value")
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 4);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 4);
     const record = _builder.toRecord();
     assertEquals(Object.keys(record).length, 4);
     assertEquals(record["input_text_file"], "/input.txt");
@@ -99,15 +99,15 @@ Deno.test("VariablesBuilder - mixed variable types", () => {
  */
 Deno.test("VariablesBuilder - invalid standard variable name", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("invalid_name", "value")
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.length, 1);
-    assertEquals(_result.error[0].kind, "InvalidName");
-    const error = _result.error[0];
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.length, 1);
+    assertEquals(result.error[0].kind, "InvalidName");
+    const error = result.error[0];
     if (error.kind === "InvalidName") {
       assertEquals(error.name, "invalid_name");
     }
@@ -116,34 +116,36 @@ Deno.test("VariablesBuilder - invalid standard variable name", () => {
 
 Deno.test("VariablesBuilder - empty value error", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("input_text_file", "")
     .addFilePathVariable("schema_file", "  ")
     .addStdinVariable("")
     .addUserVariable("uv-test", "")
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // Since stdin may not validate empty values, expect at least 3 errors
-    assertEquals(_result.error.length >= 3, true);
-    const emptyValueErrors = _result.error.filter((err) => err.kind === "EmptyValue");
+    assertEquals(result.error.length >= 3, true);
+    const emptyValueErrors = result.error.filter((err: BuilderVariableError) =>
+      err.kind === "EmptyValue"
+    );
     assertEquals(emptyValueErrors.length >= 3, true);
   }
 });
 
 Deno.test("VariablesBuilder - duplicate variable error", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("input_text_file", "first")
     .addStandardVariable("input_text_file", "second")
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.length, 1);
-    assertEquals(_result.error[0].kind, "DuplicateVariable");
-    const error = _result.error[0];
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.length, 1);
+    assertEquals(result.error[0].kind, "DuplicateVariable");
+    const error = result.error[0];
     if (error.kind === "DuplicateVariable") {
       assertEquals(error.name, "input_text_file");
     }
@@ -152,15 +154,15 @@ Deno.test("VariablesBuilder - duplicate variable error", () => {
 
 Deno.test("VariablesBuilder - invalid user variable prefix", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addUserVariable("custom", "value")
     .addUserVariable("my-var", "value")
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.length, 2);
-    _result.error.forEach((err) => {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.length, 2);
+    result.error.forEach((err: BuilderVariableError) => {
       assertEquals(err.kind, "InvalidPrefix");
       if (err.kind === "InvalidPrefix") {
         assertEquals(err.expectedPrefix, "uv-");
@@ -171,20 +173,20 @@ Deno.test("VariablesBuilder - invalid user variable prefix", () => {
 
 Deno.test("VariablesBuilder - accumulates multiple errors", () => {
   const _builder = new VariablesBuilder();
-  const _result = builder
+  const result = _builder
     .addStandardVariable("wrong_name", "value")
     .addStandardVariable("input_text_file", "")
     .addFilePathVariable("wrong_file", "path")
     .addUserVariable("no-prefix", "value")
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.length, 4);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.length, 4);
     // Check different error types
-    assertExists(_result.error.find((e) => e.kind === "InvalidName"));
-    assertExists(_result.error.find((e) => e.kind === "EmptyValue"));
-    assertExists(_result.error.find((e) => e.kind === "InvalidPrefix"));
+    assertExists(result.error.find((e: BuilderVariableError) => e.kind === "InvalidName"));
+    assertExists(result.error.find((e: BuilderVariableError) => e.kind === "EmptyValue"));
+    assertExists(result.error.find((e: BuilderVariableError) => e.kind === "InvalidPrefix"));
   }
 });
 
@@ -195,7 +197,7 @@ Deno.test("VariablesBuilder - clear method resets state", () => {
   const _builder = new VariablesBuilder();
 
   // Add some variables and errors
-  builder
+  _builder
     .addStandardVariable("input_text_file", "value")
     .addStandardVariable("wrong", "value");
 
@@ -208,16 +210,16 @@ Deno.test("VariablesBuilder - clear method resets state", () => {
   assertEquals(_builder.getErrorCount(), 0);
 
   // Build should return empty array
-  const _result = _builder.build();
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 0);
+  const result = _builder.build();
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 0);
   }
 });
 
 Deno.test("VariablesBuilder - method chaining works correctly", () => {
   const _builder = new VariablesBuilder();
-  const chainResult = builder
+  const chainResult = _builder
     .addStandardVariable("input_text_file", "file1.txt")
     .addStandardVariable("destination_path", "output/")
     .addFilePathVariable("schema_file", "schema.json")
@@ -225,7 +227,7 @@ Deno.test("VariablesBuilder - method chaining works correctly", () => {
     .addUserVariable("uv-flag", "true");
 
   // Verify chaining returns the same builder instance
-  assertEquals(chainResult, builder);
+  assertEquals(chainResult, _builder);
   assertEquals(_builder.getVariableCount(), 5);
   assertEquals(_builder.getErrorCount(), 0);
 });
@@ -238,13 +240,13 @@ Deno.test("VariablesBuilder - addUserVariables method", () => {
     "uv-var3": "value3",
   };
 
-  const _result = builder
+  const result = _builder
     .addUserVariables(customVariables)
     .build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 3);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 3);
     const record = _builder.toRecord();
     assertEquals(record["uv-var1"], "value1");
     assertEquals(record["uv-var2"], "value2");
@@ -260,14 +262,14 @@ Deno.test("VariablesBuilder - addUserVariables with invalid prefixes", () => {
     "uv-another": "value3",
   };
 
-  const _result = builder
+  const result = _builder
     .addUserVariables(customVariables)
     .build();
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.length, 1);
-    assertEquals(_result.error[0].kind, "InvalidPrefix");
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.length, 1);
+    assertEquals(result.error[0].kind, "InvalidPrefix");
   }
 });
 
@@ -288,12 +290,12 @@ Deno.test("VariablesBuilder - cross-type duplicate checking", () => {
   // Try to add user variable with same name
   _builder.addUserVariable("input_text", "different text");
 
-  const _result = _builder.build();
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  const result = _builder.build();
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // Should have InvalidPrefix error, not DuplicateVariable
     // because "input_text" doesn't have "uv-" prefix
-    assertEquals(_result.error.length, 1);
-    assertEquals(_result.error[0].kind, "InvalidPrefix");
+    assertEquals(result.error.length, 1);
+    assertEquals(result.error[0].kind, "InvalidPrefix");
   }
 });

@@ -10,7 +10,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterValidator,
   ValidationErrorType,
@@ -19,7 +19,7 @@ import {
 import { ensureDir, ensureFile } from "@std/fs";
 import { join } from "@std/path";
 
-const _logger = new BreakdownLogger("unit-prompt-adapter-validator");
+const _logger = new _BreakdownLogger("unit-prompt-adapter-validator");
 
 describe("PromptAdapterValidator Unit Tests - File Validation", () => {
   const testDir = "./test_validator_temp";
@@ -42,12 +42,12 @@ describe("PromptAdapterValidator Unit Tests - File Validation", () => {
     _logger.debug("Testing existing file validation");
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateFile(testFile, "Test file");
+    const result = await _validator.validateFile(testFile, "Test file");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertExists(_result.path);
-      assertEquals(_result.path.includes("test.txt"), true);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertExists(result.path);
+      assertEquals(result.path.includes("test.txt"), true);
     }
   });
 
@@ -55,13 +55,13 @@ describe("PromptAdapterValidator Unit Tests - File Validation", () => {
     _logger.debug("Testing non-existent file validation");
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateFile("./non_existent.txt", "Missing file");
+    const result = await _validator.validateFile("./non_existent.txt", "Missing file");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error, ValidationErrorType.NotFound);
-      assertExists(_result.message);
-      assertEquals(_result.message.includes("Missing file"), true);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error, ValidationErrorType.NotFound);
+      assertExists(result.message);
+      assertEquals(result.message.includes("Missing file"), true);
     }
   });
 
@@ -69,12 +69,12 @@ describe("PromptAdapterValidator Unit Tests - File Validation", () => {
     _logger.debug("Testing directory as file validation");
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateFile(testDir, "Directory");
+    const result = await _validator.validateFile(testDir, "Directory");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error, ValidationErrorType.NotFile);
-      assertExists(_result.message);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error, ValidationErrorType.NotFile);
+      assertExists(result.message);
     }
   });
 
@@ -88,11 +88,11 @@ describe("PromptAdapterValidator Unit Tests - File Validation", () => {
     ];
 
     for (const invalidPath of invalidPaths) {
-      const _result = await _validator.validateFile(invalidPath, "Invalid path");
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
+      const result = await _validator.validateFile(invalidPath, "Invalid path");
+      assertEquals(result.ok, false);
+      if (!result.ok) {
         // Null characters get sanitized and then fail on file existence check
-        assertEquals(_result.error, ValidationErrorType.NotFound);
+        assertEquals(result.error, ValidationErrorType.NotFound);
       }
     }
   });
@@ -117,11 +117,11 @@ describe("PromptAdapterValidator Unit Tests - Directory Validation", () => {
     _logger.debug("Testing existing directory validation");
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateDirectory(testDir, "Test directory");
+    const result = await _validator.validateDirectory(testDir, "Test directory");
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertExists(_result.path);
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertExists(result.path);
     }
   });
 
@@ -129,13 +129,13 @@ describe("PromptAdapterValidator Unit Tests - Directory Validation", () => {
     _logger.debug("Testing non-existent directory validation");
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateDirectory("./non_existent_dir", "Missing directory");
+    const result = await _validator.validateDirectory("./non_existent_dir", "Missing directory");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error, ValidationErrorType.NotFound);
-      assertExists(_result.message);
-      assertEquals(_result.message.includes("Missing directory"), true);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error, ValidationErrorType.NotFound);
+      assertExists(result.message);
+      assertEquals(result.message.includes("Missing directory"), true);
     }
   });
 
@@ -146,12 +146,12 @@ describe("PromptAdapterValidator Unit Tests - Directory Validation", () => {
     await ensureFile(testFile);
 
     const _validator = new PromptAdapterValidator();
-    const _result = await _validator.validateDirectory(testFile, "File");
+    const result = await _validator.validateDirectory(testFile, "File");
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error, ValidationErrorType.NotDirectory);
-      assertExists(_result.message);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error, ValidationErrorType.NotDirectory);
+      assertExists(result.message);
     }
   });
 });
@@ -190,8 +190,8 @@ describe("PromptAdapterValidator Unit Tests - Base Directory Validation", () => 
     ];
 
     for (const { path, expected } of specialCases) {
-      const _result = _validator.validateBaseDir(path);
-      assertEquals(_result.ok, expected, `Path "${path}" should ${expected ? "pass" : "fail"}`);
+      const result = _validator.validateBaseDir(path as string);
+      assertEquals(result.ok, expected, `Path "${path}" should ${expected ? "pass" : "fail"}`);
     }
   });
 });
@@ -218,8 +218,8 @@ describe("PromptAdapterValidator Unit Tests - Path Sanitization", () => {
       ];
 
       for (const pathVar of pathVariations) {
-        const _result = await _validator.validateFile(pathVar, "Path variation");
-        _logger.debug(`Testing path: ${pathVar}, result: ${_result.ok}`);
+        const result = await _validator.validateFile(pathVar, "Path variation");
+        _logger.debug(`Testing path: ${pathVar}, result: ${result.ok}`);
       }
     } finally {
       await Deno.remove(testDir, { recursive: true });
@@ -236,7 +236,7 @@ describe("PromptAdapterValidator Unit Tests - Error Message Quality", () => {
 
     // Test various error scenarios
     const result1 = await _validator.validateFile("/non/existent/path", testLabel);
-    if (!_result1.ok) {
+    if (!result1.ok) {
       assertEquals(
         result1.message.includes(testLabel),
         true,
@@ -250,7 +250,7 @@ describe("PromptAdapterValidator Unit Tests - Error Message Quality", () => {
     }
 
     const result2 = await _validator.validateFile("path/../traversal", testLabel);
-    if (!_result2.ok) {
+    if (!result2.ok) {
       // The sanitizePath method resolves .. so the path becomes "traversal" and fails on file existence
       assertEquals(result2.error, ValidationErrorType.NotFound);
       assertEquals(
@@ -278,8 +278,8 @@ describe("PromptAdapterValidator Unit Tests - Edge Cases", () => {
       // Create symbolic link
       await Deno.symlink(targetFile, symlinkPath);
 
-      const _result = await _validator.validateFile(symlinkPath, "Symlink");
-      assertEquals(_result.ok, true, "Should follow symbolic links");
+      const result = await _validator.validateFile(symlinkPath, "Symlink");
+      assertEquals(result.ok, true, "Should follow symbolic links");
     } catch (e) {
       // Skip on systems that don't support symlinks
       _logger.debug("Skipping symlink test: " + e);
@@ -298,11 +298,11 @@ describe("PromptAdapterValidator Unit Tests - Edge Cases", () => {
     const _validator = new PromptAdapterValidator();
     const longPath = "a/".repeat(100) + "file.txt";
 
-    const _result = await _validator.validateFile(longPath, "Long path");
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertExists(_result.error);
-      assertExists(_result.message);
+    const result = await _validator.validateFile(longPath, "Long path");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertExists(result.error);
+      assertExists(result.message);
     }
   });
 });

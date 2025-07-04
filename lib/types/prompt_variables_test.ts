@@ -21,7 +21,7 @@ import {
 describe("PromptVariables - Unit Tests", () => {
   describe("StandardVariableName", () => {
     it("should create valid names", () => {
-      const _inputTextFile = StandardVariableName.create("input_text_file");
+      const inputTextFile = StandardVariableName.create("input_text_file");
       assertExists(inputTextFile);
       if (inputTextFile.ok) {
         assertEquals(inputTextFile.data.getValue(), "input_text_file");
@@ -73,9 +73,9 @@ describe("PromptVariables - Unit Tests", () => {
         userVar.data,
       ];
 
-      const _result = toPromptParamsVariables(variables);
+      const result = toPromptParamsVariables(variables);
 
-      assertEquals(_result, {
+      assertEquals(result, {
         "input_text_file": "/path/to/input.txt",
         "schema_file": "/path/to/schema.json",
         "input_text": "Hello world",

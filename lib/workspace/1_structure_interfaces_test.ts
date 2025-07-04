@@ -11,7 +11,7 @@
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import type {
   PathResolutionStrategy,
   Workspace,
@@ -24,7 +24,7 @@ import type {
 } from "./interfaces.ts";
 
 Deno.test("WorkspaceConfig Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-config-test");
+  const _logger = new _BreakdownLogger("structure-config-test");
 
   await t.step("should define all required properties with correct types", async () => {
     _logger.debug("Testing WorkspaceConfig property definitions");
@@ -106,7 +106,7 @@ Deno.test("WorkspaceConfig Structure", async (t) => {
 });
 
 Deno.test("PathResolutionStrategy Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-strategy-test");
+  const _logger = new _BreakdownLogger("structure-strategy-test");
 
   await t.step("should define async methods with proper signatures", () => {
     _logger.debug("Testing PathResolutionStrategy method signatures");
@@ -146,22 +146,22 @@ Deno.test("PathResolutionStrategy Structure", async (t) => {
 
     // Test parameter types (all accept string)
     // Test return types
-    strategy.resolve("test").then((_result) => {
-      assertEquals(typeof _result, "string", "resolve returns string");
+    strategy.resolve("test").then((result) => {
+      assertEquals(typeof result, "string", "resolve returns string");
     });
 
-    strategy.normalize("test").then((_result) => {
-      assertEquals(typeof _result, "string", "normalize returns string");
+    strategy.normalize("test").then((result) => {
+      assertEquals(typeof result, "string", "normalize returns string");
     });
 
-    strategy.validate("test").then((_result) => {
-      assertEquals(typeof _result, "boolean", "validate returns boolean");
+    strategy.validate("test").then((result) => {
+      assertEquals(typeof result, "boolean", "validate returns boolean");
     });
   });
 });
 
 Deno.test("WorkspaceStructure Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-workspace-structure-test");
+  const _logger = new _BreakdownLogger("structure-workspace-structure-test");
 
   await t.step("should define directory management methods", () => {
     _logger.debug("Testing WorkspaceStructure method definitions");
@@ -213,18 +213,18 @@ Deno.test("WorkspaceStructure Structure", async (t) => {
     };
 
     // Mutation methods return Promise<void>
-    structure.initialize().then((_result) => {
-      assertEquals(_result, undefined, "initialize returns void");
+    structure.initialize().then((result) => {
+      assertEquals(result, undefined, "initialize returns void");
     });
 
-    structure.createDirectory("/test").then((_result) => {
-      assertEquals(_result, undefined, "createDirectory returns void");
+    structure.createDirectory("/test").then((result) => {
+      assertEquals(result, undefined, "createDirectory returns void");
     });
   });
 });
 
 Deno.test("WorkspaceConfigManager Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-config-manager-test");
+  const _logger = new _BreakdownLogger("structure-config-manager-test");
 
   await t.step("should define complete configuration lifecycle methods", () => {
     _logger.debug("Testing ConfigManager method completeness");
@@ -276,7 +276,7 @@ Deno.test("WorkspaceConfigManager Structure", async (t) => {
 });
 
 Deno.test("WorkspacePathResolver Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-path-resolver-test");
+  const _logger = new _BreakdownLogger("structure-path-resolver-test");
 
   await t.step("should mirror PathResolutionStrategy methods plus strategy management", () => {
     _logger.debug("Testing PathResolver method structure");
@@ -317,13 +317,13 @@ Deno.test("WorkspacePathResolver Structure", async (t) => {
     };
 
     // updateStrategy is synchronous
-    const _result = pathResolver.updateStrategy(mockStrategy);
-    assertEquals(_result, undefined, "updateStrategy returns void synchronously");
+    const result = pathResolver.updateStrategy(mockStrategy);
+    assertEquals(result, undefined, "updateStrategy returns void synchronously");
   });
 });
 
 Deno.test("WorkspaceErrorHandler Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-error-handler-test");
+  const _logger = new _BreakdownLogger("structure-error-handler-test");
 
   await t.step("should define synchronous error handling methods", () => {
     _logger.debug("Testing ErrorHandler method structure");
@@ -376,7 +376,7 @@ Deno.test("WorkspaceErrorHandler Structure", async (t) => {
 });
 
 Deno.test("WorkspaceEventEmitter Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-event-emitter-test");
+  const _logger = new _BreakdownLogger("structure-event-emitter-test");
 
   await t.step("should define event subscription and emission methods", () => {
     _logger.debug("Testing EventEmitter method structure");
@@ -430,7 +430,7 @@ Deno.test("WorkspaceEventEmitter Structure", async (t) => {
 });
 
 Deno.test("Workspace Main Interface Structure", async (t) => {
-  const _logger = new BreakdownLogger("structure-workspace-test");
+  const _logger = new _BreakdownLogger("structure-workspace-test");
 
   await t.step("should define complete workspace operations", () => {
     _logger.debug("Testing Workspace interface completeness");
@@ -449,20 +449,20 @@ Deno.test("Workspace Main Interface Structure", async (t) => {
     };
 
     // Core operations
-    assertExists(_workspace.initialize, "initialize exists");
-    assertExists(_workspace.resolvePath, "resolvePath exists");
-    assertExists(_workspace.createDirectory, "createDirectory exists");
-    assertExists(_workspace.removeDirectory, "removeDirectory exists");
-    assertExists(_workspace.exists, "exists exists");
+    assertExists(workspace.initialize, "initialize exists");
+    assertExists(workspace.resolvePath, "resolvePath exists");
+    assertExists(workspace.createDirectory, "createDirectory exists");
+    assertExists(workspace.removeDirectory, "removeDirectory exists");
+    assertExists(workspace.exists, "exists exists");
 
     // Directory getters
-    assertExists(_workspace.getPromptBaseDir, "getPromptBaseDir exists");
-    assertExists(_workspace.getSchemaBaseDir, "getSchemaBaseDir exists");
-    assertExists(_workspace.getWorkingDir, "getWorkingDir exists");
+    assertExists(workspace.getPromptBaseDir, "getPromptBaseDir exists");
+    assertExists(workspace.getSchemaBaseDir, "getSchemaBaseDir exists");
+    assertExists(workspace.getWorkingDir, "getWorkingDir exists");
 
     // Config operations
-    assertExists(_workspace.validateConfig, "validateConfig exists");
-    assertExists(_workspace.reloadConfig, "reloadConfig exists");
+    assertExists(workspace.validateConfig, "validateConfig exists");
+    assertExists(workspace.reloadConfig, "reloadConfig exists");
   });
 
   await t.step("should have consistent async patterns", () => {
@@ -482,10 +482,10 @@ Deno.test("Workspace Main Interface Structure", async (t) => {
     };
 
     // All methods return Promise
-    assertInstanceOf(_workspace.initialize(), Promise, "initialize returns Promise");
-    assertInstanceOf(_workspace.resolvePath("/test"), Promise, "resolvePath returns Promise");
-    assertInstanceOf(_workspace.exists(), Promise, "exists returns Promise");
-    assertInstanceOf(_workspace.getWorkingDir(), Promise, "getWorkingDir returns Promise");
+    assertInstanceOf(workspace.initialize(), Promise, "initialize returns Promise");
+    assertInstanceOf(workspace.resolvePath("/test"), Promise, "resolvePath returns Promise");
+    assertInstanceOf(workspace.exists(), Promise, "exists returns Promise");
+    assertInstanceOf(workspace.getWorkingDir(), Promise, "getWorkingDir returns Promise");
   });
 
   await t.step("should group related methods logically", () => {
@@ -515,7 +515,7 @@ Deno.test("Workspace Main Interface Structure", async (t) => {
 });
 
 Deno.test("Type Completeness and Constraints", async (t) => {
-  const _logger = new BreakdownLogger("structure-type-completeness-test");
+  const _logger = new _BreakdownLogger("structure-type-completeness-test");
 
   await t.step("should enforce required vs optional properties correctly", () => {
     _logger.debug("Testing required/optional property enforcement");

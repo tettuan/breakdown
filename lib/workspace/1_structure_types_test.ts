@@ -12,9 +12,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("structure-workspace-types");
+const _logger = new _BreakdownLogger("structure-workspace-types");
 
 describe.ignore("Workspace Types - Structure", () => {
   it("should organize types by functional area", async () => {
@@ -137,8 +137,8 @@ describe.ignore("Workspace Types - Structure", () => {
     // Each interface should have JSDoc documentation
     const interfaceMatches = typeContent.match(/(?:\/\*\*[\s\S]*?\*\/\s*)?interface\s+\w+/g) || [];
 
-    const documentedCount = 0;
-    const undocumentedCount = 0;
+    let documentedCount = 0;
+    let undocumentedCount = 0;
 
     interfaceMatches.forEach((match) => {
       if (match.startsWith("/**")) {

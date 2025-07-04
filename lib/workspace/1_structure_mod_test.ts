@@ -12,9 +12,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("structure-workspace-mod");
+const _logger = new _BreakdownLogger("structure-workspace-mod");
 
 describe("Workspace Module - Structure", async () => {
   it("should organize exports by functional area", async () => {
@@ -37,12 +37,12 @@ describe("Workspace Module - Structure", async () => {
     const functionalityRelated = ["Workspace", "initWorkspace", "validateWorkspaceStructure"];
 
     // At least one from each category should exist
-    const _hasTypes = typeRelated.some((name) => name in mod);
+    const _hasTypes = typeRelated.some((name) => name in _mod);
     const hasErrors = errorRelated.some((name) =>
-      (mod as Record<string, unknown>)[name] !== undefined
+      (_mod as Record<string, unknown>)[name] !== undefined
     );
     const hasFunctionality = functionalityRelated.some((name) =>
-      (mod as Record<string, unknown>)[name] !== undefined
+      (_mod as Record<string, unknown>)[name] !== undefined
     );
 
     assertEquals(hasErrors, true, "Should export error types");
@@ -52,7 +52,7 @@ describe("Workspace Module - Structure", async () => {
   it("should maintain single responsibility", async () => {
     _logger.debug("Testing module responsibility");
 
-    const modContent = await Deno.readTextFile("./_mod as any).ts";
+    const modContent = await Deno.readTextFile("./mod.ts");
 
     // The module should only be responsible for re-exporting
     // It should not contain any implementation logic
@@ -69,7 +69,7 @@ describe("Workspace Module - Structure", async () => {
   it("should provide consistent export style", async () => {
     _logger.debug("Testing export consistency");
 
-    const modContent = await Deno.readTextFile("./_mod as any).ts";
+    const modContent = await Deno.readTextFile("./mod.ts");
 
     // All exports should use the same style (export * from)
     const exportLines = modContent.split("\n").filter((line) => line.trim().startsWith("export"));
@@ -109,7 +109,7 @@ describe("Workspace Module - Structure", async () => {
   it("should follow a logical export order", async () => {
     _logger.debug("Testing export order");
 
-    const modContent = await Deno.readTextFile("./_mod as any).ts";
+    const modContent = await Deno.readTextFile("./mod.ts");
 
     // Exports should be in a logical order:
     // 1. Types first (foundational)
@@ -123,7 +123,7 @@ describe("Workspace Module - Structure", async () => {
     // Find indices of different export types
     const typesIndex = exportLines.findIndex(({ line }) => line.includes("types.ts"));
     const errorsIndex = exportLines.findIndex(({ line }) => line.includes("errors.ts"));
-    const workspaceIndex = exportLines.findIndex(({ line }) => line.includes("_workspace.ts"));
+    const workspaceIndex = exportLines.findIndex(({ line }) => line.includes("workspace.ts"));
 
     // Verify order (allowing for comments and empty lines)
     if (typesIndex !== -1 && errorsIndex !== -1) {
@@ -144,7 +144,7 @@ describe("Workspace Module - Structure", async () => {
     // Each imported module should have a distinct responsibility
     const types = await import("./types.ts");
     const errors = await import("./errors.ts");
-    const _workspace = await import("./_workspace.ts");
+    const _workspace = await import("./workspace.ts");
 
     // Types module should only export type-related items
     // (Can't check TypeScript types at runtime, but we verify the module exists)
@@ -153,9 +153,10 @@ describe("Workspace Module - Structure", async () => {
     // Errors module should only export error classes
     const errorExports = Object.keys(errors);
     errorExports.forEach((key) => {
-      if (key !== "default" && (errors as unknown)[key]?.prototype) {
-        const isError = (errors as unknown)[key].prototype instanceof Error ||
-          (errors as unknown)[key].name.includes("Error");
+      if (key !== "default" && (errors as Record<string, unknown>)[key]) {
+        const errorClass = (errors as Record<string, unknown>)[key] as any;
+        const isError = errorClass?.prototype instanceof Error ||
+          errorClass?.name?.includes("Error");
         assertEquals(isError, true, `${key} should be an Error class`);
       }
     });
@@ -168,7 +169,7 @@ describe("Workspace Module - Structure", async () => {
   it("should provide complete documentation references", async () => {
     _logger.debug("Testing documentation structure");
 
-    const modContent = await Deno.readTextFile("./_mod as any).ts";
+    const modContent = await Deno.readTextFile("./mod.ts");
 
     // Each export should have a documentation comment
     const exportBlocks = modContent.split(/export\s+\*\s+from/);

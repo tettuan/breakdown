@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { ConfigPrefixDetector as _ConfigPrefixDetector } from "./config_prefix_detector.ts";
+import { ConfigPrefixDetector as ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
 Deno.test("ConfigPrefixDetector structure - class exists", () => {
   assertExists(ConfigPrefixDetector, "ConfigPrefixDetector class should be exported");
@@ -30,9 +30,9 @@ Deno.test("ConfigPrefixDetector structure - detect method signature", () => {
   );
 
   // Test method accepts array argument
-  const _result = ConfigPrefixDetector.detect([]);
+  const result = ConfigPrefixDetector.detect([]);
   assertEquals(
-    _result,
+    result,
     null,
     "detect should return null for empty array",
   );
@@ -44,8 +44,8 @@ Deno.test("ConfigPrefixDetector structure - constructor is private", () => {
   // The real protection is at compile-time via TypeScript
 
   // Verify that static method works as intended
-  const _result = ConfigPrefixDetector.detect([]);
-  assertEquals(_result, null, "Static method should work correctly");
+  const result = ConfigPrefixDetector.detect([]);
+  assertEquals(result, null, "Static method should work correctly");
 
   // Document that constructor should not be used directly
   // (TypeScript will catch this at compile time)

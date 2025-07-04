@@ -94,17 +94,17 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
     context: "test context",
   };
 
-  const _result = _factory.create(input);
+  const result = _factory.create(input);
 
   // Factory層の抽象化により、利用者は内部実装を知る必要がないことを確認
-  if (_result.ok) {
+  if (result.ok) {
     // 結果がStdinVariableとして適切に抽象化されていることを確認
-    const record = _result.data.toRecord();
+    const record = result.data.toRecord();
     assertEquals(record.input_text, "test input");
 
     // Factory層が適切にTypes層を隠蔽していることを確認
-    assertExists(_result.data.name);
-    assertExists(_result.data.value);
+    assertExists(result.data.name);
+    assertExists(result.data.value);
   }
 
   // エラー処理も適切に抽象化されていることを確認
@@ -132,7 +132,7 @@ Deno.test("Structure: 入力バリデーション構造 - 段階的検証", () =
   // 第2段階: Factory層での形式検証
   const invalidSourceResult = _factory.create({
     inputText: "test",
-    source: "invalid" as unknown,
+    source: "invalid" as any,
   });
   assertEquals(invalidSourceResult.ok, false);
   if (!invalidSourceResult.ok) {
@@ -242,9 +242,9 @@ Deno.test("Structure: デフォルトインスタンス構造 - シングルト�
   assertEquals(typeof defaultStdinVariableFactory.validate, "function");
 
   // デフォルトインスタンスが正常に動作することを確認
-  const _result = defaultStdinVariableFactory.create({ inputText: "test" });
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  const result = defaultStdinVariableFactory.create({ inputText: "test" });
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 });
 
 /**
@@ -266,12 +266,12 @@ Deno.test("Structure: エラー型構造 - 階層的エラー定義", () => {
 
   const invalidSourceResult = _factory.create({
     inputText: "test",
-    source: "invalid" as unknown,
+    source: "invalid" as any,
   });
   if (!invalidSourceResult.ok) {
     assertEquals(invalidSourceResult.error.kind, "InvalidStdinSource");
-    assertExists((invalidSourceResult.error as unknown).source);
-    assertEquals(typeof (invalidSourceResult.error as unknown).source, "string");
+    assertExists((invalidSourceResult.error as any).source);
+    assertEquals(typeof (invalidSourceResult.error as any).source, "string");
   }
 
   // Types層エラーの伝播構造確認

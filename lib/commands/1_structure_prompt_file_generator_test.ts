@@ -16,23 +16,23 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";
 import type { CommandResult } from "./mod.ts";
 
-const _logger = new BreakdownLogger("prompt-generator-structure");
+const logger = new BreakdownLogger("prompt-generator-structure");
 
 describe("Structure: PromptFileGenerator Method Contracts", () => {
   it("should maintain validateInputFile contract", async () => {
-    _logger.debug("Testing validateInputFile method contract");
+    logger.debug("Testing validateInputFile method contract");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Method signature
     assertEquals(
-      _generator.validateInputFile.length,
+      generator.validateInputFile.length,
       1,
       "Should accept exactly one parameter",
     );
 
     // Return type - Promise<void>
-    const emptyResult = _generator.validateInputFile("");
+    const emptyResult = generator.validateInputFile("");
     assertExists(emptyResult.then, "Should return a Promise");
 
     // Empty path handling
@@ -42,7 +42,7 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
     });
 
     // Method implementation structure
-    const methodString = _generator.validateInputFile.toString();
+    const methodString = generator.validateInputFile.toString();
     assertEquals(
       methodString.includes("if (!path)"),
       true,
@@ -59,23 +59,23 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
       "Should use Deno.stat for validation",
     );
 
-    _logger.debug("validateInputFile contract verification completed");
+    logger.debug("validateInputFile contract verification completed");
   });
 
   it("should maintain generateWithPrompt parameter structure", async () => {
-    _logger.debug("Testing generateWithPrompt parameter structure");
+    logger.debug("Testing generateWithPrompt parameter structure");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Parameter count and order (length counts only required params before defaults)
     assertEquals(
-      _generator.generateWithPrompt.length,
+      generator.generateWithPrompt.length,
       3,
       "Should accept 3 required parameters",
     );
 
     // Method string analysis for parameter names
-    const methodString = _generator.generateWithPrompt.toString();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify parameter names and types
     assertEquals(
@@ -104,14 +104,14 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
       "Fifth parameter should be options",
     );
 
-    _logger.debug("generateWithPrompt parameter structure verified");
+    logger.debug("generateWithPrompt parameter structure verified");
   });
 
   it("should structure options parameter correctly", async () => {
-    _logger.debug("Testing options parameter structure");
+    logger.debug("Testing options parameter structure");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify options interface structure
     assertEquals(
@@ -136,16 +136,16 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
       "Options should have optional input_text",
     );
 
-    _logger.debug("Options parameter structure verified");
+    logger.debug("Options parameter structure verified");
   });
 });
 
 describe("Structure: Data Flow Patterns", () => {
   it("should transform parameters into CLI params structure", async () => {
-    _logger.debug("Testing parameter transformation flow");
+    logger.debug("Testing parameter transformation flow");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify CLI params construction
     assertEquals(
@@ -181,14 +181,14 @@ describe("Structure: Data Flow Patterns", () => {
       "Should map toFile to destinationFile",
     );
 
-    _logger.debug("Parameter transformation flow verified");
+    logger.debug("Parameter transformation flow verified");
   });
 
   it("should follow factory creation and validation flow", async () => {
-    _logger.debug("Testing factory creation and validation flow");
+    logger.debug("Testing factory creation and validation flow");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify factory creation flow
     assertEquals(
@@ -215,14 +215,14 @@ describe("Structure: Data Flow Patterns", () => {
       "Should assign promptFilePath from params",
     );
 
-    _logger.debug("Factory creation and validation flow verified");
+    logger.debug("Factory creation and validation flow verified");
   });
 
   it("should handle stdin input flow separately", async () => {
-    _logger.debug("Testing stdin input flow handling");
+    logger.debug("Testing stdin input flow handling");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify stdin detection
     assertEquals(
@@ -247,16 +247,16 @@ describe("Structure: Data Flow Patterns", () => {
       "Should return specific error for missing stdin input",
     );
 
-    _logger.debug("Stdin input flow handling verified");
+    logger.debug("Stdin input flow handling verified");
   });
 });
 
 describe("Structure: Error Handling Patterns", () => {
   it("should structure error returns consistently", async () => {
-    _logger.debug("Testing error return structure consistency");
+    logger.debug("Testing error return structure consistency");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Extract all error return patterns
     const errorReturns = methodString.match(/return\s*{\s*success:\s*false[\s\S]*?}/g) || [];
@@ -292,14 +292,14 @@ describe("Structure: Error Handling Patterns", () => {
       );
     }
 
-    _logger.debug("Error return structure consistency verified");
+    logger.debug("Error return structure consistency verified");
   });
 
   it("should map errors to appropriate error types", async () => {
-    _logger.debug("Testing error type mapping");
+    logger.debug("Testing error type mapping");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify error type mappings
     const errorMappings = [
@@ -322,14 +322,14 @@ describe("Structure: Error Handling Patterns", () => {
       );
     }
 
-    _logger.debug("Error type mapping verified");
+    logger.debug("Error type mapping verified");
   });
 
   it("should handle validation errors from factory", async () => {
-    _logger.debug("Testing factory validation error handling");
+    logger.debug("Testing factory validation error handling");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Factory validation is called synchronously
     assertEquals(
@@ -341,16 +341,16 @@ describe("Structure: Error Handling Patterns", () => {
     // Note: validateAll() throws on error, so it should be in a try-catch
     // or the method should handle thrown errors at a higher level
 
-    _logger.debug("Factory validation error handling verified");
+    logger.debug("Factory validation error handling verified");
   });
 });
 
 describe("Structure: Template Processing Integration", () => {
   it("should structure adapter creation and usage", async () => {
-    _logger.debug("Testing adapter creation structure");
+    logger.debug("Testing adapter creation structure");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify dynamic import structure
     assertEquals(
@@ -383,32 +383,32 @@ describe("Structure: Template Processing Integration", () => {
       "Should call validateAndGenerate on adapter",
     );
 
-    _logger.debug("Adapter creation structure verified");
+    logger.debug("Adapter creation structure verified");
   });
 
   it("should handle adapter results properly", async () => {
-    _logger.debug("Testing adapter result handling");
+    logger.debug("Testing adapter result handling");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify result handling structure
     assertEquals(
-      methodString.includes("const _result = await _adapter.validateAndGenerate()"),
+      methodString.includes("const result = await _adapter.validateAndGenerate()"),
       true,
       "Should store adapter result",
     );
     assertEquals(
-      methodString.includes("if (_result.success)"),
+      methodString.includes("if (result.success)"),
       true,
-      "Should check _result.success",
+      "Should check result.success",
     );
 
     // Verify success case mapping
     assertEquals(
-      methodString.includes("output: _result.content"),
+      methodString.includes("output: result.content"),
       true,
-      "Should map _result.content to output on success",
+      "Should map result.content to output on success",
     );
     assertEquals(
       methodString.includes("error: null"),
@@ -418,21 +418,21 @@ describe("Structure: Template Processing Integration", () => {
 
     // Verify failure case mapping
     assertEquals(
-      methodString.includes("String(_result.content)"),
+      methodString.includes("String(result.content)"),
       true,
-      "Should convert _result.content to string on failure",
+      "Should convert result.content to string on failure",
     );
 
-    _logger.debug("Adapter result handling verified");
+    logger.debug("Adapter result handling verified");
   });
 });
 
 describe("Structure: File System Validation", () => {
   it("should structure file existence checks", async () => {
-    _logger.debug("Testing file existence check structure");
+    logger.debug("Testing file existence check structure");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify directory check
     assertEquals(
@@ -462,14 +462,14 @@ describe("Structure: File System Validation", () => {
       "Should check directory before file",
     );
 
-    _logger.debug("File existence check structure verified");
+    logger.debug("File existence check structure verified");
   });
 
   it("should structure validation error messages", async () => {
-    _logger.debug("Testing validation error message structure");
+    logger.debug("Testing validation error message structure");
 
-    const _generator = new PromptFileGenerator();
-    const methodString = _generator.generateWithPrompt.toString();
+    const generator = new PromptFileGenerator();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Verify error messages include relevant paths
     assertEquals(
@@ -488,24 +488,24 @@ describe("Structure: File System Validation", () => {
       "Template file error should include path",
     );
 
-    _logger.debug("Validation error message structure verified");
+    logger.debug("Validation error message structure verified");
   });
 });
 
 describe("Structure: CommandResult Interface Compliance", () => {
   it("should return CommandResult with all required fields", async () => {
-    _logger.debug("Testing CommandResult interface compliance");
+    logger.debug("Testing CommandResult interface compliance");
 
-    const _generator = new PromptFileGenerator();
+    const generator = new PromptFileGenerator();
 
     // Test method signature
-    const _result = _generator.generateWithPrompt("test.md", "out.md", "format", false, {});
+    const result = generator.generateWithPrompt("test.md", "out.md", "format", false, {});
 
     // Verify returns Promise<CommandResult>
-    assertExists(_result.then, "Should return a Promise");
+    assertExists(result.then, "Should return a Promise");
 
     // Method analysis for return structure
-    const methodString = _generator.generateWithPrompt.toString();
+    const methodString = generator.generateWithPrompt.toString();
 
     // Count return statements
     const returnMatches = methodString.match(/return\s*{/g) || [];
@@ -525,6 +525,6 @@ describe("Structure: CommandResult Interface Compliance", () => {
       "All returns should follow CommandResult structure",
     );
 
-    _logger.debug("CommandResult interface compliance verified");
+    logger.debug("CommandResult interface compliance verified");
   });
 });

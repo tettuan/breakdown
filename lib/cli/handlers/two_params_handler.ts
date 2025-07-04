@@ -135,11 +135,20 @@ class TwoParamsOrchestrator {
    * Map validation errors to handler errors
    */
   private mapValidationError(error: unknown): TwoParamsHandlerError {
-    const validationError = error as { kind?: string; received?: number; expected?: number; value?: string; validTypes?: string[] };
+    const validationError = error as {
+      kind?: string;
+      received?: number;
+      expected?: number;
+      value?: string;
+      validTypes?: string[];
+    };
     if (validationError.kind === "InvalidParameterCount") {
       return validationError as TwoParamsHandlerError;
     }
-    if (validationError.kind === "InvalidDemonstrativeType" || validationError.kind === "InvalidLayerType") {
+    if (
+      validationError.kind === "InvalidDemonstrativeType" ||
+      validationError.kind === "InvalidLayerType"
+    ) {
       return validationError as TwoParamsHandlerError;
     }
     return {

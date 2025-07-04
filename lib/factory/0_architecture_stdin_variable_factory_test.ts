@@ -17,7 +17,7 @@ import {
   StdinVariableFactory,
   StdinVariableFactoryError,
 } from "./stdin_variable_factory.ts";
-import type { Result } from "../types/_result.ts";
+import type { Result } from "../types/result.ts";
 import type { StdinVariable } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";
 
@@ -28,7 +28,7 @@ import type { VariableError } from "../types/variable_result.ts";
 Deno.test("Architecture: StdinVariableFactory依存関係の方向性", () => {
   // Factory実装がTypes層の型を正しく使用していることを確認
   const _factory = new StdinVariableFactory();
-  assertExists(_factory);
+  assertExists(factory);
 
   // 型レベルでの依存関係確認
   const testInput: StdinFactoryInput = {
@@ -37,17 +37,17 @@ Deno.test("Architecture: StdinVariableFactory依存関係の方向性", () => {
     context: "test context",
   };
 
-  const _result = _factory.create(testInput);
+  const result = _factory.create(testInput);
 
   // ResultがTypes層の型であることを確認
-  assertEquals(typeof _result.ok, "boolean");
+  assertEquals(typeof result.ok, "boolean");
 
-  if (_result.ok) {
+  if (result.ok) {
     // StdinVariableがTypes層の型であることを確認
-    assertEquals(typeof _result.data.toRecord, "function");
+    assertEquals(typeof result.data.toRecord, "function");
   } else {
     // ErrorがTypes層の型であることを確認
-    assertExists(_result.error.kind);
+    assertExists(result.error.kind);
   }
 });
 
@@ -60,7 +60,7 @@ Deno.test("Architecture: 循環参照の回避確認", () => {
   const _factory = new StdinVariableFactory();
 
   // インスタンス生成が成功することで循環参照がないことを間接的に確認
-  assertExists(_factory);
+  assertExists(factory);
 
   // メソッドが正常に呼び出せることで内部循環がないことを確認
   const validateResult = _factory.validate({});
@@ -112,7 +112,7 @@ Deno.test("Architecture: エラー型の階層性確認", () => {
 
   const invalidSourceResult = _factory.create({
     inputText: "test",
-    source: "invalid" as unknown,
+    source: "invalid" as any,
   });
   if (!invalidSourceResult.ok) {
     assertEquals(invalidSourceResult.error.kind, "InvalidStdinSource");
@@ -192,7 +192,7 @@ Deno.test("Architecture: Totality原則の適用確認", () => {
       description: "空文字列",
     },
     {
-      input: { inputText: "valid", source: "invalid" as unknown },
+      input: { inputText: "valid", source: "invalid" as any },
       expectedOutcome: "error",
       description: "無効なsource",
     },
@@ -200,12 +200,12 @@ Deno.test("Architecture: Totality原則の適用確認", () => {
 
   // 全てのパターンが適切に処理されることを確認
   for (const testCase of testCases) {
-    const _result = _factory.create(testCase.input);
+    const result = _factory.create(testCase.input);
 
     if (testCase.expectedOutcome === "success") {
-      assertEquals(_result.ok, true, `${testCase.description}で成功すべき`);
+      assertEquals(result.ok, true, `${testCase.description}で成功すべき`);
     } else {
-      assertEquals(_result.ok, false, `${testCase.description}でエラーになるべき`);
+      assertEquals(result.ok, false, `${testCase.description}でエラーになるべき`);
     }
   }
 });

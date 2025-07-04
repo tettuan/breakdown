@@ -2,7 +2,7 @@
  * @fileoverview Processor Pipeline Integration Tests
  *
  * Comprehensive integration testing for the processor pipeline:
- * - TwoParamsProcessor: Converts TwoParamsResult to VariablesBuilder
+ * - TwoParamsProcessor: Converts TwoParams_Result to VariablesBuilder
  * - VariableProcessor: Processes variables from CLI options and STDIN
  * - TwoParamsStdinProcessor: Handles STDIN input processing
  *
@@ -18,15 +18,15 @@ import { TwoParamsProcessor } from "../../lib/cli/processors/two_params_processo
 import { TwoParamsVariableProcessor } from "../../lib/processor/variable_processor.ts";
 import { TwoParamsStdinProcessor } from "../../lib/cli/processors/two_params_stdin_processor.ts";
 import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
-import type { TwoParamsResult } from "../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("processor-pipeline-integration");
+const logger = new BreakdownLogger("processor-pipeline-integration");
 
 /**
- * Mock TwoParamsResult factory for testing
+ * Mock TwoParams_Result factory for testing
  */
-function createMockTwoParamsResult(overrides: Partial<TwoParamsResult> = {}): TwoParamsResult {
+function createMockTwoParams_Result(overrides: Partial<TwoParams_Result> = {}): TwoParams_Result {
   return {
     type: "two",
     demonstrativeType: "to",
@@ -43,14 +43,14 @@ function createMockTwoParamsResult(overrides: Partial<TwoParamsResult> = {}): Tw
  */
 Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
   await t.step("integrates TwoParamsProcessor with VariableProcessor", async () => {
-    _logger.debug("Testing TwoParamsProcessor → VariableProcessor integration");
+    logger.debug("Testing TwoParamsProcessor → VariableProcessor integration");
 
     // Create processors
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
     // Mock input data
-    const twoParamsResult = createMockTwoParamsResult({
+    const twoParamsResult = createMockTwoParams_Result({
       options: {
         "uv-custom1": "value1",
         "uv-custom2": "value2",
@@ -77,11 +77,11 @@ Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
       assertExists(variableResult.data, "Variable processor should return data");
     }
 
-    _logger.info("TwoParamsProcessor → VariableProcessor integration successful");
+    logger.info("TwoParamsProcessor → VariableProcessor integration successful");
   });
 
   await t.step("integrates StdinProcessor with VariableProcessor", async () => {
-    _logger.debug("Testing StdinProcessor → VariableProcessor integration");
+    logger.debug("Testing StdinProcessor → VariableProcessor integration");
 
     const stdinProcessor = new TwoParamsStdinProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
@@ -106,18 +106,18 @@ Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
 
     assertEquals(variableResult.ok, true, "VariableProcessor with stdin should succeed");
 
-    _logger.info("StdinProcessor → VariableProcessor integration successful");
+    logger.info("StdinProcessor → VariableProcessor integration successful");
   });
 
   await t.step("integrates all three processors in complete pipeline", async () => {
-    _logger.debug("Testing complete processor pipeline integration");
+    logger.debug("Testing complete processor pipeline integration");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const stdinProcessor = new TwoParamsStdinProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
     // Mock complete input scenario
-    const twoParamsResult = createMockTwoParamsResult({
+    const twoParamsResult = createMockTwoParams_Result({
       demonstrativeType: "summary",
       layerType: "issue",
       options: {
@@ -129,7 +129,7 @@ Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
       },
     });
 
-    // Step 1: Process TwoParamsResult
+    // Step 1: Process TwoParams_Result
     const builderResult = twoParamsProcessor.process(twoParamsResult);
     assertEquals(builderResult.ok, true, "TwoParamsProcessor should succeed in pipeline");
 
@@ -152,7 +152,7 @@ Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
       assertExists(variables, "Complete pipeline should produce variables");
     }
 
-    _logger.info("Complete processor pipeline integration successful");
+    logger.info("Complete processor pipeline integration successful");
   });
 });
 
@@ -162,12 +162,12 @@ Deno.test("Processor Pipeline Integration - Basic Flow", async (t) => {
  */
 Deno.test("Processor Pipeline Integration - Data Flow", async (t) => {
   await t.step("validates data flow from CLI options to variables", async () => {
-    _logger.debug("Testing CLI options data flow");
+    logger.debug("Testing CLI options data flow");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
-    const twoParamsResult = createMockTwoParamsResult({
+    const twoParamsResult = createMockTwoParams_Result({
       demonstrativeType: "to",
       layerType: "project",
       options: {
@@ -198,17 +198,17 @@ Deno.test("Processor Pipeline Integration - Data Flow", async (t) => {
       assertExists(variables, "Variables should be created");
 
       // Test that the pipeline preserved data integrity
-      _logger.debug("Data flow validation successful", {
+      logger.debug("Data flow validation successful", {
         hasVariables: !!variables,
         originalOptionsCount: Object.keys(twoParamsResult.options).length,
       });
     }
 
-    _logger.info("CLI options data flow validation successful");
+    logger.info("CLI options data flow validation successful");
   });
 
   await t.step("validates stdin content integration", async () => {
-    _logger.debug("Testing stdin content data flow");
+    logger.debug("Testing stdin content data flow");
 
     const stdinProcessor = new TwoParamsStdinProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
@@ -238,18 +238,18 @@ Deno.test("Processor Pipeline Integration - Data Flow", async (t) => {
       assertExists(variables, "Variables should include stdin content");
     }
 
-    _logger.info("Stdin content data flow validation successful");
+    logger.info("Stdin content data flow validation successful");
   });
 
   await t.step("validates complex variable processing scenarios", async () => {
-    _logger.debug("Testing complex variable processing scenarios");
+    logger.debug("Testing complex variable processing scenarios");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const stdinProcessor = new TwoParamsStdinProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
     // Complex scenario with multiple variable types
-    const twoParamsResult = createMockTwoParamsResult({
+    const twoParamsResult = createMockTwoParams_Result({
       demonstrativeType: "summary",
       layerType: "task",
       options: {
@@ -289,7 +289,7 @@ Deno.test("Processor Pipeline Integration - Data Flow", async (t) => {
       assertExists(variables, "Complex scenario should produce comprehensive variables");
     }
 
-    _logger.info("Complex variable processing scenario validation successful");
+    logger.info("Complex variable processing scenario validation successful");
   });
 });
 
@@ -299,13 +299,13 @@ Deno.test("Processor Pipeline Integration - Data Flow", async (t) => {
  */
 Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
   await t.step("handles error propagation between processors", async () => {
-    _logger.debug("Testing error propagation in processor pipeline");
+    logger.debug("Testing error propagation in processor pipeline");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
     // Test with invalid parameters that should cause errors
-    const invalidTwoParamsResult = createMockTwoParamsResult({
+    const invalidTwoParams_Result = createMockTwoParams_Result({
       demonstrativeType: "", // Invalid empty value
       layerType: "project",
       options: {
@@ -315,35 +315,35 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
     });
 
     // Process through pipeline - should handle errors gracefully
-    const builderResult = twoParamsProcessor.process(invalidTwoParamsResult);
+    const builderResult = twoParamsProcessor.process(invalidTwoParams_Result);
     // TwoParamsProcessor might succeed but VariableProcessor should catch invalid variables
 
     const variableResult = await variableProcessor.process({
-      options: invalidTwoParamsResult.options,
+      options: invalidTwoParams_Result.options,
       inputFile: "test.md",
     });
 
     // Should either succeed with filtered variables or fail with proper error
     if (!variableResult.ok) {
       assertExists(variableResult.error, "Error should be properly structured");
-      _logger.debug("Error properly propagated", { error: variableResult.error });
+      logger.debug("Error properly propagated", { error: variableResult.error });
     } else {
       // If succeeded, invalid variables should be filtered out
-      _logger.debug("Invalid variables properly filtered");
+      logger.debug("Invalid variables properly filtered");
     }
 
-    _logger.info("Error propagation testing successful");
+    logger.info("Error propagation testing successful");
   });
 
   await t.step("handles edge cases in integrated processing", async () => {
-    _logger.debug("Testing edge cases in integrated processing");
+    logger.debug("Testing edge cases in integrated processing");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const stdinProcessor = new TwoParamsStdinProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
 
     // Edge case: minimal valid input
-    const minimalResult = createMockTwoParamsResult({
+    const minimalResult = createMockTwoParams_Result({
       options: {}, // No custom variables
     });
 
@@ -367,7 +367,7 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
       maximalOptions[`uv-var${i}`] = `value${i}`;
     }
 
-    const maximalResult = createMockTwoParamsResult({
+    const maximalResult = createMockTwoParams_Result({
       options: maximalOptions,
     });
 
@@ -381,11 +381,11 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
     assertEquals(maxBuilderResult.ok, true, "Maximum complexity should be handled");
     assertEquals(maxVariableResult.ok, true, "Maximum variables should be processed");
 
-    _logger.info("Edge case testing successful");
+    logger.info("Edge case testing successful");
   });
 
   await t.step("validates pipeline resilience and recovery", async () => {
-    _logger.debug("Testing pipeline resilience and recovery");
+    logger.debug("Testing pipeline resilience and recovery");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const stdinProcessor = new TwoParamsStdinProcessor();
@@ -420,9 +420,9 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
     ];
 
     for (const scenario of scenarios) {
-      _logger.debug(`Testing scenario: ${scenario.name}`);
+      logger.debug(`Testing scenario: ${scenario.name}`);
 
-      const twoParamsResult = createMockTwoParamsResult({
+      const twoParamsResult = createMockTwoParams_Result({
         options: scenario.options,
       });
 
@@ -453,7 +453,7 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
       }
     }
 
-    _logger.info("Pipeline resilience validation successful");
+    logger.info("Pipeline resilience validation successful");
   });
 });
 
@@ -463,7 +463,7 @@ Deno.test("Processor Pipeline Integration - Error Handling", async (t) => {
  */
 Deno.test("Processor Pipeline Integration - Performance", async (t) => {
   await t.step("validates pipeline performance with large datasets", async () => {
-    _logger.debug("Testing pipeline performance with large datasets");
+    logger.debug("Testing pipeline performance with large datasets");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
@@ -474,7 +474,7 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
       largeOptions[`uv-variable${i}`] = `value-${i}-${"data".repeat(50)}`;
     }
 
-    const largeResult = createMockTwoParamsResult({
+    const largeResult = createMockTwoParams_Result({
       options: largeOptions,
     });
 
@@ -497,7 +497,7 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
     // Performance assertion (should complete within reasonable time)
     assert(duration < 1000, `Processing should complete within 1000ms, took ${duration}ms`);
 
-    _logger.info("Performance test completed", {
+    logger.info("Performance test completed", {
       duration: `${duration.toFixed(2)}ms`,
       variableCount: Object.keys(largeOptions).length,
       avgTimePerVariable: `${(duration / Object.keys(largeOptions).length).toFixed(4)}ms`,
@@ -505,7 +505,7 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
   });
 
   await t.step("validates memory efficiency in pipeline processing", async () => {
-    _logger.debug("Testing memory efficiency in pipeline processing");
+    logger.debug("Testing memory efficiency in pipeline processing");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
@@ -520,7 +520,7 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
         batchOptions[`uv-batch${batch}-var${i}`] = `batch-${batch}-value-${i}`;
       }
 
-      const batchResult = createMockTwoParamsResult({
+      const batchResult = createMockTwoParams_Result({
         options: batchOptions,
       });
 
@@ -534,12 +534,12 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
       assertEquals(variableResult.ok, true, `Batch ${batch} VariableProcessor should succeed`);
 
       // Force garbage collection hint (if available)
-      if (typeof (globalThis as unknown).gc === "function") {
-        (globalThis as unknown).gc();
+      if (typeof (globalThis as any).gc === "function") {
+        (globalThis as any).gc();
       }
     }
 
-    _logger.info("Memory efficiency test completed", {
+    logger.info("Memory efficiency test completed", {
       totalBatches: batchCount,
       variablesPerBatch,
       totalVariablesProcessed: batchCount * variablesPerBatch,
@@ -547,7 +547,7 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
   });
 
   await t.step("validates concurrent processing capabilities", async () => {
-    _logger.debug("Testing concurrent processing capabilities");
+    logger.debug("Testing concurrent processing capabilities");
 
     const twoParamsProcessor = new TwoParamsProcessor();
     const variableProcessor = new TwoParamsVariableProcessor();
@@ -560,10 +560,10 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
         [`uv-batch`]: `batch-${index}`,
       };
 
-      const result = createMockTwoParamsResult({ options });
+      const result = createMockTwoParams_Result({ options });
 
       return (async () => {
-        const builderResult = twoParamsProcessor.process(_result);
+        const builderResult = twoParamsProcessor.process(result);
         const variableResult = await variableProcessor.process({
           options,
           inputFile: `concurrent-${index}.md`,
@@ -585,19 +585,19 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
     // Verify all tasks completed successfully
     for (const result of results) {
       assertEquals(
-        _result.builderSuccess,
+        result.builderSuccess,
         true,
         `Task ${result.taskId} TwoParamsProcessor should succeed`,
       );
       assertEquals(
-        _result.variableSuccess,
+        result.variableSuccess,
         true,
         `Task ${result.taskId} VariableProcessor should succeed`,
       );
     }
 
     const duration = endTime - startTime;
-    _logger.info("Concurrent processing test completed", {
+    logger.info("Concurrent processing test completed", {
       duration: `${duration.toFixed(2)}ms`,
       concurrentTasks: results.length,
       avgTimePerTask: `${(duration / results.length).toFixed(2)}ms`,
@@ -605,4 +605,4 @@ Deno.test("Processor Pipeline Integration - Performance", async (t) => {
   });
 });
 
-_logger.info("All processor pipeline integration tests completed");
+logger.info("All processor pipeline integration tests completed");

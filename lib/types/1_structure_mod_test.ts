@@ -18,11 +18,11 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 // Import all exports to test structure
 import * as TypesModule from "./mod.ts";
 
-const _logger = new BreakdownLogger("types-mod-structure");
+const logger = new BreakdownLogger("types-mod-structure");
 
 describe("Structure: Export categorization", () => {
   it("should organize exports into logical categories", () => {
-    _logger.debug("Testing export categorization");
+    logger.debug("Testing export categorization");
 
     // Category 1: Totality-compliant types
     const totalityTypes = {
@@ -77,11 +77,11 @@ describe("Structure: Export categorization", () => {
       assertExists(value, `Config type ${name} must be exported`);
     });
 
-    _logger.debug("Export categorization verified");
+    logger.debug("Export categorization verified");
   });
 
   it("should maintain clear separation between new and legacy types", () => {
-    _logger.debug("Testing new/legacy type separation");
+    logger.debug("Testing new/legacy type separation");
 
     // New types should be classes with static create methods
     const newTypes = [
@@ -107,13 +107,13 @@ describe("Structure: Export categorization", () => {
       assertEquals(typeof Factory, "object", "Legacy factory should be an object");
     }
 
-    _logger.debug("New/legacy separation verified");
+    logger.debug("New/legacy separation verified");
   });
 });
 
 describe("Structure: Interface segregation", () => {
   it("should provide focused interfaces for different use cases", () => {
-    _logger.debug("Testing interface segregation");
+    logger.debug("Testing interface segregation");
 
     // Type creation interface
     assertExists(TypesModule.TypeFactory, "TypeFactory for type creation");
@@ -141,11 +141,11 @@ describe("Structure: Interface segregation", () => {
       assertEquals(typeof fn, "function", "Result interface should export functions");
     });
 
-    _logger.debug("Interface segregation verified");
+    logger.debug("Interface segregation verified");
   });
 
   it("should not mix concerns between different type categories", () => {
-    _logger.debug("Testing concern separation");
+    logger.debug("Testing concern separation");
 
     // DirectiveType should not know about LayerType internals
     const directive = TypesModule.DirectiveType.create({
@@ -173,13 +173,13 @@ describe("Structure: Interface segregation", () => {
     assertExists(layer.value, "LayerType should have value property");
     assertExists(profile.value, "ConfigProfileName should have value property");
 
-    _logger.debug("Concern separation verified");
+    logger.debug("Concern separation verified");
   });
 });
 
 describe("Structure: Type composition patterns", () => {
   it("should support type composition through TypeFactory", () => {
-    _logger.debug("Testing type composition");
+    logger.debug("Testing type composition");
 
     // TypeFactory should compose multiple types
     const patternProvider = {
@@ -187,20 +187,20 @@ describe("Structure: Type composition patterns", () => {
       getLayerTypePattern: () => TypesModule.TwoParamsLayerTypePattern.create("project|issue|task"),
     };
 
-    const _factory = new TypesModule.TypeFactory(patternProvider);
+    const factory = new TypesModule.TypeFactory(patternProvider);
 
     // Should support creating individual types
-    assertExists(_factory.createDirectiveType, "Factory should create DirectiveType");
-    assertExists(_factory.createLayerType, "Factory should create LayerType");
+    assertExists(factory.createDirectiveType, "Factory should create DirectiveType");
+    assertExists(factory.createLayerType, "Factory should create LayerType");
 
     // Should support creating composite types
-    assertExists(_factory.createBothTypes, "Factory should create both types");
+    assertExists(factory.createBothTypes, "Factory should create both types");
 
-    _logger.debug("Type composition verified");
+    logger.debug("Type composition verified");
   });
 
   it("should enable variable composition for prompts", () => {
-    _logger.debug("Testing variable composition");
+    logger.debug("Testing variable composition");
 
     // Different variable types should compose into PromptVariables
     const standardVarResult = TypesModule.StandardVariable.create(
@@ -241,13 +241,13 @@ describe("Structure: Type composition patterns", () => {
       }
     });
 
-    _logger.debug("Variable composition verified");
+    logger.debug("Variable composition verified");
   });
 });
 
 describe("Structure: Migration path structure", () => {
   it("should provide clear migration path from legacy to new types", () => {
-    _logger.debug("Testing migration path structure");
+    logger.debug("Testing migration path structure");
 
     // Legacy type (object with kind and value)
     type OldDemonstrativeType = TypesModule.DemonstrativeType;
@@ -271,11 +271,11 @@ describe("Structure: Migration path structure", () => {
     assertExists(newType, "Should create new type from old value");
     assertEquals(newType.value, "to", "Should preserve value during migration");
 
-    _logger.debug("Migration path verified");
+    logger.debug("Migration path verified");
   });
 
   it("should maintain compatibility through type guards", () => {
-    _logger.debug("Testing type guard compatibility");
+    logger.debug("Testing type guard compatibility");
 
     // Legacy guards for runtime checks
     const demonstrativeGuards = TypesModule.DemonstrativeTypeGuards;
@@ -304,13 +304,13 @@ describe("Structure: Migration path structure", () => {
     assertEquals(demonstrativeGuards.isTo(invalidDemo), false);
     assertEquals(layerGuards.isProject(invalidLayer), false);
 
-    _logger.debug("Type guard compatibility verified");
+    logger.debug("Type guard compatibility verified");
   });
 });
 
 describe("Structure: Module organization principles", () => {
   it("should follow single responsibility principle", () => {
-    _logger.debug("Testing single responsibility");
+    logger.debug("Testing single responsibility");
 
     // Each exported type should have a single, clear responsibility
     const responsibilities = {
@@ -334,11 +334,11 @@ describe("Structure: Module organization principles", () => {
       );
     });
 
-    _logger.debug("Single responsibility verified");
+    logger.debug("Single responsibility verified");
   });
 
   it("should minimize coupling between exported types", () => {
-    _logger.debug("Testing loose coupling");
+    logger.debug("Testing loose coupling");
 
     // Types should be usable independently
 
@@ -374,11 +374,11 @@ describe("Structure: Module organization principles", () => {
     const variable = variableResult.ok ? variableResult.data : null;
     assertExists(variable, "Variables should work independently");
 
-    _logger.debug("Loose coupling verified");
+    logger.debug("Loose coupling verified");
   });
 
   it("should provide cohesive type system", () => {
-    _logger.debug("Testing type system cohesion");
+    logger.debug("Testing type system cohesion");
 
     // All type creation should follow similar patterns
     const typeCreators = [
@@ -421,6 +421,6 @@ describe("Structure: Module organization principles", () => {
       assertEquals(typeof util, "function", "Result utilities should be functions");
     });
 
-    _logger.debug("Type system cohesion verified");
+    logger.debug("Type system cohesion verified");
   });
 });

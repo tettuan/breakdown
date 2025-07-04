@@ -23,7 +23,7 @@ import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
 import { TEST_BASE_DIR } from "$test/helpers/test_utils.ts";
 
-const _logger = new BreakdownLogger();
+const logger = new BreakdownLogger();
 
 // Preparing Part
 interface SetupResult {
@@ -33,7 +33,7 @@ interface SetupResult {
 }
 
 async function setupPromptFiles(workingDir: string): Promise<SetupResult> {
-  _logger.debug("Setting up prompt files", { workingDir });
+  logger.debug("Setting up prompt files", { workingDir });
 
   const inputContent = "# Project Title\n- Feature 1: First feature\n- Feature 2: Second feature";
   const testPromptsDir = join(workingDir, "prompts");
@@ -48,7 +48,7 @@ Content:
 
 Output to: {destination_path}`;
   await Deno.writeTextFile(promptPath, promptTemplate);
-  _logger.debug("Created test prompt template", { promptPath });
+  logger.debug("Created test prompt template", { promptPath });
 
   return { inputContent, testPromptsDir, promptPath };
 }
@@ -70,7 +70,7 @@ async function restoreWritePermissions(path: string): Promise<void> {
     }
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      _logger.error(`Error restoring permissions for ${path}:`, {
+      logger.error(`Error restoring permissions for ${path}:`, {
         path,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -89,7 +89,7 @@ async function cleanupTestDir(path: string): Promise<void> {
     await Deno.remove(path, { recursive: true });
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
-      _logger.error(`Error cleaning up test directory ${path}:`, {
+      logger.error(`Error cleaning up test directory ${path}:`, {
         path,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -101,7 +101,7 @@ async function cleanupTestDir(path: string): Promise<void> {
 // Main Test
 Deno.test("Prompt Setup", async (t) => {
   const testDir = join(TEST_BASE_DIR, "prompt_setup_test");
-  _logger.debug("Setting up test environment", { testDir });
+  logger.debug("Setting up test environment", { testDir });
 
   const env = await setupTestEnvironment({
     workingDir: testDir,
@@ -163,7 +163,7 @@ Deno.test("Prompt Setup", async (t) => {
       );
     });
   } finally {
-    _logger.debug("Cleaning up test environment");
+    logger.debug("Cleaning up test environment");
     await cleanupTestEnvironment(env);
   }
 });

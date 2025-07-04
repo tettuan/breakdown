@@ -16,11 +16,11 @@ import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("stdin-architecture");
+const logger = new BreakdownLogger("stdin-architecture");
 
 describe("Architecture: Module boundary enforcement", () => {
   it("should export all public I/O interfaces from the module", async () => {
-    _logger.debug("Testing module exports completeness");
+    logger.debug("Testing module exports completeness");
 
     const _mod = await import("./stdin.ts");
 
@@ -39,18 +39,30 @@ describe("Architecture: Module boundary enforcement", () => {
 
     // Interface types
     assertEquals(typeof (_mod as any).readStdin, "function", "readStdin should be a function");
-    assertEquals(typeof (_mod as any).hasStdinContent, "function", "hasStdinContent should be a function");
+    assertEquals(
+      typeof (_mod as any).hasStdinContent,
+      "function",
+      "hasStdinContent should be a function",
+    );
     assertEquals(typeof (_mod as any).writeStdout, "function", "writeStdout should be a function");
-    assertEquals(typeof (_mod as any).isStdinAvailable, "function", "isStdinAvailable should be a function");
+    assertEquals(
+      typeof (_mod as any).isStdinAvailable,
+      "function",
+      "isStdinAvailable should be a function",
+    );
     assertEquals(typeof (_mod as any).StdinError, "function", "StdinError should be a constructor");
-    assertEquals(typeof (_mod as any).ProgressBar, "function", "ProgressBar should be a constructor");
+    assertEquals(
+      typeof (_mod as any).ProgressBar,
+      "function",
+      "ProgressBar should be a constructor",
+    );
     assertEquals(typeof (_mod as any).Spinner, "function", "Spinner should be a constructor");
 
-    _logger.debug("Module exports validation completed");
+    logger.debug("Module exports validation completed");
   });
 
   it("should not expose internal implementation details", async () => {
-    _logger.debug("Testing encapsulation boundaries");
+    logger.debug("Testing encapsulation boundaries");
 
     const _mod = await import("./stdin.ts");
 
@@ -66,19 +78,19 @@ describe("Architecture: Module boundary enforcement", () => {
 
     for (const unexpectedExport of unexpectedExports) {
       assertEquals(
-        (mod as unknown)[unexpectedExport],
+        (_mod as any)[unexpectedExport],
         undefined,
         `${unexpectedExport} should not be exposed`,
       );
     }
 
-    _logger.debug("Encapsulation boundary verification completed");
+    logger.debug("Encapsulation boundary verification completed");
   });
 });
 
 describe("Architecture: Dependency direction verification", () => {
   it("should not import from higher-level modules", async () => {
-    _logger.debug("Testing dependency direction constraints");
+    logger.debug("Testing dependency direction constraints");
 
     // Read the module source to check imports
     const moduleSource = await Deno.readTextFile(new URL("./stdin.ts", import.meta.url).pathname);
@@ -102,11 +114,11 @@ describe("Architecture: Dependency direction verification", () => {
       );
     }
 
-    _logger.debug("Dependency direction verification completed");
+    logger.debug("Dependency direction verification completed");
   });
 
   it("should only import from allowed modules", async () => {
-    _logger.debug("Testing allowed dependencies");
+    logger.debug("Testing allowed dependencies");
 
     const moduleSource = await Deno.readTextFile(new URL("./stdin.ts", import.meta.url).pathname);
 
@@ -123,7 +135,7 @@ describe("Architecture: Dependency direction verification", () => {
 
     for (const match of importMatches) {
       const importPath = match[0];
-      const isAllowed = false;
+      let isAllowed = false;
 
       // Reset RegExp lastIndex before testing
       for (const pattern of allowedPatterns) {
@@ -141,13 +153,13 @@ describe("Architecture: Dependency direction verification", () => {
       );
     }
 
-    _logger.debug("Allowed dependencies verification completed");
+    logger.debug("Allowed dependencies verification completed");
   });
 });
 
 describe("Architecture: I/O abstraction layer compliance", () => {
   it("should provide consistent I/O interface", async () => {
-    _logger.debug("Testing I/O interface consistency");
+    logger.debug("Testing I/O interface consistency");
 
     const _mod = await import("./stdin.ts");
 
@@ -155,19 +167,27 @@ describe("Architecture: I/O abstraction layer compliance", () => {
     assertEquals(typeof (_mod as any).readStdin, "function", "readStdin should be a function");
 
     // Synchronous operations should be clearly identified
-    assertEquals(typeof (_mod as any).hasStdinContent, "function", "hasStdinContent should be sync function");
-    assertEquals(typeof (_mod as any).writeStdout, "function", "writeStdout should be sync function");
+    assertEquals(
+      typeof (_mod as any).hasStdinContent,
+      "function",
+      "hasStdinContent should be sync function",
+    );
+    assertEquals(
+      typeof (_mod as any).writeStdout,
+      "function",
+      "writeStdout should be sync function",
+    );
     assertEquals(
       typeof (_mod as any).isStdinAvailable,
       "function",
       "isStdinAvailable should be sync function",
     );
 
-    _logger.debug("I/O interface consistency verified");
+    logger.debug("I/O interface consistency verified");
   });
 
   it("should isolate platform-specific operations", async () => {
-    _logger.debug("Testing platform abstraction");
+    logger.debug("Testing platform abstraction");
 
     const moduleSource = await Deno.readTextFile(new URL("./stdin.ts", import.meta.url).pathname);
 
@@ -179,7 +199,7 @@ describe("Architecture: I/O abstraction layer compliance", () => {
       "Deno.env",
     ];
 
-    const hasDenoUsage = false;
+    let hasDenoUsage = false;
     for (const api of denoApiUsage) {
       if (moduleSource.includes(api)) {
         hasDenoUsage = true;
@@ -190,13 +210,13 @@ describe("Architecture: I/O abstraction layer compliance", () => {
     // Should use Deno APIs but wrap them appropriately
     assertEquals(hasDenoUsage, true, "Should use Deno APIs for I/O operations");
 
-    _logger.debug("Platform abstraction verification completed");
+    logger.debug("Platform abstraction verification completed");
   });
 });
 
 describe("Architecture: Error handling architecture", () => {
   it("should provide comprehensive error handling", async () => {
-    _logger.debug("Testing error handling architecture");
+    logger.debug("Testing error handling architecture");
 
     const _mod = await import("./stdin.ts");
 
@@ -209,33 +229,33 @@ describe("Architecture: Error handling architecture", () => {
     assertEquals(error.name, "StdinError", "Should have correct error name");
     assertEquals(error.message, "test error", "Should preserve error message");
 
-    _logger.debug("Error handling architecture verified");
+    logger.debug("Error handling architecture verified");
   });
 
   it("should handle async operation failures gracefully", async () => {
-    _logger.debug("Testing async error handling");
+    logger.debug("Testing async error handling");
 
     const _mod = await import("./stdin.ts");
 
     // readStdin should return a Promise
-    const _result = (_mod as any).readStdin({ timeout: 1 }); // Very short timeout
+    const result = (_mod as any).readStdin({ timeout: 1 }); // Very short timeout
     assertEquals(result instanceof Promise, true, "readStdin should return Promise");
 
     // Should handle timeout gracefully
     try {
-      await _result;
+      await result;
       // If no error, that's ok - might be in a test environment
     } catch (error) {
       assertEquals(error instanceof (_mod as any).StdinError, true, "Should throw StdinError");
     }
 
-    _logger.debug("Async error handling verified");
+    logger.debug("Async error handling verified");
   });
 });
 
 describe("Architecture: Performance and resource management", () => {
   it("should provide efficient I/O operations", async () => {
-    _logger.debug("Testing I/O performance architecture");
+    logger.debug("Testing I/O performance architecture");
 
     const _mod = await import("./stdin.ts");
 
@@ -248,11 +268,11 @@ describe("Architecture: Performance and resource management", () => {
     // Should complete very quickly (< 10ms)
     assertEquals(duration < 10, true, "isStdinAvailable should be fast");
 
-    _logger.debug("I/O performance verified");
+    logger.debug("I/O performance verified");
   });
 
   it("should manage UI component resources properly", async () => {
-    _logger.debug("Testing UI component resource management");
+    logger.debug("Testing UI component resource management");
 
     const _mod = await import("./stdin.ts");
 
@@ -272,13 +292,13 @@ describe("Architecture: Performance and resource management", () => {
     spinner.start();
     spinner.stop(); // Should not throw
 
-    _logger.debug("UI component resource management verified");
+    logger.debug("UI component resource management verified");
   });
 });
 
 describe("Architecture: Integration layer compliance", () => {
   it("should integrate with enhanced stdin module", async () => {
-    _logger.debug("Testing enhanced stdin integration");
+    logger.debug("Testing enhanced stdin integration");
 
     const moduleSource = await Deno.readTextFile(new URL("./stdin.ts", import.meta.url).pathname);
 
@@ -296,11 +316,11 @@ describe("Architecture: Integration layer compliance", () => {
       "Should use readStdinEnhanced function",
     );
 
-    _logger.debug("Enhanced stdin integration verified");
+    logger.debug("Enhanced stdin integration verified");
   });
 
   it("should support timeout management integration", async () => {
-    _logger.debug("Testing timeout management integration");
+    logger.debug("Testing timeout management integration");
 
     const _mod = await import("./stdin.ts");
 
@@ -314,13 +334,13 @@ describe("Architecture: Integration layer compliance", () => {
       "readStdin should support timeout configuration",
     );
 
-    _logger.debug("Timeout management integration verified");
+    logger.debug("Timeout management integration verified");
   });
 });
 
 describe("Architecture: Module cohesion and coupling", () => {
   it("should have high cohesion within I/O module", async () => {
-    _logger.debug("Testing module cohesion");
+    logger.debug("Testing module cohesion");
 
     const _mod = await import("./stdin.ts");
 
@@ -332,7 +352,7 @@ describe("Architecture: Module cohesion and coupling", () => {
       if (typeof exportName !== "string" || exportName.startsWith("_")) continue;
 
       // All exports should be I/O related functions, classes, or interfaces
-      const exportValue = (mod as unknown)[exportName];
+      const exportValue = (_mod as any)[exportName];
       const isIORelated = typeof exportValue === "function" || // Functions and constructors
         typeof exportValue === "object"; // Interfaces and constants
 
@@ -343,11 +363,11 @@ describe("Architecture: Module cohesion and coupling", () => {
       );
     }
 
-    _logger.debug("Module cohesion verification completed");
+    logger.debug("Module cohesion verification completed");
   });
 
   it("should have loose coupling with external modules", async () => {
-    _logger.debug("Testing module coupling");
+    logger.debug("Testing module coupling");
 
     // Count external dependencies
     const moduleSource = await Deno.readTextFile(new URL("./stdin.ts", import.meta.url).pathname);
@@ -379,6 +399,6 @@ describe("Architecture: Module cohesion and coupling", () => {
       }
     }
 
-    _logger.debug("Module coupling verification completed");
+    logger.debug("Module coupling verification completed");
   });
 });

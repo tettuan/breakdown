@@ -34,16 +34,16 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
     };
     const stdinContent = "test content";
 
-    const _result = _processor.processVariables(options, stdinContent);
+    const result = _processor.processVariables(options, stdinContent);
 
-    assert(_result.ok);
-    if (_result.ok) {
-      assertEquals(_result.data.customVariables["uv-custom"], "custom_value");
-      assertEquals(_result.data.standardVariables.input_text, "test content");
-      assertEquals(_result.data.standardVariables.input_text_file, "input.txt");
-      assertEquals(_result.data.standardVariables.destination_path, "output.txt");
-      assertEquals(_result.data.allVariables["uv-custom"], "custom_value");
-      assertEquals(_result.data.allVariables.input_text, "test content");
+    assert(result.ok);
+    if (result.ok) {
+      assertEquals(result.data.customVariables["uv-custom"], "custom_value");
+      assertEquals(result.data.standardVariables.input_text, "test content");
+      assertEquals(result.data.standardVariables.input_text_file, "input.txt");
+      assertEquals(result.data.standardVariables.destination_path, "output.txt");
+      assertEquals(result.data.allVariables["uv-custom"], "custom_value");
+      assertEquals(result.data.allVariables.input_text, "test content");
     }
   });
 
@@ -57,11 +57,11 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "prefix-uv": "ignored",
     };
 
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(_result.ok);
-    if (_result.ok) {
-      const customKeys = Object.keys(_result.data.customVariables);
+    assert(result.ok);
+    if (result.ok) {
+      const customKeys = Object.keys(result.data.customVariables);
       assertEquals(customKeys.length, 2);
       assert(customKeys.includes("uv-valid"));
       assert(customKeys.includes("uv-another"));
@@ -80,13 +80,13 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "uv-valid": "should_pass",
     };
 
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(!_result.ok);
-    if (!_result.ok) {
-      assertEquals(_result.error.length, 3);
+    assert(!result.ok);
+    if (!result.ok) {
+      assertEquals(result.error.length, 3);
 
-      const reservedErrors = _result.error.filter((e) => e.kind === "ReservedVariableName");
+      const reservedErrors = result.error.filter((e) => e.kind === "ReservedVariableName");
       assertEquals(reservedErrors.length, 3);
 
       const reservedKeys = reservedErrors.map((e) => (e as { key: string }).key);
@@ -107,11 +107,11 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "uv-false": "false", // False string is valid
     };
 
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(!_result.ok);
-    if (!_result.ok) {
-      const emptyErrors = _result.error.filter((e: VariableProcessorError) =>
+    assert(!result.ok);
+    if (!result.ok) {
+      const emptyErrors = result.error.filter((e: VariableProcessorError) =>
         e.kind === "EmptyVariableValue"
       );
       assertEquals(emptyErrors.length, 2);
@@ -126,11 +126,11 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     const options = {}; // No options provided
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(_result.ok);
-    if (_result.ok) {
-      const std = _result.data.standardVariables;
+    assert(result.ok);
+    if (result.ok) {
+      const std = result.data.standardVariables;
       assertEquals(std.input_text_file, "stdin");
       assertEquals(std.destination_path, "stdout");
       assert(!("input_text" in std)); // No stdin content
@@ -182,16 +182,16 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "destination": false, // Boolean coerced to string
     };
 
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(_result.ok);
-    if (_result.ok) {
-      assertEquals(_result.data.customVariables["uv-number"], "42");
-      assertEquals(_result.data.customVariables["uv-boolean"], "true");
-      assertEquals(_result.data.customVariables["uv-object"], "[object Object]");
-      assertEquals(_result.data.customVariables["uv-array"], "1,2,3");
-      assertEquals(_result.data.standardVariables.input_text_file, "123");
-      assertEquals(_result.data.standardVariables.destination_path, "false");
+    assert(result.ok);
+    if (result.ok) {
+      assertEquals(result.data.customVariables["uv-number"], "42");
+      assertEquals(result.data.customVariables["uv-boolean"], "true");
+      assertEquals(result.data.customVariables["uv-object"], "[object Object]");
+      assertEquals(result.data.customVariables["uv-array"], "1,2,3");
+      assertEquals(result.data.standardVariables.input_text_file, "123");
+      assertEquals(result.data.standardVariables.destination_path, "false");
     }
   });
 
@@ -215,7 +215,7 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
     }
 
     // Test with null-like stdin
-    const result3 = _processor.processVariables({}, null as unknown as string);
+    const result3 = _processor.processVariables({}, null as any as string);
     assert(result3.ok);
     if (result3.ok) {
       assert(!("input_text" in result3.data.standardVariables));
@@ -231,14 +231,14 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "destination": "out.txt",
     };
 
-    const _result = _processor.processVariablesWithoutStdin(options);
+    const result = _processor.processVariablesWithoutStdin(options);
 
-    assert(_result.ok);
-    if (_result.ok) {
-      assertEquals(_result.data.customVariables["uv-test"], "value");
-      assertEquals(_result.data.standardVariables.input_text_file, "file.txt");
-      assertEquals(_result.data.standardVariables.destination_path, "out.txt");
-      assert(!("input_text" in _result.data.standardVariables));
+    assert(result.ok);
+    if (result.ok) {
+      assertEquals(result.data.customVariables["uv-test"], "value");
+      assertEquals(result.data.standardVariables.input_text_file, "file.txt");
+      assertEquals(result.data.standardVariables.destination_path, "out.txt");
+      assert(!("input_text" in result.data.standardVariables));
     }
   });
 
@@ -246,7 +246,7 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Test null options
-    const nullResult = _processor.processVariables(null as unknown as Record<string, unknown>, "");
+    const nullResult = _processor.processVariables(null as any as Record<string, unknown>, "");
     assert(!nullResult.ok);
     if (!nullResult.ok) {
       assertEquals(nullResult.error.length, 1);
@@ -255,19 +255,19 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
 
     // Test undefined options
     const undefinedResult = _processor.processVariables(
-      undefined as unknown as Record<string, unknown>,
+      undefined as any as Record<string, unknown>,
       "",
     );
     assert(!undefinedResult.ok);
 
     // Test non-object options
     const stringResult = _processor.processVariables(
-      "string" as unknown as Record<string, unknown>,
+      "string" as any as Record<string, unknown>,
       "",
     );
     assert(!stringResult.ok);
 
-    const numberResult = _processor.processVariables(42 as unknown as Record<string, unknown>, "");
+    const numberResult = _processor.processVariables(42 as any as Record<string, unknown>, "");
     assert(!numberResult.ok);
   });
 
@@ -283,11 +283,11 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
       "uv-mixed123_Case-Name": "complex_name",
     };
 
-    const _result = _processor.processVariables(options, "");
+    const result = _processor.processVariables(options, "");
 
-    assert(_result.ok);
-    if (_result.ok) {
-      const customKeys = Object.keys(_result.data.customVariables);
+    assert(result.ok);
+    if (result.ok) {
+      const customKeys = Object.keys(result.data.customVariables);
       assertEquals(customKeys.length, 6);
 
       // All should be accepted
@@ -309,11 +309,11 @@ Deno.test("TwoParamsVariableProcessor Units", async (t) => {
     };
     const stdinContent = "stdin_val";
 
-    const _result = _processor.processVariables(options, stdinContent);
+    const result = _processor.processVariables(options, stdinContent);
 
-    assert(_result.ok);
-    if (_result.ok) {
-      const { customVariables, standardVariables, allVariables } = _result.data;
+    assert(result.ok);
+    if (result.ok) {
+      const { customVariables, standardVariables, allVariables } = result.data;
 
       // allVariables should contain everything
       assertEquals(allVariables["uv-custom"], "custom_val");

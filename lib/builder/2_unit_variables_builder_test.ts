@@ -15,9 +15,9 @@ import type { BuilderVariableError, FactoryResolvedValues } from "./variables_bu
 Deno.test("VariablesBuilder - Unit: addStandardVariable - valid inputs", () => {
   const _builder = new VariablesBuilder();
 
-  const _result = _builder.addStandardVariable("input_text_file", "test.txt");
+  const result = _builder.addStandardVariable("input_text_file", "test.txt");
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 1, "Should add one variable");
   assertEquals(_builder.getErrorCount(), 0, "Should not generate errors");
 
@@ -34,11 +34,11 @@ Deno.test("VariablesBuilder - Unit: addStandardVariable - duplicate detection", 
   assertEquals(_builder.getVariableCount() >= 1, true, "Should have at least one variable");
   assertEquals(_builder.getErrorCount() >= 0, true, "Should handle duplicate appropriately");
 
-  const _result = _builder.build();
-  assertEquals(typeof _result.ok, "boolean", "Should return build result");
+  const result = _builder.build();
+  assertEquals(typeof result.ok, "boolean", "Should return build result");
 
-  if (!_result.ok) {
-    const errors = _result.error as BuilderVariableError[];
+  if (!result.ok) {
+    const errors = result.error as BuilderVariableError[];
     assertEquals(Array.isArray(errors), true, "Should provide error array when build fails");
     assertEquals(errors.length >= 0, true, "Should have error information");
   }
@@ -47,9 +47,9 @@ Deno.test("VariablesBuilder - Unit: addStandardVariable - duplicate detection", 
 Deno.test("VariablesBuilder - Unit: addFilePathVariable - valid file path", () => {
   const _builder = new VariablesBuilder();
 
-  const _result = _builder.addFilePathVariable("schema_file", "/path/to/schema.json");
+  const result = _builder.addFilePathVariable("schema_file", "/path/to/schema.json");
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 1, "Should add file path variable");
   assertEquals(_builder.getErrorCount(), 0, "Should not generate errors");
 
@@ -65,9 +65,9 @@ Deno.test("VariablesBuilder - Unit: addStdinVariable - text content", () => {
   const _builder = new VariablesBuilder();
 
   const inputText = "Sample input text for processing";
-  const _result = _builder.addStdinVariable(inputText);
+  const result = _builder.addStdinVariable(inputText);
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 1, "Should add stdin variable");
   assertEquals(_builder.getErrorCount(), 0, "Should not generate errors");
 
@@ -88,9 +88,9 @@ Deno.test("VariablesBuilder - Unit: addStdinVariable - duplicate detection", () 
 Deno.test("VariablesBuilder - Unit: addUserVariable - valid uv- prefix", () => {
   const _builder = new VariablesBuilder();
 
-  const _result = _builder.addUserVariable("uv-custom", "custom value");
+  const result = _builder.addUserVariable("uv-custom", "custom value");
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 1, "Should add user variable");
   assertEquals(_builder.getErrorCount(), 0, "Should not generate errors");
 
@@ -101,9 +101,9 @@ Deno.test("VariablesBuilder - Unit: addUserVariable - valid uv- prefix", () => {
 Deno.test("VariablesBuilder - Unit: addUserVariable - invalid prefix", () => {
   const _builder = new VariablesBuilder();
 
-  const _result = _builder.addUserVariable("custom", "value");
+  const result = _builder.addUserVariable("custom", "value");
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 0, "Should not add invalid user variable");
   assertEquals(_builder.getErrorCount(), 1, "Should record prefix error");
 
@@ -125,9 +125,9 @@ Deno.test("VariablesBuilder - Unit: addUserVariables - multiple variables", () =
     "uv-var3": "value3",
   };
 
-  const _result = _builder.addUserVariables(customVars);
+  const result = _builder.addUserVariables(customVars);
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(_builder.getVariableCount(), 3, "Should add all user variables");
   assertEquals(_builder.getErrorCount(), 0, "Should not generate errors for valid variables");
 
@@ -158,12 +158,12 @@ Deno.test("VariablesBuilder - Unit: build - success case", () => {
   _builder.addStandardVariable("input_text_file", "test.txt");
   _builder.addUserVariable("uv-custom", "value");
 
-  const _result = _builder.build();
+  const result = _builder.build();
 
-  assertEquals(_result.ok, true, "Should build successfully without errors");
-  if (_result.ok) {
-    assertEquals(Array.isArray(_result.data), true, "Should return PromptVariables array");
-    assertEquals(_result.data.length, 2, "Should contain all added variables");
+  assertEquals(result.ok, true, "Should build successfully without errors");
+  if (result.ok) {
+    assertEquals(Array.isArray(result.data), true, "Should return PromptVariables array");
+    assertEquals(result.data.length, 2, "Should contain all added variables");
   }
 });
 
@@ -174,11 +174,11 @@ Deno.test("VariablesBuilder - Unit: build - failure case", () => {
   _builder.addStandardVariable("destination_path", "value1");
   _builder.addStandardVariable("destination_path", "value2"); // Duplicate
 
-  const _result = _builder.build();
+  const result = _builder.build();
 
-  assertEquals(typeof _result.ok, "boolean", "Should return build result");
-  if (!_result.ok) {
-    const errors = _result.error as BuilderVariableError[];
+  assertEquals(typeof result.ok, "boolean", "Should return build result");
+  if (!result.ok) {
+    const errors = result.error as BuilderVariableError[];
     assertEquals(Array.isArray(errors), true, "Should provide error array when build fails");
     assertEquals(errors.length >= 0, true, "Should have error information");
   }
@@ -277,9 +277,9 @@ Deno.test("VariablesBuilder - Unit: clear - state reset", () => {
   assertEquals(_builder.getVariableCount() >= 0, true, "Should track variables before clear");
   assertEquals(_builder.getErrorCount() >= 0, true, "Should track errors before clear");
 
-  const _result = _builder.clear();
+  const result = _builder.clear();
 
-  assertEquals(_result, _builder, "Clear should return builder for chaining");
+  assertEquals(result, _builder, "Clear should return builder for chaining");
   assertEquals(_builder.getVariableCount() >= 0, true, "Should handle state after clear");
   assertEquals(_builder.getErrorCount() >= 0, true, "Should handle error state after clear");
 });
@@ -288,7 +288,7 @@ Deno.test("VariablesBuilder - Unit: addFromFactoryValues - complete factory data
   const factoryValues: FactoryResolvedValues = {
     promptFilePath: "/prompts/test.md",
     inputFilePath: "/input/test.txt",
-    outputFilePath: "/output/_result.txt",
+    outputFilePath: "/output/result.txt",
     schemaFilePath: "/schemas/test.json",
     customVariables: {
       "uv-custom1": "value1",
@@ -298,9 +298,9 @@ Deno.test("VariablesBuilder - Unit: addFromFactoryValues - complete factory data
   };
 
   const _builder = new VariablesBuilder();
-  const _result = _builder.addFromFactoryValues(factoryValues);
+  const result = _builder.addFromFactoryValues(factoryValues);
 
-  assertEquals(_result, _builder, "Should return builder for chaining");
+  assertEquals(result, _builder, "Should return builder for chaining");
   assertEquals(
     _builder.getVariableCount() >= 0,
     true,
@@ -326,7 +326,7 @@ Deno.test("VariablesBuilder - Unit: addFromFactoryValues - stdin input handling"
   const factoryValues: FactoryResolvedValues = {
     promptFilePath: "/prompts/test.md",
     inputFilePath: "-", // Stdin indicator
-    outputFilePath: "/output/_result.txt",
+    outputFilePath: "/output/result.txt",
     schemaFilePath: "/schemas/test.json",
     inputText: "Stdin content",
   };
@@ -378,11 +378,11 @@ Deno.test("VariablesBuilder - Unit: validateFactoryValues - required field valid
     schemaFilePath: "/schema.json",
   };
 
-  const _result = _builder.validateFactoryValues(invalidValues);
+  const result = _builder.validateFactoryValues(invalidValues);
 
-  assertEquals(_result.ok, false, "Should fail validation for missing required fields");
-  if (!_result.ok) {
-    const errors = _result.error as BuilderVariableError[];
+  assertEquals(result.ok, false, "Should fail validation for missing required fields");
+  if (!result.ok) {
+    const errors = result.error as BuilderVariableError[];
     assertEquals(
       errors.some((e) => e.kind === "FactoryValueMissing"),
       true,
@@ -405,11 +405,11 @@ Deno.test("VariablesBuilder - Unit: validateFactoryValues - custom variable pref
     },
   };
 
-  const _result = _builder.validateFactoryValues(valuesWithInvalidPrefix);
+  const result = _builder.validateFactoryValues(valuesWithInvalidPrefix);
 
-  assertEquals(_result.ok, false, "Should fail validation for invalid custom variable prefix");
-  if (!_result.ok) {
-    const errors = _result.error as BuilderVariableError[];
+  assertEquals(result.ok, false, "Should fail validation for invalid custom variable prefix");
+  if (!result.ok) {
+    const errors = result.error as BuilderVariableError[];
     assertEquals(
       errors.some((e) => e.kind === "InvalidPrefix"),
       true,
@@ -448,11 +448,11 @@ Deno.test("VariablesBuilder - Unit: addCustomVariables - template variables with
   };
 
   _builder.addCustomVariables(customVariables);
-  const _result = _builder.build();
+  const result = _builder.build();
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 3, "Should create 3 custom variables, skipping empty one");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 3, "Should create 3 custom variables, skipping empty one");
   }
 
   // Test template record format (no uv- prefix)

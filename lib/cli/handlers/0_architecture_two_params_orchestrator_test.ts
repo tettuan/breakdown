@@ -13,7 +13,7 @@ import {
   TwoParamsOrchestrator,
 } from "./two_params_orchestrator.ts";
 import type { OrchestratorError } from "./two_params_orchestrator.ts";
-import { isError } from "../../types/_result.ts";
+import { isError } from "../../types/result.ts";
 
 /**
  * Architecture Test Suite: TwoParamsOrchestrator
@@ -35,7 +35,7 @@ Deno.test({
       const _orchestrator = new TwoParamsOrchestrator();
 
       // Test that invalid operations return Result.error instead of throwing
-      const invalidResult = await orchestrator.orchestrate([], {}, { skipStdin: true });
+      const invalidResult = await _orchestrator.orchestrate([], {}, { skipStdin: true });
       assertEquals(invalidResult.ok, false);
 
       if (isError(invalidResult)) {
@@ -48,11 +48,11 @@ Deno.test({
       const orchestrator = new TwoParamsOrchestrator();
 
       // Test that error types have discriminated 'kind' field
-      const _result = await orchestrator.orchestrate(["invalid"], {}, { skipStdin: true });
+      const result = await orchestrator.orchestrate(["invalid"], {}, { skipStdin: true });
 
-      if (!_result.ok) {
-        assert("kind" in _result.error);
-        assert(typeof _result.error.kind === "string");
+      if (!result.ok) {
+        assert("kind" in result.error);
+        assert(typeof result.error.kind === "string");
 
         // Verify error types are well-defined discriminated unions
         const validKinds = [
@@ -64,7 +64,7 @@ Deno.test({
           "PromptGenerationError",
           "OutputWriteError",
         ];
-        assert(validKinds.includes(_result.error.kind));
+        assert(validKinds.includes(result.error.kind));
       }
     });
 
@@ -90,7 +90,7 @@ Deno.test({
 
     await t.step("has no circular dependencies", () => {
       // Verify that TwoParamsOrchestrator only depends on:
-      // - Result types (lib/types/_result.ts)
+      // - Result types (lib/types/result.ts)
       // - Component classes (processors, generators)
       // - Utility functions from handlers (temporary readStdinSafely)
       // - No other orchestrators or handlers at same level
@@ -104,10 +104,10 @@ Deno.test({
     });
 
     await t.step("maintains type safety boundaries", async () => {
-      const orchestrator = new TwoParamsOrchestrator();
+      const _orchestrator = new TwoParamsOrchestrator();
 
       // Test that the orchestrator handles unknown input types safely
-      const _result = await orchestrator.orchestrate(
+      const result = await _orchestrator.orchestrate(
         ["demo", "layer"] as string[],
         { unknownField: Symbol("test") }, // Unknown config type
         { someOption: Symbol("test") }, // Unknown option type
@@ -115,13 +115,13 @@ Deno.test({
 
       // Should handle gracefully through orchestration
       // Result can be ok or error, but should not throw
-      assert(_result.ok === true || _result.ok === false);
+      assert(result.ok === true || result.ok === false);
 
       // Test with null/undefined inputs
-      const nullResult = await orchestrator.orchestrate(null as unknown, {}, { skipStdin: true });
+      const nullResult = await _orchestrator.orchestrate(null as any, {}, { skipStdin: true });
       assertEquals(nullResult.ok, false);
 
-      const undefinedResult = await orchestrator.orchestrate(undefined as unknown, {}, {
+      const undefinedResult = await _orchestrator.orchestrate(undefined as any, {}, {
         skipStdin: true,
       });
       assertEquals(undefinedResult.ok, false);
@@ -164,18 +164,18 @@ Deno.test({
       assert(typeof handleTwoParamsWithOrchestrator === "function");
 
       // Should accept same parameters as original handleTwoParams
-      const _result = await handleTwoParamsWithOrchestrator(
+      const result = await handleTwoParamsWithOrchestrator(
         ["demo", "layer"],
         {},
         {},
       );
 
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
 
       // Should return same Result structure
-      if (!_result.ok) {
-        assert("kind" in _result.error);
+      if (!result.ok) {
+        assert("kind" in result.error);
       }
     });
 
@@ -210,11 +210,11 @@ Deno.test({
       ];
 
       for (const test of errorTests) {
-        const _result = await orchestrator.orchestrate(test.params, {}, { skipStdin: true });
-        assertEquals(_result.ok, false);
+        const result = await orchestrator.orchestrate(test.params, {}, { skipStdin: true });
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, test.expectedKind);
+        if (!result.ok) {
+          assertEquals(result.error.kind, test.expectedKind);
         }
       }
     });
@@ -226,20 +226,20 @@ Deno.test({
       // params -> validation -> stdin -> variables -> prompt -> output
 
       // Test with valid parameters to check data flow
-      const _result = await orchestrator.orchestrate(
+      const result = await orchestrator.orchestrate(
         ["demo", "layer"],
         {},
         { skipStdin: true },
       );
 
       // Result should be consistent regardless of success/failure
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // Errors should provide clear context about which step failed
-        assert("kind" in _result.error);
-        assert(typeof _result.error.kind === "string");
+        assert("kind" in result.error);
+        assert(typeof result.error.kind === "string");
       }
     });
   },

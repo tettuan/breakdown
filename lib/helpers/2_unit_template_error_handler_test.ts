@@ -20,7 +20,7 @@ import {
 } from "./template_error_handler.ts";
 
 Deno.test("Unit: TemplateError creation with all options", async () => {
-  const _cause = new Error("Original file system error");
+  const cause = new Error("Original file system error");
   const error = new TemplateError(
     "Failed to load template",
     TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -63,9 +63,9 @@ Deno.test("Unit: TemplateErrorHandler detects file not found errors", async () =
   ];
 
   for (const testCase of testCases) {
-    const _result = TemplateErrorHandler.detectTemplateError(testCase.error, testCase.context);
+    const result = TemplateErrorHandler.detectTemplateError(testCase.error, testCase.context);
 
-    assertExists(_result, "Should detect file not found error");
+    assertExists(result, "Should detect file not found error");
     assertEquals(result?.errorType, TemplateErrorType.TEMPLATE_NOT_FOUND);
     assertEquals(result?.canAutoResolve, true, "File not found should be auto-resolvable");
     assertExists(result?.suggestions, "Should have suggestions");
@@ -90,11 +90,11 @@ Deno.test("Unit: TemplateErrorHandler detects permission errors", async () => {
   ];
 
   for (const testError of testCases) {
-    const _result = TemplateErrorHandler.detectTemplateError(testError, {
+    const result = TemplateErrorHandler.detectTemplateError(testError, {
       templatePath: "/restricted/template.md",
     });
 
-    assertExists(_result, "Should detect permission error");
+    assertExists(result, "Should detect permission error");
     assertEquals(result?.errorType, TemplateErrorType.TEMPLATE_PERMISSION_DENIED);
     assertEquals(result?.canAutoResolve, false, "Permission errors should not be auto-resolvable");
     assertEquals(result?.templatePath, "/restricted/template.md");
@@ -117,11 +117,11 @@ Deno.test("Unit: TemplateErrorHandler detects invalid template errors", async ()
   ];
 
   for (const testError of testCases) {
-    const _result = TemplateErrorHandler.detectTemplateError(testError, {
+    const result = TemplateErrorHandler.detectTemplateError(testError, {
       templatePath: "/templates/broken.md",
     });
 
-    assertExists(_result, "Should detect invalid template error");
+    assertExists(result, "Should detect invalid template error");
     assertEquals(result?.errorType, TemplateErrorType.TEMPLATE_INVALID);
     assertEquals(result?.canAutoResolve, true, "Invalid templates should be auto-resolvable");
 
@@ -146,8 +146,8 @@ Deno.test("Unit: TemplateErrorHandler ignores non-template errors", async () => 
   ];
 
   for (const error of nonTemplateErrors) {
-    const _result = TemplateErrorHandler.detectTemplateError(error);
-    assertEquals(_result, null, "Should not detect non-template errors");
+    const result = TemplateErrorHandler.detectTemplateError(error);
+    assertEquals(result, null, "Should not detect non-template errors");
   }
 });
 

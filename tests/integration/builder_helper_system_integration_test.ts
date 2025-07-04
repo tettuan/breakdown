@@ -21,10 +21,10 @@ import {
   validateConfigurationPatterns,
 } from "../../lib/helpers/totality_factory_helper.ts";
 
-const _logger = new BreakdownLogger("builder-helper-integration");
+const logger = new BreakdownLogger("builder-helper-integration");
 
 Deno.test("Builder-Helper Integration - VariablesBuilder with Factory values", async () => {
-  _logger.debug("Testing VariablesBuilder with Factory integration");
+  logger.debug("Testing VariablesBuilder with Factory integration");
 
   // Create factory bundle
   const factoryResult = await createTotalityFactory();
@@ -77,20 +77,20 @@ Deno.test("Builder-Helper Integration - VariablesBuilder with Factory values", a
       );
     }
 
-    _logger.debug("VariablesBuilder factory integration successful");
+    logger.debug("VariablesBuilder factory integration successful");
   } else {
-    _logger.debug("Factory creation failed, skipping builder integration", {
+    logger.debug("Factory creation failed, skipping builder integration", {
       error: factoryResult.error,
     });
   }
 });
 
 Deno.test("Builder-Helper Integration - Complete workflow validation", async () => {
-  _logger.debug("Testing complete Builder-Helper workflow");
+  logger.debug("Testing complete Builder-Helper workflow");
 
   // Step 1: Validate configuration patterns
   const patternValidation = await validateConfigurationPatterns();
-  _logger.debug("Pattern validation", { valid: patternValidation.valid });
+  logger.debug("Pattern validation", { valid: patternValidation.valid });
 
   // Step 2: Create factory bundle
   const factoryResult = await createTotalityFactory();
@@ -106,7 +106,7 @@ Deno.test("Builder-Helper Integration - Complete workflow validation", async () 
       bundle,
     );
 
-    _logger.debug("CLI params validation", { success: paramsResult.ok });
+    logger.debug("CLI params validation", { success: paramsResult.ok });
 
     // Step 4: Use parameters in VariablesBuilder
     if (paramsResult.ok) {
@@ -137,18 +137,18 @@ Deno.test("Builder-Helper Integration - Complete workflow validation", async () 
         );
         assertEquals(record["uv-layer"], params.layer.getValue(), "Should preserve layer value");
 
-        _logger.debug("Complete workflow integration successful");
+        logger.debug("Complete workflow integration successful");
       } else {
-        _logger.debug("Build failed in workflow", { errors: buildResult.error });
+        logger.debug("Build failed in workflow", { errors: buildResult.error });
       }
     }
   } else {
-    _logger.debug("Factory creation failed in workflow", { error: factoryResult.error });
+    logger.debug("Factory creation failed in workflow", { error: factoryResult.error });
   }
 });
 
 Deno.test("Builder-Helper Integration - Error handling coordination", async () => {
-  _logger.debug("Testing coordinated error handling");
+  logger.debug("Testing coordinated error handling");
 
   // Test error propagation through the system
   const factoryResult = await createTotalityFactory({
@@ -159,7 +159,7 @@ Deno.test("Builder-Helper Integration - Error handling coordination", async () =
   // Factory creation should handle errors gracefully
   if (!factoryResult.ok) {
     assertEquals(typeof factoryResult.error, "string", "Factory should provide string error");
-    _logger.debug("Factory error handled correctly", { error: factoryResult.error });
+    logger.debug("Factory error handled correctly", { error: factoryResult.error });
   }
 
   // Test VariablesBuilder error handling with invalid data
@@ -176,12 +176,12 @@ Deno.test("Builder-Helper Integration - Error handling coordination", async () =
     assertEquals(Array.isArray(buildResult.error), true, "Should provide error array");
     assertEquals(buildResult.error.length, 2, "Should contain all errors");
 
-    _logger.debug("Builder error accumulation working correctly");
+    logger.debug("Builder error accumulation working correctly");
   }
 });
 
 Deno.test("Builder-Helper Integration - Performance with large datasets", async () => {
-  _logger.debug("Testing performance with large datasets");
+  logger.debug("Testing performance with large datasets");
 
   const startTime = performance.now();
 
@@ -208,7 +208,7 @@ Deno.test("Builder-Helper Integration - Performance with large datasets", async 
 
   const duration = performance.now() - startTime;
 
-  _logger.debug("Large dataset performance", {
+  logger.debug("Large dataset performance", {
     duration: `${duration.toFixed(2)}ms`,
     variableCount: builder.getVariableCount(),
     success: buildResult.ok,
@@ -226,7 +226,7 @@ Deno.test("Builder-Helper Integration - Performance with large datasets", async 
 });
 
 Deno.test("Builder-Helper Integration - Memory management", async () => {
-  _logger.debug("Testing memory management in integration scenarios");
+  logger.debug("Testing memory management in integration scenarios");
 
   // Create and destroy multiple builders to test memory usage
   for (let i = 0; i < 10; i++) {
@@ -254,11 +254,11 @@ Deno.test("Builder-Helper Integration - Memory management", async () => {
     assertEquals(builder.getErrorCount(), 0, "Builder should clear errors");
   }
 
-  _logger.debug("Memory management test completed successfully");
+  logger.debug("Memory management test completed successfully");
 });
 
 Deno.test("Builder-Helper Integration - Factory helper one-step creation", async () => {
-  _logger.debug("Testing one-step factory creation integration");
+  logger.debug("Testing one-step factory creation integration");
 
   // Test integrated factory creation
   const result = await createTotalityPromptFactory(
@@ -273,10 +273,10 @@ Deno.test("Builder-Helper Integration - Factory helper one-step creation", async
     },
   );
 
-  _logger.debug("One-step factory creation", { success: _result.ok });
+  logger.debug("One-step factory creation", { success: result.ok });
 
-  if (_result.ok) {
-    const promptFactory = _result.data;
+  if (result.ok) {
+    const promptFactory = result.data;
     assertEquals(typeof promptFactory, "object", "Should create prompt factory");
     assertEquals(typeof promptFactory.getAllParams, "function", "Should have expected methods");
 
@@ -284,15 +284,15 @@ Deno.test("Builder-Helper Integration - Factory helper one-step creation", async
     const allParams = promptFactory.getAllParams();
     assertEquals(typeof allParams, "object", "Should provide parameters");
 
-    _logger.debug("One-step factory integration successful");
+    logger.debug("One-step factory integration successful");
   } else {
-    _logger.debug("One-step factory creation failed", { error: _result.error });
+    logger.debug("One-step factory creation failed", { error: result.error });
     // May fail due to configuration - this is acceptable for integration test
   }
 });
 
 Deno.test("Builder-Helper Integration - Type safety verification", async () => {
-  _logger.debug("Testing type safety in integration scenarios");
+  logger.debug("Testing type safety in integration scenarios");
 
   // Test type consistency across the integration
   const factoryResult = await createTotalityFactory();
@@ -341,16 +341,16 @@ Deno.test("Builder-Helper Integration - Type safety verification", async () => {
       assertEquals(Array.isArray(buildResult.error), true, "Error should be array");
     }
 
-    _logger.debug("Type safety verification completed");
+    logger.debug("Type safety verification completed");
   }
 });
 
 Deno.test("Builder-Helper Integration - Configuration dependency management", async () => {
-  _logger.debug("Testing configuration dependency management");
+  logger.debug("Testing configuration dependency management");
 
   // Test configuration validation across the system
   const configValidation = await validateConfigurationPatterns();
-  _logger.debug("Configuration validation", {
+  logger.debug("Configuration validation", {
     valid: configValidation.valid,
     detailCount: configValidation.details.length,
   });
@@ -377,12 +377,12 @@ Deno.test("Builder-Helper Integration - Configuration dependency management", as
       assertExists(layerPattern, "Layer pattern should exist when valid");
     }
 
-    _logger.debug("Configuration dependency management verified");
+    logger.debug("Configuration dependency management verified");
   }
 });
 
 Deno.test("Builder-Helper Integration - Interface compatibility", async () => {
-  _logger.debug("Testing interface compatibility across components");
+  logger.debug("Testing interface compatibility across components");
 
   // Test that all components implement expected interfaces correctly
   const builder = new VariablesBuilder();
@@ -431,5 +431,5 @@ Deno.test("Builder-Helper Integration - Interface compatibility", async () => {
     );
   }
 
-  _logger.debug("Interface compatibility verification completed");
+  logger.debug("Interface compatibility verification completed");
 });

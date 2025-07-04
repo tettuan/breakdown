@@ -85,7 +85,7 @@ Deno.test({
       assertEquals(func.length, 3); // params, config, options
 
       // Should return high-level result
-      const _result = func(["to", "project"], {}, { skipStdin: true });
+      const result = func(["to", "project"], {}, { skipStdin: true });
       assert(result instanceof Promise);
     });
 
@@ -105,11 +105,13 @@ Deno.test({
       ];
 
       for (const step of steps) {
-        const _result = await handleTwoParams(step.params, {}, { skipStdin: true });
-        assert(!_result.ok);
-
-        if (!_result.ok) {
-          const error = _result.error as TwoParamsHandlerError;
+        const result = await handleTwoParams(step.params, {}, { skipStdin: true });
+        
+        if (result.ok) {
+          // All steps should succeed in this test
+          assert(result.ok);
+        } else {
+          const error = result.error as TwoParamsHandlerError;
           // Error should correspond to the specific concern/step
           assert(
             error.kind === step.expectedErrorKind ||

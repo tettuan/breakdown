@@ -10,16 +10,16 @@
 
 import { assert, assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
-import { InputFilePathResolver as _InputFilePathResolver } from "./input_file_path_resolver.ts";
-import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { InputFilePathResolver as InputFilePathResolver } from "./input_file_path_resolver.ts";
+import type { PromptCliParams } from "./prompt_variables__factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
-const _logger = new BreakdownLogger("structure-input-file-path-resolver");
+const logger = new BreakdownLogger("structure-input-file-path-resolver");
 
 describe("InputFilePathResolver - Class Structure", () => {
   it("should have a clear single responsibility for input path resolution", () => {
-    _logger.debug("Testing single responsibility");
+    logger.debug("Testing single responsibility");
 
     // The class should only be responsible for resolving input file paths
     const mockConfig = { working_dir: ".agent/breakdown" };
@@ -29,19 +29,19 @@ describe("InputFilePathResolver - Class Structure", () => {
       options: { fromFile: "test.md" },
     };
 
-    const _resolver = new InputFilePathResolver(mockConfig, mockParams);
+    const resolver = new InputFilePathResolver(mockConfig, mockParams);
 
     // Should only expose path resolution functionality
-    assertEquals(typeof _resolver.getPath, "function");
+    assertEquals(typeof resolver.getPath, "function");
 
     // Should not expose unrelated functionality
-    assertEquals(typeof (resolver as unknown).readFile, "undefined");
-    assertEquals(typeof (resolver as unknown).writeFile, "undefined");
-    assertEquals(typeof (resolver as unknown).validateContent, "undefined");
+    assertEquals(typeof (_resolver as any).readFile, "undefined");
+    assertEquals(typeof (_resolver as any).writeFile, "undefined");
+    assertEquals(typeof (_resolver as any).validateContent, "undefined");
   });
 
   it("should properly encapsulate internal logic", () => {
-    _logger.debug("Testing encapsulation");
+    logger.debug("Testing encapsulation");
 
     const mockConfig = {};
     const mockParams: PromptCliParams = {
@@ -50,7 +50,7 @@ describe("InputFilePathResolver - Class Structure", () => {
       options: {},
     };
 
-    const _resolver = new InputFilePathResolver(mockConfig, mockParams);
+    const resolver = new InputFilePathResolver(mockConfig, mockParams);
 
     // Private methods exist at runtime but should not be part of public API
     // TypeScript provides compile-time encapsulation, not runtime hiding
@@ -64,34 +64,34 @@ describe("InputFilePathResolver - Class Structure", () => {
     ];
     privateMethodNames.forEach((methodName) => {
       // Methods may exist at runtime - that's normal for TypeScript
-      if ((resolver as unknown)[methodName]) {
+      if ((_resolver as any)[methodName]) {
         // If they exist, they should be functions (helper methods)
-        assertEquals(typeof (resolver as unknown)[methodName], "function");
+        assertEquals(typeof (_resolver as any)[methodName], "function");
       }
     });
 
     // Only public interface should be accessible
-    assertEquals(typeof _resolver.getPath, "function");
+    assertEquals(typeof resolver.getPath, "function");
   });
 
   it("should maintain immutable state after construction", () => {
-    _logger.debug("Testing immutability");
+    logger.debug("Testing immutability");
 
-    const _config = { working_dir: ".agent/breakdown" };
+    const config = { working_dir: ".agent/breakdown" };
     const params: PromptCliParams = {
       demonstrativeType: "to",
       layerType: "project",
       options: { fromFile: "test.md" },
     };
 
-    const _resolver = new InputFilePathResolver(config, params);
-    const path1 = _resolver.getPath();
+    const resolver = new InputFilePathResolver(config, params);
+    const path1 = resolver.getPath();
 
     // Modify original objects
-    _config.working_dir = "modified";
+    config.working_dir = "modified";
     params.options!.fromFile = "modified.md";
 
-    const path2 = _resolver.getPath();
+    const path2 = resolver.getPath();
 
     // If resolver maintains immutability, paths should be equal
     // If resolver uses references, paths may differ - both are valid design choices
@@ -103,9 +103,9 @@ describe("InputFilePathResolver - Class Structure", () => {
 
 describe("InputFilePathResolver - Method Responsibilities", () => {
   it("should handle all input path scenarios in getPath method", () => {
-    _logger.debug("Testing getPath comprehensive handling");
+    logger.debug("Testing getPath comprehensive handling");
 
-    const _config = {};
+    const config = {};
 
     // Test 1: No file specified
     const params1: PromptCliParams = {
@@ -146,9 +146,9 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
   });
 
   it("should maintain clear separation between path types", () => {
-    _logger.debug("Testing path type separation");
+    logger.debug("Testing path type separation");
 
-    const _config = {};
+    const config = {};
 
     // Test different path types to ensure proper handling
     const pathTypes = [
@@ -168,20 +168,20 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
         options: { fromFile: input },
       };
 
-      const _resolver = new InputFilePathResolver(config, params);
-      const _result = _resolver.getPath();
+      const resolver = new InputFilePathResolver(config, params);
+      const result = resolver.getPath();
 
       // Each type should be handled distinctly
       if (type === "stdin") {
-        assertEquals(_result, "-");
+        assertEquals(result, "-");
       } else if (type === "absolute") {
         // Absolute paths should be preserved
         // Note: resolver may normalize paths internally
-        assertExists(_result);
-        assert(_result.length > 0, "Should return non-empty path for absolute paths");
+        assertExists(result);
+        assert(result.length > 0, "Should return non-empty path for absolute paths");
       } else {
         // Relative paths should be resolved
-        assertNotEquals(_result, input);
+        assertNotEquals(result, input);
       }
     });
   });
@@ -189,28 +189,28 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
 
 describe("InputFilePathResolver - Abstraction Levels", () => {
   it("should use appropriate abstractions for path operations", () => {
-    _logger.debug("Testing abstraction usage");
+    logger.debug("Testing abstraction usage");
 
-    const _config = {};
+    const config = {};
     const params: PromptCliParams = {
       demonstrativeType: "to",
       layerType: "project",
       options: { fromFile: "./test/file.md" },
     };
 
-    const _resolver = new InputFilePathResolver(config, params);
-    const _result = _resolver.getPath();
+    const resolver = new InputFilePathResolver(config, params);
+    const result = resolver.getPath();
 
     // Should produce properly resolved paths using standard abstractions
-    assertExists(_result);
-    assertNotEquals(_result, "./test/file.md"); // Should be absolute
-    assertEquals(result.startsWith("/") || _result.match(/^[A-Z]:/), true); // Absolute path
+    assertExists(result);
+    assertNotEquals(result, "./test/file.md"); // Should be absolute
+    assertEquals(result.startsWith("/") || result.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
-    _logger.debug("Testing cross-platform normalization");
+    logger.debug("Testing cross-platform normalization");
 
-    const _config = {};
+    const config = {};
 
     // Windows-style paths
     const windowsPaths = [
@@ -226,8 +226,8 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
         options: { fromFile: winPath },
       };
 
-      const _resolver = new InputFilePathResolver(config, params);
-      const _result = _resolver.getPath();
+      const resolver = new InputFilePathResolver(config, params);
+      const result = resolver.getPath();
 
       // Should normalize to forward slashes
       assertEquals(result.includes("\\"), false);
@@ -237,9 +237,9 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
 
 describe("InputFilePathResolver - Responsibility Boundaries", () => {
   it("should not duplicate path resolution logic from other resolvers", () => {
-    _logger.debug("Testing responsibility separation from other resolvers");
+    logger.debug("Testing responsibility separation from other resolvers");
 
-    const _config = { working_dir: ".agent/breakdown" };
+    const config = { working_dir: ".agent/breakdown" };
 
     // Input resolver should only handle fromFile paths
     const inputParams: PromptCliParams = {
@@ -252,8 +252,8 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
       },
     };
 
-    const _resolver = new InputFilePathResolver(config, inputParams);
-    const _result = _resolver.getPath();
+    const resolver = new InputFilePathResolver(config, inputParams);
+    const result = resolver.getPath();
 
     // Should only process fromFile, not other file options
     assertEquals(result.includes("input.md"), true);
@@ -262,9 +262,9 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
   });
 
   it("should handle parameter structure variations gracefully", () => {
-    _logger.debug("Testing parameter structure handling");
+    logger.debug("Testing parameter structure handling");
 
-    const _config = {};
+    const config = {};
 
     // Test with PromptCliParams structure
     const promptParams: PromptCliParams = {
@@ -277,12 +277,12 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
     const result1 = resolver1.getPath();
     assertExists(result1);
 
-    // Test with TwoParamsResult-like structure
+    // Test with TwoParams_Result-like structure
     const twoParamsLike = {
       directive: { getValue: () => "to" },
       layer: { getValue: () => "project" },
       options: { fromFile: "test2.md" },
-    } as unknown as TwoParamsResult;
+    } as any as TwoParams_Result;
 
     const resolver2 = new InputFilePathResolver(config, twoParamsLike);
     const result2 = resolver2.getPath();
@@ -290,9 +290,9 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
   });
 
   it("should maintain consistent behavior across different layer types", () => {
-    _logger.debug("Testing layer type consistency");
+    logger.debug("Testing layer type consistency");
 
-    const _config = {};
+    const config = {};
     const file = "test.md";
 
     // Test with different layer types
@@ -305,8 +305,8 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
         options: { fromFile: file },
       };
 
-      const _resolver = new InputFilePathResolver(config, params);
-      const _result = _resolver.getPath();
+      const resolver = new InputFilePathResolver(config, params);
+      const result = resolver.getPath();
 
       // Path resolution should be consistent regardless of layer
       assertEquals(result.endsWith(file), true);
@@ -316,9 +316,9 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
 
 describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
   it("should handle empty and null-like values appropriately", () => {
-    _logger.debug("Testing edge case handling");
+    logger.debug("Testing edge case handling");
 
-    const _config = {};
+    const config = {};
 
     // Test various empty/null-like values
     const edgeCases = [
@@ -334,26 +334,26 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
       const params: PromptCliParams = {
         demonstrativeType: "to",
         layerType: "project",
-        options: { fromFile: edgeCase as unknown },
+        options: { fromFile: edgeCase as any },
       };
 
-      const _resolver = new InputFilePathResolver(config, params);
-      const _result = _resolver.getPath();
+      const resolver = new InputFilePathResolver(config, params);
+      const result = resolver.getPath();
 
       // Should return empty string for invalid inputs
       if (edgeCase === undefined || edgeCase === null || edgeCase === "") {
-        assertEquals(_result, "");
+        assertEquals(result, "");
       } else {
         // Whitespace should be handled as valid paths
-        assertNotEquals(_result, "");
+        assertNotEquals(result, "");
       }
     });
   });
 
   it("should handle special path characters correctly", () => {
-    _logger.debug("Testing special character handling");
+    logger.debug("Testing special character handling");
 
-    const _config = {};
+    const config = {};
 
     // Test paths with special characters
     const specialPaths = [
@@ -373,12 +373,12 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
         options: { fromFile: specialPath },
       };
 
-      const _resolver = new InputFilePathResolver(config, params);
-      const _result = _resolver.getPath();
+      const resolver = new InputFilePathResolver(config, params);
+      const result = resolver.getPath();
 
       // Should handle special characters without errors
-      assertExists(_result);
-      assertNotEquals(_result, "");
+      assertExists(result);
+      assertNotEquals(result, "");
     });
   });
 });

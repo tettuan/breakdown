@@ -3,18 +3,26 @@
  *
  * This module handles prompt generation following the single responsibility principle.
  * It manages the creation of PromptVariablesFactory, integration with VariablesBuilder,
- * and final prompt generation through PromptManager.
+ * and final prompt generation through PromptManagerAdapter using PromptVariables.
+ *
+ * Migration from PromptManager to PromptVariables + PromptManagerAdapter provides:
+ * - Type-safe prompt path validation
+ * - Duck-typed variable handling
+ * - Better error handling with Result types
+ * - Cleaner separation of concerns
  *
  * @module cli/generators/two_params_prompt_generator
  */
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
+import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
+import { PromptPath } from "$lib/types/prompt_types.ts";
+import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";
 
 /**
  * Prompt generation error types
@@ -134,41 +142,77 @@ export class TwoParamsPromptGenerator {
   }
 
   /**
-   * Generate prompt using PromptManager
+   * Generate prompt using PromptManagerAdapter with PromptVariables
    */
-  private async generateWithPromptManager(
+  private async generateWithPromptAdapter(
     promptFilePath: string,
     variables: Record<string, string>,
   ): Promise<Result<string, PromptGeneratorError>> {
     try {
-      const promptManager = new PromptManager();
-      const result = await promptManager.generatePrompt(
-        promptFilePath,
-        variables,
-      );
-
-      // Extract content from result
-      let content: string;
-      if (result && typeof result === "object" && "success" in result) {
-        const res = result as { success: boolean; content?: string; error?: string };
-        if (res.success) {
-          content = res.content || "";
-        } else {
-          return error({
-            kind: "PromptGenerationError",
-            error: res.error || "Prompt generation failed",
-          });
-        }
-      } else {
-        content = String(result);
+      // Create PromptPath
+      const pathResult = PromptPath.create(promptFilePath);
+      if (!pathResult.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          error: `Invalid prompt path: ${pathResult.error.message}`,
+        });
       }
 
-      return ok(content);
+      // Convert variables Record to PromptVariables
+      const promptVariables = this.createPromptVariables(variables);
+
+      // Create adapter and generate prompt
+      const adapter = new PromptManagerAdapter();
+      const result = await adapter.generatePrompt(
+        pathResult.data,
+        promptVariables,
+      );
+
+      if (result.ok) {
+        return ok(result.data.content);
+      } else {
+        return error({
+          kind: "PromptGenerationError",
+          error: this.formatPromptError(result.error),
+        });
+      }
     } catch (err) {
       return error({
         kind: "PromptGenerationError",
         error: err instanceof Error ? err.message : String(err),
       });
+    }
+  }
+
+  /**
+   * Convert variables Record to PromptVariables
+   */
+  private createPromptVariables(variables: Record<string, string>): PromptVariables {
+    // Return a simple object that implements PromptVariables interface
+    return {
+      toRecord(): Record<string, string> {
+        return { ...variables };
+      },
+    };
+  }
+
+  /**
+   * Format PromptError for display
+   */
+  private formatPromptError(error: PromptError): string {
+    switch (error.kind) {
+      case "TemplateNotFound":
+        return `Template not found: ${error.path}`;
+      case "InvalidVariables":
+        return `Invalid variables: ${error.details.join(", ")}`;
+      case "SchemaError":
+        return `Schema error in ${error.schema}: ${error.error}`;
+      case "InvalidPath":
+        return `Invalid path: ${error.message}`;
+      case "TemplateParseError":
+        return `Failed to parse template ${error.template}: ${error.error}`;
+      case "ConfigurationError":
+        return `Configuration error: ${error.message}`;
     }
   }
 
@@ -228,9 +272,9 @@ export class TwoParamsPromptGenerator {
       return error(variablesResult.error);
     }
 
-    // Generate prompt
+    // Generate prompt using new PromptManagerAdapter
     const allParams = factory.getAllParams();
-    return await this.generateWithPromptManager(
+    return await this.generateWithPromptAdapter(
       allParams.promptFilePath,
       variablesResult.data,
     );

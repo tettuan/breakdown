@@ -10,7 +10,7 @@ import {
 } from "$test/helpers/setup.ts";
 import { join } from "jsr:@std/path@^0.224.0/join";
 
-const _logger = new BreakdownLogger("working-dir-test");
+const logger = new BreakdownLogger("working-dir-test");
 
 /**
  * Working Directory Configuration Tests
@@ -47,7 +47,7 @@ let TEST_ENV: TestEnvironment;
 Deno.test({
   name: "setup",
   fn: async () => {
-    _logger.debug("Setting up test environment", {
+    logger.debug("Setting up test environment", {
       purpose: "Create test directory structure as specified in app_config.ja.md",
       step: "Initial setup",
       state: "Starting",
@@ -55,7 +55,7 @@ Deno.test({
     TEST_ENV = await setupTestEnvironment({
       workingDir: "./tmp/test/config-working-dir",
     });
-    _logger.debug("Test environment ready", {
+    logger.debug("Test environment ready", {
       workingDir: TEST_ENV.workingDir,
       step: "Initial setup",
       state: "Complete",
@@ -69,12 +69,12 @@ Deno.test({
 Deno.test({
   name: "cleanup",
   fn: async () => {
-    _logger.debug("Cleaning up test environment", {
+    logger.debug("Cleaning up test environment", {
       step: "Cleanup",
       state: "Starting",
     });
     await cleanupTestEnvironment(TEST_ENV);
-    _logger.debug("Test environment cleaned", {
+    logger.debug("Test environment cleaned", {
       step: "Cleanup",
       state: "Complete",
     });
@@ -87,7 +87,7 @@ Deno.test({
 Deno.test({
   name: "working_dir - simple pattern - default configuration",
   async fn() {
-    _logger.debug("Function started", {
+    logger.debug("Function started", {
       key: "working_dir_test#L89#setup-function-start",
       functionName: "working_dir - simple pattern - default configuration",
       arguments: { testEnvDir: TEST_ENV.workingDir },
@@ -98,7 +98,7 @@ Deno.test({
     Deno.chdir(TEST_ENV.workingDir);
 
     try {
-      _logger.debug("Testing default configuration", {
+      logger.debug("Testing default configuration", {
         key: "working_dir_test#L94#setup-config-init",
         purpose: "Verify basic configuration loading",
         step: "Simple pattern",
@@ -110,7 +110,7 @@ Deno.test({
       const configPath = join(TEST_ENV.workingDir, ".agent", "breakdown", "config");
       await Deno.mkdir(configPath, { recursive: true });
 
-      _logger.debug("Creating config file", {
+      logger.debug("Creating config file", {
         key: "working_dir_test#L105#setup-file-creation",
         step: "File creation",
         configPath,
@@ -127,7 +127,7 @@ app_schema:
 `;
       await Deno.writeTextFile(configFile, configContent);
 
-      _logger.debug("Config file written", {
+      logger.debug("Config file written", {
         key: "working_dir_test#L121#setup-file-written",
         configFile,
         contentLength: configContent.length,
@@ -137,21 +137,21 @@ app_schema:
       if (!configResult.success) {
         throw new Error("Failed to create BreakdownConfig");
       }
-      const _config = configResult.data;
+      const config = configResult.data;
 
-      _logger.debug("BreakdownConfig created", {
+      logger.debug("BreakdownConfig created", {
         key: "working_dir_test#L128#execution-config-created",
         configSetName: "test-working-dir",
         workingDir: TEST_ENV.workingDir,
       });
 
-      await (_config as any).loadConfig();
-      _logger.debug("Config loaded", {
+      await (config as any).loadConfig();
+      logger.debug("Config loaded", {
         key: "working_dir_test#L135#execution-config-loaded",
       });
 
-      const settings = await (_config as any).getConfig();
-      _logger.debug("Settings retrieved", {
+      const settings = await (config as any).getConfig();
+      logger.debug("Settings retrieved", {
         key: "working_dir_test#L140#execution-settings-retrieved",
         settings: {
           working_dir: settings.working_dir,
@@ -160,7 +160,7 @@ app_schema:
         },
       });
 
-      _logger.debug("Configuration loaded", {
+      logger.debug("Configuration loaded", {
         key: "working_dir_test#L150#validation-verification",
         step: "Verification",
         actualWorkingDir: settings.working_dir,
@@ -168,19 +168,19 @@ app_schema:
       });
       assertEquals(settings.working_dir, ".agent/breakdown");
 
-      _logger.debug("Assertion passed", {
+      logger.debug("Assertion passed", {
         key: "working_dir_test#L165#assertion-success",
         expected: ".agent/breakdown",
         actual: settings.working_dir,
       });
 
-      _logger.debug("Function completed successfully", {
+      logger.debug("Function completed successfully", {
         key: "working_dir_test#L172#teardown-function-success",
         functionName: "working_dir - simple pattern - default configuration",
         returnValue: "void (test passed)",
       });
     } catch (error) {
-      _logger.error("Function failed with error", {
+      logger.error("Function failed with error", {
         key: "working_dir_test#L179#error-function-failure",
         functionName: "working_dir - simple pattern - default configuration",
         error: error instanceof Error ? error.message : String(error),
@@ -189,7 +189,7 @@ app_schema:
       });
       throw error;
     } finally {
-      _logger.debug("Restoring original directory", {
+      logger.debug("Restoring original directory", {
         key: "working_dir_test#L188#teardown-restore-cwd",
         originalCwd,
         currentCwd: Deno.cwd(),
@@ -207,7 +207,7 @@ Deno.test({
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {
-      _logger.debug("Testing directory structure", {
+      logger.debug("Testing directory structure", {
         purpose: "Verify required directories exist",
         step: "Simple pattern",
         state: "Starting",
@@ -249,19 +249,19 @@ app_schema:
       if (!configResult.success) {
         throw new Error("Failed to create BreakdownConfig");
       }
-      const _config = configResult.data;
-      await (_config as any).loadConfig();
-      const settings = await (_config as any).getConfig();
+      const config = configResult.data;
+      await (config as any).loadConfig();
+      const settings = await (config as any).getConfig();
 
       for (const dir of requiredDirs) {
         const dirPath = join(TEST_ENV.workingDir, settings.working_dir, dir);
-        _logger.debug("Checking directory", {
+        logger.debug("Checking directory", {
           step: "Directory verification",
           dir: dirPath,
           state: "Checking",
         });
         await assertDirectoryExists(dirPath);
-        _logger.debug("Directory verified", {
+        logger.debug("Directory verified", {
           step: "Directory verification",
           dir: dirPath,
           state: "Complete",
@@ -282,7 +282,7 @@ Deno.test({
     Deno.chdir(TEST_ENV.workingDir);
     try {
       const customWorkingDir = "./tmp/test/custom-config";
-      _logger.debug("Testing custom configuration", {
+      logger.debug("Testing custom configuration", {
         purpose: "Verify custom working directory",
         step: "Normal pattern",
         state: "Starting",
@@ -308,11 +308,11 @@ app_schema:
       if (!configResult.success) {
         throw new Error("Failed to create BreakdownConfig");
       }
-      const _config = configResult.data;
-      await (_config as any).loadConfig();
-      const settings = await (_config as any).getConfig();
+      const config = configResult.data;
+      await (config as any).loadConfig();
+      const settings = await (config as any).getConfig();
 
-      _logger.debug("Configuration loaded", {
+      logger.debug("Configuration loaded", {
         step: "Verification",
         actualWorkingDir: settings.working_dir,
         expectedDir: `${customWorkingDir}/.agent/breakdown`,
@@ -332,14 +332,14 @@ Deno.test({
     await Deno.mkdir(TEST_ENV.workingDir, { recursive: true });
     Deno.chdir(TEST_ENV.workingDir);
     try {
-      _logger.debug("Testing invalid configurations", {
+      logger.debug("Testing invalid configurations", {
         purpose: "Verify error handling",
         step: "Edge cases",
         state: "Starting",
       });
 
       // Test non-existent path
-      _logger.debug("Testing non-existent path", {
+      logger.debug("Testing non-existent path", {
         step: "Error handling",
         path: "/non/existent/path",
         state: "Starting",
@@ -354,20 +354,20 @@ Deno.test({
           if (!configResult.success) {
             throw new Error("Failed to create BreakdownConfig");
           }
-          const _config = configResult.data;
-          await (_config as any).loadConfig();
+          const config = configResult.data;
+          await (config as any).loadConfig();
         },
         Error,
         // Updated error message to match new BreakdownConfig behavior
       );
 
-      _logger.debug("Non-existent path test complete", {
+      logger.debug("Non-existent path test complete", {
         step: "Error handling",
         state: "Complete",
       });
 
       // Test file path instead of directory
-      _logger.debug("Testing file path", {
+      logger.debug("Testing file path", {
         step: "Error handling",
         file: "/tmp/test/config-working-dir/test.txt",
         state: "Starting",
@@ -382,8 +382,8 @@ Deno.test({
           if (!configResult.success) {
             throw new Error("Failed to create BreakdownConfig");
           }
-          const _config = configResult.data;
-          await (_config as any).loadConfig();
+          const config = configResult.data;
+          await (config as any).loadConfig();
         },
         Error,
         // Updated error message to match new BreakdownConfig behavior
@@ -401,14 +401,14 @@ Deno.test({
           if (!configResult.success) {
             throw new Error("Failed to create BreakdownConfig");
           }
-          const _config = configResult.data;
-          await (_config as any).loadConfig();
+          const config = configResult.data;
+          await (config as any).loadConfig();
         },
         Error,
         // Updated error message to match new BreakdownConfig behavior
       );
 
-      _logger.debug("File path test complete", {
+      logger.debug("File path test complete", {
         step: "Error handling",
         state: "Complete",
       });

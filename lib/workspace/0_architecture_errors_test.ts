@@ -14,9 +14,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("test-architecture-errors");
+const _logger = new _BreakdownLogger("test-architecture-errors");
 
 describe("Workspace Errors - Architecture Tests", async () => {
   describe("Module exports completeness", async () => {

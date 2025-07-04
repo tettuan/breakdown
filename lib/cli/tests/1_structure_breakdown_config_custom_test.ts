@@ -51,7 +51,7 @@ async function loadConfig(configPath: string): Promise<CustomConfig> {
     const _workingDir = Deno.cwd();
     const configPrefix = "production-user";
 
-    const breakdownConfigResult = await BreakdownConfig.create(configPrefix, workingDir);
+    const breakdownConfigResult = await BreakdownConfig.create(configPrefix, _workingDir);
     if (!breakdownConfigResult.success) {
       throw new Error(`Failed to create BreakdownConfig: ${breakdownConfigResult.error}`);
     }
@@ -59,7 +59,7 @@ async function loadConfig(configPath: string): Promise<CustomConfig> {
     await breakdownConfig.loadConfig();
     const _config = await breakdownConfig.getConfig();
 
-    return config as CustomConfig;
+    return _config as CustomConfig;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to load config from ${configPath}: ${message}`);

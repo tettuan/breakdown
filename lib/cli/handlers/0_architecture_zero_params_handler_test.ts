@@ -33,11 +33,11 @@ Deno.test("ZeroParamsHandler Architecture", async (t) => {
     const _func = handleZeroParams;
 
     // Should accept exactly 3 parameters (args, config, options)
-    assertEquals(func.length, 3);
+    assertEquals(_func.length, 3);
 
     // Should be synchronous function (no Promise return)
-    const _result = func([], {}, {});
-    assertEquals(_result, undefined); // void return
+    const result = _func([], {}, {});
+    assertEquals(result, undefined); // void return
   });
 
   await t.step("maintains proper dependency direction", () => {
@@ -88,7 +88,7 @@ Deno.test("ZeroParamsHandler Architecture", async (t) => {
       handleZeroParams([], {}, { help: true });
       handleZeroParams([], {}, { version: true });
       handleZeroParams([], {}, {}); // default case
-      handleZeroParams(null as unknown, null as unknown, null as unknown); // extreme case
+      handleZeroParams(null as any, null as any, null as any); // extreme case
 
       // Should not throw any exceptions
       assert(true, "No exceptions thrown for various inputs");
@@ -115,8 +115,8 @@ Deno.test("ZeroParamsHandler Architecture", async (t) => {
     assertEquals(typeof func, "function");
 
     // Void return indicates coordination role (not data processing)
-    const _result = func([], {}, {});
-    assertEquals(_result, undefined);
+    const result = func([], {}, {});
+    assertEquals(result, undefined);
   });
 });
 
@@ -205,7 +205,7 @@ Deno.test("ZeroParamsHandler Totality Architecture", async (t) => {
     // Architecture should handle all states without exceptions
     for (const options of optionStates) {
       try {
-        handleZeroParams([], {}, options as unknown);
+        handleZeroParams([], {}, options as any);
         assert(true, `Option state handled: ${JSON.stringify(options)}`);
       } catch (_error) {
         assert(false, `Totality violation: unhandled option state ${JSON.stringify(options)}`);
@@ -256,7 +256,7 @@ Deno.test("ZeroParamsHandler Totality Architecture", async (t) => {
     // Architecture should handle all input types gracefully
     for (const input of inputTypes) {
       try {
-        handleZeroParams(input.args as unknown, input.config as unknown, input.options as unknown);
+        handleZeroParams(input.args as any, input.config as any, input.options as any);
         assert(true, `Input type handled: ${JSON.stringify(input)}`);
       } catch (_error) {
         assert(false, `Totality violation: unhandled input type ${JSON.stringify(input)}`);

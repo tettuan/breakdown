@@ -13,12 +13,12 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsStdinProcessor } from "./two_params_stdin_processor.ts";
 import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
 
-const _logger = new BreakdownLogger("structure-stdin-processor");
+const _logger = new _BreakdownLogger("structure-stdin-processor");
 
 describe("TwoParamsStdinProcessor Structure - Class Design Principles", () => {
   it("should adhere to single responsibility principle", async () => {
@@ -66,18 +66,18 @@ describe("TwoParamsStdinProcessor Structure - Class Design Principles", () => {
     ];
 
     for (const scenario of detectionScenarios) {
-      const _result = await _processor.process(config, scenario.options);
+      const result = await _processor.process(config, scenario.options);
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
       if (scenario.shouldDetectStdin && !scenario.options.skipStdin) {
         // Detection should lead to processing attempt
         // Result depends on actual stdin availability
       } else {
         // No detection should return empty string
-        if (_result.ok) {
-          assertEquals(_result.data, "");
+        if (result.ok) {
+          assertEquals(result.data, "");
         }
       }
     }
@@ -90,7 +90,7 @@ describe("TwoParamsStdinProcessor Structure - Class Design Principles", () => {
 
     // Internal method shouldReadStdin should not be directly accessible (private)
     assertEquals(
-      typeof (processor as unknown as { shouldReadStdin?: () => boolean }).shouldReadStdin,
+      typeof (_processor as any as { shouldReadStdin?: () => boolean }).shouldReadStdin,
       "function",
     );
 
@@ -159,17 +159,17 @@ describe("TwoParamsStdinProcessor Structure - Class Design Principles", () => {
     ];
 
     for (const scenario of resourceScenarios) {
-      const _result = await _processor.process(
+      const result = await _processor.process(
         scenario.config as BreakdownConfigCompatible,
         { skipStdin: true }, // Ensure quick completion
       );
 
       // All should complete without resource leaks
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
-      if (_result.ok) {
-        assertEquals(_result.data, "");
+      if (result.ok) {
+        assertEquals(result.data, "");
       }
     }
   });
@@ -190,18 +190,18 @@ describe("TwoParamsStdinProcessor Structure - Data Flow Patterns", () => {
     ];
 
     for (const flow of inputValidationFlow) {
-      const _result = await _processor.process(
+      const result = await _processor.process(
         flow.input as BreakdownConfigCompatible,
         { skipStdin: true },
       );
 
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
       if (flow.expectError) {
-        assertEquals(_result.ok, false);
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, "StdinReadError");
+        assertEquals(result.ok, false);
+        if (!result.ok) {
+          assertEquals(result.error.kind, "StdinReadError");
         }
       }
     }
@@ -233,14 +233,14 @@ describe("TwoParamsStdinProcessor Structure - Data Flow Patterns", () => {
     };
 
     for (const flow of optionFlows) {
-      const _result = await _processor.process(config, flow.options);
+      const result = await _processor.process(config, flow.options);
 
-      assertExists(_result);
+      assertExists(result);
 
       // Verify options are properly interpreted
       if (flow.options.skipStdin === true) {
-        if (_result.ok) {
-          assertEquals(_result.data, "");
+        if (result.ok) {
+          assertEquals(result.data, "");
         }
       }
     }
@@ -259,34 +259,34 @@ describe("TwoParamsStdinProcessor Structure - Data Flow Patterns", () => {
         description: "negative timeout",
       },
       {
-        config: { stdin: { timeout_ms: "invalid" as unknown as number } },
+        config: { stdin: { timeout_ms: "invalid" as any as number } },
         options: { fromFile: "-" },
         description: "invalid timeout type",
       },
       {
-        config: { stdin: null as unknown as { timeout_ms: number } },
+        config: { stdin: null as any as { timeout_ms: number } },
         options: { from: "-" },
         description: "null stdin config",
       },
     ];
 
     for (const scenario of errorScenarios) {
-      const _result = await _processor.process(
+      const result = await _processor.process(
         scenario.config as BreakdownConfigCompatible,
         scenario.options,
       );
 
       // Errors should be properly structured in Result
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "StdinReadError");
-        assertExists(_result.error.message);
-        assertEquals(typeof _result.error.message, "string");
+      if (!result.ok) {
+        assertEquals(result.error.kind, "StdinReadError");
+        assertExists(result.error.message);
+        assertEquals(typeof result.error.message, "string");
         // Optional cause field
-        if (_result.error.cause) {
-          assertExists(_result.error.cause);
+        if (result.error.cause) {
+          assertExists(result.error.cause);
         }
       }
     }
@@ -316,8 +316,8 @@ describe("TwoParamsStdinProcessor Structure - Configuration Handling", () => {
 
     assertExists(result1);
     assertExists(result2);
-    assertEquals(typeof _result1.ok, "boolean");
-    assertEquals(typeof _result2.ok, "boolean");
+    assertEquals(typeof result1.ok, "boolean");
+    assertEquals(typeof result2.ok, "boolean");
   });
 
   it("should structure timeout handling consistently", async () => {
@@ -361,14 +361,14 @@ describe("TwoParamsStdinProcessor Structure - Configuration Handling", () => {
     ];
 
     for (const config of boundaryConfigs) {
-      const _result = await _processor.process(
+      const result = await _processor.process(
         config as BreakdownConfigCompatible,
         { skipStdin: true },
       );
 
       // All should be handled gracefully
-      assertExists(_result);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
     }
   });
 });

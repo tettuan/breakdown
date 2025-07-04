@@ -27,16 +27,16 @@ Deno.test("TwoParamsHandler Integration - Basic functionality", async () => {
   };
 
   // Note: This will likely fail due to missing components, but tests the interface
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
   // Verify the result structure (regardless of success/failure)
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 
-  if (!_result.ok) {
+  if (!result.ok) {
     // Verify error structure matches TwoParamsHandlerError
-    assertExists(_result.error);
-    assertExists(_result.error.kind);
+    assertExists(result.error);
+    assertExists(result.error.kind);
 
     // Check for expected error kinds
     const validErrorKinds = [
@@ -50,7 +50,7 @@ Deno.test("TwoParamsHandler Integration - Basic functionality", async () => {
       "OutputWriteError",
     ];
 
-    assertEquals(validErrorKinds.includes(_result.error.kind), true);
+    assertEquals(validErrorKinds.includes(result.error.kind), true);
   }
 });
 
@@ -59,14 +59,14 @@ Deno.test("TwoParamsHandler Integration - Invalid parameter count", async () => 
   const _config = {};
   const options = {};
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidParameterCount");
-    if (_result.error.kind === "InvalidParameterCount") {
-      assertEquals(_result.error.received, 1);
-      assertEquals(_result.error.expected, 2);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidParameterCount");
+    if (result.error.kind === "InvalidParameterCount") {
+      assertEquals(result.error.received, 1);
+      assertEquals(result.error.expected, 2);
     }
   }
 });
@@ -76,15 +76,15 @@ Deno.test("TwoParamsHandler Integration - Invalid demonstrative type", async () 
   const _config = {};
   const options = {};
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidDemonstrativeType");
-    if (_result.error.kind === "InvalidDemonstrativeType") {
-      assertEquals(_result.error.value, "invalid-type");
-      assertExists(_result.error.validTypes);
-      assertEquals(Array.isArray(_result.error.validTypes), true);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidDemonstrativeType");
+    if (result.error.kind === "InvalidDemonstrativeType") {
+      assertEquals(result.error.value, "invalid-type");
+      assertExists(result.error.validTypes);
+      assertEquals(Array.isArray(result.error.validTypes), true);
     }
   }
 });
@@ -94,15 +94,15 @@ Deno.test("TwoParamsHandler Integration - Invalid layer type", async () => {
   const _config = {};
   const options = {};
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidLayerType");
-    if (_result.error.kind === "InvalidLayerType") {
-      assertEquals(_result.error.value, "invalid-layer");
-      assertExists(_result.error.validTypes);
-      assertEquals(Array.isArray(_result.error.validTypes), true);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidLayerType");
+    if (result.error.kind === "InvalidLayerType") {
+      assertEquals(result.error.value, "invalid-layer");
+      assertExists(result.error.validTypes);
+      assertEquals(Array.isArray(result.error.validTypes), true);
     }
   }
 });
@@ -112,14 +112,14 @@ Deno.test("TwoParamsHandler Integration - Empty parameters", async () => {
   const _config = {};
   const options = {};
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // Should catch empty demonstrative type
     assertEquals(
-      _result.error.kind === "InvalidDemonstrativeType" ||
-        _result.error.kind === "FactoryValidationError",
+      result.error.kind === "InvalidDemonstrativeType" ||
+        result.error.kind === "FactoryValidationError",
       true,
     );
   }
@@ -132,14 +132,14 @@ Deno.test("TwoParamsHandler Integration - Orchestrator reuse", async () => {
   const _config = {};
   const options = {};
 
-  const result1 = await handleTwoParams(params1, config, options);
-  const result2 = await handleTwoParams(params2, config, options);
+  const result1 = await handleTwoParams(params1, _config, options);
+  const result2 = await handleTwoParams(params2, _config, options);
 
   // Both calls should return results (even if failed due to missing components)
   assertExists(result1);
   assertExists(result2);
-  assertEquals(typeof _result1.ok, "boolean");
-  assertEquals(typeof _result2.ok, "boolean");
+  assertEquals(typeof result1.ok, "boolean");
+  assertEquals(typeof result2.ok, "boolean");
 });
 
 Deno.test("TwoParamsHandler Integration - Options processing", async () => {
@@ -153,19 +153,19 @@ Deno.test("TwoParamsHandler Integration - Options processing", async () => {
     customValidation: true,
   };
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
   // Verify result structure
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 
   // If it fails, it should be due to component issues, not option parsing
-  if (!_result.ok) {
+  if (!result.ok) {
     // Should not fail on InvalidParameterCount or type validation
     assertEquals(
-      _result.error.kind !== "InvalidParameterCount" &&
-        _result.error.kind !== "InvalidDemonstrativeType" &&
-        _result.error.kind !== "InvalidLayerType",
+      result.error.kind !== "InvalidParameterCount" &&
+        result.error.kind !== "InvalidDemonstrativeType" &&
+        result.error.kind !== "InvalidLayerType",
       true,
     );
   }
@@ -178,17 +178,17 @@ Deno.test("TwoParamsHandler Integration - Backward compatibility interface", asy
   const options = { output: "compatibility-test.md" };
 
   // This should compile and run without interface changes
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
   // Verify the return type structure
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 
-  if (_result.ok) {
-    assertEquals(_result.data, undefined);
+  if (result.ok) {
+    assertEquals(result.data, undefined);
   } else {
-    assertExists(_result.error);
-    assertExists(_result.error.kind);
+    assertExists(result.error);
+    assertExists(result.error.kind);
   }
 });
 
@@ -214,11 +214,11 @@ Deno.test("TwoParamsHandler Integration - Error mapping validation", async () =>
   ];
 
   for (const testCase of testCases) {
-    const _result = await handleTwoParams(testCase.params, {}, {});
+    const result = await handleTwoParams(testCase.params, {}, {});
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, testCase.expectedError);
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, testCase.expectedError);
     }
   }
 });
@@ -248,18 +248,18 @@ Deno.test("TwoParamsHandler Integration - Complex configuration", async () => {
     "uv-author": "integration-test",
   };
 
-  const _result = await handleTwoParams(params, config, options);
+  const result = await handleTwoParams(_params, _config, options);
 
   // Verify result structure with complex inputs
-  assertExists(_result);
-  assertEquals(typeof _result.ok, "boolean");
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 
   // Parameters should be valid, so if it fails, it's due to component issues
-  if (!_result.ok) {
+  if (!result.ok) {
     assertEquals(
-      _result.error.kind !== "InvalidParameterCount" &&
-        _result.error.kind !== "InvalidDemonstrativeType" &&
-        _result.error.kind !== "InvalidLayerType",
+      result.error.kind !== "InvalidParameterCount" &&
+        result.error.kind !== "InvalidDemonstrativeType" &&
+        result.error.kind !== "InvalidLayerType",
       true,
     );
   }
@@ -273,7 +273,7 @@ Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
     const _params = i % 2 === 0 ? ["to", "project"] : ["summary", "issue"];
     const options = { iteration: i };
 
-    promises.push(handleTwoParams(params, {}, options));
+    promises.push(handleTwoParams(_params, {}, options));
   }
 
   const results = await Promise.all(promises);
@@ -282,8 +282,17 @@ Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
   assertEquals(results.length, 5);
 
   // All results should have proper structure
-  for (const result of results) {
-    assertExists(_result);
-    assertEquals(typeof _result.ok, "boolean");
+  for (const _loopResult of results) {
+    assertExists(_loopResult);
+    assertEquals(typeof _loopResult.ok, "boolean");
   }
+});
+
+// Component dependency analysis
+Deno.test("TwoParamsHandler - Component dependency analysis", async () => {
+  const _params = ["to", "project"];
+  const result = await handleTwoParams(_params, {}, {});
+  
+  assertExists(result);
+  assertEquals(typeof result.ok, "boolean");
 });

@@ -26,7 +26,7 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Verify the processor is properly instantiable
-    assert(processor instanceof TwoParamsVariableProcessor);
+    assert(_processor instanceof TwoParamsVariableProcessor);
 
     // Verify key methods exist and are functions
     assert(typeof _processor.processVariables === "function");
@@ -41,7 +41,7 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     // Test null input validation
-    const nullResult = _processor.processVariables(null as unknown as Record<string, unknown>, "");
+    const nullResult = _processor.processVariables(null as any as Record<string, unknown>, "");
     assert(!nullResult.ok);
 
     if (!nullResult.ok) {
@@ -54,14 +54,14 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
 
     // Test undefined input validation
     const undefinedResult = _processor.processVariables(
-      undefined as unknown as Record<string, unknown>,
+      undefined as any as Record<string, unknown>,
       "",
     );
     assert(!undefinedResult.ok);
 
     // Test non-object input validation
     const stringResult = _processor.processVariables(
-      "not an object" as unknown as Record<string, unknown>,
+      "not an object" as any as Record<string, unknown>,
       "",
     );
     assert(!stringResult.ok);
@@ -78,11 +78,11 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
     };
     const stdinContent = "test stdin content";
 
-    const _result = _processor.processVariables(options, stdinContent);
-    assert(_result.ok);
+    const result = _processor.processVariables(options, stdinContent);
+    assert(result.ok);
 
-    if (_result.ok) {
-      const { customVariables, standardVariables, allVariables } = _result.data;
+    if (result.ok) {
+      const { customVariables, standardVariables, allVariables } = result.data;
 
       // Verify data flow: custom variables contain only uv- prefixed
       assertEquals(Object.keys(customVariables).length, 2);
@@ -114,15 +114,15 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
       "uv-valid": "good", // Valid variable
     };
 
-    const _result = _processor.processVariables(options, "");
-    assert(!_result.ok);
+    const result = _processor.processVariables(options, "");
+    assert(!result.ok);
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Should collect multiple errors
-      assertEquals(_result.error.length, 2);
+      assertEquals(result.error.length, 2);
 
       // Verify error structure consistency
-      for (const error of _result.error) {
+      for (const error of result.error) {
         assert("kind" in error);
         assert(typeof error.kind === "string");
 
@@ -153,17 +153,17 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
       "from": "file.txt",
     };
 
-    const _result = _processor.processVariables(genericOptions, "content");
-    assert(_result.ok);
+    const result = _processor.processVariables(genericOptions, "content");
+    assert(result.ok);
 
-    if (_result.ok) {
+    if (result.ok) {
       // Should extract only what it understands
-      assertEquals(Object.keys(_result.data.customVariables).length, 1);
-      assert("uv-test" in _result.data.customVariables);
+      assertEquals(Object.keys(result.data.customVariables).length, 1);
+      assert("uv-test" in result.data.customVariables);
 
       // Should build standard variables from known options
-      assertEquals(_result.data.standardVariables.input_text_file, "file.txt");
-      assertEquals(_result.data.standardVariables.input_text, "content");
+      assertEquals(result.data.standardVariables.input_text_file, "file.txt");
+      assertEquals(result.data.standardVariables.input_text, "content");
     }
   });
 
@@ -226,12 +226,12 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
       "uv-with-dashes": "also_valid",
     };
 
-    const _result = _processor.processVariables(options, "");
-    assert(_result.ok);
+    const result = _processor.processVariables(options, "");
+    assert(result.ok);
 
-    if (_result.ok) {
+    if (result.ok) {
       // Should include all valid uv- prefixed variables
-      const customKeys = Object.keys(_result.data.customVariables);
+      const customKeys = Object.keys(result.data.customVariables);
       assertEquals(customKeys.length, 3);
       assert(customKeys.includes("uv-valid"));
       assert(customKeys.includes("uv-"));
@@ -244,12 +244,12 @@ Deno.test("TwoParamsVariableProcessor Structure", async (t) => {
     const _processor = new TwoParamsVariableProcessor();
 
     const options = { "uv-test": "value" };
-    const _result = _processor.processVariables(options, "content");
+    const result = _processor.processVariables(options, "content");
 
-    assert(_result.ok);
+    assert(result.ok);
 
-    if (_result.ok) {
-      const { customVariables, standardVariables, allVariables } = _result.data;
+    if (result.ok) {
+      const { customVariables, standardVariables, allVariables } = result.data;
 
       // Verify that returned objects are separate instances
       assert(customVariables !== standardVariables);

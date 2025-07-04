@@ -226,7 +226,16 @@ export type PromptVariables = PromptVariable[];
 
 /**
  * CLI parameters for prompt generation
- * @deprecated Use proper types from @tettuan/breakdownparams
+ * @deprecated Use PromptVariables with Duck Typing pattern instead.
+ * This type will be removed in the next major version.
+ *
+ * Migration guide:
+ * - Replace PromptCliParams with PromptVariables array
+ * - Use StandardVariable, FilePathVariable, StdinVariable, UserVariable classes
+ * - Leverage toRecord() method for Duck Typing compatibility
+ *
+ * @see PromptVariables for the new approach
+ * @see PromptManagerAdapter for usage examples
  */
 export type PromptCliParams = {
   demonstrativeType: string;

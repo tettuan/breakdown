@@ -22,10 +22,10 @@ import {
   assert,
   assertEquals,
   assertExists,
-  assertStringIncludes as _assertStringIncludes,
+  assertStringIncludes,
 } from "@std/assert";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
 
@@ -37,18 +37,18 @@ import {
 import {
   handleTwoParamsWithOrchestrator,
   type OrchestratorError,
-  TwoParamsOrchestrator as _TwoParamsOrchestrator,
+  TwoParamsOrchestrator,
 } from "../../lib/cli/handlers/two_params_orchestrator.ts";
-import { TwoParamsStdinProcessor as _TwoParamsStdinProcessor } from "../../lib/cli/processors/two_params_stdin_processor.ts";
-import { TwoParamsVariableProcessor as _TwoParamsVariableProcessor } from "../../lib/cli/processors/two_params_variable_processor.ts";
-import { TwoParamsPromptGenerator as _TwoParamsPromptGenerator } from "../../lib/cli/generators/two_params_prompt_generator.ts";
-import { VariablesBuilder as _VariablesBuilder } from "../../lib/builder/variables_builder.ts";
-import { PromptVariablesFactory as _PromptVariablesFactory } from "../../lib/factory/prompt_variables_factory.ts";
+import { TwoParamsStdinProcessor } from "../../lib/cli/processors/two_params_stdin_processor.ts";
+import { TwoParamsVariableProcessor } from "../../lib/cli/processors/two_params_variable_processor.ts";
+import { TwoParamsPromptGenerator } from "../../lib/cli/generators/two_params_prompt_generator.ts";
+import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
+import { PromptVariablesFactory } from "../../lib/factory/prompt_variables_factory.ts";
 
 import type { Result } from "../../lib/types/result.ts";
-import type { BreakdownConfigCompatible as _BreakdownConfigCompatible } from "../../lib/config/timeout_manager.ts";
+import type { BreakdownConfigCompatible } from "../../lib/config/timeout_manager.ts";
 
-const _logger = new BreakdownLogger("system-integration-final");
+const logger = new BreakdownLogger("system-integration-final");
 
 /**
  * System-wide performance metrics tracking
@@ -306,7 +306,7 @@ performance:
     try {
       await Deno.remove(baseDir, { recursive: true });
     } catch (err) {
-      _logger.warn("Failed to cleanup test environment", { error: err });
+      logger.warn("Failed to cleanup test environment", { error: err });
     }
   };
 
@@ -373,7 +373,7 @@ describe("System Integration Final Verification - Complete Component Integration
   });
 
   it("should verify complete end-to-end system integration", async () => {
-    _logger.debug("Testing complete end-to-end system integration");
+    logger.debug("Testing complete end-to-end system integration");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -451,8 +451,8 @@ describe("System Integration Final Verification - Complete Component Integration
       integrationResults.push({
         scenario: scenario.name,
         duration,
-        success: _result.ok,
-        errorKind: !_result.ok ? _result.error.kind : undefined,
+        success: result.ok,
+        errorKind: !result.ok ? result.error.kind : undefined,
         memoryDelta,
       });
 
@@ -466,7 +466,7 @@ describe("System Integration Final Verification - Complete Component Integration
         `Scenario ${scenario.name} memory should be <100MB, used ${memoryDelta} bytes`,
       );
 
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
     }
 
     // Overall integration verification
@@ -486,7 +486,7 @@ describe("System Integration Final Verification - Complete Component Integration
       `Average memory usage should be <50MB, was ${avgMemoryUsage} bytes`,
     );
 
-    _logger.debug("Complete end-to-end system integration completed", {
+    logger.debug("Complete end-to-end system integration completed", {
       totalScenarios: integrationScenarios.length,
       successRate: (successRate * 100).toFixed(1) + "%",
       totalDuration,
@@ -496,7 +496,7 @@ describe("System Integration Final Verification - Complete Component Integration
   });
 
   it("should verify component orchestration integration reliability", async () => {
-    _logger.debug("Testing component orchestration integration reliability");
+    logger.debug("Testing component orchestration integration reliability");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -564,7 +564,7 @@ describe("System Integration Final Verification - Complete Component Integration
     const allConsistent = consistencyResults.every((r) => r.consistent);
     assert(allConsistent, "Handler and orchestrator should produce consistent results");
 
-    _logger.debug("Component orchestration integration reliability completed", {
+    logger.debug("Component orchestration integration reliability completed", {
       testsRun: consistencyTests.length,
       allConsistent,
       consistencyResults: consistencyResults.map((r) => ({
@@ -577,7 +577,7 @@ describe("System Integration Final Verification - Complete Component Integration
   });
 
   it("should verify cross-component data flow integrity", async () => {
-    _logger.debug("Testing cross-component data flow integrity");
+    logger.debug("Testing cross-component data flow integrity");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -643,12 +643,12 @@ describe("System Integration Final Verification - Complete Component Integration
         scenario: scenario.name,
         inputSize: scenario.inputData.length,
         customVarsCount: Object.keys(scenario.customVars).length,
-        processed: _result.ok,
+        processed: result.ok,
         duration,
       });
 
       // Data flow should handle various input sizes
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
       assert(
         duration < 8000,
         `Data flow ${scenario.name} should complete in <8s, took ${duration}ms`,
@@ -674,7 +674,7 @@ describe("System Integration Final Verification - Complete Component Integration
       );
     }
 
-    _logger.debug("Cross-component data flow integrity completed", {
+    logger.debug("Cross-component data flow integrity completed", {
       scenarios: dataFlowScenarios.length,
       dataFlowResults,
       allProcessed: dataFlowResults.every((r) => r.processed),
@@ -694,7 +694,7 @@ describe("System Integration Final Verification - System Performance & Quality",
   });
 
   it("should verify system-wide performance under realistic load", async () => {
-    _logger.debug("Testing system-wide performance under realistic load");
+    logger.debug("Testing system-wide performance under realistic load");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -763,17 +763,17 @@ describe("System Integration Final Verification - System Performance & Quality",
       loadResults.push({
         scenario: scenario.name,
         duration: scenarioDuration,
-        success: _result.ok,
-        errorKind: !_result.ok ? _result.error.kind : undefined,
+        success: result.ok,
+        errorKind: !result.ok ? result.error.kind : undefined,
         withinExpectedTime,
       });
 
       // Verify expected behavior
       if (scenario.expectFailure) {
-        assertEquals(_result.ok, false);
+        assertEquals(result.ok, false);
       } else {
         // For non-failure scenarios, structure should be correct
-        assertEquals(typeof _result.ok, "boolean");
+        assertEquals(typeof result.ok, "boolean");
       }
     }
 
@@ -822,7 +822,7 @@ describe("System Integration Final Verification - System Performance & Quality",
       );
     }
 
-    _logger.debug("System-wide performance under realistic load completed", {
+    logger.debug("System-wide performance under realistic load completed", {
       totalOperations: systemMetrics.totalOperations,
       systemMetrics,
       performanceBreakdown: {
@@ -835,7 +835,7 @@ describe("System Integration Final Verification - System Performance & Quality",
   });
 
   it("should verify concurrent system operations reliability", async () => {
-    _logger.debug("Testing concurrent system operations reliability");
+    logger.debug("Testing concurrent system operations reliability");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -955,7 +955,7 @@ describe("System Integration Final Verification - System Performance & Quality",
       `Should test significant concurrent load, tested ${totalConcurrentOps} operations`,
     );
 
-    _logger.debug("Concurrent system operations reliability completed", {
+    logger.debug("Concurrent system operations reliability completed", {
       totalBatches: concurrentBatches.length,
       totalConcurrentOps,
       totalSuccessOps,
@@ -965,7 +965,7 @@ describe("System Integration Final Verification - System Performance & Quality",
   });
 
   it("should verify production-readiness quality assurance", async () => {
-    _logger.debug("Testing production-readiness quality assurance");
+    logger.debug("Testing production-readiness quality assurance");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -1043,7 +1043,7 @@ describe("System Integration Final Verification - System Performance & Quality",
 
       // Quality assessment
       const issues: string[] = [];
-      const qualityScore = 100;
+      let qualityScore = 100;
 
       // Performance quality check
       if (duration > 10000) {
@@ -1058,22 +1058,22 @@ describe("System Integration Final Verification - System Performance & Quality",
       }
 
       // Reliability quality check
-      if (!_result.ok) {
+      if (!result.ok) {
         // Check if error is appropriate
         if (
-          _result.error.kind === "InvalidParameterCount" ||
-          _result.error.kind === "InvalidDemonstrativeType" ||
-          _result.error.kind === "InvalidLayerType"
+          result.error.kind === "InvalidParameterCount" ||
+          result.error.kind === "InvalidDemonstrativeType" ||
+          result.error.kind === "InvalidLayerType"
         ) {
           // These are expected validation errors - not quality issues
         } else {
-          issues.push(`Reliability: Unexpected error - ${_result.error.kind}`);
+          issues.push(`Reliability: Unexpected error - ${result.error.kind}`);
           qualityScore -= 25;
         }
       }
 
       // Correctness quality check (basic structural validation)
-      if (typeof _result.ok !== "boolean") {
+      if (typeof result.ok !== "boolean") {
         issues.push("Correctness: Invalid result structure");
         qualityScore -= 30;
       }
@@ -1082,7 +1082,7 @@ describe("System Integration Final Verification - System Performance & Quality",
         scenario: scenario.name,
         duration,
         memoryUsage,
-        success: _result.ok,
+        success: result.ok,
         qualityScore: Math.max(0, qualityScore),
         issues,
       });
@@ -1115,7 +1115,7 @@ describe("System Integration Final Verification - System Performance & Quality",
       `Max memory usage should be <100MB for production, was ${maxMemoryUsage} bytes`,
     );
 
-    _logger.debug("Production-readiness quality assurance completed", {
+    logger.debug("Production-readiness quality assurance completed", {
       scenarios: productionScenarios.length,
       avgQualityScore,
       criticalIssuesCount: criticalIssues.length,
@@ -1143,7 +1143,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
   });
 
   it("should verify comprehensive error handling across all system layers", async () => {
-    _logger.debug("Testing comprehensive error handling across all system layers");
+    logger.debug("Testing comprehensive error handling across all system layers");
 
     // Error scenarios across different system layers
     const errorScenarios = [
@@ -1223,12 +1223,12 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
         const responseTime = performance.now() - start;
 
         // Verify error handling
-        const errorHandled = !_result.ok;
-        const errorKind = !_result.ok ? _result.error.kind : "none";
-        const errorStructureValid = !_result.ok
+        const errorHandled = !result.ok;
+        const errorKind = !result.ok ? result.error.kind : "none";
+        const errorStructureValid = !result.ok
           ? (
-            typeof _result.error.kind === "string" &&
-            _result.error.kind.length > 0
+            typeof result.error.kind === "string" &&
+            result.error.kind.length > 0
           )
           : true;
 
@@ -1242,10 +1242,10 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
         });
 
         // Error handling quality assertions
-        assertEquals(_result.ok, false, `Test should fail: ${scenario.name}`);
-        if (!_result.ok) {
-          assertExists(_result.error.kind, "Error should have a kind");
-          assertEquals(typeof _result.error.kind, "string", "Error kind should be string");
+        assertEquals(result.ok, false, `Test should fail: ${scenario.name}`);
+        if (!result.ok) {
+          assertExists(result.error.kind, "Error should have a kind");
+          assertEquals(typeof result.error.kind, "string", "Error kind should be string");
 
           // Verify expected error type (allow some flexibility)
           if (test.expectedError) {
@@ -1253,10 +1253,10 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
               ? test.expectedError
               : [test.expectedError];
             assert(
-              expectedErrors.includes(_result.error.kind) ||
-                _result.error.kind.includes(test.expectedError) ||
-                ["FactoryValidationError", "StdinReadError"].includes(_result.error.kind),
-              `Expected error type ${test.expectedError}, got ${_result.error.kind}`,
+              expectedErrors.includes(result.error.kind) ||
+                result.error.kind.includes(test.expectedError) ||
+                ["FactoryValidationError", "StdinReadError"].includes(result.error.kind),
+              `Expected error type ${test.expectedError}, got ${result.error.kind}`,
             );
           }
         }
@@ -1279,7 +1279,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
       `Average error response time should be <1s, was ${avgResponseTime}ms`,
     );
 
-    _logger.debug("Comprehensive error handling completed", {
+    logger.debug("Comprehensive error handling completed", {
       totalErrorTests: errorHandlingResults.length,
       allErrorsHandled,
       allStructuresValid,
@@ -1292,7 +1292,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
   });
 
   it("should verify system resilience under failure conditions", async () => {
-    _logger.debug("Testing system resilience under failure conditions");
+    logger.debug("Testing system resilience under failure conditions");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -1354,13 +1354,13 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
 
     for (const scenario of resilienceScenarios) {
       const scenarioStart = startSystemMetrics();
-      const successCount = 0;
-      const errorCount = 0;
+      let successCount = 0;
+      let errorCount = 0;
 
       for (const operation of scenario.operations) {
         const result = await handleTwoParams(operation.params, config, operation.options);
 
-        if (_result.ok) {
+        if (result.ok) {
           successCount++;
         } else {
           errorCount++;
@@ -1369,9 +1369,9 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
         // Verify expected outcome
         if (operation.expectSuccess) {
           // May succeed or fail gracefully, but should not throw
-          assertEquals(typeof _result.ok, "boolean");
+          assertEquals(typeof result.ok, "boolean");
         } else {
-          assertEquals(_result.ok, false, "Operation should fail as expected");
+          assertEquals(result.ok, false, "Operation should fail as expected");
         }
       }
 
@@ -1412,7 +1412,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
       `Average memory growth should be reasonable, was ${avgMemoryGrowth} bytes`,
     );
 
-    _logger.debug("System resilience under failure conditions completed", {
+    logger.debug("System resilience under failure conditions completed", {
       totalScenarios: resilienceScenarios.length,
       totalResilienceOps,
       allScenariosStable,
@@ -1422,7 +1422,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
   });
 
   it("should verify final system integration quality and readiness", async () => {
-    _logger.debug("Testing final system integration quality and readiness");
+    logger.debug("Testing final system integration quality and readiness");
 
     const config = {
       app_prompt: { base_dir: testEnv.promptsDir },
@@ -1501,8 +1501,8 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
       },
     ];
 
-    const totalQualityScore = 0;
-    const maxPossibleScore = 0;
+    let totalQualityScore = 0;
+    let maxPossibleScore = 0;
     const validationResults: Array<{
       category: string;
       test: string;
@@ -1520,7 +1520,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
 
         const duration = performance.now() - start;
         const issues: string[] = [];
-        const testScore = test.qualityWeight;
+        let testScore = test.qualityWeight;
 
         // Type-safe test evaluation using discriminated union logic
         // Since we're working with legacy interface, we need safe checking
@@ -1529,19 +1529,19 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
 
         if (hasExpectFailure) {
           // Error test case
-          if (_result.ok) {
+          if (result.ok) {
             issues.push("Should have failed but succeeded");
             testScore = 0;
           } else {
             // Verify proper error structure
-            if (!_result.error.kind || typeof _result.error.kind !== "string") {
+            if (!result.error.kind || typeof result.error.kind !== "string") {
               issues.push("Invalid error structure");
               testScore *= 0.5;
             }
           }
         } else {
           // Functional or performance test
-          if (typeof _result.ok !== "boolean") {
+          if (typeof result.ok !== "boolean") {
             issues.push("Invalid result structure");
             testScore = 0;
           }
@@ -1599,7 +1599,7 @@ describe("System Integration Final Verification - Comprehensive Error Handling &
       `No quality issues should remain: ${totalIssues.join(", ")}`,
     );
 
-    _logger.debug("Final system integration quality and readiness completed", {
+    logger.debug("Final system integration quality and readiness completed", {
       finalQualityScore: finalQualityScore.toFixed(1) + "%",
       totalTests: validationResults.length,
       allCriticalTestsPassed,

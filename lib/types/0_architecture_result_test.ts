@@ -10,7 +10,7 @@
  * - Functional programming principles adherence
  * - Totality principle implementation
  *
- * @module types/0_architecture_result_test
+ * @module types/0_architectureresult_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
@@ -186,10 +186,10 @@ Deno.test("Result Type Architecture", async (t) => {
     assertExists(resultModule.all, "Should export all function");
 
     // All functions should be callable
-    assertEquals(typeof _resultModule.ok, "function");
-    assertEquals(typeof _resultModule.error, "function");
-    assertEquals(typeof _resultModule.map, "function");
-    assertEquals(typeof _resultModule.chain, "function");
+    assertEquals(typeof resultModule.ok, "function");
+    assertEquals(typeof resultModule.error, "function");
+    assertEquals(typeof resultModule.map, "function");
+    assertEquals(typeof resultModule.chain, "function");
   });
 });
 
@@ -224,7 +224,7 @@ Deno.test("Result Type Dependency Analysis", async (t) => {
 
     // All exports should be functions (constructors and utilities)
     for (const exportName of exports) {
-      const exportValue = resultModule[exportName as keyof typeof _resultModule];
+      const exportValue = resultModule[exportName as keyof typeof resultModule];
       assertEquals(typeof exportValue, "function", `${exportName} should be a function`);
     }
   });

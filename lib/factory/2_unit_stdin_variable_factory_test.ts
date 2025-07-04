@@ -17,15 +17,15 @@ import {
   StdinVariableFactory,
   StdinVariableFactoryError,
 } from "./stdin_variable_factory.ts";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("stdin-variable-_factory-test");
+const logger = new BreakdownLogger("stdin-variable-_factory-test");
 
 /**
  * 【単体テスト】create()メソッドの正常系テスト
  */
 Deno.test("Unit: create() - 正常系テスト", () => {
-  _logger.debug("create() 正常系テスト開始");
+  logger.debug("create() 正常系テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -34,24 +34,24 @@ Deno.test("Unit: create() - 正常系テスト", () => {
     inputText: "Hello, World!",
   };
 
-  const _result = _factory.create(minimalInput);
+  const result = _factory.create(minimalInput);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    const record = _result.data.toRecord();
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    const record = result.data.toRecord();
     assertEquals(record.input_text, "Hello, World!");
-    assertEquals(_result.data.name.getValue(), "input_text");
-    assertEquals(_result.data.value, "Hello, World!");
+    assertEquals(result.data.name.getValue(), "input_text");
+    assertEquals(result.data.value, "Hello, World!");
   }
 
-  _logger.debug("create() 正常系テスト完了", { success: _result.ok });
+  logger.debug("create() 正常系テスト完了", { success: result.ok });
 });
 
 /**
  * 【単体テスト】create()メソッドの完全入力テスト
  */
 Deno.test("Unit: create() - 完全入力テスト", () => {
-  _logger.debug("create() 完全入力テスト開始");
+  logger.debug("create() 完全入力テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -61,22 +61,22 @@ Deno.test("Unit: create() - 完全入力テスト", () => {
     context: "Test context information",
   };
 
-  const _result = _factory.create(completeInput);
+  const result = _factory.create(completeInput);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    const record = _result.data.toRecord();
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    const record = result.data.toRecord();
     assertEquals(record.input_text, "Complete input text");
   }
 
-  _logger.debug("create() 完全入力テスト完了", { success: _result.ok });
+  logger.debug("create() 完全入力テスト完了", { success: result.ok });
 });
 
 /**
  * 【単体テスト】create()メソッドの異常系テスト - NoStdinData
  */
 Deno.test("Unit: create() - NoStdinData エラーテスト", () => {
-  _logger.debug("create() NoStdinData エラーテスト開始");
+  logger.debug("create() NoStdinData エラーテスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -85,7 +85,7 @@ Deno.test("Unit: create() - NoStdinData エラーテスト", () => {
   const result1 = _factory.create(emptyInput);
 
   assertEquals(result1.ok, false);
-  if (!_result1.ok) {
+  if (!result1.ok) {
     assertEquals(result1.error.kind, "NoStdinData");
     if (result1.error.kind === "NoStdinData") {
       assertExists(result1.error.context);
@@ -101,42 +101,42 @@ Deno.test("Unit: create() - NoStdinData エラーテスト", () => {
   const result2 = _factory.create(undefinedInput);
 
   assertEquals(result2.ok, false);
-  if (!_result2.ok) {
+  if (!result2.ok) {
     assertEquals(result2.error.kind, "NoStdinData");
   }
 
-  _logger.debug("create() NoStdinData エラーテスト完了");
+  logger.debug("create() NoStdinData エラーテスト完了");
 });
 
 /**
  * 【単体テスト】create()メソッドの異常系テスト - InvalidStdinSource
  */
 Deno.test("Unit: create() - InvalidStdinSource エラーテスト", () => {
-  _logger.debug("create() InvalidStdinSource エラーテスト開始");
+  logger.debug("create() InvalidStdinSource エラーテスト開始");
 
   const _factory = new StdinVariableFactory();
 
   const invalidSourceInput: StdinFactoryInput = {
     inputText: "Valid text",
-    source: "invalid" as unknown,
+    source: "invalid" as any,
   };
 
-  const _result = _factory.create(invalidSourceInput);
+  const result = _factory.create(invalidSourceInput);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(_result.error.kind, "InvalidStdinSource");
-    assertEquals((_result.error as unknown).source, "invalid");
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "InvalidStdinSource");
+    assertEquals((result.error as any).source, "invalid");
   }
 
-  _logger.debug("create() InvalidStdinSource エラーテスト完了");
+  logger.debug("create() InvalidStdinSource エラーテスト完了");
 });
 
 /**
  * 【単体テスト】create()メソッドの異常系テスト - VariableError伝播
  */
 Deno.test("Unit: create() - VariableError 伝播テスト", () => {
-  _logger.debug("create() VariableError 伝播テスト開始");
+  logger.debug("create() VariableError 伝播テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -146,23 +146,23 @@ Deno.test("Unit: create() - VariableError 伝播テスト", () => {
     source: "cli",
   };
 
-  const _result = _factory.create(emptyTextInput);
+  const result = _factory.create(emptyTextInput);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
+  assertEquals(result.ok, false);
+  if (!result.ok) {
     // StdinVariable.createから返されるVariableErrorが伝播していることを確認
-    assertExists(_result.error.kind);
+    assertExists(result.error.kind);
     // 具体的なエラー種別はStdinVariableの実装に依存
   }
 
-  _logger.debug("create() VariableError 伝播テスト完了");
+  logger.debug("create() VariableError 伝播テスト完了");
 });
 
 /**
  * 【単体テスト】createFromText()メソッドのテスト
  */
 Deno.test("Unit: createFromText() - 機能テスト", () => {
-  _logger.debug("createFromText() 機能テスト開始");
+  logger.debug("createFromText() 機能テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -184,14 +184,14 @@ Deno.test("Unit: createFromText() - 機能テスト", () => {
   const result3 = _factory.createFromText("");
   assertEquals(result3.ok, false);
 
-  _logger.debug("createFromText() 機能テスト完了");
+  logger.debug("createFromText() 機能テスト完了");
 });
 
 /**
  * 【単体テスト】createBatch()メソッドの正常系テスト
  */
 Deno.test("Unit: createBatch() - 正常系テスト", () => {
-  _logger.debug("createBatch() 正常系テスト開始");
+  logger.debug("createBatch() 正常系テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -201,24 +201,24 @@ Deno.test("Unit: createBatch() - 正常系テスト", () => {
     { inputText: "Input 3", source: "file" },
   ];
 
-  const _result = _factory.createBatch(inputs);
+  const result = _factory.createBatch(inputs);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.length, 3);
-    assertEquals(_result.data[0].value, "Input 1");
-    assertEquals(_result.data[1].value, "Input 2");
-    assertEquals(_result.data[2].value, "Input 3");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.length, 3);
+    assertEquals(result.data[0].value, "Input 1");
+    assertEquals(result.data[1].value, "Input 2");
+    assertEquals(result.data[2].value, "Input 3");
   }
 
-  _logger.debug("createBatch() 正常系テスト完了", { count: inputs.length });
+  logger.debug("createBatch() 正常系テスト完了", { count: inputs.length });
 });
 
 /**
  * 【単体テスト】createBatch()メソッドの異常系テスト
  */
 Deno.test("Unit: createBatch() - 異常系テスト", () => {
-  _logger.debug("createBatch() 異常系テスト開始");
+  logger.debug("createBatch() 異常系テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -226,15 +226,15 @@ Deno.test("Unit: createBatch() - 異常系テスト", () => {
     { inputText: "Valid input 1", source: "cli" },
     { inputText: "", source: "pipe" }, // エラーになる
     { inputText: "Valid input 3", source: "file" },
-    { inputText: "Valid input 4", source: "invalid" as unknown }, // エラーになる
+    { inputText: "Valid input 4", source: "invalid" as any }, // エラーになる
   ];
 
-  const _result = _factory.createBatch(inputs);
+  const result = _factory.createBatch(inputs);
 
-  assertEquals(_result.ok, false);
-  if (!_result.ok) {
-    assertEquals(Array.isArray(_result.error), true);
-    assertEquals(_result.error.length, 2); // 2つのエラー
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(Array.isArray(result.error), true);
+    assertEquals(result.error.length, 2); // 2つのエラー
   }
 
   // 空配列のテスト
@@ -244,14 +244,14 @@ Deno.test("Unit: createBatch() - 異常系テスト", () => {
     assertEquals(emptyResult.data.length, 0);
   }
 
-  _logger.debug("createBatch() 異常系テスト完了");
+  logger.debug("createBatch() 異常系テスト完了");
 });
 
 /**
  * 【単体テスト】validate()メソッドのテスト
  */
 Deno.test("Unit: validate() - バリデーション機能テスト", () => {
-  _logger.debug("validate() バリデーション機能テスト開始");
+  logger.debug("validate() バリデーション機能テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -276,14 +276,14 @@ Deno.test("Unit: validate() - バリデーション機能テスト", () => {
     assertEquals(invalidResult.error.kind, "NoStdinData");
   }
 
-  _logger.debug("validate() バリデーション機能テスト完了");
+  logger.debug("validate() バリデーション機能テスト完了");
 });
 
 /**
  * 【単体テスト】エッジケースのテスト
  */
 Deno.test("Unit: エッジケース - 特殊文字・長いテキスト", () => {
-  _logger.debug("エッジケース テスト開始");
+  logger.debug("エッジケース テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -326,14 +326,14 @@ Deno.test("Unit: エッジケース - 特殊文字・長いテキスト", () => 
     assertExists(whitespaceResult.error.kind);
   }
 
-  _logger.debug("エッジケース テスト完了");
+  logger.debug("エッジケース テスト完了");
 });
 
 /**
  * 【単体テスト】source値の全パターンテスト
  */
 Deno.test("Unit: source値 - 全パターンテスト", () => {
-  _logger.debug("source値 全パターンテスト開始");
+  logger.debug("source値 全パターンテスト開始");
 
   const _factory = new StdinVariableFactory();
   const testText = "Test input";
@@ -347,10 +347,10 @@ Deno.test("Unit: source値 - 全パターンテスト", () => {
       source: source,
     };
 
-    const _result = _factory.create(input);
-    assertEquals(_result.ok, true, `source: ${source} で成功すべき`);
-    if (_result.ok) {
-      assertEquals(_result.data.value, testText);
+    const result = _factory.create(input);
+    assertEquals(result.ok, true, `source: ${source} で成功すべき`);
+    if (result.ok) {
+      assertEquals(result.data.value, testText);
     }
   }
 
@@ -365,25 +365,25 @@ Deno.test("Unit: source値 - 全パターンテスト", () => {
     assertEquals(noSourceResult.data.value, testText);
   }
 
-  _logger.debug("source値 全パターンテスト完了");
+  logger.debug("source値 全パターンテスト完了");
 });
 
 /**
  * 【単体テスト】defaultStdinVariableFactoryのテスト
  */
 Deno.test("Unit: defaultStdinVariableFactory - デフォルトインスタンス機能テスト", () => {
-  _logger.debug("defaultStdinVariableFactory 機能テスト開始");
+  logger.debug("defaultStdinVariableFactory 機能テスト開始");
 
   // デフォルトインスタンスの基本機能確認
-  const _result = defaultStdinVariableFactory.create({
+  const result = defaultStdinVariableFactory.create({
     inputText: "Default factory test",
     source: "cli",
   });
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.value, "Default factory test");
-    assertEquals(_result.data.name.getValue(), "input_text");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.value, "Default factory test");
+    assertEquals(result.data.name.getValue(), "input_text");
   }
 
   // 他のメソッドも正常に動作することを確認
@@ -395,14 +395,14 @@ Deno.test("Unit: defaultStdinVariableFactory - デフォルトインスタンス
   });
   assertEquals(validateResult.ok, true);
 
-  _logger.debug("defaultStdinVariableFactory 機能テスト完了");
+  logger.debug("defaultStdinVariableFactory 機能テスト完了");
 });
 
 /**
  * 【単体テスト】実用的なユースケーステスト
  */
 Deno.test("Unit: 実用ユースケース - CLIパイプライン処理", () => {
-  _logger.debug("実用ユースケース テスト開始");
+  logger.debug("実用ユースケース テスト開始");
 
   const _factory = new StdinVariableFactory();
 
@@ -452,5 +452,5 @@ Deno.test("Unit: 実用ユースケース - CLIパイプライン処理", () => 
     }
   }
 
-  _logger.debug("実用ユースケース テスト完了");
+  logger.debug("実用ユースケース テスト完了");
 });

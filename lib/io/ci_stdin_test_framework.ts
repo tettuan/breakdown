@@ -107,16 +107,16 @@ export class MockStdin {
     }
 
     const _bytesToRead = Math.min(buffer.length, this.data.length);
-    buffer.set(this.data.slice(0, bytesToRead));
+    buffer.set(this.data.slice(0, _bytesToRead));
     this.consumed = true;
-    return Promise.resolve(bytesToRead);
+    return Promise.resolve(_bytesToRead);
   }
 
   /** Get readable stream (for readAll compatibility) */
   get readable(): ReadableStream<Uint8Array> {
     const data = this.data;
-    const consumed = this.consumed;
-    const cancelled = false;
+    let consumed = this.consumed;
+    let cancelled = false;
 
     return new ReadableStream({
       start(controller) {

@@ -17,20 +17,20 @@
 import { assert, assertEquals, assertExists } from "../../../deps.ts";
 import { TwoParamsProcessor } from "./two_params_processor.ts";
 // ProcessorError type imported for potential future error testing
-import type { TwoParamsResult } from "../../deps.ts";
+import type { TwoParams_Result } from "../../deps.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
 
 /**
  * Unit Test Suite: TwoParamsProcessor Core Functionality
  *
  * Tests the processor's ability to correctly transform
- * TwoParamsResult into VariablesBuilder
+ * TwoParams_Result into VariablesBuilder
  */
 Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
-  await t.step("successfully processes valid TwoParamsResult", () => {
+  await t.step("successfully processes valid TwoParams_Result", () => {
     const _processor = new TwoParamsProcessor();
 
-    const validInput: TwoParamsResult = {
+    const validInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -42,30 +42,30 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
       },
     };
 
-    const _result = _processor.process(validInput);
+    const result = _processor.process(validInput);
 
     // Should succeed
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      const _builder = _result.data;
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      const _builder = result.data;
       assertExists(_builder);
-      assert(builder instanceof VariablesBuilder);
+      assert(_builder instanceof VariablesBuilder);
 
       // Verify builder can build successfully
       const buildResult = _builder.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
 
         // Should have correct base variables
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "demonstrative_type" && v.value === "to"
           ),
         );
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "layer_type" && v.value === "project"
           ),
         );
@@ -76,7 +76,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
   await t.step("handles minimal valid input correctly", () => {
     const _processor = new TwoParamsProcessor();
 
-    const minimalInput: TwoParamsResult = {
+    const minimalInput: TwoParams_Result = {
       type: "two",
       demonstrativeType: "summary",
       layerType: "issue",
@@ -84,20 +84,20 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
       options: {},
     };
 
-    const _result = _processor.process(minimalInput);
+    const result = _processor.process(minimalInput);
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      const _builder = _result.data;
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      const _builder = result.data;
       const buildResult = _builder.build();
 
       assertEquals(buildResult.ok, true);
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
 
         // Should have minimal required variables
-        assert(variables.some((v) => Object.keys(v.toRecord())[0] === "demonstrative_type"));
-        assert(variables.some((v) => Object.keys(v.toRecord())[0] === "layer_type"));
+        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "demonstrative_type"));
+        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "layer_type"));
       }
     }
   });
@@ -105,7 +105,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
   await t.step("processes custom variables correctly", () => {
     const _processor = new TwoParamsProcessor();
 
-    const inputWithCustomVars: TwoParamsResult = {
+    const inputWithCustomVars: TwoParams_Result = {
       type: "two",
       demonstrativeType: "defect",
       layerType: "task",
@@ -118,34 +118,34 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
       },
     };
 
-    const _result = _processor.process(inputWithCustomVars);
+    const result = _processor.process(inputWithCustomVars);
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      const _builder = _result.data;
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      const _builder = result.data;
       const buildResult = _builder.build();
 
       assertEquals(buildResult.ok, true);
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
 
         // Should include custom variables
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "projectName" && v.value === "TestProject"
           ),
         );
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "version" && v.value === "1.0.0"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "version" && v.value === "1.0.0"),
         );
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "author" && v.value === "Test User"
           ),
         );
 
         // Should not include non-custom variables
-        assert(!variables.some((v) => Object.keys(v.toRecord())[0] === "regularOption"));
+        assert(!_variables.some((v: any) => Object.keys(v.toRecord())[0] === "regularOption"));
       }
     }
   });
@@ -155,7 +155,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
     const demonstrativeTypes = ["to", "from", "summary", "defect", "init", "find"];
 
     for (const demonstrativeType of demonstrativeTypes) {
-      const input: TwoParamsResult = {
+      const input: TwoParams_Result = {
         type: "two",
         demonstrativeType,
         layerType: "project",
@@ -163,17 +163,17 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
         options: {},
       };
 
-      const _result = _processor.process(input);
-      assertEquals(_result.ok, true, `Should process ${demonstrativeType} successfully`);
+      const result = _processor.process(input);
+      assertEquals(result.ok, true, `Should process ${demonstrativeType} successfully`);
 
-      if (_result.ok) {
-        const buildResult = _result.data.build();
+      if (result.ok) {
+        const buildResult = result.data.build();
         assertEquals(buildResult.ok, true);
 
         if (buildResult.ok) {
-          const variables = buildResult.data;
+          const _variables = buildResult.data;
           assert(
-            variables.some((v) =>
+            _variables.some((v: any) =>
               Object.keys(v.toRecord())[0] === "demonstrative_type" && v.value === demonstrativeType
             ),
           );
@@ -187,7 +187,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
     const layerTypes = ["project", "issue", "task", "bugs", "temp"];
 
     for (const layerType of layerTypes) {
-      const input: TwoParamsResult = {
+      const input: TwoParams_Result = {
         type: "two",
         demonstrativeType: "to",
         layerType,
@@ -195,17 +195,17 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
         options: {},
       };
 
-      const _result = _processor.process(input);
-      assertEquals(_result.ok, true, `Should process ${layerType} successfully`);
+      const result = _processor.process(input);
+      assertEquals(result.ok, true, `Should process ${layerType} successfully`);
 
-      if (_result.ok) {
-        const buildResult = _result.data.build();
+      if (result.ok) {
+        const buildResult = result.data.build();
         assertEquals(buildResult.ok, true);
 
         if (buildResult.ok) {
-          const variables = buildResult.data;
+          const _variables = buildResult.data;
           assert(
-            variables.some((v) =>
+            _variables.some((v: any) =>
               Object.keys(v.toRecord())[0] === "layer_type" && v.value === layerType
             ),
           );
@@ -223,158 +223,158 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
 Deno.test("TwoParamsProcessor - Error handling", async (t) => {
   await t.step("handles null input", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process(null as unknown as TwoParamsResult);
+    const result = _processor.process(null as any as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParams");
-      if (_result.error.kind === "InvalidParams") {
-        assert(_result.error.message.includes("null"));
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParams");
+      if (result.error.kind === "InvalidParams") {
+        assert(result.error.message.includes("null"));
       }
     }
   });
 
   await t.step("handles undefined input", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process(undefined as unknown as TwoParamsResult);
+    const result = _processor.process(undefined as any as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParams");
-      if (_result.error.kind === "InvalidParams") {
-        assert(_result.error.message.includes("undefined"));
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParams");
+      if (result.error.kind === "InvalidParams") {
+        assert(result.error.message.includes("undefined"));
       }
     }
   });
 
   await t.step("handles missing type field", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
-    } as TwoParamsResult);
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "MissingRequiredField");
-      if (_result.error.kind === "MissingRequiredField") {
-        assertEquals(_result.error.field, "type");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "MissingRequiredField");
+      if (result.error.kind === "MissingRequiredField") {
+        assertEquals(result.error.field, "type");
       }
     }
   });
 
   await t.step("handles wrong type value", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "one",
       demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
-    } as unknown as TwoParamsResult);
+    } as any as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParams");
-      if (_result.error.kind === "InvalidParams") {
-        assert(_result.error.message.includes('Expected type "two"'));
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParams");
+      if (result.error.kind === "InvalidParams") {
+        assert(result.error.message.includes('Expected type "two"'));
       }
     }
   });
 
   await t.step("handles missing demonstrativeType", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "two",
       demonstrativeType: "",
       layerType: "project",
       params: ["", "project"],
       options: {},
-    } as TwoParamsResult);
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "MissingRequiredField");
-      if (_result.error.kind === "MissingRequiredField") {
-        assertEquals(_result.error.field, "demonstrativeType");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "MissingRequiredField");
+      if (result.error.kind === "MissingRequiredField") {
+        assertEquals(result.error.field, "demonstrativeType");
       }
     }
   });
 
   await t.step("handles missing layerType", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "two",
       demonstrativeType: "to",
       layerType: "",
       params: ["to", ""],
       options: {},
-    } as TwoParamsResult);
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "MissingRequiredField");
-      if (_result.error.kind === "MissingRequiredField") {
-        assertEquals(_result.error.field, "layerType");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "MissingRequiredField");
+      if (result.error.kind === "MissingRequiredField") {
+        assertEquals(result.error.field, "layerType");
       }
     }
   });
 
   await t.step("handles missing params array", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
-      params: null as unknown as string[],
+      params: null as any as string[],
       options: {},
-    } as TwoParamsResult);
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParams");
-      if (_result.error.kind === "InvalidParams") {
-        assert(_result.error.message.includes("TwoParamsResult must have a params array"));
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParams");
+      if (result.error.kind === "InvalidParams") {
+        assert(result.error.message.includes("TwoParams_Result must have a params array"));
       }
     }
   });
 
   await t.step("handles empty params array", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
       params: [],
       options: {},
-    } as TwoParamsResult);
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidParams");
-      if (_result.error.kind === "InvalidParams") {
-        assert(_result.error.message.includes("TwoParamsResult must have at least 2 parameters"));
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidParams");
+      if (result.error.kind === "InvalidParams") {
+        assert(result.error.message.includes("TwoParams_Result must have at least 2 parameters"));
       }
     }
   });
 
   await t.step("handles missing options", () => {
     const _processor = new TwoParamsProcessor();
-    const _result = _processor.process({
+    const result = _processor.process({
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
-      options: null as unknown as Record<string, unknown>,
-    } as TwoParamsResult);
+      options: null as any as Record<string, unknown>,
+    } as TwoParams_Result);
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "MissingRequiredField");
-      if (_result.error.kind === "MissingRequiredField") {
-        assertEquals(_result.error.field, "options");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "MissingRequiredField");
+      if (result.error.kind === "MissingRequiredField") {
+        assertEquals(result.error.field, "options");
       }
     }
   });
@@ -389,7 +389,7 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
   await t.step("handles special characters in values", () => {
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -401,27 +401,27 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       },
     };
 
-    const _result = _processor.process(input);
-    assertEquals(_result.ok, true);
+    const result = _processor.process(input);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const buildResult = _result.data.build();
+    if (result.ok) {
+      const buildResult = result.data.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "special" && v.value === "value with spaces"
           ),
         );
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "unicode" && v.value === "値 with 日本語"
           ),
         );
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "symbols" && v.value === "!@#$%^&*()"
           ),
         );
@@ -432,7 +432,7 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
   await t.step("handles numeric custom variable values", () => {
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -442,28 +442,28 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
         "uv-float": 3.14,
         "uv-zero": 0,
         "uv-negative": -42,
-      } as unknown,
+      },
     };
 
-    const _result = _processor.process(input);
-    assertEquals(_result.ok, true);
+    const result = _processor.process(input);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const buildResult = _result.data.build();
+    if (result.ok) {
+      const buildResult = result.data.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
         // Numbers should be converted to strings
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "number" && v.value === "123"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "number" && v.value === "123"),
         );
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "float" && v.value === "3.14"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "float" && v.value === "3.14"),
         );
-        assert(variables.some((v) => Object.keys(v.toRecord())[0] === "zero" && v.value === "0"));
+        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "zero" && v.value === "0"));
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "negative" && v.value === "-42"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "negative" && v.value === "-42"),
         );
       }
     }
@@ -472,7 +472,7 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
   await t.step("handles boolean custom variable values", () => {
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -480,24 +480,24 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       options: {
         "uv-enabled": true,
         "uv-disabled": false,
-      } as unknown,
+      },
     };
 
-    const _result = _processor.process(input);
-    assertEquals(_result.ok, true);
+    const result = _processor.process(input);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const buildResult = _result.data.build();
+    if (result.ok) {
+      const buildResult = result.data.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
         // Booleans should be converted to strings
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "enabled" && v.value === "true"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "enabled" && v.value === "true"),
         );
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "disabled" && v.value === "false"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "disabled" && v.value === "false"),
         );
       }
     }
@@ -506,7 +506,7 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
   await t.step("handles empty string custom variable values", () => {
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -517,19 +517,19 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       },
     };
 
-    const _result = _processor.process(input);
-    assertEquals(_result.ok, true);
+    const result = _processor.process(input);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const buildResult = _result.data.build();
+    if (result.ok) {
+      const buildResult = result.data.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
         // Empty strings should be preserved
-        assert(variables.some((v) => Object.keys(v.toRecord())[0] === "empty" && v.value === ""));
+        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "empty" && v.value === ""));
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "whitespace" && v.value === "   "),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "whitespace" && v.value === "   "),
         );
       }
     }
@@ -538,7 +538,7 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
   await t.step("ignores non-uv prefixed options", () => {
     const _processor = new TwoParamsProcessor();
 
-    const input: TwoParamsResult = {
+    const input: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: "project",
@@ -552,30 +552,30 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       },
     };
 
-    const _result = _processor.process(input);
-    assertEquals(_result.ok, true);
+    const result = _processor.process(input);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const buildResult = _result.data.build();
+    if (result.ok) {
+      const buildResult = result.data.build();
       assertEquals(buildResult.ok, true);
 
       if (buildResult.ok) {
-        const variables = buildResult.data;
+        const _variables = buildResult.data;
 
         // Should include uv- prefixed
         assert(
-          variables.some((v) => Object.keys(v.toRecord())[0] === "included" && v.value === "yes"),
+          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "included" && v.value === "yes"),
         );
         assert(
-          variables.some((v) =>
+          _variables.some((v: any) =>
             Object.keys(v.toRecord())[0] === "" && v.value === "another edge case"
           ),
         );
 
         // Should not include others
-        assert(!variables.some((v) => Object.keys(v.toRecord())[0] === "notIncluded"));
-        assert(!variables.some((v) => Object.keys(v.toRecord())[0] === "also-not-included"));
-        assert(!variables.some((v) => v.value === "edge case"));
+        assert(!_variables.some((v: any) => Object.keys(v.toRecord())[0] === "notIncluded"));
+        assert(!_variables.some((v: any) => Object.keys(v.toRecord())[0] === "also-not-included"));
+        assert(!_variables.some((v: any) => v.value === "edge case"));
       }
     }
   });

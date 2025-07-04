@@ -19,7 +19,7 @@ import {
 } from "./template_error_handler.ts";
 
 Deno.test("Architecture: TemplateError follows proper error hierarchy", () => {
-  const _error = new TemplateError(
+  const error = new TemplateError(
     "Test error",
     TemplateErrorType.TEMPLATE_NOT_FOUND,
   );
@@ -134,7 +134,7 @@ Deno.test("Architecture: Proper separation of error creation and handling", () =
 
   // Should not have handling logic
   assertEquals(
-    typeof (error as unknown).detect,
+    typeof (error as any).detect,
     "undefined",
     "TemplateError should not have detection methods",
   );

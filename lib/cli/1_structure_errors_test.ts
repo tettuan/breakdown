@@ -18,7 +18,7 @@ Deno.test("Structure: CliError constructor parameter handling", () => {
   // Test with all valid error codes
   const _errorCodes = Object.values(CliErrorCode);
 
-  for (const code of errorCodes) {
+  for (const code of _errorCodes) {
     const testMessage = `Test message for ${code}`;
     const error = new CliError(code, testMessage);
 
@@ -246,16 +246,16 @@ Deno.test("Structure: CliError code property accessibility", () => {
 
 Deno.test("Structure: Error code type safety", () => {
   // All error codes should be valid enum values
-  const errorCodes = Object.values(CliErrorCode);
+  const _errorCodes = Object.values(CliErrorCode);
 
-  for (const code of errorCodes) {
+  for (const code of _errorCodes) {
     const error = new CliError(code, "Type safety test");
 
     // Code should match enum value exactly
     assertEquals(error.code, code, `Code should match enum value ${code}`);
 
     // Code should be valid for switch statements
-    const switchResult = false;
+    let switchResult = false;
     switch (error.code) {
       case CliErrorCode.INVALID_OPTION:
       case CliErrorCode.DUPLICATE_OPTION:

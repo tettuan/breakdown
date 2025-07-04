@@ -12,14 +12,15 @@
  * 期待される結果を返すことを保証することです。
  */
 
-import { assertEquals, assertExists, BreakdownLogger } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../deps.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
-const _logger = new BreakdownLogger("test-unit-directive");
+const logger = new BreakdownLogger("test-unit-directive");
 
 Deno.test("DirectiveType - Unit: create() method functionality", () => {
-  _logger.debug("テスト開始: DirectiveType create()メソッド機能テスト", {
+  logger.debug("テスト開始: DirectiveType create()メソッド機能テスト", {
     testType: "unit",
     target: "DirectiveType.create",
     functionality: "creation",
@@ -31,7 +32,7 @@ Deno.test("DirectiveType - Unit: create() method functionality", () => {
 
   for (const demonstrativeType of standardTypes) {
     for (const layerType of layerTypes) {
-      const result: TwoParamsResult = {
+      const result: TwoParams_Result = {
         type: "two",
         demonstrativeType,
         layerType,
@@ -39,11 +40,11 @@ Deno.test("DirectiveType - Unit: create() method functionality", () => {
         options: {},
       };
 
-      const directiveType = DirectiveType.create(_result);
+      const directiveType = DirectiveType.create(result);
       assertExists(directiveType);
       assertEquals(directiveType.value, demonstrativeType);
 
-      _logger.debug("DirectiveType作成成功", {
+      logger.debug("DirectiveType作成成功", {
         demonstrativeType,
         layerType,
         created: true,
@@ -51,14 +52,14 @@ Deno.test("DirectiveType - Unit: create() method functionality", () => {
     }
   }
 
-  _logger.debug("create()メソッド機能テスト完了", {
+  logger.debug("create()メソッド機能テスト完了", {
     success: true,
     tested_combinations: standardTypes.length * layerTypes.length,
   });
 });
 
 Deno.test("DirectiveType - Unit: value property accuracy", () => {
-  _logger.debug("テスト開始: DirectiveType valueプロパティ精度テスト", {
+  logger.debug("テスト開始: DirectiveType valueプロパティ精度テスト", {
     testType: "unit",
     target: "DirectiveType.value",
     functionality: "value_access",
@@ -76,7 +77,7 @@ Deno.test("DirectiveType - Unit: value property accuracy", () => {
   ];
 
   for (const testCase of testCases) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: testCase.demonstrativeType,
       layerType: "project",
@@ -84,33 +85,33 @@ Deno.test("DirectiveType - Unit: value property accuracy", () => {
       options: {},
     };
 
-    const directiveType = DirectiveType.create(_result);
+    const directiveType = DirectiveType.create(result);
     assertEquals(directiveType.value, testCase.expected);
 
     // 2. getValue()メソッド（互換性用）の動作確認
     assertEquals(directiveType.getValue(), testCase.expected);
 
-    _logger.debug("値取得精度確認", {
+    logger.debug("値取得精度確認", {
       input: testCase.demonstrativeType,
       output: directiveType.value,
       match: true,
     });
   }
 
-  _logger.debug("valueプロパティ精度テスト完了", {
+  logger.debug("valueプロパティ精度テスト完了", {
     success: true,
     test_cases: testCases.length,
   });
 });
 
 Deno.test("DirectiveType - Unit: toString() method functionality", () => {
-  _logger.debug("テスト開始: DirectiveType toString()メソッド機能テスト", {
+  logger.debug("テスト開始: DirectiveType toString()メソッド機能テスト", {
     testType: "unit",
     target: "DirectiveType.toString",
     functionality: "string_representation",
   });
 
-  const testResult: TwoParamsResult = {
+  const testResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "summary",
     layerType: "issue",
@@ -131,7 +132,7 @@ Deno.test("DirectiveType - Unit: toString() method functionality", () => {
   // 3. 複数回呼び出しでも同じ結果を返すことを確認
   assertEquals(directiveType.toString(), stringRepresentation);
 
-  _logger.debug("toString()メソッド機能テスト完了", {
+  logger.debug("toString()メソッド機能テスト完了", {
     success: true,
     format: "DirectiveType(value)",
     consistency: true,
@@ -139,14 +140,14 @@ Deno.test("DirectiveType - Unit: toString() method functionality", () => {
 });
 
 Deno.test("DirectiveType - Unit: equals() method functionality", () => {
-  _logger.debug("テスト開始: DirectiveType equals()メソッド機能テスト", {
+  logger.debug("テスト開始: DirectiveType equals()メソッド機能テスト", {
     testType: "unit",
     target: "DirectiveType.equals",
     functionality: "equality_comparison",
   });
 
   // 1. 同じ値での等価性確認
-  const result1: TwoParamsResult = {
+  const result1: TwoParams_Result = {
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
@@ -154,7 +155,7 @@ Deno.test("DirectiveType - Unit: equals() method functionality", () => {
     options: {},
   };
 
-  const result2: TwoParamsResult = {
+  const result2: TwoParams_Result = {
     type: "two",
     demonstrativeType: "to",
     layerType: "issue", // layerTypeが異なってもdemonstrativeTypeが同じなら等価
@@ -168,7 +169,7 @@ Deno.test("DirectiveType - Unit: equals() method functionality", () => {
   assertEquals(directive1.equals(directive2), true);
 
   // 2. 異なる値での非等価性確認
-  const result3: TwoParamsResult = {
+  const result3: TwoParams_Result = {
     type: "two",
     demonstrativeType: "summary",
     layerType: "project",
@@ -182,7 +183,7 @@ Deno.test("DirectiveType - Unit: equals() method functionality", () => {
   // 3. 自己との等価性確認
   assertEquals(directive1.equals(directive1), true);
 
-  _logger.debug("equals()メソッド機能テスト完了", {
+  logger.debug("equals()メソッド機能テスト完了", {
     success: true,
     same_value_equality: true,
     different_value_inequality: true,
@@ -191,14 +192,14 @@ Deno.test("DirectiveType - Unit: equals() method functionality", () => {
 });
 
 Deno.test("DirectiveType - Unit: originalResult property access", () => {
-  _logger.debug("テスト開始: DirectiveType originalResultプロパティアクセステスト", {
+  logger.debug("テスト開始: DirectiveType originalResultプロパティアクセステスト", {
     testType: "unit",
     target: "DirectiveType.originalResult",
     functionality: "original_data_access",
   });
 
   const options = { debug: true, verbose: false };
-  const testResult: TwoParamsResult = {
+  const testResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "defect",
     layerType: "task",
@@ -209,7 +210,7 @@ Deno.test("DirectiveType - Unit: originalResult property access", () => {
   const directiveType = DirectiveType.create(testResult);
   const originalResult = directiveType.originalResult;
 
-  // 1. 元のTwoParamsResultのすべてのプロパティが保持されている
+  // 1. 元のTwoParams_Resultのすべてのプロパティが保持されている
   assertEquals(originalResult.type, "two");
   assertEquals(originalResult.demonstrativeType, "defect");
   assertEquals(originalResult.layerType, "task");
@@ -219,7 +220,7 @@ Deno.test("DirectiveType - Unit: originalResult property access", () => {
   assertExists(originalResult);
   assertEquals(typeof originalResult, "object");
 
-  _logger.debug("originalResultプロパティアクセステスト完了", {
+  logger.debug("originalResultプロパティアクセステスト完了", {
     success: true,
     data_preservation: true,
     readonly_access: true,
@@ -227,7 +228,7 @@ Deno.test("DirectiveType - Unit: originalResult property access", () => {
 });
 
 Deno.test("TwoParamsDirectivePattern - Unit: create() method functionality", () => {
-  _logger.debug("テスト開始: TwoParamsDirectivePattern create()メソッド機能テスト", {
+  logger.debug("テスト開始: TwoParamsDirectivePattern create()メソッド機能テスト", {
     testType: "unit",
     target: "TwoParamsDirectivePattern.create",
     functionality: "pattern_creation",
@@ -247,7 +248,7 @@ Deno.test("TwoParamsDirectivePattern - Unit: create() method functionality", () 
     assertExists(pattern);
     assertEquals(pattern?.getPattern(), patternString);
 
-    _logger.debug("有効パターン作成成功", {
+    logger.debug("有効パターン作成成功", {
       pattern: patternString,
       created: true,
     });
@@ -264,13 +265,13 @@ Deno.test("TwoParamsDirectivePattern - Unit: create() method functionality", () 
     const pattern = TwoParamsDirectivePattern.create(patternString);
     assertEquals(pattern, null);
 
-    _logger.debug("無効パターン適切に拒否", {
+    logger.debug("無効パターン適切に拒否", {
       pattern: patternString,
       rejected: true,
     });
   }
 
-  _logger.debug("create()メソッド機能テスト完了", {
+  logger.debug("create()メソッド機能テスト完了", {
     success: true,
     valid_patterns: validPatterns.length,
     invalid_patterns: invalidPatterns.length,
@@ -278,7 +279,7 @@ Deno.test("TwoParamsDirectivePattern - Unit: create() method functionality", () 
 });
 
 Deno.test("TwoParamsDirectivePattern - Unit: test() method functionality", () => {
-  _logger.debug("テスト開始: TwoParamsDirectivePattern test()メソッド機能テスト", {
+  logger.debug("テスト開始: TwoParamsDirectivePattern test()メソッド機能テスト", {
     testType: "unit",
     target: "TwoParamsDirectivePattern.test",
     functionality: "pattern_matching",
@@ -292,25 +293,25 @@ Deno.test("TwoParamsDirectivePattern - Unit: test() method functionality", () =>
     const matchingValues = ["to", "summary", "defect"];
     for (const value of matchingValues) {
       assertEquals(pattern.test(value), true);
-      _logger.debug("パターンマッチ成功", { value, matched: true });
+      logger.debug("パターンマッチ成功", { value, matched: true });
     }
 
     // 2. マッチしないパターンのテスト
     const nonMatchingValues = ["init", "find", "analyze", "transform"];
     for (const value of nonMatchingValues) {
       assertEquals(pattern.test(value), false);
-      _logger.debug("パターン非マッチ確認", { value, matched: false });
+      logger.debug("パターン非マッチ確認", { value, matched: false });
     }
   }
 
-  _logger.debug("test()メソッド機能テスト完了", {
+  logger.debug("test()メソッド機能テスト完了", {
     success: true,
     pattern_matching: "accurate",
   });
 });
 
 Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
-  _logger.debug("テスト開始: DirectiveType実世界ユースケーステスト", {
+  logger.debug("テスト開始: DirectiveType実世界ユースケーステスト", {
     testType: "unit",
     target: "DirectiveType",
     functionality: "real_world_usage",
@@ -324,7 +325,7 @@ Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
   ];
 
   for (const scenario of breakdownScenarios) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: scenario.demonstrativeType,
       layerType: scenario.layerType,
@@ -332,10 +333,10 @@ Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
       options: {},
     };
 
-    const directiveType = DirectiveType.create(_result);
+    const directiveType = DirectiveType.create(result);
     assertEquals(directiveType.value, scenario.demonstrativeType);
 
-    _logger.debug("Breakdownシナリオ確認", {
+    logger.debug("Breakdownシナリオ確認", {
       scenario: scenario.description,
       directive: scenario.demonstrativeType,
       layer: scenario.layerType,
@@ -350,7 +351,7 @@ Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
   ];
 
   for (const scenario of customScenarios) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: scenario.demonstrativeType,
       layerType: scenario.layerType,
@@ -358,10 +359,10 @@ Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
       options: { custom: true },
     };
 
-    const directiveType = DirectiveType.create(_result);
+    const directiveType = DirectiveType.create(result);
     assertEquals(directiveType.value, scenario.demonstrativeType);
 
-    _logger.debug("カスタムシナリオ確認", {
+    logger.debug("カスタムシナリオ確認", {
       scenario: scenario.description,
       directive: scenario.demonstrativeType,
       custom: true,
@@ -369,7 +370,7 @@ Deno.test("DirectiveType - Unit: Real-world usage scenarios", () => {
     });
   }
 
-  _logger.debug("実世界ユースケーステスト完了", {
+  logger.debug("実世界ユースケーステスト完了", {
     success: true,
     standard_scenarios: breakdownScenarios.length,
     custom_scenarios: customScenarios.length,

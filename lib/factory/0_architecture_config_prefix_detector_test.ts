@@ -1,5 +1,5 @@
 /**
- * Architecture test for ConfigPrefixDetector
+ * Architecture test for _ConfigPrefixDetector
  *
  * Verifies architectural constraints:
  * - No dependency on BreakdownConfig (to avoid circular dependency)
@@ -12,9 +12,9 @@
  */
 
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
-import { ConfigPrefixDetector as _ConfigPrefixDetector } from "./config_prefix_detector.ts";
+import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
-Deno.test("ConfigPrefixDetector architecture - no circular dependencies", async () => {
+Deno.test("_ConfigPrefixDetector architecture - no circular dependencies", async () => {
   // Read the source file to check imports
   const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
@@ -23,14 +23,14 @@ Deno.test("ConfigPrefixDetector architecture - no circular dependencies", async 
   assertEquals(
     sourceCode.includes("import") && sourceCode.includes("BreakdownConfig"),
     false,
-    "ConfigPrefixDetector must not depend on BreakdownConfig to avoid circular dependency",
+    "_ConfigPrefixDetector must not depend on BreakdownConfig to avoid circular dependency",
   );
 
   // Ensure no import of complex dependencies
   assertEquals(
     sourceCode.includes('from "../'),
     false,
-    "ConfigPrefixDetector should not have dependencies on other project modules",
+    "_ConfigPrefixDetector should not have dependencies on other project modules",
   );
 
   // Ensure no external package imports
@@ -39,11 +39,11 @@ Deno.test("ConfigPrefixDetector architecture - no circular dependencies", async 
   assertEquals(
     externalImports.length,
     0,
-    "ConfigPrefixDetector should not have any external dependencies to remain lightweight",
+    "_ConfigPrefixDetector should not have any external dependencies to remain lightweight",
   );
 });
 
-Deno.test("ConfigPrefixDetector architecture - single responsibility", async () => {
+Deno.test("_ConfigPrefixDetector architecture - single responsibility", async () => {
   const { ConfigPrefixDetector } = await import("./config_prefix_detector.ts");
 
   // Check that class has minimal static interface
@@ -58,7 +58,7 @@ Deno.test("ConfigPrefixDetector architecture - single responsibility", async () 
   assertEquals(
     staticMethods.length,
     1,
-    "ConfigPrefixDetector should have exactly one static method (detect)",
+    "_ConfigPrefixDetector should have exactly one static method (detect)",
   );
 
   assertEquals(
@@ -68,7 +68,7 @@ Deno.test("ConfigPrefixDetector architecture - single responsibility", async () 
   );
 });
 
-Deno.test("ConfigPrefixDetector architecture - stateless utility pattern", async () => {
+Deno.test("_ConfigPrefixDetector architecture - stateless utility pattern", async () => {
   // Verify that the class is designed as a static utility
   // Note: TypeScript private constructors are not enforceable at runtime,
   // but we can verify the design intent through other means
@@ -80,18 +80,18 @@ Deno.test("ConfigPrefixDetector architecture - stateless utility pattern", async
   assertEquals(
     instanceMethods.length,
     0,
-    "ConfigPrefixDetector should have no instance methods (pure static utility)",
+    "_ConfigPrefixDetector should have no instance methods (pure static utility)",
   );
 
   // Verify that creating an instance would be pointless (no instance methods or properties)
   // deno-lint-ignore no-explicit-any
-  const instance = new (ConfigPrefixDetector as unknown)();
+  const instance = new (ConfigPrefixDetector as any)();
   const instanceProperties = Object.getOwnPropertyNames(instance);
 
   assertEquals(
     instanceProperties.length,
     0,
-    "ConfigPrefixDetector instances should have no properties",
+    "_ConfigPrefixDetector instances should have no properties",
   );
 
   // Verify that all functionality is accessed through static methods
@@ -105,7 +105,7 @@ Deno.test("ConfigPrefixDetector architecture - stateless utility pattern", async
   );
 });
 
-Deno.test("ConfigPrefixDetector architecture - method signature stability", async () => {
+Deno.test("_ConfigPrefixDetector architecture - method signature stability", async () => {
   const { ConfigPrefixDetector } = await import("./config_prefix_detector.ts");
 
   // Verify detect method signature
@@ -125,13 +125,13 @@ Deno.test("ConfigPrefixDetector architecture - method signature stability", asyn
 
   const result2 = ConfigPrefixDetector.detect(["--config=test"]);
   assertEquals(
-    typeof _result2,
+    typeof result2,
     "string",
     "detect should return string when config found",
   );
 });
 
-Deno.test("ConfigPrefixDetector architecture - error handling strategy", async () => {
+Deno.test("_ConfigPrefixDetector architecture - error handling strategy", async () => {
   // Verify that detect method handles edge cases gracefully
   const testCases = [
     [],
@@ -145,10 +145,10 @@ Deno.test("ConfigPrefixDetector architecture - error handling strategy", async (
 
   for (const testCase of testCases) {
     try {
-      const _result = ConfigPrefixDetector.detect(testCase);
+      const result = ConfigPrefixDetector.detect(testCase);
       // Verify result is either string or null
       assertEquals(
-        typeof _result === "string" || result === null,
+        typeof result === "string" || result === null,
         true,
         `detect should return string or null for input: ${JSON.stringify(testCase)}`,
       );
@@ -164,9 +164,9 @@ Deno.test("ConfigPrefixDetector architecture - error handling strategy", async (
   // Test null/undefined handling separately (these should throw TypeError)
   const invalidInputs = [
     // deno-lint-ignore no-explicit-any
-    null as unknown,
+    null as any,
     // deno-lint-ignore no-explicit-any
-    undefined as unknown,
+    undefined as any,
   ];
 
   for (const invalidInput of invalidInputs) {
@@ -179,7 +179,7 @@ Deno.test("ConfigPrefixDetector architecture - error handling strategy", async (
   }
 });
 
-Deno.test("ConfigPrefixDetector architecture - pure function characteristics", async () => {
+Deno.test("_ConfigPrefixDetector architecture - pure function characteristics", async () => {
   // Verify that detect is a pure function (same input = same output)
   const testInputs = [
     ["--config=prod"],
@@ -202,7 +202,7 @@ Deno.test("ConfigPrefixDetector architecture - pure function characteristics", a
   }
 });
 
-Deno.test("ConfigPrefixDetector architecture - no state management", async () => {
+Deno.test("_ConfigPrefixDetector architecture - no state management", async () => {
   // Read source to verify no state variables
   const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
@@ -214,19 +214,19 @@ Deno.test("ConfigPrefixDetector architecture - no state management", async () =>
     /public\s+static\s+\w+\s*[:=]/, // public static variables
     /public\s+\w+\s*[:=]/, // public instance variables
     /this\.\w+\s*=/, // instance property assignment
-    /ConfigPrefixDetector\.\w+\s*=/, // static property assignment
+    /_ConfigPrefixDetector\.\w+\s*=/, // static property assignment
   ];
 
   for (const pattern of statePatterns) {
     assertEquals(
       pattern.test(sourceCode),
       false,
-      `ConfigPrefixDetector should not have state management (pattern: ${pattern})`,
+      `_ConfigPrefixDetector should not have state management (pattern: ${pattern})`,
     );
   }
 });
 
-Deno.test("ConfigPrefixDetector architecture - minimal complexity", async () => {
+Deno.test("_ConfigPrefixDetector architecture - minimal complexity", async () => {
   // Read source code to analyze complexity
   const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
@@ -257,7 +257,7 @@ Deno.test("ConfigPrefixDetector architecture - minimal complexity", async () => 
   );
 });
 
-Deno.test("ConfigPrefixDetector architecture - focused responsibility", async () => {
+Deno.test("_ConfigPrefixDetector architecture - focused responsibility", async () => {
   // Verify that the class only handles config prefix detection
   // and doesn't leak into other concerns
 

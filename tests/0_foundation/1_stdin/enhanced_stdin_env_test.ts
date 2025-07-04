@@ -5,7 +5,10 @@
  * instead of directly accessing Deno.env
  */
 
-import { assertEquals as _assertEquals, assertExists as _assertExists } from "jsr:@std/assert@1.0.7";
+import {
+  assertEquals as _assertEquals,
+  assertExists as _assertExists,
+} from "jsr:@std/assert@1.0.7";
 import {
   detectEnvironment as _detectEnvironment,
   type EnvironmentDetectionConfig as _EnvironmentDetectionConfig,
@@ -20,11 +23,11 @@ Deno.test("detectEnvironment - uses injected configuration instead of Deno.env",
   };
 
   const config: EnvironmentDetectionConfig = {
-    getEnvVar: (_name: _string) => mockEnvVars[name],
+    getEnvVar: (name: _string) => mockEnvVars[name],
     isTerminal: false,
   };
 
-  const _result = detectEnvironment(config);
+  const result = detectEnvironment(config);
 
   // Verify that the function correctly detected CI environment
   assertEquals(result.isCI, true);
@@ -39,13 +42,13 @@ Deno.test("detectEnvironment - uses injected configuration instead of Deno.env",
 
 Deno.test("detectEnvironment - falls back to Deno.env when no config provided", () => {
   // Test backward compatibility - should still work without config
-  const _result = detectEnvironment();
+  const result = detectEnvironment();
 
   // Result will depend on actual environment, but should not throw
-  assertEquals(typeof _result.isCI, "boolean");
-  assertEquals(typeof _result.isTerminal, "boolean");
-  assertEquals(typeof _result.isTest, "boolean");
-  assertEquals(typeof _result.envVars, "object");
+  assertEquals(typeof result.isCI, "boolean");
+  assertEquals(typeof result.isTerminal, "boolean");
+  assertEquals(typeof result.isTest, "boolean");
+  assertEquals(typeof result.envVars, "object");
 });
 
 Deno.test("detectEnvironment - uses envVars map when provided", () => {
@@ -56,7 +59,7 @@ Deno.test("detectEnvironment - uses envVars map when provided", () => {
     },
   };
 
-  const _result = detectEnvironment(config);
+  const result = detectEnvironment(config);
 
   // Should detect CI from the provided envVars
   assertEquals(result.isCI, true);
@@ -72,7 +75,7 @@ Deno.test("detectEnvironment - respects override flags", () => {
     isTest: true,
   };
 
-  const _result = detectEnvironment(config);
+  const result = detectEnvironment(config);
 
   // Should use the override values
   assertEquals(result.isTerminal, true);

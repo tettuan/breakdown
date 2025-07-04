@@ -63,13 +63,13 @@ export class PromptAdapterImpl {
     const _validator = new PromptAdapterValidator();
     const errors: string[] = [];
     // Validate prompt file
-    const promptResult = await validator.validateFile(promptFilePath, "Prompt file");
+    const promptResult = await _validator.validateFile(promptFilePath, "Prompt file");
     if (!promptResult.ok) {
       errors.push(`[${promptResult.error}] ${promptResult.message}`);
     }
     // Validate input file (if set and not stdin)
     if (inputFilePath && inputFilePath !== "-") {
-      const inputResult = await validator.validateFile(inputFilePath, "Input file");
+      const inputResult = await _validator.validateFile(inputFilePath, "Input file");
       if (!inputResult.ok) {
         errors.push(`[${inputResult.error}] ${inputResult.message}`);
       }
@@ -126,7 +126,7 @@ export class PromptAdapterImpl {
   async generatePrompt(): Promise<{ success: boolean; content: string }> {
     const { promptFilePath, inputFilePath } = this.factory.getAllParams();
     // Read the template file content
-    const template = "";
+    let template = "";
     try {
       template = await Deno.readTextFile(promptFilePath);
     } catch (e) {
@@ -134,7 +134,7 @@ export class PromptAdapterImpl {
       return { success: false, content: `[ReadError] Failed to read template: ${msg}` };
     }
     // Get input text from stdin or file
-    const inputText = "";
+    let inputText = "";
     if (template.includes("{input_text}")) {
       // First try to get input_text from options (stdin)
       const options = this.factory.getOptions();

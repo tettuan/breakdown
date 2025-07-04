@@ -8,7 +8,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { beforeEach as _beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   DirectiveType,
@@ -23,9 +23,9 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "./prompt_variables__factory.ts";
 
-const _logger = new BreakdownLogger("result-error-handling");
+const logger = new BreakdownLogger("result-error-handling");
 
 /**
  * Error scenario provider for comprehensive error testing
@@ -81,7 +81,7 @@ class ErrorScenarioProvider implements TypePatternProvider {
 
 describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", () => {
   it("should handle all TypeCreationError.kind values without default case", async () => {
-    _logger.debug("Testing exhaustive TypeCreationError.kind handling");
+    logger.debug("Testing exhaustive TypeCreationError.kind handling");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -121,15 +121,15 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
 
     errorScenarios.forEach((scenario) => {
       scenario.setup();
-      const _result = scenario.operation();
+      const result = scenario.operation();
 
-      assertEquals(_result.ok, false, `${scenario.description} should fail`);
+      assertEquals(result.ok, false, `${scenario.description} should fail`);
 
-      if (!_result.ok) {
-        const error = _result.error;
+      if (!result.ok) {
+        const error = result.error;
 
         // Handle each error kind without default case
-        const errorHandled = false;
+        let errorHandled = false;
 
         switch (error.kind) {
           case "PatternNotFound":
@@ -166,7 +166,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
   });
 
   it("should provide complete error information for all error types", async () => {
-    _logger.debug("Testing complete error information provision");
+    logger.debug("Testing complete error information provision");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -202,7 +202,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
   });
 
   it("should handle error propagation in composite operations", async () => {
-    _logger.debug("Testing error propagation in composite operations");
+    logger.debug("Testing error propagation in composite operations");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -255,18 +255,18 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
 
     propagationScenarios.forEach((scenario) => {
       scenario.setup();
-      const _result = scenario.operation();
+      const result = scenario.operation();
 
-      assertEquals(_result.ok, false, `${scenario.description} should fail`);
+      assertEquals(result.ok, false, `${scenario.description} should fail`);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, scenario.expectedKind);
+      if (!result.ok) {
+        assertEquals(result.error.kind, scenario.expectedKind);
 
         // Verify error comes from expected source
         if (
-          scenario.expectedErrorSource === "directive" && _result.error.kind === "ValidationFailed"
+          scenario.expectedErrorSource === "directive" && result.error.kind === "ValidationFailed"
         ) {
-          const validationError = _result.error as Record<string, unknown>;
+          const validationError = result.error as Record<string, unknown>;
           assertEquals((validationError.value as string).includes("invalid"), true);
         }
       }
@@ -276,7 +276,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
 
 describe("Result Type Error Handling - Factory Error State Coverage", () => {
   it("should handle all _factory validation error states without default case", async () => {
-    _logger.debug("Testing _factory validation error state coverage");
+    logger.debug("Testing _factory validation error state coverage");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -340,7 +340,7 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
         const baseDirError = testFactory.getBaseDirError();
 
         // Handle factory validation states without default case
-        const stateHandled = false;
+        let stateHandled = false;
 
         switch (scenario.expectError) {
           case true:
@@ -382,7 +382,7 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
   });
 
   it("should handle all error format constraint scenarios", async () => {
-    _logger.debug("Testing error format constraint scenarios");
+    logger.debug("Testing error format constraint scenarios");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -413,7 +413,7 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
         const actualFormat = testFactory.errorFormat;
 
         // Handle all error formats without default case
-        const formatHandled = false;
+        let formatHandled = false;
 
         switch (actualFormat) {
           case "simple":
@@ -444,7 +444,7 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
 
 describe("Result Type Error Handling - Edge Case Coverage", () => {
   it("should handle all boolean flag combination error scenarios", async () => {
-    _logger.debug("Testing boolean flag combination error scenarios");
+    logger.debug("Testing boolean flag combination error scenarios");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -476,7 +476,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
         const customValidation = testFactory.customValidation;
 
         // Handle extended flag states without default case
-        const extendedHandled = false;
+        let extendedHandled = false;
         switch (extended) {
           case true:
             assertEquals(combination.extended ?? false, true);
@@ -489,7 +489,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
         }
 
         // Handle customValidation flag states without default case
-        const customValidationHandled = false;
+        let customValidationHandled = false;
         switch (customValidation) {
           case true:
             assertEquals(combination.customValidation ?? false, true);
@@ -512,7 +512,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
   });
 
   it("should handle Result type success/failure exhaustive branching", async () => {
-    _logger.debug("Testing Result type success/failure exhaustive branching");
+    logger.debug("Testing Result type success/failure exhaustive branching");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -549,12 +549,12 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
 
     resultScenarios.forEach((scenario) => {
       scenario.setup();
-      const _result = scenario.operation();
+      const result = scenario.operation();
 
       // Handle Result type states without default case
-      const resultHandled = false;
+      let resultHandled = false;
 
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
           assertEquals(scenario.expectedSuccess, true, scenario.description);
           assertExists(result.data);
@@ -565,9 +565,9 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
 
         case false:
           assertEquals(scenario.expectedSuccess, false, scenario.description);
-          assertExists(_result.error);
+          assertExists(result.error);
           // failure result should not have data property
-          assertExists(_result.error.kind);
+          assertExists(result.error.kind);
           resultHandled = true;
           break;
       }
@@ -581,7 +581,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
   });
 
   it("should demonstrate compile-time exhaustiveness for error handling", async () => {
-    _logger.debug("Testing compile-time exhaustiveness for error handling");
+    logger.debug("Testing compile-time exhaustiveness for error handling");
 
     const provider = new ErrorScenarioProvider();
     const _factory = new TypeFactory(provider);
@@ -589,30 +589,30 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
     // This function demonstrates exhaustive error handling
     function handleTypeCreationResult<T>(result: TypeCreationResult<T>): string {
       // Handle success/failure states without default
-      switch (_result.ok) {
+      switch (result.ok) {
         case true:
           return `Success: ${result.data}`;
 
         case false:
           // Handle all error kinds without default
-          switch (_result.error.kind) {
+          switch (result.error.kind) {
             case "PatternNotFound":
-              return `Pattern not found: ${_result.error.message}`;
+              return `Pattern not found: ${result.error.message}`;
 
             case "ValidationFailed":
               return `Validation failed: ${
-                (_result.error as Record<string, unknown>).value
-              } does not match ${(_result.error as Record<string, unknown>).pattern}`;
+                (result.error as Record<string, unknown>).value
+              } does not match ${(result.error as Record<string, unknown>).pattern}`;
 
             case "InvalidPattern":
               return `Invalid pattern: ${
-                (_result.error as Record<string, unknown>).pattern
-              } caused by ${(_result.error as Record<string, unknown>).cause}`;
+                (result.error as Record<string, unknown>).pattern
+              } caused by ${(result.error as Record<string, unknown>).cause}`;
           }
 
           // This should be unreachable if switch is exhaustive
           throw new Error(
-            `Unhandled error kind: ${(_result.error as Record<string, unknown>).kind}`,
+            `Unhandled error kind: ${(result.error as Record<string, unknown>).kind}`,
           );
       }
 

@@ -13,14 +13,14 @@
  */
 
 import { assertEquals, assertExists } from "../../deps.ts";
-import { BreakdownLogger } from "../../deps.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
-const _logger = new BreakdownLogger("test-unit-layer");
+const logger = new BreakdownLogger("test-unit-layer");
 
 Deno.test("LayerType - Unit: create() method functionality", () => {
-  _logger.debug("テスト開始: LayerType create()メソッド機能テスト", {
+  logger.debug("テスト開始: LayerType create()メソッド機能テスト", {
     testType: "unit",
     target: "LayerType.create",
     functionality: "creation",
@@ -32,7 +32,7 @@ Deno.test("LayerType - Unit: create() method functionality", () => {
 
   for (const layerType of standardLayers) {
     for (const demonstrativeType of demonstrativeTypes) {
-      const result: TwoParamsResult = {
+      const result: TwoParams_Result = {
         type: "two",
         demonstrativeType,
         layerType,
@@ -40,11 +40,11 @@ Deno.test("LayerType - Unit: create() method functionality", () => {
         options: {},
       };
 
-      const layer = LayerType.create(_result);
+      const layer = LayerType.create(result);
       assertExists(layer);
       assertEquals(layer.value, layerType);
 
-      _logger.debug("LayerType作成成功", {
+      logger.debug("LayerType作成成功", {
         layerType,
         demonstrativeType,
         created: true,
@@ -55,7 +55,7 @@ Deno.test("LayerType - Unit: create() method functionality", () => {
   // 2. 特別なlayerTypeでの作成
   const specialLayers = ["bugs", "temp"];
   for (const layerType of specialLayers) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: "find",
       layerType,
@@ -63,18 +63,18 @@ Deno.test("LayerType - Unit: create() method functionality", () => {
       options: {},
     };
 
-    const layer = LayerType.create(_result);
+    const layer = LayerType.create(result);
     assertExists(layer);
     assertEquals(layer.value, layerType);
 
-    _logger.debug("特別LayerType作成成功", {
+    logger.debug("特別LayerType作成成功", {
       layerType,
       special: true,
       created: true,
     });
   }
 
-  _logger.debug("create()メソッド機能テスト完了", {
+  logger.debug("create()メソッド機能テスト完了", {
     success: true,
     standard_combinations: standardLayers.length * demonstrativeTypes.length,
     special_layers: specialLayers.length,
@@ -82,7 +82,7 @@ Deno.test("LayerType - Unit: create() method functionality", () => {
 });
 
 Deno.test("LayerType - Unit: value property accuracy", () => {
-  _logger.debug("テスト開始: LayerType valueプロパティ精度テスト", {
+  logger.debug("テスト開始: LayerType valueプロパティ精度テスト", {
     testType: "unit",
     target: "LayerType.value",
     functionality: "value_access",
@@ -100,7 +100,7 @@ Deno.test("LayerType - Unit: value property accuracy", () => {
   ];
 
   for (const testCase of testCases) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: testCase.layerType,
@@ -108,27 +108,27 @@ Deno.test("LayerType - Unit: value property accuracy", () => {
       options: {},
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.value, testCase.expected);
 
     // 2. getValue()メソッド（互換性用）の動作確認
     assertEquals(layerType.getValue(), testCase.expected);
 
-    _logger.debug("値取得精度確認", {
+    logger.debug("値取得精度確認", {
       input: testCase.layerType,
       output: layerType.value,
       match: true,
     });
   }
 
-  _logger.debug("valueプロパティ精度テスト完了", {
+  logger.debug("valueプロパティ精度テスト完了", {
     success: true,
     test_cases: testCases.length,
   });
 });
 
 Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
-  _logger.debug("テスト開始: LayerType getHierarchyLevel()機能テスト", {
+  logger.debug("テスト開始: LayerType getHierarchyLevel()機能テスト", {
     testType: "unit",
     target: "LayerType.getHierarchyLevel",
     functionality: "hierarchy_level",
@@ -144,7 +144,7 @@ Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
   ];
 
   for (const testCase of hierarchyTestCases) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: testCase.layerType,
@@ -152,10 +152,10 @@ Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
       options: {},
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.getHierarchyLevel(), testCase.expectedLevel);
 
-    _logger.debug("階層レベル確認", {
+    logger.debug("階層レベル確認", {
       layerType: testCase.layerType,
       level: testCase.expectedLevel,
       accurate: true,
@@ -163,7 +163,7 @@ Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
   }
 
   // 2. カスタム階層（未定義）の場合のデフォルト値確認
-  const customResult: TwoParamsResult = {
+  const customResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "to",
     layerType: "custom_layer",
@@ -174,7 +174,7 @@ Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
   const customLayerType = LayerType.create(customResult);
   assertEquals(customLayerType.getHierarchyLevel(), 0); // デフォルト値
 
-  _logger.debug("getHierarchyLevel()機能テスト完了", {
+  logger.debug("getHierarchyLevel()機能テスト完了", {
     success: true,
     standard_levels: hierarchyTestCases.length,
     default_handling: true,
@@ -182,7 +182,7 @@ Deno.test("LayerType - Unit: getHierarchyLevel() functionality", () => {
 });
 
 Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
-  _logger.debug("テスト開始: LayerType isStandardHierarchy()機能テスト", {
+  logger.debug("テスト開始: LayerType isStandardHierarchy()機能テスト", {
     testType: "unit",
     target: "LayerType.isStandardHierarchy",
     functionality: "standard_hierarchy_check",
@@ -191,7 +191,7 @@ Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
   // 1. 標準階層の判定確認
   const standardLayers = ["project", "issue", "task"];
   for (const layerTypeName of standardLayers) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: "to",
       layerType: layerTypeName,
@@ -199,10 +199,10 @@ Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
       options: {},
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.isStandardHierarchy(), true);
 
-    _logger.debug("標準階層判定", {
+    logger.debug("標準階層判定", {
       layerType: layerTypeName,
       standard: true,
       correct: true,
@@ -212,7 +212,7 @@ Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
   // 2. 非標準階層の判定確認
   const nonStandardLayers = ["bugs", "temp", "epic", "system", "custom"];
   for (const layerTypeName of nonStandardLayers) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: "find",
       layerType: layerTypeName,
@@ -220,17 +220,17 @@ Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
       options: {},
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.isStandardHierarchy(), false);
 
-    _logger.debug("非標準階層判定", {
+    logger.debug("非標準階層判定", {
       layerType: layerTypeName,
       standard: false,
       correct: true,
     });
   }
 
-  _logger.debug("isStandardHierarchy()機能テスト完了", {
+  logger.debug("isStandardHierarchy()機能テスト完了", {
     success: true,
     standard_layers: standardLayers.length,
     non_standard_layers: nonStandardLayers.length,
@@ -238,13 +238,13 @@ Deno.test("LayerType - Unit: isStandardHierarchy() functionality", () => {
 });
 
 Deno.test("LayerType - Unit: toString() method functionality", () => {
-  _logger.debug("テスト開始: LayerType toString()メソッド機能テスト", {
+  logger.debug("テスト開始: LayerType toString()メソッド機能テスト", {
     testType: "unit",
     target: "LayerType.toString",
     functionality: "string_representation",
   });
 
-  const testResult: TwoParamsResult = {
+  const testResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "summary",
     layerType: "issue",
@@ -265,7 +265,7 @@ Deno.test("LayerType - Unit: toString() method functionality", () => {
   // 3. 複数回呼び出しでも同じ結果を返すことを確認
   assertEquals(layerType.toString(), stringRepresentation);
 
-  _logger.debug("toString()メソッド機能テスト完了", {
+  logger.debug("toString()メソッド機能テスト完了", {
     success: true,
     format: "LayerType(value)",
     consistency: true,
@@ -273,14 +273,14 @@ Deno.test("LayerType - Unit: toString() method functionality", () => {
 });
 
 Deno.test("LayerType - Unit: equals() method functionality", () => {
-  _logger.debug("テスト開始: LayerType equals()メソッド機能テスト", {
+  logger.debug("テスト開始: LayerType equals()メソッド機能テスト", {
     testType: "unit",
     target: "LayerType.equals",
     functionality: "equality_comparison",
   });
 
   // 1. 同じ値での等価性確認
-  const result1: TwoParamsResult = {
+  const result1: TwoParams_Result = {
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
@@ -288,7 +288,7 @@ Deno.test("LayerType - Unit: equals() method functionality", () => {
     options: {},
   };
 
-  const result2: TwoParamsResult = {
+  const result2: TwoParams_Result = {
     type: "two",
     demonstrativeType: "summary", // demonstrativeTypeが異なってもlayerTypeが同じなら等価
     layerType: "project",
@@ -302,7 +302,7 @@ Deno.test("LayerType - Unit: equals() method functionality", () => {
   assertEquals(layer1.equals(layer2), true);
 
   // 2. 異なる値での非等価性確認
-  const result3: TwoParamsResult = {
+  const result3: TwoParams_Result = {
     type: "two",
     demonstrativeType: "to",
     layerType: "issue",
@@ -316,7 +316,7 @@ Deno.test("LayerType - Unit: equals() method functionality", () => {
   // 3. 自己との等価性確認
   assertEquals(layer1.equals(layer1), true);
 
-  _logger.debug("equals()メソッド機能テスト完了", {
+  logger.debug("equals()メソッド機能テスト完了", {
     success: true,
     same_value_equality: true,
     different_value_inequality: true,
@@ -325,14 +325,14 @@ Deno.test("LayerType - Unit: equals() method functionality", () => {
 });
 
 Deno.test("LayerType - Unit: originalResult property access", () => {
-  _logger.debug("テスト開始: LayerType originalResultプロパティアクセステスト", {
+  logger.debug("テスト開始: LayerType originalResultプロパティアクセステスト", {
     testType: "unit",
     target: "LayerType.originalResult",
     functionality: "original_data_access",
   });
 
   const options = { hierarchy: true, custom: "value" };
-  const testResult: TwoParamsResult = {
+  const testResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "defect",
     layerType: "task",
@@ -343,7 +343,7 @@ Deno.test("LayerType - Unit: originalResult property access", () => {
   const layerType = LayerType.create(testResult);
   const originalResult = layerType.originalResult;
 
-  // 1. 元のTwoParamsResultのすべてのプロパティが保持されている
+  // 1. 元のTwoParams_Resultのすべてのプロパティが保持されている
   assertEquals(originalResult.type, "two");
   assertEquals(originalResult.demonstrativeType, "defect");
   assertEquals(originalResult.layerType, "task");
@@ -353,7 +353,7 @@ Deno.test("LayerType - Unit: originalResult property access", () => {
   assertExists(originalResult);
   assertEquals(typeof originalResult, "object");
 
-  _logger.debug("originalResultプロパティアクセステスト完了", {
+  logger.debug("originalResultプロパティアクセステスト完了", {
     success: true,
     data_preservation: true,
     readonly_access: true,
@@ -361,7 +361,7 @@ Deno.test("LayerType - Unit: originalResult property access", () => {
 });
 
 Deno.test("TwoParamsLayerTypePattern - Unit: create() method functionality", () => {
-  _logger.debug("テスト開始: TwoParamsLayerTypePattern create()メソッド機能テスト", {
+  logger.debug("テスト開始: TwoParamsLayerTypePattern create()メソッド機能テスト", {
     testType: "unit",
     target: "TwoParamsLayerTypePattern.create",
     functionality: "pattern_creation",
@@ -381,7 +381,7 @@ Deno.test("TwoParamsLayerTypePattern - Unit: create() method functionality", () 
     assertExists(pattern);
     assertEquals(pattern?.getPattern(), patternString);
 
-    _logger.debug("有効パターン作成成功", {
+    logger.debug("有効パターン作成成功", {
       pattern: patternString,
       created: true,
     });
@@ -398,13 +398,13 @@ Deno.test("TwoParamsLayerTypePattern - Unit: create() method functionality", () 
     const pattern = TwoParamsLayerTypePattern.create(patternString);
     assertEquals(pattern, null);
 
-    _logger.debug("無効パターン適切に拒否", {
+    logger.debug("無効パターン適切に拒否", {
       pattern: patternString,
       rejected: true,
     });
   }
 
-  _logger.debug("create()メソッド機能テスト完了", {
+  logger.debug("create()メソッド機能テスト完了", {
     success: true,
     valid_patterns: validPatterns.length,
     invalid_patterns: invalidPatterns.length,
@@ -412,7 +412,7 @@ Deno.test("TwoParamsLayerTypePattern - Unit: create() method functionality", () 
 });
 
 Deno.test("TwoParamsLayerTypePattern - Unit: test() method functionality", () => {
-  _logger.debug("テスト開始: TwoParamsLayerTypePattern test()メソッド機能テスト", {
+  logger.debug("テスト開始: TwoParamsLayerTypePattern test()メソッド機能テスト", {
     testType: "unit",
     target: "TwoParamsLayerTypePattern.test",
     functionality: "pattern_matching",
@@ -426,25 +426,25 @@ Deno.test("TwoParamsLayerTypePattern - Unit: test() method functionality", () =>
     const matchingValues = ["project", "issue", "task", "bugs"];
     for (const value of matchingValues) {
       assertEquals(pattern.test(value), true);
-      _logger.debug("パターンマッチ成功", { value, matched: true });
+      logger.debug("パターンマッチ成功", { value, matched: true });
     }
 
     // 2. マッチしないパターンのテスト
     const nonMatchingValues = ["temp", "epic", "system", "component"];
     for (const value of nonMatchingValues) {
       assertEquals(pattern.test(value), false);
-      _logger.debug("パターン非マッチ確認", { value, matched: false });
+      logger.debug("パターン非マッチ確認", { value, matched: false });
     }
   }
 
-  _logger.debug("test()メソッド機能テスト完了", {
+  logger.debug("test()メソッド機能テスト完了", {
     success: true,
     pattern_matching: "accurate",
   });
 });
 
 Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
-  _logger.debug("テスト開始: LayerType実世界階層シナリオテスト", {
+  logger.debug("テスト開始: LayerType実世界階層シナリオテスト", {
     testType: "unit",
     target: "LayerType",
     functionality: "real_world_hierarchy",
@@ -476,7 +476,7 @@ Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
   ];
 
   for (const scenario of hierarchicalScenarios) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: scenario.demonstrativeType,
       layerType: scenario.layerType,
@@ -484,12 +484,12 @@ Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
       options: {},
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.value, scenario.layerType);
     assertEquals(layerType.getHierarchyLevel(), scenario.level);
     assertEquals(layerType.isStandardHierarchy(), scenario.standard);
 
-    _logger.debug("階層シナリオ確認", {
+    logger.debug("階層シナリオ確認", {
       scenario: scenario.description,
       layer: scenario.layerType,
       level: scenario.level,
@@ -517,7 +517,7 @@ Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
   ];
 
   for (const scenario of specialScenarios) {
-    const result: TwoParamsResult = {
+    const result: TwoParams_Result = {
       type: "two",
       demonstrativeType: scenario.demonstrativeType,
       layerType: scenario.layerType,
@@ -525,12 +525,12 @@ Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
       options: { special: true },
     };
 
-    const layerType = LayerType.create(_result);
+    const layerType = LayerType.create(result);
     assertEquals(layerType.value, scenario.layerType);
     assertEquals(layerType.getHierarchyLevel(), scenario.level);
     assertEquals(layerType.isStandardHierarchy(), scenario.standard);
 
-    _logger.debug("特別シナリオ確認", {
+    logger.debug("特別シナリオ確認", {
       scenario: scenario.description,
       layer: scenario.layerType,
       level: scenario.level,
@@ -539,7 +539,7 @@ Deno.test("LayerType - Unit: Real-world hierarchical scenarios", () => {
     });
   }
 
-  _logger.debug("実世界階層シナリオテスト完了", {
+  logger.debug("実世界階層シナリオテスト完了", {
     success: true,
     hierarchical_scenarios: hierarchicalScenarios.length,
     special_scenarios: specialScenarios.length,

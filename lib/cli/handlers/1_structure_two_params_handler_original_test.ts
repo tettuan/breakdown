@@ -13,12 +13,12 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler_original.ts";
-import type { Result } from "../../types/_result.ts";
+import type { Result } from "../../types/result.ts";
 
-const _logger = new BreakdownLogger("structure-handler");
+const _logger = new _BreakdownLogger("structure-handler");
 
 describe("TwoParamsHandler Structure - Function Design Principles", () => {
   it("should maintain clear separation of validation concerns", async () => {
@@ -50,26 +50,26 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
     ];
 
     for (const test of validationTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, test.expectedError);
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        assertEquals(result.error.kind, test.expectedError);
 
         // Each validation error should contain specific, relevant information
-        switch (_result.error.kind) {
+        switch (result.error.kind) {
           case "InvalidParameterCount":
-            assertExists(_result.error.received);
-            assertExists(_result.error.expected);
-            assertEquals(typeof _result.error.received, "number");
-            assertEquals(typeof _result.error.expected, "number");
+            assertExists(result.error.received);
+            assertExists(result.error.expected);
+            assertEquals(typeof result.error.received, "number");
+            assertEquals(typeof result.error.expected, "number");
             break;
           case "InvalidDemonstrativeType":
           case "InvalidLayerType":
-            assertExists(_result.error.value);
-            assertExists(_result.error.validTypes);
-            assertEquals(typeof _result.error.value, "string");
-            assertEquals(Array.isArray(_result.error.validTypes), true);
+            assertExists(result.error.value);
+            assertExists(result.error.validTypes);
+            assertEquals(typeof result.error.value, "string");
+            assertEquals(Array.isArray(result.error.validTypes), true);
             break;
         }
       }
@@ -104,13 +104,13 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
     ];
 
     for (const test of pipelineTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Pipeline should handle all input types consistently
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // If failure occurs, should be at appropriate stage
-      if (!_result.ok) {
+      if (!result.ok) {
         // Error should be from expected pipeline stage or later
         const validStageErrors = [
           "StdinReadError",
@@ -121,8 +121,8 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
         ];
 
         assert(
-          validStageErrors.includes(_result.error.kind),
-          `Unexpected error for ${test.description}: ${_result.error.kind}`,
+          validStageErrors.includes(result.error.kind),
+          `Unexpected error for ${test.description}: ${result.error.kind}`,
         );
       }
     }
@@ -163,14 +163,14 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
     ];
 
     for (const stage of transformationStages) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         stage.params,
         { app_prompt: { base_dir: "prompts" } },
         stage.options || {},
       );
 
       // Data transformation should be structured and predictable
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Each transformation stage should process data consistently
       // (Verification happens through the fact that the handler processes without throwing)
@@ -205,35 +205,35 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
     ];
 
     for (const test of errorPropagationTests) {
-      const _result = await handleTwoParams(test.params, test.config as unknown, test.options);
+      const result = await handleTwoParams(test.params, test.config as any, test.options);
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
+      assertEquals(result.ok, false);
+      if (!result.ok) {
         // Error should contain proper structure regardless of stage
-        assertExists(_result.error);
-        assertExists(_result.error.kind);
-        assertEquals(typeof _result.error.kind, "string");
+        assertExists(result.error);
+        assertExists(result.error.kind);
+        assertEquals(typeof result.error.kind, "string");
 
         // Error should have appropriate context for its type
-        switch (_result.error.kind) {
+        switch (result.error.kind) {
           case "InvalidParameterCount":
-            assertExists(_result.error.received);
-            assertExists(_result.error.expected);
+            assertExists(result.error.received);
+            assertExists(result.error.expected);
             break;
           case "InvalidDemonstrativeType":
           case "InvalidLayerType":
-            assertExists(_result.error.value);
-            assertExists(_result.error.validTypes);
+            assertExists(result.error.value);
+            assertExists(result.error.validTypes);
             break;
           case "StdinReadError":
           case "PromptGenerationError":
           case "OutputWriteError":
-            assertExists(_result.error.error);
+            assertExists(result.error.error);
             break;
           case "FactoryValidationError":
           case "VariablesBuilderError":
-            assertExists(_result.error.errors);
-            assertEquals(Array.isArray(_result.error.errors), true);
+            assertExists(result.error.errors);
+            assertEquals(Array.isArray(result.error.errors), true);
             break;
         }
       }
@@ -272,21 +272,21 @@ describe("TwoParamsHandler Structure - Function Composition", () => {
     ];
 
     for (const test of compositionTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Function composition should be consistent
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // If successful, all composed functions worked together
-      if (_result.ok) {
-        assertEquals(_result.data, undefined);
+      if (result.ok) {
+        assertEquals(result.data, undefined);
       }
 
       // If failed, error should be from composed function
-      if (!_result.ok) {
+      if (!result.ok) {
         // Error should be properly structured from composed functions
-        assertExists(_result.error);
-        assertExists(_result.error.kind);
+        assertExists(result.error);
+        assertExists(result.error.kind);
       }
     }
   });
@@ -322,10 +322,10 @@ describe("TwoParamsHandler Structure - Function Composition", () => {
     ];
 
     for (const test of dependencyFlowTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Dependency flow should be predictable
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Dependencies should not be accessed before validation
       // (This is enforced by the structure of the handler function)
@@ -369,10 +369,10 @@ describe("TwoParamsHandler Structure - Function Composition", () => {
     ];
 
     for (const test of variableProcessingTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Variable processing should be structured consistently
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // All variable types should be processed uniformly
       // (Verification through consistent behavior)
@@ -409,13 +409,13 @@ describe("TwoParamsHandler Structure - Data Flow Patterns", () => {
     ];
 
     for (const test of dataFlowTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Data flow should be consistent regardless of input type
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Flow should handle all input types uniformly
-      if (!_result.ok) {
+      if (!result.ok) {
         // Errors should be appropriately structured for data flow stage
         const dataFlowErrors = [
           "StdinReadError",
@@ -427,12 +427,12 @@ describe("TwoParamsHandler Structure - Data Flow Patterns", () => {
 
         if (
           !["InvalidParameterCount", "InvalidDemonstrativeType", "InvalidLayerType"].includes(
-            _result.error.kind,
+            result.error.kind,
           )
         ) {
           assert(
-            dataFlowErrors.includes(_result.error.kind),
-            `Unexpected data flow error: ${_result.error.kind}`,
+            dataFlowErrors.includes(result.error.kind),
+            `Unexpected data flow error: ${result.error.kind}`,
           );
         }
       }
@@ -472,14 +472,14 @@ describe("TwoParamsHandler Structure - Data Flow Patterns", () => {
     ];
 
     for (const test of dataIntegrityTests) {
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         test.params,
         test.config || { app_prompt: { base_dir: "prompts" } },
         test.options || {},
       );
 
       // Data integrity should be maintained
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Processing stages should not corrupt input data
       // (Verified through consistent processing behavior)
@@ -507,20 +507,20 @@ describe("TwoParamsHandler Structure - Data Flow Patterns", () => {
     ];
 
     for (const test of outputGenerationTests) {
-      const _result = await handleTwoParams(test.params, test.config, test.options);
+      const result = await handleTwoParams(test.params, test.config, test.options);
 
       // Output generation should be structured consistently
-      assertEquals(typeof _result.ok, "boolean");
+      assertEquals(typeof result.ok, "boolean");
 
       // Success should indicate output was generated
-      if (_result.ok) {
-        assertEquals(_result.data, undefined);
+      if (result.ok) {
+        assertEquals(result.data, undefined);
       }
 
       // Output errors should be properly structured
-      if (!_result.ok && _result.error.kind === "OutputWriteError") {
-        assertExists(_result.error.error);
-        assertEquals(typeof _result.error.error, "string");
+      if (!result.ok && result.error.kind === "OutputWriteError") {
+        assertExists(result.error.error);
+        assertEquals(typeof result.error.error, "string");
       }
     }
   });
@@ -555,20 +555,20 @@ describe("TwoParamsHandler Structure - Error Handling Architecture", () => {
     ];
 
     for (const test of errorStructureTests) {
-      const _result = await handleTwoParams(test.params, test.config as unknown, test.options);
+      const result = await handleTwoParams(test.params, test.config as any, test.options);
 
-      assertEquals(_result.ok, false);
-      if (!_result.ok) {
+      assertEquals(result.ok, false);
+      if (!result.ok) {
         // All errors should have consistent structure
-        assertExists(_result.error);
-        assertExists(_result.error.kind);
-        assertEquals(typeof _result.error.kind, "string");
+        assertExists(result.error);
+        assertExists(result.error.kind);
+        assertEquals(typeof result.error.kind, "string");
 
         // Error information should be appropriate for error type
-        const errorKind = _result.error.kind;
+        const errorKind = result.error.kind;
         const hasExpectedInfo = (errorKind.includes("Invalid") &&
-          ("value" in _result.error || "received" in _result.error)) ||
-          (errorKind.includes("Error") && ("error" in _result.error || "errors" in _result.error));
+          ("value" in result.error || "received" in result.error)) ||
+          (errorKind.includes("Error") && ("error" in result.error || "errors" in result.error));
 
         assert(hasExpectedInfo, `Error ${errorKind} should have appropriate information`);
       }
@@ -606,14 +606,14 @@ describe("TwoParamsHandler Structure - Error Handling Architecture", () => {
     ];
 
     for (const test of recoveryTests) {
-      const _result = await handleTwoParams(test.params, test.config as unknown, test.options);
+      const result = await handleTwoParams(test.params, test.config as any, test.options);
 
       if (test.shouldFailFast) {
-        assertEquals(_result.ok, false);
-        if (!_result.ok) {
+        assertEquals(result.ok, false);
+        if (!result.ok) {
           // Should fail with specific error, not attempt recovery
-          assertExists(_result.error);
-          assertExists(_result.error.kind);
+          assertExists(result.error);
+          assertExists(result.error.kind);
         }
       }
     }

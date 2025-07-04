@@ -53,8 +53,8 @@ Deno.test("VariablesBuilder - Architecture: Type interface consistency", () => {
 
   // Must accept FactoryResolvedValues without type errors
   const _builder = new VariablesBuilder();
-  const _result = _builder.addFromFactoryValues(mockFactoryValues);
-  assertEquals(_result, _builder, "addFromFactoryValues must accept FactoryResolvedValues");
+  const result = _builder.addFromFactoryValues(mockFactoryValues);
+  assertEquals(result, _builder, "addFromFactoryValues must accept FactoryResolvedValues");
 });
 
 Deno.test("VariablesBuilder - Architecture: Error type hierarchy", () => {
@@ -65,12 +65,12 @@ Deno.test("VariablesBuilder - Architecture: Error type hierarchy", () => {
   _builder.addUserVariable("uv-test", "value1");
   _builder.addUserVariable("uv-test", "value2"); // Duplicate
 
-  const _result = _builder.build();
+  const result = _builder.build();
 
   // Must return Result type with error array
-  assertEquals(_result.ok, false, "Builder with errors must return error result");
-  if (!_result.ok) {
-    const errors = _result.error as BuilderVariableError[];
+  assertEquals(result.ok, false, "Builder with errors must return error result");
+  if (!result.ok) {
+    const errors = result.error as BuilderVariableError[];
     assertEquals(Array.isArray(errors), true, "Errors must be array of BuilderVariableError");
     assertEquals(errors.length > 0, true, "Must have accumulated errors");
   }
@@ -80,16 +80,16 @@ Deno.test("VariablesBuilder - Architecture: Result monad pattern", () => {
   const _builder = new VariablesBuilder();
   _builder.addStandardVariable("input_text_file", "test.txt");
 
-  const _result = _builder.build();
+  const result = _builder.build();
 
   // Must implement Result monad pattern
-  assertExists(_result.ok, "Result must have 'ok' property");
+  assertExists(result.ok, "Result must have 'ok' property");
 
-  if (_result.ok) {
-    assertExists(_result.data, "Success result must have 'data' property");
-    assertEquals(Array.isArray(_result.data), true, "Result data must be PromptVariables array");
+  if (result.ok) {
+    assertExists(result.data, "Success result must have 'data' property");
+    assertEquals(Array.isArray(result.data), true, "Result data must be PromptVariables array");
   } else {
-    assertExists(_result.error, "Error result must have 'error' property");
+    assertExists(result.error, "Error result must have 'error' property");
   }
 });
 

@@ -6,7 +6,7 @@
  * @module
  */
 
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Template error types
@@ -54,7 +54,7 @@ export class TemplateError extends Error {
    * Get user-friendly error message with suggestions
    */
   getDetailedMessage(): string {
-    const _message = `❌ ${this.message}`;
+    let message = `❌ ${this.message}`;
 
     if (this.templatePath) {
       message += `\n   Template: ${this.templatePath}`;
@@ -253,7 +253,7 @@ export class TemplateErrorHandler {
 
     const result = await process.output();
 
-    if (_result.success) {
+    if (result.success) {
       return {
         resolved: true,
         message: "✅ Templates generated successfully",
@@ -282,7 +282,7 @@ export class TemplateErrorHandler {
 
     const result = await process.output();
 
-    if (_result.success) {
+    if (result.success) {
       return {
         resolved: true,
         message: "✅ Template validation and fixes completed",
@@ -325,13 +325,13 @@ export async function withTemplateErrorHandling<T>(
         autoResolve: context?.autoResolve,
       });
 
-      if (_result.resolved) {
+      if (result.resolved) {
         logger.info(result.message);
         // Retry the operation after resolution
         return await operation();
       } else {
         logger.error(result.message);
-        if (_result.commands) {
+        if (result.commands) {
           logger.error("\n🔧 Recovery commands:");
           for (const command of result.commands) {
             logger.error(`   ${command}`);

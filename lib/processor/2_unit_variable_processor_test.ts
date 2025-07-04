@@ -41,27 +41,27 @@ Deno.test("Unit: extractCustomVariables should extract uv- prefixed variables", 
     "another": "ignored",
   };
 
-  const _result = _processor.extractCustomVariables(options);
+  const result = _processor.extractCustomVariables(options);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(Object.keys(_result.data).length, 3);
-    assertEquals(_result.data["uv-project"], "my-project");
-    assertEquals(_result.data["uv-version"], "1.0.0");
-    assertEquals(_result.data["uv-author"], "test-author");
-    assertEquals(_result.data["normal-option"], undefined);
-    assertEquals(_result.data["another"], undefined);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(Object.keys(result.data).length, 3);
+    assertEquals(result.data["uv-project"], "my-project");
+    assertEquals(result.data["uv-version"], "1.0.0");
+    assertEquals(result.data["uv-author"], "test-author");
+    assertEquals(result.data["normal-option"], undefined);
+    assertEquals(result.data["another"], undefined);
   }
 });
 
 Deno.test("Unit: extractCustomVariables should handle empty options", async () => {
   const _processor = new TwoParamsVariableProcessor();
 
-  const _result = _processor.extractCustomVariables({});
+  const result = _processor.extractCustomVariables({});
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(Object.keys(_result.data).length, 0);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(Object.keys(result.data).length, 0);
   }
 });
 
@@ -111,14 +111,14 @@ Deno.test("Unit: extractCustomVariables should convert values to strings", async
     "uv-object": { nested: "value" },
   };
 
-  const _result = _processor.extractCustomVariables(options);
+  const result = _processor.extractCustomVariables(options);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data["uv-number"], "42");
-    assertEquals(_result.data["uv-boolean"], "true");
-    assertEquals(_result.data["uv-string"], "hello");
-    assertEquals(_result.data["uv-object"], "[object Object]");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data["uv-number"], "42");
+    assertEquals(result.data["uv-boolean"], "true");
+    assertEquals(result.data["uv-string"], "hello");
+    assertEquals(result.data["uv-object"], "[object Object]");
   }
 });
 
@@ -130,25 +130,25 @@ Deno.test("Unit: process should handle minimal configuration", async () => {
     promptFile: "test-prompt.md",
   };
 
-  const _result = await _processor.process(options);
+  const result = await _processor.process(options);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertExists(_result.data.variables);
-    assertExists(_result.data.customVariables);
-    assertExists(_result.data.standardVariables);
-    assertExists(_result.data.builder);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertExists(result.data.variables);
+    assertExists(result.data.customVariables);
+    assertExists(result.data.standardVariables);
+    assertExists(result.data.builder);
 
     // Standard variables should have defaults
-    assertEquals(_result.data.standardVariables.input_text_file, "stdin");
-    assertEquals(_result.data.standardVariables.destination_path, "stdout");
-    assertEquals(_result.data.standardVariables.input_text, undefined);
+    assertEquals(result.data.standardVariables.input_text_file, "stdin");
+    assertEquals(result.data.standardVariables.destination_path, "stdout");
+    assertEquals(result.data.standardVariables.input_text, undefined);
 
     // Custom variables should be empty
-    assertEquals(Object.keys(_result.data.customVariables).length, 0);
+    assertEquals(Object.keys(result.data.customVariables).length, 0);
 
     // Builder should be properly instantiated
-    assertInstanceOf(_result.data.builder, VariablesBuilder);
+    assertInstanceOf(result.data.builder, VariablesBuilder);
   }
 });
 
@@ -169,25 +169,25 @@ Deno.test("Unit: process should handle complete configuration", async () => {
     promptFile: "prompt.md",
   };
 
-  const _result = await _processor.process(options);
+  const result = await _processor.process(options);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
+  assertEquals(result.ok, true);
+  if (result.ok) {
     // Custom variables
-    assertEquals(_result.data.customVariables["uv-project"], "test-project");
-    assertEquals(_result.data.customVariables["uv-version"], "2.0.0");
+    assertEquals(result.data.customVariables["uv-project"], "test-project");
+    assertEquals(result.data.customVariables["uv-version"], "2.0.0");
 
     // Standard variables
-    assertEquals(_result.data.standardVariables.input_text, "Hello, world!");
-    assertEquals(_result.data.standardVariables.input_text_file, "input.txt");
-    assertEquals(_result.data.standardVariables.destination_path, "output.md");
+    assertEquals(result.data.standardVariables.input_text, "Hello, world!");
+    assertEquals(result.data.standardVariables.input_text_file, "input.txt");
+    assertEquals(result.data.standardVariables.destination_path, "output.md");
 
     // All variables should be combined
-    assertEquals(_result.data.variables["uv-project"], "test-project");
-    assertEquals(_result.data.variables["uv-version"], "2.0.0");
+    assertEquals(result.data.variables["uv-project"], "test-project");
+    assertEquals(result.data.variables["uv-version"], "2.0.0");
 
     // Builder should contain all variables
-    const builderRecord = _result.data.builder.toRecord();
+    const builderRecord = result.data.builder.toRecord();
     assertExists(builderRecord);
   }
 });
@@ -297,17 +297,17 @@ Deno.test("Unit: process should handle STDIN content", async () => {
 
   const stdinContent = "This is STDIN content\nWith multiple lines";
 
-  const _result = await _processor.process({
+  const result = await _processor.process({
     options: {},
     stdinContent,
   });
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
-    assertEquals(_result.data.standardVariables.input_text, stdinContent);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.standardVariables.input_text, stdinContent);
 
     // Variables should include STDIN data
-    const variables = _result.data.variables;
+    const variables = result.data.variables;
     assertEquals(variables.input_text, stdinContent);
   }
 });
@@ -350,9 +350,9 @@ Deno.test("Unit: static extractCustomVariables should work correctly", async () 
     "normal": "ignored",
   };
 
-  const _result = TwoParamsVariableProcessor.extractCustomVariables(options);
+  const result = TwoParamsVariableProcessor.extractCustomVariables(options);
 
-  assertEquals(typeof _result, "object");
+  assertEquals(typeof result, "object");
   assertEquals(result["uv-test"], "value");
   assertEquals(result["uv-another"], "another-value");
   assertEquals(result["normal"], undefined);
@@ -365,32 +365,32 @@ Deno.test("Unit: static extractCustomVariables should handle errors gracefully",
   };
 
   // Static method should return empty object on error (backward compatibility)
-  const _result = TwoParamsVariableProcessor.extractCustomVariables(options);
+  const result = TwoParamsVariableProcessor.extractCustomVariables(options);
 
-  assertEquals(typeof _result, "object");
-  assertEquals(Object.keys(_result).length, 0);
+  assertEquals(typeof result, "object");
+  assertEquals(Object.keys(result).length, 0);
 });
 
 Deno.test("Unit: createVariableProcessor factory should work", async () => {
   const { createVariableProcessor } = await import("./variable_processor.ts");
 
   const _processor = createVariableProcessor();
-  assertInstanceOf(processor, TwoParamsVariableProcessor);
+  assertInstanceOf(_processor, TwoParamsVariableProcessor);
 
   // Should be functional
-  const _result = _processor.extractCustomVariables({ "uv-test": "value" });
-  assertEquals(_result.ok, true);
+  const result = _processor.extractCustomVariables({ "uv-test": "value" });
+  assertEquals(result.ok, true);
 });
 
 Deno.test("Unit: extractCustomVariables export function should work", async () => {
   const { extractCustomVariables } = await import("./variable_processor.ts");
 
-  const _result = extractCustomVariables({
+  const result = extractCustomVariables({
     "uv-export": "test",
     "normal": "ignored",
   });
 
-  assertEquals(typeof _result, "object");
+  assertEquals(typeof result, "object");
   assertEquals(result["uv-export"], "test");
   assertEquals(result["normal"], undefined);
 });
@@ -413,27 +413,27 @@ Deno.test("Unit: process should handle complex scenarios", async () => {
     promptFile: "complex-prompt.md",
   };
 
-  const _result = await _processor.process(complexOptions);
+  const result = await _processor.process(complexOptions);
 
-  assertEquals(_result.ok, true);
-  if (_result.ok) {
+  assertEquals(result.ok, true);
+  if (result.ok) {
     // Verify all components are integrated correctly
-    assertEquals(_result.data.customVariables["uv-complex"], "value");
-    assertEquals(_result.data.customVariables["uv-scenario"], "test");
+    assertEquals(result.data.customVariables["uv-complex"], "value");
+    assertEquals(result.data.customVariables["uv-scenario"], "test");
 
-    assertEquals(_result.data.standardVariables.input_text, "Complex STDIN content");
-    assertEquals(_result.data.standardVariables.input_text_file, "complex-input.txt");
-    assertEquals(_result.data.standardVariables.destination_path, "complex-output.md");
+    assertEquals(result.data.standardVariables.input_text, "Complex STDIN content");
+    assertEquals(result.data.standardVariables.input_text_file, "complex-input.txt");
+    assertEquals(result.data.standardVariables.destination_path, "complex-output.md");
 
     // Variables should contain all data
-    const variables = _result.data.variables;
+    const variables = result.data.variables;
     assertEquals(variables["uv-complex"], "value");
     assertEquals(variables["uv-scenario"], "test");
     assertEquals(variables.input_text, "Complex STDIN content");
 
     // Builder should be properly configured
-    assertInstanceOf(_result.data.builder, VariablesBuilder);
-    const builderVars = _result.data.builder.toRecord();
+    assertInstanceOf(result.data.builder, VariablesBuilder);
+    const builderVars = result.data.builder.toRecord();
     assertExists(builderVars);
   }
 });

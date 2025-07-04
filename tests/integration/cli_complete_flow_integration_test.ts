@@ -25,12 +25,12 @@ import { TypeFactory } from "../../lib/types/mod.ts";
 import { handleTwoParams } from "../../lib/cli/handlers/two_params_handler_refactored.ts";
 import type { Result } from "../../lib/types/result.ts";
 
-const _logger = new BreakdownLogger("cli-complete-flow-integration");
+const logger = new BreakdownLogger("cli-complete-flow-integration");
 
 describe("CLI Complete Flow Integration", () => {
   describe("End-to-End Data Flow", () => {
     it("should execute complete CLI flow with valid parameters", async () => {
-      _logger.debug("Testing complete CLI flow execution");
+      logger.debug("Testing complete CLI flow execution");
 
       // Test the complete flow through refactored handler
       const result = await handleTwoParams(
@@ -49,7 +49,7 @@ describe("CLI Complete Flow Integration", () => {
       // Flow should complete (may fail at prompt generation due to missing templates)
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // Should fail at orchestration stages, not basic validation
         const validFailurePoints = [
           "VariablesBuilderError",
@@ -59,20 +59,20 @@ describe("CLI Complete Flow Integration", () => {
         ];
 
         assert(
-          validFailurePoints.includes(_result.error.kind),
-          `Flow should fail at orchestration, not validation. Got: ${_result.error.kind}`,
+          validFailurePoints.includes(result.error.kind),
+          `Flow should fail at orchestration, not validation. Got: ${result.error.kind}`,
         );
 
-        _logger.debug("Flow completed with expected orchestration failure", {
-          errorKind: _result.error.kind,
+        logger.debug("Flow completed with expected orchestration failure", {
+          errorKind: result.error.kind,
         });
       } else {
-        _logger.debug("Flow completed successfully");
+        logger.debug("Flow completed successfully");
       }
     });
 
     it("should maintain Result type consistency throughout flow", async () => {
-      _logger.debug("Testing Result type consistency");
+      logger.debug("Testing Result type consistency");
 
       // Test multiple parameter combinations
       const testCases = [
@@ -92,23 +92,23 @@ describe("CLI Complete Flow Integration", () => {
 
         // All results should follow Result pattern
         assert("ok" in result);
-        assertEquals(typeof _result.ok, "boolean");
+        assertEquals(typeof result.ok, "boolean");
 
-        if (!_result.ok) {
+        if (!result.ok) {
           // Error should have proper structure
-          assertExists(_result.error.kind);
-          assertEquals(typeof _result.error.kind, "string");
+          assertExists(result.error.kind);
+          assertEquals(typeof result.error.kind, "string");
         }
 
-        _logger.debug(`${testCase.description} completed`, {
+        logger.debug(`${testCase.description} completed`, {
           params: testCase.params,
-          success: _result.ok,
+          success: result.ok,
         });
       }
     });
 
     it("should integrate TypeFactory properly with CLI flow", async () => {
-      _logger.debug("Testing TypeFactory integration");
+      logger.debug("Testing TypeFactory integration");
 
       // Test that validation uses TypeFactory patterns
       const validationTests = [
@@ -131,26 +131,26 @@ describe("CLI Complete Flow Integration", () => {
           { skipStdin: true },
         );
 
-        assertEquals(_result.ok, false);
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          assertEquals(_result.error.kind, test.expectedError);
+        if (!result.ok) {
+          assertEquals(result.error.kind, test.expectedError);
 
           // Should provide TypeFactory validation details
-          if ("validTypes" in _result.error) {
-            assert(Array.isArray(_result.error.validTypes));
-            assert(_result.error.validTypes.length > 0);
+          if ("validTypes" in result.error) {
+            assert(Array.isArray(result.error.validTypes));
+            assert(result.error.validTypes.length > 0);
           }
         }
 
-        _logger.debug(`TypeFactory validation for ${test.description}`, {
-          errorKind: !_result.ok ? _result.error.kind : "success",
+        logger.debug(`TypeFactory validation for ${test.description}`, {
+          errorKind: !result.ok ? result.error.kind : "success",
         });
       }
     });
 
     it("should handle orchestrator component integration", async () => {
-      _logger.debug("Testing orchestrator component integration");
+      logger.debug("Testing orchestrator component integration");
 
       // Test orchestrator directly for component integration
       const orchestrator = new TwoParamsOrchestrator();
@@ -169,7 +169,7 @@ describe("CLI Complete Flow Integration", () => {
       // Should complete orchestration flow
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // Should integrate with all components properly
         const componentErrors = [
           "StdinReadError",
@@ -179,10 +179,10 @@ describe("CLI Complete Flow Integration", () => {
           "OutputWriteError",
         ];
 
-        assert(componentErrors.includes(_result.error.kind));
+        assert(componentErrors.includes(result.error.kind));
 
-        _logger.debug("Component integration completed", {
-          stage: _result.error.kind,
+        logger.debug("Component integration completed", {
+          stage: result.error.kind,
         });
       }
     });
@@ -190,7 +190,7 @@ describe("CLI Complete Flow Integration", () => {
 
   describe("External Package Integration", () => {
     it("should integrate with BreakdownParams patterns", async () => {
-      _logger.debug("Testing BreakdownParams integration");
+      logger.debug("Testing BreakdownParams integration");
 
       // Test various parameter formats that BreakdownParams would provide
       const paramFormats = [
@@ -209,7 +209,7 @@ describe("CLI Complete Flow Integration", () => {
         // Should handle BreakdownParams-style input
         assert("ok" in result);
 
-        _logger.debug("BreakdownParams format handled", {
+        logger.debug("BreakdownParams format handled", {
           params: format.params,
           options: format.options,
         });
@@ -217,7 +217,7 @@ describe("CLI Complete Flow Integration", () => {
     });
 
     it("should integrate with BreakdownConfig structure", async () => {
-      _logger.debug("Testing BreakdownConfig integration");
+      logger.debug("Testing BreakdownConfig integration");
 
       // Test various config structures
       const configStructures = [
@@ -253,14 +253,14 @@ describe("CLI Complete Flow Integration", () => {
         // Should handle various config structures
         assert("ok" in result);
 
-        _logger.debug(`BreakdownConfig ${description} handled`, {
+        logger.debug(`BreakdownConfig ${description} handled`, {
           configKeys: Object.keys(config),
         });
       }
     });
 
     it("should prepare for BreakdownPrompt integration", async () => {
-      _logger.debug("Testing BreakdownPrompt integration readiness");
+      logger.debug("Testing BreakdownPrompt integration readiness");
 
       // Test that CLI flow prepares data correctly for BreakdownPrompt
       const result = await handleTwoParams(
@@ -276,21 +276,21 @@ describe("CLI Complete Flow Integration", () => {
       // Should reach prompt generation stage
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // Should fail at prompt generation (BreakdownPrompt integration point)
         assert(
-          ["FactoryValidationError", "PromptGenerationError"].includes(_result.error.kind),
-          `Should reach BreakdownPrompt integration. Got: ${_result.error.kind}`,
+          ["FactoryValidationError", "PromptGenerationError"].includes(result.error.kind),
+          `Should reach BreakdownPrompt integration. Got: ${result.error.kind}`,
         );
       }
 
-      _logger.debug("BreakdownPrompt integration point reached");
+      logger.debug("BreakdownPrompt integration point reached");
     });
   });
 
   describe("Error Propagation Integration", () => {
     it("should propagate errors correctly through all components", async () => {
-      _logger.debug("Testing error propagation through components");
+      logger.debug("Testing error propagation through components");
 
       // Test error propagation at different stages
       const errorStages = [
@@ -324,37 +324,37 @@ describe("CLI Complete Flow Integration", () => {
           { skipStdin: true },
         );
 
-        assertEquals(_result.ok, false);
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
+        if (!result.ok) {
           if (stage.expectedError) {
-            assertEquals(_result.error.kind, stage.expectedError);
+            assertEquals(result.error.kind, stage.expectedError);
           } else if (stage.expectedErrors) {
             assert(
-              stage.expectedErrors.includes(_result.error.kind),
-              `Expected one of ${stage.expectedErrors.join(", ")}, got: ${_result.error.kind}`,
+              stage.expectedErrors.includes(result.error.kind),
+              `Expected one of ${stage.expectedErrors.join(", ")}, got: ${result.error.kind}`,
             );
           }
 
           // Error should have proper context
-          assertExists(_result.error.kind);
-          assertEquals(typeof _result.error.kind, "string");
+          assertExists(result.error.kind);
+          assertEquals(typeof result.error.kind, "string");
         }
 
-        _logger.debug(`Error propagation at ${stage.description}`, {
-          errorKind: !_result.ok ? _result.error.kind : "success",
+        logger.debug(`Error propagation at ${stage.description}`, {
+          errorKind: !result.ok ? result.error.kind : "success",
         });
       }
     });
 
     it("should maintain Totality principle throughout flow", async () => {
-      _logger.debug("Testing Totality principle compliance");
+      logger.debug("Testing Totality principle compliance");
 
       // Test that no exceptions are thrown, only Result types returned
       const totalityTests = [
-        { params: null as unknown, config: {}, options: {} },
-        { params: ["to", "project"], config: null as unknown, options: {} },
-        { params: ["to", "project"], config: {}, options: null as unknown },
+        { params: null as any, config: {}, options: {} },
+        { params: ["to", "project"], config: null as any, options: {} },
+        { params: ["to", "project"], config: {}, options: null as any },
       ];
 
       for (const test of totalityTests) {
@@ -362,12 +362,12 @@ describe("CLI Complete Flow Integration", () => {
           const result = await handleTwoParams(test.params, test.config, test.options);
 
           // If it returns without throwing, should be Result type
-          if (_result) {
+          if (result) {
             assert("ok" in result);
           }
         } catch (e) {
           // Some inputs might throw (documenting current behavior)
-          _logger.debug("Exception thrown (current behavior)", {
+          logger.debug("Exception thrown (current behavior)", {
             error: e instanceof Error ? e.message : String(e),
           });
           // This indicates areas for Totality improvement
@@ -378,7 +378,7 @@ describe("CLI Complete Flow Integration", () => {
 
   describe("Data Integrity Integration", () => {
     it("should maintain data integrity through complete pipeline", async () => {
-      _logger.debug("Testing data integrity through pipeline");
+      logger.debug("Testing data integrity through pipeline");
 
       const inputData = {
         demonstrativeType: "summary",
@@ -408,7 +408,7 @@ describe("CLI Complete Flow Integration", () => {
       // Should process input data through pipeline
       assert("ok" in result);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         // If fails, should be at processing stages with preserved context
         const dataProcessingErrors = [
           "VariablesBuilderError",
@@ -416,14 +416,14 @@ describe("CLI Complete Flow Integration", () => {
           "PromptGenerationError",
         ];
 
-        assert(dataProcessingErrors.includes(_result.error.kind));
+        assert(dataProcessingErrors.includes(result.error.kind));
       }
 
-      _logger.debug("Data integrity maintained through pipeline");
+      logger.debug("Data integrity maintained through pipeline");
     });
 
     it("should handle concurrent flow executions", async () => {
-      _logger.debug("Testing concurrent flow executions");
+      logger.debug("Testing concurrent flow executions");
 
       // Test multiple concurrent flows
       const concurrentFlows = Array.from({ length: 5 }, (_, i) =>
@@ -440,8 +440,8 @@ describe("CLI Complete Flow Integration", () => {
       const results = await Promise.all(concurrentFlows);
 
       // All flows should complete independently
-      results.forEach((_result, index) => {
-        assert("ok" in _result, `Flow ${index} should complete`);
+      results.forEach((result, index) => {
+        assert("ok" in result, `Flow ${index} should complete`);
       });
 
       // Results should be consistent (no race conditions)
@@ -452,11 +452,11 @@ describe("CLI Complete Flow Integration", () => {
         assertEquals(type, firstType, `Flow ${index} should have consistent result`);
       });
 
-      _logger.debug("Concurrent flows completed successfully");
+      logger.debug("Concurrent flows completed successfully");
     });
 
     it("should support flow customization and extensibility", async () => {
-      _logger.debug("Testing flow customization");
+      logger.debug("Testing flow customization");
 
       // Test various customization options
       const customizations = [
@@ -501,7 +501,7 @@ describe("CLI Complete Flow Integration", () => {
         // Should handle various customizations
         assert("ok" in result);
 
-        _logger.debug(`${customization.name} completed`, {
+        logger.debug(`${customization.name} completed`, {
           params: customization.params,
         });
       }
@@ -510,7 +510,7 @@ describe("CLI Complete Flow Integration", () => {
 
   describe("Performance and Resource Integration", () => {
     it("should execute flows efficiently", async () => {
-      _logger.debug("Testing flow performance");
+      logger.debug("Testing flow performance");
 
       const startTime = Date.now();
       const iterations = 3;
@@ -529,7 +529,7 @@ describe("CLI Complete Flow Integration", () => {
       // Should complete reasonably quickly
       assert(avgTime < 2000, `Average execution time should be reasonable: ${avgTime}ms`);
 
-      _logger.debug("Performance test completed", {
+      logger.debug("Performance test completed", {
         iterations,
         totalTime,
         averageTime: avgTime,
@@ -537,7 +537,7 @@ describe("CLI Complete Flow Integration", () => {
     });
 
     it("should handle resource cleanup properly", async () => {
-      _logger.debug("Testing resource cleanup");
+      logger.debug("Testing resource cleanup");
 
       // Test that resources are properly cleaned up between flows
       const resourceTests = [
@@ -557,7 +557,7 @@ describe("CLI Complete Flow Integration", () => {
         assert("ok" in result);
       }
 
-      _logger.debug("Resource cleanup verified");
+      logger.debug("Resource cleanup verified");
     });
   });
 });

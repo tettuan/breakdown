@@ -42,7 +42,7 @@ Deno.test("Architecture: Prompt Variables dependency validation", () => {
   // If circular dependencies existed, TypeScript would error
 
   // Test that we can create instances without issues
-  const _stdResult = StandardVariable.create("input_text_file", "test.txt");
+  const stdResult = StandardVariable.create("input_text_file", "test.txt");
   assertExists(stdResult);
   assertEquals(typeof stdResult.ok, "boolean");
 });
@@ -53,20 +53,20 @@ Deno.test("Architecture: Duck Typing interface pattern", () => {
 
   const testCases: Array<() => PromptVariable | null> = [
     () => {
-      const _result = StandardVariable.create("input_text_file", "test.txt");
-      return _result.ok ? _result.data : null;
+      const result = StandardVariable.create("input_text_file", "test.txt");
+      return result.ok ? result.data : null;
     },
     () => {
-      const _result = FilePathVariable.create("schema_file", "schema.json");
-      return _result.ok ? _result.data : null;
+      const result = FilePathVariable.create("schema_file", "schema.json");
+      return result.ok ? result.data : null;
     },
     () => {
-      const _result = StdinVariable.create("input_text", "content");
-      return _result.ok ? _result.data : null;
+      const result = StdinVariable.create("input_text", "content");
+      return result.ok ? result.data : null;
     },
     () => {
-      const _result = UserVariable.create("custom", "value");
-      return _result.ok ? _result.data : null;
+      const result = UserVariable.create("custom", "value");
+      return result.ok ? result.data : null;
     },
   ];
 
@@ -160,9 +160,9 @@ Deno.test("Architecture: Layer boundary compliance", () => {
   // - External packages (@tettuan/breakdownprompt)
 
   // Test that types are pure data structures
-  const _result = StandardVariable.create("input_text_file", "test.txt");
-  if (_result.ok) {
-    const variable = _result.data;
+  const result = StandardVariable.create("input_text_file", "test.txt");
+  if (result.ok) {
+    const variable = result.data;
     // Should not have methods that perform I/O or side effects
     const proto = Object.getPrototypeOf(variable);
     const methods = Object.getOwnPropertyNames(proto);
@@ -185,20 +185,20 @@ Deno.test("Architecture: Integration function separation", () => {
 
   if (var1.ok && var2.ok) {
     const variables: PromptVariables = [var1.data, var2.data];
-    const _result = toPromptParamsVariables(variables);
+    const result = toPromptParamsVariables(variables);
 
-    assertEquals(typeof _result, "object");
-    assertEquals(Object.keys(_result).length, 2);
+    assertEquals(typeof result, "object");
+    assertEquals(Object.keys(result).length, 2);
     assertEquals(result["input_text_file"], "test.txt");
     assertEquals(result["custom"], "value");
   }
 
   // createPromptParams should be a pure function
   if (var1.ok) {
-    const _params = createPromptParams("template.md", [var1.data]);
-    assertEquals(_params.template_file, "template.md");
-    assertExists(_params.variables);
-    assertEquals(Object.keys(_params.variables).length, 1);
+    const params = createPromptParams("template.md", [var1.data]);
+    assertEquals(params.template_file, "template.md");
+    assertExists(params.variables);
+    assertEquals(Object.keys(params.variables).length, 1);
   }
 });
 
@@ -214,10 +214,10 @@ Deno.test("Architecture: Type union completeness", () => {
   ];
 
   for (const createFn of createFunctions) {
-    const _result = createFn();
-    if (_result.ok) {
+    const result = createFn();
+    if (result.ok) {
       // Should be assignable to PromptVariable
-      const variable: PromptVariable = _result.data;
+      const variable: PromptVariable = result.data;
       assertExists(variable);
     }
   }
@@ -226,9 +226,9 @@ Deno.test("Architecture: Type union completeness", () => {
 Deno.test("Architecture: Immutability and encapsulation", () => {
   // Variables should be immutable after creation
 
-  const _result = StandardVariable.create("input_text_file", "test.txt");
-  if (_result.ok) {
-    const variable = _result.data;
+  const result = StandardVariable.create("input_text_file", "test.txt");
+  if (result.ok) {
+    const variable = result.data;
 
     // Properties should be readonly (enforced by TypeScript)
     // Private constructor prevents direct instantiation (enforced by TypeScript)
@@ -260,12 +260,12 @@ Deno.test("Architecture: Error handling consistency", () => {
 
   for (const test of emptyTests) {
     assertEquals(
-      test._result.ok,
+      test.result.ok,
       !test.expectFail,
       `${test.name} should ${test.expectFail ? "fail" : "succeed"} with empty value`,
     );
-    if (!test._result.ok) {
-      assertEquals(test._result.error.kind, "EmptyValue");
+    if (!test.result.ok) {
+      assertEquals(test.result.error.kind, "EmptyValue");
     }
   }
 
@@ -277,9 +277,9 @@ Deno.test("Architecture: Error handling consistency", () => {
   ];
 
   for (const result of invalidNameTests) {
-    assertEquals(_result.ok, false);
-    if (!_result.ok) {
-      assertEquals(_result.error.kind, "InvalidName");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidName");
     }
   }
 });
@@ -303,10 +303,10 @@ Deno.test("Architecture: No side effects in type module", () => {
   const results = Array.from({ length: 5 }, () => UserVariable.create("test", "value"));
 
   for (const result of results) {
-    assertEquals(_result.ok, true);
-    if (_result.ok) {
-      assertEquals(_result.data.name, "test");
-      assertEquals(_result.data.value, "value");
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.name, "test");
+      assertEquals(result.data.value, "value");
     }
   }
 });

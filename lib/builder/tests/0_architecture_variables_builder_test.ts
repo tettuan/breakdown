@@ -27,19 +27,19 @@ Deno.test("VariablesBuilder - follows dependency inversion principle", () => {
  */
 Deno.test("VariablesBuilder - uses Result type for all operations", () => {
   const _builder = new VariablesBuilder();
-  const _result = _builder.build();
+  const result = _builder.build();
 
   // Result must have ok property (discriminated union)
-  assertExists(_result.ok);
-  assertEquals(typeof _result.ok, "boolean");
+  assertExists(result.ok);
+  assertEquals(typeof result.ok, "boolean");
 
   // Result must have either data or error, never both
-  if (_result.ok) {
-    assertExists(_result.data);
-    assertEquals("error" in _result, false);
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals("error" in result, false);
   } else {
-    assertExists(_result.error);
-    assertEquals("data" in _result, false);
+    assertExists(result.error);
+    assertEquals("data" in result, false);
   }
 });
 
@@ -60,19 +60,19 @@ Deno.test("VariablesBuilder - implements fluent builder pattern", () => {
 
   // All add methods should return 'this' for chaining
   const result1 = _builder.addStandardVariable("input_text_file", "test");
-  assertEquals(result1, builder);
+  assertEquals(result1, _builder);
 
   const result2 = _builder.addFilePathVariable("schema_file", "test");
-  assertEquals(result2, builder);
+  assertEquals(result2, _builder);
 
   const result3 = _builder.addStdinVariable("test");
-  assertEquals(result3, builder);
+  assertEquals(result3, _builder);
 
   const result4 = _builder.addUserVariable("uv-test", "test");
-  assertEquals(result4, builder);
+  assertEquals(result4, _builder);
 
   const result5 = _builder.clear();
-  assertEquals(result5, builder);
+  assertEquals(result5, _builder);
 });
 
 /**
@@ -82,19 +82,19 @@ Deno.test("VariablesBuilder - accumulates all errors instead of throwing", () =>
   const _builder = new VariablesBuilder();
 
   // Add multiple invalid operations
-  builder
+  _builder
     .addStandardVariable("invalid", "test")
     .addStandardVariable("input_text_file", "")
     .addUserVariable("invalid", "test");
 
   // Should not throw, but accumulate errors
-  const _result = _builder.build();
-  assertEquals(_result.ok, false);
+  const result = _builder.build();
+  assertEquals(result.ok, false);
 
-  if (!_result.ok) {
+  if (!result.ok) {
     // Should have multiple errors
-    assertEquals(Array.isArray(_result.error), true);
-    assertEquals(_result.error.length, 3);
+    assertEquals(Array.isArray(result.error), true);
+    assertEquals(result.error.length, 3);
   }
 });
 
@@ -106,14 +106,14 @@ Deno.test("VariablesBuilder - uses Smart Constructors for type safety", () => {
 
   // The builder internally uses Smart Constructors from variable types
   // This is verified by successful creation with valid inputs
-  const _result = builder
+  const result = _builder
     .addStandardVariable("input_text_file", "valid")
     .build();
 
-  assertEquals(_result.ok, true);
+  assertEquals(result.ok, true);
 
   // And failure with invalid inputs
-  const errorResult = builder
+  const errorResult = _builder
     .clear()
     .addStandardVariable("invalid_name", "value")
     .build();
@@ -141,7 +141,7 @@ Deno.test("VariablesBuilder - follows interface segregation principle", () => {
   ];
 
   publicMethods.forEach((method) => {
-    assertEquals(typeof builder[method as keyof VariablesBuilder], "function");
+    assertEquals(typeof _builder[method as keyof VariablesBuilder], "function");
   });
 
   // Private methods should not be accessible (TypeScript enforces this)

@@ -21,7 +21,7 @@ import {
   withResourceLeakDetection,
 } from "./resource_leak_detector.ts";
 
-const _logger = new BreakdownLogger("test-optimization");
+const logger = new BreakdownLogger("test-optimization");
 
 /**
  * Test execution metrics for performance monitoring
@@ -66,7 +66,7 @@ export class TestResourcePool {
     const resource = factory();
     this.resourceCache.set(key, resource);
     this.creationCounters.set(key, 1);
-    _logger.debug("Resource created and cached", { key });
+    logger.debug("Resource created and cached", { key });
     return resource;
   }
 
@@ -117,7 +117,7 @@ export class OptimizedTestDataFactory {
   /**
    * Create lightweight test data with minimal memory footprint
    */
-  static createLightweightTwoParamsResult(overrides: Record<string, unknown> = {}) {
+  static createLightweightTwoParams_Result(overrides: Record<string, unknown> = {}) {
     return {
       type: "two" as const,
       demonstrativeType: "to",
@@ -139,7 +139,7 @@ export class OptimizedTestDataFactory {
     return Array.from({ length: count }, (_, i) => {
       const key = `${baseKey}-${i}`;
       return pool.getOrCreate(key, () =>
-        OptimizedTestDataFactory.createLightweightTwoParamsResult({
+        OptimizedTestDataFactory.createLightweightTwoParams_Result({
           [`uv-batch-${i}`]: `value-${i}`,
           [`uv-index`]: i.toString(),
         }));
@@ -240,7 +240,7 @@ export class TestExecutionScheduler {
             duration: `${duration.toFixed(2)}ms`,
             resourceMonitoring: enableLeakDetection ? "enabled" : "disabled",
           });
-          return _result;
+          return result;
         } catch (error) {
           const duration = performance.now() - testStartTime;
           this.metrics.push({
@@ -304,8 +304,8 @@ export class TestExecutionScheduler {
       });
 
       // Force garbage collection between batches to prevent memory buildup
-      if (typeof (globalThis as unknown).gc === "function") {
-        (globalThis as unknown).gc();
+      if (typeof (globalThis as any).gc === "function") {
+        (globalThis as any).gc();
         logger.debug("Garbage collection triggered between batches");
       }
     }
@@ -407,7 +407,7 @@ export class EfficientMockFactory {
 
     const mock = { ...template };
     EfficientMockFactory.mockInstances.set(template, mock);
-    _logger.debug("Mock created", { key, type: typeof template });
+    logger.debug("Mock created", { key, type: typeof template });
     return mock;
   }
 
@@ -449,7 +449,7 @@ export class PerformanceMonitor {
    */
   setBaseline(testName: string, duration: number): void {
     this.baselines.set(testName, duration);
-    _logger.debug("Performance baseline set", { testName, duration: `${duration.toFixed(2)}ms` });
+    logger.debug("Performance baseline set", { testName, duration: `${duration.toFixed(2)}ms` });
   }
 
   /**

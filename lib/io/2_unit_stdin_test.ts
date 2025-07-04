@@ -27,11 +27,11 @@ import {
   writeStdout,
 } from "./stdin.ts";
 
-const _logger = new BreakdownLogger("stdin-unit");
+const logger = new BreakdownLogger("stdin-unit");
 
 describe("Unit: Core I/O functions", () => {
   it("should create and handle StdinError correctly", async () => {
-    _logger.debug("Testing StdinError creation and properties");
+    logger.debug("Testing StdinError creation and properties");
 
     const error = new StdinError("Test error message");
 
@@ -45,11 +45,11 @@ describe("Unit: Core I/O functions", () => {
     assertEquals(emptyError.name, "StdinError", "Should work with empty message");
     assertEquals(emptyError.message, "", "Should preserve empty message");
 
-    _logger.debug("StdinError verified");
+    logger.debug("StdinError verified");
   });
 
   it("should handle readStdin timeout scenarios", async () => {
-    _logger.debug("Testing readStdin timeout behavior");
+    logger.debug("Testing readStdin timeout behavior");
 
     // Test with very short timeout (should fail quickly)
     const shortTimeoutPromise = readStdin({ timeout: 1 });
@@ -57,7 +57,7 @@ describe("Unit: Core I/O functions", () => {
     try {
       await shortTimeoutPromise;
       // If it succeeds, that's ok - might be in special test environment
-      _logger.debug("readStdin succeeded unexpectedly (test environment)");
+      logger.debug("readStdin succeeded unexpectedly (test environment)");
     } catch (error) {
       assertEquals(error instanceof StdinError, true, "Should throw StdinError on timeout");
     }
@@ -68,16 +68,16 @@ describe("Unit: Core I/O functions", () => {
     try {
       await allowEmptyPromise;
       // If it succeeds, that's ok - might be in special test environment
-      _logger.debug("readStdin with allowEmpty succeeded unexpectedly (test environment)");
+      logger.debug("readStdin with allowEmpty succeeded unexpectedly (test environment)");
     } catch (error) {
       assertEquals(error instanceof StdinError, true, "Should throw StdinError on timeout");
     }
 
-    _logger.debug("readStdin timeout behavior verified");
+    logger.debug("readStdin timeout behavior verified");
   });
 
   it("should check stdin content availability", async () => {
-    _logger.debug("Testing hasStdinContent function");
+    logger.debug("Testing hasStdinContent function");
 
     const hasContent = hasStdinContent();
 
@@ -85,13 +85,13 @@ describe("Unit: Core I/O functions", () => {
 
     // In test environment, typically returns false (no piped input)
     // But we don't assert the specific value since it depends on how tests are run
-    _logger.debug(`hasStdinContent returned: ${hasContent}`);
+    logger.debug(`hasStdinContent returned: ${hasContent}`);
 
-    _logger.debug("hasStdinContent verified");
+    logger.debug("hasStdinContent verified");
   });
 
   it("should check stdin availability", async () => {
-    _logger.debug("Testing isStdinAvailable function");
+    logger.debug("Testing isStdinAvailable function");
 
     // Test default behavior
     const isAvailable = isStdinAvailable();
@@ -104,11 +104,11 @@ describe("Unit: Core I/O functions", () => {
     const forcedUnavailable = isStdinAvailable({ isTerminal: true });
     assertEquals(forcedUnavailable, false, "Should return false when isTerminal is true");
 
-    _logger.debug("isStdinAvailable verified");
+    logger.debug("isStdinAvailable verified");
   });
 
   it("should write to stdout correctly", async () => {
-    _logger.debug("Testing writeStdout function");
+    logger.debug("Testing writeStdout function");
 
     // Test with normal content - should not throw
     writeStdout("test output");
@@ -120,13 +120,13 @@ describe("Unit: Core I/O functions", () => {
     writeStdout("Numbers: 123456789");
     writeStdout("Special chars: !@#$%^&*()");
 
-    _logger.debug("writeStdout verified");
+    logger.debug("writeStdout verified");
   });
 });
 
 describe("Unit: ProgressBar functionality", () => {
   it("should create ProgressBar with various configurations", async () => {
-    _logger.debug("Testing ProgressBar creation");
+    logger.debug("Testing ProgressBar creation");
 
     // Test with minimal configuration
     const progress1 = new ProgressBar(100);
@@ -149,11 +149,11 @@ describe("Unit: ProgressBar functionality", () => {
     const progress4 = new ProgressBar(100, 40, { quiet: false });
     assertEquals(progress4.enabled, true, "Should be enabled with quiet: false");
 
-    _logger.debug("ProgressBar creation verified");
+    logger.debug("ProgressBar creation verified");
   });
 
   it("should update progress correctly", async () => {
-    _logger.debug("Testing ProgressBar update functionality");
+    logger.debug("Testing ProgressBar update functionality");
 
     // Test with enabled progress bar (quiet: false) since quiet mode skips updates
     const progress = new ProgressBar(100, 40, { quiet: false });
@@ -185,11 +185,11 @@ describe("Unit: ProgressBar functionality", () => {
     quietProgress.update(50);
     assertEquals(quietProgress.progress, 0, "Should not update progress when quiet");
 
-    _logger.debug("ProgressBar update verified");
+    logger.debug("ProgressBar update verified");
   });
 
   it("should handle edge cases in ProgressBar", async () => {
-    _logger.debug("Testing ProgressBar edge cases");
+    logger.debug("Testing ProgressBar edge cases");
 
     // Test with zero total
     const zeroProgress = new ProgressBar(0, 40, { quiet: true });
@@ -206,13 +206,13 @@ describe("Unit: ProgressBar functionality", () => {
     assertEquals(zeroWidth.width, 0, "Should handle zero width");
     zeroWidth.update(50); // Should not throw
 
-    _logger.debug("ProgressBar edge cases verified");
+    logger.debug("ProgressBar edge cases verified");
   });
 });
 
 describe("Unit: Spinner functionality", () => {
   it("should create Spinner with various configurations", async () => {
-    _logger.debug("Testing Spinner creation");
+    logger.debug("Testing Spinner creation");
 
     // Test with default configuration
     const spinner1 = new Spinner();
@@ -230,11 +230,11 @@ describe("Unit: Spinner functionality", () => {
     const spinner3 = new Spinner({ quiet: false });
     assertEquals(spinner3.enabled, true, "Should be enabled with quiet: false");
 
-    _logger.debug("Spinner creation verified");
+    logger.debug("Spinner creation verified");
   });
 
   it("should handle Spinner lifecycle correctly", async () => {
-    _logger.debug("Testing Spinner lifecycle");
+    logger.debug("Testing Spinner lifecycle");
 
     const spinner = new Spinner({ quiet: true }); // Quiet to avoid actual spinning
 
@@ -254,11 +254,11 @@ describe("Unit: Spinner functionality", () => {
     spinner.stop();
     spinner.stop(); // Should handle multiple stops
 
-    _logger.debug("Spinner lifecycle verified");
+    logger.debug("Spinner lifecycle verified");
   });
 
   it("should handle Spinner frames correctly", async () => {
-    _logger.debug("Testing Spinner frames");
+    logger.debug("Testing Spinner frames");
 
     const spinner = new Spinner({ quiet: true });
 
@@ -280,11 +280,11 @@ describe("Unit: Spinner functionality", () => {
       "currentFrame should be within bounds",
     );
 
-    _logger.debug("Spinner frames verified");
+    logger.debug("Spinner frames verified");
   });
 
   it("should provide proper AbortController management", async () => {
-    _logger.debug("Testing Spinner AbortController");
+    logger.debug("Testing Spinner AbortController");
 
     const spinner = new Spinner({ quiet: true });
 
@@ -300,13 +300,13 @@ describe("Unit: Spinner functionality", () => {
     // Simulate cleanup
     spinner.stop();
 
-    _logger.debug("Spinner AbortController verified");
+    logger.debug("Spinner AbortController verified");
   });
 });
 
 describe("Unit: Options and configuration", () => {
   it("should handle StdinOptions correctly", async () => {
-    _logger.debug("Testing StdinOptions");
+    logger.debug("Testing StdinOptions");
 
     // Test that readStdin accepts various option combinations
     // In test environment, behavior may vary so we test structure rather than exact behavior
@@ -331,11 +331,11 @@ describe("Unit: Options and configuration", () => {
     assertEquals(emptyPromise instanceof Promise, true, "Should return Promise");
     emptyPromise.catch(() => {}); // Prevent unhandled rejection
 
-    _logger.debug("StdinOptions verified");
+    logger.debug("StdinOptions verified");
   });
 
   it("should handle UI component options consistently", async () => {
-    _logger.debug("Testing UI component options");
+    logger.debug("Testing UI component options");
 
     // Test ProgressBar options
     const progressDefault = new ProgressBar(100);
@@ -355,13 +355,13 @@ describe("Unit: Options and configuration", () => {
     assertEquals(spinnerQuiet.enabled, false, "Quiet should be disabled");
     assertEquals(spinnerLoud.enabled, true, "Explicit false should be enabled");
 
-    _logger.debug("UI component options verified");
+    logger.debug("UI component options verified");
   });
 });
 
 describe("Unit: Error handling and edge cases", () => {
   it("should handle various error scenarios", async () => {
-    _logger.debug("Testing error scenarios");
+    logger.debug("Testing error scenarios");
 
     // Test readStdin with invalid options
     const invalidPromise = readStdin({ timeout: -1 });
@@ -383,11 +383,11 @@ describe("Unit: Error handling and edge cases", () => {
       assertEquals(error instanceof StdinError, true, "Should throw StdinError");
     }
 
-    _logger.debug("Error scenarios verified");
+    logger.debug("Error scenarios verified");
   });
 
   it("should handle UI component edge cases", async () => {
-    _logger.debug("Testing UI component edge cases");
+    logger.debug("Testing UI component edge cases");
 
     // Test ProgressBar with edge values (using enabled progress bar)
     const progress = new ProgressBar(100, 40, { quiet: false });
@@ -424,13 +424,13 @@ describe("Unit: Error handling and edge cases", () => {
     }
     // Should complete without errors
 
-    _logger.debug("UI component edge cases verified");
+    logger.debug("UI component edge cases verified");
   });
 });
 
 describe("Unit: Integration behavior", () => {
   it("should integrate with enhanced stdin correctly", async () => {
-    _logger.debug("Testing enhanced stdin integration");
+    logger.debug("Testing enhanced stdin integration");
 
     // Test that readStdin delegates to enhanced stdin
     const promise = readStdin({ timeout: 1 });
@@ -442,11 +442,11 @@ describe("Unit: Integration behavior", () => {
       "Should convert enhanced stdin errors to StdinError",
     );
 
-    _logger.debug("Enhanced stdin integration verified");
+    logger.debug("Enhanced stdin integration verified");
   });
 
   it("should maintain consistent behavior across all functions", async () => {
-    _logger.debug("Testing behavior consistency");
+    logger.debug("Testing behavior consistency");
 
     // Test that sync functions are truly synchronous
     const start = Date.now();
@@ -467,11 +467,11 @@ describe("Unit: Integration behavior", () => {
       // Expected to fail
     });
 
-    _logger.debug("Behavior consistency verified");
+    logger.debug("Behavior consistency verified");
   });
 
   it("should support testability through option injection", async () => {
-    _logger.debug("Testing testability features");
+    logger.debug("Testing testability features");
 
     // Test isStdinAvailable with injected isTerminal
     const availableResult = isStdinAvailable({ isTerminal: false });
@@ -487,6 +487,6 @@ describe("Unit: Integration behavior", () => {
     assertEquals(progress.enabled, false, "Should support quiet mode for testing");
     assertEquals(spinner.enabled, false, "Should support quiet mode for testing");
 
-    _logger.debug("Testability features verified");
+    logger.debug("Testability features verified");
   });
 });

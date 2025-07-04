@@ -8,7 +8,7 @@
  */
 
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "../deps.ts";
 
 /**
  * Error types for LayerType creation
@@ -101,8 +101,8 @@ export class LayerTypeFactory {
         normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number],
       )
     ) {
-      // Create TwoParamsResult for LayerType.create()
-      const twoParamsResult: TwoParamsResult = {
+      // Create TwoParams_Result for LayerType.create()
+      const twoParamsResult: TwoParams_Result = {
         type: "two",
         demonstrativeType: "to", // Default directive
         layerType: normalized,
@@ -130,11 +130,11 @@ export class LayerTypeFactory {
   }
 
   /**
-   * Creates LayerType from TwoParamsResult
-   * @param result - TwoParamsResult containing layer information
+   * Creates LayerType from TwoParams_Result
+   * @param result - TwoParams_Result containing layer information
    * @returns LayerTypeResult with success or error
    */
-  static fromTwoParamsResult(result: TwoParamsResult): LayerTypeResult<LayerType> {
+  static fromTwoParams_Result(result: TwoParams_Result): LayerTypeResult<LayerType> {
     try {
       const layerType = LayerType.create(result);
       return {
@@ -147,7 +147,7 @@ export class LayerTypeFactory {
         error: {
           kind: "ValidationFailed",
           input: result.layerType,
-          pattern: "TwoParamsResult validation",
+          pattern: "TwoParams_Result validation",
         },
       };
     }

@@ -22,7 +22,7 @@ import type { TypePatternProvider } from "../type_factory.ts";
  */
 Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependency graph", async () => {
   // default_type_pattern_provider.tsのソースコードを読み込む
-  const _filePath = new URL("./default_type_pattern_provider.ts", import.meta.url).pathname;
+  const filePath = new URL("./default_type_pattern_provider.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
 
   // import文を抽出
@@ -50,7 +50,7 @@ Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependen
   const allowedParentPaths = [
     "../directive_type.ts",
     "../layer_type.ts",
-    "../type_factory.ts",
+    "../typefactory.ts",
   ];
 
   for (const dep of parentDeps) {
@@ -63,7 +63,7 @@ Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependen
 
   // ローカル依存の検証（同一defaults層内のみ許可）
   const allowedLocalPaths = [
-    "./config_two_params.ts",
+    "./config_twoparams.ts",
   ];
 
   for (const dep of localDeps) {

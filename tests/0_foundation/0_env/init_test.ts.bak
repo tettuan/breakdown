@@ -1,0 +1,512 @@
+import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "jsr:@std/assert";
+import { join as _join } from "jsr:@std/path@^0.224.0/join";
+import { exists as _exists } from "@std/fs";
+import { ensureDir as _ensureDir } from "@std/fs";
+import {
+  BreakdownLogger as _BreakdownLogger,
+  LogLevel as _LogLevel,
+} from "@tettuan/breakdownlogger";
+import {
+  cleanupTestEnvironment as _cleanupTestEnvironment,
+  setupTestEnvironment as _setupTestEnvironment,
+  type TestEnvironmentOptions as _TestEnvironmentOptions,
+} from "$test/helpers/setup.ts";
+import { Workspace as _Workspace } from "../../../lib/workspace/workspace.ts";
+import { WorkspaceInitError as _WorkspaceInitError } from "../../../lib/workspace/errors.ts";
+import { stringify as _stringify } from "jsr:@std/yaml@^1.0.6";
+
+const _logger = new _BreakdownLogger();
+
+interface TestOptions extends Omit<_TestEnvironmentOptions, "workingDir" | "logLevel"> {
+  logger: _BreakdownLogger;
+  workingDir: string;
+  logLevel: _LogLevel;
+  debug?: boolean;
+}
+
+// ---
+// Breakdownワークスペース初期化の正常系テスト
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/workspace.ja.md, docs/breakdown/testing.ja.md
+// - 新規環境でディレクトリ構造が正しく作成されることを検証
+// ---
+Deno.test({
+  name: "init - new environment",
+  async fn() {
+    const options: TestOptions = { workingDir: "tmp/test/init", logger: _logger, logLevel: _LogLevel.DEBUG };
+    await _setupTestEnvironment(options);
+
+    // Ensure parent directories exist
+    await _ensureDir(_join(options.workingDir, ".agent", "breakdown"));
+
+    const _workspace = new _Workspace({
+      workingDir: options.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    await _workspace.initialize();
+
+    // Verify directories are created under the breakdown subdirectory
+    _assertEquals(await _exists(_join(options.workingDir, ".agent", "breakdown", "prompts")), true);
+    _assertEquals(await _exists(_join(options.workingDir, ".agent", "breakdown", "schema")), true);
+
+    await _cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// 既存環境での初期化時、既存ファイルが上書きされず保持されることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.3, 4.2, docs/breakdown/workspace.ja.md
+// ---
+Deno.test({
+  _name: "init - existing environment",
+  async fn() {
+    const _env = await setupTestEnvironment({ workingDir: "./tmp/test/init-existing" });
+    try {
+      // Create existing environment
+      const _workspace = new Workspace({
+        workingDir: env.workingDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schema",
+      });
+      await workspace.initialize();
+
+      // Modify a file to check if it's preserved
+      const _configFile = join(env.workingDir, ".agent", "breakdown", "prompts", "app.yml");
+      await Deno.writeTextFile(configFile, "modified: true");
+
+      // Initialize again
+      const _workspace2 = new Workspace({
+        workingDir: env.workingDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schema",
+      });
+      await workspace2.initialize();
+
+      // Verify file is preserved
+      const _content = await Deno.readTextFile(configFile);
+      assertEquals(content, "modified: true");
+    } finally {
+      await cleanupTestEnvironment(env);
+    }
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+// ---
+// カスタム作業ディレクトリ指定時の初期化動作検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/app_config.ja.md
+// ---
+Deno.test({
+  _name: "init - with custom working directory",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-custom",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    await setupTestEnvironment(options);
+    const _customDir = join(options.workingDir, "custom");
+    // Create required directory structure and config under customDir
+    await ensureDir(join(customDir, ".agent", "breakdown", "config"));
+    await Deno.writeTextFile(
+      join(customDir, ".agent", "breakdown", "config", "app.yml"),
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
+    );
+    const _workspace = new Workspace({
+      workingDir: customDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    await workspace.initialize();
+
+    // Verify directories are created in custom location under breakdown
+    assertEquals(await exists(join(customDir, ".agent", "breakdown", "prompts")), true);
+    assertEquals(await exists(join(customDir, ".agent", "breakdown", "schema")), true);
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// デバッグ出力有効時の初期化動作・ログ出力検証
+// 仕様参照: docs/breakdown/testing.ja.md, docs/breakdown/init_template.ja.md 4.3
+// ---
+Deno.test({
+  _name: "init - with debug output",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-debug",
+      logger,
+      logLevel: LogLevel.DEBUG,
+      skipDefaultConfig: false,
+    };
+
+    try {
+      // Initialize test environment with debug enabled using logLevel option
+      const _env = await setupTestEnvironment({ ...options, logLevel: LogLevel.DEBUG });
+      const _workspace = new Workspace({
+        workingDir: env.workingDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schema",
+      });
+
+      // Add debug log before initialization
+      env._logger.debug("Starting workspace initialization");
+      await workspace.initialize();
+      env._logger.debug("Workspace initialization completed");
+
+      // Verify debug output was captured
+      assertEquals(true, true, "Debug output should be enabled");
+    } finally {
+      // No need to restore log level - setupTestEnvironment handles it
+      await cleanupTestEnvironment({
+        workingDir: "tmp/test/init-debug",
+        logger,
+        logLevel: LogLevel.DEBUG,
+      });
+    }
+  },
+});
+
+// ---
+// 初期化時のエラーハンドリング（ディレクトリ作成失敗時）
+// 仕様参照: docs/breakdown/init_template.ja.md 4.3, docs/breakdown/workspace.ja.md エラー処理
+// ---
+Deno.test({
+  _name: "init - error handling",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-error",
+      logger,
+      logLevel: LogLevel.DEBUG,
+      skipDirectorySetup: true,
+    };
+    await Deno.mkdir(options.workingDir, { recursive: true });
+    const _originalCwd = Deno.cwd();
+    Deno.chdir(options.workingDir);
+    try {
+      await setupTestEnvironment(options);
+      _logger.debug("[TEST] setupTestEnvironment complete");
+
+      // Create the .agent/breakdown directory structure but leave out prompts
+      const _breakdownDir = join(options.workingDir, ".agent", "breakdown");
+      await Deno.mkdir(breakdownDir, { recursive: true });
+      _logger.debug("[TEST] Created breakdown directory", { breakdownDir });
+
+      // Create a file that will block directory creation
+      const _targetDir = join(breakdownDir, "prompts");
+      await Deno.writeTextFile(targetDir, "");
+      _logger.debug("[TEST] Created blocking file", { targetDir });
+
+      // Create config directory and file
+      const _configDir = join(breakdownDir, "config");
+      await Deno.mkdir(configDir, { recursive: true });
+      const _configFile = join(configDir, "app.yml");
+      const _config = {
+        working_dir: ".agent/breakdown",
+        app_prompt: {
+          base_dir: "prompts",
+        },
+        app_schema: {
+          base_dir: "schema",
+        },
+      };
+      await Deno.writeTextFile(configFile, stringify(config));
+      _logger.debug("[TEST] Created config file", { configFile, config });
+
+      await assertRejects(
+        async () => {
+          _logger.debug("[TEST] Creating workspace instance");
+          const _workspace = new Workspace({
+            workingDir: options.workingDir,
+            promptBaseDir: "prompts",
+            schemaBaseDir: "schema",
+          });
+          _logger.debug("[TEST] Initializing workspace");
+          await workspace.initialize();
+        },
+        WorkspaceInitError,
+        "Path exists but is not a directory",
+      );
+
+      // Clean up the file before cleanup
+      try {
+        await Deno.remove(targetDir);
+      } catch (_error) {
+        // Ignore error if file doesn't exist
+      }
+
+      await cleanupTestEnvironment(options);
+    } finally {
+      Deno.chdir(originalCwd);
+    }
+  },
+});
+
+// ---
+// configファイル自動生成の検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, docs/breakdown/app_config.ja.md
+// ---
+Deno.test({
+  _name: "init - config file auto-generation",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-config",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    _logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    _logger.debug("[TEST] setupTestEnvironment complete");
+
+    _logger.debug("[TEST] Workspace instance created");
+    const _workspace = new Workspace({
+      workingDir: options.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    _logger.debug("[TEST] Workspace initialized");
+    await workspace.initialize();
+
+    const _configFile = join(options.workingDir, ".agent", "breakdown", "config", "app.yml");
+    _logger.debug("[TEST] Checking config file existence", { configFile });
+    const _existsConfig = await exists(configFile);
+    _logger.debug("[TEST] Config file exists?", { existsConfig });
+    assertEquals(existsConfig, true);
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// カスタムプロンプト/スキーマディレクトリ指定時の初期化動作検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.2, docs/breakdown/app_config.ja.md
+// ---
+Deno.test({
+  _name: "init - custom prompt/schema base_dir",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-custom-base",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    _logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    _logger.debug("[TEST] setupTestEnvironment complete");
+
+    // Create custom app.yml with different base directories
+    const _configDir = join(options.workingDir, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    const _configFile = join(configDir, "app.yml");
+    const _config = {
+      working_dir: ".agent/breakdown",
+      app_prompt: {
+        base_dir: "custom_prompts",
+      },
+      app_schema: {
+        base_dir: "custom_schema",
+      },
+    };
+    await Deno.writeTextFile(configFile, stringify(config));
+    _logger.debug("[TEST] Custom app.yml written", { configDir });
+
+    _logger.debug("[TEST] Workspace instance created");
+    const _workspace = new Workspace({
+      workingDir: options.workingDir,
+      promptBaseDir: "custom_prompts",
+      schemaBaseDir: "custom_schema",
+    });
+    _logger.debug("[TEST] Workspace initialized");
+    await workspace.initialize();
+
+    const _customPrompts = join(options.workingDir, ".agent", "breakdown", "custom_prompts");
+    const _customSchema = join(options.workingDir, ".agent", "breakdown", "custom_schema");
+    _logger.debug("[TEST] Checking custom prompts dir existence", { customPrompts });
+    _logger.debug("[TEST] Checking custom schema dir existence", { customSchema });
+    const _existsPrompts = await exists(customPrompts);
+    const _existsSchema = await exists(customSchema);
+    _logger.debug("[TEST] Custom prompts exists?", { existsPrompts });
+    _logger.debug("[TEST] Custom schema exists?", { existsSchema });
+    assertEquals(existsPrompts, true);
+    assertEquals(existsSchema, true);
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// 既存のapp.ymlが初期化時に上書きされないことの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.2, docs/breakdown/app_config.ja.md
+// ---
+Deno.test({
+  _name: "init - preserve existing app.yml",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-preserve-config",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    _logger.debug("[TEST] setupTestEnvironment start", { workingDir: options.workingDir });
+    await setupTestEnvironment(options);
+    _logger.debug("[TEST] setupTestEnvironment complete");
+
+    const _configDir = join(options.workingDir, ".agent", "breakdown", "config");
+    await ensureDir(configDir);
+    // Write a valid config with a custom key
+    const _originalContent =
+      `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\ncustom: true\n`;
+    const _configFile = join(configDir, "app.yml");
+    await Deno.writeTextFile(configFile, originalContent);
+
+    const _workspace = new Workspace({
+      workingDir: options.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    await workspace.initialize();
+
+    // 上書きされていないか
+    const _content = await Deno.readTextFile(configFile);
+    assertEquals(content, originalContent);
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// テンプレート（prompts/schema）がTypeScriptオブジェクトから正しく展開されることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 4.1, 5.1, docs/breakdown/app_factory.ja.md
+// ---
+Deno.test({
+  _name: "init - prompt and schema templates under lib are copied",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-copy",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    await setupTestEnvironment(options);
+
+    const _workspace = new Workspace({
+      workingDir: options.workingDir,
+      promptBaseDir: "prompts",
+      schemaBaseDir: "schema",
+    });
+    await workspace.initialize();
+
+    // prompts: Check if a representative md file is copied
+    // Use the TypeScript template as the source of truth
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { prompts } = await import("../../../lib/templates/prompts.ts");
+    const _destPrompt = join(
+      options.workingDir,
+      ".agent",
+      "breakdown",
+      "prompts",
+      "to",
+      "project",
+      "f_project.md",
+    );
+    const _destPromptContent = await Deno.readTextFile(destPrompt);
+    assertEquals(
+      destPromptContent,
+      prompts["to/project/f_project.md"],
+      "Prompt template is copied from TS template",
+    );
+
+    // schema: Check if a representative schema file is copied
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { schema } = await import("../../../lib/templates/schema.ts");
+    const _destSchema = join(
+      options.workingDir,
+      ".agent",
+      "breakdown",
+      "schema",
+      "to",
+      "project",
+      "base.schema.md",
+    );
+    const _destSchemaContent = await Deno.readTextFile(destSchema);
+    assertEquals(
+      destSchemaContent,
+      schema["to/project/base.schema.md"],
+      "Schema template is copied from TS template",
+    );
+
+    await cleanupTestEnvironment(options);
+  },
+});
+
+// ---
+// カレントディレクトリ変更時もテンプレート展開が正しく行われることの検証
+// 仕様参照: docs/breakdown/init_template.ja.md 3.1, 4.1, docs/breakdown/testing.ja.md
+// ---
+Deno.test({
+  _name: "init - prompt and schema templates are copied even if cwd is changed",
+  async fn() {
+    const options: TestOptions = {
+      workingDir: "tmp/test/init-copy-cwd",
+      logger,
+      logLevel: LogLevel.DEBUG,
+    };
+    await setupTestEnvironment(options);
+
+    // Save original cwd
+    const _originalCwd = Deno.cwd();
+
+    // Change to a different directory
+    const _tempCwd = await Deno.makeTempDir();
+    Deno.chdir(tempCwd);
+    try {
+      const _workspace = new Workspace({
+        workingDir: options.workingDir,
+        promptBaseDir: "prompts",
+        schemaBaseDir: "schema",
+      });
+      await workspace.initialize();
+
+      // prompts: Check if a representative md file is copied
+      // Use the TypeScript template as the source of truth
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { prompts } = await import("../../../lib/templates/prompts.ts");
+      const _destPrompt = join(
+        options.workingDir,
+        ".agent",
+        "breakdown",
+        "prompts",
+        "to",
+        "project",
+        "f_project.md",
+      );
+      const _destPromptContent = await Deno.readTextFile(destPrompt);
+      assertEquals(
+        destPromptContent,
+        prompts["to/project/f_project.md"],
+        "Prompt template is copied from TS template",
+      );
+
+      // schema: Check if a representative schema file is copied
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { schema } = await import("../../../lib/templates/schema.ts");
+      const _destSchema = join(
+        options.workingDir,
+        ".agent",
+        "breakdown",
+        "schema",
+        "to",
+        "project",
+        "base.schema.md",
+      );
+      const _destSchemaContent = await Deno.readTextFile(destSchema);
+      assertEquals(
+        destSchemaContent,
+        schema["to/project/base.schema.md"],
+        "Schema template is copied from TS template",
+      );
+    } finally {
+      Deno.chdir(originalCwd);
+      await cleanupTestEnvironment(options);
+    }
+  },
+});

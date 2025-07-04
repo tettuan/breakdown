@@ -19,11 +19,11 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 // Import all exports to test structure
 import * as StdinModule from "./stdin.ts";
 
-const _logger = new BreakdownLogger("stdin-structure");
+const logger = new BreakdownLogger("stdin-structure");
 
 describe("Structure: Function categorization", () => {
   it("should organize exports into logical categories", () => {
-    _logger.debug("Testing export categorization");
+    logger.debug("Testing export categorization");
 
     // Category 1: Core I/O functions
     const coreIOFunctions = {
@@ -60,11 +60,11 @@ describe("Structure: Function categorization", () => {
       assertEquals(typeof value, "function", `${name} should be a constructor`);
     });
 
-    _logger.debug("Export categorization verified");
+    logger.debug("Export categorization verified");
   });
 
   it("should maintain clear separation between sync and async operations", () => {
-    _logger.debug("Testing sync/async operation separation");
+    logger.debug("Testing sync/async operation separation");
 
     // Async operations (should return Promise)
     const asyncOps = [
@@ -82,11 +82,11 @@ describe("Structure: Function categorization", () => {
     for (const asyncOp of asyncOps) {
       // Test that calling the function returns a Promise
       // Use a very short timeout to avoid hanging
-      const _result = asyncOp({ timeout: 1 });
+      const result = asyncOp({ timeout: 1 });
       assertEquals(result instanceof Promise, true, `${asyncOp.name} should return Promise`);
 
       // Catch and ignore the expected timeout error
-      _result.catch(() => {
+      result.catch(() => {
         // Expected to fail with timeout or no input
       });
     }
@@ -107,13 +107,13 @@ describe("Structure: Function categorization", () => {
       assertEquals(error instanceof Promise, false, "writeStdout error should not be Promise");
     }
 
-    _logger.debug("Sync/async separation verified");
+    logger.debug("Sync/async separation verified");
   });
 });
 
 describe("Structure: Class design and interface segregation", () => {
   it("should provide focused error classes with single responsibility", () => {
-    _logger.debug("Testing error class design");
+    logger.debug("Testing error class design");
 
     // StdinError should extend Error
     const error = new StdinModule.StdinError("test message");
@@ -125,11 +125,11 @@ describe("Structure: Class design and interface segregation", () => {
     const errorWithoutMessage = new StdinModule.StdinError("");
     assertEquals(errorWithoutMessage.name, "StdinError", "Should work with empty message");
 
-    _logger.debug("Error class design verified");
+    logger.debug("Error class design verified");
   });
 
   it("should design UI components with clear lifecycle management", () => {
-    _logger.debug("Testing UI component design");
+    logger.debug("Testing UI component design");
 
     // ProgressBar design
     const progressBar = new StdinModule.ProgressBar(100, 40, { quiet: true });
@@ -165,13 +165,13 @@ describe("Structure: Class design and interface segregation", () => {
     assertEquals(typeof spinner.enabled, "boolean", "enabled should be boolean");
     assertEquals(Array.isArray(spinner.frames), true, "frames should be array");
 
-    _logger.debug("UI component design verified");
+    logger.debug("UI component design verified");
   });
 });
 
 describe("Structure: I/O operation patterns", () => {
   it("should follow consistent parameter patterns", () => {
-    _logger.debug("Testing parameter consistency");
+    logger.debug("Testing parameter consistency");
 
     // readStdin should accept options object
     const readStdinStr = StdinModule.readStdin.toString();
@@ -197,11 +197,11 @@ describe("Structure: I/O operation patterns", () => {
       "writeStdout should accept content parameter",
     );
 
-    _logger.debug("Parameter consistency verified");
+    logger.debug("Parameter consistency verified");
   });
 
   it("should provide consistent error handling patterns", () => {
-    _logger.debug("Testing error handling patterns");
+    logger.debug("Testing error handling patterns");
 
     // All functions should handle errors consistently
     // readStdin should throw StdinError on failure
@@ -228,13 +228,13 @@ describe("Structure: I/O operation patterns", () => {
       "hasStdinContent should handle errors gracefully",
     );
 
-    _logger.debug("Error handling patterns verified");
+    logger.debug("Error handling patterns verified");
   });
 });
 
 describe("Structure: Options and configuration patterns", () => {
   it("should support flexible configuration options", () => {
-    _logger.debug("Testing configuration flexibility");
+    logger.debug("Testing configuration flexibility");
 
     // ProgressBar should accept configuration options
     const progressBar1 = new StdinModule.ProgressBar(100);
@@ -256,11 +256,11 @@ describe("Structure: Options and configuration patterns", () => {
 
     assertEquals(spinner2.enabled, false, "quiet option should disable spinner");
 
-    _logger.debug("Configuration flexibility verified");
+    logger.debug("Configuration flexibility verified");
   });
 
   it("should maintain consistent option naming conventions", () => {
-    _logger.debug("Testing option naming consistency");
+    logger.debug("Testing option naming consistency");
 
     // Both UI components should use consistent 'quiet' option
     const progressBar = new StdinModule.ProgressBar(100, 40, { quiet: true });
@@ -273,13 +273,13 @@ describe("Structure: Options and configuration patterns", () => {
     assertExists(progressBar.enabled, "ProgressBar should have enabled property");
     assertExists(spinner.enabled, "Spinner should have enabled property");
 
-    _logger.debug("Option naming consistency verified");
+    logger.debug("Option naming consistency verified");
   });
 });
 
 describe("Structure: Resource management patterns", () => {
   it("should provide proper cleanup mechanisms", () => {
-    _logger.debug("Testing resource cleanup");
+    logger.debug("Testing resource cleanup");
 
     // Spinner should support cleanup
     const spinner = new StdinModule.Spinner({ quiet: true });
@@ -300,11 +300,11 @@ describe("Structure: Resource management patterns", () => {
     activeSpinner.start();
     activeSpinner.stop();
 
-    _logger.debug("Resource cleanup verified");
+    logger.debug("Resource cleanup verified");
   });
 
   it("should handle concurrent operations safely", () => {
-    _logger.debug("Testing concurrent operation safety");
+    logger.debug("Testing concurrent operation safety");
 
     // Spinner should handle multiple start/stop calls safely
     const spinner = new StdinModule.Spinner({ quiet: true });
@@ -321,13 +321,13 @@ describe("Structure: Resource management patterns", () => {
     assertExists(spinner.start, "start method should exist");
     assertExists(spinner.stop, "stop method should exist");
 
-    _logger.debug("Concurrent operation safety verified");
+    logger.debug("Concurrent operation safety verified");
   });
 });
 
 describe("Structure: Integration patterns", () => {
   it("should follow consistent integration patterns with enhanced stdin", () => {
-    _logger.debug("Testing enhanced stdin integration patterns");
+    logger.debug("Testing enhanced stdin integration patterns");
 
     // readStdin should delegate to enhanced stdin
     const readStdinStr = StdinModule.readStdin.toString();
@@ -344,11 +344,11 @@ describe("Structure: Integration patterns", () => {
       "Should convert enhanced stdin errors to StdinError",
     );
 
-    _logger.debug("Enhanced stdin integration verified");
+    logger.debug("Enhanced stdin integration verified");
   });
 
   it("should support extensible option patterns", () => {
-    _logger.debug("Testing extensible options");
+    logger.debug("Testing extensible options");
 
     // readStdin should accept both StdinOptions and EnhancedStdinOptions
     const readStdinStr = StdinModule.readStdin.toString();
@@ -366,13 +366,13 @@ describe("Structure: Integration patterns", () => {
       "isStdinAvailable should support option injection for testing",
     );
 
-    _logger.debug("Extensible options verified");
+    logger.debug("Extensible options verified");
   });
 });
 
 describe("Structure: Module organization principles", () => {
   it("should follow single responsibility principle", () => {
-    _logger.debug("Testing single responsibility");
+    logger.debug("Testing single responsibility");
 
     // Each exported component should have a single, clear responsibility
     const responsibilities = {
@@ -387,16 +387,16 @@ describe("Structure: Module organization principles", () => {
 
     Object.entries(responsibilities).forEach(([name, responsibility]) => {
       assertExists(
-        (StdinModule as unknown)[name],
+        (StdinModule as any)[name],
         `${name} should exist for responsibility: ${responsibility}`,
       );
     });
 
-    _logger.debug("Single responsibility verified");
+    logger.debug("Single responsibility verified");
   });
 
   it("should minimize coupling between components", () => {
-    _logger.debug("Testing loose coupling");
+    logger.debug("Testing loose coupling");
 
     // Components should be usable independently
 
@@ -423,11 +423,11 @@ describe("Structure: Module organization principles", () => {
     const isAvailable = StdinModule.isStdinAvailable();
     assertEquals(typeof isAvailable, "boolean", "isStdinAvailable should work independently");
 
-    _logger.debug("Loose coupling verified");
+    logger.debug("Loose coupling verified");
   });
 
   it("should provide cohesive I/O functionality", () => {
-    _logger.debug("Testing I/O functionality cohesion");
+    logger.debug("Testing I/O functionality cohesion");
 
     // All I/O operations should work together coherently
 
@@ -450,6 +450,6 @@ describe("Structure: Module organization principles", () => {
     assertExists(spinner.start, "Spinner should support starting");
     assertExists(spinner.stop, "Spinner should support stopping");
 
-    _logger.debug("I/O functionality cohesion verified");
+    logger.debug("I/O functionality cohesion verified");
   });
 });

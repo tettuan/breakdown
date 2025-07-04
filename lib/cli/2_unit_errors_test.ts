@@ -28,13 +28,13 @@ Deno.test("Unit: CliError creation with all error codes", () => {
   ];
 
   for (const code of testCases) {
-    const error = new CliError(code, testMessage);
+    const error = new CliError(code, _testMessage);
 
     assertEquals(error.code, code, `Should set code to ${code}`);
     assertEquals(error.name, "CliError", "Should set name to CliError");
     assertEquals(
       error.message,
-      `[${code}] ${testMessage}`,
+      `[${code}] ${_testMessage}`,
       `Should format message with code ${code}`,
     );
     assertExists(error.stack, `Should have stack trace for ${code}`);

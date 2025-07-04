@@ -17,7 +17,7 @@ import { assertEquals, assertExists } from "@std/assert";
  */
 Deno.test("Structure: Config types follow single responsibility principle", async () => {
   const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(typesFilePath);
+  const typesContent = await Deno.readTextFile(_typesFilePath);
 
   // Analyze BreakdownConfig interface
   const breakdownConfigMatch = typesContent.match(
@@ -68,8 +68,8 @@ Deno.test("Structure: Config types follow single responsibility principle", asyn
  * without leaking implementation details.
  */
 Deno.test("Structure: Config types have proper abstraction levels", async () => {
-  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(typesFilePath);
+  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(_typesFilePath);
 
   // Check for implementation details that shouldn't be in type definitions
   const implementationPatterns = [
@@ -116,8 +116,8 @@ Deno.test("Structure: Config types have proper abstraction levels", async () => 
  * different type definitions.
  */
 Deno.test("Structure: No duplication in config type responsibilities", async () => {
-  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(typesFilePath);
+  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(_typesFilePath);
 
   // Extract all properties from all interfaces
   const interfaceProperties = new Map<string, string[]>();
@@ -171,8 +171,8 @@ Deno.test("Structure: No duplication in config type responsibilities", async () 
  * and follow clear hierarchies.
  */
 Deno.test("Structure: Config type relationships are well-defined", async () => {
-  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(typesFilePath);
+  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(_typesFilePath);
 
   // Check for clear separation of concerns
   const hasBreakdownConfig = typesContent.includes("export interface BreakdownConfig");
@@ -213,8 +213,8 @@ Deno.test("Structure: Config type relationships are well-defined", async () => {
  * representing all possible states explicitly.
  */
 Deno.test("Structure: Config types use Totality-based structure", async () => {
-  const typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(typesFilePath);
+  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
+  const typesContent = await Deno.readTextFile(_typesFilePath);
 
   // Check BreakdownConfig for Totality principles
   const breakdownConfigMatch = typesContent.match(

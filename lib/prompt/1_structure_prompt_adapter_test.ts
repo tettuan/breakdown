@@ -10,10 +10,10 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { PromptVariablesProvider } from "./prompt_adapter.ts";
 
-const _logger = new BreakdownLogger("structure-prompt-adapter");
+const _logger = new _BreakdownLogger("structure-prompt-adapter");
 
 // Mock implementation for testing
 class MockPromptVariablesProvider implements PromptVariablesProvider {
@@ -127,7 +127,7 @@ describe("PromptAdapter Structure - Class Organization", () => {
     const methodPattern = /^\s{2}(private\s+)?(async\s+)?(\w+)\s*\(/gm;
     const methods: Array<{ name: string; isPrivate: boolean; line: number }> = [];
     let match;
-    const lineNum = 0;
+    let lineNum = 0;
 
     const lines = fileContent.split("\n");
     for (const line of lines) {

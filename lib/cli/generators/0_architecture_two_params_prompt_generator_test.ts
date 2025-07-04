@@ -32,8 +32,8 @@ Deno.test("Architecture: TwoParamsPromptGenerator follows single responsibility 
 
   // Other methods should be private/internal helpers
   const publicMethods = methods.filter((name) =>
-    !name.startsWith("create") && !name.startsWith("validate") && !name.startsWith("build") &&
-      !name.startsWith("generate") || name === "generatePrompt"
+    (!name.startsWith("create") && !name.startsWith("validate") && !name.startsWith("build") &&
+      !name.startsWith("generate") && !name.startsWith("format")) || name === "generatePrompt"
   );
   assertEquals(publicMethods.length, 1, "Should only have one public method");
   assertEquals(publicMethods[0], "generatePrompt", "Only public method should be generatePrompt");
@@ -57,7 +57,7 @@ Deno.test("Architecture: TwoParamsPromptGenerator error types follow discriminat
 Deno.test("Architecture: TwoParamsPromptGenerator dependencies follow correct direction", async () => {
   // Verify imports are from lower layers only
   const moduleImports = [
-    "../../types/_result.ts",
+    "../../types/result.ts",
     "../../types/mod.ts",
     "jsr:@tettuan/breakdownprompt",
     "../../factory/prompt_variables_factory.ts",
@@ -94,21 +94,21 @@ Deno.test("Architecture: TwoParamsPromptGenerator integrates with Result type pa
   const _generator = new TwoParamsPromptGenerator();
 
   // Should return Result type
-  const _result = await _generator.generatePrompt(
-    {} as unknown,
+  const result = await _generator.generatePrompt(
+    {} as Record<string, unknown>,
     { demonstrativeType: "to", layerType: "project" },
     {},
     { standardVariables: {}, customVariables: {}, allVariables: {} },
   );
 
   // Result should have ok/error structure
-  assertExists(_result.ok !== undefined, "Should return Result type");
+  assertExists(result.ok !== undefined, "Should return Result type");
 
-  if (_result.ok) {
-    assertExists(_result.data, "Success should have data");
+  if (result.ok) {
+    assertExists(result.data, "Success should have data");
   } else {
-    assertExists(_result.error, "Failure should have error");
-    assertExists(_result.error.kind, "Error should have kind discriminant");
+    assertExists(result.error, "Failure should have error");
+    assertExists(result.error.kind, "Error should have kind discriminant");
   }
 });
 

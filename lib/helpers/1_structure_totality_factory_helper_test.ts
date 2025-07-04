@@ -43,7 +43,7 @@ Deno.test("TotalityFactoryHelper - Structure: Single Responsibility Principle", 
 
 Deno.test("TotalityFactoryHelper - Structure: Responsibility separation by function purpose", async () => {
   // Factory creation functions (grouped responsibility)
-  const _factoryFunctions = [
+  const factoryFunctions = [
     createTotalityFactory,
     createTotalityPromptFactory,
   ];
@@ -145,15 +145,15 @@ Deno.test("TotalityFactoryHelper - Structure: Error handling abstraction", async
 });
 
 Deno.test("TotalityFactoryHelper - Structure: Factory bundle composition", async () => {
-  const _result = await createTotalityFactory();
+  const result = await createTotalityFactory();
 
-  if (_result.ok) {
-    const bundle = _result.data as TotalityFactoryBundle;
+  if (result.ok) {
+    const bundle = result.data as TotalityFactoryBundle;
 
     // Bundle should compose related components without tight coupling
     const typeFactory = bundle.typeFactory;
     const patternProvider = bundle.patternProvider;
-    const _config = bundle.config;
+    const config = bundle.config;
     const createPromptFactory = bundle.createPromptFactory;
 
     // Components should be independently usable
@@ -167,7 +167,7 @@ Deno.test("TotalityFactoryHelper - Structure: Factory bundle composition", async
       "function",
       "PatternProvider should be independently usable",
     );
-    assertEquals(typeof _config.getConfig, "function", "Config should be independently usable");
+    assertEquals(typeof config.getConfig, "function", "Config should be independently usable");
     assertEquals(typeof createPromptFactory, "function", "createPromptFactory should be callable");
 
     // Components should not know about each other's internal structure
@@ -326,9 +326,9 @@ Deno.test("TotalityFactoryHelper - Structure: Validation responsibility distribu
 Deno.test("TotalityFactoryHelper - Structure: Dependency injection design", async () => {
   // Should support dependency injection for testability
 
-  const _result = await createTotalityFactory();
-  if (_result.ok) {
-    const bundle = _result.data;
+  const result = await createTotalityFactory();
+  if (result.ok) {
+    const bundle = result.data;
 
     // Bundle components should be injectable
     assertEquals(typeof bundle.config, "object", "Config should be injectable");

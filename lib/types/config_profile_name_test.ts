@@ -13,7 +13,7 @@ import { ConfigProfileName } from "./config_profile_name.ts";
 describe("ConfigProfileName - Unit Tests", () => {
   describe("Valid profile name creation", () => {
     it("should create ConfigProfileName with valid names", () => {
-      const _validNames = [
+      const validNames = [
         "production",
         "staging",
         "development",

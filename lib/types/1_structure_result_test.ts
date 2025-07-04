@@ -10,11 +10,11 @@
  * - Type transformation consistency
  * - API surface coherence
  *
- * @module types/1_structure_result_test
+ * @module types/1_structureresult_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } from "./_result.ts";
+import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } from "./result.ts";
 
 /**
  * Structure Test Suite: Result Type
@@ -51,7 +51,7 @@ Deno.test("Result Type Structure", async (t) => {
     const successResult = ok(value);
 
     // Should support method chaining through composition
-    const _result = chain(
+    const result = chain(
       map(successResult, (x) => x * 2),
       (doubled) =>
         chain(
@@ -60,8 +60,8 @@ Deno.test("Result Type Structure", async (t) => {
         ),
     );
 
-    assertEquals(_result.ok, true);
-    if (_result.ok) assertEquals(_result.data, "Result: 25");
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data, "Result: 25");
 
     // Should break chain on first error
     const errorInChain = chain(
@@ -249,15 +249,15 @@ Deno.test("Result Type Error Handling Structure", async (t) => {
   await t.step("supports error transformation patterns", () => {
     // Error should be transformable in chain operations
     const initialValue = 10;
-    const _result = chain(ok(initialValue), (value) => {
+    const result = chain(ok(initialValue), (value) => {
       if (value > 5) {
         return error("Value too large");
       }
       return ok(value * 2);
     });
 
-    assertEquals(_result.ok, false);
-    if (!_result.ok) assertEquals(_result.error, "Value too large");
+    assertEquals(result.ok, false);
+    if (!result.ok) assertEquals(result.error, "Value too large");
 
     // Should work with complex error types
     interface ValidationError {
@@ -298,12 +298,12 @@ Deno.test("Result Type Error Handling Structure", async (t) => {
     // Test error in first step
     const result1 = processValue(-5);
     assertEquals(result1.ok, false);
-    if (!_result1.ok) assertEquals(result1.error, "negative value");
+    if (!result1.ok) assertEquals(result1.error, "negative value");
 
     // Test error in second step
     const result2 = processValue(150);
     assertEquals(result2.ok, false);
-    if (!_result2.ok) assertEquals(result2.error, "value too large");
+    if (!result2.ok) assertEquals(result2.error, "value too large");
 
     // Test successful path
     const result3 = processValue(50);

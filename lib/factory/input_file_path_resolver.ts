@@ -14,16 +14,16 @@
 
 import { isAbsolute, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParamsResult } from "../deps.ts";
+import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 
 // Legacy type alias for backward compatibility during migration
-type DoubleParamsResult = PromptCliParams;
+type DoubleParams_Result = PromptCliParams;
 
 /**
- * TypeCreationResult - Unified error handling for type creation operations
+ * TypeCreation_Result - Unified error handling for type creation operations
  * Follows Totality principle by explicitly representing success/failure states
  */
-export type TypeCreationResult<T> =
+export type TypeCreation_Result<T> =
   | { success: true; data: T }
   | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
@@ -75,12 +75,12 @@ export class InputFilePathResolver {
    * ```
    */
   constructor(
-    private config: Record<string, unknown>,
-    private cliParams: DoubleParamsResult | TwoParamsResult,
+    private _config: Record<string, unknown>,
+    private _cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this.config = this.deepCopyConfig(config);
-    this.cliParams = this.deepCopyCliParams(cliParams);
+    this._config = this.deepCopyConfig(_config);
+    this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
   /**
@@ -110,22 +110,27 @@ export class InputFilePathResolver {
    * @returns Deep copy of the CLI parameters
    */
   private deepCopyCliParams(
-    cliParams: DoubleParamsResult | TwoParamsResult,
-  ): DoubleParamsResult | TwoParamsResult {
-    if ("type" in cliParams && cliParams.type === "two") {
-      // TwoParamsResult
-      const twoParams = cliParams as TwoParamsResult;
-      const copy: TwoParamsResult = {
-        type: twoParams.type,
-        params: [...twoParams.params],
-        demonstrativeType: twoParams.demonstrativeType,
-        layerType: twoParams.layerType,
-        options: { ...twoParams.options },
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): DoubleParams_Result | TwoParams_Result {
+    // Check if it's TotalityPromptCliParams by checking for directive and layer properties
+    // Note: TwoParams_Result from breakdownparams may have different structure
+    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
+      return p && typeof p === 'object' && 'directive' in p && 'layer' in p &&
+        p.directive && typeof p.directive === 'object' && 'value' in p.directive &&
+        p.layer && typeof p.layer === 'object' && 'value' in p.layer;
+    };
+
+    if (hasTotalityProps(cliParams)) {
+      // TotalityPromptCliParams structure
+      const copy: any = {
+        directive: cliParams.directive,
+        layer: cliParams.layer,
+        options: { ...cliParams.options },
       };
       return copy;
     } else {
-      // DoubleParamsResult (PromptCliParams)
-      const doubleParams = cliParams as DoubleParamsResult;
+      // DoubleParams_Result (PromptCliParams)
+      const doubleParams = cliParams as DoubleParams_Result;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
@@ -206,11 +211,11 @@ export class InputFilePathResolver {
    */
   private getFromFile(): string | undefined {
     // Handle both legacy and new parameter structures
-    if ("options" in this.cliParams) {
-      return this.cliParams.options?.fromFile as string | undefined;
+    if ("options" in this._cliParams) {
+      return this._cliParams.options?.fromFile as string | undefined;
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
+    // For TwoParams_Result structure, adapt to legacy interface
+    const twoParams = this._cliParams as TwoParams_Result;
     return (twoParams as unknown as { options?: { fromFile?: string } }).options?.fromFile;
   }
 
@@ -312,15 +317,21 @@ export class InputFilePathResolver {
    * ```
    */
   private getDirectory(): string {
-    // Handle both legacy and new parameter structures
-    if ("options" in this.cliParams) {
-      return (this.cliParams.options?.fromLayerType as string) || this.cliParams.layerType;
+    // Check if it's TotalityPromptCliParams structure
+    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
+      return p && typeof p === 'object' && 'directive' in p && 'layer' in p &&
+        p.directive && typeof p.directive === 'object' && 'value' in p.directive &&
+        p.layer && typeof p.layer === 'object' && 'value' in p.layer;
+    };
+
+    if (hasTotalityProps(this._cliParams)) {
+      // TotalityPromptCliParams structure - use layer.value
+      const fromLayerType = this._cliParams.options?.fromLayerType as string | undefined;
+      return fromLayerType || this._cliParams.layer.value || "";
+    } else {
+      // Legacy PromptCliParams structure
+      const legacyParams = this._cliParams as DoubleParams_Result;
+      return legacyParams.options?.fromLayerType || legacyParams.layerType || "";
     }
-    // For TwoParamsResult structure, adapt to legacy interface
-    const twoParams = this.cliParams as TwoParamsResult;
-    const fromLayerType = (twoParams as unknown as { options?: { fromLayerType?: string } }).options
-      ?.fromLayerType;
-    const layerType = (twoParams as unknown as { layerType?: string }).layerType;
-    return fromLayerType || layerType || "";
   }
 }

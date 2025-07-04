@@ -15,7 +15,7 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler.ts";
-import type { Result } from "../../types/_result.ts";
+import type { Result } from "../../types/result.ts";
 
 /**
  * Architecture Test Suite: TwoParamsHandler
@@ -42,9 +42,9 @@ Deno.test({
       );
 
       // Should not throw, should return error Result
-      assert(!invalidResult.ok);
-      if (!invalidResult.ok) {
-        assertEquals(typeof invalidResult.error, "object");
+      assert(!_invalidResult.ok);
+      if (!_invalidResult.ok) {
+        assertEquals(typeof _invalidResult.error, "object");
       }
     });
 
@@ -87,7 +87,7 @@ Deno.test({
       assertEquals(func.length, 3);
 
       // Function should be async and return Promise<Result<void, TwoParamsHandlerError>>
-      const _result = func(["to", "project"], {}, { skipStdin: true });
+      const result = func(["to", "project"], {}, { skipStdin: true });
       assert(result instanceof Promise);
     });
 
@@ -109,7 +109,7 @@ Deno.test({
       // Invalid parameter types should be handled gracefully
       const invalidConfigResult = await handleTwoParams(
         ["to", "project"],
-        null as unknown, // Invalid config type
+        null as any as Record<string, unknown>, // Invalid config type
         { skipStdin: true }, // Skip stdin processing to avoid resource leaks in tests
       );
 
@@ -172,14 +172,14 @@ Deno.test({
       // Note: This would require valid config and proper setup
       // For architecture test, we verify the interface contract
 
-      const _result = await handleTwoParams(
+      const result = await handleTwoParams(
         ["to", "project"],
         {/* valid config structure would go here */},
         { skipStdin: true /* Skip stdin to avoid resource leaks */ },
       );
 
       // Result should be properly typed regardless of success/failure
-      assert(typeof _result === "object");
+      assert(typeof result === "object");
       assert("ok" in result);
     });
   },

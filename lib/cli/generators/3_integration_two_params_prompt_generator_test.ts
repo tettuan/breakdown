@@ -16,13 +16,13 @@ import type { ValidatedParams } from "./two_params_prompt_generator.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
 import { PromptVariablesFactory } from "../../factory/prompt_variables_factory.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 
-const _logger = new BreakdownLogger("two-params-prompt-generator-integration-test");
+const _logger = new _BreakdownLogger("two-params-prompt-generator-integration-test");
 
 // Test fixtures setup
-function setupTestEnvironment() {
+async function setupTestEnvironment() {
   const tempDir = await Deno.makeTempDir({ prefix: "prompt_generator_test_" });
 
   // Create test directory structure
@@ -141,29 +141,29 @@ Deno.test("Integration: TwoParamsPromptGenerator complete workflow with real fil
       },
     };
 
-    const _result = await _generator.generatePrompt(
-      config,
+    const result = await _generator.generatePrompt(
+      _config,
       validatedParams,
       options,
       processedVariables,
     );
 
-    _logger.debug("Integration test result", {
-      success: _result.ok,
-      errorKind: _result.ok ? "none" : _result.error.kind,
+    _logger.debug("Integration test _result", {
+      success: result.ok,
+      errorKind: result.ok ? "none" : (result.error?.kind || "unknown"),
     });
 
-    if (_result.ok) {
-      assertExists(_result.data, "Should have generated prompt");
-      assertStringIncludes(_result.data, "Project Direction Template", "Should use template");
-      assertStringIncludes(_result.data, "BreakdownTest", "Should substitute project_name");
-      assertStringIncludes(_result.data, "TestRunner", "Should substitute author");
-      assertStringIncludes(_result.data, "Build a test management system", "Should include input");
-      assertStringIncludes(_result.data, "Priority: high", "Should include custom priority");
-      assertStringIncludes(_result.data, "Deadline: 2024-12-31", "Should include custom deadline");
+    if (result.ok) {
+      assertExists(result.data, "Should have generated prompt");
+      assertStringIncludes(result.data, "Project Direction Template", "Should use template");
+      assertStringIncludes(result.data, "BreakdownTest", "Should substitute project_name");
+      assertStringIncludes(result.data, "TestRunner", "Should substitute author");
+      assertStringIncludes(result.data, "Build a test management system", "Should include input");
+      assertStringIncludes(result.data, "Priority: high", "Should include custom priority");
+      assertStringIncludes(result.data, "Deadline: 2024-12-31", "Should include custom deadline");
     } else {
       // May fail due to PromptManager integration issues
-      _logger.debug("Expected integration failure", { error: _result.error });
+      _logger.debug("Expected integration failure", { error: result.error });
     }
   } finally {
     await cleanup();
@@ -207,7 +207,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
       },
     };
 
-    const _factory = PromptVariablesFactory.createWithConfig(config, factoryCliParams);
+    const _factory = PromptVariablesFactory.createWithConfig(_config, factoryCliParams);
     const allParams = _factory.getAllParams();
 
     _logger.debug("Factory resolved paths", {
@@ -216,8 +216,8 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
     });
 
     // Now test generator with same config
-    const _result = await _generator.generatePrompt(
-      config,
+    const result = await _generator.generatePrompt(
+      _config,
       validatedParams,
       { from: "input.md", to: "output.md" },
       {
@@ -235,7 +235,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
       },
     );
 
-    assertExists(_result.ok !== undefined, "Should return Result type");
+    assertExists(result.ok !== undefined, "Should return Result type");
   } finally {
     await cleanup();
   }
@@ -271,32 +271,32 @@ Deno.test("Integration: TwoParamsPromptGenerator with VariablesBuilder", async (
   const buildResult = _builder.build();
 
   if (buildResult.ok) {
-    const variables = _builder.toTemplateRecord();
+    const _variables = _builder.toTemplateRecord();
 
     const processedVariables: ProcessedVariables = {
       standardVariables: {
-        input_text: variables.input_text || "",
-        input_text_file: variables.input_text_file || "",
-        destination_path: variables.destination_path || "",
+        input_text: _variables.input_text || "",
+        input_text_file: _variables.input_text_file || "",
+        destination_path: _variables.destination_path || "",
       },
       customVariables: {
-        status: variables.status || "",
-        severity: variables.severity || "",
-        component: variables.component || "",
+        status: _variables.status || "",
+        severity: _variables.severity || "",
+        component: _variables.component || "",
       },
-      allVariables: variables,
+      allVariables: _variables,
     };
 
-    const _result = await _generator.generatePrompt(
-      config,
+    const result = await _generator.generatePrompt(
+      _config,
       validatedParams,
       {},
       processedVariables,
     );
 
-    _logger.debug("Builder integration result", {
-      success: _result.ok,
-      variableCount: Object.keys(variables).length,
+    _logger.debug("Builder integration _result", {
+      success: result.ok,
+      variableCount: Object.keys(_variables).length,
     });
   }
 });
@@ -319,7 +319,7 @@ Deno.test("Integration: TwoParamsPromptGenerator error propagation", async () =>
   ];
 
   for (const scenario of errorScenarios) {
-    const _result = await _generator.generatePrompt(
+    const result = await _generator.generatePrompt(
       scenario.config,
       { demonstrativeType: "to", layerType: "project" },
       {},
@@ -327,14 +327,14 @@ Deno.test("Integration: TwoParamsPromptGenerator error propagation", async () =>
     );
 
     // The system has robust fallback mechanisms, so it may succeed with fallback config
-    if (_result.ok) {
-      assertExists(_result.data, `${scenario.name} succeeded with fallback configuration`);
-      assertEquals(typeof _result.data, "string", "Should return prompt content as string");
+    if (result.ok) {
+      assertExists(result.data, `${scenario.name} succeeded with fallback configuration`);
+      assertEquals(typeof result.data, "string", "Should return prompt content as string");
     } else {
       assertEquals(
-        scenario.expectedError.includes(_result.error.kind),
+        scenario.expectedError.includes(result.error.kind),
         true,
-        `${scenario.name} should have expected error type. Got: ${_result.error.kind}, Expected one of: ${
+        `${scenario.name} should have expected error type. Got: ${result.error.kind}, Expected one of: ${
           scenario.expectedError.join(", ")
         }`,
       );
@@ -381,21 +381,21 @@ Deno.test("Integration: TwoParamsPromptGenerator with complex custom variables",
       },
     };
 
-    const _result = await _generator.generatePrompt(
-      config,
+    const result = await _generator.generatePrompt(
+      _config,
       validatedParams,
       {},
       processedVariables,
     );
 
     _logger.debug("Complex variables test", {
-      success: _result.ok,
+      success: result.ok,
       customVarCount: Object.keys(complexCustomVars).length,
       totalVarCount: Object.keys(processedVariables.allVariables).length,
     });
 
     // Should handle many variables
-    assertExists(_result.ok !== undefined, "Should process complex variables");
+    assertExists(result.ok !== undefined, "Should process complex variables");
   } finally {
     await cleanup();
   }

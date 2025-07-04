@@ -29,12 +29,12 @@ import {
 } from "../../lib/helpers/template_error_handler.ts";
 import { handleTwoParams } from "../../lib/cli/handlers/two_params_handler_refactored.ts";
 
-const _logger = new BreakdownLogger("error-handler-system-integration");
+const logger = new BreakdownLogger("error-handler-system-integration");
 
 describe("ErrorHandler System Integration", () => {
   describe("Error Boundary Implementation", () => {
     it("should maintain error boundaries between components", async () => {
-      _logger.debug("Testing error boundary implementation");
+      logger.debug("Testing error boundary implementation");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
 
@@ -67,7 +67,7 @@ describe("ErrorHandler System Integration", () => {
           errorHandler.handleError(error, component);
 
           // Should not throw, should handle gracefully
-          _logger.debug(`${description} handled successfully`);
+          logger.debug(`${description} handled successfully`);
         } catch (e) {
           throw new Error(`Error boundary failed for ${description}: ${e}`);
         }
@@ -75,7 +75,7 @@ describe("ErrorHandler System Integration", () => {
     });
 
     it("should isolate error contexts between handlers", async () => {
-      _logger.debug("Testing error context isolation");
+      logger.debug("Testing error context isolation");
 
       // Create multiple error handlers
       const handler1 = new WorkspaceErrorHandlerImpl();
@@ -89,11 +89,11 @@ describe("ErrorHandler System Integration", () => {
       handler2.handleError(error2, "COMPONENT_B");
 
       // No cross-contamination should occur
-      _logger.debug("Error context isolation verified");
+      logger.debug("Error context isolation verified");
     });
 
     it("should maintain error boundaries in async operations", async () => {
-      _logger.debug("Testing async error boundaries");
+      logger.debug("Testing async error boundaries");
 
       const asyncErrorOperations = [
         () => {
@@ -117,10 +117,10 @@ describe("ErrorHandler System Integration", () => {
           const result = await operation();
 
           // If it returns a Result, should be properly structured
-          if (result && typeof _result === "object" && "ok" in result) {
+          if (result && typeof result === "object" && "ok" in result) {
             assert("ok" in result);
-            if (!_result.ok) {
-              assertExists(_result.error.kind);
+            if (!result.ok) {
+              assertExists(result.error.kind);
             }
           }
         } catch (error) {
@@ -134,7 +134,7 @@ describe("ErrorHandler System Integration", () => {
 
   describe("Error Propagation Integration", () => {
     it("should propagate errors correctly through template system", async () => {
-      _logger.debug("Testing template error propagation");
+      logger.debug("Testing template error propagation");
 
       // Test error propagation through template error handling
       const templateOperation = () => {
@@ -158,7 +158,7 @@ describe("ErrorHandler System Integration", () => {
     });
 
     it("should propagate validation errors through CLI system", async () => {
-      _logger.debug("Testing validation error propagation");
+      logger.debug("Testing validation error propagation");
 
       // Test error propagation through CLI validation
       const result = await handleTwoParams(
@@ -167,26 +167,26 @@ describe("ErrorHandler System Integration", () => {
         { skipStdin: true },
       );
 
-      assertEquals(_result.ok, false);
+      assertEquals(result.ok, false);
 
-      if (!_result.ok) {
-        assertEquals(_result.error.kind, "InvalidDemonstrativeType");
+      if (!result.ok) {
+        assertEquals(result.error.kind, "InvalidDemonstrativeType");
 
         // Type-safe property access for discriminated union
-        if (_result.error.kind === "InvalidDemonstrativeType") {
-          assertEquals(_result.error.value, "invalid_demonstrative");
-          assertExists(_result.error.validTypes);
+        if (result.error.kind === "InvalidDemonstrativeType") {
+          assertEquals(result.error.value, "invalid_demonstrative");
+          assertExists(result.error.validTypes);
 
-          _logger.debug("Validation error propagated correctly", {
-            errorKind: _result.error.kind,
-            value: _result.error.value,
+          logger.debug("Validation error propagated correctly", {
+            errorKind: result.error.kind,
+            value: result.error.value,
           });
         }
       }
     });
 
     it("should maintain error context through propagation layers", async () => {
-      _logger.debug("Testing error context preservation");
+      logger.debug("Testing error context preservation");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
       const contextualError = new Error("Database connection failed");
@@ -202,13 +202,13 @@ describe("ErrorHandler System Integration", () => {
       errorHandler.logError(contextualError, context);
 
       // Verify context preservation (this is structural - we can't directly test console output)
-      _logger.debug("Error context preserved through logging layer");
+      logger.debug("Error context preserved through logging layer");
     });
   });
 
   describe("Error Recovery and Auto-Resolution", () => {
     it("should support template error auto-resolution", async () => {
-      _logger.debug("Testing template error auto-resolution");
+      logger.debug("Testing template error auto-resolution");
 
       const templateError = new TemplateError(
         "Template file not found",
@@ -231,11 +231,11 @@ describe("ErrorHandler System Integration", () => {
       assertExists(resolutionResult.commands);
       assert(resolutionResult.commands!.length > 0);
 
-      _logger.debug("Auto-resolution mechanism verified");
+      logger.debug("Auto-resolution mechanism verified");
     });
 
     it("should provide recovery commands for different error types", async () => {
-      _logger.debug("Testing recovery command generation");
+      logger.debug("Testing recovery command generation");
 
       const errorTypes = [
         {
@@ -268,7 +268,7 @@ describe("ErrorHandler System Integration", () => {
     });
 
     it("should handle recovery attempt failures gracefully", async () => {
-      _logger.debug("Testing recovery failure handling");
+      logger.debug("Testing recovery failure handling");
 
       const unrecoverableError = new TemplateError(
         "Permission denied",
@@ -285,13 +285,13 @@ describe("ErrorHandler System Integration", () => {
       assertEquals(result.message, "Manual intervention required");
       assertExists(result.commands);
 
-      _logger.debug("Recovery failure handled gracefully");
+      logger.debug("Recovery failure handled gracefully");
     });
   });
 
   describe("Error Categorization and Discrimination", () => {
     it("should correctly categorize different error types", async () => {
-      _logger.debug("Testing error type categorization");
+      logger.debug("Testing error type categorization");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
 
@@ -306,14 +306,14 @@ describe("ErrorHandler System Integration", () => {
         errorHandler.handleError(workspaceError, "INIT");
         errorHandler.handleError(genericError, "GENERIC");
 
-        _logger.debug("Error categorization completed");
+        logger.debug("Error categorization completed");
       } catch (e) {
         throw new Error(`Error categorization failed: ${e}`);
       }
     });
 
     it("should discriminate template error types correctly", async () => {
-      _logger.debug("Testing template error discrimination");
+      logger.debug("Testing template error discrimination");
 
       const errorScenarios = [
         {
@@ -343,12 +343,12 @@ describe("ErrorHandler System Integration", () => {
         assertEquals(detectedError.errorType, scenario.expectedType);
         assertEquals(detectedError.templatePath, scenario.context.templatePath);
 
-        _logger.debug(`Error type ${scenario.expectedType} detected correctly`);
+        logger.debug(`Error type ${scenario.expectedType} detected correctly`);
       }
     });
 
     it("should handle unknown error types gracefully", async () => {
-      _logger.debug("Testing unknown error type handling");
+      logger.debug("Testing unknown error type handling");
 
       const unknownError = new Error("Completely unknown error type");
 
@@ -357,21 +357,21 @@ describe("ErrorHandler System Integration", () => {
       // Should return null for unknown errors
       assertEquals(detectedError, null);
 
-      _logger.debug("Unknown error type handled gracefully");
+      logger.debug("Unknown error type handled gracefully");
     });
   });
 
   describe("Totality Principle Compliance", () => {
     it("should never throw exceptions from error handlers", async () => {
-      _logger.debug("Testing Totality principle in error handlers");
+      logger.debug("Testing Totality principle in error handlers");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
 
       // Test extreme error conditions
       const extremeConditions = [
-        { error: null as unknown as Error, type: "NULL" },
-        { error: undefined as unknown as Error, type: "UNDEFINED" },
-        { error: { message: "Not an Error object" } as unknown as Error, type: "INVALID" },
+        { error: null as any as Error, type: "NULL" },
+        { error: undefined as any as Error, type: "UNDEFINED" },
+        { error: { message: "Not an Error object" } as any as Error, type: "INVALID" },
         { error: new Error(""), type: "" }, // Empty strings
         { error: new Error("Very ".repeat(1000) + "long error"), type: "LONG" },
       ];
@@ -382,7 +382,7 @@ describe("ErrorHandler System Integration", () => {
           // Should complete without throwing
         } catch (e) {
           // Document any exceptions (potential Totality violations)
-          _logger.debug(`Exception in error handler (potential Totality violation)`, {
+          logger.debug(`Exception in error handler (potential Totality violation)`, {
             condition: condition.type,
             error: e instanceof Error ? e.message : String(e),
           });
@@ -391,7 +391,7 @@ describe("ErrorHandler System Integration", () => {
     });
 
     it("should return Result types for all error operations", async () => {
-      _logger.debug("Testing Result type consistency");
+      logger.debug("Testing Result type consistency");
 
       // Test that template error handling returns structured results
       const templateError = new TemplateError(
@@ -404,16 +404,16 @@ describe("ErrorHandler System Integration", () => {
         { autoResolve: false },
       );
 
-      // Should return structured _result, not throw
-      assertExists(_result);
-      assertEquals(typeof _result.resolved, "boolean");
-      assertEquals(typeof _result.message, "string");
+      // Should return structured result, not throw
+      assertExists(result);
+      assertEquals(typeof result.resolved, "boolean");
+      assertEquals(typeof result.message, "string");
 
-      _logger.debug("Result type consistency verified");
+      logger.debug("Result type consistency verified");
     });
 
     it("should handle error chains without losing context", async () => {
-      _logger.debug("Testing error chain handling");
+      logger.debug("Testing error chain handling");
 
       // Create error chain
       const originalError = new Error("Original cause");
@@ -435,13 +435,13 @@ describe("ErrorHandler System Integration", () => {
       assertExists(detailedMessage);
       assert(detailedMessage.includes("Template processing failed"));
 
-      _logger.debug("Error chain context preserved");
+      logger.debug("Error chain context preserved");
     });
   });
 
   describe("Integration with CLI Architecture", () => {
     it("should integrate error handling with CLI flow", async () => {
-      _logger.debug("Testing CLI error handling integration");
+      logger.debug("Testing CLI error handling integration");
 
       // Test that CLI operations produce structured errors
       const cliErrorScenarios = [
@@ -470,10 +470,10 @@ describe("ErrorHandler System Integration", () => {
           { skipStdin: true },
         );
 
-        assertEquals(_result.ok, false);
+        assertEquals(result.ok, false);
 
-        if (!_result.ok) {
-          const error = _result.error;
+        if (!result.ok) {
+          const error = result.error;
           assertEquals(error.kind, scenario.expectedErrorStructure.kind);
 
           // Verify error structure
@@ -488,7 +488,7 @@ describe("ErrorHandler System Integration", () => {
     });
 
     it("should support error handler composition", async () => {
-      _logger.debug("Testing error handler composition");
+      logger.debug("Testing error handler composition");
 
       const workspaceHandler = new WorkspaceErrorHandlerImpl();
 
@@ -517,11 +517,11 @@ describe("ErrorHandler System Integration", () => {
       // Should complete without throwing
       await compositeOperation();
 
-      _logger.debug("Error handler composition verified");
+      logger.debug("Error handler composition verified");
     });
 
     it("should maintain performance under error conditions", async () => {
-      _logger.debug("Testing error handling performance");
+      logger.debug("Testing error handling performance");
 
       const startTime = Date.now();
       const iterations = 100;
@@ -540,7 +540,7 @@ describe("ErrorHandler System Integration", () => {
       // Should handle errors efficiently
       assert(avgTime < 10, `Error handling should be efficient: ${avgTime}ms per error`);
 
-      _logger.debug("Error handling performance verified", {
+      logger.debug("Error handling performance verified", {
         iterations,
         totalTime,
         averageTime: avgTime,
@@ -550,7 +550,7 @@ describe("ErrorHandler System Integration", () => {
 
   describe("Error System Resilience", () => {
     it("should handle concurrent error scenarios", async () => {
-      _logger.debug("Testing concurrent error handling");
+      logger.debug("Testing concurrent error handling");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
 
@@ -565,11 +565,11 @@ describe("ErrorHandler System Integration", () => {
       // All should complete successfully
       await Promise.all(concurrentErrors);
 
-      _logger.debug("Concurrent error handling completed");
+      logger.debug("Concurrent error handling completed");
     });
 
     it("should prevent error handling recursion", async () => {
-      _logger.debug("Testing error handling recursion prevention");
+      logger.debug("Testing error handling recursion prevention");
 
       // Test that error handlers don't create recursive error scenarios
       const errorHandler = new WorkspaceErrorHandlerImpl();
@@ -587,17 +587,17 @@ describe("ErrorHandler System Integration", () => {
       // Should handle without infinite recursion
       try {
         errorHandler.logError(complexError, recursiveContext);
-        _logger.debug("Complex error handled without recursion");
+        logger.debug("Complex error handled without recursion");
       } catch (e) {
         // Document any recursion issues
-        _logger.debug("Potential recursion issue detected", {
+        logger.debug("Potential recursion issue detected", {
           error: e instanceof Error ? e.message : String(e),
         });
       }
     });
 
     it("should maintain error handling under resource constraints", async () => {
-      _logger.debug("Testing error handling under resource constraints");
+      logger.debug("Testing error handling under resource constraints");
 
       const errorHandler = new WorkspaceErrorHandlerImpl();
 
@@ -614,9 +614,9 @@ describe("ErrorHandler System Integration", () => {
       // Should handle large errors gracefully
       try {
         errorHandler.logError(largeError, largeContext);
-        _logger.debug("Large error handled successfully");
+        logger.debug("Large error handled successfully");
       } catch (e) {
-        _logger.debug("Resource constraint handling", {
+        logger.debug("Resource constraint handling", {
           error: e instanceof Error ? e.message : String(e),
         });
       }

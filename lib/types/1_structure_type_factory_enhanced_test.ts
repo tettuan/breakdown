@@ -26,7 +26,7 @@ import {
   type TypePatternProvider,
 } from "./mod.ts";
 
-const _logger = new BreakdownLogger("type-factory-structure-enhanced");
+const logger = new BreakdownLogger("type-factory-structure-enhanced");
 
 // Enhanced provider for structural testing
 class EnhancedStructureTestProvider implements TypePatternProvider {
@@ -62,13 +62,13 @@ class EnhancedStructureTestProvider implements TypePatternProvider {
 
 describe("TypeFactory - Enhanced Component Structure", () => {
   it("should maintain TypeCreationResult as proper algebraic data type", () => {
-    _logger.debug("Testing TypeCreationResult ADT structure");
+    logger.debug("Testing TypeCreationResult ADT structure");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Success case structure
-    const successResult = _factory.createDirectiveType("to");
+    const successResult = factory.createDirectiveType("to");
 
     // Type narrowing should work properly
     if (successResult.ok) {
@@ -85,7 +85,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     }
 
     // Failure case structure
-    const failureResult = _factory.createDirectiveType("invalid");
+    const failureResult = factory.createDirectiveType("invalid");
 
     if (!failureResult.ok) {
       // In failure branch, only error should exist
@@ -102,7 +102,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should maintain complete TypeCreationError discrimination structure", () => {
-    _logger.debug("Testing complete TypeCreationError structure");
+    logger.debug("Testing complete TypeCreationError structure");
 
     // Test all error variants have distinct structure
     const errorVariants: TypeCreationError[] = [
@@ -150,15 +150,15 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should maintain structural consistency in error propagation", () => {
-    _logger.debug("Testing error propagation structure");
+    logger.debug("Testing error propagation structure");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test error propagation in createBothTypes
     // When directive fails, the exact error should propagate
-    const directiveError = _factory.createDirectiveType("invalid");
-    const bothDirectiveError = _factory.createBothTypes("invalid", "project");
+    const directiveError = factory.createDirectiveType("invalid");
+    const bothDirectiveError = factory.createBothTypes("invalid", "project");
 
     assertEquals(directiveError.ok, false);
     assertEquals(bothDirectiveError.ok, false);
@@ -177,8 +177,8 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     }
 
     // When layer fails, that error should propagate
-    const layerError = _factory.createLayerType("invalid");
-    const bothLayerError = _factory.createBothTypes("to", "invalid");
+    const layerError = factory.createLayerType("invalid");
+    const bothLayerError = factory.createBothTypes("to", "invalid");
 
     assertEquals(layerError.ok, false);
     assertEquals(bothLayerError.ok, false);
@@ -189,13 +189,13 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should encapsulate pattern validation logic properly", () => {
-    _logger.debug("Testing pattern validation encapsulation");
+    logger.debug("Testing pattern validation encapsulation");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Factory should not expose internal validation methods
-    const factoryMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(_factory));
+    const factoryMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(factory));
     const publicMethods = [
       "constructor",
       "createDirectiveType",
@@ -209,7 +209,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     // Only public methods should be exposed
     factoryMethods.forEach((method) => {
       if (!publicMethods.includes(method)) {
-        _logger.debug(`Unexpected method found: ${method}`);
+        logger.debug(`Unexpected method found: ${method}`);
       }
     });
 
@@ -223,7 +223,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
       assertEquals(typeof layerPattern.test, "function");
 
       // Factory should use pattern's validation
-      const factoryValidation = _factory.validateBothValues("to", "project");
+      const factoryValidation = factory.validateBothValues("to", "project");
       const patternValidation = directivePattern.test("to") && layerPattern.test("project");
 
       assertEquals(factoryValidation, patternValidation);
@@ -231,15 +231,15 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should maintain proper separation between type creation and validation", () => {
-    _logger.debug("Testing separation of concerns between creation and validation");
+    logger.debug("Testing separation of concerns between creation and validation");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // validateBothValues should only validate, not create
-    const beforeValidation = _factory.debug();
-    const isValid = _factory.validateBothValues("to", "project");
-    const afterValidation = _factory.debug();
+    const beforeValidation = factory.debug();
+    const isValid = factory.validateBothValues("to", "project");
+    const afterValidation = factory.debug();
 
     // State should not change after validation
     assertEquals(beforeValidation.patternProvider, afterValidation.patternProvider);
@@ -250,12 +250,12 @@ describe("TypeFactory - Enhanced Component Structure", () => {
 
     // Validation result should match creation result
     assertEquals(isValid, true);
-    const creationResult = _factory.createBothTypes("to", "project");
+    const creationResult = factory.createBothTypes("to", "project");
     assertEquals(creationResult.ok, isValid);
   });
 
   it("should handle all pattern availability combinations structurally", () => {
-    _logger.debug("Testing pattern availability structure completeness");
+    logger.debug("Testing pattern availability structure completeness");
 
     // Test all 4 combinations of pattern availability
     const configurations = [
@@ -267,8 +267,8 @@ describe("TypeFactory - Enhanced Component Structure", () => {
 
     configurations.forEach(({ directive, layer, expectedBoth }) => {
       const provider = new EnhancedStructureTestProvider(directive, layer);
-      const _factory = new TypeFactory(provider);
-      const availability = _factory.getPatternAvailability();
+      const factory = new TypeFactory(provider);
+      const availability = factory.getPatternAvailability();
 
       assertEquals(availability.directive, directive);
       assertEquals(availability.layer, layer);
@@ -279,7 +279,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
       assertExists(availability.layer);
       assertExists(availability.both);
 
-      _logger.debug("Availability structure", {
+      logger.debug("Availability structure", {
         config: { directive, layer },
         result: availability,
       });
@@ -287,12 +287,12 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should maintain debug information structural integrity", () => {
-    _logger.debug("Testing debug information structure");
+    logger.debug("Testing debug information structure");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const debugInfo = _factory.debug();
+    const debugInfo = factory.debug();
 
     // Debug structure validation
     assertExists(debugInfo);
@@ -319,38 +319,38 @@ describe("TypeFactory - Enhanced Component Structure", () => {
   });
 
   it("should maintain result type consistency across all factory methods", () => {
-    _logger.debug("Testing result type consistency");
+    logger.debug("Testing result type consistency");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // All creation methods should return TypeCreationResult
     const results: TypeCreationResult<any>[] = [
-      _factory.createDirectiveType("to"),
-      _factory.createLayerType("project"),
-      _factory.createBothTypes("to", "project"),
+      factory.createDirectiveType("to"),
+      factory.createLayerType("project"),
+      factory.createBothTypes("to", "project"),
     ];
 
-    results.forEach((_result, index) => {
+    results.forEach((result, index) => {
       // All results should have ok field
-      assertExists(_result.ok);
-      assertEquals(typeof _result.ok, "boolean");
+      assertExists(result.ok);
+      assertEquals(typeof result.ok, "boolean");
 
       // Results should be discriminated union
-      if (_result.ok) {
+      if (result.ok) {
         assertExists(result.data);
-        assertEquals("error" in _result, false);
+        assertEquals("error" in result, false);
       } else {
-        assertExists(_result.error);
-        assertEquals("data" in _result, false);
+        assertExists(result.error);
+        assertEquals("data" in result, false);
       }
 
-      _logger.debug(`Result ${index} structure valid`, { ok: _result.ok });
+      logger.debug(`Result ${index} structure valid`, { ok: result.ok });
     });
   });
 
   it("should handle InvalidPattern error scenarios structurally", () => {
-    _logger.debug("Testing InvalidPattern error structure");
+    logger.debug("Testing InvalidPattern error structure");
 
     // Note: Current implementation doesn't produce InvalidPattern errors
     // This test documents the expected structure when implemented
@@ -369,7 +369,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     assertEquals(typeof invalidPatternError.cause, "string");
 
     // Document missing implementation
-    _logger.debug("InvalidPattern error structure defined but not implemented", {
+    logger.debug("InvalidPattern error structure defined but not implemented", {
       suggestion: "Add pattern syntax validation in TypeFactory",
       structure: invalidPatternError,
     });
@@ -378,13 +378,13 @@ describe("TypeFactory - Enhanced Component Structure", () => {
 
 describe("TypeFactory - Type Relationships", () => {
   it("should maintain proper type hierarchy relationships", () => {
-    _logger.debug("Testing type hierarchy relationships");
+    logger.debug("Testing type hierarchy relationships");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const directiveResult = _factory.createDirectiveType("to");
-    const layerResult = _factory.createLayerType("project");
+    const directiveResult = factory.createDirectiveType("to");
+    const layerResult = factory.createLayerType("project");
 
     if (directiveResult.ok && layerResult.ok) {
       const directive = directiveResult.data;
@@ -404,12 +404,12 @@ describe("TypeFactory - Type Relationships", () => {
   });
 
   it("should maintain composition integrity in createBothTypes", () => {
-    _logger.debug("Testing createBothTypes composition integrity");
+    logger.debug("Testing createBothTypes composition integrity");
 
     const provider = new EnhancedStructureTestProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
-    const bothResult = _factory.createBothTypes("summary", "issue");
+    const bothResult = factory.createBothTypes("summary", "issue");
 
     if (bothResult.ok) {
       // Result should contain both types

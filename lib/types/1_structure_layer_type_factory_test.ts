@@ -15,21 +15,21 @@ import { describe, it } from "@std/testing/bdd";
 import {
   type LayerTypeCreationError,
   LayerTypeFactory,
-  type LayerTypeResult as _LayerTypeResult,
+  type LayerTypeResult,
 } from "./layer_type_factory.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./mod.ts";
 
-const _logger = new BreakdownLogger("layer-type-factory-structure");
+const logger = new BreakdownLogger("layer-type-factory-structure");
 
 describe("LayerTypeFactory - Class Structure", () => {
   it("should follow Single Responsibility Principle", () => {
-    _logger.debug("Verifying Single Responsibility Principle");
+    logger.debug("Verifying Single Responsibility Principle");
 
     // LayerTypeFactory should only be responsible for LayerType creation
     const _factoryMethods = Object.getOwnPropertyNames(LayerTypeFactory);
     const publicMethods = [
       "fromString",
-      "fromTwoParamsResult",
+      "fromTwoParams_Result",
       "isValidLayer",
       "getKnownLayers",
     ];
@@ -48,11 +48,11 @@ describe("LayerTypeFactory - Class Structure", () => {
   });
 
   it("should maintain cohesive method organization", () => {
-    _logger.debug("Testing method cohesion");
+    logger.debug("Testing method cohesion");
 
     // Primary creation methods
     assertExists(LayerTypeFactory.fromString);
-    assertExists(LayerTypeFactory.fromTwoParamsResult);
+    assertExists(LayerTypeFactory.fromTwoParams_Result);
 
     // Utility methods
     assertExists(LayerTypeFactory.isValidLayer);
@@ -68,7 +68,7 @@ describe("LayerTypeFactory - Class Structure", () => {
   });
 
   it("should have complete error type coverage", () => {
-    _logger.debug("Verifying error type completeness");
+    logger.debug("Verifying error type completeness");
 
     // All possible error conditions should have corresponding error types
     const errorScenarios = [
@@ -85,26 +85,26 @@ describe("LayerTypeFactory - Class Structure", () => {
         : null;
       const pattern = patternResult || undefined;
 
-      const _result = LayerTypeFactory.fromString(scenario.input, pattern);
-      assertEquals(_result.ok, false);
+      const result = LayerTypeFactory.fromString(scenario.input, pattern);
+      assertEquals(result.ok, false);
 
-      if (!_result.ok) {
-        assertExists(_result.error);
-        assertExists(_result.error.kind);
-        _logger.debug(`Error scenario covered: ${_result.error.kind}`, {
+      if (!result.ok) {
+        assertExists(result.error);
+        assertExists(result.error.kind);
+        logger.debug(`Error scenario covered: ${result.error.kind}`, {
           input: scenario.input,
-          error: _result.error,
+          error: result.error,
         });
       }
     });
   });
 
   it("should maintain consistent Result type structure", () => {
-    _logger.debug("Testing Result type consistency");
+    logger.debug("Testing Result type consistency");
 
     // All factory methods should return consistent Result types
     const stringResult = LayerTypeFactory.fromString("project");
-    const twoParamsResult = LayerTypeFactory.fromTwoParamsResult({
+    const twoParamsResult = LayerTypeFactory.fromTwoParams_Result({
       type: "two",
       demonstrativeType: "to",
       layerType: "issue",
@@ -130,7 +130,7 @@ describe("LayerTypeFactory - Class Structure", () => {
 
 describe("LayerTypeFactory - Error Structure", () => {
   it("should provide exhaustive error information", () => {
-    _logger.debug("Testing error information completeness");
+    logger.debug("Testing error information completeness");
 
     // Each error type should contain sufficient context
     const testCases: Array<[unknown, (error: LayerTypeCreationError) => void]> = [
@@ -162,20 +162,20 @@ describe("LayerTypeFactory - Error Structure", () => {
     ];
 
     testCases.forEach(([input, assertion]) => {
-      const _result = LayerTypeFactory.fromString(input);
-      assertEquals(_result.ok, false);
+      const result = LayerTypeFactory.fromString(input);
+      assertEquals(result.ok, false);
 
-      if (!_result.ok) {
-        assertion(_result.error);
+      if (!result.ok) {
+        assertion(result.error);
       }
     });
   });
 
   it("should handle error propagation consistently", () => {
-    _logger.debug("Testing error propagation patterns");
+    logger.debug("Testing error propagation patterns");
 
     // Errors from dependencies should be wrapped appropriately
-    const invalidTwoParamsResult = {
+    const invalidTwoParams_Result = {
       type: "two" as const,
       demonstrativeType: "invalid",
       layerType: "not-a-layer",
@@ -184,21 +184,21 @@ describe("LayerTypeFactory - Error Structure", () => {
     };
 
     // LayerType.create doesn't actually validate layerType values
-    // It accepts any string in TwoParamsResult.layerType
-    const _result = LayerTypeFactory.fromTwoParamsResult(invalidTwoParamsResult);
+    // It accepts any string in TwoParams_Result.layerType
+    const result = LayerTypeFactory.fromTwoParams_Result(invalidTwoParams_Result);
 
     // The factory should create a LayerType even with non-standard layer values
-    assertEquals(_result.ok, true);
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      assertEquals(_result.data.getValue(), "not-a-layer");
+    if (result.ok) {
+      assertEquals(result.data.getValue(), "not-a-layer");
     }
   });
 });
 
 describe("LayerTypeFactory - Internal Structure", () => {
   it("should maintain proper encapsulation", () => {
-    _logger.debug("Testing encapsulation boundaries");
+    logger.debug("Testing encapsulation boundaries");
 
     // Private methods and properties are accessible at runtime in JavaScript/TypeScript
     // but the TypeScript compiler prevents access at compile time
@@ -222,7 +222,7 @@ describe("LayerTypeFactory - Internal Structure", () => {
   });
 
   it("should follow immutability principles", () => {
-    _logger.debug("Testing immutability of returned data");
+    logger.debug("Testing immutability of returned data");
 
     // getKnownLayers should return a copy, not the original
     const layers1 = LayerTypeFactory.getKnownLayers();
@@ -240,10 +240,10 @@ describe("LayerTypeFactory - Internal Structure", () => {
   });
 
   it("should organize methods by access patterns", () => {
-    _logger.debug("Testing method organization patterns");
+    logger.debug("Testing method organization patterns");
 
     // Public factory methods
-    const factoryMethods = ["fromString", "fromTwoParamsResult"];
+    const factoryMethods = ["fromString", "fromTwoParams_Result"];
 
     // Public query methods
     const queryMethods = ["isValidLayer", "getKnownLayers"];
@@ -268,14 +268,14 @@ describe("LayerTypeFactory - Internal Structure", () => {
 
 describe("LayerTypeFactory - Composition Structure", () => {
   it("should properly compose with LayerType", () => {
-    _logger.debug("Testing LayerType composition");
+    logger.debug("Testing LayerType composition");
 
     // Factory should produce valid LayerType instances
-    const _result = LayerTypeFactory.fromString("task");
-    assertEquals(_result.ok, true);
+    const result = LayerTypeFactory.fromString("task");
+    assertEquals(result.ok, true);
 
-    if (_result.ok) {
-      const layerType = _result.data;
+    if (result.ok) {
+      const layerType = result.data;
 
       // Should be proper LayerType instance
       assert(layerType instanceof LayerType);
@@ -293,7 +293,7 @@ describe("LayerTypeFactory - Composition Structure", () => {
   });
 
   it("should handle pattern validation delegation", () => {
-    _logger.debug("Testing pattern validation delegation");
+    logger.debug("Testing pattern validation delegation");
 
     // When pattern is provided, should delegate validation
     const strictPatternResult = TwoParamsLayerTypePattern.create("project|issue");

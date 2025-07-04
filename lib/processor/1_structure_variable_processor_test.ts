@@ -53,7 +53,7 @@ Deno.test("Structure: Variable Processor should have single responsibility", asy
 
   nonResponsibilities.forEach((method) => {
     assertEquals(
-      (processor as unknown)[method],
+      (_processor as any)[method],
       undefined,
       `Processor should not have ${method} method - violates single responsibility`,
     );
@@ -67,7 +67,7 @@ Deno.test("Structure: Variable Processor should have proper method organization"
   const publicMethods = ["process", "extractCustomVariables"];
   publicMethods.forEach((method) => {
     assertEquals(
-      typeof (processor as unknown)[method],
+      typeof (_processor as any)[method],
       "function",
       `Public method ${method} should exist`,
     );
@@ -84,7 +84,7 @@ Deno.test("Structure: Variable Processor should have proper method organization"
   privateMethods.forEach((method) => {
     // Private methods are not accessible from outside the class
     assertEquals(
-      (processor as unknown)[method],
+      (_processor as any)[method],
       undefined,
       `Private method ${method} should not be accessible externally`,
     );
@@ -99,14 +99,14 @@ Deno.test("Structure: Variable Processor should properly encapsulate dependencie
 
   // Should not expose internal factory instance
   assertEquals(
-    (processor as unknown).stdinFactory,
+    (_processor as any).stdinFactory,
     undefined,
     "Internal StdinVariableFactory should not be exposed",
   );
 
   // Should not expose builder instances directly
   assertEquals(
-    (processor as unknown).builder,
+    (_processor as any).builder,
     undefined,
     "Internal VariablesBuilder should not be exposed as instance property",
   );

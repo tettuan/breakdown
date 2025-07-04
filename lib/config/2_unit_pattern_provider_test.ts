@@ -23,7 +23,7 @@ import { TwoParamsLayerTypePattern as _TwoParamsLayerTypePattern } from "../type
  */
 Deno.test("Unit: ConfigPatternProvider retrieves patterns from direct configuration", async () => {
   // 直接的なパターン設定を持つモックConfig
-  const _mockConfig = {
+  const __mockConfig = {
     getConfig: () => ({
       directivePattern: "^(test1|test2|test3)$",
       layerTypePattern: "^(layer1|layer2)$",
@@ -31,7 +31,7 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from direct configurat
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(__mockConfig);
 
   // Directiveパターンの取得
   const directivePattern = provider.getDirectivePattern();
@@ -49,7 +49,7 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from direct configurat
  * twoParamsRules構造からパターンを取得できるかを検証
  */
 Deno.test("Unit: ConfigPatternProvider retrieves patterns from nested twoParamsRules", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       twoParamsRules: {
         directive: {
@@ -65,7 +65,7 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from nested twoParamsR
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   const directivePattern = provider.getDirectivePattern();
   const layerPattern = provider.getLayerTypePattern();
@@ -80,7 +80,7 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from nested twoParamsR
  * validation構造からパターンを取得できるかを検証
  */
 Deno.test("Unit: ConfigPatternProvider retrieves patterns from validation structure", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       validation: {
         directive: {
@@ -94,7 +94,7 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from validation struct
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   const directivePattern = provider.getDirectivePattern();
   const layerPattern = provider.getLayerTypePattern();
@@ -109,12 +109,12 @@ Deno.test("Unit: ConfigPatternProvider retrieves patterns from validation struct
  * 設定にパターンが存在しない場合のフォールバック動作を検証
  */
 Deno.test("Unit: ConfigPatternProvider falls back to default patterns", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}), // 空の設定
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   const directivePattern = provider.getDirectivePattern();
   const layerPattern = provider.getLayerTypePattern();
@@ -134,8 +134,8 @@ Deno.test("Unit: ConfigPatternProvider falls back to default patterns", async ()
  * パターンがキャッシュされ、再取得時にキャッシュが使用されるかを検証
  */
 Deno.test("Unit: ConfigPatternProvider caches patterns", async () => {
-  const getConfigCallCount = 0;
-  const mockConfig = {
+  let getConfigCallCount = 0;
+  const _mockConfig = {
     getConfig: () => {
       getConfigCallCount++;
       return {
@@ -146,7 +146,7 @@ Deno.test("Unit: ConfigPatternProvider caches patterns", async () => {
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 初回取得
   const firstDirective = provider.getDirectivePattern();
@@ -170,7 +170,7 @@ Deno.test("Unit: ConfigPatternProvider caches patterns", async () => {
  * clearCacheメソッドがキャッシュを正しくクリアするかを検証
  */
 Deno.test("Unit: ConfigPatternProvider clearCache clears pattern cache", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       directivePattern: "^(test)$",
       layerTypePattern: "^(test)$",
@@ -178,7 +178,7 @@ Deno.test("Unit: ConfigPatternProvider clearCache clears pattern cache", async (
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // パターンを取得してキャッシュ
   provider.getDirectivePattern();
@@ -186,7 +186,7 @@ Deno.test("Unit: ConfigPatternProvider clearCache clears pattern cache", async (
 
   // デバッグ情報でキャッシュ状態を確認
   // 注: debug()メソッドはgetterを呼ぶので、キャッシュが自動的に作成される
-  const debugInfo = provider.debug();
+  let debugInfo = provider.debug();
   // debugを呼ぶことでキャッシュされるため、"cached"になる
   assertEquals(
     debugInfo.cacheStatus.directive,
@@ -257,14 +257,14 @@ Deno.test("Unit: ConfigPatternProvider hasValidPatterns checks both patterns", a
  * 設定取得時のエラーが適切に処理されるかを検証
  */
 Deno.test("Unit: ConfigPatternProvider handles config errors gracefully", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => {
       throw new Error("Config read error");
     },
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // エラー時はnullを返す（例外をスローしない）
   const directivePattern = provider.getDirectivePattern();
@@ -301,7 +301,7 @@ Deno.test("Unit: ConfigPatternProvider.create factory method", async () => {
  * デバッグ情報が正確に状態を反映しているかを検証
  */
 Deno.test("Unit: ConfigPatternProvider debug output reflects current state", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       directivePattern: "^(debug)$",
       layerTypePattern: "^(debug)$",
@@ -309,11 +309,11 @@ Deno.test("Unit: ConfigPatternProvider debug output reflects current state", asy
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 初期状態
   // 注: debug()はgetterを呼ぶため、初回呼び出しでキャッシュされる
-  const debugInfo = provider.debug();
+  let debugInfo = provider.debug();
   assertEquals(debugInfo.cacheStatus.directive, "cached", "Directive gets cached on debug call");
   assertEquals(debugInfo.cacheStatus.layer, "cached", "Layer gets cached on debug call");
   assertEquals(debugInfo.hasDirectivePattern, true, "Should detect directive pattern availability");
@@ -340,7 +340,7 @@ Deno.test("Unit: ConfigPatternProvider debug output reflects current state", asy
  * 不正な正規表現パターンが設定された場合の処理を検証
  */
 Deno.test("Unit: ConfigPatternProvider handles invalid pattern strings", async () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       directivePattern: "^(invalid[", // 不正な正規表現
       layerTypePattern: "^(valid)$",
@@ -348,7 +348,7 @@ Deno.test("Unit: ConfigPatternProvider handles invalid pattern strings", async (
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 不正なパターンでもエラーをスローしない（nullを返すかデフォルトを使用）
   const directivePattern = provider.getDirectivePattern();
@@ -371,7 +371,7 @@ Deno.test("Unit: ConfigPatternProvider handles invalid pattern strings", async (
  */
 Deno.test("Unit: ConfigPatternProvider pattern extraction priority", async () => {
   // 全ての設定場所にパターンがある場合
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       // 優先度1: 直接設定
       directivePattern: "^(direct)$",
@@ -390,7 +390,7 @@ Deno.test("Unit: ConfigPatternProvider pattern extraction priority", async () =>
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 直接設定が優先されることを確認
   const directivePattern = provider.getDirectivePattern();

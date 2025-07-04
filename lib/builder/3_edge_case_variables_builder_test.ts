@@ -288,9 +288,9 @@ Deno.test("VariablesBuilder - Edge Cases: fromFactoryValues - memory and perform
     };
 
     const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const _result = _builder.build();
+    const result = _builder.build();
 
-    assertEquals(_result.ok, true, `Iteration ${i} should build successfully`);
+    assertEquals(result.ok, true, `Iteration ${i} should build successfully`);
     assertEquals(_builder.getErrorCount(), 0, `Iteration ${i} should have no errors`);
   }
 
@@ -379,11 +379,11 @@ Deno.test("VariablesBuilder - Edge Cases: validateFactoryValues - comprehensive 
   ];
 
   for (const scenario of invalidScenarios) {
-    const _result = _builder.validateFactoryValues(scenario.values);
-    assertEquals(_result.ok, false, `${scenario.name} should fail validation`);
+    const result = _builder.validateFactoryValues(scenario.values);
+    assertEquals(result.ok, false, `${scenario.name} should fail validation`);
 
-    if (!_result.ok) {
-      const errors = _result.error as BuilderVariableError[];
+    if (!result.ok) {
+      const errors = result.error as BuilderVariableError[];
       assertEquals(
         errors.some((e) => e.kind === scenario.expectedError),
         true,

@@ -14,27 +14,30 @@
 
 import { assertEquals as _assertEquals } from "jsr:@std/assert";
 import { LogLevel as _LogLevel } from "@tettuan/breakdownlogger";
-import { cleanupTestEnvironment as _cleanupTestEnvironment, setupTestEnvironment as _setupTestEnvironment } from "$test/helpers/setup.ts";
+import {
+  cleanupTestEnvironment as _cleanupTestEnvironment,
+  setupTestEnvironment as _setupTestEnvironment,
+} from "$test/helpers/setup.ts";
 
 // Basic logging tests
 Deno.test("logger - basic functionality", async () => {
-  const _testEnv = await setupTestEnvironment({
-    logLevel: LogLevel.DEBUG,
+  const testEnv = await _setupTestEnvironment({
+    logLevel: _LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/basic",
   });
 
-  testEnv._logger.debug("Debug message", { key: "logger_test.ts#L25#basic-functionality-debug" });
-  testEnv._logger.info("Info message", { key: "logger_test.ts#L26#basic-functionality-info" });
-  testEnv._logger.warn("Warning message", { key: "logger_test.ts#L27#basic-functionality-warn" });
-  testEnv._logger.error("Error message", { key: "logger_test.ts#L28#basic-functionality-error" });
+  testEnv.logger.debug("Debug message", { key: "logger_test.ts#L25#basic-functionality-debug" });
+  testEnv.logger.info("Info message", { key: "logger_test.ts#L26#basic-functionality-info" });
+  testEnv.logger.warn("Warning message", { key: "logger_test.ts#L27#basic-functionality-warn" });
+  testEnv.logger.error("Error message", { key: "logger_test.ts#L28#basic-functionality-error" });
 
-  await cleanupTestEnvironment(testEnv);
+  await _cleanupTestEnvironment(testEnv);
 });
 
 // Message formatting tests
 Deno.test("logger - message formatting", async () => {
-  const _testEnv = await setupTestEnvironment({
-    logLevel: LogLevel.DEBUG,
+  const testEnv = await _setupTestEnvironment({
+    logLevel: _LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/formatting",
   });
 
@@ -43,34 +46,34 @@ Deno.test("logger - message formatting", async () => {
   // so we can't capture output with console overrides
 
   // Test string messages
-  testEnv._logger.info("Test info message", { key: "logger_test.ts#L45#message-formatting-info" });
-  testEnv._logger.warn("Test warning message", {
+  testEnv.logger.info("Test info message", { key: "logger_test.ts#L45#message-formatting-info" });
+  testEnv.logger.warn("Test warning message", {
     key: "logger_test.ts#L46#message-formatting-warn",
   });
-  testEnv._logger.error("Test error message", {
+  testEnv.logger.error("Test error message", {
     key: "logger_test.ts#L47#message-formatting-error",
   });
-  testEnv._logger.debug("Test debug message", {
+  testEnv.logger.debug("Test debug message", {
     key: "logger_test.ts#L48#message-formatting-debug",
   });
 
   // Test messages with data
-  testEnv._logger.info("Message with data", {
+  testEnv.logger.info("Message with data", {
     key: "logger_test.ts#L51#message-formatting-data",
     data: { key: "value" },
   });
-  testEnv._logger.warn("Warning with number", {
+  testEnv.logger.warn("Warning with number", {
     key: "logger_test.ts#L52#message-formatting-number",
     number: 42,
   });
-  testEnv._logger.error("Error with array", {
+  testEnv.logger.error("Error with array", {
     key: "logger_test.ts#L53#message-formatting-array",
     array: [1, 2, 3],
   });
 
   // Test with Error objects
-  const _testError = new Error("Test error");
-  testEnv._logger.error("Error object", {
+  const testError = new Error("Test error");
+  testEnv.logger.error("Error object", {
     key: "logger_test.ts#L57#message-formatting-error-object",
     error: testError,
   });
@@ -78,18 +81,18 @@ Deno.test("logger - message formatting", async () => {
   // If we get here without throwing, the logger is working
   assertEquals(true, true);
 
-  await cleanupTestEnvironment(testEnv);
+  await _cleanupTestEnvironment(testEnv);
 });
 
 // Structured data tests
 Deno.test("logger - structured data formatting", async () => {
-  const _testEnv = await setupTestEnvironment({
-    logLevel: LogLevel.DEBUG,
+  const testEnv = await _setupTestEnvironment({
+    logLevel: _LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/structured",
   });
 
   // Test nested object
-  testEnv._logger.info("Nested object", {
+  testEnv.logger.info("Nested object", {
     key: "logger_test.ts#L73#structured-data-nested",
     user: {
       id: 123,
@@ -104,72 +107,72 @@ Deno.test("logger - structured data formatting", async () => {
   });
 
   // Test array data
-  testEnv._logger.warn("Array data", {
+  testEnv.logger.warn("Array data", {
     key: "logger_test.ts#L87#structured-data-array",
     items: [1, 2, 3],
     tags: ["test", "debug", "development"],
   });
 
   // Test special characters
-  testEnv._logger.error("Special characters", {
+  testEnv.logger.error("Special characters", {
     key: "logger_test.ts#L93#structured-data-special-chars",
     message: "Error: Invalid character 'あいうえお' in input",
     path: "C:\\Program Files\\App\\data.txt",
     symbols: "!@#$%^&*()",
   });
 
-  await cleanupTestEnvironment(testEnv);
+  await _cleanupTestEnvironment(testEnv);
 });
 
 // Error handling tests
 Deno.test("logger - error handling", async () => {
-  const _testEnv = await setupTestEnvironment({
-    logLevel: LogLevel.ERROR,
+  const testEnv = await _setupTestEnvironment({
+    logLevel: _LogLevel.ERROR,
     workingDir: "./tmp/test/logger/error",
   });
 
   // Test with string messages
-  testEnv._logger.error("Standard error message", {
+  testEnv.logger.error("Standard error message", {
     key: "logger_test.ts#L110#error-handling-standard",
   });
-  testEnv._logger.error("Another error message", {
+  testEnv.logger.error("Another error message", {
     key: "logger_test.ts#L111#error-handling-another",
   });
 
   // Test with structured error message
-  testEnv._logger.error("Error occurred", {
+  testEnv.logger.error("Error occurred", {
     key: "logger_test.ts#L114#error-handling-structured",
-    code: "ERR_001",
+    code: "ERR001",
     details: "Additional error details",
   });
 
-  await cleanupTestEnvironment(testEnv);
+  await _cleanupTestEnvironment(testEnv);
 });
 
 // Log level configuration tests
 Deno.test("logger - log level configuration", async () => {
-  const _testEnv = await setupTestEnvironment({
-    logLevel: LogLevel.DEBUG,
+  const testEnv = await _setupTestEnvironment({
+    logLevel: _LogLevel.DEBUG,
     workingDir: "./tmp/test/logger/config",
   });
 
   // Test different log levels
-  testEnv._logger.debug("Debug message", {
+  testEnv.logger.debug("Debug message", {
     key: "logger_test.ts#L130#log-level-config-debug",
     level: "debug",
   });
-  testEnv._logger.info("Info message", {
+  testEnv.logger.info("Info message", {
     key: "logger_test.ts#L131#log-level-config-info",
     level: "info",
   });
-  testEnv._logger.warn("Warning message", {
+  testEnv.logger.warn("Warning message", {
     key: "logger_test.ts#L132#log-level-config-warn",
     level: "warn",
   });
-  testEnv._logger.error("Error message", {
+  testEnv.logger.error("Error message", {
     key: "logger_test.ts#L133#log-level-config-error",
     level: "error",
   });
 
-  await cleanupTestEnvironment(testEnv);
+  await _cleanupTestEnvironment(testEnv);
 });

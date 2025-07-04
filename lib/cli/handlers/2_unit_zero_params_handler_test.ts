@@ -31,8 +31,8 @@ Deno.test("ZeroParamsHandler Unit Tests", async (t) => {
     // Test help option triggers help display
 
     // Help option set to true
-    const _result = handleZeroParams([], {}, { help: true });
-    assertEquals(_result, undefined); // void return indicates successful delegation
+    const result = handleZeroParams([], {}, { help: true });
+    assertEquals(result, undefined); // void return indicates successful delegation
 
     // Help option with other options (help takes precedence)
     const resultWithOthers = handleZeroParams([], {}, { help: true, version: true });
@@ -47,8 +47,8 @@ Deno.test("ZeroParamsHandler Unit Tests", async (t) => {
     // Test version option triggers version display
 
     // Version option set to true (without help)
-    const _result = handleZeroParams([], {}, { version: true });
-    assertEquals(_result, undefined); // void return indicates successful delegation
+    const result = handleZeroParams([], {}, { version: true });
+    assertEquals(result, undefined); // void return indicates successful delegation
 
     // Version option with string value (truthy)
     const resultWithString = handleZeroParams([], {}, { version: "1.0.0" });
@@ -63,8 +63,8 @@ Deno.test("ZeroParamsHandler Unit Tests", async (t) => {
     // Test default behavior when no help or version options
 
     // Empty options object
-    const _result = handleZeroParams([], {}, {});
-    assertEquals(_result, undefined); // should trigger usage display
+    const result = handleZeroParams([], {}, {});
+    assertEquals(result, undefined); // should trigger usage display
 
     // Options with falsy help and version
     const resultWithFalsy = handleZeroParams([], {}, { help: false, version: false });
@@ -79,8 +79,8 @@ Deno.test("ZeroParamsHandler Unit Tests", async (t) => {
     // Test that help option takes precedence over version
 
     // Both help and version true
-    const _result = handleZeroParams([], {}, { help: true, version: true });
-    assertEquals(_result, undefined); // should trigger help (precedence)
+    const result = handleZeroParams([], {}, { help: true, version: true });
+    assertEquals(result, undefined); // should trigger help (precedence)
 
     // Help true, version false
     const resultHelpOnly = handleZeroParams([], {}, { help: true, version: false });
@@ -98,14 +98,14 @@ Deno.test("ZeroParamsHandler Unit Tests", async (t) => {
     const result1 = handleZeroParams(["some", "args"], {}, { help: true });
     assertEquals(result1, undefined);
 
-    const result2 = handleZeroParams(null as unknown as string[], {}, { help: true });
+    const result2 = handleZeroParams(null as any as string[], {}, { help: true });
     assertEquals(result2, undefined);
 
     // Various config values should not affect behavior
     const result3 = handleZeroParams([], { some: "config" }, { help: true });
     assertEquals(result3, undefined);
 
-    const result4 = handleZeroParams([], null as unknown as Record<string, unknown>, {
+    const result4 = handleZeroParams([], null as any as Record<string, unknown>, {
       help: true,
     });
     assertEquals(result4, undefined);
@@ -143,16 +143,16 @@ Deno.test("ZeroParamsHandler Edge Cases", async (t) => {
   await t.step("handles null and undefined options", () => {
     // Test null options object
     try {
-      const _result = handleZeroParams([], {}, null as Record<string, unknown> | null);
-      assertEquals(_result, undefined); // should handle gracefully
+      const result = handleZeroParams([], {}, null as Record<string, unknown> | null);
+      assertEquals(result, undefined); // should handle gracefully
     } catch (_error) {
       assert(false, "Should handle null options gracefully");
     }
 
     // Test undefined options object
     try {
-      const _result = handleZeroParams([], {}, undefined as Record<string, unknown> | undefined);
-      assertEquals(_result, undefined); // should handle gracefully
+      const result = handleZeroParams([], {}, undefined as Record<string, unknown> | undefined);
+      assertEquals(result, undefined); // should handle gracefully
     } catch (_error) {
       assert(false, "Should handle undefined options gracefully");
     }
@@ -170,8 +170,8 @@ Deno.test("ZeroParamsHandler Edge Cases", async (t) => {
       func: () => "test",
     };
 
-    const _result = handleZeroParams([], {}, complexOptions);
-    assertEquals(_result, undefined); // should focus only on help/version
+    const result = handleZeroParams([], {}, complexOptions);
+    assertEquals(result, undefined); // should focus only on help/version
   });
 
   await t.step("handles non-boolean option values", () => {
@@ -220,12 +220,12 @@ Deno.test("ZeroParamsHandler Function Behavior", async (t) => {
   await t.step("executes synchronously", () => {
     // Test that function executes synchronously (no Promise return)
 
-    const _result = handleZeroParams([], {}, { help: true });
+    const result = handleZeroParams([], {}, { help: true });
 
     // Should return undefined immediately (not Promise)
-    assertEquals(_result, undefined);
+    assertEquals(result, undefined);
     // result is undefined, cannot be instanceof Promise
-    assertEquals(typeof _result, "undefined");
+    assertEquals(typeof result, "undefined");
   });
 
   await t.step("does not throw exceptions", () => {
@@ -236,26 +236,26 @@ Deno.test("ZeroParamsHandler Function Behavior", async (t) => {
       { args: [], config: {}, options: { version: true } },
       { args: [], config: {}, options: {} },
       {
-        args: null as unknown as string[],
-        config: null as unknown as Record<string, unknown>,
+        args: null as any as string[],
+        config: null as any as Record<string, unknown>,
         options: null as Record<string, unknown> | null,
       },
       {
-        args: undefined as unknown as string[],
-        config: undefined as unknown as Record<string, unknown>,
+        args: undefined as any as string[],
+        config: undefined as any as Record<string, unknown>,
         options: undefined as Record<string, unknown> | undefined,
       },
       {
-        args: "invalid" as unknown as string[],
-        config: "invalid" as unknown as Record<string, unknown>,
-        options: "invalid" as unknown as Record<string, unknown>,
+        args: "invalid" as any as string[],
+        config: "invalid" as any as Record<string, unknown>,
+        options: "invalid" as any as Record<string, unknown>,
       },
     ];
 
     for (const testCase of testCases) {
       try {
-        const _result = handleZeroParams(testCase.args, testCase.config, testCase.options);
-        assertEquals(_result, undefined);
+        const result = handleZeroParams(testCase.args, testCase.config, testCase.options);
+        assertEquals(result, undefined);
       } catch (_error) {
         assert(false, `Should not throw for input: ${JSON.stringify(testCase)}`);
       }
@@ -285,7 +285,7 @@ Deno.test("ZeroParamsHandler Function Behavior", async (t) => {
     const _config = { test: "value" };
     const options = { help: true, test: "value" };
 
-    handleZeroParams(args, config, options);
+    handleZeroParams(args, _config, options);
 
     // Input parameters should remain unchanged
     assertEquals(args, ["test"]);
@@ -348,9 +348,9 @@ Deno.test("ZeroParamsHandler Totality Functional Tests", async (t) => {
     // Every value type should be handled functionally
     for (const options of optionValueTypes) {
       try {
-        const _result = handleZeroParams([], {}, options);
+        const result = handleZeroParams([], {}, options);
         assertEquals(
-          _result,
+          result,
           undefined,
           `Option values should be handled: ${JSON.stringify(options)}`,
         );
@@ -389,8 +389,8 @@ Deno.test("ZeroParamsHandler Totality Functional Tests", async (t) => {
     // Every behavior should execute without functional errors
     for (const test of behaviorTests) {
       try {
-        const _result = handleZeroParams([], {}, test.options);
-        assertEquals(_result, undefined, `Behavior ${test.expectedBehavior} should complete`);
+        const result = handleZeroParams([], {}, test.options);
+        assertEquals(result, undefined, `Behavior ${test.expectedBehavior} should complete`);
       } catch (error) {
         assert(false, `Behavioral exhaustiveness failed for ${test.expectedBehavior}: ${error}`);
       }
@@ -420,12 +420,12 @@ Deno.test("ZeroParamsHandler Totality Functional Tests", async (t) => {
       const results = [];
       for (let i = 0; i < 5; i++) {
         try {
-          const _result = handleZeroParams(
+          const result = handleZeroParams(
             test.args as string[],
             test.config as Record<string, unknown>,
             test.options as Record<string, unknown> | null | undefined,
           );
-          results.push(_result);
+          results.push(result);
         } catch (error) {
           assert(false, `Determinism violation on call ${i} for ${JSON.stringify(test)}: ${error}`);
         }
@@ -474,13 +474,13 @@ Deno.test("ZeroParamsHandler Totality Functional Tests", async (t) => {
     // Every parameter combination should be handled functionally
     for (const combo of parameterCombinations) {
       try {
-        const _result = handleZeroParams(
+        const result = handleZeroParams(
           combo.args as string[],
           combo.config as Record<string, unknown>,
           combo.options as Record<string, unknown> | null | undefined,
         );
         assertEquals(
-          _result,
+          result,
           undefined,
           `Parameter combination should be handled: ${JSON.stringify(combo)}`,
         );
@@ -529,8 +529,8 @@ Deno.test("ZeroParamsHandler Totality Functional Tests", async (t) => {
     // Every precedence scenario should execute correctly
     for (const scenario of precedenceScenarios) {
       try {
-        const _result = handleZeroParams([], {}, scenario.options);
-        assertEquals(_result, undefined, `Precedence scenario ${scenario.winner} should complete`);
+        const result = handleZeroParams([], {}, scenario.options);
+        assertEquals(result, undefined, `Precedence scenario ${scenario.winner} should complete`);
       } catch (error) {
         assert(
           false,

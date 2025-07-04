@@ -17,16 +17,16 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
   handleTwoParams,
   handleTwoParamsClean,
   type TwoParamsHandlerError,
 } from "./two_params_handler_refactored.ts";
-import { isError } from "../../types/_result.ts";
+import { isError } from "../../types/result.ts";
 
-const _logger = new BreakdownLogger("architecture-two-params-handler-refactored");
+const _logger = new _BreakdownLogger("architecture-two-params-handler-refactored");
 
 describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
   it("should follow Totality principle with Result types (no exceptions)", async () => {
@@ -41,10 +41,10 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
 
     for (const { params, config, options } of testCases) {
       try {
-        const _result = await handleTwoParams(params, config, options);
+        const result = await handleTwoParams(params, config, options);
         // Should return Result type
         assert("ok" in result);
-        assertEquals(_result.ok, false); // All test cases should fail
+        assertEquals(result.ok, false); // All test cases should fail
       } catch (e) {
         // Should never throw - violates Totality
         throw new Error(`Totality violation: threw exception instead of returning Result: ${e}`);
@@ -107,7 +107,7 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     assert("ok" in result2);
 
     // Error structures should be identical if both fail
-    if (!_result1.ok && !_result2.ok) {
+    if (!result1.ok && !result2.ok) {
       assertEquals(result1.error.kind, result2.error.kind);
     }
   });
@@ -118,7 +118,7 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     // The handler should delegate to internal orchestrator
     // Verify by checking that the external interface is minimal
 
-    const _result = await handleTwoParams(["to", "project"], {}, { skipStdin: true });
+    const result = await handleTwoParams(["to", "project"], {}, { skipStdin: true });
 
     // Should complete orchestration flow
     assert("ok" in result);
@@ -141,8 +141,8 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     ]);
 
     // All should complete (may fail at various points)
-    results.forEach((_result, index) => {
-      assert("ok" in _result, `Result ${index} should have ok property`);
+    results.forEach((result, index) => {
+      assert("ok" in result, `Result ${index} should have ok property`);
     });
 
     // Clean version should also work
@@ -163,17 +163,17 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     // - Input processing (delegated to orchestrator)
     // - Business logic (delegated to orchestrator)
 
-    const _result = await handleTwoParams([], {}, {}); // Invalid params
-    assertEquals(_result.ok, false);
+    const result = await handleTwoParams([], {}, {}); // Invalid params
+    assertEquals(result.ok, false);
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Error should come from internal orchestration
-      assertEquals(_result.error.kind, "InvalidParameterCount");
+      assertEquals(result.error.kind, "InvalidParameterCount");
 
       // Type-safe property access with proper discriminated union handling
-      if (_result.error.kind === "InvalidParameterCount") {
-        assertEquals(_result.error.received, 0);
-        assertEquals(_result.error.expected, 2);
+      if (result.error.kind === "InvalidParameterCount") {
+        assertEquals(result.error.received, 0);
+        assertEquals(result.error.expected, 2);
       }
     }
   });
@@ -201,12 +201,12 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     ];
 
     for (const test of errorTests) {
-      const _result = await handleTwoParams(test.params, {}, { skipStdin: true });
-      assertEquals(_result.ok, false, `${test.description} should fail`);
+      const result = await handleTwoParams(test.params, {}, { skipStdin: true });
+      assertEquals(result.ok, false, `${test.description} should fail`);
 
-      if (!_result.ok) {
+      if (!result.ok) {
         assertEquals(
-          _result.error.kind,
+          result.error.kind,
           test.expectedKind,
           `${test.description} should return ${test.expectedKind}`,
         );
@@ -237,7 +237,7 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     ];
 
     for (const { params, config, options } of unsafeInputs) {
-      const _result = await handleTwoParams(params, config, options);
+      const result = await handleTwoParams(params, config, options);
       // Should handle gracefully without type errors
       assert("ok" in result);
     }
@@ -251,11 +251,11 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     const options = { option: "test" };
 
     // Store original values
-    const originalParams = [...params];
-    const originalConfig = { ...config };
+    const originalParams = [..._params];
+    const originalConfig = { ..._config };
     const originalOptions = { ...options };
 
-    await handleTwoParams(params, config, options);
+    await handleTwoParams(_params, _config, options);
 
     // Inputs should not be mutated
     assertEquals(_params, originalParams);
@@ -307,7 +307,7 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     // - Directly access components
     // - Handle complex state management
 
-    const _result = await handleTwoParams(
+    const result = await handleTwoParams(
       ["to", "project"],
       { timeout: 1000 },
       { "uv-test": "value", skipStdin: true },
@@ -316,10 +316,10 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     // Result structure should be clean
     assert("ok" in result);
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Error should have clean structure from orchestration
-      assertExists(_result.error.kind);
-      assert(typeof _result.error.kind === "string");
+      assertExists(result.error.kind);
+      assert(typeof result.error.kind === "string");
     }
   });
 
@@ -338,18 +338,18 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     const results = await Promise.all(concurrentCalls);
 
     // All calls should complete
-    results.forEach((_result, index) => {
-      assert("ok" in _result, `Concurrent call ${index} should complete`);
+    results.forEach((result, index) => {
+      assert("ok" in result, `Concurrent call ${index} should complete`);
     });
 
     // Results should be independent
     if (results.every((r) => !r.ok)) {
       // If all fail, they should fail for the same reason (expected)
       const firstErrorKind = results[0].ok ? null : results[0].error.kind;
-      results.forEach((_result, index) => {
-        if (!_result.ok) {
+      results.forEach((result, index) => {
+        if (!result.ok) {
           assertEquals(
-            _result.error.kind,
+            result.error.kind,
             firstErrorKind,
             `Call ${index} should have consistent error`,
           );
@@ -361,32 +361,32 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
   it("should maintain error context through orchestration layers", async () => {
     _logger.debug("Testing error context preservation");
 
-    const _result = await handleTwoParams(
+    const result = await handleTwoParams(
       ["invalid_demo", "invalid_layer"],
       {},
       { skipStdin: true },
     );
 
-    if (!_result.ok) {
+    if (!result.ok) {
       // Error should provide sufficient context
-      assert("kind" in _result.error);
+      assert("kind" in result.error);
 
       // Depending on error type, should have relevant context
-      if ("value" in _result.error) {
-        assert(typeof _result.error.value === "string");
-        assert(_result.error.value.length > 0);
+      if ("value" in result.error) {
+        assert(typeof result.error.value === "string");
+        assert(result.error.value.length > 0);
       }
 
-      if ("validTypes" in _result.error) {
-        assert(Array.isArray(_result.error.validTypes));
+      if ("validTypes" in result.error) {
+        assert(Array.isArray(result.error.validTypes));
       }
 
-      if ("errors" in _result.error) {
-        assert(Array.isArray(_result.error.errors));
+      if ("errors" in result.error) {
+        assert(Array.isArray(result.error.errors));
       }
 
-      if ("error" in _result.error) {
-        assert(typeof _result.error.error === "string");
+      if ("error" in result.error) {
+        assert(typeof result.error.error === "string");
       }
     }
   });

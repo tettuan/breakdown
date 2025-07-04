@@ -15,11 +15,11 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import * as mod from "./mod.ts";
 
-const _logger = new BreakdownLogger("mod-architecture");
+const logger = new BreakdownLogger("mod-architecture");
 
 describe("Architecture: Commands Module Structure", () => {
   it("should export required public interfaces", () => {
-    _logger.debug("Testing module exports");
+    logger.debug("Testing module exports");
 
     // Required interface exports (TypeScript interfaces are not runtime objects)
     // Verify interfaces exist by checking the module has the expected function signatures
@@ -46,11 +46,11 @@ describe("Architecture: Commands Module Structure", () => {
     assertEquals(typeof mod.displayHelp, "function", "displayHelp must be a function");
     assertEquals(typeof mod.displayVersion, "function", "displayVersion must be a function");
 
-    _logger.debug("Module exports verification completed");
+    logger.debug("Module exports verification completed");
   });
 
   it("should maintain proper dependency boundaries", () => {
-    _logger.debug("Testing dependency boundaries");
+    logger.debug("Testing dependency boundaries");
 
     // Check function signatures for proper parameter counts
     assertEquals(mod.initWorkspace.length, 2, "initWorkspace should accept 2 parameters");
@@ -86,11 +86,11 @@ describe("Architecture: Commands Module Structure", () => {
       "displayVersion should be sync function",
     );
 
-    _logger.debug("Dependency boundaries verification completed");
+    logger.debug("Dependency boundaries verification completed");
   });
 
   it("should follow command orchestration patterns", () => {
-    _logger.debug("Testing command orchestration patterns");
+    logger.debug("Testing command orchestration patterns");
 
     // All command functions should return CommandResult (Promise<CommandResult> for async)
     const helpResult = mod.displayHelp();
@@ -110,11 +110,11 @@ describe("Architecture: Commands Module Structure", () => {
     assertEquals(typeof versionResult.success, "boolean", "Success should be boolean");
     assertEquals(typeof versionResult.output, "string", "Output should be string");
 
-    _logger.debug("Command orchestration patterns verification completed");
+    logger.debug("Command orchestration patterns verification completed");
   });
 
   it("should isolate external dependencies properly", () => {
-    _logger.debug("Testing external dependency isolation");
+    logger.debug("Testing external dependency isolation");
 
     // Check function implementations for proper dependency usage
     const initWorkspaceString = mod.initWorkspace.toString();
@@ -141,18 +141,18 @@ describe("Architecture: Commands Module Structure", () => {
 
     // Should not expose internal runPromptProcessing function
     assertEquals(
-      (mod as unknown).runPromptProcessing,
+      (mod as any).runPromptProcessing,
       undefined,
       "runPromptProcessing should not be exported (internal function)",
     );
 
-    _logger.debug("External dependency isolation verification completed");
+    logger.debug("External dependency isolation verification completed");
   });
 });
 
 describe("Architecture: Interface Design", () => {
   it("should define CommandResult interface properly", () => {
-    _logger.debug("Testing CommandResult interface design");
+    logger.debug("Testing CommandResult interface design");
 
     // Test interface through actual usage
     const helpResult = mod.displayHelp();
@@ -175,11 +175,11 @@ describe("Architecture: Interface Design", () => {
       "error must be string, object, or null",
     );
 
-    _logger.debug("CommandResult interface design verification completed");
+    logger.debug("CommandResult interface design verification completed");
   });
 
   it("should define GenerateWithPromptOptions interface comprehensively", () => {
-    _logger.debug("Testing GenerateWithPromptOptions interface design");
+    logger.debug("Testing GenerateWithPromptOptions interface design");
 
     // Interface should support all documented options
     // We can verify this through function parameter handling
@@ -199,11 +199,11 @@ describe("Architecture: Interface Design", () => {
       "generateWithPrompt should pass options through",
     );
 
-    _logger.debug("GenerateWithPromptOptions interface design verification completed");
+    logger.debug("GenerateWithPromptOptions interface design verification completed");
   });
 
   it("should maintain consistent error handling patterns", () => {
-    _logger.debug("Testing error handling patterns");
+    logger.debug("Testing error handling patterns");
 
     // Check error handling in function implementations
     const initWorkspaceString = mod.initWorkspace.toString();
@@ -235,13 +235,13 @@ describe("Architecture: Interface Design", () => {
       "generateWithPrompt should delegate error handling to runPromptProcessing",
     );
 
-    _logger.debug("Error handling patterns verification completed");
+    logger.debug("Error handling patterns verification completed");
   });
 });
 
 describe("Architecture: Command Function Contracts", () => {
   it("should maintain initWorkspace contract", () => {
-    _logger.debug("Testing initWorkspace contract");
+    logger.debug("Testing initWorkspace contract");
 
     // Parameter contract
     assertEquals(mod.initWorkspace.length, 2, "Should accept 2 parameters");
@@ -268,11 +268,11 @@ describe("Architecture: Command Function Contracts", () => {
       "Should use config for schema base directory",
     );
 
-    _logger.debug("initWorkspace contract verification completed");
+    logger.debug("initWorkspace contract verification completed");
   });
 
   it("should maintain generateWithPrompt contract", () => {
-    _logger.debug("Testing generateWithPrompt contract");
+    logger.debug("Testing generateWithPrompt contract");
 
     // Parameter contract (required parameters before defaults)
     assertEquals(mod.generateWithPrompt.length, 3, "Should accept 3 required parameters");
@@ -294,11 +294,11 @@ describe("Architecture: Command Function Contracts", () => {
       "Should delegate to runPromptProcessing",
     );
 
-    _logger.debug("generateWithPrompt contract verification completed");
+    logger.debug("generateWithPrompt contract verification completed");
   });
 
   it("should maintain display function contracts", () => {
-    _logger.debug("Testing display function contracts");
+    logger.debug("Testing display function contracts");
 
     // Both should accept no parameters
     assertEquals(mod.displayHelp.length, 0, "displayHelp should accept no parameters");
@@ -336,13 +336,13 @@ describe("Architecture: Command Function Contracts", () => {
       "Version output should contain version prefix",
     );
 
-    _logger.debug("Display function contracts verification completed");
+    logger.debug("Display function contracts verification completed");
   });
 });
 
 describe("Architecture: Module Cohesion", () => {
   it("should group related command functions logically", () => {
-    _logger.debug("Testing module cohesion");
+    logger.debug("Testing module cohesion");
 
     // Module should contain high-level command entry points
     const moduleExports = Object.getOwnPropertyNames(mod);
@@ -373,11 +373,11 @@ describe("Architecture: Module Cohesion", () => {
       "Should not expose internal AppConfig interface",
     );
 
-    _logger.debug("Module cohesion verification completed");
+    logger.debug("Module cohesion verification completed");
   });
 
   it("should maintain separation between command types", () => {
-    _logger.debug("Testing command type separation");
+    logger.debug("Testing command type separation");
 
     // Workspace initialization commands
     assertEquals(typeof mod.initWorkspace, "function", "Workspace commands should be functions");
@@ -416,6 +416,6 @@ describe("Architecture: Module Cohesion", () => {
       "Information commands should be sync",
     );
 
-    _logger.debug("Command type separation verification completed");
+    logger.debug("Command type separation verification completed");
   });
 });

@@ -8,9 +8,9 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("test-structure-workspace-initializer");
+const _logger = new _BreakdownLogger("test-structure-workspace-initializer");
 
 Deno.test("Structure: workspace_initializer - single responsibility", async () => {
   _logger.debug("構造テスト開始: 単一責任の原則", {

@@ -5,7 +5,7 @@
  * リソース管理とクリーンアップを適切に行い、テストの冪等性を確保します。
  */
 
-import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 // Core interfaces
 export interface StdinReader {

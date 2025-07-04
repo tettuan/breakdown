@@ -76,7 +76,7 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
     const factoryValues: FactoryResolvedValues = {
       promptFilePath: "/prompts/to_task.md",
       inputFilePath: "-", // Stdin indicator
-      outputFilePath: "/workspace/task_result.md",
+      outputFilePath: "/workspace/taskresult.md",
       schemaFilePath: "/config/task_schema.json",
       customVariables: {
         "uv-task-priority": "high",
@@ -99,7 +99,7 @@ Deno.test("VariablesBuilder Integration: Complete TwoParamsProcessor workflow", 
     assertEquals(record.input_text, "Task description from stdin", "Should include stdin content");
     assertEquals(
       record.destination_path,
-      "/workspace/task_result.md",
+      "/workspace/taskresult.md",
       "Should include output path",
     );
 
@@ -250,10 +250,10 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
       };
 
       const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
-      const _result = _builder.build();
+      const result = _builder.build();
 
-      assertEquals(_result.ok, true, `Batch ${i} should process successfully`);
-      results.push(_result);
+      assertEquals(result.ok, true, `Batch ${i} should process successfully`);
+      results.push(result);
     }
 
     const endTime = performance.now();
@@ -286,10 +286,10 @@ Deno.test("VariablesBuilder Integration: Performance with realistic processor lo
       const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
       builders.push(_builder);
 
-      const _result = _builder.build();
-      assertEquals(_result.ok, true, `Memory test ${i} should build successfully`);
+      const result = _builder.build();
+      assertEquals(result.ok, true, `Memory test ${i} should build successfully`);
 
-      if (_result.ok) {
+      if (result.ok) {
         records.push(_builder.toRecord());
       }
     }
@@ -336,7 +336,11 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
     _builder.addFromPartialFactoryValues(stage2Partial);
 
     // May or may not have conflict errors depending on variable creation
-    assertEquals(_builder.getErrorCount() >= 0, true, "Should handle stage conflicts appropriately");
+    assertEquals(
+      _builder.getErrorCount() >= 0,
+      true,
+      "Should handle stage conflicts appropriately",
+    );
 
     const buildResult = _builder.build();
     // Build may succeed or fail depending on variable creation
@@ -367,11 +371,11 @@ Deno.test("VariablesBuilder Integration: Complex real-world scenarios", async (t
     };
 
     const _builder = VariablesBuilder.fromFactoryValues(factoryValues);
-    const _result = _builder.build();
+    const result = _builder.build();
 
-    assertEquals(_result.ok, true, "Should handle cross-module variables successfully");
+    assertEquals(result.ok, true, "Should handle cross-module variables successfully");
 
-    if (_result.ok) {
+    if (result.ok) {
       const record = _builder.toRecord();
 
       // Check if module variables are present

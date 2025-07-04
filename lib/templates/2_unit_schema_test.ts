@@ -1,8 +1,8 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { schema } from "./schema.ts";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { _schema as schema } from "./schema.ts";
 
-const _logger = new BreakdownLogger("test-unit-schema");
+const _logger = new _BreakdownLogger("test-unit-schema");
 
 Deno.test("Unit: schema export exists and is an object", () => {
   _logger.debug("単体テスト開始: schemaエクスポート", {

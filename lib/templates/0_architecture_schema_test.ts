@@ -1,8 +1,8 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { schema } from "./schema.ts";
+import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { _schema as schema } from "./schema.ts";
 
-const _logger = new BreakdownLogger("test-architecture-schema");
+const _logger = new _BreakdownLogger("test-architecture-schema");
 
 Deno.test("Architecture: schema.ts follows module boundary rules", () => {
   _logger.debug("アーキテクチャテスト開始: schema.ts", {

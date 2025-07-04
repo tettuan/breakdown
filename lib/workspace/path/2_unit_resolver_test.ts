@@ -1,14 +1,14 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { WorkspacePathResolverImpl } from "./_resolver.ts";
+import { WorkspacePathResolverImpl } from "./resolver.ts";
 import { PlatformAgnosticPathStrategy } from "./strategies.ts";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspacePathResolver", async (t) => {
   // Pre-processing and Preparing Part
   const _baseDir = "/workspace";
-  const strategy = new PlatformAgnosticPathStrategy(baseDir);
+  const strategy = new PlatformAgnosticPathStrategy(_baseDir);
   const _resolver = new WorkspacePathResolverImpl(strategy);
-  const _logger = new BreakdownLogger();
+  const _logger = new _BreakdownLogger();
 
   // Main Test
   await t.step("should handle path resolution and normalization", async () => {
@@ -60,7 +60,7 @@ Deno.test("WorkspacePathResolver", async (t) => {
 
   await t.step("should support strategy updates", async () => {
     _logger.debug("Testing strategy updates");
-    const newStrategy = new PlatformAgnosticPathStrategy(baseDir);
+    const newStrategy = new PlatformAgnosticPathStrategy(_baseDir);
     _resolver.updateStrategy(newStrategy);
     assertEquals(await _resolver.resolve("test"), "/workspace/test");
   });

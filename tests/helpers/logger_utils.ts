@@ -7,7 +7,7 @@
  * - Ensure consistent logging patterns across test files
  */
 
-import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Phases for test logging
@@ -49,7 +49,7 @@ export function createLogKey(
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-  return `${baseFilename}#L${line}#${phase}-${sanitizedDescription}`;
+  return `${_baseFilename}#L${line}#${phase}-${sanitizedDescription}`;
 }
 
 /**

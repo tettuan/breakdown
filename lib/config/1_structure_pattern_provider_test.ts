@@ -29,7 +29,7 @@ Deno.test("Structure: ConfigPatternProvider class structure", () => {
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // インスタンスの型確認
   assertInstanceOf(provider, ConfigPatternProvider, "Should create ConfigPatternProvider instance");
@@ -49,12 +49,12 @@ Deno.test("Structure: ConfigPatternProvider class structure", () => {
  * - キャッシュ状態の管理
  */
 Deno.test("Structure: Pattern cache mechanism structure", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}),
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // キャッシュクリアメソッドの存在と構造
   assertEquals(typeof provider.clearCache, "function", "clearCache should be a function");
@@ -109,12 +109,12 @@ Deno.test("Structure: Factory method structure", () => {
  * 同じ構造パターンに従っているかを検証
  */
 Deno.test("Structure: Pattern getter methods consistency", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}),
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 両メソッドが同じ返り値の型構造を持つ（Pattern | null）
   const directiveResult = provider.getDirectivePattern();
@@ -141,7 +141,7 @@ Deno.test("Structure: Pattern getter methods consistency", () => {
  * パブリックAPIの振る舞いから構造を推測
  */
 Deno.test("Structure: Configuration extraction responsibility separation", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({
       directivePattern: "test-pattern",
       layerTypePattern: "test-layer-pattern",
@@ -149,10 +149,10 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 異なる設定構造に対する対応（責務の分離を示唆）
-  const mockConfigNested = {
+  const _mockConfigNested = {
     getConfig: () => ({
       twoParamsRules: {
         directive: { pattern: "nested-pattern" },
@@ -162,7 +162,7 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const providerNested = new ConfigPatternProvider(mockConfigNested);
+  const providerNested = new ConfigPatternProvider(_mockConfigNested);
 
   // 両方のプロバイダーが動作することで、
   // 設定抽出ロジックが適切に構造化されていることを確認
@@ -176,12 +176,12 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
  * デバッグメソッドが返す情報の構造が適切かを検証
  */
 Deno.test("Structure: Debug information structure", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}),
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
   const debugInfo = provider.debug();
 
   // デバッグ情報の構造を検証
@@ -215,17 +215,17 @@ Deno.test("Structure: Debug information structure", () => {
  * 両方のパターンの有効性を確認するメソッドの構造を検証
  */
 Deno.test("Structure: hasValidPatterns method logic structure", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}),
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // hasValidPatternsは両方のパターンの論理積を返すべき
-  const _result = provider.hasValidPatterns();
+  const result = provider.hasValidPatterns();
   assertEquals(
-    typeof _result,
+    typeof result,
     "boolean",
     "hasValidPatterns should return boolean",
   );
@@ -234,7 +234,7 @@ Deno.test("Structure: hasValidPatterns method logic structure", () => {
   const debugInfo = provider.debug();
   const expectedResult = debugInfo.hasDirectivePattern && debugInfo.hasLayerTypePattern;
   assertEquals(
-    _result,
+    result,
     expectedResult,
     "hasValidPatterns should be consistent with debug info",
   );
@@ -249,14 +249,14 @@ Deno.test("Structure: hasValidPatterns method logic structure", () => {
  */
 Deno.test("Structure: Error handling structural consistency", () => {
   // 不正な設定でのパターン取得
-  const mockConfigWithError = {
+  const _mockConfigWithError = {
     getConfig: () => {
       throw new Error("Config error");
     },
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfigWithError);
+  const provider = new ConfigPatternProvider(_mockConfigWithError);
 
   // パターン取得メソッドはエラー時にnullを返す構造
   const directivePattern = provider.getDirectivePattern();
@@ -281,12 +281,12 @@ Deno.test("Structure: Error handling structural consistency", () => {
  * パターン提供という単一の責務に凝集しているかを検証
  */
 Deno.test("Structure: Responsibility cohesion", () => {
-  const mockConfig = {
+  const _mockConfig = {
     getConfig: () => ({}),
     loadConfig: async () => {},
   } as unknown as BreakdownConfig;
 
-  const provider = new ConfigPatternProvider(mockConfig);
+  const provider = new ConfigPatternProvider(_mockConfig);
 
   // 全ての公開メソッドがパターン関連の責務を持つ
   const patternRelatedMethods = [

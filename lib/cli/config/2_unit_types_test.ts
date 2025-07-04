@@ -112,9 +112,9 @@ Deno.test("Unit: Config types are compatible with application usage", () => {
     output_directory: options.outputDir || defaultConfig.output_directory,
   };
 
-  assertEquals(mergedConfig.working_directory, "/custom/working", "Should use option override");
-  assertEquals(mergedConfig.output_directory, "/custom/output", "Should use option override");
-  assertEquals(mergedConfig.default_config_path, "/default/config.yml", "Should keep default");
+  assertEquals(_mergedConfig.working_directory, "/custom/working", "Should use option override");
+  assertEquals(_mergedConfig.output_directory, "/custom/output", "Should use option override");
+  assertEquals(_mergedConfig.default_config_path, "/default/config.yml", "Should keep default");
 
   // Test spread operator compatibility
   const spreadTest = { ...defaultConfig };

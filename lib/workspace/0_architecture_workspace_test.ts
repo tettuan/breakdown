@@ -7,12 +7,12 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { WorkspaceImpl } from "./_workspace.ts";
+import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
+import { WorkspaceImpl } from "./workspace.ts";
 import { Workspace, WorkspaceConfig } from "./interfaces.ts";
 
 Deno.test("Workspace Architecture", async (t) => {
-  const _logger = new BreakdownLogger("architecture-test");
+  const _logger = new _BreakdownLogger("architecture-test");
 
   await t.step("should implement Workspace interface correctly", () => {
     _logger.debug("Testing Workspace interface implementation");
@@ -24,28 +24,28 @@ Deno.test("Workspace Architecture", async (t) => {
     });
 
     // Verify all required methods exist
-    assertExists(_workspace.initialize);
-    assertExists(_workspace.resolvePath);
-    assertExists(_workspace.createDirectory);
-    assertExists(_workspace.removeDirectory);
-    assertExists(_workspace.exists);
-    assertExists(_workspace.getPromptBaseDir);
-    assertExists(_workspace.getSchemaBaseDir);
-    assertExists(_workspace.getWorkingDir);
-    assertExists(_workspace.validateConfig);
-    assertExists(_workspace.reloadConfig);
+    assertExists(workspace.initialize);
+    assertExists(workspace.resolvePath);
+    assertExists(workspace.createDirectory);
+    assertExists(workspace.removeDirectory);
+    assertExists(workspace.exists);
+    assertExists(workspace.getPromptBaseDir);
+    assertExists(workspace.getSchemaBaseDir);
+    assertExists(workspace.getWorkingDir);
+    assertExists(workspace.validateConfig);
+    assertExists(workspace.reloadConfig);
 
     // Verify method signatures return promises
-    assertEquals(typeof _workspace.initialize, "function");
-    assertEquals(typeof _workspace.resolvePath, "function");
-    assertEquals(typeof _workspace.createDirectory, "function");
-    assertEquals(typeof _workspace.removeDirectory, "function");
-    assertEquals(typeof _workspace.exists, "function");
-    assertEquals(typeof _workspace.getPromptBaseDir, "function");
-    assertEquals(typeof _workspace.getSchemaBaseDir, "function");
-    assertEquals(typeof _workspace.getWorkingDir, "function");
-    assertEquals(typeof _workspace.validateConfig, "function");
-    assertEquals(typeof _workspace.reloadConfig, "function");
+    assertEquals(typeof workspace.initialize, "function");
+    assertEquals(typeof workspace.resolvePath, "function");
+    assertEquals(typeof workspace.createDirectory, "function");
+    assertEquals(typeof workspace.removeDirectory, "function");
+    assertEquals(typeof workspace.exists, "function");
+    assertEquals(typeof workspace.getPromptBaseDir, "function");
+    assertEquals(typeof workspace.getSchemaBaseDir, "function");
+    assertEquals(typeof workspace.getWorkingDir, "function");
+    assertEquals(typeof workspace.validateConfig, "function");
+    assertEquals(typeof workspace.reloadConfig, "function");
   });
 
   await t.step("should have correct dependency direction", () => {

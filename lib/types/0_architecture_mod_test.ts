@@ -15,13 +15,13 @@ import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("types-mod-architecture");
+const logger = new BreakdownLogger("types-mod-architecture");
 
 describe("Architecture: Module boundary enforcement", () => {
   it("should export all public types from the module", async () => {
-    _logger.debug("Testing module exports completeness");
+    logger.debug("Testing module exports completeness");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // New Totality-compliant types
     assertExists(_mod.DirectiveType, "DirectiveType must be exported");
@@ -63,13 +63,13 @@ describe("Architecture: Module boundary enforcement", () => {
     assertExists(_mod.DemonstrativeTypeGuards, "DemonstrativeTypeGuards must be exported");
     assertExists(_mod.LegacyLayerTypeGuards, "LegacyLayerTypeGuards must be exported");
 
-    _logger.debug("Module exports validation completed");
+    logger.debug("Module exports validation completed");
   });
 
   it("should not expose internal implementation details", async () => {
-    _logger.debug("Testing encapsulation boundaries");
+    logger.debug("Testing encapsulation boundaries");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // These should not be exposed at module level
     const unexpectedExports = [
@@ -88,15 +88,15 @@ describe("Architecture: Module boundary enforcement", () => {
       );
     }
 
-    _logger.debug("Encapsulation boundary verification completed");
+    logger.debug("Encapsulation boundary verification completed");
   });
 });
 
 describe("Architecture: Export structure validation", () => {
   it("should group exports by functionality", async () => {
-    _logger.debug("Testing export organization");
+    logger.debug("Testing export organization");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // Totality types group
     const totalityTypes = [
@@ -139,13 +139,13 @@ describe("Architecture: Export structure validation", () => {
       assertExists((mod as unknown)[util], `Result utility ${util} must be exported`);
     }
 
-    _logger.debug("Export organization validation completed");
+    logger.debug("Export organization validation completed");
   });
 
   it("should maintain backward compatibility for legacy types", async () => {
-    _logger.debug("Testing legacy type compatibility");
+    logger.debug("Testing legacy type compatibility");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // Legacy type aliases are types, not runtime values
     // They cannot be tested at runtime since TypeScript types don't exist in JavaScript
@@ -162,13 +162,13 @@ describe("Architecture: Export structure validation", () => {
       "LegacyLayerType type alias must be exported",
     );
 
-    _logger.debug("Legacy compatibility verification completed");
+    logger.debug("Legacy compatibility verification completed");
   });
 });
 
 describe("Architecture: Dependency direction verification", () => {
   it("should not import from higher-level modules", async () => {
-    _logger.debug("Testing dependency direction constraints");
+    logger.debug("Testing dependency direction constraints");
 
     // Read the module source to check imports
     const moduleSource = await Deno.readTextFile("./lib/types/_mod.ts");
@@ -191,18 +191,18 @@ describe("Architecture: Dependency direction verification", () => {
       );
     }
 
-    _logger.debug("Dependency direction verification completed");
+    logger.debug("Dependency direction verification completed");
   });
 
   it("should only import from allowed modules", async () => {
-    _logger.debug("Testing allowed dependencies");
+    logger.debug("Testing allowed dependencies");
 
     const moduleSource = await Deno.readTextFile("./lib/types/_mod.ts");
 
     // Allowed internal imports
     const allowedPatterns = [
       /from\s+"\.\/[^"]+"/g, // Same directory imports
-      /from\s+"\.\.\/factory\/prompt_variables_factory\.ts"/g, // Specific factory import
+      /from\s+"\.\.\/factory\/prompt_variablesfactory\.ts"/g, // Specific factory import
       /from\s+"@tettuan\/breakdownparams"/g, // External dependency
       /from\s+"@tettuan\/breakdown\/lib\/types\/mod\.ts"/g, // Self-import in tests
     ];
@@ -212,7 +212,7 @@ describe("Architecture: Dependency direction verification", () => {
 
     for (const match of importMatches) {
       const importPath = match[0];
-      const isAllowed = false;
+      let isAllowed = false;
 
       // Reset RegExp lastIndex before testing
       for (const pattern of allowedPatterns) {
@@ -230,15 +230,15 @@ describe("Architecture: Dependency direction verification", () => {
       );
     }
 
-    _logger.debug("Allowed dependencies verification completed");
+    logger.debug("Allowed dependencies verification completed");
   });
 });
 
 describe("Architecture: Type safety architecture", () => {
   it("should enforce Totality principle through type exports", async () => {
-    _logger.debug("Testing Totality principle enforcement");
+    logger.debug("Testing Totality principle enforcement");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // Totality types should have factory methods
     assertEquals(
@@ -254,17 +254,17 @@ describe("Architecture: Type safety architecture", () => {
     );
 
     // TypeFactory should provide centralized type creation
-    const _factory = _mod.TypeFactory;
+    const factory = _mod.TypeFactory;
     assertExists(factory, "TypeFactory must be exported");
     assertEquals(typeof factory, "function", "TypeFactory should be a constructor");
 
-    _logger.debug("Totality principle enforcement verified");
+    logger.debug("Totality principle enforcement verified");
   });
 
   it("should provide Result type for error handling", async () => {
-    _logger.debug("Testing Result type architecture");
+    logger.debug("Testing Result type architecture");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // Result constructors
     assertExists(_mod.ok, "ok constructor must be exported");
@@ -287,15 +287,15 @@ describe("Architecture: Type safety architecture", () => {
     const errorResult = _mod.error("test error");
     assertEquals(_mod.isError(errorResult), true, "error() should create error Result");
 
-    _logger.debug("Result type architecture verified");
+    logger.debug("Result type architecture verified");
   });
 });
 
 describe("Architecture: Module cohesion and coupling", () => {
   it("should have high cohesion within type module", async () => {
-    _logger.debug("Testing module cohesion");
+    logger.debug("Testing module cohesion");
 
-    const _mod = await import("./mod.ts");
+    const mod = await import("./mod.ts");
 
     // All exports should be type-related
     const exportNames = Object.keys(_mod);
@@ -317,11 +317,11 @@ describe("Architecture: Module cohesion and coupling", () => {
       );
     }
 
-    _logger.debug("Module cohesion verification completed");
+    logger.debug("Module cohesion verification completed");
   });
 
   it("should have loose coupling with other modules", async () => {
-    _logger.debug("Testing module coupling");
+    logger.debug("Testing module coupling");
 
     // Count external dependencies
     const moduleSource = await Deno.readTextFile("./lib/types/_mod.ts");
@@ -354,13 +354,13 @@ describe("Architecture: Module cohesion and coupling", () => {
       }
     }
 
-    _logger.debug("Module coupling verification completed");
+    logger.debug("Module coupling verification completed");
   });
 });
 
 describe("Architecture: Documentation and contracts", () => {
   it("should have comprehensive module documentation", async () => {
-    _logger.debug("Testing module documentation");
+    logger.debug("Testing module documentation");
 
     const moduleSource = await Deno.readTextFile("./lib/types/_mod.ts");
 
@@ -391,11 +391,11 @@ describe("Architecture: Documentation and contracts", () => {
       "Should document deprecated features",
     );
 
-    _logger.debug("Module documentation verification completed");
+    logger.debug("Module documentation verification completed");
   });
 
   it("should clearly mark deprecated exports", async () => {
-    _logger.debug("Testing deprecation markers");
+    logger.debug("Testing deprecation markers");
 
     const moduleSource = await Deno.readTextFile("./lib/types/_mod.ts");
 
@@ -423,6 +423,6 @@ describe("Architecture: Documentation and contracts", () => {
       }
     }
 
-    _logger.debug("Deprecation markers verification completed");
+    logger.debug("Deprecation markers verification completed");
   });
 });

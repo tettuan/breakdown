@@ -18,19 +18,19 @@ Deno.test("Architecture: CliError follows proper error hierarchy", () => {
   const _error = new CliError(CliErrorCode.INVALID_OPTION, "Test error");
 
   // Should extend Error class
-  assertEquals(error instanceof Error, true, "Should extend Error class");
-  assertEquals(error instanceof CliError, true, "Should be instanceof CliError");
+  assertEquals(_error instanceof Error, true, "Should extend Error class");
+  assertEquals(_error instanceof CliError, true, "Should be instanceof CliError");
 
   // Should have proper name and error hierarchy
-  assertEquals(error.name, "CliError", "Should have correct name");
-  assertEquals(error.constructor.name, "CliError", "Should have correct constructor name");
+  assertEquals(_error.name, "CliError", "Should have correct name");
+  assertEquals(_error.constructor.name, "CliError", "Should have correct constructor name");
 
   // Should have stack trace
-  assertExists(error.stack, "Should have stack trace");
+  assertExists(_error.stack, "Should have stack trace");
 
   // Should be throwable
   try {
-    throw error;
+    throw _error;
   } catch (caught) {
     assertEquals(caught instanceof CliError, true, "Should be catchable as CliError");
     assertEquals(caught instanceof Error, true, "Should be catchable as Error");

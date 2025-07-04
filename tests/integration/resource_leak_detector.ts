@@ -13,7 +13,7 @@
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-const _logger = new BreakdownLogger("resource-leak-detector");
+const logger = new BreakdownLogger("resource-leak-detector");
 
 /**
  * Resource usage snapshot for monitoring
@@ -87,7 +87,7 @@ export class ResourceLeakDetector {
     };
 
     this.snapshots.push(snapshot);
-    _logger.debug("Resource snapshot taken", {
+    logger.debug("Resource snapshot taken", {
       testName,
       phase,
       memory: `${snapshot.memoryUsage.toFixed(2)}MB`,
@@ -111,7 +111,7 @@ export class ResourceLeakDetector {
       this.cleanupCallbacks.get(resourceId)!.push(cleanupCallback);
     }
 
-    _logger.debug("Resource registered", { resourceId, hasCleanup: !!cleanupCallback });
+    logger.debug("Resource registered", { resourceId, hasCleanup: !!cleanupCallback });
   }
 
   /**
@@ -120,7 +120,7 @@ export class ResourceLeakDetector {
   unregisterResource(resourceId: string): void {
     this.activeResources.delete(resourceId);
     this.cleanupCallbacks.delete(resourceId);
-    _logger.debug("Resource unregistered", { resourceId });
+    logger.debug("Resource unregistered", { resourceId });
   }
 
   /**
@@ -148,15 +148,15 @@ export class ResourceLeakDetector {
    */
   async cleanupAllResources(): Promise<void> {
     const resourceIds = Array.from(this.activeResources);
-    _logger.debug("Cleaning up all resources", { count: resourceIds.length });
+    logger.debug("Cleaning up all resources", { count: resourceIds.length });
 
     for (const resourceId of resourceIds) {
       await this.cleanupResource(resourceId);
     }
 
     // Force garbage collection if available
-    if (typeof (globalThis as unknown).gc === "function") {
-      (globalThis as unknown).gc();
+    if (typeof (globalThis as any).gc === "function") {
+      (globalThis as any).gc();
       logger.debug("Garbage collection triggered");
     }
   }
@@ -273,7 +273,7 @@ export class ResourceLeakDetector {
     this.snapshots = [];
     this.activeResources.clear();
     this.cleanupCallbacks.clear();
-    _logger.debug("Resource detector reset");
+    logger.debug("Resource detector reset");
   }
 
   /**
@@ -311,7 +311,7 @@ export class TestIsolationManager {
    * Setup test isolation
    */
   async setupIsolation(testName: string): Promise<void> {
-    _logger.debug("Setting up test isolation", { testName });
+    logger.debug("Setting up test isolation", { testName });
 
     // Store original environment variables
     this.storeEnvironmentState();
@@ -325,7 +325,7 @@ export class TestIsolationManager {
    * Teardown test isolation
    */
   async teardownIsolation(testName: string): Promise<void> {
-    _logger.debug("Tearing down test isolation", { testName });
+    logger.debug("Tearing down test isolation", { testName });
 
     // Restore environment variables
     this.restoreEnvironmentState();
@@ -345,7 +345,7 @@ export class TestIsolationManager {
       prefix: `test_${testName.replace(/[^a-zA-Z0-9]/g, "_")}_`,
     });
 
-    _logger.debug("Created isolated temp directory", { testName, tempDir });
+    logger.debug("Created isolated temp directory", { testName, tempDir });
     return tempDir;
   }
 
