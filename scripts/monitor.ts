@@ -1365,7 +1365,32 @@ class TmuxMonitor {
           break;
         }
 
-        // 10. Execute CI and check for errors
+        // 10. Start another 30-second ENTER sending cycle after /clear commands
+        logInfo("Starting 30-second ENTER cycles after /clear commands...");
+        for (let i = 0; i < monitoringCycles; i++) {
+          // Check for cancellation
+          if (isCancellationRequested()) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            interrupted = true;
+            break;
+          }
+
+          // Send ENTER to all panes (every 30 seconds)
+          await this.sendEnterToAllPanesCycle();
+
+          // Wait 30 seconds with cancellation check
+          interrupted = await sleepWithCancellation(TIMING.ENTER_SEND_CYCLE_DELAY);
+          if (interrupted) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            break;
+          }
+        }
+
+        if (interrupted) {
+          break;
+        }
+
+        // 11. Execute CI and check for errors
         const hasErrors = await this.executeCIAndCheckErrors();
 
         if (hasErrors) {
