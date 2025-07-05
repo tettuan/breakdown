@@ -86,11 +86,11 @@ handle_permission_error() {
 Error: Missing run permission in $test_file
 Adding --allow-run flag and retrying..."
         if [ "$test_file" = "all tests" ]; then
-            if ! LOG_LEVEL=debug deno test -A; then
+            if ! LOG_LEVEL=debug deno task test; then
                 handle_error "$test_file" "Test failed even with --allow-run permission" "true"
             fi
         else
-            if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            if ! LOG_LEVEL=debug deno task test "$test_file"; then
                 handle_error "$test_file" "Test failed even with --allow-run permission" "true"
             fi
         fi
@@ -133,11 +133,11 @@ Error: $error_message in $test_file
 Retrying with debug mode..."
         # Special handling for "all tests" case
         if [ "$test_file" = "all tests" ]; then
-            if ! LOG_LEVEL=debug deno test -A; then
+            if ! LOG_LEVEL=debug deno task test; then
                 handle_error "$test_file" "Test failed in debug mode" "true"
             fi
         else
-            if ! LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read --allow-run "$test_file"; then
+            if ! LOG_LEVEL=debug deno task test "$test_file"; then
                 handle_error "$test_file" "Test failed in debug mode" "true"
             fi
         fi
@@ -429,13 +429,13 @@ Please fix the type errors before proceeding.
 ===============================================================================
 >>> RUNNING TEST IN DEBUG MODE: $test_file <<<
 ==============================================================================="
-        if ! error_output=$(LOG_LEVEL=debug LOG_LENGTH=W deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
+        if ! error_output=$(LOG_LEVEL=debug LOG_LENGTH=W deno task test "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "true"
             return 1
         fi
     else
         echo "Running test: $test_file"
-        if ! error_output=$(deno test --allow-env --allow-write --allow-read --allow-run "$test_file" 2>&1); then
+        if ! error_output=$(deno task test "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "false"
             return 1
         fi
@@ -454,7 +454,7 @@ run_all_tests() {
 ===============================================================================
 >>> RUNNING ALL TESTS IN DEBUG MODE WITH ALL PERMISSIONS <<<
 ==============================================================================="
-        if ! error_output=$(DENO_JOBS=1 LOG_LEVEL=debug deno test -A 2>&1); then
+        if ! error_output=$(DENO_JOBS=1 LOG_LEVEL=debug deno task test 2>&1); then
             echo "
 ===============================================================================
 >>> ERROR IN ALL TESTS (DEBUG MODE) <<<
@@ -466,14 +466,14 @@ $error_output
         fi
     else
         echo "Running all tests with all permissions..."
-        if ! error_output=$(DENO_JOBS=1 deno test -A 2>&1); then
+        if ! error_output=$(DENO_JOBS=1 deno task test 2>&1); then
             echo "
 ===============================================================================
 >>> ERROR IN ALL TESTS <<<
 ===============================================================================
 Error: All tests execution failed
 Retrying with debug mode..."
-            if ! error_output=$(DENO_JOBS=1 LOG_LEVEL=debug deno test -A 2>&1); then
+            if ! error_output=$(DENO_JOBS=1 LOG_LEVEL=debug deno task test 2>&1); then
                 echo "
 ===============================================================================
 >>> ERROR IN ALL TESTS (DEBUG MODE) <<<

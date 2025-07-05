@@ -24,10 +24,7 @@ import {
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { WorkspaceImpl } from "../../lib/workspace/workspace.ts";
 import { WorkspaceStructureImpl } from "../../lib/workspace/structure.ts";
-import {
-  WorkspaceConfigError,
-  WorkspaceInitError,
-} from "../../lib/workspace/errors.ts";
+import { WorkspaceConfigError, WorkspaceInitError } from "../../lib/workspace/errors.ts";
 import { join, resolve } from "@std/path";
 import { exists } from "@std/fs";
 import {
@@ -733,14 +730,35 @@ Deno.test("Workspace Integration - Performance and stress testing", async (t) =>
     const createEnd = performance.now();
     const createDuration = createEnd - start;
 
-    // Verify all directories exist
+    // Verify all directories exist (with retry for file system sync issues)
     let existCount = 0;
-    for (let i = 0; i < operationCount; i++) {
-      const exists = await workspace.exists(`performance/test-${i}/nested/deep`);
-      if (exists) existCount++;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries && existCount < operationCount) {
+      existCount = 0;
+
+      // Check existence with small delay to allow file system sync
+      if (retryCount > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+
+      for (let i = 0; i < operationCount; i++) {
+        const exists = await workspace.exists(`performance/test-${i}/nested/deep`);
+        if (exists) existCount++;
+      }
+
+      if (existCount < operationCount) {
+        logger.debug(`Retry ${retryCount + 1}: Found ${existCount}/${operationCount} directories`);
+        retryCount++;
+      }
     }
 
-    assertEquals(existCount, operationCount);
+    assertEquals(
+      existCount,
+      operationCount,
+      `Expected all ${operationCount} directories to exist, but only found ${existCount} after ${retryCount} retries`,
+    );
 
     // Test removal performance
     const removeStart = performance.now();

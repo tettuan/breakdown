@@ -41,7 +41,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    *
    * @example
    * ```typescript
-   * const _config = { workingDir: ".agent/breakdown" };
+   * const config = { workingDir: ".agent/breakdown" };
    * const workspace = new WorkspaceStructureImpl(config);
    * await workspace.initialize();
    * ```

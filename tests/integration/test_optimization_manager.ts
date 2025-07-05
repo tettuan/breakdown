@@ -117,7 +117,7 @@ export class OptimizedTestDataFactory {
   /**
    * Create lightweight test data with minimal memory footprint
    */
-  static createLightweightTwoParams_Result(overrides: Record<string, unknown> = {}) {
+  static createLightweightTwoParamsResult(overrides: Record<string, unknown> = {}) {
     return {
       type: "two" as const,
       demonstrativeType: "to",
@@ -138,11 +138,14 @@ export class OptimizedTestDataFactory {
 
     return Array.from({ length: count }, (_, i) => {
       const key = `${baseKey}-${i}`;
-      return pool.getOrCreate(key, () =>
-        OptimizedTestDataFactory.createLightweightTwoParams_Result({
-          [`uv-batch-${i}`]: `value-${i}`,
-          [`uv-index`]: i.toString(),
-        }));
+      return pool.getOrCreate(
+        key,
+        () =>
+          OptimizedTestDataFactory.createLightweightTwoParamsResult({
+            [`uv-batch-${i}`]: `value-${i}`,
+            [`uv-index`]: i.toString(),
+          }),
+      );
     });
   }
 

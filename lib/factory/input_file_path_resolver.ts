@@ -17,15 +17,7 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 
 // Legacy type alias for backward compatibility during migration
-type DoubleParams_Result = PromptCliParams;
-
-/**
- * TypeCreation_Result - Unified error handling for type creation operations
- * Follows Totality principle by explicitly representing success/failure states
- */
-export type TypeCreation_Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
+type DoubleParamsResult = PromptCliParams;
 
 /**
  * Input file path resolver for Breakdown CLI operations.
@@ -65,7 +57,7 @@ export class InputFilePathResolver {
    *
    * @example
    * ```typescript
-   * const _config = { working_dir: ".agent/breakdown" };
+   * const config = { working_dir: ".agent/breakdown" };
    * const cliParams = {
    *   demonstrativeType: "to",
    *   layerType: "project",
@@ -75,11 +67,11 @@ export class InputFilePathResolver {
    * ```
    */
   constructor(
-    private _config: Record<string, unknown>,
-    private _cliParams: DoubleParams_Result | TwoParams_Result,
+    private config: Record<string, unknown>,
+    private _cliParams: DoubleParamsResult | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this._config = this.deepCopyConfig(_config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
@@ -110,14 +102,14 @@ export class InputFilePathResolver {
    * @returns Deep copy of the CLI parameters
    */
   private deepCopyCliParams(
-    cliParams: DoubleParams_Result | TwoParams_Result,
-  ): DoubleParams_Result | TwoParams_Result {
+    cliParams: DoubleParamsResult | TwoParams_Result,
+  ): DoubleParamsResult | TwoParams_Result {
     // Check if it's TotalityPromptCliParams by checking for directive and layer properties
     // Note: TwoParams_Result from breakdownparams may have different structure
     const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === 'object' && 'directive' in p && 'layer' in p &&
-        p.directive && typeof p.directive === 'object' && 'value' in p.directive &&
-        p.layer && typeof p.layer === 'object' && 'value' in p.layer;
+      return p && typeof p === "object" && "directive" in p && "layer" in p &&
+        p.directive && typeof p.directive === "object" && "value" in p.directive &&
+        p.layer && typeof p.layer === "object" && "value" in p.layer;
     };
 
     if (hasTotalityProps(cliParams)) {
@@ -129,8 +121,8 @@ export class InputFilePathResolver {
       };
       return copy;
     } else {
-      // DoubleParams_Result (PromptCliParams)
-      const doubleParams = cliParams as DoubleParams_Result;
+      // DoubleParamsResult (PromptCliParams)
+      const doubleParams = cliParams as DoubleParamsResult;
       const copy: any = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
@@ -319,9 +311,9 @@ export class InputFilePathResolver {
   private getDirectory(): string {
     // Check if it's TotalityPromptCliParams structure
     const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === 'object' && 'directive' in p && 'layer' in p &&
-        p.directive && typeof p.directive === 'object' && 'value' in p.directive &&
-        p.layer && typeof p.layer === 'object' && 'value' in p.layer;
+      return p && typeof p === "object" && "directive" in p && "layer" in p &&
+        p.directive && typeof p.directive === "object" && "value" in p.directive &&
+        p.layer && typeof p.layer === "object" && "value" in p.layer;
     };
 
     if (hasTotalityProps(this._cliParams)) {
@@ -330,7 +322,7 @@ export class InputFilePathResolver {
       return fromLayerType || this._cliParams.layer.value || "";
     } else {
       // Legacy PromptCliParams structure
-      const legacyParams = this._cliParams as DoubleParams_Result;
+      const legacyParams = this._cliParams as DoubleParamsResult;
       return legacyParams.options?.fromLayerType || legacyParams.layerType || "";
     }
   }

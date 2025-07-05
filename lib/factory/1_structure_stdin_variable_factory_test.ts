@@ -24,7 +24,7 @@ import {
  * StdinVariableFactoryが「StdinVariable作成」という単一の責任のみを持つことを確認
  */
 Deno.test("Structure: 単一責任の原則 - StdinVariable作成責務のみ", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   // Factory が持つべき責務のみを持つことを確認
   const factoryMethods = Object.getOwnPropertyNames(StdinVariableFactory.prototype);
@@ -55,29 +55,29 @@ Deno.test("Structure: 単一責任の原則 - StdinVariable作成責務のみ", 
  * 各メソッドが異なる責務を持ち、重複がないことを確認
  */
 Deno.test("Structure: 責務の重複回避 - メソッド間の明確な分離", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   // create(): 基本的な作成責務
-  const createResult = _factory.create({ inputText: "test" });
+  const createResult = factory.create({ inputText: "test" });
   assertExists(createResult);
 
   // createFromText(): テキストからの直接作成責務
-  const createFromTextResult = _factory.createFromText("test");
+  const createFromTextResult = factory.createFromText("test");
   assertExists(createFromTextResult);
 
   // createBatch(): バッチ処理責務
-  const createBatchResult = _factory.createBatch([{ inputText: "test" }]);
+  const createBatchResult = factory.createBatch([{ inputText: "test" }]);
   assertExists(createBatchResult);
 
   // validate(): バリデーション専用責務
-  const validateResult = _factory.validate({ inputText: "test" });
+  const validateResult = factory.validate({ inputText: "test" });
   assertExists(validateResult);
 
   // 各メソッドが異なる入力形式を受け入れることで責務が分離されていることを確認
-  assertEquals(typeof _factory.create, "function");
-  assertEquals(typeof _factory.createFromText, "function");
-  assertEquals(typeof _factory.createBatch, "function");
-  assertEquals(typeof _factory.validate, "function");
+  assertEquals(typeof factory.create, "function");
+  assertEquals(typeof factory.createFromText, "function");
+  assertEquals(typeof factory.createBatch, "function");
+  assertEquals(typeof factory.validate, "function");
 });
 
 /**
@@ -85,7 +85,7 @@ Deno.test("Structure: 責務の重複回避 - メソッド間の明確な分離"
  * Factory層として適切な抽象化レベルを維持していることを確認
  */
 Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   // 低レベル操作（Types層の直接操作）を隠蔽していることを確認
   const input: StdinFactoryInput = {
@@ -94,7 +94,7 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
     context: "test context",
   };
 
-  const result = _factory.create(input);
+  const result = factory.create(input);
 
   // Factory層の抽象化により、利用者は内部実装を知る必要がないことを確認
   if (result.ok) {
@@ -108,7 +108,7 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
   }
 
   // エラー処理も適切に抽象化されていることを確認
-  const errorResult = _factory.create({});
+  const errorResult = factory.create({});
   if (!errorResult.ok) {
     assertExists(errorResult.error.kind);
     // Factory層のエラーとして適切に抽象化されていることを確認
@@ -120,17 +120,17 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
  * 入力検証が適切な段階で行われていることを確認
  */
 Deno.test("Structure: 入力バリデーション構造 - 段階的検証", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   // 第1段階: Factory層でのnull/undefined検証
-  const noInputResult = _factory.create({});
+  const noInputResult = factory.create({});
   assertEquals(noInputResult.ok, false);
   if (!noInputResult.ok) {
     assertEquals(noInputResult.error.kind, "NoStdinData");
   }
 
   // 第2段階: Factory層での形式検証
-  const invalidSourceResult = _factory.create({
+  const invalidSourceResult = factory.create({
     inputText: "test",
     source: "invalid" as any,
   });
@@ -140,7 +140,7 @@ Deno.test("Structure: 入力バリデーション構造 - 段階的検証", () =
   }
 
   // 第3段階: Types層への移譲と結果の処理
-  const emptyTextResult = _factory.create({ inputText: "" });
+  const emptyTextResult = factory.create({ inputText: "" });
   assertEquals(emptyTextResult.ok, false);
   // この段階のエラーはStdinVariable.createから返される
 
@@ -161,7 +161,7 @@ Deno.test("Structure: 入力バリデーション構造 - 段階的検証", () =
  * バッチ処理が単一処理の適切な集約であることを確認
  */
 Deno.test("Structure: バッチ処理構造 - 単一処理の集約", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   const inputs: StdinFactoryInput[] = [
     { inputText: "input1", source: "cli" },
@@ -170,7 +170,7 @@ Deno.test("Structure: バッチ処理構造 - 単一処理の集約", () => {
     { inputText: "input4", source: "cli" },
   ];
 
-  const batchResult = _factory.createBatch(inputs);
+  const batchResult = factory.createBatch(inputs);
 
   // バッチ処理がエラーを含む場合のエラー集約確認
   assertEquals(batchResult.ok, false);
@@ -185,7 +185,7 @@ Deno.test("Structure: バッチ処理構造 - 単一処理の集約", () => {
     { inputText: "input2", source: "pipe" },
   ];
 
-  const validBatchResult = _factory.createBatch(validInputs);
+  const validBatchResult = factory.createBatch(validInputs);
   assertEquals(validBatchResult.ok, true);
   if (validBatchResult.ok) {
     assertEquals(validBatchResult.data.length, 2);
@@ -197,16 +197,16 @@ Deno.test("Structure: バッチ処理構造 - 単一処理の集約", () => {
  * createFromTextが基本メソッドの適切なラッパーであることを確認
  */
 Deno.test("Structure: 便利メソッド構造 - 基本メソッドのラッパー", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   const text = "test input";
   const source = "cli";
 
   // createFromTextの結果
-  const fromTextResult = _factory.createFromText(text, source);
+  const fromTextResult = factory.createFromText(text, source);
 
   // 同等のcreate呼び出しの結果
-  const createResult = _factory.create({
+  const createResult = factory.create({
     inputText: text,
     source: source,
     context: `Direct text input from ${source}`,
@@ -252,10 +252,10 @@ Deno.test("Structure: デフォルトインスタンス構造 - シングルト�
  * StdinVariableFactoryErrorが適切な構造を持つことを確認
  */
 Deno.test("Structure: エラー型構造 - 階層的エラー定義", () => {
-  const _factory = new StdinVariableFactory();
+  const factory = new StdinVariableFactory();
 
   // Factory固有エラーの構造確認
-  const noDataResult = _factory.create({});
+  const noDataResult = factory.create({});
   if (!noDataResult.ok) {
     assertEquals(noDataResult.error.kind, "NoStdinData");
     if (noDataResult.error.kind === "NoStdinData") {
@@ -264,7 +264,7 @@ Deno.test("Structure: エラー型構造 - 階層的エラー定義", () => {
     }
   }
 
-  const invalidSourceResult = _factory.create({
+  const invalidSourceResult = factory.create({
     inputText: "test",
     source: "invalid" as any,
   });
@@ -275,7 +275,7 @@ Deno.test("Structure: エラー型構造 - 階層的エラー定義", () => {
   }
 
   // Types層エラーの伝播構造確認
-  const emptyTextResult = _factory.create({ inputText: "" });
+  const emptyTextResult = factory.create({ inputText: "" });
   if (!emptyTextResult.ok) {
     // StdinVariable.createから返されるVariableErrorが適切に構造化されていることを確認
     assertExists(emptyTextResult.error.kind);

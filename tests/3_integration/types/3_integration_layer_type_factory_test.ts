@@ -168,7 +168,7 @@ Deno.test("Integration: TwoParams_Result integration workflow", async (t) => {
         },
       };
 
-      const result = LayerTypeFactory.fromTwoParams_Result(twoParamsResult);
+      const result = LayerTypeFactory.fromTwoParamsResult(twoParamsResult);
       assertEquals(result.ok, true, `Should create LayerType from TwoParams_Result for ${layer}`);
 
       if (result.ok) {
@@ -202,7 +202,7 @@ Deno.test("Integration: TwoParams_Result integration workflow", async (t) => {
       options: {},
     };
 
-    const result = LayerTypeFactory.fromTwoParams_Result(invalidResult);
+    const result = LayerTypeFactory.fromTwoParamsResult(invalidResult);
     // This actually succeeds because LayerType.create() doesn't validate
     assertEquals(result.ok, true, "LayerType.create accepts any TwoParams_Result");
 
@@ -420,9 +420,9 @@ Deno.test("Integration: System coherence validation", async (t) => {
       assertEquals(stringResult.ok, true);
 
       if (stringResult.ok) {
-        // Verify fromTwoParams_Result produces same result
+        // Verify fromTwoParamsResult produces same result
         const originalResult = stringResult.data.originalResult;
-        const twoParamsResult = LayerTypeFactory.fromTwoParams_Result(originalResult);
+        const twoParamsResult = LayerTypeFactory.fromTwoParamsResult(originalResult);
 
         assertEquals(twoParamsResult.ok, true);
         if (twoParamsResult.ok) {

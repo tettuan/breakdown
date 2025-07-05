@@ -31,7 +31,7 @@ export type LegacyLayerType =
  * Legacy factory for creating DemonstrativeType instances
  * @deprecated Use DirectiveType and TypeFactory instead
  */
-export const _DemonstrativeTypeFactory = {
+export const DemonstrativeTypeFactory = {
   /**
    * Create a "to" directive type
    */
@@ -243,7 +243,7 @@ export const LegacyLayerTypeGuards = {
  * Legacy DirectiveFactory for backward compatibility
  * @deprecated Use DirectiveType and TypeFactory instead
  */
-export const DirectiveFactory = _DemonstrativeTypeFactory;
+export const DirectiveFactory = DemonstrativeTypeFactory;
 
 /**
  * Legacy LayerFactory for backward compatibility

@@ -20,7 +20,7 @@
  * import { DirectiveType, LayerType, TypeFactory } from "./mod.ts";
  *
  * // Create type factory with pattern provider
- * const _factory = new TypeFactory(patternProvider);
+ * const factory = new TypeFactory(patternProvider);
  *
  * // Create validated types
  * const directive = DirectiveType.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
@@ -115,7 +115,7 @@ export type { PromptVariable, PromptVariables } from "./prompt_variables.ts";
 // Deprecated legacy types (for backward compatibility)
 export type { DemonstrativeType, LegacyLayerType } from "./legacy_factories.ts";
 export {
-  _DemonstrativeTypeFactory,
+  DemonstrativeTypeFactory,
   DemonstrativeTypeGuards,
   DirectiveFactory,
   LayerFactory,
@@ -139,5 +139,14 @@ export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
-// Re-export TotalityPromptCliParams and TwoParams_Result from factory
-export type { TotalityPromptCliParams, TwoParams_Result } from "../factory/prompt_variables_factory.ts";
+// Re-export types defined in factory to avoid circular dependencies
+export type {
+  PromptCliOptions,
+  TotalityPromptCliParams,
+} from "../factory/prompt_variables_factory.ts";
+
+/**
+ * Result type for two-parameter operations.
+ * Re-exported from breakdownparams for consistency.
+ */
+export type { TwoParams_Result } from "../deps.ts";

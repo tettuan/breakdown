@@ -10,7 +10,7 @@
  * @module tests/integration/builder_helper_system_integration_test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert@1";
+import { assertEquals as _assertEquals, assertExists as _assertExists } from "jsr:@std/assert@1";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
 import type { FactoryResolvedValues } from "../../lib/builder/variables_builder.ts";
@@ -49,28 +49,28 @@ Deno.test("Builder-Helper Integration - VariablesBuilder with Factory values", a
     const builder = new VariablesBuilder();
     builder.addFromFactoryValues(factoryValues);
 
-    assertEquals(
+    _assertEquals(
       builder.getVariableCount() > 0,
       true,
       "Builder should create variables from factory values",
     );
-    assertEquals(builder.getErrorCount(), 0, "Should not have errors with valid factory values");
+    _assertEquals(builder.getErrorCount(), 0, "Should not have errors with valid factory values");
 
     const buildResult = builder.build();
-    assertEquals(buildResult.ok, true, "Should build successfully");
+    _assertEquals(buildResult.ok, true, "Should build successfully");
 
     if (buildResult.ok) {
       const variables = buildResult.data;
-      assertEquals(Array.isArray(variables), true, "Should return variables array");
+      _assertEquals(Array.isArray(variables), true, "Should return variables array");
 
       const record = builder.toRecord();
-      assertEquals(typeof record, "object", "Should convert to record format");
-      assertEquals(
+      _assertEquals(typeof record, "object", "Should convert to record format");
+      _assertEquals(
         record["uv-integration"],
         "integration test value",
         "Should include custom variables",
       );
-      assertEquals(
+      _assertEquals(
         record.input_text,
         "Integration test input content",
         "Should include stdin content",
@@ -130,12 +130,12 @@ Deno.test("Builder-Helper Integration - Complete workflow validation", async () 
 
       if (buildResult.ok) {
         const record = builder.toRecord();
-        assertEquals(
+        _assertEquals(
           record["uv-directive"],
           params.directive.getValue(),
           "Should preserve directive value",
         );
-        assertEquals(record["uv-layer"], params.layer.getValue(), "Should preserve layer value");
+        _assertEquals(record["uv-layer"], params.layer.getValue(), "Should preserve layer value");
 
         logger.debug("Complete workflow integration successful");
       } else {
@@ -158,7 +158,7 @@ Deno.test("Builder-Helper Integration - Error handling coordination", async () =
 
   // Factory creation should handle errors gracefully
   if (!factoryResult.ok) {
-    assertEquals(typeof factoryResult.error, "string", "Factory should provide string error");
+    _assertEquals(typeof factoryResult.error, "string", "Factory should provide string error");
     logger.debug("Factory error handled correctly", { error: factoryResult.error });
   }
 
@@ -170,11 +170,11 @@ Deno.test("Builder-Helper Integration - Error handling coordination", async () =
   builder.addUserVariable("another-invalid", "value");
 
   const buildResult = builder.build();
-  assertEquals(buildResult.ok, false, "Builder should fail with invalid data");
+  _assertEquals(buildResult.ok, false, "Builder should fail with invalid data");
 
   if (!buildResult.ok) {
-    assertEquals(Array.isArray(buildResult.error), true, "Should provide error array");
-    assertEquals(buildResult.error.length, 2, "Should contain all errors");
+    _assertEquals(Array.isArray(buildResult.error), true, "Should provide error array");
+    _assertEquals(buildResult.error.length, 2, "Should contain all errors");
 
     logger.debug("Builder error accumulation working correctly");
   }
@@ -215,13 +215,13 @@ Deno.test("Builder-Helper Integration - Performance with large datasets", async 
   });
 
   // Should complete within reasonable time
-  assertEquals(duration < 1000, true, "Large dataset should process within 1 second");
+  _assertEquals(duration < 1000, true, "Large dataset should process within 1 second");
 
   if (buildResult.ok) {
-    assertEquals(builder.getVariableCount() > 100, true, "Should handle large variable count");
+    _assertEquals(builder.getVariableCount() > 100, true, "Should handle large variable count");
 
     const record = builder.toRecord();
-    assertEquals(Object.keys(record).length > 100, true, "Record should contain all variables");
+    _assertEquals(Object.keys(record).length > 100, true, "Record should contain all variables");
   }
 });
 
@@ -241,7 +241,7 @@ Deno.test("Builder-Helper Integration - Memory management", async () => {
 
     if (buildResult.ok) {
       const record = builder.toRecord();
-      assertEquals(
+      _assertEquals(
         Object.keys(record).length,
         3,
         "Each iteration should have correct variable count",
@@ -250,8 +250,8 @@ Deno.test("Builder-Helper Integration - Memory management", async () => {
 
     // Clear builder
     builder.clear();
-    assertEquals(builder.getVariableCount(), 0, "Builder should clear correctly");
-    assertEquals(builder.getErrorCount(), 0, "Builder should clear errors");
+    _assertEquals(builder.getVariableCount(), 0, "Builder should clear correctly");
+    _assertEquals(builder.getErrorCount(), 0, "Builder should clear errors");
   }
 
   logger.debug("Memory management test completed successfully");
@@ -277,12 +277,12 @@ Deno.test("Builder-Helper Integration - Factory helper one-step creation", async
 
   if (result.ok) {
     const promptFactory = result.data;
-    assertEquals(typeof promptFactory, "object", "Should create prompt factory");
-    assertEquals(typeof promptFactory.getAllParams, "function", "Should have expected methods");
+    _assertEquals(typeof promptFactory, "object", "Should create prompt factory");
+    _assertEquals(typeof promptFactory.getAllParams, "function", "Should have expected methods");
 
     // Test integration with VariablesBuilder
     const allParams = promptFactory.getAllParams();
-    assertEquals(typeof allParams, "object", "Should provide parameters");
+    _assertEquals(typeof allParams, "object", "Should provide parameters");
 
     logger.debug("One-step factory integration successful");
   } else {
@@ -301,18 +301,18 @@ Deno.test("Builder-Helper Integration - Type safety verification", async () => {
     const bundle = factoryResult.data;
 
     // Verify type factory integration
-    assertEquals(
+    _assertEquals(
       typeof bundle.typeFactory.createBothTypes,
       "function",
       "TypeFactory should be properly typed",
     );
-    assertEquals(
+    _assertEquals(
       typeof bundle.patternProvider.hasValidPatterns,
       "function",
       "PatternProvider should be properly typed",
     );
-    assertEquals(typeof bundle.config.getConfig, "function", "Config should be properly typed");
-    assertEquals(
+    _assertEquals(typeof bundle.config.getConfig, "function", "Config should be properly typed");
+    _assertEquals(
       typeof bundle.createPromptFactory,
       "function",
       "PromptFactory creator should be function",
@@ -333,12 +333,12 @@ Deno.test("Builder-Helper Integration - Type safety verification", async () => {
     const buildResult = builder.build();
 
     // Type system should ensure these operations are safe
-    assertEquals(typeof buildResult.ok, "boolean", "Build result should have proper type");
+    _assertEquals(typeof buildResult.ok, "boolean", "Build result should have proper type");
 
     if (buildResult.ok) {
-      assertEquals(Array.isArray(buildResult.data), true, "Success data should be array");
+      _assertEquals(Array.isArray(buildResult.data), true, "Success data should be array");
     } else {
-      assertEquals(Array.isArray(buildResult.error), true, "Error should be array");
+      _assertEquals(Array.isArray(buildResult.error), true, "Error should be array");
     }
 
     logger.debug("Type safety verification completed");
@@ -365,16 +365,16 @@ Deno.test("Builder-Helper Integration - Configuration dependency management", as
     const hasValidPatterns = bundle.patternProvider.hasValidPatterns();
     const configData = await bundle.config.getConfig();
 
-    assertEquals(typeof hasValidPatterns, "boolean", "Pattern validation should be boolean");
-    assertEquals(typeof configData, "object", "Config data should be object");
+    _assertEquals(typeof hasValidPatterns, "boolean", "Pattern validation should be boolean");
+    _assertEquals(typeof configData, "object", "Config data should be object");
 
     // Pattern availability should be consistent
     if (hasValidPatterns) {
       const directivePattern = bundle.patternProvider.getDirectivePattern();
       const layerPattern = bundle.patternProvider.getLayerTypePattern();
 
-      assertExists(directivePattern, "Directive pattern should exist when valid");
-      assertExists(layerPattern, "Layer pattern should exist when valid");
+      _assertExists(directivePattern, "Directive pattern should exist when valid");
+      _assertExists(layerPattern, "Layer pattern should exist when valid");
     }
 
     logger.debug("Configuration dependency management verified");
@@ -394,23 +394,23 @@ Deno.test("Builder-Helper Integration - Interface compatibility", async () => {
     .addStdinVariable("test input")
     .addUserVariable("uv-test", "test value");
 
-  assertEquals(fluentResult, builder, "Builder should support fluent interface");
+  _assertEquals(fluentResult, builder, "Builder should support fluent interface");
 
   // Helper functions should implement consistent Result pattern
   const factoryResult = await createTotalityFactory();
-  assertEquals(
+  _assertEquals(
     typeof factoryResult.ok,
     "boolean",
     "Factory result should implement Result pattern",
   );
 
   const validationResult = await validateConfigurationPatterns();
-  assertEquals(
+  _assertEquals(
     typeof validationResult.valid,
     "boolean",
     "Validation should have specific interface",
   );
-  assertEquals(
+  _assertEquals(
     Array.isArray(validationResult.details),
     true,
     "Validation should provide details array",
@@ -421,10 +421,10 @@ Deno.test("Builder-Helper Integration - Interface compatibility", async () => {
     const bundle = factoryResult.data;
 
     // Bundle should provide consistent interface
-    assertEquals(typeof bundle.typeFactory, "object", "TypeFactory should be object");
-    assertEquals(typeof bundle.patternProvider, "object", "PatternProvider should be object");
-    assertEquals(typeof bundle.config, "object", "Config should be object");
-    assertEquals(
+    _assertEquals(typeof bundle.typeFactory, "object", "TypeFactory should be object");
+    _assertEquals(typeof bundle.patternProvider, "object", "PatternProvider should be object");
+    _assertEquals(typeof bundle.config, "object", "Config should be object");
+    _assertEquals(
       typeof bundle.createPromptFactory,
       "function",
       "createPromptFactory should be function",

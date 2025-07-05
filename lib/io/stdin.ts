@@ -79,7 +79,6 @@ export function hasStdinContent(): boolean {
  */
 export function writeStdout(content: string): void {
   try {
-    const _encoder = new TextEncoder();
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
     Deno.stdout.writeSync(data);

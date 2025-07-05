@@ -75,8 +75,8 @@ describe("Workspace Module - Architecture", async () => {
   it("should follow dependency hierarchy", async () => {
     _logger.debug("Testing dependency hierarchy");
 
-    // _mod.ts should only import from its direct children
-    const modContent = await Deno.readTextFile("./lib/workspace/_mod.ts");
+    // mod.ts should only import from its direct children
+    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
 
     // Check that imports are only from local files
     const importMatches = modContent.match(/from\s+["']\.\/([^"']+)["']/g) || [];
@@ -92,7 +92,7 @@ describe("Workspace Module - Architecture", async () => {
       return !line.trim().startsWith("*") && !line.trim().startsWith("//");
     });
 
-    // Should only import from types, errors, and workspace
+    // Should only import from types, errors, workspace
     const allowedImports = ["types.ts", "errors.ts", "workspace.ts"];
     actualImports.forEach((file) => {
       assertEquals(

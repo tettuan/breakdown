@@ -31,7 +31,7 @@ const TEST_ENV = await _setupTestEnvironment({
 // Cleanup after all tests
 Deno.test({
   name: "cleanup",
-  _fn: async () => {
+  fn: async () => {
     await _cleanupTestEnvironment(TEST_ENV);
   },
   sanitizeResources: false,
@@ -53,11 +53,11 @@ Deno.test("config - default settings", async () => {
 
   try {
     // Create config file in the project root location
-    const configDir = join(originalCwd, ".agent", "breakdown", "config");
+    const configDir = _join(originalCwd, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
 
     // Save existing config if present
-    const configPath = join(configDir, "app.yml");
+    const configPath = _join(configDir, "app.yml");
     let savedConfig: string | null = null;
     try {
       savedConfig = await Deno.readTextFile(configPath);
@@ -75,20 +75,20 @@ app_schema:
 `,
     );
 
-    const configResult = await BreakdownConfig.create();
-    if (!configResult.ok) {
+    const configResult = await _BreakdownConfig.create();
+    if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
     const config = configResult.data;
-    await (_config as any).loadConfig();
-    const settings = await (_config as any).getConfig();
+    await (config as any).loadConfig();
+    const settings = await (config as any).getConfig();
 
-    assertEquals(settings.working_dir, ".");
-    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+    _assertEquals(settings.working_dir, ".");
+    _assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+    _assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
-    if (savedConfig !== _null) {
+    if (savedConfig !== null) {
       await Deno.writeTextFile(configPath, savedConfig);
     } else {
       await Deno.remove(configPath);
@@ -114,11 +114,11 @@ Deno.test("config - custom working directory", async () => {
 
   try {
     // Create config file in the project root location
-    const configDir = join(originalCwd, ".agent", "breakdown", "config");
+    const configDir = _join(originalCwd, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
 
     // Save existing config if present
-    const configPath = join(configDir, "app.yml");
+    const configPath = _join(configDir, "app.yml");
     let savedConfig: string | null = null;
     try {
       savedConfig = await Deno.readTextFile(configPath);
@@ -136,20 +136,20 @@ app_schema:
 `,
     );
 
-    const configResult = await BreakdownConfig.create();
-    if (!configResult.ok) {
+    const configResult = await _BreakdownConfig.create();
+    if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
     const config = configResult.data;
-    await (_config as any).loadConfig();
-    const settings = await (_config as any).getConfig();
+    await (config as any).loadConfig();
+    const settings = await (config as any).getConfig();
 
-    assertEquals(settings.working_dir, ".");
-    assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-    assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+    _assertEquals(settings.working_dir, ".");
+    _assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+    _assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
     // Restore original config
-    if (savedConfig !== _null) {
+    if (savedConfig !== null) {
       await Deno.writeTextFile(configPath, savedConfig);
     } else {
       await Deno.remove(configPath);
@@ -171,18 +171,18 @@ Deno.test("config - invalid configuration handling", async () => {
   const tempDir = await Deno.makeTempDir();
   Deno.chdir(tempDir);
   try {
-    const configResult = await BreakdownConfig.create();
-    if (!configResult.ok) {
+    const configResult = await _BreakdownConfig.create();
+    if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
     const config = configResult.data;
 
     try {
-      await (_config as any).loadConfig();
+      await (config as any).loadConfig();
       throw new Error("Should have thrown an error for missing config");
-    } catch (_error: _unknown) {
-      if (error instanceof _Error) {
-        assertEquals(error.message.includes("Application configuration file not found"), true);
+    } catch (_error: unknown) {
+      if (_error instanceof Error) {
+        _assertEquals(_error.message.includes("Application configuration file not found"), true);
       } else {
         throw new Error("Unexpected error type");
       }
@@ -210,11 +210,11 @@ Deno.test({
 
     try {
       // Create config file in the project root location
-      const configDir = join(originalCwd, ".agent", "breakdown", "config");
+      const configDir = _join(originalCwd, ".agent", "breakdown", "config");
       await Deno.mkdir(configDir, { recursive: true });
 
       // Save existing config if present
-      const configPath = join(configDir, "app.yml");
+      const configPath = _join(configDir, "app.yml");
       let savedConfig: string | null = null;
       try {
         savedConfig = await Deno.readTextFile(configPath);
@@ -232,24 +232,24 @@ app_schema:
 `,
       );
 
-      const configResult = await BreakdownConfig.create();
-      if (!configResult.ok) {
+      const configResult = await _BreakdownConfig.create();
+      if (!configResult.success) {
         throw new Error("Failed to create BreakdownConfig");
       }
       const config = configResult.data;
-      await (_config as any).loadConfig();
-      const settings = await (_config as any).getConfig();
+      await (config as any).loadConfig();
+      const settings = await (config as any).getConfig();
 
       // Verify basic functionality
-      assertEquals(typeof settings, "object");
-      assertEquals(typeof settings.working_dir, "string");
-      assertEquals(typeof settings.app_prompt, "object");
-      assertEquals(typeof settings.app_schema, "object");
-      assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
-      assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
+      _assertEquals(typeof settings, "object");
+      _assertEquals(typeof settings.working_dir, "string");
+      _assertEquals(typeof settings.app_prompt, "object");
+      _assertEquals(typeof settings.app_schema, "object");
+      _assertEquals(settings.app_prompt.base_dir, "lib/breakdown/prompts");
+      _assertEquals(settings.app_schema.base_dir, "lib/breakdown/schema");
 
       // Restore original config
-      if (savedConfig !== _null) {
+      if (savedConfig !== null) {
         await Deno.writeTextFile(configPath, savedConfig);
       } else {
         await Deno.remove(configPath);
@@ -269,26 +269,26 @@ Deno.test("config - error if no config file and different cwd", async () => {
   const originalCwd = Deno.cwd();
   Deno.chdir(tempDir);
   try {
-    const configResult = await BreakdownConfig.create(); // No config file created
-    if (!configResult.ok) {
+    const configResult = await _BreakdownConfig.create(); // No config file created
+    if (!configResult.success) {
       throw new Error("Failed to create BreakdownConfig");
     }
     const config = configResult.data;
-    const errorCaught = false;
+    let errorCaught = false;
     try {
-      await (_config as any).loadConfig();
+      await (config as any).loadConfig();
     } catch (_error) {
       errorCaught = true;
-      if (error instanceof _Error) {
+      if (_error instanceof Error) {
         // Should mention missing config
-        if (!error.message.includes("Application configuration file not found")) {
-          throw new Error("Unexpected error message: " + error.message);
+        if (!_error.message.includes("Application configuration file not found")) {
+          throw new Error("Unexpected error message: " + _error.message);
         }
       } else {
         throw new Error("Unexpected error type");
       }
     }
-    if (!_errorCaught) {
+    if (!errorCaught) {
       throw new Error("Should have thrown an error for missing config");
     }
   } finally {

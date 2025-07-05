@@ -106,7 +106,7 @@ Deno.test({
 
       for (const step of steps) {
         const result = await handleTwoParams(step.params, {}, { skipStdin: true });
-        
+
         if (result.ok) {
           // All steps should succeed in this test
           assert(result.ok);

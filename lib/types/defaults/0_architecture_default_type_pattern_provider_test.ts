@@ -25,8 +25,8 @@ Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependen
   const filePath = new URL("./default_type_pattern_provider.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
 
-  // import文を抽出
-  const importRegex = /import\s+(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
+  // import文を抽出（type importも含む）
+  const importRegex = /import\s+(?:type\s+)?(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
   const imports: string[] = [];
   let match;
 
@@ -50,7 +50,7 @@ Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependen
   const allowedParentPaths = [
     "../directive_type.ts",
     "../layer_type.ts",
-    "../typefactory.ts",
+    "../type_factory.ts",
   ];
 
   for (const dep of parentDeps) {
@@ -63,7 +63,7 @@ Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependen
 
   // ローカル依存の検証（同一defaults層内のみ許可）
   const allowedLocalPaths = [
-    "./config_twoparams.ts",
+    "./config_two_params.ts",
   ];
 
   for (const dep of localDeps) {

@@ -17,6 +17,11 @@ import {
   TwoParamsVariableProcessor,
   type VariableProcessorError,
 } from "./variable_processor.ts";
+
+// Type for processor structure testing
+interface ProcessorStructure {
+  [key: string]: unknown;
+}
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 
 /**
@@ -53,7 +58,7 @@ Deno.test("Structure: Variable Processor should have single responsibility", asy
 
   nonResponsibilities.forEach((method) => {
     assertEquals(
-      (_processor as any)[method],
+      (_processor as unknown as ProcessorStructure)[method],
       undefined,
       `Processor should not have ${method} method - violates single responsibility`,
     );
@@ -67,7 +72,7 @@ Deno.test("Structure: Variable Processor should have proper method organization"
   const publicMethods = ["process", "extractCustomVariables"];
   publicMethods.forEach((method) => {
     assertEquals(
-      typeof (_processor as any)[method],
+      typeof (_processor as unknown as ProcessorStructure)[method],
       "function",
       `Public method ${method} should exist`,
     );
@@ -84,7 +89,7 @@ Deno.test("Structure: Variable Processor should have proper method organization"
   privateMethods.forEach((method) => {
     // Private methods are not accessible from outside the class
     assertEquals(
-      (_processor as any)[method],
+      (_processor as unknown as ProcessorStructure)[method],
       undefined,
       `Private method ${method} should not be accessible externally`,
     );
@@ -99,14 +104,14 @@ Deno.test("Structure: Variable Processor should properly encapsulate dependencie
 
   // Should not expose internal factory instance
   assertEquals(
-    (_processor as any).stdinFactory,
+    (_processor as unknown as ProcessorStructure).stdinFactory,
     undefined,
     "Internal StdinVariableFactory should not be exposed",
   );
 
   // Should not expose builder instances directly
   assertEquals(
-    (_processor as any).builder,
+    (_processor as unknown as ProcessorStructure).builder,
     undefined,
     "Internal VariablesBuilder should not be exposed as instance property",
   );

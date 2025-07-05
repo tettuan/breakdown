@@ -29,21 +29,21 @@ import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } fro
 Deno.test("Result Type Structure", async (t) => {
   await t.step("implements consistent error propagation", () => {
     const _initialError = "initial error";
-    const errorResult: Result<number, string> = error(initialError);
+    const errorResult: Result<number, string> = error(_initialError);
 
     // Error should propagate through all operations
     const mapped = map(errorResult, (x) => x * 2);
     assertEquals(mapped.ok, false);
-    if (!mapped.ok) assertEquals(mapped.error, initialError);
+    if (!mapped.ok) assertEquals(mapped.error, _initialError);
 
     const chained = chain(errorResult, (x) => ok(x + 1));
     assertEquals(chained.ok, false);
-    if (!chained.ok) assertEquals(chained.error, initialError);
+    if (!chained.ok) assertEquals(chained.error, _initialError);
 
     // Error type should be preserved
     const chainedWithDifferentType = chain(errorResult, (x) => ok(`${x}`));
     assertEquals(chainedWithDifferentType.ok, false);
-    if (!chainedWithDifferentType.ok) assertEquals(chainedWithDifferentType.error, initialError);
+    if (!chainedWithDifferentType.ok) assertEquals(chainedWithDifferentType.error, _initialError);
   });
 
   await t.step("supports functional composition patterns", () => {

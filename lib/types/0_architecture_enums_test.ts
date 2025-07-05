@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists as _assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test: Enum Independence
@@ -18,7 +19,7 @@ import { assertEquals, assertExists as _assertExists } from "@std/assert";
  */
 Deno.test("Architecture: Enums are independent and self-contained", async () => {
   // Read the enums.ts file to analyze its imports
-  const _enumsFilePath = new URL("./enums.ts", import.meta.url).pathname;
+  const enumsFilePath = fromFileUrl(new URL("./enums.ts", import.meta.url));
   const enumsContent = await Deno.readTextFile(enumsFilePath);
 
   // Check for imports - enums.ts has no imports which is good
@@ -44,7 +45,7 @@ Deno.test("Architecture: Enums are independent and self-contained", async () => 
  * a key principle of Totality.
  */
 Deno.test("Architecture: Enums support exhaustive pattern matching", async () => {
-  const enumsFilePath = new URL("./enums.ts", import.meta.url).pathname;
+  const enumsFilePath = fromFileUrl(new URL("./enums.ts", import.meta.url));
   const enumsContent = await Deno.readTextFile(enumsFilePath);
 
   // Check for enum definitions
@@ -80,7 +81,7 @@ Deno.test("Architecture: Enums support exhaustive pattern matching", async () =>
  * rather than using magic numbers or strings.
  */
 Deno.test("Architecture: No magic values outside of enums", async () => {
-  const enumsFilePath = new URL("./enums.ts", import.meta.url).pathname;
+  const enumsFilePath = fromFileUrl(new URL("./enums.ts", import.meta.url));
   const enumsContent = await Deno.readTextFile(enumsFilePath);
 
   // This test verifies the enum module itself follows good practices
@@ -119,7 +120,7 @@ Deno.test("Architecture: No magic values outside of enums", async () => {
  * for better maintainability and readability.
  */
 Deno.test("Architecture: Enums follow consistent naming conventions", async () => {
-  const enumsFilePath = new URL("./enums.ts", import.meta.url).pathname;
+  const enumsFilePath = fromFileUrl(new URL("./enums.ts", import.meta.url));
   const enumsContent = await Deno.readTextFile(enumsFilePath);
 
   // Check enum names are PascalCase
@@ -157,7 +158,7 @@ Deno.test("Architecture: Enums follow consistent naming conventions", async () =
  * with the Breakdown tool's business requirements.
  */
 Deno.test("Architecture: Enums align with domain concepts", async () => {
-  const enumsFilePath = new URL("./enums.ts", import.meta.url).pathname;
+  const enumsFilePath = fromFileUrl(new URL("./enums.ts", import.meta.url));
   const enumsContent = await Deno.readTextFile(enumsFilePath);
 
   // Check that enums represent domain concepts (not technical details)

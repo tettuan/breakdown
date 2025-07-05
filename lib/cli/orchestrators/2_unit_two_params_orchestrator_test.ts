@@ -533,7 +533,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
       const orchestrator = new TwoParamsOrchestrator();
 
-      const _config = {
+      const config = {
         promptDir: "/test/prompts",
       };
 
@@ -553,7 +553,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
           customVariables: Record<string, string>,
         ): Promise<unknown>;
       })._generatePrompt(
-        _config,
+        config,
         cliParams,
         "",
         { "uv-invalid": "" }, // Empty custom variable might cause validation error

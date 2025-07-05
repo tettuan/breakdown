@@ -90,7 +90,7 @@ Deno.test("PathResolver Structure", async (t) => {
       assertEquals(typeof resolver.getPath, "function");
 
       // Should not expose internal implementation details
-      const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(_resolver))
+      const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(resolver))
         .filter((name) =>
           name !== "constructor" && typeof resolver[name as keyof typeof resolver] === "function"
         );
@@ -314,7 +314,7 @@ Deno.test("PathResolver Algorithm Structure", async (t) => {
         options: {},
       };
       const resolver = new PromptTemplatePathResolver(mockConfig, mockCliParams);
-      assertExists(_resolver);
+      assertExists(resolver);
 
       // Constructor should be type-safe
       assertEquals(typeof resolver, "object");

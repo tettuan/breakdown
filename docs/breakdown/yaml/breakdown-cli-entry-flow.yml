@@ -5,14 +5,14 @@
 type_flow:
   name: "CLI Entry Point Flow"
   description: "CLIエントリーポイントの実行判定と委譲"
-  
+
   steps:
     - step: 1
       from: "import.meta.main"
       to: "execution_decision"
       operation: "実行コンテキスト判定"
       principle: "boolean条件による完全な分岐"
-      
+
     - step: 2
       from: "execution_decision"
       to: "runBreakdown()"
@@ -24,7 +24,7 @@ key_types:
   ImportMeta:
     pattern: "Runtime Context Check"
     responsibility: "実行モード判定（直接実行 vs モジュールインポート）"
-    
+
   ModuleInterface:
     pattern: "Export Interface"
     responsibility: "JSRパッケージとしてのAPI公開"

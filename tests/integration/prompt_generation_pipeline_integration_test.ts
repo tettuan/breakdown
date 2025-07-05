@@ -15,7 +15,12 @@
  * @module tests/integration/prompt_generation_pipeline_integration_test
  */
 
-import { assertEquals, assertExists, assertFalse, assertStringIncludes } from "@std/assert";
+import {
+  assertEquals as _assertEquals,
+  assertExists as _assertExists,
+  assertFalse as _assertFalse,
+  assertStringIncludes as _assertStringIncludes,
+} from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 
@@ -27,8 +32,8 @@ import {
   type PromptVariablesProvider,
 } from "../../lib/prompt/prompt_adapter.ts";
 import {
-  type PromptCliParams,
-  PromptVariablesFactory,
+  type PromptCliParams as _PromptCliParams,
+  PromptVariablesFactory as _PromptVariablesFactory,
 } from "../../lib/factory/prompt_variables_factory.ts";
 import { TwoParamsPromptGenerator } from "../../lib/cli/generators/two_params_prompt_generator.ts";
 import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
@@ -410,8 +415,8 @@ Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Temp
     const directivePattern = patternProvider.getDirectivePattern();
     const layerPattern = patternProvider.getLayerTypePattern();
 
-    assertExists(directivePattern, "DirectivePattern should be available");
-    assertExists(layerPattern, "LayerPattern should be available");
+    _assertExists(directivePattern, "DirectivePattern should be available");
+    _assertExists(layerPattern, "LayerPattern should be available");
 
     // Step 2: Create TypeFactory with provider
     const typeFactory = new TypeFactory(patternProvider);
@@ -429,15 +434,15 @@ Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Temp
       const directiveResult = typeFactory.createDirectiveType(testCase.directive);
       const layerResult = typeFactory.createLayerType(testCase.layer);
 
-      assertEquals(directiveResult.ok, true, `${testCase.directive} should be valid directive`);
-      assertEquals(layerResult.ok, true, `${testCase.layer} should be valid layer`);
+      _assertEquals(directiveResult.ok, true, `${testCase.directive} should be valid directive`);
+      _assertEquals(layerResult.ok, true, `${testCase.layer} should be valid layer`);
 
       if (directiveResult.ok && layerResult.ok) {
         // Step 4: Verify template file exists (simulates template selection)
         const templateExists = await Deno.stat(testCase.expectedTemplate).then(() => true).catch(
           () => false,
         );
-        assertEquals(
+        _assertEquals(
           templateExists,
           true,
           `Template should exist for ${testCase.directive}/${testCase.layer}`,
@@ -455,8 +460,8 @@ Deno.test("Pipeline Stage 1: DefaultTypePatternProvider → TypeFactory → Temp
     const invalidDirective = typeFactory.createDirectiveType("invalid");
     const invalidLayer = typeFactory.createLayerType("invalid");
 
-    assertEquals(invalidDirective.ok, false, "Invalid directive should fail");
-    assertEquals(invalidLayer.ok, false, "Invalid layer should fail");
+    _assertEquals(invalidDirective.ok, false, "Invalid directive should fail");
+    _assertEquals(invalidLayer.ok, false, "Invalid layer should fail");
   } finally {
     await cleanup();
   }
@@ -475,7 +480,7 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
   try {
     // Step 1: Create comprehensive variable set
     const customVariables = {
-      projectname: "Pipeline Integration Test",
+      project_name: "Pipeline Integration Test",
       author: "Integration Test Suite",
       version: "2.0.0",
       issue_id: "INT-001",
@@ -499,8 +504,8 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
     const adapter = new PromptAdapterImpl(provider);
     const pathValidation = await adapter.validatePaths();
 
-    assertEquals(pathValidation.success, true, "Path validation should succeed");
-    assertEquals(pathValidation.errors.length, 0, "Should have no path errors");
+    _assertEquals(pathValidation.success, true, "Path validation should succeed");
+    _assertEquals(pathValidation.errors.length, 0, "Should have no path errors");
 
     // Step 4: Build variables using VariablesBuilder
     const builder = new VariablesBuilder();
@@ -523,8 +528,8 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
     const variablesResult = builder.build();
 
     if (variablesResult.ok) {
-      assertEquals(Array.isArray(variablesResult.data), true, "Should return variables array");
-      assertEquals(variablesResult.data.length > 0, true, "Should have variables");
+      _assertEquals(Array.isArray(variablesResult.data), true, "Should return variables array");
+      _assertEquals(variablesResult.data.length > 0, true, "Should have variables");
 
       logger.debug("Variable processing successful", {
         variablesCount: variablesResult.data.length,
@@ -544,7 +549,7 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
         logger.error(`Error ${index + 1}`, err);
       });
 
-      assertFalse(
+      _assertFalse(
         true,
         `Variable building should succeed. Errors: ${JSON.stringify(variablesResult.error)}`,
       );
@@ -552,9 +557,9 @@ Deno.test("Pipeline Stage 2: VariablesBuilder → PromptAdapter Variable Process
 
     // Step 5: Verify provider integration
     const providerParams = provider.getAllParams();
-    assertEquals(providerParams.customVariables?.project_name, "Pipeline Integration Test");
-    assertEquals(providerParams.inputFilePath, inputFile);
-    assertEquals(providerParams.schemaFilePath, schemaFiles.to_project);
+    _assertEquals(providerParams.customVariables?.project_name, "Pipeline Integration Test");
+    _assertEquals(providerParams.inputFilePath, inputFile);
+    _assertEquals(providerParams.schemaFilePath, schemaFiles.to_project);
   } finally {
     await cleanup();
   }
@@ -594,18 +599,18 @@ Deno.test("Pipeline Stage 3: PromptAdapter → Template Processing and Generatio
 
     // Step 3: Validate all paths exist
     const pathValidation = await adapter.validatePaths();
-    assertEquals(pathValidation.success, true, "All paths should be valid");
+    _assertEquals(pathValidation.success, true, "All paths should be valid");
 
     // Step 4: Attempt prompt generation
     const generationResult = await adapter.generatePrompt();
 
     // Note: This may fail due to missing PromptManager, but we verify the structure
     if (generationResult.success) {
-      assertExists(generationResult.content, "Generated content should exist");
-      assertEquals(typeof generationResult.content, "string", "Content should be string");
+      _assertExists(generationResult.content, "Generated content should exist");
+      _assertEquals(typeof generationResult.content, "string", "Content should be string");
 
       // Verify template content processing
-      assertStringIncludes(
+      _assertStringIncludes(
         generationResult.content,
         "Project Direction Prompt Template",
         "Should contain template header",
@@ -623,23 +628,23 @@ Deno.test("Pipeline Stage 3: PromptAdapter → Template Processing and Generatio
       });
 
       // Verify error structure
-      assertExists(generationResult.content, "Error message should be provided");
-      assertEquals(typeof generationResult.content, "string", "Error should be string");
+      _assertExists(generationResult.content, "Error message should be provided");
+      _assertEquals(typeof generationResult.content, "string", "Error should be string");
     }
 
     // Step 5: Verify template file content can be read
     const templateContent = await Deno.readTextFile(promptFiles.to_project);
-    assertStringIncludes(
+    _assertStringIncludes(
       templateContent,
       "{{input_text}}",
       "Template should have input_text placeholder",
     );
-    assertStringIncludes(
+    _assertStringIncludes(
       templateContent,
       "{{project_name}}",
       "Template should have project_name placeholder",
     );
-    assertStringIncludes(
+    _assertStringIncludes(
       templateContent,
       "{{schema_file}}",
       "Template should have schema_file placeholder",
@@ -669,17 +674,17 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
     const directiveResult = typeFactory.createDirectiveType("to");
     const layerResult = typeFactory.createLayerType("project");
 
-    assertEquals(directiveResult.ok, true, "Directive creation should succeed");
-    assertEquals(layerResult.ok, true, "Layer creation should succeed");
+    _assertEquals(directiveResult.ok, true, "Directive creation should succeed");
+    _assertEquals(layerResult.ok, true, "Layer creation should succeed");
 
     if (!directiveResult.ok || !layerResult.ok) {
-      assertFalse(true, "Type creation failed, cannot continue pipeline test");
+      _assertFalse(true, "Type creation failed, cannot continue pipeline test");
       return;
     }
 
     // Step 3: Setup comprehensive variables
     const customVariables = {
-      projectname: "End-to-End Pipeline Test",
+      project_name: "End-to-End Pipeline Test",
       author: "Complete Integration",
       version: "4.0.0",
       environment: "test",
@@ -702,7 +707,7 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
     const adapter = new PromptAdapterImpl(provider);
     const pathValidation = await adapter.validatePaths();
 
-    assertEquals(pathValidation.success, true, "E2E path validation should succeed");
+    _assertEquals(pathValidation.success, true, "E2E path validation should succeed");
 
     // Step 6: Prepare for TwoParamsPromptGenerator integration
     const validatedParams: ValidatedParams = {
@@ -743,8 +748,8 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
 
     // Step 8: Verify end-to-end results
     if (generatorResult.ok) {
-      assertExists(generatorResult.data, "E2E generation should produce content");
-      assertEquals(typeof generatorResult.data, "string", "Generated content should be string");
+      _assertExists(generatorResult.data, "E2E generation should produce content");
+      _assertEquals(typeof generatorResult.data, "string", "Generated content should be string");
 
       logger.debug("Complete E2E pipeline succeeded", {
         directiveType: directiveResult.data.getValue(),
@@ -763,14 +768,14 @@ Deno.test("Pipeline Stage 4: Complete End-to-End Integration", async () => {
       });
 
       // Verify error structure is correct
-      assertExists(generatorResult.error.kind, "Error should have structured kind");
+      _assertExists(generatorResult.error.kind, "Error should have structured kind");
     }
 
     // Step 9: Verify pipeline components worked correctly
-    assertEquals(directiveResult.data.getValue(), "to", "Directive should be preserved");
-    assertEquals(layerResult.data.getValue(), "project", "Layer should be preserved");
-    assertEquals(pathValidation.success, true, "Path validation should succeed");
-    assertEquals(processedVariables.customVariables.project_name, "End-to-End Pipeline Test");
+    _assertEquals(directiveResult.data.getValue(), "to", "Directive should be preserved");
+    _assertEquals(layerResult.data.getValue(), "project", "Layer should be preserved");
+    _assertEquals(pathValidation.success, true, "Path validation should succeed");
+    _assertEquals(processedVariables.customVariables.project_name, "End-to-End Pipeline Test");
   } finally {
     await cleanup();
   }
@@ -794,12 +799,16 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
     const invalidDirective = typeFactory.createDirectiveType("nonexistent");
     const invalidLayer = typeFactory.createLayerType("nonexistent");
 
-    assertEquals(invalidDirective.ok, false, "Invalid directive should fail");
-    assertEquals(invalidLayer.ok, false, "Invalid layer should fail");
+    _assertEquals(invalidDirective.ok, false, "Invalid directive should fail");
+    _assertEquals(invalidLayer.ok, false, "Invalid layer should fail");
 
     if (!invalidDirective.ok && !invalidLayer.ok) {
-      assertEquals(invalidDirective.error.kind, "ValidationFailed", "Should have validation error");
-      assertEquals(invalidLayer.error.kind, "ValidationFailed", "Should have validation error");
+      _assertEquals(
+        invalidDirective.error.kind,
+        "ValidationFailed",
+        "Should have validation error",
+      );
+      _assertEquals(invalidLayer.error.kind, "ValidationFailed", "Should have validation error");
     }
 
     // Test 2: Invalid file paths propagation
@@ -811,8 +820,8 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
     const adapter = new PromptAdapterImpl(invalidProvider);
     const pathValidation = await adapter.validatePaths();
 
-    assertEquals(pathValidation.success, false, "Invalid paths should fail validation");
-    assertEquals(pathValidation.errors.length > 0, true, "Should have path errors");
+    _assertEquals(pathValidation.success, false, "Invalid paths should fail validation");
+    _assertEquals(pathValidation.errors.length > 0, true, "Should have path errors");
 
     // Test 3: Invalid configuration propagation
     const generator = new TwoParamsPromptGenerator();
@@ -835,7 +844,7 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
     );
 
     if (!configResult.ok) {
-      assertExists(configResult.error.kind, "Should have structured error");
+      _assertExists(configResult.error.kind, "Should have structured error");
       logger.debug("Error propagation test passed", {
         errorKind: configResult.error.kind,
         hasMessage: "message" in configResult.error,
@@ -898,11 +907,11 @@ Deno.test("Pipeline Stage 6: Performance and Scalability", async () => {
     const averageTime = totalTime / testRuns;
 
     // Verify all runs succeeded
-    assertEquals(results.every((r) => r), true, "All performance test runs should succeed");
+    _assertEquals(results.every((r) => r), true, "All performance test runs should succeed");
 
     // Performance assertions (reasonable expectations)
-    assertEquals(totalTime < 1000, true, "Total time should be under 1 second");
-    assertEquals(averageTime < 200, true, "Average time per run should be under 200ms");
+    _assertEquals(totalTime < 1000, true, "Total time should be under 1 second");
+    _assertEquals(averageTime < 200, true, "Average time per run should be under 200ms");
 
     logger.debug("Performance test completed", {
       totalRuns: testRuns,
@@ -978,7 +987,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
       );
 
       // Verify successful generation
-      assertExists(result, "PromptManager should return result");
+      _assertExists(result, "PromptManager should return result");
 
       // Handle PromptResult object structure
       const resultContent = typeof result === "string"
@@ -987,28 +996,28 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
         ? (result.content || JSON.stringify(result))
         : JSON.stringify(result);
 
-      assertExists(resultContent, "Generated prompt content should exist");
-      assertEquals(typeof resultContent, "string", "Generated prompt content should be string");
+      _assertExists(resultContent, "Generated prompt content should exist");
+      _assertEquals(typeof resultContent, "string", "Generated prompt content should be string");
 
       // Verify variable substitution occurred
-      assertStringIncludes(
+      _assertStringIncludes(
         resultContent,
         "BreakdownPrompts Integration Test",
         "Should substitute project_name",
       );
-      assertStringIncludes(
+      _assertStringIncludes(
         resultContent,
         "External Package Integration",
         "Should substitute author",
       );
-      assertStringIncludes(
+      _assertStringIncludes(
         resultContent,
         "integration_input.md",
         "Should substitute input_text_file",
       );
 
       // Verify template structure is preserved
-      assertStringIncludes(
+      _assertStringIncludes(
         resultContent,
         "Project Direction Prompt Template",
         "Should preserve template header",
@@ -1027,7 +1036,7 @@ Deno.test("Pipeline Stage 7: BreakdownPrompts External Package Integration", asy
       });
 
       // Verify error is structured appropriately
-      assertExists(promptError, "Error should be defined");
+      _assertExists(promptError, "Error should be defined");
 
       // This is acceptable in integration tests as external package versions may vary
       logger.debug("External package integration completed with expected limitations");
@@ -1245,7 +1254,7 @@ Templates should:
     const adapter = new PromptAdapterImpl(provider);
     const pathValidation = await adapter.validatePaths();
 
-    assertEquals(pathValidation.success, true, "Advanced template paths should validate");
+    _assertEquals(pathValidation.success, true, "Advanced template paths should validate");
 
     // Step 7: Build advanced variable set
     const builder = new VariablesBuilder();
@@ -1262,8 +1271,8 @@ Templates should:
     const variablesResult = builder.build();
 
     if (variablesResult.ok) {
-      assertExists(variablesResult.data, "Advanced variables should build successfully");
-      assertEquals(
+      _assertExists(variablesResult.data, "Advanced variables should build successfully");
+      _assertEquals(
         variablesResult.data.length > 10,
         true,
         "Should have substantial number of variables",
@@ -1273,28 +1282,28 @@ Templates should:
       const templateContent = await Deno.readTextFile(advancedTemplateFile);
 
       // Verify template has advanced features
-      assertStringIncludes(templateContent, "{{#if", "Template should have conditional logic");
-      assertStringIncludes(templateContent, "{{#each", "Template should have iteration logic");
-      assertStringIncludes(templateContent, "{{else}}", "Template should have else blocks");
+      _assertStringIncludes(templateContent, "{{#if", "Template should have conditional logic");
+      _assertStringIncludes(templateContent, "{{#each", "Template should have iteration logic");
+      _assertStringIncludes(templateContent, "{{else}}", "Template should have else blocks");
 
       // Step 9: Attempt prompt generation with advanced features
       const generationResult = await adapter.generatePrompt();
 
       if (generationResult.success) {
-        assertExists(generationResult.content, "Advanced generation should produce content");
+        _assertExists(generationResult.content, "Advanced generation should produce content");
 
         // Verify advanced variable substitution
-        assertStringIncludes(
+        _assertStringIncludes(
           generationResult.content,
           "Advanced Template Integration",
           "Should substitute complex project name",
         );
-        assertStringIncludes(
+        _assertStringIncludes(
           generationResult.content,
           "2.0.0-advanced",
           "Should substitute version",
         );
-        assertStringIncludes(
+        _assertStringIncludes(
           generationResult.content,
           wordCount.toString(),
           "Should substitute calculated word count",
@@ -1315,7 +1324,7 @@ Templates should:
         });
 
         // Verify error structure
-        assertExists(generationResult.content, "Should provide error details");
+        _assertExists(generationResult.content, "Should provide error details");
       }
     } else {
       logger.warn("Advanced variable building failed", { errors: variablesResult.error });
@@ -1382,10 +1391,10 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
     const typePatternResult = typePatternTest();
 
     // Step 5: Verify core package coordination
-    assertEquals(loggerResult.available, true, "BreakdownLogger should be available");
-    assertEquals(typePatternResult.available, true, "TypePattern system should be available");
-    assertEquals(typePatternResult.directiveValid, true, "Directive validation should work");
-    assertEquals(typePatternResult.layerValid, true, "Layer validation should work");
+    _assertEquals(loggerResult.available, true, "BreakdownLogger should be available");
+    _assertEquals(typePatternResult.available, true, "TypePattern system should be available");
+    _assertEquals(typePatternResult.directiveValid, true, "Directive validation should work");
+    _assertEquals(typePatternResult.layerValid, true, "Layer validation should work");
 
     // Step 6: Test package interaction compatibility
     if (promptPackageResult.available && typePatternResult.available) {
@@ -1404,7 +1413,7 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
         if (directivePattern && promptPackageResult.instance) {
           // Test pattern validation with prompt generation
           const testResult = directivePattern.test("to");
-          assertEquals(
+          _assertEquals(
             testResult,
             true,
             "Pattern validation should work with external coordination",
@@ -1429,8 +1438,8 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
     }
 
     // Step 7: Verify minimum required functionality is available
-    assertExists(loggerResult, "Logger integration should be testable");
-    assertExists(typePatternResult, "Type pattern system should be testable");
+    _assertExists(loggerResult, "Logger integration should be testable");
+    _assertExists(typePatternResult, "Type pattern system should be testable");
 
     logger.debug("External package coordination test completed", {
       totalPackagesTested: 3,
@@ -1441,6 +1450,6 @@ Deno.test("Pipeline Stage 9: External Package Coordination and Compatibility", a
     logger.warn("Package coordination test encountered unexpected error", {
       error: coordinationError,
     });
-    assertExists(coordinationError, "Coordination errors should be defined");
+    _assertExists(coordinationError, "Coordination errors should be defined");
   }
 });

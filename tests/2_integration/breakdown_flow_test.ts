@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ensureDir } from "@std/fs";
-import { join } from "@std/path";
+import { fromFileUrl, join } from "@std/path";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 const logger = new BreakdownLogger();
@@ -20,7 +20,7 @@ async function runBreakdownCommand(
   cwd?: string,
   timeoutMs = 30000,
 ): Promise<CommandResult> {
-  const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
+  const breakdownPath = fromFileUrl(new URL("../../cli/breakdown.ts", import.meta.url));
   const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--allow-all", breakdownPath, ...args],
     stdout: "piped",

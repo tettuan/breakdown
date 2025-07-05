@@ -2,10 +2,7 @@ import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { exists } from "@std/fs";
 import { ensureDir } from "@std/fs";
-import {
-  BreakdownLogger,
-  LogLevel,
-} from "@tettuan/breakdownlogger";
+import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,
@@ -32,7 +29,11 @@ interface TestOptions extends Omit<TestEnvironmentOptions, "workingDir" | "logLe
 Deno.test({
   name: "init - new environment",
   async fn() {
-    const options: TestOptions = { workingDir: "tmp/test/init", logger: logger, logLevel: LogLevel.DEBUG };
+    const options: TestOptions = {
+      workingDir: "tmp/test/init",
+      logger: logger,
+      logLevel: LogLevel.DEBUG,
+    };
     await setupTestEnvironment(options);
 
     // Ensure parent directories exist
@@ -406,12 +407,12 @@ Deno.test({
       "prompts",
       "to",
       "project",
-      "fproject.md",
+      "f_project.md",
     );
     const destPromptContent = await Deno.readTextFile(destPrompt);
     assertEquals(
       destPromptContent,
-      prompts["to/project/fproject.md"],
+      prompts["to/project/f_project.md"],
       "Prompt template is copied from TS template",
     );
 
@@ -477,12 +478,12 @@ Deno.test({
         "prompts",
         "to",
         "project",
-        "fproject.md",
+        "f_project.md",
       );
       const destPromptContent = await Deno.readTextFile(destPrompt);
       assertEquals(
         destPromptContent,
-        prompts["to/project/fproject.md"],
+        prompts["to/project/f_project.md"],
         "Prompt template is copied from TS template",
       );
 

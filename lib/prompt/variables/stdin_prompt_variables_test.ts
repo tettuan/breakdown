@@ -20,7 +20,7 @@ Deno.test("StdinPromptVariables - create with empty input", () => {
 
   assertEquals(result.ok, false);
   if (!result.ok) {
-    assertEquals(result.error.kind, "EmptyValue");
+    assertEquals(result.error.message, "Standard input cannot be empty");
   }
 });
 

@@ -42,19 +42,19 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
 
     // Should not expose unrelated functionality
     assertEquals(
-      typeof (_resolver as any as { readTemplate?: unknown }).readTemplate,
+      typeof (resolver as any as { readTemplate?: unknown }).readTemplate,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { processTemplate?: unknown }).processTemplate,
+      typeof (resolver as any as { processTemplate?: unknown }).processTemplate,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { renderTemplate?: unknown }).renderTemplate,
+      typeof (resolver as any as { renderTemplate?: unknown }).renderTemplate,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { validateContent?: unknown }).validateContent,
+      typeof (resolver as any as { validateContent?: unknown }).validateContent,
       "undefined",
     );
   });
@@ -81,19 +81,19 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
 
     // Private methods should not be accessible
     assertEquals(
-      typeof (_resolver as any as { getPromptDir?: unknown }).getPromptDir,
+      typeof (resolver as any as { getPromptDir?: unknown }).getPromptDir,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { getSchemaDir?: unknown }).getSchemaDir,
+      typeof (resolver as any as { getSchemaDir?: unknown }).getSchemaDir,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { buildTemplatePath?: unknown }).buildTemplatePath,
+      typeof (resolver as any as { buildTemplatePath?: unknown }).buildTemplatePath,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { getTemplateFilename?: unknown }).getTemplateFilename,
+      typeof (resolver as any as { getTemplateFilename?: unknown }).getTemplateFilename,
       "undefined",
     );
 
@@ -484,7 +484,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
       options: {},
     };
 
-    specialConfigs.forEach((_config) => {
+    specialConfigs.forEach((config) => {
       const resolver = new PromptTemplatePathResolver(config, params);
       const result = resolver.getPath();
 

@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test: Configuration Immutability
@@ -18,7 +19,7 @@ import { assertEquals, assertExists } from "@std/assert";
  */
 Deno.test("Architecture: Config two params defaults are immutable", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./config_two_params.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./config_two_params.ts", import.meta.url)),
   );
 
   // Check for const declaration
@@ -48,7 +49,7 @@ Deno.test("Architecture: Config two params defaults are immutable", async () => 
  */
 Deno.test("Architecture: Config defaults maintain type safety", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./config_two_params.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./config_two_params.ts", import.meta.url)),
   );
 
   // Check for any/unknown types
@@ -124,7 +125,7 @@ Deno.test("Architecture: Config defaults follow domain constraints", async () =>
  */
 Deno.test("Architecture: Config defaults are independent", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./config_two_params.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./config_two_params.ts", import.meta.url)),
   );
 
   // Check for imports

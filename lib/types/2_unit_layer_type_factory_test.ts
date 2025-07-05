@@ -15,7 +15,7 @@ import {
   type LayerTypeResult,
 } from "./layer_type_factory.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./mod.ts";
-import type { TwoParams_Result } from "../../deps.ts";
+import type { TwoParamsResult } from "../../deps.ts";
 
 const logger = new BreakdownLogger("layer-type-factory-unit");
 
@@ -210,11 +210,11 @@ describe("LayerTypeFactory.fromString - Pattern Validation", () => {
   });
 });
 
-describe("LayerTypeFactory.fromTwoParams_Result", () => {
-  it("should create LayerType from valid TwoParams_Result", () => {
-    logger.debug("Testing LayerType creation from TwoParams_Result");
+describe("LayerTypeFactory.fromTwoParamsResult", () => {
+  it("should create LayerType from valid TwoParamsResult", () => {
+    logger.debug("Testing LayerType creation from TwoParamsResult");
 
-    const validResults: TwoParams_Result[] = [
+    const validResults: TwoParamsResult[] = [
       {
         type: "two",
         demonstrativeType: "to",
@@ -232,7 +232,7 @@ describe("LayerTypeFactory.fromTwoParams_Result", () => {
     ];
 
     validResults.forEach((twoParamsResult) => {
-      const result = LayerTypeFactory.fromTwoParams_Result(twoParamsResult);
+      const result = LayerTypeFactory.fromTwoParamsResult(twoParamsResult);
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -241,10 +241,10 @@ describe("LayerTypeFactory.fromTwoParams_Result", () => {
     });
   });
 
-  it("should handle invalid TwoParams_Result", () => {
-    logger.debug("Testing invalid TwoParams_Result handling");
+  it("should handle invalid TwoParamsResult", () => {
+    logger.debug("Testing invalid TwoParamsResult handling");
 
-    const invalidResult: TwoParams_Result = {
+    const invalidResult: TwoParamsResult = {
       type: "two",
       demonstrativeType: "invalid",
       layerType: "not-a-real-layer",
@@ -253,8 +253,8 @@ describe("LayerTypeFactory.fromTwoParams_Result", () => {
     };
 
     // LayerType.create doesn't validate the layerType value
-    // It accepts any TwoParams_Result, so the factory will succeed
-    const result = LayerTypeFactory.fromTwoParams_Result(invalidResult);
+    // It accepts any TwoParamsResult, so the factory will succeed
+    const result = LayerTypeFactory.fromTwoParamsResult(invalidResult);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -370,9 +370,9 @@ describe("LayerTypeFactory - Edge Cases", () => {
   it("should maintain consistency across different creation methods", () => {
     logger.debug("Testing consistency across creation methods");
 
-    // fromString and fromTwoParams_Result should produce equivalent results
+    // fromString and fromTwoParamsResult should produce equivalent results
     const stringResult = LayerTypeFactory.fromString("task");
-    const twoParamsResult = LayerTypeFactory.fromTwoParams_Result({
+    const twoParamsResult = LayerTypeFactory.fromTwoParamsResult({
       type: "two",
       demonstrativeType: "to",
       layerType: "task",

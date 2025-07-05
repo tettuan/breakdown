@@ -179,7 +179,7 @@ export class TwoParamsOrchestrator {
    * Generate prompt using factory and builder
    */
   private async _generatePrompt(
-    config: Record<string, unknown>,
+    _config: Record<string, unknown>,
     cliParams: PromptCliParams,
     inputText: string,
     customVariables: Record<string, string>,
@@ -189,7 +189,7 @@ export class TwoParamsOrchestrator {
       let factory;
       try {
         factory = await PromptVariablesFactory.create(cliParams);
-      } catch (configError) {
+      } catch (_configError) {
         // Fallback: Use minimal config when main config loading fails
         const fallbackConfig = {
           working_dir: ".agent/breakdown",

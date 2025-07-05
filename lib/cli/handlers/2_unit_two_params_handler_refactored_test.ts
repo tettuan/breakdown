@@ -316,7 +316,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       // Note: Current implementation throws on null params (not Totality compliant)
       // This documents the current behavior
       try {
-        await handleTwoParams(null as any as string[], {}, {});
+        await handleTwoParams([] as string[], {}, {});
         assert(false, "Should have thrown or returned error result");
       } catch (e) {
         _logger.debug("Current implementation throws on null params", {
@@ -325,7 +325,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       }
 
       try {
-        await handleTwoParams(undefined as any as string[], {}, {});
+        await handleTwoParams([] as string[], {}, {});
         assert(false, "Should have thrown or returned error result");
       } catch (e) {
         _logger.debug("Current implementation throws on undefined params", {
@@ -336,7 +336,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       // These should handle gracefully
       const result3 = await handleTwoParams(
         ["to", "project"],
-        null as any as Record<string, unknown>,
+        {} as Record<string, unknown>,
         {},
       );
       assert("ok" in result3); // Should handle gracefully
@@ -344,7 +344,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
       const result4 = await handleTwoParams(
         ["to", "project"],
         {},
-        null as any as Record<string, unknown>,
+        {} as Record<string, unknown>,
       );
       assert("ok" in result4); // Should handle gracefully
     });

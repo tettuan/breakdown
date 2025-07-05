@@ -25,10 +25,10 @@ import {
   type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const logger = new BreakdownLogger("architecture-prompt-_factory");
+const logger = new BreakdownLogger("architecture-prompt-factory");
 
 /**
  * Test pattern provider for architecture validation
@@ -111,14 +111,14 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
       };
 
       // Factory creation should succeed without resolver-to-factory dependencies
-      TotalityPromptVariablesFactory.create(params).then((_factory) => {
-        assertExists(_factory);
+      TotalityPromptVariablesFactory.create(params).then((factory: any) => {
+        assertExists(factory);
 
         // All path getters should be accessible
-        assertExists(_factory.promptFilePath);
-        assertExists(_factory.inputFilePath);
-        assertExists(_factory.outputFilePath);
-        assertExists(_factory.schemaFilePath);
+        assertExists(factory.promptFilePath);
+        assertExists(factory.inputFilePath);
+        assertExists(factory.outputFilePath);
+        assertExists(factory.schemaFilePath);
       });
     }
   });
@@ -147,11 +147,11 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
         options: {},
       };
 
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
       // Factory should orchestrate lower layers without exposing implementation details
-      assertExists(_factory.getAllParams());
-      assertExists(_factory.validateAll);
+      assertExists(factory.getAllParams());
+      assertExists(factory.validateAll);
     }
   });
 });
@@ -261,8 +261,8 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
             options: {},
           };
 
-          const _factory = await TotalityPromptVariablesFactory.create(params);
-          assertExists(_factory);
+          const factory = await TotalityPromptVariablesFactory.create(params);
+          assertExists(factory);
           handled = true;
           break;
         case false:
@@ -304,8 +304,8 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
           options: { errorFormat },
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
-        const retrievedFormat = _factory.errorFormat;
+        const factory = await TotalityPromptVariablesFactory.create(params);
+        const retrievedFormat = factory.errorFormat;
 
         let handled = false;
 
@@ -353,24 +353,24 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
           options: combination,
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         let handled = false;
 
         // Handle all boolean combinations without default case
-        if (_factory.extended && _factory.customValidation) {
+        if (factory.extended && factory.customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (_factory.extended && !_factory.customValidation) {
+        } else if (factory.extended && !factory.customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, false);
           handled = true;
-        } else if (!_factory.extended && _factory.customValidation) {
+        } else if (!factory.extended && factory.customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (!_factory.extended && !_factory.customValidation) {
+        } else if (!factory.extended && !factory.customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, false);
           handled = true;
@@ -402,11 +402,11 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Test base directory validation states
-      const hasValidBaseDir = _factory.hasValidBaseDir();
-      const baseDirError = _factory.getBaseDirError();
+      const hasValidBaseDir = factory.hasValidBaseDir();
+      const baseDirError = factory.getBaseDirError();
 
       let validationHandled = false;
 
@@ -428,7 +428,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       let overallValidationHandled = false;
 
       try {
-        _factory.validateAll();
+        factory.validateAll();
         // If no exception thrown, validation passed
         overallValidationHandled = true;
       } catch (error) {
@@ -456,14 +456,14 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // All path types should be resolvable
       const pathTypes = [
-        { name: "promptFilePath", path: _factory.promptFilePath },
-        { name: "inputFilePath", path: _factory.inputFilePath },
-        { name: "outputFilePath", path: _factory.outputFilePath },
-        { name: "schemaFilePath", path: _factory.schemaFilePath },
+        { name: "promptFilePath", path: factory.promptFilePath },
+        { name: "inputFilePath", path: factory.inputFilePath },
+        { name: "outputFilePath", path: factory.outputFilePath },
+        { name: "schemaFilePath", path: factory.schemaFilePath },
       ];
 
       pathTypes.forEach((pathType) => {

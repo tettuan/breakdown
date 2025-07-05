@@ -12,6 +12,7 @@
  */
 
 import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 
@@ -22,8 +23,8 @@ import type { TypePatternProvider } from "../types/type_factory.ts";
  */
 Deno.test("Architecture: Import statement analysis and dependency graph", async () => {
   // pattern_provider.tsのソースコードを読み込む
-  const __filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
-  const sourceCode = await Deno.readTextFile(__filePath);
+  const filePath = fromFileUrl(new URL("./pattern_provider.ts", import.meta.url));
+  const sourceCode = await Deno.readTextFile(filePath);
 
   // import文を抽出
   const importRegex = /import\s+(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
@@ -116,14 +117,17 @@ Deno.test("Architecture: No circular dependencies", async () => {
   // 依存関係マップの構築
   const dependencyMap = new Map<string, Set<string>>();
 
-  async function analyzeDependencies(_filePath: string, visited = new Set<string>()): Promise<void> {
-    if (visited.has(_filePath)) {
+  async function analyzeDependencies(
+    filePath: string,
+    visited = new Set<string>(),
+  ): Promise<void> {
+    if (visited.has(filePath)) {
       return; // 既に訪問済み
     }
-    visited.add(_filePath);
+    visited.add(filePath);
 
     try {
-      const sourceCode = await Deno.readTextFile(_filePath);
+      const sourceCode = await Deno.readTextFile(filePath);
       const importRegex = /import\s+(?:{[^}]+}|[^;]+)\s+from\s+["']([^"']+)["'];?/g;
       const deps = new Set<string>();
 
@@ -136,7 +140,7 @@ Deno.test("Architecture: No circular dependencies", async () => {
         }
       }
 
-      dependencyMap.set(_filePath, deps);
+      dependencyMap.set(filePath, deps);
     } catch {
       // ファイルが読めない場合はスキップ
     }
@@ -304,8 +308,8 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
   );
 
   // ソースコードを読み込んでエラー処理パターンを検証
-  const _filePath = new URL("./pattern_provider.ts", import.meta.url).pathname;
-  const sourceCode = await Deno.readTextFile(_filePath);
+  const filePath = fromFileUrl(new URL("./pattern_provider.ts", import.meta.url));
+  const sourceCode = await Deno.readTextFile(filePath);
 
   // getDirectivePatternとgetLayerTypePatternがcatch節でnullを返すことを確認
   // より単純な検証方法を使用

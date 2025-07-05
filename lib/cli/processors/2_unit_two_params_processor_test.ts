@@ -19,6 +19,7 @@ import { TwoParamsProcessor } from "./two_params_processor.ts";
 // ProcessorError type imported for potential future error testing
 import type { TwoParams_Result } from "../../deps.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
+import type { PromptVariable } from "../../types/prompt_variables.ts";
 
 /**
  * Unit Test Suite: TwoParamsProcessor Core Functionality
@@ -60,12 +61,12 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
 
         // Should have correct base variables
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "demonstrative_type" && v.value === "to"
           ),
         );
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "layer_type" && v.value === "project"
           ),
         );
@@ -131,15 +132,17 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
 
         // Should include custom variables
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "projectName" && v.value === "TestProject"
           ),
         );
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "version" && v.value === "1.0.0"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "version" && v.value === "1.0.0"
+          ),
         );
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "author" && v.value === "Test User"
           ),
         );
@@ -173,7 +176,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
         if (buildResult.ok) {
           const _variables = buildResult.data;
           assert(
-            _variables.some((v: any) =>
+            _variables.some((v: PromptVariable) =>
               Object.keys(v.toRecord())[0] === "demonstrative_type" && v.value === demonstrativeType
             ),
           );
@@ -205,7 +208,7 @@ Deno.test("TwoParamsProcessor - process() functionality", async (t) => {
         if (buildResult.ok) {
           const _variables = buildResult.data;
           assert(
-            _variables.some((v: any) =>
+            _variables.some((v: PromptVariable) =>
               Object.keys(v.toRecord())[0] === "layer_type" && v.value === layerType
             ),
           );
@@ -411,17 +414,17 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       if (buildResult.ok) {
         const _variables = buildResult.data;
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "special" && v.value === "value with spaces"
           ),
         );
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "unicode" && v.value === "値 with 日本語"
           ),
         );
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "symbols" && v.value === "!@#$%^&*()"
           ),
         );
@@ -456,14 +459,24 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
         const _variables = buildResult.data;
         // Numbers should be converted to strings
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "number" && v.value === "123"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "number" && v.value === "123"
+          ),
         );
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "float" && v.value === "3.14"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "float" && v.value === "3.14"
+          ),
         );
-        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "zero" && v.value === "0"));
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "negative" && v.value === "-42"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "zero" && v.value === "0"
+          ),
+        );
+        assert(
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "negative" && v.value === "-42"
+          ),
         );
       }
     }
@@ -494,10 +507,14 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
         const _variables = buildResult.data;
         // Booleans should be converted to strings
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "enabled" && v.value === "true"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "enabled" && v.value === "true"
+          ),
         );
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "disabled" && v.value === "false"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "disabled" && v.value === "false"
+          ),
         );
       }
     }
@@ -527,9 +544,15 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
       if (buildResult.ok) {
         const _variables = buildResult.data;
         // Empty strings should be preserved
-        assert(_variables.some((v: any) => Object.keys(v.toRecord())[0] === "empty" && v.value === ""));
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "whitespace" && v.value === "   "),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "empty" && v.value === ""
+          ),
+        );
+        assert(
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "whitespace" && v.value === "   "
+          ),
         );
       }
     }
@@ -564,10 +587,12 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
 
         // Should include uv- prefixed
         assert(
-          _variables.some((v: any) => Object.keys(v.toRecord())[0] === "included" && v.value === "yes"),
+          _variables.some((v: PromptVariable) =>
+            Object.keys(v.toRecord())[0] === "included" && v.value === "yes"
+          ),
         );
         assert(
-          _variables.some((v: any) =>
+          _variables.some((v: PromptVariable) =>
             Object.keys(v.toRecord())[0] === "" && v.value === "another edge case"
           ),
         );

@@ -9,7 +9,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { isStdinAvailable, readStdin } from "$lib/io/stdin.ts";
+import { readStdin } from "$lib/io/stdin.ts";
 import {
   type BreakdownConfigCompatible,
   createTimeoutManagerFromConfig,

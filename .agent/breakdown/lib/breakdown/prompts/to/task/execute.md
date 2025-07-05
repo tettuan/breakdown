@@ -9,9 +9,7 @@
 
 tasks/*jsonファイルを順番に読み込み、stepsに従って実行してください。
 
-\\\`\\\`\\\`zsh
-ls -l ./.agent/breakdown/tasks/*.json
-\\\`\\\`\\\`
+\\\`\\\`\\\`zsh ls -l ./.agent/breakdown/tasks/*.json \\\`\\\`\\\`
 
 手順： 優先順位や依存関係に沿って処理しなさい。 進捗を都度 task status へ反映します。 タスク内の
 steps についても、段階を追って処理します。
@@ -20,34 +18,23 @@ steps についても、段階を追って処理します。
 
 ### StepType
 
-| Property Name          | Definitions                                                                            | examples                             |
-| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------ |
-| Execute Command        | Execute the zsh command specified in the \\\`command\\\` column.                             | \\\`bundle exec rails test\\\`             |
-| Check Logs             | Check the logs to ensure there are no issues, and identify any problems if they exist. | \\\`tail -200 log/development.log\\\`      |
-| Write Application Code | "Write code that modifies the behavior of the application.                             | class Edinet ..., def initialize ... |
-| Write Test Code        | Write appropriate test code for the application code.                                  |                                      |
-| Write TDD Test Code    | Write tests using test-driven development (TDD) based on the specifications.           |                                      |
-| Git Commit             | Commit current changes with git messages.                                              | \\\`git commit\\\`                         |
-| Git Commit All         | Commit all changes, including those that have not been staged yet.                     | \\\`git add . ; git commit\\\`             |
-| Git Push               |                                                                                        | \\\`git push\\\`                           |
+| Property Name          | Definitions                                                                            | examples                              |
+| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
+| Execute Command        | Execute the zsh command specified in the \\\`command\\\` column.                       | \\\`bundle exec rails test\\\`        |
+| Check Logs             | Check the logs to ensure there are no issues, and identify any problems if they exist. | \\\`tail -200 log/development.log\\\` |
+| Write Application Code | "Write code that modifies the behavior of the application.                             | class Edinet ..., def initialize ...  |
+| Write Test Code        | Write appropriate test code for the application code.                                  |                                       |
+| Write TDD Test Code    | Write tests using test-driven development (TDD) based on the specifications.           |                                       |
+| Git Commit             | Commit current changes with git messages.                                              | \\\`git commit\\\`                    |
+| Git Commit All         | Commit all changes, including those that have not been staged yet.                     | \\\`git add . ; git commit\\\`        |
+| Git Push               |                                                                                        | \\\`git push\\\`                      |
 
 ### Task and Step State
 
-\\\`\\\`\\\`mermaid
-stateDiagram-v2
-direction LR
-  state Result <<choice>>
+\\\`\\\`\\\`mermaid stateDiagram-v2 direction LR state Result <<choice>>
 
-  [*] --> ToDo
-  ToDo --> Doing
-  Doing --> Result
-  Result --> Error: Result False
-  Result --> Crash: Stop
-  Result --> Success: Result True
-  Done --> [*]
-  Error --> ToDo
-  Crash --> [*]
-\\\`\\\`\\\`
+[_] --> ToDo ToDo --> Doing Doing --> Result Result --> Error: Result False Result --> Crash: Stop
+Result --> Success: Result True Done --> [_] Error --> ToDo Crash --> [*] \\\`\\\`\\\`
 
 # 報酬
 

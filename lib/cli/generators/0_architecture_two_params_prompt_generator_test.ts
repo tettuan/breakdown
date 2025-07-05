@@ -12,7 +12,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
-import type { PromptGeneratorError, ValidatedParams } from "./two_params_prompt_generator.ts";
+import type { ValidatedParams } from "./two_params_prompt_generator.ts";
 
 Deno.test("Architecture: TwoParamsPromptGenerator follows single responsibility principle", async () => {
   // Verify class has single clear purpose

@@ -22,63 +22,63 @@ Deno.test("detectEnvironment - uses injected configuration instead of Deno.env",
     "DENO_TESTING": "true",
   };
 
-  const config: EnvironmentDetectionConfig = {
-    getEnvVar: (name: _string) => mockEnvVars[name],
+  const config: _EnvironmentDetectionConfig = {
+    getEnvVar: (name: string) => mockEnvVars[name],
     isTerminal: false,
   };
 
-  const result = detectEnvironment(config);
+  const result = _detectEnvironment(config);
 
   // Verify that the function correctly detected CI environment
-  assertEquals(result.isCI, true);
-  assertEquals(result.ciProvider, "CI");
-  assertEquals(result.isTest, true);
-  assertEquals(result.isTerminal, false);
+  _assertEquals(result.isCI, true);
+  _assertEquals(result.ciProvider, "CI");
+  _assertEquals(result.isTest, true);
+  _assertEquals(result.isTerminal, false);
 
   // Verify that the environment variables were captured
-  assertEquals(result.envVars["CI"], "true");
-  assertEquals(result.envVars["GITHUB_ACTIONS"], "true");
+  _assertEquals(result.envVars["CI"], "true");
+  _assertEquals(result.envVars["GITHUB_ACTIONS"], "true");
 });
 
 Deno.test("detectEnvironment - falls back to Deno.env when no config provided", () => {
   // Test backward compatibility - should still work without config
-  const result = detectEnvironment();
+  const result = _detectEnvironment();
 
   // Result will depend on actual environment, but should not throw
-  assertEquals(typeof result.isCI, "boolean");
-  assertEquals(typeof result.isTerminal, "boolean");
-  assertEquals(typeof result.isTest, "boolean");
-  assertEquals(typeof result.envVars, "object");
+  _assertEquals(typeof result.isCI, "boolean");
+  _assertEquals(typeof result.isTerminal, "boolean");
+  _assertEquals(typeof result.isTest, "boolean");
+  _assertEquals(typeof result.envVars, "object");
 });
 
 Deno.test("detectEnvironment - uses envVars map when provided", () => {
-  const config: EnvironmentDetectionConfig = {
+  const config: _EnvironmentDetectionConfig = {
     envVars: {
       "CIRCLECI": "true",
       "TEST": "true",
     },
   };
 
-  const result = detectEnvironment(config);
+  const result = _detectEnvironment(config);
 
   // Should detect CI from the provided envVars
-  assertEquals(result.isCI, true);
+  _assertEquals(result.isCI, true);
   // CI provider detection may vary based on actual environment
-  assertExists(result.ciProvider);
-  assertEquals(result.envVars["CIRCLECI"], "true");
+  _assertExists(result.ciProvider);
+  _assertEquals(result.envVars["CIRCLECI"], "true");
 });
 
 Deno.test("detectEnvironment - respects override flags", () => {
-  const config: EnvironmentDetectionConfig = {
+  const config: _EnvironmentDetectionConfig = {
     getEnvVar: () => undefined, // No env vars
     isTerminal: true,
     isTest: true,
   };
 
-  const result = detectEnvironment(config);
+  const result = _detectEnvironment(config);
 
   // Should use the override values
-  assertEquals(result.isTerminal, true);
-  assertEquals(result.isTest, true);
-  assertEquals(result.isCI, false); // No CI env vars found
+  _assertEquals(result.isTerminal, true);
+  _assertEquals(result.isTest, true);
+  _assertEquals(result.isCI, false); // No CI env vars found
 });

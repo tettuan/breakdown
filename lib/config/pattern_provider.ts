@@ -76,7 +76,7 @@ interface PatternConfig {
  * ```
  */
 export class ConfigPatternProvider implements TypePatternProvider {
-  private _config: BreakdownConfig;
+  private config: BreakdownConfig;
   private _patternCache: {
     directive: TwoParamsDirectivePattern | null | undefined;
     layer: TwoParamsLayerTypePattern | null | undefined;
@@ -94,10 +94,10 @@ export class ConfigPatternProvider implements TypePatternProvider {
     // Create defensive copy to ensure immutability
     // Note: BreakdownConfig may contain methods, so use structuredClone or shallow copy
     try {
-      this._config = structuredClone(config);
+      this.config = structuredClone(config);
     } catch {
       // Fallback to shallow copy if structuredClone fails with methods
-      this._config = Object.assign(Object.create(Object.getPrototypeOf(config)), config);
+      this.config = Object.assign(Object.create(Object.getPrototypeOf(config)), config);
     }
   }
 
@@ -206,7 +206,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
    */
   private async getConfigData(): Promise<Record<string, unknown>> {
     try {
-      return await this._config.getConfig();
+      return await this.config.getConfig();
     } catch (error) {
       throw new Error(
         `Failed to get configuration data: ${

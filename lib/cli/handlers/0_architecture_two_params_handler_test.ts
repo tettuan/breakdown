@@ -109,7 +109,7 @@ Deno.test({
       // Invalid parameter types should be handled gracefully
       const invalidConfigResult = await handleTwoParams(
         ["to", "project"],
-        null as any as Record<string, unknown>, // Invalid config type
+        {} as Record<string, unknown>, // Invalid config type
         { skipStdin: true }, // Skip stdin processing to avoid resource leaks in tests
       );
 

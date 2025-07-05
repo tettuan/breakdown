@@ -58,7 +58,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 旧無引数結果型 | No Parameters Result | NoParamsResult | 廃止：ZeroParamsResultに変更 |
 | 旧単一引数結果型 | Single Parameter Result | SingleParamResult | 廃止：OneParamResultに変更 |
 | 旧二重引数結果型 | Double Parameters Result | DoubleParamsResult | 廃止：TwoParamsResultに統合 |
-| **二重パラメータ処理方向バリデーションルール型** | Two Parameters Directive Pattern | TwoParamsDirectivePattern | `demonstrativeType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（to, summary, defect）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.demonstrativeType.pattern`で指定。 |
+| **二重パラメータ処理方向バリデーションルール型** | Two Parameters Directive Pattern | TwoParamsDirectivePattern | `DirectiveType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（to, summary, defect）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.DirectiveType.pattern`で指定。 |
 | **二重パラメータ階層バリデーションルール型** | Two Parameters Layer Type Pattern | TwoParamsLayerTypePattern | `layerType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（project, issue, task）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.layerType.pattern`で指定。 |
 | 旧処理方向型 | Demonstrative Type | DemonstrativeType | 廃止：DirectiveTypeに変更 |
 | **戦略パターン** | | | |
@@ -82,7 +82,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| demonstrativeType | options.ja.md, path.ja.md | 処理の方向性を指定するパラメータ。`to`（変換）、`summary`（要約）、`defect`（欠陥検出）、`init`（初期化）などの値を取り、どの方向に処理を向かわせるかを決定する。取りうる値はuser.ymlでユーザーが自由に定義可能。実装名はDirectiveTypeに変更予定（旧DemonstrativeType）。 | layerType, コマンド, 処理方向型, DirectiveType, user.yml |
+| DirectiveType | options.ja.md, path.ja.md | 処理の方向性を指定するパラメータ。`to`（変換）、`summary`（要約）、`defect`（欠陥検出）、`init`（初期化）などの値を取り、どの方向に処理を向かわせるかを決定する。取りうる値はuser.ymlでユーザーが自由に定義可能。パターンベースバリデーションにより型安全性を保証。 | LayerType, コマンド, 処理方向型, user.yml |
 | layerType | options.ja.md, path.ja.md | 処理対象の階層を指定するパラメータ。`project`、`issue`、`task` のいずれかを指定し、処理対象の粒度を決定する。階層値には次の処理への方向性（ベクトル情報）も含まれる。取りうる値はuser.ymlでユーザーが自由に定義可能。 | demonstrativeType, コマンド, 階層型, user.yml |
 | adaptationType | options.ja.md, path.ja.md | プロンプトの種類を指定するパラメータ（-a, --adaptation）。`strict`、`a` などの値を取り、プロンプトファイル名のsuffixとして使用される。 | -a, --adaptation, プロンプト種別 |
 

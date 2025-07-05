@@ -98,13 +98,13 @@ Deno.test("WorkspaceStructure Structure", async (t) => {
   await t.step("should maintain configuration dependency structure", () => {
     _logger.debug("Testing configuration dependency structure");
 
-    const _config = {
+    const config = {
       workingDir: "./custom",
       promptBaseDir: "custom-prompts",
       schemaBaseDir: "custom-schema",
     };
 
-    const structure = new WorkspaceStructureImpl(_config);
+    const structure = new WorkspaceStructureImpl(config);
 
     // Should accept configuration in constructor
     assertExists(structure);
@@ -176,14 +176,14 @@ Deno.test("WorkspaceStructure Structure", async (t) => {
   await t.step("should maintain clean constructor pattern", () => {
     _logger.debug("Testing constructor pattern structure");
 
-    const _config = {
+    const config = {
       workingDir: "./test",
       promptBaseDir: "test-prompts",
       schemaBaseDir: "test-schema",
     };
 
     // Constructor should only require configuration
-    const structure = new WorkspaceStructureImpl(_config);
+    const structure = new WorkspaceStructureImpl(config);
     assertExists(structure);
 
     // Should not require dependency injection of services

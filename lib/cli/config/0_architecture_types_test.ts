@@ -7,7 +7,8 @@
  * @module cli/config/0_architecture_types_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test: Dependency Direction
@@ -18,8 +19,8 @@ import { assertEquals, assertExists } from "@std/assert";
  */
 Deno.test("Architecture: CLI config types dependency direction", async () => {
   // Analyze imports in types.ts file
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Extract import statements
   const importLines = typesContent.split("\n").filter((line) => line.trim().startsWith("import"));
@@ -69,8 +70,8 @@ Deno.test("Architecture: CLI config types dependency direction", async () => {
 Deno.test("Architecture: No circular dependencies in config types", async () => {
   // Since types.ts should have no imports (verified in previous test),
   // it cannot create circular dependencies
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Verify no imports exist
   const hasImports = typesContent.includes("import ");
@@ -92,8 +93,8 @@ Deno.test("Architecture: No circular dependencies in config types", async () => 
  * and structural patterns according to Totality principles.
  */
 Deno.test("Architecture: Config types interface consistency", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Extract interface definitions
   const interfaceMatches = typesContent.matchAll(/export\s+interface\s+(\w+)/g);
@@ -118,7 +119,7 @@ Deno.test("Architecture: Config types interface consistency", async () => {
   });
 
   // Check for optional properties - they should have clear purpose
-  const optionalProperties = Array.from(typesContent.matchAll(/^\s*(\w+)\?:\s*/gm));
+  // const optionalProperties = Array.from(typesContent.matchAll(/^\s*(\w+)\?:\s*/gm));
 
   // In ConfigOptions, optional properties are acceptable as they represent runtime options
   assertEquals(interfaceNames.length > 0, true, "Should have interface definitions");
@@ -133,8 +134,8 @@ Deno.test("Architecture: Config types interface consistency", async () => {
  * - Proper error representation as values, not exceptions
  */
 Deno.test("Architecture: Config types follow Totality principles", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check for proper handling of optional properties
   // In ConfigOptions, optional properties are acceptable as they represent runtime configuration
@@ -183,8 +184,8 @@ Deno.test("Architecture: Config types follow Totality principles", async () => {
  * and doesn't leak implementation details.
  */
 Deno.test("Architecture: Config types module boundaries", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check that only type definitions are exported
   const exportLines = typesContent.split("\n").filter((line) => line.trim().startsWith("export"));

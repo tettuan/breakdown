@@ -33,7 +33,7 @@ function makeCliParams(
     adaptation?: string;
     config?: string;
   },
-  testDir: string,
+  _testDir: string,
 ) {
   return {
     demonstrativeType,

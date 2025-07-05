@@ -4,8 +4,13 @@
 The larger the number, the more concrete.
 
 # 1. Top-Level Design
-
-1. Pass args to CLI (ex. `./.deno/bin/breakdown to issue -f=test.md, -o=tmp/ -a=fix --config=mine`)
+2. Directive words usable in two parameters
+  - Standard:
+    - DirectiveType: to, summary, defect
+    - LayerType: project, issue, task
+  - Custom: Regular expression patterns
+  - Custom specification:
+    - DirectiveType: `params.two.DirectiveType.pattern` in configs args to CLI (ex. `./.deno/bin/breakdown to issue -f=test.md, -o=tmp/ -a=fix --config=mine`)
 2. Start Breakdown CLI
 3. Separate and understand parameters and options
 4. When there are two parameters (two params), select a prompt
@@ -73,7 +78,7 @@ They are like the Four Heavenly Kings, equivalent to the Breakdown core.
 
 # 4. PATH Resolution
 
-1. In two params, demonstrativeType and layerType are used. Set these from parameter values.
+1. In two params, DirectiveType and LayerType are used. Set these from parameter values.
 1-1. Additionally, the input option may specify fromLayerType
 1-2. Furthermore, the adaptation option may specify a derived version
 2. Identify one prompt file from the combination of parameters and option values
@@ -217,7 +222,7 @@ sequenceDiagram
     Core->>Params: Get Result
     Params->>Core: two params result
     
-    Core->>Core: Set demonstrativeType, layerType
+    Core->>Core: Set DirectiveType, LayerType
     Core->>Config: Get app_prompt.base_dir
     Core->>Config: Get app_schema.base_dir
     Core->>Core: Build prompt PATH
@@ -251,7 +256,7 @@ sequenceDiagram
     participant PathResolver as PATH Resolution Process
     participant Prompt as BreakdownPrompt
     
-    Core->>PathResolver: demonstrativeType, layerType
+    Core->>PathResolver: DirectiveType, LayerType
     
     Note over PathResolver: Combination of parameters and option values
     PathResolver->>Config: app_prompt.base_dir
@@ -313,5 +318,5 @@ sequenceDiagram
 
 ### Customization Points
 1. **config**: Specify prefix with `--config/-c`
-2. **Parameter patterns**: Control demonstrative/layerType with regular expressions
+2. **Parameter patterns**: Control DirectiveType/LayerType with regular expressions
 3. **User variables**: Control in-prompt variables with `--uv-$name=value`

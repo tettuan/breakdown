@@ -12,7 +12,7 @@ import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { TwoParams_Result } from "../deps.ts";
-import { SchemaFilePathResolver as SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
+import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 const logger = new BreakdownLogger("structure-schema-file-path-resolver");
 
@@ -40,20 +40,20 @@ describe("SchemaFilePathResolver - Class Structure", () => {
 
     // Should not expose unrelated functionality
     assertEquals(
-      typeof (_resolver as any as { validateSchema?: unknown }).validateSchema,
+      typeof (resolver as any as { validateSchema?: unknown }).validateSchema,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { parseSchema?: unknown }).parseSchema,
+      typeof (resolver as any as { parseSchema?: unknown }).parseSchema,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { compileSchema?: unknown }).compileSchema,
+      typeof (resolver as any as { compileSchema?: unknown }).compileSchema,
       "undefined",
     );
-    assertEquals(typeof (_resolver as any as { readSchema?: unknown }).readSchema, "undefined");
+    assertEquals(typeof (resolver as any as { readSchema?: unknown }).readSchema, "undefined");
     assertEquals(
-      typeof (_resolver as any as { processSchema?: unknown }).processSchema,
+      typeof (resolver as any as { processSchema?: unknown }).processSchema,
       "undefined",
     );
   });
@@ -77,19 +77,19 @@ describe("SchemaFilePathResolver - Class Structure", () => {
 
     // Private methods should not be accessible
     assertEquals(
-      typeof (_resolver as any as { getSchemaDir?: unknown }).getSchemaDir,
+      typeof (resolver as any as { getSchemaDir?: unknown }).getSchemaDir,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { buildSchemaPath?: unknown }).buildSchemaPath,
+      typeof (resolver as any as { buildSchemaPath?: unknown }).buildSchemaPath,
       "function",
     ); // This is public
     assertEquals(
-      typeof (_resolver as any as { getSchemaFilename?: unknown }).getSchemaFilename,
+      typeof (resolver as any as { getSchemaFilename?: unknown }).getSchemaFilename,
       "undefined",
     );
     assertEquals(
-      typeof (_resolver as any as { getSchemaExtension?: unknown }).getSchemaExtension,
+      typeof (resolver as any as { getSchemaExtension?: unknown }).getSchemaExtension,
       "undefined",
     );
 
@@ -349,7 +349,7 @@ describe("SchemaFilePathResolver - Responsibility Boundaries", () => {
     paramVariations.forEach((_params) => {
       const resolver = new SchemaFilePathResolver(
         config,
-        params as {
+        _params as {
           demonstrativeType: "to" | "summary";
           layerType: "project" | "issue";
           options: Record<string, unknown>;
@@ -460,7 +460,7 @@ describe("SchemaFilePathResolver - Edge Cases and Boundaries", () => {
       options: {},
     };
 
-    specialConfigs.forEach((_config) => {
+    specialConfigs.forEach((config) => {
       const resolver = new SchemaFilePathResolver(
         config,
         params as {

@@ -22,7 +22,7 @@ import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
   type TwoParams_Result,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("two-params-structure");
 
@@ -65,7 +65,7 @@ describe("TwoParams_Result - Type Structure Validation", () => {
   it("should maintain strict type structure for TwoParams_Result", async () => {
     logger.debug("Testing TwoParams_Result type structure");
 
-    const typesResult = _factory.createBothTypes("to", "project");
+    const typesResult = factory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
 
     if (typesResult.ok) {
@@ -140,7 +140,7 @@ describe("TwoParams_Result - Type Structure Validation", () => {
   it("should maintain type consistency across parameter structures", async () => {
     logger.debug("Testing type consistency across parameter structures");
 
-    const typesResult = _factory.createBothTypes("summary", "issue");
+    const typesResult = factory.createBothTypes("summary", "issue");
     assertEquals(typesResult.ok, true);
 
     if (typesResult.ok) {
@@ -177,11 +177,11 @@ describe("TwoParams_Result - Validation Pattern Integration", () => {
 
     customPatterns.forEach((pattern) => {
       const provider = new ConfigurablePatternProvider(pattern, "project|issue|task");
-      const _factory = new TypeFactory(provider);
+      const factory = new TypeFactory(provider);
 
       const directives = pattern.split("|");
       directives.forEach((directive) => {
-        const result = _factory.createDirectiveType(directive);
+        const result = factory.createDirectiveType(directive);
         assertEquals(result.ok, true);
 
         if (result.ok) {
@@ -203,11 +203,11 @@ describe("TwoParams_Result - Validation Pattern Integration", () => {
 
     customPatterns.forEach((pattern) => {
       const provider = new ConfigurablePatternProvider("to|summary", pattern);
-      const _factory = new TypeFactory(provider);
+      const factory = new TypeFactory(provider);
 
       const layers = pattern.split("|");
       layers.forEach((layer) => {
-        const result = _factory.createLayerType(layer);
+        const result = factory.createLayerType(layer);
         assertEquals(result.ok, true);
 
         if (result.ok) {
@@ -246,11 +246,11 @@ describe("TwoParams_Result - Validation Pattern Integration", () => {
 });
 
 describe("TwoParams_Result - Factory Integration Patterns", () => {
-  it("should support all _factory creation patterns", async () => {
-    logger.debug("Testing comprehensive _factory creation patterns");
+  it("should support all factory creation patterns", async () => {
+    logger.debug("Testing comprehensive factory creation patterns");
 
     const provider = new ConfigurablePatternProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Standard combinations
     const standardCombinations = [
@@ -262,7 +262,7 @@ describe("TwoParams_Result - Factory Integration Patterns", () => {
     ];
 
     for (const [directive, layer] of standardCombinations) {
-      const typesResult = _factory.createBothTypes(directive, layer);
+      const typesResult = factory.createBothTypes(directive, layer);
       assertEquals(typesResult.ok, true);
 
       if (typesResult.ok) {
@@ -286,8 +286,8 @@ describe("TwoParams_Result - Factory Integration Patterns", () => {
     logger.debug("Testing complex option combinations");
 
     const provider = new ConfigurablePatternProvider();
-    const _factory = new TypeFactory(provider);
-    const typesResult = _factory.createBothTypes("to", "project");
+    const factory = new TypeFactory(provider);
+    const typesResult = factory.createBothTypes("to", "project");
 
     assertEquals(typesResult.ok, true);
 
@@ -341,8 +341,8 @@ describe("TwoParams_Result - Factory Integration Patterns", () => {
     logger.debug("Testing TwoParams_Result immutability");
 
     const provider = new ConfigurablePatternProvider();
-    const _factory = new TypeFactory(provider);
-    const typesResult = _factory.createBothTypes("summary", "issue");
+    const factory = new TypeFactory(provider);
+    const typesResult = factory.createBothTypes("summary", "issue");
 
     assertEquals(typesResult.ok, true);
 
@@ -410,8 +410,8 @@ describe("TwoParams_Result - Error Boundary Testing", () => {
     ];
 
     errorScenarios.forEach((scenario, index) => {
-      const _factory = new TypeFactory(scenario.provider);
-      const result = _factory.createBothTypes(scenario.directive, scenario.layer);
+      const factory = new TypeFactory(scenario.provider);
+      const result = factory.createBothTypes(scenario.directive, scenario.layer);
 
       assertEquals(result.ok, false, `Scenario ${index} should fail`);
 
@@ -427,10 +427,10 @@ describe("TwoParams_Result - Error Boundary Testing", () => {
     logger.debug("Testing comprehensive error information provision");
 
     const provider = new ConfigurablePatternProvider("to|summary", "project|issue");
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test validation failure with detailed error info
-    const result = _factory.createBothTypes("invalid_directive", "invalid_layer");
+    const result = factory.createBothTypes("invalid_directive", "invalid_layer");
     assertEquals(result.ok, false);
 
     if (!result.ok) {

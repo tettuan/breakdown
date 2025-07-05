@@ -247,19 +247,19 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
     _logger.debug("Testing input immutability");
 
     const _params = ["to", "project"];
-    const _config = { key: "value" };
+    const config = { key: "value" };
     const options = { option: "test" };
 
     // Store original values
     const originalParams = [..._params];
-    const originalConfig = { ..._config };
+    const originalConfig = { ...config };
     const originalOptions = { ...options };
 
-    await handleTwoParams(_params, _config, options);
+    await handleTwoParams(_params, config, options);
 
     // Inputs should not be mutated
     assertEquals(_params, originalParams);
-    assertEquals(_config, originalConfig);
+    assertEquals(config, originalConfig);
     assertEquals(options, originalOptions);
   });
 

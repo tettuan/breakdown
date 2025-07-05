@@ -17,20 +17,9 @@ import { existsSync } from "@std/fs";
 import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
-import type { ExtendedTwoParams_Result } from "../types/mod.ts";
-import { DirectiveType } from "../types/directive_type.ts";
-import { LayerType as LayerType } from "../types/layer_type.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
-
-/**
- * TypeCreation_Result - Unified error handling for type creation operations
- * Follows Totality principle by explicitly representing success/failure states
- */
-export type TypeCreation_Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
 
 /**
  * Prompt template path resolver for Breakdown CLI operations.
@@ -61,7 +50,7 @@ export type TypeCreation_Result<T> =
  * ```
  */
 export class PromptTemplatePathResolver {
-  private _config:
+  private config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   private _cliParams: DoubleParams_Result | TwoParams_Result;
@@ -92,7 +81,7 @@ export class PromptTemplatePathResolver {
     cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability using dedicated methods
-    this._config = this.deepCopyConfig(config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(cliParams);
   }
 
@@ -238,10 +227,10 @@ export class PromptTemplatePathResolver {
     const useSchema = this.getUseSchemaFlag();
     let baseDir: string;
 
-    if (useSchema && this._config.app_schema?.base_dir) {
-      baseDir = this._config.app_schema.base_dir;
+    if (useSchema && this.config.app_schema?.base_dir) {
+      baseDir = this.config.app_schema.base_dir;
     } else {
-      baseDir = this._config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
+      baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
     }
 
     if (!isAbsolute(baseDir)) {

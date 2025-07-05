@@ -46,6 +46,16 @@ Breakdown本体は、4つの外部モジュールを持っている。
 2-2. Breakdown本体は、 args の分解も行わないし、定義も知らないで済む（関心の分離）
 2-2-1. ただし `--config/-c` だけ例外。BreakdownParams の前に設定ファイルを特定する必要があるため避けられない。
 
+## 2-1. パラメータ型の詳細
+
+### DirectiveType と LayerType
+- **DirectiveType**: 「何をするか」を表す処理方向（to=変換, summary=要約, defect=欠陥検出）
+- **LayerType**: 「どのレベルで」を表す階層（project=プロジェクト全体, issue=課題単位, task=タスク単位）
+
+両方ともパターンベースバリデーションにより信頼性を確保し、ConfigProfileNameによる設定切り替えに対応している。
+
+詳細は `docs/breakdown/domain_core/two_params_types.ja.md` を参照。
+
 ## 2-1. ParamsResultの型構成
 
 BreakdownParams.ParamsResultは以下の判別可能な結合型：
@@ -89,7 +99,7 @@ BreakdownParams.ParamsResultは以下の判別可能な結合型：
 
 # Level.2 プロンプト選択アーキテクチャ(PATH解決)
 
-1. two params では、demonstrativeType, layerType が使われる。これをパラメータの値からセットする。
+1. two params では、DirectiveType, LayerType が使われる。これをパラメータの値からセットする。
 1-1. さらに、input オプションが fromLayerType を指定することもできる
 1-2. 加えて、adaptation オプションが派生版を指定することもできる
 2. パラメータとオプション値の組み合わせから、prompt ファイルを1つ特定する
@@ -106,6 +116,14 @@ PATH解決では以下の型安全性を保証する：
 1. **WorkingDirectoryResult**: 未検証文字列から検証済み作業ディレクトリへの変換
 2. **AbsolutePath**: Smart Constructorで検証されたパスのみを受け入れ
 3. **FilePath**: プロンプトパス、スキーマパス、出力パスで統一された型
+
+DirectiveTypeとLayerTypeは、パターンベースバリデーションにより以下を実現：
+- 設定の柔軟性（環境・プロジェクト別の値設定）
+- 品質保証（不正な値の事前防止）
+- 拡張性（新しい型の設定による追加）
+- 一貫性（ProfileNameによる環境別対応）
+
+詳細は `docs/breakdown/domain_core/two_params_types.ja.md` を参照。
 
 # Level.3 プロンプトファイルのPATH解決
 
@@ -145,7 +163,13 @@ PATH解決では以下の型安全性を保証する：
 3-1. BreakdownPromptでは、英数字とアンダースコアのみ使用可能, 先頭は英字のみ, 大文字小文字を区別
 3-2. 詳細: https://github.com/tettuan/breakdownprompt/blob/main/docs/variables.ja.md
 
-## 4-1. PromptVariablesの構成
+## 4-1. PromptVariablesの構成と変容プロセス
+
+プロンプト変数は3段階の変容を経て最終的なプロンプトとして生成される：
+
+1. **PromptVariableSource**: CLI引数・STDINからの「生の材料」
+2. **PromptVariables**: アプリケーション内部での「完成品」
+3. **PromptParams**: 外部API向けの「最終形態」
 
 PromptVariablesは以下の4つの変数型で構成される：
 
@@ -153,6 +177,8 @@ PromptVariablesは以下の4つの変数型で構成される：
 2. **FilePathVariable**: `schema_file` などのファイルパス変数  
 3. **StdinVariable**: `input_text` のみ（型安全性によりSTDIN変数名を制約）
 4. **UserVariable**: `--uv-$name=value` 形式で指定されるカスタム変数
+
+詳細は `docs/breakdown/domain_core/prompt_variables.ja.md` を参照。
 
 
 # Level.1 カスタムできる種類
@@ -166,12 +192,12 @@ PromptVariablesは以下の4つの変数型で構成される：
     -例: `--config=production`, `-c=system`
 2. two パラメータに使える指示詞
   - 標準: 
-    - demonstrativetype: to,summary,defect
-    - layerType: project,issue,task
+    - DirectiveType: to,summary,defect
+    - LayerType: project,issue,task
   - カスタム: 正規表現パターン
   - カスタム指定方法: 
-    - demonstrativetype: config で `params.two.demonstrativeType.pattern`
-    - layerType: config で `params.two.layerType.pattern`
+    - DirectiveType: config で `params.two.DirectiveType.pattern`
+    - LayerType: config で `params.two.LayerType.pattern`
     -例: `--config=production`, `-c=system`
 3. プロンプトのユーザー変数
   - 標準: なし

@@ -3,7 +3,9 @@
 This prompt helps create comprehensive issue summaries with detailed analysis.
 
 ## Input
+
 The input is an issue containing:
+
 - Issue title
 - Description
 - Acceptance criteria
@@ -16,7 +18,9 @@ The input is an issue containing:
 - Change history
 
 ## Output
+
 The output should be a detailed structured summary with:
+
 - Executive summary (max 200 chars)
 - Detailed description analysis
 - Complete requirements breakdown
@@ -40,6 +44,7 @@ The output should be a detailed structured summary with:
   - Next steps
 
 ## Instructions
+
 1. Extract and analyze all issue information
 2. Provide detailed analysis of requirements
 3. Create comprehensive dependency analysis
@@ -49,4 +54,4 @@ The output should be a detailed structured summary with:
 7. Assess implementation risks
 8. Review current progress
 9. Identify action items
-10. Suggest optimization opportunities 
+10. Suggest optimization opportunities

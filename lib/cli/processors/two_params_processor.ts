@@ -61,7 +61,7 @@ export class TwoParamsProcessor {
    */
   process(twoParamsResult: TwoParams_Result): ProcessorResult<VariablesBuilder> {
     // Validate input parameters
-    const validationResult = this.validateTwoParams_Result(twoParamsResult);
+    const validationResult = this.validateTwoParamsResult(twoParamsResult);
     if (!validationResult.ok) {
       return validationResult;
     }
@@ -97,7 +97,7 @@ export class TwoParamsProcessor {
    * @param twoParamsResult - Result to validate
    * @returns Validation result
    */
-  private validateTwoParams_Result(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
+  private validateTwoParamsResult(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
     // Check if the entire result object is null or undefined
     if (twoParamsResult === null || twoParamsResult === undefined) {
       return error({
@@ -304,7 +304,7 @@ export class TwoParamsProcessor {
    * @returns Validation result
    */
   validateOnly(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
-    const validationResult = this.validateTwoParams_Result(twoParamsResult);
+    const validationResult = this.validateTwoParamsResult(twoParamsResult);
     if (!validationResult.ok) {
       return validationResult;
     }

@@ -4,17 +4,17 @@
  */
 
 import { assert, assertEquals, assertExists } from "jsr:@std/assert";
-import { join, resolve } from "jsr:@std/path";
+import { fromFileUrl, join, resolve } from "jsr:@std/path";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 import {
-  DEFAULT_SCHEMA_BASE_DIR,
   _DEFAULT_WORKSPACE_STRUCTURE,
+  DEFAULT_SCHEMA_BASE_DIR,
 } from "../../lib/config/constants.ts";
 
 // プロジェクトルートを確実に取得
 const BASE_DIR = await (async () => {
   // このファイルから2階層上がプロジェクトルート
-  const currentFile = new URL(import.meta.url).pathname;
+  const currentFile = fromFileUrl(new URL(import.meta.url));
   const projectRoot = resolve(currentFile, "../../../");
   return projectRoot;
 })();

@@ -35,7 +35,7 @@ Breakdown CLIは以下のフェーズで処理を実行します：
 
 #### 2.1 プロンプトファイルの選択
 - `PromptTemplatePathResolver`による解決
-- `DemonstrativeType`（処理分類：to, summary, defect等）の判定
+- `DirectiveType`（処理分類：to, summary, defect等）の判定
 - `LayerType`（対象階層：project, issue, task等）の判定
 - `adaptation`（適応タイプ）による特化プロンプト選択
 

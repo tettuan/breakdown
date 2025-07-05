@@ -131,14 +131,14 @@ Deno.test("TwoParamsHandler - Valid parameters processing", async () => {
 
   // Test with valid parameters (even if components fail)
   const validParams = ["to", "project"];
-  const _config = { timeout: 30000 };
+  const config = { timeout: 30000 };
   const options = { output: "test.md" };
 
   try {
     if (!handleTwoParams) {
       throw new Error("handleTwoParams is undefined");
     }
-    const result = await handleTwoParams(validParams, _config, options);
+    const result = await handleTwoParams(validParams, config, options);
 
     assertExists(result);
     assertEquals(typeof result.ok, "boolean");

@@ -16,7 +16,7 @@
 
 import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import { __defaultConfigTwoParams } from "./config_twoparams.ts";
+import { _defaultConfigTwoParams } from "./config_two_params.ts";
 
 /**
  * 単体テスト: getDirectivePattern の正常系

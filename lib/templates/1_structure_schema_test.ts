@@ -1,6 +1,7 @@
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
-import { _schema as schema } from "./schema.ts";
+import { schema } from "./schema.ts";
 
 const _logger = new _BreakdownLogger("test-structure-schema");
 
@@ -118,7 +119,7 @@ Deno.test("Structure: schema follows Totality pattern with Result type", () => {
   assertEquals(typeof result, "string");
 
   // const assertionによる不変性の確認
-  const moduleCode = Deno.readTextFileSync(new URL("./schema.ts", import.meta.url).pathname);
+  const moduleCode = Deno.readTextFileSync(fromFileUrl(new URL("./schema.ts", import.meta.url)));
   assertEquals(moduleCode.includes("} as const;"), true, "Should use 'as const' for immutability");
 
   // エラー処理不要の設計（キーが存在すれば必ず文字列を返す）

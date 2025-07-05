@@ -5,20 +5,20 @@
 type_flow:
   name: "Parameter Processing Flow"
   description: "パラメータ解析から最終出力までの処理"
-  
+
   steps:
     - step: 1
       from: "string[] (CLI args)"
       to: "ParamsResult"
       operation: "ParamsParser.parse()"
       principle: "zero/one/two/error の完全な分類"
-      
+
     - step: 2
       from: "ParamsResult"
       to: "HandlerFunction"
       operation: "type-based dispatch"
       principle: "全てのパラメータタイプに対応"
-      
+
     - step: 3
       from: "TwoParamsResult"
       to: "Result<void, TwoParamsHandlerError>"
@@ -34,7 +34,7 @@ key_types:
       - "{ type: 'one', params: string[], options: Record<string, unknown> }"
       - "{ type: 'two', params: string[], options: Record<string, unknown> }"
       - "{ type: 'error', error: Error }"
-    
+
   TwoParamsHandlerError:
     pattern: "Discriminated Union Error"
     variants:
@@ -44,7 +44,7 @@ key_types:
       - "StdinReadError"
       - "PromptGenerationError"
       - "OutputWriteError"
-    
+
   TwoParamsOrchestrator:
     pattern: "Orchestrator with Result Chain"
     components:
@@ -58,11 +58,11 @@ processing_flow:
   zero_params:
     description: "ヘルプ・バージョン表示"
     handler: "handleZeroParams"
-    
+
   one_params:
     description: "初期化などの単一コマンド"
     handler: "handleOneParams"
-    
+
   two_params:
     description: "プロンプト生成（メイン処理）"
     handler: "handleTwoParams"

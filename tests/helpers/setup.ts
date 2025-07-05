@@ -1,5 +1,6 @@
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { join } from "@std/path/join";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Parses log level string to LogLevel enum
@@ -311,7 +312,7 @@ export async function runCommand(
   const shouldLog = logLevel === "debug" || (logKey && logKey.includes("test-helper"));
   const logger = shouldLog ? new BreakdownLogger("test-helper") : null;
 
-  const breakdownPath = new URL("../../cli/breakdown.ts", import.meta.url).pathname;
+  const breakdownPath = fromFileUrl(new URL("../../cli/breakdown.ts", import.meta.url));
   // Use cwd directly if it's already absolute, otherwise join with Deno.cwd()
   const absoluteCwd = cwd ? (cwd.startsWith("/") ? cwd : join(Deno.cwd(), cwd)) : undefined;
 

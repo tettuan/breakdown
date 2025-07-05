@@ -25,11 +25,7 @@ import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.2.3";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
-import {
-  _DemonstrativeTypeFactory,
-  type DemonstrativeType,
-  type LayerType,
-} from "$lib/types/mod.ts";
+import { type DemonstrativeType, DemonstrativeTypeFactory } from "$lib/types/mod.ts";
 
 /**
  * Error types for TwoParamsHandler
@@ -74,7 +70,7 @@ function validateDemonstrativeType(
 ): Result<DemonstrativeType, TwoParamsHandlerError> {
   if (_VALID_DEMONSTRATIVE_TYPES.includes(value as any)) {
     // Create the proper DemonstrativeType object
-    const demonstrativeType = _DemonstrativeTypeFactory.fromString(value);
+    const demonstrativeType = DemonstrativeTypeFactory.fromString(value);
     if (demonstrativeType) {
       return ok(demonstrativeType);
     }

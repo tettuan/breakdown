@@ -1,5 +1,6 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { _prompts as prompts } from "./prompts.ts";
+import { fromFileUrl } from "@std/path";
+import { prompts } from "./prompts.ts";
 
 /**
  * アーキテクチャテスト：prompts.ts
@@ -20,7 +21,7 @@ Deno.test("Architecture: prompts should be a const object", () => {
 Deno.test("Architecture: prompts should not have external dependencies", () => {
   // このファイルは自己完結し、外部依存を持たない
   // import文の検証（このテストファイル自体のimportを除く）
-  const moduleCode = Deno.readTextFileSync(new URL("./prompts.ts", import.meta.url).pathname);
+  const moduleCode = Deno.readTextFileSync(fromFileUrl(new URL("./prompts.ts", import.meta.url)));
   const importLines = moduleCode.split("\n").filter((line) =>
     line.trim().startsWith("import") && !line.includes("test")
   );

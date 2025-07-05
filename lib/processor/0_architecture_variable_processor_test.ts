@@ -18,6 +18,11 @@ import {
   type VariableProcessorError,
 } from "./variable_processor.ts";
 import type { Result } from "../types/result.ts";
+
+// Type for architecture testing
+interface ProcessorArchitecture {
+  [key: string]: unknown;
+}
 import type { PromptVariable } from "../types/prompt_variables.ts";
 
 /**
@@ -113,7 +118,7 @@ Deno.test("Architecture: Variable Processor should follow single responsibility"
   ];
 
   publicMethods.forEach((method) => {
-    assertEquals(typeof (_processor as any)[method], "function");
+    assertEquals(typeof (_processor as unknown as ProcessorArchitecture)[method], "function");
   });
 
   // Should not have methods that belong to other layers
@@ -125,7 +130,7 @@ Deno.test("Architecture: Variable Processor should follow single responsibility"
   ];
 
   shouldNotHave.forEach((method) => {
-    assertEquals((_processor as any)[method], undefined);
+    assertEquals((_processor as unknown as ProcessorArchitecture)[method], undefined);
   });
 });
 
@@ -176,7 +181,7 @@ Deno.test("Architecture: Variable Processor should not leak implementation detai
 
   internalMethods.forEach((method) => {
     // Private methods should not be accessible
-    assertEquals((_processor as any)[method], undefined);
+    assertEquals((_processor as unknown as ProcessorArchitecture)[method], undefined);
   });
 });
 

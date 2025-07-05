@@ -79,7 +79,7 @@ Deno.test("logger - message formatting", async () => {
   });
 
   // If we get here without throwing, the logger is working
-  assertEquals(true, true);
+  _assertEquals(true, true);
 
   await _cleanupTestEnvironment(testEnv);
 });

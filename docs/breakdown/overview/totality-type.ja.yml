@@ -67,7 +67,7 @@ BreakdownParams.constructorの引数:
 
 BreakdownParams.ParamsResult: # BreakdownParamsの結果型
   TwoParamsResult:
-    - DirectiveType(demonstrativeType)
+    - DirectiveType(DirectiveType)
     - LayerType
     - Options
   OneParamsResult:

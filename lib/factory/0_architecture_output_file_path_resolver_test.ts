@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -20,7 +21,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
 
     // Verify OutputFilePathResolver doesn't import other resolvers that might import it back
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Check that it doesn't import input, prompt_template, or schema resolvers
@@ -43,7 +44,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing external dependencies");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Extract all import statements
@@ -59,7 +60,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     const allowedPrefixes = [
       "@std/", // Standard library
       "../deps.ts", // Project dependencies
-      "./prompt_variables__factory.ts", // Factory types
+      "./prompt_variables_factory.ts", // Factory types
       "../types/", // Type definitions
       "../config/", // Configuration modules
     ];
@@ -78,7 +79,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing TypeCreationResult pattern consistency");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Verify TypeCreationResult is used consistently if present
@@ -97,7 +98,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing layer boundary respect");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should not directly manipulate file system beyond path operations
@@ -143,7 +144,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing single responsibility principle");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Count public methods (should be minimal)
@@ -176,7 +177,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing abstraction usage");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should use standard library abstractions for path operations
@@ -194,7 +195,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing parameter structure handling consistency");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Verify it can handle different parameter structures
@@ -220,7 +221,7 @@ describe("OutputFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing encapsulation");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // All helper methods should be private
@@ -256,7 +257,7 @@ describe("OutputFilePathResolver - Integration Points", () => {
     logger.debug("Testing configuration integration");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should work with configuration for working directory
@@ -274,7 +275,7 @@ describe("OutputFilePathResolver - Integration Points", () => {
     logger.debug("Testing error handling patterns");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Check for proper documentation (error handling or return values)
@@ -300,7 +301,7 @@ describe("OutputFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing dependency tree structure");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should not import input resolver to avoid potential cycles
@@ -328,7 +329,7 @@ describe("OutputFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing module hierarchy compliance");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Factory modules can depend on:
@@ -360,7 +361,7 @@ describe("OutputFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing separation of concerns");
 
     const moduleContent = await Deno.readTextFile(
-      new URL("./output_file_path_resolver.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./output_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should focus on output/destination paths only

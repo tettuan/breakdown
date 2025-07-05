@@ -20,14 +20,6 @@ import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 type DoubleParams_Result = PromptCliParams;
 
 /**
- * TypeCreation_Result - Unified error handling for type creation operations
- * Follows Totality principle by explicitly representing success/failure states
- */
-export type TypeCreation_Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
-
-/**
  * Output file path resolver for Breakdown CLI operations.
  *
  * The OutputFilePathResolver class centralizes and standardizes output path
@@ -45,7 +37,7 @@ export type TypeCreation_Result<T> =
  *
  * @example
  * ```typescript
- * const _resolver = new OutputFilePathResolver(config, cliParams);
+ * const resolver = new OutputFilePathResolver(config, cliParams);
  *
  * // Auto-generated in layer directory
  * const autoPath = resolver.getPath(); // "./project/20241222_abc123.md"
@@ -66,7 +58,7 @@ export class OutputFilePathResolver {
    *
    * @example
    * ```typescript
-   * const _config = { working_dir: ".agent/breakdown" };
+   * const config = { working_dir: ".agent/breakdown" };
    * const cliParams = {
    *   demonstrativeType: "to",
    *   layerType: "project",
@@ -76,11 +68,11 @@ export class OutputFilePathResolver {
    * ```
    */
   constructor(
-    private _config: Record<string, unknown>,
+    private config: Record<string, unknown>,
     private _cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this._config = this.deepCopyConfig(_config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
@@ -230,7 +222,7 @@ export class OutputFilePathResolver {
     if ("layerType" in this._cliParams && this._cliParams.layerType) {
       return this._cliParams.layerType;
     }
-    
+
     // For TwoParams_Result from breakdownparams
     if ("type" in this._cliParams && this._cliParams.type === "two") {
       const twoParams = this._cliParams as TwoParams_Result;

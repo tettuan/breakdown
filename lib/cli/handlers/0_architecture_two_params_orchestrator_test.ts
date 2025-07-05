@@ -118,10 +118,10 @@ Deno.test({
       assert(result.ok === true || result.ok === false);
 
       // Test with null/undefined inputs
-      const nullResult = await _orchestrator.orchestrate(null as any, {}, { skipStdin: true });
+      const nullResult = await _orchestrator.orchestrate([] as string[], {}, { skipStdin: true });
       assertEquals(nullResult.ok, false);
 
-      const undefinedResult = await _orchestrator.orchestrate(undefined as any, {}, {
+      const undefinedResult = await _orchestrator.orchestrate([] as string[], {}, {
         skipStdin: true,
       });
       assertEquals(undefinedResult.ok, false);

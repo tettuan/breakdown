@@ -21,7 +21,7 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("config-constraint-validation");
 
@@ -132,8 +132,8 @@ describe("Config Constraint Validation - Pattern Validation", () => {
 
     patternScenarios.forEach((scenario) => {
       const provider = new MockConfigProvider(scenario.pattern, "project|issue|task");
-      const _factory = new TypeFactory(provider);
-      const availability = _factory.getPatternAvailability();
+      const factory = new TypeFactory(provider);
+      const availability = factory.getPatternAvailability();
 
       // Pattern availability should reflect pattern validity
       if (scenario.valid && scenario.pattern) {
@@ -162,8 +162,8 @@ describe("Config Constraint Validation - Pattern Validation", () => {
 
     layerScenarios.forEach((scenario) => {
       const provider = new MockConfigProvider("to|summary|defect", scenario.pattern);
-      const _factory = new TypeFactory(provider);
-      const availability = _factory.getPatternAvailability();
+      const factory = new TypeFactory(provider);
+      const availability = factory.getPatternAvailability();
 
       // Pattern availability should reflect pattern validity
       if (scenario.valid && scenario.pattern) {
@@ -206,8 +206,8 @@ describe("Config Constraint Validation - Pattern Validation", () => {
 
     combinationScenarios.forEach((scenario) => {
       const provider = new MockConfigProvider(scenario.directive, scenario.layer);
-      const _factory = new TypeFactory(provider);
-      const availability = _factory.getPatternAvailability();
+      const factory = new TypeFactory(provider);
+      const availability = factory.getPatternAvailability();
 
       assertEquals(availability.directive, scenario.expected.directive, scenario.description);
       assertEquals(availability.layer, scenario.expected.layer, scenario.description);
@@ -281,8 +281,8 @@ describe("Config Constraint Validation - Directory Validation", () => {
 
     for (const scenario of directoryScenarios) {
       const provider = new MockConfigProvider();
-      const _factory = new TypeFactory(provider);
-      const typesResult = _factory.createBothTypes("to", "project");
+      const factory = new TypeFactory(provider);
+      const typesResult = factory.createBothTypes("to", "project");
 
       assertEquals(typesResult.ok, true);
 
@@ -338,8 +338,8 @@ describe("Config Constraint Validation - Directory Validation", () => {
       });
 
       const provider = new MockConfigProvider();
-      const _factory = new TypeFactory(provider);
-      const typesResult = _factory.createBothTypes("to", "project");
+      const factory = new TypeFactory(provider);
+      const typesResult = factory.createBothTypes("to", "project");
 
       assertEquals(typesResult.ok, true);
 
@@ -436,9 +436,9 @@ describe("Config Constraint Validation - Parameter Integration", () => {
       }
 
       const provider = new ConfigBasedProvider(scenario.config);
-      const _factory = new TypeFactory(provider);
+      const factory = new TypeFactory(provider);
 
-      const result = _factory.createBothTypes(
+      const result = factory.createBothTypes(
         scenario.testValues.directive,
         scenario.testValues.layer,
       );
@@ -533,8 +533,8 @@ describe("Config Constraint Validation - Parameter Integration", () => {
       }
 
       const provider = new EdgeCaseProvider(edgeCase.config);
-      const _factory = new TypeFactory(provider);
-      const availability = _factory.getPatternAvailability();
+      const factory = new TypeFactory(provider);
+      const availability = factory.getPatternAvailability();
 
       assertEquals(
         availability.directive,

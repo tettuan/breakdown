@@ -5,23 +5,23 @@
 complete_flow:
   name: "Complete Breakdown Type Flow"
   description: "mod.ts から最終出力までの完全なフロー"
-  
+
   phases:
     - phase: "CLI Entry"
       description: "実行コンテキスト判定と委譲"
       yaml_file: "breakdown-cli-entry-flow.yml"
       key_transformation: "import.meta.main → runBreakdown()"
-      
+
     - phase: "Config Detection"
       description: "CLI引数からの設定プロファイル抽出"
       yaml_file: "breakdown-config-profile-detection.yml"
       key_transformation: "string[] → ConfigProfileName"
-      
+
     - phase: "Config Loading"
       description: "設定プロファイルに基づく設定読み込み"
       yaml_file: "breakdown-config-loading-flow.yml"
       key_transformation: "ConfigProfileName → CustomConfig | undefined"
-      
+
     - phase: "Params Processing"
       description: "パラメータ解析からプロンプト生成"
       yaml_file: "breakdown-params-processing-flow.yml"
@@ -31,10 +31,10 @@ complete_flow:
 key_components:
   external_libraries:
     - "BreakdownParams: CLI引数解析"
-    - "BreakdownConfig: 設定管理" 
+    - "BreakdownConfig: 設定管理"
     - "BreakdownPrompt: プロンプト生成"
     - "BreakdownLogger: ログ出力"
-    
+
   internal_modules:
     - "ConfigPrefixDetector: 設定プレフィックス検出"
     - "ConfigProfileName: 設定プロファイル名型"

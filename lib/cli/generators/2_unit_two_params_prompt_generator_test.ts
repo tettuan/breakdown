@@ -21,7 +21,7 @@ const _logger = new _BreakdownLogger("two-params-prompt-generator-test");
 Deno.test("Unit: TwoParamsPromptGenerator generates prompt successfully with valid inputs", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "./prompts",
     outputDir: "./output",
     configDir: "./config",
@@ -59,7 +59,7 @@ Deno.test("Unit: TwoParamsPromptGenerator generates prompt successfully with val
   };
 
   const result = await _generator.generatePrompt(
-    _config,
+    config,
     validatedParams,
     options,
     processedVariables,
@@ -150,7 +150,7 @@ Deno.test("Unit: TwoParamsPromptGenerator handles missing required configuration
 Deno.test("Unit: TwoParamsPromptGenerator processes custom variables correctly", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "./prompts",
     outputDir: "./output",
     configDir: "./config",
@@ -192,7 +192,7 @@ Deno.test("Unit: TwoParamsPromptGenerator processes custom variables correctly",
   };
 
   const result = await _generator.generatePrompt(
-    _config,
+    config,
     validatedParams,
     options,
     processedVariables,
@@ -210,7 +210,7 @@ Deno.test("Unit: TwoParamsPromptGenerator processes custom variables correctly",
 Deno.test("Unit: TwoParamsPromptGenerator handles factory creation errors", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "/nonexistent/path",
     outputDir: "/another/nonexistent",
     configDir: "./config",
@@ -222,7 +222,7 @@ Deno.test("Unit: TwoParamsPromptGenerator handles factory creation errors", asyn
   };
 
   const result = await _generator.generatePrompt(
-    _config,
+    config,
     validatedParams,
     {},
     { standardVariables: {}, customVariables: {}, allVariables: {} },
@@ -238,7 +238,7 @@ Deno.test("Unit: TwoParamsPromptGenerator handles factory creation errors", asyn
 Deno.test("Unit: TwoParamsPromptGenerator integrates with VariablesBuilder", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "./prompts",
     outputDir: "./output",
     configDir: "./config",
@@ -277,7 +277,7 @@ Deno.test("Unit: TwoParamsPromptGenerator integrates with VariablesBuilder", asy
   };
 
   const result = await _generator.generatePrompt(
-    _config,
+    config,
     validatedParams,
     options,
     processedVariables,
@@ -293,7 +293,7 @@ Deno.test("Unit: TwoParamsPromptGenerator integrates with VariablesBuilder", asy
 Deno.test("Unit: TwoParamsPromptGenerator handles all demonstrative types", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "./prompts",
     outputDir: "./output",
     configDir: "./config",
@@ -310,7 +310,7 @@ Deno.test("Unit: TwoParamsPromptGenerator handles all demonstrative types", asyn
       };
 
       const result = await _generator.generatePrompt(
-        _config,
+        config,
         validatedParams,
         {},
         { standardVariables: {}, customVariables: {}, allVariables: {} },

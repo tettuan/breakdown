@@ -5,14 +5,14 @@
 type_flow:
   name: "Configuration Loading Flow"
   description: "設定プロファイル名から設定オブジェクトへの変換"
-  
+
   steps:
     - step: 1
       from: "string | null (profile name)"
       to: "Record<string, unknown>"
       operation: "loadBreakdownConfig()"
       principle: "BreakdownConfig による設定統合"
-      
+
     - step: 2
       from: "Record<string, unknown>"
       to: "Result<CustomConfig | undefined, ConfigError>"
@@ -25,12 +25,12 @@ key_types:
     pattern: "External Library"
     responsibility: "app.yml と user.yml の統合読み込み"
     result_type: "{ success: boolean, data?: BreakdownConfig }"
-    
+
   ParamsCustomConfig:
     pattern: "Smart Constructor"
     responsibility: "設定オブジェクトの型安全な変換"
     return_pattern: "Result<CustomConfig | undefined, ConfigError>"
-    
+
   ConfigError:
     pattern: "Error as Value"
     responsibility: "設定エラーの型表現"
@@ -42,9 +42,8 @@ loading_process:
     - "null → undefined 変換（BreakdownConfig API互換）"
     - "プロファイル名による設定ファイル特定"
     - "app.yml と user.yml の統合"
-    
+
   error_handling:
     - "設定ファイル不存在 → 警告表示 + 空オブジェクト"
     - "YAML解析エラー → ConfigError"
     - "設定不在 → undefined返却"
-

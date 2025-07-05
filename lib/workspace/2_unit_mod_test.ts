@@ -47,8 +47,14 @@ describe("Workspace Module - Unit Tests", async () => {
 
     // All error classes should be re-exported
     Object.keys(errors).forEach((key) => {
-      if (key !== "default" && typeof (errors as Record<string, unknown>)[key] === "function" && ((errors as any)[key]?.prototype instanceof Error)) {
-        assertExists((_mod as Record<string, unknown>)[key], `Error class ${key} should be re-exported`);
+      if (
+        key !== "default" && typeof (errors as Record<string, unknown>)[key] === "function" &&
+        ((errors as any)[key]?.prototype instanceof Error)
+      ) {
+        assertExists(
+          (_mod as Record<string, unknown>)[key],
+          `Error class ${key} should be re-exported`,
+        );
         assertEquals(
           (_mod as Record<string, unknown>)[key],
           (errors as Record<string, unknown>)[key],
@@ -58,16 +64,19 @@ describe("Workspace Module - Unit Tests", async () => {
     });
   });
 
-  it("should re-export workspace functionality from _workspace.ts", async () => {
+  it("should re-export workspace functionality from workspace.ts", async () => {
     _logger.debug("Testing workspace re-exports");
 
     const _mod = await import("./mod.ts");
-    const _workspace = await import("./_workspace.ts");
+    const _workspace = await import("./workspace.ts");
 
     // All workspace exports should be available
     Object.keys(_workspace).forEach((key) => {
       if (key !== "default") {
-        assertExists((_mod as Record<string, unknown>)[key], `${key} should be re-exported from _workspace.ts`);
+        assertExists(
+          (_mod as Record<string, unknown>)[key],
+          `${key} should be re-exported from workspace.ts`,
+        );
         assertEquals(
           (_mod as Record<string, unknown>)[key],
           (_workspace as Record<string, unknown>)[key],
@@ -174,7 +183,10 @@ describe("Workspace Module - Unit Tests", async () => {
     ];
 
     stableAPI.forEach((apiItem) => {
-      assertExists((_mod as Record<string, unknown>)[apiItem], `Stable API item ${apiItem} should exist`);
+      assertExists(
+        (_mod as Record<string, unknown>)[apiItem],
+        `Stable API item ${apiItem} should exist`,
+      );
     });
   });
 });

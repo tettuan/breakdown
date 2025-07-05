@@ -26,7 +26,7 @@ import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
   type TwoParams_Result,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("totality-compliance");
 
@@ -64,7 +64,7 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
     logger.debug("Testing exhaustive TypeCreationError handling");
 
     const provider = new ComprehensivePatternProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Create all possible error types
     const errors: TypeCreationError[] = [
@@ -103,11 +103,11 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
     logger.debug("Testing exhaustive directive type handling");
 
     const provider = new ComprehensivePatternProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
     const allDirectives = provider.getAllDirectiveValues();
 
     allDirectives.forEach((directiveValue) => {
-      const result = _factory.createDirectiveType(directiveValue);
+      const result = factory.createDirectiveType(directiveValue);
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -147,11 +147,11 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
     logger.debug("Testing exhaustive layer type handling");
 
     const provider = new ComprehensivePatternProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
     const allLayers = provider.getAllLayerValues();
 
     allLayers.forEach((layerValue) => {
-      const result = _factory.createLayerType(layerValue);
+      const result = factory.createLayerType(layerValue);
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -198,10 +198,10 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
     logger.debug("Testing exhaustive TypeCreationResult state handling");
 
     const provider = new ComprehensivePatternProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test success case
-    const successResult = _factory.createDirectiveType("to");
+    const successResult = factory.createDirectiveType("to");
     let successHandled = false;
 
     switch (successResult.ok) {
@@ -219,7 +219,7 @@ describe("Totality Principle - Result Type Exhaustive Handling", () => {
     assertEquals(successHandled, true);
 
     // Test failure case
-    const failureResult = _factory.createDirectiveType("invalid");
+    const failureResult = factory.createDirectiveType("invalid");
     let failureHandled = false;
 
     switch (failureResult.ok) {
@@ -314,8 +314,8 @@ describe("Totality Principle - Error Format Exhaustive Handling", () => {
           options: { errorFormat },
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
-        const format = _factory.errorFormat;
+        const factory = await TotalityPromptVariablesFactory.create(params);
+        const format = factory.errorFormat;
 
         let handled = false;
 
@@ -403,9 +403,9 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
-      const hasValidBaseDir = _factory.hasValidBaseDir();
-      const baseDirError = _factory.getBaseDirError();
+      const factory = await TotalityPromptVariablesFactory.create(params);
+      const hasValidBaseDir = factory.hasValidBaseDir();
+      const baseDirError = factory.getBaseDirError();
 
       let handled = false;
 
@@ -427,8 +427,8 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
 });
 
 describe("Totality Principle - Factory State Machine Coverage", () => {
-  it("should handle all _factory creation states without default case", async () => {
-    logger.debug("Testing exhaustive _factory creation state handling");
+  it("should handle all factory creation states without default case", async () => {
+    logger.debug("Testing exhaustive factory creation state handling");
 
     const provider = new ComprehensivePatternProvider();
     const typeFactory = new TypeFactory(provider);
@@ -460,8 +460,8 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
             options: {},
           };
 
-          const _factory = await TotalityPromptVariablesFactory.create(params);
-          assertExists(_factory);
+          const factory = await TotalityPromptVariablesFactory.create(params);
+          assertExists(factory);
           handled = true;
           break;
         case false:
@@ -485,8 +485,8 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
     // by ensuring TypeScript compiler would catch missing cases
 
     const provider = new ComprehensivePatternProvider();
-    const _factory = new TypeFactory(provider);
-    const result = _factory.createDirectiveType("to");
+    const factory = new TypeFactory(provider);
+    const result = factory.createDirectiveType("to");
 
     if (result.ok) {
       const directive = result.data;

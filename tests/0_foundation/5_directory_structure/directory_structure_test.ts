@@ -36,8 +36,8 @@
  * - Configuration loading is tested separately
  */
 
-import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "../../../deps.ts";
-import { join as _join } from "@std/path";
+import { assertEquals as _assertEquals, assertRejects as _assertRejects } from "jsr:@std/assert@1";
+import { join as _join } from "@std/path/join";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment as _cleanupTestEnvironment,
@@ -48,12 +48,12 @@ import { Workspace as _Workspace } from "../../../lib/workspace/workspace.ts";
 import { WorkspaceInitError as _WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 
 const logger = new BreakdownLogger();
-let TEST_ENV: TestEnvironment;
+let TEST_ENV: _TestEnvironment;
 
 // Setup test environment
 Deno.test({
   name: "setup",
-  _fn: async () => {
+  fn: async () => {
     logger.debug("Setting up test environment", {
       purpose: "Create test directory for structure testing",
       step: "Initial setup",
@@ -67,7 +67,7 @@ Deno.test({
 // Cleanup after tests
 Deno.test({
   name: "cleanup",
-  _fn: async () => {
+  fn: async () => {
     logger.debug("Cleaning up test environment", {
       step: "Cleanup",
     });
@@ -86,15 +86,15 @@ Deno.test("should throw permission denied error when creating workspace in read-
   await Deno.chmod(readOnlyDir, 0o444);
 
   try {
-    await assertRejects(
+    await _assertRejects(
       () =>
         new _Workspace({
           workingDir: readOnlyDir,
           promptBaseDir: "prompts",
           schemaBaseDir: "schema",
         }).initialize(),
-      WorkspaceInitError,
-      `Permission denied: Cannot create directory structure in ${join(readOnlyDir, "breakdown")}`,
+      _WorkspaceInitError,
+      `Permission denied: Cannot create directory structure in ${_join(readOnlyDir, "breakdown")}`,
     );
   } finally {
     await Deno.chmod(readOnlyDir, 0o755);
@@ -106,14 +106,14 @@ Deno.test("should throw permission denied error when creating workspace in read-
 Deno.test("directory - structure with default config only", async () => {
   const tempDir = await Deno.makeTempDir();
   try {
-    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    const configDir = _join(tempDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
-    const workingDir = join(tempDir, ".agent", "breakdown");
+    const workingDir = _join(tempDir, ".agent", "breakdown");
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
+      _join(configDir, "app.yml"),
       `working_dir: ${workingDir}\napp_prompt:\n  base_dir: ${
-        join(tempDir, "prompts")
-      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+        _join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${_join(tempDir, "schema")}\n`,
     );
     // 3. Confirm required dirs under working_dir
     const requiredDirs = [
@@ -126,10 +126,10 @@ Deno.test("directory - structure with default config only", async () => {
       "schema",
     ];
     for (const dir of requiredDirs) {
-      const dirPath = join(workingDir, dir);
+      const dirPath = _join(workingDir, dir);
       await Deno.mkdir(dirPath, { recursive: true });
-      const exists = await Deno.stat(dirPath).then((_stat) => stat.isDirectory, () => false);
-      assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
+      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      _assertEquals(exists, true, `Directory ${dir} should exist under default working_dir`);
     }
   } finally {
     await Deno.remove(tempDir, { recursive: true });
@@ -140,22 +140,22 @@ Deno.test("directory - structure with default config only", async () => {
 Deno.test("directory - structure with user config working_dir override", async () => {
   const tempDir = await Deno.makeTempDir();
   try {
-    const configDir = join(tempDir, ".agent", "breakdown", "config");
+    const configDir = _join(tempDir, ".agent", "breakdown", "config");
     await Deno.mkdir(configDir, { recursive: true });
-    const defaultWorkingDir = join(tempDir, ".agent", "breakdown");
+    const defaultWorkingDir = _join(tempDir, ".agent", "breakdown");
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
+      _join(configDir, "app.yml"),
       `working_dir: ${defaultWorkingDir}\napp_prompt:\n  base_dir: ${
-        join(tempDir, "prompts")
-      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+        _join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${_join(tempDir, "schema")}\n`,
     );
     // 2. Create user.yml with different working_dir
-    const userWorkingDir = join(tempDir, "custom_workspace");
+    const userWorkingDir = _join(tempDir, "custom_workspace");
     await Deno.writeTextFile(
-      join(configDir, "user.yml"),
+      _join(configDir, "user.yml"),
       `working_dir: ${userWorkingDir}\napp_prompt:\n  base_dir: ${
-        join(tempDir, "prompts")
-      }\napp_schema:\n  base_dir: ${join(tempDir, "schema")}\n`,
+        _join(tempDir, "prompts")
+      }\napp_schema:\n  base_dir: ${_join(tempDir, "schema")}\n`,
     );
     // 3. Simulate config loading (merge user config)
     const requiredDirs = [
@@ -168,10 +168,10 @@ Deno.test("directory - structure with user config working_dir override", async (
       "schema",
     ];
     for (const dir of requiredDirs) {
-      const dirPath = join(userWorkingDir, dir);
+      const dirPath = _join(userWorkingDir, dir);
       await Deno.mkdir(dirPath, { recursive: true });
-      const exists = await Deno.stat(dirPath).then((_stat) => stat.isDirectory, () => false);
-      assertEquals(exists, true, `Directory ${dir} should exist under user working_dir`);
+      const exists = await Deno.stat(dirPath).then((stat) => stat.isDirectory, () => false);
+      _assertEquals(exists, true, `Directory ${dir} should exist under user working_dir`);
     }
   } finally {
     await Deno.remove(tempDir, { recursive: true });

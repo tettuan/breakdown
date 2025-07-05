@@ -121,18 +121,18 @@ export class StdinTestUtils {
    */
   static validateEnvironmentConfig(): void {
     Deno.test("Environment configuration validation", () => {
-      const _config = StdinEnvironmentController.getEnvironmentConfig();
+      const config = StdinEnvironmentController.getEnvironmentConfig();
 
       // Validate structure
-      assertEquals(typeof _config.ci.enabled, "boolean");
-      assertEquals(typeof _config.test.enabled, "boolean");
-      assertEquals(typeof _config.debug.enabled, "boolean");
-      assertEquals(typeof _config.timeout.default, "number");
+      assertEquals(typeof config.ci.enabled, "boolean");
+      assertEquals(typeof config.test.enabled, "boolean");
+      assertEquals(typeof config.debug.enabled, "boolean");
+      assertEquals(typeof config.timeout.default, "number");
 
       // Validate timeout values are reasonable
-      assertEquals(_config.timeout.default > 0, true);
-      assertEquals(_config.timeout.ci > 0, true);
-      assertEquals(_config.timeout.test > 0, true);
+      assertEquals(config.timeout.default > 0, true);
+      assertEquals(config.timeout.ci > 0, true);
+      assertEquals(config.timeout.test > 0, true);
     });
   }
 

@@ -316,19 +316,19 @@ describe("TwoParamsOrchestrator - Architecture Constraints", () => {
     const orchestrator = new TwoParamsOrchestrator();
 
     const _params = ["to", "project"];
-    const _config = { key: "value" };
+    const config = { key: "value" };
     const options = { option: "test" };
 
     // Store original values
     const originalParams = [..._params];
-    const originalConfig = { ..._config };
+    const originalConfig = { ...config };
     const originalOptions = { ...options };
 
-    await orchestrator.execute(_params, _config, options);
+    await orchestrator.execute(_params, config, options);
 
     // Inputs should not be mutated
     assertEquals(_params, originalParams);
-    assertEquals(_config, originalConfig);
+    assertEquals(config, originalConfig);
     assertEquals(options, originalOptions);
   });
 

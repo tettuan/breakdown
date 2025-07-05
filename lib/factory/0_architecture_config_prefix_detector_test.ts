@@ -12,11 +12,12 @@
  */
 
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
 Deno.test("_ConfigPrefixDetector architecture - no circular dependencies", async () => {
   // Read the source file to check imports
-  const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
+  const filePath = fromFileUrl(new URL("./config_prefix_detector.ts", import.meta.url));
   const sourceCode = await Deno.readTextFile(filePath);
 
   // Ensure no import of BreakdownConfig
@@ -204,7 +205,7 @@ Deno.test("_ConfigPrefixDetector architecture - pure function characteristics", 
 
 Deno.test("_ConfigPrefixDetector architecture - no state management", async () => {
   // Read source to verify no state variables
-  const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
+  const filePath = fromFileUrl(new URL("./config_prefix_detector.ts", import.meta.url));
   const sourceCode = await Deno.readTextFile(filePath);
 
   // Check for common state patterns
@@ -228,7 +229,7 @@ Deno.test("_ConfigPrefixDetector architecture - no state management", async () =
 
 Deno.test("_ConfigPrefixDetector architecture - minimal complexity", async () => {
   // Read source code to analyze complexity
-  const filePath = new URL("./config_prefix_detector.ts", import.meta.url).pathname;
+  const filePath = fromFileUrl(new URL("./config_prefix_detector.ts", import.meta.url));
   const sourceCode = await Deno.readTextFile(filePath);
 
   // Extract the detect method body

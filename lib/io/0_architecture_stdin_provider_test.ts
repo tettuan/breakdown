@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test: Dependency Isolation
@@ -17,12 +18,12 @@ import { assertEquals, assertExists } from "@std/assert";
  * and provides a clean abstraction layer.
  */
 Deno.test("Architecture: Stdin provider isolates system dependencies", async () => {
-  const _moduleSource = await Deno.readTextFile(
-    new URL("./stdin_provider.ts", import.meta.url).pathname,
+  const moduleSource = await Deno.readTextFile(
+    fromFileUrl(new URL("./stdin_provider.ts", import.meta.url)),
   );
 
   // Check that interface doesn't expose Deno-specific types directly
-  const interfaceSection = _moduleSource.match(/export interface StdinProvider\s*{[^}]+}/s);
+  const interfaceSection = moduleSource.match(/export interface StdinProvider\s*{[^}]+}/s);
   assertExists(interfaceSection, "Should have StdinProvider interface");
 
   const interfaceContent = interfaceSection[0];
@@ -32,7 +33,9 @@ Deno.test("Architecture: Stdin provider isolates system dependencies", async () 
   assertEquals(hasDenoTypes, false, "Interface should not expose Deno-specific types");
 
   // Check that MockStdinProvider doesn't use actual I/O
-  const mockProviderSection = _moduleSource.match(/export class MockStdinProvider[^{]+{[\s\S]+?^}/m);
+  const mockProviderSection = moduleSource.match(
+    /export class MockStdinProvider[^{]+{[\s\S]+?^}/m,
+  );
   if (mockProviderSection) {
     const hasActualIO = mockProviderSection[0].includes("Deno.stdin") ||
       mockProviderSection[0].includes("readAll(Deno.stdin)");
@@ -52,7 +55,7 @@ Deno.test("Architecture: Stdin provider isolates system dependencies", async () 
  */
 Deno.test("Architecture: Stdin provider interface is properly segregated", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./stdin_provider.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./stdin_provider.ts", import.meta.url)),
   );
 
   // Extract interface methods
@@ -86,7 +89,7 @@ Deno.test("Architecture: Stdin provider interface is properly segregated", async
  */
 Deno.test("Architecture: Stdin provider ensures test environment safety", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./stdin_provider.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./stdin_provider.ts", import.meta.url)),
   );
 
   // Check MockStdinProvider implementation
@@ -123,7 +126,7 @@ Deno.test("Architecture: Stdin provider ensures test environment safety", async 
  */
 Deno.test("Architecture: Stdin provider uses Totality-based error handling", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./stdin_provider.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./stdin_provider.ts", import.meta.url)),
   );
 
   // Check interface methods return promises (can handle errors)
@@ -162,7 +165,7 @@ Deno.test("Architecture: Stdin provider uses Totality-based error handling", asy
  */
 Deno.test("Architecture: Stdin provider follows provider pattern correctly", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./stdin_provider.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./stdin_provider.ts", import.meta.url)),
   );
 
   // Check for interface definition

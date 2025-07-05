@@ -26,10 +26,10 @@ describe("LayerTypeFactory - Class Structure", () => {
     logger.debug("Verifying Single Responsibility Principle");
 
     // LayerTypeFactory should only be responsible for LayerType creation
-    const _factoryMethods = Object.getOwnPropertyNames(LayerTypeFactory);
+    const factoryMethods = Object.getOwnPropertyNames(LayerTypeFactory);
     const publicMethods = [
       "fromString",
-      "fromTwoParams_Result",
+      "fromTwoParamsResult",
       "isValidLayer",
       "getKnownLayers",
     ];
@@ -52,7 +52,7 @@ describe("LayerTypeFactory - Class Structure", () => {
 
     // Primary creation methods
     assertExists(LayerTypeFactory.fromString);
-    assertExists(LayerTypeFactory.fromTwoParams_Result);
+    assertExists(LayerTypeFactory.fromTwoParamsResult);
 
     // Utility methods
     assertExists(LayerTypeFactory.isValidLayer);
@@ -104,7 +104,7 @@ describe("LayerTypeFactory - Class Structure", () => {
 
     // All factory methods should return consistent Result types
     const stringResult = LayerTypeFactory.fromString("project");
-    const twoParamsResult = LayerTypeFactory.fromTwoParams_Result({
+    const twoParamsResult = LayerTypeFactory.fromTwoParamsResult({
       type: "two",
       demonstrativeType: "to",
       layerType: "issue",
@@ -185,7 +185,7 @@ describe("LayerTypeFactory - Error Structure", () => {
 
     // LayerType.create doesn't actually validate layerType values
     // It accepts any string in TwoParams_Result.layerType
-    const result = LayerTypeFactory.fromTwoParams_Result(invalidTwoParams_Result);
+    const result = LayerTypeFactory.fromTwoParamsResult(invalidTwoParams_Result);
 
     // The factory should create a LayerType even with non-standard layer values
     assertEquals(result.ok, true);
@@ -243,7 +243,7 @@ describe("LayerTypeFactory - Internal Structure", () => {
     logger.debug("Testing method organization patterns");
 
     // Public factory methods
-    const factoryMethods = ["fromString", "fromTwoParams_Result"];
+    const factoryMethods = ["fromString", "fromTwoParamsResult"];
 
     // Public query methods
     const queryMethods = ["isValidLayer", "getKnownLayers"];

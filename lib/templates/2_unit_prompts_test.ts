@@ -1,5 +1,5 @@
 import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
-import { _prompts as prompts } from "./prompts.ts";
+import { prompts } from "./prompts.ts";
 
 /**
  * 単体テスト：prompts.ts

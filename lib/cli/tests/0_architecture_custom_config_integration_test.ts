@@ -97,15 +97,15 @@ async function loadCustomConfig(configPath: string): Promise<CustomConfigStructu
     }
     const breakdownConfig = breakdownConfigResult.data;
     await breakdownConfig.loadConfig();
-    const _config = await breakdownConfig.getConfig();
+    const config = await breakdownConfig.getConfig();
 
     _logger.debug("Loaded custom config", {
       path: configPath,
-      hasCustomConfig: !!_config.customConfig,
+      hasCustomConfig: !!config.customConfig,
     });
 
     // Explicitly cast through unknown first to avoid type overlap issues
-    return _config as any as CustomConfigStructure;
+    return config as any as CustomConfigStructure;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     _logger.error("Failed to load custom config", { path: configPath, error: message });
@@ -120,20 +120,20 @@ Deno.test({
     const configPath = resolve(Deno.cwd(), ".agent/breakdown/config/production-user.yml");
 
     await t.step("should load CustomConfig from production-user.yml", async () => {
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
 
-      assertExists(_config.customConfig);
-      assertEquals(_config.customConfig.enabled, true);
+      assertExists(config.customConfig);
+      assertEquals(config.customConfig.enabled, true);
 
       _logger.debug("CustomConfig loaded successfully", {
-        enabled: _config.customConfig.enabled,
-        hasFindBugs: !!_config.customConfig.findBugs,
+        enabled: config.customConfig.enabled,
+        hasFindBugs: !!config.customConfig.findBugs,
       });
     });
 
     await t.step("should validate findBugs configuration", async () => {
-      const _config = await loadCustomConfig(configPath);
-      const findBugs = _config.customConfig.findBugs;
+      const config = await loadCustomConfig(configPath);
+      const findBugs = config.customConfig.findBugs;
 
       assertExists(findBugs);
       assertEquals(findBugs.enabled, true);
@@ -164,8 +164,8 @@ Deno.test({
     });
 
     await t.step("should validate file extensions and exclusions", async () => {
-      const _config = await loadCustomConfig(configPath);
-      const findBugs = _config.customConfig.findBugs;
+      const config = await loadCustomConfig(configPath);
+      const findBugs = config.customConfig.findBugs;
 
       // Check file extensions
       assertExists(findBugs.includeExtensions);
@@ -189,21 +189,21 @@ Deno.test({
     const configPath = resolve(Deno.cwd(), ".agent/breakdown/config/production-user.yml");
 
     await t.step("should validate BreakdownParams customConfig structure", async () => {
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
 
-      assertExists(_config.breakdownParams);
-      assertExists(_config.breakdownParams.customConfig);
-      assertEquals(_config.breakdownParams.version, "latest");
+      assertExists(config.breakdownParams);
+      assertExists(config.breakdownParams.customConfig);
+      assertEquals(config.breakdownParams.version, "latest");
 
       _logger.debug("BreakdownParams structure validated", {
-        version: _config.breakdownParams.version,
-        hasCustomConfig: !!_config.breakdownParams.customConfig,
+        version: config.breakdownParams.version,
+        hasCustomConfig: !!config.breakdownParams.customConfig,
       });
     });
 
     await t.step("should validate two-parameter command patterns", async () => {
-      const _config = await loadCustomConfig(configPath);
-      const _params = _config.breakdownParams.customConfig.params.two;
+      const config = await loadCustomConfig(configPath);
+      const _params = config.breakdownParams.customConfig.params.two;
 
       assertExists(_params.demonstrativeType);
       assertExists(_params.layerType);
@@ -223,8 +223,8 @@ Deno.test({
     });
 
     await t.step("should validate command validation rules", async () => {
-      const _config = await loadCustomConfig(configPath);
-      const validation = _config.breakdownParams.customConfig.validation;
+      const config = await loadCustomConfig(configPath);
+      const validation = config.breakdownParams.customConfig.validation;
 
       // Test all command types
       for (const commandType of ["zero", "one", "two"]) {
@@ -243,8 +243,8 @@ Deno.test({
     });
 
     await t.step("should validate option definitions", async () => {
-      const _config = await loadCustomConfig(configPath);
-      const options = _config.breakdownParams.customConfig.options;
+      const config = await loadCustomConfig(configPath);
+      const options = config.breakdownParams.customConfig.options;
 
       assertExists(options.values);
       assertExists(options.flags);
@@ -270,31 +270,31 @@ Deno.test({
     const configPath = resolve(Deno.cwd(), ".agent/breakdown/config/production-user.yml");
 
     await t.step("should support find command with bugs parameter", async () => {
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
 
-      assertExists(_config.customConfig.find);
-      assertExists(_config.customConfig.find.twoParams);
-      assertEquals(Array.isArray(_config.customConfig.find.twoParams), true);
-      assertEquals(_config.customConfig.find.twoParams.includes("bugs"), true);
+      assertExists(config.customConfig.find);
+      assertExists(config.customConfig.find.twoParams);
+      assertEquals(Array.isArray(config.customConfig.find.twoParams), true);
+      assertEquals(config.customConfig.find.twoParams.includes("bugs"), true);
 
       _logger.debug("Find command support validated", {
-        twoParams: _config.customConfig.find.twoParams,
+        twoParams: config.customConfig.find.twoParams,
       });
     });
 
     await t.step("should validate find-bugs end-to-end configuration", async () => {
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
 
       // Verify find command supports bugs
-      assertEquals(_config.customConfig.find.twoParams.includes("bugs"), true);
+      assertEquals(config.customConfig.find.twoParams.includes("bugs"), true);
 
       // Verify findBugs configuration is complete
-      assertEquals(_config.customConfig.findBugs.enabled, true);
-      assertEquals(_config.customConfig.findBugs.patterns.length > 0, true);
-      assertEquals(_config.customConfig.findBugs.includeExtensions.length > 0, true);
+      assertEquals(config.customConfig.findBugs.enabled, true);
+      assertEquals(config.customConfig.findBugs.patterns.length > 0, true);
+      assertEquals(config.customConfig.findBugs.includeExtensions.length > 0, true);
 
       // Verify BreakdownParams supports find and bugs patterns
-      const _params = _config.breakdownParams.customConfig.params.two;
+      const _params = config.breakdownParams.customConfig.params.two;
       assertEquals(_params.demonstrativeType.pattern.includes("find"), true);
       assertEquals(_params.layerType.pattern.includes("bugs"), true);
 
@@ -318,8 +318,8 @@ Deno.test({
     });
 
     await t.step("should validate error handling configuration", async () => {
-      const _config = await loadCustomConfig(resolve(Deno.cwd(), "config/production-user.yml"));
-      const errorHandling = _config.breakdownParams.customConfig.errorHandling;
+      const config = await loadCustomConfig(resolve(Deno.cwd(), "config/production-user.yml"));
+      const errorHandling = config.breakdownParams.customConfig.errorHandling;
 
       assertExists(errorHandling);
       assertEquals(errorHandling.unknownOption, "error");
@@ -339,31 +339,31 @@ Deno.test({
 
     await t.step("should load configuration efficiently", async () => {
       const startTime = performance.now();
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
       const loadTime = performance.now() - startTime;
 
-      assertExists(_config);
+      assertExists(config);
       assertEquals(loadTime < 100, true, "Config loading should be fast (<100ms)");
 
       _logger.debug("Configuration loading performance", { loadTime });
     });
 
     await t.step("should validate all required fields exist", async () => {
-      const _config = await loadCustomConfig(configPath);
+      const config = await loadCustomConfig(configPath);
 
       // Check top-level structure
-      assertExists(_config.customConfig);
-      assertExists(_config.breakdownParams);
+      assertExists(config.customConfig);
+      assertExists(config.breakdownParams);
 
       // Check customConfig required fields
-      assertExists(_config.customConfig.enabled);
-      assertExists(_config.customConfig.find);
-      assertExists(_config.customConfig.findBugs);
+      assertExists(config.customConfig.enabled);
+      assertExists(config.customConfig.find);
+      assertExists(config.customConfig.findBugs);
 
       // Check breakdownParams required fields
-      assertExists(_config.breakdownParams.version);
-      assertExists(_config.breakdownParams.customConfig);
-      assertExists(_config.breakdownParams.customParams);
+      assertExists(config.breakdownParams.version);
+      assertExists(config.breakdownParams.customConfig);
+      assertExists(config.breakdownParams.customParams);
 
       _logger.debug("All required fields validated");
     });

@@ -170,16 +170,19 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Stdin Input", () => {
     );
 
     assertEquals(result.success, false, "Should fail without input text");
-    assertEquals(
-      (result.error as any)?.type,
-      PromptFileErrorType.InputFileNotFound,
-      "Should return InputFileNotFound error type",
-    );
-    assertEquals(
-      (result.error as any)?.message,
-      "No input provided via stdin",
-      "Should have specific stdin error message",
-    );
+    if (result.error && typeof result.error === "object" && "type" in result.error) {
+      const typedError = result.error as { type: PromptFileErrorType; message: string };
+      assertEquals(
+        typedError.type,
+        PromptFileErrorType.InputFileNotFound,
+        "Should return InputFileNotFound error type",
+      );
+      assertEquals(
+        typedError.message,
+        "No input provided via stdin",
+        "Should have specific stdin error message",
+      );
+    }
 
     logger.debug("Stdin rejection without text verified");
   });
@@ -217,10 +220,13 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Error Scenarios", () =>
 
     // Note: This test assumes factory creation succeeds but file validation fails
     // In reality, factory creation might fail first
-    if ((result.error as any)?.type === PromptFileErrorType.InputFileNotFound) {
-      assertEquals(result.success, false);
-      assertEquals(result.output, "");
-      assertExists((result.error as any).message.includes("Input file not found"));
+    if (result.error && typeof result.error === "object" && "type" in result.error) {
+      const typedError = result.error as { type: PromptFileErrorType; message: string };
+      if (typedError.type === PromptFileErrorType.InputFileNotFound) {
+        assertEquals(result.success, false);
+        assertEquals(result.output, "");
+        assertExists(typedError.message.includes("Input file not found"));
+      }
     }
 
     logger.debug("Input file not found error verified");
@@ -304,7 +310,7 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Success Path Mock", () 
     generator = new PromptFileGenerator();
   });
 
-  it("should return success result when adapter succeeds", async () => {
+  it("should return success result when adapter succeeds", () => {
     logger.debug("Testing success path with mocked dependencies");
 
     // In a real test, we would mock:
@@ -358,7 +364,7 @@ describe("Unit: PromptFileGenerator Edge Cases", () => {
       "input.md",
       "output.md",
       "test",
-      undefined as any, // Explicitly pass undefined
+      undefined as unknown as boolean, // Explicitly pass undefined
       {},
     );
 
@@ -376,7 +382,7 @@ describe("Unit: PromptFileGenerator Edge Cases", () => {
       "output.md",
       "test",
       false,
-      null as any, // Pass null instead of object
+      undefined, // Pass undefined instead of null
     );
 
     // Should handle null options gracefully

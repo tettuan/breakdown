@@ -13,7 +13,7 @@ import { showHelp, showUsage, showVersion } from "$lib/cli/help.ts";
  * Handle zero parameters case
  *
  * @param _args - Original command line arguments (for compatibility)
- * @param _config - Configuration object from BreakdownConfig
+ * @param config - Configuration object from BreakdownConfig
  * @param options - Parsed options from BreakdownParams
  */
 export function handleZeroParams(

@@ -132,18 +132,19 @@ Deno.test("DuckTypingPromptVariables - withVariable creates new instance", () =>
   assertEquals(original.ok, true);
 
   if (original.ok) {
-    const updated = original.data.withVariable("key2", "value2");
-    assertEquals(updated.ok, true);
+    const updatedResult = original.data.withVariable("key2", "value2");
+    assertEquals(updatedResult.ok, true);
 
-    if (updated.ok) {
+    if (updatedResult.ok) {
+      const updated = updatedResult.data;
       // Original should be unchanged
       assertEquals(original.data.size(), 1);
       assertEquals(original.data.has("key2"), false);
 
       // New instance should have both variables
-      assertEquals(updated.data.size(), 2);
-      assertEquals(updated.data.get("key1"), "value1");
-      assertEquals(updated.data.get("key2"), "value2");
+      assertEquals(updated.size(), 2);
+      assertEquals(updated.get("key1"), "value1");
+      assertEquals(updated.get("key2"), "value2");
     }
   }
 });
@@ -156,15 +157,16 @@ Deno.test("DuckTypingPromptVariables - withVariables merges with other PromptVar
   assertEquals(vars2.ok, true);
 
   if (vars1.ok && vars2.ok) {
-    const merged = vars1.data.withVariables(vars2.data);
-    assertEquals(merged.ok, true);
+    const mergedResult = vars1.data.withVariables(vars2.data);
+    assertEquals(mergedResult.ok, true);
 
-    if (merged.ok) {
-      assertEquals(merged.data.size(), 4);
-      assertEquals(merged.data.get("a"), "1");
-      assertEquals(merged.data.get("b"), "2");
-      assertEquals(merged.data.get("c"), "3");
-      assertEquals(merged.data.get("d"), "4");
+    if (mergedResult.ok) {
+      const merged = mergedResult.data;
+      assertEquals(merged.size(), 4);
+      assertEquals(merged.get("a"), "1");
+      assertEquals(merged.get("b"), "2");
+      assertEquals(merged.get("c"), "3");
+      assertEquals(merged.get("d"), "4");
     }
   }
 });
@@ -174,15 +176,16 @@ Deno.test("DuckTypingPromptVariables - without removes specified variables", () 
   assertEquals(original.ok, true);
 
   if (original.ok) {
-    const filtered = original.data.without("b", "d");
-    assertEquals(filtered.ok, true);
+    const filteredResult = original.data.without("b", "d");
+    assertEquals(filteredResult.ok, true);
 
-    if (filtered.ok) {
-      assertEquals(filtered.data.size(), 2);
-      assertEquals(filtered.data.has("a"), true);
-      assertEquals(filtered.data.has("c"), true);
-      assertEquals(filtered.data.has("b"), false);
-      assertEquals(filtered.data.has("d"), false);
+    if (filteredResult.ok) {
+      const filtered = filteredResult.data;
+      assertEquals(filtered.size(), 2);
+      assertEquals(filtered.has("a"), true);
+      assertEquals(filtered.has("c"), true);
+      assertEquals(filtered.has("b"), false);
+      assertEquals(filtered.has("d"), false);
     }
   }
 });
@@ -218,10 +221,11 @@ Deno.test("DuckTypingPromptVariables - filter works with predicate function", ()
     assertEquals(filtered.ok, true);
 
     if (filtered.ok) {
-      assertEquals(filtered.data.size(), 2);
-      assertEquals(filtered.data.has("short"), false);
-      assertEquals(filtered.data.has("medium"), true);
-      assertEquals(filtered.data.has("long"), true);
+      const filteredVars = filtered;
+      assertEquals(filteredVars.data.size(), 2);
+      assertEquals(filteredVars.data.has("short"), false);
+      assertEquals(filteredVars.data.has("medium"), true);
+      assertEquals(filteredVars.data.has("long"), true);
     }
   }
 });

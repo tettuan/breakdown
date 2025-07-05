@@ -69,13 +69,13 @@ Deno.test("Workspace Structure", async (t) => {
   await t.step("should manage configuration responsibility clearly", () => {
     _logger.debug("Testing configuration management structure");
 
-    const _config = {
+    const config = {
       workingDir: ".",
       promptBaseDir: "prompts",
       schemaBaseDir: "schema",
     };
 
-    const _workspace = new WorkspaceImpl(_config);
+    const _workspace = new WorkspaceImpl(config);
 
     // Configuration management methods should exist
     assertExists(_workspace.validateConfig);
@@ -145,14 +145,14 @@ Deno.test("Workspace Structure", async (t) => {
   await t.step("should maintain clean constructor dependency injection", () => {
     _logger.debug("Testing constructor dependency injection structure");
 
-    const _config = {
+    const config = {
       workingDir: "./test",
       promptBaseDir: "custom-prompts",
       schemaBaseDir: "custom-schema",
     };
 
     // Constructor should accept configuration and create dependencies
-    const _workspace = new WorkspaceImpl(_config);
+    const _workspace = new WorkspaceImpl(config);
     assertExists(_workspace);
 
     // Should not require external dependency injection beyond config

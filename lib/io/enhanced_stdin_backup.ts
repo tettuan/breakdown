@@ -11,15 +11,8 @@
  * @module
  */
 
-import { readAll } from "jsr:@std/io@0.224.9/read-all";
-
 import type { TimeoutManager } from "../config/timeout_manager.ts";
-import {
-  type ExtendedStdinOptions,
-  type MockStdinConfig,
-  type StdinProvider,
-  StdinProviderFactory,
-} from "./stdin_provider.ts";
+import { type ExtendedStdinOptions, StdinProviderFactory } from "./stdin_provider.ts";
 
 /**
  * Enhanced options for reading from stdin

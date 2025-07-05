@@ -128,8 +128,8 @@ Deno.test({
       // Test STDIN processing error scenarios
       // Note: Actual STDIN mocking would require proper test setup
 
-      const _config = {}; // Empty config might cause STDIN processing issues
-      const result = await handleTwoParams(["to", "project"], _config, { skipStdin: true });
+      const config = {}; // Empty config might cause STDIN processing issues
+      const result = await handleTwoParams(["to", "project"], config, { skipStdin: true });
 
       if (!result.ok) {
         const error = result.error as TwoParamsHandlerError;

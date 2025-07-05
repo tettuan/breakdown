@@ -12,7 +12,7 @@ import { initializeBreakdownConfiguration } from "../initialization/workspace_in
  * Handle one parameter case
  *
  * @param params - Command line parameters from BreakdownParams
- * @param _config - Configuration object from BreakdownConfig
+ * @param config - Configuration object from BreakdownConfig
  * @param _options - Parsed options from BreakdownParams
  */
 export async function handleOneParams(

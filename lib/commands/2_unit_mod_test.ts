@@ -75,12 +75,12 @@ describe("Unit: initWorkspace Function", async () => {
   it("should use provided configuration", async () => {
     logger.debug("Testing custom configuration");
 
-    const _config = {
+    const config = {
       app_prompt: { base_dir: "custom_prompts" },
       app_schema: { base_dir: "custom_schemas" },
     };
 
-    const result = await initWorkspace(tempDir, _config);
+    const result = await initWorkspace(tempDir, config);
 
     assertEquals(result.success, true, "Should succeed with custom config");
     assertEquals(

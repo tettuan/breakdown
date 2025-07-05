@@ -28,10 +28,10 @@ import {
   type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const logger = new BreakdownLogger("unit-prompt-_factory");
+const logger = new BreakdownLogger("unit-prompt-factory");
 
 /**
  * Test pattern provider for unit testing
@@ -113,13 +113,13 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
       options: {},
     };
 
-    const _factory = await PromptVariablesFactory.create(params);
+    const factory = await PromptVariablesFactory.create(params);
 
-    assertExists(_factory);
-    assertEquals(typeof _factory.promptFilePath, "string");
-    assertEquals(typeof _factory.inputFilePath, "string");
-    assertEquals(typeof _factory.outputFilePath, "string");
-    assertEquals(typeof _factory.schemaFilePath, "string");
+    assertExists(factory);
+    assertEquals(typeof factory.promptFilePath, "string");
+    assertEquals(typeof factory.inputFilePath, "string");
+    assertEquals(typeof factory.outputFilePath, "string");
+    assertEquals(typeof factory.schemaFilePath, "string");
   });
 
   it("should create Totality factory with validated types", async () => {
@@ -137,15 +137,15 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
-      assertExists(_factory);
-      assertEquals(_factory.directive.getValue(), "to");
-      assertEquals(_factory.layer.getValue(), "project");
-      assertEquals(typeof _factory.promptFilePath, "string");
-      assertEquals(typeof _factory.inputFilePath, "string");
-      assertEquals(typeof _factory.outputFilePath, "string");
-      assertEquals(typeof _factory.schemaFilePath, "string");
+      assertExists(factory);
+      assertEquals(factory.directive.getValue(), "to");
+      assertEquals(factory.layer.getValue(), "project");
+      assertEquals(typeof factory.promptFilePath, "string");
+      assertEquals(typeof factory.inputFilePath, "string");
+      assertEquals(typeof factory.outputFilePath, "string");
+      assertEquals(typeof factory.schemaFilePath, "string");
     }
   });
 
@@ -169,11 +169,11 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
         options: {},
       };
 
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
-      assertExists(_factory);
-      assertEquals(_factory.directive.getValue(), "summary");
-      assertEquals(_factory.layer.getValue(), "issue");
+      assertExists(factory);
+      assertEquals(factory.directive.getValue(), "summary");
+      assertEquals(factory.layer.getValue(), "issue");
     }
   });
 
@@ -198,11 +198,11 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
         options: {},
       };
 
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
-      assertExists(_factory);
-      assertEquals(_factory.hasValidBaseDir(), false);
-      assertExists(_factory.getBaseDirError());
+      assertExists(factory);
+      assertEquals(factory.hasValidBaseDir(), false);
+      assertExists(factory.getBaseDirError());
     }
   });
 });
@@ -280,7 +280,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   it("should resolve prompt file path correctly", async () => {
     logger.debug("Testing prompt file path resolution");
 
-    const promptPath = _factory.promptFilePath;
+    const promptPath = factory.promptFilePath;
 
     assertExists(promptPath);
     assertEquals(promptPath.includes("prompts/to/project/f_project.md"), true);
@@ -290,7 +290,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   it("should resolve input file path correctly", async () => {
     logger.debug("Testing input file path resolution");
 
-    const inputPath = _factory.inputFilePath;
+    const inputPath = factory.inputFilePath;
 
     assertExists(inputPath);
     assertEquals(inputPath.includes("input.md"), true);
@@ -299,7 +299,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   it("should resolve output file path correctly", async () => {
     logger.debug("Testing output file path resolution");
 
-    const outputPath = _factory.outputFilePath;
+    const outputPath = factory.outputFilePath;
 
     assertExists(outputPath);
     assertEquals(outputPath.includes("output.md"), true);
@@ -308,7 +308,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   it("should resolve schema file path correctly", async () => {
     logger.debug("Testing schema file path resolution");
 
-    const schemaPath = _factory.schemaFilePath;
+    const schemaPath = factory.schemaFilePath;
 
     assertExists(schemaPath);
     assertEquals(schemaPath.includes("schema/to/project/base.schema.md"), true);
@@ -330,9 +330,9 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
         options: {}, // No fromFile specified
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
-      const inputPath = _factory.inputFilePath;
+      const inputPath = factory.inputFilePath;
       // Empty input path should be handled gracefully
       assertEquals(typeof inputPath, "string");
     }
@@ -341,7 +341,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
   it("should get all parameters in single call", async () => {
     logger.debug("Testing getAllParams method");
 
-    const allParams = _factory.getAllParams();
+    const allParams = factory.getAllParams();
 
     assertExists(allParams.promptFilePath);
     assertExists(allParams.inputFilePath);
@@ -395,10 +395,10 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
         options: complexOptions,
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Verify all options are preserved
-      const retrievedOptions = _factory.getOptions();
+      const retrievedOptions = factory.getOptions();
       assertEquals(retrievedOptions.fromFile, complexOptions.fromFile);
       assertEquals(retrievedOptions.destinationFile, complexOptions.destinationFile);
       assertEquals(retrievedOptions.adaptation, complexOptions.adaptation);
@@ -411,7 +411,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
       assertEquals(retrievedOptions.config, complexOptions.config);
 
       // Verify custom variables
-      const customVars = _factory.customVariables;
+      const customVars = factory.customVariables;
       assertEquals(customVars["project-name"], "complex-project");
       assertEquals(customVars["version"], "2.1.0-beta");
       assertEquals(customVars["environment"], "staging");
@@ -443,10 +443,10 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: testCase,
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
-        assertEquals(_factory.extended, testCase.extended || false);
-        assertEquals(_factory.customValidation, testCase.customValidation || false);
+        assertEquals(factory.extended, testCase.extended || false);
+        assertEquals(factory.customValidation, testCase.customValidation || false);
       }
     }
   });
@@ -472,9 +472,9 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: { errorFormat },
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
-        assertEquals(_factory.errorFormat, errorFormat || "simple");
+        assertEquals(factory.errorFormat, errorFormat || "simple");
       }
     }
   });
@@ -499,9 +499,9 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: testCase,
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
-        const customVars = _factory.customVariables;
+        const customVars = factory.customVariables;
         assertEquals(typeof customVars, "object");
         assertEquals(Object.keys(customVars).length, 0);
       }
@@ -531,11 +531,11 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Should validate successfully with proper configuration
       try {
-        _factory.validateAll();
+        factory.validateAll();
         // If no exception thrown, validation passed
         assertEquals(true, true);
       } catch (error) {
@@ -566,10 +566,10 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
           options: {},
         };
 
-        const _factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
-        assertEquals(_factory.hasValidBaseDir(), false);
-        const error = _factory.getBaseDirError();
+        assertEquals(factory.hasValidBaseDir(), false);
+        const error = factory.getBaseDirError();
         assertExists(error);
         assertEquals(typeof error, "string");
         assertEquals(error.includes("base_dir"), true);
@@ -592,14 +592,14 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
 
       // Create factory with invalid base configuration
       const invalidConfig = { app_prompt: {}, app_schema: {} };
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
       // Base directory validation should fail
-      assertEquals(_factory.hasValidBaseDir(), false);
+      assertEquals(factory.hasValidBaseDir(), false);
 
       // Overall validation should throw
       assertThrows(() => {
-        _factory.validateAll();
+        factory.validateAll();
       }, Error);
     }
   });
@@ -618,9 +618,9 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
       };
 
       const invalidConfig = { app_prompt: { base_dir: "" }, app_schema: {} };
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
-      const errorMessage = _factory.getBaseDirError();
+      const errorMessage = factory.getBaseDirError();
       assertExists(errorMessage);
       assertEquals(typeof errorMessage, "string");
       assertEquals(errorMessage.length > 0, true);
@@ -661,8 +661,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options: {},
         };
 
-        const _factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
-        const schemaPath = _factory.schemaFilePath;
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+        const schemaPath = factory.schemaFilePath;
 
         // Analyze what paths are actually generated
         assertEquals(typeof schemaPath, "string");
@@ -699,18 +699,18 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options,
         };
 
-        const _factory = await TotalityPromptVariablesFactory.create(params);
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         // All paths should be strings and properly resolved
-        assertEquals(typeof _factory.inputFilePath, "string");
-        assertEquals(typeof _factory.outputFilePath, "string");
-        assertEquals(typeof _factory.promptFilePath, "string");
+        assertEquals(typeof factory.inputFilePath, "string");
+        assertEquals(typeof factory.outputFilePath, "string");
+        assertEquals(typeof factory.promptFilePath, "string");
 
         // Check if current implementation properly handles relative paths
         const allPaths = [
-          _factory.inputFilePath,
-          _factory.outputFilePath,
-          _factory.promptFilePath,
+          factory.inputFilePath,
+          factory.outputFilePath,
+          factory.promptFilePath,
         ];
 
         // Log what paths are actually generated for analysis
@@ -748,16 +748,16 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options: {},
         };
 
-        const _factory = TotalityPromptVariablesFactory.createWithConfig(config as any, params);
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config as any, params);
 
         // Should not throw and should handle null/undefined gracefully
-        assertEquals(typeof _factory.schemaFilePath, "string");
-        assertEquals(_factory.schemaFilePath.length > 0, true);
+        assertEquals(typeof factory.schemaFilePath, "string");
+        assertEquals(factory.schemaFilePath.length > 0, true);
 
         // Should provide meaningful error indication for invalid base directories
         if (config.app_prompt?.base_dir === null || config.app_prompt?.base_dir === undefined) {
-          assertEquals(_factory.hasValidBaseDir(), false);
-          assertExists(_factory.getBaseDirError());
+          assertEquals(factory.hasValidBaseDir(), false);
+          assertExists(factory.getBaseDirError());
         }
       }
     }
@@ -786,8 +786,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
         options: { customVariables: dangerousVariables },
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
-      const retrievedVars = _factory.customVariables;
+      const factory = await TotalityPromptVariablesFactory.create(params);
+      const retrievedVars = factory.customVariables;
 
       // Variables should be preserved as-is but handled safely in context
       assertEquals(Object.keys(retrievedVars).length, Object.keys(dangerousVariables).length);
@@ -798,8 +798,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
       });
 
       // Factory should still function properly with dangerous variables
-      assertExists(_factory.getAllParams());
-      assertEquals(typeof _factory.promptFilePath, "string");
+      assertExists(factory.getAllParams());
+      assertEquals(typeof factory.promptFilePath, "string");
     }
   });
 
@@ -825,20 +825,20 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
         options: longPathOptions,
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Verify factory handles long paths gracefully
-      assertEquals(typeof _factory.inputFilePath, "string");
-      assertEquals(typeof _factory.outputFilePath, "string");
-      assertEquals(typeof _factory.promptFilePath, "string");
-      assertEquals(typeof _factory.schemaFilePath, "string");
+      assertEquals(typeof factory.inputFilePath, "string");
+      assertEquals(typeof factory.outputFilePath, "string");
+      assertEquals(typeof factory.promptFilePath, "string");
+      assertEquals(typeof factory.schemaFilePath, "string");
 
       // Log actual path lengths for analysis
       const allPaths = [
-        _factory.inputFilePath,
-        _factory.outputFilePath,
-        _factory.promptFilePath,
-        _factory.schemaFilePath,
+        factory.inputFilePath,
+        factory.outputFilePath,
+        factory.promptFilePath,
+        factory.schemaFilePath,
       ];
 
       allPaths.forEach((path, index) => {
@@ -872,7 +872,7 @@ describe("PromptVariablesFactory Unit Tests - Cryptographic Security", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Generate multiple output paths to analyze randomness source
       const outputPaths: string[] = [];
@@ -934,12 +934,12 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // DirectiveType methods should be available
-      assertEquals(_factory.directive.getValue(), "to");
-      assertEquals(typeof _factory.directive.equals, "function");
-      assertEquals(_factory.directive.equals(directiveResult.data), true);
+      assertEquals(factory.directive.getValue(), "to");
+      assertEquals(typeof factory.directive.equals, "function");
+      assertEquals(factory.directive.equals(directiveResult.data), true);
     }
   });
 
@@ -959,14 +959,14 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // LayerType methods should be available
-      assertEquals(_factory.layer.getValue(), "issue");
-      assertEquals(typeof _factory.layer.equals, "function");
-      assertEquals(_factory.layer.equals(layerResult.data), true);
-      assertEquals(typeof _factory.layer.getHierarchyLevel, "function");
-      assertEquals(typeof _factory.layer.isStandardHierarchy, "function");
+      assertEquals(factory.layer.getValue(), "issue");
+      assertEquals(typeof factory.layer.equals, "function");
+      assertEquals(factory.layer.equals(layerResult.data), true);
+      assertEquals(typeof factory.layer.getHierarchyLevel, "function");
+      assertEquals(typeof factory.layer.isStandardHierarchy, "function");
     }
   });
 
@@ -1023,27 +1023,27 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: comprehensiveOptions,
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Test all major functionality
-      assertExists(_factory.getAllParams());
-      assertExists(_factory.getOptions());
-      assertEquals(_factory.directive.getValue(), "find");
-      assertEquals(_factory.layer.getValue(), "temp");
-      assertEquals(_factory.extended, true);
-      assertEquals(_factory.customValidation, true);
-      assertEquals(_factory.errorFormat, "detailed");
-      assertEquals(_factory.customVariables["test-mode"], "comprehensive");
+      assertExists(factory.getAllParams());
+      assertExists(factory.getOptions());
+      assertEquals(factory.directive.getValue(), "find");
+      assertEquals(factory.layer.getValue(), "temp");
+      assertEquals(factory.extended, true);
+      assertEquals(factory.customValidation, true);
+      assertEquals(factory.errorFormat, "detailed");
+      assertEquals(factory.customVariables["test-mode"], "comprehensive");
 
       // Test validation
-      assertEquals(typeof _factory.hasValidBaseDir(), "boolean");
-      assertEquals(typeof _factory.validateAll, "function");
+      assertEquals(typeof factory.hasValidBaseDir(), "boolean");
+      assertEquals(typeof factory.validateAll, "function");
 
       // Test path resolution
-      assertEquals(typeof _factory.promptFilePath, "string");
-      assertEquals(typeof _factory.inputFilePath, "string");
-      assertEquals(typeof _factory.outputFilePath, "string");
-      assertEquals(typeof _factory.schemaFilePath, "string");
+      assertEquals(typeof factory.promptFilePath, "string");
+      assertEquals(typeof factory.inputFilePath, "string");
+      assertEquals(typeof factory.outputFilePath, "string");
+      assertEquals(typeof factory.schemaFilePath, "string");
     }
   });
 });

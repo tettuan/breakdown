@@ -11,23 +11,24 @@
  * and internal path resolvers to provide a unified interface for prompt processing.
  *
  * @module factory/prompt_variables_factory
- * @see {@link https://tettuan.github.io/breakdown/docs/breakdown/app_factory.ja.md} Factory Documentation
+ * @see {@link https://tettuan.github.io/breakdown/docs/breakdown/appfactory.ja.md} Factory Documentation
  */
 
 // Temporarily commenting out BreakdownConfig import to avoid errors during development
 // TODO: Re-enable BreakdownConfig when external dependency issues are resolved
 // import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 
-// Legacy imports for backward compatibility during migration
-import type { DemonstrativeType, LegacyLayerType } from "../types/mod.ts";
 // New Totality-compliant imports
-import {
-  DirectiveType,
-  LayerType,
-  TwoParamsDirectivePattern,
-  TwoParamsLayerTypePattern,
-  type TypePatternProvider,
-} from "../types/mod.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+
+/**
+ * Interface for providing validation patterns to type construction
+ */
+interface TypePatternProvider {
+  getDirectivePattern(): TwoParamsDirectivePattern | null;
+  getLayerTypePattern(): TwoParamsLayerTypePattern | null;
+}
 
 /**
  * Configuration options for prompt generation and file resolution.
@@ -198,14 +199,14 @@ export interface PromptCliParams {
  * @example Basic usage with Totality types
  * ```typescript
  * // Types must be created through TypeFactory
- * const _factory = new TypeFactory(patternProvider);
- * const directive_Result = factory.createDirectiveType("to");
- * const layer_Result = factory.createLayerType("project");
+ * const factory = new TypeFactory(patternProvider);
+ * const directiveResult = factory.createDirectiveType("to");
+ * const layerResult = factory.createLayerType("project");
  *
- * if (directive_Result.ok && layer_Result.ok) {
+ * if (directiveResult.ok && layerResult.ok) {
  *   const params: TotalityPromptCliParams = {
- *     directive: directive_Result.data,
- *     layer: layer_Result.data,
+ *     directive: directiveResult.data,
+ *     layer: layerResult.data,
  *     options: {
  *       fromFile: "requirements.md",
  *       destinationFile: "output/"
@@ -217,16 +218,16 @@ export interface PromptCliParams {
  * @example Error handling with Result types
  * ```typescript
  * const factory = new TypeFactory(patternProvider);
- * const both_Result = factory.createBothTypes("summary", "issue");
+ * const bothResult = factory.createBothTypes("summary", "issue");
  *
- * if (!both_Result.ok) {
- *   console.error("Type creation failed:", both_Result.error.message);
+ * if (!bothResult.ok) {
+ *   console.error("Type creation failed:", bothResult.error.message);
  *   return;
  * }
  *
  * const params: TotalityPromptCliParams = {
- *   directive: both_Result.data.directive,
- *   layer: both_Result.data.layer,
+ *   directive: bothResult.data.directive,
+ *   layer: bothResult.data.layer,
  *   options: { extended: true }
  * };
  * ```
@@ -363,15 +364,15 @@ export interface PromptVariablesFactoryOptions {
  * @example Factory initialization with Totality types
  * ```typescript
  * const factory = new TypeFactory(patternProvider);
- * const directive_Result = factory.createDirectiveType("to");
- * const layer_Result = factory.createLayerType("project");
+ * const directiveResult = factory.createDirectiveType("to");
+ * const layerResult = factory.createLayerType("project");
  *
- * if (directive_Result.ok && layer_Result.ok) {
+ * if (directiveResult.ok && layerResult.ok) {
  *   const options: TotalityPromptVariablesFactoryOptions = {
  *     config: await breakdownConfig.getConfig(),
  *     cliParams: {
- *       directive: directive_Result.data,
- *       layer: layer_Result.data,
+ *       directive: directiveResult.data,
+ *       layer: layerResult.data,
  *       options: {}
  *     }
  *   };
@@ -402,7 +403,7 @@ export interface TotalityPromptVariablesFactoryOptions {
  * For new implementations, consider using TotalityPromptVariablesFactory with validated types.
  */
 export class PromptVariablesFactory {
-  private _config:
+  private config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   /**
@@ -414,7 +415,7 @@ export class PromptVariablesFactory {
    * Private copy of CLI parameters to ensure immutability
    */
   private _cliParams: PromptCliParams;
-  
+
   private _baseDirOverride?: string;
   private _baseDirError?: string;
 
@@ -445,7 +446,7 @@ export class PromptVariablesFactory {
     baseDirOverride?: string,
   ) {
     // Deep copy to ensure immutability without JSON.parse
-    this._config = this.deepCopyConfig(config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(cliParams);
     // Initialize the public readonly property
     (this as any).cliParams = this._cliParams;
@@ -570,23 +571,23 @@ export class PromptVariablesFactory {
         Deno.env.get("DENO_TESTING") === "true" ||
         currentDir.includes("/github/breakdown");
 
-      let breakdownConfig_Result;
+      let breakdownConfigResult;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
-        breakdownConfig_Result = await BreakdownConfig.create(configSetName, ".");
+        breakdownConfigResult = await BreakdownConfig.create(configSetName, ".");
       } else {
         // For production environments, use current working directory
-        breakdownConfig_Result = await BreakdownConfig.create(configSetName, currentDir);
+        breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
       }
 
-      if (!breakdownConfig_Result.success) {
+      if (!breakdownConfigResult.success) {
         throw new Error(
           `BreakdownConfig creation failed: ${
-            breakdownConfig_Result.error?.message || "Unknown error"
+            breakdownConfigResult.error?.message || "Unknown error"
           }`,
         );
       }
-      const breakdownConfig = breakdownConfig_Result.data;
+      const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new PromptVariablesFactory(config, cliParams);
@@ -620,14 +621,14 @@ export class PromptVariablesFactory {
    * ```typescript
    * const breakdownConfig = new BreakdownConfig("development");
    * await breakdownConfig.loadConfig();
-   * const _config = await breakdownConfig.getConfig();
+   * const config = await breakdownConfig.getConfig();
    *
    * const factory = PromptVariablesFactory.createWithConfig(config, cliParams);
    * ```
    *
    * @example Reusing configuration for multiple factories
    * ```typescript
-   * const _config = await loadSharedConfig();
+   * const config = await loadSharedConfig();
    *
    * const factory1 = PromptVariablesFactory.createWithConfig(config, params1);
    * const factory2 = PromptVariablesFactory.createWithConfig(config, params2);
@@ -758,7 +759,7 @@ export class PromptVariablesFactory {
    */
   public validateAll(): void {
     if (!this.cliParams) throw new Error("cliParams is required");
-    if (!this._config) throw new Error("config is required");
+    if (!this.config) throw new Error("config is required");
     if (!this.promptFilePath) throw new Error("Prompt file path is required");
     if (!this.schemaFilePath) throw new Error("Schema file path is required");
     // Input and output file paths may be empty - this is acceptable
@@ -1040,16 +1041,16 @@ export class PromptVariablesFactory {
  * const typeFactory = new TypeFactory(patternProvider);
  *
  * // Create validated types
- * const types_Result = typeFactory.createBothTypes("to", "project");
- * if (!types_Result.ok) {
- *   console.error("Type validation failed:", types_Result.error);
+ * const typesResult = typeFactory.createBothTypes("to", "project");
+ * if (!typesResult.ok) {
+ *   console.error("Type validation failed:", typesResult.error);
  *   return;
  * }
  *
  * // Create Totality-compliant parameters
  * const totalityParams: TotalityPromptCliParams = {
- *   directive: types_Result.data.directive,
- *   layer: types_Result.data.layer,
+ *   directive: typesResult.data.directive,
+ *   layer: typesResult.data.layer,
  *   options: { fromFile: "input.md" }
  * };
  *
@@ -1058,14 +1059,14 @@ export class PromptVariablesFactory {
  * ```
  */
 export class TotalityPromptVariablesFactory {
-  private _config:
+  private config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   /**
    * The validated CLI parameters using Totality-compliant types.
    */
   private readonly _cliParams!: TotalityPromptCliParams;
-  
+
   private _baseDirOverride?: string;
   private _baseDirError?: string;
 
@@ -1089,7 +1090,7 @@ export class TotalityPromptVariablesFactory {
     baseDirOverride?: string,
   ) {
     // Deep copy to ensure immutability without JSON.parse
-    this._config = this.deepCopyConfig(config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyTotalityCliParams(cliParams);
     this._baseDirOverride = baseDirOverride;
 
@@ -1100,8 +1101,8 @@ export class TotalityPromptVariablesFactory {
 
     // Create legacy-compatible params for existing resolvers
     const legacyParams: PromptCliParams = {
-      demonstrativeType: cliParams.directive.value,
-      layerType: cliParams.layer.value,
+      demonstrativeType: cliParams.directive.getValue(),
+      layerType: cliParams.layer.getValue(),
       options: cliParams.options,
     };
 
@@ -1185,23 +1186,23 @@ export class TotalityPromptVariablesFactory {
         Deno.env.get("DENO_TESTING") === "true" ||
         currentDir.includes("/github/breakdown");
 
-      let breakdownConfig_Result;
+      let breakdownConfigResult;
       if (isTestEnvironment) {
         // For test environments, use relative path "." to avoid ABSOLUTE_PATH_NOT_ALLOWED error
-        breakdownConfig_Result = await BreakdownConfig.create(configSetName, ".");
+        breakdownConfigResult = await BreakdownConfig.create(configSetName, ".");
       } else {
         // For production environments, use current working directory
-        breakdownConfig_Result = await BreakdownConfig.create(configSetName, currentDir);
+        breakdownConfigResult = await BreakdownConfig.create(configSetName, currentDir);
       }
 
-      if (!breakdownConfig_Result.success) {
+      if (!breakdownConfigResult.success) {
         throw new Error(
           `BreakdownConfig creation failed: ${
-            breakdownConfig_Result.error?.message || "Unknown error"
+            breakdownConfigResult.error?.message || "Unknown error"
           }`,
         );
       }
-      const breakdownConfig = breakdownConfig_Result.data;
+      const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
       return new TotalityPromptVariablesFactory(config, cliParams);
@@ -1261,6 +1262,13 @@ export class TotalityPromptVariablesFactory {
   }
 
   /**
+   * Gets the CLI parameters.
+   */
+  public get cliParams(): TotalityPromptCliParams {
+    return this._cliParams;
+  }
+
+  /**
    * Gets the validated DirectiveType instance.
    */
   public get directive(): DirectiveType {
@@ -1286,7 +1294,7 @@ export class TotalityPromptVariablesFactory {
    */
   public validateAll(): void {
     if (!this._cliParams) throw new Error("cliParams is required");
-    if (!this._config) throw new Error("config is required");
+    if (!this.config) throw new Error("config is required");
     if (!this.hasValidBaseDir()) {
       throw new Error(`Invalid base directory: ${this.getBaseDirError()}`);
     }

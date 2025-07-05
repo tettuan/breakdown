@@ -189,9 +189,25 @@ describe("TypeFactory - Integration Architecture", () => {
   it("should integrate properly with BreakdownConfig patterns", () => {
     logger.debug("Testing BreakdownConfig integration architecture");
 
+    // Define proper types for configuration structure
+    interface ConfigParams {
+      two?: {
+        demonstrativeType?: {
+          pattern?: string;
+        };
+        layerType?: {
+          pattern?: string;
+        };
+      };
+    }
+
+    interface TypeSafeConfig {
+      params?: ConfigParams;
+    }
+
     // Simulate BreakdownConfig providing patterns
     class ConfigBasedProvider implements TypePatternProvider {
-      constructor(private config: Record<string, any>) {}
+      constructor(private config: TypeSafeConfig) {}
 
       getDirectivePattern() {
         const pattern = this.config.params?.two?.demonstrativeType?.pattern;

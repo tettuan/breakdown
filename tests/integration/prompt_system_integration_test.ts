@@ -12,7 +12,11 @@
  * @module tests/integration/prompt_system_integration_test
  */
 
-import { assertEquals, assertExists, assertFalse, assertStringIncludes } from "@std/assert";
+import {
+  assertEquals,
+  assertExists,
+  assertStringIncludes,
+} from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterImpl,
@@ -288,7 +292,7 @@ Deno.test("Integration: Complete Prompt System End-to-End flow", async () => {
   try {
     // Step 1: PromptAdapter setup and validation
     const customVariables = {
-      projectname: "test_project",
+      project_name: "test_project",
       author: "integration_test",
       version: "1.0.0",
     };
@@ -524,7 +528,7 @@ Deno.test("Integration: Variable transformation flow through system", async () =
     );
 
     assertEquals(
-      record["uv-user_name"],
+      record["uv-username"],
       "test_user",
       "Custom variables should be preserved",
     );
@@ -557,7 +561,7 @@ Deno.test("Integration: Variable transformation flow through system", async () =
     // Step 6: Verify variable preservation through provider
     const providerParams = provider.getAllParams();
     assertEquals(
-      providerParams.customVariables?.user_name,
+      providerParams.customVariables?.username,
       "test_user",
       "Variables should be preserved through provider",
     );
@@ -786,7 +790,7 @@ This is a complex input document for testing the prompt system integration.
 
     // Create complex variables
     const complexVariables = {
-      projectname: "Complex Integration Test",
+      project_name: "Complex Integration Test",
       project_type: "prompt_system_test",
       author: "Integration Test Suite",
       version: "2.0.0",

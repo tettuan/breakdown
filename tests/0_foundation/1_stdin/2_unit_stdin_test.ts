@@ -28,28 +28,28 @@ const logger = new BreakdownLogger();
 async function withStdinInput(_input: string, fn: () => Promise<void>): Promise<void> {
   const originalStdin = Deno.stdin;
   const encoder = new TextEncoder();
-  const bytes = _encoder.encode(_input);
+  const bytes = encoder.encode(_input);
 
   const tempFile = await Deno.makeTempFile();
-  await Deno.writeFile(_tempFile, _bytes);
-  const file = await Deno.open(_tempFile, { read: true });
+  await Deno.writeFile(tempFile, bytes);
+  const file = await Deno.open(tempFile, { read: true });
 
   // @ts-ignore: Override stdin for testing
-  Deno.stdin = _file;
+  Deno.stdin = file;
 
   try {
     await fn();
   } finally {
     // Ensure file is properly closed
     try {
-      _file.close();
+      file.close();
     } catch (_e) {
       // File might already be closed
     }
 
     // Clean up temp file
     try {
-      await Deno.remove(_tempFile);
+      await Deno.remove(tempFile);
     } catch (_e) {
       // File might already be removed
     }
@@ -70,16 +70,16 @@ Deno.test({
     const isCI = Deno.env.get("CI") === "true" || Deno.env.get("GITHUB_ACTIONS") === "true";
 
     try {
-      if (_isCI) {
+      if (isCI) {
         logger.debug("Skipping stdin reading test in CI environment");
         // Test parameter structure validation instead
         const options = { allowEmpty: false };
-        _assertEquals(typeof _options.allowEmpty, "boolean");
+        _assertEquals(typeof options.allowEmpty, "boolean");
         logger.debug("Parameter validation completed in CI mode");
       } else {
         await withStdinInput("test input\n", async () => {
           const content = await _readStdin();
-          _assertEquals(_content, "test input");
+          _assertEquals(content, "test input");
         });
 
         logger.debug("Basic input reading test completed successfully");
@@ -120,7 +120,7 @@ Deno.test({
       // Test with allowEmpty option
       await withStdinInput("", async () => {
         const content = await _readStdin({ allowEmpty: true });
-        _assertEquals(_content, "");
+        _assertEquals(content, "");
       });
 
       logger.debug("Empty input handling test completed successfully");
@@ -146,9 +146,9 @@ Line 2
 Line 3
 `;
 
-      await withStdinInput(_multilineInput, async () => {
+      await withStdinInput(multilineInput, async () => {
         const content = await _readStdin();
-        _assertEquals(_content, _multilineInput.trim());
+        _assertEquals(content, multilineInput.trim());
       });
 
       logger.debug("Multiline input test completed successfully");
@@ -171,9 +171,9 @@ Deno.test({
     try {
       const specialChars = "Special chars: !@#$%^&*()_+-=[]{}|;:'\",.<>?`~\n";
 
-      await withStdinInput(_specialChars, async () => {
+      await withStdinInput(specialChars, async () => {
         const content = await _readStdin();
-        _assertEquals(_content, _specialChars.trim());
+        _assertEquals(content, specialChars.trim());
       });
 
       logger.debug("Special characters test completed successfully");

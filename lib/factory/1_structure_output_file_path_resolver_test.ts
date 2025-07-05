@@ -11,8 +11,8 @@
 import { assert, assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { OutputFilePathResolver as OutputFilePathResolver } from "./output_file_path_resolver.ts";
-import type { PromptCliParams } from "./prompt_variables__factory.ts";
+import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 const logger = new BreakdownLogger("structure-output-file-path-resolver");
@@ -37,14 +37,14 @@ describe("OutputFilePathResolver - Class Structure", () => {
     assertEquals(typeof resolver.generateDefaultFilename, "function");
 
     // Should not expose unrelated functionality
-    if ((_resolver as any).readFile) {
-      assertEquals(typeof (_resolver as any).readFile, "function");
+    if ((resolver as any).readFile) {
+      assertEquals(typeof (resolver as any).readFile, "function");
     }
-    if ((_resolver as any).writeFile) {
-      assertEquals(typeof (_resolver as any).writeFile, "function");
+    if ((resolver as any).writeFile) {
+      assertEquals(typeof (resolver as any).writeFile, "function");
     }
-    if ((_resolver as any).processContent) {
-      assertEquals(typeof (_resolver as any).processContent, "function");
+    if ((resolver as any).processContent) {
+      assertEquals(typeof (resolver as any).processContent, "function");
     }
   });
 
@@ -61,8 +61,8 @@ describe("OutputFilePathResolver - Class Structure", () => {
     const resolver = new OutputFilePathResolver(mockConfig, mockParams);
 
     // Private methods should not be accessible
-    if ((_resolver as any).getLayerType) {
-      assertEquals(typeof (_resolver as any).getLayerType, "function");
+    if ((resolver as any).getLayerType) {
+      assertEquals(typeof (resolver as any).getLayerType, "function");
     }
 
     // Public helper methods should be accessible (marked public for testing)

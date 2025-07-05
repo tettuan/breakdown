@@ -256,7 +256,11 @@ Deno.test("ZeroParamsHandler Totality Architecture", async (t) => {
     // Architecture should handle all input types gracefully
     for (const input of inputTypes) {
       try {
-        handleZeroParams(input.args as any, input.config as any, input.options as any);
+        handleZeroParams(
+          input.args as string[],
+          input.config as Record<string, unknown>,
+          input.options as Record<string, unknown> | null | undefined,
+        );
         assert(true, `Input type handled: ${JSON.stringify(input)}`);
       } catch (_error) {
         assert(false, `Totality violation: unhandled input type ${JSON.stringify(input)}`);

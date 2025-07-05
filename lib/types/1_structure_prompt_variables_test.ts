@@ -42,7 +42,7 @@ Deno.test("Structure: Variable classes follow consistent design pattern", () => 
     UserVariable.create("custom", "value"),
   ];
 
-  for (const result of variables) {
+  for (const result of _variables) {
     if (result.ok) {
       const variable = result.data;
 

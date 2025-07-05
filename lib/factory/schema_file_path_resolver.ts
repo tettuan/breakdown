@@ -20,14 +20,6 @@ import type { TwoParams_Result } from "../deps.ts";
 type DoubleParams_Result = PromptCliParams;
 
 /**
- * TypeCreation_Result - Unified error handling for type creation operations
- * Follows Totality principle by explicitly representing success/failure states
- */
-export type TypeCreation_Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; errorType: "validation" | "missing" | "config" };
-
-/**
  * Schema file path resolver for Breakdown CLI operations.
  *
  * The SchemaFilePathResolver class handles the resolution of JSON schema file
@@ -73,11 +65,11 @@ export class SchemaFilePathResolver {
    * ```
    */
   constructor(
-    private _config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
+    private config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
     private _cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
     // Deep copy to ensure immutability
-    this._config = this.deepCopyConfig(_config);
+    this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(_cliParams);
   }
 
@@ -125,7 +117,7 @@ export class SchemaFilePathResolver {
         params: twoParams.params || [],
         demonstrativeType: twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
-        options: {}
+        options: {},
       };
       return copy;
     } else {
@@ -195,7 +187,7 @@ export class SchemaFilePathResolver {
    * ```
    */
   public resolveBaseDir(): string {
-    let baseDir = this._config.app_schema?.base_dir || ".agent/breakdown/schema";
+    let baseDir = this.config.app_schema?.base_dir || ".agent/breakdown/schema";
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
     }

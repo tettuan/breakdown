@@ -11,6 +11,7 @@
  */
 
 import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import type {
   PathResolutionStrategy,
@@ -30,7 +31,7 @@ Deno.test("WorkspaceConfig Structure", async (t) => {
     _logger.debug("Testing WorkspaceConfig property definitions");
 
     // Test by examining interface definition
-    const filePath = new URL("./interfaces.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./interfaces.ts", import.meta.url));
     const fileContent = await Deno.readTextFile(filePath);
 
     // Check for required properties definition
@@ -237,7 +238,7 @@ Deno.test("WorkspaceConfigManager Structure", async (t) => {
           promptBaseDir: "/prompts",
           schemaBaseDir: "/schemas",
         }),
-      update: (_config: Partial<WorkspaceConfig>) => Promise.resolve(),
+      update: (config: Partial<WorkspaceConfig>) => Promise.resolve(),
       validate: () => Promise.resolve(),
     };
 

@@ -17,7 +17,7 @@ import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern } from "../directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../layer_type.ts";
-import { __defaultConfigTwoParams } from "./config_twoparams.ts";
+import { _defaultConfigTwoParams } from "./config_two_params.ts";
 
 /**
  * 構造テスト: クラスの単一責任

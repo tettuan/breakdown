@@ -47,7 +47,7 @@ Deno.test("PromptPath - follows single responsibility principle", () => {
     const publicMethods = methods.filter((m) =>
       !m.startsWith("_") &&
       m !== "constructor" &&
-      typeof (path as Record<string, unknown>)[m] === "function"
+      typeof (path as unknown as Record<string, unknown>)[m] === "function"
     );
 
     // Only toString and equals should be public methods

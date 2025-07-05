@@ -33,7 +33,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
       () => LayerTypeFactory.fromString(123),
       () => LayerTypeFactory.fromString(""),
       () =>
-        LayerTypeFactory.fromTwoParams_Result({
+        LayerTypeFactory.fromTwoParamsResult({
           type: "two",
           demonstrativeType: "to",
           layerType: "project",
@@ -44,7 +44,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
 
     testCases.forEach((testCase, index) => {
       let result: LayerTypeResult<any>;
-      const threwError = false;
+      let threwError = false;
 
       try {
         result = testCase();
@@ -112,7 +112,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
           default:
             // TypeScript exhaustiveness check
             const _exhaustive: never = result.error;
-            throw new Error(`Unhandled error kind: ${(_exhaustive as unknown).kind}`);
+            throw new Error(`Unhandled error kind: ${(result.error as any).kind}`);
         }
       }
     });
@@ -131,7 +131,7 @@ describe("LayerTypeFactory - Totality Principle Architecture", () => {
 
       // LayerType constructor should not be directly accessible
       // (This is enforced by TypeScript's private constructor)
-      assertEquals(typeof (LayerType as unknown).new, "undefined");
+      assertEquals(typeof (LayerType as any).new, "undefined");
 
       // But factory methods should work
       assertEquals(result.data.getValue(), "project");
@@ -197,7 +197,7 @@ describe("LayerTypeFactory - Dependency Architecture", () => {
       options: { verbose: true },
     };
 
-    const result = LayerTypeFactory.fromTwoParams_Result(validResult);
+    const result = LayerTypeFactory.fromTwoParamsResult(validResult);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -301,7 +301,7 @@ describe("LayerTypeFactory - Extension Architecture", () => {
       options: {},
     };
 
-    const result = LayerTypeFactory.fromTwoParams_Result(legacyResult);
+    const result = LayerTypeFactory.fromTwoParamsResult(legacyResult);
     assertEquals(result.ok, true);
   });
 });

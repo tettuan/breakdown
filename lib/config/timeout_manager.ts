@@ -143,7 +143,7 @@ export const DEFAULT_TIMEOUT_CONFIG: EnvironmentTimeoutConfig = {
  * 適切なタイムアウト値を自動的に選択します。
  */
 export class TimeoutManager {
-  private _config: EnvironmentTimeoutConfig;
+  private config: EnvironmentTimeoutConfig;
   private _environmentType: EnvironmentType;
   private _environmentInfo: EnvironmentInfo;
   private _debugMode: boolean;
@@ -161,7 +161,7 @@ export class TimeoutManager {
     debugMode?: boolean,
   ) {
     // 設定のマージ（デフォルト設定 + 提供された設定）
-    this._config = this.mergeConfig(DEFAULT_TIMEOUT_CONFIG, config);
+    this.config = this.mergeConfig(DEFAULT_TIMEOUT_CONFIG, config);
 
     // 環境情報の取得
     this._environmentInfo = detectEnvironment();
@@ -170,7 +170,7 @@ export class TimeoutManager {
     this._environmentType = environmentType || this.detectEnvironmentType();
 
     // デバッグモードの決定
-    this._debugMode = debugMode ?? this._config.stdin.environments[this._environmentType].debug;
+    this._debugMode = debugMode ?? this.config.stdin.environments[this._environmentType].debug;
 
     // Debug logging removed - use BreakdownLogger instead
   }
@@ -259,7 +259,7 @@ export class TimeoutManager {
     }
 
     // 既存のロジック
-    const timeout = this._config.timeouts[this._environmentType];
+    const timeout = this.config.timeouts[this._environmentType];
 
     // Debug logging removed - use BreakdownLogger instead
 
@@ -280,7 +280,7 @@ export class TimeoutManager {
     }
 
     // 既存のロジック
-    const timeout = this._config.stdin.environments[this._environmentType].timeout;
+    const timeout = this.config.stdin.environments[this._environmentType].timeout;
 
     // Debug logging removed - use BreakdownLogger instead
 
@@ -293,7 +293,7 @@ export class TimeoutManager {
    * @returns STDIN処理用の全設定
    */
   getStdinConfig(): StdinTimeoutConfig {
-    const config = this._config.stdin.environments[this._environmentType];
+    const config = this.config.stdin.environments[this._environmentType];
 
     // Debug logging removed - use BreakdownLogger instead
 
@@ -349,7 +349,7 @@ export class TimeoutManager {
     const warnings: string[] = [];
 
     // タイムアウト値の範囲チェック
-    const timeouts = this._config.timeouts;
+    const timeouts = this.config.timeouts;
     Object.entries(timeouts).forEach(([env, timeout]) => {
       if (timeout < 0) {
         errors.push(`Invalid timeout for ${env}: ${timeout} (must be >= 0)`);
@@ -360,7 +360,7 @@ export class TimeoutManager {
     });
 
     // STDIN設定のチェック
-    Object.entries(this._config.stdin.environments).forEach(([env, config]) => {
+    Object.entries(this.config.stdin.environments).forEach(([env, config]) => {
       if (config.timeout < 0) {
         errors.push(`Invalid stdin timeout for ${env}: ${config.timeout} (must be >= 0)`);
       }
@@ -398,7 +398,7 @@ export class TimeoutManager {
       timeout: this.getTimeout(),
       stdinTimeout: this.getStdinTimeout(),
       stdinConfig: this.getStdinConfig(),
-      config: this._config,
+      config: this.config,
       validation: this.validateConfig(),
     };
   }
@@ -411,7 +411,7 @@ export class TimeoutManager {
    * @param updates 更新する設定の部分
    */
   updateConfig(updates: Partial<EnvironmentTimeoutConfig>): void {
-    this._config = this.mergeConfig(this._config, updates);
+    this.config = this.mergeConfig(this.config, updates);
 
     // Debug logging removed - use BreakdownLogger instead
   }

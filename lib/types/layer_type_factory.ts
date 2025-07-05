@@ -134,7 +134,7 @@ export class LayerTypeFactory {
    * @param result - TwoParams_Result containing layer information
    * @returns LayerTypeResult with success or error
    */
-  static fromTwoParams_Result(result: TwoParams_Result): LayerTypeResult<LayerType> {
+  static fromTwoParamsResult(result: TwoParams_Result): LayerTypeResult<LayerType> {
     try {
       const layerType = LayerType.create(result);
       return {

@@ -5,7 +5,7 @@
  * converting abstract types to concrete implementations while maintaining
  * type safety and explicit error handling.
  *
- * @module prompt/prompt_manager_adapter
+ * @module prompt/prompt_manageradapter
  */
 
 import { PromptManager } from "@tettuan/breakdownprompt";
@@ -90,8 +90,67 @@ export class PromptManagerAdapter {
         variableDict,
       );
 
+      // Debug output to investigate the content type
+      if (this.debug || Deno.env.get("LOG_LEVEL") === "debug") {
+        console.debug("PromptManager returned content:", {
+          type: typeof content,
+          content: content,
+          isString: typeof content === "string",
+          toString: String(content),
+        });
+      }
+
+      // Handle BreakdownPrompt response format
+      // Check if the response indicates an error
+      if (content && typeof content === "object") {
+        const responseObj = content as { success?: boolean; error?: string; templatePath?: string };
+
+        // If BreakdownPrompt returns an error object instead of throwing
+        if (responseObj.success === false && responseObj.error) {
+          const errorMessage = responseObj.error;
+
+          if (errorMessage.includes("not found") || errorMessage.includes("does not exist")) {
+            return resultError({
+              kind: "TemplateNotFound",
+              path: responseObj.templatePath || templatePath,
+            });
+          }
+
+          if (errorMessage.includes("variable") || errorMessage.includes("undefined")) {
+            return resultError({
+              kind: "InvalidVariables",
+              details: [errorMessage],
+            });
+          }
+
+          // Generic error fallback
+          return resultError({
+            kind: "ConfigurationError",
+            message: errorMessage,
+          });
+        }
+      }
+
+      // Ensure content is properly converted to string
+      let stringContent: string;
+      if (typeof content === "string") {
+        stringContent = content;
+      } else if (
+        content && typeof content === "object" && "success" in content && content.success === true
+      ) {
+        // Handle successful BreakdownPrompt response with content property
+        const successObj = content as { success: true; content?: string };
+        stringContent = successObj.content || "";
+      } else if (content && typeof content === "object" && "toString" in content) {
+        stringContent = content.toString();
+      } else if (content && typeof content === "object") {
+        stringContent = JSON.stringify(content, null, 2);
+      } else {
+        stringContent = String(content);
+      }
+
       const promptResult: PromptResult = {
-        content: String(content), // Ensure content is a string
+        content: stringContent,
         metadata: {
           template: templatePath,
           variables: variableDict,

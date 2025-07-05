@@ -10,11 +10,11 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
+import type { BuilderVariableError } from "../../builder/variables_builder.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
-import type { DemonstrativeType, LayerType } from "$lib/types/mod.ts";
 import type { ValidatedParams } from "../generators/two_params_prompt_generator.ts";
 
 /**
@@ -146,11 +146,12 @@ export class TwoParamsOrchestrator {
     if (!variablesResult.ok) {
       return error({
         kind: "VariableProcessingError",
-        errors: variablesResult.error.map((e: any) => {
-          if (e.kind === "InvalidOptions") {
-            return `${e.kind}: ${e.message}`;
-          } else if ("key" in e) {
+        errors: variablesResult.error.map((e) => {
+          if ("key" in e && e.key) {
             return `${e.kind}: ${e.key}`;
+          }
+          if ("message" in e && e.message) {
+            return `${e.kind}: ${e.message}`;
           }
           return String(e.kind);
         }),
@@ -179,7 +180,7 @@ export class TwoParamsOrchestrator {
           } else if (err.kind === "PromptGenerationError") {
             return `${err.kind}: ${err.error}`;
           }
-          return String((err as any).kind);
+          return String(err.kind);
         })(),
       });
     }

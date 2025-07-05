@@ -7,7 +7,8 @@
  * @module cli/config/1_structure_types_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Structure Test: Single Responsibility Principle
@@ -16,8 +17,8 @@ import { assertEquals, assertExists } from "@std/assert";
  * and doesn't mix concerns.
  */
 Deno.test("Structure: Config types follow single responsibility principle", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Analyze BreakdownConfig interface
   const breakdownConfigMatch = typesContent.match(
@@ -68,8 +69,8 @@ Deno.test("Structure: Config types follow single responsibility principle", asyn
  * without leaking implementation details.
  */
 Deno.test("Structure: Config types have proper abstraction levels", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check for implementation details that shouldn't be in type definitions
   const implementationPatterns = [
@@ -116,8 +117,8 @@ Deno.test("Structure: Config types have proper abstraction levels", async () => 
  * different type definitions.
  */
 Deno.test("Structure: No duplication in config type responsibilities", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Extract all properties from all interfaces
   const interfaceProperties = new Map<string, string[]>();
@@ -171,8 +172,8 @@ Deno.test("Structure: No duplication in config type responsibilities", async () 
  * and follow clear hierarchies.
  */
 Deno.test("Structure: Config type relationships are well-defined", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check for clear separation of concerns
   const hasBreakdownConfig = typesContent.includes("export interface BreakdownConfig");
@@ -213,8 +214,8 @@ Deno.test("Structure: Config type relationships are well-defined", async () => {
  * representing all possible states explicitly.
  */
 Deno.test("Structure: Config types use Totality-based structure", async () => {
-  const _typesFilePath = new URL("./types.ts", import.meta.url).pathname;
-  const typesContent = await Deno.readTextFile(_typesFilePath);
+  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check BreakdownConfig for Totality principles
   const breakdownConfigMatch = typesContent.match(
@@ -244,8 +245,8 @@ Deno.test("Structure: Config types use Totality-based structure", async () => {
   // ConfigOptions can have optional properties as it represents runtime options
   const configOptionsMatch = typesContent.match(/export\s+interface\s+ConfigOptions\s*{([^}]+)}/s);
   if (configOptionsMatch) {
-    const content = configOptionsMatch[1];
-    const hasOptionalProps = content.includes("?:");
+    // const content = configOptionsMatch[1];
+    // const hasOptionalProps = content.includes("?:");
 
     // ConfigOptions is allowed to have optional properties for runtime configuration
     assertEquals(
@@ -256,7 +257,7 @@ Deno.test("Structure: Config types use Totality-based structure", async () => {
   }
 
   // Check for discriminated unions (if any)
-  const hasDiscriminatedUnions = /type\s+\w+\s*=\s*{[^}]*kind:\s*['"]\w+['"]/.test(typesContent);
+  // const hasDiscriminatedUnions = /type\s+\w+\s*=\s*{[^}]*kind:\s*['"]\w+['"]/.test(typesContent);
 
   // If there are state representations, they should use discriminated unions
   if (typesContent.includes("type ") && typesContent.includes(" | ")) {

@@ -14,6 +14,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test Suite: Result Type
@@ -27,7 +28,7 @@ import { assertEquals, assertExists } from "@std/assert";
  */
 Deno.test("Result Type Architecture", async (t) => {
   await t.step("has no external dependencies", async () => {
-    const _filePath = new URL("./result.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
     // Should not import any external modules
@@ -45,7 +46,7 @@ Deno.test("Result Type Architecture", async (t) => {
   });
 
   await t.step("implements pure functional design", async () => {
-    const filePath = new URL("./result.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
     // Should not use mutable state
@@ -77,7 +78,7 @@ Deno.test("Result Type Architecture", async (t) => {
       assertEquals(successResult.data, 42);
     }
     assertEquals(
-      (successResult as unknown).error,
+      (successResult as any).error,
       undefined,
       "Success result should not have error property",
     );
@@ -90,7 +91,7 @@ Deno.test("Result Type Architecture", async (t) => {
       assertEquals(errorResult.error, "test error");
     }
     assertEquals(
-      (errorResult as unknown).data,
+      (errorResult as any).data,
       undefined,
       "Error result should not have data property",
     );
@@ -158,7 +159,7 @@ Deno.test("Result Type Architecture", async (t) => {
 
   await t.step("provides type-safe error handling", async () => {
     // This test verifies that TypeScript compiler enforces proper usage
-    const filePath = new URL("./result.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
     // Result type should use discriminated union pattern
@@ -200,7 +201,7 @@ Deno.test("Result Type Architecture", async (t) => {
  */
 Deno.test("Result Type Dependency Analysis", async (t) => {
   await t.step("is a leaf module with zero dependencies", async () => {
-    const filePath = new URL("./result.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
     // Should have no imports at all
@@ -231,7 +232,7 @@ Deno.test("Result Type Dependency Analysis", async (t) => {
 
   await t.step("serves as foundation for error handling architecture", async () => {
     // This module should be importable by all other modules without creating cycles
-    const filePath = new URL("./result.ts", import.meta.url).pathname;
+    const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
     // Should define generic, reusable types

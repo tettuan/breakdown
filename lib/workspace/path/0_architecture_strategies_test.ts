@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 
 /**
  * Architecture Test: Strategy Pattern Implementation
@@ -18,7 +19,7 @@ import { assertEquals, assertExists } from "@std/assert";
  */
 Deno.test("Architecture: Path strategies follow Strategy pattern", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./strategies.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./strategies.ts", import.meta.url)),
   );
 
   // Check for interface import
@@ -56,7 +57,7 @@ Deno.test("Architecture: Path strategies follow Strategy pattern", async () => {
  */
 Deno.test("Architecture: Path strategies maintain platform independence", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./strategies.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./strategies.ts", import.meta.url)),
   );
 
   // Check for standard path utilities usage
@@ -106,7 +107,7 @@ Deno.test("Architecture: Path strategies maintain platform independence", async 
  */
 Deno.test("Architecture: Path strategies ensure total path resolution", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./strategies.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./strategies.ts", import.meta.url)),
   );
 
   // Check that resolve method is implemented in strategies
@@ -142,7 +143,7 @@ Deno.test("Architecture: Path strategies ensure total path resolution", async ()
  */
 Deno.test("Architecture: Path strategies have correct dependencies", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./strategies.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./strategies.ts", import.meta.url)),
   );
 
   // Check imports are minimal and appropriate
@@ -182,7 +183,7 @@ Deno.test("Architecture: Path strategies have correct dependencies", async () =>
  */
 Deno.test("Architecture: Path strategies support extensibility", async () => {
   const moduleSource = await Deno.readTextFile(
-    new URL("./strategies.ts", import.meta.url).pathname,
+    fromFileUrl(new URL("./strategies.ts", import.meta.url)),
   );
 
   // Check that strategies are exported (allowing external use)

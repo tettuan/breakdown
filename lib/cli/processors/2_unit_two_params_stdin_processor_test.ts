@@ -277,7 +277,10 @@ describe("TwoParamsStdinProcessor Unit Tests - Error Handling", () => {
     ];
 
     for (const scenario of errorScenarios) {
-      const result = await processor.process(scenario.config as BreakdownConfigCompatible, scenario.options);
+      const result = await processor.process(
+        scenario.config as BreakdownConfigCompatible,
+        scenario.options,
+      );
 
       assertExists(result);
       assertEquals(typeof result.ok, "boolean", `Failed for: ${scenario.desc}`);

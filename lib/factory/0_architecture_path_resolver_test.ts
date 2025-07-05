@@ -134,7 +134,7 @@ Deno.test("PathResolver Architecture", async (t) => {
         layerType: "project",
         options: {},
       } as any);
-      assertExists(_resolver);
+      assertExists(resolver);
 
       // Should have safe methods that return results, not throw
       assertEquals(typeof resolver.getPath, "function");

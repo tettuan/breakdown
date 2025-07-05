@@ -17,7 +17,7 @@ class MockBreakdownConfig {
 
 Deno.test("TwoParamsHandler Integration - Basic functionality", async () => {
   const _params = ["to", "project"];
-  const _config = {
+  const config = {
     timeout: 30000,
     workingDirectory: "/tmp",
   };
@@ -27,7 +27,7 @@ Deno.test("TwoParamsHandler Integration - Basic functionality", async () => {
   };
 
   // Note: This will likely fail due to missing components, but tests the interface
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   // Verify the result structure (regardless of success/failure)
   assertExists(result);
@@ -56,10 +56,10 @@ Deno.test("TwoParamsHandler Integration - Basic functionality", async () => {
 
 Deno.test("TwoParamsHandler Integration - Invalid parameter count", async () => {
   const _params = ["to"]; // Only one parameter
-  const _config = {};
+  const config = {};
   const options = {};
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -73,10 +73,10 @@ Deno.test("TwoParamsHandler Integration - Invalid parameter count", async () => 
 
 Deno.test("TwoParamsHandler Integration - Invalid demonstrative type", async () => {
   const _params = ["invalid-type", "project"];
-  const _config = {};
+  const config = {};
   const options = {};
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -91,10 +91,10 @@ Deno.test("TwoParamsHandler Integration - Invalid demonstrative type", async () 
 
 Deno.test("TwoParamsHandler Integration - Invalid layer type", async () => {
   const _params = ["to", "invalid-layer"];
-  const _config = {};
+  const config = {};
   const options = {};
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -109,10 +109,10 @@ Deno.test("TwoParamsHandler Integration - Invalid layer type", async () => {
 
 Deno.test("TwoParamsHandler Integration - Empty parameters", async () => {
   const _params = ["", "project"];
-  const _config = {};
+  const config = {};
   const options = {};
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -129,11 +129,11 @@ Deno.test("TwoParamsHandler Integration - Orchestrator reuse", async () => {
   // Test that the singleton orchestrator instance is reused
   const params1 = ["to", "project"];
   const params2 = ["summary", "issue"];
-  const _config = {};
+  const config = {};
   const options = {};
 
-  const result1 = await handleTwoParams(params1, _config, options);
-  const result2 = await handleTwoParams(params2, _config, options);
+  const result1 = await handleTwoParams(params1, config, options);
+  const result2 = await handleTwoParams(params2, config, options);
 
   // Both calls should return results (even if failed due to missing components)
   assertExists(result1);
@@ -144,7 +144,7 @@ Deno.test("TwoParamsHandler Integration - Orchestrator reuse", async () => {
 
 Deno.test("TwoParamsHandler Integration - Options processing", async () => {
   const _params = ["defect", "task"];
-  const _config = {};
+  const config = {};
   const options = {
     fromFile: "input.md",
     destinationFile: "output.md",
@@ -153,7 +153,7 @@ Deno.test("TwoParamsHandler Integration - Options processing", async () => {
     customValidation: true,
   };
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   // Verify result structure
   assertExists(result);
@@ -174,11 +174,11 @@ Deno.test("TwoParamsHandler Integration - Options processing", async () => {
 Deno.test("TwoParamsHandler Integration - Backward compatibility interface", async () => {
   // Test that the function signature matches the original
   const _params = ["init", "bugs"];
-  const _config = { timeout: 5000 };
+  const config = { timeout: 5000 };
   const options = { output: "compatibility-test.md" };
 
   // This should compile and run without interface changes
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   // Verify the return type structure
   assertExists(result);
@@ -225,7 +225,7 @@ Deno.test("TwoParamsHandler Integration - Error mapping validation", async () =>
 
 Deno.test("TwoParamsHandler Integration - Complex configuration", async () => {
   const _params = ["find", "temp"];
-  const _config = {
+  const config = {
     timeout: 60000,
     workingDirectory: "/custom/path",
     profile: "development",
@@ -248,7 +248,7 @@ Deno.test("TwoParamsHandler Integration - Complex configuration", async () => {
     "uv-author": "integration-test",
   };
 
-  const result = await handleTwoParams(_params, _config, options);
+  const result = await handleTwoParams(_params, config, options);
 
   // Verify result structure with complex inputs
   assertExists(result);
@@ -267,7 +267,7 @@ Deno.test("TwoParamsHandler Integration - Complex configuration", async () => {
 
 Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
   // Test multiple rapid calls to ensure no memory leaks or performance issues
-  const promises: Promise<any>[] = [];
+  const promises: Promise<unknown>[] = [];
 
   for (let i = 0; i < 5; i++) {
     const _params = i % 2 === 0 ? ["to", "project"] : ["summary", "issue"];
@@ -284,7 +284,7 @@ Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
   // All results should have proper structure
   for (const _loopResult of results) {
     assertExists(_loopResult);
-    assertEquals(typeof _loopResult.ok, "boolean");
+    assertEquals(typeof (_loopResult as any).ok, "boolean");
   }
 });
 
@@ -292,7 +292,7 @@ Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
 Deno.test("TwoParamsHandler - Component dependency analysis", async () => {
   const _params = ["to", "project"];
   const result = await handleTwoParams(_params, {}, {});
-  
+
   assertExists(result);
   assertEquals(typeof result.ok, "boolean");
 });

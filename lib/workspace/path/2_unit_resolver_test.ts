@@ -7,7 +7,7 @@ Deno.test("WorkspacePathResolver", async (t) => {
   // Pre-processing and Preparing Part
   const _baseDir = "/workspace";
   const strategy = new PlatformAgnosticPathStrategy(_baseDir);
-  const _resolver = new WorkspacePathResolverImpl(strategy);
+  const resolver = new WorkspacePathResolverImpl(strategy);
   const _logger = new _BreakdownLogger();
 
   // Main Test
@@ -15,21 +15,21 @@ Deno.test("WorkspacePathResolver", async (t) => {
     _logger.debug("Testing path resolution and normalization");
 
     // Test path resolution
-    assertEquals(await _resolver.resolve("test"), "/workspace/test");
-    assertEquals(await _resolver.resolve("dir/subdir"), "/workspace/dir/subdir");
+    assertEquals(await resolver.resolve("test"), "/workspace/test");
+    assertEquals(await resolver.resolve("dir/subdir"), "/workspace/dir/subdir");
 
     // Test path normalization
-    assertEquals(await _resolver.normalize("dir//subdir"), "dir/subdir");
-    assertEquals(await _resolver.normalize("dir\\subdir"), "dir/subdir");
+    assertEquals(await resolver.normalize("dir//subdir"), "dir/subdir");
+    assertEquals(await resolver.normalize("dir\\subdir"), "dir/subdir");
   });
 
   await t.step("should validate paths", async () => {
     _logger.debug("Testing path validation");
     // Valid paths
-    const normValidPath = await _resolver.normalize("valid/path");
-    const normValidBackslash = await _resolver.normalize("valid\\path");
-    const validPathResult = await _resolver.validate("valid/path");
-    const validBackslashResult = await _resolver.validate("valid\\path");
+    const normValidPath = await resolver.normalize("valid/path");
+    const normValidBackslash = await resolver.normalize("valid\\path");
+    const validPathResult = await resolver.validate("valid/path");
+    const validBackslashResult = await resolver.validate("valid\\path");
     _logger.debug(`normalize('valid/path') = ${normValidPath}`);
     _logger.debug(`normalize('valid\\path') = ${normValidBackslash}`);
     _logger.debug(`validate('valid/path') = ${validPathResult}`);
@@ -37,10 +37,10 @@ Deno.test("WorkspacePathResolver", async (t) => {
     assertEquals(validPathResult, true);
     assertEquals(validBackslashResult, true);
     // Invalid paths
-    const normInvalidDoubleSlash = await _resolver.normalize("invalid//path");
-    const normInvalidDoubleBackslash = await _resolver.normalize("invalid\\\\path");
-    const invalidDoubleSlashResult = await _resolver.validate("invalid//path");
-    const invalidDoubleBackslashResult = await _resolver.validate("invalid\\\\path");
+    const normInvalidDoubleSlash = await resolver.normalize("invalid//path");
+    const normInvalidDoubleBackslash = await resolver.normalize("invalid\\\\path");
+    const invalidDoubleSlashResult = await resolver.validate("invalid//path");
+    const invalidDoubleBackslashResult = await resolver.validate("invalid\\\\path");
     _logger.debug(`normalize('invalid//path') = ${normInvalidDoubleSlash}`);
     _logger.debug(`normalize('invalid\\\\path') = ${normInvalidDoubleBackslash}`);
     _logger.debug(`validate('invalid//path') = ${invalidDoubleSlashResult}`);
@@ -52,7 +52,7 @@ Deno.test("WorkspacePathResolver", async (t) => {
   await t.step("should handle invalid paths", async () => {
     _logger.debug("Testing invalid path handling");
     await assertRejects(
-      () => _resolver.resolve("invalid//path"),
+      () => resolver.resolve("invalid//path"),
       Error,
       "Invalid path: invalid//path",
     );
@@ -61,7 +61,7 @@ Deno.test("WorkspacePathResolver", async (t) => {
   await t.step("should support strategy updates", async () => {
     _logger.debug("Testing strategy updates");
     const newStrategy = new PlatformAgnosticPathStrategy(_baseDir);
-    _resolver.updateStrategy(newStrategy);
-    assertEquals(await _resolver.resolve("test"), "/workspace/test");
+    resolver.updateStrategy(newStrategy);
+    assertEquals(await resolver.resolve("test"), "/workspace/test");
   });
 });

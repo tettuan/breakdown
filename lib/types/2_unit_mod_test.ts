@@ -25,7 +25,7 @@ import {
   createPromptParams,
   // Legacy types
   DemonstrativeType,
-  _DemonstrativeTypeFactory,
+  DemonstrativeTypeFactory,
   DemonstrativeTypeGuards,
   // Totality types
   DirectiveType,
@@ -470,22 +470,22 @@ describe("Unit: Legacy type compatibility", () => {
   it("should maintain legacy factories", () => {
     logger.debug("Testing legacy factories");
 
-    // _DemonstrativeTypeFactory creates type objects
-    const toType = _DemonstrativeTypeFactory.to();
+    // DemonstrativeTypeFactory creates type objects
+    const toType = DemonstrativeTypeFactory.to();
     assertEquals(toType.kind, "to");
     assertEquals(toType.value, "to");
 
-    const summaryType = _DemonstrativeTypeFactory.summary();
+    const summaryType = DemonstrativeTypeFactory.summary();
     assertEquals(summaryType.kind, "summary");
     assertEquals(summaryType.value, "summary");
 
     // Test fromString method
-    const fromString = _DemonstrativeTypeFactory.fromString("defect");
+    const fromString = DemonstrativeTypeFactory.fromString("defect");
     assertExists(fromString);
     assertEquals(fromString?.kind, "defect");
     assertEquals(fromString?.value, "defect");
 
-    const invalidFromString = _DemonstrativeTypeFactory.fromString("invalid");
+    const invalidFromString = DemonstrativeTypeFactory.fromString("invalid");
     assertEquals(invalidFromString, null);
 
     // LegacyLayerTypeFactory

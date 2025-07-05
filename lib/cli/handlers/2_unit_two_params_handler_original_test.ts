@@ -658,13 +658,13 @@ describe("TwoParamsHandler Unit Tests - End-to-End Processing", () => {
     try {
       _logger.debug("Testing concurrent processing");
 
-      const _config = { app_prompt: { base_dir: "prompts" } };
+      const config = { app_prompt: { base_dir: "prompts" } };
 
       // Run multiple handlers concurrently
       const concurrentPromises = [
-        handleTwoParams(["specification", "foundation"], _config, {}),
-        handleTwoParams(["architecture", "core"], _config, {}),
-        handleTwoParams(["defect", "task"], _config, {}),
+        handleTwoParams(["specification", "foundation"], config, {}),
+        handleTwoParams(["architecture", "core"], config, {}),
+        handleTwoParams(["defect", "task"], config, {}),
       ];
 
       const results = await Promise.all(concurrentPromises);
@@ -678,7 +678,6 @@ describe("TwoParamsHandler Unit Tests - End-to-End Processing", () => {
       console.log("Error in singleton test:", error);
     }
   });
-
 });
 
 // Component dependency analysis

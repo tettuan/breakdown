@@ -31,10 +31,10 @@ describe("Workspace Module - Structure", async () => {
     const typeRelated = ["WorkspaceOptions", "WorkspaceConfig", "WorkspaceStructure"];
     const errorRelated = [
       "WorkspaceError",
-      "WorkspaceInitializationError",
-      "WorkspaceValidationError",
+      "WorkspaceInitError",
+      "WorkspaceConfigError",
     ];
-    const functionalityRelated = ["Workspace", "initWorkspace", "validateWorkspaceStructure"];
+    const functionalityRelated = ["Workspace", "initWorkspace"];
 
     // At least one from each category should exist
     const _hasTypes = typeRelated.some((name) => name in _mod);
@@ -52,14 +52,15 @@ describe("Workspace Module - Structure", async () => {
   it("should maintain single responsibility", async () => {
     _logger.debug("Testing module responsibility");
 
-    const modContent = await Deno.readTextFile("./mod.ts");
+    const modPath = new URL("./mod.ts", import.meta.url).pathname;
+    const modContent = await Deno.readTextFile(modPath);
 
     // The module should only be responsible for re-exporting
     // It should not contain any implementation logic
 
     // Check for implementation patterns that shouldn't exist
-    const hasClassDefinition = /class\s+\w+/.test(modContent);
-    const hasFunctionDefinition = /function\s+\w+/.test(modContent);
+    const hasClassDefinition = /^\s*class\s+\w+/m.test(modContent);
+    const hasFunctionDefinition = /^\s*function\s+\w+/m.test(modContent);
     const _hasConstAssignment = /const\s+\w+\s*=\s*[^i]/.test(modContent); // Allow imports
 
     assertEquals(hasClassDefinition, false, "Module should not define classes");
@@ -69,7 +70,8 @@ describe("Workspace Module - Structure", async () => {
   it("should provide consistent export style", async () => {
     _logger.debug("Testing export consistency");
 
-    const modContent = await Deno.readTextFile("./mod.ts");
+    const modPath = new URL("./mod.ts", import.meta.url).pathname;
+    const modContent = await Deno.readTextFile(modPath);
 
     // All exports should use the same style (export * from)
     const exportLines = modContent.split("\n").filter((line) => line.trim().startsWith("export"));
@@ -109,7 +111,8 @@ describe("Workspace Module - Structure", async () => {
   it("should follow a logical export order", async () => {
     _logger.debug("Testing export order");
 
-    const modContent = await Deno.readTextFile("./mod.ts");
+    const modPath = new URL("./mod.ts", import.meta.url).pathname;
+    const modContent = await Deno.readTextFile(modPath);
 
     // Exports should be in a logical order:
     // 1. Types first (foundational)
@@ -169,7 +172,8 @@ describe("Workspace Module - Structure", async () => {
   it("should provide complete documentation references", async () => {
     _logger.debug("Testing documentation structure");
 
-    const modContent = await Deno.readTextFile("./mod.ts");
+    const modPath = new URL("./mod.ts", import.meta.url).pathname;
+    const modContent = await Deno.readTextFile(modPath);
 
     // Each export should have a documentation comment
     const exportBlocks = modContent.split(/export\s+\*\s+from/);

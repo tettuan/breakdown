@@ -10,7 +10,6 @@
 
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
@@ -59,7 +58,7 @@ export type TypeCreationError =
  *
  * @example 基本的な使用例
  * ```typescript
- * const _factory = new TypeFactory(patternProvider);
+ * const factory = new TypeFactory(patternProvider);
  *
  * const directiveResult = factory.createDirectiveType("to");
  * if (directiveResult.ok) {

@@ -11,7 +11,7 @@
  * - Maintains backward compatibility during migration
  * - Follows Totality principle throughout
  *
- * @module prompt/new_prompt_manager_adapter
+ * @module prompt/new_prompt_manageradapter
  */
 
 import { PromptManager } from "@tettuan/breakdownprompt";

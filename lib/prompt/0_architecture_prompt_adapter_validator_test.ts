@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -19,7 +20,7 @@ describe("PromptAdapterValidator Architecture - Module Dependencies", () => {
     _logger.debug("Testing external dependencies");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
     const imports = fileContent.match(/import.*from\s+["']([^"']+)["']/g) || [];
 
@@ -45,12 +46,12 @@ describe("PromptAdapterValidator Architecture - Module Dependencies", () => {
     _logger.debug("Testing dependency direction");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should not import from these higher-level modules
     const forbiddenImports = [
-      "prompt_adapter.ts",
+      "promptadapter.ts",
       "../cli/",
       "../commands/",
       "../factory/prompt_variables_factory",
@@ -67,7 +68,7 @@ describe("PromptAdapterValidator Architecture - Module Dependencies", () => {
     _logger.debug("Testing interface definitions");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should export validation result types
@@ -93,7 +94,7 @@ describe("PromptAdapterValidator Architecture - Single Responsibility", () => {
     _logger.debug("Testing single responsibility");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should not contain these non-validation responsibilities
@@ -127,7 +128,7 @@ describe("PromptAdapterValidator Architecture - Single Responsibility", () => {
     _logger.debug("Testing function purity");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Validation methods should be predictable
@@ -150,7 +151,7 @@ describe("PromptAdapterValidator Architecture - Error Type System", () => {
     _logger.debug("Testing error type system");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should define error types as enum
@@ -175,7 +176,7 @@ describe("PromptAdapterValidator Architecture - Error Type System", () => {
     _logger.debug("Testing result structure");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should define ValidationResult type
@@ -195,7 +196,7 @@ describe("PromptAdapterValidator Architecture - Stateless Design", () => {
     _logger.debug("Testing stateless design");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Should not have state-holding instance variables
@@ -216,7 +217,7 @@ describe("PromptAdapterValidator Architecture - Stateless Design", () => {
     _logger.debug("Testing method independence");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Methods could potentially be static
@@ -240,7 +241,7 @@ describe("PromptAdapterValidator Architecture - Public API Design", () => {
     _logger.debug("Testing public API minimalism");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 
     // Count public methods (not marked as private, excluding control flow)

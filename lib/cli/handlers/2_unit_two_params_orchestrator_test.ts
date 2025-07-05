@@ -207,12 +207,12 @@ Deno.test("TwoParamsOrchestrator - configuration parameter handling", async () =
   const orchestrator = new TwoParamsOrchestrator();
 
   // Test configuration parameter passing
-  const _config = { timeout: 5000, debug: true };
+  const config = { timeout: 5000, debug: true };
   const options = { verbose: true };
 
   const result = await orchestrator.orchestrate(
     ["to", "project"],
-    _config,
+    config,
     { ...options, skipStdin: true },
   );
 

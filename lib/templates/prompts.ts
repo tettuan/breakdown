@@ -2,7 +2,7 @@
 /**
  * Source: Markdown templates under .agent/breakdown/lib/breakdown/prompts (English only)
  */
-export const _prompts = {
+export const prompts = {
   "defect/error_schema.md":
     "あなたはシステムエラーを解析するQAエンジニアのスペシャリストです。 Error Input\nMarkdownをもとに、Schemaへマッピングしてください。 必要に応じて、refs 資料を参照すること。\n\nなお、Markdownの内容の全てをJSONへ記載すること。\n\n- Must: 情報を欠落させないこと。\n- Not: マッピングできた要素のみをJSONに記述\n- But: 全てをJSONに保持。説明などテキストで持たせる。かつ分解可能な項目はJSON項目へマッピング。\n  結果、JSONは「Makrdownの情報量＋構造化されたデータ」となります。\n\n# Input Markdown\n\n@20240320-typescript_system_analysis.md\n\n# refs\n\n- 要求：draft/20250207-defect.md\n- 設計：draft/20250207-design.md\n- 基礎構造/階層：draft/20250207-directory.md\n- 基礎構造/設定：20250207-config.md\n\n# Output Schema\n\n./rules/schema/defect.error.schema.json\n\n# Output JSON filename\n\n\\\\\\`./.agent/breakdown/issues/<yyyymmdd>_<short_issue_title>.md\\\\\\`\n\n- ex. \\\\\\`92345_title_something_from_inputs.md\\\\\\`\n- yyyymmdd is today\n- use \\\\\\`\\\\\\`\\\\\\`\\\\\\`\\\\\\` for outside of markdown\n",
   "defect/project/f_project.md":

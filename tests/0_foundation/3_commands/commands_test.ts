@@ -19,8 +19,8 @@
  *    - Normal pattern: Command with options
  */
 
-import { assertEquals as _assertEquals, assertExists as _assertExists } from "../../../deps.ts";
-import { join as _join } from "@std/path";
+import { assertEquals, assertExists } from "../../../deps.ts";
+import { fromFileUrl, join } from "@std/path";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type OneParamsResult as _OneParamsResult,
@@ -32,23 +32,19 @@ import {
   setupTestEnvironment as _setupTestEnvironment,
   type TestEnvironment as _TestEnvironment,
 } from "$test/helpers/setup.ts";
-import {
-  displayHelp as _displayHelp,
-  displayVersion as _displayVersion,
-  initWorkspace as _initWorkspace,
-} from "../../../lib/commands/mod.ts";
+import { displayHelp, displayVersion, initWorkspace } from "../../../lib/commands/mod.ts";
 // validateCommandOptions integrated into enhancedPreprocessCommandLine in breakdown.ts
 // import { validateCommandOptions as _validateCommandOptions } from "../../../lib/cli/breakdown.ts";
-import { VERSION as _VERSION } from "../../../lib/version.ts";
-import { exists as _exists } from "jsr:@std/fs";
+import { _VERSION as VERSION } from "../../../lib/version.ts";
+import { exists } from "jsr:@std/fs";
 
 const logger = new BreakdownLogger();
-let TEST_ENV: TestEnvironment;
+let TEST_ENV: _TestEnvironment;
 
 // Setup test environment before running tests
 Deno.test({
   name: "setup",
-  _fn: async () => {
+  fn: async () => {
     logger.debug("Setting up test environment", { test: "setup" });
     TEST_ENV = await _setupTestEnvironment({
       workingDir: "./tmp/test_commands",
@@ -60,7 +56,7 @@ Deno.test({
 // Cleanup after all tests
 Deno.test({
   name: "cleanup",
-  _fn: async () => {
+  fn: async () => {
     logger.debug("Cleaning up test environment", { test: "cleanup" });
     await _cleanupTestEnvironment(TEST_ENV);
     logger.debug("Test environment cleanup complete");
@@ -75,12 +71,12 @@ Deno.test("parseParams - help command", async () => {
     args: ["--help"],
   });
   const args = ["--help"];
-  const parser = new ParamsParser();
+  const parser = new _ParamsParser();
   const result = parser.parse(args);
   if (result.type !== "zero") {
     throw new Error("Expected zero result type");
   }
-  const noParamsResult = result as ZeroParamsResult;
+  const noParamsResult = result as _ZeroParamsResult;
   assertEquals(noParamsResult.options.help, true);
   logger.debug("Help flag parsing test complete", { result: noParamsResult });
 });
@@ -92,12 +88,12 @@ Deno.test("parseParams - version command", async () => {
     args: ["--version"],
   });
   const args = ["--version"];
-  const parser = new ParamsParser();
+  const parser = new _ParamsParser();
   const result = parser.parse(args);
   if (result.type !== "zero") {
     throw new Error("Expected zero result type");
   }
-  const noParamsResult = result as ZeroParamsResult;
+  const noParamsResult = result as _ZeroParamsResult;
   assertEquals(noParamsResult.options.version, true);
   logger.debug("Version flag parsing test complete", { result: noParamsResult });
 });
@@ -110,12 +106,12 @@ Deno.test("parseParams - init command", async () => {
     args: ["init"],
   });
   const args = ["init"];
-  const parser = new ParamsParser();
+  const parser = new _ParamsParser();
   const result = parser.parse(args);
   if (result.type !== "one") {
     throw new Error("Expected one result type");
   }
-  const singleResult = result as OneParamsResult;
+  const singleResult = result as _OneParamsResult;
   assertEquals(singleResult.demonstrativeType, "init");
   logger.debug("Init command parsing test complete", { result: singleResult });
 });
@@ -180,7 +176,7 @@ Deno.test("Command Module Tests", async (t) => {
 
     await t.step("initWorkspace should create required directories", async () => {
       const result = await initWorkspace(TEST_DIR);
-      assertEquals(result.ok, true);
+      assertEquals(result.success, true);
       assertEquals(result.error, "");
       // Verify .agent/breakdown directory exists
       const breakdownDir = join(TEST_DIR, ".agent/breakdown");
@@ -213,7 +209,7 @@ Deno.test("Command Module Tests", async (t) => {
 
     await t.step("displayVersion should not throw and output correct version", () => {
       const result = displayVersion();
-      assertEquals(result.ok, true);
+      assertEquals(result.success, true);
       assertEquals(result.output, `Breakdown v${VERSION}`);
     });
 
@@ -236,7 +232,7 @@ Deno.test("cli - init command should finish and create config", async () => {
   } catch { /* ignore */ }
   await Deno.mkdir(testDir, { recursive: true });
   logger.debug("[CLI INIT TEST] Running CLI init command", { testDir });
-  const cliPath = new URL("../../../cli/breakdown.ts", import.meta.url).pathname;
+  const cliPath = fromFileUrl(new URL("../../../cli/breakdown.ts", import.meta.url));
   const cmd = new Deno.Command("deno", {
     args: ["run", "--allow-all", cliPath, "init"],
     cwd: testDir,

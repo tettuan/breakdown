@@ -1,5 +1,5 @@
 /**
- * @fileoverview Architecture tests for prompt_manager_adapter module
+ * @fileoverview Architecture tests for prompt_manageradapter module
  *
  * Tests architectural constraints and dependencies:
  * - Dependency direction (only depends on types layer and external packages)
@@ -133,7 +133,7 @@ Deno.test("prompt_manager_adapter - layer boundary enforcement", async () => {
     "../commands/", // Upper layer
     "../config/", // Upper layer
     "../workspace/", // Upper layer
-    "./prompt_adapter", // Lateral (old implementation)
+    "./promptadapter", // Lateral (old implementation)
     "./prompt_", // Any other prompt layer module
   ];
 
@@ -192,9 +192,9 @@ Deno.test("prompt_manager_adapter - no circular dependencies", async () => {
 
   // Specific check: should not import old adapter
   assertEquals(
-    moduleContent.includes("./prompt_adapter"),
+    moduleContent.includes("./promptadapter"),
     false,
-    "Should not import from old prompt_adapter (being replaced)",
+    "Should not import from old promptadapter (being replaced)",
   );
 });
 

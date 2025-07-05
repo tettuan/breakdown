@@ -237,17 +237,17 @@ Deno.test("ZeroParamsHandler Function Behavior", async (t) => {
       { args: [], config: {}, options: {} },
       {
         args: null as any as string[],
-        config: null as any as Record<string, unknown>,
+        config: {} as Record<string, unknown>,
         options: null as Record<string, unknown> | null,
       },
       {
         args: undefined as any as string[],
-        config: undefined as any as Record<string, unknown>,
+        config: {} as Record<string, unknown>,
         options: undefined as Record<string, unknown> | undefined,
       },
       {
         args: "invalid" as any as string[],
-        config: "invalid" as any as Record<string, unknown>,
+        config: {} as Record<string, unknown>,
         options: "invalid" as any as Record<string, unknown>,
       },
     ];
@@ -282,14 +282,14 @@ Deno.test("ZeroParamsHandler Function Behavior", async (t) => {
 
     // Should not modify input parameters
     const args = ["test"];
-    const _config = { test: "value" };
+    const config = { test: "value" };
     const options = { help: true, test: "value" };
 
-    handleZeroParams(args, _config, options);
+    handleZeroParams(args, config, options);
 
     // Input parameters should remain unchanged
     assertEquals(args, ["test"]);
-    assertEquals(_config, { test: "value" });
+    assertEquals(config, { test: "value" });
     assertEquals(options, { help: true, test: "value" });
   });
 });

@@ -33,10 +33,10 @@ import {
   type PromptVariablesFactoryOptions as PromptVariablesFactoryOptions,
   TotalityPromptVariablesFactory,
   type TotalityPromptVariablesFactoryOptions as _TotalityPromptVariablesFactoryOptions,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
-const logger = new BreakdownLogger("structure-prompt-_factory");
+const logger = new BreakdownLogger("structure-prompt-factory");
 
 /**
  * Test pattern provider for structure validation
@@ -82,43 +82,43 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Factory should only be responsible for coordinating path resolution
       // and parameter management, not implementing path resolution itself
 
       // Path resolution methods should exist but delegate to resolvers
-      assertExists(_factory.promptFilePath);
-      assertExists(_factory.inputFilePath);
-      assertExists(_factory.outputFilePath);
-      assertExists(_factory.schemaFilePath);
+      assertExists(factory.promptFilePath);
+      assertExists(factory.inputFilePath);
+      assertExists(factory.outputFilePath);
+      assertExists(factory.schemaFilePath);
 
       // Parameter management should be centralized
-      assertExists(_factory.getAllParams);
-      assertExists(_factory.getOptions);
-      assertExists(_factory.directive);
-      assertExists(_factory.layer);
+      assertExists(factory.getAllParams);
+      assertExists(factory.getOptions);
+      assertExists(factory.directive);
+      assertExists(factory.layer);
 
       // Validation should be factory's responsibility
-      assertExists(_factory.validateAll);
-      assertExists(_factory.hasValidBaseDir);
-      assertExists(_factory.getBaseDirError);
+      assertExists(factory.validateAll);
+      assertExists(factory.hasValidBaseDir);
+      assertExists(factory.getBaseDirError);
 
       // Factory should not expose internal resolver instances
       assertEquals(
-        typeof (_factory as any as { promptPathResolver?: unknown }).promptPathResolver,
+        typeof (factory as any as { _promptPathResolver?: unknown })._promptPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { inputPathResolver?: unknown }).inputPathResolver,
+        typeof (factory as any as { _inputPathResolver?: unknown })._inputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { outputPathResolver?: unknown }).outputPathResolver,
+        typeof (factory as any as { _outputPathResolver?: unknown })._outputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { schemaPathResolver?: unknown }).schemaPathResolver,
+        typeof (factory as any as { _schemaPathResolver?: unknown })._schemaPathResolver,
         "object",
       );
     }
@@ -185,44 +185,44 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
         },
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Public interface should be accessible
-      assertExists(_factory.cliParams);
-      assertEquals(_factory.cliParams.directive.getValue(), "summary");
-      assertEquals(_factory.cliParams.layer.getValue(), "issue");
+      assertExists(factory.cliParams);
+      assertEquals(factory.cliParams.directive.getValue(), "summary");
+      assertEquals(factory.cliParams.layer.getValue(), "issue");
 
       // Internal resolvers should exist but not be directly accessible
       // (they exist as private fields)
       assertEquals(
-        typeof (_factory as any as { promptPathResolver?: unknown }).promptPathResolver,
+        typeof (factory as any as { _promptPathResolver?: unknown })._promptPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { inputPathResolver?: unknown }).inputPathResolver,
+        typeof (factory as any as { _inputPathResolver?: unknown })._inputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { outputPathResolver?: unknown }).outputPathResolver,
+        typeof (factory as any as { _outputPathResolver?: unknown })._outputPathResolver,
         "object",
       );
       assertEquals(
-        typeof (_factory as any as { schemaPathResolver?: unknown }).schemaPathResolver,
+        typeof (factory as any as { _schemaPathResolver?: unknown })._schemaPathResolver,
         "object",
       );
 
       // Configuration should be private but effects should be observable
-      assertEquals(typeof (_factory as any as { config?: unknown }).config, "object");
+      assertEquals(typeof (factory as any as { config?: unknown }).config, "object");
       assertEquals(
-        typeof (_factory as any as { baseDirOverride?: unknown }).baseDirOverride,
+        typeof (factory as any as { baseDirOverride?: unknown }).baseDirOverride,
         "undefined",
       );
 
       // Error state should be properly encapsulated
-      assertEquals(typeof _factory.hasValidBaseDir(), "boolean");
+      assertEquals(typeof factory.hasValidBaseDir(), "boolean");
 
       // getBaseDirError() returns string | undefined - test both scenarios
-      const baseDirError = _factory.getBaseDirError();
+      const baseDirError = factory.getBaseDirError();
       const errorType = typeof baseDirError;
       assert(
         errorType === "string" || errorType === "undefined",
@@ -341,16 +341,16 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Error handling methods should be consistent
-      assertEquals(typeof _factory.hasValidBaseDir, "function");
-      assertEquals(typeof _factory.getBaseDirError, "function");
-      assertEquals(typeof _factory.validateAll, "function");
+      assertEquals(typeof factory.hasValidBaseDir, "function");
+      assertEquals(typeof factory.getBaseDirError, "function");
+      assertEquals(typeof factory.validateAll, "function");
 
       // Error states should be boolean or string/undefined
-      assertEquals(typeof _factory.hasValidBaseDir(), "boolean");
-      const errorMessage = _factory.getBaseDirError();
+      assertEquals(typeof factory.hasValidBaseDir(), "boolean");
+      const errorMessage = factory.getBaseDirError();
       assertEquals(typeof errorMessage === "string" || typeof errorMessage === "undefined", true);
     }
   });
@@ -372,17 +372,17 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // All path resolvers should be properly initialized
       const promptResolver =
-        (_factory as any as { promptPathResolver?: { getPath(): string } }).promptPathResolver;
+        (factory as any as { _promptPathResolver?: { getPath(): string } })._promptPathResolver;
       const inputResolver =
-        (_factory as any as { inputPathResolver?: { getPath(): string } }).inputPathResolver;
+        (factory as any as { _inputPathResolver?: { getPath(): string } })._inputPathResolver;
       const outputResolver =
-        (_factory as any as { outputPathResolver?: { getPath(): string } }).outputPathResolver;
+        (factory as any as { _outputPathResolver?: { getPath(): string } })._outputPathResolver;
       const schemaResolver =
-        (_factory as any as { schemaPathResolver?: { getPath(): string } }).schemaPathResolver;
+        (factory as any as { _schemaPathResolver?: { getPath(): string } })._schemaPathResolver;
 
       assertExists(promptResolver);
       assertExists(inputResolver);
@@ -396,17 +396,17 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
       assertEquals(typeof schemaResolver?.getPath, "function");
 
       // Factory should delegate to resolvers
-      assertEquals(_factory.promptFilePath, promptResolver?.getPath());
-      assertEquals(_factory.inputFilePath, inputResolver?.getPath());
+      assertEquals(factory.promptFilePath, promptResolver?.getPath());
+      assertEquals(factory.inputFilePath, inputResolver?.getPath());
 
       // Output file paths may contain dynamic hashes - check base pattern
-      const factoryOutput = _factory.outputFilePath;
+      const factoryOutput = factory.outputFilePath;
       const resolverOutput = outputResolver?.getPath() || "";
       const factoryOutputBase = factoryOutput.replace(/_[a-f0-9]+\.md$/, "_HASH.md");
       const resolverOutputBase = resolverOutput.replace(/_[a-f0-9]+\.md$/, "_HASH.md");
       assertEquals(factoryOutputBase, resolverOutputBase);
 
-      assertEquals(_factory.schemaFilePath, schemaResolver?.getPath());
+      assertEquals(factory.schemaFilePath, schemaResolver?.getPath());
     }
   });
 
@@ -431,10 +431,10 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
         options: {},
       };
 
-      const _factory = TotalityPromptVariablesFactory.createWithConfig(customConfig, params);
+      const factory = TotalityPromptVariablesFactory.createWithConfig(customConfig, params);
 
       // Configuration should be properly stored and accessible
-      const internalConfig = (_factory as any as { config?: Record<string, unknown> }).config;
+      const internalConfig = (factory as any as { config?: Record<string, unknown> }).config;
       assertExists(internalConfig);
       const appPrompt = internalConfig as { app_prompt?: { base_dir?: string } };
       const appSchema = internalConfig as { app_schema?: { base_dir?: string } };
@@ -444,8 +444,8 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
       assertEquals(customSetting.custom_setting, "test_value");
 
       // Configuration should affect resolver behavior
-      assertExists(_factory.promptFilePath);
-      assertExists(_factory.schemaFilePath);
+      assertExists(factory.promptFilePath);
+      assertExists(factory.schemaFilePath);
     }
   });
 
@@ -464,17 +464,17 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
         options: { extended: true },
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(totalityParams);
+      const factory = await TotalityPromptVariablesFactory.create(totalityParams);
 
       // Factory should maintain Totality types
-      assertEquals(_factory.directive.getValue(), "defect");
-      assertEquals(_factory.layer.getValue(), "task");
-      assertEquals(typeof _factory.directive.getValue, "function");
-      assertEquals(typeof _factory.layer.getValue, "function");
+      assertEquals(factory.directive.getValue(), "defect");
+      assertEquals(factory.layer.getValue(), "task");
+      assertEquals(typeof factory.directive.getValue, "function");
+      assertEquals(typeof factory.layer.getValue, "function");
 
       // Internal conversion should happen for legacy resolvers
       // but not be exposed in public interface
-      const legacyParams = (_factory as any as {
+      const legacyParams = (factory as any as {
         legacyParams?: { demonstrativeType?: string; layerType?: string };
       }).legacyParams;
       if (legacyParams) {
@@ -510,15 +510,15 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: inputOptions,
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Input should flow through to output consistently
-      const allParams = _factory.getAllParams();
+      const allParams = factory.getAllParams();
       assertEquals(allParams.directive.getValue(), "to");
       assertEquals(allParams.layer.getValue(), "project");
       assertEquals(allParams.customVariables?.key, "value");
 
-      const retrievedOptions = _factory.getOptions();
+      const retrievedOptions = factory.getOptions();
       assertEquals(retrievedOptions.fromFile, inputOptions.fromFile);
       assertEquals(retrievedOptions.destinationFile, inputOptions.destinationFile);
       assertEquals(retrievedOptions.adaptation, inputOptions.adaptation);
@@ -554,11 +554,11 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: originalOptions,
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Multiple access calls should return consistent data
-      const firstCall = _factory.getAllParams();
-      const secondCall = _factory.getAllParams();
+      const firstCall = factory.getAllParams();
+      const secondCall = factory.getAllParams();
 
       assertEquals(firstCall.directive.getValue(), secondCall.directive.getValue());
       assertEquals(firstCall.layer.getValue(), secondCall.layer.getValue());
@@ -568,8 +568,8 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
       );
 
       // Options should remain immutable
-      const options1 = _factory.getOptions();
-      const options2 = _factory.getOptions();
+      const options1 = factory.getOptions();
+      const options2 = factory.getOptions();
 
       assertEquals(options1.extended, options2.extended);
       assertEquals(options1.customValidation, options2.customValidation);
@@ -595,18 +595,18 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: {},
       };
 
-      const _factory = await TotalityPromptVariablesFactory.create(params);
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Base directory validation should be first step
-      const hasValidBaseDir = _factory.hasValidBaseDir();
-      const baseDirError = _factory.getBaseDirError();
+      const hasValidBaseDir = factory.hasValidBaseDir();
+      const baseDirError = factory.getBaseDirError();
 
       if (hasValidBaseDir) {
         assertEquals(baseDirError, undefined);
 
         // Overall validation should succeed if base dir is valid
         try {
-          _factory.validateAll();
+          factory.validateAll();
           // If no exception, validation passed
           assertEquals(true, true);
         } catch (error) {
@@ -618,7 +618,7 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
 
         // Overall validation should fail if base dir is invalid
         try {
-          _factory.validateAll();
+          factory.validateAll();
           // Should not reach here if base dir is invalid
           assertEquals(false, true, "Validation should have failed");
         } catch (error) {

@@ -364,7 +364,7 @@ Deno.test("Integration: Template error recovery workflow simulation", async () =
     assertEquals(fileExists.isFile, true, "Template file should now exist");
 
     logger.debug("Recovery workflow completed", {
-      initialError: templateError.errorType,
+      _initialError: templateError.errorType,
       recovered: true,
       templateCreated: missingPath,
     });

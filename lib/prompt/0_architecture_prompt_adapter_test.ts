@@ -9,6 +9,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
+import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -19,7 +20,7 @@ describe("PromptAdapter Architecture - Module Dependencies", () => {
     _logger.debug("Testing external package dependencies");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
     const imports = fileContent.match(/import.*from\s+["']([^"']+)["']/g) || [];
 
@@ -46,7 +47,7 @@ describe("PromptAdapter Architecture - Module Dependencies", () => {
     _logger.debug("Testing layer separation");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
 
     // Should not directly import from lower-level modules
@@ -80,7 +81,7 @@ describe("PromptAdapter Architecture - Module Dependencies", () => {
     _logger.debug("Testing public interface exposure");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
 
     // Check exported items
@@ -119,7 +120,7 @@ describe("PromptAdapter Architecture - Adapter Pattern Compliance", () => {
     _logger.debug("Testing adapter pattern implementation");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
 
     // Should have methods that adapt between interfaces
@@ -152,7 +153,7 @@ describe("PromptAdapter Architecture - Adapter Pattern Compliance", () => {
     _logger.debug("Testing single responsibility principle");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
 
     // Should not contain business logic for these responsibilities
@@ -177,7 +178,7 @@ describe("PromptAdapter Architecture - Error Handling Consistency", () => {
     _logger.debug("Testing error handling consistency");
 
     const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter.ts", import.meta.url).pathname,
+      fromFileUrl(new URL("./prompt_adapter.ts", import.meta.url)),
     );
 
     // Should return Result-like objects for error handling

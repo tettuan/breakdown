@@ -11,13 +11,13 @@
  * - TypeCreationResult algebraic data type tests
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf as _assertInstanceOf } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
-  DirectiveType,
-  LayerType,
+  DirectiveType as _DirectiveType,
+  LayerType as _LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
   type TypeCreationError,
@@ -325,7 +325,7 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     const factory = new TypeFactory(provider);
 
     // All creation methods should return TypeCreationResult
-    const results: TypeCreationResult<any>[] = [
+    const results: TypeCreationResult<unknown>[] = [
       factory.createDirectiveType("to"),
       factory.createLayerType("project"),
       factory.createBothTypes("to", "project"),

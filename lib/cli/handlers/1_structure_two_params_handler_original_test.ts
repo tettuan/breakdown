@@ -205,7 +205,11 @@ describe("TwoParamsHandler Structure - Function Design Principles", () => {
     ];
 
     for (const test of errorPropagationTests) {
-      const result = await handleTwoParams(test.params, test.config as any, test.options);
+      const result = await handleTwoParams(
+        test.params,
+        test.config as Record<string, unknown>,
+        test.options,
+      );
 
       assertEquals(result.ok, false);
       if (!result.ok) {
@@ -555,7 +559,11 @@ describe("TwoParamsHandler Structure - Error Handling Architecture", () => {
     ];
 
     for (const test of errorStructureTests) {
-      const result = await handleTwoParams(test.params, test.config as any, test.options);
+      const result = await handleTwoParams(
+        test.params,
+        test.config as Record<string, unknown>,
+        test.options,
+      );
 
       assertEquals(result.ok, false);
       if (!result.ok) {
@@ -606,7 +614,11 @@ describe("TwoParamsHandler Structure - Error Handling Architecture", () => {
     ];
 
     for (const test of recoveryTests) {
-      const result = await handleTwoParams(test.params, test.config as any, test.options);
+      const result = await handleTwoParams(
+        test.params,
+        test.config as Record<string, unknown>,
+        test.options,
+      );
 
       if (test.shouldFailFast) {
         assertEquals(result.ok, false);

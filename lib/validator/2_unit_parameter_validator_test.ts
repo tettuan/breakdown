@@ -40,7 +40,7 @@ class MockPatternProvider implements TypePatternProvider {
 class MockConfigValidator implements ConfigValidator {
   constructor(private shouldSucceed: boolean = true) {}
 
-  validateConfig(_config: unknown) {
+  validateConfig(config: unknown) {
     if (this.shouldSucceed) {
       return { ok: true as const, data: undefined };
     } else {

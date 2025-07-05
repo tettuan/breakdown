@@ -37,7 +37,7 @@ export interface StdinFactoryInput {
  *
  * @example Basic usage
  * ```typescript
- * const _factory = new StdinVariableFactory();
+ * const factory = new StdinVariableFactory();
  * const result = factory.create({
  *   inputText: "Hello, world!",
  *   source: "cli"

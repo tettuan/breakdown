@@ -12,7 +12,7 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import { DirectiveType } from "../types/directive_type.ts";
 import { LayerType } from "../types/layer_type.ts";
-import type { TwoParams_Result, OneParamsResult, ZeroParamsResult } from "../deps.ts";
+import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 
 /**

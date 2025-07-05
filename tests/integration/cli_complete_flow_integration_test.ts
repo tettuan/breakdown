@@ -16,7 +16,11 @@
  * @module tests/integration/cli_complete_flow_integration_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import {
+  assert as _assert,
+  assertEquals as _assertEquals,
+  assertExists as _assertExists,
+} from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -47,7 +51,7 @@ describe("CLI Complete Flow Integration", () => {
       );
 
       // Flow should complete (may fail at prompt generation due to missing templates)
-      assert("ok" in result);
+      _assert("ok" in result);
 
       if (!result.ok) {
         // Should fail at orchestration stages, not basic validation
@@ -58,7 +62,7 @@ describe("CLI Complete Flow Integration", () => {
           "OutputWriteError",
         ];
 
-        assert(
+        _assert(
           validFailurePoints.includes(result.error.kind),
           `Flow should fail at orchestration, not validation. Got: ${result.error.kind}`,
         );
@@ -91,13 +95,13 @@ describe("CLI Complete Flow Integration", () => {
         );
 
         // All results should follow Result pattern
-        assert("ok" in result);
-        assertEquals(typeof result.ok, "boolean");
+        _assert("ok" in result);
+        _assertEquals(typeof result.ok, "boolean");
 
         if (!result.ok) {
           // Error should have proper structure
-          assertExists(result.error.kind);
-          assertEquals(typeof result.error.kind, "string");
+          _assertExists(result.error.kind);
+          _assertEquals(typeof result.error.kind, "string");
         }
 
         logger.debug(`${testCase.description} completed`, {
@@ -131,15 +135,15 @@ describe("CLI Complete Flow Integration", () => {
           { skipStdin: true },
         );
 
-        assertEquals(result.ok, false);
+        _assertEquals(result.ok, false);
 
         if (!result.ok) {
-          assertEquals(result.error.kind, test.expectedError);
+          _assertEquals(result.error.kind, test.expectedError);
 
           // Should provide TypeFactory validation details
           if ("validTypes" in result.error) {
-            assert(Array.isArray(result.error.validTypes));
-            assert(result.error.validTypes.length > 0);
+            _assert(Array.isArray(result.error.validTypes));
+            _assert(result.error.validTypes.length > 0);
           }
         }
 
@@ -167,7 +171,7 @@ describe("CLI Complete Flow Integration", () => {
       );
 
       // Should complete orchestration flow
-      assert("ok" in result);
+      _assert("ok" in result);
 
       if (!result.ok) {
         // Should integrate with all components properly
@@ -179,7 +183,7 @@ describe("CLI Complete Flow Integration", () => {
           "OutputWriteError",
         ];
 
-        assert(componentErrors.includes(result.error.kind));
+        _assert(componentErrors.includes(result.error.kind));
 
         logger.debug("Component integration completed", {
           stage: result.error.kind,
@@ -207,7 +211,7 @@ describe("CLI Complete Flow Integration", () => {
         );
 
         // Should handle BreakdownParams-style input
-        assert("ok" in result);
+        _assert("ok" in result);
 
         logger.debug("BreakdownParams format handled", {
           params: format.params,
@@ -251,7 +255,7 @@ describe("CLI Complete Flow Integration", () => {
         );
 
         // Should handle various config structures
-        assert("ok" in result);
+        _assert("ok" in result);
 
         logger.debug(`BreakdownConfig ${description} handled`, {
           configKeys: Object.keys(config),
@@ -274,11 +278,11 @@ describe("CLI Complete Flow Integration", () => {
       );
 
       // Should reach prompt generation stage
-      assert("ok" in result);
+      _assert("ok" in result);
 
       if (!result.ok) {
         // Should fail at prompt generation (BreakdownPrompt integration point)
-        assert(
+        _assert(
           ["FactoryValidationError", "PromptGenerationError"].includes(result.error.kind),
           `Should reach BreakdownPrompt integration. Got: ${result.error.kind}`,
         );
@@ -324,21 +328,21 @@ describe("CLI Complete Flow Integration", () => {
           { skipStdin: true },
         );
 
-        assertEquals(result.ok, false);
+        _assertEquals(result.ok, false);
 
         if (!result.ok) {
           if (stage.expectedError) {
-            assertEquals(result.error.kind, stage.expectedError);
+            _assertEquals(result.error.kind, stage.expectedError);
           } else if (stage.expectedErrors) {
-            assert(
+            _assert(
               stage.expectedErrors.includes(result.error.kind),
               `Expected one of ${stage.expectedErrors.join(", ")}, got: ${result.error.kind}`,
             );
           }
 
           // Error should have proper context
-          assertExists(result.error.kind);
-          assertEquals(typeof result.error.kind, "string");
+          _assertExists(result.error.kind);
+          _assertEquals(typeof result.error.kind, "string");
         }
 
         logger.debug(`Error propagation at ${stage.description}`, {
@@ -363,7 +367,7 @@ describe("CLI Complete Flow Integration", () => {
 
           // If it returns without throwing, should be Result type
           if (result) {
-            assert("ok" in result);
+            _assert("ok" in result);
           }
         } catch (e) {
           // Some inputs might throw (documenting current behavior)
@@ -406,7 +410,7 @@ describe("CLI Complete Flow Integration", () => {
       );
 
       // Should process input data through pipeline
-      assert("ok" in result);
+      _assert("ok" in result);
 
       if (!result.ok) {
         // If fails, should be at processing stages with preserved context
@@ -416,7 +420,7 @@ describe("CLI Complete Flow Integration", () => {
           "PromptGenerationError",
         ];
 
-        assert(dataProcessingErrors.includes(result.error.kind));
+        _assert(dataProcessingErrors.includes(result.error.kind));
       }
 
       logger.debug("Data integrity maintained through pipeline");
@@ -441,7 +445,7 @@ describe("CLI Complete Flow Integration", () => {
 
       // All flows should complete independently
       results.forEach((result, index) => {
-        assert("ok" in result, `Flow ${index} should complete`);
+        _assert("ok" in result, `Flow ${index} should complete`);
       });
 
       // Results should be consistent (no race conditions)
@@ -449,7 +453,7 @@ describe("CLI Complete Flow Integration", () => {
       const firstType = resultTypes[0];
 
       resultTypes.forEach((type, index) => {
-        assertEquals(type, firstType, `Flow ${index} should have consistent result`);
+        _assertEquals(type, firstType, `Flow ${index} should have consistent result`);
       });
 
       logger.debug("Concurrent flows completed successfully");
@@ -499,7 +503,7 @@ describe("CLI Complete Flow Integration", () => {
         );
 
         // Should handle various customizations
-        assert("ok" in result);
+        _assert("ok" in result);
 
         logger.debug(`${customization.name} completed`, {
           params: customization.params,
@@ -527,7 +531,7 @@ describe("CLI Complete Flow Integration", () => {
       const avgTime = totalTime / iterations;
 
       // Should complete reasonably quickly
-      assert(avgTime < 2000, `Average execution time should be reasonable: ${avgTime}ms`);
+      _assert(avgTime < 2000, `Average execution time should be reasonable: ${avgTime}ms`);
 
       logger.debug("Performance test completed", {
         iterations,
@@ -554,7 +558,7 @@ describe("CLI Complete Flow Integration", () => {
         );
 
         // Each flow should be independent
-        assert("ok" in result);
+        _assert("ok" in result);
       }
 
       logger.debug("Resource cleanup verified");

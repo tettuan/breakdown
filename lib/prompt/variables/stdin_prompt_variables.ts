@@ -9,8 +9,8 @@
 
 import type { PromptVariables } from "../../types/prompt_types.ts";
 import { StdinVariable, StdinVariableName } from "../../types/prompt_variables.ts";
-import type { VariableResult } from "../../types/variable_result.ts";
-import { createEmptyValueError, createSuccess } from "../../types/variable_result.ts";
+import type { Result } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
 
 /**
  * Standard input prompt variables implementation
@@ -38,20 +38,20 @@ export class StdinPromptVariables implements PromptVariables {
    * Create StdinPromptVariables from input text
    *
    * @param inputText - The text from standard input
-   * @returns Result containing StdinPromptVariables or VariableError
+   * @returns Result containing StdinPromptVariables or Error
    */
-  static create(inputText: string): VariableResult<StdinPromptVariables> {
+  static create(inputText: string): Result<StdinPromptVariables, Error> {
     if (!inputText || inputText.trim().length === 0) {
-      return createEmptyValueError("input_text", "Standard input cannot be empty");
+      return error(new Error("Standard input cannot be empty"));
     }
 
     // Create stdin variable with the standard name
     const stdinVarResult = StdinVariable.create("input_text", inputText);
     if (!stdinVarResult.ok) {
-      return stdinVarResult;
+      return error(new Error(`Failed to create stdin variable: ${stdinVarResult.error.kind}`));
     }
 
-    return createSuccess(new StdinPromptVariables([stdinVarResult.data]));
+    return ok(new StdinPromptVariables([stdinVarResult.data]));
   }
 
   /**

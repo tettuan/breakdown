@@ -16,7 +16,11 @@
  * @module tests/integration/error_handler_system_integration_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import {
+  assertEquals,
+  assertExists,
+  assert,
+} from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

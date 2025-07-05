@@ -16,7 +16,7 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler_original.ts";
-import type { Result } from "../../types/result.ts";
+// import type { Result } from "../../types/result.ts";
 
 const _logger = new _BreakdownLogger("architecture-handler");
 

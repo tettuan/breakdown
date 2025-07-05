@@ -25,29 +25,29 @@ import { error, ok } from "$lib/types/result.ts";
 
 const _logger = new _BreakdownLogger("structure-two-params-orchestrator");
 
-describe("TwoParamsOrchestrator - Component Structure", async () => {
-  it("should properly initialize all required components", async () => {
+describe("TwoParamsOrchestrator - Component Structure", () => {
+  it("should properly initialize all required components", () => {
     _logger.debug("Testing component initialization");
 
     const orchestrator = new TwoParamsOrchestrator();
 
     // Check that all required components are initialized
-    assertExists((orchestrator as any as Record<string, unknown>).validator);
-    assertExists((orchestrator as any as Record<string, unknown>).stdinProcessor);
+    assertExists((orchestrator as unknown as Record<string, unknown>).validator);
+    assertExists((orchestrator as unknown as Record<string, unknown>).stdinProcessor);
     // Note: outputWriter component not present in current implementation
 
     // Components should be of correct types
     assert(
-      (orchestrator as any as Record<string, unknown>).validator instanceof TwoParamsValidator,
+      (orchestrator as unknown as Record<string, unknown>).validator instanceof TwoParamsValidator,
     );
     assert(
-      (orchestrator as any as Record<string, unknown>).stdinProcessor instanceof
+      (orchestrator as unknown as Record<string, unknown>).stdinProcessor instanceof
         TwoParamsStdinProcessor,
     );
     // Note: Current implementation only has validator and stdinProcessor components
   });
 
-  it("should maintain proper component relationships through dependency injection", async () => {
+  it("should maintain proper component relationships through dependency injection", () => {
     _logger.debug("Testing component dependency injection");
 
     // Create mock components
@@ -94,8 +94,8 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     };
 
     const orchestrator = new TwoParamsOrchestrator(
-      mockValidator as any as TwoParamsValidator,
-      mockStdinProcessor as any as TwoParamsStdinProcessor,
+      mockValidator as unknown as TwoParamsValidator,
+      mockStdinProcessor as unknown as TwoParamsStdinProcessor,
     );
 
     // Execute should flow through components
@@ -273,7 +273,7 @@ describe("TwoParamsOrchestrator - Component Structure", async () => {
     internalMethods.forEach((method) => {
       assert(
         typeof (orchestrator as any)[method] === "function",
-        `${method} should exist as a function`
+        `${method} should exist as a function`,
       );
     });
   });

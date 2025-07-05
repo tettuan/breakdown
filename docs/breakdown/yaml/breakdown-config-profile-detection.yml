@@ -5,14 +5,14 @@
 type_flow:
   name: "Config Profile Detection Flow"
   description: "CLI引数からConfigProfileNameへの変換"
-  
+
   steps:
     - step: 1
       from: "string[] (CLI args)"
       to: "string | null"
       operation: "ConfigPrefixDetector.detect()"
       principle: "全てのCLI引数パターンを網羅"
-      
+
     - step: 2
       from: "string | null"
       to: "ConfigProfileName"
@@ -29,7 +29,7 @@ key_types:
       - "-c=filename"
       - "--config filename"
       - "-c filename"
-    
+
   ConfigProfileName:
     pattern: "Smart Constructor"
     responsibility: "設定プロファイル名の制約と検証"

@@ -1,8 +1,8 @@
 import { assertEquals, assertExists } from "@std/assert";
 import {
+  _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_PROMPT_BASE_DIR,
   DEFAULT_SCHEMA_BASE_DIR,
-  _DEFAULT_WORKSPACE_STRUCTURE,
   type DirectoryType,
 } from "./constants.ts";
 

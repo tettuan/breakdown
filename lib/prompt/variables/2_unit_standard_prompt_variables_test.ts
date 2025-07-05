@@ -4,22 +4,22 @@
  * This module tests the StandardPromptVariables class focusing on:
  * - Smart constructor validation
  * - Input parameter validation (empty strings, null, undefined)
- * - Additional variables handling
+ * - Additional _variables handling
  * - Immutability via "with" methods
  * - toRecord() method correctness
  * - Error handling for invalid inputs
  * - Getter methods functionality
  *
- * @module prompt/variables/2_unit_standard_prompt_variables_test
+ * @module prompt/_variables/2_unit_standard_prompt_variables_test
  */
 
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
 
-// Test helper to verify error messages
-function assertErrorMessage(fn: () => void, expectedMessage: string): void {
-  const error = assertThrows(fn, Error, expectedMessage);
-  assertEquals(error.message, expectedMessage);
+// Test helper to verify error messages for Result types
+function assertErrorResult<T>(result: { ok: boolean; error?: any }, expectedMessage: string): void {
+  assertEquals(result.ok, false, "Expected failed result");
+  assertEquals(result.error?.message, expectedMessage);
 }
 
 // Helper to get data from result or throw
@@ -31,49 +31,49 @@ function getDataOrThrow<T>(result: { ok: boolean; data?: T; error?: any }): T {
 }
 
 Deno.test("StandardPromptVariables - creates with valid parameters", () => {
-  const varsResult = StandardPromptVariables.create(
+  const variables1Result = StandardPromptVariables.create(
     "input.txt",
     "output.md",
   );
 
-  if (!varsResult.ok) {
+  if (!variables1Result.ok) {
     throw new Error("Expected successful creation");
   }
-  const vars = varsResult.data;
+  const variables1 = variables1Result.data;
 
-  assertEquals(vars.getInputTextFile(), "input.txt");
-  assertEquals(vars.getDestinationPath(), "output.md");
+  assertEquals(variables1.getInputTextFile(), "input.txt");
+  assertEquals(variables1.getDestinationPath(), "output.md");
 
-  const record = vars.toRecord();
+  const record = variables1.toRecord();
   assertEquals(record.input_text_file, "input.txt");
   assertEquals(record.destination_path, "output.md");
   assertEquals(Object.keys(record).length, 2);
 });
 
-Deno.test("StandardPromptVariables - creates with additional variables", () => {
+Deno.test("StandardPromptVariables - creates with additional _variables", () => {
   const additionalVars = {
     layer_type: "project",
     demonstrative_type: "to",
   };
 
-  const varsResult = StandardPromptVariables.create(
+  const variables2Result = StandardPromptVariables.create(
     "stdin",
     "stdout",
     additionalVars,
   );
 
-  if (!varsResult.ok) {
+  if (!variables2Result.ok) {
     throw new Error("Expected successful creation");
   }
-  const vars = varsResult.data;
+  const variables2 = variables2Result.data;
 
-  assertEquals(vars.getInputTextFile(), "stdin");
-  assertEquals(vars.getDestinationPath(), "stdout");
-  assertEquals(vars.getAdditionalVariable("layer_type"), "project");
-  assertEquals(vars.getAdditionalVariable("demonstrative_type"), "to");
-  assertEquals(vars.getAdditionalVariable("non_existent"), undefined);
+  assertEquals(variables2.getInputTextFile(), "stdin");
+  assertEquals(variables2.getDestinationPath(), "stdout");
+  assertEquals(variables2.getAdditionalVariable("layer_type"), "project");
+  assertEquals(variables2.getAdditionalVariable("demonstrative_type"), "to");
+  assertEquals(variables2.getAdditionalVariable("non_existent"), undefined);
 
-  const record = vars.toRecord();
+  const record = variables2.toRecord();
   assertEquals(record.input_text_file, "stdin");
   assertEquals(record.destination_path, "stdout");
   assertEquals(record.layer_type, "project");
@@ -82,83 +82,73 @@ Deno.test("StandardPromptVariables - creates with additional variables", () => {
 });
 
 Deno.test("StandardPromptVariables - trims whitespace from inputs", () => {
-  const varsResult = StandardPromptVariables.create(
+  const variables3Result = StandardPromptVariables.create(
     "  input.txt  ",
     "\toutput.md\n",
   );
 
-  assertEquals(vars.getInputTextFile(), "input.txt");
-  assertEquals(vars.getDestinationPath(), "output.md");
+  if (!variables3Result.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const variables3 = variables3Result.data;
+
+  assertEquals(variables3.getInputTextFile(), "input.txt");
+  assertEquals(variables3.getDestinationPath(), "output.md");
 });
 
 Deno.test("StandardPromptVariables - validates empty inputTextFile", () => {
-  assertErrorMessage(
-    () => StandardPromptVariables.create("", "output.md"),
-    "inputTextFile cannot be empty",
-  );
+  const emptyResult = StandardPromptVariables.create("", "output.md");
+  assertErrorResult(emptyResult, "inputTextFile cannot be empty");
 
-  assertErrorMessage(
-    () => StandardPromptVariables.create("   ", "output.md"),
-    "inputTextFile cannot be empty",
-  );
+  const whitespaceResult = StandardPromptVariables.create("   ", "output.md");
+  assertErrorResult(whitespaceResult, "inputTextFile cannot be empty");
 });
 
 Deno.test("StandardPromptVariables - validates empty destinationPath", () => {
-  assertErrorMessage(
-    () => StandardPromptVariables.create("input.txt", ""),
-    "destinationPath cannot be empty",
-  );
+  const emptyResult = StandardPromptVariables.create("input.txt", "");
+  assertErrorResult(emptyResult, "destinationPath cannot be empty");
 
-  assertErrorMessage(
-    () => StandardPromptVariables.create("input.txt", "\t\n"),
-    "destinationPath cannot be empty",
-  );
+  const whitespaceResult = StandardPromptVariables.create("input.txt", "\t\n");
+  assertErrorResult(whitespaceResult, "destinationPath cannot be empty");
 });
 
 Deno.test("StandardPromptVariables - validates additional variable keys", () => {
-  assertErrorMessage(
-    () =>
-      StandardPromptVariables.create("input.txt", "output.md", {
-        "": "value",
-      }),
-    "Variable key cannot be empty",
-  );
+  const emptyKeyResult = StandardPromptVariables.create("input.txt", "output.md", {
+    "": "value",
+  });
+  assertErrorResult(emptyKeyResult, "Variable key cannot be empty");
 
-  assertErrorMessage(
-    () =>
-      StandardPromptVariables.create("input.txt", "output.md", {
-        "   ": "value",
-      }),
-    "Variable key cannot be empty",
-  );
+  const whitespaceKeyResult = StandardPromptVariables.create("input.txt", "output.md", {
+    "   ": "value",
+  });
+  assertErrorResult(whitespaceKeyResult, "Variable key cannot be empty");
 });
 
 Deno.test("StandardPromptVariables - validates additional variable values", () => {
-  assertErrorMessage(
-    () =>
-      StandardPromptVariables.create("input.txt", "output.md", {
-        "key": null as any,
-      }),
-    "Variable value for 'key' cannot be null or undefined",
-  );
+  const nullValueResult = StandardPromptVariables.create("input.txt", "output.md", {
+    "key": null as any,
+  });
+  assertErrorResult(nullValueResult, "Variable value for 'key' cannot be null or undefined");
 
-  assertErrorMessage(
-    () =>
-      StandardPromptVariables.create("input.txt", "output.md", {
-        "key": undefined as any,
-      }),
-    "Variable value for 'key' cannot be null or undefined",
-  );
+  const undefinedValueResult = StandardPromptVariables.create("input.txt", "output.md", {
+    "key": undefined as any,
+  });
+  assertErrorResult(undefinedValueResult, "Variable value for 'key' cannot be null or undefined");
 });
 
 Deno.test("StandardPromptVariables - allows empty string as variable value", () => {
-  const varsResult = StandardPromptVariables.create("input.txt", "output.md", {
+  const variables4Result = StandardPromptVariables.create("input.txt", "output.md", {
     "empty_value": "",
   });
 
-  assertEquals(vars.getAdditionalVariable("empty_value"), "");
+  if (!variables4Result.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const variables4 = variables4Result.data;
 
-  const record = vars.toRecord();
+  assertEquals(variables4.getAdditionalVariable("empty_value"), "");
+
+  const record = variables4.toRecord();
   assertEquals(record.empty_value, "");
 });
 
@@ -169,16 +159,26 @@ Deno.test("StandardPromptVariables - withAdditionalVariables creates new instanc
     { existing: "value" },
   );
 
-  const updated = original.withAdditionalVariables({
+  if (!originalResult.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const original = originalResult.data;
+
+  const updatedResult = original.withAdditionalVariables({
     new_var: "new_value",
     another: "another_value",
   });
+
+  if (!updatedResult.ok) {
+    throw new Error("Expected successful update");
+  }
+  const updated = updatedResult.data;
 
   // Original should be unchanged
   assertEquals(original.getAdditionalVariable("new_var"), undefined);
   assertEquals(original.getAdditionalVariable("another"), undefined);
 
-  // Updated should have all variables
+  // Updated should have all _variables
   assertEquals(updated.getAdditionalVariable("existing"), "value");
   assertEquals(updated.getAdditionalVariable("new_var"), "new_value");
   assertEquals(updated.getAdditionalVariable("another"), "another_value");
@@ -195,9 +195,19 @@ Deno.test("StandardPromptVariables - withAdditionalVariables overwrites existing
     { key: "original_value" },
   );
 
-  const updated = original.withAdditionalVariables({
+  if (!originalResult.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const original = originalResult.data;
+
+  const updatedResult = original.withAdditionalVariables({
     key: "updated_value",
   });
+
+  if (!updatedResult.ok) {
+    throw new Error("Expected successful update");
+  }
+  const updated = updatedResult.data;
 
   assertEquals(original.getAdditionalVariable("key"), "original_value");
   assertEquals(updated.getAdditionalVariable("key"), "updated_value");
@@ -210,7 +220,17 @@ Deno.test("StandardPromptVariables - withInputTextFile creates new instance", ()
     { var: "value" },
   );
 
-  const updated = original.withInputTextFile("new_input.txt");
+  if (!originalResult.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const original = originalResult.data;
+
+  const updatedResult = original.withInputTextFile("new_input.txt");
+
+  if (!updatedResult.ok) {
+    throw new Error("Expected successful update");
+  }
+  const updated = updatedResult.data;
 
   // Original should be unchanged
   assertEquals(original.getInputTextFile(), "input.txt");
@@ -230,7 +250,17 @@ Deno.test("StandardPromptVariables - withDestinationPath creates new instance", 
     { var: "value" },
   );
 
-  const updated = original.withDestinationPath("new_output.md");
+  if (!originalResult.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const original = originalResult.data;
+
+  const updatedResult = original.withDestinationPath("new_output.md");
+
+  if (!updatedResult.ok) {
+    throw new Error("Expected successful update");
+  }
+  const updated = updatedResult.data;
 
   // Original should be unchanged
   assertEquals(original.getDestinationPath(), "output.md");
@@ -244,37 +274,38 @@ Deno.test("StandardPromptVariables - withDestinationPath creates new instance", 
 });
 
 Deno.test("StandardPromptVariables - with methods validate input", () => {
-  const varsResult = StandardPromptVariables.create("input.txt", "output.md");
+  const variablesResult = StandardPromptVariables.create("input.txt", "output.md");
+  if (!variablesResult.ok) throw new Error("Expected successful creation");
+  const variables = variablesResult.data;
 
-  assertErrorMessage(
-    () => vars.withInputTextFile(""),
-    "inputTextFile cannot be empty",
-  );
+  const emptyInputResult = variables.withInputTextFile("");
+  assertErrorResult(emptyInputResult, "inputTextFile cannot be empty");
 
-  assertErrorMessage(
-    () => vars.withDestinationPath("   "),
-    "destinationPath cannot be empty",
-  );
+  const emptyDestResult = variables.withDestinationPath("   ");
+  assertErrorResult(emptyDestResult, "destinationPath cannot be empty");
 
-  assertErrorMessage(
-    () => vars.withAdditionalVariables({ "": "value" }),
-    "Variable key cannot be empty",
-  );
+  const emptyKeyResult = variables.withAdditionalVariables({ "": "value" });
+  assertErrorResult(emptyKeyResult, "Variable key cannot be empty");
 
-  assertErrorMessage(
-    () => vars.withAdditionalVariables({ "key": null as any }),
-    "Variable value for 'key' cannot be null or undefined",
-  );
+  const nullValueResult = variables.withAdditionalVariables({ "key": null as any });
+  assertErrorResult(nullValueResult, "Variable value for 'key' cannot be null or undefined");
 });
 
 Deno.test("StandardPromptVariables - chain multiple with methods", () => {
   const originalResult = StandardPromptVariables.create("input.txt", "output.md");
+  if (!originalResult.ok) throw new Error("Expected successful creation");
+  const original = originalResult.data;
 
-  const updated = original
-    .withInputTextFile("new_input.txt")
-    .withDestinationPath("new_output.md")
-    .withAdditionalVariables({ layer: "project" })
-    .withAdditionalVariables({ directive: "to" });
+  const step1 = original.withInputTextFile("new_input.txt");
+  if (!step1.ok) throw new Error("Expected successful step1");
+  const step2 = step1.data.withDestinationPath("new_output.md");
+  if (!step2.ok) throw new Error("Expected successful step2");
+  const step3 = step2.data.withAdditionalVariables({ layer: "project" });
+  if (!step3.ok) throw new Error("Expected successful step3");
+  const updatedResult = step3.data.withAdditionalVariables({ directive: "to" });
+
+  if (!updatedResult.ok) throw new Error("Expected successful update");
+  const updated = updatedResult.data;
 
   assertEquals(updated.getInputTextFile(), "new_input.txt");
   assertEquals(updated.getDestinationPath(), "new_output.md");
@@ -287,8 +318,8 @@ Deno.test("StandardPromptVariables - chain multiple with methods", () => {
   assertEquals(original.getAdditionalVariable("layer"), undefined);
 });
 
-Deno.test("StandardPromptVariables - toRecord includes all variables", () => {
-  const varsResult = StandardPromptVariables.create(
+Deno.test("StandardPromptVariables - toRecord includes all _variables", () => {
+  const variables5Result = StandardPromptVariables.create(
     "data.csv",
     "report.pdf",
     {
@@ -298,13 +329,16 @@ Deno.test("StandardPromptVariables - toRecord includes all variables", () => {
     },
   );
 
-  const record = vars.toRecord();
+  if (!variables5Result.ok) throw new Error("Expected successful creation");
+  const variables5 = variables5Result.data;
 
-  // Should include standard variables
+  const record = variables5.toRecord();
+
+  // Should include standard _variables
   assertEquals(record.input_text_file, "data.csv");
   assertEquals(record.destination_path, "report.pdf");
 
-  // Should include additional variables
+  // Should include additional _variables
   assertEquals(record.format, "csv");
   assertEquals(record.delimiter, ",");
   assertEquals(record.encoding, "utf-8");
@@ -314,10 +348,13 @@ Deno.test("StandardPromptVariables - toRecord includes all variables", () => {
 });
 
 Deno.test("StandardPromptVariables - implements PromptVariables interface", () => {
-  const varsResult = StandardPromptVariables.create("input.txt", "output.md");
+  const variables6Result = StandardPromptVariables.create("input.txt", "output.md");
+
+  if (!variables6Result.ok) throw new Error("Expected successful creation");
+  const variables6 = variables6Result.data;
 
   // Check that toRecord returns proper type
-  const record = vars.toRecord();
+  const record = variables6.toRecord();
   assertEquals(typeof record, "object");
 
   // All values should be strings
@@ -331,17 +368,22 @@ Deno.test("StandardPromptVariables - implements PromptVariables interface", () =
 });
 
 Deno.test("StandardPromptVariables - handles special characters in paths", () => {
-  const varsResult = StandardPromptVariables.create(
+  const variables7Result = StandardPromptVariables.create(
     "/path/with spaces/file.txt",
     "C:\\Windows\\Path\\With\\Backslashes.md",
   );
 
-  assertEquals(vars.getInputTextFile(), "/path/with spaces/file.txt");
-  assertEquals(vars.getDestinationPath(), "C:\\Windows\\Path\\With\\Backslashes.md");
+  if (!variables7Result.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const variables7 = variables7Result.data;
+
+  assertEquals(variables7.getInputTextFile(), "/path/with spaces/file.txt");
+  assertEquals(variables7.getDestinationPath(), "C:\\Windows\\Path\\With\\Backslashes.md");
 });
 
-Deno.test("StandardPromptVariables - handles Unicode in variables", () => {
-  const varsResult = StandardPromptVariables.create(
+Deno.test("StandardPromptVariables - handles Unicode in _variables", () => {
+  const variables8Result = StandardPromptVariables.create(
     "入力.txt",
     "出力.md",
     {
@@ -350,16 +392,21 @@ Deno.test("StandardPromptVariables - handles Unicode in variables", () => {
     },
   );
 
-  assertEquals(vars.getInputTextFile(), "入力.txt");
-  assertEquals(vars.getDestinationPath(), "出力.md");
-  assertEquals(vars.getAdditionalVariable("日本語"), "テスト");
-  assertEquals(vars.getAdditionalVariable("emoji"), "🎉");
+  if (!variables8Result.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const variables8 = variables8Result.data;
+
+  assertEquals(variables8.getInputTextFile(), "入力.txt");
+  assertEquals(variables8.getDestinationPath(), "出力.md");
+  assertEquals(variables8.getAdditionalVariable("日本語"), "テスト");
+  assertEquals(variables8.getAdditionalVariable("emoji"), "🎉");
 });
 
 Deno.test("StandardPromptVariables - accepts string values only", () => {
   // Since StandardPromptVariables expects Record<string, string>,
   // we should pass strings explicitly
-  const varsResult = StandardPromptVariables.create(
+  const variables9Result = StandardPromptVariables.create(
     "input.txt",
     "output.md",
     {
@@ -369,7 +416,12 @@ Deno.test("StandardPromptVariables - accepts string values only", () => {
     },
   );
 
-  assertEquals(vars.getAdditionalVariable("count"), "42");
-  assertEquals(vars.getAdditionalVariable("ratio"), "3.14");
-  assertEquals(vars.getAdditionalVariable("flag"), "true");
+  if (!variables9Result.ok) {
+    throw new Error("Expected successful creation");
+  }
+  const variables9 = variables9Result.data;
+
+  assertEquals(variables9.getAdditionalVariable("count"), "42");
+  assertEquals(variables9.getAdditionalVariable("ratio"), "3.14");
+  assertEquals(variables9.getAdditionalVariable("flag"), "true");
 });

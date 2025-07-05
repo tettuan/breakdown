@@ -88,7 +88,7 @@ Deno.test("OneParamsHandler Unit Tests", async (t) => {
       {},
       { some: "config" },
       { complex: { nested: "value" } },
-      null as any,
+      null as unknown,
       undefined as any,
     ];
 
@@ -108,7 +108,7 @@ Deno.test("OneParamsHandler Unit Tests", async (t) => {
       {},
       { "some": "option" },
       { "complex": { "nested": "value" } },
-      null as any,
+      null as unknown,
       undefined as any,
     ];
 

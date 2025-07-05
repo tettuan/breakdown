@@ -92,13 +92,13 @@ Deno.test({
         version: "1.0.0",
       };
 
-      const _factory = new TestPromptVariablesFactory(customVariables);
-      (_factory._allParams as any).promptFilePath = promptPath;
-      (_factory._allParams as any).inputFilePath = inputPath;
+      const factory = new TestPromptVariablesFactory(customVariables);
+      (factory._allParams as any).promptFilePath = promptPath;
+      (factory._allParams as any).inputFilePath = inputPath;
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(_factory as any);
-      const result = await _adapter.generatePrompt();
+      const adapter = new PromptAdapterImpl(factory as any);
+      const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with custom variables", result);
 
@@ -124,13 +124,13 @@ Deno.test({
       await createTestFile(promptPath, "Simple prompt without variables");
 
       // Create factory without custom variables
-      const _factory = new TestPromptVariablesFactory({});
-      (_factory._allParams as any).promptFilePath = promptPath;
-      (_factory._allParams as any).inputFilePath = "";
+      const factory = new TestPromptVariablesFactory({});
+      (factory._allParams as any).promptFilePath = promptPath;
+      (factory._allParams as any).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(_factory as any);
-      const result = await _adapter.generatePrompt();
+      const adapter = new PromptAdapterImpl(factory as any);
+      const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result without custom variables", result);
 
@@ -164,13 +164,13 @@ Deno.test({
         custom_field: "CustomValue",
       };
 
-      const _factory = new TestPromptVariablesFactory(customVariables);
-      (_factory._allParams as any).promptFilePath = promptPath;
-      (_factory._allParams as any).inputFilePath = "";
+      const factory = new TestPromptVariablesFactory(customVariables);
+      (factory._allParams as any).promptFilePath = promptPath;
+      (factory._allParams as any).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(_factory as any);
-      const result = await _adapter.generatePrompt();
+      const adapter = new PromptAdapterImpl(factory as any);
+      const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with multiple custom variables", result);
 
@@ -207,14 +207,14 @@ Deno.test({
         destination_path: "/custom/path",
       };
 
-      const _factory = new TestPromptVariablesFactory(customVariables);
-      (_factory._allParams as any).promptFilePath = promptPath;
-      (_factory._allParams as any).inputFilePath = inputPath;
-      (_factory._allParams as any).outputFilePath = "/default/output.md";
+      const factory = new TestPromptVariablesFactory(customVariables);
+      (factory._allParams as any).promptFilePath = promptPath;
+      (factory._allParams as any).inputFilePath = inputPath;
+      (factory._allParams as any).outputFilePath = "/default/output.md";
 
       // Create adapter and generate prompt
-      const _adapter = new PromptAdapterImpl(_factory as any);
-      const result = await _adapter.generatePrompt();
+      const adapter = new PromptAdapterImpl(factory as any);
+      const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with overriding custom variables", result);
 

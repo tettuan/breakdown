@@ -73,7 +73,7 @@ describe("PromptAdapter Structure - Interface Design", () => {
     _logger.debug("Testing concern separation");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Should have distinct methods for different concerns
@@ -96,7 +96,7 @@ describe("PromptAdapter Structure - Interface Design", () => {
     _logger.debug("Testing method signature consistency");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Async methods should return Promise
@@ -120,7 +120,7 @@ describe("PromptAdapter Structure - Class Organization", () => {
     _logger.debug("Testing method organization");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Extract method definitions with their visibility
@@ -155,7 +155,7 @@ describe("PromptAdapter Structure - Class Organization", () => {
     _logger.debug("Testing constructor design");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Constructor should accept dependencies
@@ -173,7 +173,7 @@ describe("PromptAdapter Structure - Data Flow", () => {
     _logger.debug("Testing data flow patterns");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Should follow: input -> validation -> transformation -> output pattern
@@ -193,7 +193,7 @@ describe("PromptAdapter Structure - Data Flow", () => {
     _logger.debug("Testing encapsulation");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // All fields should be private
@@ -215,7 +215,7 @@ describe("PromptAdapter Structure - Error Handling Structure", () => {
     _logger.debug("Testing error handling structure");
 
     const fileContent = await Deno.readTextFile(
-      "/Users/tettuan/github/breakdown/lib/prompt/prompt_adapter.ts",
+      new URL("./prompt_adapter.ts", import.meta.url),
     );
 
     // Should return structured error objects

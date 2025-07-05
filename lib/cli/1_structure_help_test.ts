@@ -39,7 +39,7 @@ Deno.test("Help Module Structure", async (t) => {
     const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
 
     // Each function should have a single, clear purpose
-    const functionDefinitions = _helpContent.match(/export function (\w+)[^{]*\{([^}]+)\}/g) || [];
+    // const functionDefinitions = _helpContent.match(/export function (\w+)[^{]*\{([^}]+)\}/g) || [];
 
     // Check showVersion function
     const showVersionMatch = _helpContent.match(/export function showVersion[^{]*\{([\s\S]*?)\n\}/);

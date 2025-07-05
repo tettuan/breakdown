@@ -92,7 +92,7 @@ Deno.test("Integration: TwoParamsPromptGenerator complete workflow with real fil
   try {
     const _generator = new TwoParamsPromptGenerator();
 
-    const _config = {
+    const config = {
       promptDir,
       outputDir,
       configDir,
@@ -142,7 +142,7 @@ Deno.test("Integration: TwoParamsPromptGenerator complete workflow with real fil
     };
 
     const result = await _generator.generatePrompt(
-      _config,
+      config,
       validatedParams,
       options,
       processedVariables,
@@ -177,7 +177,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
     const _generator = new TwoParamsPromptGenerator();
 
     // Test factory integration
-    const _config = {
+    const config = {
       promptDir,
       outputDir,
       configDir,
@@ -207,8 +207,8 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
       },
     };
 
-    const _factory = PromptVariablesFactory.createWithConfig(_config, factoryCliParams);
-    const allParams = _factory.getAllParams();
+    const factory = PromptVariablesFactory.createWithConfig(config, factoryCliParams);
+    const allParams = factory.getAllParams();
 
     _logger.debug("Factory resolved paths", {
       hasPromptFile: !!allParams.promptFilePath,
@@ -217,7 +217,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
 
     // Now test generator with same config
     const result = await _generator.generatePrompt(
-      _config,
+      config,
       validatedParams,
       { from: "input.md", to: "output.md" },
       {
@@ -244,7 +244,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
 Deno.test("Integration: TwoParamsPromptGenerator with VariablesBuilder", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const _config = {
+  const config = {
     promptDir: "./prompts",
     outputDir: "./output",
     configDir: "./config",
@@ -288,7 +288,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with VariablesBuilder", async (
     };
 
     const result = await _generator.generatePrompt(
-      _config,
+      config,
       validatedParams,
       {},
       processedVariables,
@@ -348,7 +348,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with complex custom variables",
   try {
     const _generator = new TwoParamsPromptGenerator();
 
-    const _config = {
+    const config = {
       promptDir,
       outputDir,
       configDir,
@@ -382,7 +382,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with complex custom variables",
     };
 
     const result = await _generator.generatePrompt(
-      _config,
+      config,
       validatedParams,
       {},
       processedVariables,

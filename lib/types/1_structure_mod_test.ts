@@ -17,6 +17,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Import all exports to test structure
 import * as TypesModule from "./mod.ts";
+import type { DemonstrativeType, LegacyLayerType } from "./mod.ts";
 
 const logger = new BreakdownLogger("types-mod-structure");
 
@@ -299,8 +300,8 @@ describe("Structure: Migration path structure", () => {
     assertEquals(layerGuards.isTask(taskType), true);
 
     // Should reject invalid values
-    const invalidDemo = { kind: "invalid", value: "invalid" } as unknown;
-    const invalidLayer = { kind: "invalid", value: "invalid" } as unknown;
+    const invalidDemo = { kind: "invalid", value: "invalid" } as unknown as DemonstrativeType;
+    const invalidLayer = { kind: "invalid", value: "invalid" } as unknown as LegacyLayerType;
     assertEquals(demonstrativeGuards.isTo(invalidDemo), false);
     assertEquals(layerGuards.isProject(invalidLayer), false);
 

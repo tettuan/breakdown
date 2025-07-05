@@ -132,11 +132,21 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
           handlerResult.error && typeof handlerResult.error === "object" &&
           "kind" in handlerResult.error && handlerResult.error.kind === "PromptGenerationError"
         ) {
-          const errorMsg = handlerResult.error.error
-            ? (typeof handlerResult.error.error === "string"
-              ? handlerResult.error.error
-              : JSON.stringify(handlerResult.error.error))
-            : "Configuration or template issue";
+          let errorMsg: string;
+          if (handlerResult.error.error) {
+            if (typeof handlerResult.error.error === "string") {
+              errorMsg = handlerResult.error.error;
+            } else if (typeof handlerResult.error.error === "object") {
+              // Handle BreakdownPrompt error objects
+              const errorObj = handlerResult.error.error as { message?: string; error?: string };
+              errorMsg = errorObj.message || errorObj.error ||
+                JSON.stringify(handlerResult.error.error);
+            } else {
+              errorMsg = String(handlerResult.error.error);
+            }
+          } else {
+            errorMsg = "Configuration or template issue";
+          }
 
           // Check if this is a test scenario that should fail
           // by looking at the call stack and config being tested
@@ -156,14 +166,32 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
             errorMsg.includes("critical") || errorMsg.includes("fatal")
           ) {
             // These are fundamental path errors that should fail
-            throw new Error(`Two params handler error: ${JSON.stringify(handlerResult.error)}`);
+            throw new Error(
+              `Two params handler error: ${
+                handlerResult.error && typeof handlerResult.error === "object" &&
+                  "kind" in handlerResult.error
+                  ? `${handlerResult.error.kind}: ${
+                    JSON.stringify(handlerResult.error).substring(0, 200)
+                  }`
+                  : String(handlerResult.error)
+              }`,
+            );
           }
 
           console.warn(`⚠️ Prompt generation issue: ${errorMsg}`);
           console.log("✅ Breakdown execution completed with warnings");
           return; // Continue gracefully instead of throwing
         }
-        throw new Error(`Two params handler error: ${JSON.stringify(handlerResult.error)}`);
+        throw new Error(
+          `Two params handler error: ${
+            handlerResult.error && typeof handlerResult.error === "object" &&
+              "kind" in handlerResult.error
+              ? `${handlerResult.error.kind}: ${
+                JSON.stringify(handlerResult.error).substring(0, 200)
+              }`
+              : String(handlerResult.error)
+          }`,
+        );
       }
     } else if (result.type === "one") {
       await handleOneParams(result.params, config, result.options);

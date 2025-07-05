@@ -118,8 +118,16 @@ class TwoParamsOrchestrator {
 
     // 5. Write output
     try {
+      // Ensure the prompt data is properly stringified
+      const outputText = typeof promptResult.data === "string"
+        ? promptResult.data
+        : JSON.stringify(promptResult.data);
+
+      // Add newline if not present
+      const finalOutput = outputText.endsWith("\n") ? outputText : outputText + "\n";
+
       const encoder = new TextEncoder();
-      const data = encoder.encode(promptResult.data);
+      const data = encoder.encode(finalOutput);
       await Deno.stdout.write(data);
     } catch (err) {
       return error({

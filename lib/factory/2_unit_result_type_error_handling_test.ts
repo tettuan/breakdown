@@ -23,7 +23,7 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables__factory.ts";
+} from "./prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("result-error-handling");
 
@@ -84,7 +84,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
     logger.debug("Testing exhaustive TypeCreationError.kind handling");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Generate all possible error types
     const errorScenarios = [
@@ -93,7 +93,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
         setup: () => {
           provider.disablePatterns();
         },
-        operation: () => _factory.createDirectiveType("to"),
+        operation: () => factory.createDirectiveType("to"),
         expectedKind: "PatternNotFound" as const,
         description: "Pattern not found error",
       },
@@ -103,7 +103,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
           provider.enablePatterns();
           provider.setDirectivePattern("to|summary");
         },
-        operation: () => _factory.createDirectiveType("invalid"),
+        operation: () => factory.createDirectiveType("invalid"),
         expectedKind: "ValidationFailed" as const,
         description: "Validation failed error",
       },
@@ -113,7 +113,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
           provider.enablePatterns();
           provider.setDirectivePattern("[invalid-regex");
         },
-        operation: () => _factory.createDirectiveType("to"),
+        operation: () => factory.createDirectiveType("to"),
         expectedKind: "PatternNotFound" as const, // TwoParamsDirectivePattern.create returns null for invalid regex
         description: "Invalid pattern error",
       },
@@ -169,11 +169,11 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
     logger.debug("Testing complete error information provision");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test PatternNotFound error information
     provider.disablePatterns();
-    const patternNotFoundResult = _factory.createDirectiveType("any");
+    const patternNotFoundResult = factory.createDirectiveType("any");
     assertEquals(patternNotFoundResult.ok, false);
 
     if (!patternNotFoundResult.ok) {
@@ -189,7 +189,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
     // Test ValidationFailed error information
     provider.enablePatterns();
     provider.setDirectivePattern("to|summary");
-    const validationFailedResult = _factory.createDirectiveType("invalid_value");
+    const validationFailedResult = factory.createDirectiveType("invalid_value");
     assertEquals(validationFailedResult.ok, false);
 
     if (!validationFailedResult.ok) {
@@ -205,7 +205,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
     logger.debug("Testing error propagation in composite operations");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test createBothTypes error propagation scenarios
     const propagationScenarios = [
@@ -213,7 +213,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
         setup: () => {
           provider.disablePatterns();
         },
-        operation: () => _factory.createBothTypes("to", "project"),
+        operation: () => factory.createBothTypes("to", "project"),
         expectedErrorSource: "directive",
         expectedKind: "PatternNotFound",
         description: "Both patterns missing - fails on directive first",
@@ -224,7 +224,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
           provider.setDirectivePattern("to|summary");
           provider.setLayerPattern("project|issue");
         },
-        operation: () => _factory.createBothTypes("invalid", "project"),
+        operation: () => factory.createBothTypes("invalid", "project"),
         expectedErrorSource: "directive",
         expectedKind: "ValidationFailed",
         description: "Invalid directive, valid layer - fails on directive",
@@ -235,7 +235,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
           provider.setDirectivePattern("to|summary");
           provider.setLayerPattern("project|issue");
         },
-        operation: () => _factory.createBothTypes("to", "invalid"),
+        operation: () => factory.createBothTypes("to", "invalid"),
         expectedErrorSource: "layer",
         expectedKind: "ValidationFailed",
         description: "Valid directive, invalid layer - fails on layer",
@@ -246,7 +246,7 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
           provider.setDirectivePattern("to|summary");
           provider.setLayerPattern("project|issue");
         },
-        operation: () => _factory.createBothTypes("invalid_directive", "invalid_layer"),
+        operation: () => factory.createBothTypes("invalid_directive", "invalid_layer"),
         expectedErrorSource: "directive",
         expectedKind: "ValidationFailed",
         description: "Both invalid - fails on directive first",
@@ -275,15 +275,15 @@ describe("Result Type Error Handling - TypeCreationError Exhaustive Coverage", (
 });
 
 describe("Result Type Error Handling - Factory Error State Coverage", () => {
-  it("should handle all _factory validation error states without default case", async () => {
-    logger.debug("Testing _factory validation error state coverage");
+  it("should handle all factory validation error states without default case", async () => {
+    logger.debug("Testing factory validation error state coverage");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Create valid types for factory testing
     provider.enablePatterns();
-    const typesResult = _factory.createBothTypes("to", "project");
+    const typesResult = factory.createBothTypes("to", "project");
     assertEquals(typesResult.ok, true);
 
     if (typesResult.ok) {
@@ -385,8 +385,8 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
     logger.debug("Testing error format constraint scenarios");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
-    const typesResult = _factory.createBothTypes("to", "project");
+    const factory = new TypeFactory(provider);
+    const typesResult = factory.createBothTypes("to", "project");
 
     assertEquals(typesResult.ok, true);
 
@@ -447,8 +447,8 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
     logger.debug("Testing boolean flag combination error scenarios");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
-    const typesResult = _factory.createBothTypes("to", "project");
+    const factory = new TypeFactory(provider);
+    const typesResult = factory.createBothTypes("to", "project");
 
     assertEquals(typesResult.ok, true);
 
@@ -515,7 +515,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
     logger.debug("Testing Result type success/failure exhaustive branching");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // Test success and failure scenarios
     const resultScenarios = [
@@ -524,7 +524,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
           provider.enablePatterns();
           provider.setDirectivePattern("to|summary");
         },
-        operation: () => _factory.createDirectiveType("to"),
+        operation: () => factory.createDirectiveType("to"),
         expectedSuccess: true,
         description: "Valid directive type creation",
       },
@@ -533,7 +533,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
           provider.enablePatterns();
           provider.setDirectivePattern("to|summary");
         },
-        operation: () => _factory.createDirectiveType("invalid"),
+        operation: () => factory.createDirectiveType("invalid"),
         expectedSuccess: false,
         description: "Invalid directive type creation",
       },
@@ -541,7 +541,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
         setup: () => {
           provider.disablePatterns();
         },
-        operation: () => _factory.createDirectiveType("to"),
+        operation: () => factory.createDirectiveType("to"),
         expectedSuccess: false,
         description: "Missing pattern directive type creation",
       },
@@ -584,7 +584,7 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
     logger.debug("Testing compile-time exhaustiveness for error handling");
 
     const provider = new ErrorScenarioProvider();
-    const _factory = new TypeFactory(provider);
+    const factory = new TypeFactory(provider);
 
     // This function demonstrates exhaustive error handling
     function handleTypeCreationResult<T>(result: TypeCreationResult<T>): string {
@@ -622,12 +622,12 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
 
     // Test that the function handles all cases
     provider.enablePatterns();
-    const successResult = _factory.createDirectiveType("to");
+    const successResult = factory.createDirectiveType("to");
     const successMessage = handleTypeCreationResult(successResult);
     assertEquals(successMessage.startsWith("Success:"), true);
 
     provider.disablePatterns();
-    const failureResult = _factory.createDirectiveType("to");
+    const failureResult = factory.createDirectiveType("to");
     const failureMessage = handleTypeCreationResult(failureResult);
     assertEquals(failureMessage.startsWith("Pattern not found:"), true);
   });

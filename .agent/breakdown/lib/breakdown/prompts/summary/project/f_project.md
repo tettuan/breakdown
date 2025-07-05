@@ -3,10 +3,13 @@
 This prompt helps create comprehensive project summaries.
 
 ## Input
+
 {input_text}
 
 ## Output
+
 The output should be a structured project summary with:
+
 - Project status overview
 - Progress on key objectives
 - Deliverable status
@@ -18,6 +21,7 @@ The output should be a structured project summary with:
 - Next steps
 
 ## Instructions
+
 1. Analyze project documentation
 2. Assess progress on objectives
 3. Review deliverable status
@@ -26,4 +30,4 @@ The output should be a structured project summary with:
 6. Review resource usage
 7. Check dependency status
 8. Update risk assessment
-9. Identify action items 
+9. Identify action items

@@ -11,6 +11,7 @@
  */
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.211.0/assert/mod.ts";
+import { fromFileUrl } from "@std/path";
 import { PromptManagerAdapter, PromptManagerAdapterConfig } from "./prompt_manager_adapter.ts";
 import { PromptPath, PromptVariables } from "../types/prompt_types.ts";
 
@@ -105,7 +106,7 @@ Deno.test("PromptManagerAdapter - methods have focused responsibilities", async 
  */
 Deno.test("PromptManagerAdapter - private methods encapsulate details", async () => {
   // Read the source to verify private method structure
-  const currentDir = new URL(".", import.meta.url).pathname;
+  const currentDir = fromFileUrl(new URL(".", import.meta.url));
   const filePath = currentDir + "prompt_manager_adapter.ts";
   const moduleContent = await Deno.readTextFile(filePath);
 
@@ -136,7 +137,7 @@ Deno.test("PromptManagerAdapter - private methods encapsulate details", async ()
  * Test: Error handling is centralized
  */
 Deno.test("PromptManagerAdapter - centralizes error handling", async () => {
-  const currentDir = new URL(".", import.meta.url).pathname;
+  const currentDir = fromFileUrl(new URL(".", import.meta.url));
   const filePath = currentDir + "prompt_manager_adapter.ts";
   const moduleContent = await Deno.readTextFile(filePath);
 
@@ -164,7 +165,7 @@ Deno.test("PromptManagerAdapter - centralizes error handling", async () => {
  * Test: Validation logic is properly separated
  */
 Deno.test("PromptManagerAdapter - separates validation concerns", async () => {
-  const currentDir = new URL(".", import.meta.url).pathname;
+  const currentDir = fromFileUrl(new URL(".", import.meta.url));
   const filePath = currentDir + "prompt_manager_adapter.ts";
   const moduleContent = await Deno.readTextFile(filePath);
 
@@ -219,7 +220,7 @@ Deno.test("PromptManagerAdapter - profile support is well-organized", () => {
  * Test: Adapter doesn't mix concerns
  */
 Deno.test("PromptManagerAdapter - maintains clear boundaries", async () => {
-  const currentDir = new URL(".", import.meta.url).pathname;
+  const currentDir = fromFileUrl(new URL(".", import.meta.url));
   const filePath = currentDir + "prompt_manager_adapter.ts";
   const moduleContent = await Deno.readTextFile(filePath);
 

@@ -11,8 +11,8 @@
 import { assert, assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { InputFilePathResolver as InputFilePathResolver } from "./input_file_path_resolver.ts";
-import type { PromptCliParams } from "./prompt_variables__factory.ts";
+import { InputFilePathResolver } from "./input_file_path_resolver.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 const logger = new BreakdownLogger("structure-input-file-path-resolver");
@@ -35,9 +35,9 @@ describe("InputFilePathResolver - Class Structure", () => {
     assertEquals(typeof resolver.getPath, "function");
 
     // Should not expose unrelated functionality
-    assertEquals(typeof (_resolver as any).readFile, "undefined");
-    assertEquals(typeof (_resolver as any).writeFile, "undefined");
-    assertEquals(typeof (_resolver as any).validateContent, "undefined");
+    assertEquals(typeof (resolver as any).readFile, "undefined");
+    assertEquals(typeof (resolver as any).writeFile, "undefined");
+    assertEquals(typeof (resolver as any).validateContent, "undefined");
   });
 
   it("should properly encapsulate internal logic", () => {
@@ -64,9 +64,9 @@ describe("InputFilePathResolver - Class Structure", () => {
     ];
     privateMethodNames.forEach((methodName) => {
       // Methods may exist at runtime - that's normal for TypeScript
-      if ((_resolver as any)[methodName]) {
+      if ((resolver as any)[methodName]) {
         // If they exist, they should be functions (helper methods)
-        assertEquals(typeof (_resolver as any)[methodName], "function");
+        assertEquals(typeof (resolver as any)[methodName], "function");
       }
     });
 
