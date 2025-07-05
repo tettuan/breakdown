@@ -90,6 +90,7 @@ const TIMING = {
   PANE_PROCESSING_DELAY: 1000, // 1 second - delay after processing each pane
   MONITORING_CYCLE_DELAY: 300000, // 5*60 seconds (300 seconds) - delay between monitoring cycles (updated per requirements)
   CLD_COMMAND_DELAY: 200, // 0.2 seconds - delay for cld command (from requirements)
+  ENTER_SEND_CYCLE_DELAY: 30000, // 30 seconds - delay between sending ENTER to all panes
 } as const;
 
 // =============================================================================
@@ -1015,6 +1016,25 @@ class TmuxMonitor {
   }
 
   /**
+   * Send ENTER to all panes every 30 seconds
+   */
+  private async sendEnterToAllPanesCycle(): Promise<void> {
+    logInfo("Starting 30-second ENTER sending cycle to all panes...");
+
+    const targetPanes = this.paneManager.getTargetPanes();
+    const mainPane = this.paneManager.getMainPane();
+    
+    // Send ENTER to all panes (including main pane)
+    const allPanes = mainPane ? [mainPane, ...targetPanes] : targetPanes;
+    
+    for (const pane of allPanes) {
+      await executeTmuxCommand(`tmux send-keys -t ${pane.id} Enter`);
+    }
+
+    logInfo(`ENTER sent to ${allPanes.length} panes`);
+  }
+
+  /**
    * Send status report instructions to all panes
    */
   private async processAllPanes(): Promise<void> {
@@ -1122,15 +1142,28 @@ class TmuxMonitor {
         await this.reportStatusChanges();
         await this.reportToMainPane();
 
-        // 7. Wait 5 minutes
-        logInfo("Waiting for 5 minutes...");
-        const interrupted = await sleepWithKeyboardInterrupt(TIMING.MONITORING_CYCLE_DELAY);
+        // 8. Start 30-second ENTER sending cycle during waiting period
+        const monitoringCycles = TIMING.MONITORING_CYCLE_DELAY / TIMING.ENTER_SEND_CYCLE_DELAY;
+        logInfo(`Waiting for 5 minutes with 30-second ENTER cycles (${monitoringCycles} cycles)...`);
+        
+        let interrupted = false;
+        for (let i = 0; i < monitoringCycles; i++) {
+          // Send ENTER to all panes
+          await this.sendEnterToAllPanesCycle();
+          
+          // Wait 30 seconds with keyboard interrupt capability
+          interrupted = await sleepWithKeyboardInterrupt(TIMING.ENTER_SEND_CYCLE_DELAY);
+          if (interrupted) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            break;
+          }
+        }
+        
         if (interrupted) {
-          logInfo("Monitoring cancelled by user input. Exiting...");
           break;
         }
 
-        // 8. Execute CI and check for errors
+        // 9. Execute CI and check for errors
         const hasErrors = await this.executeCIAndCheckErrors();
 
         if (hasErrors) {
