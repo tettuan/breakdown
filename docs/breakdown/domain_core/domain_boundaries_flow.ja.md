@@ -15,8 +15,15 @@ type BreakdownDomain =
   | "config-management"     // 設定管理ドメイン
   | "prompt-path-resolution" // プロンプトパス決定ドメイン
   | "prompt-variable-generation" // プロンプト変数生成ドメイン
-  | "prompt-execution"      // プロンプト実行ドメイン
-  | "output-processing";    // 出力処理ドメイン
+  | "prompt-generation"     // プロンプト生成ドメイン（最終出力）
+  | "stdout-output";        // 標準出力ドメイン（標準出力まで）
+
+// 注意：以下のドメインはアプリケーションの対象外
+// | "prompt-execution"      // AIへのプロンプト実行（対象外）
+// | "ai-response-processing" // AI応答の処理（対象外）
+// 
+// Breakdown CLIのスコープ：
+// プロンプトを作成し、標準出力するまでがアプリケーションの責務範囲
 ```
 
 ### ドメイン境界の定義
@@ -34,19 +41,32 @@ graph TB
     subgraph "Core Processing Layer"
         PATH[プロンプトパス決定ドメイン]
         VARS[プロンプト変数生成ドメイン]
-        EXEC[プロンプト実行ドメイン]
+        PROMPT[プロンプト生成ドメイン]
     end
     
     subgraph "Output Layer"
-        OUTPUT[出力処理ドメイン]
+        OUTPUT[標準出力ドメイン]
+    end
+    
+    subgraph "Out of Scope (対象外)" 
+        EXEC[AI実行ドメイン]
+        RESPONSE[AI応答処理ドメイン]
     end
     
     CLI --> CONFIG
     CLI --> PATH
     CONFIG --> PATH
     PATH --> VARS
-    VARS --> EXEC
-    EXEC --> OUTPUT
+    VARS --> PROMPT
+    PROMPT --> OUTPUT
+    
+    %% 対象外の依存関係（点線で表示）
+    OUTPUT -.-> EXEC
+    EXEC -.-> RESPONSE
+    
+    %% スタイル設定
+    style EXEC fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
+    style RESPONSE fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
 ```
 
 ## 第2章：バリューオブジェクト設計
@@ -252,8 +272,12 @@ type BreakdownError =
   | { domain: "config-management"; error: ConfigError }
   | { domain: "prompt-path-resolution"; error: PathResolutionError }
   | { domain: "prompt-variable-generation"; error: VariableGenerationError }
-  | { domain: "prompt-execution"; error: PromptExecutionError }
-  | { domain: "output-processing"; error: OutputProcessingError };
+  | { domain: "prompt-generation"; error: PromptGenerationError }
+  | { domain: "stdout-output"; error: OutputError };
+
+// 注意：以下のエラー型はアプリケーションの対象外
+// | { domain: "prompt-execution"; error: PromptExecutionError }
+// | { domain: "ai-response-processing"; error: ResponseProcessingError }
 
 /**
  * PathResolutionError - パス解決エラーのユニオン型
@@ -284,8 +308,10 @@ sequenceDiagram
     participant CONFIG as 設定管理ドメイン
     participant PATH as プロンプトパス決定ドメイン
     participant VARS as プロンプト変数生成ドメイン
-    participant EXEC as プロンプト実行ドメイン
-    participant OUTPUT as 出力処理ドメイン
+    participant PROMPT as プロンプト生成ドメイン
+    participant OUTPUT as 標準出力ドメイン
+    
+    Note over CLI,OUTPUT: Breakdown CLIのスコープ（プロンプト生成→標準出力まで）
 
     Note over CLI: CLI引数 → BreakdownParamsResult
     CLI->>CONFIG: ConfigProfileName
@@ -301,12 +327,16 @@ sequenceDiagram
     PATH->>VARS: PromptTemplatePath
     
     Note over VARS: 変数生成 → PromptVariables
-    VARS->>EXEC: PromptVariables
+    VARS->>PROMPT: PromptVariables
     
-    Note over EXEC: プロンプト実行 → GeneratedPrompt
-    EXEC->>OUTPUT: GeneratedPrompt
+    Note over PROMPT: プロンプト生成 → GeneratedPrompt
+    PROMPT->>OUTPUT: GeneratedPrompt
     
-    Note over OUTPUT: 出力処理 → 完了
+    Note over OUTPUT: 標準出力 → 完了
+    
+    rect rgb(240, 240, 240)
+        Note over OUTPUT: 【アプリケーション対象外】<br/>AI実行・応答処理は<br/>Breakdown CLIの範囲外
+    end
 ```
 
 ### 段階的データ変換フロー
@@ -335,9 +365,14 @@ flowchart TD
         J[PromptParams]
     end
     
-    subgraph "Execution Layer"
+    subgraph "Output Layer (Breakdown CLI Scope)"
         K[GeneratedPrompt]
-        L[OutputResult]
+        L[StandardOutput]
+    end
+    
+    subgraph "Out of Scope"
+        M[AI Execution]
+        N[AI Response]
     end
     
     A --> C
@@ -353,10 +388,16 @@ flowchart TD
     J --> K
     K --> L
     
+    %% 対象外の依存関係（点線）
+    L -.-> M
+    M -.-> N
+    
     style A fill:#e1f5fe
     style L fill:#e8f5e8
     style G fill:#fff3e0
     style I fill:#fce4ec
+    style M fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
+    style N fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
 ```
 
 ## 第5章：ドメイン境界の詳細仕様
@@ -452,11 +493,11 @@ const transformPathToVariables = (
 };
 ```
 
-### 4. プロンプト変数生成ドメイン → プロンプト実行ドメイン
+### 4. プロンプト変数生成ドメイン → プロンプト生成ドメイン
 
 ```typescript
 // 境界インターフェース
-interface VariablesToExecutionBoundary {
+interface VariablesToPromptBoundary {
   // 入力
   promptVariables: PromptVariables;
   
@@ -464,13 +505,13 @@ interface VariablesToExecutionBoundary {
   generatedPrompt: GeneratedPrompt;
   
   // 契約
-  executePrompt(
+  generatePrompt(
     variables: PromptVariables
-  ): Result<GeneratedPrompt, PromptExecutionError>;
+  ): Result<GeneratedPrompt, PromptGenerationError>;
 }
 
 // データ変換
-const transformVariablesToExecution = (
+const transformVariablesToPrompt = (
   variables: PromptVariables
 ): PromptParams => {
   return {
@@ -485,6 +526,54 @@ const transformVariablesToExecution = (
     }
   };
 };
+```
+
+### 5. プロンプト生成ドメイン → 標準出力ドメイン
+
+```typescript
+// 境界インターフェース
+interface PromptToOutputBoundary {
+  // 入力
+  generatedPrompt: GeneratedPrompt;
+  
+  // 出力
+  outputResult: StandardOutputResult;
+  
+  // 契約
+  outputToStdout(
+    prompt: GeneratedPrompt
+  ): Result<StandardOutputResult, OutputError>;
+}
+
+// データ変換
+const transformPromptToOutput = (
+  prompt: GeneratedPrompt
+): StandardOutputData => {
+  return {
+    content: prompt.content,
+    metadata: prompt.metadata,
+    timestamp: new Date().toISOString()
+  };
+};
+```
+
+### 注意：アプリケーションスコープ外のドメイン
+
+```typescript
+// 以下のドメインはBreakdown CLIの対象外
+// 
+// interface PromptExecutionBoundary {
+//   // AI実行サービス（Claude, GPT等）へのプロンプト送信
+//   executeWithAI(prompt: GeneratedPrompt): Result<AIResponse, AIError>;
+// }
+// 
+// interface ResponseProcessingBoundary {
+//   // AI応答の処理・整形
+//   processResponse(response: AIResponse): Result<ProcessedResult, ProcessingError>;
+// }
+// 
+// Breakdown CLIの責務範囲：
+// ユーザー入力 → プロンプト生成 → 標準出力 まで
 ```
 
 ## 第6章：エラーハンドリングの境界設計
@@ -640,25 +729,35 @@ class StandardPathResolutionStrategy implements PathResolutionStrategy {
 
 このドメイン境界設計により、Breakdown CLIは以下の価値を実現します：
 
-### 1. 型安全性の確保
+### 1. 明確なアプリケーションスコープ
+- **範囲の明確化**: プロンプト生成から標準出力まで
+- **責務の限定**: AI実行・応答処理は対象外
+- **境界の明示**: 何を行い、何を行わないかの明確化
+
+### 2. 型安全性の確保
 - バリューオブジェクトによる不変性
 - ユニオン型による状態の明確化
 - Smart Constructorによる生成時バリデーション
 
-### 2. 責務の明確化
+### 3. 責務の明確化
 - 各ドメインの単一責任
 - 境界での明確なデータ変換
 - エラー処理の局所化
 
-### 3. 拡張性の実現
+### 4. 拡張性の実現
 - 新しいドメインの追加容易性
 - 既存境界への影響最小化
 - 設定による動的な挙動変更
 
-### 4. 保守性の向上
+### 5. 保守性の向上
 - ドメイン固有の用語による理解促進
 - 境界での変換ロジックの集約
 - テスト可能な設計
+
+### 6. 統合の容易性
+- 標準出力による他ツールとの連携
+- パイプライン処理への組み込み
+- 外部システムとの疎結合
 
 ## 関連ドキュメント
 
