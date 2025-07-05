@@ -12,21 +12,21 @@ Breakdown CLIのテスト戦略は、**ドメイン駆動設計**の思想に基
 
 ```
 tests/
-├── core_domain/              # 核心ドメインテスト
+├── 0_core_domain/            # 核心ドメインテスト（最優先実行）
 │   ├── prompt_path_resolution/    # プロンプトパス決定ドメイン
 │   ├── prompt_variable_generation/ # プロンプト変数生成ドメイン
 │   ├── parameter_parsing/         # パラメータ解析ドメイン
 │   └── configuration_management/  # 設定管理ドメイン
-├── supporting_domain/        # 支援ドメインテスト
+├── 1_supporting_domain/      # 支援ドメインテスト
 │   ├── template_management/       # テンプレート管理ドメイン
 │   └── workspace_management/      # ワークスペース管理ドメイン
-├── generic_domain/           # 技術基盤ドメインテスト
+├── 2_generic_domain/         # 技術基盤ドメインテスト
 │   ├── factory/                  # ファクトリードメイン
 │   └── system/                   # システムドメイン
-├── interface_layer/          # インターフェース層テスト
+├── 3_interface_layer/        # インターフェース層テスト
 │   ├── cli/                      # CLIインターフェース
 │   └── configuration/            # 設定インターフェース
-└── cross_domain/             # ドメイン間統合テスト
+└── 4_cross_domain/           # ドメイン間統合テスト（最後に実行）
     ├── e2e/                      # エンドツーエンドシナリオ
     └── collaboration/            # ドメイン間協働
 ```
@@ -83,7 +83,7 @@ tests/
 **検証対象**: ユーザーの意図を正確なファイルパスに変換する確実性
 
 ```typescript
-// tests/core_domain/prompt_path_resolution/
+// tests/0_core_domain/prompt_path_resolution/
 describe('プロンプトパス決定ドメイン', () => {
   describe('確実性の保証', () => {
     it('同じ入力からは必ず同じパスを生成する', () => {
@@ -108,7 +108,7 @@ describe('プロンプトパス決定ドメイン', () => {
 **検証対象**: 入力データの3段階変容の正確性
 
 ```typescript
-// tests/core_domain/prompt_variable_generation/
+// tests/0_core_domain/prompt_variable_generation/
 describe('プロンプト変数生成ドメイン', () => {
   describe('3段階変容', () => {
     it('PromptVariableSource → PromptVariables', () => {
@@ -133,7 +133,7 @@ describe('プロンプト変数生成ドメイン', () => {
 **検証対象**: CLI引数から型安全なドメインオブジェクトへの変換
 
 ```typescript
-// tests/core_domain/parameter_parsing/
+// tests/0_core_domain/parameter_parsing/
 describe('パラメータ解析ドメイン', () => {
   describe('TwoParams構築', () => {
     it('DirectiveType と LayerType の型安全な構築', () => {
@@ -152,7 +152,7 @@ describe('パラメータ解析ドメイン', () => {
 **検証対象**: 環境固有設定の統一的管理
 
 ```typescript
-// tests/core_domain/configuration_management/
+// tests/0_core_domain/configuration_management/
 describe('設定管理ドメイン', () => {
   describe('プロファイル切り替え', () => {
     it('プロファイル別設定の正確な読み込み', () => {
@@ -175,7 +175,7 @@ describe('設定管理ドメイン', () => {
 **検証対象**: プロンプトテンプレートとスキーマファイルの配置管理
 
 ```typescript
-// tests/supporting_domain/template_management/
+// tests/1_supporting_domain/template_management/
 describe('テンプレート管理ドメイン', () => {
   describe('ファイル配置ルール', () => {
     it('プロンプトテンプレートの正確な配置検証', () => {
@@ -194,7 +194,7 @@ describe('テンプレート管理ドメイン', () => {
 **検証対象**: プロジェクト環境の設定と管理
 
 ```typescript
-// tests/supporting_domain/workspace_management/
+// tests/1_supporting_domain/workspace_management/
 describe('ワークスペース管理ドメイン', () => {
   describe('環境構築', () => {
     it('プロジェクト固有設定の適切な管理', () => {
@@ -211,7 +211,7 @@ describe('ワークスペース管理ドメイン', () => {
 **検証対象**: ドメインオブジェクトの構築と依存関係管理
 
 ```typescript
-// tests/generic_domain/factory/
+// tests/2_generic_domain/factory/
 describe('ファクトリードメイン', () => {
   describe('PromptVariablesFactory', () => {
     it('パラメータ構築の一元化', () => {
@@ -230,7 +230,7 @@ describe('ファクトリードメイン', () => {
 **検証対象**: システム基盤とエラーハンドリング
 
 ```typescript
-// tests/generic_domain/system/
+// tests/2_generic_domain/system/
 describe('システムドメイン', () => {
   describe('エラーハンドリング', () => {
     it('標準化されたエラー処理', () => {
@@ -247,7 +247,7 @@ describe('システムドメイン', () => {
 **検証対象**: コマンドライン引数の仕様準拠
 
 ```typescript
-// tests/interface_layer/cli/
+// tests/3_interface_layer/cli/
 describe('CLIインターフェース', () => {
   describe('基本コマンド', () => {
     it('breakdown to task の正確な実行', () => {
@@ -268,7 +268,7 @@ describe('CLIインターフェース', () => {
 **検証対象**: 設定ファイルの読み込みと管理
 
 ```typescript
-// tests/interface_layer/configuration/
+// tests/3_interface_layer/configuration/
 describe('設定インターフェース', () => {
   describe('設定ファイル読み込み', () => {
     it('app.yml と user.yml の正確なマージ', () => {
@@ -285,7 +285,7 @@ describe('設定インターフェース', () => {
 **検証対象**: システム全体の価値創出
 
 ```typescript
-// tests/cross_domain/e2e/
+// tests/4_cross_domain/e2e/
 describe('エンドツーエンドシナリオ', () => {
   describe('基本的なプロンプト生成フロー', () => {
     it('CLI実行からプロンプト出力までの完全フロー', async () => {
@@ -311,7 +311,7 @@ describe('エンドツーエンドシナリオ', () => {
 **検証対象**: ドメイン間の境界と協働関係
 
 ```typescript
-// tests/cross_domain/collaboration/
+// tests/4_cross_domain/collaboration/
 describe('ドメイン間協働', () => {
   describe('核心ドメイン間の連携', () => {
     it('パス決定→変数生成→プロンプト生成の連携', () => {
@@ -329,13 +329,15 @@ describe('ドメイン間協働', () => {
 
 ## 技術的品質テスト（診断・補完）
 
-### テストカテゴリの簡潔な命名
-- **`_architecture/`**: アーキテクチャ制約検証
-- **`_behavior/`**: 動作検証
-- **`_structure/`**: 構造整合性検証
-- **`_core/`**: コア機能テスト
+### テストカテゴリの簡潔な命名（実行順序制御付き）
+- **`0_architecture/`**: アーキテクチャ制約検証（最初に実行）
+- **`1_behavior/`**: 動作検証（基本機能の確認）
+- **`2_structure/`**: 構造整合性検証（データ構造の検証）
+- **`3_core/`**: コア機能テスト（統合的な機能検証）
 
 これらの技術テストは、DDDの価値テストを補完し、技術的品質を診断的に検証します。
+
+> **実行順序制御**: フォルダ名とファイル名に番号プレフィックス（0-4）を付けることで、Denoのテスト実行順序が制御され、依存関係に基づいた適切な順序でテストが実行されます。
 
 ## 品質メトリクス
 

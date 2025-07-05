@@ -8,36 +8,38 @@ Breakdownは、プロジェクト管理のための階層的なタスク分解�
 
 ```
 tests/
-├── core_domain/              # 核心ドメインテスト
-├── supporting_domain/        # 支援ドメインテスト  
-├── generic_domain/           # 技術基盤ドメインテスト
-├── interface_layer/          # インターフェース層テスト
-├── cross_domain/             # ドメイン間統合テスト
+├── 0_core_domain/            # 核心ドメインテスト（最優先実行）
+├── 1_supporting_domain/      # 支援ドメインテスト
+├── 2_generic_domain/         # 技術基盤ドメインテスト
+├── 3_interface_layer/        # インターフェース層テスト
+├── 4_cross_domain/           # ドメイン間統合テスト（最後に実行）
 ├── helpers/                  # 共通テストユーティリティ
 └── fixtures/                 # テストデータ
 ```
 
 ### 技術テストカテゴリ
 
-各ドメイン内で以下の技術テストが利用可能：
+各ドメイン内で以下の技術テストが利用可能（実行順序制御のための番号付き）：
 
-- **`_architecture/`** - アーキテクチャ制約
-- **`_behavior/`** - 動作検証  
-- **`_structure/`** - 構造整合性
-- **`_core/`** - コア機能テスト
+- **`0_architecture/`** - アーキテクチャ制約（最初に実行）
+- **`1_behavior/`** - 動作検証（基本機能の確認）
+- **`2_structure/`** - 構造整合性（データ構造の検証）
+- **`3_core/`** - コア機能テスト（統合的な機能検証）
+
+> **注意**: フォルダ名とファイル名に番号プレフィックスを付けることで、Denoのテスト実行順序が制御されます。
 
 ## テスト実行方法
 
 ```bash
-# 全ドメインテスト実行
+# 全ドメインテスト実行（番号順に実行される）
 deno test tests/
 
-# ドメイン別実行
-deno test tests/core_domain/          # 核心ドメイン
-deno test tests/supporting_domain/   # 支援ドメイン
-deno test tests/generic_domain/      # 技術基盤
-deno test tests/interface_layer/     # インターフェース層
-deno test tests/cross_domain/        # 統合テスト
+# ドメイン別実行（推奨される実行順序）
+deno test tests/0_core_domain/        # 核心ドメイン（最優先）
+deno test tests/1_supporting_domain/  # 支援ドメイン
+deno test tests/2_generic_domain/     # 技術基盤
+deno test tests/3_interface_layer/    # インターフェース層
+deno test tests/4_cross_domain/       # 統合テスト（最後）
 ```
 
 ## 移行完了状況
@@ -101,33 +103,33 @@ jobs:
       - uses: denoland/setup-deno@v1
       
       - name: Core Domain Tests
-        run: deno test tests/core_domain/
+        run: deno test tests/0_core_domain/
       
       - name: Supporting Domain Tests
-        run: deno test tests/supporting_domain/
+        run: deno test tests/1_supporting_domain/
       
       - name: Generic Domain Tests
-        run: deno test tests/generic_domain/
+        run: deno test tests/2_generic_domain/
       
       - name: Interface Layer Tests
-        run: deno test tests/interface_layer/
+        run: deno test tests/3_interface_layer/
       
       - name: Cross Domain Tests
-        run: deno test tests/cross_domain/
+        run: deno test tests/4_cross_domain/
 ```
 
 ### ローカルでの実行
 
 ```bash
-# 全テスト実行
+# 全テスト実行（番号順に実行される）
 deno test tests/
 
-# ドメイン別実行
-deno test tests/core_domain/
-deno test tests/supporting_domain/
-deno test tests/generic_domain/
-deno test tests/interface_layer/
-deno test tests/cross_domain/
+# ドメイン別実行（推奨される実行順序）
+deno test tests/0_core_domain/
+deno test tests/1_supporting_domain/
+deno test tests/2_generic_domain/
+deno test tests/3_interface_layer/
+deno test tests/4_cross_domain/
 ```
 
 
