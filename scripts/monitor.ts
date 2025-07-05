@@ -869,6 +869,19 @@ class PaneStatusManager {
     }
     return donePanes;
   }
+
+  /**
+   * Get all panes with DONE or IDLE status
+   */
+  getDoneAndIdlePanes(): string[] {
+    const targetPanes: string[] = [];
+    for (const [paneId, info] of this.statusMap.entries()) {
+      if (info.current === "DONE" || info.current === "IDLE") {
+        targetPanes.push(paneId);
+      }
+    }
+    return targetPanes;
+  }
 }
 
 /**
@@ -975,6 +988,15 @@ class PaneCommunicator {
   ): Promise<void> {
     const report = generateStatusReport(sessionName, mainPaneId, targetPaneIds);
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}' `);
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
+  }
+
+  /**
+   * Send custom message to main pane
+   */
+  async sendCustomMessage(mainPaneId: string, message: string): Promise<void> {
+    const escapedMessage = message.replace(/'/g, "'\"'\"'");
+    await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${escapedMessage}'`);
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
   }
 }
@@ -1134,10 +1156,10 @@ class TmuxMonitor {
   }
 
   /**
-   * Check for DONE panes and send clear commands
+   * Check for DONE and IDLE panes and send clear commands
    */
-  private async checkAndClearDonePanes(): Promise<void> {
-    logInfo("Checking for DONE panes and sending clear commands...");
+  private async checkAndClearDoneAndIdlePanes(): Promise<void> {
+    logInfo("Checking for DONE and IDLE panes and sending clear commands...");
 
     // Update status tracking for all panes first
     const targetPanes = this.paneManager.getTargetPanes();
@@ -1150,20 +1172,27 @@ class TmuxMonitor {
       }
     }
 
-    // Get all panes with DONE status
-    const donePanes = this.statusManager.getDonePanes();
+    // Get all panes with DONE or IDLE status
+    const clearTargetPanes = this.statusManager.getDoneAndIdlePanes();
     
-    if (donePanes.length > 0) {
-      logInfo(`Found ${donePanes.length} DONE panes: ${donePanes.join(", ")}`);
+    if (clearTargetPanes.length > 0) {
+      logInfo(`Found ${clearTargetPanes.length} DONE/IDLE panes: ${clearTargetPanes.join(", ")}`);
       
-      // Send clear command to each DONE pane
-      for (const paneId of donePanes) {
+      // Send clear command to each DONE/IDLE pane
+      for (const paneId of clearTargetPanes) {
         await this.communicator.sendClearCommand(paneId);
       }
       
-      logInfo(`Clear commands sent to ${donePanes.length} DONE panes`);
+      logInfo(`Clear commands sent to ${clearTargetPanes.length} DONE/IDLE panes`);
+
+      // Report the clearing action to main pane
+      const mainPane = this.paneManager.getMainPane();
+      if (mainPane) {
+        const clearReport = `Cleared ${clearTargetPanes.length} DONE/IDLE panes: ${clearTargetPanes.join(", ")}`;
+        await this.communicator.sendCustomMessage(mainPane.id, clearReport);
+      }
     } else {
-      logInfo("No DONE panes found");
+      logInfo("No DONE/IDLE panes found for clearing");
     }
   }
 
@@ -1312,11 +1341,8 @@ class TmuxMonitor {
             break;
           }
 
-          // Send ENTER to all panes
+          // Send ENTER to all panes (every 30 seconds)
           await this.sendEnterToAllPanesCycle();
-
-          // Check for DONE panes and send clear commands
-          await this.checkAndClearDonePanes();
 
           // Wait 30 seconds with cancellation check
           interrupted = await sleepWithCancellation(TIMING.ENTER_SEND_CYCLE_DELAY);
@@ -1330,13 +1356,16 @@ class TmuxMonitor {
           break;
         }
 
+        // 9. After 5-minute cycle: Check for DONE/IDLE panes and send clear commands
+        await this.checkAndClearDoneAndIdlePanes();
+
         // Check for cancellation
         if (isCancellationRequested()) {
           logInfo("Monitoring cancelled by user input. Exiting...");
           break;
         }
 
-        // 9. Execute CI and check for errors
+        // 10. Execute CI and check for errors
         const hasErrors = await this.executeCIAndCheckErrors();
 
         if (hasErrors) {
