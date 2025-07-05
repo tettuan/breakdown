@@ -7,7 +7,7 @@
  * @module cli/config/1_structure_types_test
  */
 
-import { assertEquals } from "../../../../lib/deps.ts";
+import { assertEquals } from "../../../deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**
@@ -17,7 +17,7 @@ import { fromFileUrl } from "@std/path";
  * and doesn't mix concerns.
  */
 Deno.test("Structure: Config types follow single responsibility principle", async () => {
-  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesFilePath = fromFileUrl(new URL("../_behavior/types.ts", import.meta.url));
   const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Analyze BreakdownConfig interface
@@ -30,8 +30,8 @@ Deno.test("Structure: Config types follow single responsibility principle", asyn
     // Check that all properties relate to configuration
     properties.forEach((prop) => {
       const propName = prop.split(":")[0].trim().replace("?", "");
-      const isConfigRelated = propName.includes("directory") || propName.includes("path") ||
-        propName.includes("config") || propName.includes("output");
+      const isConfigRelated = propName.includes("prompts") || propName.includes("schema") ||
+        propName.includes("workspace") || propName.includes("baseDir");
       assertEquals(
         isConfigRelated,
         true,
@@ -48,8 +48,8 @@ Deno.test("Structure: Config types follow single responsibility principle", asyn
     // Check that all properties relate to runtime options
     properties.forEach((prop) => {
       const propName = prop.split(":")[0].trim().replace("?", "");
-      const isOptionRelated = propName.includes("Path") || propName.includes("Dir") ||
-        propName.endsWith("path") || propName.endsWith("dir");
+      const isOptionRelated = propName.includes("profile") || propName.includes("debug") ||
+        propName.includes("option") || propName.includes("setting");
       assertEquals(
         isOptionRelated,
         true,
@@ -69,7 +69,7 @@ Deno.test("Structure: Config types follow single responsibility principle", asyn
  * without leaking implementation details.
  */
 Deno.test("Structure: Config types have proper abstraction levels", async () => {
-  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesFilePath = fromFileUrl(new URL("../_behavior/types.ts", import.meta.url));
   const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check for implementation details that shouldn't be in type definitions
@@ -117,7 +117,7 @@ Deno.test("Structure: Config types have proper abstraction levels", async () => 
  * different type definitions.
  */
 Deno.test("Structure: No duplication in config type responsibilities", async () => {
-  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesFilePath = fromFileUrl(new URL("../_behavior/types.ts", import.meta.url));
   const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Extract all properties from all interfaces
@@ -172,7 +172,7 @@ Deno.test("Structure: No duplication in config type responsibilities", async () 
  * and follow clear hierarchies.
  */
 Deno.test("Structure: Config type relationships are well-defined", async () => {
-  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesFilePath = fromFileUrl(new URL("../_behavior/types.ts", import.meta.url));
   const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check for clear separation of concerns
@@ -214,7 +214,7 @@ Deno.test("Structure: Config type relationships are well-defined", async () => {
  * representing all possible states explicitly.
  */
 Deno.test("Structure: Config types use Totality-based structure", async () => {
-  const typesFilePath = fromFileUrl(new URL("./types.ts", import.meta.url));
+  const typesFilePath = fromFileUrl(new URL("../_behavior/types.ts", import.meta.url));
   const typesContent = await Deno.readTextFile(typesFilePath);
 
   // Check BreakdownConfig for Totality principles

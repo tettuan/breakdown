@@ -12,7 +12,7 @@ import { describe, it } from "@std/testing/bdd";
 
 describe("Validators Module - Architecture", () => {
   it("should export all public validators", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     // Core validators
     assertExists(_mod.TwoParamsValidator);
@@ -20,7 +20,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should export all type definitions", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     // Check that types are available (via type checking)
     const typeExports = Object.keys(_mod as Record<string, unknown>);
@@ -31,7 +31,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should not export internal implementations", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // Should not export internal helpers or private functions
@@ -43,7 +43,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should follow barrel export pattern", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should only contain exports, no implementations
     assertEquals(
@@ -64,7 +64,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should maintain proper dependency hierarchy", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should only import from subdirectories or siblings, not from parent
     assertEquals(
@@ -81,7 +81,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should export consistent interfaces", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     // All validators should follow consistent naming
     const validators = Object.keys(_mod).filter((k) => k.includes("Validator"));
@@ -91,7 +91,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should support future extensibility", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should have clear sections for different export types
     assertEquals(modContent.includes("// Core validator exports"), true);
@@ -99,7 +99,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should not leak implementation details", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // Should not export test utilities or mocks
@@ -111,7 +111,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should maintain module cohesion", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // All exports should be related to validation
@@ -126,7 +126,7 @@ describe("Validators Module - Architecture", () => {
   });
 
   it("should support tree-shaking", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should use named exports for tree-shaking
     assertEquals(modContent.includes("export {"), true, "Should use named exports");

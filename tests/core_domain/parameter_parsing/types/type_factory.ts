@@ -6,9 +6,9 @@
  * @module parameter_parsing/types/type_factory
  */
 
-import { DirectiveType, TwoParamsDirectivePattern } from "../../../lib/types/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../../../../lib/types/directive_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../../../lib/deps.ts";
 
 /**
  * 設定ファイルからバリデーションパターンを提供するインターフェース

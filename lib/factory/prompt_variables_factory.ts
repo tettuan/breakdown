@@ -179,13 +179,18 @@ export class PromptVariablesFactory {
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
+    directive: DirectiveType;
+    layer: LayerType;
     customVariables?: Record<string, string>;
   } {
+    const totalityParams = this.cliParams as TotalityPromptCliParams;
     return {
       promptFilePath: this.promptFilePath,
       inputFilePath: this.inputFilePath,
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
+      directive: totalityParams.directive!,
+      layer: totalityParams.layer!,
       customVariables: this.cliParams.options.customVariables,
     };
   }
@@ -269,18 +274,50 @@ export class PromptVariablesFactory {
    * Check if base directory configuration is valid
    */
   public hasValidBaseDir(): boolean {
-    const baseDir = this.config.app_prompt?.base_dir;
-    return typeof baseDir === "string" && baseDir.length > 0;
+    const promptBaseDir = this.config.app_prompt?.base_dir;
+    return promptBaseDir !== undefined && promptBaseDir !== null && 
+           promptBaseDir.trim() !== "" && promptBaseDir.trim() !== "   ";
   }
 
   /**
-   * Get base directory validation error if any
+   * Get base directory validation error message
    */
   public getBaseDirError(): string | undefined {
-    if (!this.hasValidBaseDir()) {
-      return "Base directory not configured or invalid";
+    if (this.hasValidBaseDir()) {
+      return undefined;
     }
-    return undefined;
+    const promptBaseDir = this.config.app_prompt?.base_dir;
+    if (promptBaseDir === undefined || promptBaseDir === null) {
+      return "Configuration missing app_prompt.base_dir property";
+    }
+    if (promptBaseDir.trim() === "") {
+      return "Configuration app_prompt.base_dir cannot be empty";
+    }
+    if (promptBaseDir.trim() === "   ") {
+      return "Configuration app_prompt.base_dir cannot be whitespace only";
+    }
+    return "Invalid app_prompt.base_dir configuration";
+  }
+
+  /**
+   * Get error format option for compatibility with test files
+   */
+  public get errorFormat(): "simple" | "detailed" | "json" {
+    return this.cliParams.options.errorFormat || "simple";
+  }
+
+  /**
+   * Get extended flag for compatibility with test files
+   */
+  public get extended(): boolean {
+    return this.cliParams.options.extended || false;
+  }
+
+  /**
+   * Get custom validation flag for compatibility with test files
+   */
+  public get customValidation(): boolean {
+    return this.cliParams.options.customValidation || false;
   }
 
   /**
@@ -322,6 +359,67 @@ export class PromptVariablesFactory {
    */
   public getLayerType(): string {
     return this.cliParams.layerType;
+  }
+
+  /**
+   * Build method for compatibility with test files
+   */
+  public build(): PromptParams {
+    // This is a synchronous version that throws on error
+    // For async version, use toPromptParams()
+    const result = this.toPromptParamsSync();
+    if (!result.ok) {
+      throw result.error;
+    }
+    return result.data;
+  }
+
+  /**
+   * Get prompt path for compatibility with test files
+   */
+  public get promptPath(): string {
+    return this.promptFilePath;
+  }
+
+  /**
+   * Get schema path for compatibility with test files
+   */
+  public get schemaPath(): string {
+    return this.schemaFilePath;
+  }
+
+  /**
+   * Synchronous version of toPromptParams for backward compatibility
+   */
+  private toPromptParamsSync(): Result<PromptParams, Error> {
+    try {
+      // Stage 1: Create PromptVariableSource from various inputs
+      const source = this.createPromptVariableSource();
+
+      // Stage 2-3: Transform through domain service (synchronous version)
+      const templatePath = this.promptFilePath;
+      
+      // Create PromptParams object with correct structure
+      const promptParams: PromptParams = {
+        template_file: this.promptFilePath,
+        variables: {
+          demonstrative_type: this.cliParams.demonstrativeType,
+          layer_type: this.cliParams.layerType,
+          input_file: this.inputFilePath,
+          output_file: this.outputFilePath,
+          prompt_path: this.promptFilePath,
+          schema_path: this.schemaFilePath,
+          ...this.customVariables,
+        },
+      };
+
+      return { ok: true, data: promptParams };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
   }
 
   /**

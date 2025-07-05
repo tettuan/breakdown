@@ -12,7 +12,7 @@ import {
 import {
   detectEnvironment as _detectEnvironment,
   type EnvironmentDetectionConfig as _EnvironmentDetectionConfig,
-} from "../../../lib/io/enhanced_stdin.ts";
+} from "../../../../lib/io/enhanced_stdin.ts";
 
 Deno.test("detectEnvironment - uses injected configuration instead of Deno.env", () => {
   // Create a mock configuration that doesn't use Deno.env

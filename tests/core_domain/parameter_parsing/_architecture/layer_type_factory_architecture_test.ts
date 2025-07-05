@@ -8,7 +8,7 @@
  * - Integration boundaries
  */
 
-import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -18,7 +18,7 @@ import {
   type LayerTypeResult,
 } from "../../../../lib/types/layer_type_factory.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("layer-type-factory-architecture");
 

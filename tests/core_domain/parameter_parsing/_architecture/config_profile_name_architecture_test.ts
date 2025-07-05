@@ -10,7 +10,7 @@
  * @module types/config_profile_name_architecture_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigProfileName } from "../../../../lib/types/config_profile_name.ts";
 

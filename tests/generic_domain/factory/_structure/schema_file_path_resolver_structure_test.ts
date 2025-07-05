@@ -12,7 +12,7 @@ import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.t
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { TwoParams_Result } from "$lib/types/mod.ts";
-import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
+import { SchemaFilePathResolver } from "../../../../lib/factory/schema_file_path_resolver.ts";
 
 const logger = new BreakdownLogger("structure-schema-file-path-resolver");
 

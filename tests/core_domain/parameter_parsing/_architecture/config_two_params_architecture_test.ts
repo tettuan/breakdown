@@ -8,7 +8,7 @@
  * @module types/defaults/0_architecture_config_two_params_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

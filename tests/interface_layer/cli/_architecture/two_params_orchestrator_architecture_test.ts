@@ -18,10 +18,10 @@ import { assert, assertEquals } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { TwoParamsOrchestrator } from "./two_params_orchestrator.ts";
-import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
-import type { TwoParamsValidator } from "../validators/two_params_validator.ts";
-import type { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
+import { TwoParamsOrchestrator } from "../../../../lib/cli/orchestrators/two_params_orchestrator.ts";
+import type { TwoParamsHandlerError } from "../../../../lib/cli/handlers/two_params_handler.ts";
+import type { TwoParamsValidator } from "../../../../lib/cli/validators/two_params_validator.ts";
+import type { TwoParamsStdinProcessor } from "../../../../lib/cli/processors/two_params_stdin_processor.ts";
 import { isError } from "../../../lib/deps.ts";
 
 const _logger = new _BreakdownLogger("architecture-two-params-orchestrator");

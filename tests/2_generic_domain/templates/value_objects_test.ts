@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { SchemaPath } from "../../../lib/domain/generic/template_management/value_objects/schema_path.ts";
 import { SchemaContent } from "../../../lib/domain/generic/template_management/value_objects/schema_content.ts";
@@ -7,6 +7,30 @@ import { PromptContent } from "../../../lib/domain/generic/template_management/v
 import { TemplateRequest } from "../../../lib/domain/generic/template_management/value_objects/template_request.ts";
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
 import { LayerType } from "../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
+
+// Helper function to create DirectiveType and LayerType for testing
+function createTestTypes(directive: string, layer: string): { directive: DirectiveType; layer: LayerType } {
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: directive,
+    layerType: layer,
+    params: [directive, layer],
+    options: {}
+  };
+  
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
+  
+  if (!directiveResult || !layerResult) {
+    throw new Error(`Failed to create test types: directive=${directiveResult ? 'ok' : 'null'}, layer=${layerResult ? 'ok' : 'null'}`);
+  }
+  
+  return {
+    directive: directiveResult,
+    layer: layerResult
+  };
+}
 
 const logger = new BreakdownLogger("value-objects-test");
 
@@ -17,16 +41,17 @@ Deno.test("SchemaPath: creates valid schema path", () => {
     target: "SchemaPath.create",
   });
 
-  const pathResult = SchemaPath.create("find/bugs/base.schema.md");
+  const types = createTestTypes("find", "bugs");
+  const pathResult = SchemaPath.create(types.directive, types.layer, "base.json");
 
   logger.debug("SchemaPath作成結果", {
     success: pathResult.ok,
-    path: pathResult.ok ? pathResult.data.getValue() : pathResult.error,
+    path: pathResult.ok ? pathResult.data!.getPath() : pathResult.error,
   });
 
   assertEquals(pathResult.ok, true);
-  if (pathResult.ok) {
-    assertEquals(pathResult.data.getValue(), "find/bugs/base.schema.md");
+  if (pathResult.ok && pathResult.data) {
+    assertEquals(pathResult.data.getPath(), "find/bugs/base.json");
   }
 });
 
@@ -36,8 +61,9 @@ Deno.test("SchemaPath: rejects invalid schema path", () => {
     target: "SchemaPath.create (invalid)",
   });
 
-  const emptyPathResult = SchemaPath.create("");
-  const invalidExtensionResult = SchemaPath.create("invalid.txt");
+  const types = createTestTypes("test", "layer");
+  const emptyPathResult = SchemaPath.create(types.directive, types.layer, "");
+  const invalidExtensionResult = SchemaPath.create(types.directive, types.layer, "invalid.txt");
 
   logger.debug("SchemaPath無効パス結果", {
     emptyPathSuccess: emptyPathResult.ok,
@@ -54,17 +80,18 @@ Deno.test("SchemaPath: ensures value object equality", () => {
     target: "SchemaPath equality",
   });
 
-  const path1Result = SchemaPath.create("to/project/base.schema.md");
-  const path2Result = SchemaPath.create("to/project/base.schema.md");
+  const types = createTestTypes("to", "project");
+  const path1Result = SchemaPath.create(types.directive, types.layer, "base.json");
+  const path2Result = SchemaPath.create(types.directive, types.layer, "base.json");
 
-  if (path1Result.ok && path2Result.ok) {
+  if (path1Result.ok && path2Result.ok && path1Result.data && path2Result.data) {
     logger.debug("SchemaPath等価性確認", {
-      path1: path1Result.data.getValue(),
-      path2: path2Result.data.getValue(),
-      areEqual: path1Result.data.getValue() === path2Result.data.getValue(),
+      path1: path1Result.data.getPath(),
+      path2: path2Result.data.getPath(),
+      areEqual: path1Result.data.getPath() === path2Result.data.getPath(),
     });
 
-    assertEquals(path1Result.data.getValue(), path2Result.data.getValue());
+    assertEquals(path1Result.data.getPath(), path2Result.data.getPath());
   }
 });
 
@@ -87,11 +114,11 @@ Deno.test("SchemaContent: creates valid schema content", () => {
 
   logger.debug("SchemaContent作成結果", {
     success: contentResult.ok,
-    hasContent: contentResult.ok ? contentResult.data.getValue().length > 0 : false,
+    hasContent: contentResult.ok && contentResult.data ? contentResult.data.getValue().length > 0 : false,
   });
 
   assertEquals(contentResult.ok, true);
-  if (contentResult.ok) {
+  if (contentResult.ok && contentResult.data) {
     assertEquals(contentResult.data.getValue(), content);
   }
 });
@@ -119,16 +146,17 @@ Deno.test("PromptPath: creates valid prompt path", () => {
     target: "PromptPath.create",
   });
 
-  const pathResult = PromptPath.create("to/project/f_project.md");
+  const types = createTestTypes("to", "project");
+  const pathResult = PromptPath.create(types.directive, types.layer, "f_project.md");
 
   logger.debug("PromptPath作成結果", {
     success: pathResult.ok,
-    path: pathResult.ok ? pathResult.data.getValue() : pathResult.error,
+    path: pathResult.ok ? pathResult.data!.getPath() : pathResult.error,
   });
 
   assertEquals(pathResult.ok, true);
-  if (pathResult.ok) {
-    assertEquals(pathResult.data.getValue(), "to/project/f_project.md");
+  if (pathResult.ok && pathResult.data) {
+    assertEquals(pathResult.data.getPath(), "to/project/f_project.md");
   }
 });
 
@@ -138,8 +166,9 @@ Deno.test("PromptPath: rejects invalid prompt path", () => {
     target: "PromptPath.create (invalid)",
   });
 
-  const emptyPathResult = PromptPath.create("");
-  const invalidExtensionResult = PromptPath.create("invalid.txt");
+  const types = createTestTypes("test", "layer");
+  const emptyPathResult = PromptPath.create(types.directive, types.layer, "");
+  const invalidExtensionResult = PromptPath.create(types.directive, types.layer, "invalid.txt");
 
   logger.debug("PromptPath無効パス結果", {
     emptyPathSuccess: emptyPathResult.ok,
@@ -172,12 +201,12 @@ Please convert the provided input into a structured project format.
 
   logger.debug("PromptContent作成結果", {
     success: contentResult.ok,
-    hasContent: contentResult.ok ? contentResult.data.getValue().length > 0 : false,
-    hasTemplateVariables: contentResult.ok ? contentResult.data.getValue().includes("{") : false,
+    hasContent: contentResult.ok && contentResult.data ? contentResult.data.getValue().length > 0 : false,
+    hasTemplateVariables: contentResult.ok && contentResult.data ? contentResult.data.getValue().includes("{") : false,
   });
 
   assertEquals(contentResult.ok, true);
-  if (contentResult.ok) {
+  if (contentResult.ok && contentResult.data) {
     assertEquals(contentResult.data.getValue(), content);
     assertEquals(contentResult.data.getValue().includes("{input_text_file}"), true);
   }
@@ -190,30 +219,38 @@ Deno.test("TemplateRequest: creates valid template request", () => {
     target: "TemplateRequest.create",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("project", "^(project|issue|task)$");
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "project",
+    params: ["to", "project"],
+    options: {}
+  };
+  
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
     fromLayer: undefined,
   });
 
   logger.debug("TemplateRequest作成結果", {
     success: requestResult.ok,
-    directive: requestResult.ok ? requestResult.data.getDirective().getValue() : null,
-    layer: requestResult.ok ? requestResult.data.getLayer().getValue() : null,
+    directive: requestResult.ok && requestResult.data ? requestResult.data.directive.getValue() : null,
+    layer: requestResult.ok && requestResult.data ? requestResult.data.layer.getValue() : null,
   });
 
   assertEquals(requestResult.ok, true);
-  if (requestResult.ok) {
-    assertEquals(requestResult.data.getDirective().getValue(), "to");
-    assertEquals(requestResult.data.getLayer().getValue(), "project");
+  if (requestResult.ok && requestResult.data) {
+    assertEquals(requestResult.data.directive.getValue(), "to");
+    assertEquals(requestResult.data.layer.getValue(), "project");
   }
 });
 
@@ -223,28 +260,36 @@ Deno.test("TemplateRequest: creates request with adaptation", () => {
     target: "TemplateRequest.create (with adaptation)",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("summary", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("issue", "^(project|issue|task)$");
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "summary",
+    layerType: "issue",
+    params: ["summary", "issue"],
+    options: {}
+  };
+  
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: "detailed",
     fromLayer: undefined,
   });
 
   logger.debug("TemplateRequest適応タイプ付き作成結果", {
     success: requestResult.ok,
-    adaptation: requestResult.ok ? requestResult.data.getAdaptation() : null,
+    adaptation: requestResult.ok && requestResult.data ? requestResult.data.adaptation : null,
   });
 
   assertEquals(requestResult.ok, true);
-  if (requestResult.ok) {
-    assertEquals(requestResult.data.getAdaptation(), "detailed");
+  if (requestResult.ok && requestResult.data) {
+    assertEquals(requestResult.data.adaptation, "detailed");
   }
 });
 
@@ -254,30 +299,46 @@ Deno.test("TemplateRequest: creates request with fromLayer", () => {
     target: "TemplateRequest.create (with fromLayer)",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("task", "^(project|issue|task)$");
-  const fromLayerResult = LayerType.createWithPattern("issue", "^(project|issue|task)$");
+  const twoParamsResultDirective: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "task",
+    params: ["to", "task"],
+    options: {}
+  };
+  
+  const twoParamsResultFromLayer: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "issue",
+    params: ["to", "issue"],
+    options: {}
+  };
+  
+  const directiveResult = DirectiveType.create(twoParamsResultDirective);
+  const layerResult = LayerType.create(twoParamsResultDirective);
+  const fromLayerResult = LayerType.create(twoParamsResultFromLayer);
 
-  if (!directiveResult.ok || !layerResult.ok || !fromLayerResult.ok) {
+  if (!directiveResult || !layerResult || !fromLayerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
-    fromLayer: fromLayerResult.data,
+    fromLayer: fromLayerResult,
   });
 
   logger.debug("TemplateRequest fromLayer付き作成結果", {
     success: requestResult.ok,
-    fromLayer: requestResult.ok ? requestResult.data.getFromLayer()?.getValue() : null,
+    fromLayer: requestResult.ok && requestResult.data ? requestResult.data.fromLayer?.getValue() : null,
   });
 
   assertEquals(requestResult.ok, true);
-  if (requestResult.ok) {
-    assertExists(requestResult.data.getFromLayer());
-    assertEquals(requestResult.data.getFromLayer()!.getValue(), "issue");
+  if (requestResult.ok && requestResult.data) {
+    assertExists(requestResult.data.fromLayer);
+    assertEquals(requestResult.data.fromLayer!.getValue(), "issue");
   }
 });
 
@@ -287,20 +348,21 @@ Deno.test("Value Objects: maintain immutability", () => {
     target: "Value Object immutability",
   });
 
-  const pathResult = SchemaPath.create("to/project/base.schema.md");
+  const types = createTestTypes("to", "project");
+  const pathResult = SchemaPath.create(types.directive, types.layer, "base.json");
   const contentResult = SchemaContent.create('{"test": "content"}');
 
-  if (pathResult.ok && contentResult.ok) {
-    const originalPath = pathResult.data.getValue();
+  if (pathResult.ok && contentResult.ok && pathResult.data && contentResult.data) {
+    const originalPath = pathResult.data.getPath();
     const originalContent = contentResult.data.getValue();
 
     logger.debug("Value Object不変性確認", {
-      pathImmutable: pathResult.data.getValue() === originalPath,
+      pathImmutable: pathResult.data.getPath() === originalPath,
       contentImmutable: contentResult.data.getValue() === originalContent,
     });
 
     // Value Objectの値は変更されない
-    assertEquals(pathResult.data.getValue(), originalPath);
+    assertEquals(pathResult.data.getPath(), originalPath);
     assertEquals(contentResult.data.getValue(), originalContent);
   }
 });

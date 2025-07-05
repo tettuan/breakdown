@@ -14,7 +14,7 @@
  */
 
 import { assert, assertEquals } from "../../../../lib/deps.ts";
-import { handleZeroParams } from "$lib/cli/zero_params_handler.ts";
+import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 
 /**
  * Structure Test Suite: ZeroParamsHandler

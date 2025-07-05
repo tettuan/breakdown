@@ -13,7 +13,7 @@
  * @module lib/types/4_cross_layer_type_factory_integration_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { LayerTypeFactory } from "../../../lib/types/layer_type_factory.ts";
 import {
   LayerType as _LayerType,
@@ -31,7 +31,7 @@ import {
   createInvalidNameError,
   createSuccess,
 } from "../../../lib/types/variable_result.ts";
-import type { TwoParams_Result as _TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result as _TwoParams_Result } from "../../lib/deps.ts";
 
 /**
  * Cross-Layer Integration Test Suite: Complete TypeFactory System Validation

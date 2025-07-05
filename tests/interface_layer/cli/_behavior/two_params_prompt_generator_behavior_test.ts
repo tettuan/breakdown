@@ -11,9 +11,9 @@
  */
 
 import { assertEquals, assertExists, assertStringIncludes } from "../../../../lib/deps.ts";
-import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
-import type { ValidatedParams } from "./two_params_prompt_generator.ts";
-import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
+import { TwoParamsPromptGenerator } from "../../../../lib/cli/generators/two_params_prompt_generator.ts";
+import type { ValidatedParams } from "../../../../lib/cli/generators/two_params_prompt_generator.ts";
+import type { ProcessedVariables } from "../../../../lib/cli/processors/two_params_variable_processor.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("two-params-prompt-generator-test");

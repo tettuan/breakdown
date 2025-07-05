@@ -8,7 +8,7 @@
  */
 
 import { assert, assertEquals } from "../../../../lib/deps.ts";
-import { TwoParamsVariableProcessor } from "$lib/cli/two_params_variable_processor.ts";
+import { TwoParamsVariableProcessor } from "../../../../lib/cli/processors/two_params_variable_processor.ts";
 // Import types for type checking only - may be used in future structure validation
 
 /**

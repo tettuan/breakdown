@@ -88,7 +88,7 @@ Deno.test("Help Module Architecture", async (t) => {
 
   await t.step("defines clear module boundaries", async () => {
     const { showHelp, showVersion, showUsage, HELP_TEXT, _VERSION, APP_NAME, ...otherExports } =
-      await import("./help.ts");
+      await import("../../../../lib/cli/help.ts");
 
     // Should export specific help-related functionality
     assertExists(showHelp, "Should export showHelp function");
@@ -202,7 +202,7 @@ Deno.test("Help Module Dependency Graph", async (t) => {
 
   await t.step("can be safely imported by CLI entry points", async () => {
     // This module should be safe to import without side effects
-    const helpModule = await import("./help.ts");
+    const helpModule = await import("../../../../lib/cli/help.ts");
     assertExists(helpModule, "Should be importable");
 
     // Importing should not cause side effects

@@ -18,7 +18,7 @@ Deno.test("Structure: workspace_initializer - single responsibility", async () =
   });
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // 関数の責務を分析
@@ -66,7 +66,7 @@ Deno.test("Structure: workspace_initializer - no responsibility duplication", as
   _logger.debug("構造テスト開始: 責務の重複チェック");
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // ハードコードされた値の重複をチェック
@@ -110,7 +110,7 @@ Deno.test("Structure: workspace_initializer - appropriate abstraction level", as
   _logger.debug("構造テスト開始: 適切な抽象化レベル");
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // 抽象化レベルの指標
@@ -162,7 +162,7 @@ Deno.test("Structure: workspace_initializer - cohesion analysis", async () => {
   _logger.debug("構造テスト開始: 凝集性の分析");
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // 機能的凝集性の要素を分析
@@ -204,7 +204,7 @@ Deno.test("Structure: workspace_initializer - future extensibility", async () =>
   _logger.debug("構造テスト開始: 将来の拡張性");
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // TODOコメントから将来の拡張ポイントを分析

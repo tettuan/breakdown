@@ -11,13 +11,13 @@
  * @module types/mod_structure_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf as _assertInstanceOf } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf as _assertInstanceOf } from "../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Import all exports to test structure
-import * as TypesModule from "../../../lib/deps.ts";
-import type { DemonstrativeType, LegacyLayerType } from "../../../lib/deps.ts";
+import * as TypesModule from "../../lib/deps.ts";
+import type { DemonstrativeType, LegacyLayerType } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("types-mod-structure");
 

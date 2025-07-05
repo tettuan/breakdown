@@ -119,8 +119,8 @@ Deno.test("Builder-Helper Integration - Complete workflow validation", async () 
         outputFilePath: "/test/output/workflow.txt",
         schemaFilePath: "/test/schemas/workflow.json",
         customVariables: {
-          "uv-directive": params.directive.getValue(),
-          "uv-layer": params.layer.getValue(),
+          "uv-directive": params.directive?.getValue() || "unknown",
+          "uv-layer": params.layer?.getValue() || "unknown",
         },
       };
 
@@ -132,10 +132,10 @@ Deno.test("Builder-Helper Integration - Complete workflow validation", async () 
         const record = builder.toRecord();
         assertEquals(
           record["uv-directive"],
-          params.directive.getValue(),
+          params.directive?.getValue() || "unknown",
           "Should preserve directive value",
         );
-        assertEquals(record["uv-layer"], params.layer.getValue(), "Should preserve layer value");
+        assertEquals(record["uv-layer"], params.layer?.getValue() || "unknown", "Should preserve layer value");
 
         logger.debug("Complete workflow integration successful");
       } else {

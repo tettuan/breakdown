@@ -9,7 +9,7 @@
  * @module parameter_parsing/types/layer_type
  */
 
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 /**
  * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン

@@ -25,9 +25,9 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsOrchestrator } from "../../../lib/cli/orchestrators/two_params_orchestrator.ts";
-import { TypeFactory } from "../../../lib/deps.ts";
+import { TypeFactory } from "../../../lib/types/type_factory.ts";
 import { handleTwoParams } from "../../../lib/cli/handlers/two_params_handler_refactored.ts";
-import type { Result } from "../../../lib/deps.ts";
+import type { Result } from "../../../lib/types/result.ts";
 
 const logger = new BreakdownLogger("cli-complete-flow-integration");
 

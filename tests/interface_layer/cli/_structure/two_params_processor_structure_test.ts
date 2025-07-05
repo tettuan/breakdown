@@ -21,7 +21,7 @@ import {
   TwoParamsProcessor,
 } from "$lib/cli/processors/two_params_processor.ts";
 import type { TwoParams_Result } from "$lib/deps.ts";
-import { VariablesBuilder } from "../../builder/variables_builder.ts";
+import { VariablesBuilder } from "$lib/builder/variables_builder.ts";
 
 /**
  * Structure Test Suite: TwoParamsProcessor
@@ -316,8 +316,9 @@ Deno.test("ProcessorResult Type Structure", async (t) => {
       assertExists(builder);
 
       // Should be able to call VariablesBuilder methods
-      const buildResult = builder.build();
-      assertExists(buildResult);
+      // Should be able to call VariablesBuilder methods
+      assertExists(builder.getVariableCount);
+      assertEquals(typeof builder.getVariableCount(), "number");
     } else {
       // TypeScript should know result.error is ProcessorError
       const error: ProcessorError = result.error;

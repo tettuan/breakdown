@@ -12,7 +12,7 @@ import { assertEquals, assertExists, assertRejects } from "../../../../lib/deps.
 import { exists } from "@std/fs";
 import { join } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
-import { initializeBreakdownConfiguration } from "./workspace_initializer.ts";
+import { initializeBreakdownConfiguration } from "../../../../lib/cli/initialization/workspace_initializer.ts";
 
 const _logger = new _BreakdownLogger("test-unit-workspace-initializer");
 
@@ -289,7 +289,7 @@ Deno.test("Unit: workspace_initializer - error cases", async () => {
   // コードレビューとTODOコメントの存在で間接的に検証
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // エラーハンドリングの準備があることを確認

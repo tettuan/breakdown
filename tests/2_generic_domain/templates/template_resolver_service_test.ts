@@ -1,9 +1,10 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TemplateResolverService } from "../../../lib/domain/generic/template_management/template_resolver_service.ts";
 import { TemplateRequest } from "../../../lib/domain/generic/template_management/value_objects/template_request.ts";
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
 import { LayerType } from "../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("template-resolver-service-test");
 
@@ -14,21 +15,28 @@ Deno.test("TemplateResolverService: resolves template successfully", async () =>
   });
 
   // Smart Constructorでテスト用パターン設定
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("project", "^(project|issue|task)$");
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "project",
+    params: ["to", "project"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
     fromLayer: undefined,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
@@ -37,14 +45,15 @@ Deno.test("TemplateResolverService: resolves template successfully", async () =>
 
   logger.debug("テンプレート解決結果", {
     success: resolveResult.ok,
-    hasPrompt: resolveResult.ok ? resolveResult.data.prompt !== null : false,
-    hasSchema: resolveResult.ok ? resolveResult.data.schema !== null : false,
+    hasPrompt: resolveResult.ok && resolveResult.data ? resolveResult.data.prompt !== null : false,
+    hasSchema: resolveResult.ok && resolveResult.data ? resolveResult.data.schema !== null : false,
   });
 
   assertEquals(resolveResult.ok, true);
   if (resolveResult.ok) {
-    assertExists(resolveResult.data.prompt);
-    assertExists(resolveResult.data.schema);
+    assertExists(resolveResult.data);
+    assertExists(resolveResult.data?.prompt);
+    assertExists(resolveResult.data?.schema);
   }
 });
 
@@ -54,21 +63,28 @@ Deno.test("TemplateResolverService: handles non-existent template gracefully", a
     target: "TemplateResolverService non-existent template",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("nonexistent", "^(nonexistent)$");
-  const layerResult = LayerType.createWithPattern("invalid", "^(invalid)$");
+  const twoParamsResultInvalid: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "nonexistent",
+    layerType: "invalid",
+    params: ["nonexistent", "invalid"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResultInvalid);
+  const layerResult = LayerType.create(twoParamsResultInvalid);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
     fromLayer: undefined,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
@@ -77,12 +93,12 @@ Deno.test("TemplateResolverService: handles non-existent template gracefully", a
 
   logger.debug("存在しないテンプレート解決結果", {
     success: resolveResult.ok,
-    prompt: resolveResult.ok ? resolveResult.data.prompt : null,
-    schema: resolveResult.ok ? resolveResult.data.schema : null,
+    prompt: resolveResult.ok && resolveResult.data ? resolveResult.data.prompt : null,
+    schema: resolveResult.ok && resolveResult.data ? resolveResult.data.schema : null,
   });
 
   assertEquals(resolveResult.ok, true);
-  if (resolveResult.ok) {
+  if (resolveResult.ok && resolveResult.data) {
     // 存在しないテンプレートの場合、nullが返される
     assertEquals(resolveResult.data.prompt, null);
     assertEquals(resolveResult.data.schema, null);
@@ -95,21 +111,28 @@ Deno.test("TemplateResolverService: resolves with adaptation type", async () => 
     target: "TemplateResolverService with adaptation",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("issue", "^(project|issue|task)$");
+  const twoParamsResultIssue: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "issue",
+    params: ["to", "issue"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResultIssue);
+  const layerResult = LayerType.create(twoParamsResultIssue);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: "strict",
     fromLayer: undefined,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
@@ -118,15 +141,15 @@ Deno.test("TemplateResolverService: resolves with adaptation type", async () => 
 
   logger.debug("適応タイプ付き解決結果", {
     success: resolveResult.ok,
-    hasPrompt: resolveResult.ok ? resolveResult.data.prompt !== null : false,
+    hasPrompt: resolveResult.ok && resolveResult.data ? resolveResult.data.prompt !== null : false,
     adaptation: "strict",
   });
 
   assertEquals(resolveResult.ok, true);
-  if (resolveResult.ok && resolveResult.data.prompt) {
+  if (resolveResult.ok && resolveResult.data?.prompt) {
     // 適応タイプが指定された場合の処理確認
     // (実際のプロンプトにstrictが含まれるかは実装依存)
-    assertExists(resolveResult.data.prompt);
+    assertExists(resolveResult.data?.prompt);
   }
 });
 
@@ -136,22 +159,37 @@ Deno.test("TemplateResolverService: resolves with fromLayer specification", asyn
     target: "TemplateResolverService with fromLayer",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("task", "^(project|issue|task)$");
-  const fromLayerResult = LayerType.createWithPattern("issue", "^(project|issue|task)$");
+  const twoParamsResultTo: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "task",
+    params: ["to", "task"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResultTo);
+  const layerResult = LayerType.create(twoParamsResultTo);
+  
+  const twoParamsResultFrom: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "issue",
+    params: ["to", "issue"],
+    options: {}
+  };
+  const fromLayerResult = LayerType.create(twoParamsResultFrom);
 
-  if (!directiveResult.ok || !layerResult.ok || !fromLayerResult.ok) {
+  if (!directiveResult || !layerResult || !fromLayerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
-    fromLayer: fromLayerResult.data,
+    fromLayer: fromLayerResult,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
@@ -160,14 +198,14 @@ Deno.test("TemplateResolverService: resolves with fromLayer specification", asyn
 
   logger.debug("fromLayer指定解決結果", {
     success: resolveResult.ok,
-    hasPrompt: resolveResult.ok ? resolveResult.data.prompt !== null : false,
+    hasPrompt: resolveResult.ok && resolveResult.data ? resolveResult.data.prompt !== null : false,
     fromLayer: "issue",
   });
 
   assertEquals(resolveResult.ok, true);
   if (resolveResult.ok) {
     // fromLayerが指定された場合、適切なプロンプトが選択される
-    assertExists(resolveResult.data.prompt);
+    assertExists(resolveResult.data?.prompt);
   }
 });
 
@@ -178,21 +216,28 @@ Deno.test("TemplateResolverService: handles template resolution errors", async (
   });
 
   // 無効なTemplateRequestの作成テスト
-  const directiveResult = DirectiveType.createWithPattern("to", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("project", "^(project|issue|task)$");
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: "project",
+    params: ["to", "project"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
     fromLayer: undefined,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
@@ -214,28 +259,35 @@ Deno.test("TemplateResolverService: validates template consistency", async () =>
     target: "TemplateResolverService consistency validation",
   });
 
-  const directiveResult = DirectiveType.createWithPattern("summary", "^(to|summary|defect)$");
-  const layerResult = LayerType.createWithPattern("issue", "^(project|issue|task)$");
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "summary",
+    layerType: "issue",
+    params: ["summary", "issue"],
+    options: {}
+  };
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
 
-  if (!directiveResult.ok || !layerResult.ok) {
+  if (!directiveResult || !layerResult) {
     throw new Error("Failed to create test types");
   }
 
   const requestResult = TemplateRequest.create({
-    directive: directiveResult.data,
-    layer: layerResult.data,
+    directive: directiveResult,
+    layer: layerResult,
     adaptation: undefined,
     fromLayer: undefined,
   });
 
-  if (!requestResult.ok) {
+  if (!requestResult.ok || !requestResult.data) {
     throw new Error(`Failed to create template request: ${requestResult.error}`);
   }
 
   const service = new TemplateResolverService();
   const resolveResult = await service.resolveTemplate(requestResult.data);
 
-  if (resolveResult.ok && resolveResult.data.prompt && resolveResult.data.schema) {
+  if (resolveResult.ok && resolveResult.data && resolveResult.data.prompt && resolveResult.data.schema) {
     logger.debug("テンプレート一貫性確認", {
       promptPath: "summary/issue",
       schemaPath: "to/issue", // スキーマは変換先の構造

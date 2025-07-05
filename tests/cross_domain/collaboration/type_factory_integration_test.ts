@@ -12,14 +12,14 @@ import {
   assertEquals,
   assertExists,
   assertFalse,
-} from "https://deno.land/std@0.210.0/assert/mod.ts";
-import { TypeFactory } from "../../lib/types/type_factory.ts";
-import { ConfigPatternProvider } from "../../lib/config/pattern_provider.ts";
-import { DefaultTypePatternProvider } from "../../lib/types/defaults/default_type_pattern_provider.ts";
+} from "../../../lib/deps.ts";
+import { TypeFactory } from "../../../lib/types/type_factory.ts";
+import { ConfigPatternProvider } from "../../../lib/config/pattern_provider.ts";
+import { DefaultTypePatternProvider } from "../../../lib/types/defaults/default_type_pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { TwoParamsDirectivePattern } from "../../lib/types/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../../lib/types/layer_type.ts";
+import { TwoParamsDirectivePattern } from "../../../lib/types/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../../../lib/types/layer_type.ts";
 
 const logger = new BreakdownLogger("type-factory-integration-test");
 

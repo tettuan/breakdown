@@ -22,7 +22,7 @@ Deno.test("CLI basic no-params behavior", async () => {
   // BreakdownParams handles the parameter parsing logic
 
   // Basic structural verification
-  const { runBreakdown } = await import("../../../cli/breakdown.ts");
+  const { runBreakdown } = await import("../../../../cli/breakdown.ts");
   assertEquals(typeof runBreakdown, "function");
 
   _logger.debug("CLI no-params delegation architecture verified");
@@ -32,7 +32,7 @@ Deno.test("CLI help functionality", async () => {
   _logger.debug("Testing help functionality");
 
   // Test that CLI can handle help requests gracefully
-  const { runBreakdown } = await import("../../../cli/breakdown.ts");
+  const { runBreakdown } = await import("../../../../cli/breakdown.ts");
 
   try {
     // Test help flag processing without throwing errors
@@ -53,7 +53,7 @@ Deno.test("CLI parameter processing integration", async () => {
   _logger.debug("Testing parameter processing integration");
 
   // Test that CLI can process various parameter combinations
-  const { runBreakdown } = await import("../../../cli/breakdown.ts");
+  const { runBreakdown } = await import("../../../../cli/breakdown.ts");
 
   try {
     // Test different parameter scenarios

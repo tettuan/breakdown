@@ -19,7 +19,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should have a clear single responsibility for template path resolution", async () => {
     logger.debug("Testing single responsibility");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // The class should only be responsible for resolving template file paths
@@ -35,7 +35,11 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(mockConfig, mockParams);
+    const resolverResult = PromptTemplatePathResolver.create(mockConfig, mockParams);
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+
+    const resolver = resolverResult.data;
 
     // Should only expose template path resolution functionality
     assertEquals(typeof resolver.getPath, "function");
@@ -62,7 +66,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should properly encapsulate internal logic", async () => {
     logger.debug("Testing encapsulation");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const mockConfig = {
@@ -77,7 +81,11 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(mockConfig, mockParams);
+    const resolverResult = PromptTemplatePathResolver.create(mockConfig, mockParams);
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+
+    const resolver = resolverResult.data;
 
     // Private methods should not be accessible
     assertEquals(
@@ -104,7 +112,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should maintain immutable state after construction", async () => {
     logger.debug("Testing immutability");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -119,14 +127,24 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(config, params);
-    const path1 = resolver.getPath();
+    const resolverResult = PromptTemplatePathResolver.create(config, params);
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+
+    const resolver = resolverResult.data;
+    const pathResult1 = resolver.getPath();
+    assertEquals(pathResult1.ok, true);
+    if (!pathResult1.ok) return;
+    const path1 = pathResult1.data.value;
 
     // Modify original objects
     config.app_prompt.base_dir = "modified";
     (params as { layerType: string }).layerType = "modified";
 
-    const path2 = resolver.getPath();
+    const pathResult2 = resolver.getPath();
+    assertEquals(pathResult2.ok, true);
+    if (!pathResult2.ok) return;
+    const path2 = pathResult2.data.value;
 
     // Resolver should not be affected by external modifications
     assertEquals(path1, path2);
@@ -137,7 +155,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should handle template path resolution comprehensively", async () => {
     logger.debug("Testing comprehensive template path handling");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test 1: Standard prompt template
@@ -152,8 +170,15 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: {},
     };
-    const resolver1 = new PromptTemplatePathResolver(config1, params1);
-    const result1 = resolver1.getPath();
+    const resolver1Result = PromptTemplatePathResolver.create(config1, params1);
+    assertEquals(resolver1Result.ok, true);
+    if (!resolver1Result.ok) return;
+
+    const resolver1 = resolver1Result.data;
+    const pathResult1 = resolver1.getPath();
+    assertEquals(pathResult1.ok, true);
+    if (!pathResult1.ok) return;
+    const result1 = pathResult1.data.value;
 
     assertExists(result1);
     assertEquals(result1.includes("prompts"), true);
@@ -168,8 +193,15 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
       layerType: "issue",
       options: {},
     };
-    const resolver2 = new PromptTemplatePathResolver(config1, params2);
-    const result2 = resolver2.getPath();
+    const resolver2Result = PromptTemplatePathResolver.create(config1, params2);
+    assertEquals(resolver2Result.ok, true);
+    if (!resolver2Result.ok) return;
+
+    const resolver2 = resolver2Result.data;
+    const pathResult2 = resolver2.getPath();
+    assertEquals(pathResult2.ok, true);
+    if (!pathResult2.ok) return;
+    const result2 = pathResult2.data.value;
 
     assertExists(result2);
     // Should handle schema path resolution
@@ -179,7 +211,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should maintain clear separation between prompt and schema paths", async () => {
     logger.debug("Testing prompt vs schema path separation");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -195,8 +227,15 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: {},
     };
-    const promptResolver = new PromptTemplatePathResolver(config, promptParams);
-    const promptPath = promptResolver.getPath();
+    const promptResolverResult = PromptTemplatePathResolver.create(config, promptParams);
+    assertEquals(promptResolverResult.ok, true);
+    if (!promptResolverResult.ok) return;
+
+    const promptResolver = promptResolverResult.data;
+    const promptPathResult = promptResolver.getPath();
+    assertEquals(promptPathResult.ok, true);
+    if (!promptPathResult.ok) return;
+    const promptPath = promptPathResult.data.value;
 
     // Test schema path (if supported)
     const schemaParams: TwoParams_Result = {
@@ -206,8 +245,15 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: { useSchema: true },
     };
-    const schemaResolver = new PromptTemplatePathResolver(config, schemaParams);
-    const schemaPath = schemaResolver.getPath();
+    const schemaResolverResult = PromptTemplatePathResolver.create(config, schemaParams);
+    assertEquals(schemaResolverResult.ok, true);
+    if (!schemaResolverResult.ok) return;
+
+    const schemaResolver = schemaResolverResult.data;
+    const schemaPathResult = schemaResolver.getPath();
+    assertEquals(schemaPathResult.ok, true);
+    if (!schemaPathResult.ok) return;
+    const schemaPath = schemaPathResult.data.value;
 
     // Paths should be different and use appropriate directories
     assertNotEquals(promptPath, schemaPath);
@@ -217,7 +263,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should generate consistent template paths for same parameters", async () => {
     logger.debug("Testing path consistency");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -233,11 +279,21 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
     };
 
     // Multiple resolvers with same parameters should produce same path
-    const resolver1 = new PromptTemplatePathResolver(config, params);
-    const resolver2 = new PromptTemplatePathResolver(config, params);
+    const resolver1Result = PromptTemplatePathResolver.create(config, params);
+    assertEquals(resolver1Result.ok, true);
+    if (!resolver1Result.ok) return;
+    const path1Result = resolver1Result.data.getPath();
+    assertEquals(path1Result.ok, true);
+    if (!path1Result.ok) return;
+    const path1 = path1Result.data.value;
 
-    const path1 = resolver1.getPath();
-    const path2 = resolver2.getPath();
+    const resolver2Result = PromptTemplatePathResolver.create(config, params);
+    assertEquals(resolver2Result.ok, true);
+    if (!resolver2Result.ok) return;
+    const path2Result = resolver2Result.data.getPath();
+    assertEquals(path2Result.ok, true);
+    if (!path2Result.ok) return;
+    const path2 = path2Result.data.value;
 
     assertEquals(path1, path2);
   });
@@ -247,7 +303,7 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
   it("should use appropriate abstractions for path operations", async () => {
     logger.debug("Testing abstraction usage");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -262,8 +318,13 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(config, params);
-    const result = resolver.getPath();
+    const resolverResult = PromptTemplatePathResolver.create(config, params);
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const pathResult = resolverResult.data.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
 
     // Should produce properly resolved paths
     assertExists(result);
@@ -279,7 +340,7 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
   it("should handle configuration-based directory resolution", async () => {
     logger.debug("Testing configuration-based resolution");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with different base directories
@@ -301,14 +362,19 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
     };
 
     configs.forEach((config, index) => {
-      const resolver = new PromptTemplatePathResolver(config, params);
-      const result = resolver.getPath();
+      const resolverResult = PromptTemplatePathResolver.create(config, params);
+      assertEquals(resolverResult.ok, true);
+      if (!resolverResult.ok) return;
+      const pathResult = resolverResult.data.getPath();
+      assertEquals(pathResult.ok, true);
+      if (!pathResult.ok) return;
+      const result = pathResult.data.value;
 
       assertExists(result);
       assertNotEquals(result, "");
 
       // Should incorporate the configured base directory
-      const baseDir = config.app_prompt.base_dir.replace(/^\.?\//, "");
+      const baseDir = config.app_prompt.base_dir.replace(/^\.?\//g, "");
       assertEquals(result.includes(baseDir), true);
     });
   });
@@ -318,7 +384,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should not duplicate functionality from other resolvers", async () => {
     logger.debug("Testing responsibility separation from other resolvers");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -335,8 +401,13 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(config, templateParams);
-    const result = resolver.getPath();
+    const resolverResult = PromptTemplatePathResolver.create(config, templateParams);
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const pathResult = resolverResult.data.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
 
     // Should focus on template resolution, not input/output files
     assertEquals(result.includes("input.md"), false);
@@ -347,7 +418,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should handle parameter structure variations gracefully", async () => {
     logger.debug("Testing parameter structure handling");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -374,8 +445,13 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
     ];
 
     paramVariations.forEach((params) => {
-      const resolver = new PromptTemplatePathResolver(config, params);
-      const result = resolver.getPath();
+      const resolverResult = PromptTemplatePathResolver.create(config, params);
+      assertEquals(resolverResult.ok, true);
+      if (!resolverResult.ok) return;
+      const pathResult = resolverResult.data.getPath();
+      assertEquals(pathResult.ok, true);
+      if (!pathResult.ok) return;
+      const result = pathResult.data.value;
 
       assertExists(result);
       assertNotEquals(result, "");
@@ -385,7 +461,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should maintain consistent behavior across different types", async () => {
     logger.debug("Testing type consistency");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -411,8 +487,13 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
         options: {},
       };
 
-      const resolver = new PromptTemplatePathResolver(config, params);
-      const result = resolver.getPath();
+      const resolverResult = PromptTemplatePathResolver.create(config, params);
+      assertEquals(resolverResult.ok, true);
+      if (!resolverResult.ok) return;
+      const pathResult = resolverResult.data.getPath();
+      assertEquals(pathResult.ok, true);
+      if (!pathResult.ok) return;
+      const result = pathResult.data.value;
 
       // Should generate valid paths for all type combinations
       assertExists(result);
@@ -427,7 +508,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should handle missing configuration gracefully", async () => {
     logger.debug("Testing missing configuration handling");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with missing or incomplete configuration
@@ -448,12 +529,22 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
     };
 
     edgeConfigs.forEach((config, index) => {
-      const resolver = new PromptTemplatePathResolver(config as Record<string, unknown>, params);
-
+      const resolverResult = PromptTemplatePathResolver.create(config as Record<string, unknown>, params);
+      
       // Should handle gracefully without throwing
       try {
-        const result = resolver.getPath();
-        assertExists(result);
+        if (resolverResult.ok) {
+          const pathResult = resolverResult.data.getPath();
+          if (pathResult.ok) {
+            assertExists(pathResult.data.value);
+          } else {
+            // Should have meaningful error
+            assertExists(pathResult.error);
+          }
+        } else {
+          // Should have meaningful error
+          assertExists(resolverResult.error);
+        }
       } catch (error) {
         // If it throws, should be a meaningful error
         assertExists((error as Error).message);
@@ -465,7 +556,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should handle special characters in paths appropriately", async () => {
     logger.debug("Testing special character handling");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with special characters in configuration
@@ -485,8 +576,13 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
     };
 
     specialConfigs.forEach((config) => {
-      const resolver = new PromptTemplatePathResolver(config, params);
-      const result = resolver.getPath();
+      const resolverResult = PromptTemplatePathResolver.create(config, params);
+      assertEquals(resolverResult.ok, true);
+      if (!resolverResult.ok) return;
+      const pathResult = resolverResult.data.getPath();
+      assertEquals(pathResult.ok, true);
+      if (!pathResult.ok) return;
+      const result = pathResult.data.value;
 
       // Should handle special characters without errors
       assertExists(result);
@@ -497,7 +593,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should provide meaningful error information for invalid configurations", async () => {
     logger.debug("Testing error information quality");
 
-    const module = await import("./prompt_template_path_resolver.ts");
+    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const invalidConfig = {
@@ -513,16 +609,26 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
       options: {},
     };
 
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       invalidConfig as Record<string, unknown>,
       params,
     );
 
     // Should either handle gracefully or provide meaningful error
     try {
-      const result = resolver.getPath();
-      // If successful, should still produce a usable path
-      assertExists(result);
+      if (resolverResult.ok) {
+        const pathResult = resolverResult.data.getPath();
+        if (pathResult.ok) {
+          // If successful, should still produce a usable path
+          assertExists(pathResult.data.value);
+        } else {
+          // Error should be informative
+          assertExists(pathResult.error);
+        }
+      } else {
+        // Error should be informative
+        assertExists(resolverResult.error);
+      }
     } catch (error) {
       // Error should be informative
       assertExists((error as Error).message);

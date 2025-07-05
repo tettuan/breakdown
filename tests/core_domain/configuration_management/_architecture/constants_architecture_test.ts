@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import {
   _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_PROMPT_BASE_DIR,

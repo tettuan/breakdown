@@ -25,22 +25,22 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 
 // Core integration components
-import { TypeFactory } from "../../lib/types/type_factory.ts";
-import { DefaultTypePatternProvider } from "../../lib/types/defaults/default_type_pattern_provider.ts";
+import { TypeFactory } from "../../../lib/types/type_factory.ts";
+import { DefaultTypePatternProvider } from "../../../lib/types/defaults/default_type_pattern_provider.ts";
 import {
   PromptAdapterImpl,
   type PromptVariablesProvider,
-} from "../../lib/prompt/prompt_adapter.ts";
+} from "../../../lib/prompt/prompt_adapter.ts";
 import {
   type PromptCliParams as _PromptCliParams,
   PromptVariablesFactory as _PromptVariablesFactory,
-} from "../../lib/factory/prompt_variables_factory.ts";
-import { TwoParamsPromptGenerator } from "../../lib/cli/generators/two_params_prompt_generator.ts";
-import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
+} from "../../../lib/factory/prompt_variables_factory.ts";
+import { TwoParamsPromptGenerator } from "../../../lib/cli/generators/two_params_prompt_generator.ts";
+import { VariablesBuilder } from "../../../lib/builder/variables_builder.ts";
 
 // Supporting types
-import type { ProcessedVariables } from "../../lib/cli/processors/two_params_variable_processor.ts";
-import type { ValidatedParams } from "../../lib/cli/generators/two_params_prompt_generator.ts";
+import type { ProcessedVariables } from "../../../lib/cli/processors/two_params_variable_processor.ts";
+import type { ValidatedParams } from "../../../lib/cli/generators/two_params_prompt_generator.ts";
 
 const logger = new BreakdownLogger("prompt-pipeline-integration");
 

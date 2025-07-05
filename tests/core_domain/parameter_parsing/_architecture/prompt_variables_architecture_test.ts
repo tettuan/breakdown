@@ -16,7 +16,7 @@
  * @module lib/types/0_architecture_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import {
   createPromptParams,
   FilePathVariable,

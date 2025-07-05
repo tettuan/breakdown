@@ -14,12 +14,12 @@
  */
 
 import { assertEquals, assertRejects as _assertRejects } from "../../../lib/deps.ts";
-import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
+import { readStdin as _readStdin, StdinError as _StdinError } from "../../../../lib/io/stdin.ts";
 import {
   cleanupTestEnvironment as _cleanupTestEnvironment,
   setupTestEnvironment as _setupTestEnvironment,
-} from "../../helpers/setup.ts";
-import { getTestEnvOptions as _getTestEnvOptions } from "../../helpers/test_utils.ts";
+} from "../../../helpers/setup.ts";
+import { getTestEnvOptions as _getTestEnvOptions } from "../../../helpers/test_utils.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger();
@@ -55,7 +55,7 @@ async function withStdinInput(_input: string, fn: () => Promise<void>): Promise<
     }
 
     // @ts-ignore: Restore original stdin
-    Deno.stdin = _originalStdin;
+    Deno.stdin = originalStdin;
   }
 }
 

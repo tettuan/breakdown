@@ -8,8 +8,8 @@
  */
 
 import { assert, assertEquals } from "../../../../lib/deps.ts";
-import { TwoParamsVariableProcessor } from "./two_params_variable_processor.ts";
-import type { VariableProcessorError } from "./two_params_variable_processor.ts";
+import { TwoParamsVariableProcessor } from "../../../../lib/cli/processors/two_params_variable_processor.ts";
+import type { VariableProcessorError } from "../../../../lib/cli/processors/two_params_variable_processor.ts";
 
 /**
  * Architecture Test Suite: TwoParamsVariableProcessor

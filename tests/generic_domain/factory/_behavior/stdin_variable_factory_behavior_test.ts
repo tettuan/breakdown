@@ -16,7 +16,7 @@ import {
   StdinFactoryInput,
   StdinVariableFactory,
   StdinVariableFactoryError,
-} from "./stdin_variable_factory.ts";
+} from "../../../../lib/factory/stdin_variable_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("stdin-variable-factory-test");

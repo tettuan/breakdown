@@ -1,5 +1,5 @@
 import { assertEquals } from "../../../lib/deps.ts";
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolver } from "../../../../lib/factory/prompt_template_path_resolver.ts";
 import { ensureDir } from "@std/fs";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
@@ -19,11 +19,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "project", "f_project.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -34,11 +40,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: relBaseDir } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(isAbsolute(result), true);
     assertEquals(result, join(absBaseDir, "to", "project", "f_project.md"));
     await Deno.remove(absBaseDir, { recursive: true });
@@ -50,11 +62,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: relBaseDir } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(absBaseDir, "to", "project", "f_project.md"));
     await Deno.remove(absBaseDir, { recursive: true });
   });
@@ -64,11 +82,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: absBaseDir } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(absBaseDir, "to", "project", "f_project.md"));
     await Deno.remove(absBaseDir, { recursive: true });
   });
@@ -78,11 +102,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: "" } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(defaultBaseDir, "to", "project", "f_project.md"));
     await Deno.remove(defaultBaseDir, { recursive: true });
   });
@@ -93,11 +123,17 @@ describe("PromptTemplatePathResolver: baseDir resolution", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_task.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: relBaseDir } },
       { demonstrativeType: "summary", layerType: "task", options: {} },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(absBaseDir, "summary", "task", "f_task.md"));
     await Deno.remove(absBaseDir, { recursive: true });
   });
@@ -110,11 +146,17 @@ describe("PromptTemplatePathResolver: adaptation/fallback logic", () => {
     await ensureDir(promptDir);
     const adaptationFile = join(promptDir, "f_project_strict.md");
     await Deno.writeTextFile(adaptationFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: { adaptation: "strict" } },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, adaptationFile);
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -125,11 +167,17 @@ describe("PromptTemplatePathResolver: adaptation/fallback logic", () => {
     // Only fallback file exists
     const fallbackFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(fallbackFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: { adaptation: "special" } },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, fallbackFile);
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -137,11 +185,17 @@ describe("PromptTemplatePathResolver: adaptation/fallback logic", () => {
     const baseDir = await Deno.makeTempDir();
     const promptDir = join(baseDir, "to", "project");
     await ensureDir(promptDir);
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: { adaptation: "strict" } },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "project", "f_project_strict.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -155,7 +209,7 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
     const promptFile = join(promptDir, "f_issue.md");
     await Deno.writeTextFile(promptFile, "dummy");
     // fromLayerType omitted, fromFile contains 'issue'
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       {
         demonstrativeType: "to",
@@ -163,7 +217,13 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
         options: { fromFile: "something/created/123_issue_file.md" },
       },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "issue", "f_issue.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -173,7 +233,7 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       {
         demonstrativeType: "to",
@@ -181,7 +241,13 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
         options: { fromFile: "foo.md", fromLayerType: "project" },
       },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "issue", "f_project.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -191,11 +257,17 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_task.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "task", options: { fromFile: "foo.md" } },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "task", "f_task.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -204,23 +276,35 @@ describe("PromptTemplatePathResolver: fromLayerType inference", () => {
 describe("PromptTemplatePathResolver: file existence and edge cases", () => {
   it("returns path even if file does not exist", async () => {
     const baseDir = await Deno.makeTempDir();
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: {} },
     );
     const expected = join(baseDir, "to", "project", "f_project.md");
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, expected);
     await Deno.remove(baseDir, { recursive: true });
   });
   it("returns correct path for missing demonstrativeType/layerType", async () => {
     const baseDir = "somewhere";
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "", layerType: "", options: {} },
     );
     const expected = resolve(Deno.cwd(), baseDir, "", "", "f_.md");
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, expected);
   });
   it("fromFile is absolute path", async () => {
@@ -230,11 +314,17 @@ describe("PromptTemplatePathResolver: file existence and edge cases", () => {
     await ensureDir(promptDir);
     const promptFile = join(promptDir, "f_project.md");
     await Deno.writeTextFile(promptFile, "dummy");
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       { demonstrativeType: "to", layerType: "project", options: { fromFile: absFromFile } },
     );
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "to", "project", "f_project.md"));
     await Deno.remove(baseDir, { recursive: true });
   });
@@ -248,7 +338,7 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
     const promptFile = join(promptDir, "f_task.md");
     await Deno.writeTextFile(promptFile, "dummy");
 
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       {
         demonstrativeType: "summary",
@@ -257,7 +347,13 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
       },
     );
 
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     // Should use f_task.md instead of f_issue.md
     assertEquals(result, join(baseDir, "summary", "issue", "f_task.md"));
     await Deno.remove(baseDir, { recursive: true });
@@ -270,7 +366,7 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
     const promptFile = join(promptDir, "f_issue.md");
     await Deno.writeTextFile(promptFile, "dummy");
 
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       {
         demonstrativeType: "summary",
@@ -279,7 +375,13 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
       },
     );
 
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     // Should use f_issue.md as default
     assertEquals(result, join(baseDir, "summary", "issue", "f_issue.md"));
     await Deno.remove(baseDir, { recursive: true });
@@ -293,7 +395,7 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
     await ensureDir(promptDir);
     await Deno.writeTextFile(join(promptDir, "f_task.md"), "dummy");
 
-    const resolver = new PromptTemplatePathResolver(
+    const resolverResult = PromptTemplatePathResolver.create(
       { app_prompt: { base_dir: baseDir } },
       {
         demonstrativeType: "summary",
@@ -302,7 +404,13 @@ describe("PromptTemplatePathResolver: fromLayerType (--input option)", () => {
       },
     );
 
-    const result = resolver.getPath();
+    assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
     assertEquals(result, join(baseDir, "summary", "issue", "f_task.md"));
 
     await Deno.remove(baseDir, { recursive: true });
@@ -318,7 +426,7 @@ describe("PromptTemplatePathResolver: demonstrativeType/layerType combinations",
         await ensureDir(promptDir);
         const promptFile = join(promptDir, `f_${layerType}.md`);
         await Deno.writeTextFile(promptFile, "dummy");
-        const resolver = new PromptTemplatePathResolver(
+        const resolverResult = PromptTemplatePathResolver.create(
           { app_prompt: { base_dir: baseDir } },
           {
             demonstrativeType: demonstrativeType,
@@ -326,7 +434,13 @@ describe("PromptTemplatePathResolver: demonstrativeType/layerType combinations",
             options: {},
           },
         );
-        const result = resolver.getPath();
+        assertEquals(resolverResult.ok, true);
+    if (!resolverResult.ok) return;
+    const resolver = resolverResult.data;
+    const pathResult = resolver.getPath();
+    assertEquals(pathResult.ok, true);
+    if (!pathResult.ok) return;
+    const result = pathResult.data.value;
         assertEquals(result, join(baseDir, demonstrativeType, layerType, `f_${layerType}.md`));
         await Deno.remove(baseDir, { recursive: true });
       });

@@ -13,11 +13,11 @@
  * @module tests/integration/processor_pipeline_integration_test
  */
 
-import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
-import { TwoParamsProcessor } from "../../lib/cli/processors/two_params_processor.ts";
-import { TwoParamsVariableProcessor } from "../../lib/processor/variable_processor.ts";
-import { TwoParamsStdinProcessor } from "../../lib/cli/processors/two_params_stdin_processor.ts";
-import { VariablesBuilder as _VariablesBuilder } from "../../lib/builder/variables_builder.ts";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
+import { TwoParamsProcessor } from "../../../lib/cli/processors/two_params_processor.ts";
+import { TwoParamsVariableProcessor } from "../../../lib/processor/variable_processor.ts";
+import { TwoParamsStdinProcessor } from "../../../lib/cli/processors/two_params_stdin_processor.ts";
+import { VariablesBuilder as _VariablesBuilder } from "../../../lib/builder/variables_builder.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

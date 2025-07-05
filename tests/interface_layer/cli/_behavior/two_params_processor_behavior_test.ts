@@ -14,12 +14,12 @@
  * @module cli/processors/2_unit_two_params_processor_test
  */
 
-import { assert, assertEquals, assertExists } from "../../../deps.ts";
-import { TwoParamsProcessor } from "./two_params_processor.ts";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { TwoParamsProcessor } from "../../../../lib/cli/processors/two_params_processor.ts";
 // ProcessorError type imported for potential future error testing
 import type { TwoParams_Result } from "$lib/deps.ts";
-import { VariablesBuilder } from "../../builder/variables_builder.ts";
-import type { PromptVariable } from "../../types/prompt_variables.ts";
+import { VariablesBuilder } from "../../../../lib/builder/variables_builder.ts";
+import type { PromptVariable } from "../../../../lib/types/prompt_variables.ts";
 
 /**
  * Unit Test Suite: TwoParamsProcessor Core Functionality
@@ -413,21 +413,12 @@ Deno.test("TwoParamsProcessor - Edge cases", async (t) => {
 
       if (buildResult.ok) {
         const _variables = buildResult.data;
-        assert(
-          _variables.some((v: PromptVariable) =>
-            Object.keys(v.toRecord())[0] === "special" && v.value === "value with spaces"
-          ),
-        );
-        assert(
-          _variables.some((v: PromptVariable) =>
-            Object.keys(v.toRecord())[0] === "unicode" && v.value === "値 with 日本語"
-          ),
-        );
-        assert(
-          _variables.some((v: PromptVariable) =>
-            Object.keys(v.toRecord())[0] === "symbols" && v.value === "!@#$%^&*()"
-          ),
-        );
+        const recordMap = _variables.reduce((acc, variable) => {
+          return { ...acc, ...variable.toRecord() };
+        }, {} as Record<string, string>);
+        assertEquals(recordMap["special"], "value with spaces");
+        assertEquals(recordMap["unicode"], "値 with 日本語");
+        assertEquals(recordMap["symbols"], "!@#$%^&*()");
       }
     }
   });

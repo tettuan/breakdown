@@ -26,7 +26,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   /**
    * Get directive type pattern
    */
-  getDirectiveTypePattern(): TwoParamsDirectivePattern | null {
+  getDirectivePattern(): TwoParamsDirectivePattern | null {
     return this.directivePattern;
   }
 

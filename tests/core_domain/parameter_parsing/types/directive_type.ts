@@ -9,7 +9,7 @@
  * @module parameter_parsing/types/directive_type
  */
 
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 /**
  * TwoParamsDirectivePattern - DirectiveType用のバリデーションパターン

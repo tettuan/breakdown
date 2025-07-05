@@ -12,10 +12,10 @@
  * 階層管理の責務を正しく果たすことを保証することです。
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("test-structure-layer");
 

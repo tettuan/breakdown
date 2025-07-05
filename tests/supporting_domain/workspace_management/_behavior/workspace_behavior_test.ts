@@ -5,8 +5,9 @@
  * edge cases, and boundary conditions for the workspace module.
  */
 
-import { assertEquals, assertExists, assertRejects } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertRejects } from "../../lib/deps.ts";
 import { WorkspaceImpl } from "../../../../lib/workspace/workspace.ts";
+import { WorkspaceConfigError } from "../../../../lib/workspace/errors.ts";
 import { CliError, CliErrorCode } from "../../../../lib/cli/errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { join, resolve } from "@std/path";

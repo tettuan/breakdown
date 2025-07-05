@@ -1,5 +1,5 @@
-import { assertEquals } from "../../../lib/deps.ts";
-import { assertRejects } from "../../../lib/deps.ts";
+import { assertEquals } from "../../lib/deps.ts";
+import { assertRejects } from "../../lib/deps.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { assertDirectoryExists } from "$test/helpers/assertions.ts";

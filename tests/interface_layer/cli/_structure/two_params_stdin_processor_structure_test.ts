@@ -15,8 +15,8 @@ import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { TwoParamsStdinProcessor } from "$lib/cli/two_params_stdin_processor.ts";
-import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
+import { TwoParamsStdinProcessor } from "$lib/cli/processors/two_params_stdin_processor.ts";
+import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 
 const _logger = new _BreakdownLogger("structure-stdin-processor");
 

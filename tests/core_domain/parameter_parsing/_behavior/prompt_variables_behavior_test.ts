@@ -16,7 +16,7 @@
  * @module lib/types/2_unit_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import {
   createPromptParams,
   FilePathVariable,
@@ -28,7 +28,7 @@ import {
   StdinVariableName,
   toPromptParamsVariables,
   UserVariable,
-} from "../../../lib/types/prompt_variables.ts";
+} from "../../../../lib/types/prompt_variables.ts";
 
 Deno.test("Unit: StandardVariable creation and validation", () => {
   // Valid standard variable names

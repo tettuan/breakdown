@@ -20,14 +20,14 @@
  * - Directory structure is always created under the configured baseDir.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { join, relative, resolve } from "jsr:@std/path@^0.224.0";
 import { ensureDir } from "jsr:@std/fs@^0.224.0";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^0.1.10";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import { PromptAdapterImpl } from "$lib/prompt/prompt_adapter.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import type { DemonstrativeType, LayerType } from "../../../lib/deps.ts";
+import type { DemonstrativeType, LayerType } from "../../lib/deps.ts";
 import { Workspace } from "$lib/workspace/workspace.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 

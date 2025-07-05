@@ -6,7 +6,8 @@
  */
 
 import { assertEquals } from "../../../lib/deps.ts";
-import * as VariableResultModule from "../../../lib/types/variable_result.ts";
+import type { VariableResult, VariableError } from "$lib/types/variable_result.ts";
+import * as VariableResultModule from "$lib/types/variable_result.ts";
 
 Deno.test("VariableResult structure - module exports", () => {
   // Verify that the module exports all expected types and functions
@@ -115,7 +116,7 @@ Deno.test("VariableResult structure - immutable error data", () => {
   // Error data should be structured to support immutability
   const result = VariableResultModule.createInvalidNameError<string>("test", ["a", "b", "c"]);
 
-  if (!result.ok && result.error.kind === "InvalidName") {
+  if (!result.ok && result.error?.kind === "InvalidName") {
     // validNames should be readonly array
     const validNames = result.error.validNames;
     assertEquals(Array.isArray(validNames), true);

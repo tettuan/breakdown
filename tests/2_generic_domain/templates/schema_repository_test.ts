@@ -1,11 +1,11 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { SchemaRepository } from "../../../lib/domain/templates/schema_repository.ts";
 import { SchemaPath } from "../../../lib/domain/generic/template_management/value_objects/schema_path.ts";
 import { SchemaContent } from "../../../lib/domain/generic/template_management/value_objects/schema_content.ts";
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
 import { LayerType } from "../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("schema-repository-test");
 
@@ -64,9 +64,16 @@ function createTypesFromPath(pathStr: string): { directive: DirectiveType; layer
     options: {}
   };
   
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
+  
+  if (!directiveResult || !layerResult) {
+    return null;
+  }
+  
   return {
-    directive: DirectiveType.create(twoParamsResult),
-    layer: LayerType.create(twoParamsResult)
+    directive: directiveResult,
+    layer: layerResult
   };
 }
 
@@ -82,7 +89,7 @@ Deno.test("SchemaRepository: can retrieve schema by path", async () => {
   
   const pathResult = SchemaPath.create(types.directive, types.layer, "base.json");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create schema path: ${pathResult.error}`);
   }
 
@@ -112,7 +119,7 @@ Deno.test("SchemaRepository: returns null for non-existent schema", async () => 
   
   const pathResult = SchemaPath.create(types.directive, types.layer, "schema.json");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create schema path: ${pathResult.error}`);
   }
 
@@ -124,7 +131,9 @@ Deno.test("SchemaRepository: returns null for non-existent schema", async () => 
   });
 
   assertEquals(schemaResult.ok, true);
-  assertEquals(schemaResult.data, null);
+  if (schemaResult.ok) {
+    assertEquals(schemaResult.data, null);
+  }
 });
 
 Deno.test("SchemaRepository: findAll returns all available schemas", async () => {
@@ -158,10 +167,13 @@ Deno.test("SchemaRepository: handles invalid schema paths gracefully", async () 
     target: "SchemaRepository with invalid path",
   });
 
-  const repository = new SchemaRepository();
+  const repository = new MockSchemaRepository();
   
   // 無効なパスでSchemaPathを作成しようとする
-  const invalidPathResult = SchemaPath.create("");
+  const types = createTypesFromPath("invalid/path/test.json");
+  if (!types) throw new Error("Failed to create types");
+  
+  const invalidPathResult = SchemaPath.create(types.directive, types.layer, "");
 
   logger.debug("無効なパス作成結果", {
     success: invalidPathResult.ok,
@@ -180,10 +192,13 @@ Deno.test("SchemaRepository: schema content is properly typed", async () => {
     target: "SchemaContent type safety",
   });
 
-  const repository = new SchemaRepository();
-  const pathResult = SchemaPath.create("to/issue/base.schema.md");
+  const repository = new MockSchemaRepository();
+  const types = createTypesFromPath("to/issue/base.json");
+  if (!types) throw new Error("Failed to create types");
+  
+  const pathResult = SchemaPath.create(types.directive, types.layer, "base.json");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create schema path: ${pathResult.error}`);
   }
 

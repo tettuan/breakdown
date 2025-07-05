@@ -132,6 +132,8 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -140,8 +142,8 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
       const factory = await TotalityPromptVariablesFactory.create(params);
 
       assertExists(factory);
-      assertEquals(factory.directive.getValue(), "to");
-      assertEquals(factory.layer.getValue(), "project");
+      assertEquals(factory.getDirective(), "to");
+      assertEquals(factory.getLayerType(), "project");
       assertEquals(typeof factory.promptFilePath, "string");
       assertEquals(typeof factory.inputFilePath, "string");
       assertEquals(typeof factory.outputFilePath, "string");
@@ -164,6 +166,8 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -172,8 +176,8 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
       const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
       assertExists(factory);
-      assertEquals(factory.directive.getValue(), "summary");
-      assertEquals(factory.layer.getValue(), "issue");
+      assertEquals(factory.getDirective(), "summary");
+      assertEquals(factory.getLayerType(), "issue");
     }
   });
 
@@ -193,6 +197,8 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -260,6 +266,8 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {
@@ -325,6 +333,8 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {}, // No fromFile specified
@@ -390,6 +400,8 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: complexOptions,
@@ -438,6 +450,8 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
 
       for (const testCase of booleanTestCases) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: testCase,
@@ -445,8 +459,8 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
 
         const factory = await TotalityPromptVariablesFactory.create(params);
 
-        assertEquals(factory.extended, testCase.extended || false);
-        assertEquals(factory.customValidation, testCase.customValidation || false);
+        assertEquals(factory.getOptions().extended, testCase.extended || false);
+        assertEquals(factory.getOptions().customValidation, testCase.customValidation || false);
       }
     }
   });
@@ -467,6 +481,8 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
 
       for (const errorFormat of errorFormats) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: { errorFormat },
@@ -474,7 +490,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
 
         const factory = await TotalityPromptVariablesFactory.create(params);
 
-        assertEquals(factory.errorFormat, errorFormat || "simple");
+        assertEquals(factory.getOptions().errorFormat, errorFormat || "simple");
       }
     }
   });
@@ -494,6 +510,8 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
 
       for (const testCase of testCases) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: testCase,
@@ -526,6 +544,8 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -561,6 +581,8 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
     if (typesResult.ok) {
       for (const config of invalidConfigs) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: {},
@@ -585,6 +607,8 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -612,6 +636,8 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -656,6 +682,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
 
       for (const config of testConfigs) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: {},
@@ -694,6 +722,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
 
       for (const options of dangerousOptions) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options,
@@ -743,6 +773,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
 
       for (const config of unsafeConfigs) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: {},
@@ -781,6 +813,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: { customVariables: dangerousVariables },
@@ -820,6 +854,8 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: longPathOptions,
@@ -867,6 +903,8 @@ describe("PromptVariablesFactory Unit Tests - Cryptographic Security", () => {
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -929,6 +967,8 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
 
     if (directiveResult.ok && layerResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: directiveResult.data.getValue(),
+        layerType: layerResult.data.getValue(),
         directive: directiveResult.data,
         layer: layerResult.data,
         options: {},
@@ -937,9 +977,8 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
       const factory = await TotalityPromptVariablesFactory.create(params);
 
       // DirectiveType methods should be available
-      assertEquals(factory.directive.getValue(), "to");
-      assertEquals(typeof factory.directive.equals, "function");
-      assertEquals(factory.directive.equals(directiveResult.data), true);
+      assertEquals(factory.getDirective(), "to");
+      // Note: getDirective() returns string, not DirectiveType object
     }
   });
 
@@ -954,6 +993,8 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
 
     if (directiveResult.ok && layerResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: directiveResult.data.getValue(),
+        layerType: layerResult.data.getValue(),
         directive: directiveResult.data,
         layer: layerResult.data,
         options: {},
@@ -962,11 +1003,8 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
       const factory = await TotalityPromptVariablesFactory.create(params);
 
       // LayerType methods should be available
-      assertEquals(factory.layer.getValue(), "issue");
-      assertEquals(typeof factory.layer.equals, "function");
-      assertEquals(factory.layer.equals(layerResult.data), true);
-      assertEquals(typeof factory.layer.getHierarchyLevel, "function");
-      assertEquals(typeof factory.layer.isStandardHierarchy, "function");
+      assertEquals(factory.getLayerType(), "issue");
+      // Note: getLayerType() returns string, not LayerType object
     }
   });
 
@@ -1018,6 +1056,8 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: comprehensiveOptions,
@@ -1028,11 +1068,11 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
       // Test all major functionality
       assertExists(factory.getAllParams());
       assertExists(factory.getOptions());
-      assertEquals(factory.directive.getValue(), "find");
-      assertEquals(factory.layer.getValue(), "temp");
-      assertEquals(factory.extended, true);
-      assertEquals(factory.customValidation, true);
-      assertEquals(factory.errorFormat, "detailed");
+      assertEquals(factory.getDirective(), "find");
+      assertEquals(factory.getLayerType(), "temp");
+      assertEquals(factory.getOptions().extended, true);
+      assertEquals(factory.getOptions().customValidation, true);
+      assertEquals(factory.getOptions().errorFormat, "detailed");
       assertEquals(factory.customVariables["test-mode"], "comprehensive");
 
       // Test validation

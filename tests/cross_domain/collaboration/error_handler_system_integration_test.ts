@@ -24,14 +24,14 @@ import {
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { WorkspaceErrorHandlerImpl } from "../../lib/workspace/error_handler.ts";
+import { WorkspaceErrorHandlerImpl } from "../../../lib/workspace/error_handler.ts";
 import {
   TemplateError,
   TemplateErrorHandler,
   TemplateErrorType,
   withTemplateErrorHandling,
-} from "../../lib/helpers/template_error_handler.ts";
-import { handleTwoParams } from "../../lib/cli/handlers/two_params_handler_refactored.ts";
+} from "../../../lib/helpers/template_error_handler.ts";
+import { handleTwoParams } from "../../../lib/cli/handlers/two_params_handler_refactored.ts";
 
 const logger = new BreakdownLogger("error-handler-system-integration");
 

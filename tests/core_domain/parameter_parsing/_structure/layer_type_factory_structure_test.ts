@@ -8,7 +8,7 @@
  * - Result type consistency
  */
 
-import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { describe, it } from "@std/testing/bdd";
 

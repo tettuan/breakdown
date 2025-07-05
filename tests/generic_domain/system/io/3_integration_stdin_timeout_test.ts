@@ -14,7 +14,7 @@ import {
   assertEquals,
   assertRejects as _assertRejects,
 } from "../../../lib/deps.ts";
-import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
+import { readStdin as _readStdin, StdinError as _StdinError } from "../../../../lib/io/stdin.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("stdin-timeout-test");

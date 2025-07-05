@@ -77,6 +77,8 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
+        demonstrativeType: "to",
+        layerType: "project",
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -105,6 +107,8 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: "to",
+        layerType: "project",
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -142,6 +146,8 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: "to",
+        layerType: "project",
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -256,6 +262,8 @@ describe("PromptVariablesFactory Architecture - Configuration State Exhaustivene
           assertExists(typesResult.data);
 
           const params: TotalityPromptCliParams = {
+            demonstrativeType: typesResult.data.directive.getValue(),
+            layerType: typesResult.data.layer.getValue(),
             directive: typesResult.data.directive,
             layer: typesResult.data.layer,
             options: {},
@@ -299,13 +307,15 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
 
       for (const errorFormat of errorFormatOptions) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: { errorFormat },
         };
 
         const factory = await TotalityPromptVariablesFactory.create(params);
-        const retrievedFormat = factory.errorFormat;
+        const retrievedFormat = params.options.errorFormat;
 
         let handled = false;
 
@@ -348,6 +358,8 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
 
       for (const combination of booleanCombinations) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: "to",
+          layerType: "project",
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: combination,
@@ -358,19 +370,22 @@ describe("PromptVariablesFactory Architecture - Option Validation Exhaustiveness
         let handled = false;
 
         // Handle all boolean combinations without default case
-        if (factory.extended && factory.customValidation) {
+        const extended = params.options.extended;
+        const customValidation = params.options.customValidation;
+        
+        if (extended && customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (factory.extended && !factory.customValidation) {
+        } else if (extended && !customValidation) {
           assertEquals(combination.extended, true);
           assertEquals(combination.customValidation, false);
           handled = true;
-        } else if (!factory.extended && factory.customValidation) {
+        } else if (!extended && customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, true);
           handled = true;
-        } else if (!factory.extended && !factory.customValidation) {
+        } else if (!extended && !customValidation) {
           assertEquals(combination.extended, false);
           assertEquals(combination.customValidation, false);
           handled = true;
@@ -397,6 +412,8 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: "to",
+        layerType: "project",
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -451,6 +468,8 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},

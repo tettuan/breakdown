@@ -5,7 +5,7 @@
  * of the Result type system for variable operations.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { type VariableError, type VariableResult } from "../../../../lib/types/variable_result.ts";
 
 Deno.test("VariableResult architecture - follows Totality principle", () => {

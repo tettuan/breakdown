@@ -7,7 +7,7 @@
  * @module cli/config/2_unit_types_test
  */
 
-import { assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import type { BreakdownConfig, ConfigOptions } from "./types.ts";
 
 /**
@@ -19,24 +19,29 @@ import type { BreakdownConfig, ConfigOptions } from "./types.ts";
 Deno.test("Unit: BreakdownConfig has required properties", () => {
   // Create a test config object
   const testConfig: BreakdownConfig = {
-    working_directory: "/test/path",
-    output_directory: "/test/output",
-    default_config_path: "/test/config.yml",
+    prompts: {
+      baseDir: "/test/prompts",
+    },
+    schema: {
+      baseDir: "/test/schema",
+    },
+    workspace: {
+      baseDir: "/test/workspace",
+    },
   };
 
   // Verify all required properties are present
-  assertExists(testConfig.working_directory, "working_directory should exist");
-  assertExists(testConfig.output_directory, "output_directory should exist");
-  assertExists(testConfig.default_config_path, "default_config_path should exist");
+  assertExists(testConfig.prompts, "prompts should exist");
+  assertExists(testConfig.schema, "schema should exist");
+  assertExists(testConfig.workspace, "workspace should exist");
+  assertExists(testConfig.prompts.baseDir, "prompts.baseDir should exist");
+  assertExists(testConfig.schema.baseDir, "schema.baseDir should exist");
+  assertExists(testConfig.workspace.baseDir, "workspace.baseDir should exist");
 
   // Verify property types
-  assertEquals(typeof testConfig.working_directory, "string", "working_directory should be string");
-  assertEquals(typeof testConfig.output_directory, "string", "output_directory should be string");
-  assertEquals(
-    typeof testConfig.default_config_path,
-    "string",
-    "default_config_path should be string",
-  );
+  assertEquals(typeof testConfig.prompts.baseDir, "string", "prompts.baseDir should be string");
+  assertEquals(typeof testConfig.schema.baseDir, "string", "schema.baseDir should be string");
+  assertEquals(typeof testConfig.workspace.baseDir, "string", "workspace.baseDir should be string");
 
   // The TypeScript compiler ensures no additional properties
   assertEquals(
@@ -56,32 +61,35 @@ Deno.test("Unit: ConfigOptions handles optional properties correctly", () => {
   // Test minimal options (all undefined)
   const minimalOptions: ConfigOptions = {};
   assertEquals(Object.keys(minimalOptions).length, 0, "Minimal options should have no properties");
-  assertEquals(minimalOptions.configPath, undefined, "configPath should be undefined");
-  assertEquals(minimalOptions.workingDir, undefined, "workingDir should be undefined");
-  assertEquals(minimalOptions.outputDir, undefined, "outputDir should be undefined");
+  assertEquals(minimalOptions.profile, undefined, "profile should be undefined");
+  assertEquals(minimalOptions.debug, undefined, "debug should be undefined");
 
   // Test partial options
-  const partialOptions: ConfigOptions = { configPath: "/custom/config.yml" };
-  assertEquals(partialOptions.configPath, "/custom/config.yml", "configPath should be set");
-  assertEquals(partialOptions.workingDir, undefined, "workingDir should be undefined");
-  assertEquals(partialOptions.outputDir, undefined, "outputDir should be undefined");
+  const partialOptions: ConfigOptions = { profile: "custom-profile" };
+  assertEquals(partialOptions.profile, "custom-profile", "profile should be set");
+  assertEquals(partialOptions.debug, undefined, "debug should be undefined");
 
   // Test full options
   const fullOptions: ConfigOptions = {
-    configPath: "/custom/config.yml",
-    workingDir: "/custom/working",
-    outputDir: "/custom/output",
+    profile: "custom-profile",
+    debug: true,
   };
-  assertEquals(fullOptions.configPath, "/custom/config.yml", "configPath should be set");
-  assertEquals(fullOptions.workingDir, "/custom/working", "workingDir should be set");
-  assertEquals(fullOptions.outputDir, "/custom/output", "outputDir should be set");
+  assertEquals(fullOptions.profile, "custom-profile", "profile should be set");
+  assertEquals(fullOptions.debug, true, "debug should be set");
 
-  // All property types should be string when defined
-  if (fullOptions.configPath) {
+  // All property types should be correct when defined
+  if (fullOptions.profile) {
     assertEquals(
-      typeof fullOptions.configPath,
+      typeof fullOptions.profile,
       "string",
-      "configPath should be string when defined",
+      "profile should be string when defined",
+    );
+  }
+  if (fullOptions.debug !== undefined) {
+    assertEquals(
+      typeof fullOptions.debug,
+      "boolean",
+      "debug should be boolean when defined",
     );
   }
 });
@@ -93,36 +101,41 @@ Deno.test("Unit: ConfigOptions handles optional properties correctly", () => {
  * in the application.
  */
 Deno.test("Unit: Config types are compatible with application usage", () => {
-  // Test that ConfigOptions can be used to override BreakdownConfig defaults
+  // Test that ConfigOptions can be used with BreakdownConfig
   const defaultConfig: BreakdownConfig = {
-    working_directory: "/default/path",
-    output_directory: "/default/output",
-    default_config_path: "/default/config.yml",
+    prompts: {
+      baseDir: "/default/prompts",
+    },
+    schema: {
+      baseDir: "/default/schema",
+    },
+    workspace: {
+      baseDir: "/default/workspace",
+    },
   };
 
   const options: ConfigOptions = {
-    workingDir: "/custom/working",
-    outputDir: "/custom/output",
+    profile: "custom-profile",
+    debug: true,
   };
 
-  // Simulate merging options with config (type compatibility test)
-  const _mergedConfig = {
-    ...defaultConfig,
-    working_directory: options.workingDir || defaultConfig.working_directory,
-    output_directory: options.outputDir || defaultConfig.output_directory,
+  // Test options compatibility (type compatibility test)
+  const _configWithOptions = {
+    config: defaultConfig,
+    options: options,
   };
 
-  assertEquals(_mergedConfig.working_directory, "/custom/working", "Should use option override");
-  assertEquals(_mergedConfig.output_directory, "/custom/output", "Should use option override");
-  assertEquals(_mergedConfig.default_config_path, "/default/config.yml", "Should keep default");
+  assertEquals(_configWithOptions.options.profile, "custom-profile", "Options should be accessible");
+  assertEquals(_configWithOptions.options.debug, true, "Options should be accessible");
+  assertEquals(_configWithOptions.config.prompts.baseDir, "/default/prompts", "Config should be accessible");
 
   // Test spread operator compatibility
   const spreadTest = { ...defaultConfig };
-  assertEquals(spreadTest.working_directory, defaultConfig.working_directory, "Spread should work");
+  assertEquals(spreadTest.prompts.baseDir, defaultConfig.prompts.baseDir, "Spread should work");
 
   // Types support expected transformations
   assertEquals(
-    typeof defaultConfig.working_directory,
+    typeof defaultConfig.prompts.baseDir,
     "string",
     "Types are compatible with runtime usage",
   );
@@ -137,30 +150,41 @@ Deno.test("Unit: Config types are compatible with application usage", () => {
 Deno.test("Unit: Config types avoid partial states", () => {
   // Test that BreakdownConfig requires all properties (no partial states)
   const validConfig: BreakdownConfig = {
-    working_directory: "/valid/path",
-    output_directory: "/valid/output",
-    default_config_path: "/valid/config.yml",
+    prompts: {
+      baseDir: "/valid/prompts",
+    },
+    schema: {
+      baseDir: "/valid/schema",
+    },
+    workspace: {
+      baseDir: "/valid/workspace",
+    },
   };
 
   // All properties must be defined for BreakdownConfig
   assertEquals(
-    validConfig.working_directory !== undefined,
+    validConfig.prompts !== undefined,
     true,
-    "working_directory must be defined",
+    "prompts must be defined",
   );
   assertEquals(
-    validConfig.output_directory !== undefined,
+    validConfig.schema !== undefined,
     true,
-    "output_directory must be defined",
+    "schema must be defined",
   );
   assertEquals(
-    validConfig.default_config_path !== undefined,
+    validConfig.workspace !== undefined,
     true,
-    "default_config_path must be defined",
+    "workspace must be defined",
+  );
+  assertEquals(
+    validConfig.prompts.baseDir !== undefined,
+    true,
+    "prompts.baseDir must be defined",
   );
 
   // ConfigOptions allows partial states by design (runtime options)
-  const partialOptions: ConfigOptions = { configPath: "/path" };
+  const partialOptions: ConfigOptions = { profile: "test-profile" };
   assertEquals(
     Object.keys(partialOptions).length >= 0,
     true,
@@ -169,22 +193,26 @@ Deno.test("Unit: Config types avoid partial states", () => {
 
   // Test that all valid configurations can be represented
   const configurations = [
-    { working_directory: "/", output_directory: "/out", default_config_path: "/config.yml" },
     {
-      working_directory: "./relative",
-      output_directory: "./out",
-      default_config_path: "./config.yml",
+      prompts: { baseDir: "/prompts" },
+      schema: { baseDir: "/schema" },
+      workspace: { baseDir: "/workspace" },
     },
     {
-      working_directory: "/abs/path",
-      output_directory: "/abs/out",
-      default_config_path: "/abs/config.yml",
+      prompts: { baseDir: "./relative/prompts" },
+      schema: { baseDir: "./relative/schema" },
+      workspace: { baseDir: "./relative/workspace" },
+    },
+    {
+      prompts: { baseDir: "/abs/prompts" },
+      schema: { baseDir: "/abs/schema" },
+      workspace: { baseDir: "/abs/workspace" },
     },
   ];
 
   configurations.forEach((cfg, i) => {
     const typedConfig: BreakdownConfig = cfg;
-    assertEquals(typedConfig.working_directory !== undefined, true, `Config ${i} is valid`);
+    assertEquals(typedConfig.prompts.baseDir !== undefined, true, `Config ${i} is valid`);
   });
 
   // TypeScript compiler prevents invalid configurations at compile time
@@ -199,12 +227,12 @@ Deno.test("Unit: Config types avoid partial states", () => {
 Deno.test("Unit: Config types handle edge cases", () => {
   // Test empty strings (valid but may need validation in implementation)
   const emptyPathConfig: BreakdownConfig = {
-    working_directory: "",
-    output_directory: "",
-    default_config_path: "",
+    prompts: { baseDir: "" },
+    schema: { baseDir: "" },
+    workspace: { baseDir: "" },
   };
   assertEquals(
-    typeof emptyPathConfig.working_directory,
+    typeof emptyPathConfig.prompts.baseDir,
     "string",
     "Empty strings are valid strings",
   );
@@ -212,20 +240,20 @@ Deno.test("Unit: Config types handle edge cases", () => {
   // Test very long path strings
   const longPath = "/" + "a".repeat(255);
   const longPathConfig: BreakdownConfig = {
-    working_directory: longPath,
-    output_directory: longPath + "/out",
-    default_config_path: longPath + "/config.yml",
+    prompts: { baseDir: longPath },
+    schema: { baseDir: longPath + "/schema" },
+    workspace: { baseDir: longPath + "/workspace" },
   };
-  assertEquals(longPathConfig.working_directory.length > 250, true, "Long paths are accepted");
+  assertEquals(longPathConfig.prompts.baseDir.length > 250, true, "Long paths are accepted");
 
   // Test special characters in paths
   const specialCharConfig: BreakdownConfig = {
-    working_directory: "/path with spaces/and-dashes/",
-    output_directory: "/path/with/@special/chars/",
-    default_config_path: "/config (1).yml",
+    prompts: { baseDir: "/path with spaces/and-dashes/" },
+    schema: { baseDir: "/path/with/@special/chars/" },
+    workspace: { baseDir: "/workspace (1)/" },
   };
   assertEquals(
-    specialCharConfig.working_directory.includes(" "),
+    specialCharConfig.prompts.baseDir.includes(" "),
     true,
     "Spaces in paths are accepted",
   );
@@ -233,35 +261,35 @@ Deno.test("Unit: Config types handle edge cases", () => {
   // Test platform-specific path formats
   const platformPaths = [
     {
-      working_directory: "/unix/style/path",
-      output_directory: "/out",
-      default_config_path: "/cfg.yml",
+      prompts: { baseDir: "/unix/style/prompts" },
+      schema: { baseDir: "/unix/style/schema" },
+      workspace: { baseDir: "/unix/style/workspace" },
     },
     {
-      working_directory: "C:\\windows\\style",
-      output_directory: "D:\\out",
-      default_config_path: "E:\\cfg.yml",
+      prompts: { baseDir: "C:\\windows\\prompts" },
+      schema: { baseDir: "C:\\windows\\schema" },
+      workspace: { baseDir: "C:\\windows\\workspace" },
     },
     {
-      working_directory: "./relative/path",
-      output_directory: "../out",
-      default_config_path: "../../cfg.yml",
+      prompts: { baseDir: "./relative/prompts" },
+      schema: { baseDir: "./relative/schema" },
+      workspace: { baseDir: "./relative/workspace" },
     },
   ];
 
   platformPaths.forEach((paths, i) => {
     const config: BreakdownConfig = paths;
-    assertEquals(typeof config.working_directory, "string", `Platform path ${i} is valid`);
+    assertEquals(typeof config.prompts.baseDir, "string", `Platform path ${i} is valid`);
   });
 
   // Test Unicode in paths
   const unicodeConfig: BreakdownConfig = {
-    working_directory: "/パス/路径/путь/",
-    output_directory: "/出力/输出/",
-    default_config_path: "/設定.yml",
+    prompts: { baseDir: "/パス/路径/prompts/" },
+    schema: { baseDir: "/パス/路径/schema/" },
+    workspace: { baseDir: "/パス/路径/workspace/" },
   };
   assertEquals(
-    unicodeConfig.working_directory.includes("パス"),
+    unicodeConfig.prompts.baseDir.includes("パス"),
     true,
     "Unicode paths are accepted",
   );

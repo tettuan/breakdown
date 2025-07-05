@@ -5,14 +5,14 @@
  * as well as error type guards and formatting functions.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import {
   formatPromptError,
   isInvalidVariablesError,
   isTemplateNotFoundError,
   type PromptError,
   PromptPath,
-} from "./prompt_types.ts";
+} from "../../../../lib/types/prompt_types.ts";
 
 Deno.test("PromptPath.create() - rejects empty strings", () => {
   // Test empty string

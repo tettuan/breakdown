@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { schema } from "../../../lib/templates/schema.ts";
 import { prompts } from "../../../lib/templates/prompts.ts";

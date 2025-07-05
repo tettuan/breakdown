@@ -1,5 +1,5 @@
 import { assertEquals } from "../../../lib/deps.ts";
-import { InputFilePathResolver } from "./input_file_path_resolver.ts";
+import { InputFilePathResolver } from "../../../../lib/factory/input_file_path_resolver.ts";
 import { join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import type { DemonstrativeType } from "../types/mod.ts";
@@ -11,7 +11,9 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
       layerType: "project",
       options: {},
     });
-    assertEquals(resolver.getPath(), "");
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, "");
   });
   it("returns absolute path if fromFile is absolute", async () => {
     const absPath = resolve(Deno.cwd(), "foo", "bar", "input.md");
@@ -20,7 +22,9 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
       layerType: "project",
       options: { fromFile: absPath },
     });
-    assertEquals(resolver.getPath(), absPath);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, absPath);
   });
   it("resolves path if fromFile has path hierarchy (relative)", async () => {
     const relPath = join("foo", "bar", "input.md");
@@ -30,7 +34,9 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
       layerType: "project",
       options: { fromFile: relPath },
     });
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
   });
 });
 
@@ -42,7 +48,9 @@ describe("InputFilePathResolver: layerType/fromLayerType handling", () => {
       options: { fromFile: "input.md" },
     });
     const expected = resolve(Deno.cwd(), "input.md");
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
   });
   it("resolves path if fromFile is filename only (uses fromLayerType)", async () => {
     const resolver = new InputFilePathResolver({}, {
@@ -51,7 +59,9 @@ describe("InputFilePathResolver: layerType/fromLayerType handling", () => {
       options: { fromFile: "input.md", fromLayerType: "project" },
     });
     const expected = resolve(Deno.cwd(), "input.md");
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
   });
 });
 
@@ -64,7 +74,9 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
       layerType: "project",
       options: { fromFile: winPath },
     });
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
   });
   it("handles edge case with empty layerType and fromLayerType", async () => {
     const resolver = new InputFilePathResolver({}, {
@@ -73,7 +85,9 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
       options: { fromFile: "input.md" },
     });
     const expected = resolve(Deno.cwd(), "input.md");
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
   });
   it("handles ambiguous case where fromFile is a directory name", async () => {
     const dirName = "ambiguous.md";
@@ -85,7 +99,9 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
     });
     // Should resolve to <cwd>/ambiguous.md (not treat as directory)
     const expected = resolve(Deno.cwd(), dirName);
-    assertEquals(resolver.getPath(), expected);
+    const result = resolver.getPath();
+    assertEquals(result.ok, true);
+    if (result.ok) assertEquals(result.data.value, expected);
     await Deno.remove(dirName, { recursive: true });
   });
 });

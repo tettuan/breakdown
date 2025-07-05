@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertStringIncludes } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertStringIncludes } from "../../lib/deps.ts";
 import { prompts } from "../../../../lib/templates/prompts.ts";
 
 /**

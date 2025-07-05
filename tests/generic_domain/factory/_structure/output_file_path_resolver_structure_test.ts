@@ -11,8 +11,8 @@
 import { assert, assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
-import type { PromptCliParams } from "./prompt_variables_factory.ts";
+import { OutputFilePathResolver } from "../../../../lib/factory/output_file_path_resolver.ts";
+import type { PromptCliParams } from "../../../../lib/factory/prompt_variables_factory.ts";
 import type { TwoParams_Result } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger("structure-output-file-path-resolver");
@@ -112,8 +112,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
     };
     const resolver1 = new OutputFilePathResolver(config, params1);
     const result1 = resolver1.getPath();
-    assertEquals(result1.includes("project"), true);
-    assertEquals(result1.endsWith(".md"), true);
+    assert(result1.ok);
+    assertEquals(result1.data.value.includes("project"), true);
+    assertEquals(result1.data.value.endsWith(".md"), true);
 
     // Test 2: Absolute file path
     const params2: PromptCliParams = {
@@ -123,7 +124,8 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
     };
     const resolver2 = new OutputFilePathResolver(config, params2);
     const result2 = resolver2.getPath();
-    assertEquals(result2, "/absolute/path/file.md");
+    assert(result2.ok);
+    assertEquals(result2.data.value, "/absolute/path/file.md");
 
     // Test 3: Relative file with hierarchy
     const params3: PromptCliParams = {
@@ -133,7 +135,8 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
     };
     const resolver3 = new OutputFilePathResolver(config, params3);
     const result3 = resolver3.getPath();
-    assertEquals(result3.includes("output/file.md"), true);
+    assert(result3.ok);
+    assertEquals(result3.data.value.includes("output/file.md"), true);
 
     // Test 4: Filename only
     const params4: PromptCliParams = {
@@ -143,7 +146,8 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
     };
     const resolver4 = new OutputFilePathResolver(config, params4);
     const result4 = resolver4.getPath();
-    assertEquals(result4.includes("project/simple.md"), true);
+    assert(result4.ok);
+    assertEquals(result4.data.value.includes("project/simple.md"), true);
   });
 
   it("should maintain clear separation between different path operations", () => {
@@ -172,8 +176,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
 
     // Test filename generation
     const filename = resolver.generateDefaultFilename();
-    assertEquals(filename.endsWith(".md"), true);
-    assertEquals(filename.includes("_"), true);
+    assert(filename.ok);
+    assertEquals(filename.data.endsWith(".md"), true);
+    assertEquals(filename.data.includes("_"), true);
   });
 
   it("should generate unique filenames consistently", () => {
@@ -191,7 +196,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
     // Generate multiple filenames
     const filenames = [];
     for (let i = 0; i < 5; i++) {
-      filenames.push(resolver.generateDefaultFilename());
+      const result = resolver.generateDefaultFilename();
+      assert(result.ok);
+      filenames.push(result.data);
     }
 
     // All should be unique
@@ -223,8 +230,9 @@ describe("OutputFilePathResolver - Abstraction Levels", () => {
 
     // Should produce properly resolved paths using standard abstractions
     assertExists(result);
-    assertNotEquals(result, "./test/output.md"); // Should be absolute
-    assertEquals(result.startsWith("/") || result.match(/^[A-Z]:/), true); // Absolute path
+    assert(result.ok);
+    assertNotEquals(result.data.value, "./test/output.md"); // Should be absolute
+    assertEquals(result.data.value.startsWith("/") || result.data.value.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
@@ -298,9 +306,10 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
     const result = resolver.getPath();
 
     // Should only process destinationFile, not other file options
-    assertEquals(result.includes("output.md"), true);
-    assertEquals(result.includes("input.md"), false);
-    assertEquals(result.includes("prompts"), false);
+    assert(result.ok);
+    assertEquals(result.data.value.includes("output.md"), true);
+    assertEquals(result.data.value.includes("input.md"), false);
+    assertEquals(result.data.value.includes("prompts"), false);
   });
 
   it("should handle parameter structure variations gracefully", () => {
@@ -350,8 +359,9 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
       const result = resolver.getPath();
 
       // Should generate path with appropriate layer directory
-      assertEquals(result.includes(layer), true);
-      assertEquals(result.endsWith(".md"), true);
+      assert(result.ok);
+      assertEquals(result.data.value.includes(layer), true);
+      assertEquals(result.data.value.endsWith(".md"), true);
     });
   });
 });
@@ -384,9 +394,10 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
 
       // Should handle invalid inputs by auto-generating
       assertExists(result);
-      assertNotEquals(result, "");
+      assert(result.ok);
+      assertNotEquals(result.data.value, "");
       // Should generate a meaningful path (may or may not include "project")
-      assert(result.length > 0, "Should generate non-empty path");
+      assert(result.data.value.length > 0, "Should generate non-empty path");
     });
   });
 
@@ -418,7 +429,8 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
 
       // Should handle special characters without errors
       assertExists(result);
-      assertNotEquals(result, "");
+      assert(result.ok);
+      assertNotEquals(result.data.value, "");
     });
   });
 
@@ -439,7 +451,8 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
 
     // Should still generate a valid path
     assertExists(result);
-    assertNotEquals(result, "");
-    assertEquals(result.endsWith(".md"), true);
+    assert(result.ok);
+    assertNotEquals(result.data.value, "");
+    assertEquals(result.data.value.endsWith(".md"), true);
   });
 });

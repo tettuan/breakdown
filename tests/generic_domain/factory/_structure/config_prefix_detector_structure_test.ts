@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "../../../lib/deps.ts";
-import { ConfigPrefixDetector as ConfigPrefixDetector } from "./config_prefix_detector.ts";
+import { ConfigPrefixDetector as ConfigPrefixDetector } from "../../../../lib/factory/config_prefix_detector.ts";
 
 Deno.test("ConfigPrefixDetector structure - class exists", () => {
   assertExists(ConfigPrefixDetector, "ConfigPrefixDetector class should be exported");

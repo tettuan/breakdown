@@ -19,8 +19,8 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsOrchestrator } from "$lib/cli/orchestrators/two_params_orchestrator.ts";
-import { TwoParamsValidator } from "../validators/two_params_validator.ts";
-import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
+import { TwoParamsValidator } from "../../../../lib/cli/validators/two_params_validator.ts";
+import { TwoParamsStdinProcessor } from "../../../../lib/cli/processors/two_params_stdin_processor.ts";
 import { error, ok } from "../../../lib/deps.ts";
 
 const _logger = new _BreakdownLogger("structure-two-params-orchestrator");

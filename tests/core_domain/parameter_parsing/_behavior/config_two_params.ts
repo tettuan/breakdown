@@ -7,7 +7,7 @@
  * @module core_domain/parameter_parsing/config_two_params
  */
 
-import type { TwoParams_Result } from "../../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 /**
  * Configuration for two parameters behavior

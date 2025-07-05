@@ -13,7 +13,7 @@ import {
   type StdinMockConfig,
   StdinTestScenario,
 } from "../../lib/io/ci_stdin_test_framework.ts";
-import { assertEquals, assertRejects } from "../../../lib/deps.ts";
+import { assertEquals, assertRejects } from "../../lib/deps.ts";
 
 /**
  * STDIN test utilities for use in test files

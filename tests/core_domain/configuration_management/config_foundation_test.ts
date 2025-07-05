@@ -15,7 +15,7 @@
  * - Required directories exist and are accessible
  */
 
-import { assertEquals } from "../../../lib/deps.ts";
+import { assertEquals } from "../../lib/deps.ts";
 import { join as _join } from "jsr:@std/path/join";
 import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 import {

@@ -10,7 +10,7 @@
  */
 
 import { assertEquals } from "../../../lib/deps.ts";
-import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
+import { ConfigPrefixDetector } from "../../../../lib/factory/config_prefix_detector.ts";
 
 Deno.test("ConfigPrefixDetector - detects --config=value format", () => {
   assertEquals(

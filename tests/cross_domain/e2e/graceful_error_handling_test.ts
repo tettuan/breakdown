@@ -12,7 +12,7 @@
  * - All parameter combinations should complete without system crashes
  */
 
-import { assertEquals, assertStringIncludes } from "../../../lib/deps.ts";
+import { assertEquals, assertStringIncludes } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 

@@ -10,7 +10,7 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import {
   formatPromptError,
   isInvalidVariablesError,

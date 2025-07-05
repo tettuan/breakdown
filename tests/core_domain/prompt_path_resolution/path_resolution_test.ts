@@ -11,13 +11,13 @@
  * 移行元: tests/1_core/0_path/path_resolver_test.ts
  */
 
-import { assertEquals, assertRejects } from "../../../lib/deps.ts";
+import { assertEquals, assertRejects } from "../../lib/deps.ts";
 import { join } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { ensureDir } from "@std/fs";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { cleanupTestEnvironment, setupTestEnvironment } from "$test/helpers/setup.ts";
+import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
+import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 
 const logger = new BreakdownLogger("prompt-path-resolution");
 
@@ -174,10 +174,12 @@ describe("プロンプトパス決定ドメイン", () => {
             async () => {
               const factory = await PromptVariablesFactory.create(cliParams);
               // プロンプトファイルの実際の読み込みでエラーが発生する
-              await factory.build();
+              const result = await factory.toPromptParams();
+              if (!result.ok) {
+                throw result.error;
+              }
             },
-            Error,
-            "プロンプトファイルが見つかりません"
+            Error
           );
 
           logger.info("明確なエラーメッセージが提供される");

@@ -17,7 +17,7 @@ import {
   StdinFactoryInput,
   StdinVariableFactory,
   StdinVariableFactoryError,
-} from "./stdin_variable_factory.ts";
+} from "../../../../lib/factory/stdin_variable_factory.ts";
 
 /**
  * 【構造検証】単一責任の原則の遵守確認

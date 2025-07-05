@@ -22,8 +22,8 @@
 import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
-import { runCommand } from "../../../tests/helpers/setup.ts";
-import { assertCommandSuccess } from "../../../tests/helpers/assertions.ts";
+import { runCommand } from "../../../helpers/setup.ts";
+import { assertCommandSuccess } from "../../../helpers/assertions.ts";
 import { ensureDir } from "@std/fs";
 
 const _logger = new _BreakdownLogger();

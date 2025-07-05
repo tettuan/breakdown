@@ -14,12 +14,12 @@
  * - draft/2025/20250504-template_using_dir.ja.md
  */
 
-import { assertEquals } from "../../../lib/deps.ts";
+import { assertEquals } from "../../lib/deps.ts";
 import { join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { runCommand } from "$test/helpers/setup.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { assert } from "../../../lib/deps.ts";
+import { assert } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger();
 

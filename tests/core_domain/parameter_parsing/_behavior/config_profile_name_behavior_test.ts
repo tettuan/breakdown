@@ -12,7 +12,7 @@
  * - Value retrieval and existence checks
  */
 
-import { assertEquals } from "../../../lib/deps.ts";
+import { assertEquals } from "../../lib/deps.ts";
 import { describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

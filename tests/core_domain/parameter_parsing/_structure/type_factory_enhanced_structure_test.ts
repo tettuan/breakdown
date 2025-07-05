@@ -11,7 +11,7 @@
  * - TypeCreationResult algebraic data type tests
  */
 
-import { assertEquals, assertExists, assertInstanceOf as _assertInstanceOf } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf as _assertInstanceOf } from "../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -24,7 +24,7 @@ import {
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
-} from "../../../lib/deps.ts";
+} from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("type-factory-structure-enhanced");
 

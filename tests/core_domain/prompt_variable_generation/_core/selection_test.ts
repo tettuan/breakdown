@@ -14,7 +14,7 @@
  * - Adaptation option correctly modifies prompt selection
  */
 
-import { assert, assertEquals } from "../../../lib/deps.ts";
+import { assert, assertEquals } from "../../lib/deps.ts";
 import { afterEach, beforeEach, describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
@@ -24,7 +24,7 @@ import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_fa
 import type {
   DemonstrativeType as _DemonstrativeType,
   LayerType as _LayerType,
-} from "../../../lib/deps.ts";
+} from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger();
 

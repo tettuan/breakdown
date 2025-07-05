@@ -12,7 +12,7 @@ import { describe, it } from "@std/testing/bdd";
 
 describe("Validators Module - Structure", () => {
   it("should follow single responsibility principle", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // All exports should be focused on validation
@@ -24,7 +24,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should organize exports by category", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should have clear category sections
     const hasCategories = modContent.includes("// Core validator exports") &&
@@ -34,7 +34,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should maintain proper abstraction level", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     // Should export high-level validators, not low-level utilities
     assertExists(_mod.TwoParamsValidator, "Should export main validator");
@@ -49,7 +49,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should provide clear public API", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     // Main validators should be classes
     assertEquals(
@@ -65,7 +65,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should export necessary types", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should export validation-related types
     assertEquals(
@@ -81,7 +81,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should maintain exports cohesion", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // All exports should come from validator modules
     const exportLines = modContent.split("\n").filter((line) => line.includes("export"));
@@ -99,7 +99,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should minimize coupling", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should not import from too many different modules
     const fromStatements = modContent.match(/from\s+"[^"]+"/g) || [];
@@ -113,7 +113,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should have clear boundaries", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // Should not mix validators with other concerns
@@ -127,7 +127,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should follow composition over inheritance", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should not export abstract classes or base classes
     assertEquals(modContent.includes("Abstract"), false, "Should not export abstract classes");
@@ -135,7 +135,7 @@ describe("Validators Module - Structure", () => {
   });
 
   it("should be extensible without modification", async () => {
-    const modContent = await Deno.readTextFile(new URL("./mod.ts", import.meta.url));
+    const modContent = await Deno.readTextFile(new URL("../../../../lib/cli/validators/mod.ts", import.meta.url));
 
     // Should have clear sections where new exports can be added
     const lines = modContent.split("\n");

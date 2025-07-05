@@ -18,8 +18,8 @@ import {
   StdinVariableFactoryError,
 } from "../../../../lib/factory/stdin_variable_factory.ts";
 import type { Result } from "../../../lib/deps.ts";
-import type { StdinVariable } from "../types/prompt_variables.ts";
-import type { VariableError } from "../types/variable_result.ts";
+import type { StdinVariable } from "../../../../lib/types/prompt_variables.ts";
+import type { VariableError } from "../../../../lib/types/variable_result.ts";
 
 /**
  * 【アーキテクチャ検証】Factory層の依存関係検証

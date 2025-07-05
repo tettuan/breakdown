@@ -21,7 +21,7 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "../../../../lib/factory/prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("config-constraint-validation");
 
@@ -288,6 +288,8 @@ describe("Config Constraint Validation - Directory Validation", () => {
 
       if (typesResult.ok) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: {},
@@ -296,7 +298,11 @@ describe("Config Constraint Validation - Directory Validation", () => {
         // Create factory with custom config
         const totalityFactory = TotalityPromptVariablesFactory.createWithConfig(
           scenario.config,
-          params,
+          {
+            demonstrativeType: typesResult.data.directive.getValue(),
+            layerType: typesResult.data.layer.getValue(),
+            options: {},
+          },
         );
 
         const hasValidBaseDir = totalityFactory.hasValidBaseDir();
@@ -345,12 +351,18 @@ describe("Config Constraint Validation - Directory Validation", () => {
 
       if (typesResult.ok) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: {},
         };
 
-        const totalityFactory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+        const totalityFactory = TotalityPromptVariablesFactory.createWithConfig(config, {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
+          options: {},
+        });
         const hasValidBaseDir = totalityFactory.hasValidBaseDir();
 
         assertEquals(hasValidBaseDir, scenario.valid, `${scenario.description} validity`);

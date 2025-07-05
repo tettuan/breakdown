@@ -6,7 +6,7 @@
  * are followed and components have clear, non-overlapping responsibilities.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf } from "../../lib/deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { WorkspaceImpl } from "../../../../lib/workspace/workspace.ts";
 import { WorkspaceStructureImpl } from "../../../../lib/workspace/structure.ts";

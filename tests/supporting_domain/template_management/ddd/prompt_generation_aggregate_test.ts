@@ -2,7 +2,7 @@
  * @fileoverview Prompt Generation Aggregate Tests
  */
 
-import { assertEquals, assertThrows } from "../../../lib/deps.ts";
+import { assertEquals, assertThrows } from "../../lib/deps.ts";
 import {
   PromptGenerationAggregate,
   PromptTemplate,
@@ -12,7 +12,7 @@ import {
   GeneratedPrompt,
   PromptGenerationError,
 } from "../../../../lib/domain/templates/prompt_generation_aggregate.ts";
-import { DirectiveType, LayerType } from "../../../lib/deps.ts";
+import { DirectiveType, LayerType } from "../../lib/deps.ts";
 
 // Helper to create test types
 function createTestTypes() {

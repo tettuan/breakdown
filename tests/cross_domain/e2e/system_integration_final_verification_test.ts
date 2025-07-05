@@ -28,12 +28,12 @@ import { join } from "@std/path";
 import {
   handleTwoParams,
   type TwoParamsHandlerError,
-} from "../../lib/cli/handlers/two_params_handler.ts";
+} from "../../../lib/cli/handlers/two_params_handler.ts";
 import {
   handleTwoParamsWithOrchestrator,
   type OrchestratorError,
-} from "../../lib/cli/handlers/two_params_orchestrator.ts";
-import type { Result } from "../../../lib/deps.ts";
+} from "../../../lib/cli/handlers/two_params_orchestrator.ts";
+import type { Result } from "../../../lib/types/result.ts";
 
 const logger = new BreakdownLogger("system-integration-final");
 
@@ -906,8 +906,8 @@ describe("System Integration Final Verification - System Performance & Quality",
       const batchResults = await Promise.all(batchPromises);
 
       const batchDuration = performance.now() - batchStart;
-      const successCount = batchResults.filter((r) => r.ok).length;
-      const errorCount = batchResults.filter((r) => !r.ok).length;
+      const successCount = batchResults.filter((r: Result<unknown, unknown>) => r.ok).length;
+      const errorCount = batchResults.filter((r: Result<unknown, unknown>) => !r.ok).length;
 
       // Check for interference (results should be independent)
       const interference = false; // Simplified interference detection

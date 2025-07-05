@@ -11,7 +11,7 @@
  * - Totality principle validation through exhaustive matching
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -23,7 +23,7 @@ import {
   type TypeCreationError,
   TypeFactory,
   type TypePatternProvider,
-} from "../../../lib/deps.ts";
+} from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("type-factory-architecture-enhanced");
 

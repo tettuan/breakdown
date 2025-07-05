@@ -11,7 +11,7 @@ import { assert, assertEquals } from "../../../../lib/deps.ts";
 import {
   TwoParamsVariableProcessor,
   type VariableProcessorError,
-} from "./two_params_variable_processor.ts";
+} from "../../../../lib/cli/processors/two_params_variable_processor.ts";
 
 /**
  * Unit Test Suite: TwoParamsVariableProcessor

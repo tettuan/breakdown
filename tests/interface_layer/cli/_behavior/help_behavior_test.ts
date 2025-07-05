@@ -14,7 +14,7 @@ import { assertEquals, assertStringIncludes } from "../../../../lib/deps.ts";
  * Test help text content and format
  */
 Deno.test("HELP_TEXT contains all required sections", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
 
   // Check for main sections
   assertStringIncludes(HELP_TEXT, "Usage: breakdown [command] [options]");
@@ -27,7 +27,7 @@ Deno.test("HELP_TEXT contains all required sections", async () => {
  * Test command list completeness
  */
 Deno.test("HELP_TEXT includes all documented commands", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
 
   // Check for documented commands
   assertStringIncludes(HELP_TEXT, "init");
@@ -40,7 +40,7 @@ Deno.test("HELP_TEXT includes all documented commands", async () => {
  * Test options list completeness
  */
 Deno.test("HELP_TEXT includes all documented options", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
 
   // Check for options
   assertStringIncludes(HELP_TEXT, "--config/-c <prefix>");
@@ -55,7 +55,7 @@ Deno.test("HELP_TEXT includes all documented options", async () => {
  * Test examples section
  */
 Deno.test("HELP_TEXT includes usage examples", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
 
   // Check for examples
   assertStringIncludes(HELP_TEXT, "breakdown init");
@@ -67,7 +67,7 @@ Deno.test("HELP_TEXT includes usage examples", async () => {
  * Test help text formatting
  */
 Deno.test("HELP_TEXT has proper formatting and alignment", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   const _lines = HELP_TEXT.split("\n");
 
   // Check for proper indentation
@@ -95,7 +95,7 @@ Deno.test("HELP_TEXT has proper formatting and alignment", async () => {
  * Test showVersion function output
  */
 Deno.test("showVersion displays correct version information", async () => {
-  const { showVersion, _VERSION, APP_NAME } = await import("./help.ts");
+  const { showVersion, _VERSION, APP_NAME } = await import("../../../../lib/cli/help.ts");
 
   // Capture console.log output
   const originalLog = console.log;
@@ -117,7 +117,7 @@ Deno.test("showVersion displays correct version information", async () => {
  * Test showHelp function output
  */
 Deno.test("showHelp displays app name and help text", async () => {
-  const { showHelp, APP_NAME, HELP_TEXT } = await import("./help.ts");
+  const { showHelp, APP_NAME, HELP_TEXT } = await import("../../../../lib/cli/help.ts");
 
   // Capture console.log output
   const originalLog = console.log;
@@ -139,7 +139,7 @@ Deno.test("showHelp displays app name and help text", async () => {
  * Test showUsage function output
  */
 Deno.test("showUsage displays minimal usage information", async () => {
-  const { showUsage, APP_NAME } = await import("./help.ts");
+  const { showUsage, APP_NAME } = await import("../../../../lib/cli/help.ts");
 
   // Capture console.log output
   const originalLog = console.log;
@@ -161,7 +161,7 @@ Deno.test("showUsage displays minimal usage information", async () => {
  * Test constants are properly exported
  */
 Deno.test("Exported constants have correct values", async () => {
-  const { _VERSION, APP_NAME } = await import("./help.ts");
+  const { _VERSION, APP_NAME } = await import("../../../../lib/cli/help.ts");
   assertEquals(_VERSION.constructor.name, "String", "_VERSION should be a string");
   assertEquals(_VERSION.length > 0, true, "_VERSION should not be empty");
   assertEquals(APP_NAME, "Breakdown - AI Development Instruction Tool");
@@ -171,7 +171,7 @@ Deno.test("Exported constants have correct values", async () => {
  * Test help text doesn't contain undefined or null values
  */
 Deno.test("HELP_TEXT doesn't contain undefined or null values", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   assertEquals(HELP_TEXT.includes("undefined"), false);
   assertEquals(HELP_TEXT.includes("null"), false);
   assertEquals(HELP_TEXT.includes("[object"), false);
@@ -181,7 +181,7 @@ Deno.test("HELP_TEXT doesn't contain undefined or null values", async () => {
  * Test help text line endings and formatting consistency
  */
 Deno.test("HELP_TEXT has consistent line endings", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   // Check that there are no double line breaks except between sections
   const doubleLineBreaks = HELP_TEXT.match(/\n\n\n/g);
   assertEquals(doubleLineBreaks, null, "Should not have triple line breaks");
@@ -205,7 +205,7 @@ Deno.test("HELP_TEXT has consistent line endings", async () => {
  * Test edge case: empty command in examples
  */
 Deno.test("HELP_TEXT examples are valid command formats", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   const exampleSection = HELP_TEXT.substring(HELP_TEXT.indexOf("Examples:"));
   const exampleLines = exampleSection.split("\n").filter((line: string) =>
     line.trim().startsWith("breakdown")
@@ -221,7 +221,7 @@ Deno.test("HELP_TEXT examples are valid command formats", async () => {
  * Test command descriptions are informative
  */
 Deno.test("Command descriptions provide useful information", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   const commandDescriptions = [
     "Initialize breakdown configuration",
     "Process with two parameters",
@@ -237,7 +237,7 @@ Deno.test("Command descriptions provide useful information", async () => {
  * Test option descriptions are clear
  */
 Deno.test("Option descriptions are clear and helpful", async () => {
-  const { HELP_TEXT } = await import("./help.ts");
+  const { HELP_TEXT } = await import("../../../../lib/cli/help.ts");
   const optionDescriptions = [
     "Use custom config prefix",
     "Show this help message",

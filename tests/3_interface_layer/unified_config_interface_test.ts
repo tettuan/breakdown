@@ -11,7 +11,7 @@ Deno.test("UnifiedConfigInterface - create with default profile", async () => {
   const logger = new BreakdownLogger("unified-config-test");
   const result = await UnifiedConfigInterface.create();
   
-  logger.debug("Create result", "テスト結果の確認", { 
+  logger.debug("Create result", { 
     ok: result.ok, 
     error: result.ok ? null : result.error 
   });

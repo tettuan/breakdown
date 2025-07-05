@@ -23,7 +23,7 @@ import {
 import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "../../../../lib/factory/prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("result-error-handling");
 
@@ -288,6 +288,8 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
 
     if (typesResult.ok) {
       const validParams: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -404,6 +406,8 @@ describe("Result Type Error Handling - Factory Error State Coverage", () => {
 
       for (const scenario of errorFormatScenarios) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: { errorFormat: scenario.format },
@@ -464,6 +468,8 @@ describe("Result Type Error Handling - Edge Case Coverage", () => {
 
       for (const combination of booleanCombinations) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: combination,

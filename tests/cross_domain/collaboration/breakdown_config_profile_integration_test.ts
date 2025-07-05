@@ -19,13 +19,13 @@ import {
   assertEquals,
   assertExists,
   assertFalse,
-} from "https://deno.land/std@0.210.0/assert/mod.ts";
+} from "../../../lib/deps.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigPatternProvider } from "../../lib/config/pattern_provider.ts";
-import { TypeFactory } from "../../lib/types/type_factory.ts";
-import { ConfigProfileName } from "../../lib/types/config_profile_name.ts";
-import { DefaultTypePatternProvider } from "../../lib/types/defaults/default_type_pattern_provider.ts";
+import { ConfigPatternProvider } from "../../../lib/config/pattern_provider.ts";
+import { TypeFactory } from "../../../lib/types/type_factory.ts";
+import { ConfigProfileName } from "../../../lib/types/config_profile_name.ts";
+import { DefaultTypePatternProvider } from "../../../lib/types/defaults/default_type_pattern_provider.ts";
 import {
   cleanupTestEnvironment,
   setupTestEnvironment,

@@ -11,7 +11,7 @@
  * @module types/defaults/0_architecture_default_type_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertStrictEquals } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertStrictEquals } from "../../lib/deps.ts";
 import { DefaultTypePatternProvider } from "../../../../lib/types/defaults/default_type_pattern_provider.ts";
 import type { TypePatternProvider } from "../../../../lib/types/type_factory.ts";
 

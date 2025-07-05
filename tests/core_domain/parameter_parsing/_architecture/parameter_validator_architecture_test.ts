@@ -26,8 +26,8 @@ import type {
   OneParamsResult as _OneParamsResult,
   TwoParams_Result,
   ZeroParamsResult as _ZeroParamsResult,
-} from "../../../lib/deps.ts";
-import type { Result as _Result } from "../../../lib/deps.ts";
+} from "../../lib/deps.ts";
+import type { Result as _Result } from "../../lib/deps.ts";
 
 /**
  * Architecture Test: Dependency Direction Validation

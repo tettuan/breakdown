@@ -30,7 +30,7 @@ import {
   StdinVariableName,
   toPromptParamsVariables,
   UserVariable,
-} from "../../../lib/types/prompt_variables.ts";
+} from "$lib/types/prompt_variables.ts";
 
 Deno.test("Structure: Variable classes follow consistent design pattern", () => {
   // All variable classes should follow the same structural pattern
@@ -148,8 +148,8 @@ Deno.test("Structure: Variable encapsulation prevents mutation", () => {
 
     assertEquals(JSON.stringify(record1), JSON.stringify(record2));
     // They should not be the same object reference
-    record1.modified = "test";
-    assertEquals(record2.modified, undefined);
+    (record1 as any).modified = "test";
+    assertEquals((record2 as any).modified, undefined);
   }
 });
 
@@ -237,7 +237,7 @@ Deno.test("Structure: Integration functions maintain separation", () => {
   const var2 = UserVariable.create("custom", "value");
 
   if (var1.ok && var2.ok) {
-    const variables: PromptVariables = [var1.data, var2.data];
+    const variables: PromptVariable[] = [var1.data, var2.data];
 
     // Should work with empty array
     const emptyResult = toPromptParamsVariables([]);
@@ -314,7 +314,7 @@ Deno.test("Structure: Variable composition works correctly", () => {
     UserVariable.create("custom2", "value2"),
   ];
 
-  const variables: PromptVariables = [];
+  const variables: PromptVariable[] = [];
   for (const result of results) {
     if (result.ok) {
       variables.push(result.data);
@@ -324,7 +324,7 @@ Deno.test("Structure: Variable composition works correctly", () => {
   assertEquals(variables.length, 6);
 
   // Should convert to unified record
-  const unified = toPromptParamsVariables(variables);
+  const unified = toPromptParamsVariables(variables as PromptVariables);
   assertEquals(Object.keys(unified).length, 6);
 
   // Should maintain all values

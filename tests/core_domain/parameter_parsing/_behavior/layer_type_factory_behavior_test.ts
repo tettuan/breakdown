@@ -5,7 +5,7 @@
  * with comprehensive test cases covering all execution paths.
  */
 
-import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { describe, it } from "@std/testing/bdd";
 

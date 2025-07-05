@@ -20,11 +20,11 @@ import {
   assertEquals,
   assertExists,
   assertRejects,
-} from "https://deno.land/std@0.210.0/assert/mod.ts";
+} from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { WorkspaceImpl } from "../../lib/workspace/workspace.ts";
-import { WorkspaceStructureImpl } from "../../lib/workspace/structure.ts";
-import { WorkspaceConfigError, WorkspaceInitError } from "../../lib/workspace/errors.ts";
+import { WorkspaceImpl } from "../../../lib/workspace/workspace.ts";
+import { WorkspaceStructureImpl } from "../../../lib/workspace/structure.ts";
+import { WorkspaceConfigError, WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 import { join, resolve } from "@std/path";
 import { exists } from "@std/fs";
 import {

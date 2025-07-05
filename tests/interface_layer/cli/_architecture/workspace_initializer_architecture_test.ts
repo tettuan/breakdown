@@ -19,7 +19,7 @@ Deno.test("Architecture: workspace_initializer - dependency direction", async ()
 
   // 実装ファイルの内容を読み込み
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // 依存関係の抽出
@@ -75,7 +75,7 @@ Deno.test("Architecture: workspace_initializer - no circular dependencies", asyn
   // しかし、将来的な拡張に備えてチェックを実装
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // エクスポートされている関数/定数を確認
@@ -129,7 +129,7 @@ Deno.test("Architecture: workspace_initializer - interface consistency", async (
 
   // 関数のシグネチャが適切であることを確認
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // 非同期関数のパターン
@@ -162,7 +162,7 @@ Deno.test("Architecture: workspace_initializer - separation of concerns", async 
   _logger.debug("アーキテクチャテスト開始: 関心事の分離");
 
   const moduleContent = await Deno.readTextFile(
-    new URL("./workspace_initializer.ts", import.meta.url),
+    new URL("../../../../lib/cli/initialization/workspace_initializer.ts", import.meta.url),
   );
 
   // TODOコメントから将来の責務分離の方向性を確認

@@ -24,7 +24,7 @@ import type {
   OneParamsResult as _OneParamsResult,
   TwoParams_Result,
   ZeroParamsResult as _ZeroParamsResult,
-} from "../../../../lib/deps.ts";
+} from "../../../lib/deps.ts";
 
 /**
  * Structure Test: validateTwoParams Method Responsibility Boundary

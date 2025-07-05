@@ -13,11 +13,11 @@
  * - Error structure consistency
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { ConfigError, ParamsCustomConfig, type Result as _Result, ResultStatus } from "../../../lib/deps.ts";
+import { ConfigError, ParamsCustomConfig, type Result as _Result, ResultStatus } from "../../lib/deps.ts";
 
 import type { CustomConfig as _CustomConfig } from "@tettuan/breakdownparams";
 

@@ -26,7 +26,7 @@ import {
   type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
   type TwoParams_Result,
-} from "./prompt_variables_factory.ts";
+} from "../../../../lib/factory/prompt_variables_factory.ts";
 
 const logger = new BreakdownLogger("totality-compliance");
 
@@ -309,13 +309,15 @@ describe("Totality Principle - Error Format Exhaustive Handling", () => {
 
       for (const errorFormat of errorFormats) {
         const params: TotalityPromptCliParams = {
+          demonstrativeType: typesResult.data.directive.getValue(),
+          layerType: typesResult.data.layer.getValue(),
           directive: typesResult.data.directive,
           layer: typesResult.data.layer,
           options: { errorFormat },
         };
 
         const factory = await TotalityPromptVariablesFactory.create(params);
-        const format = factory.errorFormat;
+        const format = factory.getOptions().errorFormat;
 
         let handled = false;
 
@@ -398,6 +400,8 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
 
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -455,6 +459,8 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
           assertExists(result.data.layer);
 
           const params: TotalityPromptCliParams = {
+            demonstrativeType: result.data.directive.getValue(),
+            layerType: result.data.layer.getValue(),
             directive: result.data.directive,
             layer: result.data.layer,
             options: {},

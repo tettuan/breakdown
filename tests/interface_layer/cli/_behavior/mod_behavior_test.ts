@@ -10,12 +10,8 @@
 import { assertEquals, assertExists, assertInstanceOf } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 
-import {
-  ParameterValidator,
-  TwoParamsValidator,
-  type ValidatedParams,
-  type ValidationError,
-} from "../../../lib/deps.ts";
+import { TwoParamsValidator } from "../../../../lib/cli/validators/two_params_validator.ts";
+import type { ValidatedParams, ValidationError } from "../../../../lib/cli/validators/two_params_validator.ts";
 
 describe("Validators Module - Unit Tests", () => {
   it("should export TwoParamsValidator class", () => {
@@ -27,13 +23,10 @@ describe("Validators Module - Unit Tests", () => {
     assertInstanceOf(_validator, TwoParamsValidator);
   });
 
-  it("should export ParameterValidator class", () => {
-    assertExists(ParameterValidator);
-    assertEquals(typeof ParameterValidator, "function");
-
-    // ParameterValidator requires constructor arguments
-    // Just check that it's exported as a class
-    assertEquals(ParameterValidator.name, "ParameterValidator");
+  it("should export TwoParamsValidator properly", () => {
+    // TwoParamsValidator should be properly exported
+    assertExists(TwoParamsValidator);
+    assertEquals(typeof TwoParamsValidator, "function");
   });
 
   it("should allow using exported validators", () => {
@@ -89,24 +82,19 @@ describe("Validators Module - Unit Tests", () => {
     // TwoParamsValidator should have validate method
     assertEquals(typeof twoParamsValidator.validate, "function");
 
-    // ParameterValidator is exported but requires constructor args
-    assertEquals(typeof ParameterValidator, "function");
+    // TwoParamsValidator is the main validator we use
   });
 
   it("should re-export from correct paths", async () => {
     // Import directly from source to compare
-    const { TwoParamsValidator: DirectValidator } = await import("./two_params_validator.ts");
-    const { ParameterValidator: DirectParamValidator } = await import(
-      "../../validator/parameter_validator.ts"
-    );
+    const { TwoParamsValidator: DirectValidator } = await import("../../../../lib/cli/validators/two_params_validator.ts");
 
     // Should be the same references
     assertEquals(TwoParamsValidator, DirectValidator);
-    assertEquals(ParameterValidator, DirectParamValidator);
   });
 
   it("should not export undefined values", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
 
     Object.entries(_mod).forEach(([key, value]) => {
       assertExists(value, `Export ${key} should not be undefined`);
@@ -114,7 +102,7 @@ describe("Validators Module - Unit Tests", () => {
   });
 
   it("should export only public API", async () => {
-    const _mod = await import("./mod.ts");
+    const _mod = await import("../../../../lib/cli/validators/mod.ts");
     const exports = Object.keys(_mod);
 
     // Should have reasonable number of exports
@@ -125,7 +113,7 @@ describe("Validators Module - Unit Tests", () => {
   it("should load efficiently", async () => {
     // Module should load without side effects
     const startTime = performance.now();
-    await import("./mod.ts");
+    await import("../../../../lib/cli/validators/mod.ts");
     const loadTime = performance.now() - startTime;
 
     // Should load quickly (under 100ms)

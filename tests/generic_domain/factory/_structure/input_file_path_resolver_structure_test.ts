@@ -11,8 +11,8 @@
 import { assert, assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { InputFilePathResolver } from "./input_file_path_resolver.ts";
-import type { PromptCliParams } from "./prompt_variables_factory.ts";
+import { InputFilePathResolver } from "../../../../lib/factory/input_file_path_resolver.ts";
+import type { PromptCliParams } from "../../../../lib/factory/prompt_variables_factory.ts";
 import type { TwoParams_Result } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger("structure-input-file-path-resolver");
@@ -114,7 +114,9 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
       options: {},
     };
     const resolver1 = new InputFilePathResolver(config, params1);
-    assertEquals(resolver1.getPath(), "");
+    const result1 = resolver1.getPath();
+    assert(result1.ok);
+    assertEquals(result1.data.value, "");
 
     // Test 2: Stdin input
     const params2: PromptCliParams = {
@@ -123,7 +125,9 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
       options: { fromFile: "-" },
     };
     const resolver2 = new InputFilePathResolver(config, params2);
-    assertEquals(resolver2.getPath(), "-");
+    const result2 = resolver2.getPath();
+    assert(result2.ok);
+    assertEquals(result2.data.value, "-");
 
     // Test 3: Absolute path
     const params3: PromptCliParams = {
@@ -132,7 +136,9 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
       options: { fromFile: "/absolute/path/file.md" },
     };
     const resolver3 = new InputFilePathResolver(config, params3);
-    assertEquals(resolver3.getPath(), "/absolute/path/file.md");
+    const result3 = resolver3.getPath();
+    assert(result3.ok);
+    assertEquals(result3.data.value, "/absolute/path/file.md");
 
     // Test 4: Relative path
     const params4: PromptCliParams = {
@@ -141,8 +147,10 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
       options: { fromFile: "./relative/file.md" },
     };
     const resolver4 = new InputFilePathResolver(config, params4);
-    assertNotEquals(resolver4.getPath(), "");
-    assertNotEquals(resolver4.getPath(), "./relative/file.md"); // Should be resolved
+    const result4 = resolver4.getPath();
+    assert(result4.ok);
+    assertNotEquals(result4.data.value, "");
+    assertNotEquals(result4.data.value, "./relative/file.md"); // Should be resolved
   });
 
   it("should maintain clear separation between path types", () => {
@@ -173,15 +181,18 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
 
       // Each type should be handled distinctly
       if (type === "stdin") {
-        assertEquals(result, "-");
+        assert(result.ok);
+        assertEquals(result.data.value, "-");
       } else if (type === "absolute") {
         // Absolute paths should be preserved
         // Note: resolver may normalize paths internally
         assertExists(result);
-        assert(result.length > 0, "Should return non-empty path for absolute paths");
+        assert(result.ok);
+        assert(result.data.value.length > 0, "Should return non-empty path for absolute paths");
       } else {
         // Relative paths should be resolved
-        assertNotEquals(result, input);
+        assert(result.ok);
+        assertNotEquals(result.data.value, input);
       }
     });
   });
@@ -203,8 +214,9 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
 
     // Should produce properly resolved paths using standard abstractions
     assertExists(result);
-    assertNotEquals(result, "./test/file.md"); // Should be absolute
-    assertEquals(result.startsWith("/") || result.match(/^[A-Z]:/), true); // Absolute path
+    assert(result.ok);
+    assertNotEquals(result.data.value, "./test/file.md"); // Should be absolute
+    assertEquals(result.data.value.startsWith("/") || result.data.value.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
@@ -230,7 +242,8 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
       const result = resolver.getPath();
 
       // Should normalize to forward slashes
-      assertEquals(result.includes("\\"), false);
+      assert(result.ok);
+      assertEquals(result.data.value.includes("\\"), false);
     });
   });
 });
@@ -256,9 +269,10 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
     const result = resolver.getPath();
 
     // Should only process fromFile, not other file options
-    assertEquals(result.includes("input.md"), true);
-    assertEquals(result.includes("output.md"), false);
-    assertEquals(result.includes("prompts"), false);
+    assert(result.ok);
+    assertEquals(result.data.value.includes("input.md"), true);
+    assertEquals(result.data.value.includes("output.md"), false);
+    assertEquals(result.data.value.includes("prompts"), false);
   });
 
   it("should handle parameter structure variations gracefully", () => {
@@ -309,7 +323,8 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
       const result = resolver.getPath();
 
       // Path resolution should be consistent regardless of layer
-      assertEquals(result.endsWith(file), true);
+      assert(result.ok);
+      assertEquals(result.data.value.endsWith(file), true);
     });
   });
 });
@@ -341,11 +356,12 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
       const result = resolver.getPath();
 
       // Should return empty string for invalid inputs
+      assert(result.ok);
       if (edgeCase === undefined || edgeCase === null || edgeCase === "") {
-        assertEquals(result, "");
+        assertEquals(result.data.value, "");
       } else {
         // Whitespace should be handled as valid paths
-        assertNotEquals(result, "");
+        assertNotEquals(result.data.value, "");
       }
     });
   });
@@ -378,7 +394,8 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
 
       // Should handle special characters without errors
       assertExists(result);
-      assertNotEquals(result, "");
+      assert(result.ok);
+      assertNotEquals(result.data.value, "");
     });
   });
 });

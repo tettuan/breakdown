@@ -21,14 +21,14 @@ import {
   assertStringIncludes,
 } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { runCommand as _runCommand } from "../../helpers/setup.ts";
+import { runCommand as _runCommand } from "../../../helpers/setup.ts";
 import { join as _join } from "@std/path";
 import { ensureDir as _ensureDir } from "@std/fs";
 import {
   IsolatedTestEnvironment as _IsolatedTestEnvironment,
   type StdinTestContext,
   withStdinTest as _withStdinTest,
-} from "../../helpers/stdin/test_context.ts";
+} from "../../../helpers/stdin/test_context.ts";
 
 const logger = new BreakdownLogger();
 const TEST_DIR = "tmp/test_stdin_flow";

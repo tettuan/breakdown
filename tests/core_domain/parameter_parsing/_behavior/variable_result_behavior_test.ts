@@ -12,15 +12,15 @@ import {
   createSuccess,
   createValidationFailedError,
   type VariableError,
-  type VariableResult as _VariableResult,
-} from "../../../lib/types/variable_result.ts";
+  type VariableResult,
+} from "../../../../lib/types/variable_result.ts";
 
 // Test data type for testing
 type TestData = { id: number; name: string };
 
 Deno.test("VariableResult - createSuccess creates valid success result", () => {
   const testData: TestData = { id: 1, name: "test" };
-  const result = createSuccess(testData);
+  const result: VariableResult<TestData> = createSuccess(testData);
 
   assertEquals(result.ok, true);
   if (result.ok) {
@@ -34,7 +34,7 @@ Deno.test("VariableResult - createError creates valid error result", () => {
     name: "badName",
     validNames: ["goodName1", "goodName2"],
   };
-  const result = createError<TestData>(error);
+  const result: VariableResult<TestData> = createError<TestData>(error);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -43,7 +43,7 @@ Deno.test("VariableResult - createError creates valid error result", () => {
 });
 
 Deno.test("VariableResult - createInvalidNameError creates proper error", () => {
-  const result = createInvalidNameError<TestData>("badName", ["valid1", "valid2"]);
+  const result: VariableResult<TestData> = createInvalidNameError<TestData>("badName", ["valid1", "valid2"]);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -56,7 +56,7 @@ Deno.test("VariableResult - createInvalidNameError creates proper error", () => 
 });
 
 Deno.test("VariableResult - createEmptyValueError creates proper error", () => {
-  const result = createEmptyValueError<TestData>("testVar", "Value cannot be empty");
+  const result: VariableResult<TestData> = createEmptyValueError<TestData>("testVar", "Value cannot be empty");
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -69,7 +69,7 @@ Deno.test("VariableResult - createEmptyValueError creates proper error", () => {
 });
 
 Deno.test("VariableResult - createValidationFailedError creates proper error", () => {
-  const result = createValidationFailedError<TestData>("invalid", "must be numeric");
+  const result: VariableResult<TestData> = createValidationFailedError<TestData>("invalid", "must be numeric");
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -83,8 +83,8 @@ Deno.test("VariableResult - createValidationFailedError creates proper error", (
 
 Deno.test("VariableResult - type safety with discriminated union", () => {
   // Test that we can properly discriminate between success and error
-  const successResult = createSuccess({ id: 1, name: "test" });
-  const errorResult = createInvalidNameError<TestData>("bad", ["good"]);
+  const successResult: VariableResult<TestData> = createSuccess({ id: 1, name: "test" });
+  const errorResult: VariableResult<TestData> = createInvalidNameError<TestData>("bad", ["good"]);
 
   // Type guards should work correctly
   if (successResult.ok) {
@@ -101,9 +101,9 @@ Deno.test("VariableResult - type safety with discriminated union", () => {
 });
 
 Deno.test("VariableResult - error types are properly discriminated", () => {
-  const invalidNameError = createInvalidNameError<string>("bad", ["good"]);
-  const emptyValueError = createEmptyValueError<string>("var", "empty");
-  const validationError = createValidationFailedError<string>("val", "constraint");
+  const invalidNameError: VariableResult<string> = createInvalidNameError<string>("bad", ["good"]);
+  const emptyValueError: VariableResult<string> = createEmptyValueError<string>("var", "empty");
+  const validationError: VariableResult<string> = createValidationFailedError<string>("val", "constraint");
 
   // All should be error results
   assertEquals(invalidNameError.ok, false);
@@ -123,7 +123,7 @@ Deno.test("VariableResult - error types are properly discriminated", () => {
 });
 
 Deno.test("VariableResult - readonly validNames array", () => {
-  const result = createInvalidNameError<string>("test", ["a", "b", "c"]);
+  const result: VariableResult<string> = createInvalidNameError<string>("test", ["a", "b", "c"]);
 
   if (!result.ok && result.error.kind === "InvalidName") {
     // validNames should be readonly
@@ -136,21 +136,21 @@ Deno.test("VariableResult - readonly validNames array", () => {
 
 Deno.test("VariableResult - generic type works with different data types", () => {
   // Test with string
-  const stringResult = createSuccess("test string");
+  const stringResult: VariableResult<string> = createSuccess("test string");
   assertEquals(stringResult.ok, true);
   if (stringResult.ok) {
     assertEquals(typeof stringResult.data, "string");
   }
 
   // Test with number
-  const numberResult = createSuccess(42);
+  const numberResult: VariableResult<number> = createSuccess(42);
   assertEquals(numberResult.ok, true);
   if (numberResult.ok) {
     assertEquals(typeof numberResult.data, "number");
   }
 
   // Test with array
-  const arrayResult = createSuccess([1, 2, 3]);
+  const arrayResult: VariableResult<number[]> = createSuccess([1, 2, 3]);
   assertEquals(arrayResult.ok, true);
   if (arrayResult.ok) {
     assertEquals(Array.isArray(arrayResult.data), true);

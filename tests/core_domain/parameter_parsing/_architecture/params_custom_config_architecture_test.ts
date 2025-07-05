@@ -13,11 +13,11 @@
  * - Error handling architecture
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { DEFAULT_CUSTOM_CONFIG, ParamsParser, type Result as _Result } from "../../../lib/deps.ts";
+import { DEFAULT_CUSTOM_CONFIG, ParamsParser, type Result as _Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("params-custom-config-architecture");
 

@@ -6,7 +6,7 @@
  * and separation of concerns between structure management and other workspace components.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { WorkspaceStructureImpl } from "../../../../lib/workspace/structure.ts";
 import { WorkspaceConfig, WorkspaceStructure } from "../../../../lib/workspace/interfaces.ts";

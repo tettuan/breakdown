@@ -1,11 +1,11 @@
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { TemplateRepository } from "../../../lib/domain/templates/template_repository.ts";
 import { PromptPath } from "../../../lib/domain/generic/template_management/value_objects/prompt_path.ts";
 import { PromptContent } from "../../../lib/domain/generic/template_management/value_objects/prompt_content.ts";
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
 import { LayerType } from "../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("prompt-repository-test");
 
@@ -52,10 +52,14 @@ class MockPromptRepository {
           options: {}
         };
         
-        const directive = DirectiveType.create(directiveResult);
-        const layer = LayerType.create(layerResult);
+        const directiveCreateResult = DirectiveType.create(directiveResult);
+        const layerCreateResult = LayerType.create(layerResult);
         
-        const pathResult = PromptPath.create(directive, layer, pathParts[2]);
+        if (!directiveCreateResult || !layerCreateResult) {
+          continue; // Skip invalid entries
+        }
+        
+        const pathResult = PromptPath.create(directiveCreateResult, layerCreateResult, pathParts[2]);
         const contentResult = PromptContent.create(contentStr);
         
         if (pathResult.ok && pathResult.data && contentResult.ok && contentResult.data) {
@@ -99,9 +103,16 @@ function createTypesFromPath(pathStr: string): { directive: DirectiveType; layer
     options: {}
   };
   
+  const directiveResult = DirectiveType.create(twoParamsResult);
+  const layerResult = LayerType.create(twoParamsResult);
+  
+  if (!directiveResult || !layerResult) {
+    return null;
+  }
+  
   return {
-    directive: DirectiveType.create(twoParamsResult),
-    layer: LayerType.create(twoParamsResult)
+    directive: directiveResult,
+    layer: layerResult
   };
 }
 
@@ -117,7 +128,7 @@ Deno.test("PromptRepository: can retrieve prompt by path", async () => {
   
   const pathResult = PromptPath.create(types.directive, types.layer, "f_project.md");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create prompt path: ${pathResult.error}`);
   }
 
@@ -147,7 +158,7 @@ Deno.test("PromptRepository: returns null for non-existent prompt", async () => 
   
   const pathResult = PromptPath.create(types.directive, types.layer, "prompt.md");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create prompt path: ${pathResult.error}`);
   }
 
@@ -159,7 +170,9 @@ Deno.test("PromptRepository: returns null for non-existent prompt", async () => 
   });
 
   assertEquals(promptResult.ok, true);
-  assertEquals(promptResult.data, null);
+  if (promptResult.ok) {
+    assertEquals(promptResult.data, null);
+  }
 });
 
 Deno.test("PromptRepository: findAll returns all available prompts", async () => {
@@ -251,7 +264,7 @@ Deno.test("PromptRepository: handles template variables correctly", async () => 
   
   const pathResult = PromptPath.create(types.directive, types.layer, "f_task.md");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create prompt path: ${pathResult.error}`);
   }
 
@@ -285,7 +298,7 @@ Deno.test("PromptRepository: prompt content is properly typed", async () => {
   
   const pathResult = PromptPath.create(types.directive, types.layer, "f_issue.md");
 
-  if (!pathResult.ok) {
+  if (!pathResult.ok || !pathResult.data) {
     throw new Error(`Failed to create prompt path: ${pathResult.error}`);
   }
 

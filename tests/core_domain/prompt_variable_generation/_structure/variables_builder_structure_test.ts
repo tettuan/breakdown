@@ -7,7 +7,7 @@
  * @module builder/tests/1_structure_variables_builder_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { VariablesBuilder } from "../variables_builder.ts";
 
 /**

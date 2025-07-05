@@ -8,7 +8,7 @@
  */
 
 import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+import type { TwoParams_Result } from "../../lib/deps.ts";
 
 /**
  * Error types for LayerType creation

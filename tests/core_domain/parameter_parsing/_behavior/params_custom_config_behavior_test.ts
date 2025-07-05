@@ -12,11 +12,11 @@
  * - Edge cases
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { ConfigError, ParamsCustomConfig, type Result, ResultStatus } from "../../../lib/deps.ts";
+import { ConfigError, ParamsCustomConfig, type Result, ResultStatus } from "../../lib/deps.ts";
 
 import type { CustomConfig } from "@tettuan/breakdownparams";
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";

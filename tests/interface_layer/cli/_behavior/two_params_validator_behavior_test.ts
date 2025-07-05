@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "../../../../lib/deps.ts";
-import { TwoParamsValidator } from "./two_params_validator.ts";
+import { TwoParamsValidator } from "../../../../lib/cli/validators/two_params_validator.ts";
 
 Deno.test("TwoParamsValidator - validate success with default types", () => {
   const _validator = new TwoParamsValidator();

@@ -14,7 +14,7 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 
 const logger = new BreakdownLogger("file-cleanup-safety");

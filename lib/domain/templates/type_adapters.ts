@@ -299,7 +299,7 @@ export class TypeValidator {
     const layerValue = layer.getValue();
 
     // Define compatibility rules
-    const incompatibleCombinations = [
+    const incompatibleCombinations: Array<[string, string]> = [
       // Add any known incompatible combinations here
     ];
 

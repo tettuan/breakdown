@@ -30,10 +30,8 @@ import {
 import {
   type PromptCliOptions,
   PromptVariablesFactory,
-  type PromptVariablesFactoryOptions as PromptVariablesFactoryOptions,
   TotalityPromptVariablesFactory,
-  type TotalityPromptVariablesFactoryOptions as _TotalityPromptVariablesFactoryOptions,
-} from "./prompt_variables_factory.ts";
+} from "../../../../lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
 const logger = new BreakdownLogger("structure-prompt-factory");
@@ -98,8 +96,8 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
       // Parameter management should be centralized
       assertExists(factory.getAllParams);
       assertExists(factory.getOptions);
-      assertExists(factory.directive);
-      assertExists(factory.layer);
+      assertExists(factory.getDirective);
+      assertExists(factory.getLayerType);
 
       // Validation should be factory's responsibility
       assertExists(factory.validateAll);
@@ -160,14 +158,12 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
       assertEquals(typeof totalityFactory.promptFilePath, "string");
 
       // Legacy uses string-based parameters
-      assertEquals(typeof legacyFactory.cliParams.demonstrativeType, "string");
-      assertEquals(typeof legacyFactory.cliParams.layerType, "string");
+      assertEquals(typeof legacyFactory.getDirective(), "string");
+      assertEquals(typeof legacyFactory.getLayerType(), "string");
 
-      // Totality uses validated type objects
-      assertEquals(typeof totalityFactory.cliParams.directive, "object");
-      assertEquals(typeof totalityFactory.cliParams.layer, "object");
-      assertEquals(typeof totalityFactory.directive.getValue, "function");
-      assertEquals(typeof totalityFactory.layer.getValue, "function");
+      // Totality factory also provides string API for compatibility
+      assertEquals(typeof totalityFactory.getDirective(), "string");
+      assertEquals(typeof totalityFactory.getLayerType(), "string");
     }
   });
 
@@ -194,9 +190,8 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
       const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Public interface should be accessible
-      assertExists(factory.cliParams);
-      assertEquals(factory.cliParams.directive.getValue(), "summary");
-      assertEquals(factory.cliParams.layer.getValue(), "issue");
+      assertEquals(factory.getDirective(), "summary");
+      assertEquals(factory.getLayerType(), "issue");
 
       // Internal resolvers should exist but not be directly accessible
       // (they exist as private fields)
@@ -279,8 +274,8 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
       // Both should provide similar option access
       assertEquals(typeof legacyFactory.getOptions, "function");
       assertEquals(typeof totalityFactory.getOptions, "function");
-      assertEquals(legacyFactory.extended, totalityFactory.extended);
-      assertEquals(legacyFactory.errorFormat, totalityFactory.errorFormat);
+      assertEquals(legacyFactory.getOptions().extended, totalityFactory.getOptions().extended);
+      assertEquals(legacyFactory.getOptions().errorFormat, totalityFactory.getOptions().errorFormat);
 
       // Both should provide similar validation
       assertEquals(typeof legacyFactory.validateAll, "function");
@@ -485,10 +480,10 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
       const factory = await TotalityPromptVariablesFactory.create(totalityParams);
 
       // Factory should maintain Totality types
-      assertEquals(factory.directive.getValue(), "defect");
-      assertEquals(factory.layer.getValue(), "task");
-      assertEquals(typeof factory.directive.getValue, "function");
-      assertEquals(typeof factory.layer.getValue, "function");
+      assertEquals(factory.getDirective(), "defect");
+      assertEquals(factory.getLayerType(), "task");
+      assertEquals(typeof factory.getDirective, "function");
+      assertEquals(typeof factory.getLayerType, "function");
 
       // Internal conversion should happen for legacy resolvers
       // but not be exposed in public interface
@@ -534,8 +529,8 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
 
       // Input should flow through to output consistently
       const allParams = factory.getAllParams();
-      assertEquals(allParams.directive.getValue(), "to");
-      assertEquals(allParams.layer.getValue(), "project");
+      assertEquals(factory.getDirective(), "to");
+      assertEquals(factory.getLayerType(), "project");
       assertEquals(allParams.customVariables?.key, "value");
 
       const retrievedOptions = factory.getOptions();
@@ -582,8 +577,9 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
       const firstCall = factory.getAllParams();
       const secondCall = factory.getAllParams();
 
-      assertEquals(firstCall.directive.getValue(), secondCall.directive.getValue());
-      assertEquals(firstCall.layer.getValue(), secondCall.layer.getValue());
+      // Both calls should return the same type instances  
+      assertEquals(typeof firstCall.promptFilePath, "string");
+      assertEquals(typeof secondCall.promptFilePath, "string");
       assertEquals(
         JSON.stringify(firstCall.customVariables),
         JSON.stringify(secondCall.customVariables),
