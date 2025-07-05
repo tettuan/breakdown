@@ -42,7 +42,9 @@
     "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",
     "check": "deno check lib/**/*.ts cli/**/*.ts tests/**/*.ts mod.ts",
     "ci": "sh scripts/local_ci.sh",
-    "breakdown": "deno run -A jsr:@tettuan/breakdown/cli"
+    "breakdown": "deno run -A jsr:@tettuan/breakdown/cli",
+    "kill-nodes": "bash scripts/kill_node_panes.sh",
+    "kill-nodes-force": "bash scripts/kill_node_panes.sh --force"
   },
   "fmt": {
     "indentWidth": 2,
