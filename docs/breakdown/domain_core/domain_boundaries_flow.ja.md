@@ -343,36 +343,36 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    subgraph "Input Layer"
-        A[CLI Args: string[]]
-        B[Config Profile]
+    subgraph INPUT ["Input Layer"]
+        A["CLI Args: string[]"]
+        B["Config Profile"]
     end
     
-    subgraph "Parsing Layer"
-        C[BreakdownParamsResult]
-        D[TwoParamsResult]
-        E[PromptVariableSource]
+    subgraph PARSING ["Parsing Layer"]
+        C["BreakdownParamsResult"]
+        D["TwoParamsResult"]
+        E["PromptVariableSource"]
     end
     
-    subgraph "Resolution Layer"
-        F[PathResolutionOption]
-        G[PromptTemplatePath]
-        H[BreakdownConfig]
+    subgraph RESOLUTION ["Resolution Layer"]
+        F["PathResolutionOption"]
+        G["PromptTemplatePath"]
+        H["BreakdownConfig"]
     end
     
-    subgraph "Generation Layer"
-        I[PromptVariables]
-        J[PromptParams]
+    subgraph GENERATION ["Generation Layer"]
+        I["PromptVariables"]
+        J["PromptParams"]
     end
     
-    subgraph "Output Layer (Breakdown CLI Scope)"
-        K[GeneratedPrompt]
-        L[StandardOutput]
+    subgraph OUTPUT ["Output Layer (Breakdown CLI Scope)"]
+        K["GeneratedPrompt"]
+        L["StandardOutput"]
     end
     
-    subgraph "Out of Scope"
-        M[AI Execution]
-        N[AI Response]
+    subgraph OUTSCOPE ["Out of Scope"]
+        M["AI Execution"]
+        N["AI Response"]
     end
     
     A --> C
@@ -396,8 +396,8 @@ flowchart TD
     style L fill:#e8f5e8
     style G fill:#fff3e0
     style I fill:#fce4ec
-    style M fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
-    style N fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5
+    style M fill:#f9f9f9,stroke:#999,stroke-dasharray:5,5
+    style N fill:#f9f9f9,stroke:#999,stroke-dasharray:5,5
 ```
 
 ## 第5章：ドメイン境界の詳細仕様
