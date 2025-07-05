@@ -94,11 +94,11 @@ export class InputFilePathResolver {
    * const resolver = new InputFilePathResolver(config, cliParams);
    * ```
    */
-  constructor(
+  private constructor(
     private config: Record<string, unknown>,
     private _cliParams: DoubleParamsResult | TwoParams_Result,
   ) {
-    // Deep copy to ensure immutability
+    // Deep copy to ensure immutability - inputs are already validated
     this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(_cliParams);
   }
@@ -259,10 +259,22 @@ export class InputFilePathResolver {
   }
 
   /**
-   * Legacy method for backward compatibility
+   * Legacy method for backward compatibility - returns Result instead of throwing
    * @deprecated Use getPath() which returns Result<ResolvedInputPath, InputFilePathError>
    */
-  public getPathLegacy(): string {
+  public getPathLegacy(): Result<string, InputFilePathError> {
+    const result = this.getPath();
+    if (!result.ok) {
+      return result;
+    }
+    return ok(result.data.value);
+  }
+
+  /**
+   * Legacy method for backward compatibility - throws exceptions for existing callers
+   * @deprecated Use getPath() or getPathLegacy() which returns Result type
+   */
+  public getPathLegacyUnsafe(): string {
     const result = this.getPath();
     if (!result.ok) {
       const errorMessage = (() => {
@@ -474,35 +486,72 @@ export class InputFilePathResolver {
 
   /**
    * Smart Constructor for creating InputFilePathResolver with validation
+   * 
+   * Following Totality principle:
+   * - Private constructor enforces creation through smart constructor
+   * - Comprehensive validation of all inputs
+   * - Result type for explicit error handling
+   * - No exceptions, all errors are represented as Result.error
    */
   static create(
     config: Record<string, unknown>,
     cliParams: DoubleParamsResult | TwoParams_Result,
   ): Result<InputFilePathResolver, InputFilePathError> {
-    try {
-      // Validate config
-      if (!config || typeof config !== "object") {
-        return error({
-          kind: "ConfigurationError",
-          message: "Invalid configuration object",
-        });
-      }
-
-      // Validate cliParams
-      if (!cliParams || typeof cliParams !== "object") {
-        return error({
-          kind: "ConfigurationError",
-          message: "Invalid CLI parameters object",
-        });
-      }
-
-      const resolver = new InputFilePathResolver(config, cliParams);
-      return ok(resolver);
-    } catch (err) {
+    // Validate config presence and type
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
       return error({
         kind: "ConfigurationError",
-        message: err instanceof Error ? err.message : String(err),
+        message: "Configuration must be a non-null object",
       });
     }
+
+    // Validate cliParams presence and type
+    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
+      return error({
+        kind: "ConfigurationError",
+        message: "CLI parameters must be a non-null object",
+      });
+    }
+
+    // Validate parameter structure based on type
+    const validationResult = InputFilePathResolver.validateParameterStructure(cliParams);
+    if (!validationResult.ok) {
+      return validationResult;
+    }
+
+    // Create instance with validated inputs
+    const resolver = new InputFilePathResolver(config, cliParams);
+    return ok(resolver);
+  }
+
+  /**
+   * Validates the structure of CLI parameters
+   * @private
+   */
+  private static validateParameterStructure(
+    cliParams: DoubleParamsResult | TwoParams_Result,
+  ): Result<void, InputFilePathError> {
+    // Check for Totality parameters structure
+    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
+      return p && typeof p === "object" && "directive" in p && "layer" in p &&
+        p.directive && typeof p.directive === "object" && "value" in p.directive &&
+        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    };
+
+    // Check for legacy parameters structure
+    const hasLegacyProps = (p: any): p is { demonstrativeType: string; layerType: string } => {
+      return p && typeof p === "object" && 
+        "demonstrativeType" in p && "layerType" in p &&
+        typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
+    };
+
+    if (!hasTotalityProps(cliParams) && !hasLegacyProps(cliParams)) {
+      return error({
+        kind: "ConfigurationError",
+        message: "CLI parameters must have either Totality structure (directive.value, layer.value) or legacy structure (demonstrativeType, layerType)",
+      });
+    }
+
+    return ok(undefined);
   }
 }

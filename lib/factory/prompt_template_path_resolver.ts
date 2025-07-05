@@ -127,6 +127,7 @@ export class PromptTemplatePathResolver {
 
   /**
    * Private constructor following Smart Constructor pattern
+   * Inputs are already validated by the smart constructor
    */
   private constructor(
     config:
@@ -134,7 +135,7 @@ export class PromptTemplatePathResolver {
       & Record<string, unknown>,
     cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
-    // Deep copy to ensure immutability using dedicated methods
+    // Deep copy to ensure immutability - inputs are already validated
     this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(cliParams);
   }
@@ -169,15 +170,23 @@ export class PromptTemplatePathResolver {
       & Record<string, unknown>,
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): Result<PromptTemplatePathResolver, PathResolutionError> {
-    // Validate configuration
-    if (!config) {
+    // Validate configuration presence and type
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
       return resultError({
         kind: "InvalidConfiguration",
-        details: "Configuration object is required",
+        details: "Configuration must be a non-null object",
       });
     }
 
-    // Validate CLI parameters
+    // Validate cliParams presence and type
+    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: "CLI parameters must be a non-null object",
+      });
+    }
+
+    // Validate CLI parameters structure and content
     const demonstrativeType = PromptTemplatePathResolver.extractDemonstrativeType(cliParams);
     const layerType = PromptTemplatePathResolver.extractLayerType(cliParams);
 
@@ -186,6 +195,15 @@ export class PromptTemplatePathResolver {
         kind: "InvalidParameterCombination",
         demonstrativeType: demonstrativeType || "(missing)",
         layerType: layerType || "(missing)",
+      });
+    }
+
+    // Validate that extracted values are non-empty strings
+    if (demonstrativeType.trim() === "" || layerType.trim() === "") {
+      return resultError({
+        kind: "InvalidParameterCombination",
+        demonstrativeType: demonstrativeType || "(empty)",
+        layerType: layerType || "(empty)",
       });
     }
 

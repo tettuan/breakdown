@@ -32,6 +32,10 @@ import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { formatSchemaError, SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import type { Result } from "../types/result.ts";
+import {
+  PromptVariablesFactoryErrors,
+  PromptVariablesFactoryErrorFactory,
+} from "../types/prompt_variables_factory_error.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.
@@ -154,11 +158,29 @@ export class PromptVariablesFactory {
   /**
    * Create factory with automatic configuration loading
    */
-  static async create(cliParams: PromptCliParams): Promise<PromptVariablesFactory> {
-    // TODO: Re-enable BreakdownConfig when API is stable
-    // For now, always use default config to avoid compilation errors
-    const config = createDefaultConfig();
-    return new PromptVariablesFactory(config, cliParams);
+  static async create(cliParams: PromptCliParams): Promise<Result<PromptVariablesFactory, PromptVariablesFactoryErrors>> {
+    try {
+      // TODO: Re-enable BreakdownConfig when API is stable
+      // For now, always use default config to avoid compilation errors
+      const config = createDefaultConfig();
+      const factory = new PromptVariablesFactory(config, cliParams);
+      return { ok: true, data: factory };
+    } catch (error) {
+      // Convert thrown errors to Result errors
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes("path options")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message) };
+        }
+        if (message.includes("template resolver")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message) };
+        }
+        if (message.includes("schema resolver")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message) };
+        }
+      }
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)) };
+    }
   }
 
   /**
@@ -167,8 +189,26 @@ export class PromptVariablesFactory {
   static createWithConfig(
     config: FactoryConfig,
     cliParams: PromptCliParams,
-  ): PromptVariablesFactory {
-    return new PromptVariablesFactory(config, cliParams);
+  ): Result<PromptVariablesFactory, PromptVariablesFactoryErrors> {
+    try {
+      const factory = new PromptVariablesFactory(config, cliParams);
+      return { ok: true, data: factory };
+    } catch (error) {
+      // Convert thrown errors to Result errors
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes("path options")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message) };
+        }
+        if (message.includes("template resolver")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message) };
+        }
+        if (message.includes("schema resolver")) {
+          return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message) };
+        }
+      }
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)) };
+    }
   }
 
   /**
@@ -234,6 +274,16 @@ export class PromptVariablesFactory {
   }
 
   /**
+   * Get resolved prompt file path safely
+   */
+  public getPromptFilePath(): Result<string, PromptVariablesFactoryErrors> {
+    if (!this._promptFilePath) {
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.promptFilePathNotResolved() };
+    }
+    return { ok: true, data: this._promptFilePath };
+  }
+
+  /**
    * Get resolved input file path
    */
   public get inputFilePath(): string {
@@ -241,6 +291,16 @@ export class PromptVariablesFactory {
       throw new Error("Input file path not resolved");
     }
     return this._inputFilePath;
+  }
+
+  /**
+   * Get resolved input file path safely
+   */
+  public getInputFilePath(): Result<string, PromptVariablesFactoryErrors> {
+    if (!this._inputFilePath) {
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.inputFilePathNotResolved() };
+    }
+    return { ok: true, data: this._inputFilePath };
   }
 
   /**
@@ -254,6 +314,16 @@ export class PromptVariablesFactory {
   }
 
   /**
+   * Get resolved output file path safely
+   */
+  public getOutputFilePath(): Result<string, PromptVariablesFactoryErrors> {
+    if (!this._outputFilePath) {
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.outputFilePathNotResolved() };
+    }
+    return { ok: true, data: this._outputFilePath };
+  }
+
+  /**
    * Get resolved schema file path
    */
   public get schemaFilePath(): string {
@@ -261,6 +331,16 @@ export class PromptVariablesFactory {
       throw new Error("Schema file path not resolved");
     }
     return this._schemaFilePath;
+  }
+
+  /**
+   * Get resolved schema file path safely
+   */
+  public getSchemaFilePath(): Result<string, PromptVariablesFactoryErrors> {
+    if (!this._schemaFilePath) {
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaFilePathNotResolved() };
+    }
+    return { ok: true, data: this._schemaFilePath };
   }
 
   /**
