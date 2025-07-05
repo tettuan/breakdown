@@ -88,8 +88,15 @@ type DirectiveType = {
   
   // ドメイン操作
   isValidForProfile(profile: ConfigProfileName): boolean;
+  
+  // パス解決専用ドメイン操作
   getPromptDirectory(baseDir: string, layer: LayerType): string;
+  getSchemaDirectory(baseDir: string, layer: LayerType): string;
+  isValidForResourcePath(): boolean;
+  
+  // 型安全な比較
   equals(other: DirectiveType): boolean;
+  toString(): string;
 }
 
 /**
@@ -101,8 +108,15 @@ type LayerType = {
   
   // ドメイン操作
   isValidForDirective(directive: DirectiveType): boolean;
+  
+  // パス解決専用ドメイン操作
   getPromptFilename(fromLayerType: string, adaptation?: string): string;
+  getSchemaFilename(): string;
+  isValidForResourcePath(): boolean;
+  
+  // 型安全な比較
   equals(other: LayerType): boolean;
+  toString(): string;
 }
 
 /**
@@ -117,7 +131,10 @@ type ConfigProfileName = {
   getConfigPath(): string;
   getDirectiveTypes(): readonly DirectiveType[];
   getLayerTypes(): readonly LayerType[];
+  
+  // 型安全な比較
   equals(other: ConfigProfileName): boolean;
+  toString(): string;
 }
 
 /**
