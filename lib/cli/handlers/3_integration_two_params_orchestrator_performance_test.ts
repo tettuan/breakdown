@@ -14,7 +14,7 @@
  */
 
 import { assert, assertEquals, assertExists } from "../../deps.ts";
-import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
+import { beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import {
@@ -83,8 +83,8 @@ function createPerformanceTestConfig(): BreakdownConfigCompatible {
 /**
  * Mock implementations for performance testing
  */
-class MockStdinProcessor {
-  async process(): Promise<Result<string, any>> {
+class _MockStdinProcessor {
+  async process(): Promise<Result<string, OrchestratorError>> {
     // Simulate minimal processing time
     await new Promise((resolve) => setTimeout(resolve, 1));
     return { ok: true, data: "" };
@@ -456,13 +456,13 @@ describe("TwoParamsOrchestrator Integration Performance Tests - Component Coordi
     };
 
     // Measure coordination across all stages
-    const stageTimings: Record<string, number> = {};
+    const _stageTimings: Record<string, number> = {};
 
     const overallMeasurement = startPerformanceMeasurement();
 
     // Mock timing capture for different stages
-    const originalOrchestrate = TwoParamsOrchestrator.prototype.orchestrate;
-    const stageStartTime = performance.now();
+    const _originalOrchestrate = TwoParamsOrchestrator.prototype.orchestrate;
+    const _stageStartTime = performance.now();
 
     // We can't easily intercept private methods, so we measure the overall flow
     const result = await new TwoParamsOrchestrator().orchestrate(_params, config, options);
@@ -615,7 +615,7 @@ describe("TwoParamsOrchestrator Integration Performance Tests - Component Coordi
       const metrics = endPerformanceMeasurement(measurement);
 
       allocationResults.push({
-        complexity: (level.options as any).complexity || "low",
+        complexity: (level.options as { complexity?: string }).complexity || "low",
         duration: metrics.duration,
         memoryDelta: metrics.memoryDelta,
         result: result,

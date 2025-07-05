@@ -2,14 +2,21 @@
  * @fileoverview Tests for unified configuration interface
  */
 
-import { assertEquals, assertExists, assert } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assert } from "../deps.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { UnifiedConfigInterface, CONFIG_PRESETS } from "../../lib/config/unified_config_interface.ts";
 import { FactoryConfigAdapter, ConfigurationMigrator } from "../../lib/config/factory_integration.ts";
 
 Deno.test("UnifiedConfigInterface - create with default profile", async () => {
+  const logger = new BreakdownLogger("unified-config-test");
   const result = await UnifiedConfigInterface.create();
   
-  assert(result.ok, "Should create successfully");
+  logger.debug("Create result", "テスト結果の確認", { 
+    ok: result.ok, 
+    error: result.ok ? null : result.error 
+  });
+  
+  assert(result.ok, `Should create successfully, but got: ${JSON.stringify(result)}`);
   if (result.ok) {
     const config = result.data.getConfig();
     
@@ -78,8 +85,8 @@ Deno.test("FactoryConfigAdapter - convert unified to factory config", async () =
     const factoryConfig = FactoryConfigAdapter.toFactoryConfig(unified);
     
     // Check conversion
-    assertEquals(factoryConfig.app_prompt?.base_dir, unified.paths.promptBaseDir);
-    assertEquals(factoryConfig.app_schema?.base_dir, unified.paths.schemaBaseDir);
+    assertEquals((factoryConfig.app_prompt as any)?.base_dir, unified.paths.promptBaseDir);
+    assertEquals((factoryConfig.app_schema as any)?.base_dir, unified.paths.schemaBaseDir);
     assertEquals(factoryConfig.features, unified.app.features);
     assertEquals(factoryConfig.environment, unified.environment);
   }
@@ -98,12 +105,12 @@ Deno.test("ConfigurationMigrator - migrate old format", () => {
   const migrated = ConfigurationMigrator.migrateConfig(oldConfig);
   
   // Check migration
-  assertEquals(migrated.paths?.promptBaseDir, "old/prompts");
-  assertEquals(migrated.paths?.schemaBaseDir, "old/schemas");
-  assertEquals(migrated.features?.extendedThinking, true);
-  assertEquals(migrated.features?.debugMode, false);
-  assertEquals(migrated.environment?.logLevel, "debug");
-  assertEquals(migrated.environment?.colorOutput, true);
+  assertEquals((migrated.paths as any)?.promptBaseDir, "old/prompts");
+  assertEquals((migrated.paths as any)?.schemaBaseDir, "old/schemas");
+  assertEquals((migrated.features as any)?.extendedThinking, true);
+  assertEquals((migrated.features as any)?.debugMode, false);
+  assertEquals((migrated.environment as any)?.logLevel, "debug");
+  assertEquals((migrated.environment as any)?.colorOutput, true);
 });
 
 Deno.test("ConfigurationMigrator - validate migration", () => {

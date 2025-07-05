@@ -132,7 +132,12 @@ async function example4_factoryBuilder() {
 
   // Access pattern provider
   const patternProvider = builder.getPatternProvider();
-  console.log("Available patterns:", await patternProvider.getPatterns());
+  const patternsResult = await patternProvider.getAllPatterns();
+  if (patternsResult.ok) {
+    console.log("Available patterns:", patternsResult.data);
+  } else {
+    console.error("Failed to get patterns:", patternsResult.error);
+  }
 }
 
 /**

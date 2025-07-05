@@ -14,7 +14,7 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterValidator,
   ValidationErrorType,
-  type ValidationResult,
+  type ValidationResult as _ValidationResult,
 } from "./prompt_adapter_validator.ts";
 import { ensureDir, ensureFile } from "@std/fs";
 import { join } from "@std/path";
@@ -157,7 +157,7 @@ describe("PromptAdapterValidator Unit Tests - Directory Validation", () => {
 });
 
 describe("PromptAdapterValidator Unit Tests - Base Directory Validation", () => {
-  it("should validate base directory configurations", async () => {
+  it("should validate base directory configurations", () => {
     _logger.debug("Testing base directory validation");
 
     const _validator = new PromptAdapterValidator();
@@ -174,7 +174,7 @@ describe("PromptAdapterValidator Unit Tests - Base Directory Validation", () => 
     }
   });
 
-  it("should handle special base directory values", async () => {
+  it("should handle special base directory values", () => {
     _logger.debug("Testing special base directory values");
 
     const _validator = new PromptAdapterValidator();

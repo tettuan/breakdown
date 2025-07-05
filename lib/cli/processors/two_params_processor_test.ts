@@ -34,13 +34,14 @@ Deno.test("TwoParamsProcessor - Valid input conversion", () => {
 Deno.test("TwoParamsProcessor - Invalid type error", () => {
   const _processor = new TwoParamsProcessor();
 
+  // Creating invalid test data with proper type assertion
   const twoParamsResult = {
-    type: "invalid",
+    type: "invalid" as const,
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
-  } as any as TwoParams_Result;
+  } as unknown as TwoParams_Result;
 
   const result = _processor.process(twoParamsResult);
 
@@ -56,13 +57,14 @@ Deno.test("TwoParamsProcessor - Invalid type error", () => {
 Deno.test("TwoParamsProcessor - Missing demonstrativeType error", () => {
   const _processor = new TwoParamsProcessor();
 
+  // Creating test data with empty demonstrativeType
   const twoParamsResult = {
     type: "two",
     demonstrativeType: "",
     layerType: "project",
     params: ["to", "project"],
     options: {},
-  } as any as TwoParams_Result;
+  } as unknown as TwoParams_Result;
 
   const result = _processor.process(twoParamsResult);
 
@@ -78,13 +80,14 @@ Deno.test("TwoParamsProcessor - Missing demonstrativeType error", () => {
 Deno.test("TwoParamsProcessor - Missing layerType error", () => {
   const _processor = new TwoParamsProcessor();
 
+  // Creating test data with empty layerType
   const twoParamsResult = {
     type: "two",
     demonstrativeType: "to",
     layerType: "",
     params: ["to", "project"],
     options: {},
-  } as any as TwoParams_Result;
+  } as unknown as TwoParams_Result;
 
   const result = _processor.process(twoParamsResult);
 
@@ -228,7 +231,7 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
     layerType: "project",
     params: ["to", "project"],
     options: {},
-  } as any as TwoParams_Result;
+  } as unknown as TwoParams_Result;
 
   const invalidValidationResult = _processor.validateOnly(invalidResult);
   assertEquals(invalidValidationResult.ok, false);

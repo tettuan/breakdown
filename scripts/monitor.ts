@@ -856,6 +856,19 @@ class PaneStatusManager {
       this.statusMap.set(paneId, { current: info.current });
     }
   }
+
+  /**
+   * Get all panes with DONE status
+   */
+  getDonePanes(): string[] {
+    const donePanes: string[] = [];
+    for (const [paneId, info] of this.statusMap.entries()) {
+      if (info.current === "DONE") {
+        donePanes.push(paneId);
+      }
+    }
+    return donePanes;
+  }
 }
 
 /**
@@ -940,6 +953,16 @@ class PaneCommunicator {
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
 
     logInfo(`Reported ${changedPanes.length} status changes to main pane`);
+  }
+
+  /**
+   * Send clear command to pane
+   */
+  async sendClearCommand(paneId: string): Promise<void> {
+    logInfo(`Sending /clear command to pane ${paneId}`);
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} '/clear'`);
+    await executeTmuxCommand(`tmux send-keys -t ${paneId} Enter`);
+    await sleep(TIMING.INSTRUCTION_DELAY); // 0.2 seconds delay after sending /clear
   }
 
   /**
@@ -1111,6 +1134,40 @@ class TmuxMonitor {
   }
 
   /**
+   * Check for DONE panes and send clear commands
+   */
+  private async checkAndClearDonePanes(): Promise<void> {
+    logInfo("Checking for DONE panes and sending clear commands...");
+
+    // Update status tracking for all panes first
+    const targetPanes = this.paneManager.getTargetPanes();
+    
+    for (const pane of targetPanes) {
+      const paneDetail = await getPaneDetail(pane.id);
+      if (paneDetail) {
+        const currentStatus = determineStatus(paneDetail);
+        this.statusManager.updateStatus(pane.id, currentStatus);
+      }
+    }
+
+    // Get all panes with DONE status
+    const donePanes = this.statusManager.getDonePanes();
+    
+    if (donePanes.length > 0) {
+      logInfo(`Found ${donePanes.length} DONE panes: ${donePanes.join(", ")}`);
+      
+      // Send clear command to each DONE pane
+      for (const paneId of donePanes) {
+        await this.communicator.sendClearCommand(paneId);
+      }
+      
+      logInfo(`Clear commands sent to ${donePanes.length} DONE panes`);
+    } else {
+      logInfo("No DONE panes found");
+    }
+  }
+
+  /**
    * Send status report instructions to all panes
    */
   private async processAllPanes(): Promise<void> {
@@ -1257,6 +1314,9 @@ class TmuxMonitor {
 
           // Send ENTER to all panes
           await this.sendEnterToAllPanesCycle();
+
+          // Check for DONE panes and send clear commands
+          await this.checkAndClearDonePanes();
 
           // Wait 30 seconds with cancellation check
           interrupted = await sleepWithCancellation(TIMING.ENTER_SEND_CYCLE_DELAY);

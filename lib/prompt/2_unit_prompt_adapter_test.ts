@@ -10,7 +10,7 @@
 import { assertEquals } from "../../deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptAdapterImpl } from "./prompt_adapter.ts";
-import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
+import { PromptVariablesFactory as _PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 
 const _logger = new _BreakdownLogger("prompt-adapter");
 
@@ -61,7 +61,7 @@ async function createTestFile(path: string, content: string): Promise<void> {
 }
 
 // Clean up test files
-async function cleanupTestFiles(...paths: string[]): Promise<void> {
+async function _cleanupTestFiles(...paths: string[]): Promise<void> {
   for (const path of paths) {
     try {
       await Deno.remove(path);
@@ -93,11 +93,11 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as any).promptFilePath = promptPath;
-      (factory._allParams as any).inputFilePath = inputPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = inputPath;
 
       // Create adapter and generate prompt
-      const adapter = new PromptAdapterImpl(factory as any);
+      const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
       const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with custom variables", result);
@@ -125,11 +125,11 @@ Deno.test({
 
       // Create factory without custom variables
       const factory = new TestPromptVariablesFactory({});
-      (factory._allParams as any).promptFilePath = promptPath;
-      (factory._allParams as any).inputFilePath = "";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const adapter = new PromptAdapterImpl(factory as any);
+      const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
       const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result without custom variables", result);
@@ -165,11 +165,11 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as any).promptFilePath = promptPath;
-      (factory._allParams as any).inputFilePath = "";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = "";
 
       // Create adapter and generate prompt
-      const adapter = new PromptAdapterImpl(factory as any);
+      const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
       const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with multiple custom variables", result);
@@ -208,12 +208,12 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as any).promptFilePath = promptPath;
-      (factory._allParams as any).inputFilePath = inputPath;
-      (factory._allParams as any).outputFilePath = "/default/output.md";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = inputPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).outputFilePath = "/default/output.md";
 
       // Create adapter and generate prompt
-      const adapter = new PromptAdapterImpl(factory as any);
+      const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
       const result = await adapter.generatePrompt();
 
       _logger.debug("generatePrompt result with overriding custom variables", result);

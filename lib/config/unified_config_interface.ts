@@ -192,7 +192,8 @@ export class UnifiedConfigInterface {
         unifiedConfig.paths.workingDirectory,
         [unifiedConfig.paths.resourceDirectory],
         {
-          normalizeCase: true,
+          required: [],
+          optional: [],
         },
       );
 
@@ -261,37 +262,37 @@ export class UnifiedConfigInterface {
       },
 
       patterns: {
-        directiveTypes: patterns.directiveTypes,
-        layerTypes: patterns.layerTypes,
-        customPatterns: patterns.customPatterns,
+        directiveTypes: patterns.directive ? [patterns.directive.getPattern()] : [],
+        layerTypes: patterns.layer ? [patterns.layer.getPattern()] : [],
+        customPatterns: {},
       },
 
       app: {
         version: DEPENDENCY_VERSIONS.BREAKDOWN_CONFIG,
         features: {
-          extendedThinking: baseConfig.features?.extendedThinking as boolean ?? false,
-          debugMode: baseConfig.features?.debugMode as boolean ?? false,
-          strictValidation: baseConfig.features?.strictValidation as boolean ?? true,
-          autoSchema: baseConfig.features?.autoSchema as boolean ?? true,
+          extendedThinking: (typedBaseConfig.features as any)?.extendedThinking ?? false,
+          debugMode: (typedBaseConfig.features as any)?.debugMode ?? false,
+          strictValidation: (typedBaseConfig.features as any)?.strictValidation ?? true,
+          autoSchema: (typedBaseConfig.features as any)?.autoSchema ?? true,
         },
         limits: {
-          maxFileSize: baseConfig.limits?.maxFileSize as number ?? 10485760, // 10MB
-          maxPromptLength: baseConfig.limits?.maxPromptLength as number ?? 50000,
-          maxVariables: baseConfig.limits?.maxVariables as number ?? 100,
+          maxFileSize: (typedBaseConfig.limits as any)?.maxFileSize ?? 10485760, // 10MB
+          maxPromptLength: (typedBaseConfig.limits as any)?.maxPromptLength ?? 50000,
+          maxVariables: (typedBaseConfig.limits as any)?.maxVariables ?? 100,
         },
       },
 
       user: {
-        customVariables: baseConfig.user?.customVariables as Record<string, string>,
-        aliases: baseConfig.user?.aliases as Record<string, string>,
-        templates: baseConfig.user?.templates as Record<string, string>,
+        customVariables: (typedBaseConfig.user as any)?.customVariables,
+        aliases: (typedBaseConfig.user as any)?.aliases,
+        templates: (typedBaseConfig.user as any)?.templates,
       },
 
       environment: {
-        logLevel: this.getLogLevel(baseConfig),
-        colorOutput: baseConfig.environment?.colorOutput as boolean ?? true,
-        timezone: baseConfig.environment?.timezone as string,
-        locale: baseConfig.environment?.locale as string,
+        logLevel: this.getLogLevel(typedBaseConfig),
+        colorOutput: (typedBaseConfig.environment as any)?.colorOutput ?? true,
+        timezone: (typedBaseConfig.environment as any)?.timezone,
+        locale: (typedBaseConfig.environment as any)?.locale,
         ...options.environmentOverrides,
       },
 
@@ -490,7 +491,7 @@ export class UnifiedConfigInterface {
     config: Record<string, unknown>,
   ): UnifiedConfig["environment"]["logLevel"] {
     const envLevel = Deno.env.get("LOG_LEVEL");
-    const configLevel = config.environment?.logLevel as string;
+    const configLevel = (config.environment as any)?.logLevel;
 
     const level = envLevel || configLevel || "info";
 

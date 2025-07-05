@@ -13,7 +13,7 @@ export class TwoParamsStdinProcessor {
   /**
    * Process stdin input for CLI
    */
-  static async process(input: string): Promise<string> {
+  static process(input: string): string {
     return input.trim().replace(/\n/g, " ");
   }
 

@@ -10,7 +10,6 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import type { BuilderVariableError } from "../../builder/variables_builder.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";

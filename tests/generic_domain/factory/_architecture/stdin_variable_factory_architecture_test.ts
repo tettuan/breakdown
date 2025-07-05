@@ -16,7 +16,7 @@ import {
   StdinFactoryInput,
   StdinVariableFactory,
   StdinVariableFactoryError,
-} from "./stdin_variable_factory.ts";
+} from "../../../../lib/factory/stdin_variable_factory.ts";
 import type { Result } from "../../../lib/deps.ts";
 import type { StdinVariable } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";

@@ -142,7 +142,7 @@ export class ParameterValidator {
       });
     }
 
-    // Create validated types
+    // Create validated types from TwoParams_Result
     const directive = DirectiveType.create(result);
     const layer = LayerType.create(result);
 

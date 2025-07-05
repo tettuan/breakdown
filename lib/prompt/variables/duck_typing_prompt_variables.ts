@@ -21,7 +21,7 @@ export function isPromptVariables(obj: unknown): obj is PromptVariables {
     typeof obj === "object" &&
     obj !== null &&
     "toRecord" in obj &&
-    typeof (obj as any).toRecord === "function"
+    typeof (obj as { toRecord?: unknown }).toRecord === "function"
   );
 }
 
@@ -35,7 +35,7 @@ export function isPromptVariablesLike(obj: unknown): obj is Record<string, strin
   }
 
   // Check if all values are strings
-  for (const [key, value] of Object.entries(obj)) {
+  for (const [_key, value] of Object.entries(obj)) {
     if (typeof value !== "string") {
       return false;
     }

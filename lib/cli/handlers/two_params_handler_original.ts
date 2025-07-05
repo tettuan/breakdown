@@ -87,7 +87,7 @@ function validateDemonstrativeType(
  * Validate layer type without type assertion
  */
 function validateLayerType(value: string): Result<string, TwoParamsHandlerError> {
-  if (VALID_LAYER_TYPES.includes(value as any)) {
+  if (VALID_LAYER_TYPES.includes(value as typeof VALID_LAYER_TYPES[number])) {
     return ok(value);
   }
 

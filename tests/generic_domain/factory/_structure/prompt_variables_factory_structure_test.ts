@@ -77,6 +77,8 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -144,6 +146,8 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: { fromFile: "input.md" },
@@ -177,6 +181,8 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {
@@ -250,6 +256,8 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: { extended: true, errorFormat: "json" },
@@ -303,6 +311,8 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: { config: "test" },
@@ -336,6 +346,8 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -367,6 +379,8 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -426,6 +440,8 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},
@@ -459,6 +475,8 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const totalityParams: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: { extended: true },
@@ -505,6 +523,8 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: inputOptions,
@@ -549,6 +569,8 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
       };
 
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: originalOptions,
@@ -590,6 +612,8 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
     assertEquals(typesResult.ok, true);
     if (typesResult.ok) {
       const params: TotalityPromptCliParams = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},

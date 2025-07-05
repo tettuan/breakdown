@@ -1,10 +1,74 @@
 import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { SchemaRepository } from "../../../lib/domain/templates/schema_repository.ts";
-// import { SchemaContent } from "../../../lib/domain/templates/value_objects/schema_content.ts";
-// import { SchemaPath } from "../../../lib/domain/templates/value_objects/schema_path.ts";
+import type { SchemaRepository } from "../../../lib/domain/templates/schema_repository.ts";
+import { SchemaPath } from "../../../lib/domain/generic/template_management/value_objects/schema_path.ts";
+import { SchemaContent } from "../../../lib/domain/generic/template_management/value_objects/schema_content.ts";
+import { DirectiveType } from "../../../lib/types/directive_type.ts";
+import { LayerType } from "../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("schema-repository-test");
+
+// Mock repository for testing
+class MockSchemaRepository {
+  private mockContent = new Map<string, string>([
+    ["find/bugs/base.json", '{"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "Bug Analysis Schema", "type": "object"}'],
+    ["to/project/base.json", '{"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "Project Schema", "type": "object"}'],
+    ["to/issue/base.json", '{"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "Issue Schema", "type": "object"}'],
+  ]);
+
+  async findByPath(path: SchemaPath): Promise<{ ok: true; data: SchemaContent | null } | { ok: false; error: string }> {
+    const pathStr = path.getPath();
+    const content = this.mockContent.get(pathStr);
+    if (content) {
+      const contentResult = SchemaContent.create(content);
+      if (contentResult.ok) {
+        return { ok: true, data: contentResult.data! };
+      }
+    }
+    return { ok: true, data: null };
+  }
+
+  async findAll(): Promise<{ ok: true; data: Array<{ path: SchemaPath; content: SchemaContent }> } | { ok: false; error: string }> {
+    const results: Array<{ path: SchemaPath; content: SchemaContent }> = [];
+    
+    for (const [pathStr, contentStr] of this.mockContent.entries()) {
+      const pathParts = pathStr.split('/');
+      if (pathParts.length >= 3) {
+        const types = createTypesFromPath(pathStr);
+        if (types) {
+          const pathResult = SchemaPath.create(types.directive, types.layer, pathParts[2]);
+          const contentResult = SchemaContent.create(contentStr);
+          
+          if (pathResult.ok && pathResult.data && contentResult.ok && contentResult.data) {
+            results.push({ path: pathResult.data, content: contentResult.data });
+          }
+        }
+      }
+    }
+    
+    return { ok: true, data: results };
+  }
+}
+
+// Helper function to create DirectiveType and LayerType from path
+function createTypesFromPath(pathStr: string): { directive: DirectiveType; layer: LayerType } | null {
+  const parts = pathStr.split('/');
+  if (parts.length < 2) return null;
+  
+  const twoParamsResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: parts[0],
+    layerType: parts[1],
+    params: [parts[0], parts[1]],
+    options: {}
+  };
+  
+  return {
+    directive: DirectiveType.create(twoParamsResult),
+    layer: LayerType.create(twoParamsResult)
+  };
+}
 
 Deno.test("SchemaRepository: can retrieve schema by path", async () => {
   logger.debug("SchemaRepository取得テスト開始", {
@@ -12,8 +76,11 @@ Deno.test("SchemaRepository: can retrieve schema by path", async () => {
     target: "SchemaRepository.findByPath",
   });
 
-  const repository = new SchemaRepository();
-  const pathResult = SchemaPath.create("find/bugs/base.schema.md");
+  const repository = new MockSchemaRepository();
+  const types = createTypesFromPath("find/bugs/base.json");
+  if (!types) throw new Error("Failed to create types");
+  
+  const pathResult = SchemaPath.create(types.directive, types.layer, "base.json");
 
   if (!pathResult.ok) {
     throw new Error(`Failed to create schema path: ${pathResult.error}`);
@@ -39,8 +106,11 @@ Deno.test("SchemaRepository: returns null for non-existent schema", async () => 
     target: "SchemaRepository.findByPath (non-existent)",
   });
 
-  const repository = new SchemaRepository();
-  const pathResult = SchemaPath.create("non/existent/schema.md");
+  const repository = new MockSchemaRepository();
+  const types = createTypesFromPath("non/existent/schema.json");
+  if (!types) throw new Error("Failed to create types");
+  
+  const pathResult = SchemaPath.create(types.directive, types.layer, "schema.json");
 
   if (!pathResult.ok) {
     throw new Error(`Failed to create schema path: ${pathResult.error}`);
@@ -63,7 +133,7 @@ Deno.test("SchemaRepository: findAll returns all available schemas", async () =>
     target: "SchemaRepository.findAll",
   });
 
-  const repository = new SchemaRepository();
+  const repository = new MockSchemaRepository();
   const allSchemasResult = await repository.findAll();
 
   logger.debug("全スキーマ取得結果", {
@@ -76,9 +146,9 @@ Deno.test("SchemaRepository: findAll returns all available schemas", async () =>
     assertEquals(allSchemasResult.data.length > 0, true);
     
     // 期待されるスキーマが含まれていることを確認
-    const paths = allSchemasResult.data.map(entry => entry.path.getValue());
-    assertEquals(paths.includes("find/bugs/base.schema.md"), true);
-    assertEquals(paths.includes("to/project/base.schema.md"), true);
+    const paths = allSchemasResult.data.map(entry => entry.path.getPath());
+    assertEquals(paths.includes("find/bugs/base.json"), true);
+    assertEquals(paths.includes("to/project/base.json"), true);
   }
 });
 

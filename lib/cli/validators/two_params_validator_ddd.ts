@@ -437,9 +437,9 @@ export class TwoParamsValidator {
   /**
    * Get validation patterns with caching
    */
-  private async getValidationPatterns(
+  private getValidationPatterns(
     profile: ProfileName,
-  ): Promise<Result<ValidationPatterns, ValidationError>> {
+  ): Result<ValidationPatterns, ValidationError> {
     // Check cache first
     const cached = this.cachedPatterns.get(ProfileName.value(profile));
     if (cached) {
@@ -496,9 +496,9 @@ export class TwoParamsValidator {
    * Can be extended to support complex business rules
    */
   private validateCombination(
-    directive: DirectiveType,
-    layer: LayerType,
-    profile: ProfileName,
+    _directive: DirectiveType,
+    _layer: LayerType,
+    _profile: ProfileName,
   ): Result<void, ValidationError> {
     // Example: Certain combinations might not be allowed
     // This is where domain-specific business rules can be enforced
@@ -526,7 +526,7 @@ export class TwoParamsValidator {
       return error(profileResult.error);
     }
 
-    return await this.getValidationPatterns(profileResult.data);
+    return this.getValidationPatterns(profileResult.data);
   }
 }
 

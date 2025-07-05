@@ -28,7 +28,7 @@ import {
   type PromptCliOptions,
   PromptVariablesFactory,
   TotalityPromptVariablesFactory,
-} from "./prompt_variables_factory.ts";
+} from "../../../../lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "../types/mod.ts";
 
 const logger = new BreakdownLogger("unit-prompt-factory");

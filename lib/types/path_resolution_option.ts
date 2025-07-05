@@ -43,6 +43,8 @@ export interface PathValidationRules {
   required: PathValidationRule[];
   /** Rules that should be satisfied but are not critical */
   optional?: PathValidationRule[];
+  /** Whether to normalize case for path comparisons */
+  normalizeCase?: boolean;
   /** Custom validation function */
   custom?: (path: string) => Result<void, string>;
 }

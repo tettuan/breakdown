@@ -10,7 +10,7 @@
 
 import {
   assertEquals,
-  assertExists,
+  assertExists as _assertExists,
   assertThrows,
 } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { UserPromptVariables } from "./user_prompt_variables.ts";
@@ -109,7 +109,7 @@ Deno.test("UserPromptVariables - rejects null/undefined values", () => {
   assertThrows(
     () => {
       UserPromptVariables.create({
-        userName: null as any,
+        userName: null as unknown as string,
       });
     },
     Error,
@@ -119,7 +119,7 @@ Deno.test("UserPromptVariables - rejects null/undefined values", () => {
   assertThrows(
     () => {
       UserPromptVariables.create({
-        userName: undefined as any,
+        userName: undefined as unknown as string,
       });
     },
     Error,
@@ -329,7 +329,7 @@ Deno.test("UserPromptVariables - with() validates new variables", () => {
 
   assertThrows(
     () => {
-      variables.with("test", null as any);
+      variables.with("test", null as unknown as string);
     },
     Error,
     "Variable value for 'test' cannot be null or undefined",

@@ -190,21 +190,16 @@ export class ParameterValidatorV2 {
     }
 
     // 5. Create validated types
-    const directive = DirectiveType.create({
+    const twoParamsResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: typeValidation.data.demonstrativeType,
       layerType: typeValidation.data.layerType,
       params: typeValidation.data.params,
       options: typeValidation.data.options,
-    });
+    };
 
-    const layer = LayerType.create({
-      type: "two",
-      demonstrativeType: typeValidation.data.demonstrativeType,
-      layerType: typeValidation.data.layerType,
-      params: typeValidation.data.params,
-      options: typeValidation.data.options,
-    });
+    const directive = DirectiveType.create(twoParamsResult);
+    const layer = LayerType.create(twoParamsResult);
 
     // 6. Create validated options
     const validatedOptions: ValidatedOptions = {

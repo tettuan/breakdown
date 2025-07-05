@@ -104,7 +104,7 @@ export async function loadBreakdownConfig(
     if (!configResult.success) {
       return resultError({
         kind: "BreakdownConfigError",
-        message: `Failed to create BreakdownConfig: ${configResult.error || "Unknown error"}`,
+        message: `Failed to create BreakdownConfig: ${JSON.stringify(configResult.error) || "Unknown error"}`,
       });
     }
 

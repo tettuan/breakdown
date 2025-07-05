@@ -17,7 +17,8 @@ type PathErrorKind =
   | { kind: "INVALID_PATH"; path: string; reason: string }
   | { kind: "NORMALIZATION_FAILED"; path: string; cause: Error }
   | { kind: "SECURITY_VIOLATION"; path: string; violation: string }
-  | { kind: "PLATFORM_DETECTION_FAILED"; message: string };
+  | { kind: "PLATFORM_DETECTION_FAILED"; message: string }
+  | { kind: "STRATEGY_CREATION_FAILED"; message: string };
 
 // ===== Default Path Strategy with Totality =====
 /**

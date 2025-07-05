@@ -20,7 +20,7 @@ import type { TwoParams_Result } from "../deps.ts";
  * Configuration options for prompt generation and file resolution.
  * This interface is shared across all parameter types.
  */
-export interface PromptCliOptions {
+export interface PromptCliOptions extends Record<string, unknown> {
   fromFile?: string;
   destinationFile?: string;
   adaptation?: string;
@@ -148,10 +148,31 @@ export class UnifiedPromptVariablesFactory {
 
     // Create resolvers with unified adapter
     const resolverAdapter = this.createResolverAdapter();
-    this._promptPathResolver = new PromptTemplatePathResolver(config, resolverAdapter);
-    this._inputPathResolver = new InputFilePathResolver(config, resolverAdapter);
-    this._outputPathResolver = new OutputFilePathResolver(config, resolverAdapter);
-    this._schemaPathResolver = new SchemaFilePathResolver(config, resolverAdapter);
+    
+    // Use static create methods for Smart Constructor pattern
+    const promptPathResolverResult = PromptTemplatePathResolver.create(config, resolverAdapter);
+    const inputPathResolverResult = InputFilePathResolver.create(config, resolverAdapter);
+    const outputPathResolverResult = OutputFilePathResolver.create(config, resolverAdapter);
+    const schemaPathResolverResult = SchemaFilePathResolver.create(config, resolverAdapter);
+    
+    // Handle creation errors
+    if (!promptPathResolverResult.ok) {
+      throw new Error(`Failed to create PromptTemplatePathResolver: ${JSON.stringify(promptPathResolverResult.error)}`);
+    }
+    if (!inputPathResolverResult.ok) {
+      throw new Error(`Failed to create InputFilePathResolver: ${JSON.stringify(inputPathResolverResult.error)}`);
+    }
+    if (!outputPathResolverResult.ok) {
+      throw new Error(`Failed to create OutputFilePathResolver: ${JSON.stringify(outputPathResolverResult.error)}`);
+    }
+    if (!schemaPathResolverResult.ok) {
+      throw new Error(`Failed to create SchemaFilePathResolver: ${JSON.stringify(schemaPathResolverResult.error)}`);
+    }
+    
+    this._promptPathResolver = promptPathResolverResult.data;
+    this._inputPathResolver = inputPathResolverResult.data;
+    this._outputPathResolver = outputPathResolverResult.data;
+    this._schemaPathResolver = schemaPathResolverResult.data;
   }
 
   /**
@@ -355,21 +376,17 @@ export class LegacyToUnifiedAdapter {
       throw new Error("Failed to create directive pattern");
     }
 
-    const directive = DirectiveType.create(legacyParams.demonstrativeType);
-    if (!directive) {
-      throw new Error(`Invalid directive type: ${legacyParams.demonstrativeType}`);
-    }
+    // Create TwoParams_Result for DirectiveType and LayerType
+    const twoParamsResult: TwoParams_Result = {
+      type: "two",
+      params: [legacyParams.demonstrativeType, legacyParams.layerType],
+      demonstrativeType: legacyParams.demonstrativeType,
+      layerType: legacyParams.layerType,
+      options: legacyParams.options
+    };
 
-    // Create LayerType
-    const layerPattern = provider.getLayerTypePattern();
-    if (!layerPattern) {
-      throw new Error("Failed to create layer pattern");
-    }
-
-    const layer = LayerType.create(legacyParams.layerType);
-    if (!layer) {
-      throw new Error(`Invalid layer type: ${legacyParams.layerType}`);
-    }
+    const directive = DirectiveType.create(twoParamsResult);
+    const layer = LayerType.create(twoParamsResult);
 
     return {
       directive,

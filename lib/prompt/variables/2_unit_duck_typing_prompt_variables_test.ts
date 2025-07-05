@@ -5,7 +5,7 @@
  * focusing on type safety, flexibility, and compatibility with existing code.
  */
 
-import { assertEquals, assertExists, assertRejects } from "../../deps.ts";
+import { assertEquals, assertExists, assertRejects as _assertRejects } from "../../deps.ts";
 import {
   createPromptVariables,
   DuckTypingPromptVariables,
@@ -14,7 +14,7 @@ import {
   mergePromptVariables,
 } from "./duck_typing_prompt_variables.ts";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
-import { UserPromptVariables } from "./user_prompt_variables.ts";
+import { UserPromptVariables as _UserPromptVariables } from "./user_prompt_variables.ts";
 
 Deno.test("DuckTypingPromptVariables - fromRecord creates instance from valid record", () => {
   const variables = { key1: "value1", key2: "value2" };
@@ -33,15 +33,15 @@ Deno.test("DuckTypingPromptVariables - fromRecord validates input", () => {
   assertEquals(invalidKey.ok, false);
 
   // Test null value
-  const nullValue = DuckTypingPromptVariables.fromRecord({ key: null as any });
+  const nullValue = DuckTypingPromptVariables.fromRecord({ key: null } as unknown as { key: string });
   assertEquals(nullValue.ok, false);
 
   // Test undefined value
-  const undefinedValue = DuckTypingPromptVariables.fromRecord({ key: undefined as any });
+  const undefinedValue = DuckTypingPromptVariables.fromRecord({ key: undefined } as unknown as { key: string });
   assertEquals(undefinedValue.ok, false);
 
   // Test non-string value
-  const nonStringValue = DuckTypingPromptVariables.fromRecord({ key: 123 as any });
+  const nonStringValue = DuckTypingPromptVariables.fromRecord({ key: 123 } as unknown as { key: string });
   assertEquals(nonStringValue.ok, false);
 });
 
@@ -217,7 +217,7 @@ Deno.test("DuckTypingPromptVariables - filter works with predicate function", ()
   assertEquals(original.ok, true);
 
   if (original.ok) {
-    const filtered = original.data.filter((key, value) => value.length > 2);
+    const filtered = original.data.filter((_key, value) => value.length > 2);
     assertEquals(filtered.ok, true);
 
     if (filtered.ok) {
@@ -235,7 +235,7 @@ Deno.test("DuckTypingPromptVariables - map transforms variable values", () => {
   assertEquals(original.ok, true);
 
   if (original.ok) {
-    const mapped = original.data.map((key, value) => value.toUpperCase());
+    const mapped = original.data.map((_key, value) => value.toUpperCase());
     assertEquals(mapped.ok, true);
 
     if (mapped.ok) {
@@ -251,11 +251,11 @@ Deno.test("DuckTypingPromptVariables - validate checks all variables", () => {
 
   if (vars.ok) {
     // Test validation that passes
-    const numericValidation = vars.data.validate((key, value) => /^\d+$/.test(value));
+    const numericValidation = vars.data.validate((_key, value) => /^\d+$/.test(value));
     assertEquals(numericValidation.ok, false); // Should fail because "abc" is not numeric
 
     // Test validation that fails
-    const lengthValidation = vars.data.validate((key, value) => value.length >= 3);
+    const lengthValidation = vars.data.validate((_key, value) => value.length >= 3);
     assertEquals(lengthValidation.ok, true); // Should pass because all values have length >= 3
   }
 });
@@ -468,7 +468,7 @@ Deno.test("DuckTypingPromptVariables - error handling for edge cases", () => {
   assertEquals(vars.ok, true);
 
   if (vars.ok) {
-    const invalidMap = vars.data.map((key, value) => parseInt(value) as any);
+    const invalidMap = vars.data.map((_key, value) => parseInt(value).toString());
     assertEquals(invalidMap.ok, false);
   }
 
