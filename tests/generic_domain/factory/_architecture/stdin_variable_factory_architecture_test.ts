@@ -11,13 +11,13 @@
  * CLI層から使用される中間層の位置にあります。
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   StdinFactoryInput,
   StdinVariableFactory,
   StdinVariableFactoryError,
 } from "./stdin_variable_factory.ts";
-import type { Result } from "../types/result.ts";
+import type { Result } from "../../../lib/deps.ts";
 import type { StdinVariable } from "../types/prompt_variables.ts";
 import type { VariableError } from "../types/variable_result.ts";
 

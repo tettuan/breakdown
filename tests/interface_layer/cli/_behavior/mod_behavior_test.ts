@@ -7,7 +7,7 @@
  * @module cli/validators/tests/2_unit_mod_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 
 import {
@@ -15,7 +15,7 @@ import {
   TwoParamsValidator,
   type ValidatedParams,
   type ValidationError,
-} from "./mod.ts";
+} from "../../../lib/deps.ts";
 
 describe("Validators Module - Unit Tests", () => {
   it("should export TwoParamsValidator class", () => {

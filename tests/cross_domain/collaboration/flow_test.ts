@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { exists } from "@std/fs";
 import { Workspace } from "$lib/workspace/mod.ts";
 import { WorkspaceConfigError } from "$lib/workspace/errors.ts";

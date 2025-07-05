@@ -8,7 +8,7 @@
 import {
   assertEquals,
   assertExists,
-} from "jsr:@std/assert@1.0.7";
+} from "../../../lib/deps.ts";
 import {
   detectEnvironment as _detectEnvironment,
   type EnvironmentDetectionConfig as _EnvironmentDetectionConfig,

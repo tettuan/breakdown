@@ -15,7 +15,7 @@
  * @module cli/handlers/0_architecture_two_params_handler_refactored_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -23,8 +23,8 @@ import {
   handleTwoParams,
   handleTwoParamsClean,
   type TwoParamsHandlerError,
-} from "./two_params_handler_refactored.ts";
-import { isError } from "../../types/result.ts";
+} from "../../../../lib/cli/handlers/two_params_handler_refactored.ts";
+import { isError } from "../../../../lib/types/result.ts";
 
 const _logger = new _BreakdownLogger("architecture-two-params-handler-refactored");
 

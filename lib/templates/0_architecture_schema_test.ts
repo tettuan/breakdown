@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { schema } from "./schema.ts";

@@ -5,7 +5,7 @@
  * and ensure correct operation of the Totality pattern implementation.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -16,7 +16,7 @@ import {
   TwoParamsLayerTypePattern,
   TypeFactory,
   type TypePatternProvider,
-} from "./mod.ts";
+} from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("type-factory-unit");
 

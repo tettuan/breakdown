@@ -5,7 +5,7 @@
  * from production-user.yml files, specifically the customConfig sections.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { resolve } from "@std/path";
 

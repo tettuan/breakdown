@@ -13,7 +13,7 @@
  * @module types/1_structureresult_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } from "./result.ts";
 
 /**

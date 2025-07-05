@@ -18,7 +18,7 @@
  * @module tests/4_e2e/system_integration_final_verification_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ensureDir } from "@std/fs";
@@ -33,7 +33,7 @@ import {
   handleTwoParamsWithOrchestrator,
   type OrchestratorError,
 } from "../../lib/cli/handlers/two_params_orchestrator.ts";
-import type { Result } from "../../lib/types/result.ts";
+import type { Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("system-integration-final");
 

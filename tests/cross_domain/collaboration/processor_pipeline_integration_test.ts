@@ -18,7 +18,7 @@ import { TwoParamsProcessor } from "../../lib/cli/processors/two_params_processo
 import { TwoParamsVariableProcessor } from "../../lib/processor/variable_processor.ts";
 import { TwoParamsStdinProcessor } from "../../lib/cli/processors/two_params_stdin_processor.ts";
 import { VariablesBuilder as _VariablesBuilder } from "../../lib/builder/variables_builder.ts";
-import type { TwoParams_Result } from "../../lib/deps.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("processor-pipeline-integration");

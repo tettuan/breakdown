@@ -8,7 +8,7 @@
  * @module builder/3_edge_case_variables_builder_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../deps.ts";
 import { VariablesBuilder } from "./variables_builder.ts";
 import type { BuilderVariableError, FactoryResolvedValues } from "./variables_builder.ts";
 

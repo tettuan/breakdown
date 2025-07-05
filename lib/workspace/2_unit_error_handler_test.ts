@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../deps.ts";
 import { WorkspaceErrorHandlerImpl } from "./error_handler.ts";
 import { WorkspaceError, WorkspaceInitError } from "./errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";

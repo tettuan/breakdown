@@ -13,7 +13,7 @@
  * @module prompt/_variables/2_unit_standard_prompt_variables_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../deps.ts";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
 
 // Test helper to verify error messages for Result types

@@ -8,7 +8,7 @@
  * @module builder/2_unit_variables_builder_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { VariablesBuilder } from "./variables_builder.ts";
 import type { BuilderVariableError, FactoryResolvedValues } from "./variables_builder.ts";
 

@@ -5,7 +5,7 @@
  * focusing on type safety, flexibility, and compatibility with existing code.
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "../../deps.ts";
 import {
   createPromptVariables,
   DuckTypingPromptVariables,

@@ -2,7 +2,7 @@
  * @fileoverview Tests for StdinPromptVariables
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../deps.ts";
 import { StdinPromptVariables } from "./stdin_prompt_variables.ts";
 
 Deno.test("StdinPromptVariables - create with valid input", () => {

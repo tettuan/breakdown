@@ -1,10 +1,10 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_PROMPT_BASE_DIR,
   DEFAULT_SCHEMA_BASE_DIR,
   type DirectoryType,
-} from "./constants.ts";
+} from "../../../../lib/config/constants.ts";
 
 /**
  * Architecture test for constants.ts
@@ -34,14 +34,16 @@ Deno.test("Architecture: constants are immutable at compile time", () => {
 
   // Attempt mutations (these should fail at runtime if not truly immutable)
   try {
-    // @ts-expect-error - Should not allow mutation of const object
+    // Should not allow mutation of const object
+    // @ts-ignore - Testing immutability
     _DEFAULT_WORKSPACE_STRUCTURE.root = "modified";
   } catch {
     // Expected to fail
   }
 
   try {
-    // @ts-expect-error - Should not allow mutation of nested properties
+    // Should not allow mutation of nested properties
+    // @ts-ignore - Testing immutability
     _DEFAULT_WORKSPACE_STRUCTURE.directories.issues = "modified";
   } catch {
     // Expected to fail
@@ -65,6 +67,8 @@ Deno.test("Architecture: DirectoryType is a discriminated union", () => {
       case "projects":
         return "projects directory";
         // TypeScript ensures this is exhaustive
+      default:
+        return "unknown directory";
     }
   };
 

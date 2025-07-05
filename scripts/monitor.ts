@@ -645,6 +645,82 @@ Target panes: ${paneIds.join(", ")}
 }
 
 // =============================================================================
+// Global State Management
+// =============================================================================
+
+let globalCancellationRequested = false;
+
+/**
+ * Global function to set up keyboard interrupt handler
+ */
+function setupGlobalKeyboardInterrupt(): void {
+  if (Deno.stdin.isTerminal()) {
+    Deno.stdin.setRaw(true);
+
+    // Set up a background listener for keyboard input
+    const readKeyboardInput = async () => {
+      const buffer = new Uint8Array(1);
+      try {
+        while (!globalCancellationRequested) {
+          const bytesRead = await Deno.stdin.read(buffer);
+          if (bytesRead === null) break;
+
+          // Any key press triggers cancellation
+          if (bytesRead > 0) {
+            globalCancellationRequested = true;
+            logInfo("Keyboard input detected. Cancelling monitoring...");
+            break;
+          }
+        }
+      } catch (error) {
+        // Ignore errors during cleanup
+      }
+    };
+
+    // Start the background keyboard listener
+    readKeyboardInput();
+  }
+}
+
+/**
+ * Global function to restore stdin and cleanup
+ */
+function cleanupGlobalKeyboardInterrupt(): void {
+  if (Deno.stdin.isTerminal()) {
+    try {
+      Deno.stdin.setRaw(false);
+    } catch (error) {
+      // Ignore errors during cleanup
+    }
+  }
+}
+
+/**
+ * Global function to check if cancellation was requested
+ */
+function isCancellationRequested(): boolean {
+  return globalCancellationRequested;
+}
+
+/**
+ * Global function to wait with cancellation check
+ */
+async function sleepWithCancellation(ms: number): Promise<boolean> {
+  const startTime = Date.now();
+  const checkInterval = 100; // Check every 100ms
+
+  while (Date.now() - startTime < ms) {
+    if (isCancellationRequested()) {
+      return true; // Cancelled
+    }
+
+    await sleep(Math.min(checkInterval, ms - (Date.now() - startTime)));
+  }
+
+  return false; // Not cancelled
+}
+
+// =============================================================================
 // Object-Oriented Classes
 // =============================================================================
 
@@ -1023,10 +1099,10 @@ class TmuxMonitor {
 
     const targetPanes = this.paneManager.getTargetPanes();
     const mainPane = this.paneManager.getMainPane();
-    
+
     // Send ENTER to all panes (including main pane)
     const allPanes = mainPane ? [mainPane, ...targetPanes] : targetPanes;
-    
+
     for (const pane of allPanes) {
       await executeTmuxCommand(`tmux send-keys -t ${pane.id} Enter`);
     }
@@ -1115,10 +1191,22 @@ class TmuxMonitor {
       try {
         logInfo("Starting tmux monitoring...");
 
+        // Check for cancellation before starting
+        if (isCancellationRequested()) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
+          return;
+        }
+
         // 1. Get session and panes
         await this.session.discover();
         const allPanes = await this.session.getPanes();
         this.paneManager.separate(allPanes);
+
+        // Check for cancellation
+        if (isCancellationRequested()) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
+          return;
+        }
 
         // 2. Send instruction file to main pane (only once)
         if (this.instructionFile) {
@@ -1128,6 +1216,12 @@ class TmuxMonitor {
 
         // 3. Process all panes
         await this.processAllPanes();
+
+        // Check for cancellation
+        if (isCancellationRequested()) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
+          return;
+        }
 
         // 4. Update status tracking and report changes
         await this.updateStatusTracking();
@@ -1142,24 +1236,43 @@ class TmuxMonitor {
         await this.reportStatusChanges();
         await this.reportToMainPane();
 
+        // Check for cancellation
+        if (isCancellationRequested()) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
+          return;
+        }
+
         // 8. Start 30-second ENTER sending cycle during waiting period
         const monitoringCycles = TIMING.MONITORING_CYCLE_DELAY / TIMING.ENTER_SEND_CYCLE_DELAY;
         logInfo(`Waiting for 5 minutes with 30-second ENTER cycles (${monitoringCycles} cycles)...`);
-        
+
         let interrupted = false;
         for (let i = 0; i < monitoringCycles; i++) {
+          // Check for cancellation
+          if (isCancellationRequested()) {
+            logInfo("Monitoring cancelled by user input. Exiting...");
+            interrupted = true;
+            break;
+          }
+
           // Send ENTER to all panes
           await this.sendEnterToAllPanesCycle();
-          
-          // Wait 30 seconds with keyboard interrupt capability
-          interrupted = await sleepWithKeyboardInterrupt(TIMING.ENTER_SEND_CYCLE_DELAY);
+
+          // Wait 30 seconds with cancellation check
+          interrupted = await sleepWithCancellation(TIMING.ENTER_SEND_CYCLE_DELAY);
           if (interrupted) {
             logInfo("Monitoring cancelled by user input. Exiting...");
             break;
           }
         }
-        
+
         if (interrupted) {
+          break;
+        }
+
+        // Check for cancellation
+        if (isCancellationRequested()) {
+          logInfo("Monitoring cancelled by user input. Exiting...");
           break;
         }
 
@@ -1186,10 +1299,23 @@ class TmuxMonitor {
    * Continuous monitoring mode
    */
   public async startContinuousMonitoring(): Promise<void> {
-    logInfo("Starting continuous monitoring mode (Stop with Ctrl+C)");
+    logInfo("Starting continuous monitoring mode (Press any key to stop)");
 
     while (true) {
+      // Check for cancellation
+      if (isCancellationRequested()) {
+        logInfo("Continuous monitoring cancelled by user input. Exiting...");
+        break;
+      }
+
       await this.monitor();
+      
+      // Check for cancellation after monitor cycle
+      if (isCancellationRequested()) {
+        logInfo("Continuous monitoring cancelled by user input. Exiting...");
+        break;
+      }
+
       // After the first execution, scheduled time is cleared, so subsequent cycles use normal 5-minute intervals
       logInfo("Waiting for next cycle...\n");
     }
@@ -1263,10 +1389,20 @@ async function main(): Promise<void> {
     logInfo(`Instruction file specified: ${options.instructionFile}`);
   }
 
-  if (options.continuous) {
-    await monitor.startContinuousMonitoring();
-  } else {
-    await monitor.monitor();
+  // Set up global keyboard interrupt handler
+  logInfo("Press any key to stop monitoring at any time...");
+  setupGlobalKeyboardInterrupt();
+
+  try {
+    if (options.continuous) {
+      await monitor.startContinuousMonitoring();
+    } else {
+      await monitor.monitor();
+    }
+  } finally {
+    // Clean up keyboard interrupt handler
+    cleanupGlobalKeyboardInterrupt();
+    logInfo("Monitoring stopped.");
   }
 }
 

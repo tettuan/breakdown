@@ -11,11 +11,11 @@
  * @module cli/processors/1_structure_two_params_stdin_processor_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { TwoParamsStdinProcessor } from "./two_params_stdin_processor.ts";
+import { TwoParamsStdinProcessor } from "$lib/cli/two_params_stdin_processor.ts";
 import type { BreakdownConfigCompatible } from "../../config/timeout_manager.ts";
 
 const _logger = new _BreakdownLogger("structure-stdin-processor");

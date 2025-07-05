@@ -8,12 +8,12 @@
  * 4. No responsibility duplication with other components
  */
 
-import { assert, assertEquals, assertExists, assertNotEquals } from "@std/assert";
+import { assert, assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import type { TwoParams_Result } from "$lib/types/mod.ts";
 
 const logger = new BreakdownLogger("structure-output-file-path-resolver");
 

@@ -120,3 +120,6 @@ export function all<T, E>(
   }
   return { ok: true, data };
 }
+
+// Parameter result types are imported from @tettuan/breakdownparams via deps.ts
+// and re-exported through mod.ts - no local definitions needed

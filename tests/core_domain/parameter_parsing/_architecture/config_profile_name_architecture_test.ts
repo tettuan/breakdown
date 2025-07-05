@@ -10,9 +10,9 @@
  * @module types/config_profile_name_architecture_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../../../../lib/types/config_profile_name.ts";
 
 const logger = new BreakdownLogger("config-profile-name-architecture");
 
@@ -93,8 +93,10 @@ Deno.test("Architecture: Dependency structure verification", () => {
   // Value getter should be readonly (no setter)
   const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(instance), "value");
   assertExists(descriptor, "Value property descriptor must exist");
-  assertExists(descriptor.get, "Should have getter");
-  assertEquals(descriptor.set, undefined, "Should not have setter");
+  if (descriptor) {
+    assertExists(descriptor.get, "Should have getter");
+    assertEquals(descriptor.set, undefined, "Should not have setter");
+  }
 
   logger.debug("Dependency structure verification completed");
 });

@@ -6,7 +6,7 @@
  * in switch statements, and that all error conditions are represented as values.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

@@ -13,8 +13,8 @@
  * @module cli/handlers/1_structure_two_params_handler_test
  */
 
-import { assert, assertEquals } from "@std/assert";
-import { handleTwoParams, type TwoParamsHandlerError } from "./two_params_handler.ts";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
+import { handleTwoParams, type TwoParamsHandlerError } from "$lib/cli/handlers/two_params_handler.ts";
 
 /**
  * Structure Test Suite: TwoParamsHandler

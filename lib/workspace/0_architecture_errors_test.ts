@@ -12,7 +12,7 @@
  * 従っていることを保証することです。
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 

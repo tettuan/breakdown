@@ -1,10 +1,10 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
 import { ensureDir } from "@std/fs";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";
 import type { DemonstrativeType, LayerType } from "../types/mod.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import type { TwoParams_Result } from "$lib/types/mod.ts";
 
 /*
  * IMPORTANT: All path resolution is based on config/app_prompt.base_dir (and app_schema.base_dir).

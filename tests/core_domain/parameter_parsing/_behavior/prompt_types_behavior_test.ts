@@ -5,7 +5,7 @@
  * as well as error type guards and formatting functions.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   formatPromptError,
   isInvalidVariablesError,

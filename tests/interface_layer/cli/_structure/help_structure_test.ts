@@ -13,7 +13,7 @@
  * @module cli/1_structure_help_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import {
   _VERSION,
   APP_NAME,
@@ -22,7 +22,7 @@ import {
   showHelp,
   showUsage,
   showVersion,
-} from "./help.ts";
+} from "$lib/cli/help.ts";
 
 /**
  * Structure Test Suite: Help Module

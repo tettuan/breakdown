@@ -15,7 +15,7 @@
  * @module cli/handlers/1_structure_two_params_handler_refactored_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -23,7 +23,7 @@ import {
   handleTwoParams,
   handleTwoParamsClean,
   type TwoParamsHandlerError,
-} from "./two_params_handler_refactored.ts";
+} from "$lib/cli/handlers/two_params_handler_refactored.ts";
 
 const _logger = new _BreakdownLogger("structure-two-params-handler-refactored");
 
@@ -65,7 +65,7 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     const results = await Promise.all(calls);
 
     // All calls should complete with consistent structure
-    results.forEach((result, index) => {
+    results.forEach((result: { ok: boolean; error?: TwoParamsHandlerError }, index: number) => {
       assert("ok" in result, `Call ${index} should have ok property`);
     });
   });
@@ -353,19 +353,19 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     ]);
 
     // All should have consistent behavior
-    multipleCallResults.forEach((result, index) => {
+    multipleCallResults.forEach((result: { ok: boolean; error?: TwoParamsHandlerError }, index: number) => {
       assert("ok" in result, `Call ${index} should have proper Result structure`);
     });
 
     // If all succeed or all fail, they should be consistent
-    const allSucceed = multipleCallResults.every((r) => r.ok);
-    const allFail = multipleCallResults.every((r) => !r.ok);
+    const allSucceed = multipleCallResults.every((r: { ok: boolean; error?: TwoParamsHandlerError }) => r.ok);
+    const allFail = multipleCallResults.every((r: { ok: boolean; error?: TwoParamsHandlerError }) => !r.ok);
 
     if (allFail) {
       // All failures should have the same error kind (consistent behavior)
-      const errorKinds = multipleCallResults.map((r) => r.ok ? null : r.error.kind);
+      const errorKinds = multipleCallResults.map((r: { ok: boolean; error?: TwoParamsHandlerError }) => r.ok ? null : r.error?.kind);
       const firstErrorKind = errorKinds[0];
-      errorKinds.forEach((kind, index) => {
+      errorKinds.forEach((kind: string | null | undefined, index: number) => {
         assertEquals(kind, firstErrorKind, `Call ${index} should have consistent error kind`);
       });
     }
@@ -426,28 +426,28 @@ describe("TwoParamsHandler Refactored - Structure Analysis", () => {
     const results = await Promise.all(concurrentCalls);
 
     // All results should have proper structure
-    results.forEach((result, index) => {
+    results.forEach((result: { ok: boolean; error?: TwoParamsHandlerError }, index: number) => {
       assert("ok" in result, `Concurrent call ${index} should have proper structure`);
 
       if (!result.ok) {
-        assertExists(result.error.kind);
-        assert(typeof result.error.kind === "string");
+        assertExists(result.error?.kind);
+        assert(typeof result.error?.kind === "string");
       }
     });
 
     // Results should be structurally consistent
-    const resultTypes = results.map((r) => r.ok);
-    const errorKinds = results.map((r) => r.ok ? null : r.error.kind);
+    const resultTypes = results.map((r: { ok: boolean; error?: TwoParamsHandlerError }) => r.ok);
+    const errorKinds = results.map((r: { ok: boolean; error?: TwoParamsHandlerError }) => r.ok ? null : r.error?.kind);
 
     // All should have same success/failure pattern (no race conditions)
     const firstType = resultTypes[0];
     const firstErrorKind = errorKinds[0];
 
-    resultTypes.forEach((type, index) => {
+    resultTypes.forEach((type: boolean, index: number) => {
       assertEquals(type, firstType, `Call ${index} should have consistent result type`);
     });
 
-    errorKinds.forEach((kind, index) => {
+    errorKinds.forEach((kind: string | null | undefined, index: number) => {
       assertEquals(kind, firstErrorKind, `Call ${index} should have consistent error kind`);
     });
   });

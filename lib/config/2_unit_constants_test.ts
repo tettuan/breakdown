@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertThrows } from "../deps.ts";
 import {
   _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_PROMPT_BASE_DIR,

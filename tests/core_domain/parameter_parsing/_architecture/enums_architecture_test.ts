@@ -8,7 +8,7 @@
  * @module types/0_architecture_enums_test
  */
 
-import { assertEquals, assertExists as _assertExists } from "@std/assert";
+import { assertEquals, assertExists as _assertExists } from "../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

@@ -8,7 +8,7 @@
  * @module lib/cli/initialization/2_unit_workspace_initializer_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "../../../../lib/deps.ts";
 import { exists } from "@std/fs";
 import { join } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";

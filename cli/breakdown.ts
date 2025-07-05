@@ -21,6 +21,7 @@ import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 
 /**
  * Main CLI entry point for direct execution
@@ -126,76 +127,16 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     if (result.type === "two") {
       const handlerResult = await handleTwoParams(result.params, config, result.options);
       if (!handlerResult.ok) {
-        // Handle specific PromptGenerationError cases gracefully - treat as warning instead of fatal error
-        // Only for recoverable configuration issues, not for fundamental path errors
-        if (
-          handlerResult.error && typeof handlerResult.error === "object" &&
-          "kind" in handlerResult.error && handlerResult.error.kind === "PromptGenerationError"
-        ) {
-          let errorMsg: string;
-          if (handlerResult.error.error) {
-            if (typeof handlerResult.error.error === "string") {
-              errorMsg = handlerResult.error.error;
-            } else if (typeof handlerResult.error.error === "object") {
-              // Handle BreakdownPrompt error objects
-              const errorObj = handlerResult.error.error as { message?: string; error?: string };
-              errorMsg = errorObj.message || errorObj.error ||
-                JSON.stringify(handlerResult.error.error);
-            } else {
-              errorMsg = String(handlerResult.error.error);
-            }
-          } else {
-            errorMsg = "Configuration or template issue";
-          }
-
-          // Check if this is a test scenario that should fail
-          // by looking at the call stack and config being tested
-          const isTestingErrorHandling = config && typeof config === "object" &&
-            "app_prompt" in config && config.app_prompt &&
-            typeof config.app_prompt === "object" && "base_dir" in config.app_prompt &&
-            config.app_prompt.base_dir === "/nonexistent/path";
-
-          // Only apply graceful handling for missing directories within valid paths,
-          // not for completely invalid/nonexistent paths or critical configuration errors
-          // or when testing error handling scenarios
-          if (
-            isTestingErrorHandling || errorMsg.includes("/nonexistent/") ||
-            errorMsg.includes("nonexistent") ||
-            errorMsg.includes("absolute path") || errorMsg.includes("permission denied") ||
-            errorMsg.includes("access denied") || errorMsg.includes("Invalid configuration") ||
-            errorMsg.includes("critical") || errorMsg.includes("fatal")
-          ) {
-            // These are fundamental path errors that should fail
-            throw new Error(
-              `Two params handler error: ${
-                handlerResult.error && typeof handlerResult.error === "object" &&
-                  "kind" in handlerResult.error
-                  ? `${handlerResult.error.kind}: ${
-                    JSON.stringify(handlerResult.error).substring(0, 200)
-                  }`
-                  : String(handlerResult.error)
-              }`,
-            );
-          }
-
-          console.warn(`⚠️ Prompt generation issue: ${errorMsg}`);
-          console.log("✅ Breakdown execution completed with warnings");
-          return; // Continue gracefully instead of throwing
+        // Use centralized error handler
+        if (!handleTwoParamsError(handlerResult.error, config)) {
+          throw new Error(`Two params handler error: ${formatError(handlerResult.error)}`);
         }
-        throw new Error(
-          `Two params handler error: ${
-            handlerResult.error && typeof handlerResult.error === "object" &&
-              "kind" in handlerResult.error
-              ? `${handlerResult.error.kind}: ${
-                JSON.stringify(handlerResult.error).substring(0, 200)
-              }`
-              : String(handlerResult.error)
-          }`,
-        );
+        return; // Error was handled gracefully as warning
       }
     } else if (result.type === "one") {
       await handleOneParams(result.params, config, result.options);
     } else if (result.type === "zero") {
+      // Pass original args for backward compatibility
       await handleZeroParams(args, config, result.options);
     } else if (result.type === "error") {
       throw new Error(`Parameter parsing error: ${result.error?.message || "Unknown error"}`);

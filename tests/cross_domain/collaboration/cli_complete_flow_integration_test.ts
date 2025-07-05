@@ -20,14 +20,14 @@ import {
   assert,
   assertEquals,
   assertExists,
-} from "@std/assert";
+} from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { TwoParamsOrchestrator } from "../../lib/cli/orchestrators/two_params_orchestrator.ts";
-import { TypeFactory } from "../../lib/types/mod.ts";
-import { handleTwoParams } from "../../lib/cli/handlers/two_params_handler_refactored.ts";
-import type { Result } from "../../lib/types/result.ts";
+import { TwoParamsOrchestrator } from "../../../lib/cli/orchestrators/two_params_orchestrator.ts";
+import { TypeFactory } from "../../../lib/deps.ts";
+import { handleTwoParams } from "../../../lib/cli/handlers/two_params_handler_refactored.ts";
+import type { Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("cli-complete-flow-integration");
 

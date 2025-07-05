@@ -6,15 +6,15 @@
  */
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ParameterValidator } from "./parameter_validator.ts";
+import { ParameterValidator } from "../../../../lib/validator/parameter_validator.ts";
 import type {
   ConfigValidator,
   ValidatedParams as _ValidatedParams,
   ValidationError as _ValidationError,
-} from "./parameter_validator.ts";
-import type { TypePatternProvider } from "../types/type_factory.ts";
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+} from "../../../../lib/validator/parameter_validator.ts";
+import type { TypePatternProvider } from "../../../../lib/types/type_factory.ts";
+import { TwoParamsDirectivePattern } from "../../../../lib/types/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
 // Temporary mock implementations for testing
 const _MockPatternCreator = {
   createMockPatternProvider: (): TypePatternProvider => ({
@@ -26,8 +26,8 @@ import type {
   OneParamsResult as _OneParamsResult,
   TwoParams_Result,
   ZeroParamsResult as _ZeroParamsResult,
-} from "../deps.ts";
-import type { Result as _Result } from "../types/result.ts";
+} from "../../../lib/deps.ts";
+import type { Result as _Result } from "../../../lib/deps.ts";
 
 /**
  * Architecture Test: Dependency Direction Validation

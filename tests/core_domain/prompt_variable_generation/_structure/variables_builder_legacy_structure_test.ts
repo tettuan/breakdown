@@ -8,7 +8,7 @@
  * @module builder/1_structure_variables_builder_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { VariablesBuilder } from "./variables_builder.ts";
 import type { FactoryResolvedValues } from "./variables_builder.ts";
 

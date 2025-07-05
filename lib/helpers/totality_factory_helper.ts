@@ -228,9 +228,12 @@ export function createValidatedCliParams(
   return {
     ok: true,
     data: {
+      demonstrativeType: typesResult.data.directive.getValue(),
+      layerType: typesResult.data.layer.getValue(),
+      options,
+      // Include directive and layer objects for backward compatibility
       directive: typesResult.data.directive,
       layer: typesResult.data.layer,
-      options,
     },
   };
 }

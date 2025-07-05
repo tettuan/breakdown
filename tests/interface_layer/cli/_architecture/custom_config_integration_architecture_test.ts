@@ -8,7 +8,7 @@
  * - Verifying BreakdownParams custom validation
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "../../../../lib/deps.ts";
 import { resolve } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";

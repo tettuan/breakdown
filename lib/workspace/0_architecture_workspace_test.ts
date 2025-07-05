@@ -6,7 +6,7 @@
  * and dependency direction rules.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { WorkspaceImpl } from "./workspace.ts";
 import { Workspace, WorkspaceConfig } from "./interfaces.ts";

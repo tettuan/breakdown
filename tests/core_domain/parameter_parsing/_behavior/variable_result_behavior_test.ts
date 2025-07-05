@@ -4,7 +4,7 @@
  * Tests the Result type design for type safety and functionality
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   createEmptyValueError,
   createError,
@@ -13,7 +13,7 @@ import {
   createValidationFailedError,
   type VariableError,
   type VariableResult as _VariableResult,
-} from "./variable_result.ts";
+} from "../../../lib/types/variable_result.ts";
 
 // Test data type for testing
 type TestData = { id: number; name: string };

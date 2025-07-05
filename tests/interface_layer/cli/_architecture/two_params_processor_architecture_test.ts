@@ -13,9 +13,9 @@
  * @module cli/processors/0_architecture_two_params_processor_test
  */
 
-import { assert, assertEquals } from "@std/assert";
-import { type ProcessorError, TwoParamsProcessor } from "./two_params_processor.ts";
-import type { TwoParams_Result } from "../../deps.ts";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
+import { type ProcessorError, TwoParamsProcessor } from "$lib/cli/processors/two_params_processor.ts";
+import type { TwoParams_Result } from "$lib/types/mod.ts";
 
 /**
  * Architecture Test Suite: TwoParamsProcessor

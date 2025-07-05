@@ -8,7 +8,7 @@
  * static import issues in function scope.
  */
 
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "../../../../lib/deps.ts";
 
 /**
  * Test help text content and format

@@ -10,7 +10,7 @@
  * @module cli/generators/0_architecture_two_params_prompt_generator_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
 import type { ValidatedParams } from "./two_params_prompt_generator.ts";
 

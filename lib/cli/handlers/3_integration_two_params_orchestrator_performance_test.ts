@@ -13,7 +13,7 @@
  * @module cli/handlers/3_integration_two_params_orchestrator_performance_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 

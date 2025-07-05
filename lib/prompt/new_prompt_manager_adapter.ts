@@ -476,7 +476,7 @@ export class NewPromptManagerAdapter {
   ): Result<{ template: PromptPath; variables: CompositePromptVariables }, PromptError> {
     try {
       // Build template path from validated types
-      const templateName = `${params.directive.value}/${params.layer.value}.md`;
+      const templateName = `${params.demonstrativeType}/${params.layerType}.md`;
       const templateResult = PromptPath.create(templateName);
       if (!templateResult.ok) {
         return resultError({
@@ -492,11 +492,11 @@ export class NewPromptManagerAdapter {
       // Add standard variables from Totality types
       const demoResult = variables.addStandardVariable(
         "demonstrative_type",
-        params.directive.value,
+        params.demonstrativeType,
       );
       if (!demoResult.ok) return demoResult;
 
-      const layerResult = variables.addStandardVariable("layer_type", params.layer.value);
+      const layerResult = variables.addStandardVariable("layer_type", params.layerType);
       if (!layerResult.ok) return layerResult;
 
       // Add file variables

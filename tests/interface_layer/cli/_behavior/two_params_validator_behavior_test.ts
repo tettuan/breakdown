@@ -2,7 +2,7 @@
  * Unit tests for TwoParamsValidator
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { TwoParamsValidator } from "./two_params_validator.ts";
 
 Deno.test("TwoParamsValidator - validate success with default types", () => {

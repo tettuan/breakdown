@@ -11,7 +11,7 @@
  * @module config/0_architecture_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
+import { assertEquals, assertExists, assertStrictEquals } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";

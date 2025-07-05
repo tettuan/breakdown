@@ -11,7 +11,7 @@
  * @module helpers/3_integration_template_error_handler_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertExists, assertStringIncludes } from "../deps.ts";
 import {
   TemplateError,
   TemplateErrorHandler,

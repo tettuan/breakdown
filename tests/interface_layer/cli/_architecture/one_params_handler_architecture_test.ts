@@ -13,8 +13,8 @@
  * @module cli/handlers/0_architecture_one_params_handler_test
  */
 
-import { assert, assertEquals } from "@std/assert";
-import { handleOneParams } from "./one_params_handler.ts";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
+import { handleOneParams } from "../../../../lib/cli/handlers/one_params_handler.ts";
 
 /**
  * Architecture Test Suite: OneParamsHandler

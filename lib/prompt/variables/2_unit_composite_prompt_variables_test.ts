@@ -11,7 +11,7 @@
  * @module prompt/variables/2_unit_composite_prompt_variables_test
  */
 
-import { assertEquals, assertNotStrictEquals } from "@std/assert";
+import { assertEquals, assertNotStrictEquals } from "../../deps.ts";
 import { CompositePromptVariables } from "./composite_prompt_variables.ts";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
 import { UserPromptVariables } from "./user_prompt_variables.ts";

@@ -5,7 +5,7 @@
  * クラス構造、メソッドの責務、データ構造の適切性を確認します。
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateMapping,

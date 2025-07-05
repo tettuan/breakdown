@@ -13,7 +13,7 @@
  * @module types/0_architectureresult_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

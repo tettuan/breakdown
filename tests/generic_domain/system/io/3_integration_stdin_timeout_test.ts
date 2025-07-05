@@ -13,7 +13,7 @@
 import {
   assertEquals,
   assertRejects as _assertRejects,
-} from "jsr:@std/assert@1.0.7";
+} from "../../../lib/deps.ts";
 import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

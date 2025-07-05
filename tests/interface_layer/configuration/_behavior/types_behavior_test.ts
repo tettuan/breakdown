@@ -7,7 +7,7 @@
  * @module cli/config/2_unit_types_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import type { BreakdownConfig, ConfigOptions } from "./types.ts";
 
 /**

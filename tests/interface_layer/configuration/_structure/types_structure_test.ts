@@ -7,7 +7,7 @@
  * @module cli/config/1_structure_types_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

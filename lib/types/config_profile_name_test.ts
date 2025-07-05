@@ -6,7 +6,7 @@
  * business rules for configuration profile names.
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { ConfigProfileName } from "./config_profile_name.ts";
 

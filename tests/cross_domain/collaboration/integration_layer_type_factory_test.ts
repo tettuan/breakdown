@@ -14,7 +14,7 @@
  * @module lib/types/3_integration_layer_type_factory_test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   type LayerTypeCreationError,
   LayerTypeFactory,

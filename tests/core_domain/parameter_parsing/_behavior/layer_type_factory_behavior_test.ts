@@ -5,7 +5,7 @@
  * with comprehensive test cases covering all execution paths.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { describe, it } from "@std/testing/bdd";
 
@@ -13,9 +13,9 @@ import {
   type LayerTypeCreationError,
   LayerTypeFactory,
   type LayerTypeResult,
-} from "./layer_type_factory.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "./mod.ts";
-import type { TwoParamsResult } from "../../deps.ts";
+} from "../../../../lib/types/layer_type_factory.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../../../lib/types/mod.ts";
 
 const logger = new BreakdownLogger("layer-type-factory-unit");
 
@@ -214,7 +214,7 @@ describe("LayerTypeFactory.fromTwoParamsResult", () => {
   it("should create LayerType from valid TwoParamsResult", () => {
     logger.debug("Testing LayerType creation from TwoParamsResult");
 
-    const validResults: TwoParamsResult[] = [
+    const validResults: TwoParams_Result[] = [
       {
         type: "two",
         demonstrativeType: "to",
@@ -244,7 +244,7 @@ describe("LayerTypeFactory.fromTwoParamsResult", () => {
   it("should handle invalid TwoParamsResult", () => {
     logger.debug("Testing invalid TwoParamsResult handling");
 
-    const invalidResult: TwoParamsResult = {
+    const invalidResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: "invalid",
       layerType: "not-a-real-layer",

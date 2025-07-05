@@ -11,8 +11,8 @@
  * @module cli/0_architecture_errors_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
-import { CliError, CliErrorCode } from "./errors.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { CliError, CliErrorCode } from "../../../../lib/cli/errors.ts";
 
 Deno.test("Architecture: CliError follows proper error hierarchy", () => {
   const _error = new CliError(CliErrorCode.INVALID_OPTION, "Test error");

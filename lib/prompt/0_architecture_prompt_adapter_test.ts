@@ -8,7 +8,7 @@
  * - Interface consistency
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";

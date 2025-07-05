@@ -12,7 +12,7 @@ import {
   assertEquals,
   assertExists,
   assertStringIncludes,
-} from "jsr:@std/assert@1";
+} from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("e2e-integration");

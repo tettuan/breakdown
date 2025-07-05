@@ -9,7 +9,7 @@
  * - Directory structure is always created under the configured baseDir.
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { join } from "@std/path";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import {

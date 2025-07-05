@@ -16,14 +16,14 @@
  * @module cli/orchestrators/2_unit_two_params_orchestrator_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 import { TwoParamsOrchestrator } from "./two_params_orchestrator.ts";
 import type { TwoParamsHandlerError } from "../handlers/two_params_handler.ts";
 import type { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import { error, ok } from "$lib/types/result.ts";
+import { error, ok } from "../../../lib/deps.ts";
 
 const _logger = new _BreakdownLogger("unit-two-params-orchestrator");
 

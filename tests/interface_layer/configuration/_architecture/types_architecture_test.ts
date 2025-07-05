@@ -7,7 +7,7 @@
  * @module cli/config/0_architecture_types_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

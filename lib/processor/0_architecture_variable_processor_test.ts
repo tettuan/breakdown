@@ -10,7 +10,7 @@
  * @module lib/processor/0_architecture_variable_processor_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   type ProcessorOptions,
   type ProcessorResult,

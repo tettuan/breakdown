@@ -11,7 +11,7 @@
  * @module
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists, assertThrows } from "../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 

@@ -10,7 +10,7 @@
  * @module config/loader_structure_test
  */
 
-import { assertEquals, assertExists, assertRejects as _assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { type CustomConfig, loadBreakdownConfig, loadConfig } from "./loader.ts";

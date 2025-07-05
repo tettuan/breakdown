@@ -6,7 +6,7 @@
  * principles are followed and the component has clear, focused responsibilities.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { WorkspaceStructureImpl } from "./structure.ts";
 

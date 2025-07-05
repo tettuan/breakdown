@@ -12,7 +12,7 @@
  * - Configuration integration
  */
 
-import { assertEquals, assertExists, assertRejects, assertThrows } from "@std/assert";
+import { assertEquals, assertExists, assertRejects, assertThrows } from "../../../lib/deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

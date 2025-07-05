@@ -13,7 +13,7 @@
  * @module cli/0_architecture_help_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 
 /**
  * Architecture Test Suite: Help Module

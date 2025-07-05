@@ -15,9 +15,41 @@
 import { isAbsolute, join } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { Result } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
+
+/**
+ * Error types for Output File Path Resolution
+ */
+export type OutputFilePathError =
+  | { kind: "InvalidPath"; path: string; reason: string }
+  | { kind: "DirectoryNotFound"; path: string }
+  | { kind: "PermissionDenied"; path: string }
+  | { kind: "ConfigurationError"; message: string }
+  | { kind: "FilenameGenerationFailed"; reason: string };
+
+/**
+ * Resolved output file path with metadata
+ */
+export interface ResolvedOutputPath {
+  /** The resolved absolute path */
+  value: string;
+  /** Type of output path */
+  type: "auto-generated" | "absolute" | "relative" | "filename";
+  /** Whether the path was generated automatically */
+  isGenerated: boolean;
+  /** Whether the parent directory exists */
+  directoryExists: boolean;
+  /** Additional metadata */
+  metadata: {
+    originalPath?: string;
+    resolvedFrom: "cli" | "config" | "auto";
+    layerType?: string;
+  };
+}
 
 /**
  * Output file path resolver for Breakdown CLI operations.
@@ -108,7 +140,7 @@ export class OutputFilePathResolver {
     if ("type" in cliParams && cliParams.type === "two") {
       // TwoParams_Result from breakdownparams
       const twoParams = cliParams as TwoParams_Result;
-      const copy: any = {
+      const copy: TwoParams_Result = {
         type: twoParams.type,
         params: twoParams.params ? [...twoParams.params] : [],
         demonstrativeType: twoParams.demonstrativeType,
@@ -119,9 +151,10 @@ export class OutputFilePathResolver {
     } else {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
-      const copy: any = {
+      const copy: DoubleParams_Result = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
+        options: doubleParams.options || {},
       };
 
       if (doubleParams.options) {
@@ -140,60 +173,195 @@ export class OutputFilePathResolver {
    * absolute paths, relative paths, and filename-only inputs. The resolution
    * follows Breakdown's documented output path conventions.
    *
-   * @returns string - The resolved absolute output file path
-   *
-   * @throws {Error} When path resolution fails or invalid paths are provided
+   * @returns Result<ResolvedOutputPath, OutputFilePathError> - The resolved output path with metadata
    *
    * @example
    * ```typescript
    * const resolver = new OutputFilePathResolver(config, cliParams);
    *
-   * // No destination specified - auto-generated in layer directory
-   * const autoPath = resolver.getPath(); // "/cwd/project/20241222_abc123.md"
-   *
-   * // Directory specified - auto-generated filename in directory
-   * const dirPath = resolver.getPath(); // "/specified/dir/20241222_abc123.md"
-   *
-   * // Absolute file path
-   * const absolutePath = resolver.getPath(); // "/absolute/path/to/output.md"
-   *
-   * // Relative file with hierarchy
-   * const relativePath = resolver.getPath(); // "/cwd/relative/path/output.md"
+   * const result = resolver.getPath();
+   * if (result.ok) {
+   *   console.log(result.data.value); // "/resolved/path/to/output.md"
+   *   console.log(result.data.isGenerated); // true if auto-generated
+   * } else {
+   *   console.error(result.error.kind); // "InvalidPath" | "DirectoryNotFound"
+   * }
    * ```
    *
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
+  public getPath(): Result<ResolvedOutputPath, OutputFilePathError> {
+    try {
+      const destinationFile = this.getDestinationFile();
+      const cwd = Deno.cwd();
+      const layerType = this.getLayerType();
 
-  public getPath(): string {
-    const destinationFile = this.getDestinationFile();
-    const cwd = Deno.cwd();
-    if (!destinationFile) {
-      const layerType = this.getLayerType();
-      return join(cwd, layerType, this.generateDefaultFilename());
-    }
-    const normalizedDest = this.normalizePath(destinationFile);
-    if (isAbsolute(normalizedDest)) {
-      if (this.isDirectory(normalizedDest)) {
-        return join(normalizedDest, this.generateDefaultFilename());
+      // No destination specified - auto-generate in layer directory
+      if (!destinationFile) {
+        const filename = this.generateDefaultFilename();
+        if (!filename.ok) {
+          return error(filename.error);
+        }
+
+        const resolvedPath = join(cwd, layerType, filename.data);
+        return ok({
+          value: resolvedPath,
+          type: "auto-generated",
+          isGenerated: true,
+          directoryExists: this.checkDirectoryExists(join(cwd, layerType)),
+          metadata: {
+            resolvedFrom: "auto",
+            layerType,
+          },
+        });
       }
-      return normalizedDest;
-    }
-    const absDest = join(cwd, normalizedDest);
-    if (this.isDirectory(absDest)) {
-      return join(absDest, this.generateDefaultFilename());
-    }
-    if (this.hasPathHierarchy(normalizedDest) && this.hasExtension(normalizedDest)) {
-      return absDest;
-    }
-    if (this.hasExtension(normalizedDest)) {
-      const layerType = this.getLayerType();
-      // Ensure all path components are valid strings
-      if (!cwd || !layerType || !normalizedDest) {
-        return join(Deno.cwd(), layerType || "task", normalizedDest || "output.md");
+
+      const normalizedDest = this.normalizePath(destinationFile);
+
+      // Validate path format
+      if (normalizedDest.includes("\0")) {
+        return error({
+          kind: "InvalidPath",
+          path: destinationFile,
+          reason: "Path contains null character",
+        });
       }
-      return join(cwd, layerType, normalizedDest);
+
+      // Handle absolute paths
+      if (isAbsolute(normalizedDest)) {
+        if (this.isDirectory(normalizedDest)) {
+          // Directory specified - generate filename
+          const filename = this.generateDefaultFilename();
+          if (!filename.ok) {
+            return error(filename.error);
+          }
+
+          const resolvedPath = join(normalizedDest, filename.data);
+          return ok({
+            value: resolvedPath,
+            type: "absolute",
+            isGenerated: true,
+            directoryExists: this.checkDirectoryExists(normalizedDest),
+            metadata: {
+              originalPath: destinationFile,
+              resolvedFrom: "cli",
+            },
+          });
+        }
+
+        // Absolute file path
+        return ok({
+          value: normalizedDest,
+          type: "absolute",
+          isGenerated: false,
+          directoryExists: this.checkDirectoryExists(this.getParentDirectory(normalizedDest)),
+          metadata: {
+            originalPath: destinationFile,
+            resolvedFrom: "cli",
+          },
+        });
+      }
+
+      // Handle relative paths
+      const absDest = join(cwd, normalizedDest);
+
+      if (this.isDirectory(absDest)) {
+        // Directory specified - generate filename
+        const filename = this.generateDefaultFilename();
+        if (!filename.ok) {
+          return error(filename.error);
+        }
+
+        const resolvedPath = join(absDest, filename.data);
+        return ok({
+          value: resolvedPath,
+          type: "relative",
+          isGenerated: true,
+          directoryExists: this.checkDirectoryExists(absDest),
+          metadata: {
+            originalPath: destinationFile,
+            resolvedFrom: "cli",
+          },
+        });
+      }
+
+      // File with hierarchy and extension
+      if (this.hasPathHierarchy(normalizedDest) && this.hasExtension(normalizedDest)) {
+        return ok({
+          value: absDest,
+          type: "relative",
+          isGenerated: false,
+          directoryExists: this.checkDirectoryExists(this.getParentDirectory(absDest)),
+          metadata: {
+            originalPath: destinationFile,
+            resolvedFrom: "cli",
+          },
+        });
+      }
+
+      // Filename only - place in layer directory
+      if (this.hasExtension(normalizedDest)) {
+        const resolvedPath = join(cwd, layerType, normalizedDest);
+        return ok({
+          value: resolvedPath,
+          type: "filename",
+          isGenerated: false,
+          directoryExists: this.checkDirectoryExists(join(cwd, layerType)),
+          metadata: {
+            originalPath: destinationFile,
+            resolvedFrom: "cli",
+            layerType,
+          },
+        });
+      }
+
+      // Directory without extension - generate filename
+      const filename = this.generateDefaultFilename();
+      if (!filename.ok) {
+        return error(filename.error);
+      }
+
+      const resolvedPath = join(absDest, filename.data);
+      return ok({
+        value: resolvedPath,
+        type: "relative",
+        isGenerated: true,
+        directoryExists: this.checkDirectoryExists(absDest),
+        metadata: {
+          originalPath: destinationFile,
+          resolvedFrom: "cli",
+        },
+      });
+    } catch (error) {
+      return this.handleResolutionError(error);
     }
-    return join(absDest, this.generateDefaultFilename());
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use getPath() which returns Result<ResolvedOutputPath, OutputFilePathError>
+   */
+  public getPathLegacy(): string {
+    const result = this.getPath();
+    if (!result.ok) {
+      const errorMessage = (() => {
+        switch (result.error.kind) {
+          case "InvalidPath":
+            return `${result.error.path}: ${result.error.reason}`;
+          case "DirectoryNotFound":
+          case "PermissionDenied":
+            return result.error.path;
+          case "ConfigurationError":
+            return result.error.message;
+          case "FilenameGenerationFailed":
+            return result.error.reason;
+          default:
+            return "Unknown error";
+        }
+      })();
+      throw new Error(`Path resolution failed: ${result.error.kind} - ${errorMessage}`);
+    }
+    return result.data.value;
   }
 
   /**
@@ -275,27 +443,59 @@ export class OutputFilePathResolver {
    * and a random hash to ensure uniqueness and avoid file conflicts.
    * Enhanced with performance.now() for microsecond precision to prevent collisions.
    *
-   * @returns string - The generated filename in format "YYYYMMDD_hash.md"
+   * @returns Result<string, OutputFilePathError> - The generated filename in format "YYYYMMDD_hash.md"
    *
    * @example
    * ```typescript
    * // Generated filename examples
-   * const filename1 = this.generateDefaultFilename(); // "20241222_abc123f.md"
-   * const filename2 = this.generateDefaultFilename(); // "20241222_def456a.md"
+   * const result1 = this.generateDefaultFilename();
+   * if (result1.ok) console.log(result1.data); // "20241222_abc123f.md"
    * ```
    */
-  public generateDefaultFilename(): string {
-    const date = new Date();
-    const dateStr = date.getFullYear().toString() +
-      (date.getMonth() + 1).toString().padStart(2, "0") +
-      date.getDate().toString().padStart(2, "0");
+  public generateDefaultFilename(): Result<string, OutputFilePathError> {
+    try {
+      const date = new Date();
+      const dateStr = date.getFullYear().toString() +
+        (date.getMonth() + 1).toString().padStart(2, "0") +
+        date.getDate().toString().padStart(2, "0");
 
-    // Use performance.now() for microsecond precision to prevent collisions
-    const timestampHash = Math.floor(performance.now() * 1000).toString(16).slice(-4);
-    const randomHash = Math.random().toString(16).slice(2, 5);
-    const combinedHash = `${timestampHash}${randomHash}`;
+      // Use performance.now() for microsecond precision to prevent collisions
+      const timestampHash = Math.floor(performance.now() * 1000).toString(16).slice(-4);
+      const randomHash = Math.random().toString(16).slice(2, 5);
+      const combinedHash = `${timestampHash}${randomHash}`;
 
-    return `${dateStr}_${combinedHash}.md`;
+      const filename = `${dateStr}_${combinedHash}.md`;
+
+      // Basic validation
+      if (!filename || filename.length < 10) {
+        return error({
+          kind: "FilenameGenerationFailed",
+          reason: "Generated filename is too short or empty",
+        });
+      }
+
+      return ok(filename);
+    } catch (err) {
+      return error({
+        kind: "FilenameGenerationFailed",
+        reason: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use generateDefaultFilename() which returns Result
+   */
+  public generateDefaultFilenameLegacy(): string {
+    const result = this.generateDefaultFilename();
+    if (!result.ok) {
+      const errorMessage = result.error.kind === "FilenameGenerationFailed"
+        ? result.error.reason
+        : "Unknown error";
+      throw new Error(`Filename generation failed: ${errorMessage}`);
+    }
+    return result.data;
   }
 
   /**
@@ -378,5 +578,92 @@ export class OutputFilePathResolver {
    */
   public hasExtension(p: string): boolean {
     return p.includes(".");
+  }
+
+  /**
+   * Check if a directory exists on the filesystem
+   */
+  private checkDirectoryExists(path: string): boolean {
+    try {
+      const stat = Deno.statSync(path);
+      return stat.isDirectory;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get parent directory of a file path
+   */
+  private getParentDirectory(path: string): string {
+    const lastSlash = path.lastIndexOf("/");
+    return lastSlash > 0 ? path.substring(0, lastSlash) : path;
+  }
+
+  /**
+   * Handle resolution errors and convert to appropriate error types
+   */
+  private handleResolutionError(error: unknown): Result<ResolvedOutputPath, OutputFilePathError> {
+    if (error instanceof Deno.errors.NotFound) {
+      return {
+        ok: false,
+        error: {
+          kind: "DirectoryNotFound",
+          path: error.message || "Unknown path",
+        },
+      };
+    }
+
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return {
+        ok: false,
+        error: {
+          kind: "PermissionDenied",
+          path: error.message || "Unknown path",
+        },
+      };
+    }
+
+    return {
+      ok: false,
+      error: {
+        kind: "ConfigurationError",
+        message: error instanceof Error ? error.message : String(error),
+      },
+    };
+  }
+
+  /**
+   * Smart Constructor for creating OutputFilePathResolver with validation
+   */
+  static create(
+    config: Record<string, unknown>,
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): Result<OutputFilePathResolver, OutputFilePathError> {
+    try {
+      // Validate config
+      if (!config || typeof config !== "object") {
+        return error({
+          kind: "ConfigurationError",
+          message: "Invalid configuration object",
+        });
+      }
+
+      // Validate cliParams
+      if (!cliParams || typeof cliParams !== "object") {
+        return error({
+          kind: "ConfigurationError",
+          message: "Invalid CLI parameters object",
+        });
+      }
+
+      const resolver = new OutputFilePathResolver(config, cliParams);
+      return ok(resolver);
+    } catch (err) {
+      return error({
+        kind: "ConfigurationError",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 }

@@ -11,7 +11,7 @@
  * @module types/mod_unit_test
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists, assertThrows } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -60,7 +60,7 @@ import {
   TypeFactory,
   TypePatternProvider,
   UserVariable,
-} from "./mod.ts";
+} from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("types-mod-unit");
 

@@ -3,7 +3,7 @@
  * Tests the conversion of TwoParams_Result to VariablesBuilder with Result type safety
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../deps.ts";
 import { TwoParamsProcessor } from "./two_params_processor.ts";
 import type { TwoParams_Result } from "../../deps.ts";
 

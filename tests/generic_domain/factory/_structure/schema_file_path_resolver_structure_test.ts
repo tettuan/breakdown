@@ -8,10 +8,10 @@
  * 4. No responsibility duplication with other components
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
+import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TwoParams_Result } from "../deps.ts";
+import type { TwoParams_Result } from "$lib/types/mod.ts";
 import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 
 const logger = new BreakdownLogger("structure-schema-file-path-resolver");

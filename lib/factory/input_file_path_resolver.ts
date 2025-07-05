@@ -15,9 +15,37 @@
 import { isAbsolute, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { Result } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
+
+/**
+ * Error types for Input File Path Resolution
+ */
+export type InputFilePathError =
+  | { kind: "InvalidPath"; path: string; reason: string }
+  | { kind: "PathNotFound"; path: string }
+  | { kind: "PermissionDenied"; path: string }
+  | { kind: "ConfigurationError"; message: string };
+
+/**
+ * Resolved input file path with metadata
+ */
+export interface ResolvedInputPath {
+  /** The resolved absolute path */
+  value: string;
+  /** Type of input path */
+  type: "stdin" | "absolute" | "relative" | "filename";
+  /** Whether the path exists */
+  exists: boolean;
+  /** Additional metadata */
+  metadata: {
+    originalPath?: string;
+    resolvedFrom: "cli" | "config" | "default";
+  };
+}
 
 /**
  * Input file path resolver for Breakdown CLI operations.
@@ -144,44 +172,115 @@ export class InputFilePathResolver {
    * and filename-only specifications. The resolution follows Breakdown's
    * documented path conventions.
    *
-   * @returns string - The resolved absolute input file path, empty string if not specified,
-   *                   or "-" for stdin input
-   *
-   * @throws {Error} When path resolution fails or invalid paths are provided
+   * @returns Result<ResolvedInputPath, InputFilePathError> - The resolved input path with metadata
    *
    * @example
    * ```typescript
    * const resolver = new InputFilePathResolver(config, cliParams);
    *
-   * // No file specified
-   * const noFile = resolver.getPath(); // ""
-   *
-   * // Stdin input
-   * const stdinInput = resolver.getPath(); // "-"
-   *
-   * // Absolute path
-   * const absolutePath = resolver.getPath(); // "/absolute/path/to/input.md"
-   *
-   * // Relative path from cwd
-   * const relativePath = resolver.getPath(); // "/current/working/dir/relative/input.md"
+   * const result = resolver.getPath();
+   * if (result.ok) {
+   *   console.log(result.data.value); // "/resolved/path/to/input.md"
+   *   console.log(result.data.type);  // "relative" | "absolute" | "stdin"
+   * } else {
+   *   console.error(result.error.kind); // "InvalidPath" | "PathNotFound"
+   * }
    * ```
    *
    * @see {@link https://docs.breakdown.com/path} for path resolution documentation
    */
+  public getPath(): Result<ResolvedInputPath, InputFilePathError> {
+    try {
+      const fromFile = this.getFromFile();
 
-  public getPath(): string {
-    const fromFile = this.getFromFile();
-    if (!fromFile) return "";
-    if (fromFile === "-") {
-      // Handle stdin input by returning "-" to indicate stdin
-      return "-";
+      // No file specified - return empty path
+      if (!fromFile) {
+        return ok({
+          value: "",
+          type: "filename",
+          exists: false,
+          metadata: {
+            resolvedFrom: "default",
+          },
+        });
+      }
+
+      // Handle stdin input
+      if (fromFile === "-") {
+        return ok({
+          value: "-",
+          type: "stdin",
+          exists: true,
+          metadata: {
+            originalPath: fromFile,
+            resolvedFrom: "cli",
+          },
+        });
+      }
+
+      const normalizedFromFile = this.normalizePath(fromFile);
+
+      // Validate path format
+      if (normalizedFromFile.includes("\0")) {
+        return error({
+          kind: "InvalidPath",
+          path: fromFile,
+          reason: "Path contains null character",
+        });
+      }
+
+      let resolvedPath: string;
+      let pathType: "absolute" | "relative" | "filename";
+
+      if (this.isAbsolute(normalizedFromFile)) {
+        resolvedPath = normalizedFromFile;
+        pathType = "absolute";
+      } else {
+        // Resolve relative path from current working directory
+        resolvedPath = resolve(Deno.cwd(), normalizedFromFile);
+        pathType = this.hasPathHierarchy(normalizedFromFile) ? "relative" : "filename";
+      }
+
+      // Check if path exists
+      const exists = this.checkPathExists(resolvedPath);
+
+      return ok({
+        value: resolvedPath,
+        type: pathType,
+        exists,
+        metadata: {
+          originalPath: fromFile,
+          resolvedFrom: "cli",
+        },
+      });
+    } catch (error) {
+      return this.handleResolutionError(error);
     }
-    const normalizedFromFile = this.normalizePath(fromFile);
-    if (this.isAbsolute(normalizedFromFile)) {
-      return normalizedFromFile;
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use getPath() which returns Result<ResolvedInputPath, InputFilePathError>
+   */
+  public getPathLegacy(): string {
+    const result = this.getPath();
+    if (!result.ok) {
+      const errorMessage = (() => {
+        switch (result.error.kind) {
+          case "InvalidPath":
+            return `${result.error.path}: ${result.error.reason}`;
+          case "PathNotFound":
+          case "PermissionDenied":
+            return result.error.path;
+          case "ConfigurationError":
+            return result.error.message;
+          default:
+            return "Unknown error";
+        }
+      })();
+      throw new Error(`Path resolution failed: ${result.error.kind} - ${errorMessage}`);
     }
-    // パス階層の有無にかかわらず、--fromで指定されたパスをそのままcwdからの相対パスとして解決する
-    return resolve(Deno.cwd(), normalizedFromFile);
+    return result.data.value;
   }
 
   /**
@@ -324,6 +423,86 @@ export class InputFilePathResolver {
       // Legacy PromptCliParams structure
       const legacyParams = this._cliParams as DoubleParamsResult;
       return legacyParams.options?.fromLayerType || legacyParams.layerType || "";
+    }
+  }
+
+  /**
+   * Check if a path exists on the filesystem
+   */
+  private checkPathExists(path: string): boolean {
+    if (path === "-" || path === "") return true;
+    try {
+      Deno.statSync(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Handle resolution errors and convert to appropriate error types
+   */
+  private handleResolutionError(error: unknown): Result<ResolvedInputPath, InputFilePathError> {
+    if (error instanceof Deno.errors.NotFound) {
+      return {
+        ok: false,
+        error: {
+          kind: "PathNotFound",
+          path: error.message || "Unknown path",
+        },
+      };
+    }
+
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return {
+        ok: false,
+        error: {
+          kind: "PermissionDenied",
+          path: error.message || "Unknown path",
+        },
+      };
+    }
+
+    return {
+      ok: false,
+      error: {
+        kind: "ConfigurationError",
+        message: error instanceof Error ? error.message : String(error),
+      },
+    };
+  }
+
+  /**
+   * Smart Constructor for creating InputFilePathResolver with validation
+   */
+  static create(
+    config: Record<string, unknown>,
+    cliParams: DoubleParamsResult | TwoParams_Result,
+  ): Result<InputFilePathResolver, InputFilePathError> {
+    try {
+      // Validate config
+      if (!config || typeof config !== "object") {
+        return error({
+          kind: "ConfigurationError",
+          message: "Invalid configuration object",
+        });
+      }
+
+      // Validate cliParams
+      if (!cliParams || typeof cliParams !== "object") {
+        return error({
+          kind: "ConfigurationError",
+          message: "Invalid CLI parameters object",
+        });
+      }
+
+      const resolver = new InputFilePathResolver(config, cliParams);
+      return ok(resolver);
+    } catch (err) {
+      return error({
+        kind: "ConfigurationError",
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 }

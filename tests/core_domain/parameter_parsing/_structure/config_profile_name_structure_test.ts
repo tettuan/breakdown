@@ -10,9 +10,9 @@
  * @module types/config_profile_name_structure_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../../../../lib/types/config_profile_name.ts";
 
 const logger = new BreakdownLogger("config-profile-name-structure");
 

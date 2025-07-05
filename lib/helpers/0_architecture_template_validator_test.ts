@@ -5,7 +5,7 @@
  * Totalityパターンの適用状況、依存関係の方向性、責務の分離を確認します。
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   TemplateMapping,
   TemplateValidation_Result,

@@ -48,14 +48,16 @@ export { BreakdownConfig, type MergedConfig } from "jsr:@tettuan/breakdownconfig
  * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.
  */
 export {
+  DEFAULT_CUSTOM_CONFIG,
+  ParamsParser,
   type ErrorInfo,
   type OneParamsResult,
-  type ParamsParser,
-  ParamsParser as BreakdownParams,
   type ParamsResult,
   type TwoParamsResult as TwoParams_Result,
   type ZeroParamsResult,
 } from "jsr:@tettuan/breakdownparams@^1.0.3";
+
+export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1.0.3";
 
 /**
  * Prompt management utilities for Breakdown. Re-exported from @tettuan/breakdownprompt.
@@ -78,4 +80,18 @@ export {
   assertInstanceOf,
   assertRejects,
   assertThrows,
+  assertStrictEquals,
+  assertNotEquals,
+  assertStringIncludes,
+  assertMatch,
+  assertArrayIncludes,
+  assertObjectMatch,
+  fail,
+  assertAlmostEquals,
+  assertGreater,
+  assertGreaterOrEqual,
+  assertLess,
+  assertLessOrEqual,
+  assertIsError,
+  assertNotStrictEquals,
 } from "@std/assert";

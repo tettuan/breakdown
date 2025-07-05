@@ -7,7 +7,7 @@
  * @module cli/processors/0_architecture_two_params_variable_processor_test
  */
 
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
 import { TwoParamsVariableProcessor } from "./two_params_variable_processor.ts";
 import type { VariableProcessorError } from "./two_params_variable_processor.ts";
 

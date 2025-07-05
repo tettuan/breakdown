@@ -124,7 +124,7 @@ export {
   TwoParamsConfigFactory,
   VariableResultFactory,
 } from "./legacy_factories.ts";
-export type { PromptCliParams } from "./prompt_variables.ts";
+// export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
 export type { ExtendedTwoParams_Result as ExtendedTwoParams_Result } from "./variable_result.ts";
 
 // Layer type utilities
@@ -142,11 +142,15 @@ export type { Result as EnumResult } from "./enums.ts";
 // Re-export types defined in factory to avoid circular dependencies
 export type {
   PromptCliOptions,
+  PromptCliParams,
   TotalityPromptCliParams,
 } from "../factory/prompt_variables_factory.ts";
 
+// Re-export factory classes
+export { TotalityPromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
+
 /**
- * Result type for two-parameter operations.
+ * Result types for parameter operations.
  * Re-exported from breakdownparams for consistency.
  */
-export type { TwoParams_Result } from "../deps.ts";
+export type { TwoParams_Result, OneParamsResult, ZeroParamsResult } from "../deps.ts";

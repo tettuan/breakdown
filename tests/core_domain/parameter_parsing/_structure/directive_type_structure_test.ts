@@ -12,9 +12,9 @@
  * 保守性と拡張性を持つことを保証することです。
  */
 
-import { assertEquals, assertExists, assertThrows, BreakdownLogger } from "../../deps.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import { assertEquals, assertExists, assertThrows, BreakdownLogger } from "../../../lib/deps.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../../../../lib/types/directive_type.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("test-structure-directive");
 

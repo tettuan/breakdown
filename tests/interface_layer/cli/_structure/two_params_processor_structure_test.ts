@@ -19,8 +19,8 @@ import {
   type ProcessorError,
   type ProcessorResult,
   TwoParamsProcessor,
-} from "./two_params_processor.ts";
-import type { TwoParams_Result } from "../../deps.ts";
+} from "$lib/cli/processors/two_params_processor.ts";
+import type { TwoParams_Result } from "$lib/deps.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
 
 /**

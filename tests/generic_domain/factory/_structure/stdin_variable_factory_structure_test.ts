@@ -11,7 +11,7 @@
  * 各メソッドの責任範囲が適切であることを確認します。
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
+import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import {
   defaultStdinVariableFactory,
   StdinFactoryInput,

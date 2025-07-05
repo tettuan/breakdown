@@ -13,8 +13,8 @@
  * @module cli/handlers/1_structure_zero_params_handler_test
  */
 
-import { assert, assertEquals } from "@std/assert";
-import { handleZeroParams } from "./zero_params_handler.ts";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
+import { handleZeroParams } from "$lib/cli/zero_params_handler.ts";
 
 /**
  * Structure Test Suite: ZeroParamsHandler

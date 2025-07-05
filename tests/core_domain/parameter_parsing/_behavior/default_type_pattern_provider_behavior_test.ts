@@ -14,9 +14,9 @@
  * @module tests/types/defaults/2_unit_default_type_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
-import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import { _defaultConfigTwoParams } from "./config_two_params.ts";
+import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
+import { DefaultTypePatternProvider } from "../../../../lib/types/defaults/default_type_pattern_provider.ts";
+import { _defaultConfigTwoParams } from "../../../../lib/types/defaults/config_two_params.ts";
 
 /**
  * 単体テスト: getDirectivePattern の正常系

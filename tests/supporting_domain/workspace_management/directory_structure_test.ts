@@ -36,7 +36,7 @@
  * - Configuration loading is tested separately
  */
 
-import { assertEquals, assertRejects as _assertRejects } from "jsr:@std/assert@1";
+import { assertEquals, assertRejects as _assertRejects } from "../../../lib/deps.ts";
 import { join as _join } from "@std/path/join";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {

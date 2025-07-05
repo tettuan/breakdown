@@ -12,7 +12,7 @@
  * @module cli/processors/2_unit_two_params_stdin_processor_test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 

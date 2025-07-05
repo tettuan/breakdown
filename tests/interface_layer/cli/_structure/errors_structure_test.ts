@@ -11,8 +11,8 @@
  * @module cli/1_structure_errors_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
-import { CliError, CliErrorCode } from "./errors.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { CliError, CliErrorCode } from "$lib/cli/errors.ts";
 
 Deno.test("Structure: CliError constructor parameter handling", () => {
   // Test with all valid error codes

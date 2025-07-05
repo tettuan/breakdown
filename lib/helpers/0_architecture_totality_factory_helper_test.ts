@@ -8,7 +8,7 @@
  * @module helpers/0_architecture_totality_factory_helper_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   createTotalityFactory,
   createTotalityPromptFactory,

@@ -3,14 +3,14 @@
  * constants.ts変更とtemplate_validator.tsハードコーディング修正の効果を検証
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "jsr:@std/assert";
+import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
 import { join } from "jsr:@std/path";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
-import { DEFAULT_PROMPT_BASE_DIR } from "../../lib/config/constants.ts";
+import { DEFAULT_PROMPT_BASE_DIR } from "../../../lib/config/constants.ts";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateValidator,
-} from "../../lib/helpers/template_validator.ts";
+} from "../../../lib/helpers/template_validator.ts";
 
 const BASE_DIR = Deno.cwd();
 

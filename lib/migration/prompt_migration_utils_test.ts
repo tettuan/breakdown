@@ -6,7 +6,7 @@
  * @module migration/prompt_migration_utils_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   createMigrationSummary,
   extractPromptPath,

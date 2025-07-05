@@ -7,7 +7,7 @@
  * @module cli/validators/tests/0_architecture_mod_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 
 describe("Validators Module - Architecture", () => {

@@ -19,6 +19,8 @@ import { error, ok } from "../types/result.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "../builder/variables_builder.ts";
 import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
 import type { PromptVariable } from "../types/prompt_variables.ts";
+import { CustomVariableExtractor } from "./custom_variable_extractor.ts";
+import { StandardVariableResolver } from "./standard_variable_resolver.ts";
 
 /**
  * Error types for Variable Processor
@@ -89,111 +91,42 @@ export interface ProcessorResult {
  */
 export class TwoParamsVariableProcessor {
   #stdinFactory: StdinVariableFactory;
+  #customExtractor: CustomVariableExtractor;
+  #standardResolver: StandardVariableResolver;
 
   constructor() {
     this.#stdinFactory = new StdinVariableFactory();
+    this.#customExtractor = new CustomVariableExtractor();
+    this.#standardResolver = new StandardVariableResolver();
   }
 
   /**
    * Process variables from options and content
    */
   process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
-    // 1. Extract custom variables
-    const customVarsResult = this.extractCustomVariables(params.options);
+    // 1. Extract custom variables using dedicated extractor
+    const customVarsResult = this.#customExtractor.extract(params.options);
     if (!customVarsResult.ok) {
-      return error(customVarsResult.error);
+      return error({
+        kind: "InvalidOption",
+        key: customVarsResult.error.key,
+        value: "",
+        reason: `${customVarsResult.error.kind}: ${customVarsResult.error.key}`,
+      });
     }
 
-    // 2. Process standard variables
-    const standardVarsResult = this.#processStandardVariables(params);
+    // 2. Process standard variables using dedicated resolver
+    const standardVarsResult = this.#standardResolver.resolve({
+      options: params.options,
+      stdinContent: params.stdinContent,
+      inputFile: params.inputFile,
+      outputFile: params.outputFile,
+    });
     if (!standardVarsResult.ok) {
       return error(standardVarsResult.error);
     }
 
-    // 3. Merge all variables
-    const _allCustomVariables = {
-      ...customVarsResult.data,
-      ...standardVarsResult.data.standardVariables,
-    };
-
-    // 4. Create factory values for builder
-    const factoryValues: FactoryResolvedValues = {
-      promptFilePath: params.promptFile || "default.md",
-      inputFilePath: this.#resolveInputTextFile(params),
-      outputFilePath: this.#resolveDestinationPath(params),
-      schemaFilePath: params.schemaFile || "",
-      customVariables: customVarsResult.data,
-      inputText: params.stdinContent,
-    };
-
-    // 5. Build variables using VariablesBuilder
-    const builderResult = this.#buildVariables(
-      factoryValues,
-      standardVarsResult.data.stdinVariable,
-    );
-    if (!builderResult.ok) {
-      return error(builderResult.error);
-    }
-
-    // 6. Create result
-    const result: ProcessorResult = {
-      variables: builderResult.data.toRecord(),
-      customVariables: customVarsResult.data,
-      standardVariables: standardVarsResult.data.standardVariables,
-      builder: builderResult.data,
-    };
-
-    return ok(result);
-  }
-
-  /**
-   * Extract custom variables from options (uv- prefixed)
-   */
-  extractCustomVariables(
-    options: Record<string, unknown>,
-  ): Result<Record<string, string>, VariableProcessorError> {
-    const customVariables: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(options)) {
-      if (key.startsWith("uv-")) {
-        // Validate value type
-        if (value === null || value === undefined) {
-          return error({
-            kind: "InvalidOption",
-            key,
-            value,
-            reason: "Custom variable value cannot be null or undefined",
-          });
-        }
-
-        // Convert to string
-        customVariables[key] = String(value);
-      }
-    }
-
-    return ok(customVariables);
-  }
-
-  /**
-   * Process standard variables including STDIN
-   */
-  #processStandardVariables(
-    params: ProcessorOptions,
-  ): Result<{
-    standardVariables: {
-      input_text?: string;
-      input_text_file: string;
-      destination_path: string;
-    };
-    stdinVariable?: PromptVariable;
-  }, VariableProcessorError> {
-    const standardVariables = {
-      input_text: params.stdinContent,
-      input_text_file: this.#resolveInputTextFile(params),
-      destination_path: this.#resolveDestinationPath(params),
-    };
-
-    // Create STDIN variable if content exists
+    // 3. Process STDIN variable if needed
     let stdinVariable: PromptVariable | undefined;
     if (params.stdinContent) {
       const stdinResult = this.#stdinFactory.createFromText(params.stdinContent);
@@ -206,53 +139,54 @@ export class TwoParamsVariableProcessor {
       stdinVariable = stdinResult.data;
     }
 
-    return ok({
-      standardVariables,
+    // 4. Create factory values for builder
+    const factoryValues: FactoryResolvedValues = {
+      promptFilePath: params.promptFile || "default.md",
+      inputFilePath: standardVarsResult.data.input_text_file,
+      outputFilePath: standardVarsResult.data.destination_path,
+      schemaFilePath: params.schemaFile || "",
+      customVariables: customVarsResult.data,
+      inputText: params.stdinContent,
+    };
+
+    // 5. Build variables using VariablesBuilder
+    const builderResult = this.#buildVariables(
+      factoryValues,
       stdinVariable,
-    });
+    );
+    if (!builderResult.ok) {
+      return error(builderResult.error);
+    }
+
+    // 6. Create result
+    const result: ProcessorResult = {
+      variables: builderResult.data.toRecord(),
+      customVariables: customVarsResult.data,
+      standardVariables: standardVarsResult.data,
+      builder: builderResult.data,
+    };
+
+    return ok(result);
   }
 
   /**
-   * Resolve input_text_file value from options
+   * Extract custom variables from options (uv- prefixed)
+   * @deprecated Use CustomVariableExtractor instead
    */
-  #resolveInputTextFile(params: ProcessorOptions): string {
-    const { options } = params;
-
-    // Check various option keys
-    if (options.fromFile && options.fromFile !== "-") {
-      return String(options.fromFile);
+  extractCustomVariables(
+    options: Record<string, unknown>,
+  ): Result<Record<string, string>, VariableProcessorError> {
+    // Delegate to the new extractor for backward compatibility
+    const result = this.#customExtractor.extract(options);
+    if (!result.ok) {
+      return error({
+        kind: "InvalidOption",
+        key: result.error.key,
+        value: "",
+        reason: `${result.error.kind}: ${result.error.key}`,
+      });
     }
-    if (options.from && options.from !== "-") {
-      return String(options.from);
-    }
-    if (params.inputFile) {
-      return params.inputFile;
-    }
-
-    return "stdin";
-  }
-
-  /**
-   * Resolve destination_path value from options
-   */
-  #resolveDestinationPath(params: ProcessorOptions): string {
-    const { options } = params;
-
-    // Check various option keys
-    if (options.destinationFile) {
-      return String(options.destinationFile);
-    }
-    if (options.destination) {
-      return String(options.destination);
-    }
-    if (options.output) {
-      return String(options.output);
-    }
-    if (params.outputFile) {
-      return params.outputFile;
-    }
-
-    return "stdout";
+    return ok(result.data);
   }
 
   /**

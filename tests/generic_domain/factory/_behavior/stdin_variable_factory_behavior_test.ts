@@ -10,7 +10,7 @@
  * StdinVariableFactoryの全機能が仕様通りに動作することを確認します。
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   defaultStdinVariableFactory,
   StdinFactoryInput,

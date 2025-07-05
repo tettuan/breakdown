@@ -1,5 +1,5 @@
-import { assertEquals, assertExists } from "@std/assert";
-import { prompts } from "./prompts.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { prompts } from "../../../../lib/templates/prompts.ts";
 
 /**
  * 構造テスト：prompts.ts
@@ -142,10 +142,11 @@ Deno.test("Structure: prompts should not duplicate responsibilities", () => {
   // 同じ責務を持つプロンプトが重複していないことを確認
   const valueToKeys = new Map<string, string[]>();
   Object.entries(prompts).forEach(([key, value]) => {
-    if (valueToKeys.has(value)) {
-      valueToKeys.get(value)!.push(key);
+    const valueStr = String(value);
+    if (valueToKeys.has(valueStr)) {
+      valueToKeys.get(valueStr)!.push(key);
     } else {
-      valueToKeys.set(value, [key]);
+      valueToKeys.set(valueStr, [key]);
     }
   });
 

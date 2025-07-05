@@ -10,10 +10,10 @@
  * @module config/loader_architecture_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import * as mod from "./loader.ts";
+import * as mod from "../../../../lib/config/loader.ts";
 
 const _logger = new BreakdownLogger("loader-architecture");
 

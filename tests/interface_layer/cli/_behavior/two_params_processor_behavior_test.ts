@@ -17,7 +17,7 @@
 import { assert, assertEquals, assertExists } from "../../../deps.ts";
 import { TwoParamsProcessor } from "./two_params_processor.ts";
 // ProcessorError type imported for potential future error testing
-import type { TwoParams_Result } from "../../deps.ts";
+import type { TwoParams_Result } from "$lib/deps.ts";
 import { VariablesBuilder } from "../../builder/variables_builder.ts";
 import type { PromptVariable } from "../../types/prompt_variables.ts";
 

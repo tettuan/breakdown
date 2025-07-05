@@ -10,7 +10,7 @@
  * @module helpers/0_architecture_template_error_handler_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   TemplateError,
   TemplateErrorHandler,

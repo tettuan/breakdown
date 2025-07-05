@@ -8,7 +8,7 @@
  * - Result type consistency
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { describe, it } from "@std/testing/bdd";
 
@@ -16,8 +16,8 @@ import {
   type LayerTypeCreationError,
   LayerTypeFactory,
   type LayerTypeResult,
-} from "./layer_type_factory.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "./mod.ts";
+} from "../../../../lib/types/layer_type_factory.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
 
 const logger = new BreakdownLogger("layer-type-factory-structure");
 

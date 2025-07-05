@@ -10,16 +10,16 @@
  * @module tests/integration/builder_helper_system_integration_test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert@1";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
-import type { FactoryResolvedValues } from "../../lib/builder/variables_builder.ts";
+import { VariablesBuilder } from "../../../lib/builder/variables_builder.ts";
+import type { FactoryResolvedValues } from "../../../lib/builder/variables_builder.ts";
 import {
   createTotalityFactory,
   createTotalityPromptFactory,
   createValidatedCliParams,
   validateConfigurationPatterns,
-} from "../../lib/helpers/totality_factory_helper.ts";
+} from "../../../lib/helpers/totality_factory_helper.ts";
 
 const logger = new BreakdownLogger("builder-helper-integration");
 

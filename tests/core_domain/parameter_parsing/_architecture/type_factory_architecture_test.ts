@@ -5,7 +5,7 @@
  * and properly implements the Totality principle across the type system.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -14,9 +14,9 @@ import {
   LayerType as _LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  TypeFactory,
   type TypePatternProvider,
-} from "./mod.ts";
+} from "../../../../lib/types/mod.ts";
+import { TypeFactory } from "../../../../lib/types/type_factory.ts";
 
 const logger = new BreakdownLogger("type-factory-architecture");
 
@@ -173,8 +173,8 @@ describe("TypeFactory - Architectural Constraints", () => {
     if (result.ok) {
       const directiveType = result.data;
 
-      // No direct constructor access
-      assertEquals(typeof DirectiveType.constructor, "function");
+      // DirectiveType is a type, not a value - cannot access constructor directly
+      // Smart constructor pattern is enforced at compile time
 
       // But private constructor prevents direct instantiation
       // (This would fail at compile time if attempted)

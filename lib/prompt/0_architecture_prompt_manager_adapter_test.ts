@@ -13,7 +13,7 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import * as adapter from "./prompt_manager_adapter.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 

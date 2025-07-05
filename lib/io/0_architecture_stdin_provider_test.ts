@@ -8,7 +8,7 @@
  * @module io/0_architecture_stdin_provider_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

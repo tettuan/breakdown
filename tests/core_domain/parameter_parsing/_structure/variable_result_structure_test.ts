@@ -5,8 +5,8 @@
  * of the Result type system and its helper functions.
  */
 
-import { assertEquals } from "@std/assert";
-import * as VariableResultModule from "./variable_result.ts";
+import { assertEquals } from "../../../lib/deps.ts";
+import * as VariableResultModule from "../../../lib/types/variable_result.ts";
 
 Deno.test("VariableResult structure - module exports", () => {
   // Verify that the module exports all expected types and functions

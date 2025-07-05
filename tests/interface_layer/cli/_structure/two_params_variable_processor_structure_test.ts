@@ -7,8 +7,8 @@
  * @module cli/processors/1_structure_two_params_variable_processor_test
  */
 
-import { assert, assertEquals } from "@std/assert";
-import { TwoParamsVariableProcessor } from "./two_params_variable_processor.ts";
+import { assert, assertEquals } from "../../../../lib/deps.ts";
+import { TwoParamsVariableProcessor } from "$lib/cli/two_params_variable_processor.ts";
 // Import types for type checking only - may be used in future structure validation
 
 /**

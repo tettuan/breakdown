@@ -10,7 +10,7 @@
  * @module config/1_structure_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 

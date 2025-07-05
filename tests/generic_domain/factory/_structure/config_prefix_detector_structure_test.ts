@@ -9,7 +9,7 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { ConfigPrefixDetector as ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
 Deno.test("ConfigPrefixDetector structure - class exists", () => {

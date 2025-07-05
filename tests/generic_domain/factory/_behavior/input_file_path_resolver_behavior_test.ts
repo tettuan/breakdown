@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";

@@ -13,7 +13,7 @@
  * @module factory/0_architecture_path_resolver_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 
 /**
  * Architecture Test Suite: PathResolver Components

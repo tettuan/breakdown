@@ -16,7 +16,7 @@ import {
   assertEquals,
   assertExists,
   assertStringIncludes,
-} from "@std/assert";
+} from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterImpl,
@@ -32,7 +32,7 @@ import {
 } from "../../lib/cli/generators/two_params_prompt_generator.ts";
 import { VariablesBuilder } from "../../lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../../lib/cli/processors/two_params_variable_processor.ts";
-import { error, ok } from "../../lib/types/result.ts";
+import { error, ok } from "../../../lib/deps.ts";
 import { join } from "@std/path";
 
 const logger = new BreakdownLogger("prompt-system-integration");

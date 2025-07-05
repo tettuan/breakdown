@@ -20,7 +20,7 @@ import {
   assertExists,
   assertFalse,
   assertStringIncludes,
-} from "@std/assert";
+} from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 

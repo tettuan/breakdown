@@ -9,6 +9,12 @@
  * The resolver follows Breakdown's prompt conventions and provides intelligent
  * fallback logic for adaptation-specific templates and layer type inference.
  *
+ * Following Totality principle and DDD:
+ * - Smart Constructor pattern for safe instance creation
+ * - Result type for explicit error handling
+ * - Value objects for domain modeling
+ * - 100% deterministic path resolution for reliability
+ *
  * @module factory/prompt_template_path_resolver
  */
 
@@ -17,9 +23,73 @@ import { existsSync } from "@std/fs";
 import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
+
+/**
+ * Path resolution errors following Totality principle
+ */
+export type PathResolutionError =
+  | { kind: "InvalidConfiguration"; details: string }
+  | { kind: "BaseDirectoryNotFound"; path: string }
+  | { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string }
+  | { kind: "TemplateNotFound"; attempted: string[]; fallback?: string };
+
+/**
+ * Value object representing a resolved prompt template path
+ */
+export class PromptTemplatePath {
+  private constructor(
+    readonly value: string,
+    readonly status: "Found" | "Fallback",
+    readonly metadata: {
+      baseDir: string;
+      demonstrativeType: string;
+      layerType: string;
+      fromLayerType: string;
+      adaptation?: string;
+      attemptedPaths: string[];
+    },
+  ) {}
+
+  /**
+   * Create a PromptTemplatePath instance (Smart Constructor)
+   */
+  static create(
+    path: string,
+    status: "Found" | "Fallback",
+    metadata: PromptTemplatePath["metadata"],
+  ): Result<PromptTemplatePath, Error> {
+    if (!path || path.trim() === "") {
+      return resultError(new Error("Path cannot be empty"));
+    }
+    if (!isAbsolute(path)) {
+      return resultError(new Error("Path must be absolute"));
+    }
+    return resultOk(new PromptTemplatePath(path, status, metadata));
+  }
+
+  /**
+   * Check if the path was found through fallback
+   */
+  isFallback(): boolean {
+    return this.status === "Fallback";
+  }
+
+  /**
+   * Get a descriptive message about the path resolution
+   */
+  getResolutionMessage(): string {
+    if (this.status === "Found") {
+      return `Path resolved successfully: ${this.value}`;
+    }
+    return `Path resolved with fallback: ${this.value}\nAttempted: ${
+      this.metadata.attemptedPaths.join(", ")
+    }`;
+  }
+}
 
 /**
  * Prompt template path resolver for Breakdown CLI operations.
@@ -50,16 +120,31 @@ type DoubleParams_Result = PromptCliParams;
  * ```
  */
 export class PromptTemplatePathResolver {
-  private config:
+  private readonly config:
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
-  private _cliParams: DoubleParams_Result | TwoParams_Result;
+  private readonly _cliParams: DoubleParams_Result | TwoParams_Result;
 
   /**
-   * Creates a new PromptTemplatePathResolver instance with configuration and CLI parameters.
+   * Private constructor following Smart Constructor pattern
+   */
+  private constructor(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ) {
+    // Deep copy to ensure immutability using dedicated methods
+    this.config = this.deepCopyConfig(config);
+    this._cliParams = this.deepCopyCliParams(cliParams);
+  }
+
+  /**
+   * Creates a new PromptTemplatePathResolver instance (Smart Constructor)
    *
    * @param config - The configuration object containing prompt base directory settings
    * @param cliParams - The parsed CLI parameters containing template specification options
+   * @returns Result containing resolver instance or error
    *
    * @example
    * ```typescript
@@ -71,18 +156,40 @@ export class PromptTemplatePathResolver {
    *   layerType: "project",
    *   options: { adaptation: "analysis", fromLayerType: "issue" }
    * };
-   * const resolver = new PromptTemplatePathResolver(config, cliParams);
+   * const resolverResult = PromptTemplatePathResolver.create(config, cliParams);
+   * if (resolverResult.ok) {
+   *   const resolver = resolverResult.data;
+   *   // Use resolver
+   * }
    * ```
    */
-  constructor(
+  static create(
     config:
       & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
       & Record<string, unknown>,
     cliParams: DoubleParams_Result | TwoParams_Result,
-  ) {
-    // Deep copy to ensure immutability using dedicated methods
-    this.config = this.deepCopyConfig(config);
-    this._cliParams = this.deepCopyCliParams(cliParams);
+  ): Result<PromptTemplatePathResolver, PathResolutionError> {
+    // Validate configuration
+    if (!config) {
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: "Configuration object is required",
+      });
+    }
+
+    // Validate CLI parameters
+    const demonstrativeType = PromptTemplatePathResolver.extractDemonstrativeType(cliParams);
+    const layerType = PromptTemplatePathResolver.extractLayerType(cliParams);
+
+    if (!demonstrativeType || !layerType) {
+      return resultError({
+        kind: "InvalidParameterCombination",
+        demonstrativeType: demonstrativeType || "(missing)",
+        layerType: layerType || "(missing)",
+      });
+    }
+
+    return resultOk(new PromptTemplatePathResolver(config, cliParams));
   }
 
   /**
@@ -165,64 +272,123 @@ export class PromptTemplatePathResolver {
    *
    * This method implements the full prompt template resolution strategy, including
    * adaptation-specific template discovery and fallback to standard templates when
-   * adaptation-specific versions are not available. It handles the complete workflow
-   * from base directory resolution to final path construction.
+   * adaptation-specific versions are not available. It guarantees 100% deterministic
+   * path resolution and provides clear error messages for troubleshooting.
    *
-   * @returns string - The resolved absolute prompt template file path
-   *
-   * @throws {Error} When template resolution fails or configuration is invalid
+   * @returns Result containing resolved PromptTemplatePath or error
    *
    * @example
    * ```typescript
-   * const resolver = new PromptTemplatePathResolver(config, cliParams);
+   * const resolverResult = PromptTemplatePathResolver.create(config, cliParams);
+   * if (!resolverResult.ok) {
+   *   console.error(resolverResult.error);
+   *   return;
+   * }
    *
-   * // With adaptation - tries adapted template first, fallback to standard
-   * const adaptedPath = resolver.getPath();
-   * // First try: "/prompts/to/project/f_issue_analysis.md"
-   * // Fallback:  "/prompts/to/project/f_issue.md"
-   *
-   * // Without adaptation - direct standard template
-   * const standardPath = resolver.getPath();
-   * // Returns: "/prompts/to/project/f_issue.md"
+   * const pathResult = resolverResult.data.getPath();
+   * if (pathResult.ok) {
+   *   const promptPath = pathResult.data;
+   *   console.log(promptPath.getResolutionMessage());
+   *   console.log("Path:", promptPath.value);
+   * } else {
+   *   // Clear error message for user
+   *   console.error(formatPathResolutionError(pathResult.error));
+   * }
    * ```
-   *
-   * @see {@link https://docs.breakdown.com/prompts} for template organization documentation
    */
-  public getPath(): string {
-    // No validation here; only resolve and return the path
-    const baseDir = this.resolveBaseDir();
-    const fileName = this.buildFileName();
-    let promptPath = this.buildPromptPath(baseDir, fileName);
+  public getPath(): Result<PromptTemplatePath, PathResolutionError> {
+    // Resolve base directory
+    const baseDirResult = this.resolveBaseDirSafe();
+    if (!baseDirResult.ok) {
+      return baseDirResult;
+    }
+    const baseDir = baseDirResult.data;
 
+    // Build file names
+    const fileName = this.buildFileName();
+    const promptPath = this.buildPromptPath(baseDir, fileName);
+    const attemptedPaths: string[] = [promptPath];
+
+    // Collect metadata
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
+    const fromLayerType = this.resolveFromLayerType();
+    const adaptation = this.getAdaptation();
+
+    // Check if primary path exists
+    if (existsSync(promptPath)) {
+      const pathResult = PromptTemplatePath.create(promptPath, "Found", {
+        baseDir,
+        demonstrativeType,
+        layerType,
+        fromLayerType,
+        adaptation,
+        attemptedPaths,
+      });
+
+      if (!pathResult.ok) {
+        return resultError({
+          kind: "InvalidConfiguration",
+          details: pathResult.error.message,
+        });
+      }
+      return pathResult;
+    }
+
+    // Try fallback if needed
     if (this.shouldFallback(promptPath)) {
       const fallbackFileName = this.buildFallbackFileName();
       const fallbackPath = this.buildPromptPath(baseDir, fallbackFileName);
+      attemptedPaths.push(fallbackPath);
+
       if (existsSync(fallbackPath)) {
-        promptPath = fallbackPath;
+        const pathResult = PromptTemplatePath.create(fallbackPath, "Fallback", {
+          baseDir,
+          demonstrativeType,
+          layerType,
+          fromLayerType,
+          adaptation,
+          attemptedPaths,
+        });
+
+        if (!pathResult.ok) {
+          return resultError({
+            kind: "InvalidConfiguration",
+            details: pathResult.error.message,
+          });
+        }
+        return pathResult;
       }
     }
-    return promptPath;
+
+    // No template found
+    return resultError({
+      kind: "TemplateNotFound",
+      attempted: attemptedPaths,
+      fallback: adaptation ? "Attempted fallback to base template" : undefined,
+    });
   }
 
   /**
    * Resolves the base directory for prompt templates from configuration.
-   *
-   * This method determines the prompt base directory by checking the configuration
-   * for an explicit base_dir setting, falling back to the default constant if not
-   * specified. Relative paths are resolved against the current working directory.
-   *
-   * @returns string - The resolved absolute base directory path for prompt templates
-   *
-   * @example
-   * ```typescript
-   * // With explicit configuration
-   * const baseDir1 = this.resolveBaseDir(); // "/custom/prompts/path"
-   *
-   * // With default configuration
-   * const baseDir2 = this.resolveBaseDir(); // "/cwd/lib/breakdown/prompts"
-   * ```
+   * Legacy method maintained for backward compatibility.
+   * @deprecated Use resolveBaseDirSafe() for Result-based error handling
    */
   public resolveBaseDir(): string {
+    const result = this.resolveBaseDirSafe();
+    if (!result.ok) {
+      // Maintain backward compatibility by returning default
+      return resolve(Deno.cwd(), DEFAULT_PROMPT_BASE_DIR);
+    }
+    return result.data;
+  }
+
+  /**
+   * Safely resolves the base directory with Result type
+   *
+   * @returns Result containing resolved base directory or error
+   */
+  private resolveBaseDirSafe(): Result<string, PathResolutionError> {
     // Check if schema path should be used based on options
     const useSchema = this.getUseSchemaFlag();
     let baseDir: string;
@@ -236,7 +402,16 @@ export class PromptTemplatePathResolver {
     if (!isAbsolute(baseDir)) {
       baseDir = resolve(Deno.cwd(), baseDir);
     }
-    return baseDir;
+
+    // Verify base directory exists
+    if (!existsSync(baseDir)) {
+      return resultError({
+        kind: "BaseDirectoryNotFound",
+        path: baseDir,
+      });
+    }
+
+    return resultOk(baseDir);
   }
 
   /**
@@ -314,12 +489,21 @@ export class PromptTemplatePathResolver {
    * @returns string - The demonstrative type value from DirectiveType
    */
   private getDemonstrativeType(): string {
+    return PromptTemplatePathResolver.extractDemonstrativeType(this._cliParams);
+  }
+
+  /**
+   * Static helper to extract demonstrative type from parameters
+   */
+  private static extractDemonstrativeType(
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): string {
     // Handle both legacy and new parameter structures
-    if ("demonstrativeType" in this._cliParams) {
-      return this._cliParams.demonstrativeType || "";
+    if ("demonstrativeType" in cliParams) {
+      return cliParams.demonstrativeType || "";
     }
     // For TwoParams_Result structure from breakdownparams
-    const twoParams = this._cliParams as TwoParams_Result;
+    const twoParams = cliParams as TwoParams_Result;
     if (twoParams.demonstrativeType) {
       return twoParams.demonstrativeType;
     }
@@ -335,12 +519,19 @@ export class PromptTemplatePathResolver {
    * @returns string - The layer type value from LayerType
    */
   private getLayerType(): string {
+    return PromptTemplatePathResolver.extractLayerType(this._cliParams);
+  }
+
+  /**
+   * Static helper to extract layer type from parameters
+   */
+  private static extractLayerType(cliParams: DoubleParams_Result | TwoParams_Result): string {
     // Handle both legacy and new parameter structures
-    if ("layerType" in this._cliParams) {
-      return this._cliParams.layerType || "";
+    if ("layerType" in cliParams) {
+      return cliParams.layerType || "";
     }
     // For TwoParams_Result structure from breakdownparams
-    const twoParams = this._cliParams as TwoParams_Result;
+    const twoParams = cliParams as TwoParams_Result;
     if (twoParams.layerType) {
       return twoParams.layerType;
     }
@@ -436,5 +627,43 @@ export class PromptTemplatePathResolver {
     }
 
     return null;
+  }
+}
+
+/**
+ * Format path resolution error for user-friendly display
+ */
+export function formatPathResolutionError(error: PathResolutionError): string {
+  switch (error.kind) {
+    case "InvalidConfiguration":
+      return `Configuration Error: ${error.details}`;
+
+    case "BaseDirectoryNotFound":
+      return `Base Directory Not Found: ${error.path}\n` +
+        `Please ensure the prompt base directory exists or update your configuration.`;
+
+    case "InvalidParameterCombination":
+      return `Invalid Parameter Combination:\n` +
+        `  Demonstrative Type: ${error.demonstrativeType}\n` +
+        `  Layer Type: ${error.layerType}\n` +
+        `Both parameters are required for prompt resolution.`;
+
+    case "TemplateNotFound":
+      const message = [
+        `パスは正確に生成されました: ${error.attempted[0]}`,
+        `しかし、このファイルは存在しません。`,
+        ``,
+        `試行したパス:`,
+        ...error.attempted.map((p, i) => `  ${i + 1}. ${p}`),
+        ``,
+      ];
+
+      if (error.fallback) {
+        message.push(error.fallback);
+        message.push(``);
+      }
+
+      message.push(`プロンプトテンプレートファイルの準備が必要です。`);
+      return message.join("\n");
   }
 }

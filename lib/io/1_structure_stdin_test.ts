@@ -12,7 +12,7 @@
  * @module io/stdin_structure_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

@@ -11,7 +11,7 @@
  * @module lib/processor/2_unit_variable_processor_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import {
   type ProcessorOptions,
   type ProcessorResult,

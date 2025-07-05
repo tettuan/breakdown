@@ -12,11 +12,11 @@
  * - Value retrieval and existence checks
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../lib/deps.ts";
 import { describe, it } from "jsr:@std/testing@^0.224.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../../../../lib/types/config_profile_name.ts";
 
 const logger = new BreakdownLogger("config-profile-name-unit");
 

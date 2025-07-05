@@ -15,7 +15,7 @@ import {
   assertEquals,
   assertExists,
   assertInstanceOf as _assertInstanceOf,
-} from "@std/assert";
+} from "../../../lib/deps.ts";
 import { beforeEach as _beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

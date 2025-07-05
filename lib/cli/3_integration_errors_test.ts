@@ -11,7 +11,7 @@
  * @module cli/3_integration_errors_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertExists, assertStringIncludes } from "../deps.ts";
 import { CliError, CliErrorCode } from "./errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 

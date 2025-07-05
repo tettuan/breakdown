@@ -10,7 +10,7 @@
  * 5. Proper abstraction levels and interface segregation
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import type {
   PathResolutionStrategy,

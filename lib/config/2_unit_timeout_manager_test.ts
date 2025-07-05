@@ -6,7 +6,7 @@
  * @module
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "../deps.ts";
 import {
   createDefaultTimeoutManager,
   createTimeoutManagerFromConfig,

@@ -10,7 +10,7 @@
  * @module commands/prompt_file_generator_unit_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";

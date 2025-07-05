@@ -1,5 +1,5 @@
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
-import { prompts } from "./prompts.ts";
+import { assertEquals, assertExists, assertStringIncludes } from "../../../lib/deps.ts";
+import { prompts } from "../../../../lib/templates/prompts.ts";
 
 /**
  * 単体テスト：prompts.ts
@@ -87,7 +87,7 @@ Deno.test("Unit: defect prompts should focus on analysis", () => {
       ];
 
       const hasAnalysisContent = analysisKeywords.some((keyword) =>
-        content.toLowerCase().includes(keyword)
+        String(content).toLowerCase().includes(keyword)
       );
 
       assertEquals(
@@ -118,7 +118,7 @@ Deno.test("Unit: to prompts should focus on conversion", () => {
         "Schema",
       ];
 
-      const hasConversionContent = conversionKeywords.some((keyword) => content.includes(keyword));
+      const hasConversionContent = conversionKeywords.some((keyword) => String(content).includes(keyword));
 
       assertEquals(
         hasConversionContent,
@@ -148,7 +148,7 @@ Deno.test("Unit: summary prompts should focus on summarization", () => {
         "perspectives",
       ];
 
-      const hasSummaryContent = summaryKeywords.some((keyword) => content.includes(keyword));
+      const hasSummaryContent = summaryKeywords.some((keyword) => (content as string).includes(keyword));
 
       assertEquals(
         hasSummaryContent,
@@ -178,7 +178,7 @@ Deno.test("Unit: find prompts should focus on detection", () => {
         "Analysis",
       ];
 
-      const hasDetectionContent = detectionKeywords.some((keyword) => content.includes(keyword));
+      const hasDetectionContent = detectionKeywords.some((keyword) => String(content).includes(keyword));
 
       assertEquals(
         hasDetectionContent,

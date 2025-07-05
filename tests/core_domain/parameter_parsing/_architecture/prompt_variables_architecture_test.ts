@@ -16,7 +16,7 @@
  * @module lib/types/0_architecture_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   createPromptParams,
   FilePathVariable,
@@ -30,7 +30,7 @@ import {
   StdinVariableName,
   toPromptParamsVariables,
   UserVariable,
-} from "./prompt_variables.ts";
+} from "../../../../lib/types/prompt_variables.ts";
 
 Deno.test("Architecture: Prompt Variables dependency validation", () => {
   // Test that the module has proper dependencies

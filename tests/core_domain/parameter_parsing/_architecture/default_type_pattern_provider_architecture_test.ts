@@ -11,9 +11,9 @@
  * @module types/defaults/0_architecture_default_type_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
-import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import type { TypePatternProvider } from "../type_factory.ts";
+import { assertEquals, assertExists, assertStrictEquals } from "../../../lib/deps.ts";
+import { DefaultTypePatternProvider } from "../../../../lib/types/defaults/default_type_pattern_provider.ts";
+import type { TypePatternProvider } from "../../../../lib/types/type_factory.ts";
 
 /**
  * アーキテクチャテスト: import文の解析と依存関係グラフの構築
@@ -22,7 +22,7 @@ import type { TypePatternProvider } from "../type_factory.ts";
  */
 Deno.test("Architecture: DefaultTypePatternProvider import analysis and dependency graph", async () => {
   // default_type_pattern_provider.tsのソースコードを読み込む
-  const filePath = new URL("./default_type_pattern_provider.ts", import.meta.url).pathname;
+  const filePath = new URL("../../../../lib/types/defaults/default_type_pattern_provider.ts", import.meta.url).pathname;
   const sourceCode = await Deno.readTextFile(filePath);
 
   // import文を抽出（type importも含む）
@@ -98,14 +98,14 @@ Deno.test("Architecture: Complete TypePatternProvider interface implementation b
     assertStrictEquals(
       typeof prototype[method],
       "function",
-      `DefaultTypePatternProvider must implement ${method} method from TypePatternProvider`,
+      `DefaultTypePatternProvider must implement ${String(method)} method from TypePatternProvider`,
     );
 
     // メソッドのシグネチャを検証（引数の数）
     assertEquals(
       prototype[method].length,
       0,
-      `${method} should take no arguments as per interface`,
+      `${String(method)} should take no arguments as per interface`,
     );
   }
 });

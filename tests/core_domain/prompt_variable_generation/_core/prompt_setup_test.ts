@@ -15,7 +15,7 @@
  * - Directory structure is always created under the configured baseDir.
  */
 
-import { assertEquals, assertRejects } from "jsr:@std/assert@^0.224.0";
+import { assertEquals, assertRejects } from "../../../lib/deps.ts";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { exists } from "jsr:@std/fs@^0.224.0";
 import { ensureDir } from "jsr:@std/fs@^0.224.0";

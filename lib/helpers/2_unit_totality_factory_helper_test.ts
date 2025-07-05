@@ -8,7 +8,7 @@
  * @module helpers/2_unit_totality_factory_helper_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import {
   createTotalityFactory,
   createTotalityPromptFactory,
@@ -143,8 +143,22 @@ Deno.test("TotalityFactoryHelper - Unit: createValidatedCliParams - valid inputs
 
     if (result.ok) {
       assertEquals(typeof result.data, "object", "Should return CLI params object");
-      assertEquals(typeof result.data.directive, "object", "Should include directive");
-      assertEquals(typeof result.data.layer, "object", "Should include layer");
+      assertEquals(
+        typeof result.data.demonstrativeType,
+        "string",
+        "Should include demonstrativeType",
+      );
+      assertEquals(typeof result.data.layerType, "string", "Should include layerType");
+      if (result.data.directive) {
+        assertEquals(
+          typeof result.data.directive,
+          "object",
+          "Should include directive object if present",
+        );
+      }
+      if (result.data.layer) {
+        assertEquals(typeof result.data.layer, "object", "Should include layer object if present");
+      }
       assertEquals(typeof result.data.options, "object", "Should include options");
     } else {
       assertEquals(typeof result.error, "object", "Should provide structured error");
@@ -276,6 +290,8 @@ Deno.test("TotalityFactoryHelper - Unit: Factory bundle component functionality"
     // Test createPromptFactory functionality
     if (typesResult.ok) {
       const _params = {
+        demonstrativeType: typesResult.data.directive.getValue(),
+        layerType: typesResult.data.layer.getValue(),
         directive: typesResult.data.directive,
         layer: typesResult.data.layer,
         options: {},

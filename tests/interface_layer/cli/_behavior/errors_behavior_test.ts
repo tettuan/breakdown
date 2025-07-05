@@ -11,8 +11,8 @@
  * @module cli/2_unit_errors_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
-import { CliError, CliErrorCode } from "./errors.ts";
+import { assertEquals, assertExists, assertStringIncludes } from "../../../../lib/deps.ts";
+import { CliError, CliErrorCode } from "../../../../lib/cli/errors.ts";
 
 Deno.test("Unit: CliError creation with all error codes", () => {
   const _testMessage = "Test error message";

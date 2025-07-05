@@ -5,7 +5,7 @@
  * This test file remains for historical reference but tests are disabled.
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { join as _join } from "@std/path";
 
 // Note: PREDEFINED_CONFIGS and resolveConfigPath have been removed in favor of BreakdownConfig

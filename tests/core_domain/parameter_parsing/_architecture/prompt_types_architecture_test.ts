@@ -10,8 +10,8 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "../deps.ts";
-import * as promptTypes from "./prompt_types.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import * as promptTypes from "../../../../lib/types/prompt_types.ts";
 
 /**
  * Test: Module exports required types and classes
@@ -50,7 +50,7 @@ Deno.test("prompt_types - exports required types and classes", () => {
 Deno.test("prompt_types - follows dependency rules", async () => {
   // Read the module file to check imports
   const moduleContent = await Deno.readTextFile(
-    new URL("./prompt_types.ts", import.meta.url),
+    new URL("../../../../lib/types/prompt_types.ts", import.meta.url),
   );
 
   // Should only depend on result.ts from same layer

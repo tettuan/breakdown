@@ -1,6 +1,6 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
-import { prompts } from "./prompts.ts";
+import { prompts } from "../../../../lib/templates/prompts.ts";
 
 /**
  * アーキテクチャテスト：prompts.ts

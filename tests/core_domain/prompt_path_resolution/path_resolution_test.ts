@@ -11,7 +11,7 @@
  * 移行元: tests/1_core/0_path/path_resolver_test.ts
  */
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects } from "../../../lib/deps.ts";
 import { join } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { ensureDir } from "@std/fs";

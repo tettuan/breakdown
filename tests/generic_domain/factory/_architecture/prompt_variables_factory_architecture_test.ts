@@ -9,7 +9,7 @@
  * - Path resolution handles all scenarios
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists, assertThrows } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

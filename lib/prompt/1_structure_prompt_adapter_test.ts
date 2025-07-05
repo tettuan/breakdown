@@ -8,7 +8,7 @@
  * - Proper abstraction levels
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { PromptVariablesProvider } from "./prompt_adapter.ts";

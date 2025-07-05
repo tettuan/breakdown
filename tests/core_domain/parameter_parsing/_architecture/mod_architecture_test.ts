@@ -11,7 +11,7 @@
  * @module types/mod_architecture_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -357,7 +357,7 @@ describe("Architecture: Module cohesion and coupling", () => {
       try {
         const importedSource = await Deno.readTextFile(`./lib/types/${importPath.slice(2)}`);
         assertEquals(
-          importedSource.includes('from "./mod.ts"'),
+          importedSource.includes('from "../../../lib/deps.ts"'),
           false,
           `${importPath} should not import back to mod.ts`,
         );

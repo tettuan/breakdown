@@ -10,7 +10,7 @@
  * @module cli/generators/3_integration_two_params_prompt_generator_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertExists, assertStringIncludes } from "../../deps.ts";
 import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
 import type { ValidatedParams } from "./two_params_prompt_generator.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";

@@ -20,7 +20,7 @@ import {
   assertEquals,
   assertExists,
   assert,
-} from "@std/assert";
+} from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

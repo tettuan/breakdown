@@ -6,7 +6,7 @@
  * @module prompt/variables/filepath_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../deps.ts";
 import {
   FilePathPromptVariables,
   isFileNotFoundError,

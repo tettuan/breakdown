@@ -7,7 +7,7 @@
  * 3. Backward compatibility
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../deps.ts";
 import { handleTwoParams } from "./two_params_handler.ts";
 
 // Mock implementations for testing

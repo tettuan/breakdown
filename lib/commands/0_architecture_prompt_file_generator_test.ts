@@ -10,7 +10,7 @@
  * @module commands/prompt_file_generator_architecture_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";

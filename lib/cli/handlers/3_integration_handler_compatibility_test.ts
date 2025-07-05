@@ -5,7 +5,7 @@
  * orchestrated implementation without requiring all components to exist.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../deps.ts";
 
 // Import the handler function directly to test interface compatibility
 async function testHandlerInterface() {

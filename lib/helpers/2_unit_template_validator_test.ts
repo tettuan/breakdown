@@ -5,7 +5,7 @@
  * 各メソッドの動作、エッジケース、エラーハンドリングを確認します。
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../deps.ts";
 import { join } from "@std/path";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,

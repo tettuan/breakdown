@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects } from "../../../lib/deps.ts";
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { exists } from "@std/fs";
 import { ensureDir } from "@std/fs";

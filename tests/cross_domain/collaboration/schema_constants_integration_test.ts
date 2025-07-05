@@ -3,13 +3,13 @@
  * 修正前後の動作確認用
  */
 
-import { assert, assertEquals, assertExists } from "jsr:@std/assert";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { fromFileUrl, join, resolve } from "jsr:@std/path";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@1.0.4";
 import {
   _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_SCHEMA_BASE_DIR,
-} from "../../lib/config/constants.ts";
+} from "../../../lib/config/constants.ts";
 
 // プロジェクトルートを確実に取得
 const BASE_DIR = await (async () => {

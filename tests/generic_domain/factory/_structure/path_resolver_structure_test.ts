@@ -13,7 +13,7 @@
  * @module factory/1_structure_path_resolver_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 
 /**
  * Structure Test Suite: PathResolver Components

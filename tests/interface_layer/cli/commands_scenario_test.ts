@@ -27,7 +27,7 @@
 
 import { BreakdownLogger, LogLevel } from "@tettuan/breakdownlogger";
 import { assertCommandOutput as _assertCommandOutput } from "$test/helpers/assertions.ts";
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { cleanupTestEnvironment, runCommand, setupTestEnvironment } from "$test/helpers/setup.ts";
 
 const _logger = new BreakdownLogger();

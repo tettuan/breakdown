@@ -7,7 +7,7 @@
  * @module lib/cli/initialization/1_structure_workspace_initializer_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("test-structure-workspace-initializer");

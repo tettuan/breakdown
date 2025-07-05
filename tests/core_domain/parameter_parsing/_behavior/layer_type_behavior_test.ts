@@ -12,10 +12,10 @@
  * 期待される階層管理結果を返すことを保証することです。
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
+import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("test-unit-layer");
 

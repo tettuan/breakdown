@@ -13,7 +13,7 @@
  * - Handles errors appropriately
  */
 
-import { assertEquals, assertRejects as _assertRejects } from "@std/assert";
+import { assertEquals, assertRejects as _assertRejects } from "../../../lib/deps.ts";
 import { readStdin as _readStdin, StdinError as _StdinError } from "../../../lib/io/stdin.ts";
 import {
   cleanupTestEnvironment as _cleanupTestEnvironment,

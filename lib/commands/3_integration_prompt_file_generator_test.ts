@@ -11,7 +11,7 @@
  * @module commands/3_integration_prompt_file_generator_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertExists, assertStringIncludes } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";

@@ -16,7 +16,7 @@
  * @module lib/types/1_structure_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import {
   createPromptParams,
   FilePathVariable,
@@ -30,7 +30,7 @@ import {
   StdinVariableName,
   toPromptParamsVariables,
   UserVariable,
-} from "./prompt_variables.ts";
+} from "../../../lib/types/prompt_variables.ts";
 
 Deno.test("Structure: Variable classes follow consistent design pattern", () => {
   // All variable classes should follow the same structural pattern

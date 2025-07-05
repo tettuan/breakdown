@@ -17,7 +17,7 @@ import type {
   OneParamsResult as _OneParamsResult,
   TwoParams_Result,
   ZeroParamsResult as _ZeroParamsResult,
-} from "../deps.ts";
+} from "../../../lib/deps.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 

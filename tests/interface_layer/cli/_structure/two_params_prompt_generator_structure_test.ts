@@ -10,9 +10,9 @@
  * @module cli/generators/1_structure_two_params_prompt_generator_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
-import { TwoParamsPromptGenerator } from "./two_params_prompt_generator.ts";
-import type { PromptGeneratorError, ValidatedParams } from "./two_params_prompt_generator.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { TwoParamsPromptGenerator } from "$lib/cli/two_params_prompt_generator.ts";
+import type { PromptGeneratorError, ValidatedParams } from "$lib/cli/two_params_prompt_generator.ts";
 import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
 
 Deno.test("Structure: TwoParamsPromptGenerator has correct method signature", () => {

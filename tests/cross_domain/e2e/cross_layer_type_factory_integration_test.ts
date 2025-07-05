@@ -13,7 +13,7 @@
  * @module lib/types/4_cross_layer_type_factory_integration_test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert";
+import { assertEquals, assertExists } from "../../../lib/deps.ts";
 import { LayerTypeFactory } from "../../../lib/types/layer_type_factory.ts";
 import {
   LayerType as _LayerType,

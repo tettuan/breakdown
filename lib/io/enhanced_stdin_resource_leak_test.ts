@@ -5,7 +5,7 @@
  * handles resource cleanup and prevents the op_read resource leaks.
  */
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects } from "../deps.ts";
 import { MockStdinReader } from "./stdin_reader_interface.ts";
 import { readStdinEnhanced } from "./enhanced_stdin.ts";
 

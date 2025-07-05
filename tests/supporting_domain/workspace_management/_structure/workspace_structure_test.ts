@@ -6,11 +6,11 @@
  * are followed and components have clear, non-overlapping responsibilities.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../../../lib/deps.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { WorkspaceImpl } from "./workspace.ts";
-import { WorkspaceStructureImpl } from "./structure.ts";
-import { WorkspacePathResolverImpl } from "./path/resolver.ts";
+import { WorkspaceImpl } from "../../../../lib/workspace/workspace.ts";
+import { WorkspaceStructureImpl } from "../../../../lib/workspace/structure.ts";
+import { WorkspacePathResolverImpl } from "../../../../lib/workspace/path/resolver.ts";
 
 Deno.test("Workspace Structure", async (t) => {
   const _logger = new _BreakdownLogger("structure-test");

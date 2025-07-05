@@ -13,7 +13,7 @@
  * @module tests/types/defaults/1_structure_default_type_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../../../lib/deps.ts";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern } from "../directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../layer_type.ts";

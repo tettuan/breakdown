@@ -10,7 +10,7 @@
  * 5. Interface inheritance and composition patterns
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import type {

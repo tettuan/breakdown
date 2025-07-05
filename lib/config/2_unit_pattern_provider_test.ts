@@ -10,7 +10,7 @@
  * @module config/2_unit_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "../types/directive_type.ts";
