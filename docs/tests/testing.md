@@ -1,50 +1,58 @@
-# Test Specification
+# Test Specification - Domain-Driven Design Migration Version
 
-> **For implementation examples of path resolution and parameter construction for testing, see also [app_factory.md](./app_factory.md).**
+> **Important**: This test specification is in the middle of migration to **Domain-Driven Design (DDD)**. Please refer to [../../tests/domain_driven/README.md](../../tests/domain_driven/README.md) for the new test strategy.
 
-## Test Design Principles
+## Current Status
 
-Tests are designed according to the following principles:
+### New Test Strategy (Recommended)
 
-1. **Gradual Complexity**
-   - Start with basic functionality and gradually progress to complex use cases
-   - Verify that necessary prerequisites are met at each stage
-   - Assume that previous stage tests have passed
+Adopting a new test strategy based on **Domain-Driven Design**:
 
-2. **Hierarchical Structure**
-   - Unit tests (placed in the same hierarchy as implementation files)
-   - Architecture tests (placed in the same hierarchy as implementation files)
-   - Structure tests (placed in the same hierarchy as implementation files)
-   - Integration tests (placed under tests/)
-   - E2E tests (placed under tests/)
+- **Complete Test Strategy**: [../../tests/domain_driven/README.md](../../tests/domain_driven/README.md)
+- **Test Placement**: Under `tests/domain_driven/`
+- **Design Principle**: Verification centered on core domain value creation
 
-3. **Test File Placement**
-   - Unit/Architecture/Structure tests: Same hierarchy as implementation files
-   - Integration/E2E tests: Under tests/ directory
+### New Test Design Principles
 
-4. **Execution Order Guarantee**
-   - Control execution order based on dependencies
-   - Verify that previous stage tests have succeeded
+1. **Domain-Centered Value Verification**
+   - Accurately verify the existence value of each domain
+   - Prioritize core domain (prompt generation) value creation
+   - Verify supporting domain (environment setup) support for core domain
 
-## Test Directory Structure
+2. **Respect for Bounded Context**
+   - Clearly maintain boundaries between domains
+   - Verify independence of each domain
+   - Verification based on responsibility separation principles
+
+3. **Hierarchical Value Verification**
+   - Domain Unit Tests: Pure functions within a single domain
+   - Domain Integration Tests: Service cooperation within domains
+   - Interface Integration Tests: User interface quality
+   - Cross-Domain Integration Tests: System-wide value creation
+
+## New Test Directory Structure
 
 ```
-lib/io/
-  └── stdin.ts
-      ├── 0_architecture_stdin_test.ts
-      ├── 1_structure_stdin_test.ts
-      └── 2_unit_stdin_test.ts
-lib/factory/
-  └── input_file_path_resolver.ts
-  └── tests/
-      ├── 0_architecture_input_file_path_resolver_test.ts
-      ├── 1_structure_input_file_path_resolver_test.ts
-      └── 2_unit_input_file_path_resolver_test.ts
-tests/
-  ├── 3_integration/
-  │   └── input_file_path_resolver_test.ts
-  └── 4_e2e/
-      └── input_file_path_resolver_test.ts
+tests/domain_driven/
+├── core_domain/              # Core domain tests
+│   ├── prompt_path_resolution/    # Prompt path resolution domain
+│   ├── prompt_variable_generation/ # Prompt variable generation domain
+│   ├── parameter_parsing/         # Parameter parsing domain
+│   └── configuration_management/  # Configuration management domain
+├── supporting_domain/        # Supporting domain tests
+│   ├── template_management/       # Template management
+│   ├── workspace_management/      # Workspace management
+│   └── initialization/           # Initialization service
+├── generic_domain/           # Technical foundation domain tests
+│   ├── factory/                  # Factory domain
+│   └── system/                   # System domain
+├── interface_layer/          # Interface layer tests
+│   ├── cli/                      # CLI interface
+│   ├── configuration/            # Configuration interface
+│   └── path_resolution/          # Path resolution interface
+└── cross_domain/             # Cross-domain integration tests
+    ├── e2e/                      # End-to-end scenarios
+    └── collaboration/            # Cross-domain collaboration
 ```
 
 ## Test File Naming Convention
@@ -389,12 +397,32 @@ errorLogger.error("Expected error occurred", {
   - Configuration determination test fails because configuration values don't match
 - Test preprocessing should use confirmed processes executed before the relevant test. It's important that later tests don't implement their own.
 
-# Skeleton Code Construction Order (Test-Driven)
+# Legacy Test Specification (Reference Information)
 
-- Create test files according to "Test Directory Structure"
-- Create skeleton: Describe test items as test targets first (don't write test content yet)
-- Include failing descriptions in the skeleton
-- Add comments
-  - Include what you would want to know when reading someone else's code
-  - Describe the test's intent, purpose, and reasons for testing
-  - Clearly state what the test handles
+The following is reference information for understanding existing test files and migration work:
+
+### Legacy Hierarchical Test Structure
+
+- **0_foundation/**: Foundation tests → **generic_domain/** & **interface_layer/**
+- **1_core/**: Core functionality tests → **core_domain/** & **supporting_domain/**
+- **2_integration/**: Integration tests → **cross_domain/collaboration/**
+- **3_scenarios/**: Scenario tests → **cross_domain/e2e/**
+- **4_e2e/**: E2E tests → **cross_domain/e2e/**
+
+### Legacy Test File Naming Convention
+
+- `0_architecture_<implementation_file_name>.ts`: Architecture tests
+- `1_structure_<implementation_file_name>.ts`: Structure tests
+- `2_unit_<implementation_file_name>.ts`: Unit tests
+- `3_integration_<feature_name>.ts`: Integration tests
+- `4_e2e_<feature_name>.ts`: E2E tests
+
+### Coexistence Period Until Migration Completion
+
+Currently, both old and new test structures are being used in parallel. Always use the new domain-driven structure when creating new tests.
+
+---
+
+**Migration Status**: In transition to Domain-Driven Test Strategy  
+**Recommendation**: Create new tests under `tests/domain_driven/`  
+**Details**: See [Domain-Driven Test Strategy](../../tests/domain_driven/README.md)

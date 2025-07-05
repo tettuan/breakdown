@@ -1,252 +1,272 @@
-# テスト仕様
+# テスト仕様 - ドメイン駆動設計移行版
 
-> **テスト用のパス解決・パラメータ構築の実装例については [app_factory.ja.md](./app_factory.ja.md) も参照してください。**
+> **重要**: このテスト仕様は**ドメイン駆動設計（DDD）**への移行中です。新しいテスト戦略については [../../tests/domain_driven/README.md](../../tests/domain_driven/README.md) を参照してください。
 
-## テスト設計原則
+## 現在の状況
 
-テストは以下の原則に従って設計されています：
+### 新しいテスト戦略（推奨）
 
-1. **段階的な複雑性**
-   - 基本機能から始まり、徐々に複雑なユースケースへと進む
-   - 各段階で必要な前提条件が満たされていることを確認
-   - 前段階のテストが成功していることを前提とする
+**ドメイン駆動設計**に基づく新しいテスト戦略を採用しています：
 
-2. **階層的な構造**
-   - 単体テスト（実装ファイルと同じ階層に配置）
-   - アーキテクチャテスト（実装ファイルと同じ階層に配置）
-   - 構造テスト（実装ファイルと同じ階層に配置）
-   - 結合テスト（tests/配下に配置）
-   - E2Eテスト（tests/配下に配置）
+- **完全なテスト戦略**: [../../tests/domain_driven/README.md](../../tests/domain_driven/README.md)
+- **テスト配置**: `tests/domain_driven/` 配下
+- **設計原則**: 核心ドメインの価値創出を中心とした検証
 
-3. **テストファイルの配置**
-   - 単体/アーキテクチャ/構造テスト: 実装ファイルと同じ階層
-   - 結合/E2Eテスト: tests/ディレクトリ配下
+### 新しいテスト設計原則
 
-4. **実行順序の保証**
-   - 依存関係に基づいた実行順序の制御
-   - 前段階のテストが成功していることを確認
+1. **ドメイン中心の価値検証**
+   - 各ドメインの存在価値を正確に検証
+   - 核心ドメイン（プロンプト生成）の価値創出を最優先
+   - 支援ドメイン（環境構築）による核心ドメイン支援の検証
 
-## テストディレクトリ構造
+2. **境界コンテキストの尊重**
+   - ドメイン間の境界を明確に保持
+   - 各ドメインの独立性を検証
+   - 責務分離の原則に基づく検証
 
-```
-lib/io/
-  └── stdin.ts
-      ├── 0_architecture_stdin_test.ts
-      ├── 1_structure_stdin_test.ts
-      └── 2_unit_stdin_test.ts
-lib/factory/
-  └── input_file_path_resolver.ts
-  └── tests/
-      ├── 0_architecture_input_file_path_resolver_test.ts
-      ├── 1_structure_input_file_path_resolver_test.ts
-      └── 2_unit_input_file_path_resolver_test.ts
-tests/
-  ├── 3_integration/
-  │   └── input_file_path_resolver_test.ts
-  └── 4_e2e/
-      └── input_file_path_resolver_test.ts
-```
+3. **階層的な価値検証**
+   - ドメインユニットテスト：単一ドメイン内の純粋な機能
+   - ドメイン統合テスト：ドメイン内のサービス連携
+   - インターフェース統合テスト：ユーザーインターフェースの品質
+   - クロスドメイン統合テスト：システム全体の価値創出
 
-## テストファイル命名規則
-
-テストファイルは、その目的に応じて以下の命名規則に従います：
-
-1. **アーキテクチャテスト**
-   - 命名規則: `0_architecture_<実装ファイル名>.ts`
-   - 例: `0_architecture_model.ts`
-   - 用途: アーキテクチャの制約や依存関係の検証
-   - 配置: 実装ファイルと同じ階層
-   - 検証項目:
-     - 依存関係の方向性
-     - 循環参照の有無
-     - レイヤー間の境界
-     - インターフェースの一貫性
-
-2. **構造テスト**
-   - 命名規則: `1_structure_<実装ファイル名>.ts`
-   - 例: `1_structure_model.ts`
-   - 用途: クラス構造や責務分離の検証
-   - 配置: 実装ファイルと同じ階層
-   - 検証項目:
-     - 単一責任の原則の遵守
-     - 責務の重複の有無
-     - 適切な抽象化レベル
-     - クラス間の関係性
-
-3. **単体テスト**
-   - 命名規則: `2_unit_<実装ファイル名>.ts`
-   - 例: `2_unit_model.ts`
-   - 用途: 機能の動作検証
-   - 配置: 実装ファイルと同じ階層
-
-4. **結合テスト**
-   - 命名規則: `3_integration_<機能名>.ts`
-   - 例: `3_integration_params_parser.ts`
-   - 用途: 複数のコンポーネント間の連携検証
-   - 配置: tests/3_integration/
-
-5. **E2Eテスト**
-   - 命名規則: `4_e2e_<機能名>.ts`
-   - 例: `4_e2e_params_parser.ts`
-   - 用途: エンドツーエンドの動作検証
-   - 配置: tests/4_e2e/
-
-## テストの依存関係
-
-テストは以下の順序で実行されます：
-
-1. モデルと型のテスト
-   - 基本的なデータ構造と型の検証
-   - バリデーションルールの検証
-
-2. 派生コンポーネントのテスト
-   - モデルや型を利用した機能の検証
-   - Factoryやユーティリティの検証
-
-3. ParamsParserのテスト
-   - 個別の機能検証
-   - 全体の統合検証
-
-### 依存関係の例
+## 新しいテストディレクトリ構造
 
 ```
-tests/
-  ├── 3_integration/
-  │   └── input_file_path_resolver_core_test.ts
-  └── 4_e2e/
-      └── input_file_path_resolver_basic_test.ts
-  └── 5_edgecase/
+tests/domain_driven/
+├── core_domain/              # 核心ドメインテスト
+│   ├── prompt_path_resolution/    # プロンプトパス決定ドメイン
+│   ├── prompt_variable_generation/ # プロンプト変数生成ドメイン
+│   ├── parameter_parsing/         # パラメータ解析ドメイン
+│   └── configuration_management/  # 設定管理ドメイン
+├── supporting_domain/        # 支援ドメインテスト
+│   ├── template_management/       # テンプレート管理
+│   ├── workspace_management/      # ワークスペース管理
+│   └── initialization/           # 初期化サービス
+├── generic_domain/           # 技術基盤ドメインテスト
+│   ├── factory/                  # ファクトリードメイン
+│   └── system/                   # システムドメイン
+├── interface_layer/          # インターフェース層テスト
+│   ├── cli/                      # CLIインターフェース
+│   ├── configuration/            # 設定インターフェース
+│   └── path_resolution/          # パス解決インターフェース
+└── cross_domain/             # ドメイン間統合テスト
+    ├── e2e/                      # エンドツーエンドシナリオ
+    └── collaboration/            # ドメイン間協働
 ```
 
+## テスト実行方法
 
-## テスト実行手順
-
-### 推奨: 一括テスト・CIフローのローカル実行
-
-プロジェクト全体のテスト・フォーマット・Lintチェックを一括で実行するには、以下のスクリプトを利用してください。
+### 新しいドメイン駆動テスト（推奨）
 
 ```bash
+# 全ドメインテスト実行
+deno test tests/domain_driven/
+
+# ドメイン別実行
+deno test tests/domain_driven/core_domain/          # 核心ドメイン
+deno test tests/domain_driven/supporting_domain/   # 支援ドメイン
+deno test tests/domain_driven/generic_domain/      # 技術基盤
+deno test tests/domain_driven/interface_layer/     # インターフェース層
+deno test tests/domain_driven/cross_domain/        # 統合テスト
+
+# デバッグ出力付き実行
+LOG_LEVEL=debug deno test tests/domain_driven/core_domain/
+```
+
+### 既存テスト（移行作業中）
+
+```bash
+# 従来のテスト実行（移行完了までは並行実行）
 bash scripts/local_ci.sh
+
+# 特定階層のテスト実行
+deno test tests/0_foundation/
+deno test tests/1_core/
+deno test tests/2_integration/
+deno test tests/3_scenarios/
+deno test tests/4_e2e/
 ```
 
-- CIと同等のフローをローカルで再現します。
-- すべての *_test.ts を順に実行し、テスト通過後にフォーマット・Lintチェックを行います。
-- エラー時は `LOG_LEVEL=debug deno task ci` で詳細なデバッグ出力が得られます。
-- テストは依存順（番号順）で実行されます。
-- コミット・プッシュ・マージ前に必ずこのスクリプトで全チェックを通過させてください。
+## 価値創出の検証原則
 
-### 基本的なテスト実行
+### 核心ドメインテスト
 
-```bash
-deno test --allow-env --allow-write --allow-read
-```
+**プロンプト生成の核心価値を検証**：
 
-### デバッグ出力付きテスト
+1. **プロンプトパス決定ドメイン**
+   - パス決定の100%確実性
+   - 準備コストの非対称性への対応
+   - 明確なエラーメッセージによる問題切り分け
 
-```bash
-LOG_LEVEL=debug deno test --allow-env --allow-write --allow-read
-```
+2. **プロンプト変数生成ドメイン**
+   - 入力データの3段階変容の正確性
+   - 型安全な変換処理
+   - 変数置換の完全性
 
-### 特定のテストファイルの実行
+3. **パラメータ解析ドメイン**
+   - CLI引数から型安全なドメインオブジェクトへの変換
+   - パターンベースバリデーション
+   - Smart Constructorsによる型安全性
 
-```bash
-deno test <test_file.ts> --allow-env --allow-write --allow-read
-```
+4. **設定管理ドメイン**
+   - 環境固有設定の統一的管理
+   - プロファイル切り替えの正確性
+   - 設定階層の適切なマージ
 
-## テストカバレッジ要件
+### 支援ドメインテスト
 
-### 0_foundation/
+**環境構築による核心ドメイン支援を検証**：
 
-- 設定ファイルの読み込み
-- ログレベルの制御
-- 作業ディレクトリの管理
+1. **テンプレート管理ドメイン**
+   - プロンプトテンプレートとスキーマファイルの適切な配置
+   - ファイル命名規則の遵守
+   - バリデーション設定の正確性
 
-### 1_core/
+2. **ワークスペース管理ドメイン**
+   - プロジェクト環境の設定と管理
+   - ディレクトリ構造の整合性
+   - 環境固有設定の適用
 
-- コマンドライン引数の解析
-- プロンプトの生成と検証
-- パラメータのバリデーション
+3. **初期化ドメイン**
+   - プロジェクトの初期セットアップ
+   - 必要なディレクトリとファイルの生成
+   - 設定ファイルの適切な生成
 
-### 2_integration/
+### 技術基盤ドメインテスト
 
-- コマンド実行フロー
-- ファイル入出力
-- エラーハンドリング
+**システム基盤の安定性を検証**：
 
-### 3_scenarios/
+1. **ファクトリードメイン**
+   - ドメインオブジェクトの適切な構築
+   - 依存関係の正確な注入
+   - パラメータ構築の一元化
 
-- 実際のユースケース
-- エッジケース
-- エラー回復
+2. **システムドメイン**
+   - エラーハンドリングの一貫性
+   - ログ出力の標準化
+   - ファイルシステム操作の安全性
 
-## CLI テスト要件
+### インターフェース層テスト
 
-### テスト項目
+**ユーザー体験の品質を検証**：
 
-1. コマンドライン引数
-   - 基本コマンドの認識
-   - オプションの解析
-   - 引数の組み合わせ
-   - 無効な引数のエラー処理
+1. **CLIインターフェース**
+   - コマンドライン引数の正確な解析
+   - エラーメッセージの明確性
+   - ヘルプメッセージの適切性
 
-2. コマンド実行
-   - 各コマンドの正常系テスト
-   - エラー条件でのテスト
-   - オプション指定時の動作
-   - コマンドの実行結果
+2. **設定インターフェース**
+   - 設定ファイルの読み込み正確性
+   - 設定値のバリデーション
+   - 設定エラーの適切な報告
 
-3. 入出力処理
-   - 標準入力からの読み込み
-   - 標準出力への書き込み
-   - エラー出力の制御
-   - ログレベルの動作確認
+3. **パス解決インターフェース**
+   - ファイルパス解決の確実性
+   - 相対パス・絶対パスの適切な処理
+   - パス関連エラーの明確な報告
 
-### テスト方法
+## テストヘルパーとユーティリティ
+
+### 共通テストヘルパー
+
+新旧両方のテスト構造で共有されます：
+
+- **setup.ts** - テスト環境の初期化、一時ディレクトリの作成
+- **assertions.ts** - プロンプト検証、ファイル内容検証、エラー状態検証
+- **test_utils.ts** - テストユーティリティ
+
+### デバッグ出力（重要）
+
+BreakdownLoggerは**テストコードでのみ使用**してください：
 
 ```typescript
-// コマンドライン引数のテスト例
-Deno.test("CLI argument parsing - init command", async () => {
-  const result = await runCommand(["init", "--config", "custom.json"]);
-  assertCommandSuccess(result);
-  // 期待される出力の検証
-});
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
-// エラー処理のテスト例
-Deno.test("CLI error handling - invalid command", async () => {
-  const result = await runCommand(["invalid"]);
-  assertEquals(result.error.includes("Unknown command"), true);
+const logger = new BreakdownLogger("domain-test");
+logger.debug("ドメインテスト実行開始", { 
+  domain: "core_domain",
+  testCase: "prompt_path_resolution" 
 });
 ```
 
-### テストヘルパー関数
+### ログレベルとフィルタリング
 
-- `runCommand()`: コマンド実行のラッパー
-- `assertCommandSuccess()`: コマンド成功の検証
-- `assertCommandOutput()`: 出力内容の検証
-- `mockStdin()`: 標準入力のモック
+- `LOG_LEVEL`: debug, info, warn, error
+- `LOG_KEY`: 特定モジュールのフィルタリング
+- `LOG_LENGTH`: メッセージ長制御
 
-### 統合テストでの確認項目
+詳細は [debug.ja.md](./debug.ja.md) を参照してください。
 
-1. エンドツーエンドのワークフロー
-2. 実際のファイルシステムとの連携
-3. 設定ファイルの読み込み
-4. エラー回復とリトライ
+## 移行戦略と併用期間
 
-## テストヘルパー
+### 現在の移行状況
 
-### setup.ts
+- **新しいテスト戦略**: 確立完了（`tests/domain_driven/README.md`）
+- **既存テスト**: 移行作業中（`tests/0_foundation/`, `tests/1_core/`等）
+- **CI/CD**: 新旧両方のテストを並行実行
 
-- テスト環境の初期化
-- 一時ディレクトリの作成
-- テストデータの準備
+### 移行作業の進め方
 
-### assertions.ts
+1. **新規テスト作成**: 必ず`tests/domain_driven/`配下に作成
+2. **既存テスト修正**: 可能な限り新構造への移行を検討
+3. **テスト実行**: 移行完了まで両方のテスト構造を並行実行
+4. **コードレビュー**: ドメイン駆動設計の観点から検証
 
-- プロンプト検証
-- ファイル内容の検証
-- エラー状態の検証
+### 段階的移行計画
 
-## デバッグ出力
+1. **Phase 1**: 新しいテスト戦略の確立（完了）
+2. **Phase 2**: 核心ドメインテストの移行（進行中）
+3. **Phase 3**: 支援・技術基盤ドメインテストの移行（予定）
+4. **Phase 4**: 統合テストの移行（予定）
+
+## 参考情報
+
+### 詳細なテスト戦略
+
+- **[ドメイン駆動テスト戦略](../../tests/domain_driven/README.md)** - 完全なテスト戦略
+- **[テスト実行方法](../../tests/README.md)** - 実行方法と移行状況
+
+### デバッグとログ
+
+- **[デバッグ機能](./debug.ja.md)** - BreakdownLoggerの詳細な使用方法
+- **[ログ仕様](./logging.ja.md)** - ログレベルとフィルタリング
+
+---
+
+**重要**: このファイルは従来のテスト仕様の参考資料です。新しいテスト作成時は必ず[ドメイン駆動テスト戦略](../../tests/domain_driven/README.md)に従ってください。
+
+---
+
+## 従来のテスト仕様（参考情報）
+
+以下は既存テストファイルの理解と移行作業のための参考情報です：
+
+### 従来の階層的テスト構造
+
+- **0_foundation/**: 基盤テスト → **generic_domain/** & **interface_layer/**
+- **1_core/**: コア機能テスト → **core_domain/** & **supporting_domain/**
+- **2_integration/**: 統合テスト → **cross_domain/collaboration/**
+- **3_scenarios/**: シナリオテスト → **cross_domain/e2e/**
+- **4_e2e/**: E2Eテスト → **cross_domain/e2e/**
+
+### 従来のテストファイル命名規則
+
+- `0_architecture_<実装ファイル名>.ts`: アーキテクチャテスト
+- `1_structure_<実装ファイル名>.ts`: 構造テスト
+- `2_unit_<実装ファイル名>.ts`: 単体テスト
+- `3_integration_<機能名>.ts`: 結合テスト
+- `4_e2e_<機能名>.ts`: E2Eテスト
+
+### 移行完了までの併用期間
+
+現在、新旧両方のテスト構造が併用されています。新規テスト作成時は必ず新しいドメイン駆動構造を使用してください。
+
+---
+
+**移行状況**: ドメイン駆動テスト戦略への移行中  
+**推奨**: 新規テストは`tests/domain_driven/`配下に作成  
+**詳細**: [ドメイン駆動テスト戦略](../../tests/domain_driven/README.md)を参照
 
 ### テストコードでの使用
 
