@@ -1178,18 +1178,29 @@ class TmuxMonitor {
     if (clearTargetPanes.length > 0) {
       logInfo(`Found ${clearTargetPanes.length} DONE/IDLE panes: ${clearTargetPanes.join(", ")}`);
       
-      // Send clear command to each DONE/IDLE pane
-      for (const paneId of clearTargetPanes) {
-        await this.communicator.sendClearCommand(paneId);
-      }
+      // Sort panes by ID and exclude the 4 smallest IDs
+      const sortedPanes = clearTargetPanes.sort((a, b) => a.localeCompare(b));
+      const panesToClear = sortedPanes.slice(4); // Skip first 4 (smallest IDs)
       
-      logInfo(`Clear commands sent to ${clearTargetPanes.length} DONE/IDLE panes`);
+      if (panesToClear.length > 0) {
+        logInfo(`Excluding 4 smallest pane IDs: ${sortedPanes.slice(0, 4).join(", ")}`);
+        logInfo(`Clearing ${panesToClear.length} panes: ${panesToClear.join(", ")}`);
+        
+        // Send clear command to each selected pane
+        for (const paneId of panesToClear) {
+          await this.communicator.sendClearCommand(paneId);
+        }
+        
+        logInfo(`Clear commands sent to ${panesToClear.length} panes`);
 
-      // Report the clearing action to main pane
-      const mainPane = this.paneManager.getMainPane();
-      if (mainPane) {
-        const clearReport = `Cleared ${clearTargetPanes.length} DONE/IDLE panes: ${clearTargetPanes.join(", ")}`;
-        await this.communicator.sendCustomMessage(mainPane.id, clearReport);
+        // Report the clearing action to main pane
+        const mainPane = this.paneManager.getMainPane();
+        if (mainPane) {
+          const clearReport = `Cleared ${panesToClear.length} DONE/IDLE panes: ${panesToClear.join(", ")} (excluded 4 smallest IDs)`;
+          await this.communicator.sendCustomMessage(mainPane.id, clearReport);
+        }
+      } else {
+        logInfo("All DONE/IDLE panes are among the 4 smallest IDs - no clearing performed");
       }
     } else {
       logInfo("No DONE/IDLE panes found for clearing");
