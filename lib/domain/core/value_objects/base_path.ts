@@ -80,9 +80,21 @@ export abstract class BasePathValueObject {
   /**
    * Private constructor enforcing Smart Constructor pattern
    * @param value The validated and normalized path string
+   * @param shouldFreeze Whether to freeze the object immediately (default: true)
    */
-  protected constructor(private readonly value: string) {
-    // Defensive copying and freezing for immutability
+  protected constructor(private readonly value: string, shouldFreeze: boolean = true) {
+    // Apply Object.freeze() only if requested and this is not being extended
+    // This allows subclasses to set their properties before freezing
+    if (shouldFreeze && this.constructor === BasePathValueObject) {
+      Object.freeze(this);
+    }
+  }
+
+  /**
+   * Protected method for subclasses to freeze the object after setting all properties
+   * This ensures proper inheritance behavior with immutability
+   */
+  protected freezeObject(): void {
     Object.freeze(this);
   }
 

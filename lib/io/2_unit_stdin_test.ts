@@ -20,6 +20,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   hasStdinContent,
   isStdinAvailable,
+  LegacyStdinError,
   ProgressBar,
   readStdin,
   Spinner,
@@ -59,7 +60,7 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof StdinError, true, "Should throw StdinError on timeout");
+      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
     }
 
     // Test with allowEmpty option
@@ -70,7 +71,7 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin with allowEmpty succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof StdinError, true, "Should throw StdinError on timeout");
+      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
     }
 
     logger.debug("readStdin timeout behavior verified");
@@ -370,7 +371,7 @@ describe("Unit: Error handling and edge cases", () => {
       await invalidPromise;
       // If it doesn't reject, that's ok - enhanced stdin might handle it
     } catch (error) {
-      assertEquals(error instanceof StdinError, true, "Should throw StdinError");
+      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError");
     }
 
     // Test readStdin with zero timeout
@@ -380,7 +381,7 @@ describe("Unit: Error handling and edge cases", () => {
       await zeroTimeoutPromise;
       // If it doesn't reject, that's ok
     } catch (error) {
-      assertEquals(error instanceof StdinError, true, "Should throw StdinError");
+      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError");
     }
 
     logger.debug("Error scenarios verified");
@@ -437,9 +438,9 @@ describe("Unit: Integration behavior", () => {
 
     await assertRejects(
       () => promise,
-      StdinError,
+      LegacyStdinError,
       undefined,
-      "Should convert enhanced stdin errors to StdinError",
+      "Should convert enhanced stdin errors to LegacyStdinError",
     );
 
     logger.debug("Enhanced stdin integration verified");

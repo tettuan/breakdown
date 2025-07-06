@@ -39,21 +39,26 @@ describe("Workspace Module - Unit Tests", async () => {
     });
   });
 
-  it("should re-export all error classes from errors.ts", async () => {
-    _logger.debug("Testing error re-exports");
+  it("should re-export all error factories from errors.ts", async () => {
+    _logger.debug("Testing error factory re-exports");
 
     const _mod = await import("./mod.ts");
     const errors = await import("./errors.ts");
 
-    // All error classes should be re-exported
-    Object.keys(errors).forEach((key) => {
-      if (
-        key !== "default" && typeof (errors as Record<string, unknown>)[key] === "function" &&
-        ((errors as any)[key]?.prototype instanceof Error)
-      ) {
+    // All error factory functions should be re-exported
+    const factoryFunctions = [
+      "createWorkspaceError",
+      "createWorkspaceInitError", 
+      "createWorkspaceConfigError",
+      "createWorkspacePathError",
+      "createWorkspaceDirectoryError"
+    ];
+    
+    factoryFunctions.forEach((key) => {
+      if ((errors as Record<string, unknown>)[key]) {
         assertExists(
           (_mod as Record<string, unknown>)[key],
-          `Error class ${key} should be re-exported`,
+          `Factory function ${key} should be re-exported`,
         );
         assertEquals(
           (_mod as Record<string, unknown>)[key],
@@ -86,24 +91,26 @@ describe("Workspace Module - Unit Tests", async () => {
     });
   });
 
-  it("should handle error class instantiation correctly", async () => {
-    _logger.debug("Testing error instantiation through module");
+  it("should handle error creation correctly", async () => {
+    _logger.debug("Testing error creation through module");
 
     const _mod = await import("./mod.ts");
 
-    // Test that error classes can be instantiated
-    if (_mod.WorkspaceError) {
-      const error = new _mod.WorkspaceError("Test error", "TEST_CODE");
+    // Test that error factory functions are available and work
+    if (_mod.createWorkspaceError) {
+      const error = _mod.createWorkspaceError("Test error", "TEST_CODE");
       assertExists(error);
-      assertEquals(error instanceof Error, true);
-      assertEquals(error instanceof _mod.WorkspaceError, true);
       assertEquals(error.message, "Test error");
+      assertEquals(error.code, "TEST_CODE");
+      assertEquals(error.type, "WorkspaceError");
     }
 
-    if (_mod.WorkspaceInitError) {
-      const initError = new _mod.WorkspaceInitError("Init failed");
+    if (_mod.createWorkspaceInitError) {
+      const initError = _mod.createWorkspaceInitError("Init failed");
       assertExists(initError);
-      assertEquals(initError instanceof _mod.WorkspaceError, true);
+      assertEquals(initError.message, "Init failed");
+      assertEquals(initError.type, "WorkspaceInitError");
+      assertEquals(_mod.isWorkspaceError && _mod.isWorkspaceError(initError), true);
     }
   });
 

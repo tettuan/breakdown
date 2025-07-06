@@ -56,8 +56,11 @@ export class FactoryConfigAdapter {
   ): Promise<Result<PromptVariablesFactory, Error>> {
     try {
       const factoryConfig = this.toFactoryConfig(unifiedConfig.getConfig());
-      const factory = PromptVariablesFactory.createWithConfig(factoryConfig, cliParams);
-      return resultOk(factory);
+      const factoryResult = PromptVariablesFactory.createWithConfig(factoryConfig, cliParams);
+      if (!factoryResult.ok) {
+        return resultError(new Error(`Factory creation failed: ${factoryResult.error}`));
+      }
+      return resultOk(factoryResult.data);
     } catch (error) {
       return resultError(
         error instanceof Error ? error : new Error(String(error)),
@@ -83,8 +86,8 @@ export class FactoryConfigAdapter {
     return {
       template: PromptTemplatePathResolver.create(factoryConfig, dummyCliParams),
       schema: SchemaFilePathResolver.create(factoryConfig, dummyCliParams),
-      input: new InputFilePathResolver(factoryConfig, dummyCliParams),
-      output: new OutputFilePathResolver(factoryConfig, dummyCliParams),
+      input: InputFilePathResolver.create(factoryConfig, dummyCliParams),
+      output: OutputFilePathResolver.create(factoryConfig, dummyCliParams),
     };
   }
 }

@@ -30,10 +30,11 @@ export type TwoParamsHandlerError =
   | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
   | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
   | { kind: "StdinReadError"; error: string }
+  | { kind: "FactoryCreationError"; error: string }
   | { kind: "FactoryValidationError"; errors: string[] }
   | { kind: "VariablesBuilderError"; errors: string[] }
   | { kind: "PromptGenerationError"; error: string }
-  | { kind: "OutputWriteError"; error: string };
+  | { kind: "OutputWriteError"; error: string; cause?: unknown };
 
 /**
  * Internal orchestrator for two params processing

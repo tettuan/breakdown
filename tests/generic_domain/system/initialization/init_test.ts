@@ -9,7 +9,7 @@ import {
   type TestEnvironmentOptions,
 } from "$test/helpers/setup.ts";
 import { Workspace } from "../../../../lib/workspace/workspace.ts";
-import { WorkspaceInitError } from "../../../../lib/workspace/errors.ts";
+import { WorkspaceInitError } from "../../../../lib/workspace/workspace_init_error.ts";
 import { stringify } from "jsr:@std/yaml@^1.0.6";
 
 const logger = new BreakdownLogger();

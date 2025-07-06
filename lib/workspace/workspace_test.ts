@@ -115,7 +115,7 @@ Deno.test("1_behavior: Totality - validateConfig handles non-existent directorie
     await workspace.validateConfig();
     assert(false, "Expected validation to fail");
   } catch (error) {
-    assert(error.message.includes("Working directory does not exist"));
+    assert(error instanceof Error && error.message.includes("Working directory does not exist"));
   }
 });
 

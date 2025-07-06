@@ -6,6 +6,9 @@
 - テストファイル: @docs/tests/testing.ja.md 
 - About: @docs/breakdown/index.ja.md
 
+# Claude Behavior
+- No Celebrating
+
 # Project
 - Project: Deno, JSR publish
 - run `scripts/local_ci.sh` for testing code.

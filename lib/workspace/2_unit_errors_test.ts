@@ -16,11 +16,21 @@ import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  WorkspaceConfigError,
-  WorkspaceDirectoryError,
-  WorkspaceError,
-  WorkspaceInitError,
-  WorkspacePathError,
+  createWorkspaceConfigError,
+  createWorkspaceDirectoryError,
+  createWorkspaceError,
+  createWorkspaceInitError,
+  createWorkspacePathError,
+  isWorkspaceConfigError,
+  isWorkspaceDirectoryError,
+  isWorkspaceError,
+  isWorkspaceInitError,
+  isWorkspacePathError,
+  type WorkspaceConfigError,
+  type WorkspaceDirectoryError,
+  type WorkspaceError,
+  type WorkspaceInitError,
+  type WorkspacePathError,
 } from "./errors.ts";
 
 const _logger = new _BreakdownLogger("test-unit-errors");

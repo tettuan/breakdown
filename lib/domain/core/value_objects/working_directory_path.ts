@@ -215,9 +215,10 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     private readonly isAbsolute: boolean,
     private readonly exists?: boolean,
   ) {
-    super(resolvedPath);
-    // Additional immutability guarantee
-    Object.freeze(this);
+    // Pass false to parent constructor to prevent premature freezing
+    super(resolvedPath, false);
+    // Now that all properties are set, freeze the object for immutability
+    this.freezeObject();
   }
 
   /**
@@ -459,7 +460,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
   /**
    * Check if this directory path equals another
    */
-  equals(other: WorkingDirectoryPath): boolean {
+  override equals(other: WorkingDirectoryPath): boolean {
     return super.equals(other) &&
            this.originalPath === other.originalPath &&
            this.isAbsolute === other.isAbsolute;

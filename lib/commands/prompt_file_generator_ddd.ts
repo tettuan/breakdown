@@ -129,7 +129,11 @@ export class PromptFileGeneratorDDD {
       let inputFilePath;
 
       try {
-        factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        if (!factoryResult.ok) {
+          throw new Error(`Factory creation failed: ${factoryResult.error}`);
+        }
+        factory = factoryResult.data;
         factory.validateAll();
         const params = factory.getAllParams();
         promptFilePath = params.promptFilePath;

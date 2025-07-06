@@ -1,6 +1,6 @@
 import { assertEquals } from "../deps.ts";
 import { WorkspaceErrorHandlerImpl } from "./error_handler.ts";
-import { WorkspaceError, WorkspaceInitError } from "./errors.ts";
+import { createWorkspaceInitError } from "./errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 
 Deno.test("WorkspaceErrorHandler", async (t) => {
@@ -11,7 +11,7 @@ Deno.test("WorkspaceErrorHandler", async (t) => {
   // Main Test
   await t.step("should handle workspace-specific errors", () => {
     _logger.debug("Testing workspace error handling");
-    const error = new WorkspaceInitError("Initialization failed");
+    const error = createWorkspaceInitError("Initialization failed");
     const _output = captureConsoleOutput(() => {
       _handler.handleError(error, "INIT");
     });

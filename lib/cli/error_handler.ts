@@ -67,18 +67,32 @@ export function extractErrorMessage(error: unknown): string {
     return error;
   }
 
-  // Handle unified error types
-  if (typeof error === "object" && error !== null && "kind" in error) {
-    try {
-      return extractUnifiedErrorMessage(error as UnifiedError);
-    } catch {
-      // Fall through to generic handling if not a unified error
-    }
-  }
-
   if (typeof error === "object" && error !== null) {
-    const errorObj = error as { message?: string; error?: string };
-    return errorObj.message || errorObj.error || JSON.stringify(error);
+    const errorObj = error as { message?: string; error?: string; kind?: string };
+    
+    // If it has a kind property, try unified error handling first
+    if ("kind" in errorObj) {
+      try {
+        const unifiedMessage = extractUnifiedErrorMessage(error as UnifiedError);
+        // Only use unified message if it doesn't fall back to JSON.stringify
+        if (!unifiedMessage.startsWith("Unknown error:")) {
+          return unifiedMessage;
+        }
+      } catch {
+        // Fall through to standard property extraction
+      }
+    }
+    
+    // Try standard message/error properties
+    if (errorObj.message) {
+      return errorObj.message;
+    }
+    if (errorObj.error) {
+      return errorObj.error;
+    }
+    
+    // JSON fallback for objects without standard properties
+    return JSON.stringify(error);
   }
 
   return String(error);
@@ -100,12 +114,27 @@ export function formatError(error: unknown, kind?: string): string {
 }
 
 /**
+ * Type guard to check if value is a valid config object
+ */
+function isValidConfigObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && 
+         value !== undefined && 
+         typeof value === "object" && 
+         !Array.isArray(value);
+}
+
+/**
  * Checks if the current configuration is testing error handling
  *
- * @param config - The configuration object
+ * @param config - The configuration object (can be any type for testing)
  * @returns True if this is a test scenario for error handling
  */
-export function isTestingErrorHandling(config: Record<string, unknown>): boolean {
+export function isTestingErrorHandling(config: unknown): boolean {
+  // Type guard: ensure config is a valid object
+  if (!isValidConfigObject(config)) {
+    return false;
+  }
+
   return !!(config && typeof config === "object" &&
     "app_prompt" in config && config.app_prompt &&
     typeof config.app_prompt === "object" && "base_dir" in config.app_prompt &&
@@ -116,12 +145,12 @@ export function isTestingErrorHandling(config: Record<string, unknown>): boolean
  * Handles errors from two params handler with appropriate severity
  *
  * @param handlerError - The error from two params handler
- * @param config - The configuration object
+ * @param config - The configuration object (can be any type for testing)
  * @returns True if the error was handled gracefully, false if it should be thrown
  */
 export function handleTwoParamsError(
   handlerError: unknown,
-  config: Record<string, unknown>,
+  config: unknown,
 ): boolean {
   if (!handlerError || typeof handlerError !== "object" || !("kind" in handlerError)) {
     return false;
