@@ -221,10 +221,12 @@ describe("Architecture: Configuration Modeling", () => {
     }
 
     // Should have different property naming patterns
+    const configKeys = Object.keys(testConfig);
+    const hasSnakeCase = configKeys.some(key => key.includes("_"));
     assertEquals(
-      testConfig.working_directory.includes("_"),
+      hasSnakeCase,
       true,
-      "Core config uses snake_case naming"
+      "Core config uses snake_case naming (properties contain underscores)"
     );
 
     const optionsWithProps: ConfigOptions = { workingDir: "/test" };

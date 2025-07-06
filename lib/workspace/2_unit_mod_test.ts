@@ -106,9 +106,9 @@ describe("Workspace Module - Unit Tests", async () => {
     }
 
     if (_mod.createWorkspaceInitError) {
-      const initError = _mod.createWorkspaceInitError("Init failed");
+      const initError = _mod.createWorkspaceInitError("directory", "/test/path");
       assertExists(initError);
-      assertEquals(initError.message, "Init failed");
+      assertEquals(initError.message, "Failed to create workspace directory: /test/path");
       assertEquals(initError.type, "WorkspaceInitError");
       assertEquals(_mod.isWorkspaceError && _mod.isWorkspaceError(initError), true);
     }

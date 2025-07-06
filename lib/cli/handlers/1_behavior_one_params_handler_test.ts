@@ -22,8 +22,9 @@ describe("Behavior: Command Recognition", () => {
   it("should recognize and execute init command", async () => {
     logger.debug("Testing init command recognition");
 
-    // Mock the initialization function to avoid actual file operations
-    const originalInitialize = globalThis.Deno?.test ? undefined : await import("../initialization/workspace_initializer.ts");
+    // Mock the initialization function to avoid actual file operations  
+    // In test environment, we skip the actual initialization import
+    const originalInitialize = undefined;
     
     let initializationCalled = false;
     

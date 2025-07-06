@@ -235,8 +235,8 @@ export class WorkingDirectory {
     if (path === null || typeof path !== "string") {
       return error({
         kind: "InvalidPath",
-        message: "Working directory path must be a string or undefined",
-        path: path
+        path: String(path),
+        reason: "Working directory path must be a string or undefined"
       });
     }
 
@@ -244,8 +244,8 @@ export class WorkingDirectory {
     if (path === "") {
       return error({
         kind: "InvalidPath",
-        message: "Working directory path cannot be an empty string",
-        path: path
+        path: path,
+        reason: "Working directory path cannot be an empty string"
       });
     }
 
@@ -290,7 +290,7 @@ export type ConfigPrefixError =
   | { kind: "PrefixTooLong"; message: string; prefix: string };
 
 export type WorkingDirectoryError =
-  | { kind: "InvalidPath"; message: string; path: unknown }
+  | { kind: "InvalidPath"; path: string; reason: string }
   | { kind: "EmptyPath"; message: string };
 
 export type ConfigLoadError =

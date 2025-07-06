@@ -112,7 +112,9 @@ Deno.test("1_behavior: security validation - path traversal prevention", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "PATH_TRAVERSAL");
-      assertEquals(result.error.attemptedPath, path);
+      if (result.error.kind === "PATH_TRAVERSAL") {
+        assertEquals(result.error.attemptedPath, path);
+      }
     }
   });
 });
@@ -153,8 +155,10 @@ Deno.test("1_behavior: length validation", () => {
   
   if (!longResult.ok) {
     assertEquals(longResult.error.kind, "TOO_LONG");
-    assertEquals(longResult.error.maxLength, 260);
-    assertEquals(longResult.error.actualLength, 261);
+    if (longResult.error.kind === "TOO_LONG") {
+      assertEquals(longResult.error.maxLength, 260);
+      assertEquals(longResult.error.actualLength, 261);
+    }
   }
 });
 

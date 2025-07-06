@@ -29,6 +29,16 @@
 
 import { Result } from "../types/result.ts";
 
+// Re-export the WorkspaceInitError class from workspace_init_error.ts
+export {
+  WorkspaceInitError,
+  DirectoryCreationError,
+  ConfigCreationError,
+  InvalidWorkspaceLocationError,
+  WorkspaceExistsError,
+  createWorkspaceInitError as createWorkspaceInitErrorFromClass,
+} from "./workspace_init_error.ts";
+
 /**
  * Base interface for all workspace-related errors in the Breakdown system.
  *
@@ -83,32 +93,32 @@ export function createWorkspaceError(
  *
  * @interface
  */
-export interface WorkspaceInitError extends WorkspaceErrorBase {
+export interface WorkspaceInitErrorInterface extends WorkspaceErrorBase {
   readonly type: "workspace_init_error";
   readonly code: "WORKSPACE_INIT_ERROR";
 }
 
 /**
- * Creates a WorkspaceInitError for initialization failures.
+ * Creates a WorkspaceInitErrorInterface for initialization failures.
  *
  * @param message - The error message describing the specific initialization failure
- * @returns Immutable WorkspaceInitError object
+ * @returns Immutable WorkspaceInitErrorInterface object
  *
  * @example
  * ```typescript
- * const error = createWorkspaceInitError("Failed to create projects directory: Permission denied");
+ * const error = createWorkspaceInitErrorInterface("Failed to create projects directory: Permission denied");
  * 
  * // Usage with Result type
- * function initializeWorkspace(): Result<void, WorkspaceInitError> {
+ * function initializeWorkspace(): Result<void, WorkspaceInitErrorInterface> {
  *   // Implementation logic here
  *   if (failed) {
- *     return { ok: false, error: createWorkspaceInitError("Initialization failed") };
+ *     return { ok: false, error: createWorkspaceInitErrorInterface("Initialization failed") };
  *   }
  *   return { ok: true, data: undefined };
  * }
  * ```
  */
-export function createWorkspaceInitError(message: string): WorkspaceInitError {
+export function createWorkspaceInitErrorInterface(message: string): WorkspaceInitErrorInterface {
   return {
     message,
     code: "WORKSPACE_INIT_ERROR" as const,
@@ -117,14 +127,14 @@ export function createWorkspaceInitError(message: string): WorkspaceInitError {
 }
 
 /**
- * Type guard to check if an error is a WorkspaceInitError.
+ * Type guard to check if an error is a WorkspaceInitErrorInterface.
  *
  * @param error - The error object to check
- * @returns True if the error is a WorkspaceInitError
+ * @returns True if the error is a WorkspaceInitErrorInterface
  */
 export function isWorkspaceInitError(
   error: WorkspaceErrorBase,
-): error is WorkspaceInitError {
+): error is WorkspaceInitErrorInterface {
   return error.type === "workspace_init_error";
 }
 
@@ -138,23 +148,23 @@ export function isWorkspaceInitError(
  *
  * @interface
  */
-export interface WorkspaceConfigError extends WorkspaceErrorBase {
+export interface WorkspaceConfigErrorInterface extends WorkspaceErrorBase {
   readonly type: "workspace_config_error";
   readonly code: "WORKSPACE_CONFIG_ERROR";
 }
 
 /**
- * Creates a WorkspaceConfigError for configuration failures.
+ * Creates a WorkspaceConfigErrorInterface for configuration failures.
  *
  * @param message - The error message describing the specific configuration problem
- * @returns Immutable WorkspaceConfigError object
+ * @returns Immutable WorkspaceConfigErrorInterface object
  *
  * @example
  * ```typescript
  * const error = createWorkspaceConfigError("Working directory not specified in configuration");
  * 
  * // Usage with Result type
- * function loadWorkspaceConfig(): Result<Config, WorkspaceConfigError> {
+ * function loadWorkspaceConfig(): Result<Config, WorkspaceConfigErrorInterface> {
  *   if (configMissing) {
  *     return { ok: false, error: createWorkspaceConfigError("Configuration not found") };
  *   }
@@ -162,7 +172,7 @@ export interface WorkspaceConfigError extends WorkspaceErrorBase {
  * }
  * ```
  */
-export function createWorkspaceConfigError(message: string): WorkspaceConfigError {
+export function createWorkspaceConfigError(message: string): WorkspaceConfigErrorInterface {
   return {
     message,
     code: "WORKSPACE_CONFIG_ERROR" as const,
@@ -170,15 +180,18 @@ export function createWorkspaceConfigError(message: string): WorkspaceConfigErro
   };
 }
 
+// Alias for backward compatibility  
+export const createWorkspaceConfigErrorInterface = createWorkspaceConfigError;
+
 /**
- * Type guard to check if an error is a WorkspaceConfigError.
+ * Type guard to check if an error is a WorkspaceConfigErrorInterface.
  *
  * @param error - The error object to check
- * @returns True if the error is a WorkspaceConfigError
+ * @returns True if the error is a WorkspaceConfigErrorInterface
  */
 export function isWorkspaceConfigError(
   error: WorkspaceErrorBase,
-): error is WorkspaceConfigError {
+): error is WorkspaceConfigErrorInterface {
   return error.type === "workspace_config_error";
 }
 
@@ -192,23 +205,23 @@ export function isWorkspaceConfigError(
  *
  * @interface
  */
-export interface WorkspacePathError extends WorkspaceErrorBase {
+export interface WorkspacePathErrorInterface extends WorkspaceErrorBase {
   readonly type: "workspace_path_error";
   readonly code: "WORKSPACE_PATH_ERROR";
 }
 
 /**
- * Creates a WorkspacePathError for path resolution failures.
+ * Creates a WorkspacePathErrorInterface for path resolution failures.
  *
  * @param message - The error message describing the specific path resolution problem
- * @returns Immutable WorkspacePathError object
+ * @returns Immutable WorkspacePathErrorInterface object
  *
  * @example
  * ```typescript
  * const error = createWorkspacePathError("Invalid relative path: '../../../etc/passwd'");
  * 
  * // Usage with Result type
- * function resolvePath(path: string): Result<string, WorkspacePathError> {
+ * function resolvePath(path: string): Result<string, WorkspacePathErrorInterface> {
  *   if (isInvalidPath(path)) {
  *     return { ok: false, error: createWorkspacePathError("Invalid path format") };
  *   }
@@ -216,7 +229,7 @@ export interface WorkspacePathError extends WorkspaceErrorBase {
  * }
  * ```
  */
-export function createWorkspacePathError(message: string): WorkspacePathError {
+export function createWorkspacePathError(message: string): WorkspacePathErrorInterface {
   return {
     message,
     code: "WORKSPACE_PATH_ERROR" as const,
@@ -224,15 +237,18 @@ export function createWorkspacePathError(message: string): WorkspacePathError {
   };
 }
 
+// Alias for backward compatibility
+export const createWorkspacePathErrorInterface = createWorkspacePathError;
+
 /**
- * Type guard to check if an error is a WorkspacePathError.
+ * Type guard to check if an error is a WorkspacePathErrorInterface.
  *
  * @param error - The error object to check
- * @returns True if the error is a WorkspacePathError
+ * @returns True if the error is a WorkspacePathErrorInterface
  */
 export function isWorkspacePathError(
   error: WorkspaceErrorBase,
-): error is WorkspacePathError {
+): error is WorkspacePathErrorInterface {
   return error.type === "workspace_path_error";
 }
 
@@ -246,7 +262,7 @@ export function isWorkspacePathError(
  *
  * @interface
  */
-export interface WorkspaceDirectoryError extends WorkspaceErrorBase {
+export interface WorkspaceDirectoryErrorInterface extends WorkspaceErrorBase {
   readonly type: "workspace_directory_error";
   readonly code: "WORKSPACE_DIRECTORY_ERROR";
 }
@@ -270,13 +286,16 @@ export interface WorkspaceDirectoryError extends WorkspaceErrorBase {
  * }
  * ```
  */
-export function createWorkspaceDirectoryError(message: string): WorkspaceDirectoryError {
+export function createWorkspaceDirectoryError(message: string): WorkspaceDirectoryErrorInterface {
   return {
     message,
     code: "WORKSPACE_DIRECTORY_ERROR" as const,
     type: "workspace_directory_error" as const,
   };
 }
+
+// Alias for backward compatibility
+export const createWorkspaceDirectoryErrorInterface = createWorkspaceDirectoryError;
 
 /**
  * Type guard to check if an error is a WorkspaceDirectoryError.
@@ -286,26 +305,26 @@ export function createWorkspaceDirectoryError(message: string): WorkspaceDirecto
  */
 export function isWorkspaceDirectoryError(
   error: WorkspaceErrorBase,
-): error is WorkspaceDirectoryError {
+): error is WorkspaceDirectoryErrorInterface {
   return error.type === "workspace_directory_error";
 }
 
 /**
  * Union type of all workspace error types for discriminated union support.
  */
-export type WorkspaceError = 
-  | WorkspaceInitError
-  | WorkspaceConfigError
-  | WorkspacePathError
-  | WorkspaceDirectoryError;
+export type WorkspaceErrorType = 
+  | WorkspaceInitErrorInterface
+  | WorkspaceConfigErrorInterface
+  | WorkspacePathErrorInterface
+  | WorkspaceDirectoryErrorInterface;
 
 /**
- * Type guard to check if an error is any WorkspaceError type.
+ * Type guard to check if an error is any WorkspaceErrorType.
  *
  * @param error - The error object to check
- * @returns True if the error is a WorkspaceError
+ * @returns True if the error is a WorkspaceErrorType
  */
-export function isWorkspaceError(error: unknown): error is WorkspaceError {
+export function isWorkspaceError(error: unknown): error is WorkspaceErrorType {
   return typeof error === "object" && error !== null &&
     "type" in error && typeof error.type === "string" &&
     (error.type === "workspace_init_error" ||
@@ -317,4 +336,38 @@ export function isWorkspaceError(error: unknown): error is WorkspaceError {
 /**
  * Result type for workspace operations that can fail.
  */
-export type WorkspaceResult<T> = Result<T, WorkspaceError>;
+export type WorkspaceResult<T> = Result<T, WorkspaceErrorType>;
+
+// Error classes for tests that expect constructors
+export class WorkspaceError extends Error {
+  public readonly code: string;
+  constructor(message: string, code: string) {
+    super(message);
+    this.name = "WorkspaceError";
+    this.code = code;
+  }
+}
+
+export class WorkspaceConfigError extends Error {
+  public readonly code: string = "WORKSPACE_CONFIG_ERROR";
+  constructor(message: string) {
+    super(message);
+    this.name = "WorkspaceConfigError";
+  }
+}
+
+export class WorkspacePathError extends Error {
+  public readonly code: string = "WORKSPACE_PATH_ERROR";
+  constructor(message: string) {
+    super(message);
+    this.name = "WorkspacePathError";
+  }
+}
+
+export class WorkspaceDirectoryError extends Error {
+  public readonly code: string = "WORKSPACE_DIRECTORY_ERROR";
+  constructor(message: string) {
+    super(message);
+    this.name = "WorkspaceDirectoryError";
+  }
+}

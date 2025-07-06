@@ -106,6 +106,12 @@ export * from "./types.ts";
 export * from "./errors.ts";
 
 /**
+ * Workspace initialization error classes.
+ * @see {@link ./workspace_init_error.ts}
+ */
+export * from "./workspace_init_error.ts";
+
+/**
  * Main workspace class and related functions for managing Breakdown workspaces.
  * @see {@link ./workspace.ts}
  */
