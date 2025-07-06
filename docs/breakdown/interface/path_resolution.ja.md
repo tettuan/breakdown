@@ -292,7 +292,7 @@ f_task_minimal.md      # 最小限の適応
 ### 3. 設定の明確化
 
 ```yaml
-# app.yml
+# default-app.yml
 working_dir: ".agent/breakdown"
 app_prompt:
   base_dir: "lib/breakdown/prompts"  # 明確なパス指定

@@ -126,6 +126,11 @@ type LayerType = {
  * 
  * 役割: 設定の切り替えコンテキスト
  * 例: "breakdown"(標準), "search"(検索), "custom"(カスタム)
+ * 
+ * 重要: ConfigProfileNameは必須オプションではない
+ * - CLIから未指定時は自動的に "default" が適用される
+ * - 型システム上は常にConfigProfileNameとして扱われる
+ * - デフォルト値の適用により、型安全性を保持
  */
 type ConfigProfileName = {
   readonly value: string;
@@ -136,6 +141,10 @@ type ConfigProfileName = {
   getConfigPath(): string;
   getDirectiveTypes(): readonly DirectiveType[];
   getLayerTypes(): readonly LayerType[];
+  
+  // デフォルト値関連の操作
+  static createDefault(): ConfigProfileName;
+  static fromCliOption(option: string | null | undefined): ConfigProfileName;
   
   // 型安全な比較
   equals(other: ConfigProfileName): boolean;
@@ -150,11 +159,13 @@ type ConfigProfileName = {
 Breakdownでは、CLI引数をそのまま使用するのではなく、**パターンベースバリデーション**により信頼性を確保しています：
 
 ```
-ProfileName → BreakdownConfig → CustomConfig.two.ParamsConfig
-     ↓              ↓                      ↓
+CLI args → ConfigProfileName.fromCliOption("default") → BreakdownConfig → CustomConfig.two.ParamsConfig
+     ↓                           ↓                           ↓                      ↓
 CLI args → BreakdownParams (pattern validation) → TwoParamsResult
      ↓                                                    ↓
 TwoParams → DirectiveType + LayerType (pattern-validated)
+
+注意: ProfileNameが未指定時は自動的に "default" が適用される
 ```
 
 ### なぜパターンバリデーションが必要なのか
@@ -162,7 +173,8 @@ TwoParams → DirectiveType + LayerType (pattern-validated)
 1. **設定の柔軟性**: 環境やプロジェクトごとに異なる値を許可
 2. **品質保証**: 不正な値によるエラーを事前に防止
 3. **拡張性**: 新しいDirectiveTypeやLayerTypeを設定で追加可能
-4. **一貫性**: ProfileNameによる設定切り替えで環境別対応
+4. **一貫性**: ConfigProfileNameによる設定切り替えで環境別対応
+5. **シンプルさ**: 未指定時のデフォルト値適用で利用しやすさを向上
 
 ### エラーハンドリング戦略
 
@@ -262,13 +274,19 @@ TwoParams (pattern-validated) → {base_dir}/{directive}/{layer}/filename
 
 ```typescript
 /**
- * Smart Constructors - 型安全な生成パターン
+ * Smart Constructors - 型安全な生成パターン（デフォルト値自動適用）
  */
 namespace TwoParams {
   export function create(
     directive: string,
     layer: string,
     profile: ConfigProfileName
+  ): Result<TwoParams, TwoParamsValidationError>;
+  
+  export function createWithCliOption(
+    directive: string,
+    layer: string,
+    profileOption: string | null | undefined
   ): Result<TwoParams, TwoParamsValidationError>;
 }
 
@@ -282,16 +300,24 @@ namespace DirectiveType {
 namespace LayerType {
   export function create(value: string): Result<LayerType, InvalidLayerError>;
 }
+
+namespace ConfigProfileName {
+  export function create(value: string): ConfigProfileName;
+  export function createDefault(): ConfigProfileName;
+  export function fromCliOption(option: string | null | undefined): ConfigProfileName;
+}
 ```
 
 ### 統合使用例 - CLI実行からファイル特定まで
 
 ```typescript
-// バリデーション → パス解決の完全なフロー
-const profile = ConfigProfileName.create("breakdown");
-if (profile.ok) {
-  const config = BreakdownConfig.load(profile.data);
-  const paramsResult = BreakdownParams.validate(["to", "issue"], config.CustomConfig.two.ParamsConfig);
+// バリデーション → パス解決の完全なフロー（デフォルト値自動適用）
+const cliProfileOption: string | null | undefined = extractConfigFromCLI(); // null, "breakdown", "custom", etc.
+const profile = ConfigProfileName.fromCliOption(cliProfileOption); // 自動的に "default" が適用
+const config = BreakdownConfig.load(profile);
+
+if (config.ok) {
+  const paramsResult = BreakdownParams.validate(["to", "issue"], config.data.customConfig.two.ParamsConfig);
   
   if (paramsResult.type === "two") {
     const twoParams = TwoParams.fromResult(paramsResult);
@@ -307,6 +333,13 @@ if (profile.ok) {
     const schemaPath = twoParams.data.resolveSchemaFilePath("schemas");
     // 結果: "schemas/to/issue/base.schema.json"
   }
+}
+
+// より簡潔な使用例
+const twoParamsResult = TwoParams.createWithCliOption("to", "issue", null); // nullは自動的にデフォルト値を適用
+if (twoParamsResult.ok) {
+  console.log(twoParamsResult.data.profile.value); // "default"
+  console.log(twoParamsResult.data.profile.isDefault); // true
 }
 ```
 

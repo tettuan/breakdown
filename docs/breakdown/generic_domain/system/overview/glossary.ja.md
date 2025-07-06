@@ -11,8 +11,8 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 日本語名 | 英語名 | 実装名 | 説明 |
 |----------|--------|--------|------|
 | **処理分類** | | | |
-| 処理方向型 | Directive Type | DirectiveType | 処理の方向性を表す型定義（to, summary, defect, init, find）。user.ymlでユーザー定義可能 |
-| 階層型 | Layer Type | LayerType | 対象階層を表す型定義（project, issue, task, bugs, temp）。user.ymlでユーザー定義可能 |
+| 処理方向型 | Directive Type | DirectiveType | 処理の方向性を表す型定義（to, summary, defect, init, find）。*-user.ymlでユーザー定義可能 |
+| 階層型 | Layer Type | LayerType | 対象階層を表す型定義（project, issue, task, bugs, temp）。*-user.ymlでユーザー定義可能 |
 | 適応タイプ | Adaptation Type | adaptation | プロンプト特化のための修飾子 |
 | **ファイル管理** | | | |
 | 入力ファイル | Input File | fromFile | 処理対象となる入力データファイル |
@@ -20,8 +20,8 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | プロンプト基底 | Prompt Base Directory | app_prompt.base_dir | プロンプトテンプレート格納場所 |
 | スキーマ基底 | Schema Base Directory | app_schema.base_dir | JSONスキーマファイル格納場所 |
 | **設定管理** | | | |
-| アプリ設定 | Application Config | app.yml | アプリケーション基本設定ファイル |
-| ユーザー設定 | User Config | user.yml | ユーザー固有の設定ファイル |
+| アプリ設定 | Application Config | *-app.yml | アプリケーション基本設定ファイル |
+| ユーザー設定 | User Config | *-user.yml | ユーザー固有の設定ファイル |
 | カスタム変数 | User Variables | customVariables | --uv-*で指定するユーザー定義変数 |
 | **ワークスペース** | | | |
 | 実行基準ディレクトリ | Current Working Directory | CWD | Breakdownコマンド実行時のカレントディレクトリ |
@@ -82,8 +82,8 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| DirectiveType | options.ja.md, path.ja.md | 処理の方向性を指定するパラメータ。`to`（変換）、`summary`（要約）、`defect`（欠陥検出）、`init`（初期化）などの値を取り、どの方向に処理を向かわせるかを決定する。取りうる値はuser.ymlでユーザーが自由に定義可能。パターンベースバリデーションにより型安全性を保証。 | LayerType, コマンド, 処理方向型, user.yml |
-| layerType | options.ja.md, path.ja.md | 処理対象の階層を指定するパラメータ。`project`、`issue`、`task` のいずれかを指定し、処理対象の粒度を決定する。階層値には次の処理への方向性（ベクトル情報）も含まれる。取りうる値はuser.ymlでユーザーが自由に定義可能。 | demonstrativeType, コマンド, 階層型, user.yml |
+| DirectiveType | options.ja.md, path.ja.md | 処理の方向性を指定するパラメータ。`to`（変換）、`summary`（要約）、`defect`（欠陥検出）、`init`（初期化）などの値を取り、どの方向に処理を向かわせるかを決定する。取りうる値は*-user.ymlでユーザーが自由に定義可能。パターンベースバリデーションにより型安全性を保証。 | LayerType, コマンド, 処理方向型, *-user.yml |
+| layerType | options.ja.md, path.ja.md | 処理対象の階層を指定するパラメータ。`project`、`issue`、`task` のいずれかを指定し、処理対象の粒度を決定する。階層値には次の処理への方向性（ベクトル情報）も含まれる。取りうる値は*-user.ymlでユーザーが自由に定義可能。 | demonstrativeType, コマンド, 階層型, *-user.yml |
 | adaptationType | options.ja.md, path.ja.md | プロンプトの種類を指定するパラメータ（-a, --adaptation）。`strict`、`a` などの値を取り、プロンプトファイル名のsuffixとして使用される。 | -a, --adaptation, プロンプト種別 |
 
 #### 1.2 ファイル・ディレクトリ管理
@@ -91,7 +91,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
 | CWD | path.ja.md, app_config.ja.md | Current Working Directory。Breakdownコマンドを実行した時点でのカレントディレクトリ。プロンプトやスキーマのbase_dirはCWD起点で解決される。`Deno.cwd()`で取得される。 | working_dir, app_prompt.base_dir, app_schema.base_dir |
-| working_dir | app_config.ja.md, init.ja.md | アプリケーションの作業ディレクトリ。デフォルトは `.agent/breakdown/` に設定される。入力ファイル（-i）や出力ファイル（-o）のパス解決に使用される。プロンプトやスキーマのディレクトリ解決には使用されない（それらはCWD起点で解決）。設定は `.agent/breakdown/config/app.yml` で管理される。 | base_dir, app_prompt.base_dir, app_schema.base_dir |
+| working_dir | app_config.ja.md, init.ja.md | アプリケーションの作業ディレクトリ。デフォルトは `.agent/breakdown/` に設定される。入力ファイル（-i）や出力ファイル（-o）のパス解決に使用される。プロンプトやスキーマのディレクトリ解決には使用されない（それらはCWD起点で解決）。設定は `.agent/breakdown/config/default-app.yml` で管理される。 | base_dir, app_prompt.base_dir, app_schema.base_dir |
 | base_dir | app_prompt.ja.md, app_schema.ja.md | プロンプトやスキーマの基本ディレクトリ。プロンプトの場合は `prompts/` がデフォルト。スキーマの場合は `schemas/` がデフォルト。これらのディレクトリは `lib` 配下の雛形ファイルからコピーされる。 | working_dir, prompts/, schemas/ |
 | prompts/ | init.ja.md, app_prompt.ja.md | プロンプトファイルを格納するディレクトリ。デフォルトでは `prompts/` が使用されるが、`app_prompt.base_dir` で変更可能。プロンプトファイルの配置場所として柔軟な運用が可能。 | base_dir, app_prompt.base_dir |
 | schemas/ | app_schema.ja.md | スキーマファイルを格納するディレクトリ。デフォルトでは `schemas/` が使用されるが、`app_schema.base_dir` で変更可能。スキーマファイルの配置場所として柔軟な運用が可能。 | base_dir, app_schema.base_dir |
@@ -100,9 +100,9 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| app.yml | init.ja.md, app_config.ja.md | アプリケーションの設定ファイル。`.agent/breakdown/config/app.yml` に配置される。作業ディレクトリやその他の基本設定を管理する。既存のファイルは上書きされない。設定は階層的に管理され、アプリケーション設定とユーザー設定の2層構造を持つ。 | working_dir, config/ |
-| user.yml | app_config.ja.md | ユーザー固有の設定ファイル。アプリケーション設定の階層化に存在し、アプリケーション設定を上書きする。DirectiveType（処理方向型）とLayerType（階層型）の取りうる値をユーザーが自由に定義可能。 | app.yml, config/, DirectiveType, LayerType |
-| config/ | init.ja.md, app_config.ja.md | 設定ファイルを格納するディレクトリ。`.agent/breakdown/config/` に配置され、アプリケーションの各種設定を管理する。 | app.yml, working_dir |
+| *-app.yml | init.ja.md, app_config.ja.md | アプリケーションの設定ファイル。`.agent/breakdown/config/default-app.yml` に配置される。作業ディレクトリやその他の基本設定を管理する。既存のファイルは上書きされない。設定は階層的に管理され、アプリケーション設定とユーザー設定の2層構造を持つ。 | working_dir, config/ |
+| *-user.yml | app_config.ja.md | ユーザー固有の設定ファイル。アプリケーション設定の階層化に存在し、アプリケーション設定を上書きする。DirectiveType（処理方向型）とLayerType（階層型）の取りうる値をユーザーが自由に定義可能。 | *-app.yml, config/, DirectiveType, LayerType |
+| config/ | init.ja.md, app_config.ja.md | 設定ファイルを格納するディレクトリ。`.agent/breakdown/config/` に配置され、アプリケーションの各種設定を管理する。 | *-app.yml, working_dir |
 | プロファイルプレフィクス | app_config.ja.md | 用途別設定の切り替えに使用されるプレフィクス（例：`breakdown-`, `search-`）。BreakdownConfigによってプロファイルプレフィクスが付与された設定ファイル（例：`breakdown-app.yml`, `search-user.yml`）を自動的に読み込み、DirectiveTypeとLayerTypeの組み合わせを用途に応じて切り替えることができる。例えばデフォルトの`breakdown`プロファイルでは`to,summary,defect`のDirectiveTypeを使用し、`search`プロファイルでは`web,rag,db`のDirectiveTypeを使用するといった、異なる処理体系を適用可能。 | BreakdownConfig, DirectiveType, LayerType, breakdown-, search- |
 
 #### 1.4 入出力処理
@@ -131,7 +131,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| BreakdownConfig | app_config.ja.md | 設定管理を担当するモジュール。アプリケーション設定とユーザー設定の読み込みと管理を行う。プロファイルプレフィクス（breakdown-, search-等）を用いて、用途に応じたDirectiveTypeとLayerTypeの組み合わせを切り替えることができる。 | app.yml, user.yml, プロファイルプレフィクス |
+| BreakdownConfig | app_config.ja.md | 設定管理を担当するモジュール。アプリケーション設定とユーザー設定の読み込みと管理を行う。プロファイルプレフィクス（breakdown-, search-等）を用いて、用途に応じたDirectiveTypeとLayerTypeの組み合わせを切り替えることができる。 | *-app.yml, *-user.yml, プロファイルプレフィクス |
 | BreakdownParams | options.ja.md | パラメータ処理を担当するモジュール。コマンドライン引数の解析とバリデーションを行う。ZeroParamsResult、OneParamResult、TwoParamsResultを生成（旧NoParams、Single、Doubleから変更）。 | ZeroParamsResult, OneParamResult, TwoParamsResult |
 | BreakdownPrompt | app_prompt.ja.md | プロンプト生成を担当するモジュール。変数置換やスキーマ情報の埋め込みを行い、プロンプトを生成する。 | promptmanager, プロンプト生成 |
 | BreakdownLogger | logging.ja.md | ロギング機能を担当するモジュール。デバッグ情報の出力やエラー処理を行う。 | LOG_LEVEL, DEBUG |

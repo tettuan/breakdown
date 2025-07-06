@@ -1,6 +1,6 @@
 # PromptVariablesFactory
 
-> **アプリケーション設定（app.yml, user.yml）の詳細仕様については [app_config.ja.md](./app_config.ja.md) を参照してください。**
+> **アプリケーション設定（*-app.yml, *-user.yml）の詳細仕様については [app_config.ja.md](./app_config.ja.md) を参照してください。**
 
 ## 概要
 
@@ -40,7 +40,7 @@ CLI・テスト・アプリ本体は必ずこのFactory経由でパス解決・�
 ## 入出力
 
 - **入力**:  
-  - BreakdownConfig（app.yml, user.yml などから読み込まれる設定値）
+  - BreakdownConfig（*-app.yml, *-user.yml などから読み込まれる設定値）
   - CLIパラメータ（TwoParamsResult等、コマンドライン引数やAPI経由で渡されるパラメータ全般）
   - カスタム変数（--* オプションで指定されるユーザー定義変数）
 - **出力**:  
