@@ -17,7 +17,7 @@ import { error, ok, type Result } from "../types/result.ts";
  * Each error type has a unique 'kind' discriminator for type safety
  * and follows Domain-Driven Design principles for error handling.
  */
-export type StdinError =
+export type StdinErrorType =
   | {
     kind: "ReadError";
     message: string;
@@ -47,36 +47,36 @@ export type StdinError =
   };
 
 /**
- * Type guards for StdinError discrimination
+ * Type guards for StdinErrorType discrimination
  */
-export function isReadError(error: StdinError): error is Extract<StdinError, { kind: "ReadError" }> {
+export function isReadError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ReadError" }> {
   return error.kind === "ReadError";
 }
 
-export function isTimeoutError(error: StdinError): error is Extract<StdinError, { kind: "TimeoutError" }> {
+export function isTimeoutError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "TimeoutError" }> {
   return error.kind === "TimeoutError";
 }
 
-export function isEmptyInputError(error: StdinError): error is Extract<StdinError, { kind: "EmptyInputError" }> {
+export function isEmptyInputError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "EmptyInputError" }> {
   return error.kind === "EmptyInputError";
 }
 
-export function isNotAvailableError(error: StdinError): error is Extract<StdinError, { kind: "NotAvailableError" }> {
+export function isNotAvailableError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "NotAvailableError" }> {
   return error.kind === "NotAvailableError";
 }
 
-export function isValidationError(error: StdinError): error is Extract<StdinError, { kind: "ValidationError" }> {
+export function isValidationError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ValidationError" }> {
   return error.kind === "ValidationError";
 }
 
-export function isConfigurationError(error: StdinError): error is Extract<StdinError, { kind: "ConfigurationError" }> {
+export function isConfigurationError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ConfigurationError" }> {
   return error.kind === "ConfigurationError";
 }
 
 /**
  * Format stdin error for display
  */
-export function formatStdinError(stdinError: StdinError): string {
+export function formatStdinError(stdinError: StdinErrorType): string {
   switch (stdinError.kind) {
     case "ReadError":
       return `Failed to read from stdin: ${stdinError.message}`;
@@ -90,6 +90,21 @@ export function formatStdinError(stdinError: StdinError): string {
       return `Validation error in ${stdinError.field}: ${stdinError.message}`;
     case "ConfigurationError":
       return `Configuration error for ${stdinError.setting}${stdinError.value ? `: ${stdinError.value}` : ""}`;
+  }
+}
+
+/**
+ * StdinError class for backward compatibility and testing
+ * Provides traditional Error class interface for stdin-related errors
+ */
+export class StdinError extends Error {
+  /**
+   * Creates a new StdinError instance.
+   * @param message The error message describing the stdin error.
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = "StdinError";
   }
 }
 
@@ -127,7 +142,7 @@ export class StdinReadingConfiguration {
     allowEmpty: boolean = false,
     timeout: number = 30000,
     enhancedOptions: EnhancedStdinOptions = {},
-  ): Result<StdinReadingConfiguration, StdinError> {
+  ): Result<StdinReadingConfiguration, StdinErrorType> {
     // Validate timeout
     if (timeout <= 0) {
       return error({
@@ -166,21 +181,21 @@ export class StdinReadingConfiguration {
   /**
    * Factory for standard reading configuration
    */
-  static standard(): Result<StdinReadingConfiguration, StdinError> {
+  static standard(): Result<StdinReadingConfiguration, StdinErrorType> {
     return StdinReadingConfiguration.create(false, 30000);
   }
 
   /**
    * Factory for permissive reading configuration (allows empty input)
    */
-  static permissive(timeout: number = 30000): Result<StdinReadingConfiguration, StdinError> {
+  static permissive(timeout: number = 30000): Result<StdinReadingConfiguration, StdinErrorType> {
     return StdinReadingConfiguration.create(true, timeout);
   }
 
   /**
    * Factory for CI-safe reading configuration
    */
-  static ciSafe(): Result<StdinReadingConfiguration, StdinError> {
+  static ciSafe(): Result<StdinReadingConfiguration, StdinErrorType> {
     return StdinReadingConfiguration.create(true, 5000, { forceRead: false });
   }
 
@@ -219,7 +234,7 @@ export interface StdinOptions {
  */
 export async function readStdinSafe(
   config: StdinReadingConfiguration,
-): Promise<Result<string, StdinError>> {
+): Promise<Result<string, StdinErrorType>> {
   try {
     const content = await readStdinEnhanced(config.enhancedOptions);
     return ok(content);
@@ -292,7 +307,7 @@ export class StdinAvailability {
    * Smart Constructor for StdinAvailability
    * Performs actual detection and validation
    */
-  static detect(): Result<StdinAvailability, StdinError> {
+  static detect(): Result<StdinAvailability, StdinErrorType> {
     try {
       // Check if stdin is a terminal (TTY)
       const isTerminal = Deno.stdin.isTerminal();
@@ -356,7 +371,7 @@ export class StdinAvailability {
  * 
  * @returns Result containing availability status or specific error
  */
-export function checkStdinAvailability(): Result<StdinAvailability, StdinError> {
+export function checkStdinAvailability(): Result<StdinAvailability, StdinErrorType> {
   return StdinAvailability.detect();
 }
 
@@ -398,7 +413,7 @@ export class StdoutWriteConfiguration {
   static create(
     encoding: "utf-8" | "utf-16le" | "utf-16be" = "utf-8",
     flushImmediate: boolean = false,
-  ): Result<StdoutWriteConfiguration, StdinError> {
+  ): Result<StdoutWriteConfiguration, StdinErrorType> {
     const validEncodings = ["utf-8", "utf-16le", "utf-16be"];
     if (!validEncodings.includes(encoding)) {
       return error({
@@ -414,14 +429,14 @@ export class StdoutWriteConfiguration {
   /**
    * Factory for standard configuration
    */
-  static standard(): Result<StdoutWriteConfiguration, StdinError> {
+  static standard(): Result<StdoutWriteConfiguration, StdinErrorType> {
     return StdoutWriteConfiguration.create("utf-8", false);
   }
 
   /**
    * Factory for immediate flush configuration
    */
-  static immediate(): Result<StdoutWriteConfiguration, StdinError> {
+  static immediate(): Result<StdoutWriteConfiguration, StdinErrorType> {
     return StdoutWriteConfiguration.create("utf-8", true);
   }
 
@@ -445,7 +460,7 @@ export class StdoutWriteConfiguration {
 export function writeStdoutSafe(
   content: string,
   config: StdoutWriteConfiguration,
-): Result<void, StdinError> {
+): Result<void, StdinErrorType> {
   try {
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
@@ -647,7 +662,7 @@ export class StdinAvailabilityCheckOptions {
   static create(
     isTerminalOverride?: boolean,
     forTesting: boolean = false,
-  ): Result<StdinAvailabilityCheckOptions, StdinError> {
+  ): Result<StdinAvailabilityCheckOptions, StdinErrorType> {
     // Validate that if isTerminalOverride is provided, forTesting should be true
     if (isTerminalOverride !== undefined && !forTesting) {
       return error({
@@ -663,14 +678,14 @@ export class StdinAvailabilityCheckOptions {
   /**
    * Factory for production use
    */
-  static production(): Result<StdinAvailabilityCheckOptions, StdinError> {
+  static production(): Result<StdinAvailabilityCheckOptions, StdinErrorType> {
     return StdinAvailabilityCheckOptions.create();
   }
 
   /**
    * Factory for testing with terminal override
    */
-  static testing(isTerminal: boolean): Result<StdinAvailabilityCheckOptions, StdinError> {
+  static testing(isTerminal: boolean): Result<StdinAvailabilityCheckOptions, StdinErrorType> {
     return StdinAvailabilityCheckOptions.create(isTerminal, true);
   }
 
@@ -705,11 +720,7 @@ export function isStdinAvailableSafe(
     
     return ok(!isTerminal);
   } catch (caughtError) {
-    return error({
-      kind: "ReadError",
-      message: "Failed to check stdin availability",
-      originalError: caughtError instanceof Error ? caughtError : undefined,
-    });
+    return error(new StdinError("Failed to check stdin availability"));
   }
 }
 

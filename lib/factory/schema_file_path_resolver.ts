@@ -23,7 +23,7 @@ import { existsSync } from "@std/fs";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
-import type { PathResolutionError } from "./prompt_template_path_resolver.ts";
+import type { PathResolutionError } from "../types/path_resolution_option.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
@@ -515,6 +515,48 @@ export class SchemaFilePathResolver {
           message: `Schema file not found at: ${error.attempted[0]}`,
           path: error.attempted[0] || "",
         };
+
+      case "InvalidStrategy":
+        return {
+          kind: "ConfigurationError",
+          message: `Invalid strategy: ${error.strategy}`,
+          setting: "path_strategy",
+        };
+
+      case "EmptyBaseDir":
+        return {
+          kind: "ConfigurationError",
+          message: "Base directory is empty",
+          setting: "base_directory",
+        };
+
+      case "InvalidPath":
+        return {
+          kind: "SchemaNotFound",
+          message: `Invalid path: ${error.path} - ${error.reason}`,
+          path: error.path || "",
+        };
+
+      case "NoValidFallback":
+        return {
+          kind: "SchemaNotFound",
+          message: `No valid fallback found. Attempts: ${error.attempts.join(", ")}`,
+          path: error.attempts[0] || "",
+        };
+
+      case "ValidationFailed":
+        return {
+          kind: "SchemaNotFound",
+          message: `Validation failed for path: ${error.path}`,
+          path: error.path || "",
+        };
+
+      default:
+        return {
+          kind: "FileSystemError",
+          message: "Unknown error occurred",
+          operation: "path_resolution",
+        };
     }
   }
 
@@ -552,6 +594,24 @@ export function formatSchemaError(error: PathResolutionError): string {
     case "TemplateNotFound":
       return `Schema file not found: ${error.attempted[0]}\n` +
         `Please ensure the schema file exists at the expected location.`;
+
+    case "InvalidStrategy":
+      return `Invalid Strategy: ${error.strategy}`;
+
+    case "EmptyBaseDir":
+      return `Base directory is empty`;
+
+    case "InvalidPath":
+      return `Invalid Path: ${error.path} - ${error.reason}`;
+
+    case "NoValidFallback":
+      return `No valid fallback found. Attempts: ${error.attempts.join(", ")}`;
+
+    case "ValidationFailed":
+      return `Validation failed for path: ${error.path}`;
+
+    default:
+      return `Unknown schema error occurred`;
   }
 }
 

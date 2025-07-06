@@ -18,16 +18,8 @@ const mockTwoParamsResult = {
   options: {},
 } as any;
 
-const mockDirective = DirectiveType.create(mockTwoParamsResult);
-const mockLayer = LayerType.create(mockTwoParamsResult);
-
-let validDirective: DirectiveType;
-let validLayer: LayerType;
-
-if (mockDirective.ok && mockLayer.ok) {
-  validDirective = mockDirective.data;
-  validLayer = mockLayer.data;
-}
+const validDirective = DirectiveType.create(mockTwoParamsResult);
+const validLayer = LayerType.create(mockTwoParamsResult);
 
 const validFilename = "template.md";
 const invalidFilename = "template.txt";

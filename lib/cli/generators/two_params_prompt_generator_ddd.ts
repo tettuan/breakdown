@@ -344,17 +344,16 @@ export class TwoParamsPromptGenerator {
       // Create CLI parameters
       const cliParams = this.createCliParams(context);
 
-      // Create factory
-      let factory: PromptVariablesFactory;
-      try {
-        factory = PromptVariablesFactory.createWithConfig(config, cliParams);
-      } catch (err) {
+      // Create factory - Result型チェック→factory抽出パターン
+      const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
+      if (!factoryResult.ok) {
         return error({
           kind: "FactoryCreationError",
-          message: err instanceof Error ? err.message : String(err),
-          cause: err,
+          message: factoryResult.error.message,
+          cause: factoryResult.error,
         });
       }
+      const factory = factoryResult.data;
 
       // Validate factory
       const validationResult = this.validateFactory(factory);

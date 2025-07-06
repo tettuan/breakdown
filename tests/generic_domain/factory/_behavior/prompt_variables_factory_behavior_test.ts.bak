@@ -219,12 +219,7 @@ describe("PromptVariablesFactory Unit Tests - Factory Creation", () => {
         options: {},
       };
 
-      const factoryResult = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`CreateWithConfig with invalid config failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
       assertExists(factory);
       assertEquals(factory.hasValidBaseDir(), false);
@@ -360,12 +355,7 @@ describe("PromptVariablesFactory Unit Tests - Path Resolution", () => {
         options: {}, // No fromFile specified
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       const inputPath = factory.inputFilePath;
       // Empty input path should be handled gracefully
@@ -432,12 +422,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
         options: complexOptions,
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Verify all options are preserved
       const retrievedOptions = factory.getOptions();
@@ -487,12 +472,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: testCase,
         };
 
-        const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         assertEquals(factory.getOptions().extended, testCase.extended || false);
         assertEquals(factory.getOptions().customValidation, testCase.customValidation || false);
@@ -523,12 +503,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: { errorFormat },
         };
 
-        const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         assertEquals(factory.getOptions().errorFormat, errorFormat || "simple");
       }
@@ -557,12 +532,7 @@ describe("PromptVariablesFactory Unit Tests - Options and Variables", () => {
           options: testCase,
         };
 
-        const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         const customVars = factory.customVariables;
         assertEquals(typeof customVars, "object");
@@ -596,12 +566,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
         options: {},
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Should validate successfully with proper configuration
       try {
@@ -638,12 +603,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
           options: {},
         };
 
-        const factoryResult = TotalityPromptVariablesFactory.createWithConfig(config, params);
-
-        if (!factoryResult.ok) {
-          throw new Error(`CreateWithConfig failed: ${factoryResult.error}`);
-        }
-        const factory = factoryResult.data;
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
         assertEquals(factory.hasValidBaseDir(), false);
         const error = factory.getBaseDirError();
@@ -671,12 +631,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
 
       // Create factory with invalid base configuration
       const invalidConfig = { app_prompt: {}, app_schema: {} };
-      const factoryResult = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`CreateWithConfig with invalid config failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
       // Base directory validation should fail
       assertEquals(factory.hasValidBaseDir(), false);
@@ -704,12 +659,7 @@ describe("PromptVariablesFactory Unit Tests - Validation and Error Handling", ()
       };
 
       const invalidConfig = { app_prompt: { base_dir: "" }, app_schema: {} };
-      const factoryResult = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`CreateWithConfig with invalid config failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = TotalityPromptVariablesFactory.createWithConfig(invalidConfig, params);
 
       const errorMessage = factory.getBaseDirError();
       assertExists(errorMessage);
@@ -754,12 +704,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options: {},
         };
 
-        const factoryResult = TotalityPromptVariablesFactory.createWithConfig(config, params);
-
-        if (!factoryResult.ok) {
-          throw new Error(`CreateWithConfig failed: ${factoryResult.error}`);
-        }
-        const factory = factoryResult.data;
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
         const schemaPath = factory.schemaFilePath;
 
         // Analyze what paths are actually generated
@@ -799,12 +744,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options,
         };
 
-        const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+        const factory = await TotalityPromptVariablesFactory.create(params);
 
         // All paths should be strings and properly resolved
         assertEquals(typeof factory.inputFilePath, "string");
@@ -855,12 +795,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
           options: {},
         };
 
-        const factoryResult = TotalityPromptVariablesFactory.createWithConfig(config as any, params);
-
-        if (!factoryResult.ok) {
-          throw new Error(`CreateWithConfig with config as any failed: ${factoryResult.error}`);
-        }
-        const factory = factoryResult.data;
+        const factory = TotalityPromptVariablesFactory.createWithConfig(config as any, params);
 
         // Should not throw and should handle null/undefined gracefully
         assertEquals(typeof factory.schemaFilePath, "string");
@@ -900,12 +835,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
         options: { customVariables: dangerousVariables },
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
       const retrievedVars = factory.customVariables;
 
       // Variables should be preserved as-is but handled safely in context
@@ -946,12 +876,7 @@ describe("PromptVariablesFactory Unit Tests - Security and Path Validation", () 
         options: longPathOptions,
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Verify factory handles long paths gracefully
       assertEquals(typeof factory.inputFilePath, "string");
@@ -1000,12 +925,7 @@ describe("PromptVariablesFactory Unit Tests - Cryptographic Security", () => {
         options: {},
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Generate multiple output paths to analyze randomness source
       const outputPaths: string[] = [];
@@ -1069,12 +989,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: {},
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // DirectiveType methods should be available
       assertEquals(factory.getDirective(), "to");
@@ -1100,12 +1015,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: {},
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // LayerType methods should be available
       assertEquals(factory.getLayerType(), "issue");
@@ -1168,12 +1078,7 @@ describe("PromptVariablesFactory Unit Tests - Type Safety and Integration", () =
         options: comprehensiveOptions,
       };
 
-      const factoryResult = await TotalityPromptVariablesFactory.create(params);
-
-      if (!factoryResult.ok) {
-        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
-      }
-      const factory = factoryResult.data;
+      const factory = await TotalityPromptVariablesFactory.create(params);
 
       // Test all major functionality
       assertExists(factory.getAllParams());

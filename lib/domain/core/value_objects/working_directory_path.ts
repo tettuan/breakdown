@@ -16,6 +16,7 @@
 
 import { error, ok, Result } from "../../../types/result.ts";
 import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "./base_path.ts";
+import type { PathResolutionError } from "../../../types/path_resolution_option.ts";
 
 /**
  * Working Directory Path specific error types using Discriminated Union
@@ -41,10 +42,11 @@ export type WorkingDirectoryPathError =
     operation: "read" | "write" | "execute";
   }
   | {
-    kind: "PathResolutionError";
+    kind: "PathResolutionGeneral";
     message: string;
     originalPath: string;
     resolvedPath?: string;
+    resolutionError: PathResolutionError;
   }
   | {
     kind: "SecurityViolation";
@@ -82,8 +84,8 @@ export function isPermissionDeniedError(error: WorkingDirectoryPathError): error
   return error.kind === "PermissionDenied";
 }
 
-export function isPathResolutionError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "PathResolutionError" }> {
-  return error.kind === "PathResolutionError";
+export function isPathResolutionGeneralError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "PathResolutionGeneral" }> {
+  return error.kind === "PathResolutionGeneral";
 }
 
 export function isSecurityViolationError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "SecurityViolation" }> {
@@ -110,7 +112,7 @@ export function formatWorkingDirectoryPathError(workingDirError: WorkingDirector
       return `Directory not found '${workingDirError.path}': ${workingDirError.message}`;
     case "PermissionDenied":
       return `Permission denied for ${workingDirError.operation} operation on '${workingDirError.path}': ${workingDirError.message}`;
-    case "PathResolutionError":
+    case "PathResolutionGeneral":
       return `Path resolution failed for '${workingDirError.originalPath}': ${workingDirError.message}`;
     case "SecurityViolation":
       return `Security violation detected in path '${workingDirError.attemptedPath}': ${workingDirError.message}`;
@@ -383,14 +385,14 @@ export class WorkingDirectoryPath extends BasePathValueObject {
       }
       
       return error({
-        kind: "PathResolutionError",
+        kind: "PathResolutionGeneral",
         message: "Cannot create relative path - paths are not related",
         originalPath: thisPath,
         resolvedPath: basePath,
       });
     } catch (resolutionError) {
       return error({
-        kind: "PathResolutionError",
+        kind: "PathResolutionGeneral",
         message: `Failed to calculate relative path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
         originalPath: this.getAbsolutePath(),
       });
@@ -421,7 +423,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
       return WorkingDirectoryPath.create(joinedPath);
     } catch (joinError) {
       return error({
-        kind: "PathResolutionError",
+        kind: "PathResolutionGeneral",
         message: `Failed to join path components: ${joinError instanceof Error ? joinError.message : String(joinError)}`,
         originalPath: this.getAbsolutePath(),
       });
@@ -438,7 +440,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
       return WorkingDirectoryPath.create(parentPath);
     } catch (parentError) {
       return error({
-        kind: "PathResolutionError",
+        kind: "PathResolutionGeneral",
         message: `Failed to get parent directory: ${parentError instanceof Error ? parentError.message : String(parentError)}`,
         originalPath: this.getAbsolutePath(),
       });
@@ -522,7 +524,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
       return ok({ resolvedPath, isAbsolute: resolvedPath.startsWith('/') || /^[a-zA-Z]:/.test(resolvedPath) });
     } catch (resolutionError) {
       return error({
-        kind: "PathResolutionError",
+        kind: "PathResolutionGeneral",
         message: `Failed to resolve path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
         originalPath: path,
       });

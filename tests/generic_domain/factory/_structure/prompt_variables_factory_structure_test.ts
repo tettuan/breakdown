@@ -82,7 +82,12 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Factory should only be responsible for coordinating path resolution
       // and parameter management, not implementing path resolution itself
@@ -187,7 +192,12 @@ describe("PromptVariablesFactory Structure - Class Design Principles", () => {
         },
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Public interface should be accessible
       assertEquals(factory.getDirective(), "summary");
@@ -348,7 +358,12 @@ describe("PromptVariablesFactory Structure - Interface Consistency", () => {
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Error handling methods should be consistent
       assertEquals(typeof factory.hasValidBaseDir, "function");
@@ -381,7 +396,12 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // All path resolvers should be properly initialized
       const promptResolver =
@@ -442,7 +462,12 @@ describe("PromptVariablesFactory Structure - Dependency Management", () => {
         options: {},
       };
 
-      const factory = TotalityPromptVariablesFactory.createWithConfig(customConfig, params);
+      const factoryResult = TotalityPromptVariablesFactory.createWithConfig(customConfig, params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`CreateWithConfig failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Configuration should be properly stored and accessible
       const internalConfig = (factory as any as { config?: Record<string, unknown> }).config;
@@ -525,7 +550,12 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: inputOptions,
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Input should flow through to output consistently
       const allParams = factory.getAllParams();
@@ -571,7 +601,12 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: originalOptions,
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Multiple access calls should return consistent data
       const firstCall = factory.getAllParams();
@@ -615,7 +650,12 @@ describe("PromptVariablesFactory Structure - Data Flow Patterns", () => {
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+
+      if (!factoryResult.ok) {
+        throw new Error(`TotalityPromptVariablesFactory creation failed: ${factoryResult.error}`);
+      }
+      const factory = factoryResult.data;
 
       // Base directory validation should be first step
       const hasValidBaseDir = factory.hasValidBaseDir();

@@ -163,19 +163,20 @@ export class TwoParamsPromptGenerator {
 
       // Create adapter and generate prompt
       const adapter = new PromptManagerAdapter();
+      
       const result = await adapter.generatePrompt(
         pathResult.data,
         promptVariables,
       );
 
-      if (result.ok) {
-        return ok(result.data.content);
-      } else {
+      if (!result.ok) {
         return error({
           kind: "PromptGenerationError",
           error: this.formatPromptError(result.error),
         });
       }
+      
+      return ok(result.data.content);
     } catch (err) {
       return error({
         kind: "PromptGenerationError",

@@ -142,7 +142,13 @@ export async function createTotalityFactory(
       params: TotalityPromptCliParams,
     ): Promise<TotalityPromptVariablesFactory> => {
       const configData = await config!.getConfig();
-      return TotalityPromptVariablesFactory.createWithConfig(configData, params);
+      const result = TotalityPromptVariablesFactory.createWithConfig(configData, params);
+      
+      if (!result.ok) {
+        throw new Error(`Failed to create PromptVariablesFactory: ${result.error.message || 'Unknown error'}`);
+      }
+      
+      return result.data;
     };
 
     return {

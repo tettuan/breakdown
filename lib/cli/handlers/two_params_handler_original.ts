@@ -320,7 +320,7 @@ export async function handleTwoParams(
   const customVariables = extractCustomVariables(options);
 
   // Add standard variables to custom variables
-  if (stdinResult.data) {
+  if (stdinResult.ok && stdinResult.data) {
     customVariables.input_text = stdinResult.data;
   }
   customVariables.input_text_file = (options.fromFile as string) || "stdin";

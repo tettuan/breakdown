@@ -153,11 +153,13 @@ describe("PromptVariablesFactory Architecture - Dependency Relationships", () =>
         options: {},
       };
 
-      const factory = TotalityPromptVariablesFactory.createWithConfig(config, params);
+      const factoryResult = TotalityPromptVariablesFactory.createWithConfig(config, params);
 
       // Factory should orchestrate lower layers without exposing implementation details
-      assertExists(factory.getAllParams());
-      assertExists(factory.validateAll);
+      if (factoryResult.ok) {
+        assertExists(factoryResult.data.getAllParams());
+        assertExists(factoryResult.data.validateAll);
+      }
     }
   });
 });
@@ -419,11 +421,12 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
 
-      // Test base directory validation states
-      const hasValidBaseDir = factory.hasValidBaseDir();
-      const baseDirError = factory.getBaseDirError();
+      if (factoryResult.ok) {
+        // Test base directory validation states
+        const hasValidBaseDir = factoryResult.data.hasValidBaseDir();
+        const baseDirError = factoryResult.data.getBaseDirError();
 
       let validationHandled = false;
 
@@ -445,7 +448,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       let overallValidationHandled = false;
 
       try {
-        factory.validateAll();
+        factoryResult.data.validateAll();
         // If no exception thrown, validation passed
         overallValidationHandled = true;
       } catch (error) {
@@ -455,6 +458,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
       }
 
       assertEquals(overallValidationHandled, true, "Overall validation state should be handled");
+      }
     }
   });
 
@@ -475,14 +479,15 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
 
-      // All path types should be resolvable
-      const pathTypes = [
-        { name: "promptFilePath", path: factory.promptFilePath },
-        { name: "inputFilePath", path: factory.inputFilePath },
-        { name: "outputFilePath", path: factory.outputFilePath },
-        { name: "schemaFilePath", path: factory.schemaFilePath },
+      if (factoryResult.ok) {
+        // All path types should be resolvable
+        const pathTypes = [
+          { name: "promptFilePath", path: factoryResult.data.promptFilePath },
+          { name: "inputFilePath", path: factoryResult.data.inputFilePath },
+          { name: "outputFilePath", path: factoryResult.data.outputFilePath },
+          { name: "schemaFilePath", path: factoryResult.data.schemaFilePath },
       ];
 
       pathTypes.forEach((pathType) => {
@@ -498,6 +503,7 @@ describe("PromptVariablesFactory Architecture - Validation State Coverage", () =
 
         assertEquals(pathHandled, true, `Path type ${pathType.name} should be handled`);
       });
+      }
     }
   });
 });

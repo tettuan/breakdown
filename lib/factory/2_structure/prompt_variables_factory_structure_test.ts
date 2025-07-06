@@ -19,9 +19,11 @@ const logger = new BreakdownLogger("factory-structure-test");
 
 Deno.test("PromptVariablesFactory - Structure - Result type has correct structure", async () => {
   const params: PromptCliParams = {
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    fromLayerType: "task",
+    options: {
+      fromLayerType: "task",
+    },
   };
   
   const result = await PromptVariablesFactory.create(params);
@@ -47,19 +49,21 @@ Deno.test("PromptVariablesFactory - Structure - Result type has correct structur
 Deno.test("PromptVariablesFactory - Structure - PromptCliParams interface completeness", () => {
   const completeParams: PromptCliParams = {
     // Required fields
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    fromLayerType: "task",
-    
-    // Optional fields
-    fromFile: "/path/to/input.md",
-    destinationFile: "/path/to/output.md",
-    adaptation: "custom",
-    promptDir: "/path/to/prompts",
-    input_text: "inline text",
-    customVariables: {
-      key1: "value1",
-      key2: "value2",
+    options: {
+      fromLayerType: "task",
+      
+      // Optional fields
+      fromFile: "/path/to/input.md",
+      destinationFile: "/path/to/output.md",
+      adaptation: "custom",
+      promptDir: "/path/to/prompts",
+      input_text: "inline text",
+      customVariables: {
+        key1: "value1",
+        key2: "value2",
+      },
     },
   };
   
@@ -68,9 +72,9 @@ Deno.test("PromptVariablesFactory - Structure - PromptCliParams interface comple
   assertEquals(hasAllFields, true, "Should have required fields");
   
   // Optional fieldsの型検証
-  if (completeParams.customVariables) {
+  if (completeParams.options.customVariables) {
     assertEquals(
-      typeof completeParams.customVariables,
+      typeof completeParams.options.customVariables,
       "object",
       "customVariables should be object"
     );
@@ -79,58 +83,53 @@ Deno.test("PromptVariablesFactory - Structure - PromptCliParams interface comple
 
 Deno.test("PromptVariablesFactory - Structure - built PromptVariables has required properties", async () => {
   const params: PromptCliParams = {
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    fromLayerType: "task",
-    promptDir: "/tmp/prompts",
-    fromFile: "/tmp/input.md",
-    destinationFile: "/tmp/output.md",
+    options: {
+      fromLayerType: "task",
+      promptDir: "/tmp/prompts",
+      fromFile: "/tmp/input.md",
+      destinationFile: "/tmp/output.md",
+    },
   };
   
   const factoryResult = await PromptVariablesFactory.create(params);
   
   if (factoryResult.ok) {
     const factory = factoryResult.data;
-    const variablesResult = await factory.build();
+    const variables = factory.build();
     
-    if (variablesResult.ok) {
-      const variables = variablesResult.data;
-      
-      logger.debug("Built variables structure", { variables });
-      
-      // 必須プロパティの存在確認
-      assertExists(variables.promptPath, "Should have promptPath");
-      assertExists(variables.promptDir, "Should have promptDir");
-      assertExists(variables.directiveType, "Should have directiveType");
-      assertExists(variables.layerType, "Should have layerType");
-      assertExists(variables.fromLayerType, "Should have fromLayerType");
-      
-      // 型の確認
-      assertEquals(typeof variables.promptPath, "string", "promptPath should be string");
-      assertEquals(typeof variables.promptDir, "string", "promptDir should be string");
-      assertEquals(typeof variables.directiveType, "string", "directiveType should be string");
-      assertEquals(typeof variables.layerType, "string", "layerType should be string");
-      assertEquals(typeof variables.fromLayerType, "string", "fromLayerType should be string");
-      
-      // Optional properties（存在する場合の型確認）
-      if ("inputPath" in variables) {
-        assertEquals(typeof variables.inputPath, "string", "inputPath should be string");
-      }
-      if ("outputPath" in variables) {
-        assertEquals(typeof variables.outputPath, "string", "outputPath should be string");
-      }
-      if ("schemaPath" in variables) {
-        assertEquals(typeof variables.schemaPath, "string", "schemaPath should be string");
-      }
-    }
+    logger.debug("Built variables structure", { variables });
+    
+    // 必須プロパティの存在確認（PromptParams構造）
+    assertExists(variables.template_file, "Should have template_file");
+    assertExists(variables.variables, "Should have variables");
+    assertExists(variables.variables.demonstrative_type, "Should have demonstrative_type");
+    assertExists(variables.variables.layer_type, "Should have layer_type");
+    assertExists(variables.variables.input_file, "Should have input_file");
+    assertExists(variables.variables.output_file, "Should have output_file");
+    assertExists(variables.variables.prompt_path, "Should have prompt_path");
+    assertExists(variables.variables.schema_path, "Should have schema_path");
+    
+    // 型の確認
+    assertEquals(typeof variables.template_file, "string", "template_file should be string");
+    assertEquals(typeof variables.variables, "object", "variables should be object");
+    assertEquals(typeof variables.variables.demonstrative_type, "string", "demonstrative_type should be string");
+    assertEquals(typeof variables.variables.layer_type, "string", "layer_type should be string");
+    assertEquals(typeof variables.variables.input_file, "string", "input_file should be string");
+    assertEquals(typeof variables.variables.output_file, "string", "output_file should be string");
+    assertEquals(typeof variables.variables.prompt_path, "string", "prompt_path should be string");
+    assertEquals(typeof variables.variables.schema_path, "string", "schema_path should be string");
   }
 });
 
 Deno.test("PromptVariablesFactory - Structure - error types have proper structure", async () => {
   const invalidParams: PromptCliParams = {
-    directiveType: "", // Invalid empty string
+    demonstrativeType: "", // Invalid empty string
     layerType: "project",
-    fromLayerType: "task",
+    options: {
+      fromLayerType: "task",
+    },
   };
   
   const result = await PromptVariablesFactory.create(invalidParams);
@@ -156,11 +155,13 @@ Deno.test("PromptVariablesFactory - Structure - error types have proper structur
 
 Deno.test("PromptVariablesFactory - Structure - maintains invariants through transformation", async () => {
   const params: PromptCliParams = {
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    fromLayerType: "task",
-    customVariables: {
-      immutableKey: "should-not-change",
+    options: {
+      fromLayerType: "task",
+      customVariables: {
+        immutableKey: "should-not-change",
+      },
     },
   };
   
@@ -170,32 +171,31 @@ Deno.test("PromptVariablesFactory - Structure - maintains invariants through tra
     const factory = factoryResult.data;
     
     // 複数回buildを呼んでも同じ結果が得られることを確認
-    const result1 = await factory.build();
-    const result2 = await factory.build();
+    const result1 = factory.build();
+    const result2 = factory.build();
     
-    if (result1.ok && result2.ok) {
-      logger.debug("Invariant test", { result1: result1.data, result2: result2.data });
-      
-      // 基本的なプロパティが変わらないことを確認
+    logger.debug("Invariant test", { result1: result1, result2: result2 });
+    
+    // 基本的なプロパティが変わらないことを確認
+    assertEquals(
+      result1.variables.demonstrative_type,
+      result2.variables.demonstrative_type,
+      "demonstrative_type should be consistent"
+    );
+    assertEquals(
+      result1.variables.layer_type,
+      result2.variables.layer_type,
+      "layer_type should be consistent"
+    );
+    
+    // カスタム変数が保持されることを確認
+    // カスタム変数が保持されることを確認
+    if (result1.variables.immutableKey && result2.variables.immutableKey) {
       assertEquals(
-        result1.data.directiveType,
-        result2.data.directiveType,
-        "directiveType should be consistent"
+        result1.variables.immutableKey,
+        result2.variables.immutableKey,
+        "Custom variables should be preserved"
       );
-      assertEquals(
-        result1.data.layerType,
-        result2.data.layerType,
-        "layerType should be consistent"
-      );
-      
-      // カスタム変数が保持されることを確認
-      if (result1.data.immutableKey && result2.data.immutableKey) {
-        assertEquals(
-          result1.data.immutableKey,
-          result2.data.immutableKey,
-          "Custom variables should be preserved"
-        );
-      }
     }
   }
 });

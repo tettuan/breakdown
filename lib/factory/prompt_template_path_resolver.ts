@@ -24,18 +24,12 @@ import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
+import type { PathResolutionError } from "../types/path_resolution_option.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
 
-/**
- * Path resolution errors following Totality principle
- */
-export type PathResolutionError =
-  | { kind: "InvalidConfiguration"; details: string }
-  | { kind: "BaseDirectoryNotFound"; path: string }
-  | { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string }
-  | { kind: "TemplateNotFound"; attempted: string[]; fallback?: string };
+// PathResolutionError now imported from central types definition
 
 /**
  * Value object representing a resolved prompt template path
@@ -683,5 +677,23 @@ export function formatPathResolutionError(error: PathResolutionError): string {
 
       message.push(`プロンプトテンプレートファイルの準備が必要です。`);
       return message.join("\n");
+
+    case "InvalidStrategy":
+      return `Invalid Strategy: ${error.strategy}`;
+
+    case "EmptyBaseDir":
+      return `Base directory is empty`;
+
+    case "InvalidPath":
+      return `Invalid Path: ${error.path} - ${error.reason}`;
+
+    case "NoValidFallback":
+      return `No valid fallback found. Attempts: ${error.attempts.join(", ")}`;
+
+    case "ValidationFailed":
+      return `Validation failed for path: ${error.path}`;
+
+    default:
+      return `Unknown error occurred`;
   }
 }

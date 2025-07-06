@@ -33,7 +33,11 @@ export type PathResolutionError =
   | { kind: "EmptyBaseDir" }
   | { kind: "InvalidPath"; path: string; reason: string }
   | { kind: "NoValidFallback"; attempts: string[] }
-  | { kind: "ValidationFailed"; rule: PathValidationRule; path: string };
+  | { kind: "ValidationFailed"; rule: PathValidationRule; path: string }
+  | { kind: "InvalidConfiguration"; details: string }
+  | { kind: "BaseDirectoryNotFound"; path: string }
+  | { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string }
+  | { kind: "TemplateNotFound"; attempted: string[]; fallback?: string };
 
 /**
  * Path validation rules configuration
