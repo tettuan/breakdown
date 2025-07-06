@@ -5,7 +5,18 @@
 #
 # ## 基本的な記述パターン
 #
-# ### パターン1: 制約型（受け入れ可能型と受け入れ不可型の分離）
+# ### パターン1: Result型（全域性原則の基本パターン）
+# ```yaml
+# TypeConstructorResult:
+#   Success:
+#     - data: ValidType
+#   Failure:
+#     - error: ErrorType
+# ```
+# この記述は TypeScript の以下と同等です：
+# type TypeConstructorResult = Result<ValidType, ErrorType>
+#
+# ### パターン2: 制約型（受け入れ可能型と受け入れ不可型の分離）
 # ```yaml
 # TypeName:
 #   受け入れ可能型:
@@ -13,193 +24,206 @@
 #   受け入れ不可型:
 #     - 値なし
 # ```
-# この記述は以下を意味します：
-# - TypeName は SpecificType.Property のみを受け入れる
-# - それ以外の全ての値（null、undefined、任意の文字列等）は受け入れない
-# - 「受け入れ不可型: 値なし」は「無効な値のリストを明示的に列挙しない」ことを表す
 #
-# ### パターン2: Discriminated Union型
+# ### パターン3: Discriminated Union型
 # ```yaml
-# ResultType:
+# ErrorType:
 #   VariantA:
 #     - PropertyX
 #     - PropertyY
 #   VariantB:
 #     - PropertyZ
 # ```
-# この記述は TypeScript の以下と同等です：
-# type ResultType = VariantA | VariantB
-# where VariantA = { kind: "VariantA"; PropertyX; PropertyY }
-#       VariantB = { kind: "VariantB"; PropertyZ }
-#
-# ### パターン3: Union型
-# ```yaml
-# OptionType: TypeA.Options | TypeB.Options | TypeC.Options
-# ```
-# この記述は複数の型の和集合を表します。
 #
 # ---
 
+# 共通エラー型定義
+ValidationError:
+  EmptyInput:
+    - message: string
+  InvalidFormat:
+    - value: string
+    - pattern: string
+    - message: string
+  TooLong:
+    - value: string
+    - maxLength: number
+    - message: string
+  InvalidPath:
+    - message: string
+
+# 基本ドメイン型定義（Result型を使用）
+DirectiveTypeResult:
+  Success:
+    - data: DirectiveType
+  Failure:
+    - error: ValidationError
+
 DirectiveType:
   受け入れ可能型:
-    - TwoParamsResult.DirectiveType
+    - TwoParams_Result.demonstrativeType # バリデーション済み値のみ受け入れ
   受け入れ不可型:
-    - 値なし
+    - 値なし # 未検証文字列は受け入れない
+
+LayerTypeResult:
+  Success:
+    - data: LayerType
+  Failure:
+    - error: ValidationError
 
 LayerType:
   受け入れ可能型:
-    - TwoParamsResult.LayerType
+    - TwoParams_Result.layerType # バリデーション済み値のみ受け入れ
+  受け入れ不可型:
+    - 値なし # 未検証文字列は受け入れない
+
+ConfigProfileNameResult:
+  Success:
+    - data: ConfigProfileName
+  Failure:
+    - error: ConfigProfileNameError
+
+ConfigProfileName:
+  受け入れ可能型:
+    - string # 検証済み設定プロファイル名（例: "production", "staging"）
+  受け入れ不可型:
+    - 値なし # 未検証文字列、null、undefined等は受け入れない
+
+ConfigProfileNameError:
+  EmptyInput:
+    - message: string
+  InvalidFormat:
+    - value: string
+    - pattern: string
+    - message: string
+  TooLong:
+    - value: string
+    - maxLength: number
+    - message: string
+
+PromptPathResult:
+  Success:
+    - data: PromptPath
+  Failure:
+    - error: InvalidPathError
+
+PromptPath:
+  受け入れ可能型:
+    - string # 検証済みテンプレートパス
+  受け入れ不可型:
+    - 値なし # 未検証文字列は受け入れない
+
+InvalidPathError:
+  InvalidPath:
+    - message: string
+# Breakdown パラメータ処理型定義
+BreakdownParamsResult:
+  TwoParamsResult:
+    - demonstrativeType: string # DirectiveType の元値
+    - layerType: string # LayerType の元値
+    - options: Options
+  OneParamsResult:
+    - options: Options
+  ZeroParamsResult:
+    - options: Options
+
+Options: TwoParamsResult.Options | OneParamsResult.Options | ZeroParamsResult.Options
+
+# バリデーション設定型（TwoParamsCustomConfigの一部）
+TwoParamsCustomConfig:
+  TwoParamsDirectivePattern:
+    - pattern: RegExp # 正規表現パターン
+    - errorMessage: string # エラーメッセージ
+  TwoParamsLayerTypePattern:
+    - pattern: RegExp # 正規表現パターン
+    - errorMessage: string # エラーメッセージ
+# Prompt 管理型定義（Result型を使用）
+PromptManagerResult:
+  Success:
+    - data: PromptResult
+  Failure:
+    - error: PromptError
+
+PromptResult:
+  - content: string # 生成されたプロンプト内容
+  - metadata: PromptMetadata # メタデータ
+
+PromptMetadata:
+  - template: string # テンプレートパス
+  - variables: Record<string, string> # 使用された変数
+  - timestamp: Date # 生成時刻
+
+PromptError:
+  TemplateNotFound:
+    - path: string
+  InvalidVariables:
+    - details: string[]
+  ValidationError:
+    - message: string
+
+# Prompt 変数型定義（Duck Typing パターン）
+PromptVariables:
+  # Duck Typing: toRecord()メソッドを持つ任意の型
+  - toRecord(): Record<string, string>
+
+# 具体的なPromptVariables実装型
+StandardVariable:
+  - name: StandardVariableName
+  - value: string
+
+StandardVariableName:
+  受け入れ可能型:
+    - "input_text_file"
+    - "destination_path"
   受け入れ不可型:
     - 値なし
 
-ConfigProfileName:
-  exists: true | false # Configのプロファイル名が存在することを示す
-  value: string # Configのプロファイル名型
-BreakdownParams.constructorの引数:
-  args: # CLI args
-  TwoParamsCustomConfig: # BreakdownConfig のユーザー設定の一部、共有する型
-    二重パラメータ処理方向バリデーションルール型(TwoParamsDirectivePattern):
-      ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
-      エラーメッセージ: string # 設定の中で行われるため型定義できない
-    二重パラメータ階層バリデーションルール型(TwoParamsLayerTypePattern):
-      ルール型: 正規表現型 # 設定の中で行われるため型変換が必要
-      エラーメッセージ: string # 設定の中で行われるため型定義できない
+FilePathVariable:
+  - name: FilePathVariableName
+  - value: string # FilePath型の文字列表現
 
-BreakdownParams.ParamsResult: # BreakdownParamsの結果型
-  TwoParamsResult:
-    - DirectiveType(DirectiveType)
-    - LayerType
-    - Options
-  OneParamsResult:
-    - Options
-  ZeroParamsResult:
-    - Options
+FilePathVariableName:
+  受け入れ可能型:
+    - "schema_file"
+  受け入れ不可型:
+    - 値なし
 
-Options: TwoParamsResult.Options | OneParamsResult.Options | ZeroParamsResult.Options
-PromptResult: PromptManager.generatePrompt()
+StdinVariable:
+  - name: StdinVariableName
+  - value: string
 
-PromptManager.generatePrompt()の引数:
-  template: PromptPath
-  variables: PromptVariables # Fileパス生成結果, STDIN取得結果, Optionsから統合され作成される
-
-PromptVariables: StandardVariable | FilePathVariable | StdinVariable | UserVariable # PromptManager.generatePrompt()の引数で使用される変数型（Duck Typing: toRecord()メソッドで統一）
-
-PromptPath: FilePath # PromptManager.generatePrompt()の引数で使用されるテンプレートパス型, Configのapp_prompt.base_dir, DirectiveTypeとLayerTypeの組み合わせから導き出される
-
-FilePath: string # ファイルパス型, PromptPathの一部
-
-DefaultApplicationConfig: {} # default_application_config.jsonの内容を表す型
-
-StandardVariable: {
-  name: string, # 標準変数の名前
-  value: string, # 標準変数の値
-} # PromptVariablesの一部
-
-StandardVariable.name: string "input_text_file" | "destination_path" # 標準変数の名前
-
-FilePathVariable: {
-  name: string, # ファイルパス変数の名前
-  value: FilePath, # ファイルパス変数の値
-} # PromptVariablesの一部
-
-FilePathVariable.name: string "schema_file" # ファイルパス変数の名前
-
-StdinVariable: {
-  name: string, # 標準入力変数の名前
-  value: string, # 標準入力変数の値
-} # PromptVariablesの一部
-
-StdinVariable.name: StdinVariableName # 型安全な標準入力変数名
 StdinVariableName:
   受け入れ可能型:
-    - "input_text" # Smart Constructorで制約
+    - "input_text"
   受け入れ不可型:
-    - 値なし # その他の文字列は全て拒否
+    - 値なし
 
-UserVariable: {
-  name: string, # ユーザー変数の名前（空文字列以外、--uv-*等）
-  value: string, # ユーザー変数の値（空文字列以外）
-} # PromptVariablesの一部、カスタム設定用（CLI --uv-key=value形式）
+UserVariable:
+  - name: string # ユーザー定義変数名（--uv-*形式）
+  - value: string # ユーザー定義変数値
 
-# 全域性原則に基づく作業ディレクトリ型定義
-# 「未検証の文字列」から「検証済みの作業ディレクトリ」への変換を型で表現
-WorkingDirectoryResult: # Smart Constructorで作成される検証済み作業ディレクトリ
-  ValidWorkingDirectory:
-    - path: AbsolutePath # 絶対パス（検証済み）
-    - exists: true # ディレクトリの存在を保証
-    - platform: PlatformType # プラットフォーム固有の情報
-  InvalidWorkingDirectory:
-    - error: WorkingDirectoryError # 検証失敗理由
+# 設定管理型定義
+DefaultApplicationConfig:
+  # default_application_config.jsonの内容を表す型
+  # 具体的な構造は設定ファイルに依存
 
-# 作業ディレクトリの生パス入力型（未検証）
-WorkingDirectoryInput:
+# ファイルパス型定義（基本型）
+FilePath:
   受け入れ可能型:
-    - string # 相対パスまたは絶対パス文字列
+    - string # 有効なファイルパス文字列
   受け入れ不可型:
-    - 値なし # 空文字列、null、undefined等は全て拒否
+    - 値なし # 空文字列、null、undefined等は受け入れない
 
-# 検証済み絶対パス型
-AbsolutePath:
-  受け入れ可能型:
-    - ValidWorkingDirectory.path # Smart Constructorで検証されたパス
-  受け入れ不可型:
-    - 値なし # 未検証の文字列は受け入れない
-
-# プラットフォーム型
-PlatformType:
-  Unix:
-    - separator: "/" # パス区切り文字
-    - caseSensitive: true # 大文字小文字区別
-  Windows:
-    - separator: "\\" # パス区切り文字
-    - caseSensitive: false # 大文字小文字区別なし
-
-# 作業ディレクトリエラー型
-WorkingDirectoryError:
-  PathNotFound:
-    - inputPath: string # 入力されたパス
-    - message: "指定されたパスが存在しません"
-  NotDirectory:
-    - inputPath: string # 入力されたパス
-    - message: "指定されたパスはディレクトリではありません"
-  PermissionDenied:
-    - inputPath: string # 入力されたパス
-    - message: "指定されたディレクトリにアクセス権限がありません"
-  InvalidPath:
-    - inputPath: string # 入力されたパス
-    - message: "無効なパス形式です"
-
-# Smart Constructorパターンの実装指針:
-# WorkingDirectory.create(input: string): WorkingDirectoryResult
-# 1. パス形式検証（相対/絶対パス判定）
-# 2. 絶対パス変換（相対パスの場合はCWDベース）
-# 3. ディレクトリ存在確認
-# 4. アクセス権限確認
-# 5. プラットフォーム固有処理
-# 6. 成功時はValidWorkingDirectory、失敗時はInvalidWorkingDirectoryを返す
-
-# ディレクトリ操作結果型
-DirectoryOperationResult: # ディレクトリ作成・削除等の操作結果
-  Success:
-    - path: AbsolutePath # 操作対象パス
-    - operation: DirectoryOperation # 実行された操作
-  Failure:
-    - path: string # 操作対象パス（未検証でも可）
-    - operation: DirectoryOperation # 実行しようとした操作
-    - error: DirectoryOperationError # 失敗理由
-
-DirectoryOperation:
-  受け入れ可能型:
-    - "create" # ディレクトリ作成
-    - "remove" # ディレクトリ削除
-    - "ensure" # ディレクトリ存在確保
-  受け入れ不可型:
-    - 値なし # その他の文字列は全て拒否
-
-DirectoryOperationError:
-  CreateFailed:
-    - reason: string # 作成失敗理由
-  RemoveFailed:
-    - reason: string # 削除失敗理由
-  EnsureFailed:
-    - reason: string # 存在確保失敗理由
+# 全域性原則に基づくSmart Constructorパターンの実装指針:
+# 1. 全ての値オブジェクトはprivate constructorを持つ
+# 2. static createメソッドでResult型を返す
+# 3. 成功時は検証済みオブジェクト、失敗時は詳細なエラー情報を返す
+# 4. null/undefinedを内部状態として持たない
+# 5. 不変性を保証する（Object.freeze等）
+# 6. 共通エラー型を使用してDRYな実装を実現
+#
+# 例:
+# ConfigProfileName.create(input: string): Result<ConfigProfileName, ConfigProfileNameError>
+# DirectiveType.create(twoParamsResult: TwoParams_Result): DirectiveType
+# LayerType.create(twoParamsResult: TwoParams_Result): LayerType
+# PromptPath.create(path: string): Result<PromptPath, InvalidPathError>

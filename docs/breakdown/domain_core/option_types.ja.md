@@ -364,7 +364,23 @@ throw new BreakdownError("prompt-generation", "Invalid template adaptation");
 - [options.ja.md](../parameters/options.ja.md): CLIオプションの実装詳細
 - [glossary.ja.md](../overview/glossary.ja.md): ドメイン用語の定義
 
+### 設計上の注意点
+**全域関数とnull許可について**: Value Object内部でnull値を許可するよりも、Result型を使用して成功/失敗を明確に分離することを推奨します。これにより型安全性が向上し、エラー情報の詳細化が可能になります。
+
+```typescript
+// 推奨されない設計
+static create(value: string): ValueObject {
+  if (invalid) return new ValueObject(null); // 曖昧な状態
+}
+
+// 推奨される設計
+static create(value: string): Result<ValueObject, ValidationError> {
+  if (invalid) return error({ kind: "InvalidFormat", details: ... });
+  return ok(new ValueObject(value));
+}
+```
+
 ---
 
-**ドメインストーリー設計**: 2025年1月  
+**ドメインストーリー設計**: 2025年7月  
 **設計思想**: ドメイン駆動設計による責務分離と型安全性の両立

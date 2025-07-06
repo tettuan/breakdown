@@ -29,20 +29,22 @@ enum LayerType {
 // ✅ 良い例：制約のある値型
 class ValidRate {
   private constructor(readonly value: number) {}
-  static create(n: number): ValidRate | null {
-    return (0 <= n && n <= 1) ? new ValidRate(n) : null;
+  static create(n: number): Result<ValidRate, ValidationError & { message: string }> {
+    if (0 <= n && n <= 1) {
+      return { ok: true, data: new ValidRate(n) };
+    }
+    return { ok: false, error: createError({ kind: "OutOfRange", value: n, min: 0, max: 1 }) };
   }
 }
 
 // ✅ 良い例：Configルールで制約を表現
 class LayerTypePattern {
   private constructor(readonly pattern: RegExp) {}
-  static create(patternString: string): LayerTypePattern | null {
+  static create(patternString: string): Result<LayerTypePattern, ValidationError & { message: string }> {
     try {
-      const regex = new RegExp(patternString);
-      return new LayerTypePattern(regex);
+      return { ok: true, data: new LayerTypePattern(new RegExp(patternString)) };
     } catch {
-      return null;
+      return { ok: false, error: createError({ kind: "InvalidRegex", pattern: patternString }) };
     }
   }
   test(value: string): boolean { return this.pattern.test(value); }
@@ -50,9 +52,11 @@ class LayerTypePattern {
 
 class LayerType {
   private constructor(readonly value: string) {}
-  static create(value: string, pattern: LayerTypePattern): LayerType | null {
-    // Configから取得したパターンを使用
-    return pattern.test(value) ? new LayerType(value) : null;
+  static create(value: string, pattern: LayerTypePattern): Result<LayerType, ValidationError & { message: string }> {
+    if (pattern.test(value)) {
+      return { ok: true, data: new LayerType(value) };
+    }
+    return { ok: false, error: createError({ kind: "PatternMismatch", value, pattern: pattern.pattern.source }) };
   }
   getValue(): string { return this.value; }
 }
@@ -61,6 +65,38 @@ class LayerType {
 ### パターン3：Result型によるエラー値化
 ```typescript
 type Result<T, E> = { ok: true; data: T } | { ok: false; error: E };
+
+// 共通エラー型定義
+type ValidationError = 
+  | { kind: "OutOfRange"; value: unknown; min?: number; max?: number }
+  | { kind: "InvalidRegex"; pattern: string }
+  | { kind: "PatternMismatch"; value: string; pattern: string }
+  | { kind: "ParseError"; input: string }
+  | { kind: "EmptyInput" }
+  | { kind: "TooLong"; value: string; maxLength: number };
+
+// エラー作成ヘルパー
+const createError = (error: ValidationError, customMessage?: string): ValidationError & { message: string } => ({
+  ...error,
+  message: customMessage || getDefaultMessage(error)
+});
+
+const getDefaultMessage = (error: ValidationError): string => {
+  switch (error.kind) {
+    case "OutOfRange": 
+      return `Value ${error.value} is out of range ${error.min ?? "?"}-${error.max ?? "?"}`;
+    case "InvalidRegex": 
+      return `Invalid regex pattern: ${error.pattern}`;
+    case "PatternMismatch": 
+      return `Value "${error.value}" does not match pattern ${error.pattern}`;
+    case "ParseError": 
+      return `Cannot parse "${error.input}"`;
+    case "EmptyInput": 
+      return "Input cannot be empty";
+    case "TooLong": 
+      return `Value "${error.value}" exceeds maximum length of ${error.maxLength}`;
+  }
+};
 ```
 
 ## 人間による設計観点
@@ -126,6 +162,68 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 - 固定額割引: min(固定金額, 商品額)
 ```
 
+## エラー処理の圧縮テクニック
+
+### 1. 共通エラー型の活用
+```typescript
+// ❌ 冗長：各クラスで個別エラー型
+class A { static create(): Result<A, { kind: "AError"; message: string }> }
+class B { static create(): Result<B, { kind: "BError"; message: string }> }
+
+// ✅ 簡潔：共通エラー型
+class A { static create(): Result<A, ValidationError & { message: string }> }
+class B { static create(): Result<B, ValidationError & { message: string }> }
+```
+
+### 2. エラー作成ヘルパーの活用
+```typescript
+// ❌ 冗長：毎回エラーオブジェクト作成
+return { ok: false, error: { kind: "EmptyInput", message: "Input cannot be empty" } };
+
+// ✅ 簡潔：ヘルパー使用
+return { ok: false, error: createError({ kind: "EmptyInput" }) };
+```
+
+### 3. ビルダーパターンの活用
+```typescript
+// 複雑なバリデーションの場合
+class ValidatedValue<T> {
+  static builder<T>() {
+    return new ValidationBuilder<T>();
+  }
+}
+
+class ValidationBuilder<T> {
+  private validators: Array<(input: T) => ValidationError | null> = [];
+  
+  notEmpty() { 
+    this.validators.push(input => !input ? { kind: "EmptyInput" } : null);
+    return this;
+  }
+  
+  pattern(regex: RegExp) {
+    this.validators.push(input => 
+      !regex.test(String(input)) ? { kind: "PatternMismatch", value: String(input), pattern: regex.source } : null
+    );
+    return this;
+  }
+  
+  build(input: T): Result<ValidatedValue<T>, ValidationError & { message: string }> {
+    for (const validator of this.validators) {
+      const error = validator(input);
+      if (error) return { ok: false, error: createError(error) };
+    }
+    return { ok: true, data: new ValidatedValue(input) };
+  }
+}
+
+// 使用例
+const result = ValidatedValue.builder<string>()
+  .notEmpty()
+  .pattern(/^[a-z]+$/)
+  .build("test");
+```
+
 ## 実装チェックリスト
 
 ### 🚫 禁止パターン
@@ -161,7 +259,7 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 「全域性原則を適用してコードを改善して」と依頼された場合：
 
 1. **ビジネスルール確認**: 上記テンプレートでのルール提示を要求
-2. **部分関数を特定**: 戻り値が`undefined`/`null`になる関数、型アサーションを使う箇所
+2. **部分関数を特定**: 戻り値が`undefined`/`null`になる関数、型アサーションを使う箇所を特定し、Result型に変換
 3. **型定義を改善**: オプショナルプロパティ → Discriminated Union
 4. **エラー処理を改善**: 例外 → Result型
 5. **分岐を改善**: `if`チェーン → `switch`文
@@ -189,7 +287,7 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 type State = { kind: "A"; data: X } | { kind: "B"; data: Y };
 
 // 処理関数（全ての状態を網羅）
-function handle(state: State): Result<Output, Error> {
+function handle(state: State): Result<Output, ValidationError & { message: string }> {
   switch (state.kind) {
     case "A": return { ok: true, data: processA(state.data) };
     case "B": return { ok: true, data: processB(state.data) };
@@ -197,12 +295,21 @@ function handle(state: State): Result<Output, Error> {
 }
 
 // 制約のある値（ビジネスルールで制限）
-class ValidValue {
+class ValidValue<T> {
   private constructor(readonly value: T) {}
-  static create(input: T): ValidValue | null {
-    return isValid(input) ? new ValidValue(input) : null;
+  static create<T>(input: T, validator: (input: T) => ValidationError | null): Result<ValidValue<T>, ValidationError & { message: string }> {
+    const error = validator(input);
+    if (error) {
+      return { ok: false, error: createError(error) };
+    }
+    return { ok: true, data: new ValidValue(input) };
   }
 }
+
+// 使用例
+const result = ValidValue.create("test", (input) => 
+  input.length === 0 ? { kind: "EmptyInput" } : null
+);
 ```
 
 **目標**: ビジネスルールが型に反映され、コンパイラが不正状態を検出し、`switch`文に`default`が不要な設計
