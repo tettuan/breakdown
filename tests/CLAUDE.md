@@ -113,3 +113,8 @@ LOG_LENGTH=W deno test --allow-env --allow-write --allow-read
 | LOG_LEVEL | debug, info, warn, error | ログレベル制御 |
 | LOG_LENGTH | S, L, W | S=100文字, L=200文字, W=無制限 |
 | LOG_KEY | 文字列（カンマ/コロン/スラッシュ区切り） | モジュールフィルタ |
+
+# Local CI 戦略
+
+`deno task ci` の実行時間が長いとき、エラーが多いとき、
+`deno task ci --single-file` を使う。` --single-file` オプションは1つずつ順番にテストするため全体テストの時間が不要。

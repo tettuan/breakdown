@@ -29,6 +29,36 @@ import type { PathResolutionError } from "./prompt_template_path_resolver.ts";
 type DoubleParams_Result = PromptCliParams;
 
 /**
+ * Discriminated Union for schema file path specific errors
+ * 
+ * Each error type has a unique 'kind' discriminator for type safety
+ * and follows Domain-Driven Design principles for error handling.
+ */
+export type SchemaFilePathError =
+  | {
+    kind: "SchemaNotFound";
+    message: string;
+    path: string;
+  }
+  | {
+    kind: "InvalidParameters";
+    message: string;
+    demonstrativeType: string;
+    layerType: string;
+  }
+  | {
+    kind: "ConfigurationError";
+    message: string;
+    setting: string;
+  }
+  | {
+    kind: "FileSystemError";
+    message: string;
+    operation: string;
+    originalError?: Error;
+  };
+
+/**
  * Value object representing a resolved schema file path
  */
 export class SchemaPath {
@@ -443,10 +473,56 @@ export class SchemaFilePathResolver {
   }
 
   /**
-   * Legacy method to get path as string
+   * Legacy method to get path as Result<string, SchemaFilePathError>
    * @deprecated Use getPath() for Result-based error handling
    */
-  public getPathAsString(): string {
+  public getPathAsString(): Result<string, SchemaFilePathError> {
+    const result = this.getPath();
+    if (!result.ok) {
+      // Convert PathResolutionError to SchemaFilePathError
+      return { ok: false, error: this.convertToSchemaFilePathError(result.error) };
+    }
+    return { ok: true, data: result.data.value };
+  }
+
+  /**
+   * Convert PathResolutionError to SchemaFilePathError for backward compatibility
+   */
+  private convertToSchemaFilePathError(error: PathResolutionError): SchemaFilePathError {
+    switch (error.kind) {
+      case "InvalidConfiguration":
+        return {
+          kind: "ConfigurationError",
+          message: error.details || "Invalid configuration",
+          setting: "schema_config",
+        };
+      case "BaseDirectoryNotFound":
+        return {
+          kind: "SchemaNotFound",
+          message: `Base directory not found: ${error.path}`,
+          path: error.path || "",
+        };
+      case "InvalidParameterCombination":
+        return {
+          kind: "InvalidParameters",
+          message: `Invalid parameter combination: ${error.demonstrativeType} / ${error.layerType}`,
+          demonstrativeType: error.demonstrativeType || "",
+          layerType: error.layerType || "",
+        };
+      case "TemplateNotFound":
+        return {
+          kind: "SchemaNotFound",
+          message: `Schema file not found at: ${error.attempted[0]}`,
+          path: error.attempted[0] || "",
+        };
+    }
+  }
+
+  /**
+   * Legacy method that throws exceptions for existing callers
+   * @deprecated Use getPath() or getPathAsString() which returns Result type
+   */
+  public getPathAsStringUnsafe(): string {
     const result = this.getPath();
     if (!result.ok) {
       throw new Error(`Schema path resolution failed: ${formatSchemaError(result.error)}`);
@@ -476,5 +552,41 @@ export function formatSchemaError(error: PathResolutionError): string {
     case "TemplateNotFound":
       return `Schema file not found: ${error.attempted[0]}\n` +
         `Please ensure the schema file exists at the expected location.`;
+  }
+}
+
+/**
+ * Type guards for SchemaFilePathError discrimination
+ * Enables type-safe error handling throughout the application
+ */
+export function isSchemaNotFoundError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "SchemaNotFound" }> {
+  return error.kind === "SchemaNotFound";
+}
+
+export function isInvalidParametersError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "InvalidParameters" }> {
+  return error.kind === "InvalidParameters";
+}
+
+export function isConfigurationError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "ConfigurationError" }> {
+  return error.kind === "ConfigurationError";
+}
+
+export function isFileSystemError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "FileSystemError" }> {
+  return error.kind === "FileSystemError";
+}
+
+/**
+ * Format SchemaFilePathError for user-friendly display
+ */
+export function formatSchemaFilePathError(error: SchemaFilePathError): string {
+  switch (error.kind) {
+    case "SchemaNotFound":
+      return `Schema file not found: ${error.path}`;
+    case "InvalidParameters":
+      return `Invalid parameters - Demonstrative: ${error.demonstrativeType}, Layer: ${error.layerType}`;
+    case "ConfigurationError":
+      return `Configuration error in ${error.setting}: ${error.message}`;
+    case "FileSystemError":
+      return `File system error during ${error.operation}: ${error.message}`;
   }
 }

@@ -338,10 +338,22 @@ export class OutputFilePathResolver {
   }
 
   /**
-   * Legacy method for backward compatibility
+   * Legacy method for backward compatibility - returns Result instead of throwing
    * @deprecated Use getPath() which returns Result<ResolvedOutputPath, OutputFilePathError>
    */
-  public getPathLegacy(): string {
+  public getPathLegacy(): Result<string, OutputFilePathError> {
+    const result = this.getPath();
+    if (!result.ok) {
+      return result;
+    }
+    return ok(result.data.value);
+  }
+
+  /**
+   * Legacy method for backward compatibility - throws exceptions for existing callers
+   * @deprecated Use getPath() or getPathLegacy() which returns Result type
+   */
+  public getPathLegacyUnsafe(): string {
     const result = this.getPath();
     if (!result.ok) {
       const errorMessage = (() => {
@@ -487,7 +499,15 @@ export class OutputFilePathResolver {
    * Legacy method for backward compatibility
    * @deprecated Use generateDefaultFilename() which returns Result
    */
-  public generateDefaultFilenameLegacy(): string {
+  public generateDefaultFilenameLegacy(): Result<string, OutputFilePathError> {
+    return this.generateDefaultFilename();
+  }
+
+  /**
+   * Legacy method that throws exceptions for existing callers
+   * @deprecated Use generateDefaultFilename() or generateDefaultFilenameLegacy() which returns Result type
+   */
+  public generateDefaultFilenameLegacyUnsafe(): string {
     const result = this.generateDefaultFilename();
     if (!result.ok) {
       const errorMessage = result.error.kind === "FilenameGenerationFailed"

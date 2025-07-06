@@ -23,6 +23,11 @@ import type {
   SelectionContext,
 } from "../../domain/templates/generation_policy.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import type { Result } from "../../types/result.ts";
+import {
+  PromptGenerationServiceErrors,
+  PromptGenerationServiceErrorFactory,
+} from "../../types/prompt_generation_service_error.ts";
 
 /**
  * Prompt generation request
@@ -71,11 +76,57 @@ export class PromptGenerationService {
   private readonly logger: BreakdownLogger;
   private readonly aggregates: Map<string, PromptGenerationAggregate>;
 
-  constructor(
+  private constructor(
     private readonly deps: PromptGenerationDependencies,
   ) {
     this.logger = deps.logger || new BreakdownLogger("prompt-generation-service");
     this.aggregates = new Map();
+  }
+
+  /**
+   * Smart Constructor for creating PromptGenerationService with validation
+   * 
+   * Following Totality principle:
+   * - Private constructor enforces creation through smart constructor
+   * - Comprehensive validation of all dependencies
+   * - Result type for explicit error handling
+   * - No exceptions, all errors are represented as Result.error
+   */
+  static create(
+    deps: PromptGenerationDependencies,
+  ): Result<PromptGenerationService, PromptGenerationServiceErrors> {
+    // Validate dependencies presence and type
+    if (!deps || typeof deps !== "object" || Array.isArray(deps)) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
+          "Dependencies must be a non-null object"
+        ),
+      };
+    }
+
+    // Validate required dependencies
+    if (!deps.repository) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
+          "Template repository is required"
+        ),
+      };
+    }
+
+    if (!deps.policy) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
+          "Generation policy is required"
+        ),
+      };
+    }
+
+    // Create instance with validated dependencies
+    const service = new PromptGenerationService(deps);
+    return { ok: true, data: service };
   }
 
   /**
@@ -209,6 +260,7 @@ export class PromptGenerationService {
     // Validate provided variables
     const validation = this.deps.policy.validateVariables(provided);
     if (!validation.isValid) {
+      // Legacy behavior: still throw for now, but add Result-based alternative
       throw new Error(
         `Variable validation failed: ${validation.errors.map((e) => e.message).join(", ")}`,
       );
@@ -231,6 +283,64 @@ export class PromptGenerationService {
 
     // Transform variables according to policy
     return this.deps.policy.transformVariables(resolved);
+  }
+
+  /**
+   * Prepare variables safely using Result type
+   * @param request - The prompt generation request
+   * @param template - The template to prepare variables for
+   * @returns Result<TemplateVariables, PromptGenerationServiceErrors>
+   */
+  private async prepareVariablesSafe(
+    request: PromptGenerationRequest,
+    template: PromptTemplate,
+  ): Promise<Result<TemplateVariables, PromptGenerationServiceErrors>> {
+    try {
+      // Base variables from request
+      const baseVariables: Record<string, string> = {
+        ...request.variables,
+        input_text: request.options.inputText || "",
+        input_text_file: request.options.fromFile || "",
+        destination_path: request.options.toFile || "",
+      };
+
+      const provided = TemplateVariables.create(baseVariables);
+
+      // Validate provided variables
+      const validation = this.deps.policy.validateVariables(provided);
+      if (!validation.isValid) {
+        return {
+          ok: false,
+          error: PromptGenerationServiceErrorFactory.variableValidationFailed(validation.errors),
+        };
+      }
+
+      // Resolve missing variables
+      const required = template.getContent().getRequiredVariables();
+      const context: ResolutionContext = {
+        providedVariables: baseVariables,
+        directive: request.directive,
+        layer: request.layer,
+        workingDirectory: Deno.cwd(),
+      };
+
+      const resolved = await this.deps.policy.resolveMissingVariables(
+        provided,
+        required,
+        context,
+      );
+
+      // Transform variables according to policy
+      const transformed = this.deps.policy.transformVariables(resolved);
+      return { ok: true, data: transformed };
+    } catch (error) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.promptGenerationFailed(
+          error instanceof Error ? error.message : String(error)
+        ),
+      };
+    }
   }
 
   private getOrCreateAggregate(

@@ -223,26 +223,26 @@ export async function readStdinSafe(
   try {
     const content = await readStdinEnhanced(config.enhancedOptions);
     return ok(content);
-  } catch (error) {
+  } catch (caughtError) {
     // Convert enhanced stdin errors to our Discriminated Union
-    if (error instanceof Error) {
-      if (error.message.includes("timeout")) {
+    if (caughtError instanceof Error) {
+      if (caughtError.message.includes("timeout")) {
         return error({
           kind: "TimeoutError",
           timeout: config.timeout,
         });
       }
       
-      if (error.message.includes("empty") || error.message.includes("No input")) {
+      if (caughtError.message.includes("empty") || caughtError.message.includes("No input")) {
         return error({
           kind: "EmptyInputError",
-          message: error.message,
+          message: caughtError.message,
         });
       }
       
-      if (error.message.includes("not available") || error.message.includes("CI") || error.message.includes("test")) {
-        const environment = error.message.includes("CI") ? "CI" : 
-                           error.message.includes("test") ? "test" : "unknown";
+      if (caughtError.message.includes("not available") || caughtError.message.includes("CI") || caughtError.message.includes("test")) {
+        const environment = caughtError.message.includes("CI") ? "CI" : 
+                           caughtError.message.includes("test") ? "test" : "unknown";
         return error({
           kind: "NotAvailableError",
           environment,
@@ -252,8 +252,8 @@ export async function readStdinSafe(
     
     return error({
       kind: "ReadError",
-      message: error instanceof Error ? error.message : String(error),
-      originalError: error instanceof Error ? error : undefined,
+      message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+      originalError: caughtError instanceof Error ? caughtError : undefined,
     });
   }
 }
@@ -269,10 +269,10 @@ export async function readStdin(
   try {
     // Use enhanced stdin reader with TimeoutManager support
     return await readStdinEnhanced(options);
-  } catch (error) {
+  } catch (caughtError) {
     // Convert enhanced stdin errors to legacy stdin errors for compatibility
     throw new LegacyStdinError(
-      error instanceof Error ? error.message : String(error),
+      caughtError instanceof Error ? caughtError.message : String(caughtError),
     );
   }
 }
@@ -312,11 +312,11 @@ export class StdinAvailability {
         false, 
         "stdin is piped or redirected"
       ));
-    } catch (error) {
+    } catch (caughtError) {
       return error({
         kind: "ReadError",
         message: "Failed to detect stdin availability",
-        originalError: error instanceof Error ? error : undefined,
+        originalError: caughtError instanceof Error ? caughtError : undefined,
       });
     }
   }
@@ -457,11 +457,11 @@ export function writeStdoutSafe(
     }
     
     return ok(undefined);
-  } catch (error) {
+  } catch (caughtError) {
     return error({
       kind: "ReadError", // Actually a write error, but we use ReadError for I/O operations
-      message: `Failed to write to stdout: ${error instanceof Error ? error.message : String(error)}`,
-      originalError: error instanceof Error ? error : undefined,
+      message: `Failed to write to stdout: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+      originalError: caughtError instanceof Error ? caughtError : undefined,
     });
   }
 }
@@ -476,8 +476,8 @@ export function writeStdout(content: string): void {
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
     Deno.stdout.writeSync(data);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (caughtError) {
+    const errorMessage = caughtError instanceof Error ? caughtError.message : String(caughtError);
     throw new Error(`Failed to write to stdout: ${errorMessage}`);
   }
 }
@@ -704,11 +704,11 @@ export function isStdinAvailableSafe(
     }
     
     return ok(!isTerminal);
-  } catch (error) {
+  } catch (caughtError) {
     return error({
       kind: "ReadError",
       message: "Failed to check stdin availability",
-      originalError: error instanceof Error ? error : undefined,
+      originalError: caughtError instanceof Error ? caughtError : undefined,
     });
   }
 }

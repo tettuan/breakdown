@@ -88,8 +88,15 @@ async function main() {
  */
 export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {
-    // 1. Extract and create config profile name in one step
-    const configProfileName = ConfigProfileName.create(ConfigPrefixDetector.detect(args));
+    // 1. Extract and create config profile name with Result pattern matching
+    const configProfileNameResult = ConfigProfileName.create(ConfigPrefixDetector.detect(args));
+    
+    if (!configProfileNameResult.ok) {
+      console.error("❌ Invalid config profile name:", configProfileNameResult.error.message);
+      Deno.exit(1);
+    }
+    
+    const configProfileName = configProfileNameResult.data;
 
     // 2. Initialize BreakdownConfig with profile name (with error handling)
     let config: Record<string, unknown> = {};

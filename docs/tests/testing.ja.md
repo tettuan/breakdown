@@ -12,11 +12,40 @@
 - **テスト配置**: `tests/` 配下（番号付きドメイン構造）
 - **実行状況**: 188テストファイルの完全移行完了
 
+### テスト配置の方針
+
+- **単体テスト**: `lib/`配下の実装ファイルと同じディレクトリに配置
+- **統合・E2Eテスト**: `tests/`配下の独立したテストディレクトリに配置
+
+```
+lib/                          # 実装ファイル + 単体テスト
+├── domain/
+│   ├── service.ts
+│   └── service.test.ts       # 単体テスト（実装と同じ場所）
+└── ...
+
+tests/                        # 統合・E2Eテスト専用
+├── 0_core_domain/            # 核心ドメイン統合テスト
+├── 4_cross_domain/           # ドメイン間統合テスト
+│   ├── collaboration/        # ドメイン間協働・結合テスト
+│   └── e2e/                 # システム全体のE2Eテスト
+└── ...
+```
+
 ## テスト実行方法
 
 ### 基本的な実行方法
 
 ```bash
+# 単体テスト実行（lib/配下）
+deno test lib/
+
+# 統合・E2Eテスト実行（tests/配下）
+deno test tests/
+
+# 全テスト実行（推奨：単体テスト → 統合テスト の順序）
+deno test lib/ && deno test tests/
+
 # 全ドメインテスト実行（番号順に実行される）
 deno test tests/
 
@@ -28,11 +57,38 @@ deno test tests/3_interface_layer/    # インターフェース層
 deno test tests/4_cross_domain/       # 統合テスト（最後）
 ```
 
+### テストカテゴリ別実行
+
+```bash
+# 単体テスト（lib/配下）
+deno test lib/ --filter="0_architecture"  # アーキテクチャ制約テスト
+deno test lib/ --filter="1_behavior"      # 動作検証テスト
+deno test lib/ --filter="2_structure"     # 構造整合性テスト
+
+# 統合・E2Eテスト（tests/配下）
+deno test tests/*/3_core/             # コア機能テスト
+deno test tests/4_cross_domain/e2e/     # E2Eテスト
+deno test tests/4_cross_domain/collaboration/  # 結合テスト
+```
+
+### 実行順序の設計思想
+
+1. **`0_architecture/`**: システムの基盤が正しく構築されていることを最初に検証
+2. **`1_behavior/`**: 基本機能が正常に動作することを検証
+3. **`2_structure/`**: データ構造の整合性を検証
+4. **`3_core/`**: ドメイン内統合機能を検証
+5. **`4_cross_domain/`**: システム全体の協働を最後に検証
+
 ### CI/CDでの実行
 
 ```bash
 # 従来のCI実行方法（スクリプト使用）
 bash scripts/local_ci.sh
+
+# 段階的実行（推奨）
+deno test lib/                    # 単体テスト
+deno test tests/0_core_domain/    # 核心ドメイン統合テスト
+deno test tests/4_cross_domain/   # E2E・結合テスト
 ```
 
 ## デバッグとログ出力
@@ -51,7 +107,7 @@ logger.debug("ドメインテスト実行開始", {
 });
 ```
 
-### ログレベルとフィルタリング
+### デバッグログレベルとフィルタリング
 
 - `LOG_LEVEL`: debug, info, warn, error
 - `LOG_KEY`: 特定モジュールのフィルタリング

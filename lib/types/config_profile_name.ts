@@ -1,18 +1,30 @@
 /**
- * @fileoverview ConfigProfileName implementation with Totality principle
+ * @fileoverview ConfigProfileName implementation with Result-based Totality principle
  *
- * This module implements ConfigProfileName following the Totality principle,
- * ensuring type safety through Smart Constructor pattern and validation.
+ * This module implements ConfigProfileName following the improved Totality principle,
+ * ensuring type safety through Smart Constructor pattern with Result type.
  * ConfigProfileName represents the configuration profile prefix (e.g., "production", "staging")
  * used in BreakdownConfig to switch between different configuration sets.
  *
  * @module types/config_profile_name
  */
 
+import type { Result } from "./result.ts";
+import { error, ok } from "./result.ts";
+
+/**
+ * ConfigProfileName validation errors
+ */
+export type ConfigProfileNameError = 
+  | { kind: "EmptyInput"; message: string }
+  | { kind: "InvalidFormat"; value: string; pattern: string; message: string }
+  | { kind: "TooLong"; value: string; maxLength: number; message: string };
+
 /**
  * ConfigProfileName - 設定プロファイル名型
  *
- * Totality原則に準拠した制約型。BreakdownConfigの設定プロファイル（prefix）を表現し、
+ * Totality原則に準拠した制約型で、Result型を使用して型安全性を確保。
+ * BreakdownConfigの設定プロファイル（prefix）を表現し、
  * CLI引数の --config/-c オプションの値として使用される。
  *
  * 設定プロファイルは以下の用途で使用される：
@@ -20,39 +32,29 @@
  * - ユーザー設定ファイル: ${profileName}-user.yml
  * - DirectiveTypeとLayerTypeの組み合わせの切り替え
  *
- * ## 全域性原則の適用
- * この型は以下の状態のみを許可し、曖昧な状態を排除：
- * - 有効なプロファイル名を含むConfigProfileNameインスタンス（value が string）
- * - 無効・空・存在しない場合のConfigProfileNameインスタンス（value が null）
- *
- * インスタンスは常に存在し、有効性は value プロパティのnullチェックで判定します。
+ * ## 改善されたTotality原則の適用
+ * - Value Object内部にnullを持たない
+ * - Result型で成功/失敗を明確に分離
+ * - エラー情報を詳細に提供
+ * - 型安全性を向上
  *
  * @example 基本的な使用例
  * ```typescript
  * // 有効な設定プロファイル名
- * const _profile = ConfigProfileName.create("production");
- * if (profile.value) {
- *   console.log(profile.value); // "production"
+ * const profileResult = ConfigProfileName.create("production");
+ * if (profileResult.ok) {
+ *   console.log(profileResult.data.value); // "production"
+ * } else {
+ *   console.error(profileResult.error.message);
  * }
  *
  * // 無効な設定プロファイル名
- * const invalid = ConfigProfileName.create("INVALID");
- * console.log(invalid.value); // null
- *
- * // 空文字の場合
- * const empty = ConfigProfileName.create("");
- * console.log(empty.value); // null
- * ```
- *
- * @example BreakdownConfigとの連携
- * ```typescript
- * import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
- *
- * const profile = ConfigProfileName.create("staging");
- * if (profile.value) {
- *   const configResult = await BreakdownConfig.create(profile.value);
- *   if (configResult.success && configResult.data) {
- *     // staging-app.yml, staging-user.yml が読み込まれる
+ * const invalidResult = ConfigProfileName.create("INVALID");
+ * if (!invalidResult.ok) {
+ *   switch (invalidResult.error.kind) {
+ *     case "InvalidFormat":
+ *       console.error(`Invalid format: ${invalidResult.error.value}`);
+ *       break;
  *   }
  * }
  * ```
@@ -74,63 +76,89 @@ export class ConfigProfileName {
    * プライベートコンストラクタ
    *
    * 直接インスタンス化を禁止し、createメソッドのみでインスタンス作成を可能にします。
-   * インスタンスが存在する時点で、値が有効であることを保証します。
+   * 有効な値のみを受け取り、nullは受け取りません。
    *
-   * @param value - 設定プロファイル名（有効な値またはnull）
+   * @param value - 検証済みの設定プロファイル名
    */
-  private constructor(private readonly _value: string | null) {
+  private constructor(private readonly _value: string) {
     // 完全な不変性を保証するために Object.freeze を適用
     Object.freeze(this);
   }
 
   /**
    * 設定プロファイル名の値を取得
-   * 読み取り専用のゲッターで、完全な不変性を保証
+   * 読み取り専用のゲッターで、常に有効な値を返す（nullチェック不要）
    */
-  get value(): string | null {
+  get value(): string {
     return this._value;
   }
 
   /**
-   * 設定プロファイル名を作成する
+   * 設定プロファイル名を作成する（改善版）
    *
-   * 無効な値が渡された場合、nullの値を持つConfigProfileNameインスタンスを返す。
-   * 常にConfigProfileNameインスタンスを返し、nullは返さない。
+   * Result型を使用して成功/失敗を明確に分離。
+   * 全域関数として設計され、例外を投げず、全ての入力に対して定義されている。
    *
    * @param value - 設定プロファイル名の候補（string または null を受け取り可能）
-   * @returns 常にConfigProfileNameインスタンス（無効な場合はnullの値を持つ）
+   * @returns Result型 - 成功時はConfigProfileName、失敗時は詳細なエラー情報
    *
    * @example
    * ```typescript
-   * const valid = ConfigProfileName.create("production");
-   * console.log(valid.value); // "production"
+   * const validResult = ConfigProfileName.create("production");
+   * if (validResult.ok) {
+   *   console.log(validResult.data.value); // "production"
+   * }
    *
-   * const invalid = ConfigProfileName.create("INVALID");
-   * console.log(invalid.value); // null
-   *
-   * const empty = ConfigProfileName.create("");
-   * console.log(empty.value); // null
-   *
-   * const nullInput = ConfigProfileName.create(null);
-   * console.log(nullInput.value); // null
+   * const invalidResult = ConfigProfileName.create("INVALID");
+   * if (!invalidResult.ok) {
+   *   console.error(invalidResult.error.message);
+   * }
    * ```
    */
-  static create(value: string | null): ConfigProfileName {
-    // null/undefined/非文字列の処理
-    if (!value || typeof value !== "string") {
-      return new ConfigProfileName(null);
+  static create(value: string | null | undefined): Result<ConfigProfileName, ConfigProfileNameError> {
+    // Case 1: null/undefined/空文字の処理
+    if (!value || typeof value !== "string" || value.trim() === "") {
+      return error({
+        kind: "EmptyInput",
+        message: "ConfigProfileName cannot be empty, null, or undefined"
+      });
     }
 
-    // 空文字の場合はnullの値を持つインスタンスを返す
-    if (value === "") {
-      return new ConfigProfileName(null);
+    // Case 2: 長さ制限チェック
+    if (value.length > 50) {
+      return error({
+        kind: "TooLong",
+        value,
+        maxLength: 50,
+        message: `ConfigProfileName "${value}" exceeds maximum length of 50 characters`
+      });
     }
 
-    // プロファイル名のバリデーション
+    // Case 3: フォーマット検証
     if (!ConfigProfileName.#PROFILE_NAME_PATTERN.test(value)) {
-      return new ConfigProfileName(null);
+      return error({
+        kind: "InvalidFormat",
+        value,
+        pattern: ConfigProfileName.#PROFILE_NAME_PATTERN.source,
+        message: `ConfigProfileName "${value}" contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed.`
+      });
     }
 
-    return new ConfigProfileName(value);
+    // Case 4: 成功時
+    return ok(new ConfigProfileName(value));
+  }
+
+  /**
+   * 等価性チェック
+   */
+  equals(other: ConfigProfileName): boolean {
+    return this._value === other._value;
+  }
+
+  /**
+   * 文字列表現
+   */
+  toString(): string {
+    return this._value;
   }
 }

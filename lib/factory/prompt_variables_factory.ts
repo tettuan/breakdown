@@ -141,10 +141,20 @@ export class PromptVariablesFactory {
       throw new Error(`Failed to create schema resolver: ${schemaResolverResult.error.kind}`);
     }
 
+    const inputResolverResult = InputFilePathResolver.create(this.config, this.cliParams);
+    if (!inputResolverResult.ok) {
+      throw new Error(`Failed to create input resolver: ${inputResolverResult.error.kind}`);
+    }
+    
+    const outputResolverResult = OutputFilePathResolver.create(this.config, this.cliParams);
+    if (!outputResolverResult.ok) {
+      throw new Error(`Failed to create output resolver: ${outputResolverResult.error.kind}`);
+    }
+
     this.pathResolvers = {
       template: templateResolverResult.data,
-      input: new InputFilePathResolver(this.config, this.cliParams),
-      output: new OutputFilePathResolver(this.config, this.cliParams),
+      input: inputResolverResult.data,
+      output: outputResolverResult.data,
       schema: schemaResolverResult.data,
     };
 
