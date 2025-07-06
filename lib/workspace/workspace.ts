@@ -20,7 +20,7 @@
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import { WorkspaceConfigError, WorkspaceInitError } from "./errors.ts";
+import { createWorkspaceConfigError, createWorkspaceInitError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
@@ -159,7 +159,7 @@ export class WorkspaceImpl implements Workspace {
       }
     } catch (error) {
       if (error instanceof Deno.errors.PermissionDenied) {
-        throw new WorkspaceInitError(
+        throw createWorkspaceInitError(
           `Permission denied: Cannot create directory structure in ${
             join(this.config.workingDir, "breakdown")
           }`,
@@ -235,7 +235,7 @@ export class WorkspaceImpl implements Workspace {
    */
   async validateConfig(): Promise<void> {
     if (!await exists(this.config.workingDir)) {
-      throw new WorkspaceConfigError("Working directory does not exist");
+      throw createWorkspaceConfigError("Working directory does not exist");
     }
   }
 
@@ -263,7 +263,7 @@ export class WorkspaceImpl implements Workspace {
       };
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-        throw new WorkspaceConfigError("Configuration file not found");
+        throw createWorkspaceConfigError("Configuration file not found");
       }
       throw error;
     }

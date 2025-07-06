@@ -197,9 +197,9 @@ describe("Structure: Data Flow Patterns", () => {
       "Should create factory with cliParams",
     );
     assertEquals(
-      methodString.includes("factory.validateAll()"),
+      methodString.includes("if (!factoryResult.ok)"),
       true,
-      "Should call validateAll on factory",
+      "Should check factory creation result",
     );
     assertEquals(
       methodString.includes("factory.getAllParams()"),
@@ -331,15 +331,15 @@ describe("Structure: Error Handling Patterns", () => {
     const generator = new PromptFileGenerator();
     const methodString = generator.generateWithPrompt.toString();
 
-    // Factory validation is called synchronously
+    // Factory validation happens during creation and getAllParams()
     assertEquals(
-      methodString.includes("factory.validateAll()"),
+      methodString.includes("if (!factoryResult.ok)"),
       true,
-      "Should call factory.validateAll()",
+      "Should check factory creation result for validation errors",
     );
 
-    // Note: validateAll() throws on error, so it should be in a try-catch
-    // or the method should handle thrown errors at a higher level
+    // Note: Validation is now done during factory creation and getAllParams() calls
+    // Error handling is done through Result types rather than exceptions
 
     logger.debug("Factory validation error handling verified");
   });

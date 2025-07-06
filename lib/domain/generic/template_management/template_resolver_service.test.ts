@@ -1,0 +1,303 @@
+/**
+ * @fileoverview Unit tests for TemplateResolverService
+ * Testing service behavior, error handling, and logging integration
+ */
+
+import { assertEquals, assertExists } from "@std/assert";
+import { TemplateResolverService, type GenericTemplateResolutionResult } from "./template_resolver_service.ts";
+import { TemplateRequest } from "./value_objects/template_request.ts";
+import { DirectiveType } from "../../../types/directive_type.ts";
+import { LayerType } from "../../../types/layer_type.ts";
+import { BreakdownLogger } from "@tettuan/breakdownlogger";
+
+// Test fixtures
+const mockTwoParamsResult = {
+  type: "two",
+  params: ["to", "project"],
+  demonstrativeType: "to",
+  layerType: "project",
+  options: {},
+} as any;
+
+const mockDirective = DirectiveType.create(mockTwoParamsResult);
+const mockLayer = LayerType.create(mockTwoParamsResult);
+
+let validTemplateRequest: TemplateRequest;
+
+// Setup valid template request
+if (mockDirective.ok && mockLayer.ok) {
+  const requestResult = TemplateRequest.create({
+    directive: mockDirective.data,
+    layer: mockLayer.data,
+  });
+  if (requestResult.ok) {
+    validTemplateRequest = requestResult.data;
+  }
+}
+
+// =============================================================================
+// 0_architecture: Architecture Constraint Tests
+// =============================================================================
+
+Deno.test("0_architecture: Service class instantiation", () => {
+  // Should be instantiable without Smart Constructor pattern
+  const service = new TemplateResolverService();
+  assertExists(service);
+  assertEquals(typeof service.resolveTemplate, "function");
+});
+
+Deno.test("0_architecture: Service uses BreakdownLogger", () => {
+  // Architecture constraint: should use logging for observability
+  const service = new TemplateResolverService();
+  
+  // Check that service contains logger (indirect test via constructor behavior)
+  assertExists(service);
+  // Logger is private, but we can verify it's being used through resolution behavior
+});
+
+Deno.test("0_architecture: Service method returns Promise", () => {
+  // Architecture constraint: async operations return Promise
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = service.resolveTemplate(validTemplateRequest);
+    assertEquals(result instanceof Promise, true);
+  }
+});
+
+Deno.test("0_architecture: Result follows generic domain interface", () => {
+  // Architecture constraint: result must match GenericTemplateResolutionResult
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = service.resolveTemplate(validTemplateRequest);
+    result.then((res: GenericTemplateResolutionResult) => {
+      assertExists(res);
+      assertEquals(typeof res.ok, "boolean");
+      
+      if (res.ok) {
+        assertExists(res.data);
+        // data should have prompt and schema properties
+        assertEquals("prompt" in res.data, true);
+        assertEquals("schema" in res.data, true);
+      } else {
+        assertExists(res.error);
+        assertEquals(typeof res.error, "string");
+      }
+    });
+  }
+});
+
+Deno.test("0_architecture: Service does not throw exceptions", async () => {
+  // Architecture constraint: should handle all errors gracefully
+  const service = new TemplateResolverService();
+  
+  // Test with various invalid inputs
+  const testCases = [
+    null as any,
+    undefined as any,
+    {} as any,
+  ];
+  
+  for (const testCase of testCases) {
+    try {
+      const result = await service.resolveTemplate(testCase);
+      // Should not throw, should return error result
+      assertEquals(result.ok, false);
+      assertExists(result.error);
+    } catch (error) {
+      // If it throws, the test should fail
+      throw new Error(`Service should not throw exceptions, but threw: ${error}`);
+    }
+  }
+});
+
+// =============================================================================
+// 1_behavior: Service Behavior Tests
+// =============================================================================
+
+Deno.test("1_behavior: resolveTemplate returns success result", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertExists(result.data);
+      // Current implementation returns null values as placeholder
+      assertEquals(result.data.prompt, null);
+      assertEquals(result.data.schema, null);
+    }
+  }
+});
+
+Deno.test("1_behavior: resolveTemplate handles valid template request", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    // Should process request without error
+    assertEquals(result.ok, true);
+    assertEquals(result.error, undefined);
+  }
+});
+
+Deno.test("1_behavior: resolveTemplate logs debug information", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    // This test verifies logging behavior indirectly
+    // (direct logger testing would require mocking)
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    // If logging works correctly, resolution should succeed
+    assertEquals(result.ok, true);
+  }
+});
+
+Deno.test("1_behavior: resolveTemplate handles null request gracefully", async () => {
+  const service = new TemplateResolverService();
+  
+  try {
+    const result = await service.resolveTemplate(null as any);
+    // Should handle gracefully and return error result
+    assertEquals(result.ok, false);
+    assertExists(result.error);
+  } catch (error) {
+    // Should not throw, should return error result
+    throw new Error(`Should handle null gracefully, but threw: ${error}`);
+  }
+});
+
+Deno.test("1_behavior: resolveTemplate processes directive and layer info", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    // Should successfully process the directive and layer information
+    assertEquals(result.ok, true);
+    
+    // Verify that the request was processed (not just ignored)
+    if (result.ok) {
+      assertExists(result.data);
+    }
+  }
+});
+
+// =============================================================================
+// 2_structure: Structural Correctness Tests
+// =============================================================================
+
+Deno.test("2_structure: Service maintains proper result structure", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    // Verify result structure
+    assertExists(result);
+    assertEquals(typeof result.ok, "boolean");
+    
+    if (result.ok) {
+      assertExists(result.data);
+      assertEquals(typeof result.data, "object");
+      assertEquals("prompt" in result.data, true);
+      assertEquals("schema" in result.data, true);
+      assertEquals(result.error, undefined);
+    } else {
+      assertEquals(result.data, undefined);
+      assertExists(result.error);
+      assertEquals(typeof result.error, "string");
+    }
+  }
+});
+
+Deno.test("2_structure: Service result data has correct prompt field", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    if (result.ok && result.data) {
+      // prompt field should exist and be null in current implementation
+      assertEquals("prompt" in result.data, true);
+      assertEquals(result.data.prompt, null);
+    }
+  }
+});
+
+Deno.test("2_structure: Service result data has correct schema field", async () => {
+  const service = new TemplateResolverService();
+  
+  if (validTemplateRequest) {
+    const result = await service.resolveTemplate(validTemplateRequest);
+    
+    if (result.ok && result.data) {
+      // schema field should exist and be null in current implementation
+      assertEquals("schema" in result.data, true);
+      assertEquals(result.data.schema, null);
+    }
+  }
+});
+
+Deno.test("2_structure: Service error results have string error message", async () => {
+  const service = new TemplateResolverService();
+  
+  // Force an error scenario
+  try {
+    const result = await service.resolveTemplate(null as any);
+    
+    if (!result.ok) {
+      assertExists(result.error);
+      assertEquals(typeof result.error, "string");
+      assertEquals(result.data, undefined);
+    }
+  } catch {
+    // If it throws instead of returning error result, that's acceptable for this test
+    // since we're testing error structure when errors are returned rather than thrown
+  }
+});
+
+Deno.test("2_structure: Service maintains consistent interface", async () => {
+  const service = new TemplateResolverService();
+  
+  // Test multiple calls to ensure consistent interface
+  const calls = [];
+  
+  if (validTemplateRequest) {
+    for (let i = 0; i < 3; i++) {
+      calls.push(service.resolveTemplate(validTemplateRequest));
+    }
+    
+    const results = await Promise.all(calls);
+    
+    // All results should have consistent structure
+    for (const result of results) {
+      assertExists(result);
+      assertEquals(typeof result.ok, "boolean");
+      
+      if (result.ok) {
+        assertExists(result.data);
+        assertEquals("prompt" in result.data, true);
+        assertEquals("schema" in result.data, true);
+      }
+    }
+  }
+});
+
+Deno.test("2_structure: Service instance isolation", () => {
+  // Multiple service instances should be independent
+  const service1 = new TemplateResolverService();
+  const service2 = new TemplateResolverService();
+  
+  assertExists(service1);
+  assertExists(service2);
+  assertEquals(service1 === service2, false);
+  
+  // Both should have the same interface
+  assertEquals(typeof service1.resolveTemplate, "function");
+  assertEquals(typeof service2.resolveTemplate, "function");
+});

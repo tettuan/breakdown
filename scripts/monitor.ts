@@ -956,7 +956,7 @@ class PaneCommunicator {
 
     // Format as specified in requirements: #{pane_id} : #{status}
     const reportLines = changedPanes.map((pane) => `${pane.paneId} : ${pane.status}`);
-    const report = reportLines.join("\n");
+    const report = reportLines.join("\n") + "\ntmp/worker-management.md を更新して。";
 
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} '${report}'`);
     await executeTmuxCommand(`tmux send-keys -t ${mainPaneId} Enter`);
@@ -1049,7 +1049,7 @@ class TmuxMonitor {
   private async executeCIAndCheckErrors(): Promise<boolean> {
     try {
       logInfo("Executing 'deno task ci' to check for errors...");
-      const output = await executeTmuxCommand("deno task ci");
+      const output = await executeTmuxCommand("deno task ci --single-file");
 
       // Check for error patterns as specified in requirements
       const errorPatterns = [
@@ -1106,7 +1106,7 @@ class TmuxMonitor {
     }
 
     const message =
-      `deno task ci を実行する。その後、一番最初の指示を思い出し、チームを構成する。その後、エラー修正を行う。deno task ci が passしたらpane全てをclearさせる。`;
+      "`deno task ci --single-file` を実行する。あなたは指揮官で、自ら行う作業は仕様確認と全体の状況確認だけである。調査作業や修正作業は、ワーカープールマネージャーへ作業を依頼し、ゴルーチンワーカーに作業をさせて。ゴール達成のための、チーム稼働率の向上があなたのミッション。";
     logInfo("Sending CI instruction to main pane");
 
     // Send instruction to main pane

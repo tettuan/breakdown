@@ -12,7 +12,7 @@
 import { WorkspaceConfig, WorkspaceStructure } from "./interfaces.ts";
 import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
-import { WorkspaceInitError } from "./errors.ts";
+import { createWorkspaceInitError, type WorkspaceInitError } from "./errors.ts";
 
 /**
  * Implementation of the WorkspaceStructure interface for managing the directory
@@ -106,7 +106,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
       try {
         const stat = await Deno.stat(path);
         if (!stat.isDirectory) {
-          throw new WorkspaceInitError(`Path exists but is not a directory: ${path}`);
+          throw createWorkspaceInitError(`Path exists but is not a directory: ${path}`);
         }
       } catch (error) {
         if (error instanceof Deno.errors.NotFound) {

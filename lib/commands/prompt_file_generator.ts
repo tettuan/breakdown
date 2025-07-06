@@ -59,6 +59,20 @@ export class PromptFileGenerator {
       input_text?: string;
     },
   ): Promise<CommandResult> {
+    // Handle stdin input check first, before factory creation
+    if (fromFile === "-") {
+      if (!options?.input_text) {
+        return {
+          success: false,
+          output: "",
+          error: {
+            type: PromptFileErrorType.InputFileNotFound,
+            message: "No input provided via stdin",
+          },
+        };
+      }
+    }
+
     const cliParams = {
       demonstrativeType: options?.demonstrativeType || "to",
       layerType: format,
@@ -74,8 +88,19 @@ export class PromptFileGenerator {
     let inputFilePath;
 
     try {
-      factory = await PromptVariablesFactory.create(cliParams);
-      factory.validateAll();
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      if (!factoryResult.ok) {
+        return {
+          success: false,
+          output: "",
+          error: {
+            type: PromptFileErrorType.Unknown,
+            message: `Factory creation failed: ${factoryResult.error.message}`,
+          },
+        };
+      }
+      
+      factory = factoryResult.data;
       const params = factory.getAllParams();
       promptFilePath = params.promptFilePath;
       inputFilePath = params.inputFilePath;
@@ -90,18 +115,8 @@ export class PromptFileGenerator {
       };
     }
 
-    // Handle stdin input
+    // Handle stdin input validation (skip file validation for stdin)
     if (fromFile === "-") {
-      if (!options?.input_text) {
-        return {
-          success: false,
-          output: "",
-          error: {
-            type: PromptFileErrorType.InputFileNotFound,
-            message: "No input provided via stdin",
-          },
-        };
-      }
       // Skip input file validation for stdin
     } else {
       // 3. 入力ファイル存在チェック（引数バリデーション後に実行）
@@ -155,7 +170,7 @@ export class PromptFileGenerator {
     // 6. テンプレート処理
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
     // PromptVariablesFactory implements PromptVariablesProvider interface
-    const _adapter = new PromptAdapterImpl(factory);
+    const _adapter = new PromptAdapterImpl(factory as import("../prompt/prompt_adapter.ts").PromptVariablesProvider);
     const result = await _adapter.validateAndGenerate();
     if (result.success) {
       return {
