@@ -67,7 +67,7 @@ Breakdown は Deno で実装された OSS ツールで、プロジェクト管�
    - 生成されたプロンプトの出力
    - エラー時の適切な処理
 
-詳細は[breakdownの処理フロー](./overview/processing-flow.ja.md)を参照してください。
+詳細は[breakdownの処理フロー](./generic_domain/system/overview/processing-flow.ja.md)を参照してください。
 
 ## 使用するJSRパッケージ
 

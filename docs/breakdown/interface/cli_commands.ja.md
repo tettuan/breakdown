@@ -218,10 +218,10 @@ breakdown -v
 
 ## 関連ドキュメント
 
-- **[設定管理](../configuration/app_config.ja.md)** - 設定ファイルの準備
+- **[設定管理](./configuration.ja.md)** - 設定ファイルの準備
 - **[パラメータ型](../domain_core/two_params_types.ja.md)** - DirectiveTypeとLayerTypeの詳細
-- **[プロンプトテンプレート](../templates/app_prompt.ja.md)** - プロンプトファイルの準備
-- **[パス解決](../templates/path.ja.md)** - ファイルパスの解決ルール
+- **[プロンプトテンプレート](../supporting_domain/template_management/app_prompt.ja.md)** - プロンプトファイルの準備
+- **[パス解決](./path_resolution.ja.md)** - ファイルパスの解決ルール
 
 ---
 

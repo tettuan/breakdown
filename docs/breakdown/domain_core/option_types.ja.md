@@ -358,11 +358,11 @@ throw new BreakdownError("prompt-generation", "Invalid template adaptation");
 ### 関連ドキュメント
 - [prompt_variables.ja.md](./prompt_variables.ja.md): プロンプト変数の詳細
 - [two_params_types.ja.md](./two_params_types.ja.md): TwoParamsResultの内部構造  
-- [processing-flow.ja.md](../overview/processing-flow.ja.md): 処理フローの全体像
+- [processing-flow.ja.md](../generic_domain/system/overview/processing-flow.ja.md): 処理フローの全体像
 
 ### 実装参考
-- [options.ja.md](../parameters/options.ja.md): CLIオプションの実装詳細
-- [glossary.ja.md](../overview/glossary.ja.md): ドメイン用語の定義
+- [CLIコマンド](../interface/cli_commands.ja.md): CLIオプションの実装詳細
+- [glossary.ja.md](../generic_domain/system/overview/glossary.ja.md): ドメイン用語の定義
 
 ### 設計上の注意点
 **全域関数とnull許可について**: Value Object内部でnull値を許可するよりも、Result型を使用して成功/失敗を明確に分離することを推奨します。これにより型安全性が向上し、エラー情報の詳細化が可能になります。

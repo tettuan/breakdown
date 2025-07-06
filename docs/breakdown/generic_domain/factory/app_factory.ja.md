@@ -1,6 +1,6 @@
 # PromptVariablesFactory
 
-> **アプリケーション設定（*-app.yml, *-user.yml）の詳細仕様については [app_config.ja.md](./app_config.ja.md) を参照してください。**
+> **アプリケーション設定（*-app.yml, *-user.yml）の詳細仕様については設定管理ドキュメントを参照してください。**
 
 ## 概要
 
@@ -54,9 +54,9 @@ CLI・テスト・アプリ本体は必ずこのFactory経由でパス解決・�
 - **スキーマファイル**:  
   スキーマベースディレクトリ（`app_schema.base_dir`） + demonstrativeType + layerType + `base.schema.md`
 - **入力ファイル**:  
-  [path.ja.md](./path.ja.md)「Inputファイル」セクション準拠
+  入力ファイルパス解決の詳細仕様準拠
 - **出力ファイル**:  
-  [path.ja.md](./path.ja.md)「Outputファイル」セクション準拠
+  出力ファイルパス解決の詳細仕様準拠
 
 ## クラス設計・API例
 
@@ -103,10 +103,9 @@ console.log(factory.customVariables['projectName']); // --projectName=value で�
 
 ## 参照
 
-- [docs/breakdown/path.ja.md](./path.ja.md)
-- [docs/breakdown/options.ja.md](./options.ja.md)
-- [docs/breakdown/testing.ja.md](./testing.ja.md)
-- [docs/breakdown/app_config.ja.md](./app_config.ja.md)
+- [パス解決ルール](../../interface/path_resolution.ja.md)
+- [設定管理](../../interface/configuration.ja.md)
+- [テスト仕様](../../../tests/testing.ja.md)
 
 # カスタム変数（--*）のサポート
 

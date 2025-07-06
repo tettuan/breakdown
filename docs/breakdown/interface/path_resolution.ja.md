@@ -303,8 +303,8 @@ app_schema:
 ## 関連ドキュメント
 
 - **[プロンプトパス決定ドメイン](../domain_core/prompt_template_path.ja.md)** - パス決定の詳細な仕組み
-- **[プロンプトテンプレート](../templates/app_prompt.ja.md)** - プロンプトファイルの作成方法
-- **[スキーマ管理](../templates/app_schema.ja.md)** - スキーマファイルの配置方法
+- **[プロンプトテンプレート](../supporting_domain/template_management/app_prompt.ja.md)** - プロンプトファイルの作成方法
+- **[スキーマ管理](../supporting_domain/template_management/app_schema.ja.md)** - スキーマファイルの配置方法
 - **[設定管理](./configuration.ja.md)** - 設定によるパス制御
 
 ---
