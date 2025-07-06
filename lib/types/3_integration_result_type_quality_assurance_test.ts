@@ -6,7 +6,7 @@
  * principle across the entire system.
  */
 
-import { assertEquals, assertExists, assertThrows } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertThrows } from "../../tests/deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain, getOrElse, all } from "./result.ts";
 

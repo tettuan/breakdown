@@ -39,8 +39,8 @@ export type ConfigurationError =
  */
 export interface ConfigProfile {
   name: string;
-  description?: string;
-  environment?: "development" | "production" | "test";
+  description: string | null;
+  environment: "development" | "production" | "test" | null;
   priority: number;
   source: "default" | "user" | "environment" | "override";
 }
@@ -65,7 +65,7 @@ export interface UnifiedConfig {
   patterns: {
     directiveTypes: string[];
     layerTypes: string[];
-    customPatterns?: Record<string, string[]>;
+    customPatterns: Record<string, string[]> | null;
   };
 
   // Application settings
@@ -86,17 +86,17 @@ export interface UnifiedConfig {
 
   // User customizations
   user: {
-    customVariables?: Record<string, string>;
-    aliases?: Record<string, string>;
-    templates?: Record<string, string>;
+    customVariables: Record<string, string> | null;
+    aliases: Record<string, string> | null;
+    templates: Record<string, string> | null;
   };
 
   // Environment-specific settings
   environment: {
     logLevel: "debug" | "info" | "warn" | "error";
     colorOutput: boolean;
-    timezone?: string;
-    locale?: string;
+    timezone: string | null;
+    locale: string | null;
   };
 
   // Raw config data for extensions
@@ -107,10 +107,10 @@ export interface UnifiedConfig {
  * Configuration builder options
  */
 export interface ConfigBuilderOptions {
-  profile?: string;
-  workingDirectory?: string;
-  environmentOverrides?: Partial<UnifiedConfig["environment"]>;
-  pathOverrides?: Partial<UnifiedConfig["paths"]>;
+  profile?: string | null;
+  workingDirectory?: string | null;
+  environmentOverrides?: Partial<UnifiedConfig["environment"]> | null;
+  pathOverrides?: Partial<UnifiedConfig["paths"]> | null;
 }
 
 /**
@@ -141,13 +141,13 @@ export class UnifiedConfigInterface {
    * Create unified configuration with profile support
    */
   static async create(
-    options: ConfigBuilderOptions = {},
+    options: ConfigBuilderOptions = { profile: null, workingDirectory: null, environmentOverrides: null, pathOverrides: null },
   ): Promise<Result<UnifiedConfigInterface, ConfigurationError>> {
     try {
       // Load base configuration
       const baseConfigResult = await loadBreakdownConfig(
-        options.profile,
-        options.workingDirectory,
+        options.profile || undefined,
+        options.workingDirectory || undefined,
       );
 
       if (!baseConfigResult.ok) {
@@ -162,7 +162,7 @@ export class UnifiedConfigInterface {
       // Create pattern provider
       const patternProviderResult = await AsyncConfigPatternProvider.create(
         options.profile || "default",
-        options.workingDirectory,
+        options.workingDirectory || undefined,
       );
 
       if (!patternProviderResult.ok) {
@@ -179,12 +179,18 @@ export class UnifiedConfigInterface {
 
       // Build unified configuration
       const workingDir = options.workingDirectory || Deno.cwd();
-      const unifiedConfig = await this.buildUnifiedConfig(
+      const unifiedConfigResult = await this.buildUnifiedConfig(
         baseConfig,
         patternProvider,
         workingDir,
         options,
       );
+
+      if (!unifiedConfigResult.ok) {
+        return unifiedConfigResult;
+      }
+
+      const unifiedConfig = unifiedConfigResult.data;
 
       // Create path resolution options
       const pathOptionsResult = PathResolutionOption.create(
@@ -226,7 +232,7 @@ export class UnifiedConfigInterface {
     patternProvider: AsyncConfigPatternProvider,
     workingDir: string,
     options: ConfigBuilderOptions,
-  ): Promise<UnifiedConfig> {
+  ): Promise<Result<UnifiedConfig, ConfigurationError>> {
     // Extract paths with defaults (type-safe property access)
     const typedBaseConfig = baseConfig as Record<string, any>;
     const promptBaseDir = typedBaseConfig.app_prompt?.base_dir as string ||
@@ -238,7 +244,10 @@ export class UnifiedConfigInterface {
     // Get patterns from provider
     const patternsResult = await patternProvider.getAllPatterns();
     if (!patternsResult.ok) {
-      throw new Error(`Failed to get patterns: ${patternsResult.error.kind}`);
+      return resultError({
+        kind: "ConfigLoadError",
+        message: `Failed to get patterns: ${patternsResult.error.kind}`,
+      });
     }
     const patterns = patternsResult.data;
 
@@ -246,7 +255,7 @@ export class UnifiedConfigInterface {
     const config: UnifiedConfig = {
       profile: {
         name: options.profile || "default",
-        description: typedBaseConfig.profile?.description as string,
+        description: typedBaseConfig.profile?.description as string || null,
         environment: this.detectEnvironment(),
         priority: 0,
         source: options.profile ? "user" : "default",
@@ -258,13 +267,13 @@ export class UnifiedConfigInterface {
         promptBaseDir: this.resolvePath(workingDir, promptBaseDir),
         schemaBaseDir: this.resolvePath(workingDir, schemaBaseDir),
         outputBaseDir: this.resolvePath(workingDir, outputBaseDir),
-        ...options.pathOverrides,
+        ...(options.pathOverrides || {}),
       },
 
       patterns: {
         directiveTypes: patterns.directive ? [patterns.directive.getPattern()] : [],
         layerTypes: patterns.layer ? [patterns.layer.getPattern()] : [],
-        customPatterns: {},
+        customPatterns: null,
       },
 
       app: {
@@ -283,23 +292,23 @@ export class UnifiedConfigInterface {
       },
 
       user: {
-        customVariables: (typedBaseConfig.user as any)?.customVariables,
-        aliases: (typedBaseConfig.user as any)?.aliases,
-        templates: (typedBaseConfig.user as any)?.templates,
+        customVariables: (typedBaseConfig.user as any)?.customVariables || null,
+        aliases: (typedBaseConfig.user as any)?.aliases || null,
+        templates: (typedBaseConfig.user as any)?.templates || null,
       },
 
       environment: {
         logLevel: this.getLogLevel(typedBaseConfig),
         colorOutput: (typedBaseConfig.environment as any)?.colorOutput ?? true,
-        timezone: (typedBaseConfig.environment as any)?.timezone,
-        locale: (typedBaseConfig.environment as any)?.locale,
-        ...options.environmentOverrides,
+        timezone: (typedBaseConfig.environment as any)?.timezone || null,
+        locale: (typedBaseConfig.environment as any)?.locale || null,
+        ...(options.environmentOverrides || {}),
       },
 
       raw: baseConfig,
     };
 
-    return config;
+    return resultOk(config);
   }
 
   /**
@@ -407,6 +416,8 @@ export class UnifiedConfigInterface {
     return UnifiedConfigInterface.create({
       profile: profileName,
       workingDirectory: this.config.paths.workingDirectory,
+      environmentOverrides: null,
+      pathOverrides: null,
     });
   }
 
@@ -476,12 +487,13 @@ export class UnifiedConfigInterface {
   /**
    * Helper: Detect current environment
    */
-  private static detectEnvironment(): "development" | "production" | "test" {
+  private static detectEnvironment(): "development" | "production" | "test" | null {
     const env = Deno.env.get("DENO_ENV") || Deno.env.get("NODE_ENV");
 
     if (env === "production" || env === "prod") return "production";
     if (env === "test" || Deno.env.get("CI") === "true") return "test";
-    return "development";
+    if (env === "development" || env === "dev") return "development";
+    return null;
   }
 
   /**

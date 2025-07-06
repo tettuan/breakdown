@@ -6,7 +6,7 @@
  * the system architecture.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf } from "../../tests/deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain } from "./result.ts";
 

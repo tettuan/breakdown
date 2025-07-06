@@ -190,7 +190,7 @@ Deno.test("Behavior: Inheritance Fix - Error Handling During Construction", () =
   
   // Success case
   const successResult = ErrorTestPath.createWithError("/test/success", "never");
-  if (successResult.ok) {
+  if (successResult.ok && 'data' in successResult) {
     assert(Object.isFrozen(successResult.data));
   }
   
@@ -263,7 +263,7 @@ Deno.test("Behavior: Inheritance Fix - Method Inheritance Chain", () => {
       // Already frozen by grandparent
     }
     
-    static create(path: string) {
+    static override create(path: string) {
       return super.create(path);
     }
     
@@ -277,7 +277,7 @@ Deno.test("Behavior: Inheritance Fix - Method Inheritance Chain", () => {
   }
   
   class ChildPath extends ParentPath {
-    static create(path: string) {
+    static override create(path: string) {
       return super.create(path);
     }
     
@@ -294,8 +294,8 @@ Deno.test("Behavior: Inheritance Fix - Method Inheritance Chain", () => {
     // Should have access to all methods in the chain
     assertEquals(child.getValue(), "/test/inheritance-chain"); // From BasePathValueObject
     assertEquals(child.grandParentMethod(), "grandparent-overridden"); // From GrandParentPath (overridden)
-    assertEquals(child.parentMethod(), "parent"); // From ParentPath
-    assertEquals(child.childMethod(), "child"); // From ChildPath
+    assertEquals((child as any).parentMethod(), "parent"); // From ParentPath
+    assertEquals((child as any).childMethod(), "child"); // From ChildPath
     
     // Should be frozen
     assert(Object.isFrozen(child));
@@ -345,7 +345,7 @@ Deno.test("Behavior: Inheritance Fix - Smart Constructor Pattern Integration", (
   
   // Valid input should succeed
   const validResult = SmartTestPath.create("/test/smart", { type: "test", version: "1.0" });
-  if (validResult.ok) {
+  if (validResult.ok && 'data' in validResult) {
     const smartPath = validResult.data;
     assert(Object.isFrozen(smartPath));
     assertEquals(smartPath.getValue(), "/test/smart");

@@ -6,7 +6,7 @@
  * consistency throughout the entire breakdown system.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf } from "../../tests/deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain, all } from "./result.ts";
 
@@ -58,7 +58,7 @@ Deno.test("Totality Integration - Cross-Domain Compatibility", async (t) => {
       }
       
       // For testing purposes, create a mock DirectiveType
-      const directiveType = value as DirectiveType;
+      const directiveType = value as unknown as DirectiveType;
       return ok(directiveType);
     };
     
@@ -76,7 +76,7 @@ Deno.test("Totality Integration - Cross-Domain Compatibility", async (t) => {
       }
       
       // For testing purposes, create a mock LayerType
-      const layerType = value as LayerType;
+      const layerType = value as unknown as LayerType;
       return ok(layerType);
     };
     
@@ -88,8 +88,8 @@ Deno.test("Totality Integration - Cross-Domain Compatibility", async (t) => {
     assertEquals(validLayer.ok, true);
     
     if (validDirective.ok && validLayer.ok) {
-      assertEquals(validDirective.data, "to");
-      assertEquals(validLayer.data, "project");
+      assertEquals(validDirective.data, "to" as unknown as DirectiveType);
+      assertEquals(validLayer.data, "project" as unknown as LayerType);
     }
     
     // Test error structure consistency

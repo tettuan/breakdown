@@ -62,8 +62,10 @@ Deno.test("Behavior: loadConfig - File Not Found Error", async () => {
   
   assert(!result.ok, "Should fail for non-existent file");
   assertEquals(result.error.kind, "FileReadError");
-  assertEquals(result.error.path, nonExistentPath);
-  assertStringIncludes(result.error.message.toLowerCase(), "no such file");
+  if (result.error.kind === "FileReadError") {
+    assertEquals(result.error.path, nonExistentPath);
+    assertStringIncludes(result.error.message.toLowerCase(), "no such file");
+  }
 });
 
 Deno.test("Behavior: loadConfig - YAML Parse Error", async () => {
@@ -85,8 +87,10 @@ invalid: yaml: content:
     
     assert(!result.ok, "Should fail for invalid YAML");
     assertEquals(result.error.kind, "ParseError");
-    assertEquals(result.error.path, configPath);
-    assertExists(result.error.message);
+    if (result.error.kind === "ParseError") {
+      assertEquals(result.error.path, configPath);
+      assertExists(result.error.message);
+    }
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
@@ -204,11 +208,11 @@ Deno.test("Behavior: validateCustomConfig - Valid Configuration Structures", () 
 Deno.test("Behavior: validateCustomConfig - Invalid Configuration Structures", () => {
   // Test validation behavior with invalid configurations
   const invalidConfigs: Array<{ config: unknown; expectedError: string }> = [
-    { config: null, expectedError: "Configuration must be an object" },
-    { config: undefined, expectedError: "Configuration must be an object" },
-    { config: "string", expectedError: "Configuration must be an object" },
-    { config: 42, expectedError: "Configuration must be an object" },
-    { config: [], expectedError: "Configuration must be an object" },
+    { config: null, expectedError: "Configuration must be a non-null object" },
+    { config: undefined, expectedError: "Configuration must be a non-null object" },
+    { config: "string", expectedError: "Configuration must be a non-null object" },
+    { config: 42, expectedError: "Configuration must be a non-null object" },
+    { config: [], expectedError: "Configuration must be a non-null object" },
     { config: { customConfig: "not-object" }, expectedError: "customConfig must be an object" },
     { config: { breakdownParams: "not-object" }, expectedError: "breakdownParams must be an object" },
     { config: { customConfig: 42 }, expectedError: "customConfig must be an object" },

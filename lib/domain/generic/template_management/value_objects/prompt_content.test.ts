@@ -305,13 +305,18 @@ Deno.test("2_structure: equals method correctness", () => {
   const result3 = PromptContent.create(noVariableContent);
   
   if (result1.ok && result2.ok && result3.ok) {
+    // Type assertion to help TypeScript understand the types are safe
+    const data1 = result1.data!;
+    const data2 = result2.data!;
+    const data3 = result3.data!;
+    
     // Same content should be equal
-    assertEquals(result1.data.equals(result2.data), true);
-    assertEquals(result2.data.equals(result1.data), true);
+    assertEquals(data1.equals(data2), true);
+    assertEquals(data2.equals(data1), true);
     
     // Different content should not be equal
-    assertEquals(result1.data.equals(result3.data), false);
-    assertEquals(result3.data.equals(result1.data), false);
+    assertEquals(data1.equals(data3), false);
+    assertEquals(data3.equals(data1), false);
   }
 });
 
@@ -343,12 +348,16 @@ Deno.test("2_structure: multiple instance independence", () => {
   const result2 = PromptContent.create("Content 2 with {{var}}");
   
   if (result1.ok && result2.ok) {
+    // Type assertion to help TypeScript understand the types are safe
+    const data1 = result1.data!;
+    const data2 = result2.data!;
+    
     // Different instances should be independent
-    assertEquals(result1.data === result2.data, false);
-    assertEquals(result1.data.equals(result2.data), false);
+    assertEquals(data1 === data2, false);
+    assertEquals(data1.equals(data2), false);
     
     // But they should have same variable
-    assertEquals(result1.data.getVariables()[0], result2.data.getVariables()[0]);
+    assertEquals(data1.getVariables()[0], data2.getVariables()[0]);
   }
 });
 

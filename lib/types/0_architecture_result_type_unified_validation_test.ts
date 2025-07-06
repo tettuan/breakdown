@@ -6,7 +6,7 @@
  * for all Result type implementations throughout the system.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain, getOrElse, all } from "./result.ts";
 
@@ -75,12 +75,16 @@ Deno.test("Result Type - Operational Consistency", async (t) => {
     // Test ok() factory
     const successResult = ok("success");
     assertEquals(successResult.ok, true);
-    assertEquals(successResult.data, "success");
+    if (successResult.ok) {
+      assertEquals(successResult.data, "success");
+    }
     
     // Test error() factory
     const errorResult = error("failure");
     assertEquals(errorResult.ok, false);
-    assertEquals(errorResult.error, "failure");
+    if (!errorResult.ok) {
+      assertEquals(errorResult.error, "failure");
+    }
   });
 
   await t.step("should provide consistent utility functions", () => {
@@ -118,7 +122,7 @@ Deno.test("Result Type - Operational Consistency", async (t) => {
     assertEquals(chained.ok, true);
     if (chained.ok) assertEquals(chained.data, "5");
     
-    const chainedError = chain(errorResult, x => ok(x.toString()));
+    const chainedError = chain(errorResult, (_x: never) => ok("never-reached"));
     assertEquals(chainedError.ok, false);
     if (!chainedError.ok) assertEquals(chainedError.error, "failure");
   });

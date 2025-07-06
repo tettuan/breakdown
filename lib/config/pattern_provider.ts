@@ -12,6 +12,8 @@ import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { Result, ok, error } from "../types/result.ts";
+import { ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";
 
 /**
  * Configuration structure for validation patterns
@@ -106,19 +108,25 @@ export class ConfigPatternProvider implements TypePatternProvider {
    *
    * @param configSetName - Configuration set name (e.g., "default", "production")
    * @param workspacePath - Workspace path for configuration resolution
-   * @returns Promise<ConfigPatternProvider> - Initialized provider instance
+   * @returns Promise<Result<ConfigPatternProvider, ConfigurationError>> - Result with initialized provider instance or error
    */
   static async create(
     configSetName: string = "default",
     workspacePath: string = Deno.cwd(),
-  ): Promise<ConfigPatternProvider> {
+  ): Promise<Result<ConfigPatternProvider, ConfigurationError>> {
     const configResult = await BreakdownConfig.create(configSetName, workspacePath);
     if (!configResult.success) {
-      throw new Error(`Failed to create BreakdownConfig: ${configResult.error}`);
+      return error(ErrorFactory.configError(
+        "ConfigurationError",
+        {
+          message: `Failed to create BreakdownConfig: ${configResult.error}`,
+          source: "ConfigPatternProvider.create",
+        }
+      ));
     }
     const config = configResult.data;
     await config.loadConfig();
-    return new ConfigPatternProvider(config);
+    return ok(new ConfigPatternProvider(config));
   }
 
   /**
@@ -202,17 +210,22 @@ export class ConfigPatternProvider implements TypePatternProvider {
   /**
    * Gets configuration data from BreakdownConfig
    *
-   * @returns Record<string, unknown> - Configuration data object
+   * @returns Promise<Result<Record<string, unknown>, ConfigurationError>> - Result with configuration data or error
    */
-  private async getConfigData(): Promise<Record<string, unknown>> {
+  private async getConfigData(): Promise<Result<Record<string, unknown>, ConfigurationError>> {
     try {
-      return await this.config.getConfig();
-    } catch (error) {
-      throw new Error(
-        `Failed to get configuration data: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
+      const configData = await this.config.getConfig();
+      return ok(configData);
+    } catch (err) {
+      return error(ErrorFactory.configError(
+        "ConfigurationError",
+        {
+          message: `Failed to get configuration data: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+          source: "ConfigPatternProvider.getConfigData",
+        }
+      ));
     }
   }
 

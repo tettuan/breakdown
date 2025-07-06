@@ -31,7 +31,7 @@ import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { formatSchemaError, SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
-import type { Result } from "../types/result.ts";
+import { Result, ok, error as resultError } from "../types/result.ts";
 import {
   PromptVariablesFactoryErrors,
   PromptVariablesFactoryErrorFactory,
@@ -162,7 +162,10 @@ export class PromptVariablesFactory {
     this.transformer = transformer || TransformerFactory.createWithPathValidation(pathOptions);
 
     // Resolve paths immediately
-    this.resolvePaths();
+    const resolveResult = this.resolvePathsSafe();
+    if (!resolveResult.ok) {
+      throw new Error(`Failed to resolve paths: ${resolveResult.error.kind}`);
+    }
   }
 
   /**
@@ -372,21 +375,21 @@ export class PromptVariablesFactory {
   /**
    * Get base directory validation error message
    */
-  public getBaseDirError(): string | undefined {
+  public getBaseDirError(): Result<void, string> {
     if (this.hasValidBaseDir()) {
-      return undefined;
+      return ok(undefined);
     }
     const promptBaseDir = this.config.app_prompt?.base_dir;
     if (promptBaseDir === undefined || promptBaseDir === null) {
-      return "Configuration missing app_prompt.base_dir property";
+      return resultError("Configuration missing app_prompt.base_dir property");
     }
     if (promptBaseDir.trim() === "") {
-      return "Configuration app_prompt.base_dir cannot be empty";
+      return resultError("Configuration app_prompt.base_dir cannot be empty");
     }
     if (promptBaseDir.trim() === "   ") {
-      return "Configuration app_prompt.base_dir cannot be whitespace only";
+      return resultError("Configuration app_prompt.base_dir cannot be whitespace only");
     }
-    return "Invalid app_prompt.base_dir configuration";
+    return resultError("Invalid app_prompt.base_dir configuration");
   }
 
   /**
@@ -551,12 +554,22 @@ export class PromptVariablesFactory {
    * Resolve all file paths using the new Result-based APIs
    */
   private resolvePaths(): void {
+    const result = this.resolvePathsSafe();
+    if (!result.ok) {
+      throw new Error(`Failed to resolve paths: ${result.error.kind}`);
+    }
+  }
+
+  /**
+   * Resolve all file paths safely using Result type
+   */
+  private resolvePathsSafe(): Result<void, PromptVariablesFactoryErrors> {
     // Resolve template path using new Smart Constructor API
     const templateResult = this.pathResolvers.template.getPath();
     if (!templateResult.ok) {
-      throw new Error(
-        `Failed to resolve template path:\n${formatPathResolutionError(templateResult.error)}`,
-      );
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.promptPathResolutionFailed(
+        formatPathResolutionError(templateResult.error)
+      )};
     }
     this._promptFilePath = templateResult.data.value;
 
@@ -568,7 +581,9 @@ export class PromptVariablesFactory {
         : "message" in inputResult.error
         ? inputResult.error.message
         : "";
-      throw new Error(`Failed to resolve input path: ${inputResult.error.kind} - ${errorDetails}`);
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.inputPathResolutionFailed(
+        `${inputResult.error.kind} - ${errorDetails}`
+      )};
     }
     this._inputFilePath = inputResult.data.value;
 
@@ -580,18 +595,22 @@ export class PromptVariablesFactory {
         : "message" in outputResult.error
         ? outputResult.error.message
         : "";
-      throw new Error(
-        `Failed to resolve output path: ${outputResult.error.kind} - ${errorDetails}`,
-      );
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.outputPathResolutionFailed(
+        `${outputResult.error.kind} - ${errorDetails}`
+      )};
     }
     this._outputFilePath = outputResult.data.value;
 
     // Resolve schema path using new Smart Constructor API
     const schemaResult = this.pathResolvers.schema.getPath();
     if (!schemaResult.ok) {
-      throw new Error(`Failed to resolve schema path:\n${formatSchemaError(schemaResult.error)}`);
+      return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaPathResolutionFailed(
+        formatSchemaError(schemaResult.error)
+      )};
     }
     this._schemaFilePath = schemaResult.data.value;
+
+    return { ok: true, data: undefined };
   }
 }
 

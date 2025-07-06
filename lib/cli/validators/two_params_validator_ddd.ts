@@ -17,22 +17,17 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { TypeFactory } from "$lib/types/type_factory.ts";
+import { DirectiveType as ImportedDirectiveType, TwoParamsDirectivePattern } from "$lib/types/directive_type.ts";
+import { LayerType as ImportedLayerType, TwoParamsLayerTypePattern } from "$lib/types/layer_type.ts";
+
+// Type aliases for domain usage
+export type DirectiveType = ImportedDirectiveType;
+export type LayerType = ImportedLayerType;
 
 // ============================================================================
 // Domain Value Objects - Type-safe parameter representation
 // ============================================================================
-
-/**
- * DirectiveType - Branded type for directive parameter
- * Represents the processing direction (to, summary, defect, etc.)
- */
-export type DirectiveType = string & { readonly __brand: "DirectiveType" };
-
-/**
- * LayerType - Branded type for layer parameter
- * Represents the processing layer (project, issue, task, etc.)
- */
-export type LayerType = string & { readonly __brand: "LayerType" };
 
 /**
  * ProfileName - Branded type for configuration profile
@@ -117,7 +112,7 @@ export type ValidationError =
 /**
  * DirectiveType Smart Constructor
  */
-export const DirectiveType = {
+export const ValidatorDirectiveType = {
   /**
    * Create DirectiveType with pattern validation
    */
@@ -139,7 +134,7 @@ export const DirectiveType = {
       });
     }
 
-    return ok(value as DirectiveType);
+    return ok(value as unknown as DirectiveType);
   },
 
   /**
@@ -163,14 +158,14 @@ export const DirectiveType = {
       });
     }
 
-    return ok(value as DirectiveType);
+    return ok(value as unknown as DirectiveType);
   },
 
   /**
    * Extract string value from DirectiveType
    */
   value(directive: DirectiveType): string {
-    return directive;
+    return directive as unknown as string;
   },
 
   /**
@@ -184,7 +179,7 @@ export const DirectiveType = {
 /**
  * LayerType Smart Constructor
  */
-export const LayerType = {
+export const ValidatorLayerType = {
   /**
    * Create LayerType with pattern validation
    */
@@ -206,7 +201,7 @@ export const LayerType = {
       });
     }
 
-    return ok(value as LayerType);
+    return ok(value as unknown as LayerType);
   },
 
   /**
@@ -230,14 +225,14 @@ export const LayerType = {
       });
     }
 
-    return ok(value as LayerType);
+    return ok(value as unknown as LayerType);
   },
 
   /**
    * Extract string value from LayerType
    */
   value(layer: LayerType): string {
-    return layer;
+    return layer as unknown as string;
   },
 
   /**
@@ -401,19 +396,38 @@ export class TwoParamsValidator {
     // 4. Extract parameters
     const [directiveStr, layerStr] = params;
 
-    // 5. Validate directive type
-    const directiveResult = DirectiveType.create(
-      directiveStr,
-      patternsResult.data.directivePatterns,
+    // 5. Validate directive type using TypeFactory
+    // Create ValidationPatterns adapter for TypeFactory
+    const directivePattern = TwoParamsDirectivePattern.create(
+      `^(${patternsResult.data.directivePatterns.join("|")})$`
     );
+    const layerPattern = TwoParamsLayerTypePattern.create(
+      `^(${patternsResult.data.layerPatterns.join("|")})$`
+    );
+    
+    const patternAdapter = {
+      getDirectivePattern: () => directivePattern,
+      getLayerTypePattern: () => layerPattern,
+    };
+    
+    const typeFactory = new TypeFactory(patternAdapter);
+    const directiveResult = typeFactory.createDirectiveType(directiveStr);
     if (!directiveResult.ok) {
-      return error(directiveResult.error);
+      return error({
+        kind: "InvalidConfiguration",
+        message: `Invalid directive type: ${directiveResult.error.kind}`,
+        details: directiveResult.error
+      });
     }
 
-    // 6. Validate layer type
-    const layerResult = LayerType.create(layerStr, patternsResult.data.layerPatterns);
+    // 6. Validate layer type using TypeFactory
+    const layerResult = typeFactory.createLayerType(layerStr);
     if (!layerResult.ok) {
-      return error(layerResult.error);
+      return error({
+        kind: "InvalidConfiguration",
+        message: `Invalid layer type: ${layerResult.error.kind}`,
+        details: layerResult.error
+      });
     }
 
     // 7. Validate combination (optional, can be extended)

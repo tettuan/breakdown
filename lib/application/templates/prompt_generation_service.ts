@@ -54,7 +54,8 @@ export interface PromptGenerationResponse {
   templatePath?: string;
   appliedVariables?: Record<string, string>;
   error?: {
-    type: string;
+    kind?: string; // Future unified support
+    type: string; // Legacy support  
     message: string;
     details?: unknown;
   };
@@ -223,7 +224,8 @@ export class PromptGenerationService {
         success: false,
         output: "",
         error: {
-          type: response.error?.type || "Unknown",
+          kind: response.error?.kind || "Unknown",
+          type: response.error?.type || "Unknown", // Legacy support
           message: response.error?.message || "Unknown error",
         },
       };
@@ -392,6 +394,7 @@ export class PromptGenerationService {
     return {
       success: false,
       error: {
+        kind: error.name || "UnknownError",
         type: error.name || "UnknownError",
         message: error.message,
         details: error.stack,

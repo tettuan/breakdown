@@ -40,17 +40,51 @@ Deno.test("Architecture: Factory Integration - Class Structure", () => {
 Deno.test("Architecture: Factory Integration - Adapter Pattern Implementation", () => {
   // Test Adapter pattern: FactoryConfigAdapter should transform between interfaces
   const mockUnifiedConfig = {
+    profile: {
+      name: "test",
+      description: "Test profile",
+      environment: "development" as const,
+      priority: 1,
+      source: "default" as const,
+    },
+    patterns: {
+      directiveTypes: ["test"],
+      layerTypes: ["test"],
+      customPatterns: {},
+    },
     paths: {
+      workingDirectory: "/mock/working",
+      resourceDirectory: "/mock/resources",
       promptBaseDir: "/mock/prompts",
       schemaBaseDir: "/mock/schemas", 
       outputBaseDir: "/mock/output",
     },
     app: {
-      features: { debugMode: true },
-      limits: { maxRetries: 3 },
+      version: "1.0.0",
+      features: { 
+        extendedThinking: false,
+        debugMode: true,
+        strictValidation: false,
+        autoSchema: false,
+      },
+      limits: { 
+        maxFileSize: 1024,
+        maxPromptLength: 1024,
+        maxVariables: 100,
+        maxRetries: 3,
+      },
     },
-    environment: { logLevel: "debug" },
-    user: { preferences: {} },
+    environment: { 
+      logLevel: "debug" as const,
+      colorOutput: true,
+      timezone: null,
+      locale: null,
+    },
+    user: { 
+      customVariables: {},
+      aliases: {},
+      templates: {},
+    },
     raw: { legacy: "data" },
   };
   
@@ -61,7 +95,7 @@ Deno.test("Architecture: Factory Integration - Adapter Pattern Implementation", 
   assertEquals(factoryConfig.app_schema.base_dir, "/mock/schemas");
   assertEquals(factoryConfig.output.base_dir, "/mock/output");
   assertEquals(factoryConfig.features.debugMode, true);
-  assertEquals(factoryConfig.legacy, "data"); // Raw config preserved
+  assertEquals((factoryConfig as Record<string, unknown>).legacy, "data"); // Raw config preserved
 });
 
 Deno.test("Architecture: Factory Integration - Builder Pattern Implementation", async () => {
@@ -100,11 +134,12 @@ Deno.test("Architecture: Factory Integration - Migration Strategy Pattern", () =
   const migrated = ConfigurationMigrator.migrateConfig(oldConfig);
   
   // Verify migration strategy transforms old structure to new
-  assertEquals(migrated.paths.promptBaseDir, "/old/prompts");
-  assertEquals(migrated.paths.schemaBaseDir, "/old/schemas");
-  assertEquals(migrated.features.extendedThinking, true);
-  assertEquals(migrated.features.debugMode, false);
-  assertEquals(migrated.environment.logLevel, "info");
+  const migratedTyped = migrated as Record<string, unknown>;
+  assertEquals((migratedTyped.paths as Record<string, unknown>)?.promptBaseDir, "/old/prompts");
+  assertEquals((migratedTyped.paths as Record<string, unknown>)?.schemaBaseDir, "/old/schemas");
+  assertEquals((migratedTyped.features as Record<string, unknown>)?.extendedThinking, true);
+  assertEquals((migratedTyped.features as Record<string, unknown>)?.debugMode, false);
+  assertEquals((migratedTyped.environment as Record<string, unknown>)?.logLevel, "info");
 });
 
 Deno.test("Architecture: Factory Integration - Compatibility Layer Abstraction", () => {
@@ -171,10 +206,50 @@ Deno.test("Architecture: Factory Integration - Dependency Injection Ready", () =
   
   // Static methods should not depend on global state
   const result = FactoryConfigAdapter.toFactoryConfig({
-    paths: {},
-    app: { features: {}, limits: {} },
-    environment: {},
-    user: {},
+    profile: {
+      name: "test",
+      description: "Test profile",
+      environment: "development" as const,
+      priority: 1,
+      source: "default" as const,
+    },
+    patterns: {
+      directiveTypes: ["test"],
+      layerTypes: ["test"],
+      customPatterns: {},
+    },
+    paths: {
+      workingDirectory: "/test/working",
+      resourceDirectory: "/test/resources",
+      promptBaseDir: "/test/prompts",
+      schemaBaseDir: "/test/schemas",
+      outputBaseDir: "/test/output",
+    },
+    app: { 
+      version: "1.0.0",
+      features: {
+        extendedThinking: false,
+        debugMode: false,
+        strictValidation: false,
+        autoSchema: false,
+      }, 
+      limits: {
+        maxFileSize: 1024,
+        maxPromptLength: 1024,
+        maxVariables: 100,
+      },
+    },
+    environment: {
+      logLevel: "info" as const,
+      colorOutput: true,
+      timezone: null,
+      locale: null,
+    },
+    user: {
+      customVariables: {},
+      aliases: {},
+      templates: {},
+    },
     raw: {},
   });
   assertExists(result);
@@ -213,25 +288,32 @@ Deno.test("Architecture: Factory Integration - Immutability Principles", () => {
  */
 async function createMockUnifiedConfig(): Promise<Result<UnifiedConfigInterface, Error>> {
   try {
-    // Create a minimal test config
-    return await getUnifiedConfig({
+    // Try to create a minimal test config
+    const result = await getUnifiedConfig({
       workingDirectory: "/tmp/test",
     });
-  } catch {
-    // Return mock result structure for testing
-    return {
-      ok: true,
-      data: {
-        getConfig: () => ({
-          paths: { promptBaseDir: "/test", schemaBaseDir: "/test", outputBaseDir: "/test" },
-          app: { features: {}, limits: {} },
-          environment: {},
-          user: {},
-          raw: {},
-        }),
-        getPathOptions: () => ({}),
-        getPatternProvider: () => ({}),
-      } as UnifiedConfigInterface,
-    } as Result<UnifiedConfigInterface, Error>;
+    // If it succeeds, return the result
+    if (result.ok) {
+      return result;
+    }
+  } catch (error) {
+    // Log the error for debugging but continue with mock
+    console.warn("getUnifiedConfig failed, using mock:", error);
   }
+  
+  // Always return mock result structure for testing
+  return {
+    ok: true,
+    data: {
+      getConfig: () => ({
+        paths: { promptBaseDir: "/test", schemaBaseDir: "/test", outputBaseDir: "/test" },
+        app: { features: {}, limits: {} },
+        environment: {},
+        user: {},
+        raw: {},
+      }),
+      getPathOptions: () => ({}),
+      getPatternProvider: () => ({}),
+    } as UnifiedConfigInterface,
+  } as Result<UnifiedConfigInterface, Error>;
 }

@@ -15,6 +15,8 @@ import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 import type { TwoParams_Result } from "../deps.ts";
+import { Result, ok, error as resultError } from "../types/result.ts";
+import { FactoryInitError, formatFactoryInitError } from "./factory_error.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.
@@ -191,7 +193,7 @@ export class UnifiedPromptVariablesFactory {
   /**
    * Factory method to create UnifiedPromptVariablesFactory with configuration loading.
    */
-  static async create(cliParams: UnifiedPromptCliParams): Promise<UnifiedPromptVariablesFactory> {
+  static async create(cliParams: UnifiedPromptCliParams): Promise<Result<UnifiedPromptVariablesFactory, FactoryInitError>> {
     try {
       const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
       const configSetName = cliParams.options.config || "default";
@@ -216,16 +218,33 @@ export class UnifiedPromptVariablesFactory {
       const breakdownConfig = breakdownConfigResult.data;
       await breakdownConfig.loadConfig();
       const config = await breakdownConfig.getConfig();
-      return new UnifiedPromptVariablesFactory(config, cliParams);
+      return ok(new UnifiedPromptVariablesFactory(config, cliParams));
     } catch (error) {
       if (error instanceof Error && error.message.includes("Configuration validation failed")) {
-        throw new Error(`Invalid application configuration: ${error.message}`);
+        return resultError({
+          kind: "ConfigValidation",
+          field: "configuration",
+          reason: error.message
+        });
       }
 
       console.warn("BreakdownConfig not available, using default config:", error);
       const config = createDefaultConfig();
-      return new UnifiedPromptVariablesFactory(config, cliParams);
+      return ok(new UnifiedPromptVariablesFactory(config, cliParams));
     }
+  }
+
+  /**
+   * Factory method to create UnifiedPromptVariablesFactory (unsafe version for backward compatibility)
+   * 
+   * @deprecated Use create() instead for Result-based error handling
+   */
+  static async createUnsafe(cliParams: UnifiedPromptCliParams): Promise<UnifiedPromptVariablesFactory> {
+    const result = await UnifiedPromptVariablesFactory.create(cliParams);
+    if (!result.ok) {
+      throw new Error(`UnifiedPromptVariablesFactory creation failed: ${formatFactoryInitError(result.error)}`);
+    }
+    return result.data;
   }
 
   /**
@@ -236,8 +255,33 @@ export class UnifiedPromptVariablesFactory {
       & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
       & Record<string, unknown>,
     cliParams: UnifiedPromptCliParams,
+  ): Result<UnifiedPromptVariablesFactory, FactoryInitError> {
+    try {
+      return ok(new UnifiedPromptVariablesFactory(config, cliParams));
+    } catch (error) {
+      return resultError({
+        kind: "InvalidConfig",
+        reason: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  /**
+   * Factory method with pre-loaded configuration (unsafe version for backward compatibility).
+   * 
+   * @deprecated Use createWithConfig() instead for Result-based error handling
+   */
+  static createWithConfigUnsafe(
+    config:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown>,
+    cliParams: UnifiedPromptCliParams,
   ): UnifiedPromptVariablesFactory {
-    return new UnifiedPromptVariablesFactory(config, cliParams);
+    const result = UnifiedPromptVariablesFactory.createWithConfig(config, cliParams);
+    if (!result.ok) {
+      throw new Error(`Factory creation failed: ${formatFactoryInitError(result.error)}`);
+    }
+    return result.data;
   }
 
   /**
@@ -277,7 +321,8 @@ export class UnifiedPromptVariablesFactory {
     if (!this.cliParams) throw new Error("cliParams is required");
     if (!this.config) throw new Error("config is required");
     if (!this.hasValidBaseDir()) {
-      throw new Error(`Invalid base directory: ${this.getBaseDirError()}`);
+      const baseDirResult = this.getBaseDirError();
+      throw new Error(`Invalid base directory: ${baseDirResult.ok ? "Unknown error" : baseDirResult.error}`);
     }
     if (!this.promptFilePath) throw new Error("Prompt file path is required");
     if (!this.schemaFilePath) throw new Error("Schema file path is required");
@@ -338,8 +383,11 @@ export class UnifiedPromptVariablesFactory {
     return !this._baseDirError;
   }
 
-  public getBaseDirError(): string | undefined {
-    return this._baseDirError;
+  public getBaseDirError(): Result<void, string> {
+    if (this._baseDirError) {
+      return resultError(this._baseDirError);
+    }
+    return ok(undefined);
   }
 
   // Type accessors

@@ -20,6 +20,44 @@ import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
 
 /**
+ * Factory configuration interface
+ */
+export interface FactoryConfig {
+  app_prompt: {
+    base_dir: string;
+  };
+  app_schema: {
+    base_dir: string;
+  };
+  output: {
+    base_dir: string;
+  };
+  features: {
+    extendedThinking: boolean;
+    debugMode: boolean;
+    strictValidation: boolean;
+    autoSchema: boolean;
+  };
+  limits: {
+    maxFileSize: number;
+    maxPromptLength: number;
+    maxVariables: number;
+  };
+  environment: {
+    logLevel: "debug" | "info" | "warn" | "error";
+    colorOutput: boolean;
+    timezone: string | null;
+    locale: string | null;
+  };
+  user: {
+    customVariables: Record<string, string> | null;
+    aliases: Record<string, string> | null;
+    templates: Record<string, string> | null;
+  };
+  [key: string]: unknown; // For raw config spreading
+}
+
+/**
  * Factory configuration adapter
  * Converts UnifiedConfig to factory-compatible format
  */
@@ -27,7 +65,7 @@ export class FactoryConfigAdapter {
   /**
    * Convert UnifiedConfig to factory configuration format
    */
-  static toFactoryConfig(unified: UnifiedConfig): Record<string, unknown> {
+  static toFactoryConfig(unified: UnifiedConfig): FactoryConfig {
     return {
       app_prompt: {
         base_dir: unified.paths.promptBaseDir,
@@ -109,8 +147,8 @@ export class ConfigurationMigrator {
     }
 
     // Type-safe property access for old config
-    const typedOldConfig = oldConfig as Record<string, any>;
-    const typedMigrated = migrated as Record<string, any>;
+    const typedOldConfig = oldConfig as any;
+    const typedMigrated = migrated as any;
 
     // Migrate app_prompt to paths.promptBaseDir
     if (typedOldConfig.app_prompt?.base_dir && !typedMigrated.paths.promptBaseDir) {
@@ -240,8 +278,10 @@ export class ConfigCompatibilityLayer {
 
       // Create unified config with migrated data
       const result = await UnifiedConfigInterface.create({
-        profile,
+        profile: profile || null,
         workingDirectory: legacyConfig.working_directory as string || Deno.cwd(),
+        environmentOverrides: null,
+        pathOverrides: null,
       });
 
       return result.ok
@@ -270,7 +310,12 @@ export async function createFactoryWithUnifiedConfig(
   },
 ): Promise<Result<PromptVariablesFactory, Error>> {
   // Create unified config
-  const configResult = await UnifiedConfigInterface.create(options);
+  const configResult = await UnifiedConfigInterface.create({
+    profile: options?.profile || null,
+    workingDirectory: options?.workingDirectory || null,
+    environmentOverrides: null,
+    pathOverrides: null,
+  });
   if (!configResult.ok) {
     const errorMessage = configResult.error.kind === "ProfileNotFound"
       ? `Profile not found: ${configResult.error.profile}. Available: ${
@@ -294,7 +339,12 @@ export async function getUnifiedConfig(
     workingDirectory?: string;
   },
 ): Promise<Result<UnifiedConfigInterface, Error>> {
-  const result = await UnifiedConfigInterface.create(options);
+  const result = await UnifiedConfigInterface.create({
+    profile: options?.profile || null,
+    workingDirectory: options?.workingDirectory || null,
+    environmentOverrides: null,
+    pathOverrides: null,
+  });
   if (!result.ok) {
     const errorMessage = result.error.kind === "ProfileNotFound"
       ? `Profile not found: ${result.error.profile}. Available: ${

@@ -208,14 +208,16 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
     const validation = _defaultConfigTwoParams.params.two.validation;
     
     // Test array options don't contain duplicates
-    const flagOptions = validation.allowedFlagOptions;
-    const valueOptions = validation.allowedValueOptions;
+    const flagOptions = validation.allowedFlagOptions as string[];
+    const valueOptions = validation.allowedValueOptions as string[];
     
     assertEquals(flagOptions.length, new Set(flagOptions).size, "allowedFlagOptions should not have duplicates");
     assertEquals(valueOptions.length, new Set(valueOptions).size, "allowedValueOptions should not have duplicates");
     
     // Test array options don't contain empty strings
-    assertEquals(flagOptions.every(opt => opt.length > 0), true, "allowedFlagOptions should not contain empty strings");
+    if (flagOptions.length > 0) {
+      assertEquals(flagOptions.every(opt => opt.length > 0), true, "allowedFlagOptions should not contain empty strings");
+    }
     assertEquals(valueOptions.every(opt => opt.length > 0), true, "allowedValueOptions should not contain empty strings");
   });
 });

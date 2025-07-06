@@ -141,25 +141,89 @@ class TwoParamsOrchestrator {
   }
 
   /**
-   * Map validation errors to handler errors
+   * Type guard for InvalidParameterCount error
+   */
+  private isInvalidParameterCountError(
+    error: unknown,
+  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidParameterCount" }> {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      error.kind === "InvalidParameterCount" &&
+      "received" in error &&
+      "expected" in error &&
+      typeof (error as any).received === "number" &&
+      typeof (error as any).expected === "number"
+    );
+  }
+
+  /**
+   * Type guard for InvalidDemonstrativeType error
+   */
+  private isInvalidDemonstrativeTypeError(
+    error: unknown,
+  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidDemonstrativeType" }> {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      error.kind === "InvalidDemonstrativeType" &&
+      "value" in error &&
+      "validTypes" in error &&
+      typeof (error as any).value === "string" &&
+      Array.isArray((error as any).validTypes)
+    );
+  }
+
+  /**
+   * Type guard for InvalidLayerType error
+   */
+  private isInvalidLayerTypeError(
+    error: unknown,
+  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidLayerType" }> {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      error.kind === "InvalidLayerType" &&
+      "value" in error &&
+      "validTypes" in error &&
+      typeof (error as any).value === "string" &&
+      Array.isArray((error as any).validTypes)
+    );
+  }
+
+  /**
+   * Map validation errors to handler errors using type guards
    */
   private mapValidationError(error: unknown): TwoParamsHandlerError {
-    const validationError = error as {
-      kind?: string;
-      received?: number;
-      expected?: number;
-      value?: string;
-      validTypes?: string[];
-    };
-    if (validationError.kind === "InvalidParameterCount") {
-      return validationError as TwoParamsHandlerError;
+    // Check for specific error types using type guards
+    if (this.isInvalidParameterCountError(error)) {
+      return {
+        kind: "InvalidParameterCount",
+        received: error.received,
+        expected: error.expected,
+      };
     }
-    if (
-      validationError.kind === "InvalidDemonstrativeType" ||
-      validationError.kind === "InvalidLayerType"
-    ) {
-      return validationError as TwoParamsHandlerError;
+
+    if (this.isInvalidDemonstrativeTypeError(error)) {
+      return {
+        kind: "InvalidDemonstrativeType",
+        value: error.value,
+        validTypes: error.validTypes,
+      };
     }
+
+    if (this.isInvalidLayerTypeError(error)) {
+      return {
+        kind: "InvalidLayerType",
+        value: error.value,
+        validTypes: error.validTypes,
+      };
+    }
+
+    // Default case - unknown validation error
     return {
       kind: "FactoryValidationError",
       errors: [String(error)],
@@ -167,19 +231,69 @@ class TwoParamsOrchestrator {
   }
 
   /**
-   * Map prompt generation errors to handler errors
+   * Type guard for FactoryValidationError
+   */
+  private isFactoryValidationError(
+    error: unknown,
+  ): error is { kind: "FactoryValidationError"; errors?: string[]; message?: string } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      error.kind === "FactoryValidationError"
+    );
+  }
+
+  /**
+   * Type guard for errors with message property
+   */
+  private hasMessageProperty(
+    error: unknown,
+  ): error is { message: string } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof (error as any).message === "string"
+    );
+  }
+
+  /**
+   * Map prompt generation errors to handler errors using type guards
    */
   private mapPromptError(error: unknown): TwoParamsHandlerError {
-    const promptError = error as { kind?: string; errors?: string[]; message?: string };
-    if (promptError.kind === "FactoryValidationError") {
+    // Check if it's a FactoryValidationError
+    if (this.isFactoryValidationError(error)) {
+      const errors: string[] = [];
+      
+      // Safely extract errors array
+      if ("errors" in error && Array.isArray(error.errors)) {
+        errors.push(...error.errors);
+      } else if ("message" in error && typeof error.message === "string") {
+        errors.push(error.message);
+      } else {
+        errors.push(String(error));
+      }
+      
       return {
         kind: "FactoryValidationError",
-        errors: promptError.errors || [promptError.message || String(error)],
+        errors,
       };
     }
+
+    // Extract error message safely
+    let errorMessage: string;
+    if (this.hasMessageProperty(error)) {
+      errorMessage = error.message;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    } else {
+      errorMessage = String(error);
+    }
+
     return {
       kind: "PromptGenerationError",
-      error: promptError.message || String(error),
+      error: errorMessage,
     };
   }
 }

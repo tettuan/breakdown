@@ -254,13 +254,18 @@ Deno.test("2_structure: equals method correctness", () => {
   const result3 = PromptPath.create(validDirective, validLayer, "different.md");
   
   if (result1.ok && result2.ok && result3.ok) {
+    // Type assertion to help TypeScript understand the types are safe
+    const data1 = result1.data!;
+    const data2 = result2.data!;
+    const data3 = result3.data!;
+    
     // Same parameters should be equal
-    assertEquals(result1.data.equals(result2.data), true);
-    assertEquals(result2.data.equals(result1.data), true);
+    assertEquals(data1.equals(data2), true);
+    assertEquals(data2.equals(data1), true);
     
     // Different filenames should not be equal
-    assertEquals(result1.data.equals(result3.data), false);
-    assertEquals(result3.data.equals(result1.data), false);
+    assertEquals(data1.equals(data3), false);
+    assertEquals(data3.equals(data1), false);
   }
 });
 
@@ -323,16 +328,20 @@ Deno.test("2_structure: multiple instance independence", () => {
   const result2 = PromptPath.create(validDirective, validLayer, "file2.md");
   
   if (result1.ok && result2.ok) {
+    // Type assertion to help TypeScript understand the types are safe
+    const data1 = result1.data!;
+    const data2 = result2.data!;
+    
     // Different instances should be independent
-    assertEquals(result1.data === result2.data, false);
-    assertEquals(result1.data.equals(result2.data), false);
+    assertEquals(data1 === data2, false);
+    assertEquals(data1.equals(data2), false);
     
     // But they should share same directive and layer
-    assertEquals(result1.data.getDirective(), result2.data.getDirective());
-    assertEquals(result1.data.getLayer(), result2.data.getLayer());
+    assertEquals(data1.getDirective(), data2.getDirective());
+    assertEquals(data1.getLayer(), data2.getLayer());
     
     // Filenames should be different
-    assertEquals(result1.data.getFilename() !== result2.data.getFilename(), true);
+    assertEquals(data1.getFilename() !== data2.getFilename(), true);
   }
 });
 

@@ -89,7 +89,7 @@ export class WorkspaceImpl implements Workspace {
 
       // Create config file if it doesn't exist
       const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-      const configFile = join(configDir, "app.yml");
+      const configFile = join(configDir, "default-app.yml");
 
       try {
         await Deno.stat(configFile);
@@ -246,7 +246,7 @@ export class WorkspaceImpl implements Workspace {
   async reloadConfig(): Promise<void> {
     // Reload configuration from file
     const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-    const configFile = join(configDir, "app.yml");
+    const configFile = join(configDir, "default-app.yml");
 
     try {
       const configContent = await Deno.readTextFile(configFile);

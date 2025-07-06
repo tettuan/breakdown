@@ -351,6 +351,10 @@ Deno.test("PromptVariablesFactoryError Structure - Type system exhaustiveness", 
       case "InputFilePathNotResolved":
       case "OutputFilePathNotResolved":
       case "SchemaFilePathNotResolved":
+      case "PromptPathResolutionFailed":
+      case "InputPathResolutionFailed":
+      case "OutputPathResolutionFailed":
+      case "SchemaPathResolutionFailed":
         return "resolution";
       default: {
         // Exhaustiveness check - should never reach here

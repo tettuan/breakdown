@@ -89,7 +89,8 @@ async function main() {
 export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {
     // 1. Extract and create config profile name with Result pattern matching
-    const configProfileNameResult = ConfigProfileName.create(ConfigPrefixDetector.detect(args));
+    const detectedPrefix = ConfigPrefixDetector.detect(args);
+    const configProfileNameResult = ConfigProfileName.create(detectedPrefix ?? "default");
     
     if (!configProfileNameResult.ok) {
       console.error("❌ Invalid config profile name:", configProfileNameResult.error.message);

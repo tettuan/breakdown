@@ -142,16 +142,20 @@ Deno.test("BreakdownConfig Profile Integration - ConfigProfileName validation", 
 
     // Test valid profile names
     const breakdownProfile = ConfigProfileName.create("breakdown");
-    assertEquals(breakdownProfile.value, "breakdown");
+    assert(breakdownProfile.ok);
+    assertEquals(breakdownProfile.data.value, "breakdown");
 
     const searchProfile = ConfigProfileName.create("search");
-    assertEquals(searchProfile.value, "search");
+    assert(searchProfile.ok);
+    assertEquals(searchProfile.data.value, "search");
 
     const productionProfile = ConfigProfileName.create("production-user");
-    assertEquals(productionProfile.value, "production-user");
+    assert(productionProfile.ok);
+    assertEquals(productionProfile.data.value, "production-user");
 
     const devProfile = ConfigProfileName.create("dev_profile");
-    assertEquals(devProfile.value, "dev_profile");
+    assert(devProfile.ok);
+    assertEquals(devProfile.data.value, "dev_profile");
 
     logger.info("ConfigProfileName validation tests passed");
   });

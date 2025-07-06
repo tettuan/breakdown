@@ -24,11 +24,11 @@ import {
   isWorkspaceDirectoryError,
   isWorkspaceInitError,
   isWorkspacePathError,
-  type WorkspaceConfigError,
-  type WorkspaceDirectoryError,
-  type WorkspaceError,
-  type WorkspaceInitError,
-  type WorkspacePathError,
+  WorkspaceConfigError,
+  WorkspaceDirectoryError,
+  WorkspaceError,
+  WorkspaceInitErrorClass as WorkspaceInitError,
+  WorkspacePathError,
 } from "./errors.ts";
 
 const _logger = new _BreakdownLogger("test-structure-errors");
@@ -120,7 +120,7 @@ describe("Workspace Errors - Structure Tests", async () => {
       });
 
       const {
-        WorkspaceInitError,
+        WorkspaceInitErrorClass: WorkspaceInitError,
         WorkspaceConfigError,
         WorkspacePathError,
         WorkspaceDirectoryError,
@@ -345,7 +345,7 @@ describe("Workspace Errors - Structure Tests", async () => {
         aspect: "information_structure",
       });
 
-      const { WorkspaceInitError, WorkspaceConfigError } = await import("./errors.ts");
+      const { WorkspaceInitErrorClass: WorkspaceInitError, WorkspaceConfigError } = await import("./errors.ts");
       const errorCases = [
         {
           ErrorClass: WorkspaceInitError,
@@ -401,7 +401,7 @@ describe("Workspace Errors - Structure Tests", async () => {
         aspect: "context_information",
       });
 
-      const { WorkspaceInitError, WorkspacePathError } = await import("./errors.ts");
+      const { WorkspaceInitErrorClass: WorkspaceInitError, WorkspacePathError } = await import("./errors.ts");
       const contextualErrors = [
         {
           ErrorClass: WorkspaceInitError,
@@ -488,7 +488,7 @@ describe("Workspace Errors - Structure Tests", async () => {
       });
 
       const {
-        WorkspaceInitError,
+        WorkspaceInitErrorClass: WorkspaceInitError,
         WorkspaceConfigError,
         WorkspacePathError,
         WorkspaceDirectoryError,

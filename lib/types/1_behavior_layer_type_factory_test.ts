@@ -129,7 +129,7 @@ Deno.test("LayerTypeFactory Behavior - Suggestion Generation", () => {
   const unknownResult = LayerTypeFactory.fromString("completely_unknown_xyz");
   assert(!unknownResult.ok, "Unknown input should fail");
   if (!unknownResult.ok && unknownResult.error.kind === "UnknownLayer") {
-    assert(similarResult.error.suggestions.length > 0, "Should provide fallback suggestions");
+    assert(unknownResult.error.suggestions.length > 0, "Should provide fallback suggestions");
     // Should provide all known layers as fallback
     const knownLayers = LayerTypeFactory.getKnownLayers();
     assert(unknownResult.error.suggestions.length >= knownLayers.length, "Should include all known layers as fallback");

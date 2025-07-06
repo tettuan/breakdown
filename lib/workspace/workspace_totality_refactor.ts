@@ -140,7 +140,7 @@ export class WorkspaceInitializer {
 
   private async createConfigFile(): Promise<Result<void, WorkspaceErrorKind>> {
     const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-    const configFile = join(configDir, "app.yml");
+    const configFile = join(configDir, "default-app.yml");
 
     try {
       await Deno.stat(configFile);
@@ -309,7 +309,7 @@ export class WorkspaceConfigManager {
       ".agent",
       "breakdown",
       "config",
-      "app.yml",
+      "default-app.yml",
     );
 
     try {

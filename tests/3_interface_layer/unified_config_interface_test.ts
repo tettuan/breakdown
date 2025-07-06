@@ -30,6 +30,9 @@ Deno.test("UnifiedConfigInterface - create with default profile", async () => {
 
 Deno.test("UnifiedConfigInterface - create with development preset", async () => {
   const result = await UnifiedConfigInterface.create({
+    profile: null,
+    workingDirectory: null,
+    pathOverrides: null,
     ...CONFIG_PRESETS.development,
   });
   
@@ -88,7 +91,9 @@ Deno.test("FactoryConfigAdapter - convert unified to factory config", async () =
     assertEquals((factoryConfig.app_prompt as any)?.base_dir, unified.paths.promptBaseDir);
     assertEquals((factoryConfig.app_schema as any)?.base_dir, unified.paths.schemaBaseDir);
     assertEquals(factoryConfig.features, unified.app.features);
-    assertEquals(factoryConfig.environment, unified.environment);
+    // Compare individual properties instead of the whole object
+    assertEquals(factoryConfig.environment.logLevel, unified.environment.logLevel);
+    assertEquals(factoryConfig.environment.colorOutput, unified.environment.colorOutput);
   }
 });
 

@@ -20,8 +20,8 @@ Deno.test("2_structure: ResultStatus enum has correct string literal values", ()
   // Test that enum has exactly 2 values
   const enumValues = Object.values(ResultStatus);
   assertEquals(enumValues.length, 2);
-  assertEquals(enumValues.includes("success"), true);
-  assertEquals(enumValues.includes("error"), true);
+  assertEquals(enumValues.includes(ResultStatus.SUCCESS), true);
+  assertEquals(enumValues.includes(ResultStatus.ERROR), true);
   
   // Test that enum keys match expected names
   const enumKeys = Object.keys(ResultStatus);
@@ -42,7 +42,9 @@ Deno.test("2_structure: ResultStatus enum values are string literals", () => {
   
   assertEquals(successStatus === "success", true);
   assertEquals(errorStatus === "error", true);
-  assertEquals(successStatus === errorStatus, false);
+  // Different enum values are inherently different
+  assertEquals(successStatus, ResultStatus.SUCCESS);
+  assertEquals(errorStatus, ResultStatus.ERROR);
 });
 
 Deno.test("2_structure: Result discriminated union has correct structure for success case", () => {

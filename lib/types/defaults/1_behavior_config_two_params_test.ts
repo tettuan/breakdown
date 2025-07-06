@@ -190,8 +190,8 @@ Deno.test("defaultConfigTwoParams - Error Handling", async (t) => {
     const config = _defaultConfigTwoParams;
     
     // Test pattern format validation
-    const demonstrativePattern = config.demonstrativeType.pattern;
-    const layerPattern = config.layerType.pattern;
+    const demonstrativePattern = config.params.two.demonstrativeType.pattern;
+    const layerPattern = config.params.two.layerType.pattern;
     
     // Verify patterns are properly formatted
     assertEquals(demonstrativePattern.startsWith("^("), true);

@@ -168,6 +168,14 @@ Deno.test("PromptVariablesFactoryError Architecture - Exhaustive type handling",
         return "Output file path not resolved";
       case "SchemaFilePathNotResolved":
         return "Schema file path not resolved";
+      case "PromptPathResolutionFailed":
+        return `Prompt path resolution failed: ${error.details}`;
+      case "InputPathResolutionFailed":
+        return `Input path resolution failed: ${error.details}`;
+      case "OutputPathResolutionFailed":
+        return `Output path resolution failed: ${error.details}`;
+      case "SchemaPathResolutionFailed":
+        return `Schema path resolution failed: ${error.details}`;
       default: {
         // This ensures exhaustive handling at compile time
         const _exhaustive: never = error;

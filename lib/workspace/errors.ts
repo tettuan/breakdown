@@ -29,15 +29,17 @@
 
 import { Result } from "../types/result.ts";
 
-// Re-export the WorkspaceInitError class from workspace_init_error.ts
+// Re-export specific classes from workspace_init_error.ts
 export {
-  WorkspaceInitError,
   DirectoryCreationError,
   ConfigCreationError,
   InvalidWorkspaceLocationError,
   WorkspaceExistsError,
   createWorkspaceInitError as createWorkspaceInitErrorFromClass,
 } from "./workspace_init_error.ts";
+
+// Re-export the WorkspaceInitError class with a different name to avoid conflict
+export { WorkspaceInitError as WorkspaceInitErrorClass } from "./workspace_init_error.ts";
 
 /**
  * Base interface for all workspace-related errors in the Breakdown system.
@@ -99,6 +101,11 @@ export interface WorkspaceInitErrorInterface extends WorkspaceErrorBase {
 }
 
 /**
+ * Type alias for backward compatibility.
+ */
+export type WorkspaceInitError = WorkspaceInitErrorInterface;
+
+/**
  * Creates a WorkspaceInitErrorInterface for initialization failures.
  *
  * @param message - The error message describing the specific initialization failure
@@ -125,6 +132,15 @@ export function createWorkspaceInitErrorInterface(message: string): WorkspaceIni
     type: "workspace_init_error" as const,
   };
 }
+
+/**
+ * Creates a WorkspaceInitError for initialization failures.
+ * Alias for createWorkspaceInitErrorInterface for backward compatibility.
+ *
+ * @param message - The error message describing the specific initialization failure
+ * @returns Immutable WorkspaceInitErrorInterface object
+ */
+export const createWorkspaceInitError = createWorkspaceInitErrorInterface;
 
 /**
  * Type guard to check if an error is a WorkspaceInitErrorInterface.

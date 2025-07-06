@@ -23,7 +23,7 @@
 // user files or configs, all test artifacts (test files, config, outputs) are
 // created in a temporary test directory (TEST_DIR) and cleaned up after the test.
 //
-// The config file is created in TEST_DIR/.agent/breakdown/config/app.yml before
+// The config file is created in TEST_DIR/.agent/breakdown/config/default-app.yml before
 // running CLI commands, and the working directory is changed to TEST_DIR so that
 // the CLI finds the config as it would in a real use case. All CLI commands use
 // only relative paths within TEST_DIR.
@@ -68,7 +68,7 @@ Deno.test("CLI I/O Handling", async (t) => {
     const configDir = join(TEST_DIR, ".agent", "breakdown", "config");
     await ensureDir(configDir);
     await Deno.writeTextFile(
-      join(configDir, "app.yml"),
+      join(configDir, "default-app.yml"),
       `working_dir: ${TEST_DIR}/.agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
     );
 

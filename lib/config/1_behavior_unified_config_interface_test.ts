@@ -296,23 +296,23 @@ Deno.test("Behavior: Error Message Formatting", () => {
   // Test error message formatting behavior
   const errorTests: Array<{ error: ConfigurationError; expectedContent: string[] }> = [
     {
-      error: { kind: "ProfileNotFound", profile: "missing", available: ["default", "dev"] },
+      error: { kind: "ProfileNotFound", profile: "missing", availableProfiles: ["default", "dev"] },
       expectedContent: ["missing", "default", "dev"],
     },
     {
-      error: { kind: "ConfigLoadError", message: "File not found" },
-      expectedContent: ["File not found", "load"],
+      error: { kind: "ConfigurationError", message: "File not found" },
+      expectedContent: ["File not found", "config"],
     },
     {
-      error: { kind: "PathResolutionError", message: "Invalid path" },
+      error: { kind: "InvalidConfiguration", field: "path", reason: "Invalid path" },
       expectedContent: ["Invalid path", "path"],
     },
     {
-      error: { kind: "ValidationError", field: "app.version", message: "Required field" },
+      error: { kind: "InvalidConfiguration", field: "app.version", reason: "Required field" },
       expectedContent: ["app.version", "Required field", "validation"],
     },
     {
-      error: { kind: "MergeConflict", message: "Conflicting values" },
+      error: { kind: "ConfigurationError", message: "Conflicting values during merge" },
       expectedContent: ["Conflicting values", "merge"],
     },
   ];

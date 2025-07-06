@@ -42,7 +42,7 @@ Deno.test({
       await initializeBreakdownConfiguration();
     
     // Verify config file has expected structure
-    const configPath = join(tempDir, ".agent", "breakdown", "config", "app.yml");
+    const configPath = join(tempDir, ".agent", "breakdown", "config", "default-app.yml");
     assert(await exists(configPath));
     
     const configContent = await Deno.readTextFile(configPath);
@@ -143,12 +143,12 @@ Deno.test("1_behavior: Configuration file generation is deterministic", async ()
     // Run initialization twice
     await initializeBreakdownConfiguration();
     const firstConfig = await Deno.readTextFile(
-      join(tempDir, ".agent", "breakdown", "config", "app.yml")
+      join(tempDir, ".agent", "breakdown", "config", "default-app.yml")
     );
     
     await initializeBreakdownConfiguration();
     const secondConfig = await Deno.readTextFile(
-      join(tempDir, ".agent", "breakdown", "config", "app.yml")
+      join(tempDir, ".agent", "breakdown", "config", "default-app.yml")
     );
     
     // Configuration should be identical
@@ -192,7 +192,7 @@ Deno.test("1_behavior: Handles various working directory scenarios", async () =>
           
           // Verify initialization succeeded in nested context
           assert(
-            await exists(join(targetDir, ".agent", "breakdown", "config", "app.yml")),
+            await exists(join(targetDir, ".agent", "breakdown", "config", "default-app.yml")),
             `Initialization failed in ${scenario.name} scenario`
           );
         } finally {
@@ -264,7 +264,7 @@ Deno.test("2_structure: Generated configuration follows YAML standards", async (
     Deno.chdir(tempDir);
     await initializeBreakdownConfiguration();
     
-    const configPath = join(tempDir, ".agent", "breakdown", "config", "app.yml");
+    const configPath = join(tempDir, ".agent", "breakdown", "config", "default-app.yml");
     const configContent = await Deno.readTextFile(configPath);
     
     // Should be valid YAML structure
@@ -335,7 +335,7 @@ Deno.test("2_structure: Configuration patterns match domain constraints", async 
     Deno.chdir(tempDir);
     await initializeBreakdownConfiguration();
     
-    const configPath = join(tempDir, ".agent", "breakdown", "config", "app.yml");
+    const configPath = join(tempDir, ".agent", "breakdown", "config", "default-app.yml");
     const configContent = await Deno.readTextFile(configPath);
     
     // Verify pattern constraints match expected domain values

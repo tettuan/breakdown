@@ -428,7 +428,7 @@ Deno.test("2_structure: ErrorFactory maintains type relationships correctly", ()
   // Test that factory methods produce correctly typed errors
   
   // PathError factory
-  const pathError1 = ErrorFactory.pathError("InvalidPath", "/test", "Invalid");
+  const pathError1 = ErrorFactory.pathError("InvalidPath", "/test", { reason: "Invalid" });
   const pathError2 = ErrorFactory.pathError("PathTooLong", "/long");
   
   // Both should satisfy PathError type
@@ -462,31 +462,37 @@ Deno.test("2_structure: ErrorFactory maintains type relationships correctly", ()
 Deno.test("2_structure: Context property maintains type consistency", () => {
   // Test that context is consistently Record<string, unknown> across all error types
   const errorsWithContext: UnifiedError[] = [
-    ErrorFactory.pathError("InvalidPath", "/test", "Invalid", {
-      timestamp: Date.now(),
-      user: { id: 123, name: "test" },
-      flags: ["debug", "verbose"],
+    ErrorFactory.pathError("InvalidPath", "/test", {
+      reason: "Invalid",
+      context: {
+        timestamp: Date.now(),
+        user: { id: 123, name: "test" },
+        flags: ["debug", "verbose"],
+      },
     }),
     ErrorFactory.validationError("InvalidInput", {
       field: "test",
       value: "val",
       reason: "Invalid",
-    }, {
-      formId: "test-form",
-      nested: { deep: { value: true } },
+      context: {
+        formId: "test-form",
+        nested: { deep: { value: true } },
+      },
     }),
     ErrorFactory.configError("ConfigurationError", {
       message: "Test",
-    }, {
-      environment: "production",
-      config: { key: "value" },
+      context: {
+        environment: "production",
+        config: { key: "value" },
+      },
     }),
     ErrorFactory.processingError("ProcessingFailed", {
       operation: "test",
       reason: "Failed",
-    }, {
-      retries: 3,
-      metadata: { source: "api" },
+      context: {
+        retries: 3,
+        metadata: { source: "api" },
+      },
     }),
   ];
   
@@ -571,6 +577,14 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "TransformationFailed":
       case "GenerationFailed":
         return "processing";
+      
+      // WorkspaceError
+      case "WorkspaceInitError":
+      case "WorkspaceConfigError":
+      case "WorkspacePathError":
+      case "WorkspaceDirectoryError":
+      case "WorkspaceError":
+        return "workspace";
       
       default:
         // This ensures exhaustive checking at compile time

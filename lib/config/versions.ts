@@ -31,23 +31,33 @@ export const DEPENDENCY_VERSIONS = {
   },
 } as const;
 
+import { Result, ok, error } from "../types/result.ts";
+import { ValidationError, ErrorFactory } from "../types/unified_error_types.ts";
+
 /**
  * Get JSR import URL for a dependency
+ * @returns Result with import URL on success, ValidationError on failure
  */
-export function getJsrImport(packageName: keyof typeof DEPENDENCY_VERSIONS): string {
-  const version = DEPENDENCY_VERSIONS[packageName];
-
+export function getJsrImport(packageName: string): Result<string, ValidationError> {
   switch (packageName) {
     case "BREAKDOWN_CONFIG":
-      return `jsr:@tettuan/breakdownconfig@${version}`;
+      return ok(`jsr:@tettuan/breakdownconfig@${DEPENDENCY_VERSIONS.BREAKDOWN_CONFIG}`);
     case "BREAKDOWN_PARAMS":
-      return `jsr:@tettuan/breakdownparams@${version}`;
+      return ok(`jsr:@tettuan/breakdownparams@${DEPENDENCY_VERSIONS.BREAKDOWN_PARAMS}`);
     case "BREAKDOWN_PROMPT":
-      return `jsr:@tettuan/breakdownprompt@${version}`;
+      return ok(`jsr:@tettuan/breakdownprompt@${DEPENDENCY_VERSIONS.BREAKDOWN_PROMPT}`);
     case "BREAKDOWN_LOGGER":
-      return `jsr:@tettuan/breakdownlogger@${version}`;
+      return ok(`jsr:@tettuan/breakdownlogger@${DEPENDENCY_VERSIONS.BREAKDOWN_LOGGER}`);
     default:
-      throw new Error(`Unknown package: ${packageName}`);
+      return error(ErrorFactory.validationError(
+        "InvalidInput",
+        {
+          field: "packageName",
+          value: packageName,
+          reason: `Unknown package: ${packageName}`,
+          context: { availablePackages: Object.keys(DEPENDENCY_VERSIONS).filter(k => k !== "STD") }
+        }
+      ));
   }
 }
 

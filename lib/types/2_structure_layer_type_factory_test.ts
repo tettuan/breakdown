@@ -44,7 +44,7 @@ Deno.test("LayerTypeFactory Structure - Non-String Input Rejection", () => {
 
   for (const { value, type } of invalidInputs) {
     const result = LayerTypeFactory.fromString(value);
-    assert(!result.ok, `${type} input should be rejected: ${value}`);
+    assert(!result.ok, `${type} input should be rejected: ${String(value)}`);
     assertEquals(result.error.kind, "InvalidInput", `${type} should produce InvalidInput error`);
     
     if (result.error.kind === "InvalidInput") {

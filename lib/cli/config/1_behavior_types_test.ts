@@ -527,7 +527,9 @@ describe("Behavior: Configuration Composition", () => {
         if (path.startsWith('/') || path.includes(':')) {
           return path; // Absolute path
         }
-        return `${basePath}/${path}`.replace(/\/+/g, '/');
+        // Remove ./ prefix and normalize path
+        const cleanPath = path.replace(/^\.\//, '');
+        return `${basePath}/${cleanPath}`.replace(/\/+/g, '/');
       };
 
       return {

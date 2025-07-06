@@ -6,7 +6,7 @@
  * the overall system architecture.
  */
 
-import { assertEquals, assertExists, assertObjectMatch } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertObjectMatch } from "../deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain, all } from "./result.ts";
 
@@ -137,7 +137,7 @@ Deno.test("Result Type - System Integration Structure", async (t) => {
         assertEquals(typeof successResult.data, "object");
         
         // Each success should have consistent metadata patterns
-        const data = successResult.data as Record<string, unknown>;
+        const data = successResult.data as unknown as Record<string, unknown>;
         assertEquals(typeof data, "object");
         
         // Check for common structural patterns

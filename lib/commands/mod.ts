@@ -18,15 +18,15 @@ import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/cons
  *
  * @property success Indicates if the command was successful.
  * @property output The output message or result of the command.
- * @property error The error message, if the command failed. Can be a string or an error object with type and message.
+ * @property error The error message, if the command failed. Can be a string or an error object with kind/type and message.
  */
 export interface CommandResult {
   /** Indicates if the command was successful. */
   success: boolean;
   /** The output message or result of the command. */
   output: string;
-  /** The error message, if the command failed. Can be a string or an error object with type and message. */
-  error: string | { type: string; message: string } | null;
+  /** The error message, if the command failed. Can be a string or an error object with kind/type and message. */
+  error: string | { kind?: string; type: string; message: string } | null;
 }
 
 /**

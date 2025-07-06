@@ -10,12 +10,12 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import type {
+import {
   PromptPath,
-  PromptVariables,
-  PromptResult,
-  PromptError,
-  InvalidPathError,
+  type PromptVariables,
+  type PromptResult,
+  type PromptError,
+  type InvalidPathError,
 } from "./prompt_types.ts";
 import { 
   isTemplateNotFoundError,

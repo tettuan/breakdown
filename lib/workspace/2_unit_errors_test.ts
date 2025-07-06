@@ -26,11 +26,11 @@ import {
   isWorkspaceError,
   isWorkspaceInitError,
   isWorkspacePathError,
-  type WorkspaceConfigError,
-  type WorkspaceDirectoryError,
-  type WorkspaceError,
-  type WorkspaceInitError,
-  type WorkspacePathError,
+  WorkspaceConfigError,
+  WorkspaceDirectoryError,
+  WorkspaceError,
+  WorkspaceInitErrorClass as WorkspaceInitError,
+  WorkspacePathError,
 } from "./errors.ts";
 
 const _logger = new _BreakdownLogger("test-unit-errors");

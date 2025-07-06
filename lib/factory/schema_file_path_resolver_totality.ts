@@ -1,0 +1,494 @@
+/**
+ * @fileoverview Schema file path resolution with full Totality principle applied.
+ * 
+ * This is a refactored version of SchemaFilePathResolver that implements:
+ * - Complete Result type usage (no partial functions)
+ * - Discriminated unions for optional properties
+ * - Exhaustive error handling
+ * - No null returns or exceptions
+ * - Improved type safety
+ * 
+ * @module factory/schema_file_path_resolver_totality
+ */
+
+import { isAbsolute, join, resolve } from "@std/path";
+import { existsSync } from "@std/fs";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
+import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
+import type { PathResolutionError } from "../types/path_resolution_option.ts";
+
+// Legacy type alias for backward compatibility during migration
+type DoubleParams_Result = PromptCliParams;
+
+// Default schema base directory
+const DEFAULT_SCHEMA_BASE_DIR = ".agent/breakdown/schema";
+
+/**
+ * Schema-specific errors as discriminated union
+ */
+export type SchemaPathError =
+  | { kind: "SchemaNotFound"; path: string; attempted: string[] }
+  | { kind: "InvalidSchemaPath"; path: string; reason: string }
+  | { kind: "SchemaValidationFailed"; details: string };
+
+/**
+ * Configuration with explicit union types instead of optionals
+ */
+export type SchemaResolverConfig = 
+  | { kind: "WithSchemaConfig"; app_schema: { base_dir: string } }
+  | { kind: "NoSchemaConfig" };
+
+/**
+ * Value object representing a resolved schema file path with validation
+ */
+export class SchemaPath {
+  private constructor(
+    readonly value: string,
+    readonly metadata: {
+      baseDir: string;
+      demonstrativeType: string;
+      layerType: string;
+      fileName: string;
+      isDefault: boolean;
+    },
+  ) {}
+
+  /**
+   * Create a SchemaPath instance (Smart Constructor)
+   * Ensures all schema paths are valid and absolute
+   */
+  static create(
+    path: string,
+    metadata: Omit<SchemaPath["metadata"], "isDefault">,
+  ): Result<SchemaPath, Error> {
+    if (!path || path.trim() === "") {
+      return resultError(new Error("Schema path cannot be empty"));
+    }
+    if (!isAbsolute(path)) {
+      return resultError(new Error("Schema path must be absolute"));
+    }
+    
+    // Validate schema file naming convention
+    if (!path.endsWith("/base.schema.md")) {
+      return resultError(new Error("Schema file must be named 'base.schema.md'"));
+    }
+
+    // Check if using default base directory
+    const isDefault = metadata.baseDir === resolve(Deno.cwd(), DEFAULT_SCHEMA_BASE_DIR);
+
+    return resultOk(new SchemaPath(path, { ...metadata, isDefault }));
+  }
+
+  /**
+   * Get a descriptive message about the schema path
+   */
+  getDescription(): string {
+    const defaultNote = this.metadata.isDefault ? " (using default)" : "";
+    return `Schema: ${this.metadata.demonstrativeType}/${this.metadata.layerType}/${this.metadata.fileName}${defaultNote}`;
+  }
+
+  /**
+   * Check if this schema path exists on filesystem
+   */
+  exists(): boolean {
+    return existsSync(this.value);
+  }
+
+  /**
+   * Get the schema directory path
+   */
+  getDirectory(): string {
+    return join(
+      this.metadata.baseDir,
+      this.metadata.demonstrativeType,
+      this.metadata.layerType
+    );
+  }
+}
+
+/**
+ * Schema file path resolver with full Totality implementation
+ */
+export class SchemaFilePathResolverTotality {
+  private readonly config: SchemaResolverConfig;
+  private readonly _cliParams: DoubleParams_Result | TwoParams_Result;
+
+  /**
+   * Private constructor following Smart Constructor pattern
+   */
+  private constructor(
+    config: SchemaResolverConfig,
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ) {
+    this.config = config;
+    this._cliParams = this.deepCopyCliParams(cliParams);
+  }
+
+  /**
+   * Creates a new resolver instance with full validation
+   * 
+   * Validates all inputs and ensures type safety throughout
+   */
+  static create(
+    config: Record<string, unknown>,
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): Result<SchemaFilePathResolverTotality, PathResolutionError> {
+    // Validate configuration presence and type
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: "Configuration must be a non-null object",
+      });
+    }
+
+    // Validate cliParams presence and type
+    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: "CLI parameters must be a non-null object",
+      });
+    }
+
+    // Validate CLI parameters structure and content
+    const demonstrativeType = SchemaFilePathResolverTotality.extractDemonstrativeType(cliParams);
+    const layerType = SchemaFilePathResolverTotality.extractLayerType(cliParams);
+
+    if (!demonstrativeType || !layerType) {
+      return resultError({
+        kind: "InvalidParameterCombination",
+        demonstrativeType: demonstrativeType || "(missing)",
+        layerType: layerType || "(missing)",
+      });
+    }
+
+    // Validate that extracted values are non-empty strings
+    if (demonstrativeType.trim() === "" || layerType.trim() === "") {
+      return resultError({
+        kind: "InvalidParameterCombination",
+        demonstrativeType: demonstrativeType || "(empty)",
+        layerType: layerType || "(empty)",
+      });
+    }
+
+    // Convert config to discriminated union
+    const resolverConfig = SchemaFilePathResolverTotality.normalizeConfig(config);
+
+    return resultOk(new SchemaFilePathResolverTotality(resolverConfig, cliParams));
+  }
+
+  /**
+   * Convert raw config to discriminated union
+   * Eliminates optional properties in favor of explicit states
+   */
+  private static normalizeConfig(config: Record<string, unknown>): SchemaResolverConfig {
+    const appSchema = config.app_schema as { base_dir?: string } | undefined;
+
+    if (appSchema?.base_dir && typeof appSchema.base_dir === "string") {
+      return { 
+        kind: "WithSchemaConfig", 
+        app_schema: { base_dir: appSchema.base_dir }
+      };
+    } else {
+      return { kind: "NoSchemaConfig" };
+    }
+  }
+
+  /**
+   * Deep copy CLI parameters for immutability
+   */
+  private deepCopyCliParams(
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): DoubleParams_Result | TwoParams_Result {
+    if ("type" in cliParams && cliParams.type === "two") {
+      // TwoParams_Result from breakdownparams
+      const twoParams = cliParams as TwoParams_Result;
+      const copy: TwoParams_Result = {
+        type: "two",
+        params: twoParams.params ? [...twoParams.params] : [],
+        demonstrativeType: twoParams.params?.[0] || "",
+        layerType: twoParams.params?.[1] || "",
+        options: { ...twoParams.options },
+      };
+      return copy;
+    } else {
+      // DoubleParams_Result (PromptCliParams)
+      const doubleParams = cliParams as DoubleParams_Result;
+      const copy: DoubleParams_Result = {
+        demonstrativeType: doubleParams.demonstrativeType || "",
+        layerType: doubleParams.layerType || "",
+        options: doubleParams.options ? { ...doubleParams.options } : {},
+      };
+      return copy;
+    }
+  }
+
+  /**
+   * Resolves the complete schema file path with comprehensive error handling
+   * 
+   * Always returns a Result type - never throws exceptions
+   */
+  public getPath(): Result<SchemaPath, PathResolutionError> {
+    // Resolve base directory
+    const baseDirResult = this.resolveBaseDirSafe();
+    if (!baseDirResult.ok) {
+      return baseDirResult;
+    }
+    const baseDir = baseDirResult.data;
+
+    // Build components
+    const fileName = this.buildFileName();
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
+    const schemaPath = this.buildSchemaPath(baseDir, fileName);
+
+    // Create SchemaPath value object
+    const pathResult = SchemaPath.create(schemaPath, {
+      baseDir,
+      demonstrativeType,
+      layerType,
+      fileName,
+    });
+
+    if (!pathResult.ok) {
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: pathResult.error.message,
+      });
+    }
+
+    const schemaPathObj = pathResult.data;
+
+    // Check if schema file exists
+    if (!schemaPathObj.exists()) {
+      // Provide helpful error with directory structure hint
+      const directory = schemaPathObj.getDirectory();
+      return resultError({
+        kind: "TemplateNotFound",
+        attempted: [schemaPath],
+        fallback: `Schema file not found. Expected location: ${schemaPath}\n` +
+                 `Ensure the schema directory exists: ${directory}`,
+      });
+    }
+
+    return pathResult;
+  }
+
+  /**
+   * Safely resolves the base directory with Result type
+   * Never returns null or throws exceptions
+   */
+  private resolveBaseDirSafe(): Result<string, PathResolutionError> {
+    let baseDir: string;
+
+    switch (this.config.kind) {
+      case "WithSchemaConfig":
+        baseDir = this.config.app_schema.base_dir;
+        break;
+      case "NoSchemaConfig":
+        baseDir = DEFAULT_SCHEMA_BASE_DIR;
+        break;
+      // Exhaustive check - TypeScript ensures all cases are handled
+      default:
+        const _exhaustive: never = this.config;
+        return _exhaustive;
+    }
+
+    // Ensure absolute path
+    if (!isAbsolute(baseDir)) {
+      baseDir = resolve(Deno.cwd(), baseDir);
+    }
+
+    // Validate base directory format
+    if (baseDir.includes("\0")) {
+      return resultError({
+        kind: "InvalidPath",
+        path: baseDir,
+        reason: "Path contains null character",
+      });
+    }
+
+    // Verify base directory exists
+    if (!existsSync(baseDir)) {
+      return resultError({
+        kind: "BaseDirectoryNotFound",
+        path: baseDir,
+      });
+    }
+
+    return resultOk(baseDir);
+  }
+
+  /**
+   * Builds the standard filename for schema files
+   * Schema files always use the same standardized name
+   */
+  public buildFileName(): string {
+    return "base.schema.md";
+  }
+
+  /**
+   * Builds the complete schema file path from components
+   * Ensures consistent path structure across the system
+   */
+  public buildSchemaPath(baseDir: string, fileName: string): string {
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
+    
+    // Validate path components
+    if (!demonstrativeType || !layerType) {
+      // This should never happen due to constructor validation
+      // but provides defense in depth
+      return join(baseDir, "unknown", "unknown", fileName);
+    }
+
+    return join(baseDir, demonstrativeType, layerType, fileName);
+  }
+
+  /**
+   * Gets the demonstrative type with validation
+   */
+  private getDemonstrativeType(): string {
+    const type = SchemaFilePathResolverTotality.extractDemonstrativeType(this._cliParams);
+    return type || "unknown";
+  }
+
+  /**
+   * Static helper to extract demonstrative type
+   * Handles multiple parameter formats safely
+   */
+  private static extractDemonstrativeType(
+    cliParams: DoubleParams_Result | TwoParams_Result,
+  ): string {
+    // Handle both legacy and new parameter structures
+    if ("demonstrativeType" in cliParams && cliParams.demonstrativeType) {
+      return cliParams.demonstrativeType;
+    }
+    // For TwoParams_Result structure from breakdownparams
+    const twoParams = cliParams as TwoParams_Result;
+    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 0) {
+      return twoParams.params[0] || "";
+    }
+    return "";
+  }
+
+  /**
+   * Gets the layer type with validation
+   */
+  private getLayerType(): string {
+    const type = SchemaFilePathResolverTotality.extractLayerType(this._cliParams);
+    return type || "unknown";
+  }
+
+  /**
+   * Static helper to extract layer type
+   * Handles multiple parameter formats safely
+   */
+  private static extractLayerType(cliParams: DoubleParams_Result | TwoParams_Result): string {
+    // Handle both legacy and new parameter structures
+    if ("layerType" in cliParams && cliParams.layerType) {
+      return cliParams.layerType;
+    }
+    // For TwoParams_Result structure from breakdownparams
+    const twoParams = cliParams as TwoParams_Result;
+    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 1) {
+      return twoParams.params[1] || "";
+    }
+    return "";
+  }
+
+  /**
+   * Get all possible schema paths for debugging
+   * Useful for error messages and troubleshooting
+   */
+  public getPossiblePaths(): Result<string[], PathResolutionError> {
+    const baseDirResult = this.resolveBaseDirSafe();
+    if (!baseDirResult.ok) {
+      return baseDirResult;
+    }
+
+    const baseDir = baseDirResult.data;
+    const fileName = this.buildFileName();
+    const demonstrativeType = this.getDemonstrativeType();
+    const layerType = this.getLayerType();
+
+    const paths = [
+      join(baseDir, demonstrativeType, layerType, fileName),
+      join(baseDir, demonstrativeType, fileName), // Fallback without layer
+      join(baseDir, fileName), // Root fallback
+    ];
+
+    return resultOk(paths);
+  }
+
+  /**
+   * Validate schema file content structure
+   * Ensures schema files meet expected format
+   */
+  public validateSchemaContent(content: string): Result<void, SchemaPathError> {
+    if (!content || content.trim() === "") {
+      return resultError({
+        kind: "SchemaValidationFailed",
+        details: "Schema content is empty",
+      });
+    }
+
+    // Basic validation - ensure it looks like a schema
+    if (!content.includes("# Schema") && !content.includes("## Schema")) {
+      return resultError({
+        kind: "SchemaValidationFailed",
+        details: "Schema file missing schema header",
+      });
+    }
+
+    return resultOk(undefined);
+  }
+}
+
+/**
+ * Format schema resolution error for user-friendly display
+ * Provides actionable error messages
+ */
+export function formatSchemaError(error: PathResolutionError): string {
+  switch (error.kind) {
+    case "InvalidConfiguration":
+      return `Schema Configuration Error: ${error.details}`;
+
+    case "BaseDirectoryNotFound":
+      return `Schema Base Directory Not Found: ${error.path}\n` +
+        `Please ensure the schema base directory exists or update your configuration.\n` +
+        `Expected location: ${error.path}`;
+
+    case "InvalidParameterCombination":
+      return `Invalid Schema Parameters:\n` +
+        `  Demonstrative Type: ${error.demonstrativeType}\n` +
+        `  Layer Type: ${error.layerType}\n` +
+        `Both parameters are required for schema resolution.`;
+
+    case "TemplateNotFound":
+      return `Schema file not found at expected location:\n` +
+        `  ${error.attempted[0]}\n\n` +
+        `Please ensure the schema file exists with the standard name 'base.schema.md'\n` +
+        `${error.fallback || ""}`;
+
+    case "InvalidStrategy":
+      return `Invalid Strategy: ${error.strategy}`;
+
+    case "EmptyBaseDir":
+      return `Base directory is empty`;
+
+    case "InvalidPath":
+      return `Invalid Path: ${error.path}\n` +
+        `Reason: ${error.reason}`;
+
+    case "NoValidFallback":
+      return `No valid schema fallback found.\n` +
+        `Attempted paths: ${error.attempts.join(", ")}`;
+
+    case "ValidationFailed":
+      return `Schema validation failed for path: ${error.path}`;
+
+    default:
+      return `Unknown schema error occurred`;
+  }
+}

@@ -10,6 +10,7 @@
 
 import { type EnhancedStdinOptions, readStdinEnhanced } from "./enhanced_stdin.ts";
 import { error, ok, type Result } from "../types/result.ts";
+import { StdoutWriteConfiguration } from "./stdout.ts";
 
 /**
  * Discriminated Union for stdin-specific errors
@@ -396,58 +397,9 @@ export function hasStdinContent(): boolean {
   }
 }
 
-/**
- * Value Object for stdout writing configuration
- * Ensures immutability and validation following DDD principles
- */
-export class StdoutWriteConfiguration {
-  private constructor(
-    private readonly _encoding: "utf-8" | "utf-16le" | "utf-16be",
-    private readonly _flushImmediate: boolean,
-  ) {}
-
-  /**
-   * Smart Constructor for StdoutWriteConfiguration
-   * Validates encoding and flush options
-   */
-  static create(
-    encoding: "utf-8" | "utf-16le" | "utf-16be" = "utf-8",
-    flushImmediate: boolean = false,
-  ): Result<StdoutWriteConfiguration, StdinErrorType> {
-    const validEncodings = ["utf-8", "utf-16le", "utf-16be"];
-    if (!validEncodings.includes(encoding)) {
-      return error({
-        kind: "ValidationError",
-        field: "encoding",
-        message: `Invalid encoding: ${encoding}. Must be one of: ${validEncodings.join(", ")}`,
-      });
-    }
-
-    return ok(new StdoutWriteConfiguration(encoding, flushImmediate));
-  }
-
-  /**
-   * Factory for standard configuration
-   */
-  static standard(): Result<StdoutWriteConfiguration, StdinErrorType> {
-    return StdoutWriteConfiguration.create("utf-8", false);
-  }
-
-  /**
-   * Factory for immediate flush configuration
-   */
-  static immediate(): Result<StdoutWriteConfiguration, StdinErrorType> {
-    return StdoutWriteConfiguration.create("utf-8", true);
-  }
-
-  get encoding(): "utf-8" | "utf-16le" | "utf-16be" {
-    return this._encoding;
-  }
-
-  get flushImmediate(): boolean {
-    return this._flushImmediate;
-  }
-}
+// StdoutWriteConfiguration has been moved to stdout.ts
+// Re-export for backward compatibility
+export { StdoutWriteConfiguration } from "./stdout.ts";
 
 /**
  * Type-safe stdout writing with Result-based error handling

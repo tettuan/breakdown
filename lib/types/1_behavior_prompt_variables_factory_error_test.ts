@@ -149,6 +149,14 @@ Deno.test("PromptVariablesFactoryError Behavior - Error handling patterns", () =
         return "Cannot resolve output file path";
       case "SchemaFilePathNotResolved":
         return "Cannot resolve schema file path";
+      case "PromptPathResolutionFailed":
+        return `Prompt path resolution failed: ${error.details}`;
+      case "InputPathResolutionFailed":
+        return `Input path resolution failed: ${error.details}`;
+      case "OutputPathResolutionFailed":
+        return `Output path resolution failed: ${error.details}`;
+      case "SchemaPathResolutionFailed":
+        return `Schema path resolution failed: ${error.details}`;
       default: {
         const _exhaustive: never = error;
         return _exhaustive;

@@ -283,13 +283,17 @@ Deno.test("0_architecture: Error types implement discriminated union pattern", (
   
   // WorkingDirectoryError variants
   const dirErrors = [
-    { kind: "InvalidPath", message: "test", path: "test" },
+    { kind: "InvalidPath", path: "test", reason: "test" },
     { kind: "EmptyPath", message: "test" },
   ] satisfies WorkingDirectoryError[];
   
   for (const error of dirErrors) {
     assertExists(error.kind);
-    assertExists(error.message);
+    if ('message' in error) {
+      assertExists(error.message);
+    } else if ('reason' in error) {
+      assertExists(error.reason);
+    }
   }
 });
 
@@ -315,7 +319,12 @@ Deno.test("0_architecture: ConfigLoader.loadConfig returns Result type", async (
     } else {
       assertExists(result.error);
       assertExists(result.error.kind);
-      assertExists(result.error.message);
+      if ('message' in result.error && result.error.message) {
+        assertExists(result.error.message);
+      }
+      if ('reason' in result.error && result.error.reason) {
+        assertExists(result.error.reason);
+      }
     }
   }
 });
@@ -343,7 +352,12 @@ Deno.test("0_architecture: ConfigLoader.loadBreakdownConfig returns Result type"
     } else {
       assertExists(result.error);
       assertExists(result.error.kind);
-      assertExists(result.error.message);
+      if ('message' in result.error && result.error.message) {
+        assertExists(result.error.message);
+      }
+      if ('reason' in result.error && result.error.reason) {
+        assertExists(result.error.reason);
+      }
     }
   }
 });

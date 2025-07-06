@@ -20,22 +20,36 @@ import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
+import { Result, ok, error } from "../types/result.ts";
 
 /**
  * Interface for providing prompt variables and configuration.
  * This abstraction allows for future migration to TotalityPromptVariablesFactory.
  */
+/**
+ * Type for parameters that may or may not have custom variables
+ */
+export type PromptParams = 
+  | {
+      promptFilePath: string;
+      inputFilePath: string;
+      outputFilePath: string;
+      schemaFilePath: string;
+      customVariables: Record<string, string>;
+    }
+  | {
+      promptFilePath: string;
+      inputFilePath: string;
+      outputFilePath: string;
+      schemaFilePath: string;
+      customVariables?: never;
+    };
+
 export interface PromptVariablesProvider {
-  getAllParams(): {
-    promptFilePath: string;
-    inputFilePath: string;
-    outputFilePath: string;
-    schemaFilePath: string;
-    customVariables?: Record<string, string>;
-  };
+  getAllParams(): PromptParams;
   getOptions(): PromptCliOptions;
   hasValidBaseDir(): boolean;
-  getBaseDirError(): string | undefined;
+  getBaseDirError(): Result<void, string>;
   get customVariables(): Record<string, string>;
 }
 
@@ -171,9 +185,10 @@ export class PromptAdapterImpl {
    */
   async validateAndGenerate(): Promise<{ success: boolean; content: string }> {
     if (!this.factory.hasValidBaseDir()) {
+      const baseDirResult = this.factory.getBaseDirError();
       return {
         success: false,
-        content: this.factory.getBaseDirError() ?? "Prompt base_dir must be set",
+        content: baseDirResult.ok ? "Prompt base_dir must be set" : baseDirResult.error,
       };
     }
     const validation = await this.validatePaths();

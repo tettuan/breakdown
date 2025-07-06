@@ -268,7 +268,7 @@ Deno.test("0_architecture: ErrorFactory - provides consistent error creation", (
   // ARCHITECTURE CONSTRAINT: ErrorFactory must provide type-safe error creation
   
   // Path error factory
-  const pathError = ErrorFactory.pathError("InvalidPath", "/test", "Invalid characters");
+  const pathError = ErrorFactory.pathError("InvalidPath", "/test", { reason: "Invalid characters" });
   assertEquals(pathError.kind, "InvalidPath");
   assertEquals(pathError.path, "/test");
   if (pathError.kind === "InvalidPath") {
@@ -417,6 +417,18 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
         return `Transformation failed: ${error.targetType}`;
       case "GenerationFailed":
         return `Generation failed: ${error.generator}`;
+      
+      // WorkspaceError variants
+      case "WorkspaceInitError":
+        return `Workspace init error: ${error.message}`;
+      case "WorkspaceConfigError":
+        return `Workspace config error: ${error.message}`;
+      case "WorkspacePathError":
+        return `Workspace path error: ${error.message}`;
+      case "WorkspaceDirectoryError":
+        return `Workspace directory error: ${error.message}`;
+      case "WorkspaceError":
+        return `Workspace error: ${error.message}`;
       
       default:
         // This should never happen if all cases are handled

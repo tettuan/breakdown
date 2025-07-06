@@ -1,4 +1,7 @@
 import { PromptVariables } from "../../types/prompt_types.ts";
+import type { Result } from "../../types/result.ts";
+import { ok, error } from "../../types/result.ts";
+import { UserVariableError, formatUserVariableError } from "./user_variable_error.ts";
 
 /**
  * UserPromptVariables - User-defined prompt variables implementation
@@ -34,22 +37,21 @@ export class UserPromptVariables implements PromptVariables {
    * Validates that all variable values are non-empty strings.
    *
    * @param variables - Record of user-defined variables
-   * @returns A new UserPromptVariables instance
-   * @throws Error if any variable key or value is empty
+   * @returns Result containing UserPromptVariables or validation error
    */
   static create(
     variables: Record<string, string>,
-  ): UserPromptVariables {
+  ): Result<UserPromptVariables, UserVariableError> {
     // Validate all variables
     for (const [key, value] of Object.entries(variables)) {
       if (!key || key.trim() === "") {
-        throw new Error("Variable key cannot be empty");
+        return error({ kind: "EmptyKey", key });
       }
       if (value === null || value === undefined) {
-        throw new Error(`Variable value for '${key}' cannot be null or undefined`);
+        return error({ kind: "NullOrUndefined", key });
       }
       if (value.trim() === "") {
-        throw new Error(`Variable value for '${key}' cannot be empty`);
+        return error({ kind: "EmptyValue", key });
       }
     }
 
@@ -61,7 +63,19 @@ export class UserPromptVariables implements PromptVariables {
       variablesCopy[key] = variablesCopy[key].trim();
     }
 
-    return new UserPromptVariables(variablesCopy);
+    return ok(new UserPromptVariables(variablesCopy));
+  }
+
+  /**
+   * Gets a specific variable value (unsafe version for backward compatibility)
+   * 
+   * @deprecated Use get() instead for Result-based error handling
+   * @param key - The variable key
+   * @returns The variable value or undefined if not found
+   */
+  getUnsafe(key: string): string | undefined {
+    const result = this.get(key);
+    return result.ok ? result.data : undefined;
   }
 
   /**
@@ -86,10 +100,17 @@ export class UserPromptVariables implements PromptVariables {
    * Gets a specific variable value
    *
    * @param key - The variable key
-   * @returns The variable value or undefined if not found
+   * @returns Result containing the variable value or error if not found
    */
-  get(key: string): string | undefined {
-    return this.variables[key];
+  get(key: string): Result<string, UserVariableError> {
+    if (!key || key.trim() === "") {
+      return error({ kind: "EmptyKey", key });
+    }
+    const value = this.variables[key];
+    if (value === undefined) {
+      return error({ kind: "NotFound", key });
+    }
+    return ok(value);
   }
 
   /**
@@ -134,18 +155,17 @@ export class UserPromptVariables implements PromptVariables {
    *
    * @param key - The variable key
    * @param value - The variable value
-   * @returns A new UserPromptVariables instance
-   * @throws Error if key or value is empty
+   * @returns Result containing new UserPromptVariables instance or error
    */
-  with(key: string, value: string): UserPromptVariables {
+  with(key: string, value: string): Result<UserPromptVariables, UserVariableError> {
     if (!key || key.trim() === "") {
-      throw new Error("Variable key cannot be empty");
+      return error({ kind: "EmptyKey", key });
     }
     if (value === null || value === undefined) {
-      throw new Error(`Variable value for '${key}' cannot be null or undefined`);
+      return error({ kind: "NullOrUndefined", key });
     }
     if (value.trim() === "") {
-      throw new Error(`Variable value for '${key}' cannot be empty`);
+      return error({ kind: "EmptyValue", key });
     }
 
     return UserPromptVariables.create({
@@ -170,10 +190,9 @@ export class UserPromptVariables implements PromptVariables {
    * Creates a new instance by merging with other variables
    *
    * @param other - Other variables to merge
-   * @returns A new UserPromptVariables instance
-   * @throws Error if any merged variable is invalid
+   * @returns Result containing new UserPromptVariables instance or error
    */
-  merge(other: Record<string, string>): UserPromptVariables {
+  merge(other: Record<string, string>): Result<UserPromptVariables, UserVariableError> {
     return UserPromptVariables.create({
       ...this.variables,
       ...other,
@@ -186,8 +205,7 @@ export class UserPromptVariables implements PromptVariables {
    * Extracts --uv-* options from an options object.
    *
    * @param options - Options object containing uv-prefixed properties
-   * @returns A new UserPromptVariables instance
-   * @throws Error if any variable is invalid
+   * @returns Result containing UserPromptVariables instance or error
    *
    * @example
    * ```typescript
@@ -196,10 +214,13 @@ export class UserPromptVariables implements PromptVariables {
    *   "uv-projectName": "マイプロジェクト",
    *   "from": "input.md" // non-uv option is ignored
    * };
-   * const variables = UserPromptVariables.fromOptions(options);
+   * const result = UserPromptVariables.fromOptions(options);
+   * if (result.ok) {
+   *   console.log(result.data.toRecord());
+   * }
    * ```
    */
-  static fromOptions(options: Record<string, unknown>): UserPromptVariables {
+  static fromOptions(options: Record<string, unknown>): Result<UserPromptVariables, UserVariableError> {
     const userVariables: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(options)) {
@@ -216,5 +237,70 @@ export class UserPromptVariables implements PromptVariables {
     }
 
     return UserPromptVariables.create(userVariables);
+  }
+
+  /**
+   * Creates a new UserPromptVariables instance (unsafe version for backward compatibility)
+   * 
+   * @deprecated Use create() instead for Result-based error handling
+   * @param variables - Record of user-defined variables
+   * @returns A new UserPromptVariables instance
+   * @throws Error if any variable key or value is empty
+   */
+  static createUnsafe(variables: Record<string, string>): UserPromptVariables {
+    const result = UserPromptVariables.create(variables);
+    if (!result.ok) {
+      throw new Error(formatUserVariableError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Creates a new instance with an additional variable (unsafe version)
+   * 
+   * @deprecated Use with() instead for Result-based error handling
+   * @param key - The variable key
+   * @param value - The variable value
+   * @returns A new UserPromptVariables instance
+   * @throws Error if key or value is empty
+   */
+  withUnsafe(key: string, value: string): UserPromptVariables {
+    const result = this.with(key, value);
+    if (!result.ok) {
+      throw new Error(formatUserVariableError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Creates a new instance by merging with other variables (unsafe version)
+   * 
+   * @deprecated Use merge() instead for Result-based error handling
+   * @param other - Other variables to merge
+   * @returns A new UserPromptVariables instance
+   * @throws Error if any merged variable is invalid
+   */
+  mergeUnsafe(other: Record<string, string>): UserPromptVariables {
+    const result = this.merge(other);
+    if (!result.ok) {
+      throw new Error(formatUserVariableError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Creates UserPromptVariables from CLI arguments (unsafe version)
+   * 
+   * @deprecated Use fromOptions() instead for Result-based error handling
+   * @param options - Options object containing uv-prefixed properties
+   * @returns A new UserPromptVariables instance
+   * @throws Error if any variable is invalid
+   */
+  static fromOptionsUnsafe(options: Record<string, unknown>): UserPromptVariables {
+    const result = UserPromptVariables.fromOptions(options);
+    if (!result.ok) {
+      throw new Error(formatUserVariableError(result.error));
+    }
+    return result.data;
   }
 }
