@@ -38,6 +38,7 @@
  *   - Supports both single-run and continuous monitoring modes
  *   - Scheduled execution with keyboard interrupt capability
  *   - Instruction file option for sending startup commands to main pane
+ *   - Automatic termination after 4 hours of continuous operation
  */
 
 // =============================================================================
@@ -91,6 +92,7 @@ const TIMING = {
   MONITORING_CYCLE_DELAY: 300000, // 5*60 seconds (300 seconds) - delay between monitoring cycles (updated per requirements)
   CLD_COMMAND_DELAY: 200, // 0.2 seconds - delay for cld command (from requirements)
   ENTER_SEND_CYCLE_DELAY: 30000, // 30 seconds - delay between sending ENTER to all panes
+  MAX_RUNTIME: 14400000, // 4 hours in milliseconds (4 * 60 * 60 * 1000)
 } as const;
 
 // =============================================================================
@@ -1032,6 +1034,7 @@ class TmuxMonitor {
   private statusManager: PaneStatusManager;
   private scheduledTime: Date | null = null;
   private instructionFile: string | null = null;
+  private startTime: number = 0; // Track start time for 4-hour limit
 
   constructor(scheduledTime?: Date | null, instructionFile?: string | null) {
     this.session = new TmuxSession();
@@ -1041,6 +1044,28 @@ class TmuxMonitor {
     this.statusManager = new PaneStatusManager();
     this.scheduledTime = scheduledTime || null;
     this.instructionFile = instructionFile || null;
+    this.startTime = Date.now(); // Initialize start time
+    
+    // Log the start time and auto-stop time
+    const startTimeStr = new Date(this.startTime).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const autoStopTime = new Date(this.startTime + TIMING.MAX_RUNTIME).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    
+    logInfo(`Monitor started at: ${startTimeStr} (Asia/Tokyo)`);
+    logInfo(`Auto-stop scheduled at: ${autoStopTime} (Asia/Tokyo)`);
   }
 
   /**
@@ -1271,6 +1296,30 @@ class TmuxMonitor {
   }
 
   /**
+   * Check if the 4-hour runtime limit has been exceeded
+   */
+  private hasExceededRuntimeLimit(): boolean {
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - this.startTime;
+    const remainingTime = TIMING.MAX_RUNTIME - elapsedTime;
+    
+    if (remainingTime <= 0) {
+      logInfo("4-hour runtime limit exceeded. Automatically terminating...");
+      return true;
+    }
+    
+    // Log remaining time every hour
+    const remainingHours = Math.floor(remainingTime / (1000 * 60 * 60));
+    const remainingMinutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (elapsedTime % (1000 * 60 * 60) < 10000) { // Log roughly every hour
+      logInfo(`Remaining runtime: ${remainingHours}h ${remainingMinutes}m`);
+    }
+    
+    return false;
+  }
+
+  /**
    * Main monitoring loop with CI error checking
    */
   public async monitor(): Promise<void> {
@@ -1287,6 +1336,12 @@ class TmuxMonitor {
     while (true) {
       try {
         logInfo("Starting tmux monitoring...");
+
+        // Check for 4-hour runtime limit
+        if (this.hasExceededRuntimeLimit()) {
+          logInfo("Monitoring cancelled due to 4-hour runtime limit. Exiting...");
+          return;
+        }
 
         // Check for cancellation before starting
         if (isCancellationRequested()) {
@@ -1424,9 +1479,15 @@ class TmuxMonitor {
    * Continuous monitoring mode
    */
   public async startContinuousMonitoring(): Promise<void> {
-    logInfo("Starting continuous monitoring mode (Press any key to stop)");
+    logInfo("Starting continuous monitoring mode (Press any key to stop, auto-stop after 4 hours)");
 
     while (true) {
+      // Check for 4-hour runtime limit
+      if (this.hasExceededRuntimeLimit()) {
+        logInfo("Automatic termination due to 4-hour runtime limit. Exiting...");
+        break;
+      }
+
       // Check for cancellation
       if (isCancellationRequested()) {
         logInfo("Continuous monitoring cancelled by user input. Exiting...");
