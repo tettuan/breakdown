@@ -13,7 +13,7 @@ import {
   type ConfigProfile,
   type ConfigBuilderOptions,
   CONFIG_PRESETS,
-  formatConfigurationError,
+  formatConfigLoadError,
 } from "./unified_config_interface.ts";
 
 Deno.test("Architecture: UnifiedConfigInterface - Smart Constructor Pattern", () => {
@@ -244,7 +244,7 @@ Deno.test("Architecture: Error Handling - Error-First Design", () => {
   ];
   
   testErrors.forEach(error => {
-    const formatted = formatConfigurationError(error);
+    const formatted = formatConfigLoadError(error);
     assertEquals(typeof formatted, "string");
     assert(formatted.length > 0);
     // Error formatting should contain meaningful text (relaxed check)

@@ -303,7 +303,15 @@ describe("Behavior: Configuration Testing Detection", () => {
   it("should detect test error handling configuration", () => {
     logger.debug("Testing test configuration detection");
 
-    const testConfigs = [
+    interface ErrorTestConfig {
+      readonly app_prompt: {
+        readonly base_dir: string;
+        readonly other_setting?: string;
+      };
+      readonly other_config?: string;
+    }
+
+    const testConfigs: ErrorTestConfig[] = [
       {
         app_prompt: {
           base_dir: "/nonexistent/path"

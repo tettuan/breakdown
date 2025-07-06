@@ -570,6 +570,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "ConfigurationError":
       case "ProfileNotFound":
       case "InvalidConfiguration":
+      case "ConfigLoadError":
         return "configuration";
       
       // ProcessingError

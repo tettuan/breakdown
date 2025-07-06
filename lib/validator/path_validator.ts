@@ -59,8 +59,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Standard I/O paths are not allowed",
-        { type, allowStdio },
+        { reason: "Standard I/O paths are not allowed", context: { type, allowStdio } },
       ));
     }
 
@@ -69,8 +68,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        `${type} path cannot be empty`,
-        { type },
+        { reason: `${type} path cannot be empty`, context: { type } },
       ));
     }
 
@@ -80,8 +78,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        `Path contains invalid characters: ${invalidChars.join(", ")}`,
-        { type, invalidChars },
+        { reason: `Path contains invalid characters: ${invalidChars.join(", ")}`, context: { type, invalidChars } },
       ));
     }
 
@@ -90,8 +87,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "PathTooLong",
         path,
-        undefined,
-        { type, actualLength: path.length },
+        { maxLength, context: { type, actualLength: path.length } },
       ));
     }
 
@@ -100,8 +96,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Path must be absolute",
-        { type, allowRelative },
+        { reason: "Path must be absolute", context: { type, allowRelative } },
       ));
     }
 
@@ -161,8 +156,7 @@ export class PathValidator {
         return error(ErrorFactory.pathError(
           "InvalidPath",
           path,
-          "Path traversal detected",
-          { securityViolation: "path_traversal" },
+          { reason: "Path traversal detected", context: { securityViolation: "path_traversal" } },
         ));
       }
     }
@@ -173,8 +167,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Tilde expansion not allowed",
-        { securityViolation: "tilde_expansion" },
+        { reason: "Tilde expansion not allowed", context: { securityViolation: "tilde_expansion" } },
       ));
     }
 

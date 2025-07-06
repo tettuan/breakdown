@@ -95,7 +95,7 @@ Deno.test("WorkspaceStructure Unit Tests", async (t) => {
         // Should throw an error that can be identified as WorkspaceInitError
         await assertRejects(
           () => structure.initialize(),
-          undefined, // Don't check error type in assertRejects
+          Error, // Check that it throws an Error
           "Path exists but is not a directory",
         );
       } finally {

@@ -304,7 +304,11 @@ describe("Architecture: Configuration Integration", () => {
     );
 
     // Should not modify configuration
-    const testConfig = { app_prompt: { base_dir: "/test" } };
+    interface ArchitectureTestConfig {
+      readonly app_prompt: { readonly base_dir: string };
+    }
+    
+    const testConfig: ArchitectureTestConfig = { app_prompt: { base_dir: "/test" } };
     const originalConfig = JSON.stringify(testConfig);
     
     const isTesting = isTestingErrorHandling(testConfig);

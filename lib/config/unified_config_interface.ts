@@ -591,7 +591,7 @@ export const CONFIG_PRESETS = {
 /**
  * Format configuration error for user display
  */
-export function formatConfigurationError(error: ConfigurationError): string {
+export function formatConfigLoadError(error: ConfigurationError): string {
   switch (error.kind) {
     case "ConfigurationError":
       return `Configuration error: ${error.message}`;
@@ -602,6 +602,9 @@ export function formatConfigurationError(error: ConfigurationError): string {
 
     case "InvalidConfiguration":
       return `Configuration validation error in ${error.field}: ${error.reason}`;
+
+    case "ConfigLoadError":
+      return `Configuration load error: ${error.message}`;
 
     default:
       return `Unknown configuration error: ${JSON.stringify(error)}`;

@@ -30,9 +30,18 @@ import { FactoryInitError, formatFactoryInitError } from "./factory_error.ts";
 const logger = new BreakdownLogger("factory-behavior-test");
 
 /**
+ * Test configuration interface for factory behavior tests
+ */
+interface TestConfig {
+  readonly app_prompt: { readonly base_dir: string };
+  readonly app_schema: { readonly base_dir: string };
+  readonly [key: string]: unknown;
+}
+
+/**
  * Test configuration for factory behavior tests
  */
-const testConfig = {
+const testConfig: TestConfig = {
   app_prompt: { base_dir: "prompts" },
   app_schema: { base_dir: "schemas" },
 };

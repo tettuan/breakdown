@@ -12,7 +12,7 @@ import {
   type ConfigurationError,
   type ConfigBuilderOptions,
   CONFIG_PRESETS,
-  formatConfigurationError,
+  formatConfigLoadError,
 } from "./unified_config_interface.ts";
 
 Deno.test("Behavior: Smart Constructor - Validation and Creation", async () => {
@@ -323,7 +323,7 @@ Deno.test("Behavior: Error Message Formatting", () => {
   ];
   
   errorTests.forEach(({ error, expectedContent }, index) => {
-    const formatted = formatConfigurationError(error);
+    const formatted = formatConfigLoadError(error);
     assertEquals(typeof formatted, "string");
     assert(formatted.length > 0, `Error ${index} should have non-empty message`);
     

@@ -21,20 +21,26 @@ import { TwoParamsVariableProcessor } from "../processors/two_params_variable_pr
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
+import { TwoParamsOutputProcessor } from "../processors/two_params_output_processor.ts";
 
 /**
- * Error types for TwoParamsHandler - maintains backward compatibility
+ * Complete Discriminated Union Error Types for TwoParamsHandler
+ * 
+ * This uses the Complete Discriminated Union Pattern ensuring:
+ * - All error cases are explicitly handled
+ * - Type safety through exhaustive checking
+ * - Backward compatibility maintained
  */
-export type TwoParamsHandlerError =
-  | { kind: "InvalidParameterCount"; received: number; expected: number }
-  | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
-  | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
-  | { kind: "StdinReadError"; error: string }
-  | { kind: "FactoryCreationError"; error: string }
-  | { kind: "FactoryValidationError"; errors: string[] }
-  | { kind: "VariablesBuilderError"; errors: string[] }
-  | { kind: "PromptGenerationError"; error: string }
-  | { kind: "OutputWriteError"; error: string; cause?: unknown };
+export type TwoParamsHandlerError = 
+  | { kind: "InvalidParameterCount", received: number, expected: number }
+  | { kind: "InvalidDemonstrativeType", value: string, validTypes: string[] }
+  | { kind: "InvalidLayerType", value: string, validTypes: string[] }
+  | { kind: "StdinReadError", error: string }
+  | { kind: "FactoryCreationError", error: string }
+  | { kind: "FactoryValidationError", errors: string[] }
+  | { kind: "VariablesBuilderError", errors: string[] }
+  | { kind: "PromptGenerationError", error: string }
+  | { kind: "OutputWriteError", error: string, cause?: unknown };
 
 /**
  * Internal orchestrator for two params processing
@@ -45,13 +51,15 @@ class TwoParamsOrchestrator {
   private readonly stdinProcessor: TwoParamsStdinProcessor;
   private readonly variableProcessor: TwoParamsVariableProcessor;
   private readonly promptGenerator: TwoParamsPromptGenerator;
+  private readonly outputProcessor: TwoParamsOutputProcessor;
 
-  constructor() {
-    // Initialize all components
+  constructor(outputProcessor?: TwoParamsOutputProcessor) {
+    // Initialize all components using composition pattern
     this.validator = new TwoParamsValidator();
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
+    this.outputProcessor = outputProcessor || new TwoParamsOutputProcessor();
   }
 
   /**
@@ -117,24 +125,10 @@ class TwoParamsOrchestrator {
       return error(this.mapPromptError(promptResult.error));
     }
 
-    // 5. Write output
-    try {
-      // Ensure the prompt data is properly stringified
-      const outputText = typeof promptResult.data === "string"
-        ? promptResult.data
-        : JSON.stringify(promptResult.data);
-
-      // Add newline if not present
-      const finalOutput = outputText.endsWith("\n") ? outputText : outputText + "\n";
-
-      const encoder = new TextEncoder();
-      const data = encoder.encode(finalOutput);
-      await Deno.stdout.write(data);
-    } catch (err) {
-      return error({
-        kind: "OutputWriteError",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    // 5. Write output using processor
+    const writeResult = await this.outputProcessor.writeOutput(promptResult.data);
+    if (!writeResult.ok) {
+      return error(writeResult.error);
     }
 
     return ok(undefined);
@@ -302,10 +296,32 @@ class TwoParamsOrchestrator {
 let orchestratorInstance: TwoParamsOrchestrator | null = null;
 
 /**
- * Handle two parameters case with internal orchestration
+ * Two Params Handler - Main entry point function
  *
- * Maintains the same external interface as the original handleTwoParams
- * but uses orchestration pattern internally for better maintainability.
+ * This is the main handler function expected by architecture tests.
+ * Uses orchestration pattern internally for better maintainability.
+ *
+ * @param params - Command line parameters from BreakdownParams
+ * @param config - Configuration object from BreakdownConfig
+ * @param options - Parsed options from BreakdownParams
+ * @returns Result with void on success or TwoParamsHandlerError on failure
+ */
+export async function twoParamsHandler(
+  params: string[],
+  config: Record<string, unknown>,
+  options: Record<string, unknown> = {},
+): Promise<Result<void, TwoParamsHandlerError>> {
+  // Create orchestrator instance if not exists (singleton pattern for efficiency)
+  if (!orchestratorInstance) {
+    orchestratorInstance = new TwoParamsOrchestrator();
+  }
+
+  // Delegate to orchestrator
+  return await orchestratorInstance.execute(params, config, options);
+}
+
+/**
+ * Handle two parameters case (alias for backward compatibility)
  *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
@@ -317,11 +333,5 @@ export async function handleTwoParams(
   config: Record<string, unknown>,
   options: Record<string, unknown>,
 ): Promise<Result<void, TwoParamsHandlerError>> {
-  // Create orchestrator instance if not exists (singleton pattern for efficiency)
-  if (!orchestratorInstance) {
-    orchestratorInstance = new TwoParamsOrchestrator();
-  }
-
-  // Delegate to orchestrator
-  return await orchestratorInstance.execute(params, config, options);
+  return await twoParamsHandler(params, config, options);
 }

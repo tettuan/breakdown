@@ -131,7 +131,9 @@ export abstract class BasePathValueObject {
     const lastDot = this.value.lastIndexOf('.');
     const lastSlash = Math.max(this.value.lastIndexOf('/'), this.value.lastIndexOf('\\'));
     
-    if (lastDot > lastSlash && lastDot > 0) {
+    // Extension must be after directory separator and not at the start of filename
+    // This handles dotfiles correctly (e.g., ".dotfile" has no extension)
+    if (lastDot > lastSlash && lastDot > lastSlash + 1) {
       return this.value.substring(lastDot);
     }
     
@@ -218,7 +220,7 @@ export abstract class BasePathValueObject {
     }
 
     // Stage 5: Extension validation
-    if (config.requiredExtensions) {
+    if (config.requiredExtensions && config.requiredExtensions.length > 0) {
       const extensionValidation = this.validateExtension(normalized, config.requiredExtensions);
       if (!extensionValidation.ok) {
         return extensionValidation;
@@ -396,7 +398,9 @@ export abstract class BasePathValueObject {
     const lastDot = path.lastIndexOf('.');
     const lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
     
-    if (lastDot > lastSlash && lastDot > 0) {
+    // Extension must be after directory separator and not at the start of filename
+    // This handles dotfiles correctly (e.g., ".dotfile" has no extension)
+    if (lastDot > lastSlash && lastDot > lastSlash + 1) {
       return path.substring(lastDot);
     }
     

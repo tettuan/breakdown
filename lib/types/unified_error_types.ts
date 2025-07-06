@@ -50,6 +50,7 @@ export type SystemErrorKind =
   | "StateTransitionInvalid"
   // Configuration errors
   | "ConfigurationError"
+  | "ConfigLoadError"
   | "ProfileNotFound"
   // Workspace errors
   | "WorkspaceInitError"
@@ -121,6 +122,11 @@ export type ConfigurationError =
     kind: "InvalidConfiguration";
     field: string;
     reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ConfigLoadError";
+    message: string;
     context?: Record<string, unknown>;
   };
 
@@ -247,6 +253,7 @@ export const ErrorGuards = {
         "ConfigurationError",
         "ProfileNotFound",
         "InvalidConfiguration",
+        "ConfigLoadError",
       ].includes((error as any).kind)
     );
   },
@@ -403,6 +410,8 @@ export const ErrorFactory = {
       ? { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> }
       : K extends "InvalidConfiguration"
       ? { field: string; reason: string; context?: Record<string, unknown> }
+      : K extends "ConfigLoadError"
+      ? { message: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ConfigurationError, { kind: K }> {
     switch (kind) {
@@ -430,6 +439,14 @@ export const ErrorFactory = {
           kind: "InvalidConfiguration",
           field: d.field,
           reason: d.reason,
+          context: d.context,
+        } as Extract<ConfigurationError, { kind: K }>;
+      }
+      case "ConfigLoadError": {
+        const d = details as { message: string; context?: Record<string, unknown> };
+        return {
+          kind: "ConfigLoadError",
+          message: d.message,
           context: d.context,
         } as Extract<ConfigurationError, { kind: K }>;
       }
@@ -598,6 +615,8 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.profile}`;
     case "InvalidConfiguration":
       return `${error.kind}: ${error.field} - ${error.reason}`;
+    case "ConfigLoadError":
+      return `${error.kind}: ${error.message}`;
     
     // Processing errors
     case "ProcessingFailed":

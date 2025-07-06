@@ -24,7 +24,13 @@ import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 import { formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 
 /**
- * Main CLI entry point for direct execution
+ * Default configuration profile name
+ */
+const DEFAULT_CONFIG_PROFILE = "default";
+
+/**
+ * Legacy main function - kept for backward compatibility
+ * @deprecated Use EntryPointManager for enhanced entry point management
  */
 async function main() {
   await runBreakdown();
@@ -90,7 +96,7 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   try {
     // 1. Extract and create config profile name with Result pattern matching
     const detectedPrefix = ConfigPrefixDetector.detect(args);
-    const configProfileNameResult = ConfigProfileName.create(detectedPrefix ?? "default");
+    const configProfileNameResult = ConfigProfileName.create(detectedPrefix ?? DEFAULT_CONFIG_PROFILE);
     
     if (!configProfileNameResult.ok) {
       console.error("❌ Invalid config profile name:", configProfileNameResult.error.message);
@@ -157,6 +163,27 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
   }
 }
 
+// Enhanced Entry Point Pattern using Entry Point Manager
 if (import.meta.main) {
-  await main();
+  // Dynamic import to avoid circular dependencies
+  const { EntryPointManager } = await import("$lib/cli/entry_point_manager.ts");
+  
+  // Detect environment and create appropriate manager
+  const isDevelopment = Deno.env.get("DENO_ENV") === "development" || 
+                       Deno.args.includes("--verbose") ||
+                       Deno.args.includes("--dev");
+  
+  const manager = isDevelopment 
+    ? EntryPointManager.createDevelopment()
+    : EntryPointManager.createStandard();
+  
+  // Start application with enhanced entry point management
+  const result = await manager.start();
+  
+  if (!result.ok) {
+    // Dynamic import to get error message utility
+    const { getEntryPointErrorMessage } = await import("$lib/cli/entry_point_manager.ts");
+    console.error("Entry Point Error:", getEntryPointErrorMessage(result.error));
+    Deno.exit(1);
+  }
 }

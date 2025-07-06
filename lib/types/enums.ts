@@ -10,11 +10,14 @@
 /**
  * Result status enumeration for type-safe status checking
  * Used throughout the application for consistent result handling
+ * Implemented as const object for immutability (Dependency Injection principle)
  */
-export enum ResultStatus {
-  SUCCESS = "success",
-  ERROR = "error",
-}
+export const ResultStatus = Object.freeze({
+  SUCCESS: "success",
+  ERROR: "error",
+} as const);
+
+export type ResultStatusType = typeof ResultStatus[keyof typeof ResultStatus];
 
 /**
  * Generic Result type for operations that can fail
@@ -45,5 +48,5 @@ export enum ResultStatus {
  * ```
  */
 export type Result<T, E> =
-  | { status: ResultStatus.SUCCESS; data: T }
-  | { status: ResultStatus.ERROR; error: E };
+  | { status: "success"; data: T }
+  | { status: "error"; error: E };

@@ -29,7 +29,7 @@ import {
   WorkspaceConfigError,
   WorkspaceDirectoryError,
   WorkspaceError,
-  WorkspaceInitErrorClass as WorkspaceInitError,
+  WorkspaceInitError,
   WorkspacePathError,
 } from "./errors.ts";
 

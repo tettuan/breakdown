@@ -13,6 +13,10 @@
  */
 
 import type { TwoParams_Result } from "../deps.ts";
+import type { Result } from "./result.ts";
+import { error, ok } from "./result.ts";
+import type { ValidationError } from "./unified_error_types.ts";
+import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
  * TwoParamsDirectivePattern - DirectiveType用のバリデーションパターン
@@ -29,11 +33,45 @@ export class TwoParamsDirectivePattern {
    * @returns 成功時は TwoParamsDirectivePattern、失敗時は null
    */
   static create(pattern: string): TwoParamsDirectivePattern | null {
+    // Validate input type first
+    if (typeof pattern !== 'string' || pattern == null) {
+      return null;
+    }
+    
     try {
       const regex = new RegExp(pattern);
       return new TwoParamsDirectivePattern(regex);
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
+   * 
+   * Totality原則に準拠し、エラーを明示的に返す。
+   * 
+   * @param pattern 正規表現文字列
+   * @returns 成功時は Result<TwoParamsDirectivePattern>、失敗時はエラー情報
+   */
+  static createOrError(pattern: string): Result<TwoParamsDirectivePattern, ValidationError> {
+    if (!pattern || pattern.length === 0) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: "Pattern cannot be empty",
+      }));
+    }
+
+    try {
+      const regex = new RegExp(pattern);
+      return ok(new TwoParamsDirectivePattern(regex));
+    } catch (e) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
+      }));
     }
   }
 
@@ -143,6 +181,65 @@ export class DirectiveType {
    */
   static create(result: TwoParams_Result): DirectiveType {
     return new DirectiveType(result);
+  }
+
+  /**
+   * TwoParams_Result から DirectiveType を構築（Result型版）
+   *
+   * Totality原則に完全準拠し、すべてのエラーケースを明示的に扱う。
+   * DirectiveTypeの構築前に追加バリデーションを実行し、
+   * 失敗の可能性がある場合はResult型でエラーを返す。
+   *
+   * @param result TwoParams_Result（基本的なバリデーション済み）
+   * @param pattern オプショナル：追加バリデーション用のパターン
+   * @returns 成功時は Result<DirectiveType>、失敗時はエラー情報
+   *
+   * @example
+   * ```typescript
+   * const pattern = TwoParamsDirectivePattern.createOrError("^(to|from|summary)$");
+   * if (pattern.ok) {
+   *   const directiveResult = DirectiveType.createOrError(result, pattern.data);
+   *   if (directiveResult.ok) {
+   *     // 型安全に使用可能
+   *     console.log(directiveResult.data.value);
+   *   } else {
+   *     // エラーハンドリング
+   *     console.error(directiveResult.error);
+   *   }
+   * }
+   * ```
+   */
+  static createOrError(
+    result: TwoParams_Result,
+    pattern?: TwoParamsDirectivePattern
+  ): Result<DirectiveType, ValidationError> {
+    // 基本的なバリデーション
+    if (!result || result.type !== "two") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "result",
+        value: result,
+        reason: "Invalid TwoParams_Result: must have type 'two'",
+      }));
+    }
+
+    if (!result.demonstrativeType || typeof result.demonstrativeType !== "string") {
+      return error(ErrorFactory.validationError("MissingRequiredField", {
+        field: "demonstrativeType",
+        source: "TwoParams_Result",
+      }));
+    }
+
+    // パターンマッチングによる追加バリデーション（オプショナル）
+    if (pattern && !pattern.test(result.demonstrativeType)) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "demonstrativeType",
+        value: result.demonstrativeType,
+        reason: `Value does not match required pattern: ${pattern.getPattern()}`,
+      }));
+    }
+
+    // すべてのバリデーションに成功
+    return ok(new DirectiveType(result));
   }
 
   /**

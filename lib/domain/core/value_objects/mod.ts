@@ -109,10 +109,16 @@ export function isPathValueObjectError(error: unknown): error is PathValueObject
  * Provides unified error formatting across all path types
  */
 export async function formatPathValueObjectError(error: PathValueObjectError): Promise<string> {
-  // Import the specific formatters
-  const { formatTemplatePathError } = await import("./template_path.ts");
-  const { formatSchemaPathError } = await import("./schema_path.ts");
-  const { formatWorkingDirectoryPathError } = await import("./working_directory_path.ts");
+  // Import all formatters at once to avoid potential module resolution issues
+  const [
+    { formatTemplatePathError },
+    { formatSchemaPathError },
+    { formatWorkingDirectoryPathError }
+  ] = await Promise.all([
+    import("./template_path.ts"),
+    import("./schema_path.ts"),
+    import("./working_directory_path.ts")
+  ]);
   
   // Type-safe error formatting based on error structure
   if ('kind' in error) {

@@ -13,9 +13,9 @@ import {
   validateCustomConfig,
   loadAndValidateConfig,
   mergeConfigs,
-  formatConfigurationError,
+  formatConfigLoadError,
   type CustomConfig,
-  type ConfigurationError,
+  type ConfigLoadError,
 } from "./loader_refactored.ts";
 import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";
@@ -222,7 +222,7 @@ Deno.test("Behavior: validateCustomConfig - Invalid Configuration Structures", (
   invalidConfigs.forEach(({ config, expectedError }) => {
     const result = validateCustomConfig(config);
     assert(!result.ok, `Should reject invalid config: ${JSON.stringify(config)}`);
-    assertEquals(result.error.kind, "InvalidConfiguration");
+    assertEquals(result.error.kind, "ValidationError");
     assertEquals(result.error.message, expectedError);
   });
 });
@@ -395,9 +395,9 @@ Deno.test("Behavior: mergeConfigs - Array and Primitive Value Handling", () => {
   assertEquals(merged.customConfig?.findBugs?.maxResults, 50);
 });
 
-Deno.test("Behavior: formatConfigurationError - Error Message Formatting", () => {
+Deno.test("Behavior: formatConfigLoadError - Error Message Formatting", () => {
   // Test error message formatting behavior
-  const errorTests: Array<{ error: ConfigurationError; expectedContent: string[] }> = [
+  const errorTests: Array<{ error: ConfigLoadError; expectedContent: string[] }> = [
     {
       error: { kind: "FileReadError", path: "/test/config.yml", message: "Permission denied" },
       expectedContent: ["read", "config.yml", "permission denied"],
@@ -407,7 +407,7 @@ Deno.test("Behavior: formatConfigurationError - Error Message Formatting", () =>
       expectedContent: ["parse", "config.yml", "invalid yaml", "line 5"],
     },
     {
-      error: { kind: "InvalidConfiguration", field: "customConfig", reason: "customConfig must be an object" },
+      error: { kind: "ValidationError", message: "customConfig must be an object" },
       expectedContent: ["validation", "customconfig", "object"],
     },
     {
@@ -417,7 +417,7 @@ Deno.test("Behavior: formatConfigurationError - Error Message Formatting", () =>
   ];
   
   errorTests.forEach(({ error, expectedContent }, index) => {
-    const formatted = formatConfigurationError(error);
+    const formatted = formatConfigLoadError(error);
     assertEquals(typeof formatted, "string");
     assert(formatted.length > 0, `Error ${index} should have non-empty message`);
     
@@ -451,10 +451,10 @@ Deno.test("Behavior: Error Recovery and Graceful Degradation", async () => {
   // Should handle malformed configs gracefully
   const validationResult = validateCustomConfig({ customConfig: null });
   assert(!validationResult.ok);
-  assertEquals(validationResult.error.kind, "InvalidConfiguration");
+  assertEquals(validationResult.error.kind, "ValidationError");
   
   // Error formatting should never throw
-  const testError: ConfigurationError = { kind: "InvalidConfiguration", field: "test", reason: "Test error" };
-  const formatted = formatConfigurationError(testError);
+  const testError: ConfigLoadError = { kind: "ValidationError", message: "Test error" };
+  const formatted = formatConfigLoadError(testError);
   assertEquals(typeof formatted, "string");
 });

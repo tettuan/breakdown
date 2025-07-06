@@ -37,13 +37,15 @@ Deno.test("Architecture: DefaultTypePatternProvider - Pattern Type Safety", () =
   
   // Patterns should be either the correct type or null
   if (directivePattern !== null) {
-    // TwoParamsDirectivePattern uses private constructor, so check using duck typing
-    assert(typeof directivePattern === 'object' && 'getValue' in directivePattern);
+    // TwoParamsDirectivePattern should have test() and getPattern() methods
+    assert(typeof directivePattern === 'object' && 'test' in directivePattern);
+    assert(typeof directivePattern === 'object' && 'getPattern' in directivePattern);
   }
   
   if (layerPattern !== null) {
-    // TwoParamsLayerTypePattern uses private constructor, so check using duck typing
-    assert(typeof layerPattern === 'object' && 'getValue' in layerPattern);
+    // TwoParamsLayerTypePattern should have test() and getPattern() methods  
+    assert(typeof layerPattern === 'object' && 'test' in layerPattern);
+    assert(typeof layerPattern === 'object' && 'getPattern' in layerPattern);
   }
   
   // With valid defaults, patterns should not be null
@@ -134,13 +136,15 @@ Deno.test("Architecture: DefaultTypePatternProvider - Dependency Management", ()
   const layerPattern = provider.getLayerTypePattern();
   
   if (directivePattern) {
-    // TwoParamsDirectivePattern uses private constructor, so check using duck typing
-    assert(typeof directivePattern === 'object' && 'getValue' in directivePattern);
+    // TwoParamsDirectivePattern should implement pattern interface properly
+    assert(typeof directivePattern === 'object' && 'test' in directivePattern);
+    assert(typeof directivePattern === 'object' && 'getPattern' in directivePattern);
   }
   
   if (layerPattern) {
-    // TwoParamsLayerTypePattern uses private constructor, so check using duck typing
-    assert(typeof layerPattern === 'object' && 'getValue' in layerPattern);
+    // TwoParamsLayerTypePattern should implement pattern interface properly
+    assert(typeof layerPattern === 'object' && 'test' in layerPattern);
+    assert(typeof layerPattern === 'object' && 'getPattern' in layerPattern);
   }
   
   // Should use _defaultConfigTwoParams dependency

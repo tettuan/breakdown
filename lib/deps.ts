@@ -53,11 +53,14 @@ export {
   type ErrorInfo,
   type OneParamsResult,
   type ParamsResult,
-  type TwoParamsResult as TwoParams_Result,
+  type TwoParamsResult as BaseTwoParamsResult,
   type ZeroParamsResult,
-} from "jsr:@tettuan/breakdownparams@^1.0.3";
+} from "jsr:@tettuan/breakdownparams@^1.0.7";
 
-export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1.0.3";
+export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1.0.7";
+
+// Re-export extended TwoParams_Result with params property
+export type { TwoParams_Result } from "./types/two_params_result_extension.ts";
 
 /**
  * Prompt management utilities for Breakdown. Re-exported from @tettuan/breakdownprompt.

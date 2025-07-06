@@ -26,7 +26,8 @@ Deno.test("Totality: DirectiveType.create never throws", async () => {
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   // DirectiveType.create should never throw because it only accepts
@@ -41,7 +42,8 @@ Deno.test("Totality: DirectiveType.create never throws", async () => {
     type: "two",
     demonstrativeType: "summary",
     layerType: "issue",
-    options: {}
+    options: {},
+    params: ["summary", "issue"]
   };
   
   const summaryDirective = DirectiveType.create(summaryResult);
@@ -56,7 +58,8 @@ Deno.test("Totality: LayerType.create never throws", async () => {
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   // LayerType.create should never throw because it only accepts
@@ -71,7 +74,8 @@ Deno.test("Totality: LayerType.create never throws", async () => {
     type: "two",
     demonstrativeType: "to",
     layerType: "task",
-    options: {}
+    options: {},
+    params: ["to", "task"]
   };
   
   const taskLayer = LayerType.create(taskResult);
@@ -109,12 +113,12 @@ Deno.test("Totality: ConfigProfileName handles all inputs via Result", async () 
   // Test valid inputs
   const validName = ConfigProfileName.create("development");
   if (validName.ok) {
-    assertEquals(validName.data.name, "development");
+    assertEquals(validName.data.value, "development");
   }
   
   const anotherValidName = ConfigProfileName.create("production");
   if (anotherValidName.ok) {
-    assertEquals(anotherValidName.data.name, "production");
+    assertEquals(anotherValidName.data.value, "production");
   }
   
   // Test invalid inputs - should not throw, but return error
@@ -236,7 +240,8 @@ Deno.test("Totality: No hidden exceptions in value object operations", async () 
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   const directive = DirectiveType.create(mockResult);

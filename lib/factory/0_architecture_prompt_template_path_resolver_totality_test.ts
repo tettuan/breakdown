@@ -172,8 +172,10 @@ Deno.test("PromptTemplatePathResolverTotality - handles schema file resolution",
   const resolverResult = PromptTemplatePathResolverTotality.create(
     config,
     { 
+      type: "two" as const,
       demonstrativeType: "to", 
       layerType: "project", 
+      params: ["to", "project"],
       options: { useSchema: true } 
     }
   );

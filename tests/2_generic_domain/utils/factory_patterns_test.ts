@@ -24,7 +24,8 @@ Deno.test("Factory Pattern: PathValueObjectFactory - encapsulates complexity", a
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -56,7 +57,8 @@ Deno.test("Factory Pattern: PathValueObjectFactory - consistent interfaces", asy
     type: "two",
     demonstrativeType: "summary",
     layerType: "issue",
-    options: {}
+    options: {},
+    params: ["summary", "issue"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -107,7 +109,8 @@ Deno.test("Factory Pattern: Smart Constructor factories work correctly", async (
     type: "two",
     demonstrativeType: "defect",
     layerType: "task",
-    options: {}
+    options: {},
+    params: ["defect", "task"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -133,11 +136,11 @@ Deno.test("Factory Pattern: ConfigProfileName factory behavior", async () => {
     const result = ConfigProfileName.create(profileName);
     
     if (result.ok) {
-      assertEquals(result.data.name, profileName);
+      assertEquals(result.data.value, profileName);
       assertEquals(result.data.toString(), profileName);
       
       // Should provide consistent behavior
-      assertEquals(result.data.name, result.data.toString());
+      assertEquals(result.data.value, result.data.toString());
     } else {
       // If creation fails, should provide meaningful error
       assertExists(result.error.kind);
@@ -163,7 +166,7 @@ Deno.test("Factory Pattern: Error handling in factory methods", async () => {
   assertEquals(invalidProfile.ok, false);
   
   if (!invalidProfile.ok) {
-    assertEquals(invalidProfile.error.kind, "InvalidProfileName");
+    assertEquals(invalidProfile.error.kind, "EmptyInput");
     assertExists(invalidProfile.error.message);
   }
 });
@@ -187,7 +190,8 @@ Deno.test("Factory Pattern: Factory abstraction benefits", async () => {
     type: "two",
     demonstrativeType: "analyze",
     layerType: "system",
-    options: {}
+    options: {},
+    params: ["analyze", "system"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -221,7 +225,8 @@ Deno.test("Factory Pattern: Factory method vs constructor pattern", async () => 
     type: "two",
     demonstrativeType: "transform",
     layerType: "module",
-    options: {}
+    options: {},
+    params: ["transform", "module"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -266,7 +271,8 @@ Deno.test("Factory Pattern: Parameterized factory behavior", async () => {
       type: "two",
       demonstrativeType: testCase.demonstrativeType,
       layerType: testCase.layerType,
-      options: {}
+      options: {},
+      params: [testCase.demonstrativeType, testCase.layerType]
     };
     
     const directive = DirectiveType.create(mockResult);
@@ -307,18 +313,19 @@ Deno.test("Factory Pattern: Factory ensures object invariants", async () => {
   
   if (profileResult.ok) {
     // Invariant: profile name should never be empty after creation
-    assert(profileResult.data.name.length > 0);
-    assertEquals(profileResult.data.name, "production");
+    assert(profileResult.data.value.length > 0);
+    assertEquals(profileResult.data.value, "production");
     
     // Invariant: toString should match name
-    assertEquals(profileResult.data.name, profileResult.data.toString());
+    assertEquals(profileResult.data.value, profileResult.data.toString());
   }
   
   const mockResult: TwoParams_Result = {
     type: "two",
     demonstrativeType: "validate",
     layerType: "component",
-    options: {}
+    options: {},
+    params: ["validate", "component"]
   };
   
   const directive = DirectiveType.create(mockResult);

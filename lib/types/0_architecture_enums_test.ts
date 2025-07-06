@@ -7,7 +7,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { ResultStatus } from "./enums.ts";
+import { ResultStatus, type ResultStatusType } from "./enums.ts";
 import * as enumsModule from "./enums.ts";
 
 Deno.test({
@@ -130,7 +130,7 @@ Deno.test({
   name: "Architecture: Enum should be usable in switch statements",
   fn() {
     // Test that enum can be used in exhaustive switch statements
-    function testSwitch(status: ResultStatus): string {
+    function testSwitch(status: ResultStatusType): string {
       switch (status) {
         case ResultStatus.SUCCESS:
           return "success case";

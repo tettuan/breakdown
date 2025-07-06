@@ -109,7 +109,7 @@ describe("Workspace Module - Unit Tests", async () => {
       const initError = _mod.createWorkspaceInitError("directory", "/test/path");
       assertExists(initError);
       assertEquals(initError.message, "Failed to create workspace directory: /test/path");
-      assertEquals(initError.type, "WorkspaceInitError");
+      assertEquals(initError.name, "DirectoryCreationError");
       assertEquals(_mod.isWorkspaceError && _mod.isWorkspaceError(initError), true);
     }
   });

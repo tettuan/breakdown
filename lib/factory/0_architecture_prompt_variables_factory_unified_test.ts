@@ -99,16 +99,23 @@ Deno.test("UnifiedFactory - 1_behavior - validates all parameters before constru
   const validParams = createValidUnifiedParams();
   
   try {
-    const factory = await UnifiedPromptVariablesFactory.create(validParams);
+    const factoryResult = await UnifiedPromptVariablesFactory.create(validParams);
     
-    // Test validation method
-    try {
-      factory.validateAll();
-      logger.debug("Validation passed for valid parameters");
-    } catch (validationError) {
-      logger.debug("Validation failed", { error: validationError });
-      // Validation may fail due to file system constraints in test environment
-      assertExists(validationError, "Validation error should exist if validation fails");
+    if (factoryResult.ok) {
+      const factory = factoryResult.data;
+      
+      // Test validation method
+      try {
+        factory.validateAll();
+        logger.debug("Validation passed for valid parameters");
+      } catch (validationError) {
+        logger.debug("Validation failed", { error: validationError });
+        // Validation may fail due to file system constraints in test environment
+        assertExists(validationError, "Validation error should exist if validation fails");
+      }
+    } else {
+      logger.debug("Factory creation failed during validation test", { error: factoryResult.error });
+      assertExists(factoryResult.error, "Creation error should exist if creation fails");
     }
     
   } catch (creationError) {
@@ -123,27 +130,34 @@ Deno.test("UnifiedFactory - 1_behavior - provides type-safe path accessors", asy
   const params = createValidUnifiedParams();
   
   try {
-    const factory = await UnifiedPromptVariablesFactory.create(params);
+    const factoryResult = await UnifiedPromptVariablesFactory.create(params);
     
-    // Test all path accessors
-    const pathAccessors = [
-      () => factory.promptFilePath,
-      () => factory.inputFilePath,
-      () => factory.outputFilePath,
-      () => factory.schemaFilePath
-    ];
+    if (factoryResult.ok) {
+      const factory = factoryResult.data;
+      
+      // Test all path accessors
+      const pathAccessors = [
+        () => factory.promptFilePath,
+        () => factory.inputFilePath,
+        () => factory.outputFilePath,
+        () => factory.schemaFilePath
+      ];
     
-    for (const accessor of pathAccessors) {
-      try {
-        const path = accessor();
-        assertEquals(typeof path, "string", "Path should be string");
-        assertExists(path.trim(), "Path should not be empty");
-        logger.debug("Path accessor succeeded", { path });
-      } catch (pathError) {
-        // Path resolution may fail in test environment
-        logger.debug("Path accessor failed as expected", { error: pathError });
-        assertExists(pathError, "Path error should exist if path resolution fails");
+      for (const accessor of pathAccessors) {
+        try {
+          const path = accessor();
+          assertEquals(typeof path, "string", "Path should be string");
+          assertExists(path.trim(), "Path should not be empty");
+          logger.debug("Path accessor succeeded", { path });
+        } catch (pathError) {
+          // Path resolution may fail in test environment
+          logger.debug("Path accessor failed as expected", { error: pathError });
+          assertExists(pathError, "Path error should exist if path resolution fails");
+        }
       }
+    } else {
+      logger.debug("Factory creation failed during path accessor test", { error: factoryResult.error });
+      assertExists(factoryResult.error, "Error should exist if factory creation fails");
     }
     
   } catch (error) {
@@ -158,18 +172,25 @@ Deno.test("UnifiedFactory - 1_behavior - handles base directory validation", asy
   const params = createValidUnifiedParams();
   
   try {
-    const factory = await UnifiedPromptVariablesFactory.create(params);
+    const factoryResult = await UnifiedPromptVariablesFactory.create(params);
     
-    // Test base directory validation methods
-    const hasValidBaseDir = factory.hasValidBaseDir();
-    assertEquals(typeof hasValidBaseDir, "boolean", "Base dir validation should return boolean");
+    if (factoryResult.ok) {
+      const factory = factoryResult.data;
+      
+      // Test base directory validation methods
+      const hasValidBaseDir = factory.hasValidBaseDir();
+      assertEquals(typeof hasValidBaseDir, "boolean", "Base dir validation should return boolean");
     
-    const baseDirError = factory.getBaseDirError();
-    if (baseDirError !== undefined) {
-      assertEquals(typeof baseDirError, "string", "Base dir error should be string");
-      logger.debug("Base directory validation failed", { error: baseDirError });
+      const baseDirError = factory.getBaseDirError();
+      if (baseDirError !== undefined) {
+        assertEquals(typeof baseDirError, "string", "Base dir error should be string");
+        logger.debug("Base directory validation failed", { error: baseDirError });
+      } else {
+        logger.debug("Base directory validation passed");
+      }
     } else {
-      logger.debug("Base directory validation passed");
+      logger.debug("Factory creation failed during base dir test", { error: factoryResult.error });
+      assertExists(factoryResult.error, "Error should exist if factory creation fails");
     }
     
   } catch (error) {
@@ -184,25 +205,32 @@ Deno.test("UnifiedFactory - 1_behavior - provides option accessors with defaults
   const params = createValidUnifiedParams();
   
   try {
-    const factory = await UnifiedPromptVariablesFactory.create(params);
+    const factoryResult = await UnifiedPromptVariablesFactory.create(params);
     
-    // Test option accessors with default values
-    const customVariables = factory.customVariables;
-    assertEquals(typeof customVariables, "object", "Custom variables should be object");
-    assertEquals(customVariables !== null, true, "Custom variables should not be null");
+    if (factoryResult.ok) {
+      const factory = factoryResult.data;
+      
+      // Test option accessors with default values
+      const customVariables = factory.customVariables;
+      assertEquals(typeof customVariables, "object", "Custom variables should be object");
+      assertEquals(customVariables !== null, true, "Custom variables should not be null");
+      
+      const extended = factory.extended;
+      assertEquals(typeof extended, "boolean", "Extended should be boolean");
+      
+      const customValidation = factory.customValidation;
+      assertEquals(typeof customValidation, "boolean", "Custom validation should be boolean");
     
-    const extended = factory.extended;
-    assertEquals(typeof extended, "boolean", "Extended should be boolean");
-    
-    const customValidation = factory.customValidation;
-    assertEquals(typeof customValidation, "boolean", "Custom validation should be boolean");
-    
-    const errorFormat = factory.errorFormat;
-    assertEquals(["simple", "detailed", "json"].includes(errorFormat), true, "Error format should be valid enum value");
-    
-    logger.debug("Option accessors working correctly", { 
-      customVariables, extended, customValidation, errorFormat 
-    });
+      const errorFormat = factory.errorFormat;
+      assertEquals(["simple", "detailed", "json"].includes(errorFormat), true, "Error format should be valid enum value");
+      
+      logger.debug("Option accessors working correctly", { 
+        customVariables, extended, customValidation, errorFormat 
+      });
+    } else {
+      logger.debug("Factory creation failed during option accessor test", { error: factoryResult.error });
+      assertExists(factoryResult.error, "Error should exist if factory creation fails");
+    }
     
   } catch (error) {
     logger.debug("Factory creation failed during option accessor test", { error });
@@ -252,10 +280,13 @@ Deno.test("UnifiedFactory - 1_behavior - getAllParams returns complete parameter
   const params = createValidUnifiedParams();
   
   try {
-    const factory = await UnifiedPromptVariablesFactory.create(params);
+    const factoryResult = await UnifiedPromptVariablesFactory.create(params);
     
-    try {
-      const allParams = factory.getAllParams();
+    if (factoryResult.ok) {
+      const factory = factoryResult.data;
+      
+      try {
+        const allParams = factory.getAllParams();
       
       assertExists(allParams, "Should return parameters object");
       assertEquals(typeof allParams, "object", "Parameters should be object");
@@ -270,11 +301,15 @@ Deno.test("UnifiedFactory - 1_behavior - getAllParams returns complete parameter
         assertEquals(prop in allParams, true, `Should have ${prop} property`);
       }
       
-      logger.debug("getAllParams returned complete parameter set", { allParams });
-      
-    } catch (getParamsError) {
-      logger.debug("getAllParams failed", { error: getParamsError });
-      assertExists(getParamsError, "Error should exist if getAllParams fails");
+        logger.debug("getAllParams returned complete parameter set", { allParams });
+        
+      } catch (getParamsError) {
+        logger.debug("getAllParams failed", { error: getParamsError });
+        assertExists(getParamsError, "Error should exist if getAllParams fails");
+      }
+    } else {
+      logger.debug("Factory creation failed during getAllParams test", { error: factoryResult.error });
+      assertExists(factoryResult.error, "Error should exist if factory creation fails");
     }
     
   } catch (error) {

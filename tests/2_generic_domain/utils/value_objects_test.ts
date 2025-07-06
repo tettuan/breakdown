@@ -74,7 +74,7 @@ Deno.test("Value Objects: ConfigProfileName - validation rules", async () => {
     assertEquals(result.ok, true, `Valid name '${name}' should be accepted`);
     
     if (result.ok) {
-      assertEquals(result.data.name, name);
+      assertEquals(result.data.value, name);
       assertEquals(result.data.toString(), name);
     }
   }
@@ -101,7 +101,8 @@ Deno.test("Value Objects: DirectiveType and LayerType - consistency", async () =
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -126,7 +127,8 @@ Deno.test("Value Objects: PathValueObjectFactory - template path creation", asyn
     type: "two",
     demonstrativeType: "to",
     layerType: "project",
-    options: {}
+    options: {},
+    params: ["to", "project"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -155,7 +157,8 @@ Deno.test("Value Objects: PathValueObjectFactory - schema path creation", async 
     type: "two",
     demonstrativeType: "summary",
     layerType: "issue",
-    options: {}
+    options: {},
+    params: ["summary", "issue"]
   };
   
   const directive = DirectiveType.create(mockResult);
@@ -206,19 +209,19 @@ Deno.test("Value Objects: PathValueObjectConfigs - environment configurations", 
   logger.debug("Testing PathValueObjectConfigs environment configurations");
   
   // Development config
-  const devConfig = PathValueObjectConfigs.development;
+  const devConfig = await PathValueObjectConfigs.development();
   assertEquals(devConfig.template.allowCustomDirectives, true);
   assertEquals(devConfig.template.allowCustomLayers, true);
   assertEquals(devConfig.workingDirectory.createIfMissing, true);
   assertEquals(devConfig.workingDirectory.requireWritePermission, true);
   
   // Production config
-  const prodConfig = PathValueObjectConfigs.production;
+  const prodConfig = await PathValueObjectConfigs.production();
   assertEquals(prodConfig.workingDirectory.verifyExistence, true);
   assertEquals(prodConfig.workingDirectory.requireReadPermission, true);
   
   // Testing config
-  const testConfig = PathValueObjectConfigs.testing;
+  const testConfig = await PathValueObjectConfigs.testing();
   assertEquals(testConfig.template.allowCustomDirectives, true);
   assertEquals(testConfig.template.allowCustomLayers, true);
   assertEquals(testConfig.workingDirectory.verifyExistence, false);

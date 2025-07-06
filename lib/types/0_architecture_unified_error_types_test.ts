@@ -409,6 +409,8 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
         return `Profile not found: ${error.profile}`;
       case "InvalidConfiguration":
         return `Invalid config: ${error.field}`;
+      case "ConfigLoadError":
+        return `Config load error: ${error.message}`;
       
       // ProcessingError variants
       case "ProcessingFailed":

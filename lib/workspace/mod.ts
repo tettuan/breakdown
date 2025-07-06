@@ -103,13 +103,46 @@ export * from "./types.ts";
  * Error types related to workspace operations.
  * @see {@link ./errors.ts}
  */
-export * from "./errors.ts";
+export {
+  // Interface-based error types  
+  createWorkspaceError,
+  createWorkspaceConfigError,
+  createWorkspacePathError,
+  createWorkspaceDirectoryError,
+  isWorkspaceInitError,
+  isWorkspaceConfigError,
+  isWorkspacePathError,
+  isWorkspaceDirectoryError,
+  isWorkspaceError,
+  // Type aliases
+  type WorkspaceErrorBase,
+  type WorkspaceInitErrorType,
+  type WorkspaceInitErrorInterface,
+  type WorkspaceConfigErrorInterface,
+  type WorkspacePathErrorInterface,
+  type WorkspaceDirectoryErrorInterface,
+  type WorkspaceErrorType,
+  type WorkspaceResult,
+  // Class-based error types for tests
+  WorkspaceError,
+  WorkspaceInitError,
+  WorkspaceConfigError,
+  WorkspacePathError,
+  WorkspaceDirectoryError,
+} from "./errors.ts";
 
 /**
  * Workspace initialization error classes.
  * @see {@link ./workspace_init_error.ts}
  */
-export * from "./workspace_init_error.ts";
+export {
+  WorkspaceInitError as WorkspaceInitErrorClass,
+  DirectoryCreationError,
+  ConfigCreationError,
+  InvalidWorkspaceLocationError,
+  WorkspaceExistsError,
+  createWorkspaceInitError,
+} from "./workspace_init_error.ts";
 
 /**
  * Main workspace class and related functions for managing Breakdown workspaces.

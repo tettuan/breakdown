@@ -38,8 +38,9 @@ export {
   createWorkspaceInitError as createWorkspaceInitErrorFromClass,
 } from "./workspace_init_error.ts";
 
-// Re-export the WorkspaceInitError class with a different name to avoid conflict
-export { WorkspaceInitError as WorkspaceInitErrorClass } from "./workspace_init_error.ts";
+// Re-export the WorkspaceInitError class for tests
+export { WorkspaceInitError } from "./workspace_init_error.ts";
+
 
 /**
  * Base interface for all workspace-related errors in the Breakdown system.
@@ -103,7 +104,7 @@ export interface WorkspaceInitErrorInterface extends WorkspaceErrorBase {
 /**
  * Type alias for backward compatibility.
  */
-export type WorkspaceInitError = WorkspaceInitErrorInterface;
+export type WorkspaceInitErrorType = WorkspaceInitErrorInterface;
 
 /**
  * Creates a WorkspaceInitErrorInterface for initialization failures.
