@@ -12,9 +12,9 @@ import {
   validateCustomConfig,
   loadAndValidateConfig,
   mergeConfigs,
-  formatConfigLoadError,
+  formatConfigurationError,
   type CustomConfig,
-  type ConfigLoadError,
+  type ConfigurationError,
 } from "./loader_refactored.ts";
 import type { Result } from "../types/result.ts";
 
@@ -45,12 +45,12 @@ Deno.test("Architecture: Loader Refactored - Result Type System", async () => {
 });
 
 Deno.test("Architecture: Loader Refactored - Error Type System", () => {
-  // Test discriminated union for ConfigLoadError
-  const errorTypes: ConfigLoadError[] = [
-    { kind: "FileReadError", path: "/test", message: "Not found" },
-    { kind: "ParseError", path: "/test", message: "Invalid YAML" },
-    { kind: "ValidationError", message: "Invalid structure" },
-    { kind: "BreakdownConfigError", message: "Config creation failed" },
+  // Test discriminated union for ConfigurationError
+  const errorTypes: ConfigurationError[] = [
+    { kind: "ConfigurationError", message: "File not found: /test" },
+    { kind: "ConfigurationError", message: "Parse error: Invalid YAML" },
+    { kind: "InvalidConfiguration", field: "structure", reason: "Invalid structure" },
+    { kind: "ConfigurationError", message: "Config creation failed" },
   ];
   
   errorTypes.forEach(error => {
@@ -131,9 +131,9 @@ Deno.test("Architecture: Loader Refactored - Separation of Concerns", () => {
   // mergeConfigs: Configuration merging only
   assertEquals(typeof mergeConfigs, "function");
   
-  // formatConfigLoadError: Error formatting only
-  assertEquals(typeof formatConfigLoadError, "function");
-  assertEquals(formatConfigLoadError.length, 1); // Takes error object
+  // formatConfigurationError: Error formatting only
+  assertEquals(typeof formatConfigurationError, "function");
+  assertEquals(formatConfigurationError.length, 1); // Takes error object
 });
 
 Deno.test("Architecture: Loader Refactored - Dependency Management", () => {
@@ -179,12 +179,12 @@ Deno.test("Architecture: Loader Refactored - Error Boundary Design", () => {
   const testErrors: ConfigLoadError[] = [
     { kind: "FileReadError", path: "/test.yml", message: "Permission denied" },
     { kind: "ParseError", path: "/test.yml", message: "Invalid YAML syntax" },
-    { kind: "ValidationError", message: "Missing required field" },
+    { kind: "InvalidConfiguration", field: "required", reason: "Missing required field" },
     { kind: "BreakdownConfigError", message: "Config initialization failed" },
   ];
   
   testErrors.forEach(error => {
-    const formatted = formatConfigLoadError(error);
+    const formatted = formatConfigurationError(error);
     assertEquals(typeof formatted, "string");
     assert(formatted.length > 0);
     // Error formatting should be meaningful (contains some relevant text)
@@ -221,7 +221,7 @@ Deno.test("Architecture: Loader Refactored - Smart Constructor Pattern", () => {
     const result = validateCustomConfig(input);
     assert(!result.ok, `Invalid input ${index} should fail validation`);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationError");
+      assertEquals(result.error.kind, "InvalidConfiguration");
     }
   });
 });
@@ -301,7 +301,7 @@ Deno.test("Architecture: Loader Refactored - Type Safety Guarantees", () => {
   // All functions should have proper TypeScript types
   assertEquals(typeof validateCustomConfig, "function");
   assertEquals(typeof mergeConfigs, "function");
-  assertEquals(typeof formatConfigLoadError, "function");
+  assertEquals(typeof formatConfigurationError, "function");
   
   // CustomConfig should allow extension ([key: string]: unknown)
   const extendedConfig: CustomConfig = {

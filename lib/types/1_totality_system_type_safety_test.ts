@@ -6,7 +6,7 @@
  * their interactions within the breakdown system.
  */
 
-import { assertEquals, assertExists, assertThrows } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assertThrows } from "../../tests/deps.ts";
 import type { Result } from "./result.ts";
 import { ok, error, isOk, isError, map, chain, all } from "./result.ts";
 

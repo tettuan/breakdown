@@ -25,14 +25,49 @@ import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";
 
 /**
- * Configuration errors
+ * Configuration errors (unified with system-wide error types)
  */
 export type ConfigurationError =
-  | { kind: "ProfileNotFound"; profile: string; available: string[] }
-  | { kind: "ConfigLoadError"; message: string }
-  | { kind: "PathResolutionError"; message: string }
-  | { kind: "ValidationError"; field: string; message: string }
-  | { kind: "MergeConflict"; message: string };
+  | {
+    kind: "ConfigurationError";
+    message: string;
+    source?: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ProfileNotFound";
+    profile: string;
+    availableProfiles?: string[];
+    available?: string[];
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidConfiguration";
+    field: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ConfigLoadError";
+    message: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "PathResolutionError";
+    message: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ValidationError";
+    field: string;
+    message: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "MergeConflict";
+    message: string;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Configuration profile metadata
@@ -558,20 +593,17 @@ export const CONFIG_PRESETS = {
  */
 export function formatConfigurationError(error: ConfigurationError): string {
   switch (error.kind) {
+    case "ConfigurationError":
+      return `Configuration error: ${error.message}`;
+
     case "ProfileNotFound":
       return `Configuration profile not found: ${error.profile}\n` +
-        `Available profiles: ${error.available.join(", ")}`;
+        `Available profiles: ${error.availableProfiles?.join(", ") || "none"}`;
 
-    case "ConfigLoadError":
-      return `Failed to load configuration: ${error.message}`;
+    case "InvalidConfiguration":
+      return `Configuration validation error in ${error.field}: ${error.reason}`;
 
-    case "PathResolutionError":
-      return `Path resolution error: ${error.message}`;
-
-    case "ValidationError":
-      return `Configuration validation error in ${error.field}: ${error.message}`;
-
-    case "MergeConflict":
-      return `Configuration merge conflict: ${error.message}`;
+    default:
+      return `Unknown configuration error: ${JSON.stringify(error)}`;
   }
 }

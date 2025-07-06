@@ -319,7 +319,7 @@ export async function createFactoryWithUnifiedConfig(
   if (!configResult.ok) {
     const errorMessage = configResult.error.kind === "ProfileNotFound"
       ? `Profile not found: ${configResult.error.profile}. Available: ${
-        configResult.error.available.join(", ")
+        configResult.error.availableProfiles?.join(", ") || "none"
       }`
       : `Configuration error: ${configResult.error.kind}`;
     return resultError(new Error(errorMessage));
@@ -348,7 +348,7 @@ export async function getUnifiedConfig(
   if (!result.ok) {
     const errorMessage = result.error.kind === "ProfileNotFound"
       ? `Profile not found: ${result.error.profile}. Available: ${
-        result.error.available.join(", ")
+        result.error.availableProfiles?.join(", ") || "none"
       }`
       : `Configuration error: ${result.error.kind}`;
     return resultError(new Error(errorMessage));

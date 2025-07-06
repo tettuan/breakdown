@@ -18,6 +18,7 @@ const createValidTwoParamsResult = (demonstrativeType = "to", layerType = "proje
   type: "two" as const,
   demonstrativeType,
   layerType,
+  params: [demonstrativeType, layerType],
   options: {},
 });
 
@@ -197,6 +198,7 @@ Deno.test("2_structure: DirectiveType originalResult provides safe read-only acc
     type: "two" as const,
     demonstrativeType: "to",
     layerType: "project",
+    params: ["to", "project"],
     options: { debug: true, custom: "value" },
   };
   
@@ -243,6 +245,7 @@ Deno.test("2_structure: DirectiveType supports complex TwoParams_Result structur
     type: "two",
     demonstrativeType: "analyze",
     layerType: "system",
+    params: ["analyze", "system"],
     options: {
       debug: true,
       profile: "production",

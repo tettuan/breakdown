@@ -19,7 +19,9 @@ Deno.test({
     assertEquals(status1, status2);
     assertNotEquals(status1, status3);
     assertEquals(status1 === status2, true);
-    assertEquals(status1 === status3, false);
+    // Different enum values have different types, so check values directly
+    assertEquals(status1, ResultStatus.SUCCESS);
+    assertEquals(status3, ResultStatus.ERROR);
   },
 });
 

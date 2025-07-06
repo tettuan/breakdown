@@ -22,7 +22,7 @@ import {
 
 Deno.test("1_behavior: ErrorFactory.pathError creates correct error variants", () => {
   // Test InvalidPath with reason
-  const invalidPath = ErrorFactory.pathError("InvalidPath", "/test\0path", "Contains null character");
+  const invalidPath = ErrorFactory.pathError("InvalidPath", "/test\0path", { reason: "Contains null character" });
   assertEquals(invalidPath.kind, "InvalidPath");
   assertEquals(invalidPath.path, "/test\0path");
   if (invalidPath.kind === "InvalidPath") {
@@ -63,8 +63,7 @@ Deno.test("1_behavior: ErrorFactory.pathError creates correct error variants", (
   const withContext = ErrorFactory.pathError(
     "InvalidPath",
     "/test",
-    "Invalid",
-    { operation: "write", user: "test" }
+    { reason: "Invalid", context: { operation: "write", user: "test" } }
   );
   assertExists(withContext.context);
   assertEquals(withContext.context.operation, "write");
@@ -135,8 +134,7 @@ Deno.test("1_behavior: ErrorFactory.validationError creates correct error varian
   // Test with context
   const withContext = ErrorFactory.validationError(
     "InvalidInput",
-    { field: "test", value: "val", reason: "Invalid" },
-    { formId: "test-form", attempt: 1 }
+    { field: "test", value: "val", reason: "Invalid", context: { formId: "test-form", attempt: 1 } }
   );
   assertExists(withContext.context);
   assertEquals(withContext.context.formId, "test-form");
@@ -190,8 +188,7 @@ Deno.test("1_behavior: ErrorFactory.configError creates correct error variants",
   // Test with context
   const withContext = ErrorFactory.configError(
     "ConfigurationError",
-    { message: "Test error" },
-    { environment: "production", version: "1.0.0" }
+    { message: "Test error", context: { environment: "production", version: "1.0.0" } }
   );
   assertExists(withContext.context);
   assertEquals(withContext.context.environment, "production");
@@ -246,8 +243,7 @@ Deno.test("1_behavior: ErrorFactory.processingError creates correct error varian
   // Test with context
   const withContext = ErrorFactory.processingError(
     "ProcessingFailed",
-    { operation: "test", reason: "Failed" },
-    { retries: 3, lastAttempt: new Date().toISOString() }
+    { operation: "test", reason: "Failed", context: { retries: 3, lastAttempt: new Date().toISOString() } }
   );
   assertExists(withContext.context);
   assertEquals(withContext.context.retries, 3);
@@ -375,7 +371,7 @@ Deno.test("1_behavior: Type guards work correctly with discriminated unions", ()
   }
   
   // Test PathError type guard
-  const pathError: UnifiedError = ErrorFactory.pathError("InvalidPath", "/test", "Invalid");
+  const pathError: UnifiedError = ErrorFactory.pathError("InvalidPath", "/test", { reason: "Invalid" });
   assertEquals(isPathError(pathError), true);
   assertEquals(isValidationError(pathError), false);
   assertEquals(isConfigurationError(pathError), false);
@@ -445,24 +441,21 @@ Deno.test("1_behavior: Error composition with context merging", () => {
   const error1 = ErrorFactory.pathError(
     "PermissionDenied",
     "/restricted/file",
-    undefined,
-    baseContext
+    { context: baseContext }
   );
   
   // Create new error with merged context
   const error2 = ErrorFactory.pathError(
     "PermissionDenied",
     "/restricted/file",
-    undefined,
-    { ...error1.context, ...userContext }
+    { context: { ...error1.context, ...userContext } }
   );
   
   // Create final error with all context
   const error3 = ErrorFactory.pathError(
     "PermissionDenied",
     "/restricted/file",
-    undefined,
-    { ...error2.context, ...operationContext }
+    { context: { ...error2.context, ...operationContext } }
   );
   
   // Verify context accumulation
@@ -481,7 +474,7 @@ Deno.test("1_behavior: Error composition with context merging", () => {
 
 Deno.test("1_behavior: Error factory handles edge cases gracefully", () => {
   // Test with empty strings
-  const emptyPath = ErrorFactory.pathError("InvalidPath", "", "Empty path");
+  const emptyPath = ErrorFactory.pathError("InvalidPath", "", { reason: "Empty path" });
   assertEquals(emptyPath.path, "");
   if (emptyPath.kind === "InvalidPath") {
     assertEquals(emptyPath.reason, "Empty path");
@@ -494,14 +487,13 @@ Deno.test("1_behavior: Error factory handles edge cases gracefully", () => {
   
   // Test with special characters
   const specialPath = "/path/with/特殊文字/and/emoji/🚀";
-  const specialError = ErrorFactory.pathError("InvalidPath", specialPath, "Contains special characters");
+  const specialError = ErrorFactory.pathError("InvalidPath", specialPath, { reason: "Contains special characters" });
   assertEquals(specialError.path, specialPath);
   
   // Test with null/undefined in context (should handle gracefully)
   const contextWithNull = ErrorFactory.validationError(
     "InvalidInput",
-    { field: "test", value: null, reason: "Value is null" },
-    { nullValue: null, undefinedValue: undefined }
+    { field: "test", value: null, reason: "Value is null", context: { nullValue: null, undefinedValue: undefined } }
   );
   
   if (contextWithNull.kind === "InvalidInput") {
@@ -517,8 +509,7 @@ Deno.test("1_behavior: Error factory handles edge cases gracefully", () => {
   
   const errorWithCircular = ErrorFactory.processingError(
     "ProcessingFailed",
-    { operation: "serialize", reason: "Circular reference" },
-    { data: circularObj }
+    { operation: "serialize", reason: "Circular reference", context: { data: circularObj } }
   );
   
   assertExists(errorWithCircular.context);

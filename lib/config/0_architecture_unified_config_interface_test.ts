@@ -122,7 +122,7 @@ Deno.test("Architecture: Configuration Types - Type Safety", () => {
   
   // ConfigurationError should be discriminated union
   const errors: ConfigurationError[] = [
-    { kind: "ProfileNotFound", profile: "test", available: [] },
+    { kind: "ProfileNotFound", profile: "test", availableProfiles: [] },
     { kind: "ConfigLoadError", message: "test" },
     { kind: "PathResolutionError", message: "test" },
     { kind: "ValidationError", field: "test", message: "test" },
@@ -236,11 +236,11 @@ Deno.test("Architecture: Error Handling - Error-First Design", () => {
   
   // Error formatting should be standardized
   const testErrors: ConfigurationError[] = [
-    { kind: "ProfileNotFound", profile: "missing", available: ["default"] },
-    { kind: "ConfigLoadError", message: "Load failed" },
-    { kind: "PathResolutionError", message: "Path invalid" },
-    { kind: "ValidationError", field: "app.version", message: "Required" },
-    { kind: "MergeConflict", message: "Conflicting values" },
+    { kind: "ProfileNotFound", profile: "missing", availableProfiles: ["default"] },
+    { kind: "ConfigurationError", message: "Load failed" },
+    { kind: "ConfigurationError", message: "Path invalid" },
+    { kind: "InvalidConfiguration", field: "app.version", reason: "Required" },
+    { kind: "ConfigurationError", message: "Conflicting values" },
   ];
   
   testErrors.forEach(error => {

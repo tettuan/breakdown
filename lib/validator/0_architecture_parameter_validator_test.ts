@@ -14,7 +14,8 @@ import { assertEquals, assertFalse } from "@std/assert";
 import { ParameterValidator, type ValidationError, type ValidatedParams } from "./parameter_validator.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-import type { ConfigValidator, TypePatternProvider } from "./parameter_validator.ts";
+import type { ConfigValidator } from "./parameter_validator.ts";
+import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 
 // Mock TypePatternProvider for testing
@@ -70,6 +71,7 @@ const createValidTwoParamsResult = (): TwoParams_Result => ({
 
 const createValidOneParamsResult = (): OneParamsResult => ({
   type: "one",
+  demonstrativeType: "project",
   params: ["project"],
   options: {
     fromFile: "input.md",
