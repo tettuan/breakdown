@@ -182,17 +182,17 @@ describe("InputFilePathResolver - Method Responsibilities", () => {
       // Each type should be handled distinctly
       if (type === "stdin") {
         assert(result.ok);
-        assertEquals(result.data.value, "-");
+        assertEquals(result.data.data, "-");
       } else if (type === "absolute") {
         // Absolute paths should be preserved
         // Note: resolver may normalize paths internally
         assertExists(result);
         assert(result.ok);
-        assert(result.data.value.length > 0, "Should return non-empty path for absolute paths");
+        assert(result.data.data.length > 0, "Should return non-empty path for absolute paths");
       } else {
         // Relative paths should be resolved
         assert(result.ok);
-        assertNotEquals(result.data.value, input);
+        assertNotEquals(result.data.data, input);
       }
     });
   });
@@ -215,8 +215,8 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
     // Should produce properly resolved paths using standard abstractions
     assertExists(result);
     assert(result.ok);
-    assertNotEquals(result.data.value, "./test/file.md"); // Should be absolute
-    assertEquals(result.data.value.startsWith("/") || result.data.value.match(/^[A-Z]:/), true); // Absolute path
+    assertNotEquals(result.data.data, "./test/file.md"); // Should be absolute
+    assertEquals(result.data.data.startsWith("/") || result.data.data.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
@@ -243,7 +243,7 @@ describe("InputFilePathResolver - Abstraction Levels", () => {
 
       // Should normalize to forward slashes
       assert(result.ok);
-      assertEquals(result.data.value.includes("\\"), false);
+      assertEquals(result.data.data.includes("\\"), false);
     });
   });
 });
@@ -270,9 +270,9 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
 
     // Should only process fromFile, not other file options
     assert(result.ok);
-    assertEquals(result.data.value.includes("input.md"), true);
-    assertEquals(result.data.value.includes("output.md"), false);
-    assertEquals(result.data.value.includes("prompts"), false);
+    assertEquals(result.data.data.includes("input.md"), true);
+    assertEquals(result.data.data.includes("output.md"), false);
+    assertEquals(result.data.data.includes("prompts"), false);
   });
 
   it("should handle parameter structure variations gracefully", () => {
@@ -324,7 +324,7 @@ describe("InputFilePathResolver - Responsibility Boundaries", () => {
 
       // Path resolution should be consistent regardless of layer
       assert(result.ok);
-      assertEquals(result.data.value.endsWith(file), true);
+      assertEquals(result.data.data.endsWith(file), true);
     });
   });
 });
@@ -358,10 +358,10 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
       // Should return empty string for invalid inputs
       assert(result.ok);
       if (edgeCase === undefined || edgeCase === null || edgeCase === "") {
-        assertEquals(result.data.value, "");
+        assertEquals(result.data.data, "");
       } else {
         // Whitespace should be handled as valid paths
-        assertNotEquals(result.data.value, "");
+        assertNotEquals(result.data.data, "");
       }
     });
   });
@@ -395,7 +395,7 @@ describe("InputFilePathResolver - Edge Cases and Boundaries", () => {
       // Should handle special characters without errors
       assertExists(result);
       assert(result.ok);
-      assertNotEquals(result.data.value, "");
+      assertNotEquals(result.data.data, "");
     });
   });
 });

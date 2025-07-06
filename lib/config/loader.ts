@@ -62,9 +62,17 @@ export class ConfigFilePath {
    * @param path File path to validate
    * @returns Result with ConfigFilePath or error
    */
-  static create(path: string): Result<ConfigFilePath, ConfigFilePathError> {
-    // Validate path is not empty
-    if (!path || typeof path !== "string") {
+  static create(path: unknown): Result<ConfigFilePath, ConfigFilePathError> {
+    // Validate type first
+    if (typeof path !== "string") {
+      return error({
+        kind: "EmptyPath",
+        message: "Configuration file path must be a string"
+      });
+    }
+
+    // Validate path is not empty (including empty string)
+    if (!path || path === "") {
       return error({
         kind: "EmptyPath",
         message: "Configuration file path cannot be empty"
@@ -73,19 +81,21 @@ export class ConfigFilePath {
 
     // Validate path is properly trimmed
     const trimmed = path.trim();
+    
+    // Check if path becomes empty after trimming
+    if (trimmed.length === 0) {
+      return error({
+        kind: "EmptyPath",
+        message: "Configuration file path cannot be empty after trimming"
+      });
+    }
+    
+    // Check if path had whitespace
     if (trimmed !== path) {
       return error({
         kind: "InvalidFormat",
         message: "Configuration file path cannot have leading or trailing whitespace",
         path
-      });
-    }
-
-    // Validate path length
-    if (trimmed.length === 0) {
-      return error({
-        kind: "EmptyPath",
-        message: "Configuration file path cannot be empty after trimming"
       });
     }
 
@@ -215,24 +225,35 @@ export class WorkingDirectory {
    * @param path Directory path
    * @returns Result with WorkingDirectory or error
    */
-  static create(path?: string): Result<WorkingDirectory, WorkingDirectoryError> {
-    // Default to current working directory if not provided
-    const targetPath = path ?? Deno.cwd();
+  static create(path?: unknown): Result<WorkingDirectory, WorkingDirectoryError> {
+    // Handle undefined/null case - use current working directory
+    if (path === undefined) {
+      return ok(new WorkingDirectory(Deno.cwd()));
+    }
 
-    // Validate path
-    if (!targetPath || typeof targetPath !== "string") {
+    // Validate type
+    if (path === null || typeof path !== "string") {
       return error({
         kind: "InvalidPath",
-        message: "Working directory path must be a non-empty string",
-        path: targetPath
+        message: "Working directory path must be a string or undefined",
+        path: path
       });
     }
 
-    const trimmed = targetPath.trim();
+    // Validate non-empty string
+    if (path === "") {
+      return error({
+        kind: "InvalidPath",
+        message: "Working directory path cannot be an empty string",
+        path: path
+      });
+    }
+
+    const trimmed = path.trim();
     if (trimmed.length === 0) {
       return error({
         kind: "EmptyPath",
-        message: "Working directory path cannot be empty"
+        message: "Working directory path cannot be empty after trimming"
       });
     }
 
@@ -300,7 +321,7 @@ export class ConfigLoader {
    * @param filePath Configuration file path
    * @returns Result with parsed CustomConfig or ConfigLoadError
    */
-  static async loadConfig(filePath: string): Promise<Result<CustomConfig, ConfigLoadError>> {
+  static async loadConfig(filePath: unknown): Promise<Result<CustomConfig, ConfigLoadError>> {
     // Validate file path using Smart Constructor
     const pathResult = ConfigFilePath.create(filePath);
     if (!pathResult.ok) {
@@ -381,11 +402,11 @@ export class ConfigLoader {
    * @returns Result with merged configuration or BreakdownConfigLoadError
    */
   static async loadBreakdownConfig(
-    configPrefix?: string | null,
-    workingDir?: string
+    configPrefix?: unknown,
+    workingDir?: unknown
   ): Promise<Result<Record<string, unknown>, BreakdownConfigLoadError>> {
     // Validate config prefix using Smart Constructor
-    const prefixResult = ConfigPrefix.create(configPrefix);
+    const prefixResult = ConfigPrefix.create(configPrefix as string | null | undefined);
     if (!prefixResult.ok) {
       return error(prefixResult.error);
     }

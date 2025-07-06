@@ -97,29 +97,35 @@ Deno.test("PromptVariablesFactory - Structure - built PromptVariables has requir
   
   if (factoryResult.ok) {
     const factory = factoryResult.data;
-    const variables = factory.build();
     
-    logger.debug("Built variables structure", { variables });
-    
-    // 必須プロパティの存在確認（PromptParams構造）
-    assertExists(variables.template_file, "Should have template_file");
-    assertExists(variables.variables, "Should have variables");
-    assertExists(variables.variables.demonstrative_type, "Should have demonstrative_type");
-    assertExists(variables.variables.layer_type, "Should have layer_type");
-    assertExists(variables.variables.input_file, "Should have input_file");
-    assertExists(variables.variables.output_file, "Should have output_file");
-    assertExists(variables.variables.prompt_path, "Should have prompt_path");
-    assertExists(variables.variables.schema_path, "Should have schema_path");
-    
-    // 型の確認
-    assertEquals(typeof variables.template_file, "string", "template_file should be string");
-    assertEquals(typeof variables.variables, "object", "variables should be object");
-    assertEquals(typeof variables.variables.demonstrative_type, "string", "demonstrative_type should be string");
-    assertEquals(typeof variables.variables.layer_type, "string", "layer_type should be string");
-    assertEquals(typeof variables.variables.input_file, "string", "input_file should be string");
-    assertEquals(typeof variables.variables.output_file, "string", "output_file should be string");
-    assertEquals(typeof variables.variables.prompt_path, "string", "prompt_path should be string");
-    assertEquals(typeof variables.variables.schema_path, "string", "schema_path should be string");
+    try {
+      const variables = factory.build();
+      
+      logger.debug("Built variables structure", { variables });
+      
+      // 必須プロパティの存在確認（PromptParams構造）
+      assertExists(variables.template_file, "Should have template_file");
+      assertExists(variables.variables, "Should have variables");
+      assertExists(variables.variables.demonstrative_type, "Should have demonstrative_type");
+      assertExists(variables.variables.layer_type, "Should have layer_type");
+      assertExists(variables.variables.input_file, "Should have input_file");
+      assertExists(variables.variables.output_file, "Should have output_file");
+      assertExists(variables.variables.prompt_path, "Should have prompt_path");
+      assertExists(variables.variables.schema_path, "Should have schema_path");
+      
+      // 型の確認
+      assertEquals(typeof variables.template_file, "string", "template_file should be string");
+      assertEquals(typeof variables.variables, "object", "variables should be object");
+      assertEquals(typeof variables.variables.demonstrative_type, "string", "demonstrative_type should be string");
+      assertEquals(typeof variables.variables.layer_type, "string", "layer_type should be string");
+      assertEquals(typeof variables.variables.input_file, "string", "input_file should be string");
+      assertEquals(typeof variables.variables.output_file, "string", "output_file should be string");
+      assertEquals(typeof variables.variables.prompt_path, "string", "prompt_path should be string");
+      assertEquals(typeof variables.variables.schema_path, "string", "schema_path should be string");
+    } catch (error) {
+      logger.debug("Build failed", { error });
+      throw new Error(`Build should not throw for valid parameters: ${error}`);
+    }
   }
 });
 
@@ -170,32 +176,37 @@ Deno.test("PromptVariablesFactory - Structure - maintains invariants through tra
   if (factoryResult.ok) {
     const factory = factoryResult.data;
     
-    // 複数回buildを呼んでも同じ結果が得られることを確認
-    const result1 = factory.build();
-    const result2 = factory.build();
-    
-    logger.debug("Invariant test", { result1: result1, result2: result2 });
-    
-    // 基本的なプロパティが変わらないことを確認
-    assertEquals(
-      result1.variables.demonstrative_type,
-      result2.variables.demonstrative_type,
-      "demonstrative_type should be consistent"
-    );
-    assertEquals(
-      result1.variables.layer_type,
-      result2.variables.layer_type,
-      "layer_type should be consistent"
-    );
-    
-    // カスタム変数が保持されることを確認
-    // カスタム変数が保持されることを確認
-    if (result1.variables.immutableKey && result2.variables.immutableKey) {
+    try {
+      // 複数回buildを呼んでも同じ結果が得られることを確認
+      const result1 = factory.build();
+      const result2 = factory.build();
+      
+      logger.debug("Invariant test", { result1: result1, result2: result2 });
+      
+      // 基本的なプロパティが変わらないことを確認
       assertEquals(
-        result1.variables.immutableKey,
-        result2.variables.immutableKey,
-        "Custom variables should be preserved"
+        result1.variables.demonstrative_type,
+        result2.variables.demonstrative_type,
+        "demonstrative_type should be consistent"
       );
+      assertEquals(
+        result1.variables.layer_type,
+        result2.variables.layer_type,
+        "layer_type should be consistent"
+      );
+      
+      // カスタム変数が保持されることを確認
+      if (result1.variables.immutableKey && result2.variables.immutableKey) {
+        assertEquals(
+          result1.variables.immutableKey,
+          result2.variables.immutableKey,
+          "Custom variables should be preserved"
+        );
+      }
+    } catch (error) {
+      logger.debug("Build failed in invariant test", { error });
+      // This test expects success, so rethrow
+      throw error;
     }
   }
 });

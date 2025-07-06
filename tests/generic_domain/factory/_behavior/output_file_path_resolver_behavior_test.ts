@@ -13,7 +13,7 @@ describe("OutputFilePathResolver: path resolution", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertMatch(result.data.value, new RegExp(`/project/\\d{8}_[a-f0-9]{7}\\.md$`));
+    if (result.ok) assertMatch(result.data.data, new RegExp(`/project/\\d{8}_[a-f0-9]{7}\\.md$`));
   });
   it("returns absolute path if destinationFile is absolute file path", async () => {
     const absPath = resolve(Deno.cwd(), "foo", "bar", "output.md");
@@ -24,7 +24,7 @@ describe("OutputFilePathResolver: path resolution", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, absPath);
+    if (result.ok) assertEquals(result.data.data, absPath);
   });
   it("returns path if destinationFile has path hierarchy and extension", async () => {
     const relPath = join("foo", "bar", "output.md");
@@ -36,7 +36,7 @@ describe("OutputFilePathResolver: path resolution", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
 });
 
@@ -51,7 +51,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertMatch(result.data.value, new RegExp(`${dir}/\\d{8}_[a-f0-9]{7}\\.md$`));
+    if (result.ok) assertMatch(result.data.data, new RegExp(`${dir}/\\d{8}_[a-f0-9]{7}\\.md$`));
     await Deno.remove(dir, { recursive: true });
   });
   it("returns path in layerType dir if destinationFile is filename only with extension", async () => {
@@ -63,7 +63,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
     const expected = resolve(Deno.cwd(), "task", "output.md");
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
   it("returns path in directory if destinationFile is filename only without extension", async () => {
     const dir = resolve(Deno.cwd(), "tmp", "output_dir2");
@@ -75,7 +75,7 @@ describe("OutputFilePathResolver: directory/file/extension handling", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertMatch(result.data.value, new RegExp(`${dir}/\\d{8}_[a-f0-9]{7}\\.md$`));
+    if (result.ok) assertMatch(result.data.data, new RegExp(`${dir}/\\d{8}_[a-f0-9]{7}\\.md$`));
     await Deno.remove(dir, { recursive: true });
   });
 });
@@ -91,7 +91,7 @@ describe("OutputFilePathResolver: Windows/ambiguous cases", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
   it("handles ambiguous case where destinationFile is a directory name with extension", async () => {
     const dirName = "ambiguous.md";
@@ -106,7 +106,7 @@ describe("OutputFilePathResolver: Windows/ambiguous cases", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       const pattern = new RegExp(`${resolve(Deno.cwd(), dirName)}/\\d{8}_[a-f0-9]{7}\\.md$`);
-      assertMatch(result.data.value, pattern);
+      assertMatch(result.data.data, pattern);
     }
     await Deno.remove(dirName, { recursive: true });
   });
@@ -123,7 +123,7 @@ describe("OutputFilePathResolver: unique filename generation", () => {
     for (let i = 0; i < 10; i++) {
       const result = resolver.getPath();
       assertEquals(result.ok, true);
-      if (result.ok) results.add(result.data.value);
+      if (result.ok) results.add(result.data.data);
     }
     // All generated filenames should be unique
     assertEquals(results.size, 10);

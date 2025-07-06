@@ -74,7 +74,9 @@ Deno.test("0_architecture: Smart Constructor - no exceptions thrown", () => {
       params as any
     );
     assertEquals(result.ok, false);
-    assertExists(result.error);
+    if (!result.ok) {
+      assertExists(result.error);
+    }
   }
 });
 
@@ -84,7 +86,9 @@ Deno.test("1_behavior: validates config parameter", () => {
   assertEquals(nullResult.ok, false);
   if (!nullResult.ok) {
     assertEquals(nullResult.error.kind, "ConfigurationError");
-    assertEquals(nullResult.error.message, "Configuration must be a non-null object");
+    if (nullResult.error.kind === "ConfigurationError") {
+      assertEquals(nullResult.error.message, "Configuration must be a non-null object");
+    }
   }
 
   // Test array config
@@ -92,7 +96,9 @@ Deno.test("1_behavior: validates config parameter", () => {
   assertEquals(arrayResult.ok, false);
   if (!arrayResult.ok) {
     assertEquals(arrayResult.error.kind, "ConfigurationError");
-    assertEquals(arrayResult.error.message, "Configuration must be a non-null object");
+    if (arrayResult.error.kind === "ConfigurationError") {
+      assertEquals(arrayResult.error.message, "Configuration must be a non-null object");
+    }
   }
 
   // Test non-object config
@@ -100,7 +106,9 @@ Deno.test("1_behavior: validates config parameter", () => {
   assertEquals(stringResult.ok, false);
   if (!stringResult.ok) {
     assertEquals(stringResult.error.kind, "ConfigurationError");
-    assertEquals(stringResult.error.message, "Configuration must be a non-null object");
+    if (stringResult.error.kind === "ConfigurationError") {
+      assertEquals(stringResult.error.message, "Configuration must be a non-null object");
+    }
   }
 });
 
@@ -110,7 +118,9 @@ Deno.test("1_behavior: validates CLI parameters", () => {
   assertEquals(nullResult.ok, false);
   if (!nullResult.ok) {
     assertEquals(nullResult.error.kind, "ConfigurationError");
-    assertEquals(nullResult.error.message, "CLI parameters must be a non-null object");
+    if (nullResult.error.kind === "ConfigurationError") {
+      assertEquals(nullResult.error.message, "CLI parameters must be a non-null object");
+    }
   }
 
   // Test array params
@@ -118,7 +128,9 @@ Deno.test("1_behavior: validates CLI parameters", () => {
   assertEquals(arrayResult.ok, false);
   if (!arrayResult.ok) {
     assertEquals(arrayResult.error.kind, "ConfigurationError");
-    assertEquals(arrayResult.error.message, "CLI parameters must be a non-null object");
+    if (arrayResult.error.kind === "ConfigurationError") {
+      assertEquals(arrayResult.error.message, "CLI parameters must be a non-null object");
+    }
   }
 
   // Test invalid structure
@@ -126,10 +138,12 @@ Deno.test("1_behavior: validates CLI parameters", () => {
   assertEquals(invalidStructResult.ok, false);
   if (!invalidStructResult.ok) {
     assertEquals(invalidStructResult.error.kind, "ConfigurationError");
-    assertEquals(
-      invalidStructResult.error.message,
-      "CLI parameters must have either Totality structure (directive.value, layer.value) or legacy structure (demonstrativeType, layerType)"
-    );
+    if (invalidStructResult.error.kind === "ConfigurationError") {
+      assertEquals(
+        invalidStructResult.error.message,
+        "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)"
+      );
+    }
   }
 });
 
@@ -161,6 +175,7 @@ Deno.test("1_behavior: handles missing optional fields", () => {
   const minimalLegacyParams: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
+    options: {},
   };
 
   const result = InputFilePathResolver.create(validConfig, minimalLegacyParams);

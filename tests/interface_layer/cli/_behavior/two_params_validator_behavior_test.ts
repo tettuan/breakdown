@@ -49,7 +49,7 @@ Deno.test("TwoParamsValidator - invalid demonstrative type", () => {
   if (!result.ok) {
     assertEquals(result.error.kind, "InvalidDemonstrativeType");
     if (result.error.kind === "InvalidDemonstrativeType") {
-      assertEquals(result.error.value, "invalid");
+      assertEquals(result.error.data, "invalid");
       assertEquals(result.error.validTypes, ["to", "summary", "defect", "init", "find"]);
     }
   }
@@ -63,7 +63,7 @@ Deno.test("TwoParamsValidator - invalid layer type", () => {
   if (!result.ok) {
     assertEquals(result.error.kind, "InvalidLayerType");
     if (result.error.kind === "InvalidLayerType") {
-      assertEquals(result.error.value, "invalid");
+      assertEquals(result.error.data, "invalid");
       assertEquals(result.error.validTypes, ["project", "issue", "task", "bugs", "temp"]);
     }
   }

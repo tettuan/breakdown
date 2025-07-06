@@ -80,7 +80,7 @@ Deno.test("TwoParamsHandler - Architecture - uses exhaustive error types", async
       expectedErrorKind: "InvalidParameterCount",
     },
     {
-      params: ["invalid-demonstrative"],
+      params: ["invalid-demonstrative", "project"],
       expectedErrorKind: "InvalidDemonstrativeType",
     },
     {

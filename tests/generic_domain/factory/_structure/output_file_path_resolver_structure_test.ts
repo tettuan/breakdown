@@ -231,8 +231,8 @@ describe("OutputFilePathResolver - Abstraction Levels", () => {
     // Should produce properly resolved paths using standard abstractions
     assertExists(result);
     assert(result.ok);
-    assertNotEquals(result.data.value, "./test/output.md"); // Should be absolute
-    assertEquals(result.data.value.startsWith("/") || result.data.value.match(/^[A-Z]:/), true); // Absolute path
+    assertNotEquals(result.data.data, "./test/output.md"); // Should be absolute
+    assertEquals(result.data.data.startsWith("/") || result.data.data.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
@@ -307,9 +307,9 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
 
     // Should only process destinationFile, not other file options
     assert(result.ok);
-    assertEquals(result.data.value.includes("output.md"), true);
-    assertEquals(result.data.value.includes("input.md"), false);
-    assertEquals(result.data.value.includes("prompts"), false);
+    assertEquals(result.data.data.includes("output.md"), true);
+    assertEquals(result.data.data.includes("input.md"), false);
+    assertEquals(result.data.data.includes("prompts"), false);
   });
 
   it("should handle parameter structure variations gracefully", () => {
@@ -360,8 +360,8 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
 
       // Should generate path with appropriate layer directory
       assert(result.ok);
-      assertEquals(result.data.value.includes(layer), true);
-      assertEquals(result.data.value.endsWith(".md"), true);
+      assertEquals(result.data.data.includes(layer), true);
+      assertEquals(result.data.data.endsWith(".md"), true);
     });
   });
 });
@@ -395,9 +395,9 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
       // Should handle invalid inputs by auto-generating
       assertExists(result);
       assert(result.ok);
-      assertNotEquals(result.data.value, "");
+      assertNotEquals(result.data.data, "");
       // Should generate a meaningful path (may or may not include "project")
-      assert(result.data.value.length > 0, "Should generate non-empty path");
+      assert(result.data.data.length > 0, "Should generate non-empty path");
     });
   });
 
@@ -430,7 +430,7 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
       // Should handle special characters without errors
       assertExists(result);
       assert(result.ok);
-      assertNotEquals(result.data.value, "");
+      assertNotEquals(result.data.data, "");
     });
   });
 
@@ -452,7 +452,7 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
     // Should still generate a valid path
     assertExists(result);
     assert(result.ok);
-    assertNotEquals(result.data.value, "");
-    assertEquals(result.data.value.endsWith(".md"), true);
+    assertNotEquals(result.data.data, "");
+    assertEquals(result.data.data.endsWith(".md"), true);
   });
 });

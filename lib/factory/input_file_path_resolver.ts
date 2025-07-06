@@ -428,9 +428,9 @@ export class InputFilePathResolver {
     };
 
     if (hasTotalityProps(this._cliParams)) {
-      // TotalityPromptCliParams structure - use layer.value
+      // TotalityPromptCliParams structure - use layer.data
       const fromLayerType = this._cliParams.options?.fromLayerType as string | undefined;
-      return fromLayerType || this._cliParams.layer.value || "";
+      return fromLayerType || this._cliParams.layer.data || "";
     } else {
       // Legacy PromptCliParams structure
       const legacyParams = this._cliParams as DoubleParamsResult;
@@ -548,7 +548,7 @@ export class InputFilePathResolver {
     if (!hasTotalityProps(cliParams) && !hasLegacyProps(cliParams)) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have either Totality structure (directive.value, layer.value) or legacy structure (demonstrativeType, layerType)",
+        message: "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)",
       });
     }
 

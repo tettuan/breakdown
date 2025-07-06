@@ -178,12 +178,12 @@ describe("ErrorHandler System Integration", () => {
 
         // Type-safe property access for discriminated union
         if (result.error.kind === "InvalidDemonstrativeType") {
-          assertEquals(result.error.value, "invalid_demonstrative");
+          assertEquals(result.error.data, "invalid_demonstrative");
           assertExists(result.error.validTypes);
 
           logger.debug("Validation error propagated correctly", {
             errorKind: result.error.kind,
-            value: result.error.value,
+            value: result.error.data,
           });
         }
       }

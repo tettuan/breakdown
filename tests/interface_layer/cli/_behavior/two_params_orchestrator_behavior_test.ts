@@ -116,7 +116,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
         // Type-safe property access with proper discriminated union handling
         if (result.error.kind === "InvalidDemonstrativeType") {
-          assertEquals(result.error.value, "invalid_demo");
+          assertEquals(result.error.data, "invalid_demo");
           // Error structure validated by error kind
         }
       }
@@ -139,7 +139,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
         // Type-safe property access with proper discriminated union handling
         if (result.error.kind === "InvalidLayerType") {
-          assertEquals(result.error.value, "invalid_layer");
+          assertEquals(result.error.data, "invalid_layer");
           // Error structure validated by error kind
         }
       }

@@ -92,8 +92,18 @@ export class ConfigPrefixDetector {
    * ```
    */
   static detect(args: string[]): string | null {
+    // Handle null, undefined, or non-array inputs
+    if (!args || !Array.isArray(args)) {
+      return null;
+    }
+    
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
+      
+      // Skip non-string elements
+      if (typeof arg !== "string") {
+        continue;
+      }
 
       // Handle --config=value format
       if (arg.startsWith("--config=")) {
@@ -108,8 +118,9 @@ export class ConfigPrefixDetector {
       // Handle space-separated format (--config value or -c value)
       if ((arg === "--config" || arg === "-c") && i + 1 < args.length) {
         const nextArg = args[i + 1];
-        // Only recognize as value if next arg doesn't start with dash
-        if (nextArg && !nextArg.startsWith("-")) {
+        // Only recognize as value if next arg exists and doesn't start with dash
+        // Empty string is a valid value
+        if (typeof nextArg === "string" && !nextArg.startsWith("-")) {
           return nextArg;
         }
       }

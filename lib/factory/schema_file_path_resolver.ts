@@ -289,7 +289,7 @@ export class SchemaFilePathResolver {
    * const pathResult = resolverResult.data.getPath();
    * if (pathResult.ok) {
    *   const schemaPath = pathResult.data;
-   *   console.log("Schema path:", schemaPath.value);
+   *   console.log("Schema path:", schemaPath.data);
    *   console.log("Description:", schemaPath.getDescription());
    * } else {
    *   console.error("Schema resolution failed:", pathResult.error);

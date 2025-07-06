@@ -87,7 +87,7 @@ describe("TypeFactory - createDirectiveType Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "invalid");
+        assertEquals(result.error.data, "invalid");
         assertExists(result.error.pattern);
       }
     }
@@ -116,7 +116,7 @@ describe("TypeFactory - createDirectiveType Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "");
+        assertEquals(result.error.data, "");
       }
     }
   });
@@ -130,7 +130,7 @@ describe("TypeFactory - createDirectiveType Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "   ");
+        assertEquals(result.error.data, "   ");
       }
     }
   });
@@ -207,7 +207,7 @@ describe("TypeFactory - createLayerType Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "invalid");
+        assertEquals(result.error.data, "invalid");
       }
     }
   });
@@ -257,7 +257,7 @@ describe("TypeFactory - createBothTypes Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "invalid");
+        assertEquals(result.error.data, "invalid");
       }
     }
   });
@@ -271,7 +271,7 @@ describe("TypeFactory - createBothTypes Method", () => {
     if (!result.ok) {
       assertEquals(result.error.kind, "ValidationFailed");
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "invalid");
+        assertEquals(result.error.data, "invalid");
       }
     }
   });
@@ -286,7 +286,7 @@ describe("TypeFactory - createBothTypes Method", () => {
       assertEquals(result.error.kind, "ValidationFailed");
       // Should fail on directive first
       if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.value, "invalid1");
+        assertEquals(result.error.data, "invalid1");
       }
     }
   });

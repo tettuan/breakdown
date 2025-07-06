@@ -63,12 +63,18 @@ export class PromptFileGeneratorDDD {
       createDefaultSelectionStrategy(),
     );
 
-    // Initialize application service
-    this.service = new PromptGenerationService({
+    // Initialize application service using Smart Constructor
+    const serviceResult = PromptGenerationService.create({
       repository,
       policy,
       logger: this.logger,
     });
+
+    if (!serviceResult.ok) {
+      throw new Error(`Service creation failed: ${serviceResult.error}`);
+    }
+
+    this.service = serviceResult.data;
   }
 
   /**

@@ -45,7 +45,7 @@ Deno.test("Unit: StandardVariable creation and validation", () => {
 
     if (result.ok) {
       assertEquals(result.data.name.getValue(), testCase.name);
-      assertEquals(result.data.value, testCase.value);
+      assertEquals(result.data.data, testCase.value);
 
       const record = result.data.toRecord();
       assertEquals(record[testCase.name], testCase.value);
@@ -96,7 +96,7 @@ Deno.test("Unit: FilePathVariable creation and validation", () => {
 
     if (result.ok) {
       assertEquals(result.data.name.getValue(), testCase.name);
-      assertEquals(result.data.value, testCase.value);
+      assertEquals(result.data.data, testCase.value);
 
       const record = result.data.toRecord();
       assertEquals(record[testCase.name], testCase.value);
@@ -135,7 +135,7 @@ Deno.test("Unit: StdinVariable creation and validation", () => {
 
     if (result.ok) {
       assertEquals(result.data.name.getValue(), testCase.name);
-      assertEquals(result.data.value, testCase.value);
+      assertEquals(result.data.data, testCase.value);
 
       const record = result.data.toRecord();
       assertEquals(record[testCase.name], testCase.value);
@@ -171,7 +171,7 @@ Deno.test("Unit: UserVariable creation and validation", () => {
 
     if (result.ok) {
       assertEquals(result.data.name, testCase.name);
-      assertEquals(result.data.value, testCase.value);
+      assertEquals(result.data.data, testCase.value);
 
       const record = result.data.toRecord();
       // UserVariable strips uv- prefix in toRecord()
@@ -202,7 +202,7 @@ Deno.test("Unit: UserVariable creation and validation", () => {
     assertEquals(result.ok, true, `Should accept empty/whitespace value: "${value}"`);
 
     if (result.ok) {
-      assertEquals(result.data.value, value);
+      assertEquals(result.data.data, value);
     }
   }
 });
@@ -215,7 +215,7 @@ Deno.test("Unit: Variable name classes behavior", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.getValue(), name);
-      assertEquals(result.data.value, name);
+      assertEquals(result.data.data, name);
     }
   }
 
@@ -226,7 +226,7 @@ Deno.test("Unit: Variable name classes behavior", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.getValue(), name);
-      assertEquals(result.data.value, name);
+      assertEquals(result.data.data, name);
     }
   }
 
@@ -237,7 +237,7 @@ Deno.test("Unit: Variable name classes behavior", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.getValue(), name);
-      assertEquals(result.data.value, name);
+      assertEquals(result.data.data, name);
     }
   }
 });

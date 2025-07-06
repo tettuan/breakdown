@@ -13,7 +13,7 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, "");
+    if (result.ok) assertEquals(result.data.data, "");
   });
   it("returns absolute path if fromFile is absolute", async () => {
     const absPath = resolve(Deno.cwd(), "foo", "bar", "input.md");
@@ -24,7 +24,7 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, absPath);
+    if (result.ok) assertEquals(result.data.data, absPath);
   });
   it("resolves path if fromFile has path hierarchy (relative)", async () => {
     const relPath = join("foo", "bar", "input.md");
@@ -36,7 +36,7 @@ describe("InputFilePathResolver: fromFile not provided/absolute/relative", () =>
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
 });
 
@@ -50,7 +50,7 @@ describe("InputFilePathResolver: layerType/fromLayerType handling", () => {
     const expected = resolve(Deno.cwd(), "input.md");
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
   it("resolves path if fromFile is filename only (uses fromLayerType)", async () => {
     const resolver = new InputFilePathResolver({}, {
@@ -61,7 +61,7 @@ describe("InputFilePathResolver: layerType/fromLayerType handling", () => {
     const expected = resolve(Deno.cwd(), "input.md");
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
 });
 
@@ -76,7 +76,7 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
     });
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
   it("handles edge case with empty layerType and fromLayerType", async () => {
     const resolver = new InputFilePathResolver({}, {
@@ -87,7 +87,7 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
     const expected = resolve(Deno.cwd(), "input.md");
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
   });
   it("handles ambiguous case where fromFile is a directory name", async () => {
     const dirName = "ambiguous.md";
@@ -101,7 +101,7 @@ describe("InputFilePathResolver: Windows/edge/ambiguous cases", () => {
     const expected = resolve(Deno.cwd(), dirName);
     const result = resolver.getPath();
     assertEquals(result.ok, true);
-    if (result.ok) assertEquals(result.data.value, expected);
+    if (result.ok) assertEquals(result.data.data, expected);
     await Deno.remove(dirName, { recursive: true });
   });
 });

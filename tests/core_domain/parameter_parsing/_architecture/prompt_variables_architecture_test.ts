@@ -306,7 +306,7 @@ Deno.test("Architecture: No side effects in type module", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.name, "test");
-      assertEquals(result.data.value, "value");
+      assertEquals(result.data.data, "value");
     }
   }
 });

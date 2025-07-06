@@ -104,7 +104,7 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
 
     // Factory層が適切にTypes層を隠蔽していることを確認
     assertExists(result.data.name);
-    assertExists(result.data.value);
+    assertExists(result.data.data);
   }
 
   // エラー処理も適切に抽象化されていることを確認

@@ -28,8 +28,11 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const name of validNames) {
         const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        assertEquals(profile.ok, true);
+        if (profile.ok) {
+          assertEquals(profile.data.value, name);
+          assertEquals(profile.data.getValue(), name);
+        }
       }
     });
   });
@@ -69,8 +72,10 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const name of invalidNames) {
         const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, null);
-        assertEquals(profile.value !== null, false);
+        assertEquals(profile.ok, false);
+        if (!profile.ok) {
+          assertEquals(typeof profile.error, "object");
+        }
       }
     });
   });
@@ -88,23 +93,29 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const input of invalidInputs) {
         const profile = ConfigProfileName.create(input);
-        assertEquals(profile.value, null, `Invalid input '${input}' should have null value`);
-        assertEquals(profile.value !== null, false);
+        assertEquals(profile.ok, false, `Invalid input '${input}' should be rejected`);
+        if (!profile.ok) {
+          assertEquals(typeof profile.error, "object");
+        }
       }
     });
   });
 
   describe("Null handling for invalid inputs", () => {
     it("should return null for invalid inputs", () => {
-      // Test that empty string returns null value
+      // Test that empty string is rejected
       const empty = ConfigProfileName.create("");
-      assertEquals(empty.value, null);
-      assertEquals(empty.value !== null, false);
+      assertEquals(empty.ok, false);
+      if (!empty.ok) {
+        assertEquals(empty.error.kind, "EmptyInput");
+      }
 
-      // Test that whitespace-only string returns null value
+      // Test that whitespace-only string is rejected
       const whitespace = ConfigProfileName.create("   ");
-      assertEquals(whitespace.value, null);
-      assertEquals(whitespace.value !== null, false);
+      assertEquals(whitespace.ok, false);
+      if (!whitespace.ok) {
+        assertEquals(whitespace.error.kind, "EmptyInput");
+      }
     });
   });
 
@@ -129,11 +140,14 @@ describe("ConfigProfileName - Unit Tests", () => {
       for (const profileName of commonProfiles) {
         const profile = ConfigProfileName.create(profileName);
         assertEquals(
-          profile.value !== null,
+          profile.ok,
           true,
           `Common profile '${profileName}' should be valid`,
         );
-        assertEquals(profile.value, profileName);
+        if (profile.ok) {
+          assertEquals(profile.data.value, profileName);
+          assertEquals(profile.data.getValue(), profileName);
+        }
       }
     });
   });
@@ -144,8 +158,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profile = ConfigProfileName.create("staging");
 
       // Simulate BreakdownConfig usage
-      const configPrefix = profile.value || undefined;
-      assertEquals(configPrefix, "staging");
+      assertEquals(profile.ok, true);
+      if (profile.ok) {
+        const configPrefix = profile.data.getValue();
+        assertEquals(configPrefix, "staging");
+      }
     });
   });
 
@@ -170,12 +187,15 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const testCase of edgeCases) {
         const profile = ConfigProfileName.create(testCase.name);
-        const isValid = profile.value !== null;
+        const isValid = profile.ok;
         assertEquals(
           isValid,
           testCase.valid,
           `Profile name '${testCase.name}' should be ${testCase.valid ? "valid" : "invalid"}`,
         );
+        if (profile.ok && testCase.valid) {
+          assertEquals(profile.data.getValue(), testCase.name);
+        }
       }
     });
   });
