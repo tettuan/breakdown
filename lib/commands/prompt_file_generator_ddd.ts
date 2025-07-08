@@ -40,7 +40,7 @@ export class PromptFileGeneratorDDD {
     });
 
     // Initialize domain policy
-    const policy = GenerationPolicy.create(
+    const policyResult = GenerationPolicy.create(
       {
         requiredVariables: ["input_text_file", "destination_path"],
         optionalVariables: ["input_text", "schema_file", "adaptation"],
@@ -63,10 +63,14 @@ export class PromptFileGeneratorDDD {
       createDefaultSelectionStrategy(),
     );
 
+    if (!policyResult.ok) {
+      throw new Error(`Policy creation failed: ${policyResult.error.message}`);
+    }
+
     // Initialize application service using Smart Constructor
     const serviceResult = PromptGenerationService.create({
       repository,
-      policy,
+      policy: policyResult.data,
       logger: this.logger,
     });
 

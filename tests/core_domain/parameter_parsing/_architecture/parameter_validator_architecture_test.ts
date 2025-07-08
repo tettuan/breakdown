@@ -18,8 +18,8 @@ import { TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
 // Temporary mock implementations for testing
 const _MockPatternCreator = {
   createMockPatternProvider: (): TypePatternProvider => ({
-    getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary|defect"),
-    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("project|issue|task"),
+    getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary|defect") || null,
+    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("project|issue|task") || null,
   }),
 };
 import type {
@@ -53,6 +53,17 @@ Deno.test("Architecture: ParameterValidator dependency direction compliance", ()
   assertEquals(typeof _validator.validateTwoParams, "function");
   assertEquals(typeof _validator.validateOneParams, "function");
   assertEquals(typeof _validator.validateZeroParams, "function");
+
+  // Architecture constraint: All public methods should return Result types
+  // This is a compile-time check that ensures Totality principle
+  type ValidateTwoParamsReturn = ReturnType<typeof _validator.validateTwoParams>;
+  type ValidateOneParamsReturn = ReturnType<typeof _validator.validateOneParams>;
+  type ValidateZeroParamsReturn = ReturnType<typeof _validator.validateZeroParams>;
+  
+  // These type assertions ensure Result<T, E> pattern is followed
+  const _typeCheck1: ValidateTwoParamsReturn extends _Result<unknown, unknown> ? true : false = true;
+  const _typeCheck2: ValidateOneParamsReturn extends _Result<unknown, unknown> ? true : false = true;
+  const _typeCheck3: ValidateZeroParamsReturn extends _Result<unknown, unknown> ? true : false = true;
 });
 
 /**
@@ -90,9 +101,15 @@ Deno.test("Architecture: Result type pattern compliance", () => {
   if (twoParamsResult.ok) {
     assertExists(twoParamsResult.data);
     assertEquals(typeof twoParamsResult.data, "object");
+    // Verify Result<T, E> structure compliance
+    assertEquals("error" in twoParamsResult, false);
   } else {
     assertExists(twoParamsResult.error);
     assertEquals(typeof twoParamsResult.error, "object");
+    // Verify Result<T, E> structure compliance
+    assertEquals("data" in twoParamsResult, false);
+    // Error must have 'kind' property for discriminated union
+    assertExists(twoParamsResult.error.kind);
   }
 });
 
@@ -115,6 +132,9 @@ Deno.test("Architecture: ValidationError totality compliance", () => {
     "CustomVariableInvalid",
     "ConfigValidationFailed",
     "UnsupportedParamsType",
+    "InvalidInput",
+    "InvalidFieldType",
+    "ValidationFailed",
   ] as const;
 
   // Validate that each error kind is properly typed
@@ -128,6 +148,13 @@ Deno.test("Architecture: ValidationError totality compliance", () => {
     assertEquals(error.kind, kind);
     assertExists(error);
   });
+
+  // Architecture constraint: Exhaustiveness check must compile
+  // The getErrorPropertiesForKind function should handle all cases
+  // without needing a default branch (enforced by TypeScript's never type)
+  type AllErrorKinds = _ValidationError["kind"];
+  const _exhaustivenessCheck: AllErrorKinds extends typeof errorKinds[number] ? true : false = true;
+  assertEquals(_exhaustivenessCheck, true);
 });
 
 /**
@@ -186,8 +213,8 @@ Deno.test("Architecture: Dependency injection pattern compliance", () => {
   // and not instantiate concrete implementations internally
 
   const customPatternProvider: TypePatternProvider = {
-    getDirectivePattern: () => TwoParamsDirectivePattern.create("custom"),
-    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("layer"),
+    getDirectivePattern: () => TwoParamsDirectivePattern.create("custom") || null,
+    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("layer") || null,
   };
 
   const customConfigValidator: ConfigValidator = {
@@ -249,25 +276,39 @@ Deno.test("Architecture: Interface segregation compliance", () => {
 /**
  * Helper function for totality testing
  * Returns appropriate properties for each ValidationError kind
+ * 
+ * This function demonstrates the Totality principle by handling
+ * all possible ValidationError kinds without a catch-all default.
+ * The TypeScript compiler will error if a case is missed.
  */
 function getErrorPropertiesForKind(kind: _ValidationError["kind"]): Partial<_ValidationError> {
   switch (kind) {
     case "InvalidParamsType":
-      return { expected: "test", received: "test" };
+      return { kind, expected: "test", received: "test", context: { test: true } };
     case "MissingRequiredField":
-      return { field: "test", source: "test" };
+      return { kind, field: "test", source: "test", context: { test: true } };
     case "InvalidDirectiveType":
-      return { value: "test", validPattern: "test" };
+      return { kind, value: "test", validPattern: "test", context: { test: true } };
     case "InvalidLayerType":
-      return { value: "test", validPattern: "test" };
+      return { kind, value: "test", validPattern: "test", context: { test: true } };
     case "PathValidationFailed":
-      return { path: "test", reason: "test" };
+      return { kind, path: "test", reason: "test", context: { test: true } };
     case "CustomVariableInvalid":
-      return { key: "test", reason: "test" };
+      return { kind, key: "test", reason: "test", context: { test: true } };
     case "ConfigValidationFailed":
-      return { errors: ["test"] };
+      return { kind, errors: ["test"], context: { test: true } };
     case "UnsupportedParamsType":
-      return { type: "test" };
-      // Note: No default case - this enforces totality at compile time
+      return { kind, type: "test", context: { test: true } };
+    case "InvalidInput":
+      return { kind, field: "test", value: "test", reason: "test", context: { test: true } };
+    case "InvalidFieldType":
+      return { kind, field: "test", expected: "test", received: "test", context: { test: true } };
+    case "ValidationFailed":
+      return { kind, errors: ["test"], context: { test: true } };
+    default: {
+      // This ensures exhaustiveness - TypeScript will error if we miss a case
+      const _exhaustive: never = kind;
+      throw new Error(`Unhandled ValidationError kind: ${_exhaustive}`);
+    }
   }
 }

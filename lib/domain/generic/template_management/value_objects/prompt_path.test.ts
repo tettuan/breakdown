@@ -48,7 +48,7 @@ Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   
   if (result.ok) {
     assertExists(result.data);
-    assertEquals(result.data.constructor.name, "PromptPath");
+    assertEquals(result.data!.constructor.name, "PromptPath");
   } else {
     assertExists(result.error);
     assertEquals(typeof result.error, "string");
@@ -120,9 +120,9 @@ Deno.test("1_behavior: creates PromptPath with valid parameters", () => {
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.getDirective(), validDirective);
-    assertEquals(result.data.getLayer(), validLayer);
-    assertEquals(result.data.getFilename(), validFilename);
+    assertEquals(result.data!.getDirective(), validDirective);
+    assertEquals(result.data!.getLayer(), validLayer);
+    assertEquals(result.data!.getFilename(), validFilename);
   }
 });
 
@@ -184,7 +184,7 @@ Deno.test("1_behavior: accepts valid .md filename", () => {
     const result = PromptPath.create(validDirective, validLayer, filename);
     assertEquals(result.ok, true);
     if (result.ok) {
-      assertEquals(result.data.getFilename(), filename);
+      assertEquals(result.data!.getFilename(), filename);
     }
   }
 });
@@ -212,7 +212,7 @@ Deno.test("1_behavior: generates correct path", () => {
   
   if (result.ok) {
     const expectedPath = `${validDirective.getValue()}/${validLayer.getValue()}/${validFilename}`;
-    assertEquals(result.data.getPath(), expectedPath);
+    assertEquals(result.data!.getPath(), expectedPath);
   }
 });
 
@@ -220,7 +220,7 @@ Deno.test("1_behavior: toString returns path", () => {
   const result = PromptPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), result.data.getPath());
+    assertEquals(result.data!.toString(), result.data!.getPath());
   }
 });
 
@@ -232,7 +232,7 @@ Deno.test("2_structure: PromptPath immutability", () => {
   const result = PromptPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!
     
     // Properties should remain constant
     const originalDirective = path.getDirective();
@@ -286,7 +286,7 @@ Deno.test("2_structure: success results have correct structure", () => {
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
     assertExists(validResult.data);
-    assertEquals(validResult.data instanceof PromptPath, true);
+    assertEquals(validResult.data! instanceof PromptPath, true);
     assertEquals(validResult.error, undefined);
   }
 });
@@ -295,7 +295,7 @@ Deno.test("2_structure: method return type consistency", () => {
   const result = PromptPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!
     
     // Verify return types
     assertEquals(typeof path.getPath(), "string");
@@ -310,7 +310,7 @@ Deno.test("2_structure: path composition correctness", () => {
   const result = PromptPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!
     const fullPath = path.getPath();
     
     // Path should contain all components
@@ -368,7 +368,7 @@ Deno.test("2_structure: toString equals getPath", () => {
   const result = PromptPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), result.data.getPath());
+    assertEquals(result.data!.toString(), result.data!.getPath());
   }
 });
 
@@ -379,7 +379,7 @@ Deno.test("2_structure: path format consistency", () => {
     const result = PromptPath.create(validDirective, validLayer, filename);
     
     if (result.ok) {
-      const path = result.data.getPath();
+      const path = result.data!.getPath();
       const parts = path.split("/");
       
       assertEquals(parts.length, 3);

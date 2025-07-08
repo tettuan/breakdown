@@ -178,8 +178,13 @@ Deno.test("CompositePromptVariables - with real implementations", () => {
   if (!standard.ok) {
     throw new Error("Failed to create standard variables");
   }
+  
+  // Check if user creation succeeded
+  if (!user.ok) {
+    throw new Error("Failed to create user variables");
+  }
 
-  const composite = CompositePromptVariables.of(standard.data, user);
+  const composite = CompositePromptVariables.of(standard.data, user.data);
 
   const result = composite.toRecord();
   assertEquals(result.input_text_file, "/path/to/input.md");
@@ -208,8 +213,13 @@ Deno.test("CompositePromptVariables - override standard variables with user vari
   if (!standard.ok) {
     throw new Error("Failed to create standard variables");
   }
+  
+  // Check if user creation succeeded
+  if (!user.ok) {
+    throw new Error("Failed to create user variables");
+  }
 
-  const composite = new CompositePromptVariables([standard.data, user]);
+  const composite = new CompositePromptVariables([standard.data, user.data]);
 
   assertEquals(composite.toRecord(), {
     input_text_file: "user_input.md", // User override

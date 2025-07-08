@@ -20,7 +20,7 @@ import {
   UnifiedError,
   ErrorFactory,
   extractUnifiedErrorMessage,
-} from "./unified_error_types.ts";
+} from "./mod.ts";
 
 Deno.test("0_architecture: BaseError interface - enforces minimal structure", () => {
   // ARCHITECTURE CONSTRAINT: BaseError must have minimal required properties
@@ -401,6 +401,20 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
         return `Type error: ${error.field}`;
       case "ValidationFailed":
         return `Validation failed: ${error.errors.length} errors`;
+      case "InvalidParamsType":
+        return `Invalid params type: expected ${error.expected}, received ${error.received}`;
+      case "InvalidDirectiveType":
+        return `Invalid directive type: ${error.value}`;
+      case "InvalidLayerType":
+        return `Invalid layer type: ${error.value}`;
+      case "PathValidationFailed":
+        return `Path validation failed: ${error.path}`;
+      case "CustomVariableInvalid":
+        return `Custom variable invalid: ${error.key}`;
+      case "ConfigValidationFailed":
+        return `Config validation failed: ${error.errors.length} errors`;
+      case "UnsupportedParamsType":
+        return `Unsupported params type: ${error.type}`;
       
       // ConfigurationError variants
       case "ConfigurationError":
@@ -419,6 +433,12 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
         return `Transformation failed: ${error.targetType}`;
       case "GenerationFailed":
         return `Generation failed: ${error.generator}`;
+      case "PatternNotFound":
+        return `Pattern not found: ${error.operation}`;
+      case "PatternValidationFailed":
+        return `Pattern validation failed: ${error.value}`;
+      case "InvalidPattern":
+        return `Invalid pattern: ${error.pattern}`;
       
       // WorkspaceError variants
       case "WorkspaceInitError":

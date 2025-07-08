@@ -21,6 +21,7 @@ import {
   assertFalse,
   assertStringIncludes,
 } from "../../../lib/deps.ts";
+import type { Result } from "../../../lib/types/result.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 
@@ -87,8 +88,8 @@ class PipelinePromptProvider implements PromptVariablesProvider {
     return true;
   }
 
-  getBaseDirError(): string | undefined {
-    return undefined;
+  getBaseDirError(): Result<void, string> {
+    return { ok: true, data: undefined };
   }
 
   get customVariables(): Record<string, string> {
@@ -805,10 +806,10 @@ Deno.test("Pipeline Stage 5: Error Propagation and Recovery", async () => {
     if (!invalidDirective.ok && !invalidLayer.ok) {
       assertEquals(
         invalidDirective.error.kind,
-        "ValidationFailed",
+        "PatternValidationFailed",
         "Should have validation error",
       );
-      assertEquals(invalidLayer.error.kind, "ValidationFailed", "Should have validation error");
+      assertEquals(invalidLayer.error.kind, "PatternValidationFailed", "Should have validation error");
     }
 
     // Test 2: Invalid file paths propagation

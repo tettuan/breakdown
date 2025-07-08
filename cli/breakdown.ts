@@ -22,11 +22,25 @@ import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 import { formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
+import type { Result } from "$lib/types/result.ts";
+import type { ConfigurationError, ProcessingError, ValidationError } from "$lib/types/unified_error_types.ts";
 
 /**
  * Default configuration profile name
  */
 const DEFAULT_CONFIG_PROFILE = "default";
+
+/**
+ * Breakdown-specific error types following Totality principle
+ */
+type BreakdownError = 
+  | { kind: "ConfigProfileError"; message: string; cause: unknown }
+  | { kind: "ConfigLoadError"; message: string }
+  | { kind: "ParameterParsingError"; message: string }
+  | { kind: "TwoParamsHandlerError"; cause: unknown }
+  | { kind: "OneParamsHandlerError"; cause: unknown }
+  | { kind: "ZeroParamsHandlerError"; cause: unknown }
+  | { kind: "UnknownResultType"; type: string };
 
 /**
  * Legacy main function - kept for backward compatibility
@@ -92,15 +106,21 @@ async function main() {
  * @see {@link https://jsr.io/@tettuan/breakdownparams} for parameter parsing
  * @see {@link https://jsr.io/@tettuan/breakdownprompt} for prompt generation
  */
-export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
+export async function runBreakdown(args: string[] = Deno.args): Promise<Result<void, BreakdownError>> {
   try {
     // 1. Extract and create config profile name with Result pattern matching
     const detectedPrefix = ConfigPrefixDetector.detect(args);
     const configProfileNameResult = ConfigProfileName.create(detectedPrefix ?? DEFAULT_CONFIG_PROFILE);
     
     if (!configProfileNameResult.ok) {
-      console.error("❌ Invalid config profile name:", configProfileNameResult.error.message);
-      Deno.exit(1);
+      return { 
+        ok: false, 
+        error: { 
+          kind: "ConfigProfileError", 
+          message: configProfileNameResult.error.message,
+          cause: configProfileNameResult.error 
+        } 
+      };
     }
     
     const configProfileName = configProfileNameResult.data;
@@ -138,52 +158,95 @@ export async function runBreakdown(args: string[] = Deno.args): Promise<void> {
     //     console.log("🔍 DEBUG: ParamsParser result:", JSON.stringify(result, null, 2));
 
     // 4. Determine zero/one/two params and branch
-    if (result.type === "two") {
-      const handlerResult = await handleTwoParams(result.params, config, result.options);
-      if (!handlerResult.ok) {
-        // Use centralized error handler
-        if (!handleTwoParamsError(handlerResult.error, config)) {
-          throw new Error(`Two params handler error: ${formatError(handlerResult.error)}`);
+    switch (result.type) {
+      case "two": {
+        const handlerResult = await handleTwoParams(result.params, config, result.options);
+        if (!handlerResult.ok) {
+          // Use centralized error handler
+          if (!handleTwoParamsError(handlerResult.error, config)) {
+            return { 
+              ok: false, 
+              error: { 
+                kind: "TwoParamsHandlerError", 
+                cause: handlerResult.error 
+              } 
+            };
+          }
+          // Error was handled gracefully as warning
         }
-        return; // Error was handled gracefully as warning
+        return { ok: true, data: undefined };
       }
-    } else if (result.type === "one") {
-      await handleOneParams(result.params, config, result.options);
-    } else if (result.type === "zero") {
-      // Pass original args for backward compatibility
-      await handleZeroParams(args, config, result.options);
-    } else if (result.type === "error") {
-      throw new Error(`Parameter parsing error: ${result.error?.message || "Unknown error"}`);
-    } else {
-      throw new Error(`Unknown result type: ${result.type}`);
+      case "one": {
+        await handleOneParams(result.params, config, result.options);
+        return { ok: true, data: undefined };
+      }
+      case "zero": {
+        // Pass original args for backward compatibility
+        await handleZeroParams(args, config, result.options);
+        return { ok: true, data: undefined };
+      }
+      case "error": {
+        return { 
+          ok: false, 
+          error: { 
+            kind: "ParameterParsingError", 
+            message: result.error?.message || "Unknown error" 
+          } 
+        };
+      }
+      default: {
+        // TypeScript exhaustive check - this should never be reached
+        return { 
+          ok: false, 
+          error: { 
+            kind: "UnknownResultType", 
+            type: (result as any).type || "unknown" 
+          } 
+        };
+      }
     }
+    // Success case
+    return { ok: true, data: undefined };
   } catch (error) {
-    console.error("Error:", error instanceof Error ? error.message : String(error));
-    throw error;
+    // Catch any unexpected errors and convert to Result type
+    return {
+      ok: false,
+      error: {
+        kind: "UnknownResultType",
+        type: error instanceof Error ? error.message : String(error)
+      }
+    };
   }
 }
 
 // Enhanced Entry Point Pattern using Entry Point Manager
 if (import.meta.main) {
   // Dynamic import to avoid circular dependencies
-  const { EntryPointManager } = await import("$lib/cli/entry_point_manager.ts");
+  const { EntryPointManager, getEntryPointErrorMessage } = await import("$lib/cli/entry_point_manager.ts");
   
   // Detect environment and create appropriate manager
   const isDevelopment = Deno.env.get("DENO_ENV") === "development" || 
                        Deno.args.includes("--verbose") ||
                        Deno.args.includes("--dev");
   
+  // Create a wrapper function that handles Result type
+  const mainFunction = async (args: string[]) => {
+    const result = await runBreakdown(args);
+    if (!result.ok) {
+      throw new Error(`Breakdown execution failed: ${JSON.stringify(result.error)}`);
+    }
+  };
+  
   const manager = isDevelopment 
-    ? EntryPointManager.createDevelopment()
-    : EntryPointManager.createStandard();
+    ? EntryPointManager.createDevelopment(mainFunction)
+    : EntryPointManager.createStandard(false, mainFunction);
   
   // Start application with enhanced entry point management
   const result = await manager.start();
   
   if (!result.ok) {
-    // Dynamic import to get error message utility
-    const { getEntryPointErrorMessage } = await import("$lib/cli/entry_point_manager.ts");
     console.error("Entry Point Error:", getEntryPointErrorMessage(result.error));
+    // Exit with error code - necessary evil for CLI applications
     Deno.exit(1);
   }
 }

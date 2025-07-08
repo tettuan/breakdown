@@ -18,7 +18,7 @@ import {
   type PromptGenerationResponse
 } from "./prompt_generation_service.ts";
 import type { TemplateRepository, TemplateManifest } from "../../domain/templates/template_repository.ts";
-import { GenerationPolicy, type ValidationResult } from "../../domain/templates/generation_policy.ts";
+import { GenerationPolicy, type ValidationResult, type SelectionContext } from "../../domain/templates/generation_policy.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
 import { PromptTemplate, TemplatePath, TemplateVariables } from "../../domain/templates/prompt_generation_aggregate.ts";
 
@@ -82,13 +82,18 @@ const createMockPolicy = (options?: {
   };
   
   const selectionStrategy = {
-    selectTemplate: (directive: DirectiveType, layer: LayerType) => {
+    selectTemplate: (directive: DirectiveType, layer: LayerType, context?: SelectionContext) => {
       const filename = `${directive.getValue()}-${layer.getValue()}.md`;
       return TemplatePath.create(directive, layer, filename);
     },
   };
   
-  const policy = GenerationPolicy.create(config, [], selectionStrategy);
+  const policyResult = GenerationPolicy.create(config, [], selectionStrategy);
+  if (!policyResult.ok) {
+    throw new Error(`Failed to create mock policy: ${policyResult.error.message}`);
+  }
+  
+  const policy = policyResult.data;
   
   // Override methods if needed for testing
   if (options?.validateVariablesResult) {
@@ -174,10 +179,13 @@ Deno.test("PromptGenerationService - Behavior - Successful prompt generation", a
       updatedAt: new Date(),
     }),
     generate: (variables: any) => ({
-      getContent: () => "Generated content",
-      getTemplate: () => mockTemplate,
-      getAppliedVariables: () => variables,
-      getGeneratedAt: () => new Date(),
+      ok: true,
+      data: {
+        getContent: () => "Generated content",
+        getTemplate: () => mockTemplate,
+        getAppliedVariables: () => variables,
+        getGeneratedAt: () => new Date(),
+      },
     }),
   } as unknown as PromptTemplate;
   
@@ -260,10 +268,13 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
       updatedAt: new Date(),
     }),
     generate: (variables: any) => ({
-      getContent: () => "Generated content",
-      getTemplate: () => mockTemplate,
-      getAppliedVariables: () => variables,
-      getGeneratedAt: () => new Date(),
+      ok: true,
+      data: {
+        getContent: () => "Generated content",
+        getTemplate: () => mockTemplate,
+        getAppliedVariables: () => variables,
+        getGeneratedAt: () => new Date(),
+      },
     }),
   } as any;
   // Template path should match the TemplatePath.create format: directive/layer/filename
@@ -387,10 +398,13 @@ Deno.test("PromptGenerationService - Behavior - Refresh templates clears aggrega
       updatedAt: new Date(),
     }),
     generate: (variables: any) => ({
-      getContent: () => "Generated content",
-      getTemplate: () => mockTemplate,
-      getAppliedVariables: () => variables,
-      getGeneratedAt: () => new Date(),
+      ok: true,
+      data: {
+        getContent: () => "Generated content",
+        getTemplate: () => mockTemplate,
+        getAppliedVariables: () => variables,
+        getGeneratedAt: () => new Date(),
+      },
     }),
   } as any;
   // Template path should match the TemplatePath.create format: directive/layer/filename

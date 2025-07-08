@@ -55,33 +55,46 @@ Deno.test("ErrorSeverity - custom creates correct instance", () => {
 });
 
 Deno.test("ErrorSeverity - fromString creates correct instance", () => {
-  const severity = ErrorSeverity.fromString("error");
-  assertEquals(severity.getLevel(), SeverityLevel.ERROR);
-  assertEquals(severity.getImpact(), ImpactScope.MODULE);
+  const result = ErrorSeverity.fromString("error");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.getLevel(), SeverityLevel.ERROR);
+    assertEquals(result.data.getImpact(), ImpactScope.MODULE);
+  }
 });
 
 Deno.test("ErrorSeverity - fromString is case insensitive", () => {
-  const severity1 = ErrorSeverity.fromString("ERROR");
-  const severity2 = ErrorSeverity.fromString("error");
-  const severity3 = ErrorSeverity.fromString("ErRoR");
+  const result1 = ErrorSeverity.fromString("ERROR");
+  const result2 = ErrorSeverity.fromString("error");
+  const result3 = ErrorSeverity.fromString("ErRoR");
   
-  assertEquals(severity1.getLevel(), SeverityLevel.ERROR);
-  assertEquals(severity2.getLevel(), SeverityLevel.ERROR);
-  assertEquals(severity3.getLevel(), SeverityLevel.ERROR);
+  assertEquals(result1.ok, true);
+  assertEquals(result2.ok, true);
+  assertEquals(result3.ok, true);
+  
+  if (result1.ok && result2.ok && result3.ok) {
+    assertEquals(result1.data.getLevel(), SeverityLevel.ERROR);
+    assertEquals(result2.data.getLevel(), SeverityLevel.ERROR);
+    assertEquals(result3.data.getLevel(), SeverityLevel.ERROR);
+  }
 });
 
 Deno.test("ErrorSeverity - fromString with custom impact", () => {
-  const severity = ErrorSeverity.fromString("warning", ImpactScope.GLOBAL);
-  assertEquals(severity.getLevel(), SeverityLevel.WARNING);
-  assertEquals(severity.getImpact(), ImpactScope.GLOBAL);
+  const result = ErrorSeverity.fromString("warning", ImpactScope.GLOBAL);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.getLevel(), SeverityLevel.WARNING);
+    assertEquals(result.data.getImpact(), ImpactScope.GLOBAL);
+  }
 });
 
 Deno.test("ErrorSeverity - fromString validates input", () => {
-  assertThrows(
-    () => ErrorSeverity.fromString("invalid"),
-    Error,
-    "Invalid severity level: invalid"
-  );
+  const result = ErrorSeverity.fromString("invalid");
+  assertEquals(result.ok, false);
+  if (!result.ok && result.error.kind === "InvalidLevel") {
+    assertEquals(result.error.kind, "InvalidLevel");
+    assertEquals(result.error.providedLevel, "invalid");
+  }
 });
 
 Deno.test("ErrorSeverity - getNumericLevel returns correct value", () => {

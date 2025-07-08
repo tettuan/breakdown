@@ -10,6 +10,7 @@
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { TemplatePath } from "./prompt_generation_aggregate.ts";
 import { TemplateVariables } from "./prompt_generation_aggregate.ts";
+import type { Result } from "../../types/result.ts";
 
 /**
  * Variable resolution strategy
@@ -48,7 +49,7 @@ export interface TemplateSelectionStrategy {
     directive: DirectiveType,
     layer: LayerType,
     context: SelectionContext,
-  ): TemplatePath;
+  ): Result<TemplatePath, string>;
 }
 
 /**
@@ -98,7 +99,7 @@ export interface FallbackStrategy {
 export type FallbackAction =
   | { type: "useDefault"; defaultValue: string }
   | { type: "skipVariable" }
-  | { type: "useAlternativeTemplate"; templatePath: TemplatePath }
+  | { type: "useAlternativeTemplate"; templatePath: Result<TemplatePath, string> }
   | { type: "fail" };
 
 /**
@@ -118,8 +119,21 @@ export class GenerationPolicy {
     config: GenerationPolicyConfig,
     variableStrategies: VariableResolutionStrategy[],
     selectionStrategy: TemplateSelectionStrategy,
-  ): GenerationPolicy {
-    return new GenerationPolicy(config, variableStrategies, selectionStrategy);
+  ): Result<GenerationPolicy, { kind: "InvalidConfiguration"; message: string }> {
+    // Validate inputs
+    if (!config) {
+      return { ok: false, error: { kind: "InvalidConfiguration", message: "Configuration is required" } };
+    }
+    
+    if (!selectionStrategy) {
+      return { ok: false, error: { kind: "InvalidConfiguration", message: "Template selection strategy is required" } };
+    }
+    
+    if (!Array.isArray(variableStrategies)) {
+      return { ok: false, error: { kind: "InvalidConfiguration", message: "Variable strategies must be an array" } };
+    }
+    
+    return { ok: true, data: new GenerationPolicy(config, variableStrategies, selectionStrategy) };
   }
 
   /**
@@ -230,7 +244,7 @@ export class GenerationPolicy {
     directive: DirectiveType,
     layer: LayerType,
     context: SelectionContext,
-  ): TemplatePath {
+  ): Result<TemplatePath, string> {
     return this.selectionStrategy.selectTemplate(directive, layer, context);
   }
 

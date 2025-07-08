@@ -48,10 +48,12 @@ interface ValidatedTwoParams {
 export class TwoParamsOrchestrator {
   private readonly variableProcessor: TwoParamsVariableProcessor;
   private readonly promptGenerator: TwoParamsPromptGenerator;
+  private readonly stdinProcessor?: TwoParamsStdinProcessor;
 
-  constructor() {
+  constructor(stdinProcessor?: TwoParamsStdinProcessor) {
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
+    this.stdinProcessor = stdinProcessor;
   }
 
   /**
@@ -72,9 +74,28 @@ export class TwoParamsOrchestrator {
    * Extract and validate parameters
    * TODO: Replace with ParameterValidator when implemented
    */
-  #extractParameters(params: string[]): ValidatedTwoParams {
+  #extractParameters(params: string[]): Result<ValidatedTwoParams, OrchestratorError> {
     const [demonstrativeType, layerType] = params;
-    return { demonstrativeType, layerType };
+    
+    // Basic validation - these would be replaced by ParameterValidator
+    const validDemonstrativeTypes = ["to", "summary", "defect", "from"];
+    const validLayerTypes = ["project", "issue", "task", "file"];
+    
+    if (!validDemonstrativeTypes.includes(demonstrativeType)) {
+      return error({
+        kind: "InvalidDemonstrativeType",
+        value: demonstrativeType,
+      });
+    }
+    
+    if (!validLayerTypes.includes(layerType)) {
+      return error({
+        kind: "InvalidLayerType",
+        value: layerType,
+      });
+    }
+    
+    return ok({ demonstrativeType, layerType });
   }
 
   /**
@@ -121,11 +142,15 @@ export class TwoParamsOrchestrator {
       return error(_countResult.error);
     }
 
-    // 2. Extract parameters (TODO: Add validation with ParameterValidator)
-    const validatedParams = this.#extractParameters(params!);
+    // 2. Extract and validate parameters
+    const validatedParamsResult = this.#extractParameters(params!);
+    if (!validatedParamsResult.ok) {
+      return error(validatedParamsResult.error);
+    }
+    const validatedParams = validatedParamsResult.data;
 
     // 3. Read STDIN
-    const stdinProcessor = new TwoParamsStdinProcessor();
+    const stdinProcessor = this.stdinProcessor || new TwoParamsStdinProcessor();
     const stdinResult = await stdinProcessor.process(
       config as BreakdownConfigCompatible,
       options,

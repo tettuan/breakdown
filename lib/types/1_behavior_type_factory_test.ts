@@ -8,9 +8,9 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { TypeFactory, TypePatternProvider, TypeCreationError } from "./type_factory.ts";
-import { TwoParamsDirectivePattern, DirectiveType } from "./directive_type.ts";
-import { TwoParamsLayerTypePattern, LayerType } from "./layer_type.ts";
+import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
+import { TwoParamsDirectivePattern, DirectiveType } from "./mod.ts";
+import { TwoParamsLayerTypePattern, LayerType } from "./mod.ts";
 
 /**
  * テスト用のモックパターンプロバイダー
@@ -62,7 +62,7 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
   if (!result1.ok) {
     assertEquals(result1.error.kind, "PatternNotFound");
     if (result1.error.kind === "PatternNotFound") {
-      assertEquals(result1.error.message, "DirectiveType validation pattern not found in configuration");
+      assertEquals(result1.error.reason, "DirectiveType validation pattern not found in configuration");
     }
   }
   
@@ -76,8 +76,8 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
   const result2 = factory2.createDirectiveType("invalid");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
-    assertEquals(result2.error.kind, "ValidationFailed");
-    if (result2.error.kind === "ValidationFailed") {
+    assertEquals(result2.error.kind, "PatternValidationFailed");
+    if (result2.error.kind === "PatternValidationFailed") {
       assertEquals(result2.error.value, "invalid");
       assertEquals(result2.error.pattern, "^(to|summary)$");
     }
@@ -116,7 +116,7 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
   if (!result1.ok) {
     assertEquals(result1.error.kind, "PatternNotFound");
     if (result1.error.kind === "PatternNotFound") {
-      assertEquals(result1.error.message, "LayerType validation pattern not found in configuration");
+      assertEquals(result1.error.reason, "LayerType validation pattern not found in configuration");
     }
   }
   
@@ -130,8 +130,8 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
   const result2 = factory2.createLayerType("task");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
-    assertEquals(result2.error.kind, "ValidationFailed");
-    if (result2.error.kind === "ValidationFailed") {
+    assertEquals(result2.error.kind, "PatternValidationFailed");
+    if (result2.error.kind === "PatternValidationFailed") {
       assertEquals(result2.error.value, "task");
       assertEquals(result2.error.pattern, "^(project|issue)$");
     }
@@ -157,8 +157,8 @@ Deno.test("TypeFactory Behavior - createBothTypes success and error propagation"
   const result2 = factory.createBothTypes("invalid", "project");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
-    assertEquals(result2.error.kind, "ValidationFailed");
-    if (result2.error.kind === "ValidationFailed") {
+    assertEquals(result2.error.kind, "PatternValidationFailed");
+    if (result2.error.kind === "PatternValidationFailed") {
       assertEquals(result2.error.value, "invalid");
     }
   }
@@ -167,8 +167,8 @@ Deno.test("TypeFactory Behavior - createBothTypes success and error propagation"
   const result3 = factory.createBothTypes("to", "invalid");
   assertEquals(result3.ok, false);
   if (!result3.ok) {
-    assertEquals(result3.error.kind, "ValidationFailed");
-    if (result3.error.kind === "ValidationFailed") {
+    assertEquals(result3.error.kind, "PatternValidationFailed");
+    if (result3.error.kind === "PatternValidationFailed") {
       assertEquals(result3.error.value, "invalid");
     }
   }
@@ -177,8 +177,8 @@ Deno.test("TypeFactory Behavior - createBothTypes success and error propagation"
   const result4 = factory.createBothTypes("invalid1", "invalid2");
   assertEquals(result4.ok, false);
   if (!result4.ok) {
-    assertEquals(result4.error.kind, "ValidationFailed");
-    if (result4.error.kind === "ValidationFailed") {
+    assertEquals(result4.error.kind, "PatternValidationFailed");
+    if (result4.error.kind === "PatternValidationFailed") {
       assertEquals(result4.error.value, "invalid1");
     }
   }

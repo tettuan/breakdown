@@ -52,7 +52,7 @@ Deno.test("0_architecture: Result type should enforce mutual exclusivity", () =>
 Deno.test("0_architecture: Helper functions return correctly typed Results", () => {
   // ok function returns Result<T, never>
   const okResult = ok(42);
-  const _okType: Result<number, never> = okResult;
+  const _okType: Result<number, unknown> = okResult;
   assertEquals(okResult.ok, true);
   if (okResult.ok) {
     assertEquals(okResult.data, 42);
@@ -60,7 +60,7 @@ Deno.test("0_architecture: Helper functions return correctly typed Results", () 
 
   // error function returns Result<never, E>
   const errorResult = error("failed");
-  const _errorType: Result<never, string> = errorResult;
+  const _errorType: Result<unknown, string> = errorResult;
   assertEquals(errorResult.ok, false);
   if (!errorResult.ok) {
     assertEquals(errorResult.error, "failed");
@@ -125,7 +125,7 @@ Deno.test("1_behavior: map() transforms success values", () => {
 });
 
 Deno.test("1_behavior: map() preserves errors", () => {
-  const result = error<string>("failed");
+  const result: Result<number, string> = error("failed");
   const mapped = map(result, (x: number) => x * 2);
   
   assertEquals(mapped.ok, false);
@@ -145,7 +145,7 @@ Deno.test("1_behavior: chain() sequences successful operations", () => {
 });
 
 Deno.test("1_behavior: chain() short-circuits on error", () => {
-  const result = error<string>("initial error");
+  const result: Result<number, string> = error("initial error");
   const chained = chain(result, (x: number) => ok(x * 2));
   
   assertEquals(chained.ok, false);
@@ -156,11 +156,11 @@ Deno.test("1_behavior: chain() short-circuits on error", () => {
 
 Deno.test("1_behavior: chain() propagates errors from chained function", () => {
   const result = ok(42);
-  const chained = chain(result, (_x) => error("chained error"));
+  const chained = chain(result, (_x) => error<number, Error>(new Error("chained error")));
   
   assertEquals(chained.ok, false);
   if (!chained.ok) {
-    assertEquals(chained.error, "chained error");
+    assertEquals(chained.error.message, "chained error");
   }
 });
 
@@ -170,7 +170,7 @@ Deno.test("1_behavior: getOrElse() returns data on success", () => {
 });
 
 Deno.test("1_behavior: getOrElse() returns default on error", () => {
-  const result = error<string>("failed");
+  const result: Result<number, string> = error("failed");
   assertEquals(getOrElse(result, 0), 0);
 });
 
@@ -185,7 +185,7 @@ Deno.test("1_behavior: all() combines successful results", () => {
 });
 
 Deno.test("1_behavior: all() fails on first error", () => {
-  const results = [ok(1), error("failed at 2"), ok(3)];
+  const results: Result<number, string>[] = [ok(1), error("failed at 2"), ok(3)];
   const combined = all(results);
   
   assertEquals(combined.ok, false);
@@ -210,7 +210,7 @@ Deno.test("1_behavior: all() returns empty array for empty input", () => {
 
 Deno.test("1_behavior: Monad left identity law - return a >>= f === f a", () => {
   const a = 42;
-  const f = (x: number): Result<number, string> => ok(x * 2);
+  const f = (x: number): Result<number, Error> => ok(x * 2);
   
   // Left identity: ok(a) >>= f === f(a)
   const leftSide = chain(ok(a), f);
@@ -230,8 +230,8 @@ Deno.test("1_behavior: Monad right identity law - m >>= return === m", () => {
 
 Deno.test("1_behavior: Monad associativity law - (m >>= f) >>= g === m >>= (x => f x >>= g)", () => {
   const m = ok(42);
-  const f = (x: number): Result<number, string> => ok(x * 2);
-  const g = (x: number): Result<number, string> => ok(x + 10);
+  const f = (x: number): Result<number, Error> => ok(x * 2);
+  const g = (x: number): Result<number, Error> => ok(x + 10);
   
   // Left side: (m >>= f) >>= g
   const leftSide = chain(chain(m, f), g);
@@ -284,7 +284,7 @@ Deno.test("1_behavior: fold operation for Result type", () => {
   }
   
   const successResult = ok(42);
-  const errorResult = error<string>("failed");
+  const errorResult: Result<number, string> = error("failed");
   
   const successFolded = fold(
     successResult,
@@ -413,7 +413,7 @@ Deno.test("2_structure: Function composition maintains type safety", () => {
   
   const processed = chain(
     map(result, (s) => parseInt(s)),
-    (n) => n > 0 ? ok(n * 2) : error("negative number")
+    (n) => n > 0 ? ok<number, Error>(n * 2) : error<number, Error>(new Error("negative number"))
   );
   
   assertEquals(processed.ok, true);
@@ -470,9 +470,9 @@ Deno.test("2_structure: Functional purity - chain operations are pure", () => {
   const chainedResult = chain(result, (value) => {
     // Pure function - should not modify external state
     if (value > 5) {
-      return ok(value * 2);
+      return ok<number, Error>(value * 2);
     }
-    return error("too small");
+    return error<number, Error>(new Error("too small"));
   });
   
   // Verify no side effects
@@ -646,7 +646,7 @@ Deno.test("2_structure: Result composition maintains structural invariants", () 
     map(baseResult, (arr) => arr.map(x => x * 2)),
     (doubled) => chain(
       ok(doubled.reduce((sum, x) => sum + x, 0)),
-      (sum) => sum > 10 ? ok(`Sum: ${sum}`) : error("Sum too small")
+      (sum) => sum > 10 ? ok<string, Error>(`Sum: ${sum}`) : error<string, Error>(new Error("Sum too small"))
     )
   );
   

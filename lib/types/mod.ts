@@ -80,7 +80,7 @@ export { ConfigProfileName } from "./config_profile_name.ts";
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
-export type { TypeCreationError, TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
+export type { TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
 
 // Pattern types
 export { TwoParamsDirectivePattern } from "./directive_type.ts";
@@ -139,6 +139,18 @@ export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
+// Error severity types
+export { ErrorSeverity as ErrorSeverityClass, SeverityLevel, ImpactScope } from "../domain/core/value_objects/error_severity.ts";
+export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
+
+// CLI Error severity enum for backward compatibility
+export const ErrorSeverity = {
+  CRITICAL: "critical",
+  WARNING: "warning"
+} as const;
+
+export type ErrorSeverityType = typeof ErrorSeverity[keyof typeof ErrorSeverity];
+
 // Re-export types defined in factory to avoid circular dependencies
 export type {
   PromptCliOptions,
@@ -154,3 +166,22 @@ export { TotalityPromptVariablesFactory } from "../factory/prompt_variables_fact
  * Re-exported from breakdownparams for consistency.
  */
 export type { TwoParams_Result, OneParamsResult, ZeroParamsResult } from "../deps.ts";
+
+// Unified Error Types - Totality-compliant error handling system
+export type {
+  BaseError,
+  SystemError,
+  SystemErrorKind,
+  PathError,
+  ValidationError,
+  ConfigurationError,
+  ProcessingError,
+  WorkspaceError,
+  UnifiedError,
+  UnifiedResult,
+} from "./unified_error_types.ts";
+export {
+  ErrorGuards,
+  ErrorFactory,
+  extractUnifiedErrorMessage,
+} from "./unified_error_types.ts";

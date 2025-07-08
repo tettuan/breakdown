@@ -36,7 +36,7 @@ import {
  */
 Deno.test("Help Module Structure", async (t) => {
   await t.step("maintains single responsibility per function", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // Each function should have a single, clear purpose
     // const functionDefinitions = _helpContent.match(/export function (\w+)[^{]*\{([^}]+)\}/g) || [];
@@ -81,7 +81,7 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("separates data from presentation logic", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // Data should be defined separately from display logic
     assertEquals(
@@ -145,7 +145,7 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("maintains proper encapsulation", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // Internal functions should not be exported
     assertEquals(
@@ -184,7 +184,7 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("follows composition pattern", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // generateHelpText should compose from configuration
     const generateMatch = _helpContent.match(/function generateHelpText[\s\S]*?\n\}/);
@@ -221,7 +221,7 @@ Deno.test("Help Module Structure", async (t) => {
 
   await t.step("provides clear and focused public API", async () => {
     const { showHelp, showVersion, showUsage, HELP_TEXT, APP_NAME, _VERSION, ...otherExports } =
-      await import("./help.ts");
+      await import("../../../../lib/cli/help.ts");
 
     // Verify main exports exist
     assertExists(showHelp);
@@ -259,7 +259,7 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("uses functional programming principles", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // Should not use classes
     assertEquals(_helpContent.includes("class "), false, "Should not use classes");
@@ -275,7 +275,7 @@ Deno.test("Help Module Structure", async (t) => {
   });
 
   await t.step("separates configuration from implementation", async () => {
-    const _helpContent = await Deno.readTextFile("./lib/cli/help.ts");
+    const _helpContent = await Deno.readTextFile(new URL("../../../../lib/cli/help.ts", import.meta.url));
 
     // Configuration should be separate from logic
     const configMatch = _helpContent.match(/const DEFAULT_HELP_CONFIG[^}]+\}/s);

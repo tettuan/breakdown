@@ -206,18 +206,29 @@ Deno.test("Entry Point Manager Architecture - Manager implements proper encapsul
 
 Deno.test("Entry Point Manager Architecture - Error handling follows functional patterns", async () => {
   // Test that error handling follows functional programming patterns
-  const manager = EntryPointManager.createStandard();
-
+  // Set test environment to avoid signal handler registration
+  const originalEnv = Deno.env.get("DENO_TESTING");
+  Deno.env.set("DENO_TESTING", "true");
+  
   try {
-    // Use invalid arguments that might cause errors
-    const result = await manager.start(["--help"]);
+    const manager = EntryPointManager.createStandard();
     
-    // Even if help is shown, should return success result
+    // Test with empty arguments (should show help)
+    const result = await manager.start([]);
+    
+    // Should return Result type
     assert(typeof result.ok === "boolean", "Should return Result type");
     
   } catch (error) {
     // Manager should not throw, should return Result instead
     throw new Error(`Entry Point Manager should not throw, got: ${error}`);
+  } finally {
+    // Restore original environment
+    if (originalEnv === undefined) {
+      Deno.env.delete("DENO_TESTING");
+    } else {
+      Deno.env.set("DENO_TESTING", originalEnv);
+    }
   }
 });
 

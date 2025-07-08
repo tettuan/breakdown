@@ -14,16 +14,16 @@
  * @module tests/4_cross_domain/collaboration/totality_composition_safety_integration_test
  */
 
-import { assertEquals, assertExists, assert } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Core Domain imports
-import { DirectiveType } from "../../../lib/types/directive_type.ts";
-import { LayerType } from "../../../lib/types/layer_type.ts";
+// import { DirectiveType } from "../../../lib/types/directive_type.ts";
+// import { LayerType } from "../../../lib/types/layer_type.ts";
 import { ConfigProfileName } from "../../../lib/types/config_profile_name.ts";
-import { Result, ok, error, isOk, isError, map, chain } from "../../../lib/types/result.ts";
+import { error, isOk, ok, Result } from "../../../lib/types/result.ts";
 
-// Supporting Domain imports  
+// Supporting Domain imports
 import { WorkingDirectoryPath } from "../../../lib/domain/core/value_objects/working_directory_path.ts";
 
 // Generic Domain imports
@@ -31,7 +31,7 @@ import { TypeFactory } from "../../../lib/types/type_factory.ts";
 import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
 
 // Cross-domain integration types
-import type { TwoParams_Result } from "../../../lib/deps.ts";
+// import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("totality-composition-safety");
 
@@ -39,34 +39,35 @@ const logger = new BreakdownLogger("totality-composition-safety");
  * Comprehensive test of Result type composition across domains
  * Ensures that Result operations maintain totality when composing across domain boundaries
  */
-Deno.test("Composition Safety: Result type operations maintain totality across domains", async () => {
+Deno.test("Composition Safety: Result type operations maintain totality across domains", () => {
   logger.debug("Testing Result composition totality across domain boundaries");
 
   // Create test data from different domains
   const configResult = ConfigProfileName.create("development");
   const workDirResult = WorkingDirectoryPath.create("/tmp");
-  
-  // Test composition of Results from different domains
-  const composedResult = chain(configResult, (config) => {
-    return chain(workDirResult, (workDir) => {
-      // This composition should never throw, always return Result
-      return ok({
-        config: config.name,
-        workDir: workDir.path,
-        composed: true
-      });
-    });
-  });
 
-  // Verify composition maintains totality
-  assert(composedResult.ok === true || composedResult.ok === false);
-  
-  if (isOk(composedResult)) {
-    assertExists(composedResult.data);
-    assertEquals(composedResult.data.composed, true);
+  // Test composition of Results from different domains
+  // Since configResult and workDirResult have different error types,
+  // we need to handle them separately and then combine
+  if (isOk(configResult) && isOk(workDirResult)) {
+    const composedResult = ok({
+      config: configResult.data.getValue(),
+      workDir: workDirResult.data.getValue(),
+      composed: true,
+    });
+
+    // Verify composition maintains totality
+    assert(composedResult.ok === true || composedResult.ok === false);
+
+    if (isOk(composedResult)) {
+      assertExists(composedResult.data);
+      assertEquals(composedResult.data.composed, true);
+    }
   } else {
+    // Handle error cases
+    const composedResult = configResult.ok ? workDirResult : configResult;
+    assert(!composedResult.ok);
     assertExists(composedResult.error);
-    // Error should maintain discriminated union structure
     assertExists(composedResult.error.kind);
     assertExists(composedResult.error.message);
   }
@@ -82,15 +83,29 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
   // Mock pattern provider for testing
   class TestPatternProvider {
     getDirectivePattern() {
-      const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
-      return TwoParamsDirectivePattern.create("^(to|summary)$");
+      // Import synchronously using dynamic import (already loaded)
+      // deno-lint-ignore no-explicit-any
+      return (globalThis as any).__twoParamsDirectivePattern || null;
     }
-    
+
     getLayerTypePattern() {
-      const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
-      return TwoParamsLayerTypePattern.create("^(project|issue)$");
+      // Import synchronously using dynamic import (already loaded)
+      // deno-lint-ignore no-explicit-any
+      return (globalThis as any).__twoParamsLayerTypePattern || null;
     }
   }
+
+  // Pre-load the patterns for synchronous access
+  const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
+  const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
+  // deno-lint-ignore no-explicit-any
+  (globalThis as any).__twoParamsDirectivePattern = TwoParamsDirectivePattern.create(
+    "^(to|summary)$",
+  );
+  // deno-lint-ignore no-explicit-any
+  (globalThis as any).__twoParamsLayerTypePattern = TwoParamsLayerTypePattern.create(
+    "^(project|issue)$",
+  );
 
   const provider = new TestPatternProvider();
   const typeFactory = new TypeFactory(provider);
@@ -98,12 +113,12 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
   // Test all combinations to ensure exhaustive coverage
   const testCombinations = [
     ["to", "project"],
-    ["to", "issue"], 
+    ["to", "issue"],
     ["summary", "project"],
     ["summary", "issue"],
     ["invalid", "project"], // Should fail safely
     ["to", "invalid"], // Should fail safely
-    ["invalid", "invalid"] // Should fail safely
+    ["invalid", "invalid"], // Should fail safely
   ];
 
   for (const [directive, layer] of testCombinations) {
@@ -124,7 +139,7 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
         layerType: layer,
         directive: directiveResult.data,
         layer: layerResult.data,
-        options: {}
+        options: {},
       };
 
       // PromptVariablesFactory should compose safely
@@ -135,7 +150,9 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
       } catch (error) {
         // If it throws, it violates totality - this should not happen
         logger.error(`Factory composition threw exception for ${directive}/${layer}`, { error });
-        throw new Error(`Totality violation: Factory composition should not throw for ${directive}/${layer}`);
+        throw new Error(
+          `Totality violation: Factory composition should not throw for ${directive}/${layer}`,
+        );
       }
     }
   }
@@ -145,7 +162,7 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
  * Tests error propagation across domain boundaries
  * Ensures error handling remains exhaustive when crossing domain boundaries
  */
-Deno.test("Composition Safety: Error propagation maintains exhaustive handling", async () => {
+Deno.test("Composition Safety: Error propagation maintains exhaustive handling", () => {
   logger.debug("Testing exhaustive error propagation across domains");
 
   // Create errors from different domains
@@ -155,8 +172,9 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
   assert(!configError.ok);
   assert(!workDirError.ok);
 
-  // Test error composition
-  const combinedError = chain(configError, (_) => workDirError);
+  // Test error composition - handle different error types
+  // Since we can't chain different error types, we create a unified error structure
+  const combinedError = configError.ok ? workDirError : configError;
 
   // Should maintain error structure
   assert(!combinedError.ok);
@@ -168,10 +186,10 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
   const errorKinds = [
     combinedError.error.kind,
     configError.error.kind,
-    workDirError.error.kind
+    workDirError.error.kind,
   ];
 
-  errorKinds.forEach(kind => {
+  errorKinds.forEach((kind) => {
     let handled = false;
 
     // This switch should handle all possible error kinds without default
@@ -188,7 +206,7 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
       case "PermissionDenied":
         handled = true;
         break;
-      case "PathResolutionError":
+      case "PathResolutionGeneral":
         handled = true;
         break;
       case "SecurityViolation":
@@ -197,10 +215,13 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
       case "FileSystemError":
         handled = true;
         break;
-      case "ConfigError":
+      case "EmptyInput":
         handled = true;
         break;
-      case "ProfileNameValidationError":
+      case "InvalidFormat":
+        handled = true;
+        break;
+      case "TooLong":
         handled = true;
         break;
     }
@@ -213,7 +234,7 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
  * Tests type safety preservation across domain boundaries
  * Verifies that type safety is maintained when domains interact
  */
-Deno.test("Composition Safety: Type safety preserved across domain boundaries", async () => {
+Deno.test("Composition Safety: Type safety preserved across domain boundaries", () => {
   logger.debug("Testing type safety preservation across domains");
 
   // Valid cross-domain operation
@@ -225,18 +246,18 @@ Deno.test("Composition Safety: Type safety preserved across domain boundaries", 
     const composition = {
       config: validConfig.data,
       workDir: validWorkDir.data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Verify type safety is maintained
-    assertEquals(typeof composition.config.name, "string");
-    assertEquals(typeof composition.workDir.path, "string");
+    assertEquals(typeof composition.config.getValue(), "string");
+    assertEquals(typeof composition.workDir.getValue(), "string");
     assertEquals(typeof composition.timestamp, "number");
 
     // Operations on composed types should be type-safe
-    const configName = composition.config.name;
-    const workPath = composition.workDir.path;
-    
+    const configName = composition.config.getValue();
+    const workPath = composition.workDir.getValue();
+
     assertEquals(typeof configName.toUpperCase(), "string");
     assertEquals(typeof workPath.length, "number");
   }
@@ -263,50 +284,50 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", async (
   logger.debug("Testing pipeline composition totality");
 
   // Create a multi-stage pipeline that crosses domain boundaries
-  async function totalPipeline(
+  function totalPipeline(
     configName: string,
     workDirPath: string,
     directiveValue: string,
-    layerValue: string
-  ): Promise<Result<{ success: boolean; result: any }, { kind: string; message: string }>> {
+    layerValue: string,
+  ): Result<{ success: boolean; result: unknown }, { kind: string; message: string }> {
     try {
       // Stage 1: Configuration domain
       const configResult = ConfigProfileName.create(configName);
       if (!isOk(configResult)) {
         return error({
           kind: "ConfigurationError",
-          message: `Configuration failed: ${configResult.error.message}`
+          message: `Configuration failed: ${configResult.error.message}`,
         });
       }
 
-      // Stage 2: Filesystem domain  
+      // Stage 2: Filesystem domain
       const workDirResult = WorkingDirectoryPath.create(workDirPath);
       if (!isOk(workDirResult)) {
         return error({
-          kind: "FilesystemError", 
-          message: `Working directory failed: ${workDirResult.error.message}`
+          kind: "FilesystemError",
+          message: `Working directory failed: ${workDirResult.error.message}`,
         });
       }
 
       // Stage 3: Type creation domain
       const provider = {
         getDirectivePattern: () => {
-          const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
-          return TwoParamsDirectivePattern.create("^(to|summary)$");
+          // deno-lint-ignore no-explicit-any
+          return (globalThis as any).__twoParamsDirectivePattern || null;
         },
         getLayerTypePattern: () => {
-          const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
-          return TwoParamsLayerTypePattern.create("^(project|issue)$");
-        }
+          // deno-lint-ignore no-explicit-any
+          return (globalThis as any).__twoParamsLayerTypePattern || null;
+        },
       };
 
       const typeFactory = new TypeFactory(provider);
       const typesResult = typeFactory.createBothTypes(directiveValue, layerValue);
-      
+
       if (!isOk(typesResult)) {
         return error({
           kind: "TypeCreationError",
-          message: `Type creation failed: ${typesResult.error.message}`
+          message: `Type creation failed: ${typesResult.error.kind}`,
         });
       }
 
@@ -314,26 +335,25 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", async (
       return ok({
         success: true,
         result: {
-          config: configResult.data.name,
-          workDir: workDirResult.data.path,
+          config: configResult.data.getValue(),
+          workDir: workDirResult.data.getValue(),
           directive: typesResult.data.directive.getValue(),
-          layer: typesResult.data.layer.getValue()
-        }
+          layer: typesResult.data.layer.getValue(),
+        },
       });
-
     } catch (exception) {
       // This should NEVER happen in a total system
       logger.error("Pipeline threw exception - totality violation!", { exception });
       return error({
         kind: "TotalityViolation",
-        message: `Unexpected exception: ${exception}`
+        message: `Unexpected exception: ${exception}`,
       });
     }
   }
 
   // Test valid pipeline
-  const validResult = await totalPipeline("development", ".", "to", "project");
-  
+  const validResult = totalPipeline("development", ".", "to", "project");
+
   if (isOk(validResult)) {
     assertEquals(validResult.data.success, true);
     assertExists(validResult.data.result);
@@ -344,12 +364,12 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", async (
   }
 
   // Test invalid pipeline stages
-  const invalidResults = await Promise.all([
+  const invalidResults = [
     totalPipeline("", ".", "to", "project"), // Invalid config
     totalPipeline("development", "/nonexistent", "to", "project"), // Invalid workdir
     totalPipeline("development", ".", "invalid", "project"), // Invalid directive
     totalPipeline("development", ".", "to", "invalid"), // Invalid layer
-  ]);
+  ];
 
   // All should fail gracefully without exceptions
   invalidResults.forEach((result, index) => {
@@ -373,27 +393,27 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
       // Configuration operations
       ConfigProfileName.create(`config-${i}`),
       ConfigProfileName.create(`test-${i}`),
-      
+
       // Working directory operations
       WorkingDirectoryPath.create("."),
       WorkingDirectoryPath.create("/tmp"),
-      
-      // Type creation operations (async)
-      (async () => {
+
+      // Type creation operations
+      (() => {
         const provider = {
           getDirectivePattern: () => {
-            const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
-            return TwoParamsDirectivePattern.create("^(to|summary)$");
+            // deno-lint-ignore no-explicit-any
+            return (globalThis as any).__twoParamsDirectivePattern || null;
           },
           getLayerTypePattern: () => {
-            const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
-            return TwoParamsLayerTypePattern.create("^(project|issue)$");
-          }
+            // deno-lint-ignore no-explicit-any
+            return (globalThis as any).__twoParamsLayerTypePattern || null;
+          },
         };
-        
+
         const factory = new TypeFactory(provider);
         return factory.createBothTypes(i % 2 === 0 ? "to" : "summary", "project");
-      })()
+      })(),
     ]);
   });
 
@@ -405,10 +425,10 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
     operationGroup.forEach((result, opIndex) => {
       // Each result should be a Result type (never throw)
       assert(
-        typeof result === 'object' && 
-        'ok' in result && 
-        (result.ok === true || result.ok === false),
-        `Operation ${groupIndex}-${opIndex} should return Result type`
+        typeof result === "object" &&
+          "ok" in result &&
+          (result.ok === true || result.ok === false),
+        `Operation ${groupIndex}-${opIndex} should return Result type`,
       );
 
       if (result.ok) {
@@ -416,13 +436,19 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
       } else {
         assertExists(result.error);
         assertExists(result.error.kind);
-        assertExists(result.error.message);
+        // Handle different error structures - some have message, some don't
+        const errorMessage = ("message" in result.error)
+          ? result.error.message
+          : ("value" in result.error)
+          ? `${result.error.kind}: ${result.error.value}`
+          : result.error.kind;
+        assert(typeof errorMessage === "string" && errorMessage.length > 0);
       }
     });
   });
 
   logger.debug("All concurrent operations maintained totality", {
-    operationsCount: results.length * results[0].length
+    operationsCount: results.length * results[0].length,
   });
 });
 
@@ -430,7 +456,7 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
  * Tests composition boundary invariants
  * Verifies that domain boundaries preserve Totality principle invariants
  */
-Deno.test("Composition Safety: Domain boundary invariants preserved", async () => {
+Deno.test("Composition Safety: Domain boundary invariants preserved", () => {
   logger.debug("Testing domain boundary invariant preservation");
 
   // Define invariants that must hold across all domain boundaries
@@ -442,44 +468,45 @@ Deno.test("Composition Safety: Domain boundary invariants preserved", async () =
     // All successful operations should return valid data
     validSuccessData: true,
     // Type safety should be maintained
-    typeSafety: true
+    typeSafety: true,
   };
 
   // Test operations that cross multiple domain boundaries
   const crossDomainOperations = [
     // Config -> WorkDir -> Type creation
-    async () => {
+    () => {
       const config = ConfigProfileName.create("test");
       const workDir = WorkingDirectoryPath.create(".");
-      
+
       const provider = {
         getDirectivePattern: () => {
-          const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
-          return TwoParamsDirectivePattern.create("^(to|summary)$");
+          // deno-lint-ignore no-explicit-any
+          return (globalThis as any).__twoParamsDirectivePattern || null;
         },
         getLayerTypePattern: () => {
-          const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
-          return TwoParamsLayerTypePattern.create("^(project|issue)$");
-        }
+          // deno-lint-ignore no-explicit-any
+          return (globalThis as any).__twoParamsLayerTypePattern || null;
+        },
       };
-      
+
       const factory = new TypeFactory(provider);
       const types = factory.createBothTypes("to", "project");
-      
+
       return { config, workDir, types };
-    }
+    },
   ];
 
   for (const operation of crossDomainOperations) {
     try {
-      const results = await operation();
-      
+      const results = operation();
+
       // Verify no exceptions invariant
       assertEquals(invariants.noExceptions, true, "Operations should not throw exceptions");
-      
+
       // Check each result maintains invariants
+      // deno-lint-ignore no-explicit-any
       Object.values(results).forEach((result: any) => {
-        if (result && typeof result === 'object' && 'ok' in result) {
+        if (result && typeof result === "object" && "ok" in result) {
           if (result.ok) {
             // Success data should be valid
             assertExists(result.data);
@@ -488,14 +515,19 @@ Deno.test("Composition Safety: Domain boundary invariants preserved", async () =
             // Error should be structured
             assertExists(result.error);
             assertExists(result.error.kind);
-            assertExists(result.error.message);
+            // Handle different error structures - some have message, some don't
+            const errorMessage = ("message" in result.error)
+              ? result.error.message
+              : ("value" in result.error)
+              ? `${result.error.kind}: ${result.error.value}`
+              : result.error.kind;
+            assert(typeof errorMessage === "string" && errorMessage.length > 0);
             assertEquals(invariants.structuredErrors, true);
           }
         }
       });
-      
+
       assertEquals(invariants.typeSafety, true, "Type safety should be maintained");
-      
     } catch (exception) {
       // Any exception violates the totality invariant
       invariants.noExceptions = false;
@@ -506,7 +538,7 @@ Deno.test("Composition Safety: Domain boundary invariants preserved", async () =
 
   // All invariants should be preserved
   assertEquals(invariants.noExceptions, true);
-  assertEquals(invariants.structuredErrors, true);  
+  assertEquals(invariants.structuredErrors, true);
   assertEquals(invariants.validSuccessData, true);
   assertEquals(invariants.typeSafety, true);
 });

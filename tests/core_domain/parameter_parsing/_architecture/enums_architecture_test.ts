@@ -26,8 +26,8 @@ Deno.test("Architecture: Enums are independent and self-contained", async () => 
   const importLines = enumsContent.split("\n").filter((line) => line.trim().startsWith("import"));
   assertEquals(importLines.length, 0, "Enums file should have no imports");
 
-  // Verify it contains enum definitions
-  const hasEnums = enumsContent.includes("export enum");
+  // Verify it contains enum definitions (using const enum pattern)
+  const hasEnums = enumsContent.includes("export enum") || enumsContent.includes("export const");
   assertEquals(hasEnums, true, "Enums file should contain enum definitions");
 
   // Verify it contains type definitions (which is acceptable for enums module)

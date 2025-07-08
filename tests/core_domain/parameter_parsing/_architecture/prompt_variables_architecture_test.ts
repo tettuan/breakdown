@@ -16,7 +16,7 @@
  * @module lib/types/0_architecture_prompt_variables_test
  */
 
-import { assertEquals, assertExists } from "../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import {
   createPromptParams,
   FilePathVariable,
@@ -306,7 +306,7 @@ Deno.test("Architecture: No side effects in type module", () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.name, "test");
-      assertEquals(result.data.data, "value");
+      assertEquals(result.data.value, "value");
     }
   }
 });

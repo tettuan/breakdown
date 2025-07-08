@@ -22,6 +22,7 @@ import {
   isTestingErrorHandling,
   handleTwoParamsError
 } from "./error_handler.ts";
+import type { TwoParamsHandlerError } from "./handlers/two_params_handler.ts";
 
 const logger = new BreakdownLogger("error-handler-behavior");
 
@@ -41,10 +42,10 @@ describe("Behavior: Error Severity Analysis", () => {
     ];
 
     for (const error of criticalErrors) {
-      const severity = analyzeErrorSeverity(error);
+      const severity = analyzeErrorSeverity(error as TwoParamsHandlerError);
       assertEquals(
-        severity,
-        ErrorSeverity.CRITICAL,
+        severity.kind,
+        "critical",
         `Should classify as CRITICAL: ${error.error}`,
       );
     }
@@ -63,10 +64,10 @@ describe("Behavior: Error Severity Analysis", () => {
     ];
 
     for (const error of warningErrors) {
-      const severity = analyzeErrorSeverity(error);
+      const severity = analyzeErrorSeverity(error as TwoParamsHandlerError);
       assertEquals(
-        severity,
-        ErrorSeverity.WARNING,
+        severity.kind,
+        "warning",
         `Should classify as WARNING: ${error.error}`,
       );
     }
@@ -88,10 +89,10 @@ describe("Behavior: Error Severity Analysis", () => {
     ];
 
     for (const error of unknownErrors) {
-      const severity = analyzeErrorSeverity(error);
+      const severity = analyzeErrorSeverity(error as any);
       assertEquals(
-        severity,
-        ErrorSeverity.CRITICAL,
+        severity.kind,
+        "critical",
         `Should classify unknown error as CRITICAL: ${JSON.stringify(error)}`,
       );
     }
@@ -110,10 +111,10 @@ describe("Behavior: Error Severity Analysis", () => {
       }
     };
 
-    const severity = analyzeErrorSeverity(nestedError);
+    const severity = analyzeErrorSeverity(nestedError as any);
     assertEquals(
-      severity,
-      ErrorSeverity.CRITICAL,
+      severity.kind,
+      "critical",
       "Should handle nested error structures and extract critical indicators",
     );
 
@@ -126,13 +127,20 @@ describe("Behavior: Error Message Extraction", () => {
     logger.debug("Testing string error message extraction");
 
     const stringError = "Simple error message";
-    const message = extractErrorMessage(stringError);
+    const messageResult = extractErrorMessage(stringError);
     
     assertEquals(
-      message,
-      stringError,
-      "Should return string errors as-is",
+      messageResult.ok,
+      true,
+      "Should successfully extract string error",
     );
+    if (messageResult.ok) {
+      assertEquals(
+        messageResult.data,
+        stringError,
+        "Should return string errors as-is",
+      );
+    }
 
     logger.debug("String error message extraction completed");
   });
@@ -155,12 +163,19 @@ describe("Behavior: Error Message Extraction", () => {
     ];
 
     for (let i = 0; i < objectErrors.length; i++) {
-      const message = extractErrorMessage(objectErrors[i]);
+      const messageResult = extractErrorMessage(objectErrors[i]);
       assertEquals(
-        message,
-        expectedMessages[i],
-        `Should extract correct message from object error ${i}`,
+        messageResult.ok,
+        true,
+        `Should successfully extract message from object error ${i}`,
       );
+      if (messageResult.ok) {
+        assertEquals(
+          messageResult.data,
+          expectedMessages[i],
+          `Should extract correct message from object error ${i}`,
+        );
+      }
     }
 
     logger.debug("Object error message extraction completed");
@@ -176,9 +191,12 @@ describe("Behavior: Error Message Extraction", () => {
       details: { field: "param1", value: "invalid" }
     };
 
-    const message = extractErrorMessage(unifiedError);
-    assertExists(message, "Should extract message from unified error");
-    assertEquals(typeof message, "string", "Should return string message");
+    const messageResult = extractErrorMessage(unifiedError);
+    assertEquals(messageResult.ok, true, "Should successfully extract message from unified error");
+    if (messageResult.ok) {
+      assertExists(messageResult.data, "Should extract message from unified error");
+      assertEquals(typeof messageResult.data, "string", "Should return string message");
+    }
 
     // Should handle gracefully if unified error extraction fails
     const malformedUnified = {
@@ -186,8 +204,11 @@ describe("Behavior: Error Message Extraction", () => {
       // Missing required properties
     };
 
-    const fallbackMessage = extractErrorMessage(malformedUnified);
-    assertExists(fallbackMessage, "Should provide fallback for malformed unified errors");
+    const fallbackResult = extractErrorMessage(malformedUnified);
+    assertEquals(fallbackResult.ok, true, "Should successfully handle malformed unified errors");
+    if (fallbackResult.ok) {
+      assertExists(fallbackResult.data, "Should provide fallback for malformed unified errors");
+    }
 
     logger.debug("Unified error type message extraction completed");
   });
@@ -195,11 +216,17 @@ describe("Behavior: Error Message Extraction", () => {
   it("should handle null and undefined errors", () => {
     logger.debug("Testing null/undefined error handling");
 
-    const nullMessage = extractErrorMessage(null);
-    assertEquals(nullMessage, "null", "Should handle null error");
+    const nullResult = extractErrorMessage(null);
+    assertEquals(nullResult.ok, true, "Should successfully handle null error");
+    if (nullResult.ok) {
+      assertEquals(nullResult.data, "null", "Should handle null error");
+    }
 
-    const undefinedMessage = extractErrorMessage(undefined);
-    assertEquals(undefinedMessage, "undefined", "Should handle undefined error");
+    const undefinedResult = extractErrorMessage(undefined);
+    assertEquals(undefinedResult.ok, true, "Should successfully handle undefined error");
+    if (undefinedResult.ok) {
+      assertEquals(undefinedResult.data, "undefined", "Should handle undefined error");
+    }
 
     logger.debug("Null/undefined error handling completed");
   });
@@ -215,9 +242,12 @@ describe("Behavior: Error Message Extraction", () => {
     ];
 
     for (const error of primitiveErrors) {
-      const message = extractErrorMessage(error);
-      assertEquals(typeof message, "string", `Should convert ${typeof error} to string`);
-      assertExists(message, `Should provide message for ${typeof error}`);
+      const messageResult = extractErrorMessage(error);
+      assertEquals(messageResult.ok, true, `Should successfully handle ${typeof error}`);
+      if (messageResult.ok) {
+        assertEquals(typeof messageResult.data, "string", `Should convert ${typeof error} to string`);
+        assertExists(messageResult.data, `Should provide message for ${typeof error}`);
+      }
     }
 
     logger.debug("Primitive type error handling completed");
@@ -235,16 +265,19 @@ describe("Behavior: Error Formatting", () => {
     ];
 
     for (const error of testErrors) {
-      const formatted = formatError(error);
-      assertExists(formatted, "Should return formatted error");
-      assertEquals(typeof formatted, "string", "Should return string format");
-      
-      if (typeof error === "object" && error !== null && "kind" in error) {
-        assertEquals(
-          formatted.includes((error as any).kind),
-          true,
-          "Should include error kind in format for object errors",
-        );
+      const formattedResult = formatError(error);
+      assertEquals(formattedResult.ok, true, "Should successfully format error");
+      if (formattedResult.ok) {
+        assertExists(formattedResult.data, "Should return formatted error");
+        assertEquals(typeof formattedResult.data, "string", "Should return string format");
+        
+        if (typeof error === "object" && error !== null && "kind" in error) {
+          assertEquals(
+            formattedResult.data.includes((error as any).kind),
+            true,
+            "Should include error kind in format for object errors",
+          );
+        }
       }
     }
 
@@ -257,18 +290,21 @@ describe("Behavior: Error Formatting", () => {
     const error = { message: "Test error message" };
     const kind = "ValidationError";
     
-    const formatted = formatError(error, kind);
+    const formattedResult = formatError(error, kind);
+    assertEquals(formattedResult.ok, true, "Should successfully format error with kind");
     
-    assertEquals(
-      formatted.startsWith(kind),
-      true,
-      "Should prefix with provided kind",
-    );
-    assertEquals(
-      formatted.includes(":"),
-      true,
-      "Should separate kind and message with colon",
-    );
+    if (formattedResult.ok) {
+      assertEquals(
+        formattedResult.data.startsWith(kind),
+        true,
+        "Should prefix with provided kind",
+      );
+      assertEquals(
+        formattedResult.data.includes(":"),
+        true,
+        "Should separate kind and message with colon",
+      );
+    }
 
     logger.debug("Error formatting with kind prefix completed");
   });
@@ -282,18 +318,21 @@ describe("Behavior: Error Formatting", () => {
       additionalInfo: "b".repeat(200)
     };
 
-    const formatted = formatError(longError);
+    const formattedResult = formatError(longError);
+    assertEquals(formattedResult.ok, true, "Should successfully format long error");
     
-    assertEquals(
-      formatted.length <= 250, // Should be truncated (200 char limit + kind info)
-      true,
-      "Should truncate long error objects",
-    );
-    assertEquals(
-      formatted.includes("LongError"),
-      true,
-      "Should preserve error kind even after truncation",
-    );
+    if (formattedResult.ok) {
+      assertEquals(
+        formattedResult.data.length <= 250, // Should be truncated (200 char limit + kind info)
+        true,
+        "Should truncate long error objects",
+      );
+      assertEquals(
+        formattedResult.data.includes("LongError"),
+        true,
+        "Should preserve error kind even after truncation",
+      );
+    }
 
     logger.debug("Long error object truncation completed");
   });
@@ -327,9 +366,9 @@ describe("Behavior: Configuration Testing Detection", () => {
     ];
 
     for (const config of testConfigs) {
-      const isTesting = isTestingErrorHandling(config);
+      const testingResult = isTestingErrorHandling(config);
       assertEquals(
-        isTesting,
+        testingResult.ok && testingResult.isValid && testingResult.isTestScenario,
         true,
         `Should detect test configuration: ${JSON.stringify(config)}`,
       );
@@ -362,9 +401,9 @@ describe("Behavior: Configuration Testing Detection", () => {
     ];
 
     for (const config of nonTestConfigs) {
-      const isTesting = isTestingErrorHandling(config);
+      const testingResult = isTestingErrorHandling(config);
       assertEquals(
-        isTesting,
+        testingResult.ok && testingResult.isTestScenario,
         false,
         `Should not detect as test configuration: ${JSON.stringify(config)}`,
       );
@@ -397,9 +436,9 @@ describe("Behavior: Two Params Error Handling", () => {
     console.log = (msg: string) => { logOutput += msg; };
 
     try {
-      const handled = handleTwoParamsError(warningError, config);
+      const handledResult = handleTwoParamsError(warningError, config);
       
-      assertEquals(handled, true, "Should handle warning-level PromptGenerationError");
+      assertEquals(handledResult.ok && handledResult.handled, true, "Should handle warning-level PromptGenerationError");
       assertEquals(
         warnOutput.includes("⚠️"),
         true,
@@ -430,10 +469,10 @@ describe("Behavior: Two Params Error Handling", () => {
       app_prompt: { base_dir: "/real/path" }
     };
 
-    const handled = handleTwoParamsError(criticalError, config);
+    const handledResult = handleTwoParamsError(criticalError, config);
     
     assertEquals(
-      handled,
+      handledResult.ok && handledResult.handled,
       false,
       "Should not handle critical errors - they should be thrown",
     );
@@ -455,9 +494,9 @@ describe("Behavior: Two Params Error Handling", () => {
     const config = { app_prompt: { base_dir: "/real/path" } };
 
     for (const error of otherErrors) {
-      const handled = handleTwoParamsError(error, config);
+      const handledResult = handleTwoParamsError(error, config);
       assertEquals(
-        handled,
+        handledResult.ok && handledResult.handled,
         false,
         `Should not handle non-PromptGenerationError: ${JSON.stringify(error)}`,
       );
@@ -480,10 +519,10 @@ describe("Behavior: Two Params Error Handling", () => {
       }
     };
 
-    const handled = handleTwoParamsError(error, testConfig);
+    const handledResult = handleTwoParamsError(error, testConfig);
     
     assertEquals(
-      handled,
+      handledResult.ok && handledResult.handled,
       false,
       "Should not handle errors when in test configuration",
     );

@@ -11,9 +11,9 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
-import type { ValidationError } from "./unified_error_types.ts";
+import type { ValidationError } from "./mod.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
@@ -212,6 +212,20 @@ Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
         return `Invalid type for ${error.field}: expected ${error.expected}, got ${error.received}`;
       case "ValidationFailed":
         return `Validation failed: ${error.errors.join(", ")}`;
+      case "InvalidParamsType":
+        return `Invalid params type: expected ${error.expected}, received ${error.received}`;
+      case "InvalidDirectiveType":
+        return `Invalid directive type: ${error.value} does not match pattern ${error.validPattern}`;
+      case "InvalidLayerType":
+        return `Invalid layer type: ${error.value} does not match pattern ${error.validPattern}`;
+      case "PathValidationFailed":
+        return `Path validation failed: ${error.path} - ${error.reason}`;
+      case "CustomVariableInvalid":
+        return `Invalid custom variable ${error.key}: ${error.reason}`;
+      case "ConfigValidationFailed":
+        return `Config validation failed: ${error.errors.join(", ")}`;
+      case "UnsupportedParamsType":
+        return `Unsupported params type: ${error.type}`;
       default:
         const _exhaustive: never = error;
         throw new Error(`Unhandled error kind: ${_exhaustive}`);

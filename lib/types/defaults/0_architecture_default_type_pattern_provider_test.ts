@@ -5,11 +5,10 @@
  * TypePatternProvider implementation.
  */
 
-import { assertEquals, assertExists, assertInstanceOf, assert } from "../../../tests/deps.ts";
+import { assertEquals, assertExists, assert } from "../../../tests/deps.ts";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern } from "../directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../layer_type.ts";
-import type { TypePatternProvider } from "../type_factory.ts";
 
 /**
  * Test suite for DefaultTypePatternProvider architecture validation
@@ -39,12 +38,20 @@ Deno.test("DefaultTypePatternProvider - Architecture Validation", async (t) => {
     // Should return pattern objects or null
     if (directivePattern !== null) {
       // TwoParamsDirectivePattern uses private constructor, so check using duck typing
-      assert(typeof directivePattern === 'object' && 'getValue' in directivePattern);
+      // Check for the actual methods that exist on the pattern objects
+      assert(typeof directivePattern === 'object');
+      assert(typeof directivePattern.test === 'function');
+      assert(typeof directivePattern.toString === 'function');
+      assert(typeof directivePattern.getPattern === 'function');
     }
     
     if (layerPattern !== null) {
       // TwoParamsLayerTypePattern uses private constructor, so check using duck typing
-      assert(typeof layerPattern === 'object' && 'getValue' in layerPattern);
+      // Check for the actual methods that exist on the pattern objects
+      assert(typeof layerPattern === 'object');
+      assert(typeof layerPattern.test === 'function');
+      assert(typeof layerPattern.toString === 'function');
+      assert(typeof layerPattern.getPattern === 'function');
     }
   });
 
@@ -119,13 +126,16 @@ Deno.test("DefaultTypePatternProvider - Error Handling Architecture", async (t) 
     let directivePattern: TwoParamsDirectivePattern | null = null;
     let layerPattern: TwoParamsLayerTypePattern | null = null;
     
-    assertEquals(() => {
+    // Test that pattern creation doesn't throw
+    let errorThrown = false;
+    try {
       directivePattern = provider.getDirectivePattern();
       layerPattern = provider.getLayerTypePattern();
-    }, () => {
-      directivePattern = provider.getDirectivePattern();
-      layerPattern = provider.getLayerTypePattern();
-    });
+    } catch {
+      errorThrown = true;
+    }
+    
+    assertEquals(errorThrown, false, "Pattern creation should not throw errors");
     
     // With valid defaults, patterns should be created successfully
     assertExists(directivePattern);

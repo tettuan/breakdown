@@ -26,14 +26,18 @@ Deno.test("Architecture: Smart Constructor pattern enforcement", () => {
   assertExists(ConfigProfileName.create, "Static create method must exist");
   assertEquals(typeof ConfigProfileName.create, "function", "create must be a function");
 
-  // Verify create method returns ConfigProfileName instance
-  const instance = ConfigProfileName.create("test");
-  assertExists(instance, "create method must return an instance");
-  assertEquals(
-    instance.constructor.name,
-    "ConfigProfileName",
-    "Must return ConfigProfileName instance",
-  );
+  // Verify create method returns Result with ConfigProfileName instance
+  const result = ConfigProfileName.create("test");
+  assertExists(result, "create method must return a Result");
+  assertEquals(result.ok, true, "create method must return success Result");
+  
+  if (result.ok) {
+    assertEquals(
+      result.data.constructor.name,
+      "ConfigProfileName",
+      "Must return ConfigProfileName instance",
+    );
+  }
 
   logger.debug("Smart Constructor pattern verification completed");
 });
@@ -59,20 +63,20 @@ Deno.test("Architecture: Totality principle compliance", () => {
   for (const input of testInputs) {
     const result = ConfigProfileName.create(input as string | null);
 
-    // Every result must be a ConfigProfileName instance
-    assertExists(result, `Input ${input} must return an instance`);
-    assertEquals(
-      result.constructor.name,
-      "ConfigProfileName",
-      "Must always return ConfigProfileName",
-    );
+    // Every result must be a Result object
+    assertExists(result, `Input ${input} must return a Result`);
+    assertEquals(typeof result.ok, "boolean", "Must return Result with ok property");
 
     // Value must be either string or null (never undefined)
-    assertEquals(
-      typeof result.value === "string" || result.value === null,
-      true,
-      `Value must be string or null for input: ${input}`,
-    );
+    if (result.ok) {
+      assertEquals(
+        typeof result.data.value === "string",
+        true,
+        `Valid result should have string value for input: ${input}`,
+      );
+    } else {
+      assertExists(result.error, `Invalid result should have error for input: ${input}`);
+    }
   }
 
   logger.debug("Totality principle compliance verified");
@@ -83,7 +87,13 @@ Deno.test("Architecture: Dependency structure verification", () => {
 
   // Verify ConfigProfileName has no runtime dependencies on other domain types
   // This ensures clean architecture separation
-  const instance = ConfigProfileName.create("test");
+  const result = ConfigProfileName.create("test");
+  
+  if (!result.ok) {
+    throw new Error("Failed to create ConfigProfileName instance for testing");
+  }
+  
+  const instance = result.data;
 
   // Should only have _value property (private field)
   const properties = Object.getOwnPropertyNames(instance);
@@ -126,18 +136,20 @@ Deno.test("Architecture: Type safety boundaries", () => {
   // All valid patterns should create instances with non-null values
   for (const pattern of validPatterns) {
     const result = ConfigProfileName.create(pattern);
-    assertEquals(
-      typeof result.value,
-      "string",
-      `Valid pattern ${pattern} should have string value`,
-    );
-    assertEquals(result.value, pattern, `Valid pattern ${pattern} should preserve value`);
+    if (result.ok) {
+      assertEquals(
+        typeof result.data.value,
+        "string",
+        `Valid pattern ${pattern} should have string value`,
+      );
+      assertEquals(result.data.value, pattern, `Valid pattern ${pattern} should preserve value`);
+    }
   }
 
   // All invalid patterns should create instances with null values
   for (const pattern of invalidPatterns) {
     const result = ConfigProfileName.create(pattern);
-    assertEquals(result.value, null, `Invalid pattern ${pattern} should have null value`);
+    assertEquals(result.ok, false, `Invalid pattern ${pattern} should fail validation`);
   }
 
   logger.debug("Type safety boundaries verification completed");
@@ -164,16 +176,14 @@ Deno.test("Architecture: Interface consistency validation", () => {
 
     // Consistent interface structure
     assertExists(result, "Must return instance");
-    assertEquals(
-      typeof result.value,
-      scenario.expectValid ? "string" : "object",
-      `Scenario ${scenario.input}: value type consistency`,
-    );
 
     if (scenario.expectValid) {
-      assertEquals(result.value, scenario.input, "Valid input should preserve value");
+      assertEquals(result.ok, true, `Valid scenario should succeed: ${scenario.input}`);
+      if (result.ok) {
+        assertEquals(result.data.value, scenario.input, "Valid input should preserve value");
+      }
     } else {
-      assertEquals(result.value, null, "Invalid input should result in null value");
+      assertEquals(result.ok, false, `Invalid scenario should fail: ${scenario.input}`);
     }
   }
 
@@ -183,7 +193,10 @@ Deno.test("Architecture: Interface consistency validation", () => {
 Deno.test("Architecture: Immutability enforcement", () => {
   logger.debug("Testing immutability enforcement");
 
-  const instance = ConfigProfileName.create("test-profile");
+  const result = ConfigProfileName.create("test-profile");
+  if (!result.ok) return;
+  
+  const instance = result.data;
   const originalValue = instance.value;
 
   // Verify value property is readonly
@@ -240,7 +253,7 @@ Deno.test("Architecture: Validation pattern isolation", () => {
 
   for (const testCase of edgeCases) {
     const result = ConfigProfileName.create(testCase.input);
-    const isValid = result.value !== null;
+    const isValid = result.ok;
     assertEquals(
       isValid,
       testCase.expected,

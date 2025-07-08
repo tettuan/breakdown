@@ -503,7 +503,7 @@ Deno.test("Result Type - Performance Consistency", async (t) => {
     // Test factory patterns performance
     const factoryStart = performance.now();
     for (let i = 0; i < iterations; i++) {
-      const result = i % 2 === 0 
+      const result: Result<{ id: number; name: string }, { code: string; message: string }> = i % 2 === 0 
         ? ok({ id: i, name: `item_${i}` })
         : error({ code: "ERROR", message: `Error ${i}` });
       

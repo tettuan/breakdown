@@ -2,7 +2,7 @@
  * @fileoverview Prompt Generation Aggregate Tests
  */
 
-import { assertEquals, assertThrows } from "../../lib/deps.ts";
+import { assertEquals } from "../../lib/deps.ts";
 import {
   PromptGenerationAggregate,
   PromptTemplate,
@@ -23,22 +23,26 @@ function createTestTypes() {
 
 Deno.test("TemplatePath - creates valid path", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
   
-  assertEquals(path.getPath(), "to/task/f_task.md");
-  assertEquals(path.getDirective(), directive);
-  assertEquals(path.getLayer(), layer);
-  assertEquals(path.getFilename(), "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (pathResult.ok) {
+    const path = pathResult.data;
+    assertEquals(path.getPath(), "to/task/f_task.md");
+    assertEquals(path.getDirective(), directive);
+    assertEquals(path.getLayer(), layer);
+    assertEquals(path.getFilename(), "f_task.md");
+  }
 });
 
 Deno.test("TemplatePath - validates filename extension", () => {
   const { directive, layer } = createTestTypes();
   
-  assertThrows(
-    () => TemplatePath.create(directive, layer, "invalid.txt"),
-    Error,
-    "Invalid template filename",
-  );
+  const pathResult = TemplatePath.create(directive, layer, "invalid.txt");
+  assertEquals(pathResult.ok, false);
+  if (!pathResult.ok) {
+    assertEquals(pathResult.error.includes("Invalid template filename"), true);
+  }
 });
 
 Deno.test("TemplateContent - extracts variables correctly", () => {
@@ -84,85 +88,130 @@ Deno.test("TemplateVariables - merges variables", () => {
 
 Deno.test("PromptTemplate - generates prompt with all variables", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(
-    path,
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(
+    pathResult.data,
     "Task: {title}\nDescription: {description}",
   );
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
   
   const variables = TemplateVariables.create({
     title: "Fix bug",
     description: "Fix the login issue",
   });
   
-  const generated = template.generate(variables);
-  assertEquals(
-    generated.getContent(),
-    "Task: Fix bug\nDescription: Fix the login issue",
-  );
+  const generatedResult = templateResult.data.generate(variables);
+  assertEquals(generatedResult.ok, true);
+  if (generatedResult.ok) {
+    assertEquals(
+      generatedResult.data.getContent(),
+      "Task: Fix bug\nDescription: Fix the login issue",
+    );
+  }
 });
 
 Deno.test("PromptTemplate - throws on missing variables", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(
-    path,
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(
+    pathResult.data,
     "Task: {title}\nAssigned to: {assignee}",
   );
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
   
   const variables = TemplateVariables.create({
     title: "Fix bug",
     // missing 'assignee'
   });
   
-  assertThrows(
-    () => template.generate(variables),
-    PromptGenerationError,
-    "Missing required variables: assignee",
-  );
+  const generatedResult = templateResult.data.generate(variables);
+  assertEquals(generatedResult.ok, false);
+  if (!generatedResult.ok) {
+    assertEquals(generatedResult.error instanceof PromptGenerationError, true);
+    assertEquals(generatedResult.error.message.includes("Missing required variables: assignee"), true);
+  }
 });
 
 Deno.test("PromptGenerationAggregate - successful generation", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-1", template);
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
   
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-1", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({ name: "World" });
   const result = aggregate.generatePrompt(variables);
   
-  assertEquals(result.success, true);
-  assertEquals(result.prompt?.getContent(), "Hello World!");
-  assertEquals(result.attempts, 1);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.data.getContent(), "Hello World!");
+  }
   
   const state = aggregate.getState();
   assertEquals(state.status, "completed");
+  assertEquals(state.attempts, 1);
 });
 
 Deno.test("PromptGenerationAggregate - handles generation failure", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-2", template);
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
   
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-2", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({}); // missing 'name'
   const result = aggregate.generatePrompt(variables);
   
-  assertEquals(result.success, false);
-  assertEquals(result.error instanceof PromptGenerationError, true);
-  assertEquals(result.attempts, 1);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error instanceof PromptGenerationError, true);
+  }
   
   const state = aggregate.getState();
   assertEquals(state.status, "failed");
+  assertEquals(state.attempts, 1);
   assertEquals(aggregate.canRetry(), true);
 });
 
 Deno.test("PromptGenerationAggregate - retry limit", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-3", template);
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
   
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-3", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   const emptyVars = TemplateVariables.create({});
   
   // First attempt
@@ -180,12 +229,22 @@ Deno.test("PromptGenerationAggregate - retry limit", () => {
 
 Deno.test("GeneratedPrompt - stores metadata correctly", () => {
   const { directive, layer } = createTestTypes();
-  const path = TemplatePath.create(directive, layer, "f_task.md");
-  const template = PromptTemplate.create(path, "Task: {title}");
+  const pathResult = TemplatePath.create(directive, layer, "f_task.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Task: {title}");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const template = templateResult.data;
   const variables = TemplateVariables.create({ title: "Test" });
   
-  const generated = template.generate(variables);
+  const generatedResult = template.generate(variables);
+  assertEquals(generatedResult.ok, true);
+  if (!generatedResult.ok) return;
   
+  const generated = generatedResult.data;
   assertEquals(generated.getContent(), "Task: Test");
   assertEquals(generated.getTemplate(), template);
   assertEquals(generated.getAppliedVariables().get("title"), "Test");

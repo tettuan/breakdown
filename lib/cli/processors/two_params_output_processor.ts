@@ -35,9 +35,14 @@ export class TwoParamsOutputProcessor {
   async writeOutput(data: unknown): Promise<Result<void, TwoParamsOutputError>> {
     try {
       // Ensure the data is properly stringified
-      const outputText = typeof data === "string"
-        ? data
-        : JSON.stringify(data);
+      let outputText: string;
+      if (typeof data === "string") {
+        outputText = data;
+      } else if (data === undefined) {
+        outputText = "undefined";
+      } else {
+        outputText = JSON.stringify(data);
+      }
 
       // Add newline if not present
       const finalOutput = outputText.endsWith("\n") ? outputText : outputText + "\n";

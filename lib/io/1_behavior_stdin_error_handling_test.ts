@@ -15,7 +15,7 @@
  * @module
  */
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertExists } from "@std/assert";
 import { ok, error } from "../types/result.ts";
 import {
   readStdinSafe,

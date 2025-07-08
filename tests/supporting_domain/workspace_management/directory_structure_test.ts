@@ -45,7 +45,7 @@ import {
   type TestEnvironment as _TestEnvironment,
 } from "$test/helpers/setup.ts";
 import { Workspace as _Workspace } from "../../../lib/workspace/workspace.ts";
-import { WorkspaceInitErrorClass as _WorkspaceInitError } from "../../../lib/workspace/errors.ts";
+import { WorkspaceInitError as _WorkspaceInitError } from "../../../lib/workspace/errors.ts";
 
 const logger = new BreakdownLogger();
 let TEST_ENV: _TestEnvironment;

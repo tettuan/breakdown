@@ -7,6 +7,9 @@
 
 import { assertEquals, assertExists } from "../../../tests/deps.ts";
 import { _defaultConfigTwoParams } from "./config_two_params.ts";
+import { type Result, ok, error } from "../result.ts";
+import { DirectiveType, LayerType } from "../mod.ts";
+import type { TwoParams_Result } from "../../deps.ts";
 
 /**
  * Test suite for defaultConfigTwoParams runtime behavior
@@ -15,17 +18,17 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
   await t.step("should support pattern-based validation", () => {
     const config = _defaultConfigTwoParams.params.two;
     
-    // Test demonstrativeType pattern behavior
-    const demonstrativeRegex = new RegExp(config.demonstrativeType.pattern);
-    const validDemonstrative = ["to", "summary", "defect"];
-    const invalidDemonstrative = ["invalid", "TO", "summary2", ""];
+    // Test directiveType pattern behavior
+    const directiveRegex = new RegExp(config.directiveType.pattern);
+    const validDirective = ["to", "summary", "defect"];
+    const invalidDirective = ["invalid", "TO", "summary2", ""];
     
-    validDemonstrative.forEach(value => {
-      assertEquals(demonstrativeRegex.test(value), true, `${value} should match demonstrativeType pattern`);
+    validDirective.forEach(value => {
+      assertEquals(directiveRegex.test(value), true, `${value} should match directiveType pattern`);
     });
     
-    invalidDemonstrative.forEach(value => {
-      assertEquals(demonstrativeRegex.test(value), false, `${value} should not match demonstrativeType pattern`);
+    invalidDirective.forEach(value => {
+      assertEquals(directiveRegex.test(value), false, `${value} should not match directiveType pattern`);
     });
     
     // Test layerType pattern behavior
@@ -61,14 +64,14 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
   await t.step("should maintain pattern extraction capability", () => {
     const config = _defaultConfigTwoParams.params.two;
     
-    // Test demonstrativeType pattern extraction
-    const demonstrativeMatch = config.demonstrativeType.pattern.match(/^\^\(([^)]+)\)\$$/);
-    assertExists(demonstrativeMatch);
-    assertEquals(demonstrativeMatch[1], "to|summary|defect");
+    // Test directiveType pattern extraction
+    const directiveMatch = config.directiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
+    assertExists(directiveMatch);
+    assertEquals(directiveMatch[1], "to|summary|defect");
     
-    const demonstrativeValues = demonstrativeMatch[1].split("|");
-    assertEquals(demonstrativeValues.length, 3);
-    assertEquals(demonstrativeValues, ["to", "summary", "defect"]);
+    const directiveValues = directiveMatch[1].split("|");
+    assertEquals(directiveValues.length, 3);
+    assertEquals(directiveValues, ["to", "summary", "defect"]);
     
     // Test layerType pattern extraction
     const layerMatch = config.layerType.pattern.match(/^\^\(([^)]+)\)\$$/);
@@ -83,7 +86,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
   await t.step("should support deep object traversal", () => {
     // Test nested access patterns
     const paths = [
-      ["params", "two", "demonstrativeType", "pattern"],
+      ["params", "two", "directiveType", "pattern"],
       ["params", "two", "layerType", "pattern"],
       ["params", "two", "validation", "allowedFlagOptions"],
       ["params", "two", "validation", "allowedValueOptions"],
@@ -109,7 +112,7 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     const config = _defaultConfigTwoParams;
     
     // Simulate TypePatternProvider behavior
-    const getDirectivePattern = () => config.params.two.demonstrativeType.pattern;
+    const getDirectivePattern = () => config.params.two.directiveType.pattern;
     const getLayerTypePattern = () => config.params.two.layerType.pattern;
     
     assertEquals(typeof getDirectivePattern(), "string");
@@ -133,8 +136,8 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
         ...config.params,
         two: {
           ...config.params.two,
-          demonstrativeType: {
-            ...config.params.two.demonstrativeType,
+          directiveType: {
+            ...config.params.two.directiveType,
             pattern: "^(custom|pattern)$"
           }
         }
@@ -142,10 +145,10 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     };
     
     // Verify original is unchanged
-    assertEquals(config.params.two.demonstrativeType.pattern, "^(to|summary|defect)$");
+    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect)$");
     
     // Verify custom config has new pattern
-    assertEquals(customConfig.params.two.demonstrativeType.pattern, "^(custom|pattern)$");
+    assertEquals(customConfig.params.two.directiveType.pattern, "^(custom|pattern)$");
     
     // Verify other properties are preserved
     assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task)$");
@@ -190,19 +193,152 @@ Deno.test("defaultConfigTwoParams - Error Handling", async (t) => {
     const config = _defaultConfigTwoParams;
     
     // Test pattern format validation
-    const demonstrativePattern = config.params.two.demonstrativeType.pattern;
+    const directivePattern = config.params.two.directiveType.pattern;
     const layerPattern = config.params.two.layerType.pattern;
     
     // Verify patterns are properly formatted
-    assertEquals(demonstrativePattern.startsWith("^("), true);
-    assertEquals(demonstrativePattern.endsWith(")$"), true);
+    assertEquals(directivePattern.startsWith("^("), true);
+    assertEquals(directivePattern.endsWith(")$"), true);
     assertEquals(layerPattern.startsWith("^("), true);
     assertEquals(layerPattern.endsWith(")$"), true);
     
     // Test that patterns don't have common regex pitfalls
-    assertEquals(demonstrativePattern.includes(".*"), false);
+    assertEquals(directivePattern.includes(".*"), false);
     assertEquals(layerPattern.includes(".*"), false);
-    assertEquals(demonstrativePattern.includes("\\"), false);
+    assertEquals(directivePattern.includes("\\"), false);
     assertEquals(layerPattern.includes("\\"), false);
+  });
+});
+
+/**
+ * Test suite for Result type usage with configuration
+ */
+Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
+  await t.step("should validate directive string values with Result", () => {
+    const config = _defaultConfigTwoParams;
+    const pattern = config.params.two.directiveType.pattern;
+    
+    // Helper function to simulate directive validation
+    const validateDirectiveString = (value: string): Result<string, string> => {
+      const regex = new RegExp(pattern);
+      if (regex.test(value)) {
+        return ok(value);
+      }
+      return error(`Invalid directive type: ${value}`);
+    };
+    
+    // Test valid values
+    const validResult1 = validateDirectiveString("to");
+    assertEquals(validResult1.ok, true);
+    if (validResult1.ok) {
+      assertEquals(validResult1.data, "to");
+    }
+    
+    const validResult2 = validateDirectiveString("summary");
+    assertEquals(validResult2.ok, true);
+    if (validResult2.ok) {
+      assertEquals(validResult2.data, "summary");
+    }
+    
+    // Test invalid values
+    const invalidResult = validateDirectiveString("invalid");
+    assertEquals(invalidResult.ok, false);
+    if (!invalidResult.ok) {
+      assertEquals(invalidResult.error, "Invalid directive type: invalid");
+    }
+  });
+
+  await t.step("should validate layer string values with Result", () => {
+    const config = _defaultConfigTwoParams;
+    const pattern = config.params.two.layerType.pattern;
+    
+    // Helper function to simulate layer validation
+    const validateLayerString = (value: string): Result<string, string> => {
+      const regex = new RegExp(pattern);
+      if (regex.test(value)) {
+        return ok(value);
+      }
+      return error(`Invalid layer type: ${value}`);
+    };
+    
+    // Test valid values
+    const validResult1 = validateLayerString("project");
+    assertEquals(validResult1.ok, true);
+    if (validResult1.ok) {
+      assertEquals(validResult1.data, "project");
+    }
+    
+    const validResult2 = validateLayerString("task");
+    assertEquals(validResult2.ok, true);
+    if (validResult2.ok) {
+      assertEquals(validResult2.data, "task");
+    }
+    
+    // Test invalid values
+    const invalidResult = validateLayerString("TASK");
+    assertEquals(invalidResult.ok, false);
+    if (!invalidResult.ok) {
+      assertEquals(invalidResult.error, "Invalid layer type: TASK");
+    }
+  });
+
+  await t.step("should validate DirectiveType and LayerType with TwoParams_Result", () => {
+    const config = _defaultConfigTwoParams;
+    
+    // Helper function to validate both types and create domain objects
+    const validateAndCreateTypes = (
+      directive: string,
+      layer: string
+    ): Result<{ directive: DirectiveType; layer: LayerType }, string> => {
+      const directiveRegex = new RegExp(config.params.two.directiveType.pattern);
+      const layerRegex = new RegExp(config.params.two.layerType.pattern);
+      
+      if (!directiveRegex.test(directive)) {
+        return error(`Invalid directive type: ${directive}`);
+      }
+      
+      if (!layerRegex.test(layer)) {
+        return error(`Invalid layer type: ${layer}`);
+      }
+      
+      // Create TwoParams_Result for DirectiveType and LayerType creation
+      const twoParamsResult: TwoParams_Result = {
+        type: "two",
+        demonstrativeType: directive,
+        layerType: layer,
+        params: [directive, layer],
+        options: {}
+      };
+      
+      const directiveType = DirectiveType.create(twoParamsResult);
+      const layerType = LayerType.create(twoParamsResult);
+      
+      return ok({
+        directive: directiveType,
+        layer: layerType,
+      });
+    };
+    
+    // Test valid combination
+    const validResult = validateAndCreateTypes("to", "project");
+    assertEquals(validResult.ok, true);
+    if (validResult.ok) {
+      assertEquals(validResult.data.directive.value, "to");
+      assertEquals(validResult.data.layer.value, "project");
+    }
+    
+    // Test invalid directive
+    const invalidDirective = validateAndCreateTypes("invalid", "project");
+    assertEquals(invalidDirective.ok, false);
+    if (!invalidDirective.ok) {
+      assertEquals(invalidDirective.error, "Invalid directive type: invalid");
+    }
+    
+    // Test invalid layer
+    const invalidLayer = validateAndCreateTypes("to", "invalid");
+    assertEquals(invalidLayer.ok, false);
+    if (!invalidLayer.ok) {
+      assertEquals(invalidLayer.error, "Invalid layer type: invalid");
+    }
   });
 });

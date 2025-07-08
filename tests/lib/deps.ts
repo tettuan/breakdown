@@ -23,7 +23,11 @@ export { DEFAULT_CUSTOM_CONFIG, ParamsParser } from "../../lib/deps.ts";
 export { TwoParamsDirectivePattern, TwoParamsLayerTypePattern } from "../../lib/types/mod.ts";
 export { TypeFactory } from "../../lib/types/type_factory.ts";
 export { DirectiveType, LayerType } from "../../lib/types/mod.ts";
-export type { TypePatternProvider, TypeCreationError } from "../../lib/types/mod.ts";
+export type { TypePatternProvider } from "../../lib/types/mod.ts";
+import type { ProcessingError } from "../../lib/types/unified_error_types.ts";
+
+// Type alias for backward compatibility
+export type TypeCreationError = ProcessingError;
 
 // Missing exports that tests expect - add as aliases
 export { DirectiveType as DemonstrativeType } from "../../lib/types/mod.ts";

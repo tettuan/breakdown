@@ -305,14 +305,14 @@ Deno.test("1_behavior: formatPromptError produces correct messages", () => {
   const errorTests: Array<[PromptError, string]> = [
     [
       { kind: "TemplateNotFound", path: "/missing/template.md" },
-      "Template not found: /missing/template.md"
+      "TemplateNotFound: Template not found: /missing/template.md"
     ],
     [
       { 
         kind: "InvalidVariables", 
         details: ["Missing 'name'", "Invalid 'date'"] 
       },
-      "Invalid variables: Missing 'name', Invalid 'date'"
+      "InvalidVariables: Invalid variables: Missing 'name', Invalid 'date'"
     ],
     [
       { 
@@ -320,14 +320,14 @@ Deno.test("1_behavior: formatPromptError produces correct messages", () => {
         schema: "output.schema.json", 
         error: "Invalid JSON" 
       },
-      "Schema error in output.schema.json: Invalid JSON"
+      "SchemaError: Schema error in output.schema.json: Invalid JSON"
     ],
     [
       { 
         kind: "InvalidPath", 
         message: "Contains null character" 
       },
-      "Invalid path: Contains null character"
+      "InvalidPath: Invalid path: Contains null character"
     ],
     [
       { 
@@ -335,14 +335,14 @@ Deno.test("1_behavior: formatPromptError produces correct messages", () => {
         template: "broken.md", 
         error: "Unclosed tag" 
       },
-      "Failed to parse template broken.md: Unclosed tag"
+      "TemplateParseError: Failed to parse template broken.md: Unclosed tag"
     ],
     [
       { 
         kind: "ConfigurationError", 
         message: "Missing config file" 
       },
-      "Configuration error: Missing config file"
+      "ConfigurationError: Configuration error: Missing config file"
     ],
   ];
 
@@ -360,7 +360,7 @@ Deno.test("1_behavior: formatPromptError handles edge cases", () => {
   };
   
   const emptyMessage = formatPromptError(emptyDetails);
-  assertEquals(emptyMessage, "Invalid variables: ");
+  assertEquals(emptyMessage, "InvalidVariables: Invalid variables: ");
 
   // Single detail
   const singleDetail: PromptError = {
@@ -369,7 +369,7 @@ Deno.test("1_behavior: formatPromptError handles edge cases", () => {
   };
   
   const singleMessage = formatPromptError(singleDetail);
-  assertEquals(singleMessage, "Invalid variables: Single error");
+  assertEquals(singleMessage, "InvalidVariables: Invalid variables: Single error");
 
   // Very long paths and messages
   const longPath = "/very/long/path/that/goes/on/and/on/template.md";
@@ -379,7 +379,7 @@ Deno.test("1_behavior: formatPromptError handles edge cases", () => {
   };
   
   const longMessage = formatPromptError(longError);
-  assertEquals(longMessage, `Template not found: ${longPath}`);
+  assertEquals(longMessage, `TemplateNotFound: Template not found: ${longPath}`);
 
   // Special characters in messages
   const specialChars: PromptError = {
@@ -388,7 +388,7 @@ Deno.test("1_behavior: formatPromptError handles edge cases", () => {
   };
   
   const specialMessage = formatPromptError(specialChars);
-  assertEquals(specialMessage, "Configuration error: Error with 特殊文字 and emoji 🚀");
+  assertEquals(specialMessage, "ConfigurationError: Configuration error: Error with 特殊文字 and emoji 🚀");
 });
 
 Deno.test("1_behavior: Error creation with realistic scenarios", () => {

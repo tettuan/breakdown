@@ -25,7 +25,11 @@ export class TypedTemplatePathFactory {
     filename?: string,
   ): TemplatePath {
     const actualFilename = filename || `f_${layer.getValue()}.md`;
-    return TemplatePath.create(directive, layer, actualFilename);
+    const result = TemplatePath.create(directive, layer, actualFilename);
+    if (!result.ok) {
+      throw new Error(`Failed to create template path: ${result.error}`);
+    }
+    return result.data;
   }
 
   /**
@@ -37,7 +41,11 @@ export class TypedTemplatePathFactory {
     filename?: string,
   ): SchemaPath {
     const actualFilename = filename || `f_${layer.getValue()}.json`;
-    return SchemaPath.create(directive, layer, actualFilename);
+    const result = SchemaPath.create(directive, layer, actualFilename);
+    if (!result.ok) {
+      throw new Error(`Failed to create schema path: ${result.error}`);
+    }
+    return result.data;
   }
 
   /**
@@ -227,16 +235,19 @@ export class LegacyTemplateAdapter {
       const mockDirective = { getValue: () => directive } as DirectiveType;
       const mockLayer = { getValue: () => layer } as LayerType;
 
-      const templatePath = TemplatePath.create(mockDirective, mockLayer, filename);
+      const templatePathResult = TemplatePath.create(mockDirective, mockLayer, filename);
+      if (!templatePathResult.ok) {
+        return null;
+      }
+      const templatePath = templatePathResult.data;
 
       // Create corresponding schema path if it exists
       let schemaPath: SchemaPath | undefined;
       if (filename.endsWith(".md")) {
         const schemaFilename = filename.replace(".md", ".json");
-        try {
-          schemaPath = SchemaPath.create(mockDirective, mockLayer, schemaFilename);
-        } catch {
-          // Schema path creation failed, skip
+        const schemaResult = SchemaPath.create(mockDirective, mockLayer, schemaFilename);
+        if (schemaResult.ok) {
+          schemaPath = schemaResult.data;
         }
       }
 

@@ -8,9 +8,10 @@
  */
 
 import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
-import { TypeFactory, TypePatternProvider, TypeCreationResult, TypeCreationError } from "./type_factory.ts";
-import { TwoParamsDirectivePattern, DirectiveType } from "./directive_type.ts";
-import { TwoParamsLayerTypePattern, LayerType } from "./layer_type.ts";
+import { TypeFactory, TypePatternProvider, TypeCreationResult } from "./type_factory.ts";
+import type { ProcessingError } from "./mod.ts";
+import { TwoParamsDirectivePattern, DirectiveType } from "./mod.ts";
+import { TwoParamsLayerTypePattern, LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
@@ -60,13 +61,13 @@ Deno.test("TypeFactory Structure - TypeCreationResult type structure", () => {
     assertExists(errorResult.error);
     assertEquals("data" in errorResult, false);
     
-    // errorはTypeCreationError型
+    // errorはProcessingError型
     assertEquals("kind" in errorResult.error, true);
-    assertEquals("message" in errorResult.error || "value" in errorResult.error || "pattern" in errorResult.error, true);
+    assertEquals("operation" in errorResult.error || "value" in errorResult.error || "pattern" in errorResult.error, true);
   }
 });
 
-Deno.test("TypeFactory Structure - TypeCreationError variants", () => {
+Deno.test("TypeFactory Structure - ProcessingError variants", () => {
   // PatternNotFoundエラーの構造
   const nullProvider = new StructureTestProvider(null, null);
   const factory1 = new TypeFactory(nullProvider);
@@ -76,8 +77,8 @@ Deno.test("TypeFactory Structure - TypeCreationError variants", () => {
     const error = patternNotFoundResult.error;
     assertEquals(error.kind, "PatternNotFound");
     if (error.kind === "PatternNotFound") {
-      assertExists(error.message);
-      assertEquals(typeof error.message, "string");
+      assertExists(error.reason);
+      assertEquals(typeof error.reason, "string");
     }
   }
 
@@ -91,8 +92,8 @@ Deno.test("TypeFactory Structure - TypeCreationError variants", () => {
   const validationFailedResult = factory2.createDirectiveType("invalid");
   if (!validationFailedResult.ok) {
     const error = validationFailedResult.error;
-    assertEquals(error.kind, "ValidationFailed");
-    if (error.kind === "ValidationFailed") {
+    assertEquals(error.kind, "PatternValidationFailed");
+    if (error.kind === "PatternValidationFailed") {
       assertExists(error.value);
       assertExists(error.pattern);
       assertEquals(typeof error.value, "string");

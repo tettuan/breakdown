@@ -116,7 +116,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
         // Type-safe property access with proper discriminated union handling
         if (result.error.kind === "InvalidDemonstrativeType") {
-          assertEquals(result.error.data, "invalid_demo");
+          assertEquals(result.error.value, "invalid_demo");
           // Error structure validated by error kind
         }
       }
@@ -139,7 +139,7 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
         // Type-safe property access with proper discriminated union handling
         if (result.error.kind === "InvalidLayerType") {
-          assertEquals(result.error.data, "invalid_layer");
+          assertEquals(result.error.value, "invalid_layer");
           // Error structure validated by error kind
         }
       }
@@ -150,12 +150,18 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
       // Mock stdin processor that always errors
       const errorStdinProcessor = {
-        process: async () => error({ message: "Stdin read timeout" }),
+        process: async () => error({ 
+          kind: "StdinReadError" as const,
+          message: "Stdin read timeout" 
+        }),
         shouldReadStdin: () => true,
-        processWithDefaultTimeout: async () => error({ message: "Stdin read timeout" }),
+        processWithDefaultTimeout: async () => error({ 
+          kind: "StdinReadError" as const,
+          message: "Stdin read timeout" 
+        }),
       };
 
-      const orchestrator = new TwoParamsOrchestrator();
+      const orchestrator = new TwoParamsOrchestrator(errorStdinProcessor as any);
 
       const result = await orchestrator.orchestrate(["to", "project"], {}, {});
 
@@ -197,24 +203,48 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
 
       const orchestrator = new TwoParamsOrchestrator();
 
-      // Test with valid parameter count but invalid processing
-      const result = await orchestrator.orchestrate(
-        ["test", "params"],
+      // Test with invalid demonstrative type first (should fail at validation)
+      const result1 = await orchestrator.orchestrate(
+        ["test", "project"],
         {},
         { skipStdin: true },
       );
 
-      // Should fail at some stage (stdin, variables, or prompt generation)
-      assertEquals(result.ok, false);
-      if (!result.ok) {
+      assertEquals(result1.ok, false);
+      if (!result1.ok) {
+        assertEquals(result1.error.kind, "InvalidDemonstrativeType");
+      }
+
+      // Test with invalid layer type (should fail at validation)
+      const result2 = await orchestrator.orchestrate(
+        ["to", "invalid"],
+        {},
+        { skipStdin: true },
+      );
+
+      assertEquals(result2.ok, false);
+      if (!result2.ok) {
+        assertEquals(result2.error.kind, "InvalidLayerType");
+      }
+
+      // Test with valid parameters (should fail at later stage)
+      const result3 = await orchestrator.orchestrate(
+        ["to", "project"],
+        {},
+        { skipStdin: true },
+      );
+
+      assertEquals(result3.ok, false);
+      if (!result3.ok) {
+        // Should fail at stdin, variables, or prompt generation stage
         assert(
           [
             "StdinReadError",
             "VariableProcessingError", 
             "PromptGenerationError",
             "OutputWriteError"
-          ].includes(result.error.kind),
-          `Unexpected error kind: ${result.error.kind}`
+          ].includes(result3.error.kind),
+          `Unexpected error kind: ${result3.error.kind}`
         );
       }
     });
@@ -350,15 +380,13 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
         // Error should include proper context
         assertExists(result.error.kind);
         
-        // Depending on validation, could be different error types
-        assert(
-          [
-            "StdinReadError",
-            "VariableProcessingError",
-            "PromptGenerationError"
-          ].includes(result.error.kind),
-          `Unexpected error kind: ${result.error.kind}`
-        );
+        // With validation, invalid demonstrative type should fail first
+        assertEquals(result.error.kind, "InvalidDemonstrativeType");
+        
+        // Verify error details for InvalidDemonstrativeType
+        if (result.error.kind === "InvalidDemonstrativeType") {
+          assertEquals(result.error.value, "invalid");
+        }
       }
     });
 
@@ -519,18 +547,22 @@ describe("TwoParamsOrchestrator - Unit Tests", () => {
       const orchestrator = new TwoParamsOrchestrator();
 
       const result = await orchestrator.orchestrate(
-        ["init", "bugs"],
+        ["to", "project"],
         {},
         { skipStdin: true },
       );
 
+      // Result should be structured correctly
       assert("ok" in result);
 
-      // Should process with defaults
+      // Should process with defaults but likely fail due to missing resources
       if (!result.ok) {
-        // Expected to fail at factory/prompt generation
-        assert(["FactoryValidationError", "VariablesBuilderError", "PromptGenerationError"]
-          .includes(result.error.kind));
+        // Should fail at factory/prompt generation or variable processing
+        assert([
+          "StdinReadError",
+          "VariableProcessingError",
+          "PromptGenerationError"
+        ].includes(result.error.kind), `Unexpected error kind: ${result.error.kind}`);
       }
     });
 

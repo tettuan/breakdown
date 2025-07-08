@@ -176,16 +176,16 @@ export function isInvalidVariablesError(
 export function formatPromptError(error: PromptError): string {
   switch (error.kind) {
     case "TemplateNotFound":
-      return `Template not found: ${error.path}`;
+      return `${error.kind}: Template not found: ${error.path}`;
     case "InvalidVariables":
-      return `Invalid variables: ${error.details.join(", ")}`;
+      return `${error.kind}: Invalid variables: ${error.details.join(", ")}`;
     case "SchemaError":
-      return `Schema error in ${error.schema}: ${error.error}`;
+      return `${error.kind}: Schema error in ${error.schema}: ${error.error}`;
     case "InvalidPath":
-      return `Invalid path: ${error.message}`;
+      return `${error.kind}: Invalid path: ${error.message}`;
     case "TemplateParseError":
-      return `Failed to parse template ${error.template}: ${error.error}`;
+      return `${error.kind}: Failed to parse template ${error.template}: ${error.error}`;
     case "ConfigurationError":
-      return `Configuration error: ${error.message}`;
+      return `${error.kind}: Configuration error: ${error.message}`;
   }
 }

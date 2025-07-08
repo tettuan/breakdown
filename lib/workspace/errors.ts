@@ -333,7 +333,8 @@ export type WorkspaceErrorType =
   | WorkspaceInitErrorInterface
   | WorkspaceConfigErrorInterface
   | WorkspacePathErrorInterface
-  | WorkspaceDirectoryErrorInterface;
+  | WorkspaceDirectoryErrorInterface
+  | WorkspaceError;
 
 /**
  * Type guard to check if an error is any WorkspaceErrorType.
@@ -347,7 +348,8 @@ export function isWorkspaceError(error: unknown): error is WorkspaceErrorType {
     (error.type === "workspace_init_error" ||
      error.type === "workspace_config_error" ||
      error.type === "workspace_path_error" ||
-     error.type === "workspace_directory_error");
+     error.type === "workspace_directory_error" ||
+     error.type === "workspace_error");
 }
 
 /**
@@ -358,6 +360,7 @@ export type WorkspaceResult<T> = Result<T, WorkspaceErrorType>;
 // Error classes for tests that expect constructors
 export class WorkspaceError extends Error {
   public readonly code: string;
+  public readonly type: string = "workspace_error";
   constructor(message: string, code: string) {
     super(message);
     this.name = "WorkspaceError";

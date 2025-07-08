@@ -165,19 +165,19 @@ Deno.test("BreakdownConfig Profile Integration - ConfigProfileName validation", 
 
     // Test invalid profile names
     const invalidChars = ConfigProfileName.create("INVALID");
-    assertEquals(invalidChars.value, null);
+    assertEquals(invalidChars.ok, false);
 
     const tooLong = ConfigProfileName.create("a".repeat(51));
-    assertEquals(tooLong.value, null);
+    assertEquals(tooLong.ok, false);
 
     const emptyString = ConfigProfileName.create("");
-    assertEquals(emptyString.value, null);
+    assertEquals(emptyString.ok, false);
 
     const nullInput = ConfigProfileName.create(null);
-    assertEquals(nullInput.value, null);
+    assertEquals(nullInput.ok, false);
 
     const withSpaces = ConfigProfileName.create("invalid profile");
-    assertEquals(withSpaces.value, null);
+    assertEquals(withSpaces.ok, false);
 
     logger.info("ConfigProfileName rejection tests passed");
   });
@@ -391,7 +391,7 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         for (const invalidDirective of profileConfig.invalidDirectives) {
           const result = factory.createDirectiveType(invalidDirective);
           if (!result.ok) {
-            assertEquals(result.error.kind, "ValidationFailed");
+            assertEquals(result.error.kind, "PatternValidationFailed");
             logger.debug("Invalid directive rejected", {
               profile: profileConfig.profileName,
               directive: invalidDirective,
@@ -415,7 +415,7 @@ Deno.test("BreakdownConfig Profile Integration - TypeFactory profile switching",
         for (const invalidLayer of profileConfig.invalidLayers) {
           const result = factory.createLayerType(invalidLayer);
           if (!result.ok) {
-            assertEquals(result.error.kind, "ValidationFailed");
+            assertEquals(result.error.kind, "PatternValidationFailed");
             logger.debug("Invalid layer rejected", {
               profile: profileConfig.profileName,
               layer: invalidLayer,

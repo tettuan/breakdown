@@ -18,7 +18,7 @@ import {
   type TypePatternProvider,
 } from "../../lib/deps.ts";
 
-const logger = new BreakdownLogger("type-factory-unit");
+const logger = new BreakdownLogger("type-factory-behavior");
 
 class UnitTestProvider implements TypePatternProvider {
   constructor(
@@ -85,9 +85,9 @@ describe("TypeFactory - createDirectiveType Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "invalid");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "invalid");
         assertExists(result.error.pattern);
       }
     }
@@ -114,9 +114,9 @@ describe("TypeFactory - createDirectiveType Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "");
       }
     }
   });
@@ -128,9 +128,9 @@ describe("TypeFactory - createDirectiveType Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "   ");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "   ");
       }
     }
   });
@@ -205,9 +205,9 @@ describe("TypeFactory - createLayerType Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "invalid");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "invalid");
       }
     }
   });
@@ -255,9 +255,9 @@ describe("TypeFactory - createBothTypes Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "invalid");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "invalid");
       }
     }
   });
@@ -269,9 +269,9 @@ describe("TypeFactory - createBothTypes Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "invalid");
+      assertEquals(result.error.kind, "PatternValidationFailed");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "invalid");
       }
     }
   });
@@ -283,10 +283,10 @@ describe("TypeFactory - createBothTypes Method", () => {
 
     assertEquals(result.ok, false);
     if (!result.ok) {
-      assertEquals(result.error.kind, "ValidationFailed");
+      assertEquals(result.error.kind, "PatternValidationFailed");
       // Should fail on directive first
-      if (result.error.kind === "ValidationFailed") {
-        assertEquals(result.error.data, "invalid1");
+      if (result.error.kind === "PatternValidationFailed") {
+        assertEquals(result.error.value, "invalid1");
       }
     }
   });

@@ -6,7 +6,7 @@
  * represented as values rather than exceptions.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -296,7 +296,7 @@ describe("Config Constraint Validation - Directory Validation", () => {
         };
 
         // Create factory with custom config
-        const totalityFactory = TotalityPromptVariablesFactory.createWithConfig(
+        const totalityFactoryResult = TotalityPromptVariablesFactory.createWithConfig(
           scenario.config,
           {
             demonstrativeType: typesResult.data.directive.getValue(),
@@ -305,15 +305,16 @@ describe("Config Constraint Validation - Directory Validation", () => {
           },
         );
 
-        const hasValidBaseDir = totalityFactory.hasValidBaseDir();
-        const baseDirError = totalityFactory.getBaseDirError();
-
         if (scenario.expectValid) {
-          assertEquals(hasValidBaseDir, true, `${scenario.description} should be valid`);
-          assertEquals(baseDirError, undefined, `${scenario.description} should not have error`);
+          assertEquals(totalityFactoryResult.ok, true, `${scenario.description} should be valid`);
+          if (totalityFactoryResult.ok) {
+            assertExists(totalityFactoryResult.data, `${scenario.description} should have factory`);
+          }
         } else {
-          assertEquals(hasValidBaseDir, false, `${scenario.description} should be invalid`);
-          assertExists(baseDirError, `${scenario.description} should have error`);
+          assertEquals(totalityFactoryResult.ok, false, `${scenario.description} should be invalid`);
+          if (!totalityFactoryResult.ok) {
+            assertExists(totalityFactoryResult.error, `${scenario.description} should have error`);
+          }
         }
       }
     }
@@ -358,14 +359,13 @@ describe("Config Constraint Validation - Directory Validation", () => {
           options: {},
         };
 
-        const totalityFactory = TotalityPromptVariablesFactory.createWithConfig(config, {
+        const totalityFactoryResult = TotalityPromptVariablesFactory.createWithConfig(config, {
           demonstrativeType: typesResult.data.directive.getValue(),
           layerType: typesResult.data.layer.getValue(),
           options: {},
         });
-        const hasValidBaseDir = totalityFactory.hasValidBaseDir();
-
-        assertEquals(hasValidBaseDir, scenario.valid, `${scenario.description} validity`);
+        
+        assertEquals(totalityFactoryResult.ok, scenario.valid, `${scenario.description} validity`);
       }
     }
   });
@@ -461,7 +461,7 @@ describe("Config Constraint Validation - Parameter Integration", () => {
         assertEquals(result.data.directive.getValue(), scenario.testValues.directive);
         assertEquals(result.data.layer.getValue(), scenario.testValues.layer);
       } else if (!scenario.expectValid && !result.ok) {
-        assertEquals(result.error.kind, "ValidationFailed");
+        assertEquals(result.error.kind, "PatternValidationFailed");
       }
     });
   });

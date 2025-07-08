@@ -8,12 +8,12 @@
  * 4. No responsibility duplication with other components
  */
 
-import { assert, assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists, assertNotEquals } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { OutputFilePathResolver } from "../../../../lib/factory/output_file_path_resolver.ts";
 import type { PromptCliParams } from "../../../../lib/factory/prompt_variables_factory.ts";
-import type { TwoParams_Result } from "$lib/types/mod.ts";
+import type { TwoParams_Result } from "../../../../lib/types/mod.ts";
 
 const logger = new BreakdownLogger("structure-output-file-path-resolver");
 
@@ -29,23 +29,50 @@ describe("OutputFilePathResolver - Class Structure", () => {
       options: { destinationFile: "output.md" },
     };
 
-    const resolver = new OutputFilePathResolver(mockConfig, mockParams);
+    const resolverResult = OutputFilePathResolver.create(mockConfig, mockParams);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
 
     // Should only expose output path resolution functionality
     assertEquals(typeof resolver.getPath, "function");
-    assertEquals(typeof resolver.getDestinationFile, "function");
-    assertEquals(typeof resolver.generateDefaultFilename, "function");
+    
+    // Verify through actual usage that it only handles output paths
+    const result = resolver.getPath();
+    assert(result.ok);
+    assertEquals(result.data.type, "filename");
+    assertEquals(result.data.value.includes("output.md"), true);
 
     // Should not expose unrelated functionality
-    if ((resolver as any).readFile) {
-      assertEquals(typeof (resolver as any).readFile, "function");
-    }
-    if ((resolver as any).writeFile) {
-      assertEquals(typeof (resolver as any).writeFile, "function");
-    }
-    if ((resolver as any).processContent) {
-      assertEquals(typeof (resolver as any).processContent, "function");
-    }
+    // Check that no methods for reading, writing, or content processing exist
+    const allMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(resolver));
+    const publicMethods = allMethods.filter(name => {
+      if (name === 'constructor') return false;
+      const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(resolver), name);
+      return descriptor && typeof descriptor.value === 'function';
+    });
+    
+    // Debug output to understand the methods
+    logger.debug("Found methods", publicMethods);
+    
+    // getPath should be the only public method
+    assertEquals(publicMethods.includes("getPath"), true, "Should have getPath method");
+    
+    // Private methods are marked private in TypeScript but still accessible at runtime
+    // We verify they exist but are not part of the public API design
+    const privateMethodNames = ['normalizePath', 'generateDefaultFilename', 'isDirectory', 'hasPathHierarchy', 'hasExtension'];
+    privateMethodNames.forEach(methodName => {
+      // In JavaScript runtime, private methods are still accessible via any cast
+      // This is a limitation of TypeScript's private modifier
+      const method = (resolver as any)[methodName];
+      if (method !== undefined) {
+        assertEquals(typeof method, 'function', `${methodName} should be a function if accessible`);
+      }
+    });
+    
+    // Verify that TypeScript's type system would prevent direct access
+    // This is what matters for encapsulation in TypeScript
+    // The fact that private methods exist at runtime is a JavaScript limitation,
+    // but TypeScript enforces encapsulation at compile time
   });
 
   it("should properly encapsulate internal logic", () => {
@@ -58,19 +85,22 @@ describe("OutputFilePathResolver - Class Structure", () => {
       options: {},
     };
 
-    const resolver = new OutputFilePathResolver(mockConfig, mockParams);
+    const resolverResult = OutputFilePathResolver.create(mockConfig, mockParams);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
 
-    // Private methods should not be accessible
-    if ((resolver as any).getLayerType) {
-      assertEquals(typeof (resolver as any).getLayerType, "function");
-    }
-
-    // Public helper methods should be accessible (marked public for testing)
-    assertEquals(typeof resolver.normalizePath, "function");
-    assertEquals(typeof resolver.generateDefaultFilename, "function");
-    assertEquals(typeof resolver.isDirectory, "function");
-    assertEquals(typeof resolver.hasPathHierarchy, "function");
-    assertEquals(typeof resolver.hasExtension, "function");
+    // Verify encapsulation through the public interface behavior
+    const result1 = resolver.getPath();
+    assert(result1.ok);
+    
+    // Test that internal implementation details are not exposed
+    // The resolver should handle all path logic internally
+    const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(resolver))
+      .filter(name => name !== 'constructor' && typeof (resolver as any)[name] === 'function');
+    
+    // Should only have minimal public interface
+    assertEquals(publicMethods.includes('getPath'), true, "Should have getPath method");
+    assertEquals(publicMethods.includes('create'), false, "create is static, not instance method");
   });
 
   it("should maintain immutable state after construction", () => {
@@ -83,7 +113,9 @@ describe("OutputFilePathResolver - Class Structure", () => {
       options: { destinationFile: "test.md" },
     };
 
-    const resolver = new OutputFilePathResolver(config, params);
+    const resolverResult = OutputFilePathResolver.create(config, params);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
     const path1 = resolver.getPath();
 
     // Modify original objects
@@ -110,7 +142,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: {},
     };
-    const resolver1 = new OutputFilePathResolver(config, params1);
+    const resolverResult1 = OutputFilePathResolver.create(config, params1);
+    assert(resolverResult1.ok, "Should create resolver successfully");
+    const resolver1 = resolverResult1.data;
     const result1 = resolver1.getPath();
     assert(result1.ok);
     assertEquals(result1.data.value.includes("project"), true);
@@ -122,7 +156,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: { destinationFile: "/absolute/path/file.md" },
     };
-    const resolver2 = new OutputFilePathResolver(config, params2);
+    const resolverResult2 = OutputFilePathResolver.create(config, params2);
+    assert(resolverResult2.ok, "Should create resolver successfully");
+    const resolver2 = resolverResult2.data;
     const result2 = resolver2.getPath();
     assert(result2.ok);
     assertEquals(result2.data.value, "/absolute/path/file.md");
@@ -133,7 +169,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: { destinationFile: "./output/file.md" },
     };
-    const resolver3 = new OutputFilePathResolver(config, params3);
+    const resolverResult3 = OutputFilePathResolver.create(config, params3);
+    assert(resolverResult3.ok, "Should create resolver successfully");
+    const resolver3 = resolverResult3.data;
     const result3 = resolver3.getPath();
     assert(result3.ok);
     assertEquals(result3.data.value.includes("output/file.md"), true);
@@ -144,7 +182,9 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       layerType: "project",
       options: { destinationFile: "simple.md" },
     };
-    const resolver4 = new OutputFilePathResolver(config, params4);
+    const resolverResult4 = OutputFilePathResolver.create(config, params4);
+    assert(resolverResult4.ok, "Should create resolver successfully");
+    const resolver4 = resolverResult4.data;
     const result4 = resolver4.getPath();
     assert(result4.ok);
     assertEquals(result4.data.value.includes("project/simple.md"), true);
@@ -160,25 +200,25 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       options: {},
     };
 
-    const resolver = new OutputFilePathResolver(config, params);
+    const resolverResult = OutputFilePathResolver.create(config, params);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
 
-    // Test path normalization
-    const windowsPath = resolver.normalizePath("output\\file.md");
-    assertEquals(windowsPath, "output/file.md");
-
-    // Test extension detection
-    assertEquals(resolver.hasExtension("file.md"), true);
-    assertEquals(resolver.hasExtension("directory"), false);
-
-    // Test hierarchy detection
-    assertEquals(resolver.hasPathHierarchy("dir/file.md"), true);
-    assertEquals(resolver.hasPathHierarchy("file.md"), false);
-
-    // Test filename generation
-    const filename = resolver.generateDefaultFilename();
-    assert(filename.ok);
-    assertEquals(filename.data.endsWith(".md"), true);
-    assertEquals(filename.data.includes("_"), true);
+    // Test separation of concerns through output behavior
+    // When no destination is specified
+    const defaultResult = resolver.getPath();
+    assert(defaultResult.ok);
+    const defaultPath = defaultResult.data.value;
+    
+    // Should generate appropriate path (with layer directory)
+    assertEquals(defaultPath.includes("project"), true, "Should include layer type in path");
+    assertEquals(defaultPath.endsWith(".md"), true, "Should have markdown extension");
+    
+    // Path should be properly normalized (no backslashes)
+    assertEquals(defaultPath.includes("\\"), false, "Should normalize path separators");
+    
+    // Should handle file naming consistently
+    assertEquals(defaultPath.includes("_"), true, "Should use consistent naming pattern");
   });
 
   it("should generate unique filenames consistently", () => {
@@ -191,25 +231,31 @@ describe("OutputFilePathResolver - Method Responsibilities", () => {
       options: {},
     };
 
-    const resolver = new OutputFilePathResolver(config, params);
+    const resolverResult = OutputFilePathResolver.create(config, params);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
 
-    // Generate multiple filenames
-    const filenames = [];
+    // Generate multiple paths to test uniqueness
+    const paths = [];
     for (let i = 0; i < 5; i++) {
-      const result = resolver.generateDefaultFilename();
+      // Create new resolver each time to test filename generation
+      const newResolverResult = OutputFilePathResolver.create(config, params);
+      assert(newResolverResult.ok);
+      const newResolver = newResolverResult.data;
+      const result = newResolver.getPath();
       assert(result.ok);
-      filenames.push(result.data);
+      paths.push(result.data.value);
     }
 
-    // All should be unique
-    const uniqueFilenames = new Set(filenames);
-    assertEquals(uniqueFilenames.size, filenames.length);
+    // All generated paths should be unique
+    const uniquePaths = new Set(paths);
+    assertEquals(uniquePaths.size, paths.length, "Each generated path should be unique");
 
-    // All should follow the pattern YYYYMMDD_hash.md
-    filenames.forEach((filename) => {
-      assertEquals(filename.endsWith(".md"), true);
-      assertEquals(filename.includes("_"), true);
-      assertEquals(filename.length > 10, true); // At least YYYYMMDD_X.md
+    // All should follow consistent pattern
+    paths.forEach((path) => {
+      assertEquals(path.endsWith(".md"), true, "Should end with .md");
+      assertEquals(path.includes("project"), true, "Should include layer type");
+      assertEquals(path.includes("_"), true, "Should include separator in filename");
     });
   });
 });
@@ -225,14 +271,16 @@ describe("OutputFilePathResolver - Abstraction Levels", () => {
       options: { destinationFile: "./test/output.md" },
     };
 
-    const resolver = new OutputFilePathResolver(config, params);
+    const resolverResult = OutputFilePathResolver.create(config, params);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
     const result = resolver.getPath();
 
     // Should produce properly resolved paths using standard abstractions
     assertExists(result);
     assert(result.ok);
-    assertNotEquals(result.data.data, "./test/output.md"); // Should be absolute
-    assertEquals(result.data.data.startsWith("/") || result.data.data.match(/^[A-Z]:/), true); // Absolute path
+    assertNotEquals(result.data.value, "./test/output.md"); // Should be absolute
+    assertEquals(result.data.value.startsWith("/") || result.data.value.match(/^[A-Z]:/), true); // Absolute path
   });
 
   it("should handle cross-platform path normalization consistently", () => {
@@ -254,8 +302,12 @@ describe("OutputFilePathResolver - Abstraction Levels", () => {
         options: { destinationFile: winPath },
       };
 
-      const resolver = new OutputFilePathResolver(config, params);
-      const normalized = resolver.normalizePath(winPath);
+      const resolverResult = OutputFilePathResolver.create(config, params);
+      assert(resolverResult.ok, "Should create resolver successfully");
+      const resolver = resolverResult.data;
+      const result = resolver.getPath();
+      assert(result.ok);
+      const normalized = result.data.value;
 
       // Should normalize to forward slashes
       assertEquals(normalized.includes("\\"), false);
@@ -273,15 +325,26 @@ describe("OutputFilePathResolver - Abstraction Levels", () => {
       options: {},
     };
 
-    const resolver = new OutputFilePathResolver(config, params);
+    const resolverResult = OutputFilePathResolver.create(config, params);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
 
-    // Test with current directory (should exist)
-    const currentDir = resolver.isDirectory(".");
-    assertEquals(currentDir, true);
-
-    // Test with non-existent directory
-    const nonExistent = resolver.isDirectory("/non/existent/directory");
-    assertEquals(nonExistent, false);
+    // Test directory handling through path resolution behavior
+    // When destination is a directory (no extension)
+    const dirParams: PromptCliParams = {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: { destinationFile: "./output/" },
+    };
+    
+    const dirResolverResult = OutputFilePathResolver.create(config, dirParams);
+    assert(dirResolverResult.ok);
+    const dirResolver = dirResolverResult.data;
+    const dirResult = dirResolver.getPath();
+    
+    // Should handle directory paths appropriately
+    assert(dirResult.ok, "Should resolve directory paths");
+    assertEquals(dirResult.data.value.endsWith(".md"), true, "Should add filename to directory");
   });
 });
 
@@ -302,14 +365,16 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
       },
     };
 
-    const resolver = new OutputFilePathResolver(config, outputParams);
+    const resolverResult = OutputFilePathResolver.create(config, outputParams);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
     const result = resolver.getPath();
 
     // Should only process destinationFile, not other file options
     assert(result.ok);
-    assertEquals(result.data.data.includes("output.md"), true);
-    assertEquals(result.data.data.includes("input.md"), false);
-    assertEquals(result.data.data.includes("prompts"), false);
+    assertEquals(result.data.value.includes("output.md"), true);
+    assertEquals(result.data.value.includes("input.md"), false);
+    assertEquals(result.data.value.includes("prompts"), false);
   });
 
   it("should handle parameter structure variations gracefully", () => {
@@ -324,18 +389,24 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
       options: { destinationFile: "test1.md" },
     };
 
-    const resolver1 = new OutputFilePathResolver(config, promptParams);
+    const resolverResult1 = OutputFilePathResolver.create(config, promptParams);
+    assert(resolverResult1.ok, "Should create resolver successfully");
+    const resolver1 = resolverResult1.data;
     const result1 = resolver1.getPath();
     assertExists(result1);
 
     // Test with TwoParams_Result-like structure
-    const twoParamsLike = {
-      directive: { getValue: () => "to" },
-      layer: { getValue: () => "project" },
+    const twoParamsLike: TwoParams_Result = {
+      type: "two",
+      params: ["to", "project"],
+      demonstrativeType: "to",
+      layerType: "project",
       options: { destinationFile: "test2.md" },
-    } as any as TwoParams_Result;
+    };
 
-    const resolver2 = new OutputFilePathResolver(config, twoParamsLike);
+    const resolverResult2 = OutputFilePathResolver.create(config, twoParamsLike);
+    assert(resolverResult2.ok, "Should create resolver successfully");
+    const resolver2 = resolverResult2.data;
     const result2 = resolver2.getPath();
     assertExists(result2);
   });
@@ -355,13 +426,15 @@ describe("OutputFilePathResolver - Responsibility Boundaries", () => {
         options: {},
       };
 
-      const resolver = new OutputFilePathResolver(config, params);
+      const resolverResult = OutputFilePathResolver.create(config, params);
+      assert(resolverResult.ok, "Should create resolver successfully");
+      const resolver = resolverResult.data;
       const result = resolver.getPath();
 
       // Should generate path with appropriate layer directory
       assert(result.ok);
-      assertEquals(result.data.data.includes(layer), true);
-      assertEquals(result.data.data.endsWith(".md"), true);
+      assertEquals(result.data.value.includes(layer), true);
+      assertEquals(result.data.value.endsWith(".md"), true);
     });
   });
 });
@@ -389,15 +462,17 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
         options: { destinationFile: edgeCase as any },
       };
 
-      const resolver = new OutputFilePathResolver(config, params);
+      const resolverResult = OutputFilePathResolver.create(config, params);
+      assert(resolverResult.ok, "Should create resolver successfully");
+      const resolver = resolverResult.data;
       const result = resolver.getPath();
 
       // Should handle invalid inputs by auto-generating
       assertExists(result);
       assert(result.ok);
-      assertNotEquals(result.data.data, "");
+      assertNotEquals(result.data.value, "");
       // Should generate a meaningful path (may or may not include "project")
-      assert(result.data.data.length > 0, "Should generate non-empty path");
+      assert(result.data.value.length > 0, "Should generate non-empty path");
     });
   });
 
@@ -424,13 +499,15 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
         options: { destinationFile: specialPath },
       };
 
-      const resolver = new OutputFilePathResolver(config, params);
+      const resolverResult = OutputFilePathResolver.create(config, params);
+      assert(resolverResult.ok, "Should create resolver successfully");
+      const resolver = resolverResult.data;
       const result = resolver.getPath();
 
       // Should handle special characters without errors
       assertExists(result);
       assert(result.ok);
-      assertNotEquals(result.data.data, "");
+      assertNotEquals(result.data.value, "");
     });
   });
 
@@ -446,13 +523,15 @@ describe("OutputFilePathResolver - Edge Cases and Boundaries", () => {
       options: {},
     };
 
-    const resolver = new OutputFilePathResolver(config, paramsWithoutLayer);
+    const resolverResult = OutputFilePathResolver.create(config, paramsWithoutLayer);
+    assert(resolverResult.ok, "Should create resolver successfully");
+    const resolver = resolverResult.data;
     const result = resolver.getPath();
 
     // Should still generate a valid path
     assertExists(result);
     assert(result.ok);
-    assertNotEquals(result.data.data, "");
-    assertEquals(result.data.data.endsWith(".md"), true);
+    assertNotEquals(result.data.value, "");
+    assertEquals(result.data.value.endsWith(".md"), true);
   });
 });

@@ -8,7 +8,7 @@
 import {
   assertEquals,
   assertExists,
-} from "../../../lib/deps.ts";
+} from "../../../../lib/deps.ts";
 import {
   detectEnvironment as _detectEnvironment,
   type EnvironmentDetectionConfig as _EnvironmentDetectionConfig,

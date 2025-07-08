@@ -11,6 +11,9 @@
 import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
+import type { Result } from "./result.ts";
+import type { ProcessingError } from "./unified_error_types.ts";
+import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
  * 設定ファイルからバリデーションパターンを提供するインターフェース
@@ -32,23 +35,15 @@ export interface TypePatternProvider {
 
 /**
  * 型構築結果を表すResult型
- * Totality原則に基づいてエラーを値として扱う
+ * 統一されたResult型とProcessingErrorを使用
  */
-export type TypeCreationResult<T> = {
-  ok: true;
-  data: T;
-} | {
-  ok: false;
-  error: TypeCreationError;
-};
+export type TypeCreationResult<T> = Result<T, ProcessingError>;
 
-/**
- * 型構築時のエラー種別
- */
-export type TypeCreationError =
-  | { kind: "PatternNotFound"; message: string }
-  | { kind: "ValidationFailed"; value: string; pattern: string }
-  | { kind: "InvalidPattern"; pattern: string; cause: string };
+// TypeCreationError は ProcessingError に統一されました
+// 使用方法:
+// - PatternNotFound -> ProcessingError with kind "PatternNotFound"
+// - ValidationFailed -> ProcessingError with kind "PatternValidationFailed"
+// - InvalidPattern -> ProcessingError with kind "InvalidPattern"
 
 /**
  * TypeFactory - 型構築のためのファクトリー
@@ -91,10 +86,10 @@ export class TypeFactory {
     if (!pattern) {
       return {
         ok: false,
-        error: {
-          kind: "PatternNotFound",
-          message: "DirectiveType validation pattern not found in configuration",
-        },
+        error: ErrorFactory.processingError("PatternNotFound", {
+          operation: "type_creation",
+          reason: "DirectiveType validation pattern not found in configuration",
+        }),
       };
     }
 
@@ -103,11 +98,11 @@ export class TypeFactory {
     if (!pattern.test(value)) {
       return {
         ok: false,
-        error: {
-          kind: "ValidationFailed",
+        error: ErrorFactory.processingError("PatternValidationFailed", {
           value,
           pattern: pattern.getPattern(),
-        },
+          operation: "type_creation",
+        }),
       };
     }
 
@@ -141,10 +136,10 @@ export class TypeFactory {
     if (!pattern) {
       return {
         ok: false,
-        error: {
-          kind: "PatternNotFound",
-          message: "LayerType validation pattern not found in configuration",
-        },
+        error: ErrorFactory.processingError("PatternNotFound", {
+          operation: "type_creation",
+          reason: "LayerType validation pattern not found in configuration",
+        }),
       };
     }
 
@@ -153,11 +148,11 @@ export class TypeFactory {
     if (!pattern.test(value)) {
       return {
         ok: false,
-        error: {
-          kind: "ValidationFailed",
+        error: ErrorFactory.processingError("PatternValidationFailed", {
           value,
           pattern: pattern.getPattern(),
-        },
+          operation: "type_creation",
+        }),
       };
     }
 

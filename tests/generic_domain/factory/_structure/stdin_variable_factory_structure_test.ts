@@ -11,7 +11,7 @@
  * 各メソッドの責任範囲が適切であることを確認します。
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertNotEquals } from "../../../../lib/deps.ts";
 import {
   defaultStdinVariableFactory,
   StdinFactoryInput,
@@ -104,7 +104,7 @@ Deno.test("Structure: 適切な抽象化レベル - Factory層の責務範囲", 
 
     // Factory層が適切にTypes層を隠蔽していることを確認
     assertExists(result.data.name);
-    assertExists(result.data.data);
+    assertExists(result.data.value);
   }
 
   // エラー処理も適切に抽象化されていることを確認

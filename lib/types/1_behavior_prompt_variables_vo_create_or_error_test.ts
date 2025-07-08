@@ -13,7 +13,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import { PromptVariablesVO } from "./prompt_variables_vo.ts";
 import { StandardVariable, FilePathVariable, StdinVariable, UserVariable } from "./prompt_variables.ts";
 import type { PromptVariable } from "./prompt_variables.ts";
-import { ErrorGuards } from "./unified_error_types.ts";
+import { ErrorGuards } from "./mod.ts";
 
 // Test helper to create test variables
 const createValidVariables = (): PromptVariable[] => {

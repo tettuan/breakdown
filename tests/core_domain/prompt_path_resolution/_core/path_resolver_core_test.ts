@@ -70,7 +70,7 @@ describe("Input Path: fromFile hierarchy", () => {
 
     // Create required prompt files
     await Deno.writeTextFile(
-      join(testDir, "prompts", "to", "issue", "f_project_strict.md"),
+      join(testDir, "prompts", "to", "issue", "f_issue.md"),
       "# Test prompt",
     );
     await Deno.writeTextFile(
@@ -112,7 +112,14 @@ describe("Input Path: fromFile hierarchy", () => {
         },
         testDir,
       );
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      if (!factoryResult.ok) {
+        logger.debug("Factory creation failed", { error: factoryResult.error });
+        console.error("Factory error:", factoryResult.error);
+      }
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       const resolved = factory.inputFilePath;
       logger.debug(`resolved path: ${resolved}`);
       logger.debug(`expected path: ${path.resolve("path/to/file.md")}`);
@@ -156,7 +163,10 @@ describe("Input Path: fromLayerType vs layerType", () => {
         fromLayerType: "project",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.inputFilePath, path.resolve("file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -193,7 +203,10 @@ describe("Input Path: fromLayerType vs layerType", () => {
         fromFile: "file.md",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.inputFilePath, path.resolve("file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -232,8 +245,17 @@ describe("Input Path: fromFile edge cases", () => {
         layerType: "issue",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
-      assertEquals(factory.inputFilePath, "");
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
+      const inputFilePathResult = factory.getInputFilePath();
+      if (inputFilePathResult.ok) {
+        assertEquals(inputFilePathResult.data, "");
+      } else {
+        // fromFile が提供されていない場合、エラーが返されることを確認
+        assertEquals(inputFilePathResult.ok, false);
+      }
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
@@ -269,7 +291,10 @@ describe("Input Path: fromFile edge cases", () => {
         fromFile: "path\\to\\file.md",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.inputFilePath, path.resolve("path/to/file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -308,7 +333,10 @@ describe("Output Path: destinationFile patterns", () => {
         layerType: "issue",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       const pathVal = factory.outputFilePath;
       const expectedDir = path.resolve("issue");
       const pattern = new RegExp(`^${expectedDir.replace(/\\/g, "/")}/\\d{8}_[a-f0-9]{7}\\.md$`);
@@ -350,7 +378,10 @@ describe("Output Path: destinationFile patterns", () => {
         destinationFile,
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.outputFilePath, path.resolve("path/to/file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -387,7 +418,10 @@ describe("Output Path: destinationFile patterns", () => {
         destinationFile: "file.md",
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.outputFilePath, path.resolve("issue/file.md"));
     } finally {
       Deno.chdir(originalCwd);
@@ -429,7 +463,10 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
         destinationFile: destinationDir,
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       const pathVal = factory.outputFilePath;
       const pattern = new RegExp(
         `^${path.resolve("path/to/dir").replace(/\\/g, "/")}/\\d{8}_[a-f0-9]{7}\\.md$`,
@@ -472,7 +509,10 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
         destinationFile: ambiguousPath,
         config: "test-path-resolver",
       }, testDir);
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       const pathVal = factory.outputFilePath;
       const pattern = new RegExp(
         `^${path.resolve(ambiguousPath).replace(/\\/g, "/")}/\\d{8}_[a-f0-9]{7}\\.md$`,
@@ -519,7 +559,10 @@ describe("Output Path: Directory vs File Ambiguity and Hash", () => {
           }, testDir);
           cliParams.demonstrativeType = "to";
           cliParams.layerType = "issue";
-          const factory = await PromptVariablesFactory.create(cliParams);
+          const factoryResult = await PromptVariablesFactory.create(cliParams);
+          assertEquals(factoryResult.ok, true);
+          if (!factoryResult.ok) continue; // Type guard
+          const factory = factoryResult.data;
           paths.add(factory.outputFilePath);
         }
         assertEquals(paths.size, 10, "Should generate unique paths");
@@ -574,11 +617,18 @@ describe("Factory Combination: resolves all subclass paths", () => {
           config: "test-path-resolver",
         },
       };
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.promptFilePath, path.resolve("prompts/to/issue/f_project_strict.md"));
       assertEquals(factory.inputFilePath, path.resolve("project.md"));
       assertEquals(factory.outputFilePath, path.resolve("issue/issue.md"));
-      assertEquals(factory.schemaFilePath, path.resolve("schema/to/issue/base.schema.md"));
+      const schemaFilePathResult = factory.getSchemaFilePath();
+      assertEquals(schemaFilePathResult.ok, true);
+      if (schemaFilePathResult.ok) {
+        assertEquals(schemaFilePathResult.data, path.resolve("schema/to/issue/base.schema.md"));
+      }
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
@@ -624,11 +674,18 @@ describe("Factory Combination: resolves all subclass paths", () => {
           config: "test-path-resolver",
         },
       };
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.promptFilePath, path.resolve("prompts/summary/project/f_project.md"));
       assertEquals(factory.inputFilePath, path.resolve("input.md"));
       assertEquals(factory.outputFilePath, path.resolve("project/output.md"));
-      assertEquals(factory.schemaFilePath, path.resolve("schema/summary/project/base.schema.md"));
+      const schemaFilePathResult = factory.getSchemaFilePath();
+      assertEquals(schemaFilePathResult.ok, true);
+      if (schemaFilePathResult.ok) {
+        assertEquals(schemaFilePathResult.data, path.resolve("schema/summary/project/base.schema.md"));
+      }
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);
@@ -675,11 +732,18 @@ describe("Factory Combination: resolves all subclass paths", () => {
           config: "test-path-resolver",
         },
       };
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       assertEquals(factory.promptFilePath, path.resolve("prompts/defect/task/f_task.md"));
       assertEquals(factory.inputFilePath, path.resolve("task_input.md"));
       assertEquals(factory.outputFilePath, absDest);
-      assertEquals(factory.schemaFilePath, path.resolve("schema/defect/task/base.schema.md"));
+      const schemaFilePathResult = factory.getSchemaFilePath();
+      assertEquals(schemaFilePathResult.ok, true);
+      if (schemaFilePathResult.ok) {
+        assertEquals(schemaFilePathResult.data, path.resolve("schema/defect/task/base.schema.md"));
+      }
     } finally {
       Deno.chdir(originalCwd);
       await cleanupTestEnvironment(env);

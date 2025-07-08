@@ -188,8 +188,6 @@ Deno.test("0_architecture: Type safety constraint - compile-time guarantees", ()
   if (result.ok) {
     // Verify method availability on successful construction
     assertEquals(typeof result.data.getPath, "function");
-    assertEquals(typeof result.data.getPathLegacy, "function");
-    assertEquals(typeof result.data.getPathLegacyUnsafe, "function");
     
     // Verify methods return appropriate types
     const pathResult = result.data.getPath();

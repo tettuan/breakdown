@@ -11,7 +11,6 @@
  * @module lib/cli/entry_point_manager
  */
 
-import { runBreakdown } from "../../cli/breakdown.ts";
 import type { Result } from "../types/result.ts";
 import { ok, error } from "../types/result.ts";
 
@@ -30,6 +29,8 @@ export interface EntryPointConfig {
   };
   /** Environment validation options */
   validateEnvironment?: boolean;
+  /** Main application function to run */
+  mainFunction?: (args: string[]) => Promise<unknown>;
 }
 
 /**
@@ -117,7 +118,11 @@ export class EntryPointManager {
       }
 
       // 3. Execute main application logic
-      await runBreakdown(args);
+      if (this.config.mainFunction) {
+        await this.config.mainFunction(args);
+      } else {
+        throw new Error("Main function not provided to EntryPointManager");
+      }
 
       if (this.config.verbose) {
         const duration = Date.now() - this.startupTime.getTime();
@@ -306,10 +311,11 @@ export class EntryPointManager {
   /**
    * Factory method to create a standard entry point manager
    */
-  static createStandard(verbose = false): EntryPointManager {
+  static createStandard(verbose = false, mainFunction?: (args: string[]) => Promise<unknown>): EntryPointManager {
     return new EntryPointManager({
       verbose,
       validateEnvironment: true,
+      mainFunction,
       errorHandler: (error) => {
         console.error("❌ Application Error:", error.message);
         if (verbose && error.stack) {
@@ -322,10 +328,11 @@ export class EntryPointManager {
   /**
    * Factory method to create a development entry point manager
    */
-  static createDevelopment(): EntryPointManager {
+  static createDevelopment(mainFunction?: (args: string[]) => Promise<unknown>): EntryPointManager {
     return new EntryPointManager({
       verbose: true,
       validateEnvironment: true,
+      mainFunction,
       errorHandler: (error) => {
         console.error("🐛 Development Error:", error.message);
         if (error.stack) {
@@ -338,10 +345,11 @@ export class EntryPointManager {
   /**
    * Factory method to create a production entry point manager
    */
-  static createProduction(): EntryPointManager {
+  static createProduction(mainFunction?: (args: string[]) => Promise<unknown>): EntryPointManager {
     return new EntryPointManager({
       verbose: false,
       validateEnvironment: true,
+      mainFunction,
       errorHandler: (error) => {
         // In production, log errors but don't expose details
         console.error("Application error occurred");

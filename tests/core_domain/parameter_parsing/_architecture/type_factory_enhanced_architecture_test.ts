@@ -20,10 +20,10 @@ import {
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  type TypeCreationError,
   TypeFactory,
   type TypePatternProvider,
 } from "../../lib/deps.ts";
+import type { ProcessingError } from "../../../../lib/types/unified_error_types.ts";
 
 const logger = new BreakdownLogger("type-factory-architecture-enhanced");
 
@@ -73,23 +73,32 @@ describe("TypeFactory - Enhanced Architectural Constraints", () => {
     const factory = new TypeFactory(provider);
 
     // Helper function to exhaustively handle all error types
-    function handleError(error: TypeCreationError): string {
+    function handleError(error: ProcessingError): string {
       switch (error.kind) {
         case "PatternNotFound":
-          return `Pattern not found: ${error.message}`;
-        case "ValidationFailed":
+          return `Pattern not found: ${error.reason}`;
+        case "PatternValidationFailed":
           return `Validation failed for ${error.value} against ${error.pattern}`;
         case "InvalidPattern":
-          return `Invalid pattern ${error.pattern}: ${error.cause}`;
-          // TypeScript will error if a case is missing, enforcing totality
+          return `Invalid pattern ${error.pattern}: ${error.reason}`;
+        case "ProcessingFailed":
+          return `Processing failed: ${error.reason}`;
+        case "TransformationFailed":
+          return `Transformation failed: ${error.reason}`;
+        case "GenerationFailed":
+          return `Generation failed: ${error.reason}`;
+        default:
+          // Handle other ProcessingError kinds
+          const exhaustiveCheck: never = error;
+          return `Processing error: ${JSON.stringify(exhaustiveCheck)}`;
       }
     }
 
     // Test all error types are handled
-    const errors: TypeCreationError[] = [
-      { kind: "PatternNotFound", message: "Test message" },
-      { kind: "ValidationFailed", value: "test", pattern: "pattern" },
-      { kind: "InvalidPattern", pattern: "bad|pattern", cause: "Invalid syntax" },
+    const errors: ProcessingError[] = [
+      { kind: "PatternNotFound", reason: "Test message", operation: "test" },
+      { kind: "PatternValidationFailed", value: "test", pattern: "pattern", operation: "test" },
+      { kind: "InvalidPattern", pattern: "bad|pattern", reason: "Invalid syntax", operation: "test" },
     ];
 
     errors.forEach((error) => {
@@ -216,8 +225,8 @@ describe("TypeFactory - Enhanced Architectural Constraints", () => {
 
     if (!bothResultInvalidDirective.ok) {
       // Error should indicate which validation failed
-      assertEquals(bothResultInvalidDirective.error.kind, "ValidationFailed");
-      if (bothResultInvalidDirective.error.kind === "ValidationFailed") {
+      assertEquals(bothResultInvalidDirective.error.kind, "PatternValidationFailed");
+      if (bothResultInvalidDirective.error.kind === "PatternValidationFailed") {
         assertEquals(bothResultInvalidDirective.error.value, "invalid");
         assertExists(bothResultInvalidDirective.error.pattern);
       }
@@ -227,8 +236,8 @@ describe("TypeFactory - Enhanced Architectural Constraints", () => {
     assertEquals(bothResultInvalidLayer.ok, false);
 
     if (!bothResultInvalidLayer.ok) {
-      assertEquals(bothResultInvalidLayer.error.kind, "ValidationFailed");
-      if (bothResultInvalidLayer.error.kind === "ValidationFailed") {
+      assertEquals(bothResultInvalidLayer.error.kind, "PatternValidationFailed");
+      if (bothResultInvalidLayer.error.kind === "PatternValidationFailed") {
         assertEquals(bothResultInvalidLayer.error.value, "invalid");
         assertExists(bothResultInvalidLayer.error.pattern);
       }

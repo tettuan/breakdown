@@ -93,12 +93,12 @@ Deno.test("2_unit - DefaultTypePatternProvider.getDefaultConfig returns _default
   // 設定の構造を確認
   assertExists(config.params, "Config should have params");
   assertExists(config.params.two, "Config should have two params");
-  assertExists(config.params.two.demonstrativeType, "Config should have demonstrativeType");
+  assertExists(config.params.two.directiveType, "Config should have directiveType");
   assertExists(config.params.two.layerType, "Config should have layerType");
 
   // パターン文字列の確認
   assertEquals(
-    config.params.two.demonstrativeType.pattern,
+    config.params.two.directiveType.pattern,
     "^(to|summary|defect)$",
     "DirectiveType pattern should match expected",
   );

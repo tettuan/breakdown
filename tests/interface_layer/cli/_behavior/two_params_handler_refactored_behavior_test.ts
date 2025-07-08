@@ -112,7 +112,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
 
           // Type-safe property access with proper discriminated union handling
           if (result.error.kind === "InvalidDemonstrativeType") {
-            assertEquals(result.error.data, invalidType);
+            assertEquals(result.error.value, invalidType);
             assertExists(result.error.validTypes);
             assert(result.error.validTypes.every((type: string) => validTypes.includes(type)));
           }
@@ -135,7 +135,7 @@ describe("TwoParamsHandler Refactored - Unit Tests", () => {
 
           // Type-safe property access with proper discriminated union handling
           if (result.error.kind === "InvalidLayerType") {
-            assertEquals(result.error.data, invalidType);
+            assertEquals(result.error.value, invalidType);
             assertExists(result.error.validTypes);
             assert(result.error.validTypes.every((type: string) => validTypes.includes(type)));
           }

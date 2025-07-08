@@ -47,7 +47,11 @@ const createMockPolicy = (): GenerationPolicy => {
     selectTemplate: () => ({} as any),
   };
   
-  return GenerationPolicy.create(config, [], selectionStrategy);
+  const policyResult = GenerationPolicy.create(config, [], selectionStrategy);
+  if (!policyResult.ok) {
+    throw new Error(`Failed to create mock policy: ${policyResult.error.message}`);
+  }
+  return policyResult.data;
 };
 
 Deno.test("PromptGenerationService - Architecture - Smart Constructor pattern enforcement", () => {

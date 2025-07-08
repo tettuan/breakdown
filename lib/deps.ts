@@ -62,6 +62,9 @@ export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1
 // Re-export extended TwoParams_Result with params property
 export type { TwoParams_Result } from "./types/two_params_result_extension.ts";
 
+// Re-export Result type
+export type { Result } from "./types/result.ts";
+
 /**
  * Prompt management utilities for Breakdown. Re-exported from @tettuan/breakdownprompt.
  */
@@ -98,3 +101,9 @@ export {
   assertIsError,
   assertNotStrictEquals,
 } from "@std/assert";
+
+/**
+ * Unified error types and factory functions. Re-exported from unified_error_types.
+ */
+export { ErrorFactory } from "./types/unified_error_types.ts";
+export type { ProcessingError } from "./types/unified_error_types.ts";

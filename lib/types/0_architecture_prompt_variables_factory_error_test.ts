@@ -212,6 +212,10 @@ Deno.test("PromptVariablesFactoryError Architecture - Factory object is const", 
     "inputFilePathNotResolved",
     "outputFilePathNotResolved",
     "schemaFilePathNotResolved",
+    "promptPathResolutionFailed",
+    "inputPathResolutionFailed",
+    "outputPathResolutionFailed",
+    "schemaPathResolutionFailed",
   ];
 
   assertEquals(factoryKeys.length, expectedKeys.length, "Factory should have expected number of methods");

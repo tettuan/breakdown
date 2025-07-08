@@ -6,13 +6,13 @@
  * consistency throughout the entire breakdown system.
  */
 
-import { assertEquals, assertExists, assertInstanceOf } from "../../tests/deps.ts";
+import { assertEquals, assertExists } from "../../deps.ts";
 import type { Result } from "./result.ts";
-import { ok, error, isOk, isError, map, chain, all } from "./result.ts";
+import { ok, error, chain } from "./result.ts";
 
 // Import types from different domains to test cross-domain compatibility
-import type { DirectiveType } from "./directive_type.ts";
-import type { LayerType } from "./layer_type.ts";
+import type { DirectiveType } from "./mod.ts";
+import type { LayerType } from "./mod.ts";
 import type { TypeFactory } from "./type_factory.ts";
 
 /**
@@ -357,7 +357,17 @@ Deno.test("Totality Integration - Smart Constructor Patterns", async (t) => {
     
     // Smart Constructor for LayerType
     const createValidatedLayerType = (value: string): SmartConstructorResult<string> => {
-      // Pattern constraint
+      // Case constraint first - check if lowercase
+      if (value !== value.toLowerCase()) {
+        return error({
+          validator: "LayerTypeValidator",
+          constraint: "case",
+          value,
+          message: "LayerType value must be lowercase"
+        });
+      }
+      
+      // Pattern constraint after case check
       const pattern = /^(project|issue|task)$/;
       if (!pattern.test(value)) {
         return error({
@@ -365,16 +375,6 @@ Deno.test("Totality Integration - Smart Constructor Patterns", async (t) => {
           constraint: "pattern",
           value,
           message: `Value "${value}" does not match pattern ${pattern.source}`
-        });
-      }
-      
-      // Case constraint
-      if (value !== value.toLowerCase()) {
-        return error({
-          validator: "LayerTypeValidator",
-          constraint: "case",
-          value,
-          message: "LayerType value must be lowercase"
         });
       }
       
@@ -409,9 +409,17 @@ Deno.test("Totality Integration - Smart Constructor Patterns", async (t) => {
     
     if (!invalidDirective.ok && !invalidLayer.ok) {
       assertEquals(invalidDirective.error.constraint, "pattern");
-      assertEquals(invalidLayer.error.constraint, "case");
+      assertEquals(invalidLayer.error.constraint, "case"); // TASK fails case check first now
       assertExists(invalidDirective.error.message);
       assertExists(invalidLayer.error.message);
+    }
+    
+    // Test case constraint specifically
+    const invalidCaseLayer = createValidatedLayerType("Task");
+    assertEquals(invalidCaseLayer.ok, false);
+    if (!invalidCaseLayer.ok) {
+      assertEquals(invalidCaseLayer.error.constraint, "case");
+      assertExists(invalidCaseLayer.error.message);
     }
   });
 

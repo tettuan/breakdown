@@ -373,8 +373,8 @@ describe("TwoParamsHandler Refactored - Architecture Constraints", () => {
 
       // Depending on error type, should have relevant context
       if ("value" in result.error) {
-        assert(typeof result.error.data === "string");
-        assert(result.error.data.length > 0);
+        assert(typeof result.error.value === "string");
+        assert(result.error.value.length > 0);
       }
 
       if ("validTypes" in result.error) {

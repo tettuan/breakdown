@@ -20,8 +20,8 @@ import type {
   ProcessingError,
   UnifiedError,
   UnifiedResult,
-} from "./unified_error_types.ts";
-import { ErrorFactory } from "./unified_error_types.ts";
+} from "./mod.ts";
+import { ErrorFactory } from "./mod.ts";
 import type { Result } from "./result.ts";
 
 Deno.test("2_structure: BaseError interface defines minimal required structure", () => {
@@ -296,30 +296,67 @@ Deno.test("2_structure: ProcessingError discriminated union has correct variant 
       generator: "promptGenerator",
       reason: "Template missing",
     },
+    {
+      kind: "PatternNotFound",
+      operation: "type_creation",
+      reason: "Pattern not configured",
+    },
+    {
+      kind: "PatternValidationFailed",
+      value: "invalid",
+      pattern: "^to$",
+      operation: "type_creation",
+    },
+    {
+      kind: "InvalidPattern",
+      pattern: "[invalid",
+      operation: "type_creation",
+      reason: "Invalid regex pattern",
+    },
   ];
   
   // Verify each variant has required properties
   for (const error of processingErrorVariants) {
     assertExists(error.kind);
-    assertExists(error.reason);
     
     // Check variant-specific properties
     switch (error.kind) {
       case "ProcessingFailed":
         assertExists(error.operation);
+        assertExists(error.reason);
         assertEquals("input" in error, false);
         assertEquals("generator" in error, false);
         break;
       case "TransformationFailed":
         assertExists(error.input);
         assertExists(error.targetType);
+        assertExists(error.reason);
         assertEquals("operation" in error, false);
         assertEquals("generator" in error, false);
         break;
       case "GenerationFailed":
         assertExists(error.generator);
+        assertExists(error.reason);
         assertEquals("operation" in error, false);
         assertEquals("input" in error, false);
+        break;
+      case "PatternNotFound":
+        assertExists(error.operation);
+        assertExists(error.reason);
+        assertEquals("value" in error, false);
+        assertEquals("pattern" in error, false);
+        break;
+      case "PatternValidationFailed":
+        assertExists(error.value);
+        assertExists(error.pattern);
+        assertExists(error.operation);
+        assertEquals("reason" in error, false);
+        break;
+      case "InvalidPattern":
+        assertExists(error.pattern);
+        assertExists(error.operation);
+        assertExists(error.reason);
+        assertEquals("value" in error, false);
         break;
     }
   }
@@ -564,6 +601,13 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "MissingRequiredField":
       case "InvalidFieldType":
       case "ValidationFailed":
+      case "InvalidParamsType":
+      case "InvalidDirectiveType":
+      case "InvalidLayerType":
+      case "PathValidationFailed":
+      case "CustomVariableInvalid":
+      case "ConfigValidationFailed":
+      case "UnsupportedParamsType":
         return "validation";
       
       // ConfigurationError
@@ -577,6 +621,9 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "ProcessingFailed":
       case "TransformationFailed":
       case "GenerationFailed":
+      case "PatternNotFound":
+      case "PatternValidationFailed":
+      case "InvalidPattern":
         return "processing";
       
       // WorkspaceError

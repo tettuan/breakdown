@@ -1,31 +1,45 @@
 /**
- * @fileoverview ErrorSeverity 0_architecture Tests - Smart Constructor Totality Validation
+ * @fileoverview ErrorSeverity Behavior Tests - Enhanced Totality Pattern Validation
  * 
- * Totality原則に基づくアーキテクチャ制約のテスト。
- * Smart Constructor, Result型, Discriminated Unionパターンの正当性を検証。
+ * Totality原則に基づくSmart Constructor、Result型、Discriminated Unionパターンの統合テスト。
+ * 新しいTotality準拠実装の動作とエラーハンドリングを検証。
  * 
  * テスト構成:
- * - 0_architecture: Smart Constructor, Result型, Discriminated Union制約
- * - 1_behavior: 通常動作とビジネスルールの検証
- * - 2_structure: データ構造と整合性の検証
+ * - Smart Constructor (create) パターンの検証
+ * - Result型によるエラーハンドリングの検証
+ * - Discriminated Unionエラー型の検証
+ * - 型ガード関数の検証
+ * - レガシー互換性の検証
  */
 
-import { assertEquals, assertExists, assertThrows } from "https://deno.land/std@0.210.0/assert/mod.ts";
+import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
 import {
   ErrorSeverity,
   SeverityLevel,
   ImpactScope,
   ErrorMetadata,
+  ErrorSeverityError,
+  isInvalidLevelError,
+  isInvalidImpactError,
+  isInvalidMetadataError,
+  isNullOrUndefinedError,
+  isInvalidTypeError,
+  formatErrorSeverityError,
 } from "./error_severity.ts";
+import type { Result } from "../../../types/result.ts";
 
 // =============================================================================
-// 0_ARCHITECTURE: Smart Constructor & Result Type & Discriminated Union Tests
+// TOTALITY PATTERN: Smart Constructor & Result Type & Discriminated Union Tests
 // =============================================================================
 
-Deno.test("0_architecture - ErrorSeverity implements Smart Constructor pattern correctly", () => {
+Deno.test("Totality - ErrorSeverity implements Smart Constructor pattern with Result type", () => {
   // Smart Constructor: Private constructor, public static factory methods
   
-  // Public factory methods exist for each severity level
+  // Primary Smart Constructor methods
+  assertExists(ErrorSeverity.create);
+  assertExists(ErrorSeverity.fromString);
+  
+  // Legacy factory methods should still exist
   assertExists(ErrorSeverity.debug);
   assertExists(ErrorSeverity.info);
   assertExists(ErrorSeverity.warning);
@@ -33,11 +47,19 @@ Deno.test("0_architecture - ErrorSeverity implements Smart Constructor pattern c
   assertExists(ErrorSeverity.critical);
   assertExists(ErrorSeverity.fatal);
   assertExists(ErrorSeverity.custom);
-  assertExists(ErrorSeverity.fromString);
-  // Note: combine method is available on ValidationRule, not ErrorSeverity
+  
+  // Verify Smart Constructor returns Result type
+  const result = ErrorSeverity.create(SeverityLevel.ERROR, ImpactScope.MODULE);
+  assertExists(result);
+  assertExists(result.ok);
+  
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(result.data.getLevel(), SeverityLevel.ERROR);
+  }
 });
 
-Deno.test("0_architecture - SeverityLevel enum is properly defined with numeric values", () => {
+Deno.test("Architecture - SeverityLevel enum is properly defined with numeric values", () => {
   // Enum should be properly defined with correct numeric values
   assertExists(SeverityLevel);
   
@@ -57,7 +79,7 @@ Deno.test("0_architecture - SeverityLevel enum is properly defined with numeric 
   assertEquals(SeverityLevel.CRITICAL < SeverityLevel.FATAL, true);
 });
 
-Deno.test("0_architecture - ImpactScope enum uses Discriminated Union pattern", () => {
+Deno.test("Architecture - ImpactScope enum uses Discriminated Union pattern", () => {
   // Enum should be properly defined with string discriminators
   assertExists(ImpactScope);
   
@@ -76,7 +98,7 @@ Deno.test("0_architecture - ImpactScope enum uses Discriminated Union pattern", 
   assertEquals(typeof ImpactScope.GLOBAL, "string");
 });
 
-Deno.test("0_architecture - ErrorMetadata interface supports extensible metadata", () => {
+Deno.test("Architecture - ErrorMetadata interface supports extensible metadata", () => {
   // Test metadata structure and immutability
   const metadata: ErrorMetadata = {
     code: "E001",
@@ -107,7 +129,7 @@ Deno.test("0_architecture - ErrorMetadata interface supports extensible metadata
   assertExists(complexMetadata);
 });
 
-Deno.test("0_architecture - ErrorSeverity factory methods create immutable instances", () => {
+Deno.test("Architecture - ErrorSeverity factory methods create immutable instances", () => {
   // Test each factory method creates proper instances
   const debugSeverity = ErrorSeverity.debug();
   const infoSeverity = ErrorSeverity.info();
@@ -141,9 +163,9 @@ Deno.test("0_architecture - ErrorSeverity factory methods create immutable insta
   assertEquals(fatalSeverity.getImpact(), ImpactScope.GLOBAL);
 });
 
-Deno.test("0_architecture - ErrorSeverity supports custom factory with validation", () => {
-  // Custom factory should accept any valid combination
-  const customSeverity = ErrorSeverity.custom(
+Deno.test("Totality - ErrorSeverity.create validates all parameters comprehensively", () => {
+  // Valid creation should succeed
+  const validResult = ErrorSeverity.create(
     SeverityLevel.WARNING,
     ImpactScope.GLOBAL,
     {
@@ -152,42 +174,227 @@ Deno.test("0_architecture - ErrorSeverity supports custom factory with validatio
     }
   );
   
-  assertExists(customSeverity);
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.getLevel(), SeverityLevel.WARNING);
+    assertEquals(validResult.data.getImpact(), ImpactScope.GLOBAL);
+    
+    const metadata = validResult.data.getMetadata();
+    assertEquals(metadata.code, "CUSTOM001");
+    assertEquals(metadata.category, "business");
+  }
+  
+  // Invalid level should return error
+  const invalidLevelResult = ErrorSeverity.create(
+    999 as SeverityLevel,
+    ImpactScope.MODULE
+  );
+  assert(!invalidLevelResult.ok);
+  if (!invalidLevelResult.ok) {
+    assertEquals(invalidLevelResult.error.kind, "InvalidLevel");
+  }
+  
+  // Invalid impact should return error
+  const invalidImpactResult = ErrorSeverity.create(
+    SeverityLevel.ERROR,
+    "invalid" as ImpactScope
+  );
+  assert(!invalidImpactResult.ok);
+  if (!invalidImpactResult.ok) {
+    assertEquals(invalidImpactResult.error.kind, "InvalidImpact");
+  }
+  
+  // Invalid metadata should return error
+  const invalidMetadataResult = ErrorSeverity.create(
+    SeverityLevel.ERROR,
+    ImpactScope.MODULE,
+    "not an object" as any
+  );
+  assert(!invalidMetadataResult.ok);
+  if (!invalidMetadataResult.ok) {
+    assertEquals(invalidMetadataResult.error.kind, "InvalidMetadata");
+  }
+});
+
+Deno.test("Totality - ErrorSeverity.fromString returns Result type with comprehensive validation", () => {
+  // Valid string parsing should return success Result
+  const debugResult = ErrorSeverity.fromString("debug");
+  assert(debugResult.ok);
+  if (debugResult.ok) {
+    assertEquals(debugResult.data.getLevel(), SeverityLevel.DEBUG);
+  }
+  
+  const errorResult = ErrorSeverity.fromString("ERROR");
+  assert(errorResult.ok);
+  if (errorResult.ok) {
+    assertEquals(errorResult.data.getLevel(), SeverityLevel.ERROR);
+  }
+  
+  const fatalResult = ErrorSeverity.fromString("Fatal");
+  assert(fatalResult.ok);
+  if (fatalResult.ok) {
+    assertEquals(fatalResult.data.getLevel(), SeverityLevel.FATAL);
+  }
+  
+  // Invalid string should return error Result (Totality pattern)
+  const invalidResult = ErrorSeverity.fromString("invalid_level");
+  assert(!invalidResult.ok);
+  if (!invalidResult.ok) {
+    assertEquals(invalidResult.error.kind, "InvalidLevel");
+  }
+  
+  // Empty string should return error Result
+  const emptyResult = ErrorSeverity.fromString("");
+  assert(!emptyResult.ok);
+  if (!emptyResult.ok) {
+    assertEquals(emptyResult.error.kind, "InvalidLevel");
+  }
+  
+  // Null/undefined should return error Result
+  const nullResult = ErrorSeverity.fromString(null as any);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+});
+
+// =============================================================================
+// DISCRIMINATED UNION ERROR TYPE TESTS
+// =============================================================================
+
+Deno.test("Totality - ErrorSeverityError type guards work correctly", () => {
+  // Create different error types
+  const invalidLevelResult = ErrorSeverity.fromString("invalid");
+  assert(!invalidLevelResult.ok);
+  if (!invalidLevelResult.ok) {
+    const invalidLevelError = invalidLevelResult.error;
+    
+    const invalidImpactResult = ErrorSeverity.create(
+      SeverityLevel.ERROR,
+      "invalid" as ImpactScope
+    );
+    assert(!invalidImpactResult.ok);
+    if (!invalidImpactResult.ok) {
+      const invalidImpactError = invalidImpactResult.error;
+      
+      const nullResult = ErrorSeverity.fromString(null as any);
+      assert(!nullResult.ok);
+      if (!nullResult.ok) {
+        const nullError = nullResult.error;
+        
+        // Test type guards
+        assert(isInvalidLevelError(invalidLevelError));
+        assert(!isInvalidImpactError(invalidLevelError));
+        assert(!isNullOrUndefinedError(invalidLevelError));
+        
+        assert(isInvalidImpactError(invalidImpactError));
+        assert(!isInvalidLevelError(invalidImpactError));
+        
+        assert(isNullOrUndefinedError(nullError));
+        assert(!isInvalidLevelError(nullError));
+      }
+    }
+  }
+});
+
+Deno.test("Totality - formatErrorSeverityError provides comprehensive error messages", () => {
+  // Test InvalidLevel error formatting
+  const invalidLevelResult = ErrorSeverity.fromString("unknown");
+  assert(!invalidLevelResult.ok);
+  if (!invalidLevelResult.ok) {
+    const invalidLevelMessage = formatErrorSeverityError(invalidLevelResult.error);
+    assert(invalidLevelMessage.includes("Invalid severity level"));
+    assert(invalidLevelMessage.includes("unknown"));
+    assert(invalidLevelMessage.includes("Valid levels:"));
+  }
+  
+  // Test InvalidImpact error formatting
+  const invalidImpactResult = ErrorSeverity.create(
+    SeverityLevel.ERROR,
+    "invalid" as ImpactScope
+  );
+  assert(!invalidImpactResult.ok);
+  if (!invalidImpactResult.ok) {
+    const invalidImpactMessage = formatErrorSeverityError(invalidImpactResult.error);
+    assert(invalidImpactMessage.includes("Invalid impact scope"));
+    assert(invalidImpactMessage.includes("invalid"));
+  }
+  
+  // Test NullOrUndefined error formatting
+  const nullResult = ErrorSeverity.create(null as any, ImpactScope.MODULE);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    const nullMessage = formatErrorSeverityError(nullResult.error);
+    assert(nullMessage.includes("cannot be null or undefined"));
+  }
+});
+
+// =============================================================================
+// LEGACY COMPATIBILITY TESTS
+// =============================================================================
+
+Deno.test("Totality - Legacy methods maintain backward compatibility", () => {
+  // Legacy factory methods should still work
+  const debugSeverity = ErrorSeverity.debug();
+  assertEquals(debugSeverity.getLevel(), SeverityLevel.DEBUG);
+  
+  // Legacy custom method should work but is deprecated
+  const customSeverity = ErrorSeverity.custom(
+    SeverityLevel.WARNING,
+    ImpactScope.GLOBAL
+  );
   assertEquals(customSeverity.getLevel(), SeverityLevel.WARNING);
-  assertEquals(customSeverity.getImpact(), ImpactScope.GLOBAL);
   
-  const metadata = customSeverity.getMetadata();
-  assertEquals(metadata.code, "CUSTOM001");
-  assertEquals(metadata.category, "business");
+  // Legacy fromStringUnsafe should exist and throw on error
+  const validLegacy = ErrorSeverity.fromStringUnsafe("ERROR");
+  assertEquals(validLegacy.getLevel(), SeverityLevel.ERROR);
+  
+  // Should throw on invalid input (legacy behavior)
+  try {
+    ErrorSeverity.fromStringUnsafe("invalid");
+    assert(false, "Should have thrown");
+  } catch (error) {
+    assert(error instanceof Error);
+    if (error instanceof Error) {
+      assert(error.message.includes("Invalid severity level"));
+    }
+  }
 });
 
-Deno.test("0_architecture - ErrorSeverity.fromString provides safe string parsing", () => {
-  // Valid string parsing
-  const debugFromString = ErrorSeverity.fromString("debug");
-  assertEquals(debugFromString.getLevel(), SeverityLevel.DEBUG);
-  
-  const errorFromString = ErrorSeverity.fromString("ERROR");
-  assertEquals(errorFromString.getLevel(), SeverityLevel.ERROR);
-  
-  const fatalFromString = ErrorSeverity.fromString("Fatal");
-  assertEquals(fatalFromString.getLevel(), SeverityLevel.FATAL);
-  
-  // Invalid string should throw error (fail-fast principle)
-  assertThrows(
-    () => ErrorSeverity.fromString("invalid_level"),
-    Error,
-    "Invalid severity level"
+// =============================================================================
+// IMMUTABILITY AND VALUE OBJECT TESTS
+// =============================================================================
+
+Deno.test("Totality - ErrorSeverity instances are completely immutable", () => {
+  const result = ErrorSeverity.create(
+    SeverityLevel.ERROR,
+    ImpactScope.SYSTEM,
+    { code: "E001", category: "validation" }
   );
-  
-  // Empty string should throw error
-  assertThrows(
-    () => ErrorSeverity.fromString(""),
-    Error,
-    "Invalid severity level"
-  );
+  assert(result.ok);
+  if (result.ok) {
+    const severity = result.data;
+    
+    // Object should be frozen
+    assert(Object.isFrozen(severity));
+    
+    // Metadata should be frozen (defensive)
+    const metadata = severity.getMetadata();
+    // Note: getMetadata returns a copy, so we can't test freezing of the copy
+    // But the original internal metadata should be frozen
+    
+    // Repeated calls should return identical values
+    assertEquals(severity.getLevel(), severity.getLevel());
+    assertEquals(severity.getImpact(), severity.getImpact());
+    
+    // Metadata should be defensive copies
+    const metadata1 = severity.getMetadata();
+    const metadata2 = severity.getMetadata();
+    assertEquals(JSON.stringify(metadata1), JSON.stringify(metadata2));
+  }
 });
 
-Deno.test("0_architecture - ErrorSeverity is immutable Value Object", () => {
+Deno.test("Architecture - ErrorSeverity is immutable Value Object", () => {
   const severity = ErrorSeverity.error(ImpactScope.SYSTEM, {
     code: "E001",
     category: "validation",
@@ -224,7 +431,7 @@ Deno.test("0_architecture - ErrorSeverity is immutable Value Object", () => {
   assertEquals(metadata3.code, "E001"); // Should still be original value
 });
 
-Deno.test("0_architecture - ErrorSeverity supports functional composition methods", () => {
+Deno.test("Architecture - ErrorSeverity supports functional composition methods", () => {
   const baseSeverity = ErrorSeverity.warning();
   
   // Composition methods should exist
@@ -249,7 +456,7 @@ Deno.test("0_architecture - ErrorSeverity supports functional composition method
   assertEquals(baseSeverity.getImpact(), ImpactScope.MODULE); // Original unchanged
 });
 
-Deno.test("0_architecture - ErrorSeverity supports escalation for priority management", () => {
+Deno.test("Architecture - ErrorSeverity supports escalation for priority management", () => {
   // Escalation should handle severity comparison and priority management
   const warning = ErrorSeverity.warning();
   const error = ErrorSeverity.error();
@@ -272,7 +479,7 @@ Deno.test("0_architecture - ErrorSeverity supports escalation for priority manag
   assertEquals(escalated3.getImpact(), ImpactScope.GLOBAL);
 });
 
-Deno.test("0_architecture - ErrorSeverity provides comprehensive comparison methods", () => {
+Deno.test("Architecture - ErrorSeverity provides comprehensive comparison methods", () => {
   const warning = ErrorSeverity.warning();
   const error = ErrorSeverity.error();
   const critical = ErrorSeverity.critical();
@@ -300,7 +507,7 @@ Deno.test("0_architecture - ErrorSeverity provides comprehensive comparison meth
   assertEquals(critical.requiresSystemHalt(), false);
 });
 
-Deno.test("0_architecture - ErrorSeverity serialization is consistent and reversible", () => {
+Deno.test("Architecture - ErrorSeverity serialization is consistent and reversible", () => {
   const severity = ErrorSeverity.error(ImpactScope.SYSTEM, {
     code: "E001",
     category: "validation",

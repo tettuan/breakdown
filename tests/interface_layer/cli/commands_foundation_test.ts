@@ -255,7 +255,7 @@ Deno.test("cli - init command should finish and create config", async () => {
   // Check exit code
   assertEquals(code, 0);
   // Check config file exists
-  const configFile = `${testDir}/.agent/breakdown/config/app.yml`;
+  const configFile = `${testDir}/.agent/breakdown/config/default-app.yml`;
   const existsConfig = await exists(configFile);
   logger.debug("[CLI INIT TEST] Config file exists?", { configFile, existsConfig });
   assertEquals(existsConfig, true);

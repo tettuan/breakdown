@@ -28,11 +28,11 @@ Deno.test({
 Deno.test({
   name: "Behavior: ResultStatus should work with conditional logic",
   fn() {
-    function isSuccess(status: ResultStatus): boolean {
+    function isSuccess(status: typeof ResultStatus.SUCCESS | typeof ResultStatus.ERROR): boolean {
       return status === ResultStatus.SUCCESS;
     }
     
-    function isError(status: ResultStatus): boolean {
+    function isError(status: typeof ResultStatus.SUCCESS | typeof ResultStatus.ERROR): boolean {
       return status === ResultStatus.ERROR;
     }
     

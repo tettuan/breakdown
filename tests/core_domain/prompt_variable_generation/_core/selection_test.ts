@@ -164,7 +164,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
         },
       };
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -212,7 +215,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       };
 
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -267,7 +273,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       };
 
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -320,7 +329,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       };
 
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -373,7 +385,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       };
 
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -417,7 +432,10 @@ describe("Prompt Selection: PromptAdapterImpl", () => {
       };
 
       try {
-        const factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return; // Type guard
+        const factory = factoryResult.data;
         const adapter = new PromptAdapterImpl(factory);
         const result = await adapter.validateAndGenerate();
 
@@ -489,9 +507,17 @@ describe("Prompt Selection: CLI integration adaptation option", () => {
         },
       };
 
-      const factory = await PromptVariablesFactory.create(cliParams);
+      const factoryResult = await PromptVariablesFactory.create(cliParams);
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return; // Type guard
+      const factory = factoryResult.data;
       const adapter = new PromptAdapterImpl(factory);
-      const result = await adapter.validateAndGenerate();
+      const validateResult = await adapter.validateAndGenerate();
+      
+      if (!validateResult.success) {
+        throw new Error(`Validation failed: ${validateResult.content}`);
+      }
+      const result = validateResult;
 
       logger.debug("CLI integration success", {
         key: "selection_test.ts#L466#validation-cli-success",

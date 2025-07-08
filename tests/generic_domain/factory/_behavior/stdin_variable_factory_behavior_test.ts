@@ -10,7 +10,7 @@
  * StdinVariableFactoryの全機能が仕様通りに動作することを確認します。
  */
 
-import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../../../lib/deps.ts";
 import {
   defaultStdinVariableFactory,
   StdinFactoryInput,
@@ -41,7 +41,7 @@ Deno.test("Unit: create() - 正常系テスト", () => {
     const record = result.data.toRecord();
     assertEquals(record.input_text, "Hello, World!");
     assertEquals(result.data.name.getValue(), "input_text");
-    assertEquals(result.data.data, "Hello, World!");
+    assertEquals(result.data.value, "Hello, World!");
   }
 
   logger.debug("create() 正常系テスト完了", { success: result.ok });
@@ -350,7 +350,7 @@ Deno.test("Unit: source値 - 全パターンテスト", () => {
     const result = factory.create(input);
     assertEquals(result.ok, true, `source: ${source} で成功すべき`);
     if (result.ok) {
-      assertEquals(result.data.data, testText);
+      assertEquals(result.data.value, testText);
     }
   }
 
@@ -382,7 +382,7 @@ Deno.test("Unit: defaultStdinVariableFactory - デフォルトインスタンス
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.data, "Default factory test");
+    assertEquals(result.data.value, "Default factory test");
     assertEquals(result.data.name.getValue(), "input_text");
   }
 

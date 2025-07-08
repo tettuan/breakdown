@@ -56,7 +56,7 @@ export class WorkspaceErrorHandlerImpl implements WorkspaceErrorHandler {
    */
   handleError(error: Error, type: string): void {
     if (isWorkspaceError(error)) {
-      console.error(`[${type}] ${error.type}: ${error.message}`);
+      console.error(`[${type}] ${error.name}: ${error.message}`);
     } else {
       console.error(`[${type}] Unexpected error: ${error.message}`);
     }

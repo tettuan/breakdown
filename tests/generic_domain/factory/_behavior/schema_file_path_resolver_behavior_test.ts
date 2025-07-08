@@ -1,4 +1,4 @@
-import { assertEquals } from "../../../lib/deps.ts";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { SchemaFilePathResolver } from "../../../../lib/factory/schema_file_path_resolver.ts";
 import { isAbsolute, join, resolve } from "@std/path";
 import { describe, it } from "jsr:@std/testing@0.224.0/bdd";

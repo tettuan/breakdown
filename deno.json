@@ -41,7 +41,11 @@
     "test": "deno test --allow-env --allow-write --allow-read --allow-run",
     "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",
     "check": "deno check lib/**/*.ts cli/**/*.ts tests/**/*.ts mod.ts",
-    "ci": "sh scripts/local_ci.sh",
+    "ci": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts",
+    "ci:silent": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --silent",
+    "ci:error-files": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --error-files-only",
+    "ci:debug": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --debug",
+    "ci:sh": "sh scripts/local_ci.sh",
     "breakdown": "deno run -A jsr:@tettuan/breakdown/cli",
     "kill-nodes": "bash scripts/kill_node_panes.sh",
     "kill-nodes-force": "bash scripts/kill_node_panes.sh --force"

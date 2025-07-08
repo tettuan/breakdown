@@ -39,7 +39,7 @@ Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   
   if (result.ok) {
     assertExists(result.data);
-    assertEquals(result.data.constructor.name, "PromptContent");
+    assertEquals(result.data!.constructor.name, "PromptContent");
   } else {
     assertExists(result.error);
     assertEquals(typeof result.error, "string");
@@ -120,7 +120,7 @@ Deno.test("1_behavior: creates PromptContent with valid content", () => {
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.getValue(), validContent);
+    assertEquals(result.data!.getValue(), validContent);
   }
 });
 
@@ -146,7 +146,7 @@ Deno.test("1_behavior: extracts variables from content", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    const variables = result.data.getVariables();
+    const variables = result.data!.getVariables();
     assertEquals(variables.length, 2);
     assertEquals(variables.includes("variable"), true);
     assertEquals(variables.includes("another"), true);
@@ -157,9 +157,9 @@ Deno.test("1_behavior: handles content without variables", () => {
   const result = PromptContent.create(noVariableContent);
   
   if (result.ok) {
-    const variables = result.data.getVariables();
+    const variables = result.data!.getVariables();
     assertEquals(variables.length, 0);
-    assertEquals(result.data.hasVariables(), false);
+    assertEquals(result.data!.hasVariables(), false);
   }
 });
 
@@ -168,11 +168,11 @@ Deno.test("1_behavior: detects presence of variables", () => {
   const withoutVariables = PromptContent.create(noVariableContent);
   
   if (withVariables.ok) {
-    assertEquals(withVariables.data.hasVariables(), true);
+    assertEquals(withVariables.data!.hasVariables(), true);
   }
   
   if (withoutVariables.ok) {
-    assertEquals(withoutVariables.data.hasVariables(), false);
+    assertEquals(withoutVariables.data!.hasVariables(), false);
   }
 });
 
@@ -180,8 +180,8 @@ Deno.test("1_behavior: provides content length", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    assertEquals(result.data.getLength(), validContent.length);
-    assertEquals(result.data.isEmpty(), false);
+    assertEquals(result.data!.getLength(), validContent.length);
+    assertEquals(result.data!.isEmpty(), false);
   }
 });
 
@@ -190,7 +190,7 @@ Deno.test("1_behavior: generates consistent hash", () => {
   const result2 = PromptContent.create(validContent);
   
   if (result1.ok && result2.ok) {
-    assertEquals(result1.data.getHash(), result2.data.getHash());
+    assertEquals(result1.data!.getHash(), result2.data!.getHash());
   }
 });
 
@@ -203,7 +203,7 @@ Deno.test("1_behavior: replaces variables correctly", () => {
       "another": "value",
     };
     
-    const replaced = result.data.replaceVariables(replacements);
+    const replaced = result.data!.replaceVariables(replacements);
     assertEquals(replaced, "This is a test prompt with value placeholder.");
   }
 });
@@ -213,7 +213,7 @@ Deno.test("1_behavior: provides content preview", () => {
   const result = PromptContent.create(longContent);
   
   if (result.ok) {
-    const preview = result.data.getPreview();
+    const preview = result.data!.getPreview();
     assertEquals(preview.length, 103); // 100 chars + "..."
     assertEquals(preview.endsWith("..."), true);
   }
@@ -223,7 +223,7 @@ Deno.test("1_behavior: counts lines correctly", () => {
   const result = PromptContent.create(multilineContent);
   
   if (result.ok) {
-    assertEquals(result.data.getLineCount(), 3);
+    assertEquals(result.data!.getLineCount(), 3);
   }
 });
 
@@ -235,7 +235,7 @@ Deno.test("2_structure: PromptContent immutability", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    const content = result.data;
+    const content = result.data!;
     
     // getValue should always return the same content
     assertEquals(content.getValue(), validContent);
@@ -247,8 +247,8 @@ Deno.test("2_structure: variable extraction immutability", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    const variables1 = result.data.getVariables();
-    const variables2 = result.data.getVariables();
+    const variables1 = result.data!.getVariables();
+    const variables2 = result.data!.getVariables();
     
     // Should return arrays with same content but potentially different instances
     assertEquals(variables1.length, variables2.length);
@@ -284,7 +284,7 @@ Deno.test("2_structure: method return type consistency", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    const content = result.data;
+    const content = result.data!;
     
     // Verify return types
     assertEquals(typeof content.getValue(), "string");
@@ -324,8 +324,8 @@ Deno.test("2_structure: toString implementation", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), validContent);
-    assertEquals(result.data.toString(), result.data.getValue());
+    assertEquals(result.data!.toString(), validContent);
+    assertEquals(result.data!.toString(), result.data!.getValue());
   }
 });
 
@@ -333,11 +333,11 @@ Deno.test("2_structure: variable replacement preserves original", () => {
   const result = PromptContent.create(validContent);
   
   if (result.ok) {
-    const original = result.data.getValue();
-    const replaced = result.data.replaceVariables({ "variable": "test" });
+    const original = result.data!.getValue();
+    const replaced = result.data!.replaceVariables({ "variable": "test" });
     
     // Original should be unchanged
-    assertEquals(result.data.getValue(), original);
+    assertEquals(result.data!.getValue(), original);
     // Replaced should be different
     assertEquals(replaced !== original, true);
   }

@@ -9,7 +9,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { LayerTypeFactory, type LayerTypeCreationError, type LayerTypeResult } from "./layer_type_factory.ts";
-import { LayerType } from "./layer_type.ts";
+import { LayerType } from "./mod.ts";
 
 /**
  * Architecture Test Suite for LayerTypeFactory

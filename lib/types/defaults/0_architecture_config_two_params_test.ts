@@ -18,11 +18,11 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     assertExists(_defaultConfigTwoParams.params.two);
   });
 
-  await t.step("should have demonstrativeType configuration", () => {
-    const demonstrativeType = _defaultConfigTwoParams.params.two.demonstrativeType;
-    assertExists(demonstrativeType);
-    assertExists(demonstrativeType.pattern);
-    assertEquals(typeof demonstrativeType.pattern, "string");
+  await t.step("should have directiveType configuration", () => {
+    const directiveType = _defaultConfigTwoParams.params.two.directiveType;
+    assertExists(directiveType);
+    assertExists(directiveType.pattern);
+    assertEquals(typeof directiveType.pattern, "string");
   });
 
   await t.step("should have layerType configuration", () => {
@@ -50,16 +50,20 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
   });
 
   await t.step("should have valid regex patterns", () => {
-    const demonstrativePattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
+    const directivePattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
     const layerPattern = _defaultConfigTwoParams.params.two.layerType.pattern;
     
-    // Test patterns are valid regex
-    assertEquals(() => new RegExp(demonstrativePattern), () => new RegExp(demonstrativePattern));
-    assertEquals(() => new RegExp(layerPattern), () => new RegExp(layerPattern));
+    // Test patterns are valid regex - should not throw when creating RegExp
+    try {
+      new RegExp(directivePattern);
+      new RegExp(layerPattern);
+    } catch (e) {
+      throw new Error(`Invalid regex pattern: ${e}`);
+    }
     
     // Test patterns match expected format
-    assertEquals(demonstrativePattern.startsWith("^"), true);
-    assertEquals(demonstrativePattern.endsWith("$"), true);
+    assertEquals(directivePattern.startsWith("^"), true);
+    assertEquals(directivePattern.endsWith("$"), true);
     assertEquals(layerPattern.startsWith("^"), true);
     assertEquals(layerPattern.endsWith("$"), true);
   });
@@ -67,8 +71,8 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
   await t.step("should have specific expected values", () => {
     const config = _defaultConfigTwoParams.params.two;
     
-    // Test demonstrativeType pattern contains expected values
-    assertEquals(config.demonstrativeType.pattern, "^(to|summary|defect)$");
+    // Test directiveType pattern contains expected values
+    assertEquals(config.directiveType.pattern, "^(to|summary|defect)$");
     
     // Test layerType pattern contains expected values
     assertEquals(config.layerType.pattern, "^(project|issue|task)$");
@@ -93,7 +97,7 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
     // Try to modify (should not affect the original)
     try {
       // @ts-ignore - intentionally trying to modify
-      _defaultConfigTwoParams.params.two.demonstrativeType.pattern = "modified";
+      _defaultConfigTwoParams.params.two.directiveType.pattern = "modified";
     } catch {
       // Expected to fail in strict mode
     }
@@ -117,8 +121,8 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
  * Test suite for defaultConfigTwoParams pattern validation
  */
 Deno.test("defaultConfigTwoParams - Pattern Validation", async (t) => {
-  await t.step("should validate demonstrativeType pattern", () => {
-    const pattern = new RegExp(_defaultConfigTwoParams.params.two.demonstrativeType.pattern);
+  await t.step("should validate directiveType pattern", () => {
+    const pattern = new RegExp(_defaultConfigTwoParams.params.two.directiveType.pattern);
     
     // Valid values should match
     assertEquals(pattern.test("to"), true);

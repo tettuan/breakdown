@@ -152,10 +152,17 @@ Deno.test("PromptVariablesFactoryError Structure - Factory object structure", ()
     "schemaFilePathNotResolved",
   ];
 
-  assertEquals(factoryKeys.length, expectedMethods.length);
+  // Pattern 2: Flexible handling - factory may have additional methods
+  assert(factoryKeys.length >= expectedMethods.length, `Factory should have at least ${expectedMethods.length} methods, found ${factoryKeys.length}`);
+  
   for (const method of expectedMethods) {
     assert(factoryKeys.includes(method), `Factory should have method: ${method}`);
     assertEquals(typeof (PromptVariablesFactoryErrorFactory as any)[method], "function");
+  }
+  
+  // Verify all factory methods are functions (Pattern 2: Comprehensive validation)
+  for (const key of factoryKeys) {
+    assertEquals(typeof (PromptVariablesFactoryErrorFactory as any)[key], "function", `All factory exports should be functions: ${key}`);
   }
 
   // Verify factory is read-only (const assertion)

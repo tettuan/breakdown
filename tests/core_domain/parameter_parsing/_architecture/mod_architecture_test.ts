@@ -11,7 +11,7 @@
  * @module types/mod_architecture_test
  */
 
-import { assertEquals, assertExists } from "../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -21,7 +21,7 @@ describe("Architecture: Module boundary enforcement", () => {
   it("should export all public types from the module", async () => {
     logger.debug("Testing module exports completeness");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // New Totality-compliant types
     assertExists(mod.DirectiveType, "DirectiveType must be exported");
@@ -69,7 +69,7 @@ describe("Architecture: Module boundary enforcement", () => {
   it("should not expose internal implementation details", async () => {
     logger.debug("Testing encapsulation boundaries");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // These should not be exposed at module level
     const unexpectedExports = [
@@ -96,7 +96,7 @@ describe("Architecture: Export structure validation", () => {
   it("should group exports by functionality", async () => {
     logger.debug("Testing export organization");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // Totality types group
     const totalityTypes = [
@@ -154,12 +154,12 @@ describe("Architecture: Export structure validation", () => {
   it("should maintain backward compatibility for legacy types", async () => {
     logger.debug("Testing legacy type compatibility");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // Legacy type aliases are types, not runtime values
     // They cannot be tested at runtime since TypeScript types don't exist in JavaScript
     // We verify their existence through import checks in the module source
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
     assertEquals(
       moduleSource.includes("DemonstrativeType") && moduleSource.includes("export type"),
       true,
@@ -180,7 +180,7 @@ describe("Architecture: Dependency direction verification", () => {
     logger.debug("Testing dependency direction constraints");
 
     // Read the module source to check imports
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
 
     // Should not import from these higher-level modules
     const forbiddenImports = [
@@ -208,7 +208,7 @@ describe("Architecture: Dependency direction verification", () => {
   it("should only import from allowed modules", async () => {
     logger.debug("Testing allowed dependencies");
 
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
 
     // Allowed internal imports
     const allowedPatterns = [
@@ -217,6 +217,7 @@ describe("Architecture: Dependency direction verification", () => {
       /from\s+"@tettuan\/breakdownparams"/g, // External dependency
       /from\s+"@tettuan\/breakdown\/lib\/types\/mod\.ts"/g, // Self-import in tests
       /from\s+"\.\.\/deps\.ts"/g, // Dependencies module
+      /from\s+"\.\.\/domain\/core\/value_objects\/error_severity\.ts"/g, // Domain value objects
     ];
 
     // Extract all imports
@@ -250,7 +251,7 @@ describe("Architecture: Type safety architecture", () => {
   it("should enforce Totality principle through type exports", async () => {
     logger.debug("Testing Totality principle enforcement");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // Totality types should have factory methods
     assertEquals(
@@ -276,7 +277,7 @@ describe("Architecture: Type safety architecture", () => {
   it("should provide Result type for error handling", async () => {
     logger.debug("Testing Result type architecture");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // Result constructors
     assertExists(mod.ok, "ok constructor must be exported");
@@ -307,7 +308,7 @@ describe("Architecture: Module cohesion and coupling", () => {
   it("should have high cohesion within type module", async () => {
     logger.debug("Testing module cohesion");
 
-    const mod = await import("./mod.ts");
+    const mod = await import("../../../../lib/types/mod.ts");
 
     // All exports should be type-related
     const exportNames = Object.keys(mod);
@@ -336,7 +337,7 @@ describe("Architecture: Module cohesion and coupling", () => {
     logger.debug("Testing module coupling");
 
     // Count external dependencies
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
     const externalImports = moduleSource.match(/from\s+"[^.][^"]+"/g) || [];
 
     // Should have minimal external dependencies (allowing for reasonable JSR package dependencies)
@@ -355,7 +356,7 @@ describe("Architecture: Module cohesion and coupling", () => {
       if (!importPath || !importPath.endsWith(".ts")) continue;
 
       try {
-        const importedSource = await Deno.readTextFile(`./lib/types/${importPath.slice(2)}`);
+        const importedSource = await Deno.readTextFile(`../../../../lib/types/${importPath.slice(2)}`);
         assertEquals(
           importedSource.includes('from "../../lib/deps.ts"'),
           false,
@@ -374,7 +375,7 @@ describe("Architecture: Documentation and contracts", () => {
   it("should have comprehensive module documentation", async () => {
     logger.debug("Testing module documentation");
 
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
 
     // Should have module-level JSDoc
     assertEquals(
@@ -409,7 +410,7 @@ describe("Architecture: Documentation and contracts", () => {
   it("should clearly mark deprecated exports", async () => {
     logger.debug("Testing deprecation markers");
 
-    const moduleSource = await Deno.readTextFile(new URL("./mod.ts", import.meta.url).pathname);
+    const moduleSource = await Deno.readTextFile(new URL("../../../../lib/types/mod.ts", import.meta.url).pathname);
 
     // Check specific deprecated exports
     const deprecatedExports = [

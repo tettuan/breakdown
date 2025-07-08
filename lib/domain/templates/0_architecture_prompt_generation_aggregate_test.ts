@@ -16,11 +16,11 @@ import {
   TemplatePath,
   TemplateContent,
   TemplateVariables,
-  GeneratedPrompt,
+  GeneratedPrompt as _GeneratedPrompt,
   PromptGenerationError,
-  type GenerationResult
 } from "./prompt_generation_aggregate.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import { ok, error, isOk, type Result } from "../../types/result.ts";
 
 // Mock DirectiveType and LayerType for testing
 class MockDirectiveType {
@@ -41,15 +41,24 @@ Deno.test("0_architecture - PromptGenerationAggregate follows Aggregate Root pat
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
+  const pathResult = TemplatePath.create(directive, layer, "test.md");
+  assertEquals(isOk(pathResult), true);
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(isOk(templateResult), true);
+  if (!isOk(templateResult)) return;
   
   // Act
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(isOk(aggregateResult), true);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   
   // Assert - Aggregate maintains identity and encapsulation
   assertEquals(aggregate.getId(), "test-id");
-  assertEquals(aggregate.getTemplate(), template);
+  assertEquals(aggregate.getTemplate(), templateResult.data);
   assertEquals(aggregate.getState().status, "initialized");
   assertEquals(aggregate.getState().attempts, 0);
   assertEquals(aggregate.getState().errors.length, 0);
@@ -59,9 +68,16 @@ Deno.test("0_architecture - PromptGenerationAggregate encapsulates state mutatio
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(directive, layer, "test.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({ name: "World" });
   
   // Act
@@ -71,10 +87,10 @@ Deno.test("0_architecture - PromptGenerationAggregate encapsulates state mutatio
   const state2 = aggregate.getState();
   
   // Assert - State changes are controlled by aggregate
-  assertEquals(result1.success, true);
+  assertEquals(isOk(result1), true);
   assertEquals(state1.attempts, 1);
   assertEquals(state1.status, "completed");
-  assertEquals(result2.success, true);
+  assertEquals(isOk(result2), true);
   assertEquals(state2.attempts, 2);
   assertEquals(state2.status, "completed");
 });
@@ -83,9 +99,16 @@ Deno.test("0_architecture - Domain invariants are maintained across operations",
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(directive, layer, "test.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const invalidVariables = TemplateVariables.create({ wrong: "value" });
   
   // Act
@@ -93,7 +116,7 @@ Deno.test("0_architecture - Domain invariants are maintained across operations",
   const state = aggregate.getState();
   
   // Assert - Invariants preserved even on failure
-  assertEquals(result.success, false);
+  assertEquals(isOk(result), false);
   assertEquals(state.status, "failed");
   assertEquals(state.attempts, 1);
   assertEquals(state.errors.length, 1);
@@ -104,9 +127,16 @@ Deno.test("0_architecture - Aggregate enforces retry policy", () => {
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(directive, layer, "test.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const invalidVariables = TemplateVariables.create({ wrong: "value" });
   
   // Act & Assert - Retry policy enforced
@@ -130,9 +160,16 @@ Deno.test("1_behavior - Successful prompt generation with valid variables", () =
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "greeting.md");
-  const template = PromptTemplate.create(path, "Hello {name}, welcome to {project}!");
-  const aggregate = PromptGenerationAggregate.create("greeting-001", template);
+  const pathResult = TemplatePath.create(directive, layer, "greeting.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}, welcome to {project}!");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("greeting-001", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({ 
     name: "Alice", 
     project: "Breakdown" 
@@ -142,9 +179,10 @@ Deno.test("1_behavior - Successful prompt generation with valid variables", () =
   const result = aggregate.generatePrompt(variables);
   
   // Assert
-  assertEquals(result.success, true);
-  assertEquals(result.attempts, 1);
-  assertEquals(result.prompt?.getContent(), "Hello Alice, welcome to Breakdown!");
+  assertEquals(isOk(result), true);
+  if (isOk(result)) {
+    assertEquals(result.data.getContent(), "Hello Alice, welcome to Breakdown!");
+  }
   assertEquals(aggregate.getState().status, "completed");
 });
 
@@ -152,19 +190,27 @@ Deno.test("1_behavior - Prompt generation fails with missing variables", () => {
   // Arrange
   const directive = new MockDirectiveType("summary") as unknown as DirectiveType;
   const layer = new MockLayerType("issue") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "summary.md");
-  const template = PromptTemplate.create(path, "Summarize {title} from {source}");
-  const aggregate = PromptGenerationAggregate.create("summary-001", template);
+  const pathResult = TemplatePath.create(directive, layer, "summary.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Summarize {title} from {source}");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("summary-001", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({ title: "Test Issue" }); // Missing 'source'
   
   // Act
   const result = aggregate.generatePrompt(variables);
   
   // Assert
-  assertEquals(result.success, false);
-  assertEquals(result.attempts, 1);
-  assertInstanceOf(result.error, PromptGenerationError);
-  assertEquals(result.error?.message, "Missing required variables: source");
+  assertEquals(isOk(result), false);
+  if (!isOk(result)) {
+    assertInstanceOf(result.error, PromptGenerationError);
+    assertEquals(result.error.message, "Missing required variables: source");
+  }
   assertEquals(aggregate.getState().status, "failed");
 });
 
@@ -172,7 +218,9 @@ Deno.test("1_behavior - Multiple variable substitution with complex template", (
   // Arrange
   const directive = new MockDirectiveType("defect") as unknown as DirectiveType;
   const layer = new MockLayerType("task") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "defect_analysis.md");
+  const pathResult = TemplatePath.create(directive, layer, "defect_analysis.md");
+  if (!isOk(pathResult)) return;
+  
   const complexTemplate = `
 # Defect Analysis for {component}
 
@@ -188,8 +236,13 @@ Deno.test("1_behavior - Multiple variable substitution with complex template", (
 The issue in {component} affects {impact_area} with {severity} severity.
 Contact {reporter} for more details.
 `;
-  const template = PromptTemplate.create(path, complexTemplate);
-  const aggregate = PromptGenerationAggregate.create("defect-001", template);
+  const templateResult = PromptTemplate.create(pathResult.data, complexTemplate);
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("defect-001", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({
     component: "AuthService",
     description: "Login timeout after 30 seconds",
@@ -202,13 +255,15 @@ Contact {reporter} for more details.
   const result = aggregate.generatePrompt(variables);
   
   // Assert
-  assertEquals(result.success, true);
-  const content = result.prompt?.getContent() || "";
-  assertEquals(content.includes("AuthService"), true);
-  assertEquals(content.includes("Login timeout after 30 seconds"), true);
-  assertEquals(content.includes("HIGH"), true);
-  assertEquals(content.includes("john.doe@example.com"), true);
-  assertEquals(content.includes("user authentication"), true);
+  assertEquals(isOk(result), true);
+  if (isOk(result)) {
+    const content = result.data.getContent();
+    assertEquals(content.includes("AuthService"), true);
+    assertEquals(content.includes("Login timeout after 30 seconds"), true);
+    assertEquals(content.includes("HIGH"), true);
+    assertEquals(content.includes("john.doe@example.com"), true);
+    assertEquals(content.includes("user authentication"), true);
+  }
 });
 
 Deno.test("1_behavior - Template variable extraction works correctly", () => {
@@ -251,16 +306,19 @@ Deno.test("2_structure - TemplatePath value object enforces invariants", () => {
   const layer = new MockLayerType("project") as unknown as LayerType;
   
   // Act & Assert - Valid filename
-  const validPath = TemplatePath.create(directive, layer, "template.md");
-  assertEquals(validPath.getFilename(), "template.md");
-  assertEquals(validPath.getPath(), "to/project/template.md");
+  const validPathResult = TemplatePath.create(directive, layer, "template.md");
+  assertEquals(isOk(validPathResult), true);
+  if (isOk(validPathResult)) {
+    assertEquals(validPathResult.data.getFilename(), "template.md");
+    assertEquals(validPathResult.data.getPath(), "to/project/template.md");
+  }
   
-  // Act & Assert - Invalid filename throws
-  assertThrows(
-    () => TemplatePath.create(directive, layer, "template.txt"),
-    Error,
-    "Invalid template filename: template.txt. Must end with .md"
-  );
+  // Act & Assert - Invalid filename returns error
+  const invalidPathResult = TemplatePath.create(directive, layer, "template.txt");
+  assertEquals(isOk(invalidPathResult), false);
+  if (!isOk(invalidPathResult)) {
+    assertEquals(invalidPathResult.error, "Invalid template filename: template.txt. Must end with .md");
+  }
 });
 
 Deno.test("2_structure - TemplateContent extracts variables correctly", () => {
@@ -284,7 +342,9 @@ Deno.test("2_structure - PromptTemplate composition with metadata", () => {
   // Arrange
   const directive = new MockDirectiveType("summary") as unknown as DirectiveType;
   const layer = new MockLayerType("issue") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "issue_summary.md");
+  const pathResult = TemplatePath.create(directive, layer, "issue_summary.md");
+  if (!isOk(pathResult)) return;
+  
   const content = "Summarize {issue_title} with priority {priority}";
   const metadata = {
     version: "2.1.0",
@@ -293,48 +353,64 @@ Deno.test("2_structure - PromptTemplate composition with metadata", () => {
   };
   
   // Act
-  const template = PromptTemplate.create(path, content, metadata);
+  const templateResult = PromptTemplate.create(pathResult.data, content, metadata);
   
   // Assert
-  assertEquals(template.getPath(), path);
-  assertEquals(template.getContent().getContent(), content);
-  const templateMetadata = template.getMetadata();
-  assertEquals(templateMetadata.version, "2.1.0");
-  assertEquals(templateMetadata.description, "Issue summary template");
-  assertEquals(templateMetadata.author, "team@example.com");
-  assertInstanceOf(templateMetadata.createdAt, Date);
-  assertInstanceOf(templateMetadata.updatedAt, Date);
+  assertEquals(isOk(templateResult), true);
+  if (isOk(templateResult)) {
+    const template = templateResult.data;
+    assertEquals(template.getPath(), pathResult.data);
+    assertEquals(template.getContent().getContent(), content);
+    const templateMetadata = template.getMetadata();
+    assertEquals(templateMetadata.version, "2.1.0");
+    assertEquals(templateMetadata.description, "Issue summary template");
+    assertEquals(templateMetadata.author, "team@example.com");
+    assertInstanceOf(templateMetadata.createdAt, Date);
+    assertInstanceOf(templateMetadata.updatedAt, Date);
+  }
 });
 
 Deno.test("2_structure - GeneratedPrompt maintains relationships", () => {
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("task") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "task.md");
-  const template = PromptTemplate.create(path, "Complete {task} by {deadline}");
+  const pathResult = TemplatePath.create(directive, layer, "task.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Complete {task} by {deadline}");
+  if (!isOk(templateResult)) return;
+  
+  const template = templateResult.data;
   const variables = TemplateVariables.create({ 
     task: "Code review", 
     deadline: "2024-01-15" 
   });
   
   // Act
-  const generated = template.generate(variables);
+  const generatedResult = template.generate(variables);
   
   // Assert
-  assertEquals(generated.getContent(), "Complete Code review by 2024-01-15");
-  assertEquals(generated.getTemplate(), template);
-  assertEquals(generated.getAppliedVariables().toObject(), {
-    task: "Code review",
-    deadline: "2024-01-15"
-  });
-  assertInstanceOf(generated.getGeneratedAt(), Date);
+  assertEquals(isOk(generatedResult), true);
+  if (isOk(generatedResult)) {
+    const generated = generatedResult.data;
+    assertEquals(generated.getContent(), "Complete Code review by 2024-01-15");
+    assertEquals(generated.getTemplate(), template);
+    assertEquals(generated.getAppliedVariables().toObject(), {
+      task: "Code review",
+      deadline: "2024-01-15"
+    });
+    assertInstanceOf(generated.getGeneratedAt(), Date);
+  }
 });
 
 Deno.test("2_structure - PromptGenerationError contains domain context", () => {
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "test.md");
+  const pathResult = TemplatePath.create(directive, layer, "test.md");
+  if (!isOk(pathResult)) return;
+  
+  const path = pathResult.data;
   const missingVars = ["var1", "var2"];
   
   // Act
@@ -356,9 +432,17 @@ Deno.test("2_structure - Aggregate maintains entity relationships", () => {
   // Arrange
   const directive = new MockDirectiveType("defect") as unknown as DirectiveType;
   const layer = new MockLayerType("issue") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "defect.md");
-  const template = PromptTemplate.create(path, "Analyze {issue}");
-  const aggregate = PromptGenerationAggregate.create("defect-123", template);
+  const pathResult = TemplatePath.create(directive, layer, "defect.md");
+  if (!isOk(pathResult)) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Analyze {issue}");
+  if (!isOk(templateResult)) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("defect-123", templateResult.data);
+  if (!isOk(aggregateResult)) return;
+  
+  const aggregate = aggregateResult.data;
+  const template = templateResult.data;
   const variables = TemplateVariables.create({ issue: "Memory leak" });
   
   // Act
@@ -368,7 +452,10 @@ Deno.test("2_structure - Aggregate maintains entity relationships", () => {
   // Assert - Entity relationships preserved
   assertEquals(aggregate.getId(), "defect-123");
   assertEquals(aggregate.getTemplate().getPath().getFilename(), "defect.md");
-  assertEquals(result.prompt?.getTemplate(), template);
+  assertEquals(isOk(result), true);
+  if (isOk(result)) {
+    assertEquals(result.data.getTemplate(), template);
+  }
   assertEquals(state.lastGenerated?.getContent(), "Analyze Memory leak");
   assertEquals(state.lastGenerated?.getAppliedVariables().get("issue"), "Memory leak");
 });
@@ -377,7 +464,10 @@ Deno.test("2_structure - Value object immutability is preserved", () => {
   // Arrange
   const directive = new MockDirectiveType("to") as unknown as DirectiveType;
   const layer = new MockLayerType("project") as unknown as LayerType;
-  const path = TemplatePath.create(directive, layer, "immutable.md");
+  const pathResult = TemplatePath.create(directive, layer, "immutable.md");
+  if (!isOk(pathResult)) return;
+  
+  const path = pathResult.data;
   const variables1 = TemplateVariables.create({ key: "value1" });
   const variables2 = TemplateVariables.create({ key: "value2" });
   

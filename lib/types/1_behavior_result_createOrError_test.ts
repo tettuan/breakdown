@@ -8,7 +8,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { error, ok, Result } from "./result.ts";
-import { ErrorFactory, ValidationError } from "./unified_error_types.ts";
+import { ErrorFactory, ValidationError } from "./mod.ts";
 
 // Example domain type with createOrError pattern
 class ExampleDomainType {

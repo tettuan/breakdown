@@ -13,8 +13,8 @@
  * @module types/1_structureresult_test
  */
 
-import { assertEquals, assertExists } from "../../lib/deps.ts";
-import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } from "./result.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
+import { all, chain, error, getOrElse, isError, isOk, map, ok, type Result } from "../../../../lib/types/result.ts";
 
 /**
  * Structure Test Suite: Result Type
@@ -66,11 +66,11 @@ Deno.test("Result Type Structure", async (t) => {
     // Should break chain on first error
     const errorInChain = chain(
       map(successResult, (x) => x * 2),
-      (doubled) => error("Chain broken"),
+      (doubled) => error(new Error("Chain broken")),
     );
 
     assertEquals(errorInChain.ok, false);
-    if (!errorInChain.ok) assertEquals(errorInChain.error, "Chain broken");
+    if (!errorInChain.ok) assertEquals(errorInChain.error.message, "Chain broken");
   });
 
   await t.step("maintains type transformation coherence", () => {
@@ -174,14 +174,14 @@ Deno.test("Result Type Structure", async (t) => {
     }
 
     // Mix of success and error
-    const mixedResults = [ok(1), error("fail"), ok(3)];
+    const mixedResults = [ok(1), error(new Error("fail")), ok(3)];
     const errorResult = all(mixedResults);
 
     assertEquals(errorResult.ok, false);
-    if (!errorResult.ok) assertEquals(errorResult.error, "fail");
+    if (!errorResult.ok) assertEquals(errorResult.error.message, "fail");
 
     // Empty array should succeed
-    const emptyResults: Result<number, string>[] = [];
+    const emptyResults: Result<number, Error>[] = [];
     const emptyResult = all(emptyResults);
 
     assertEquals(emptyResult.ok, true);
@@ -251,16 +251,16 @@ Deno.test("Result Type Error Handling Structure", async (t) => {
     const initialValue = 10;
     const result = chain(ok(initialValue), (value) => {
       if (value > 5) {
-        return error("Value too large");
+        return error(new Error("Value too large"));
       }
       return ok(value * 2);
     });
 
     assertEquals(result.ok, false);
-    if (!result.ok) assertEquals(result.error, "Value too large");
+    if (!result.ok) assertEquals(result.error.message, "Value too large");
 
     // Should work with complex error types
-    interface ValidationError {
+    interface ValidationError extends Error {
       field: string;
       rule: string;
       value: unknown;
@@ -268,7 +268,11 @@ Deno.test("Result Type Error Handling Structure", async (t) => {
 
     const validate = (x: number): Result<number, ValidationError> => {
       if (x < 0) {
-        return error({ field: "value", rule: "positive", value: x });
+        const err = new Error("Validation failed") as ValidationError;
+        err.field = "value";
+        err.rule = "positive";
+        err.value = x;
+        return error(err);
       }
       return ok(x);
     };
@@ -276,34 +280,33 @@ Deno.test("Result Type Error Handling Structure", async (t) => {
     const validationResult = chain(ok(-1), validate);
     assertEquals(validationResult.ok, false);
     if (!validationResult.ok) {
-      assertEquals(validationResult.error.field, "value");
-      assertEquals(validationResult.error.rule, "positive");
-      assertEquals(validationResult.error.value, -1);
+      const error = validationResult.error as ValidationError;
+      assertEquals(error.field, "value");
+      assertEquals(error.rule, "positive");
+      assertEquals(error.value, -1);
     }
   });
 
   await t.step("maintains error context through nested operations", () => {
     // Nested chain operations should preserve error context
-    const processValue = (x: number): Result<string, string> => {
-      return chain(
-        x > 0 ? ok(x) : error("negative value"),
-        (positive) =>
-          chain(
-            positive < 100 ? ok(positive) : error("value too large"),
-            (valid) => ok(`Processed: ${valid}`),
-          ),
-      );
+    const processValue = (x: number): Result<string, Error> => {
+      const step1: Result<number, Error> = x > 0 ? ok(x) : error(new Error("negative value"));
+      
+      return chain(step1, (positive: number) => {
+        const step2: Result<number, Error> = positive < 100 ? ok(positive) : error(new Error("value too large"));
+        return chain(step2, (valid: number) => ok(`Processed: ${valid}`));
+      });
     };
 
     // Test error in first step
     const result1 = processValue(-5);
     assertEquals(result1.ok, false);
-    if (!result1.ok) assertEquals(result1.error, "negative value");
+    if (!result1.ok) assertEquals(result1.error.message, "negative value");
 
     // Test error in second step
     const result2 = processValue(150);
     assertEquals(result2.ok, false);
-    if (!result2.ok) assertEquals(result2.error, "value too large");
+    if (!result2.ok) assertEquals(result2.error.message, "value too large");
 
     // Test successful path
     const result3 = processValue(50);

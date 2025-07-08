@@ -78,6 +78,7 @@ export type PathError =
 
 /**
  * Validation error types used across validators
+ * Unified type that encompasses all validation scenarios across the system
  */
 export type ValidationError =
   | {
@@ -100,7 +101,52 @@ export type ValidationError =
     received: string;
     context?: Record<string, unknown>;
   }
-  | { kind: "ValidationFailed"; errors: string[]; context?: Record<string, unknown> };
+  | {
+    kind: "ValidationFailed";
+    errors: string[];
+    context?: Record<string, unknown>;
+  }
+  // Parameter Validator specific errors - unified from parameter_validator.ts
+  | {
+    kind: "InvalidParamsType";
+    expected: string;
+    received: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidDirectiveType";
+    value: string;
+    validPattern: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidLayerType";
+    value: string;
+    validPattern: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "PathValidationFailed";
+    path: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "CustomVariableInvalid";
+    key: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ConfigValidationFailed";
+    errors: string[];
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "UnsupportedParamsType";
+    type: string;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Configuration error types used across config handlers
@@ -132,6 +178,7 @@ export type ConfigurationError =
 
 /**
  * Processing error types used across processors
+ * Includes type creation errors unified from type_factory.ts
  */
 export type ProcessingError =
   | {
@@ -150,6 +197,27 @@ export type ProcessingError =
   | {
     kind: "GenerationFailed";
     generator: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  // Type Factory specific errors - unified from type_factory.ts
+  | {
+    kind: "PatternNotFound";
+    operation: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "PatternValidationFailed";
+    value: string;
+    pattern: string;
+    operation: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidPattern";
+    pattern: string;
+    operation: string;
     reason: string;
     context?: Record<string, unknown>;
   };
@@ -219,14 +287,14 @@ export const ErrorGuards = {
       error !== null &&
       "kind" in error &&
       "path" in error &&
-      typeof (error as any).path === "string" &&
+      typeof (error as Record<string, unknown>).path === "string" &&
       [
         "InvalidPath",
         "PathNotFound",
         "DirectoryNotFound",
         "PermissionDenied",
         "PathTooLong",
-      ].includes((error as any).kind)
+      ].includes((error as Record<string, unknown>).kind as string)
     );
   },
 
@@ -240,7 +308,14 @@ export const ErrorGuards = {
         "MissingRequiredField",
         "InvalidFieldType",
         "ValidationFailed",
-      ].includes((error as any).kind)
+        "InvalidParamsType",
+        "InvalidDirectiveType",
+        "InvalidLayerType",
+        "PathValidationFailed",
+        "CustomVariableInvalid",
+        "ConfigValidationFailed",
+        "UnsupportedParamsType",
+      ].includes((error as Record<string, unknown>).kind as string)
     );
   },
 
@@ -254,7 +329,7 @@ export const ErrorGuards = {
         "ProfileNotFound",
         "InvalidConfiguration",
         "ConfigLoadError",
-      ].includes((error as any).kind)
+      ].includes((error as Record<string, unknown>).kind as string)
     );
   },
 
@@ -267,7 +342,10 @@ export const ErrorGuards = {
         "ProcessingFailed",
         "TransformationFailed",
         "GenerationFailed",
-      ].includes((error as any).kind)
+        "PatternNotFound",
+        "PatternValidationFailed",
+        "InvalidPattern",
+      ].includes((error as Record<string, unknown>).kind as string)
     );
   },
 
@@ -282,7 +360,7 @@ export const ErrorGuards = {
         "WorkspacePathError",
         "WorkspaceDirectoryError",
         "WorkspaceError",
-      ].includes((error as any).kind)
+      ].includes((error as Record<string, unknown>).kind as string)
     );
   },
 };
@@ -297,15 +375,15 @@ export const ErrorFactory = {
   pathError<K extends PathError["kind"]>(
     kind: K,
     path: string,
-    additionalData?: K extends "InvalidPath"
-      ? { reason: string; context?: Record<string, unknown> }
-      : K extends "PathTooLong"
-      ? { maxLength?: number; context?: Record<string, unknown> }
+    additionalData?: K extends "InvalidPath" ? { reason: string; context?: Record<string, unknown> }
+      : K extends "PathTooLong" ? { maxLength?: number; context?: Record<string, unknown> }
       : { context?: Record<string, unknown> },
   ): Extract<PathError, { kind: K }> {
     switch (kind) {
       case "InvalidPath": {
-        const data = additionalData as { reason: string; context?: Record<string, unknown> } | undefined;
+        const data = additionalData as
+          | { reason: string; context?: Record<string, unknown> }
+          | undefined;
         return {
           kind: "InvalidPath",
           path,
@@ -314,7 +392,9 @@ export const ErrorFactory = {
         } as Extract<PathError, { kind: K }>;
       }
       case "PathTooLong": {
-        const data = additionalData as { maxLength?: number; context?: Record<string, unknown> } | undefined;
+        const data = additionalData as
+          | { maxLength?: number; context?: Record<string, unknown> }
+          | undefined;
         return {
           kind: "PathTooLong",
           path,
@@ -347,16 +427,32 @@ export const ErrorFactory = {
     details: K extends "InvalidInput"
       ? { field: string; value: unknown; reason: string; context?: Record<string, unknown> }
       : K extends "MissingRequiredField"
-      ? { field: string; source: string; context?: Record<string, unknown> }
+        ? { field: string; source: string; context?: Record<string, unknown> }
       : K extends "InvalidFieldType"
-      ? { field: string; expected: string; received: string; context?: Record<string, unknown> }
-      : K extends "ValidationFailed"
-      ? { errors: string[]; context?: Record<string, unknown> }
+        ? { field: string; expected: string; received: string; context?: Record<string, unknown> }
+      : K extends "ValidationFailed" ? { errors: string[]; context?: Record<string, unknown> }
+      : K extends "InvalidParamsType"
+        ? { expected: string; received: string; context?: Record<string, unknown> }
+      : K extends "InvalidDirectiveType"
+        ? { value: string; validPattern: string; context?: Record<string, unknown> }
+      : K extends "InvalidLayerType"
+        ? { value: string; validPattern: string; context?: Record<string, unknown> }
+      : K extends "PathValidationFailed"
+        ? { path: string; reason: string; context?: Record<string, unknown> }
+      : K extends "CustomVariableInvalid"
+        ? { key: string; reason: string; context?: Record<string, unknown> }
+      : K extends "ConfigValidationFailed" ? { errors: string[]; context?: Record<string, unknown> }
+      : K extends "UnsupportedParamsType" ? { type: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ValidationError, { kind: K }> {
     switch (kind) {
       case "InvalidInput": {
-        const d = details as { field: string; value: unknown; reason: string; context?: Record<string, unknown> };
+        const d = details as {
+          field: string;
+          value: unknown;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "InvalidInput",
           field: d.field,
@@ -375,7 +471,12 @@ export const ErrorFactory = {
         } as Extract<ValidationError, { kind: K }>;
       }
       case "InvalidFieldType": {
-        const d = details as { field: string; expected: string; received: string; context?: Record<string, unknown> };
+        const d = details as {
+          field: string;
+          expected: string;
+          received: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "InvalidFieldType",
           field: d.field,
@@ -389,6 +490,79 @@ export const ErrorFactory = {
         return {
           kind: "ValidationFailed",
           errors: d.errors,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "InvalidParamsType": {
+        const d = details as {
+          expected: string;
+          received: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "InvalidParamsType",
+          expected: d.expected,
+          received: d.received,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "InvalidDirectiveType": {
+        const d = details as {
+          value: string;
+          validPattern: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "InvalidDirectiveType",
+          value: d.value,
+          validPattern: d.validPattern,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "InvalidLayerType": {
+        const d = details as {
+          value: string;
+          validPattern: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "InvalidLayerType",
+          value: d.value,
+          validPattern: d.validPattern,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "PathValidationFailed": {
+        const d = details as { path: string; reason: string; context?: Record<string, unknown> };
+        return {
+          kind: "PathValidationFailed",
+          path: d.path,
+          reason: d.reason,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "CustomVariableInvalid": {
+        const d = details as { key: string; reason: string; context?: Record<string, unknown> };
+        return {
+          kind: "CustomVariableInvalid",
+          key: d.key,
+          reason: d.reason,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "ConfigValidationFailed": {
+        const d = details as { errors: string[]; context?: Record<string, unknown> };
+        return {
+          kind: "ConfigValidationFailed",
+          errors: d.errors,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "UnsupportedParamsType": {
+        const d = details as { type: string; context?: Record<string, unknown> };
+        return {
+          kind: "UnsupportedParamsType",
+          type: d.type,
           context: d.context,
         } as Extract<ValidationError, { kind: K }>;
       }
@@ -407,16 +581,19 @@ export const ErrorFactory = {
     details: K extends "ConfigurationError"
       ? { message: string; source?: string; context?: Record<string, unknown> }
       : K extends "ProfileNotFound"
-      ? { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> }
+        ? { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> }
       : K extends "InvalidConfiguration"
-      ? { field: string; reason: string; context?: Record<string, unknown> }
-      : K extends "ConfigLoadError"
-      ? { message: string; context?: Record<string, unknown> }
+        ? { field: string; reason: string; context?: Record<string, unknown> }
+      : K extends "ConfigLoadError" ? { message: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ConfigurationError, { kind: K }> {
     switch (kind) {
       case "ConfigurationError": {
-        const d = details as { message: string; source?: string; context?: Record<string, unknown> };
+        const d = details as {
+          message: string;
+          source?: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "ConfigurationError",
           message: d.message,
@@ -425,7 +602,11 @@ export const ErrorFactory = {
         } as Extract<ConfigurationError, { kind: K }>;
       }
       case "ProfileNotFound": {
-        const d = details as { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> };
+        const d = details as {
+          profile: string;
+          availableProfiles?: string[];
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "ProfileNotFound",
           profile: d.profile,
@@ -465,14 +646,24 @@ export const ErrorFactory = {
     details: K extends "ProcessingFailed"
       ? { operation: string; reason: string; context?: Record<string, unknown> }
       : K extends "TransformationFailed"
-      ? { input: unknown; targetType: string; reason: string; context?: Record<string, unknown> }
+        ? { input: unknown; targetType: string; reason: string; context?: Record<string, unknown> }
       : K extends "GenerationFailed"
-      ? { generator: string; reason: string; context?: Record<string, unknown> }
+        ? { generator: string; reason: string; context?: Record<string, unknown> }
+      : K extends "PatternNotFound"
+        ? { operation: string; reason: string; context?: Record<string, unknown> }
+      : K extends "PatternValidationFailed"
+        ? { value: string; pattern: string; operation: string; context?: Record<string, unknown> }
+      : K extends "InvalidPattern"
+        ? { pattern: string; operation: string; reason: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ProcessingError, { kind: K }> {
     switch (kind) {
       case "ProcessingFailed": {
-        const d = details as { operation: string; reason: string; context?: Record<string, unknown> };
+        const d = details as {
+          operation: string;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "ProcessingFailed",
           operation: d.operation,
@@ -481,7 +672,12 @@ export const ErrorFactory = {
         } as Extract<ProcessingError, { kind: K }>;
       }
       case "TransformationFailed": {
-        const d = details as { input: unknown; targetType: string; reason: string; context?: Record<string, unknown> };
+        const d = details as {
+          input: unknown;
+          targetType: string;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "TransformationFailed",
           input: d.input,
@@ -491,10 +687,57 @@ export const ErrorFactory = {
         } as Extract<ProcessingError, { kind: K }>;
       }
       case "GenerationFailed": {
-        const d = details as { generator: string; reason: string; context?: Record<string, unknown> };
+        const d = details as {
+          generator: string;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
         return {
           kind: "GenerationFailed",
           generator: d.generator,
+          reason: d.reason,
+          context: d.context,
+        } as Extract<ProcessingError, { kind: K }>;
+      }
+      case "PatternNotFound": {
+        const d = details as {
+          operation: string;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "PatternNotFound",
+          operation: d.operation,
+          reason: d.reason,
+          context: d.context,
+        } as Extract<ProcessingError, { kind: K }>;
+      }
+      case "PatternValidationFailed": {
+        const d = details as {
+          value: string;
+          pattern: string;
+          operation: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "PatternValidationFailed",
+          value: d.value,
+          pattern: d.pattern,
+          operation: d.operation,
+          context: d.context,
+        } as Extract<ProcessingError, { kind: K }>;
+      }
+      case "InvalidPattern": {
+        const d = details as {
+          pattern: string;
+          operation: string;
+          reason: string;
+          context?: Record<string, unknown>;
+        };
+        return {
+          kind: "InvalidPattern",
+          pattern: d.pattern,
+          operation: d.operation,
           reason: d.reason,
           context: d.context,
         } as Extract<ProcessingError, { kind: K }>;
@@ -597,7 +840,7 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.path}`;
     case "PathTooLong":
       return `${error.kind}: ${error.path} (max: ${error.maxLength})`;
-    
+
     // Validation errors
     case "InvalidInput":
       return `${error.kind}: ${error.field} - ${error.reason}`;
@@ -607,7 +850,21 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.field} expected ${error.expected}, got ${error.received}`;
     case "ValidationFailed":
       return `${error.kind}: ${error.errors.join(", ")}`;
-    
+    case "InvalidParamsType":
+      return `${error.kind}: expected ${error.expected}, received ${error.received}`;
+    case "InvalidDirectiveType":
+      return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
+    case "InvalidLayerType":
+      return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
+    case "PathValidationFailed":
+      return `${error.kind}: ${error.path} - ${error.reason}`;
+    case "CustomVariableInvalid":
+      return `${error.kind}: ${error.key} - ${error.reason}`;
+    case "ConfigValidationFailed":
+      return `${error.kind}: ${error.errors.join(", ")}`;
+    case "UnsupportedParamsType":
+      return `${error.kind}: ${error.type}`;
+
     // Configuration errors
     case "ConfigurationError":
       return `${error.kind}: ${error.message}`;
@@ -617,7 +874,7 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.field} - ${error.reason}`;
     case "ConfigLoadError":
       return `${error.kind}: ${error.message}`;
-    
+
     // Processing errors
     case "ProcessingFailed":
       return `${error.kind}: ${error.operation} - ${error.reason}`;
@@ -625,7 +882,13 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: to ${error.targetType} - ${error.reason}`;
     case "GenerationFailed":
       return `${error.kind}: ${error.generator} - ${error.reason}`;
-    
+    case "PatternNotFound":
+      return `${error.kind}: ${error.reason}`;
+    case "PatternValidationFailed":
+      return `${error.kind}: ${error.value} does not match pattern ${error.pattern}`;
+    case "InvalidPattern":
+      return `${error.kind}: ${error.pattern} - ${error.reason}`;
+
     // Workspace errors
     case "WorkspaceInitError":
       return `${error.kind}: ${error.message}`;
@@ -637,7 +900,7 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.message}`;
     case "WorkspaceError":
       return `${error.kind}: ${error.message}`;
-    
+
     default:
       return assertNever(error);
   }

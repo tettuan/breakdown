@@ -48,7 +48,7 @@ Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   
   if (result.ok) {
     assertExists(result.data);
-    assertEquals(result.data.constructor.name, "SchemaPath");
+    assertEquals(result.data!.constructor.name, "SchemaPath");
   } else {
     assertExists(result.error);
     assertEquals(typeof result.error, "string");
@@ -120,9 +120,9 @@ Deno.test("1_behavior: creates SchemaPath with valid parameters", () => {
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.getDirective(), validDirective);
-    assertEquals(result.data.getLayer(), validLayer);
-    assertEquals(result.data.getFilename(), validFilename);
+    assertEquals(result.data!.getDirective(), validDirective);
+    assertEquals(result.data!.getLayer(), validLayer);
+    assertEquals(result.data!.getFilename(), validFilename);
   }
 });
 
@@ -184,7 +184,7 @@ Deno.test("1_behavior: accepts valid .json filename", () => {
     const result = SchemaPath.create(validDirective, validLayer, filename);
     assertEquals(result.ok, true);
     if (result.ok) {
-      assertEquals(result.data.getFilename(), filename);
+      assertEquals(result.data!.getFilename(), filename);
     }
   }
 });
@@ -213,7 +213,7 @@ Deno.test("1_behavior: generates correct path", () => {
   
   if (result.ok) {
     const expectedPath = `${validDirective.getValue()}/${validLayer.getValue()}/${validFilename}`;
-    assertEquals(result.data.getPath(), expectedPath);
+    assertEquals(result.data!.getPath(), expectedPath);
   }
 });
 
@@ -221,7 +221,7 @@ Deno.test("1_behavior: toString returns path", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), result.data.getPath());
+    assertEquals(result.data!.toString(), result.data!.getPath());
   }
 });
 
@@ -233,7 +233,7 @@ Deno.test("2_structure: SchemaPath immutability", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!;
     
     // Properties should remain constant
     const originalDirective = path.getDirective();
@@ -256,12 +256,12 @@ Deno.test("2_structure: equals method correctness", () => {
   
   if (result1.ok && result2.ok && result3.ok) {
     // Same parameters should be equal
-    assertEquals(result1.data.equals(result2.data), true);
-    assertEquals(result2.data.equals(result1.data), true);
+    assertEquals(result1.data!.equals(result2.data!), true);
+    assertEquals(result2.data!.equals(result1.data!), true);
     
     // Different filenames should not be equal
-    assertEquals(result1.data.equals(result3.data), false);
-    assertEquals(result3.data.equals(result1.data), false);
+    assertEquals(result1.data!.equals(result3.data!), false);
+    assertEquals(result3.data!.equals(result1.data!), false);
   }
 });
 
@@ -282,7 +282,7 @@ Deno.test("2_structure: success results have correct structure", () => {
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
     assertExists(validResult.data);
-    assertEquals(validResult.data instanceof SchemaPath, true);
+    assertEquals(validResult.data! instanceof SchemaPath, true);
     assertEquals(validResult.error, undefined);
   }
 });
@@ -291,7 +291,7 @@ Deno.test("2_structure: method return type consistency", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!;
     
     // Verify return types
     assertEquals(typeof path.getPath(), "string");
@@ -306,7 +306,7 @@ Deno.test("2_structure: path composition correctness", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    const path = result.data;
+    const path = result.data!;
     const fullPath = path.getPath();
     
     // Path should contain all components
@@ -325,15 +325,15 @@ Deno.test("2_structure: multiple instance independence", () => {
   
   if (result1.ok && result2.ok) {
     // Different instances should be independent
-    assertEquals(result1.data === result2.data, false);
-    assertEquals(result1.data.equals(result2.data), false);
+    assertEquals(result1.data! === result2.data!, false);
+    assertEquals(result1.data!.equals(result2.data!), false);
     
     // But they should share same directive and layer
-    assertEquals(result1.data.getDirective(), result2.data.getDirective());
-    assertEquals(result1.data.getLayer(), result2.data.getLayer());
+    assertEquals(result1.data!.getDirective(), result2.data!.getDirective());
+    assertEquals(result1.data!.getLayer(), result2.data!.getLayer());
     
     // Filenames should be different
-    assertEquals(result1.data.getFilename() !== result2.data.getFilename(), true);
+    assertEquals(result1.data!.getFilename() !== result2.data!.getFilename(), true);
   }
 });
 
@@ -360,7 +360,7 @@ Deno.test("2_structure: toString equals getPath", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), result.data.getPath());
+    assertEquals(result.data!.toString(), result.data!.getPath());
   }
 });
 
@@ -371,7 +371,7 @@ Deno.test("2_structure: path format consistency", () => {
     const result = SchemaPath.create(validDirective, validLayer, filename);
     
     if (result.ok) {
-      const path = result.data.getPath();
+      const path = result.data!.getPath();
       const parts = path.split("/");
       
       assertEquals(parts.length, 3);

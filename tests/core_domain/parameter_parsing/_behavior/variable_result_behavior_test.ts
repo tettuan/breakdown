@@ -75,7 +75,7 @@ Deno.test("VariableResult - createValidationFailedError creates proper error", (
   if (!result.ok) {
     assertEquals(result.error.kind, "ValidationFailed");
     if (result.error.kind === "ValidationFailed") {
-      assertEquals(result.error.data, "invalid");
+      assertEquals(result.error.value, "invalid");
       assertEquals(result.error.constraint, "must be numeric");
     }
   }

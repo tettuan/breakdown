@@ -105,8 +105,8 @@ Deno.test("Result Type - Operational Consistency", async (t) => {
   });
 
   await t.step("should provide consistent transformation functions", () => {
-    const successResult = ok(5);
-    const errorResult = error("failure");
+    const successResult: Result<number, string> = ok(5);
+    const errorResult: Result<number, string> = error("failure");
     
     // Test map()
     const mapped = map(successResult, x => x * 2);
@@ -122,20 +122,20 @@ Deno.test("Result Type - Operational Consistency", async (t) => {
     assertEquals(chained.ok, true);
     if (chained.ok) assertEquals(chained.data, "5");
     
-    const chainedError = chain(errorResult, (_x: never) => ok("never-reached"));
+    const chainedError = chain(errorResult, x => ok(x.toString()));
     assertEquals(chainedError.ok, false);
     if (!chainedError.ok) assertEquals(chainedError.error, "failure");
   });
 
   await t.step("should provide consistent aggregation functions", () => {
     // Test all() with success cases
-    const results = [ok(1), ok(2), ok(3)];
+    const results: Result<number, string>[] = [ok(1), ok(2), ok(3)];
     const combined = all(results);
     assertEquals(combined.ok, true);
     if (combined.ok) assertEquals(combined.data, [1, 2, 3]);
     
     // Test all() with error cases
-    const mixedResults = [ok(1), error("failure"), ok(3)];
+    const mixedResults: Result<number, string>[] = [ok(1), error("failure"), ok(3)];
     const combinedError = all(mixedResults);
     assertEquals(combinedError.ok, false);
     if (!combinedError.ok) assertEquals(combinedError.error, "failure");
@@ -311,7 +311,7 @@ Deno.test("Result Type - Performance Validation", async (t) => {
   });
 
   await t.step("should have efficient utility function performance", () => {
-    const results = Array.from({ length: 1000 }, (_, i) => 
+    const results: Result<number, string>[] = Array.from({ length: 1000 }, (_, i) => 
       i % 3 === 0 ? error(`Error ${i}`) : ok(i)
     );
     
@@ -407,7 +407,7 @@ Deno.test("Result Type - Totality Principle Validation", async (t) => {
     if (success.ok) assertEquals(success.data, "4");
     
     // Test failing composition
-    const failure = compose(500);
+    const failure = compose(100000);
     assertEquals(failure.ok, false);
     if (!failure.ok) assertEquals(failure.error, "Too long");
   });

@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { isOk, isError } from "./result.ts";
 

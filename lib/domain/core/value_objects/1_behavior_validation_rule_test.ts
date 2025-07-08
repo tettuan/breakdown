@@ -1,295 +1,555 @@
-import { assertEquals, assertExists } from "@std/assert";
-import { describe, it } from "@std/testing/bdd";
-import { ValidationRule } from "./validation_rule.ts";
+/**
+ * @fileoverview ValidationRule Behavior Tests - Enhanced Totality Pattern Validation
+ * 
+ * Totality原則に基づくSmart Constructor、Result型、Discriminated Unionパターンの統合テスト。
+ * 新しいTotality準拠実装の動作とエラーハンドリングを検証。
+ * 
+ * テスト構成:
+ * - Smart Constructor (create) パターンの検証
+ * - Result型によるエラーハンドリングの検証
+ * - Discriminated Unionエラー型の検証
+ * - 型ガード関数の検証
+ * - レガシー互換性の検証
+ */
 
-describe("1_behavior_validation_rule_test", () => {
-  it("should handle valid inputs correctly", () => {
-    // Test basic validation with valid input
-    const rule = ValidationRule.create(
-      "test_rule",
-      (value: string) => value.length > 0,
-      "Value must not be empty",
-    );
+import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
+import {
+  ValidationRule,
+  ValidationRuleError,
+  isEmptyNameError,
+  isEmptyErrorMessageError,
+  isInvalidValidatorError,
+  isInvalidRangeError,
+  isNegativeLengthError,
+  isEmptyRuleSetError,
+  isNullOrUndefinedError,
+  isInvalidTypeError,
+  formatValidationRuleError,
+} from "./validation_rule.ts";
+import type { Result } from "../../../types/result.ts";
 
-    const result = rule.validate("valid_input");
-    assertEquals(result.isValid, true);
-    assertEquals(result.errorMessage, undefined);
-    assertEquals(result.appliedRules, ["test_rule"]);
+// =============================================================================
+// TOTALITY PATTERN: Smart Constructor & Result Type & Discriminated Union Tests
+// =============================================================================
 
-    // Test required field with valid input
-    const requiredRule = ValidationRule.required<string>("username");
-    const validResult = requiredRule.validate("john_doe");
+Deno.test("Totality - ValidationRule implements Smart Constructor pattern with Result type", () => {
+  // Smart Constructor: Private constructor, public static factory methods
+  
+  // Primary Smart Constructor methods
+  assertExists(ValidationRule.create);
+  assertExists(ValidationRule.minLength);
+  assertExists(ValidationRule.maxLength);
+  assertExists(ValidationRule.range);
+  assertExists(ValidationRule.combine);
+  
+  // Legacy factory methods should still exist
+  assertExists(ValidationRule.createUnsafe);
+  assertExists(ValidationRule.minLengthUnsafe);
+  assertExists(ValidationRule.maxLengthUnsafe);
+  assertExists(ValidationRule.rangeUnsafe);
+  assertExists(ValidationRule.combineUnsafe);
+  assertExists(ValidationRule.required);
+  assertExists(ValidationRule.pattern);
+  assertExists(ValidationRule.custom);
+  
+  // Verify Smart Constructor returns Result type
+  const result = ValidationRule.create(
+    "test_rule",
+    (value: string) => value.length > 0,
+    "Value must not be empty"
+  );
+  assertExists(result);
+  assertExists(result.ok);
+  
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(result.data.getName(), "test_rule");
+  }
+});
+
+Deno.test("Totality - ValidationRule.create validates all parameters comprehensively", () => {
+  // Valid creation should succeed
+  const validResult = ValidationRule.create(
+    "username_required",
+    (value: string) => value != null && value.trim().length > 0,
+    "Username is required and cannot be empty"
+  );
+  
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.getName(), "username_required");
+    assertEquals(validResult.data.getErrorMessage(), "Username is required and cannot be empty");
+  }
+  
+  // Invalid name (null) should return error
+  const nullNameResult = ValidationRule.create(
+    null as any,
+    (value: string) => true,
+    "Error message"
+  );
+  assert(!nullNameResult.ok);
+  if (!nullNameResult.ok) {
+    assertEquals(nullNameResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Invalid name (empty) should return error
+  const emptyNameResult = ValidationRule.create(
+    "   ",
+    (value: string) => true,
+    "Error message"
+  );
+  assert(!emptyNameResult.ok);
+  if (!emptyNameResult.ok) {
+    assertEquals(emptyNameResult.error.kind, "EmptyName");
+  }
+  
+  // Invalid validator (null) should return error
+  const nullValidatorResult = ValidationRule.create(
+    "test_rule",
+    null as any,
+    "Error message"
+  );
+  assert(!nullValidatorResult.ok);
+  if (!nullValidatorResult.ok) {
+    assertEquals(nullValidatorResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Invalid validator (not function) should return error
+  const invalidValidatorResult = ValidationRule.create(
+    "test_rule",
+    "not a function" as any,
+    "Error message"
+  );
+  assert(!invalidValidatorResult.ok);
+  if (!invalidValidatorResult.ok) {
+    assertEquals(invalidValidatorResult.error.kind, "InvalidValidator");
+  }
+  
+  // Invalid error message (null) should return error
+  const nullMessageResult = ValidationRule.create(
+    "test_rule",
+    (value: string) => true,
+    null as any
+  );
+  assert(!nullMessageResult.ok);
+  if (!nullMessageResult.ok) {
+    assertEquals(nullMessageResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Invalid error message (empty) should return error
+  const emptyMessageResult = ValidationRule.create(
+    "test_rule",
+    (value: string) => true,
+    "   "
+  );
+  assert(!emptyMessageResult.ok);
+  if (!emptyMessageResult.ok) {
+    assertEquals(emptyMessageResult.error.kind, "EmptyErrorMessage");
+  }
+});
+
+Deno.test("Totality - ValidationRule.minLength returns Result type with comprehensive validation", () => {
+  // Valid minLength creation should return success Result
+  const validResult = ValidationRule.minLength(5, "password");
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.getName(), "minLength_5_password");
+  }
+  
+  // Negative length should return error Result (Totality pattern)
+  const negativeResult = ValidationRule.minLength(-1, "field");
+  assert(!negativeResult.ok);
+  if (!negativeResult.ok) {
+    assertEquals(negativeResult.error.kind, "NegativeLength");
+  }
+  
+  // Null length should return error Result
+  const nullResult = ValidationRule.minLength(null as any, "field");
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Non-number length should return error Result
+  const invalidTypeResult = ValidationRule.minLength("5" as any, "field");
+  assert(!invalidTypeResult.ok);
+  if (!invalidTypeResult.ok) {
+    assertEquals(invalidTypeResult.error.kind, "InvalidType");
+  }
+});
+
+Deno.test("Totality - ValidationRule.maxLength returns Result type with comprehensive validation", () => {
+  // Valid maxLength creation should return success Result
+  const validResult = ValidationRule.maxLength(10, "username");
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.getName(), "maxLength_10_username");
+  }
+  
+  // Negative length should return error Result (Totality pattern)
+  const negativeResult = ValidationRule.maxLength(-1, "field");
+  assert(!negativeResult.ok);
+  if (!negativeResult.ok) {
+    assertEquals(negativeResult.error.kind, "NegativeLength");
+  }
+});
+
+Deno.test("Totality - ValidationRule.range returns Result type with comprehensive validation", () => {
+  // Valid range creation should return success Result
+  const validResult = ValidationRule.range(1, 100, "age");
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.getName(), "range_1_100_age");
+  }
+  
+  // Invalid range (min > max) should return error Result
+  const invalidRangeResult = ValidationRule.range(100, 1, "age");
+  assert(!invalidRangeResult.ok);
+  if (!invalidRangeResult.ok) {
+    assertEquals(invalidRangeResult.error.kind, "InvalidRange");
+  }
+  
+  // Null min should return error Result
+  const nullMinResult = ValidationRule.range(null as any, 100, "age");
+  assert(!nullMinResult.ok);
+  if (!nullMinResult.ok) {
+    assertEquals(nullMinResult.error.kind, "NullOrUndefined");
+  }
+});
+
+Deno.test("Totality - ValidationRule.combine returns Result type with comprehensive validation", () => {
+  // Valid combination should return success Result
+  const rule1Result = ValidationRule.minLength(3, "field");
+  const rule2Result = ValidationRule.maxLength(10, "field");
+  
+  assert(rule1Result.ok && rule2Result.ok);
+  if (rule1Result.ok && rule2Result.ok) {
+    const combinedResult = ValidationRule.combine([rule1Result.data, rule2Result.data]);
+    assert(combinedResult.ok);
+    if (combinedResult.ok) {
+      assertEquals(combinedResult.data.getName().includes("combined"), true);
+    }
+  }
+  
+  // Empty rules array should return error Result
+  const emptyResult = ValidationRule.combine([]);
+  assert(!emptyResult.ok);
+  if (!emptyResult.ok) {
+    assertEquals(emptyResult.error.kind, "EmptyRuleSet");
+  }
+  
+  // Null rules should return error Result
+  const nullResult = ValidationRule.combine(null as any);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Non-array rules should return error Result
+  const invalidTypeResult = ValidationRule.combine("not an array" as any);
+  assert(!invalidTypeResult.ok);
+  if (!invalidTypeResult.ok) {
+    assertEquals(invalidTypeResult.error.kind, "InvalidType");
+  }
+});
+
+Deno.test("Totality - ValidationRule.withMessage returns Result type with validation", () => {
+  // Create a base rule first
+  const baseRuleResult = ValidationRule.create(
+    "test_rule",
+    (value: string) => value.length > 0,
+    "Original message"
+  );
+  
+  assert(baseRuleResult.ok);
+  if (baseRuleResult.ok) {
+    const baseRule = baseRuleResult.data;
+    
+    // Valid message change should return success Result
+    const validResult = baseRule.withMessage("New error message");
+    assert(validResult.ok);
+    if (validResult.ok) {
+      assertEquals(validResult.data.getErrorMessage(), "New error message");
+      // Original should remain unchanged (immutability)
+      assertEquals(baseRule.getErrorMessage(), "Original message");
+    }
+    
+    // Empty message should return error Result
+    const emptyResult = baseRule.withMessage("   ");
+    assert(!emptyResult.ok);
+    if (!emptyResult.ok) {
+      assertEquals(emptyResult.error.kind, "EmptyErrorMessage");
+    }
+    
+    // Null message should return error Result
+    const nullResult = baseRule.withMessage(null as any);
+    assert(!nullResult.ok);
+    if (!nullResult.ok) {
+      assertEquals(nullResult.error.kind, "NullOrUndefined");
+    }
+  }
+});
+
+// =============================================================================
+// DISCRIMINATED UNION ERROR TYPE TESTS
+// =============================================================================
+
+Deno.test("Totality - ValidationRuleError type guards work correctly", () => {
+  // Test different error types and their type guards
+  const emptyNameResult = ValidationRule.create("", (v: string) => true, "Error");
+  assert(!emptyNameResult.ok);
+  if (!emptyNameResult.ok) {
+    const emptyNameError = emptyNameResult.error;
+    
+    const negativeResult = ValidationRule.minLength(-1, "field");
+    assert(!negativeResult.ok);
+    if (!negativeResult.ok) {
+      const negativeError = negativeResult.error;
+      
+      const nullResult = ValidationRule.create(null as any, (v: string) => true, "Error");
+      assert(!nullResult.ok);
+      if (!nullResult.ok) {
+        const nullError = nullResult.error;
+        
+        // Test type guards
+        assert(isEmptyNameError(emptyNameError));
+        assert(!isNegativeLengthError(emptyNameError));
+        assert(!isNullOrUndefinedError(emptyNameError));
+        
+        assert(isNegativeLengthError(negativeError));
+        assert(!isEmptyNameError(negativeError));
+        
+        assert(isNullOrUndefinedError(nullError));
+        assert(!isEmptyNameError(nullError));
+      }
+    }
+  }
+});
+
+Deno.test("Totality - formatValidationRuleError provides comprehensive error messages", () => {
+  // Test EmptyName error formatting
+  const emptyNameResult = ValidationRule.create("", (v: string) => true, "Error");
+  assert(!emptyNameResult.ok);
+  if (!emptyNameResult.ok) {
+    const emptyNameMessage = formatValidationRuleError(emptyNameResult.error);
+    assert(emptyNameMessage.includes("name cannot be empty"));
+  }
+  
+  // Test NegativeLength error formatting
+  const negativeResult = ValidationRule.minLength(-5, "field");
+  assert(!negativeResult.ok);
+  if (!negativeResult.ok) {
+    const negativeMessage = formatValidationRuleError(negativeResult.error);
+    assert(negativeMessage.includes("cannot be negative"));
+    assert(negativeMessage.includes("-5"));
+  }
+  
+  // Test InvalidRange error formatting
+  const rangeResult = ValidationRule.range(10, 5, "field");
+  assert(!rangeResult.ok);
+  if (!rangeResult.ok) {
+    const rangeMessage = formatValidationRuleError(rangeResult.error);
+    assert(rangeMessage.includes("Invalid range"));
+    assert(rangeMessage.includes("10"));
+    assert(rangeMessage.includes("5"));
+  }
+});
+
+// =============================================================================
+// LEGACY COMPATIBILITY TESTS
+// =============================================================================
+
+Deno.test("Totality - Legacy methods maintain backward compatibility", () => {
+  // Legacy factory methods should still work
+  const requiredRule = ValidationRule.required<string>("username");
+  assertEquals(requiredRule.getName(), "required_username");
+  
+  // Legacy unsafe methods should work but are deprecated
+  const unsafeRule = ValidationRule.createUnsafe(
+    "test_rule",
+    (value: string) => value.length > 0,
+    "Error message"
+  );
+  assertEquals(unsafeRule.getName(), "test_rule");
+  
+  // Legacy unsafe methods should throw on error
+  try {
+    ValidationRule.createUnsafe("", (value: string) => true, "Error");
+    assert(false, "Should have thrown");
+  } catch (error) {
+    assert(error instanceof Error);
+    if (error instanceof Error) {
+      assert(error.message.includes("name cannot be empty"));
+    }
+  }
+  
+  // Legacy withMessageUnsafe should work
+  const withMessageUnsafe = unsafeRule.withMessageUnsafe("New message");
+  assertEquals(withMessageUnsafe.getErrorMessage(), "New message");
+  
+  // Should throw on invalid message
+  try {
+    unsafeRule.withMessageUnsafe("");
+    assert(false, "Should have thrown");
+  } catch (error) {
+    assert(error instanceof Error);
+  }
+});
+
+// =============================================================================
+// IMMUTABILITY AND VALUE OBJECT TESTS
+// =============================================================================
+
+Deno.test("Totality - ValidationRule instances are completely immutable", () => {
+  const result = ValidationRule.create(
+    "test_rule",
+    (value: string) => value.length > 0,
+    "Error message"
+  );
+  assert(result.ok);
+  if (result.ok) {
+    const rule = result.data;
+    
+    // Object should be frozen
+    assert(Object.isFrozen(rule));
+    
+    // Repeated calls should return identical values
+    assertEquals(rule.getName(), rule.getName());
+    assertEquals(rule.getErrorMessage(), rule.getErrorMessage());
+    assertEquals(rule.isOptionalRule(), rule.isOptionalRule());
+    
+    // Method chaining should create new instances
+    const withMessageResult = rule.withMessage("New message");
+    assert(withMessageResult.ok);
+    if (withMessageResult.ok) {
+      const newRule = withMessageResult.data;
+      assertEquals(rule.getErrorMessage(), "Error message"); // Original unchanged
+      assertEquals(newRule.getErrorMessage(), "New message"); // New instance changed
+    }
+  }
+});
+
+Deno.test("Architecture - ValidationRule validation behavior works correctly", () => {
+  // Test that validation still works with the new implementation
+  const ruleResult = ValidationRule.create(
+    "length_check",
+    (value: string) => value.length >= 3,
+    "Value must be at least 3 characters"
+  );
+  
+  assert(ruleResult.ok);
+  if (ruleResult.ok) {
+    const rule = ruleResult.data;
+    
+    // Valid input
+    const validResult = rule.validate("hello");
     assertEquals(validResult.isValid, true);
     assertEquals(validResult.errorMessage, undefined);
-    assertEquals(validResult.appliedRules, ["required_username"]);
+    assertEquals(validResult.appliedRules, ["length_check"]);
+    
+    // Invalid input
+    const invalidResult = rule.validate("hi");
+    assertEquals(invalidResult.isValid, false);
+    assertEquals(invalidResult.errorMessage, "Value must be at least 3 characters");
+    assertEquals(invalidResult.appliedRules, ["length_check"]);
+  }
+});
 
-    // Test minLength with valid input
-    const minLengthRule = ValidationRule.minLength(5, "password");
-    const validMinResult = minLengthRule.validate("password123");
-    assertEquals(validMinResult.isValid, true);
-    assertEquals(validMinResult.errorMessage, undefined);
-    assertEquals(validMinResult.appliedRules, ["minLength_5_password"]);
-
-    // Test maxLength with valid input
-    const maxLengthRule = ValidationRule.maxLength(10, "username");
-    const validMaxResult = maxLengthRule.validate("short");
-    assertEquals(validMaxResult.isValid, true);
-    assertEquals(validMaxResult.errorMessage, undefined);
-    assertEquals(validMaxResult.appliedRules, ["maxLength_10_username"]);
-
-    // Test pattern with valid input
-    const patternRule = ValidationRule.pattern(/^[a-z]+$/, "fieldName");
-    const validPatternResult = patternRule.validate("lowercase");
-    assertEquals(validPatternResult.isValid, true);
-    assertEquals(validPatternResult.errorMessage, undefined);
-    assertEquals(validPatternResult.appliedRules, ["pattern_fieldName"]);
-
-    // Test range with valid input
-    const rangeRule = ValidationRule.range(1, 100, "age");
-    const validRangeResult = rangeRule.validate(25);
-    assertEquals(validRangeResult.isValid, true);
-    assertEquals(validRangeResult.errorMessage, undefined);
-    assertEquals(validRangeResult.appliedRules, ["range_1_100_age"]);
-  });
-
-  it("should handle invalid inputs with proper errors", () => {
-    // Test basic validation with invalid input
-    const rule = ValidationRule.create(
-      "test_rule",
-      (value: string) => value.length > 0,
-      "Value must not be empty",
-    );
-
-    const result = rule.validate("");
-    assertEquals(result.isValid, false);
-    assertEquals(result.errorMessage, "Value must not be empty");
-    assertEquals(result.appliedRules, ["test_rule"]);
-
-    // Test required field with invalid input
-    const requiredRule = ValidationRule.required<string>("username");
-    const nullResult = requiredRule.validate(null);
-    assertEquals(nullResult.isValid, false);
-    assertEquals(nullResult.errorMessage, "username is required");
-    assertEquals(nullResult.appliedRules, ["required_username"]);
-
-    const undefinedResult = requiredRule.validate(undefined);
-    assertEquals(undefinedResult.isValid, false);
-    assertEquals(undefinedResult.errorMessage, "username is required");
-    assertEquals(undefinedResult.appliedRules, ["required_username"]);
-
-    // Test minLength with invalid input
-    const minLengthRule = ValidationRule.minLength(5, "password");
-    const invalidMinResult = minLengthRule.validate("abc");
-    assertEquals(invalidMinResult.isValid, false);
-    assertEquals(invalidMinResult.errorMessage, "password must be at least 5 characters long");
-    assertEquals(invalidMinResult.appliedRules, ["minLength_5_password"]);
-
-    // Test maxLength with invalid input
-    const maxLengthRule = ValidationRule.maxLength(10, "username");
-    const invalidMaxResult = maxLengthRule.validate("very_long_username");
-    assertEquals(invalidMaxResult.isValid, false);
-    assertEquals(invalidMaxResult.errorMessage, "username must not exceed 10 characters");
-    assertEquals(invalidMaxResult.appliedRules, ["maxLength_10_username"]);
-
-    // Test pattern with invalid input
-    const patternRule = ValidationRule.pattern(/^[a-z]+$/, "fieldName");
-    const invalidPatternResult = patternRule.validate("UPPERCASE");
-    assertEquals(invalidPatternResult.isValid, false);
-    assertEquals(
-      invalidPatternResult.errorMessage,
-      "fieldName does not match the required pattern",
-    );
-    assertEquals(invalidPatternResult.appliedRules, ["pattern_fieldName"]);
-
-    // Test range with invalid input
-    const rangeRule = ValidationRule.range(1, 100, "age");
-    const invalidRangeResult = rangeRule.validate(150);
-    assertEquals(invalidRangeResult.isValid, false);
-    assertEquals(invalidRangeResult.errorMessage, "age must be between 1 and 100");
-    assertEquals(invalidRangeResult.appliedRules, ["range_1_100_age"]);
-  });
-
-  it("should maintain immutability", () => {
-    // Test that withMessage returns new instance
-    const originalRule = ValidationRule.create("test", (_v: string) => true, "Original");
-    const newRule = originalRule.withMessage("New message");
-
-    assertEquals(originalRule.getErrorMessage(), "Original");
-    assertEquals(newRule.getErrorMessage(), "New message");
-
-    // Test that combining rules returns new instance
-    const rule1 = ValidationRule.minLength(5, "field");
-    const rule2 = ValidationRule.maxLength(10, "field");
-    const combined = rule1.and(rule2);
-
-    assertEquals(rule1.getName(), "minLength_5_field");
-    assertEquals(rule2.getName(), "maxLength_10_field");
-    assertEquals(combined.getName(), "minLength_5_field_and_maxLength_10_field");
-
-    // Test that optional returns new instance
-    const requiredRule = ValidationRule.required<string>("field");
-    const optionalRule = requiredRule.optional();
-
-    assertEquals(requiredRule.isOptionalRule(), false);
+Deno.test("Architecture - ValidationRule composition methods still work", () => {
+  // Test that rule composition still works after Totality refactoring
+  const minResult = ValidationRule.minLength(3, "field");
+  const maxResult = ValidationRule.maxLength(10, "field");
+  
+  assert(minResult.ok && maxResult.ok);
+  if (minResult.ok && maxResult.ok) {
+    const minRule = minResult.data;
+    const maxRule = maxResult.data;
+    
+    // Test and() composition
+    const andRule = minRule.and(maxRule);
+    
+    const validAndResult = andRule.validate("hello");
+    assertEquals(validAndResult.isValid, true);
+    
+    const invalidAndResult = andRule.validate("hi");
+    assertEquals(invalidAndResult.isValid, false);
+    
+    // Test or() composition
+    const orRule = minRule.or(maxRule);
+    
+    const validOrResult = orRule.validate("hi"); // Satisfies maxLength
+    assertEquals(validOrResult.isValid, true);
+    
+    // Test optional() composition
+    const optionalRule = minRule.optional();
     assertEquals(optionalRule.isOptionalRule(), true);
-  });
-
-  it("should follow totality principles", () => {
-    // Test that all validation methods produce valid outputs
-    const rule = ValidationRule.create("test", (v: string) => v.length > 0, "Error");
-
-    // Valid input produces Result
-    const validResult = rule.validate("test");
-    assertExists(validResult);
-    assertEquals(typeof validResult.isValid, "boolean");
-    assertEquals(Array.isArray(validResult.appliedRules), true);
-
-    // Invalid input produces Result (not exception)
-    const invalidResult = rule.validate("");
-    assertExists(invalidResult);
-    assertEquals(typeof invalidResult.isValid, "boolean");
-    assertEquals(Array.isArray(invalidResult.appliedRules), true);
-
-    // Test complete error handling coverage
-    const requiredRule = ValidationRule.required<string>("field");
-
-    // null input
-    const nullResult = requiredRule.validate(null);
-    assertExists(nullResult);
-    assertEquals(typeof nullResult.isValid, "boolean");
-
-    // undefined input
-    const undefinedResult = requiredRule.validate(undefined);
-    assertExists(undefinedResult);
-    assertEquals(typeof undefinedResult.isValid, "boolean");
-
-    // valid input
-    const validStringResult = requiredRule.validate("value");
-    assertExists(validStringResult);
-    assertEquals(typeof validStringResult.isValid, "boolean");
-  });
-
-  it("should handle method chaining correctly", () => {
-    // Test and() method chaining
-    const rule1 = ValidationRule.minLength(5, "field");
-    const rule2 = ValidationRule.maxLength(10, "field");
-    const combined = rule1.and(rule2);
-
-    // Valid input (satisfies both rules)
-    const validResult = combined.validate("hello");
-    assertEquals(validResult.isValid, true);
-
-    // Invalid input (violates first rule)
-    const invalidResult1 = combined.validate("hi");
-    assertEquals(invalidResult1.isValid, false);
-
-    // Invalid input (violates second rule)
-    const invalidResult2 = combined.validate("very_long_string");
-    assertEquals(invalidResult2.isValid, false);
-
-    // Test or() method chaining
-    const orRule = rule1.or(rule2);
-    const orValidResult = orRule.validate("hi"); // Short but satisfies maxLength
-    assertEquals(orValidResult.isValid, true);
-  });
-
-  it("should handle conditional validation correctly", () => {
-    // Test when() method
-    const baseRule = ValidationRule.minLength(5, "field");
-    const conditionalRule = baseRule.when((context: boolean) => context, true);
-
-    // When condition is true, validation applies
-    const conditionTrueResult = conditionalRule.validate("abc");
-    assertEquals(conditionTrueResult.isValid, false);
-
-    // When condition is false, validation is skipped
-    const conditionalRuleFalse = baseRule.when((context: boolean) => context, false);
-    const conditionFalseResult = conditionalRuleFalse.validate("abc");
-    assertEquals(conditionFalseResult.isValid, true);
-  });
-
-  it("should handle optional validation correctly", () => {
-    // Test optional() method
-    const requiredRule = ValidationRule.minLength(5, "field");
-    const optionalRule = requiredRule.optional();
-
-    // null/undefined should be valid for optional
+    
     const nullResult = optionalRule.validate(null);
     assertEquals(nullResult.isValid, true);
+  }
+});
 
-    const undefinedResult = optionalRule.validate(undefined);
-    assertEquals(undefinedResult.isValid, true);
+Deno.test("Architecture - ValidationRule supports functional composition patterns", () => {
+  // Test various factory methods still work - use Result-based factory
+  const patternRule = ValidationRule.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "email");
+  const customRule = ValidationRule.custom(
+    "not_disposable",
+    (email: string) => !email.includes("tempmail"),
+    "Disposable email addresses not allowed"
+  );
+  const lengthRule = ValidationRule.custom(
+    "email_length",
+    (email: string) => email.length >= 5 && email.length <= 100,
+    "Email must be between 5 and 100 characters"
+  );
+  
+  // All should be ValidationRule instances
+  assertExists(patternRule);
+  assertExists(customRule);
+  assertExists(lengthRule);
+  
+  // Test composition with compatible types
+  const emailValidation = patternRule.and(customRule).and(lengthRule);
+  
+  // Valid email
+  const validEmail = emailValidation.validate("user@example.com");
+  assertEquals(validEmail.isValid, true);
+  
+  // Invalid email (missing @)
+  const invalidEmail1 = emailValidation.validate("invalid-email");
+  assertEquals(invalidEmail1.isValid, false);
+  
+  // Invalid email (disposable)
+  const invalidEmail2 = emailValidation.validate("user@tempmail.com");
+  assertEquals(invalidEmail2.isValid, false);
+  
+  // Test required field separately (different type)
+  const requiredRule = ValidationRule.required<string>("email");
+  assertExists(requiredRule);
+  
+  const nullResult = requiredRule.validate(null);
+  assertEquals(nullResult.isValid, false);
+  
+  const validRequiredResult = requiredRule.validate("test@example.com");
+  assertEquals(validRequiredResult.isValid, true);
+});
 
-    // Non-null values should follow original validation
-    const validResult = optionalRule.validate("hello");
-    assertEquals(validResult.isValid, true);
-
-    const invalidResult = optionalRule.validate("hi");
-    assertEquals(invalidResult.isValid, false);
-  });
-
-  it("should handle combined rules correctly", () => {
-    // Test combine() static method
-    const rule1 = ValidationRule.minLength(3, "field");
-    const rule2 = ValidationRule.maxLength(10, "field");
-    const rule3 = ValidationRule.pattern(/^[a-z]+$/, "field");
-
-    const combinedRule = ValidationRule.combine([rule1, rule2, rule3]);
-
-    // Valid input (satisfies all rules)
-    const validResult = combinedRule.validate("hello");
-    assertEquals(validResult.isValid, true);
-
-    // Invalid input (violates minLength)
-    const invalidResult1 = combinedRule.validate("hi");
-    assertEquals(invalidResult1.isValid, false);
-
-    // Invalid input (violates pattern)
-    const invalidResult2 = combinedRule.validate("Hello");
-    assertEquals(invalidResult2.isValid, false);
-
-    // Test single rule combine
-    const singleRule = ValidationRule.combine([rule1]);
-    assertEquals(singleRule.getName(), rule1.getName());
-  });
-
-  it("should handle custom validation correctly", () => {
-    // Test custom() static method
-    const customRule = ValidationRule.custom(
-      "even_number",
-      (value: number) => value % 2 === 0,
-      "Value must be even",
-    );
-
-    const validResult = customRule.validate(4);
-    assertEquals(validResult.isValid, true);
-
-    const invalidResult = customRule.validate(3);
-    assertEquals(invalidResult.isValid, false);
-    assertEquals(invalidResult.errorMessage, "Value must be even");
-  });
-
-  it("should handle pattern with custom message", () => {
-    // Test pattern with custom message
-    const patternRule = ValidationRule.pattern(/^[0-9]+$/, "fieldName", "Only numbers allowed");
-
-    const validResult = patternRule.validate("123");
-    assertEquals(validResult.isValid, true);
-
-    const invalidResult = patternRule.validate("abc");
-    assertEquals(invalidResult.isValid, false);
-    assertEquals(invalidResult.errorMessage, "Only numbers allowed");
-  });
-
-  it("should handle toString method", () => {
-    // Test toString representation
-    const rule = ValidationRule.create("test_rule", (_v: string) => true, "Error");
-    const result = rule.toString();
-    assertEquals(result, "ValidationRule(test_rule)");
-
-    // Test optional rule toString
+Deno.test("Architecture - ValidationRule toString representation is consistent", () => {
+  const ruleResult = ValidationRule.create("test_rule", (v: string) => true, "Error");
+  assert(ruleResult.ok);
+  if (ruleResult.ok) {
+    const rule = ruleResult.data;
+    
+    // String representation
+    const stringRepr = rule.toString();
+    assertExists(stringRepr);
+    assertEquals(typeof stringRepr, "string");
+    assertEquals(stringRepr.includes("ValidationRule"), true);
+    assertEquals(stringRepr.includes("test_rule"), true);
+    
+    // Optional rule toString
     const optionalRule = rule.optional();
-    const optionalResult = optionalRule.toString();
-    assertEquals(optionalResult, "ValidationRule(optional_test_rule, optional)");
-  });
+    const optionalRepr = optionalRule.toString();
+    assertEquals(optionalRepr.includes("optional"), true);
+  }
 });

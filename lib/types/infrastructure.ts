@@ -280,6 +280,7 @@ export class MockFileSystemProvider implements FileSystemProvider {
         mtime: new Date(),
         atime: new Date(),
         birthtime: new Date(),
+        ctime: new Date(),
         dev: 0,
         ino: 0,
         mode: 0o644,
@@ -289,6 +290,10 @@ export class MockFileSystemProvider implements FileSystemProvider {
         rdev: 0,
         blksize: 4096,
         blocks: 1,
+        isBlockDevice: false,
+        isCharDevice: false,
+        isFifo: false,
+        isSocket: false,
       };
       return { ok: true, data: fileInfo };
     }
@@ -302,6 +307,7 @@ export class MockFileSystemProvider implements FileSystemProvider {
         mtime: new Date(),
         atime: new Date(),
         birthtime: new Date(),
+        ctime: new Date(),
         dev: 0,
         ino: 0,
         mode: 0o755,
@@ -311,6 +317,10 @@ export class MockFileSystemProvider implements FileSystemProvider {
         rdev: 0,
         blksize: 4096,
         blocks: 1,
+        isBlockDevice: false,
+        isCharDevice: false,
+        isFifo: false,
+        isSocket: false,
       };
       return { ok: true, data: fileInfo };
     }

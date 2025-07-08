@@ -8,10 +8,10 @@
  * 4. No responsibility duplication with other components
  */
 
-import { assertEquals, assertExists, assertNotEquals } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assertNotEquals } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import type { TwoParams_Result } from "$lib/types/mod.ts";
+import type { TwoParams_Result } from "../../../../lib/types/mod.ts";
 
 const logger = new BreakdownLogger("structure-prompt-template-path-resolver");
 
@@ -19,7 +19,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should have a clear single responsibility for template path resolution", async () => {
     logger.debug("Testing single responsibility");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // The class should only be responsible for resolving template file paths
@@ -66,7 +66,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should properly encapsulate internal logic", async () => {
     logger.debug("Testing encapsulation");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const mockConfig = {
@@ -112,7 +112,7 @@ describe("PromptTemplatePathResolver - Class Structure", () => {
   it("should maintain immutable state after construction", async () => {
     logger.debug("Testing immutability");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -155,7 +155,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should handle template path resolution comprehensively", async () => {
     logger.debug("Testing comprehensive template path handling");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test 1: Standard prompt template
@@ -211,7 +211,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should maintain clear separation between prompt and schema paths", async () => {
     logger.debug("Testing prompt vs schema path separation");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -263,7 +263,7 @@ describe("PromptTemplatePathResolver - Method Responsibilities", () => {
   it("should generate consistent template paths for same parameters", async () => {
     logger.debug("Testing path consistency");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -303,7 +303,7 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
   it("should use appropriate abstractions for path operations", async () => {
     logger.debug("Testing abstraction usage");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -340,7 +340,7 @@ describe("PromptTemplatePathResolver - Abstraction Levels", () => {
   it("should handle configuration-based directory resolution", async () => {
     logger.debug("Testing configuration-based resolution");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with different base directories
@@ -384,7 +384,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should not duplicate functionality from other resolvers", async () => {
     logger.debug("Testing responsibility separation from other resolvers");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -418,7 +418,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should handle parameter structure variations gracefully", async () => {
     logger.debug("Testing parameter structure handling");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -461,7 +461,7 @@ describe("PromptTemplatePathResolver - Responsibility Boundaries", () => {
   it("should maintain consistent behavior across different types", async () => {
     logger.debug("Testing type consistency");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const config = {
@@ -508,7 +508,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should handle missing configuration gracefully", async () => {
     logger.debug("Testing missing configuration handling");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with missing or incomplete configuration
@@ -556,7 +556,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should handle special characters in paths appropriately", async () => {
     logger.debug("Testing special character handling");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     // Test with special characters in configuration
@@ -593,7 +593,7 @@ describe("PromptTemplatePathResolver - Edge Cases and Boundaries", () => {
   it("should provide meaningful error information for invalid configurations", async () => {
     logger.debug("Testing error information quality");
 
-    const module = await import("../../../../lib/factory/prompt_template_path_resolver.ts");
+    const module = await import("../../../lib/factory/prompt_template_path_resolver.ts");
     const { PromptTemplatePathResolver } = module;
 
     const invalidConfig = {

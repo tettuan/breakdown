@@ -7,8 +7,8 @@
 
 import { assertEquals, assertExists, assertInstanceOf, assert } from "@std/assert";
 import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
-import { TwoParamsDirectivePattern } from "./directive_type.ts";
-import { TwoParamsLayerTypePattern } from "./layer_type.ts";
+import { TwoParamsDirectivePattern } from "./mod.ts";
+import { TwoParamsLayerTypePattern } from "./mod.ts";
 import type { TypePatternProvider } from "./type_factory.ts";
 
 Deno.test("Architecture: DefaultTypePatternProvider - Interface Implementation", () => {
@@ -63,11 +63,11 @@ Deno.test("Architecture: DefaultTypePatternProvider - Configuration Encapsulatio
   assertEquals(typeof config, "object");
   assertExists(config.params);
   assertExists(config.params.two);
-  assertExists(config.params.two.demonstrativeType);
+  assertExists(config.params.two.directiveType);
   assertExists(config.params.two.layerType);
   
   // Config structure should follow expected pattern
-  assertEquals(typeof config.params.two.demonstrativeType.pattern, "string");
+  assertEquals(typeof config.params.two.directiveType.pattern, "string");
   assertEquals(typeof config.params.two.layerType.pattern, "string");
 });
 

@@ -172,7 +172,9 @@ describe("Structure: Interface segregation", () => {
     // Each type should be self-contained
     assertExists(directive.value, "DirectiveType should have value property");
     assertExists(layer.value, "LayerType should have value property");
-    assertExists(profile.value, "ConfigProfileName should have value property");
+    if (profile.ok) {
+      assertExists(profile.data, "ConfigProfileName should have data property");
+    }
 
     logger.debug("Concern separation verified");
   });
@@ -407,7 +409,16 @@ describe("Structure: Module organization principles", () => {
         instance = Type.create("test");
       }
       if (instance) {
-        assertExists(instance.value, `${Type.name} instance should have value property`);
+        // Handle different types appropriately
+        if (Type === TypesModule.ConfigProfileName) {
+          // ConfigProfileName returns Result<ConfigProfileName>
+          if ((instance as any).ok) {
+            assertExists((instance as any).data, `${Type.name} instance should have data property`);
+          }
+        } else {
+          // DirectiveType and LayerType return instances with value property
+          assertExists((instance as any).value, `${Type.name} instance should have value property`);
+        }
       }
     });
 

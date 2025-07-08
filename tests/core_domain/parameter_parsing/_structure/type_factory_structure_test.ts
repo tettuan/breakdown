@@ -14,10 +14,10 @@ import {
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  type TypeCreationError,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
+  type ProcessingError,
 } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("type-factory-structure");
@@ -120,14 +120,18 @@ describe("TypeFactory - Component Structure", () => {
     assertEquals(validationFailedLayer.ok, false);
 
     if (!validationFailedDirective.ok && !validationFailedLayer.ok) {
-      assertEquals(validationFailedDirective.error.kind, "ValidationFailed");
-      assertEquals(validationFailedLayer.error.kind, "ValidationFailed");
+      assertEquals(validationFailedDirective.error.kind, "PatternValidationFailed");
+      assertEquals(validationFailedLayer.error.kind, "PatternValidationFailed");
 
-      // ValidationFailed should include value and pattern
-      assertExists((validationFailedDirective.error as { value?: string }).value);
-      assertExists((validationFailedDirective.error as { pattern?: string }).pattern);
-      assertExists((validationFailedLayer.error as { value?: string }).value);
-      assertExists((validationFailedLayer.error as { pattern?: string }).pattern);
+      // PatternValidationFailed should include value and pattern
+      if (validationFailedDirective.error.kind === "PatternValidationFailed") {
+        assertExists(validationFailedDirective.error.value);
+        assertExists(validationFailedDirective.error.pattern);
+      }
+      if (validationFailedLayer.error.kind === "PatternValidationFailed") {
+        assertExists(validationFailedLayer.error.value);
+        assertExists(validationFailedLayer.error.pattern);
+      }
     }
   });
 
@@ -286,8 +290,10 @@ describe("TypeFactory - Error Structure Integrity", () => {
 
     if (!patternNotFoundResult.ok) {
       assertEquals(patternNotFoundResult.error.kind, "PatternNotFound");
-      // PatternNotFound error has message property
-      assertExists((patternNotFoundResult.error as { message?: string }).message);
+      // PatternNotFound error has reason property
+      if (patternNotFoundResult.error.kind === "PatternNotFound") {
+        assertExists(patternNotFoundResult.error.reason);
+      }
     }
 
     // ValidationFailed error
@@ -295,9 +301,11 @@ describe("TypeFactory - Error Structure Integrity", () => {
     assertEquals(validationFailedResult.ok, false);
 
     if (!validationFailedResult.ok) {
-      assertEquals(validationFailedResult.error.kind, "ValidationFailed");
-      assertExists((validationFailedResult.error as { value?: string }).value);
-      assertExists((validationFailedResult.error as { pattern?: string }).pattern);
+      assertEquals(validationFailedResult.error.kind, "PatternValidationFailed");
+      if (validationFailedResult.error.kind === "PatternValidationFailed") {
+        assertExists(validationFailedResult.error.value);
+        assertExists(validationFailedResult.error.pattern);
+      }
     }
   });
 
@@ -312,8 +320,10 @@ describe("TypeFactory - Error Structure Integrity", () => {
     assertEquals(bothFailDirective.ok, false);
 
     if (!bothFailDirective.ok) {
-      assertEquals(bothFailDirective.error.kind, "ValidationFailed");
-      assertEquals((bothFailDirective.error as { value?: string }).value, "invalid");
+      assertEquals(bothFailDirective.error.kind, "PatternValidationFailed");
+      if (bothFailDirective.error.kind === "PatternValidationFailed") {
+        assertEquals(bothFailDirective.error.value, "invalid");
+      }
     }
 
     // If layer fails, both should fail with layer error
@@ -321,8 +331,10 @@ describe("TypeFactory - Error Structure Integrity", () => {
     assertEquals(bothFailLayer.ok, false);
 
     if (!bothFailLayer.ok) {
-      assertEquals(bothFailLayer.error.kind, "ValidationFailed");
-      assertEquals((bothFailLayer.error as { value?: string }).value, "invalid");
+      assertEquals(bothFailLayer.error.kind, "PatternValidationFailed");
+      if (bothFailLayer.error.kind === "PatternValidationFailed") {
+        assertEquals(bothFailLayer.error.value, "invalid");
+      }
     }
   });
 });

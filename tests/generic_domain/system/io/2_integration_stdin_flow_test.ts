@@ -19,7 +19,7 @@
 import {
   assertEquals,
   assertStringIncludes,
-} from "../../../lib/deps.ts";
+} from "../../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { runCommand as _runCommand } from "../../../helpers/setup.ts";
 import { join as _join } from "@std/path";

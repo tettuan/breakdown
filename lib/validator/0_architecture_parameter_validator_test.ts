@@ -11,30 +11,29 @@
  */
 
 import { assertEquals, assertFalse } from "@std/assert";
-import { ParameterValidator, type ValidationError, type ValidatedParams } from "./parameter_validator.ts";
+import { ParameterValidator, type ValidatedParams } from "./parameter_validator.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import type { ConfigValidator } from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
+import type { ValidationError } from "../types/unified_error_types.ts";
+import type { FactoryCreation_Result } from "../helpers/totality_factory_helper.ts";
+
+import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // Mock TypePatternProvider for testing
 class MockTypePatternProvider implements TypePatternProvider {
-  private directivePattern = /^(to|summary|defect|init)$/;
-  private layerTypePattern = /^(project|issue|task)$/;
+  private directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect|init)$");
+  private layerTypePattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
 
   getDirectivePattern() {
-    return {
-      test: (value: string) => this.directivePattern.test(value),
-      getPattern: () => this.directivePattern.source,
-    };
+    return this.directivePattern;
   }
 
   getLayerTypePattern() {
-    return {
-      test: (value: string) => this.layerTypePattern.test(value),
-      getPattern: () => this.layerTypePattern.source,
-    };
+    return this.layerTypePattern;
   }
 }
 
@@ -142,8 +141,11 @@ Deno.test("ParameterValidator: validateTwoParams - invalid params type returns e
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "InvalidParamsType");
-    assertEquals(error.expected, "two");
-    assertEquals(error.received, "invalid");
+    // Double Type Guard Pattern
+    if (error.kind === "InvalidParamsType") {
+      assertEquals(error.expected, "two");
+      assertEquals(error.received, "invalid");
+    }
   }
 });
 
@@ -160,8 +162,11 @@ Deno.test("ParameterValidator: validateTwoParams - missing demonstrativeType ret
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "MissingRequiredField");
-    assertEquals(error.field, "demonstrativeType");
-    assertEquals(error.source, "TwoParams_Result");
+    // Double Type Guard Pattern
+    if (error.kind === "MissingRequiredField") {
+      assertEquals(error.field, "demonstrativeType");
+      assertEquals(error.source, "TwoParams_Result");
+    }
   }
 });
 
@@ -178,8 +183,10 @@ Deno.test("ParameterValidator: validateTwoParams - missing layerType returns err
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "MissingRequiredField");
-    assertEquals(error.field, "layerType");
-    assertEquals(error.source, "TwoParams_Result");
+    if (error.kind === "MissingRequiredField") {
+      assertEquals(error.field, "layerType");
+      assertEquals(error.source, "TwoParams_Result");
+    }
   }
 });
 
@@ -196,7 +203,9 @@ Deno.test("ParameterValidator: validateTwoParams - invalid directive type return
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "InvalidDirectiveType");
-    assertEquals(error.value, "invalid");
+    if (error.kind === "InvalidDirectiveType") {
+      assertEquals(error.value, "invalid");
+    }
   }
 });
 
@@ -213,7 +222,9 @@ Deno.test("ParameterValidator: validateTwoParams - invalid layer type returns er
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "InvalidLayerType");
-    assertEquals(error.value, "invalid");
+    if (error.kind === "InvalidLayerType") {
+      assertEquals(error.value, "invalid");
+    }
   }
 });
 
@@ -252,8 +263,10 @@ Deno.test("ParameterValidator: validateOneParams - invalid params type returns e
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "InvalidParamsType");
-    assertEquals(error.expected, "one");
-    assertEquals(error.received, "invalid");
+    if (error.kind === "InvalidParamsType") {
+      assertEquals(error.expected, "one");
+      assertEquals(error.received, "invalid");
+    }
   }
 });
 
@@ -270,8 +283,10 @@ Deno.test("ParameterValidator: validateOneParams - missing params returns error"
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "MissingRequiredField");
-    assertEquals(error.field, "params");
-    assertEquals(error.source, "OneParamsResult");
+    if (error.kind === "MissingRequiredField") {
+      assertEquals(error.field, "params");
+      assertEquals(error.source, "OneParamsResult");
+    }
   }
 });
 
@@ -310,8 +325,10 @@ Deno.test("ParameterValidator: validateZeroParams - invalid params type returns 
   if (!result.ok) {
     const error: ValidationError = result.error;
     assertEquals(error.kind, "InvalidParamsType");
-    assertEquals(error.expected, "zero");
-    assertEquals(error.received, "invalid");
+    if (error.kind === "InvalidParamsType") {
+      assertEquals(error.expected, "zero");
+      assertEquals(error.received, "invalid");
+    }
   }
 });
 
@@ -351,7 +368,9 @@ Deno.test("ParameterValidator: path validation - null character in path returns 
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "PathValidationFailed");
-    assertEquals(validationResult.error.reason, "Path contains null character");
+    if (validationResult.error.kind === "PathValidationFailed") {
+      assertEquals(validationResult.error.reason, "Path contains null character");
+    }
   }
 });
 
@@ -369,7 +388,9 @@ Deno.test("ParameterValidator: path validation - empty path returns error", () =
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "PathValidationFailed");
-    assertEquals(validationResult.error.reason, "input path cannot be empty");
+    if (validationResult.error.kind === "PathValidationFailed") {
+      assertEquals(validationResult.error.reason, "input path cannot be empty");
+    }
   }
 });
 
@@ -419,8 +440,10 @@ Deno.test("ParameterValidator: custom variables - invalid variable type returns 
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "CustomVariableInvalid");
-    assertEquals(validationResult.error.key, "uv-invalidVar");
-    assertEquals(validationResult.error.reason, "Value must be string, number, or boolean");
+    if (validationResult.error.kind === "CustomVariableInvalid") {
+      assertEquals(validationResult.error.key, "uv-invalidVar");
+      assertEquals(validationResult.error.reason, "Value must be string, number, or boolean");
+    }
   }
 });
 
@@ -641,7 +664,9 @@ Deno.test("ParameterValidator: integration - pattern provider without patterns",
   assertEquals(result.ok, false);
   if (!result.ok) {
     assertEquals(result.error.kind, "InvalidDirectiveType");
-    assertEquals(result.error.validPattern, "undefined");
+    if (result.error.kind === "InvalidDirectiveType") {
+      assertEquals(result.error.validPattern, "undefined");
+    }
   }
 });
 

@@ -92,7 +92,7 @@ export class ConfigPrefixDetector {
    * ```
    */
   static detect(args: string[]): string | null {
-    // Handle null, undefined, or non-array inputs
+    // Handle null, undefined, or non-array inputs gracefully
     if (!args || !Array.isArray(args)) {
       return null;
     }

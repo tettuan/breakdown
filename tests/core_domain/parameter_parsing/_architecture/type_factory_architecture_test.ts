@@ -155,7 +155,7 @@ describe("TypeFactory - Architectural Constraints", () => {
     results.forEach((result, index) => {
       assertEquals(result.ok, false, `Result ${index} should fail`);
       if (!result.ok) {
-        assertEquals(result.error.kind, "ValidationFailed");
+        assertEquals(result.error.kind, "PatternValidationFailed");
       }
     });
   });

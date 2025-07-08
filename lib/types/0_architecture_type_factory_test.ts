@@ -9,8 +9,8 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
-import { TwoParamsDirectivePattern } from "./directive_type.ts";
-import { TwoParamsLayerTypePattern } from "./layer_type.ts";
+import { TwoParamsDirectivePattern } from "./mod.ts";
+import { TwoParamsLayerTypePattern } from "./mod.ts";
 
 /**
  * テスト用のTypePatternProvider実装

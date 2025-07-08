@@ -6,7 +6,7 @@
  * in switch statements, and that all error conditions are represented as values.
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -15,15 +15,14 @@ import {
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  type TypeCreationError,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
-} from "../types/mod.ts";
+} from "../../../../lib/types/mod.ts";
+import type { ProcessingError } from "../../../../lib/types/unified_error_types.ts";
 import {
   type PromptCliParams,
   PromptVariablesFactory,
-  type TotalityPromptCliParams,
   TotalityPromptVariablesFactory,
   type TwoParams_Result,
 } from "../../../../lib/factory/prompt_variables_factory.ts";
@@ -60,17 +59,17 @@ class ComprehensivePatternProvider implements TypePatternProvider {
 }
 
 describe("Totality Principle - Exhaustive State Coverage", () => {
-  it("should handle all possible TypeCreationError kinds without default case", async () => {
-    logger.debug("Testing exhaustive TypeCreationError handling");
+  it("should handle all possible ProcessingError kinds without default case", async () => {
+    logger.debug("Testing exhaustive ProcessingError handling");
 
     const provider = new ComprehensivePatternProvider();
     const factory = new TypeFactory(provider);
 
-    // Create all possible error types
-    const errors: TypeCreationError[] = [
-      { kind: "PatternNotFound", message: "Pattern not found" },
-      { kind: "ValidationFailed", value: "invalid", pattern: "valid_pattern" },
-      { kind: "InvalidPattern", pattern: "bad_pattern", cause: "regex_error" },
+    // Create all possible error types for type creation
+    const errors: ProcessingError[] = [
+      { kind: "PatternNotFound", operation: "type_creation", reason: "Pattern not found" },
+      { kind: "PatternValidationFailed", value: "invalid", pattern: "valid_pattern", operation: "type_creation" },
+      { kind: "InvalidPattern", pattern: "bad_pattern", operation: "type_creation", reason: "regex_error" },
     ];
 
     // Test exhaustive switch without default
@@ -80,17 +79,17 @@ describe("Totality Principle - Exhaustive State Coverage", () => {
       // This switch should handle all cases without default
       switch (error.kind) {
         case "PatternNotFound":
-          assertEquals(error.message, "Pattern not found");
+          assertEquals(error.reason, "Pattern not found");
           handled = true;
           break;
-        case "ValidationFailed":
+        case "PatternValidationFailed":
           assertExists((error as any).value);
           assertExists((error as any).pattern);
           handled = true;
           break;
         case "InvalidPattern":
           assertExists((error as any).pattern);
-          assertExists((error as any).cause);
+          assertExists((error as any).reason);
           handled = true;
           break;
       }
@@ -308,15 +307,19 @@ describe("Totality Principle - Error Format Exhaustive Handling", () => {
       const errorFormats: Array<"simple" | "detailed" | "json"> = ["simple", "detailed", "json"];
 
       for (const errorFormat of errorFormats) {
-        const params: TotalityPromptCliParams = {
+        const params: PromptCliParams = {
           demonstrativeType: typesResult.data.directive.getValue(),
           layerType: typesResult.data.layer.getValue(),
-          directive: typesResult.data.directive,
-          layer: typesResult.data.layer,
           options: { errorFormat },
         };
 
-        const factory = await TotalityPromptVariablesFactory.create(params);
+        const factoryResult = await TotalityPromptVariablesFactory.create(params);
+        if (!factoryResult.ok) {
+          logger.debug("Factory creation failed", factoryResult.error);
+        }
+        assertEquals(factoryResult.ok, true);
+        if (!factoryResult.ok) return;
+        const factory = factoryResult.data;
         const format = factory.getOptions().errorFormat;
 
         let handled = false;
@@ -399,15 +402,19 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
     assertEquals(typesResult.ok, true);
 
     if (typesResult.ok) {
-      const params: TotalityPromptCliParams = {
+      const params: PromptCliParams = {
         demonstrativeType: typesResult.data.directive.getValue(),
         layerType: typesResult.data.layer.getValue(),
-        directive: typesResult.data.directive,
-        layer: typesResult.data.layer,
         options: {},
       };
 
-      const factory = await TotalityPromptVariablesFactory.create(params);
+      const factoryResult = await TotalityPromptVariablesFactory.create(params);
+      if (!factoryResult.ok) {
+        logger.debug("Factory creation failed in directory validation test", factoryResult.error);
+      }
+      assertEquals(factoryResult.ok, true);
+      if (!factoryResult.ok) return;
+      const factory = factoryResult.data;
       const hasValidBaseDir = factory.hasValidBaseDir();
       const baseDirError = factory.getBaseDirError();
 
@@ -416,11 +423,14 @@ describe("Totality Principle - Configuration State Exhaustive Handling", () => {
       // Handle base directory validation states without default
       switch (hasValidBaseDir) {
         case true:
-          assertEquals(baseDirError, undefined);
+          assertEquals(baseDirError.ok, true);
           handled = true;
           break;
         case false:
-          assertExists(baseDirError);
+          assertEquals(baseDirError.ok, false);
+          if (!baseDirError.ok) {
+            assertExists(baseDirError.error);
+          }
           handled = true;
           break;
       }
@@ -458,15 +468,19 @@ describe("Totality Principle - Factory State Machine Coverage", () => {
           assertExists(result.data.directive);
           assertExists(result.data.layer);
 
-          const params: TotalityPromptCliParams = {
+          const params: PromptCliParams = {
             demonstrativeType: result.data.directive.getValue(),
             layerType: result.data.layer.getValue(),
-            directive: result.data.directive,
-            layer: result.data.layer,
             options: {},
           };
 
-          const factory = await TotalityPromptVariablesFactory.create(params);
+          const factoryResult = await TotalityPromptVariablesFactory.create(params);
+          if (!factoryResult.ok) {
+            logger.debug("Factory creation failed in state machine test", factoryResult.error);
+          }
+          assertEquals(factoryResult.ok, true);
+          if (!factoryResult.ok) return;
+          const factory = factoryResult.data;
           assertExists(factory);
           handled = true;
           break;

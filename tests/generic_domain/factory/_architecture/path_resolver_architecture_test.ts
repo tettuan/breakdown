@@ -13,7 +13,7 @@
  * @module factory/0_architecture_path_resolver_test
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists, assert } from "../../../../lib/deps.ts";
 
 /**
  * Architecture Test Suite: PathResolver Components
@@ -37,7 +37,7 @@ Deno.test("PathResolver Architecture", async (t) => {
 
     for (const file of resolverFiles) {
       try {
-        const content = await Deno.readTextFile(`./lib/factory/${file}`);
+        const content = await Deno.readTextFile(`../../../lib/factory/${file}`);
 
         // Should only import from allowed modules
         const imports = content.match(/import.*from ["']([^"']+)["']/g) || [];
@@ -76,7 +76,7 @@ Deno.test("PathResolver Architecture", async (t) => {
   await t.step("implements safe path resolution patterns", async () => {
     try {
       const promptResolverContent = await Deno.readTextFile(
-        "./lib/factory/prompt_template_path_resolver.ts",
+        "../../../lib/factory/prompt_template_path_resolver.ts",
       );
 
       // Should use safe path operations
@@ -124,16 +124,18 @@ Deno.test("PathResolver Architecture", async (t) => {
 
   await t.step("follows Result type pattern for error handling", async () => {
     try {
-      const { PromptTemplatePathResolver } = await import("./prompt_template_path_resolver.ts");
+      const { PromptTemplatePathResolver } = await import("../../../lib/factory/prompt_template_path_resolver.ts");
 
       // Should exist and be instantiable
       assertExists(PromptTemplatePathResolver);
 
-      const resolver = new PromptTemplatePathResolver({}, {
+      const resolverResult = PromptTemplatePathResolver.create({}, {
         demonstrativeType: "to",
         layerType: "project",
         options: {},
       } as any);
+      assert(resolverResult.ok);
+      const resolver = resolverResult.data;
       assertExists(resolver);
 
       // Should have safe methods that return results, not throw
@@ -149,7 +151,7 @@ Deno.test("PathResolver Architecture", async (t) => {
 
   await t.step("restricts file system access to configured directories", async () => {
     try {
-      const content = await Deno.readTextFile("./lib/factory/prompt_template_path_resolver.ts");
+      const content = await Deno.readTextFile("../../../lib/factory/prompt_template_path_resolver.ts");
 
       // Should use configuration-based base directories
       assertEquals(
@@ -195,7 +197,7 @@ Deno.test("PathResolver Architecture", async (t) => {
 
     for (const file of resolverFiles) {
       try {
-        const content = await Deno.readTextFile(`./lib/factory/${file}`);
+        const content = await Deno.readTextFile(`../../../lib/factory/${file}`);
 
         // Should not import CLI handlers or processors
         assertEquals(
@@ -235,7 +237,7 @@ Deno.test("PathResolver Architecture", async (t) => {
 
   await t.step("enforces immutable configuration usage", async () => {
     try {
-      const content = await Deno.readTextFile("./lib/factory/prompt_template_path_resolver.ts");
+      const content = await Deno.readTextFile("../../../lib/factory/prompt_template_path_resolver.ts");
 
       // Should not modify configuration objects
       assertEquals(content.includes("config."), true, "Should use configuration");
@@ -273,7 +275,7 @@ Deno.test("PathResolver Architecture", async (t) => {
 Deno.test("PathResolver Security Architecture", async (t) => {
   await t.step("prevents path traversal vulnerabilities", async () => {
     try {
-      const content = await Deno.readTextFile("./lib/factory/prompt_template_path_resolver.ts");
+      const content = await Deno.readTextFile("../../../lib/factory/prompt_template_path_resolver.ts");
 
       // Should sanitize paths
       assertEquals(content.includes("resolve("), true, "Should use path.resolve for normalization");
@@ -300,13 +302,15 @@ Deno.test("PathResolver Security Architecture", async (t) => {
 
   await t.step("validates input parameters", async () => {
     try {
-      const { PromptTemplatePathResolver } = await import("./prompt_template_path_resolver.ts");
+      const { PromptTemplatePathResolver } = await import("../../../lib/factory/prompt_template_path_resolver.ts");
 
-      const resolver = new PromptTemplatePathResolver({}, {
+      const resolverResult = PromptTemplatePathResolver.create({}, {
         demonstrativeType: "to",
         layerType: "project",
         options: {},
       } as any);
+      assert(resolverResult.ok);
+      const resolver = resolverResult.data;
 
       // Should handle invalid inputs gracefully
       // This is testing the architecture, not the specific behavior
@@ -328,7 +332,7 @@ Deno.test("PathResolver Security Architecture", async (t) => {
 
     for (const file of resolverFiles) {
       try {
-        const content = await Deno.readTextFile(`./lib/factory/${file}`);
+        const content = await Deno.readTextFile(`../../../lib/factory/${file}`);
 
         // Should only read, not write
         assertEquals(content.includes("Deno.writeFile"), false, "Should not write files");

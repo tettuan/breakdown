@@ -1,250 +1,445 @@
-import { assertEquals, assertThrows } from "@std/assert";
-import { describe, it } from "@std/testing/bdd";
-import { TimeoutDuration } from "./timeout_duration.ts";
+/**
+ * @fileoverview TimeoutDuration Behavior Tests - Enhanced Totality Pattern Validation
+ * 
+ * Totality原則に基づくSmart Constructor、Result型、Discriminated Unionパターンの統合テスト。
+ * 新しいTotality準拠実装の動作とエラーハンドリングを検証。
+ * 
+ * テスト構成:
+ * - Smart Constructor (fromMilliseconds/fromSeconds/fromMinutes) パターンの検証
+ * - Result型によるエラーハンドリングの検証
+ * - Discriminated Unionエラー型の検証
+ * - 型ガード関数の検証
+ * - レガシー互換性の検証
+ */
 
-describe("1_behavior_timeout_duration_test", () => {
-  it("should handle valid inputs correctly", () => {
-    // Test normal operation paths
-    const fromMs = TimeoutDuration.fromMilliseconds(1000);
-    assertEquals(fromMs.toMilliseconds(), 1000);
-    assertEquals(fromMs.toSeconds(), 1);
-    assertEquals(fromMs.toMinutes(), 0);
-    assertEquals(fromMs.toHumanReadable(), "1s");
-    
-    const fromSec = TimeoutDuration.fromSeconds(30);
-    assertEquals(fromSec.toMilliseconds(), 30000);
-    assertEquals(fromSec.toSeconds(), 30);
-    assertEquals(fromSec.toMinutes(), 0);
-    assertEquals(fromSec.toHumanReadable(), "30s");
-    
-    const fromMin = TimeoutDuration.fromMinutes(2);
-    assertEquals(fromMin.toMilliseconds(), 120000);
-    assertEquals(fromMin.toSeconds(), 120);
-    assertEquals(fromMin.toMinutes(), 2);
-    assertEquals(fromMin.toHumanReadable(), "2m");
-    
-    // Test default and infinite instances
-    const defaultInstance = TimeoutDuration.default();
-    assertEquals(defaultInstance.toMilliseconds(), 30000);
-    assertEquals(defaultInstance.toHumanReadable(), "30s");
-    
-    const infiniteInstance = TimeoutDuration.infinite();
-    assertEquals(infiniteInstance.toMilliseconds(), 600000);
-    assertEquals(infiniteInstance.toHumanReadable(), "10m");
-    
-    // Test all public methods
-    const instance = TimeoutDuration.fromMilliseconds(5000);
-    assertEquals(instance.toSeconds(), 5);
-    assertEquals(instance.toMinutes(), 0);
-    assertEquals(instance.toHumanReadable(), "5s");
-    assertEquals(instance.toString(), "TimeoutDuration(5s)");
-    
-    const json = instance.toJSON();
-    assertEquals(json.milliseconds, 5000);
-    assertEquals(json.humanReadable, "5s");
-  });
+import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
+import {
+  TimeoutDuration,
+  TimeoutDurationError,
+  isNonIntegerValueError,
+  isBelowMinimumError,
+  isAboveMaximumError,
+  isInvalidSecondsError,
+  isInvalidMinutesError,
+  isInvalidScaleFactorError,
+  isNullOrUndefinedError,
+  isInvalidTypeError,
+  formatTimeoutDurationError,
+} from "./timeout_duration.ts";
+import type { Result } from "../../../types/result.ts";
 
-  it("should handle invalid inputs with proper errors", () => {
-    // Test error conditions for fromMilliseconds
-    assertThrows(
-      () => TimeoutDuration.fromMilliseconds(1.5),
-      Error,
-      "TimeoutDuration must be an integer"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromMilliseconds(50),
-      Error,
-      "TimeoutDuration must be at least 100ms"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromMilliseconds(700000),
-      Error,
-      "TimeoutDuration must not exceed 600000ms"
-    );
-    
-    // Test error conditions for fromSeconds
-    assertThrows(
-      () => TimeoutDuration.fromSeconds(-1),
-      Error,
-      "Invalid seconds value"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromSeconds(Infinity),
-      Error,
-      "Invalid seconds value"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromSeconds(NaN),
-      Error,
-      "Invalid seconds value"
-    );
-    
-    // Test error conditions for fromMinutes
-    assertThrows(
-      () => TimeoutDuration.fromMinutes(-1),
-      Error,
-      "Invalid minutes value"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromMinutes(Infinity),
-      Error,
-      "Invalid minutes value"
-    );
-    
-    assertThrows(
-      () => TimeoutDuration.fromMinutes(NaN),
-      Error,
-      "Invalid minutes value"
-    );
-    
-    // Test error conditions for scale
-    const instance = TimeoutDuration.fromMilliseconds(1000);
-    assertThrows(
-      () => instance.scale(-1),
-      Error,
-      "Invalid scale factor"
-    );
-    
-    assertThrows(
-      () => instance.scale(Infinity),
-      Error,
-      "Invalid scale factor"
-    );
-    
-    assertThrows(
-      () => instance.scale(NaN),
-      Error,
-      "Invalid scale factor"
-    );
-  });
+// =============================================================================
+// TOTALITY PATTERN: Smart Constructor & Result Type & Discriminated Union Tests
+// =============================================================================
 
-  it("should maintain immutability", () => {
-    // Test that objects don't mutate
-    const original = TimeoutDuration.fromMilliseconds(1000);
-    const originalMs = original.toMilliseconds();
-    
-    // Operations should return new instances
-    const added = original.add(TimeoutDuration.fromMilliseconds(500));
-    const subtracted = original.subtract(TimeoutDuration.fromMilliseconds(500));
-    const scaled = original.scale(2);
-    
-    // Original should be unchanged
-    assertEquals(original.toMilliseconds(), originalMs);
-    assertEquals(original.toMilliseconds(), 1000);
-    
-    // New instances should have different values
-    assertEquals(added.toMilliseconds(), 1500);
-    assertEquals(subtracted.toMilliseconds(), 500);
-    assertEquals(scaled.toMilliseconds(), 2000);
-    
-    // Verify side-effect free operations
-    const instance = TimeoutDuration.fromMilliseconds(5000);
-    const ms1 = instance.toMilliseconds();
-    const sec1 = instance.toSeconds();
-    const min1 = instance.toMinutes();
-    const human1 = instance.toHumanReadable();
-    
-    // Multiple calls should return same values
-    assertEquals(instance.toMilliseconds(), ms1);
-    assertEquals(instance.toSeconds(), sec1);
-    assertEquals(instance.toMinutes(), min1);
-    assertEquals(instance.toHumanReadable(), human1);
-  });
+Deno.test("Totality - TimeoutDuration implements Smart Constructor pattern with Result type", () => {
+  // Smart Constructor: Private constructor, public static factory methods
+  
+  // Primary Smart Constructor methods
+  assertExists(TimeoutDuration.fromMilliseconds);
+  assertExists(TimeoutDuration.fromSeconds);
+  assertExists(TimeoutDuration.fromMinutes);
+  
+  // Legacy factory methods should still exist
+  assertExists(TimeoutDuration.fromMillisecondsUnsafe);
+  assertExists(TimeoutDuration.fromSecondsUnsafe);
+  assertExists(TimeoutDuration.fromMinutesUnsafe);
+  assertExists(TimeoutDuration.default);
+  assertExists(TimeoutDuration.infinite);
+  
+  // Verify Smart Constructor returns Result type
+  const result = TimeoutDuration.fromMilliseconds(5000);
+  assertExists(result);
+  assertExists(result.ok);
+  
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(result.data.toMilliseconds(), 5000);
+  }
+});
 
-  it("should follow totality principles", () => {
-    // Test that all inputs produce valid outputs
-    const validInputs = [100, 1000, 5000, 30000, 600000];
-    
-    for (const input of validInputs) {
-      const instance = TimeoutDuration.fromMilliseconds(input);
+Deno.test("Totality - TimeoutDuration.fromMilliseconds validates all parameters comprehensively", () => {
+  // Valid creation should succeed
+  const validResult = TimeoutDuration.fromMilliseconds(5000);
+  
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.toMilliseconds(), 5000);
+    assertEquals(validResult.data.toHumanReadable(), "5s");
+  }
+  
+  // Invalid value (null) should return error
+  const nullResult = TimeoutDuration.fromMilliseconds(null as any);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Invalid value (non-integer) should return error
+  const nonIntegerResult = TimeoutDuration.fromMilliseconds(1.5);
+  assert(!nonIntegerResult.ok);
+  if (!nonIntegerResult.ok) {
+    assertEquals(nonIntegerResult.error.kind, "NonIntegerValue");
+  }
+  
+  // Invalid value (below minimum) should return error
+  const belowMinResult = TimeoutDuration.fromMilliseconds(50);
+  assert(!belowMinResult.ok);
+  if (!belowMinResult.ok) {
+    assertEquals(belowMinResult.error.kind, "BelowMinimum");
+  }
+  
+  // Invalid value (above maximum) should return error
+  const aboveMaxResult = TimeoutDuration.fromMilliseconds(700000);
+  assert(!aboveMaxResult.ok);
+  if (!aboveMaxResult.ok) {
+    assertEquals(aboveMaxResult.error.kind, "AboveMaximum");
+  }
+  
+  // Invalid type should return error
+  const invalidTypeResult = TimeoutDuration.fromMilliseconds("5000" as any);
+  assert(!invalidTypeResult.ok);
+  if (!invalidTypeResult.ok) {
+    assertEquals(invalidTypeResult.error.kind, "InvalidType");
+  }
+  
+  // Infinite value should return error
+  const infiniteResult = TimeoutDuration.fromMilliseconds(Infinity);
+  assert(!infiniteResult.ok);
+  if (!infiniteResult.ok) {
+    assertEquals(infiniteResult.error.kind, "InvalidType");
+  }
+});
+
+Deno.test("Totality - TimeoutDuration.fromSeconds returns Result type with comprehensive validation", () => {
+  // Valid seconds creation should return success Result
+  const validResult = TimeoutDuration.fromSeconds(30);
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.toSeconds(), 30);
+    assertEquals(validResult.data.toMilliseconds(), 30000);
+  }
+  
+  // Negative seconds should return error Result (Totality pattern)
+  const negativeResult = TimeoutDuration.fromSeconds(-1);
+  assert(!negativeResult.ok);
+  if (!negativeResult.ok) {
+    assertEquals(negativeResult.error.kind, "InvalidSeconds");
+  }
+  
+  // Null seconds should return error Result
+  const nullResult = TimeoutDuration.fromSeconds(null as any);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+  
+  // Infinite seconds should return error Result
+  const infiniteResult = TimeoutDuration.fromSeconds(Infinity);
+  assert(!infiniteResult.ok);
+  if (!infiniteResult.ok) {
+    assertEquals(infiniteResult.error.kind, "InvalidSeconds");
+  }
+  
+  // Non-number seconds should return error Result
+  const invalidTypeResult = TimeoutDuration.fromSeconds("30" as any);
+  assert(!invalidTypeResult.ok);
+  if (!invalidTypeResult.ok) {
+    assertEquals(invalidTypeResult.error.kind, "InvalidType");
+  }
+});
+
+Deno.test("Totality - TimeoutDuration.fromMinutes returns Result type with comprehensive validation", () => {
+  // Valid minutes creation should return success Result
+  const validResult = TimeoutDuration.fromMinutes(2);
+  assert(validResult.ok);
+  if (validResult.ok) {
+    assertEquals(validResult.data.toMinutes(), 2);
+    assertEquals(validResult.data.toMilliseconds(), 120000);
+  }
+  
+  // Negative minutes should return error Result (Totality pattern)
+  const negativeResult = TimeoutDuration.fromMinutes(-1);
+  assert(!negativeResult.ok);
+  if (!negativeResult.ok) {
+    assertEquals(negativeResult.error.kind, "InvalidMinutes");
+  }
+  
+  // Null minutes should return error Result
+  const nullResult = TimeoutDuration.fromMinutes(null as any);
+  assert(!nullResult.ok);
+  if (!nullResult.ok) {
+    assertEquals(nullResult.error.kind, "NullOrUndefined");
+  }
+});
+
+Deno.test("Totality - TimeoutDuration arithmetic operations return Result types", () => {
+  // Create valid base timeout
+  const baseResult = TimeoutDuration.fromMilliseconds(5000);
+  assert(baseResult.ok);
+  if (baseResult.ok) {
+    const base = baseResult.data;
+    const otherResult = TimeoutDuration.fromMilliseconds(2000);
+    assert(otherResult.ok);
+    if (otherResult.ok) {
+      const other = otherResult.data;
       
-      // No undefined/null returns
-      assertEquals(typeof instance.toMilliseconds(), "number");
-      assertEquals(typeof instance.toSeconds(), "number");
-      assertEquals(typeof instance.toMinutes(), "number");
-      assertEquals(typeof instance.toHumanReadable(), "string");
-      assertEquals(typeof instance.toString(), "string");
+      // Test addition returns Result
+      const addResult = base.add(other);
+      assert(addResult.ok);
+      if (addResult.ok) {
+        assertEquals(addResult.data.toMilliseconds(), 7000);
+      }
       
-      const json = instance.toJSON();
-      assertEquals(typeof json.milliseconds, "number");
-      assertEquals(typeof json.humanReadable, "string");
+      // Test subtraction returns Result
+      const subResult = base.subtract(other);
+      assert(subResult.ok);
+      if (subResult.ok) {
+        assertEquals(subResult.data.toMilliseconds(), 3000);
+      }
       
-      // Comparison operations always return boolean
-      const other = TimeoutDuration.fromMilliseconds(2000);
-      assertEquals(typeof instance.equals(other), "boolean");
-      assertEquals(typeof instance.isGreaterThan(other), "boolean");
-      assertEquals(typeof instance.isLessThan(other), "boolean");
-      assertEquals(typeof instance.isGreaterThanOrEqualTo(other), "boolean");
-      assertEquals(typeof instance.isLessThanOrEqualTo(other), "boolean");
+      // Test scaling returns Result
+      const scaleResult = base.scale(2);
+      assert(scaleResult.ok);
+      if (scaleResult.ok) {
+        assertEquals(scaleResult.data.toMilliseconds(), 10000);
+      }
+    }
+  }
+});
+
+Deno.test("Totality - TimeoutDuration.scale validates scale factor comprehensively", () => {
+  const baseResult = TimeoutDuration.fromMilliseconds(1000);
+  assert(baseResult.ok);
+  if (baseResult.ok) {
+    const base = baseResult.data;
+    
+    // Valid scale factor should succeed
+    const validResult = base.scale(2.5);
+    assert(validResult.ok);
+    if (validResult.ok) {
+      assertEquals(validResult.data.toMilliseconds(), 2500);
     }
     
-    // Complete error handling coverage - invalid inputs throw errors
-    const invalidInputs = [
-      { fn: () => TimeoutDuration.fromMilliseconds(1.5), desc: "non-integer" },
-      { fn: () => TimeoutDuration.fromMilliseconds(50), desc: "below minimum" },
-      { fn: () => TimeoutDuration.fromMilliseconds(700000), desc: "above maximum" },
-      { fn: () => TimeoutDuration.fromSeconds(-1), desc: "negative seconds" },
-      { fn: () => TimeoutDuration.fromMinutes(-1), desc: "negative minutes" },
-    ];
-    
-    for (const invalid of invalidInputs) {
-      assertThrows(invalid.fn, Error);
+    // Negative scale factor should return error
+    const negativeResult = base.scale(-1);
+    assert(!negativeResult.ok);
+    if (!negativeResult.ok) {
+      assertEquals(negativeResult.error.kind, "InvalidScaleFactor");
     }
     
-    // Boundary conditions are handled correctly
-    const minInstance = TimeoutDuration.fromMilliseconds(TimeoutDuration.MIN_MILLISECONDS);
-    const maxInstance = TimeoutDuration.fromMilliseconds(TimeoutDuration.MAX_MILLISECONDS);
+    // Null scale factor should return error
+    const nullResult = base.scale(null as any);
+    assert(!nullResult.ok);
+    if (!nullResult.ok) {
+      assertEquals(nullResult.error.kind, "NullOrUndefined");
+    }
     
-    assertEquals(minInstance.toMilliseconds(), TimeoutDuration.MIN_MILLISECONDS);
-    assertEquals(maxInstance.toMilliseconds(), TimeoutDuration.MAX_MILLISECONDS);
-    
-    // Arithmetic operations handle overflow/underflow
-    const largeSum = maxInstance.add(TimeoutDuration.fromMilliseconds(1000));
-    assertEquals(largeSum.toMilliseconds(), TimeoutDuration.MAX_MILLISECONDS);
-    
-    const smallDiff = minInstance.subtract(TimeoutDuration.fromMilliseconds(1000));
-    assertEquals(smallDiff.toMilliseconds(), TimeoutDuration.MIN_MILLISECONDS);
-  });
+    // Infinite scale factor should return error
+    const infiniteResult = base.scale(Infinity);
+    assert(!infiniteResult.ok);
+    if (!infiniteResult.ok) {
+      assertEquals(infiniteResult.error.kind, "InvalidScaleFactor");
+    }
+  }
+});
 
-  it("should handle arithmetic operations correctly", () => {
-    // Test addition
-    const base = TimeoutDuration.fromMilliseconds(1000);
-    const addition = TimeoutDuration.fromMilliseconds(500);
-    const sum = base.add(addition);
-    
-    assertEquals(sum.toMilliseconds(), 1500);
-    assertEquals(base.toMilliseconds(), 1000); // Original unchanged
-    
-    // Test subtraction
-    const difference = base.subtract(addition);
-    assertEquals(difference.toMilliseconds(), 500);
-    
-    // Test scaling
-    const scaled = base.scale(2.5);
-    assertEquals(scaled.toMilliseconds(), 2500);
-    
-    const scaledDown = base.scale(0.5);
-    assertEquals(scaledDown.toMilliseconds(), 500);
-    
-    // Test edge cases with overflow/underflow protection
-    const nearMax = TimeoutDuration.fromMilliseconds(TimeoutDuration.MAX_MILLISECONDS - 500);
-    const overflow = nearMax.add(TimeoutDuration.fromMilliseconds(1000));
-    assertEquals(overflow.toMilliseconds(), TimeoutDuration.MAX_MILLISECONDS);
-    
-    const nearMin = TimeoutDuration.fromMilliseconds(TimeoutDuration.MIN_MILLISECONDS + 50);
-    const underflow = nearMin.subtract(TimeoutDuration.fromMilliseconds(100));
-    assertEquals(underflow.toMilliseconds(), TimeoutDuration.MIN_MILLISECONDS);
-  });
+// =============================================================================
+// DISCRIMINATED UNION ERROR TYPE TESTS
+// =============================================================================
 
-  it("should handle comparison operations correctly", () => {
-    const timeout1 = TimeoutDuration.fromMilliseconds(1000);
-    const timeout2 = TimeoutDuration.fromMilliseconds(2000);
-    const timeout3 = TimeoutDuration.fromMilliseconds(1000);
+Deno.test("Totality - TimeoutDurationError type guards work correctly", () => {
+  // Test different error types and their type guards
+  const nonIntegerResult = TimeoutDuration.fromMilliseconds(1.5);
+  assert(!nonIntegerResult.ok);
+  if (!nonIntegerResult.ok) {
+    const nonIntegerError = nonIntegerResult.error;
+    
+    const belowMinResult = TimeoutDuration.fromMilliseconds(50);
+    assert(!belowMinResult.ok);
+    if (!belowMinResult.ok) {
+      const belowMinError = belowMinResult.error;
+      
+      const nullResult = TimeoutDuration.fromMilliseconds(null as any);
+      assert(!nullResult.ok);
+      if (!nullResult.ok) {
+        const nullError = nullResult.error;
+        
+        // Test type guards
+        assert(isNonIntegerValueError(nonIntegerError));
+        assert(!isBelowMinimumError(nonIntegerError));
+        assert(!isNullOrUndefinedError(nonIntegerError));
+        
+        assert(isBelowMinimumError(belowMinError));
+        assert(!isNonIntegerValueError(belowMinError));
+        
+        assert(isNullOrUndefinedError(nullError));
+        assert(!isNonIntegerValueError(nullError));
+      }
+    }
+  }
+});
+
+Deno.test("Totality - formatTimeoutDurationError provides comprehensive error messages", () => {
+  // Test NonIntegerValue error formatting
+  const nonIntegerResult = TimeoutDuration.fromMilliseconds(1.5);
+  assert(!nonIntegerResult.ok);
+  if (!nonIntegerResult.ok) {
+    const nonIntegerMessage = formatTimeoutDurationError(nonIntegerResult.error);
+    assert(nonIntegerMessage.includes("must be an integer"));
+    assert(nonIntegerMessage.includes("1.5"));
+  }
+  
+  // Test BelowMinimum error formatting
+  const belowMinResult = TimeoutDuration.fromMilliseconds(50);
+  assert(!belowMinResult.ok);
+  if (!belowMinResult.ok) {
+    const belowMinMessage = formatTimeoutDurationError(belowMinResult.error);
+    assert(belowMinMessage.includes("below minimum"));
+    assert(belowMinMessage.includes("50"));
+    assert(belowMinMessage.includes("100"));
+  }
+  
+  // Test AboveMaximum error formatting
+  const aboveMaxResult = TimeoutDuration.fromMilliseconds(700000);
+  assert(!aboveMaxResult.ok);
+  if (!aboveMaxResult.ok) {
+    const aboveMaxMessage = formatTimeoutDurationError(aboveMaxResult.error);
+    assert(aboveMaxMessage.includes("above maximum"));
+    assert(aboveMaxMessage.includes("700000"));
+    assert(aboveMaxMessage.includes("600000"));
+  }
+  
+  // Test InvalidSeconds error formatting
+  const invalidSecondsResult = TimeoutDuration.fromSeconds(-5);
+  assert(!invalidSecondsResult.ok);
+  if (!invalidSecondsResult.ok) {
+    const invalidSecondsMessage = formatTimeoutDurationError(invalidSecondsResult.error);
+    assert(invalidSecondsMessage.includes("Invalid seconds value"));
+    assert(invalidSecondsMessage.includes("-5"));
+  }
+});
+
+// =============================================================================
+// LEGACY COMPATIBILITY TESTS
+// =============================================================================
+
+Deno.test("Totality - Legacy methods maintain backward compatibility", () => {
+  // Legacy factory methods should still work
+  const defaultTimeout = TimeoutDuration.default();
+  assertEquals(defaultTimeout.toMilliseconds(), 30000);
+  
+  const infiniteTimeout = TimeoutDuration.infinite();
+  assertEquals(infiniteTimeout.toMilliseconds(), 600000);
+  
+  // Legacy unsafe methods should work but are deprecated
+  const unsafeTimeout = TimeoutDuration.fromMillisecondsUnsafe(5000);
+  assertEquals(unsafeTimeout.toMilliseconds(), 5000);
+  
+  // Legacy unsafe methods should throw on error
+  try {
+    TimeoutDuration.fromMillisecondsUnsafe(1.5);
+    assert(false, "Should have thrown");
+  } catch (error) {
+    assert(error instanceof Error);
+    if (error instanceof Error) {
+      assert(error.message.includes("must be an integer"));
+    }
+  }
+  
+  // Test unsafe arithmetic methods
+  const baseUnsafe = TimeoutDuration.fromMillisecondsUnsafe(1000);
+  const otherUnsafe = TimeoutDuration.fromMillisecondsUnsafe(500);
+  
+  const addedUnsafe = baseUnsafe.addUnsafe(otherUnsafe);
+  assertEquals(addedUnsafe.toMilliseconds(), 1500);
+  
+  const subtractedUnsafe = baseUnsafe.subtractUnsafe(otherUnsafe);
+  assertEquals(subtractedUnsafe.toMilliseconds(), 500);
+  
+  const scaledUnsafe = baseUnsafe.scaleUnsafe(2);
+  assertEquals(scaledUnsafe.toMilliseconds(), 2000);
+  
+  // Should throw on invalid scale factor
+  try {
+    baseUnsafe.scaleUnsafe(-1);
+    assert(false, "Should have thrown");
+  } catch (error) {
+    assert(error instanceof Error);
+  }
+});
+
+// =============================================================================
+// IMMUTABILITY AND VALUE OBJECT TESTS
+// =============================================================================
+
+Deno.test("Totality - TimeoutDuration instances are completely immutable", () => {
+  const result = TimeoutDuration.fromMilliseconds(5000);
+  assert(result.ok);
+  if (result.ok) {
+    const timeout = result.data;
+    
+    // Object should be frozen
+    assert(Object.isFrozen(timeout));
+    
+    // Repeated calls should return identical values
+    assertEquals(timeout.toMilliseconds(), timeout.toMilliseconds());
+    assertEquals(timeout.toSeconds(), timeout.toSeconds());
+    assertEquals(timeout.toMinutes(), timeout.toMinutes());
+    assertEquals(timeout.toHumanReadable(), timeout.toHumanReadable());
+    
+    // Arithmetic operations should create new instances
+    const otherResult = TimeoutDuration.fromMilliseconds(2000);
+    assert(otherResult.ok);
+    if (otherResult.ok) {
+      const other = otherResult.data;
+      
+      const addResult = timeout.add(other);
+      assert(addResult.ok);
+      if (addResult.ok) {
+        const added = addResult.data;
+        assertEquals(timeout.toMilliseconds(), 5000); // Original unchanged
+        assertEquals(added.toMilliseconds(), 7000); // New instance changed
+      }
+    }
+  }
+});
+
+Deno.test("Architecture - TimeoutDuration timeout behavior works correctly", () => {
+  // Test that timeout creation and basic operations still work with the new implementation
+  const timeoutResult = TimeoutDuration.fromMilliseconds(10000);
+  
+  assert(timeoutResult.ok);
+  if (timeoutResult.ok) {
+    const timeout = timeoutResult.data;
+    
+    // Basic conversions
+    assertEquals(timeout.toMilliseconds(), 10000);
+    assertEquals(timeout.toSeconds(), 10);
+    assertEquals(timeout.toMinutes(), 0);
+    assertEquals(timeout.toHumanReadable(), "10s");
+    
+    // JSON representation
+    const json = timeout.toJSON();
+    assertEquals(json.milliseconds, 10000);
+    assertEquals(json.humanReadable, "10s");
+    
+    // String representation
+    assertEquals(timeout.toString(), "TimeoutDuration(10s)");
+  }
+});
+
+Deno.test("Architecture - TimeoutDuration comparison methods work correctly", () => {
+  // Test that comparison operations still work after Totality refactoring
+  const timeout1Result = TimeoutDuration.fromMilliseconds(1000);
+  const timeout2Result = TimeoutDuration.fromMilliseconds(2000);
+  const timeout3Result = TimeoutDuration.fromMilliseconds(1000);
+  
+  assert(timeout1Result.ok && timeout2Result.ok && timeout3Result.ok);
+  if (timeout1Result.ok && timeout2Result.ok && timeout3Result.ok) {
+    const timeout1 = timeout1Result.data;
+    const timeout2 = timeout2Result.data;
+    const timeout3 = timeout3Result.data;
     
     // Test equality
     assertEquals(timeout1.equals(timeout2), false);
@@ -269,34 +464,55 @@ describe("1_behavior_timeout_duration_test", () => {
     assertEquals(timeout1.isLessThanOrEqualTo(timeout2), true);
     assertEquals(timeout2.isLessThanOrEqualTo(timeout1), false);
     assertEquals(timeout1.isLessThanOrEqualTo(timeout3), true);
-  });
+  }
+});
 
-  it("should handle human-readable format correctly", () => {
-    // Test milliseconds format
-    const ms = TimeoutDuration.fromMilliseconds(500);
-    assertEquals(ms.toHumanReadable(), "500ms");
+Deno.test("Architecture - TimeoutDuration handles edge cases correctly", () => {
+  // Test boundary values
+  const minResult = TimeoutDuration.fromMilliseconds(TimeoutDuration.MIN_MILLISECONDS);
+  const maxResult = TimeoutDuration.fromMilliseconds(TimeoutDuration.MAX_MILLISECONDS);
+  
+  assert(minResult.ok && maxResult.ok);
+  if (minResult.ok && maxResult.ok) {
+    const minTimeout = minResult.data;
+    const maxTimeout = maxResult.data;
     
-    // Test seconds format
-    const sec = TimeoutDuration.fromSeconds(30);
-    assertEquals(sec.toHumanReadable(), "30s");
+    assertEquals(minTimeout.toMilliseconds(), TimeoutDuration.MIN_MILLISECONDS);
+    assertEquals(maxTimeout.toMilliseconds(), TimeoutDuration.MAX_MILLISECONDS);
     
-    // Test minutes format
-    const min = TimeoutDuration.fromMinutes(2);
-    assertEquals(min.toHumanReadable(), "2m");
+    // Test overflow handling
+    const overflowResult = maxTimeout.add(minTimeout);
+    assert(overflowResult.ok);
+    if (overflowResult.ok) {
+      assertEquals(overflowResult.data.toMilliseconds(), TimeoutDuration.MAX_MILLISECONDS);
+    }
     
-    // Test mixed minutes and seconds
-    const mixed = TimeoutDuration.fromMilliseconds(90000); // 1.5 minutes = 1m30s
-    assertEquals(mixed.toHumanReadable(), "1m30s");
-    
-    // Test exact minutes (no seconds)
-    const exactMin = TimeoutDuration.fromMinutes(5);
-    assertEquals(exactMin.toHumanReadable(), "5m");
-    
-    // Test boundary cases
-    const minBoundary = TimeoutDuration.fromMilliseconds(TimeoutDuration.MIN_MILLISECONDS);
-    assertEquals(minBoundary.toHumanReadable(), "100ms");
-    
-    const maxBoundary = TimeoutDuration.fromMilliseconds(TimeoutDuration.MAX_MILLISECONDS);
-    assertEquals(maxBoundary.toHumanReadable(), "10m");
-  });
+    // Test underflow handling
+    const underflowResult = minTimeout.subtract(maxTimeout);
+    assert(underflowResult.ok);
+    if (underflowResult.ok) {
+      assertEquals(underflowResult.data.toMilliseconds(), TimeoutDuration.MIN_MILLISECONDS);
+    }
+  }
+});
+
+Deno.test("Architecture - TimeoutDuration human-readable format is consistent", () => {
+  // Test various human-readable formats
+  const testCases = [
+    { ms: 500, expected: "500ms" },
+    { ms: 1000, expected: "1s" },
+    { ms: 30000, expected: "30s" },
+    { ms: 60000, expected: "1m" },
+    { ms: 90000, expected: "1m30s" },
+    { ms: 120000, expected: "2m" },
+    { ms: 300000, expected: "5m" },
+  ];
+  
+  for (const testCase of testCases) {
+    const result = TimeoutDuration.fromMilliseconds(testCase.ms);
+    assert(result.ok);
+    if (result.ok) {
+      assertEquals(result.data.toHumanReadable(), testCase.expected);
+    }
+  }
 });

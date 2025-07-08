@@ -78,7 +78,7 @@ Deno.test("Unit: TwoParamsPromptGenerator generates prompt successfully with val
 Deno.test("Unit: TwoParamsPromptGenerator handles invalid configuration", async () => {
   const _generator = new TwoParamsPromptGenerator();
 
-  const invalidConfig = null as any;
+  const invalidConfig = null as unknown;
 
   const validatedParams: ValidatedParams = {
     demonstrativeType: "to",

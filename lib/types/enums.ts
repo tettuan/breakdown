@@ -48,5 +48,5 @@ export type ResultStatusType = typeof ResultStatus[keyof typeof ResultStatus];
  * ```
  */
 export type Result<T, E> =
-  | { status: "success"; data: T }
-  | { status: "error"; error: E };
+  | { status: typeof ResultStatus.SUCCESS; data: T }
+  | { status: typeof ResultStatus.ERROR; error: E };

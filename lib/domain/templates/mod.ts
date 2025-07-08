@@ -10,7 +10,6 @@
 // Core Aggregates
 export {
   GeneratedPrompt,
-  type GenerationResult,
   PromptGenerationAggregate,
   PromptGenerationError,
   PromptTemplate,
@@ -119,14 +118,23 @@ export {
   TypeValidator,
 } from "./type_adapters.ts";
 
+// Schema Reader Service
+export {
+  createTemplateSchemaReader,
+  type SchemaBatchReadResult,
+  type SchemaReadOptions,
+  type SchemaReadResult,
+  TemplateSchemaReader,
+} from "./template_schema_reader.ts";
+
 /**
  * Factory function to create a complete template management setup
  */
 export async function createTemplateManagement(config: {
   baseDirectory?: string;
   cacheEnabled?: boolean;
-  templateRepository?: any; // TODO: Fix proper type reference
-  schemaRepository?: any; // TODO: Fix proper type reference
+  templateRepository?: unknown; // TODO: Fix proper type reference
+  schemaRepository?: unknown; // TODO: Fix proper type reference
 }) {
   // This would create and wire up all the dependencies
   // Implementation depends on the specific infrastructure choices
@@ -168,7 +176,7 @@ export async function createTemplateManagement(config: {
  * Convenience function for legacy compatibility
  */
 export async function createLegacyCompatibleGenerator() {
-  const management = await createTemplateManagement({});
+  const _management = await createTemplateManagement({});
 
   // Import the DDD adapter
   const { PromptFileGeneratorDDD } = await import("../../commands/prompt_file_generator_ddd.ts");

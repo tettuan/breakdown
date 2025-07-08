@@ -191,7 +191,7 @@ Deno.test("Structure: workspace_initializer - cohesion analysis", async () => {
 
   // 関連する操作がグループ化されているか確認
   const hasLogicalGrouping = moduleContent.includes("// Create directory structure") &&
-    moduleContent.includes("// Create basic app.yml config file");
+    moduleContent.includes("// Create basic default-app.yml config file");
 
   assertEquals(
     hasLogicalGrouping,

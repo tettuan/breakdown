@@ -20,10 +20,10 @@ import {
   LayerType as _LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  type TypeCreationError,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
+  type ProcessingError,
 } from "../../lib/deps.ts";
 
 const logger = new BreakdownLogger("type-factory-structure-enhanced");
@@ -105,20 +105,26 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     logger.debug("Testing complete TypeCreationError structure");
 
     // Test all error variants have distinct structure
-    const errorVariants: TypeCreationError[] = [
+    const errorVariants: ProcessingError[] = [
       {
         kind: "PatternNotFound",
-        message: "Pattern not found in configuration",
+        operation: "type_creation",
+        reason: "Pattern not found in configuration",
       },
       {
-        kind: "ValidationFailed",
+        kind: "PatternValidationFailed",
         value: "invalid_value",
         pattern: "valid|pattern",
+        operation: "type_creation",
+        context: {
+          reason: "Value does not match pattern",
+        },
       },
       {
         kind: "InvalidPattern",
         pattern: "bad||pattern",
-        cause: "Empty pattern segment",
+        operation: "type_creation",
+        reason: "Empty pattern segment",
       },
     ];
 
@@ -126,23 +132,24 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     errorVariants.forEach((error) => {
       switch (error.kind) {
         case "PatternNotFound":
-          assertExists(error.message);
-          assertEquals("value" in error, false);
-          assertEquals("pattern" in error, false);
-          assertEquals("cause" in error, false);
+          assertExists(error.operation);
+          assertExists(error.reason);
+          assertEquals("expected" in error, false);
+          assertEquals("actual" in error, false);
+          assertEquals("context" in error, false);
           break;
 
-        case "ValidationFailed":
+        case "PatternValidationFailed":
+          assertExists(error.operation);
           assertExists(error.value);
           assertExists(error.pattern);
-          assertEquals("message" in error, false);
-          assertEquals("cause" in error, false);
+          assertEquals("reason" in error, false);
           break;
 
         case "InvalidPattern":
+          assertExists(error.operation);
+          assertExists(error.reason);
           assertExists(error.pattern);
-          assertExists(error.cause);
-          assertEquals("message" in error, false);
           assertEquals("value" in error, false);
           break;
       }
@@ -168,8 +175,8 @@ describe("TypeFactory - Enhanced Component Structure", () => {
       assertEquals(directiveError.error.kind, bothDirectiveError.error.kind);
 
       if (
-        directiveError.error.kind === "ValidationFailed" &&
-        bothDirectiveError.error.kind === "ValidationFailed"
+        directiveError.error.kind === "PatternValidationFailed" &&
+        bothDirectiveError.error.kind === "PatternValidationFailed"
       ) {
         assertEquals(directiveError.error.value, bothDirectiveError.error.value);
         assertEquals(directiveError.error.pattern, bothDirectiveError.error.pattern);
@@ -355,18 +362,21 @@ describe("TypeFactory - Enhanced Component Structure", () => {
     // Note: Current implementation doesn't produce InvalidPattern errors
     // This test documents the expected structure when implemented
 
-    const invalidPatternError: TypeCreationError = {
+    const invalidPatternError: ProcessingError = {
       kind: "InvalidPattern",
       pattern: "invalid||pattern",
-      cause: "Empty pattern segment not allowed",
+      operation: "type_creation",
+      reason: "Empty pattern segment not allowed",
     };
 
     // Verify structure
     assertEquals(invalidPatternError.kind, "InvalidPattern");
+    assertExists(invalidPatternError.operation);
+    assertExists(invalidPatternError.reason);
     assertExists(invalidPatternError.pattern);
-    assertExists(invalidPatternError.cause);
+    assertEquals(typeof invalidPatternError.operation, "string");
+    assertEquals(typeof invalidPatternError.reason, "string");
     assertEquals(typeof invalidPatternError.pattern, "string");
-    assertEquals(typeof invalidPatternError.cause, "string");
 
     // Document missing implementation
     logger.debug("InvalidPattern error structure defined but not implemented", {

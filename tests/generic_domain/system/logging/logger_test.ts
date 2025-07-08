@@ -12,7 +12,7 @@
  * - Error messages are properly formatted and logged
  */
 
-import { assertEquals } from "../../../lib/deps.ts";
+import { assertEquals } from "../../../../lib/deps.ts";
 import { LogLevel as _LogLevel } from "@tettuan/breakdownlogger";
 import {
   cleanupTestEnvironment as _cleanupTestEnvironment,

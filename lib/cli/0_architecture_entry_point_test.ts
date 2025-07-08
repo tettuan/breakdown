@@ -6,6 +6,7 @@
  * - Proper module export structure
  * - import.meta.main pattern implementation
  * - CLI and library usage separation
+ * - Totality principle compliance (all operations return Result types)
  * 
  * @module lib/cli/0_architecture_entry_point_test
  */
@@ -47,12 +48,18 @@ Deno.test("Entry Point Architecture - main function accepts proper arguments", (
   assertEquals(argTypes <= 1, true, "runBreakdown should accept 0 or 1 parameters (optional args)");
 });
 
-Deno.test("Entry Point Architecture - entry point provides async interface", () => {
-  // Test that the main entry point is async
-  const result = runBreakdown([]);
+Deno.test("Entry Point Architecture - entry point provides async interface", async () => {
+  // Test that the main entry point is async and returns Result type (Totality principle)
+  const resultPromise = runBreakdown([]);
   
-  assertExists(result, "runBreakdown should return a value");
-  assertEquals(result instanceof Promise, true, "runBreakdown should return a Promise");
+  assertExists(resultPromise, "runBreakdown should return a value");
+  assertEquals(resultPromise instanceof Promise, true, "runBreakdown should return a Promise");
+  
+  // Verify it returns a Result type following Totality principle
+  const result = await resultPromise;
+  assertExists(result, "runBreakdown should return a Result");
+  assertEquals(typeof result, "object", "Result should be an object");
+  assertEquals("ok" in result, true, "Result should have 'ok' property (Result type)");
 });
 
 Deno.test("Entry Point Architecture - entry point separation (CLI vs Library)", async () => {
@@ -72,39 +79,40 @@ Deno.test("Entry Point Architecture - entry point separation (CLI vs Library)", 
 });
 
 Deno.test("Entry Point Architecture - proper error handling in main", async () => {
-  // Test that the main entry point handles errors gracefully
-  try {
-    // Call with invalid arguments that should trigger error handling
-    await runBreakdown(["--invalid-flag-that-does-not-exist"]);
-  } catch (error) {
-    // Main function should either handle errors internally or throw meaningful errors
-    assertExists(error, "Error should be defined if thrown");
-    assertEquals(error instanceof Error, true, "Should throw proper Error instances");
+  // Test that the main entry point handles errors gracefully using Result type (Totality principle)
+  const result = await runBreakdown(["--invalid-flag-that-does-not-exist"]);
+  
+  // Following Totality principle, errors should be returned as Result, not thrown
+  assertExists(result, "runBreakdown should return a Result");
+  assertEquals(typeof result, "object", "Result should be an object");
+  assertEquals("ok" in result, true, "Result should have 'ok' property");
+  
+  // The function should handle unknown flags gracefully
+  // It may either succeed (ignoring unknown flag) or return an error Result
+  if (!result.ok) {
+    assertExists(result.error, "Error Result should have error property");
+    assertEquals("kind" in result.error, true, "Error should have 'kind' property");
   }
 });
 
 Deno.test("Entry Point Architecture - main function provides help interface", async () => {
-  // Test that help functionality is accessible
-  try {
-    // This should not throw an error and should display help
-    await runBreakdown(["--help"]);
-    // If this executes without throwing, help interface is working
-  } catch (error) {
-    // Help should not throw errors
-    throw new Error(`Help interface should not throw errors: ${error}`);
-  }
+  // Test that help functionality is accessible and returns Result (Totality principle)
+  const result = await runBreakdown(["--help"]);
+  
+  // Help should return a successful Result
+  assertExists(result, "runBreakdown should return a Result");
+  assertEquals(typeof result, "object", "Result should be an object");
+  assertEquals(result.ok, true, "Help should return successful Result");
 });
 
 Deno.test("Entry Point Architecture - version information accessible", async () => {
-  // Test that version information is accessible
-  try {
-    // This should not throw an error and should display version
-    await runBreakdown(["--version"]);
-    // If this executes without throwing, version interface is working
-  } catch (error) {
-    // Version should not throw errors
-    throw new Error(`Version interface should not throw errors: ${error}`);
-  }
+  // Test that version information is accessible and returns Result (Totality principle)
+  const result = await runBreakdown(["--version"]);
+  
+  // Version should return a successful Result
+  assertExists(result, "runBreakdown should return a Result");
+  assertEquals(typeof result, "object", "Result should be an object");
+  assertEquals(result.ok, true, "Version should return successful Result");
 });
 
 Deno.test("Entry Point Architecture - consistent interface patterns", () => {

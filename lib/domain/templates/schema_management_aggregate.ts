@@ -8,6 +8,8 @@
  */
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { Result } from "../../types/result.ts";
+import { ok, error } from "../../types/result.ts";
 
 /**
  * Schema path value object
@@ -19,11 +21,11 @@ export class SchemaPath {
     private readonly filename: string,
   ) {}
 
-  static create(directive: DirectiveType, layer: LayerType, filename: string): SchemaPath {
+  static create(directive: DirectiveType, layer: LayerType, filename: string): Result<SchemaPath, string> {
     if (!filename.endsWith(".json")) {
-      throw new Error(`Invalid schema filename: ${filename}. Must end with .json`);
+      return error(`Invalid schema filename: ${filename}. Must end with .json`);
     }
-    return new SchemaPath(directive, layer, filename);
+    return ok(new SchemaPath(directive, layer, filename));
   }
 
   static fromString(path: string): SchemaPath | null {
@@ -65,12 +67,12 @@ export class SchemaContent {
     private readonly schemaVersion: string,
   ) {}
 
-  static create(content: unknown, version = "draft-07"): SchemaContent {
+  static create(content: unknown, version = "draft-07"): Result<SchemaContent, string> {
     // Validate that content is a valid JSON schema structure
     if (!SchemaContent.isValidSchema(content)) {
-      throw new Error("Invalid schema content");
+      return error("Invalid schema content");
     }
-    return new SchemaContent(content, version);
+    return ok(new SchemaContent(content, version));
   }
 
   private static isValidSchema(content: unknown): boolean {
@@ -144,8 +146,12 @@ export class Schema {
     path: SchemaPath,
     content: unknown,
     metadata?: Partial<SchemaMetadata>,
-  ): Schema {
-    const schemaContent = SchemaContent.create(content);
+  ): Result<Schema, string> {
+    const schemaContentResult = SchemaContent.create(content);
+    if (!schemaContentResult.ok) {
+      return error(schemaContentResult.error);
+    }
+    
     const fullMetadata: SchemaMetadata = {
       version: metadata?.version || "1.0.0",
       author: metadata?.author || "system",
@@ -153,7 +159,7 @@ export class Schema {
       updatedAt: metadata?.updatedAt || new Date(),
       ...metadata,
     };
-    return new Schema(path, schemaContent, fullMetadata);
+    return ok(new Schema(path, schemaContentResult.data, fullMetadata));
   }
 
   getPath(): SchemaPath {
@@ -171,22 +177,26 @@ export class Schema {
   /**
    * Update schema content
    */
-  updateContent(newContent: unknown): Schema {
-    const updatedContent = SchemaContent.create(newContent);
-    return new Schema(
+  updateContent(newContent: unknown): Result<Schema, string> {
+    const updatedContentResult = SchemaContent.create(newContent);
+    if (!updatedContentResult.ok) {
+      return { ok: false, error: updatedContentResult.error };
+    }
+    
+    return { ok: true, data: new Schema(
       this.path,
-      updatedContent,
+      updatedContentResult.data,
       {
         ...this.metadata,
         updatedAt: new Date(),
       },
-    );
+    ) };
   }
 
   /**
    * Validate data against this schema
    */
-  async validate(data: unknown): Promise<ValidationResult> {
+  validate(_data: unknown): ValidationResult {
     // In a real implementation, this would use a JSON schema validator
     // For now, we'll return a simple result
     return {
@@ -311,8 +321,12 @@ export class SchemaManagementAggregate {
     private state: SchemaManagementState,
   ) {}
 
-  static create(id: string): SchemaManagementAggregate {
-    return new SchemaManagementAggregate(
+  static create(id: string): Result<SchemaManagementAggregate, string> {
+    if (!id || id.trim().length === 0) {
+      return { ok: false, error: "Invalid aggregate ID: ID cannot be empty" };
+    }
+    
+    return { ok: true, data: new SchemaManagementAggregate(
       id,
       new SchemaRegistry(),
       {
@@ -320,7 +334,7 @@ export class SchemaManagementAggregate {
         lastSync: null,
         schemaCount: 0,
       },
-    );
+    ) };
   }
 
   getId(): string {
@@ -338,7 +352,7 @@ export class SchemaManagementAggregate {
   /**
    * Import schemas from a source
    */
-  async importSchemas(schemas: Schema[]): Promise<ImportResult> {
+  importSchemas(schemas: Schema[]): ImportResult {
     const imported: string[] = [];
     const failed: Array<{ path: string; error: string }> = [];
 

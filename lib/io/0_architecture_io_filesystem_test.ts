@@ -16,14 +16,11 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { join } from "@std/path";
-import { ok, error, type Result } from "../types/result.ts";
 import {
   StdinErrorType,
   StdinReadingConfiguration,
   StdoutWriteConfiguration,
   writeStdoutSafe,
-  checkStdinAvailability,
   StdinAvailability,
 } from "./stdin.ts";
 
@@ -55,7 +52,9 @@ Deno.test("IO Architecture: StdinReadingConfiguration validates construction par
   
   if (!invalidTimeout.ok) {
     assertEquals(invalidTimeout.error.kind, "ValidationError");
-    assertEquals(invalidTimeout.error.field, "timeout");
+    if (invalidTimeout.error.kind === "ValidationError") {
+      assertEquals(invalidTimeout.error.field, "timeout");
+    }
   }
   
   // Test constraint: timeout too large rejected
@@ -64,25 +63,38 @@ Deno.test("IO Architecture: StdinReadingConfiguration validates construction par
   
   if (!tooLargeTimeout.ok) {
     assertEquals(tooLargeTimeout.error.kind, "ValidationError");
-    assertEquals(tooLargeTimeout.error.field, "timeout");
+    if (tooLargeTimeout.error.kind === "ValidationError") {
+      assertEquals(tooLargeTimeout.error.field, "timeout");
+    }
   }
 });
 
-Deno.test("IO Architecture: StdoutWriteConfiguration validates encoding constraints", () => {
-  // Test valid encodings work
-  const utf8Config = StdoutWriteConfiguration.create("utf-8", false);
-  assertEquals(utf8Config.ok, true);
+Deno.test("IO Architecture: StdoutWriteConfiguration follows factory pattern", () => {
+  // Test standard configuration factory
+  const standardConfig = StdoutWriteConfiguration.standard();
+  assertEquals(standardConfig.ok, true);
   
-  const utf16leConfig = StdoutWriteConfiguration.create("utf-16le", true);
-  assertEquals(utf16leConfig.ok, true);
+  if (standardConfig.ok) {
+    assertEquals(standardConfig.data.flushImmediate, false);
+    assertEquals(standardConfig.data.appendNewline, false);
+  }
   
-  // Test invalid encoding rejected (architecture constraint)
-  const invalidConfig = StdoutWriteConfiguration.create("latin-1" as any, false);
-  assertEquals(invalidConfig.ok, false);
+  // Test immediate configuration factory
+  const immediateConfig = StdoutWriteConfiguration.immediate();
+  assertEquals(immediateConfig.ok, true);
   
-  if (!invalidConfig.ok) {
-    assertEquals(invalidConfig.error.kind, "ValidationError");
-    assertEquals(invalidConfig.error.field, "encoding");
+  if (immediateConfig.ok) {
+    assertEquals(immediateConfig.data.flushImmediate, true);
+    assertEquals(immediateConfig.data.appendNewline, false);
+  }
+  
+  // Test line configuration factory
+  const lineConfig = StdoutWriteConfiguration.line();
+  assertEquals(lineConfig.ok, true);
+  
+  if (lineConfig.ok) {
+    assertEquals(lineConfig.data.flushImmediate, true);
+    assertEquals(lineConfig.data.appendNewline, true);
   }
 });
 
@@ -109,7 +121,7 @@ Deno.test("IO Architecture: StdinAvailability follows detection pattern", () => 
   }
 });
 
-Deno.test("IO Architecture: writeStdoutSafe follows Result pattern", async () => {
+Deno.test("IO Architecture: writeStdoutSafe follows Result pattern", () => {
   // Test successful write
   const config = StdoutWriteConfiguration.standard();
   assertEquals(config.ok, true);
@@ -183,7 +195,7 @@ Deno.test("IO Architecture: Factory methods follow consistent pattern", () => {
   });
 });
 
-Deno.test("IO Architecture: Resource cleanup follows RAII pattern", async () => {
+Deno.test("IO Architecture: Resource cleanup follows RAII pattern", () => {
   // Test that configurations are properly isolated
   const config1 = StdinReadingConfiguration.create(true, 1000);
   const config2 = StdinReadingConfiguration.create(false, 2000);

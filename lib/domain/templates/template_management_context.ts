@@ -8,15 +8,17 @@
  * @module domain/templates/template_management_context
  */
 
-import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
+import type { Result } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
 import type { TemplateRepository } from "./template_repository.ts";
 import type { SchemaRepository } from "./schema_repository.ts";
 import {
   PromptGenerationAggregate,
-  PromptTemplate,
+  PromptTemplate as _PromptTemplate,
   TemplatePath,
 } from "./prompt_generation_aggregate.ts";
-import { Schema, SchemaManagementAggregate, SchemaPath } from "./schema_management_aggregate.ts";
+import { Schema as _Schema, SchemaManagementAggregate, SchemaPath } from "./schema_management_aggregate.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
@@ -30,22 +32,67 @@ export interface TemplateRegistryEntry {
 }
 
 /**
+ * Validation result with proper Result type integration
+ */
+export interface TemplateValidationSummary {
+  readonly totalChecked: number;
+  readonly missingTemplates: number;
+  readonly missingSchemas: number;
+  readonly invalidTemplates: number;
+  readonly dependencyErrors: number;
+}
+
+/**
  * Validation result for templates
  */
 export interface TemplateValidationResult {
   valid: boolean;
   errors: ValidationError[];
   warnings: ValidationWarning[];
-  summary: {
-    totalChecked: number;
-    missingTemplates: number;
-    missingSchemas: number;
-    invalidTemplates: number;
-  };
+  summary: TemplateValidationSummary;
 }
 
 /**
- * Validation error
+ * Totality-compliant validation result
+ */
+export type TotalityValidationResult = Result<
+  {
+    readonly warnings: readonly TemplateManagementWarning[];
+    readonly summary: TemplateValidationSummary;
+  },
+  TemplateManagementError
+>;
+
+/**
+ * Comprehensive validation error types following Totality principle
+ */
+export type TemplateManagementError =
+  // Template errors
+  | { readonly kind: "MissingTemplate"; readonly path: string; readonly required: boolean }
+  | { readonly kind: "InvalidTemplate"; readonly path: string; readonly details: string }
+  | { readonly kind: "TemplateLoadError"; readonly path: string; readonly cause: string }
+  // Schema errors
+  | { readonly kind: "MissingSchema"; readonly path: string; readonly required: boolean }
+  | { readonly kind: "InvalidSchema"; readonly path: string; readonly details: string }
+  | { readonly kind: "SchemaLoadError"; readonly path: string; readonly cause: string }
+  // Dependency errors
+  | { readonly kind: "DependencyError"; readonly path: string; readonly dependency: string }
+  | { readonly kind: "CircularDependency"; readonly path: string; readonly cycle: readonly string[] }
+  // System errors
+  | { readonly kind: "RepositoryError"; readonly operation: string; readonly cause: string }
+  | { readonly kind: "InitializationError"; readonly component: string; readonly cause: string };
+
+/**
+ * Validation warning types
+ */
+export type TemplateManagementWarning =
+  | { readonly kind: "OptionalMissing"; readonly path: string; readonly description?: string }
+  | { readonly kind: "VersionMismatch"; readonly path: string; readonly expected: string; readonly actual: string }
+  | { readonly kind: "Deprecated"; readonly path: string; readonly replacement?: string }
+  | { readonly kind: "PerformanceWarning"; readonly path: string; readonly issue: string };
+
+/**
+ * Legacy compatibility types (for gradual migration)
  */
 export interface ValidationError {
   type: "missing_template" | "missing_schema" | "invalid_template" | "dependency_error";
@@ -53,9 +100,6 @@ export interface ValidationError {
   message: string;
 }
 
-/**
- * Validation warning
- */
 export interface ValidationWarning {
   type: "optional_missing" | "version_mismatch" | "deprecated";
   path: string;
@@ -73,7 +117,20 @@ export interface InitializationOptions {
 }
 
 /**
- * Initialization result
+ * Initialization result with proper error typing
+ */
+export interface InitializationSummary {
+  readonly templates: readonly string[];
+  readonly schemas: readonly string[];
+}
+
+export interface InitializationFailures {
+  readonly templates: readonly { readonly path: string; readonly error: TemplateManagementError }[];
+  readonly schemas: readonly { readonly path: string; readonly error: TemplateManagementError }[];
+}
+
+/**
+ * Legacy initialization result (for gradual migration)
  */
 export interface InitializationResult {
   success: boolean;
@@ -87,6 +144,21 @@ export interface InitializationResult {
   };
   validation: TemplateValidationResult;
 }
+
+/**
+ * Totality-compliant initialization result
+ */
+export type TotalityInitializationResult = Result<
+  {
+    readonly initialized: InitializationSummary;
+    readonly warnings: readonly TemplateManagementWarning[];
+    readonly validation: TotalityValidationResult;
+  },
+  {
+    readonly failed: InitializationFailures;
+    readonly validationErrors: readonly TemplateManagementError[];
+  }
+>;
 
 /**
  * Template registry - manages template and schema relationships
@@ -131,27 +203,49 @@ export class TemplateRegistry {
   }
 
   /**
-   * Load default registry
+   * Load default registry with proper error handling
    */
-  static createDefault(): TemplateRegistry {
-    const registry = new TemplateRegistry();
+  static createDefault(): Result<TemplateRegistry, TemplateManagementError> {
+    try {
+      const registry = new TemplateRegistry();
 
-    // Register default templates
-    // This replaces the hardcoded DEFAULT_TEMPLATE_MAPPINGS
-    const defaults = [
-      { directive: "summary", layer: "issue", filename: "f_issue.md", required: true },
-      { directive: "summary", layer: "project", filename: "f_project.md", required: true },
-      { directive: "defect", layer: "issue", filename: "f_issue.md", required: true },
-      { directive: "find", layer: "bugs", filename: "f_bugs.md", required: true },
-      { directive: "to", layer: "task", filename: "f_task.md", required: true },
-      { directive: "to", layer: "issue", filename: "f_issue.md", required: true },
-      { directive: "to", layer: "project", filename: "f_project.md", required: true },
-    ];
+      // Register default templates with proper type safety
+      const defaults = [
+        { directive: "summary", layer: "issue", filename: "f_issue.md", required: true },
+        { directive: "summary", layer: "project", filename: "f_project.md", required: true },
+        { directive: "defect", layer: "issue", filename: "f_issue.md", required: true },
+        { directive: "find", layer: "bugs", filename: "f_bugs.md", required: true },
+        { directive: "to", layer: "task", filename: "f_task.md", required: true },
+        { directive: "to", layer: "issue", filename: "f_issue.md", required: true },
+        { directive: "to", layer: "project", filename: "f_project.md", required: true },
+      ];
 
-    // In real implementation, would create proper DirectiveType/LayerType instances
-    // For now, simplified registration
+      // Register each template with proper error handling
+      // Note: In a full implementation, would need to properly construct DirectiveType and LayerType
+      // For now, using string-based registration until type factory is available
+      for (const item of defaults) {
+        // Simplified path creation without DirectiveType/LayerType validation
+        // TODO: Integrate with TypeFactory for proper type construction
+        const pathString = `templates/${item.directive}/${item.layer}/${item.filename}`;
+        
+        // For now, create a simplified entry without full type validation
+        // This would be replaced with proper DirectiveType/LayerType construction
+        registry.register({
+          templatePath: { getPath: () => pathString } as TemplatePath,
+          required: item.required,
+          description: `Default ${item.directive} template for ${item.layer} layer`
+        });
+      }
 
-    return registry;
+      return ok(registry);
+    } catch (caught) {
+      const errorMessage = caught instanceof Error ? caught.message : String(caught);
+      return error({
+        kind: "InitializationError",
+        component: "TemplateRegistry",
+        cause: errorMessage
+      });
+    }
   }
 }
 
@@ -166,6 +260,48 @@ export class ValidationPolicy {
   ) {}
 
   /**
+   * Extract error message with type safety
+   */
+  private extractErrorMessage(caught: unknown): string {
+    if (caught instanceof Error) {
+      return caught.message;
+    }
+    if (typeof caught === "string") {
+      return caught;
+    }
+    if (caught && typeof caught === "object" && "message" in caught) {
+      return String((caught as { message: unknown }).message);
+    }
+    return "Unknown error occurred";
+  }
+
+  /**
+   * Create standardized template management error
+   */
+  private createTemplateError(
+    kind: TemplateManagementError["kind"],
+    path: string,
+    details: string
+  ): TemplateManagementError {
+    switch (kind) {
+      case "MissingTemplate":
+        return { kind: "MissingTemplate", path, required: true };
+      case "InvalidTemplate":
+        return { kind: "InvalidTemplate", path, details };
+      case "TemplateLoadError":
+        return { kind: "TemplateLoadError", path, cause: details };
+      case "MissingSchema":
+        return { kind: "MissingSchema", path, required: true };
+      case "InvalidSchema":
+        return { kind: "InvalidSchema", path, details };
+      case "SchemaLoadError":
+        return { kind: "SchemaLoadError", path, cause: details };
+      default:
+        return { kind: "RepositoryError", operation: "unknown", cause: details };
+    }
+  }
+
+  /**
    * Validate templates against registry
    */
   async validateTemplates(registry: TemplateRegistry): Promise<TemplateValidationResult> {
@@ -176,6 +312,7 @@ export class ValidationPolicy {
       missingTemplates: 0,
       missingSchemas: 0,
       invalidTemplates: 0,
+      dependencyErrors: 0,
     };
 
     for (const entry of registry.getEntries()) {
@@ -201,13 +338,14 @@ export class ValidationPolicy {
       } else {
         // Validate template content
         try {
-          const template = await this.templateRepo.loadTemplate(entry.templatePath);
+          const _template = await this.templateRepo.loadTemplate(entry.templatePath);
           // Additional validation logic here
-        } catch (error) {
+        } catch (caught) {
+          const errorMessage = this.extractErrorMessage(caught);
           errors.push({
             type: "invalid_template",
             path: entry.templatePath.getPath(),
-            message: `Invalid template: ${error instanceof Error ? error.message : String(error)}`,
+            message: `Invalid template: ${errorMessage}`,
           });
           summary.invalidTemplates++;
         }
@@ -276,6 +414,22 @@ export class InitializationService {
   ) {}
 
   /**
+   * Extract error message with type safety
+   */
+  private extractErrorMessage(caught: unknown): string {
+    if (caught instanceof Error) {
+      return caught.message;
+    }
+    if (typeof caught === "string") {
+      return caught;
+    }
+    if (caught && typeof caught === "object" && "message" in caught) {
+      return String((caught as { message: unknown }).message);
+    }
+    return "Unknown error occurred";
+  }
+
+  /**
    * Initialize templates and schemas
    */
   async initialize(
@@ -308,7 +462,7 @@ export class InitializationService {
 
   private async copyMissingTemplates(
     registry: TemplateRegistry,
-    sourcePath: string,
+    _sourcePath: string,
     result: InitializationResult,
   ): Promise<void> {
     for (const entry of registry.getRequiredEntries()) {
@@ -320,10 +474,11 @@ export class InitializationService {
           this.logger.info("Template copied", { path: entry.templatePath.getPath() });
           result.initialized.templates.push(entry.templatePath.getPath());
         }
-      } catch (error) {
+      } catch (caught) {
+        const errorMessage = this.extractErrorMessage(caught);
         result.failed.templates.push({
           path: entry.templatePath.getPath(),
-          error: error instanceof Error ? error.message : String(error),
+          error: errorMessage,
         });
       }
     }
@@ -344,25 +499,44 @@ export class TemplateManagementContext {
     private readonly logger: BreakdownLogger,
   ) {
     this.promptAggregates = new Map();
-    this.schemaAggregate = SchemaManagementAggregate.create("schema-management");
+    const schemaAggregateResult = SchemaManagementAggregate.create("schema-management");
+    if (!schemaAggregateResult.ok) {
+      throw new Error(`Failed to create schema aggregate: ${schemaAggregateResult.error}`);
+    }
+    this.schemaAggregate = schemaAggregateResult.data;
   }
 
   /**
-   * Create default context
+   * Create default context with proper error handling
    */
   static create(
     templateRepo: TemplateRepository,
     schemaRepo: SchemaRepository,
-  ): TemplateManagementContext {
-    const logger = new BreakdownLogger("template-management-context");
-    const registry = TemplateRegistry.createDefault();
+  ): Result<TemplateManagementContext, TemplateManagementError> {
+    try {
+      const logger = new BreakdownLogger("template-management-context");
+      const registryResult = TemplateRegistry.createDefault();
+      
+      if (!registryResult.ok) {
+        return error(registryResult.error);
+      }
 
-    return new TemplateManagementContext(
-      templateRepo,
-      schemaRepo,
-      registry,
-      logger,
-    );
+      const context = new TemplateManagementContext(
+        templateRepo,
+        schemaRepo,
+        registryResult.data,
+        logger,
+      );
+
+      return ok(context);
+    } catch (caught) {
+      const errorMessage = caught instanceof Error ? caught.message : String(caught);
+      return error({
+        kind: "InitializationError",
+        component: "TemplateManagementContext",
+        cause: errorMessage
+      });
+    }
   }
 
   /**

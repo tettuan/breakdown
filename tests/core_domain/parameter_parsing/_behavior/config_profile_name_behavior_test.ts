@@ -28,9 +28,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["production", "staging", "development", "test"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, true, `Should create profile for ${name}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, name);
+        }
       });
     });
 
@@ -40,9 +42,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["prod1", "test2", "v3", "123"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, true, `Should create profile for ${name}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, name);
+        }
       });
     });
 
@@ -52,9 +56,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["prod-env", "test_env", "feature-123", "branch_456"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, true, `Should create profile for ${name}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, name);
+        }
       });
     });
 
@@ -64,9 +70,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["prod-v2_final", "test_123-beta", "feature_branch-01"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, true, `Should create profile for ${name}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, name);
+        }
       });
     });
 
@@ -76,9 +84,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["a", "z", "0", "9", "-", "_"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, name);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, true, `Should create profile for ${name}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, name);
+        }
       });
     });
 
@@ -86,10 +96,12 @@ describe("ConfigProfileName - Unit Tests", () => {
       logger.debug("Testing maximum length profile names");
 
       const maxLength = "a".repeat(50);
-      const profile = ConfigProfileName.create(maxLength);
-      assertEquals(profile.value, maxLength);
-      assertEquals(profile.value !== null, true);
-      assertEquals(profile.value?.length, 50);
+      const profileResult = ConfigProfileName.create(maxLength);
+      assertEquals(profileResult.ok, true, "Should accept maximum length profile");
+      if (profileResult.ok) {
+        assertEquals(profileResult.data.value, maxLength);
+        assertEquals(profileResult.data.value.length, 50);
+      }
     });
   });
 
@@ -100,9 +112,8 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["PRODUCTION", "Production", "productioN", "PROD"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, null);
-        assertEquals(profile.value !== null, false);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, false, `Should reject profile for ${name}`);
       });
     });
 
@@ -119,9 +130,8 @@ describe("ConfigProfileName - Unit Tests", () => {
       ];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, null);
-        assertEquals(profile.value !== null, false);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, false, `Should reject profile for ${name}`);
       });
     });
 
@@ -131,27 +141,24 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["prod env", " prod", "prod ", "prod\tenv", "prod\nenv", "  "];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, null);
-        assertEquals(profile.value !== null, false);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, false, `Should reject profile for ${name}`);
       });
     });
 
     it("should return empty for empty string", () => {
       logger.debug("Testing empty string");
 
-      const profile = ConfigProfileName.create("");
-      assertEquals(profile.value, null);
-      assertEquals(profile.value !== null, false);
+      const profileResult = ConfigProfileName.create("");
+      assertEquals(profileResult.ok, false, "Should reject empty string");
     });
 
     it("should return empty for exceeding maximum length", () => {
       logger.debug("Testing profile names exceeding maximum length");
 
       const tooLong = "a".repeat(51);
-      const profile = ConfigProfileName.create(tooLong);
-      assertEquals(profile.value, null);
-      assertEquals(profile.value !== null, false);
+      const profileResult = ConfigProfileName.create(tooLong);
+      assertEquals(profileResult.ok, false, "Should reject too long profile name");
     });
 
     it("should return empty for non-string values", () => {
@@ -159,28 +166,23 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       // @ts-ignore - Testing runtime behavior
       const profile1 = ConfigProfileName.create(null);
-      assertEquals(profile1.value, null);
-      assertEquals(profile1.value !== null, false);
+      assertEquals(profile1.ok, false, "Should reject null");
 
       // @ts-ignore - Testing runtime behavior
       const profile2 = ConfigProfileName.create(undefined);
-      assertEquals(profile2.value, null);
-      assertEquals(profile2.value !== null, false);
+      assertEquals(profile2.ok, false, "Should reject undefined");
 
       // @ts-ignore - Testing runtime behavior
       const profile3 = ConfigProfileName.create(123);
-      assertEquals(profile3.value, null);
-      assertEquals(profile3.value !== null, false);
+      assertEquals(profile3.ok, false, "Should reject number");
 
       // @ts-ignore - Testing runtime behavior
       const profile4 = ConfigProfileName.create({});
-      assertEquals(profile4.value, null);
-      assertEquals(profile4.value !== null, false);
+      assertEquals(profile4.ok, false, "Should reject object");
 
       // @ts-ignore - Testing runtime behavior
       const profile5 = ConfigProfileName.create([]);
-      assertEquals(profile5.value, null);
-      assertEquals(profile5.value !== null, false);
+      assertEquals(profile5.ok, false, "Should reject array");
     });
   });
 
@@ -188,8 +190,11 @@ describe("ConfigProfileName - Unit Tests", () => {
     it("should return null for empty string", () => {
       logger.debug("Testing null return for empty string");
 
-      const profile = ConfigProfileName.create("");
-      assertEquals(profile.value, null);
+      const profileResult = ConfigProfileName.create("");
+      assertEquals(profileResult.ok, false, "Should reject empty string");
+      if (!profileResult.ok) {
+        assertEquals(profileResult.error.kind, "EmptyInput");
+      }
     });
 
     it("should consistently return null for invalid inputs", () => {
@@ -198,8 +203,8 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profile1 = ConfigProfileName.create("");
       const profile2 = ConfigProfileName.create("INVALID");
 
-      assertEquals(profile1.value, null);
-      assertEquals(profile2.value, null);
+      assertEquals(profile1.ok, false, "Should reject empty string");
+      assertEquals(profile2.ok, false, "Should reject invalid string");
     });
   });
 
@@ -210,20 +215,23 @@ describe("ConfigProfileName - Unit Tests", () => {
       // Length 49 - valid
       const length49 = "a".repeat(49);
       const profile49 = ConfigProfileName.create(length49);
-      assertEquals(profile49.value, length49);
-      assertEquals(profile49.value !== null, true);
+      assertEquals(profile49.ok, true, "Should accept length 49");
+      if (profile49.ok) {
+        assertEquals(profile49.data.value, length49);
+      }
 
       // Length 50 - valid
       const length50 = "a".repeat(50);
       const profile50 = ConfigProfileName.create(length50);
-      assertEquals(profile50.value, length50);
-      assertEquals(profile50.value !== null, true);
+      assertEquals(profile50.ok, true, "Should accept length 50");
+      if (profile50.ok) {
+        assertEquals(profile50.data.value, length50);
+      }
 
       // Length 51 - invalid
       const length51 = "a".repeat(51);
       const profile51 = ConfigProfileName.create(length51);
-      assertEquals(profile51.value, null);
-      assertEquals(profile51.value !== null, false);
+      assertEquals(profile51.ok, false, "Should reject length 51");
     });
 
     it("should handle unicode and non-ASCII characters", () => {
@@ -232,9 +240,8 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profiles = ["café", "日本語", "🚀", "test™", "prod©"];
 
       profiles.forEach((name) => {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.value, null);
-        assertEquals(profile.value !== null, false);
+        const profileResult = ConfigProfileName.create(name);
+        assertEquals(profileResult.ok, false, `Should reject profile for ${name}`);
       });
     });
 
@@ -243,13 +250,17 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       // Pure numbers are valid
       const numeric = ConfigProfileName.create("12345");
-      assertEquals(numeric.value, "12345");
-      assertEquals(numeric.value !== null, true);
+      assertEquals(numeric.ok, true, "Should accept numeric string");
+      if (numeric.ok) {
+        assertEquals(numeric.data.value, "12345");
+      }
 
       // Zero-prefixed numbers are valid
       const zeroPrefixed = ConfigProfileName.create("00123");
-      assertEquals(zeroPrefixed.value, "00123");
-      assertEquals(zeroPrefixed.value !== null, true);
+      assertEquals(zeroPrefixed.ok, true, "Should accept zero-prefixed numeric");
+      if (zeroPrefixed.ok) {
+        assertEquals(zeroPrefixed.data.value, "00123");
+      }
     });
   });
 
@@ -265,9 +276,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       ];
 
       profiles.forEach(({ input, expected }) => {
-        const profile = ConfigProfileName.create(input);
-        assertEquals(profile.value, expected);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(input);
+        assertEquals(profileResult.ok, true, `Should create profile for ${input}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, expected);
+        }
       });
     });
 
@@ -283,9 +296,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       ];
 
       profiles.forEach(({ input, expected }) => {
-        const profile = ConfigProfileName.create(input);
-        assertEquals(profile.value, expected);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(input);
+        assertEquals(profileResult.ok, true, `Should create profile for ${input}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, expected);
+        }
       });
     });
 
@@ -300,9 +315,11 @@ describe("ConfigProfileName - Unit Tests", () => {
       ];
 
       profiles.forEach(({ input, expected }) => {
-        const profile = ConfigProfileName.create(input);
-        assertEquals(profile.value, expected);
-        assertEquals(profile.value !== null, true);
+        const profileResult = ConfigProfileName.create(input);
+        assertEquals(profileResult.ok, true, `Should create profile for ${input}`);
+        if (profileResult.ok) {
+          assertEquals(profileResult.data.value, expected);
+        }
       });
     });
   });

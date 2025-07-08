@@ -37,8 +37,8 @@ Deno.test("2_structure: ResultStatus enum values are string literals", () => {
   }
   
   // Test that values can be used as discriminators
-  const successStatus: ResultStatus = ResultStatus.SUCCESS;
-  const errorStatus: ResultStatus = ResultStatus.ERROR;
+  const successStatus: typeof ResultStatus.SUCCESS = ResultStatus.SUCCESS;
+  const errorStatus: typeof ResultStatus.ERROR = ResultStatus.ERROR;
   
   assertEquals(successStatus === "success", true);
   assertEquals(errorStatus === "error", true);

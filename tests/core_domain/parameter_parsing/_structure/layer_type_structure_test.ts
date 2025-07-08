@@ -16,6 +16,8 @@ import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/types/layer_type.ts";
 import type { TwoParams_Result } from "../../lib/deps.ts";
+import type { Result } from "../../../../lib/types/result.ts";
+import { ok, error } from "../../../../lib/types/result.ts";
 
 const logger = new BreakdownLogger("test-structure-layer");
 
@@ -35,25 +37,37 @@ Deno.test("LayerType - Structure: Smart Constructor pattern implementation", () 
   };
 
   // 1. static create()メソッドが唯一の作成方法であることを確認
-  const layerType = LayerType.create(testResult);
-  assertExists(layerType);
-  assertEquals(layerType.value, "project");
+  const createResult = (() => {
+    try {
+      const layerType = LayerType.create(testResult);
+      return ok(layerType);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  })();
 
-  // 2. create()メソッドが適切な型を返すことを確認
-  assertEquals(layerType instanceof LayerType, true);
+  assertEquals(createResult.ok, true);
+  if (createResult.ok) {
+    const layerType = createResult.data as LayerType;
+    assertExists(layerType);
+    assertEquals(layerType.value, "project");
 
-  // 3. 階層情報の適切な管理
-  assertEquals(layerType.getHierarchyLevel(), 1); // projectは階層レベル1
-  assertEquals(layerType.isStandardHierarchy(), true);
+    // 2. create()メソッドが適切な型を返すことを確認
+    assertEquals(layerType instanceof LayerType, true);
 
-  logger.debug("Smart Constructor実装検証完了", {
-    success: true,
-    creation_method: "static_create_only",
-    hierarchical_info: {
-      level: layerType.getHierarchyLevel(),
-      standard: layerType.isStandardHierarchy(),
-    },
-  });
+    // 3. 階層情報の適切な管理
+    assertEquals(layerType.getHierarchyLevel(), 1); // projectは階層レベル1
+    assertEquals(layerType.isStandardHierarchy(), true);
+
+    logger.debug("Smart Constructor実装検証完了", {
+      success: true,
+      creation_method: "static_create_only",
+      hierarchical_info: {
+        level: layerType.getHierarchyLevel(),
+        standard: layerType.isStandardHierarchy(),
+      },
+    });
+  }
 });
 
 Deno.test("LayerType - Structure: Hierarchical management responsibility", () => {
@@ -79,16 +93,28 @@ Deno.test("LayerType - Structure: Hierarchical management responsibility", () =>
       options: {},
     };
 
-    const layerType = LayerType.create(result);
-    assertEquals(layerType.value, layer.name);
-    assertEquals(layerType.getHierarchyLevel(), layer.level);
-    assertEquals(layerType.isStandardHierarchy(), layer.standard);
+    const layerTypeResult = (() => {
+      try {
+        const layerType = LayerType.create(result);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
 
-    logger.debug("標準階層管理確認", {
-      layer: layer.name,
-      level: layer.level,
-      standard: layer.standard,
-    });
+    assertEquals(layerTypeResult.ok, true);
+    if (layerTypeResult.ok) {
+      const layerType = layerTypeResult.data as LayerType;
+      assertEquals(layerType.value, layer.name);
+      assertEquals(layerType.getHierarchyLevel(), layer.level);
+      assertEquals(layerType.isStandardHierarchy(), layer.standard);
+
+      logger.debug("標準階層管理確認", {
+        layer: layer.name,
+        level: layer.level,
+        standard: layer.standard,
+      });
+    }
   }
 
   // 2. 特別階層の適切な管理
@@ -106,16 +132,28 @@ Deno.test("LayerType - Structure: Hierarchical management responsibility", () =>
       options: {},
     };
 
-    const layerType = LayerType.create(result);
-    assertEquals(layerType.value, layer.name);
-    assertEquals(layerType.getHierarchyLevel(), layer.level);
-    assertEquals(layerType.isStandardHierarchy(), layer.standard);
+    const layerTypeResult = (() => {
+      try {
+        const layerType = LayerType.create(result);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
 
-    logger.debug("特別階層管理確認", {
-      layer: layer.name,
-      level: layer.level,
-      standard: layer.standard,
-    });
+    assertEquals(layerTypeResult.ok, true);
+    if (layerTypeResult.ok) {
+      const layerType = layerTypeResult.data as LayerType;
+      assertEquals(layerType.value, layer.name);
+      assertEquals(layerType.getHierarchyLevel(), layer.level);
+      assertEquals(layerType.isStandardHierarchy(), layer.standard);
+
+      logger.debug("特別階層管理確認", {
+        layer: layer.name,
+        level: layer.level,
+        standard: layer.standard,
+      });
+    }
   }
 
   logger.debug("階層管理責務検証完了", {
@@ -133,25 +171,48 @@ Deno.test("LayerType - Structure: TwoParamsLayerTypePattern design validity", ()
   });
 
   // 1. パターン作成の設計適切性
-  const validPattern = TwoParamsLayerTypePattern.create("project|issue|task");
-  const invalidPattern = TwoParamsLayerTypePattern.create("[invalid");
+  const validPatternResult = (() => {
+    try {
+      const pattern = TwoParamsLayerTypePattern.create("project|issue|task");
+      return ok(pattern);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  })();
 
-  assertExists(validPattern);
-  assertEquals(invalidPattern, null);
+  const invalidPatternResult = (() => {
+    try {
+      const pattern = TwoParamsLayerTypePattern.create("[invalid");
+      return ok(pattern);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  })();
 
-  // 2. パターンマッチング機能の設計
-  if (validPattern) {
-    assertEquals(validPattern.test("project"), true);
-    assertEquals(validPattern.test("issue"), true);
-    assertEquals(validPattern.test("task"), true);
-    assertEquals(validPattern.test("invalid"), false);
+  assertEquals(validPatternResult.ok, true);
+  if (validPatternResult.ok) {
+    const validPattern = validPatternResult.data as TwoParamsLayerTypePattern;
+    assertExists(validPattern);
+    
+    // 2. パターンマッチング機能の設計
+    if (validPattern) {
+      assertEquals(validPattern.test("project"), true);
+      assertEquals(validPattern.test("issue"), true);
+      assertEquals(validPattern.test("task"), true);
+      assertEquals(validPattern.test("invalid"), false);
 
-    // 3. パターン情報の適切な提供
-    assertEquals(validPattern.getPattern(), "project|issue|task");
-    assertEquals(validPattern.toString(), "project|issue|task");
+      // 3. パターン情報の適切な提供
+      assertEquals(validPattern.getPattern(), "project|issue|task");
+      assertEquals(validPattern.toString(), "project|issue|task");
 
-    // 4. TypePatternProviderインターフェース準拠
-    assertEquals(validPattern.getLayerTypePattern(), validPattern);
+      // 4. TypePatternProviderインターフェース準拠
+      assertEquals(validPattern.getLayerTypePattern(), validPattern);
+    }
+  }
+
+  // 5. 無効なパターンの適切な処理
+  if (invalidPatternResult.ok) {
+    assertEquals(invalidPatternResult.data, null);
   }
 
   logger.debug("TwoParamsLayerTypePattern設計妥当性検証完了", {
@@ -177,29 +238,41 @@ Deno.test("LayerType - Structure: Immutable design verification", () => {
     options: {},
   };
 
-  const layerType = LayerType.create(testResult);
-  const originalValue = layerType.value;
-  const originalLevel = layerType.getHierarchyLevel();
-  const originalStandard = layerType.isStandardHierarchy();
+  const layerTypeResult = (() => {
+    try {
+      const layerType = LayerType.create(testResult);
+      return ok(layerType);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  })();
 
-  // 1. 値が変更不可であることを確認
-  assertEquals(originalValue, "issue");
-  assertEquals(originalLevel, 2);
-  assertEquals(originalStandard, true);
+  assertEquals(layerTypeResult.ok, true);
+  if (layerTypeResult.ok) {
+    const layerType = layerTypeResult.data as LayerType;
+    const originalValue = layerType.value;
+    const originalLevel = layerType.getHierarchyLevel();
+    const originalStandard = layerType.isStandardHierarchy();
 
-  // 2. 複数回アクセスしても同じ値を返すことを確認
-  assertEquals(layerType.value, originalValue);
-  assertEquals(layerType.getHierarchyLevel(), originalLevel);
-  assertEquals(layerType.isStandardHierarchy(), originalStandard);
+    // 1. 値が変更不可であることを確認
+    assertEquals(originalValue, "issue");
+    assertEquals(originalLevel, 2);
+    assertEquals(originalStandard, true);
 
-  // 3. originalResultが読み取り専用であることを確認
-  const originalResult = layerType.originalResult;
-  assertEquals(originalResult.layerType, "issue");
+    // 2. 複数回アクセスしても同じ値を返すことを確認
+    assertEquals(layerType.value, originalValue);
+    assertEquals(layerType.getHierarchyLevel(), originalLevel);
+    assertEquals(layerType.isStandardHierarchy(), originalStandard);
 
-  // 4. toString()の結果も一貫していることを確認
-  const stringRepresentation = layerType.toString();
-  assertEquals(stringRepresentation, layerType.toString());
-  assertEquals(stringRepresentation.includes("issue"), true);
+    // 3. originalResultが読み取り専用であることを確認
+    const originalResult = layerType.originalResult;
+    assertEquals(originalResult.layerType, "issue");
+
+    // 4. toString()の結果も一貫していることを確認
+    const stringRepresentation = layerType.toString();
+    assertEquals(stringRepresentation, layerType.toString());
+    assertEquals(stringRepresentation.includes("issue"), true);
+  }
 
   logger.debug("Immutable設計検証完了", {
     success: true,
@@ -250,28 +323,69 @@ Deno.test("LayerType - Structure: Appropriate abstraction level", () => {
     },
   ];
 
-  const layerTypes = layerResults.map((result) => LayerType.create(result));
+  const layerTypesResults = layerResults.map((result) => {
+    try {
+      const layerType = LayerType.create(result);
+      return ok(layerType);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  });
 
   // 2. 各インスタンスが適切な階層情報を持つことを確認
-  assertEquals(layerTypes.length, 4);
-  assertEquals(layerTypes[0].value, "project");
-  assertEquals(layerTypes[1].value, "issue");
-  assertEquals(layerTypes[2].value, "task");
-  assertEquals(layerTypes[3].value, "bugs");
+  assertEquals(layerTypesResults.length, 4);
+  
+  for (const result of layerTypesResults) {
+    assertEquals(result.ok, true);
+  }
 
-  // 3. 階層レベルの適切な抽象化
-  assertEquals(layerTypes[0].getHierarchyLevel(), 1); // project
-  assertEquals(layerTypes[1].getHierarchyLevel(), 2); // issue
-  assertEquals(layerTypes[2].getHierarchyLevel(), 3); // task
-  assertEquals(layerTypes[3].getHierarchyLevel(), 0); // bugs
+  if (layerTypesResults.every(r => r.ok)) {
+    const layerTypes = layerTypesResults.map(r => r.ok ? r.data : null).filter(Boolean) as LayerType[];
+    
+    assertEquals(layerTypes[0].value, "project");
+    assertEquals(layerTypes[1].value, "issue");
+    assertEquals(layerTypes[2].value, "task");
+    assertEquals(layerTypes[3].value, "bugs");
 
-  // 4. equals()メソッドによる適切な比較機能
-  const layerType1 = LayerType.create(layerResults[0]);
-  const layerType2 = LayerType.create(layerResults[0]);
-  const layerType3 = LayerType.create(layerResults[1]);
+    // 3. 階層レベルの適切な抽象化
+    assertEquals(layerTypes[0].getHierarchyLevel(), 1); // project
+    assertEquals(layerTypes[1].getHierarchyLevel(), 2); // issue
+    assertEquals(layerTypes[2].getHierarchyLevel(), 3); // task
+    assertEquals(layerTypes[3].getHierarchyLevel(), 0); // bugs
 
-  assertEquals(layerType1.equals(layerType2), true);
-  assertEquals(layerType1.equals(layerType3), false);
+    // 4. equals()メソッドによる適切な比較機能
+    const layerType1Result = (() => {
+      try {
+        const layerType = LayerType.create(layerResults[0]);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
+
+    const layerType2Result = (() => {
+      try {
+        const layerType = LayerType.create(layerResults[0]);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
+
+    const layerType3Result = (() => {
+      try {
+        const layerType = LayerType.create(layerResults[1]);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
+
+    if (layerType1Result.ok && layerType2Result.ok && layerType3Result.ok) {
+      assertEquals((layerType1Result.data as LayerType).equals(layerType2Result.data as LayerType), true);
+      assertEquals((layerType1Result.data as LayerType).equals(layerType3Result.data as LayerType), false);
+    }
+  }
 
   logger.debug("適切な抽象化レベル検証完了", {
     success: true,
@@ -298,23 +412,35 @@ Deno.test("LayerType - Structure: Single responsibility adherence", () => {
     options: {},
   };
 
-  const layerType = LayerType.create(testResult);
+  const layerTypeResult = (() => {
+    try {
+      const layerType = LayerType.create(testResult);
+      return ok(layerType);
+    } catch (err) {
+      return error(err instanceof Error ? err.message : String(err));
+    }
+  })();
 
-  // 1. LayerTypeの責務：階層値の型安全な管理のみ
-  assertEquals(layerType.value, "task");
+  assertEquals(layerTypeResult.ok, true);
+  if (layerTypeResult.ok) {
+    const layerType = layerTypeResult.data as LayerType;
 
-  // 2. 階層管理以外の複雑な処理を持たないことを確認
-  assertEquals(typeof layerType.value, "string");
-  assertEquals(typeof layerType.getHierarchyLevel(), "number");
-  assertEquals(typeof layerType.isStandardHierarchy(), "boolean");
+    // 1. LayerTypeの責務：階層値の型安全な管理のみ
+    assertEquals(layerType.value, "task");
 
-  // 3. バリデーション機能が含まれていないことを確認
-  // （バリデーションはBreakdownParamsの責務）
-  assertEquals(layerType.value, "task");
+    // 2. 階層管理以外の複雑な処理を持たないことを確認
+    assertEquals(typeof layerType.value, "string");
+    assertEquals(typeof layerType.getHierarchyLevel(), "number");
+    assertEquals(typeof layerType.isStandardHierarchy(), "boolean");
 
-  // 4. 内部状態の適切な隠蔽
-  assertExists(layerType.originalResult);
-  assertEquals(layerType.originalResult.layerType, "task");
+    // 3. バリデーション機能が含まれていないことを確認
+    // （バリデーションはBreakdownParamsの責務）
+    assertEquals(layerType.value, "task");
+
+    // 4. 内部状態の適切な隠蔽
+    assertExists(layerType.originalResult);
+    assertEquals(layerType.originalResult.layerType, "task");
+  }
 
   logger.debug("単一責任原則遵守検証完了", {
     success: true,
@@ -363,14 +489,26 @@ Deno.test("LayerType - Structure: Error handling design", () => {
 
   // 2. 正常な作成が常に成功することを確認
   for (const result of validResults) {
-    const layerType = LayerType.create(result);
-    assertExists(layerType);
-    assertEquals(layerType.value, result.layerType);
+    const layerTypeResult = (() => {
+      try {
+        const layerType = LayerType.create(result);
+        return ok(layerType);
+      } catch (err) {
+        return error(err instanceof Error ? err.message : String(err));
+      }
+    })();
 
-    logger.debug("正常作成確認", {
-      layerType: result.layerType,
-      success: true,
-    });
+    assertEquals(layerTypeResult.ok, true);
+    if (layerTypeResult.ok) {
+      const layerType = layerTypeResult.data as LayerType;
+      assertExists(layerType);
+      assertEquals(layerType.value, result.layerType);
+
+      logger.debug("正常作成確認", {
+        layerType: result.layerType,
+        success: true,
+      });
+    }
   }
 
   logger.debug("エラーハンドリング設計検証完了", {

@@ -40,7 +40,6 @@ export {
   LayerType,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  type TypeCreationError,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,
@@ -48,3 +47,6 @@ export {
 
 // Export Result types
 export { error, ok, type Result } from "./types/result.ts";
+
+// Export unified error types following Totality principle
+export type { ProcessingError, UnifiedError } from "./types/unified_error_types.ts";

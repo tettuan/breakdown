@@ -19,12 +19,12 @@ Deno.test("defaultConfigTwoParams - Structural Integrity", async (t) => {
     assertEquals(typeof config, "object");
     assertEquals(typeof config.params, "object");
     assertEquals(typeof config.params.two, "object");
-    assertEquals(typeof config.params.two.demonstrativeType, "object");
+    assertEquals(typeof config.params.two.directiveType, "object");
     assertEquals(typeof config.params.two.layerType, "object");
     assertEquals(typeof config.params.two.validation, "object");
     
     // Test leaf node types
-    assertEquals(typeof config.params.two.demonstrativeType.pattern, "string");
+    assertEquals(typeof config.params.two.directiveType.pattern, "string");
     assertEquals(typeof config.params.two.layerType.pattern, "string");
     assertEquals(Array.isArray(config.params.two.validation.allowedFlagOptions), true);
     assertEquals(Array.isArray(config.params.two.validation.allowedValueOptions), true);
@@ -33,16 +33,16 @@ Deno.test("defaultConfigTwoParams - Structural Integrity", async (t) => {
   });
 
   await t.step("should have symmetric pattern structure", () => {
-    const demonstrativeType = _defaultConfigTwoParams.params.two.demonstrativeType;
+    const directiveType = _defaultConfigTwoParams.params.two.directiveType;
     const layerType = _defaultConfigTwoParams.params.two.layerType;
     
     // Both types should have the same structure
-    assertEquals(Object.keys(demonstrativeType), Object.keys(layerType));
-    assertEquals(Object.keys(demonstrativeType), ["pattern"]);
+    assertEquals(Object.keys(directiveType), Object.keys(layerType));
+    assertEquals(Object.keys(directiveType), ["pattern"]);
     
     // Both patterns should follow the same format
-    assertEquals(demonstrativeType.pattern.startsWith("^("), true);
-    assertEquals(demonstrativeType.pattern.endsWith(")$"), true);
+    assertEquals(directiveType.pattern.startsWith("^("), true);
+    assertEquals(directiveType.pattern.endsWith(")$"), true);
     assertEquals(layerType.pattern.startsWith("^("), true);
     assertEquals(layerType.pattern.endsWith(")$"), true);
   });
@@ -75,7 +75,7 @@ Deno.test("defaultConfigTwoParams - Structural Integrity", async (t) => {
  */
 Deno.test("defaultConfigTwoParams - Cross-Domain Consistency", async (t) => {
   await t.step("should be consistent with DirectiveType expectations", () => {
-    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
     
     // Extract values from pattern
     const match = pattern.match(/^\^\(([^)]+)\)\$$/);
@@ -133,7 +133,7 @@ Deno.test("defaultConfigTwoParams - Serialization Consistency", async (t) => {
     const deserialized = JSON.parse(serialized);
     
     // Test structural equality
-    assertEquals(deserialized.params.two.demonstrativeType.pattern, original.params.two.demonstrativeType.pattern);
+    assertEquals(deserialized.params.two.directiveType.pattern, original.params.two.directiveType.pattern);
     assertEquals(deserialized.params.two.layerType.pattern, original.params.two.layerType.pattern);
     assertEquals(deserialized.params.two.validation.allowedFlagOptions, original.params.two.validation.allowedFlagOptions);
     assertEquals(deserialized.params.two.validation.allowedValueOptions, original.params.two.validation.allowedValueOptions);
@@ -164,7 +164,7 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
     assertObjectMatch(config, {
       params: {
         two: {
-          demonstrativeType: { pattern: "^(to|summary|defect)$" },
+          directiveType: { pattern: "^(to|summary|defect)$" },
           layerType: { pattern: "^(project|issue|task)$" },
           validation: {
             allowedFlagOptions: [],
@@ -186,7 +186,7 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
       return formatRegex.test(pattern);
     };
     
-    assertEquals(validatePatternFormat(config.demonstrativeType.pattern), true);
+    assertEquals(validatePatternFormat(config.directiveType.pattern), true);
     assertEquals(validatePatternFormat(config.layerType.pattern), true);
     
     // Test pattern content validation
@@ -195,12 +195,12 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
       return match ? match[1].split("|") : [];
     };
     
-    const demonstrativeValues = extractValues(config.demonstrativeType.pattern);
+    const directiveValues = extractValues(config.directiveType.pattern);
     const layerValues = extractValues(config.layerType.pattern);
     
-    assertEquals(demonstrativeValues.length > 0, true);
+    assertEquals(directiveValues.length > 0, true);
     assertEquals(layerValues.length > 0, true);
-    assertEquals(demonstrativeValues.every(v => v.length > 0), true);
+    assertEquals(directiveValues.every(v => v.length > 0), true);
     assertEquals(layerValues.every(v => v.length > 0), true);
   });
 
@@ -208,8 +208,8 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
     const validation = _defaultConfigTwoParams.params.two.validation;
     
     // Test array options don't contain duplicates
-    const flagOptions = validation.allowedFlagOptions as string[];
-    const valueOptions = validation.allowedValueOptions as string[];
+    const flagOptions: string[] = [...validation.allowedFlagOptions];
+    const valueOptions: string[] = [...validation.allowedValueOptions];
     
     assertEquals(flagOptions.length, new Set(flagOptions).size, "allowedFlagOptions should not have duplicates");
     assertEquals(valueOptions.length, new Set(valueOptions).size, "allowedValueOptions should not have duplicates");

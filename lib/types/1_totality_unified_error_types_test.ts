@@ -21,7 +21,7 @@ import {
   ErrorFactory,
   ErrorGuards,
   extractUnifiedErrorMessage,
-} from "./unified_error_types.ts";
+} from "./mod.ts";
 
 // Type-level exhaustiveness checker
 type AssertNever<T extends never> = T;
@@ -178,6 +178,13 @@ Deno.test("1_totality: UnifiedError union type is closed and complete", () => {
       case "MissingRequiredField":
       case "InvalidFieldType":
       case "ValidationFailed":
+      case "InvalidParamsType":
+      case "InvalidDirectiveType":
+      case "InvalidLayerType":
+      case "PathValidationFailed":
+      case "CustomVariableInvalid":
+      case "ConfigValidationFailed":
+      case "UnsupportedParamsType":
         return `Validation error: ${error.kind}`;
       
       // Configuration errors
@@ -191,6 +198,9 @@ Deno.test("1_totality: UnifiedError union type is closed and complete", () => {
       case "ProcessingFailed":
       case "TransformationFailed":
       case "GenerationFailed":
+      case "PatternNotFound":
+      case "PatternValidationFailed":
+      case "InvalidPattern":
         return `Processing error: ${error.kind}`;
       
       // Workspace errors

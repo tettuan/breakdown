@@ -74,14 +74,14 @@ Deno.test("Unit: workspace_initializer - successful initialization", async () =>
       );
     }
 
-    // 設定ファイルの存在確認
-    const configPath = join(breakdownDir, "config", "app.yml");
+    // 設定ファイルの存在確認 (default-app.yml が作成される)
+    const configPath = join(breakdownDir, "config", "default-app.yml");
     const configExists = await exists(configPath);
 
     assertEquals(
       configExists,
       true,
-      "設定ファイル app.yml が作成されていません",
+      "設定ファイル default-app.yml が作成されていません",
     );
 
     // 設定ファイルの内容確認
@@ -119,7 +119,7 @@ Deno.test("Unit: workspace_initializer - idempotent operation", async () => {
     await initializeBreakdownConfiguration();
 
     // 設定ファイルの内容を保存
-    const configPath = join(breakdownDir, "config", "app.yml");
+    const configPath = join(breakdownDir, "config", "default-app.yml");
     const firstContent = await Deno.readTextFile(configPath);
     const firstModified = (await Deno.stat(configPath)).mtime;
 
@@ -163,7 +163,7 @@ Deno.test("Unit: workspace_initializer - existing file conflict handling", async
 
     // カスタム設定ファイルを作成
     const customConfig = "# Custom configuration\ncustom: value\n";
-    const configPath = join(configDir, "app.yml");
+    const configPath = join(configDir, "default-app.yml");
     await Deno.writeTextFile(configPath, customConfig);
 
     // 初期化を実行
@@ -313,7 +313,7 @@ Deno.test("Unit: workspace_initializer - configuration validation", async () => 
   try {
     await initializeBreakdownConfiguration();
 
-    const configPath = join(breakdownDir, "config", "app.yml");
+    const configPath = join(breakdownDir, "config", "default-app.yml");
     const configContent = await Deno.readTextFile(configPath);
 
     // YAMLの基本的な構文チェック

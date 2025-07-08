@@ -62,8 +62,8 @@ Deno.test("Architecture: Config defaults maintain type safety", async () => {
 
   // Check that values are properly typed (strings, arrays, etc.)
   const hasStringPatterns = moduleSource.includes('pattern: "');
-  const hasArrayValues = moduleSource.includes("allowedFlagOptions: [") ||
-    moduleSource.includes("allowedValueOptions: [");
+  const hasArrayValues = moduleSource.includes("allowedFlagOptions: Object.freeze([") ||
+    moduleSource.includes("allowedValueOptions: Object.freeze([");
   const hasBooleanValues = moduleSource.includes(": true") || moduleSource.includes(": false");
 
   assertEquals(hasStringPatterns, true, "Should have string pattern values");
@@ -143,8 +143,9 @@ Deno.test("Architecture: Config defaults are independent", async () => {
   assertEquals(hasClasses, false, "Should not define classes");
   assertEquals(hasFunctions, false, "Should not define functions");
 
-  // Verify it's a simple object export
-  const hasObjectExport = moduleSource.includes("export const") && moduleSource.includes("= {");
+  // Verify it's a simple object export (Object.freeze counts as object)
+  const hasObjectExport = moduleSource.includes("export const") && 
+    (moduleSource.includes("= {") || moduleSource.includes("= Object.freeze({"));
   assertEquals(hasObjectExport, true, "Should export a simple object");
 });
 

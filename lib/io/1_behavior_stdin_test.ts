@@ -29,6 +29,7 @@ import {
   
   // Error types and discriminated union
   type StdinError,
+  type StdinErrorType,
   isReadError,
   isTimeoutError,
   isEmptyInputError,
@@ -148,27 +149,32 @@ describe("Smart Constructors: StdoutWriteConfiguration", () => {
   it("should create valid write configuration", () => {
     logger.debug("Testing StdoutWriteConfiguration smart constructor");
     
-    const result = StdoutWriteConfiguration.create();
+    const result = StdoutWriteConfiguration.standard();
     assert(isOk(result), "Should create configuration successfully");
-    assertEquals(result.data.encoding, "utf-8");
+    // StdoutWriteConfiguration no longer exposes encoding property
     assertEquals(result.data.flushImmediate, false);
   });
 
-  it("should validate encoding parameter", () => {
-    logger.debug("Testing encoding validation");
+  it("should create different configuration types", () => {
+    logger.debug("Testing different configuration types");
     
-    const invalidEncoding = StdoutWriteConfiguration.create("invalid" as any, false);
-    assert(isError(invalidEncoding), "Should fail with invalid encoding");
-    assert(isValidationError(invalidEncoding.error), "Should be ValidationError");
-    assertEquals(invalidEncoding.error.field, "encoding");
+    // Test standard configuration
+    const standardConfig = StdoutWriteConfiguration.standard();
+    assert(isOk(standardConfig), "Should create standard configuration successfully");
+    assertEquals(standardConfig.data.flushImmediate, false);
+    assertEquals(standardConfig.data.appendNewline, false);
     
-    // Test all valid encodings
-    const validEncodings: Array<"utf-8" | "utf-16le" | "utf-16be"> = ["utf-8", "utf-16le", "utf-16be"];
-    for (const encoding of validEncodings) {
-      const result = StdoutWriteConfiguration.create(encoding, false);
-      assert(isOk(result), `Should accept encoding: ${encoding}`);
-      assertEquals(result.data.encoding, encoding);
-    }
+    // Test immediate configuration
+    const immediateConfig = StdoutWriteConfiguration.immediate();
+    assert(isOk(immediateConfig), "Should create immediate configuration successfully");
+    assertEquals(immediateConfig.data.flushImmediate, true);
+    assertEquals(immediateConfig.data.appendNewline, false);
+    
+    // Test line configuration
+    const lineConfig = StdoutWriteConfiguration.line();
+    assert(isOk(lineConfig), "Should create line configuration successfully");
+    assertEquals(lineConfig.data.flushImmediate, true);
+    assertEquals(lineConfig.data.appendNewline, true);
   });
 
   it("should provide factory methods for common write configurations", () => {
@@ -176,13 +182,13 @@ describe("Smart Constructors: StdoutWriteConfiguration", () => {
     
     const standard = StdoutWriteConfiguration.standard();
     assert(isOk(standard), "Standard factory should succeed");
-    assertEquals(standard.data.encoding, "utf-8");
     assertEquals(standard.data.flushImmediate, false);
+    assertEquals(standard.data.appendNewline, false);
     
     const immediate = StdoutWriteConfiguration.immediate();
     assert(isOk(immediate), "Immediate factory should succeed");
-    assertEquals(immediate.data.encoding, "utf-8");
     assertEquals(immediate.data.flushImmediate, true);
+    assertEquals(immediate.data.appendNewline, false);
   });
 });
 
@@ -343,7 +349,7 @@ describe("Totality Verification: Error handling completeness", () => {
     logger.debug("Testing completeness of StdinError discriminated union");
     
     // Test each error type and its type guard
-    const readError: StdinError = {
+    const readError: StdinErrorType = {
       kind: "ReadError",
       message: "Read failed",
       originalError: new Error("underlying")
@@ -351,33 +357,33 @@ describe("Totality Verification: Error handling completeness", () => {
     assert(isReadError(readError), "Should identify ReadError");
     assert(!isTimeoutError(readError), "Should not identify as other type");
     
-    const timeoutError: StdinError = {
+    const timeoutError: StdinErrorType = {
       kind: "TimeoutError",
       timeout: 5000
     };
     assert(isTimeoutError(timeoutError), "Should identify TimeoutError");
     assert(!isReadError(timeoutError), "Should not identify as other type");
     
-    const emptyError: StdinError = {
+    const emptyError: StdinErrorType = {
       kind: "EmptyInputError",
       message: "No input provided"
     };
     assert(isEmptyInputError(emptyError), "Should identify EmptyInputError");
     
-    const notAvailableError: StdinError = {
+    const notAvailableError: StdinErrorType = {
       kind: "NotAvailableError",
       environment: "CI"
     };
     assert(isNotAvailableError(notAvailableError), "Should identify NotAvailableError");
     
-    const validationError: StdinError = {
+    const validationError: StdinErrorType = {
       kind: "ValidationError",
       field: "timeout",
       message: "Invalid timeout value"
     };
     assert(isValidationError(validationError), "Should identify ValidationError");
     
-    const configError: StdinError = {
+    const configError: StdinErrorType = {
       kind: "ConfigurationError",
       setting: "encoding",
       value: "invalid"
@@ -388,7 +394,7 @@ describe("Totality Verification: Error handling completeness", () => {
   it("should format all error types correctly", () => {
     logger.debug("Testing error formatting for all types");
     
-    const errors: StdinError[] = [
+    const errors: StdinErrorType[] = [
       { kind: "ReadError", message: "Read failed" },
       { kind: "TimeoutError", timeout: 5000 },
       { kind: "EmptyInputError", message: "No input" },

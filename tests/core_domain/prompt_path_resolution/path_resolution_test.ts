@@ -16,7 +16,7 @@ import { join } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { ensureDir } from "@std/fs";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
+import { TotalityPromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
 import { cleanupTestEnvironment, setupTestEnvironment } from "../../helpers/setup.ts";
 
 const logger = new BreakdownLogger("prompt-path-resolution");
@@ -89,9 +89,26 @@ describe("プロンプトパス決定ドメイン", () => {
           });
 
           // 複数回実行して同じ結果を得ることを確認
-          const factory1 = await PromptVariablesFactory.create(cliParams);
-          const factory2 = await PromptVariablesFactory.create(cliParams);
-          const factory3 = await PromptVariablesFactory.create(cliParams);
+          const factoryResult1 = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult1.ok) {
+            logger.error("Factory creation failed", factoryResult1.error);
+            throw new Error(`Factory creation failed: ${factoryResult1.error.kind}`);
+          }
+          const factory1 = factoryResult1.data;
+          
+          const factoryResult2 = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult2.ok) {
+            logger.error("Factory creation failed", factoryResult2.error);
+            throw new Error(`Factory creation failed: ${factoryResult2.error.kind}`);
+          }
+          const factory2 = factoryResult2.data;
+          
+          const factoryResult3 = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult3.ok) {
+            logger.error("Factory creation failed", factoryResult3.error);
+            throw new Error(`Factory creation failed: ${factoryResult3.error.kind}`);
+          }
+          const factory3 = factoryResult3.data;
 
           assertEquals(factory1.promptFilePath, factory2.promptFilePath);
           assertEquals(factory2.promptFilePath, factory3.promptFilePath);
@@ -129,7 +146,12 @@ describe("プロンプトパス決定ドメイン", () => {
           });
 
           // パス決定自体は例外を発生させない
-          const factory = await PromptVariablesFactory.create(cliParams);
+          const factoryResult = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult.ok) {
+            logger.error("Factory creation failed", factoryResult.error);
+            throw new Error(`Factory creation failed: ${factoryResult.error.kind}`);
+          }
+          const factory = factoryResult.data;
           
           // パスが確実に決定される
           assertEquals(typeof factory.promptFilePath, "string");
@@ -172,7 +194,10 @@ describe("プロンプトパス決定ドメイン", () => {
           // ファイル不存在エラーの検証
           await assertRejects(
             async () => {
-              const factory = await PromptVariablesFactory.create(cliParams);
+              const factoryResult = await TotalityPromptVariablesFactory.create(cliParams);
+              assertEquals(factoryResult.ok, true);
+              if (!factoryResult.ok) return; // Type guard
+              const factory = factoryResult.data;
               // プロンプトファイルの実際の読み込みでエラーが発生する
               const result = await factory.toPromptParams();
               if (!result.ok) {
@@ -221,7 +246,12 @@ describe("プロンプトパス決定ドメイン", () => {
             config: "test-path-preparation-cost",
           });
 
-          const factory = await PromptVariablesFactory.create(cliParams);
+          const factoryResult = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult.ok) {
+            logger.error("Factory creation failed", factoryResult.error);
+            throw new Error(`Factory creation failed: ${factoryResult.error.kind}`);
+          }
+          const factory = factoryResult.data;
           
           // パスが正確に決定される
           assertEquals(factory.promptPath.includes("f_project.md"), true);
@@ -278,7 +308,12 @@ describe("プロンプトパス決定ドメイン", () => {
             config: "test-relative-path",
           });
 
-          const factory = await PromptVariablesFactory.create(cliParams);
+          const factoryResult = await TotalityPromptVariablesFactory.create(cliParams);
+          if (!factoryResult.ok) {
+            logger.error("Factory creation failed", factoryResult.error);
+            throw new Error(`Factory creation failed: ${factoryResult.error.kind}`);
+          }
+          const factory = factoryResult.data;
           
           // 相対パスが正確に解決される
           assertEquals(factory.inputFilePath.includes("path/to/file.md"), true);
@@ -336,7 +371,12 @@ describe("プロンプトパス決定ドメイン", () => {
               config: "test-boundary-combinations",
             });
 
-            const factory = await PromptVariablesFactory.create(cliParams);
+            const factoryResult = await TotalityPromptVariablesFactory.create(cliParams);
+            if (!factoryResult.ok) {
+              logger.error("Factory creation failed", factoryResult.error);
+              throw new Error(`Factory creation failed: ${factoryResult.error.kind}`);
+            }
+            const factory = factoryResult.data;
             
             // 各組み合わせでパスが正確に決定される
             assertEquals(factory.promptPath.includes(combo.directive), true);

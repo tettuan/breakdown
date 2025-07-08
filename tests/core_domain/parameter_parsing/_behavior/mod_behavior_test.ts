@@ -55,7 +55,9 @@ import {
   toPromptParamsVariables,
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
-  TypeCreationError,
+  // TypeCreationError is now unified as ProcessingError
+  ErrorFactory,
+  ProcessingError,
   TypeCreationResult,
   TypeFactory,
   TypePatternProvider,
@@ -112,20 +114,32 @@ describe("Unit: Totality type creation", () => {
     // Valid profile names
     const valid = ConfigProfileName.create("production");
     assertExists(valid, "Should create ConfigProfileName");
-    assertEquals(valid.value, "production", "Should have correct value");
+    assertEquals(valid.ok, true, "Should successfully create ConfigProfileName");
+    if (valid.ok) {
+      assertEquals(valid.data.value, "production", "Should have correct value");
+    }
 
     // Invalid profile names
     const invalid = ConfigProfileName.create("INVALID");
-    assertExists(invalid, "Should create ConfigProfileName even for invalid input");
-    assertEquals(invalid.value, null, "Invalid input should result in null value");
+    assertExists(invalid, "Should return Result for invalid input");
+    assertEquals(invalid.ok, false, "Should fail for invalid profile name");
+    if (!invalid.ok) {
+      assertEquals(invalid.error.kind, "InvalidFormat", "Should have InvalidFormat error");
+    }
 
     // Empty string
     const empty = ConfigProfileName.create("");
-    assertEquals(empty.value, null, "Empty string should result in null value");
+    assertEquals(empty.ok, false, "Should fail for empty string");
+    if (!empty.ok) {
+      assertEquals(empty.error.kind, "EmptyInput", "Should have EmptyInput error");
+    }
 
     // Null input
     const nullInput = ConfigProfileName.create(null);
-    assertEquals(nullInput.value, null, "Null input should result in null value");
+    assertEquals(nullInput.ok, false, "Should fail for null input");
+    if (!nullInput.ok) {
+      assertEquals(nullInput.error.kind, "EmptyInput", "Should have EmptyInput error");
+    }
 
     logger.debug("ConfigProfileName creation verified");
   });
@@ -317,7 +331,7 @@ describe("Unit: Result type operations", () => {
     }
 
     const failure = error("error");
-    const mappedError = map(failure, (x) => x * 2);
+    const mappedError = map(failure, (x: unknown) => (x as number) * 2);
 
     assertEquals(isError(mappedError), true);
     if (!mappedError.ok) {
@@ -338,7 +352,7 @@ describe("Unit: Result type operations", () => {
       assertEquals(chained.data, 15);
     }
 
-    const chainedError = chain(success, (x) => error(`Cannot process ${x}`));
+    const chainedError = chain(success, (x) => error(new Error(`Cannot process ${x}`)));
     assertEquals(isError(chainedError), true);
 
     logger.debug("Result chain verified");
@@ -367,10 +381,10 @@ describe("Unit: Result type operations", () => {
       assertEquals(allSuccess.data, [1, 2, 3]);
     }
 
-    const withError = all([ok(1), error("fail"), ok(3)]);
+    const withError = all([ok(1), error(new Error("fail")), ok(3)]);
     assertEquals(isError(withError), true);
     if (!withError.ok) {
-      assertEquals(withError.error, "fail");
+      assertEquals(withError.error.message, "fail");
     }
 
     logger.debug("Result all verified");

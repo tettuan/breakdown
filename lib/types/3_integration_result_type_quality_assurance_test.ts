@@ -23,8 +23,8 @@ Deno.test("Result Type - Production Readiness", async (t) => {
     
     for (let i = 0; i < operationCount; i++) {
       const result = i % 3 === 0 
-        ? error(`Error ${i}`)
-        : ok(i);
+        ? error<number, string>(`Error ${i}`)
+        : ok<number, string>(i);
       
       results.push(result);
       
@@ -56,12 +56,12 @@ Deno.test("Result Type - Production Readiness", async (t) => {
     // Simulate concurrent Result operations
     const concurrentTasks = Array.from({ length: 100 }, (_, i) => 
       Promise.resolve().then(() => {
-        const result = i % 2 === 0 ? ok(i) : error(`Error ${i}`);
+        const result = i % 2 === 0 ? ok<number, string>(i) : error<number, string>(`Error ${i}`);
         
         // Perform chain of operations
         return chain(
           map(result, x => x + 1),
-          x => x > 50 ? error("Too large") : ok(x)
+          x => x > 50 ? error<number, string>("Too large") : ok<number, string>(x)
         );
       })
     );
@@ -661,7 +661,7 @@ Deno.test("Result Type - Compliance and Validation", async (t) => {
       context: Record<string, unknown>;
       stackTrace?: string;
       userMessage?: string;
-      sugggestedAction?: string;
+      suggestedAction?: string;
     }
     
     const createComprehensiveError = (
@@ -678,7 +678,7 @@ Deno.test("Result Type - Compliance and Validation", async (t) => {
       context,
       stackTrace: new Error().stack,
       userMessage: "An error occurred. Please try again.",
-      sugggestedAction: "Contact support if the problem persists."
+      suggestedAction: "Contact support if the problem persists."
     });
     
     const comprehensiveResult: Result<never, ComprehensiveError> = error(
@@ -702,7 +702,7 @@ Deno.test("Result Type - Compliance and Validation", async (t) => {
       assertExists(err.context);
       assertExists(err.stackTrace);
       assertExists(err.userMessage);
-      assertExists(err.sugggestedAction);
+      assertExists(err.suggestedAction);
       
       assertEquals(err.code, "VALIDATION_FAILED");
       assertEquals(err.severity, "HIGH");

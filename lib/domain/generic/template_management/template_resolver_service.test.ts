@@ -30,7 +30,7 @@ const requestResult = TemplateRequest.create({
   layer: mockLayer,
 });
 if (requestResult.ok) {
-  validTemplateRequest = requestResult.data;
+  validTemplateRequest = requestResult.data!;
 }
 
 // =============================================================================
@@ -53,36 +53,36 @@ Deno.test("0_architecture: Service uses BreakdownLogger", () => {
   // Logger is private, but we can verify it's being used through resolution behavior
 });
 
-Deno.test("0_architecture: Service method returns Promise", () => {
+Deno.test("0_architecture: Service method returns Promise", async () => {
   // Architecture constraint: async operations return Promise
   const service = new TemplateResolverService();
   
   if (validTemplateRequest) {
     const result = service.resolveTemplate(validTemplateRequest);
     assertEquals(result instanceof Promise, true);
+    // Await the result to avoid leaks
+    await result;
   }
 });
 
-Deno.test("0_architecture: Result follows generic domain interface", () => {
+Deno.test("0_architecture: Result follows generic domain interface", async () => {
   // Architecture constraint: result must match GenericTemplateResolutionResult
   const service = new TemplateResolverService();
   
   if (validTemplateRequest) {
-    const result = service.resolveTemplate(validTemplateRequest);
-    result.then((res: GenericTemplateResolutionResult) => {
-      assertExists(res);
-      assertEquals(typeof res.ok, "boolean");
-      
-      if (res.ok) {
-        assertExists(res.data);
-        // data should have prompt and schema properties
-        assertEquals("prompt" in res.data, true);
-        assertEquals("schema" in res.data, true);
-      } else {
-        assertExists(res.error);
-        assertEquals(typeof res.error, "string");
-      }
-    });
+    const result = await service.resolveTemplate(validTemplateRequest);
+    assertExists(result);
+    assertEquals(typeof result.ok, "boolean");
+    
+    if (result.ok) {
+      assertExists(result.data);
+      // data should have prompt and schema properties
+      assertEquals("prompt" in result.data, true);
+      assertEquals("schema" in result.data, true);
+    } else {
+      assertExists(result.error);
+      assertEquals(typeof result.error, "string");
+    }
   }
 });
 
@@ -115,9 +115,18 @@ Deno.test("1_behavior: resolveTemplate returns success result", async () => {
     assertEquals(result.ok, true);
     if (result.ok) {
       assertExists(result.data);
-      // Current implementation returns null values as placeholder
-      assertEquals(result.data.prompt, null);
-      assertEquals(result.data.schema, null);
+      // Current implementation returns PromptContent and SchemaContent instances or null
+      // depending on file availability
+      if (result.data.prompt !== null) {
+        assertExists(result.data.prompt);
+        // Check the public interface instead of private properties
+        assertEquals(typeof result.data.prompt, "object");
+      }
+      if (result.data.schema !== null) {
+        assertExists(result.data.schema);
+        // Check the public interface instead of private properties
+        assertEquals(typeof result.data.schema, "object");
+      }
     }
   }
 });
@@ -211,9 +220,13 @@ Deno.test("2_structure: Service result data has correct prompt field", async () 
     const result = await service.resolveTemplate(validTemplateRequest);
     
     if (result.ok && result.data) {
-      // prompt field should exist and be null in current implementation
+      // prompt field should exist and be PromptContent instance or null
       assertEquals("prompt" in result.data, true);
-      assertEquals(result.data.prompt, null);
+      if (result.data.prompt !== null) {
+        assertExists(result.data.prompt);
+        // Check the public interface instead of private properties
+        assertEquals(typeof result.data.prompt, "object");
+      }
     }
   }
 });
@@ -225,9 +238,13 @@ Deno.test("2_structure: Service result data has correct schema field", async () 
     const result = await service.resolveTemplate(validTemplateRequest);
     
     if (result.ok && result.data) {
-      // schema field should exist and be null in current implementation
+      // schema field should exist and be SchemaContent instance or null
       assertEquals("schema" in result.data, true);
-      assertEquals(result.data.schema, null);
+      if (result.data.schema !== null) {
+        assertExists(result.data.schema);
+        // Check the public interface instead of private properties
+        assertEquals(typeof result.data.schema, "object");
+      }
     }
   }
 });

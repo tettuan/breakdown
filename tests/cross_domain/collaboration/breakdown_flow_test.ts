@@ -93,7 +93,7 @@ Deno.test("CLI Integration: project summary to project/issue/task (happy path)",
   await ensureDir(configDir);
   // app.yml: base_dir=prompts
   await Deno.writeTextFile(
-    join(configDir, "app.yml"),
+    join(configDir, "default-app.yml"),
     `working_dir: .agent/breakdown\napp_prompt:\n  base_dir: prompts\napp_schema:\n  base_dir: schema\n`,
   );
   // 入力ファイル

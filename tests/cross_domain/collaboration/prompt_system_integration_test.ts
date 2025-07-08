@@ -17,6 +17,7 @@ import {
   assertExists,
   assertStringIncludes,
 } from "../../../lib/deps.ts";
+import type { Result } from "../../../lib/types/result.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptAdapterImpl,
@@ -79,8 +80,8 @@ class MockPromptVariablesProvider implements PromptVariablesProvider {
     return true;
   }
 
-  getBaseDirError(): string | undefined {
-    return undefined;
+  getBaseDirError(): Result<void, string> {
+    return { ok: true, data: undefined };
   }
 
   get customVariables(): Record<string, string> {

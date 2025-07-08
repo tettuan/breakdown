@@ -8,7 +8,7 @@
  * 4. No violations of architectural constraints
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -21,7 +21,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
 
     // Verify PromptTemplatePathResolver doesn't import other resolvers that might import it back
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Check that it doesn't import input, output, or schema resolvers
@@ -44,7 +44,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing external dependencies");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Extract all import statements
@@ -80,7 +80,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing TypeCreationResult pattern consistency");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Verify TypeCreationResult is used consistently if present
@@ -99,7 +99,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing layer boundary respect");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should not perform file content manipulation
@@ -140,7 +140,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing single responsibility principle");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Count public methods (should be minimal)
@@ -175,7 +175,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing abstraction usage");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should use standard library abstractions for path operations
@@ -193,7 +193,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing configuration integration");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should integrate with configuration system
@@ -222,7 +222,7 @@ describe("PromptTemplatePathResolver - Architectural Constraints", () => {
     logger.debug("Testing encapsulation");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // All helper methods should be private
@@ -258,7 +258,7 @@ describe("PromptTemplatePathResolver - Integration Points", () => {
     logger.debug("Testing type system integration");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should work with directive and layer types
@@ -278,7 +278,7 @@ describe("PromptTemplatePathResolver - Integration Points", () => {
     logger.debug("Testing error handling patterns");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Check for method documentation
@@ -298,7 +298,7 @@ describe("PromptTemplatePathResolver - Integration Points", () => {
     logger.debug("Testing template file extension handling");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should handle common template extensions
@@ -320,7 +320,7 @@ describe("PromptTemplatePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing dependency tree structure");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should not import other resolvers to avoid potential cycles
@@ -347,7 +347,7 @@ describe("PromptTemplatePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing module hierarchy compliance");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Factory modules can depend on:
@@ -378,7 +378,7 @@ describe("PromptTemplatePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing separation of concerns");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("../../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/prompt_template_path_resolver.ts", import.meta.url)),
     );
 
     // Should focus on path resolution, not content processing

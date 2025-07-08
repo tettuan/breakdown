@@ -3,7 +3,7 @@
  * Testing Smart Constructor patterns, Result types, and Totality principle compliance
  */
 
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists } from "@std/assert";
 import {
   PromptGenerationAggregate,
   PromptTemplate,
@@ -12,7 +12,6 @@ import {
   TemplateVariables,
   GeneratedPrompt,
   PromptGenerationError,
-  type GenerationResult,
 } from "./prompt_generation_aggregate.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { TwoParams_Result } from "../../deps.ts";
@@ -26,15 +25,20 @@ const createMockTwoParamsResult = (directive: string, layer: string): TwoParams_
   params: [directive, layer],
 });
 
-const mockDirective = DirectiveType.create(createMockTwoParamsResult("to", "project"));
-const mockLayer = LayerType.create(createMockTwoParamsResult("to", "project"));
+const directiveResult = DirectiveType.createOrError(createMockTwoParamsResult("to", "project"));
+const layerResult = LayerType.createOrError(createMockTwoParamsResult("to", "project"));
+if (!directiveResult.ok || !layerResult.ok) {
+  throw new Error("Failed to create mock directive or layer");
+}
+const mockDirective = directiveResult.data;
+const mockLayer = layerResult.data;
 
 // === 0_architecture: Smart Constructor 制約検証 ===
 
 Deno.test("0_architecture: TemplatePath - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new TemplatePath(mockDirective, mockLayer, "test.md");
+  const _directInstantiation = () => new TemplatePath(mockDirective, mockLayer, "test.md");
   
   assertEquals(typeof TemplatePath.create, "function");
 });
@@ -42,7 +46,7 @@ Deno.test("0_architecture: TemplatePath - enforces private constructor", () => {
 Deno.test("0_architecture: TemplateContent - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new TemplateContent("content", new Set());
+  const _directInstantiation = () => new TemplateContent("content", new Set());
   
   assertEquals(typeof TemplateContent.create, "function");
 });
@@ -50,41 +54,55 @@ Deno.test("0_architecture: TemplateContent - enforces private constructor", () =
 Deno.test("0_architecture: TemplateVariables - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new TemplateVariables(new Map());
+  const _directInstantiation = () => new TemplateVariables(new Map());
   
   assertEquals(typeof TemplateVariables.create, "function");
 });
 
 Deno.test("0_architecture: PromptTemplate - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
   const content = TemplateContent.create("test content");
   
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new PromptTemplate(path, content, {});
+  const _directInstantiation = () => new PromptTemplate(pathResult.data, content, {});
   
   assertEquals(typeof PromptTemplate.create, "function");
 });
 
 Deno.test("0_architecture: PromptGenerationAggregate - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "test content");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "test content");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
   
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new PromptGenerationAggregate("id", template, {});
+  const _directInstantiation = () => new PromptGenerationAggregate("id", templateResult.data, {});
   
   assertEquals(typeof PromptGenerationAggregate.create, "function");
 });
 
 Deno.test("0_architecture: GeneratedPrompt - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "test content");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "test content");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
   const variables = TemplateVariables.create({});
   
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const directInstantiation = () => new GeneratedPrompt(template, "content", variables, new Date());
+  const _directInstantiation = () => new GeneratedPrompt(templateResult.data, "content", variables, new Date());
   
   assertEquals(typeof GeneratedPrompt.create, "function");
 });
@@ -93,24 +111,28 @@ Deno.test("0_architecture: GeneratedPrompt - enforces private constructor", () =
 
 Deno.test("1_behavior: TemplatePath - validates filename extension", () => {
   // Valid .md extension should work
-  const validPath = TemplatePath.create(mockDirective, mockLayer, "template.md");
-  assertExists(validPath);
-  assertEquals(validPath.getFilename(), "template.md");
+  const validPathResult = TemplatePath.create(mockDirective, mockLayer, "template.md");
+  assertEquals(validPathResult.ok, true);
+  if (validPathResult.ok) {
+    assertEquals(validPathResult.data.getFilename(), "template.md");
+  }
 
-  // Invalid extension should throw
-  assertThrows(
-    () => TemplatePath.create(mockDirective, mockLayer, "template.txt"),
-    Error,
-    "Invalid template filename"
-  );
+  // Invalid extension should return error
+  const invalidPathResult = TemplatePath.create(mockDirective, mockLayer, "template.txt");
+  assertEquals(invalidPathResult.ok, false);
+  if (!invalidPathResult.ok) {
+    assertEquals(invalidPathResult.error.includes("Invalid template filename"), true);
+  }
 });
 
 Deno.test("1_behavior: TemplatePath - generates correct path", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "template.md");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "template.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
   
   // Mock the getValue methods to return predictable values
   const expectedPath = `${mockDirective.getValue()}/${mockLayer.getValue()}/template.md`;
-  assertEquals(path.getPath(), expectedPath);
+  assertEquals(pathResult.data.getPath(), expectedPath);
 });
 
 Deno.test("1_behavior: TemplateContent - extracts variables correctly", () => {
@@ -158,33 +180,61 @@ Deno.test("1_behavior: TemplateVariables - merges correctly", () => {
 });
 
 Deno.test("1_behavior: PromptTemplate - generates prompt with variables", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "greet.md");
-  const template = PromptTemplate.create(path, "Hello {name}, welcome to {project}!");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "greet.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}, welcome to {project}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const template = templateResult.data;
   const variables = TemplateVariables.create({
     name: "Alice",
     project: "Breakdown",
   });
   
-  const generated = template.generate(variables);
-  assertEquals(generated.getContent(), "Hello Alice, welcome to Breakdown!");
+  const generatedResult = template.generate(variables);
+  assertEquals(generatedResult.ok, true);
+  if (generatedResult.ok) {
+    assertEquals(generatedResult.data.getContent(), "Hello Alice, welcome to Breakdown!");
+  }
 });
 
-Deno.test("1_behavior: PromptTemplate - throws on missing variables", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "greet.md");
-  const template = PromptTemplate.create(path, "Hello {name}, welcome to {project}!");
+Deno.test("1_behavior: PromptTemplate - handles missing variables", () => {
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "greet.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}, welcome to {project}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const template = templateResult.data;
   const variables = TemplateVariables.create({ name: "Alice" }); // Missing 'project'
   
-  assertThrows(
-    () => template.generate(variables),
-    PromptGenerationError,
-    "Missing required variables: project"
-  );
+  const generatedResult = template.generate(variables);
+  assertEquals(generatedResult.ok, false);
+  if (!generatedResult.ok) {
+    assertExists(generatedResult.error);
+    assertEquals(generatedResult.error.message.includes("Missing required variables: project"), true);
+  }
 });
 
 Deno.test("1_behavior: PromptGenerationAggregate - manages generation lifecycle", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   
   // Initial state
   assertEquals(aggregate.getId(), "test-id");
@@ -195,10 +245,11 @@ Deno.test("1_behavior: PromptGenerationAggregate - manages generation lifecycle"
   const variables = TemplateVariables.create({ name: "World" });
   const result = aggregate.generatePrompt(variables);
   
-  assertEquals(result.success, true);
-  assertEquals(result.attempts, 1);
-  assertExists(result.prompt);
-  assertEquals(result.prompt.getContent(), "Hello World!");
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(result.data.getContent(), "Hello World!");
+  }
   
   const finalState = aggregate.getState();
   assertEquals(finalState.status, "completed");
@@ -206,17 +257,28 @@ Deno.test("1_behavior: PromptGenerationAggregate - manages generation lifecycle"
 });
 
 Deno.test("1_behavior: PromptGenerationAggregate - handles generation failure", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   
   // Missing variables should cause failure
   const variables = TemplateVariables.create({});
   const result = aggregate.generatePrompt(variables);
   
-  assertEquals(result.success, false);
-  assertEquals(result.attempts, 1);
-  assertExists(result.error);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertExists(result.error);
+  }
   
   const state = aggregate.getState();
   assertEquals(state.status, "failed");
@@ -225,9 +287,19 @@ Deno.test("1_behavior: PromptGenerationAggregate - handles generation failure", 
 });
 
 Deno.test("1_behavior: PromptGenerationAggregate - retry logic", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   
   // Fail multiple times
   const badVariables = TemplateVariables.create({});
@@ -244,43 +316,67 @@ Deno.test("1_behavior: PromptGenerationAggregate - retry logic", () => {
 
 // === 2_structure: Result型とTotality検証 ===
 
-Deno.test("2_structure: GenerationResult - success structure", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+Deno.test("2_structure: Result type - success structure", () => {
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({ name: "World" });
   
-  const result: GenerationResult = aggregate.generatePrompt(variables);
+  const result = aggregate.generatePrompt(variables);
   
   // Success structure validation
-  assertEquals(result.success, true);
-  assertEquals(typeof result.attempts, "number");
-  assertExists(result.prompt);
-  assertEquals(result.error, undefined);
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertExists(result.data);
+    assertEquals(result.data.getContent(), "Hello World!");
+  }
 });
 
-Deno.test("2_structure: GenerationResult - failure structure", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+Deno.test("2_structure: Result type - failure structure", () => {
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   const variables = TemplateVariables.create({});
   
-  const result: GenerationResult = aggregate.generatePrompt(variables);
+  const result = aggregate.generatePrompt(variables);
   
   // Failure structure validation
-  assertEquals(result.success, false);
-  assertEquals(typeof result.attempts, "number");
-  assertEquals(result.prompt, undefined);
-  assertExists(result.error);
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertExists(result.error);
+  }
 });
 
 Deno.test("2_structure: PromptGenerationError - custom error type", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const error = new PromptGenerationError("Test error", path, ["missing1", "missing2"]);
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const error = new PromptGenerationError("Test error", pathResult.data, ["missing1", "missing2"]);
   
   assertEquals(error.name, "PromptGenerationError");
   assertEquals(error.message, "Test error");
-  assertEquals(error.templatePath, path);
+  assertEquals(error.templatePath, pathResult.data);
   assertEquals(error.missingVariables?.length, 2);
   assertEquals(error.missingVariables?.includes("missing1"), true);
   assertEquals(error.missingVariables?.includes("missing2"), true);
@@ -288,7 +384,11 @@ Deno.test("2_structure: PromptGenerationError - custom error type", () => {
 
 Deno.test("2_structure: Totality - all classes implement required methods", () => {
   // TemplatePath totality
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const path = pathResult.data;
   assertEquals(typeof path.getPath, "function");
   assertEquals(typeof path.getDirective, "function");
   assertEquals(typeof path.getLayer, "function");
@@ -308,7 +408,11 @@ Deno.test("2_structure: Totality - all classes implement required methods", () =
   assertEquals(typeof vars.merge, "function");
   
   // PromptTemplate totality
-  const template = PromptTemplate.create(path, "test");
+  const templateResult = PromptTemplate.create(path, "test");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const template = templateResult.data;
   assertEquals(typeof template.getPath, "function");
   assertEquals(typeof template.getContent, "function");
   assertEquals(typeof template.getMetadata, "function");
@@ -322,7 +426,11 @@ Deno.test("2_structure: Totality - all classes implement required methods", () =
   assertEquals(typeof generated.getGeneratedAt, "function");
   
   // PromptGenerationAggregate totality
-  const aggregate = PromptGenerationAggregate.create("id", template);
+  const aggregateResult = PromptGenerationAggregate.create("id", template);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   assertEquals(typeof aggregate.getId, "function");
   assertEquals(typeof aggregate.getTemplate, "function");
   assertEquals(typeof aggregate.getState, "function");
@@ -343,9 +451,19 @@ Deno.test("2_structure: Immutability - value objects preserve state", () => {
 });
 
 Deno.test("2_structure: State isolation - aggregate state management", () => {
-  const path = TemplatePath.create(mockDirective, mockLayer, "test.md");
-  const template = PromptTemplate.create(path, "Hello {name}!");
-  const aggregate = PromptGenerationAggregate.create("test-id", template);
+  const pathResult = TemplatePath.create(mockDirective, mockLayer, "test.md");
+  assertEquals(pathResult.ok, true);
+  if (!pathResult.ok) return;
+  
+  const templateResult = PromptTemplate.create(pathResult.data, "Hello {name}!");
+  assertEquals(templateResult.ok, true);
+  if (!templateResult.ok) return;
+  
+  const aggregateResult = PromptGenerationAggregate.create("test-id", templateResult.data);
+  assertEquals(aggregateResult.ok, true);
+  if (!aggregateResult.ok) return;
+  
+  const aggregate = aggregateResult.data;
   
   const initialState = aggregate.getState();
   assertEquals(initialState.status, "initialized");

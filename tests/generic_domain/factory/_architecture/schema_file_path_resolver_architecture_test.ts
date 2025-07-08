@@ -8,7 +8,7 @@
  * 4. No violations of architectural constraints
  */
 
-import { assertEquals, assertExists } from "../../../lib/deps.ts";
+import { assertEquals, assertExists } from "../../../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -21,7 +21,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
 
     // Verify SchemaFilePathResolver doesn't import other resolvers that might import it back
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Check that it doesn't import input, output, or prompt template resolvers
@@ -44,7 +44,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing external dependencies");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Extract all import statements
@@ -79,7 +79,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing TypeCreationResult pattern consistency");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Verify TypeCreationResult is used consistently if present
@@ -98,7 +98,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing layer boundary respect");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should not perform schema validation or content manipulation
@@ -141,7 +141,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing single responsibility principle");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Count public methods (should be minimal)
@@ -176,7 +176,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing abstraction usage");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should use standard library abstractions for path operations
@@ -194,7 +194,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing configuration integration");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should integrate with configuration system for schema directories
@@ -224,7 +224,7 @@ describe("SchemaFilePathResolver - Architectural Constraints", () => {
     logger.debug("Testing encapsulation");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // All helper methods should be private
@@ -260,7 +260,7 @@ describe("SchemaFilePathResolver - Integration Points", () => {
     logger.debug("Testing type system integration");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should work with directive and layer types for schema selection
@@ -280,7 +280,7 @@ describe("SchemaFilePathResolver - Integration Points", () => {
     logger.debug("Testing error handling patterns");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Check for method documentation
@@ -300,7 +300,7 @@ describe("SchemaFilePathResolver - Integration Points", () => {
     logger.debug("Testing schema file extension handling");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should handle common schema extensions or path operations
@@ -325,7 +325,7 @@ describe("SchemaFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing dependency tree structure");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should not import other resolvers to avoid potential cycles
@@ -352,7 +352,7 @@ describe("SchemaFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing module hierarchy compliance");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Factory modules can depend on:
@@ -384,7 +384,7 @@ describe("SchemaFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing separation of concerns");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should focus on path resolution, not schema validation
@@ -431,7 +431,7 @@ describe("SchemaFilePathResolver - Dependency Graph Validation", () => {
     logger.debug("Testing distinction from template resolution");
 
     const moduleContent = await Deno.readTextFile(
-      fromFileUrl(new URL("./schema_file_path_resolver.ts", import.meta.url)),
+      fromFileUrl(new URL("../../../lib/factory/schema_file_path_resolver.ts", import.meta.url)),
     );
 
     // Should focus on schema files

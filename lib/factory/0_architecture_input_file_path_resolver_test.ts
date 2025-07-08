@@ -29,12 +29,23 @@ const validLegacyParams: PromptCliParams = {
 };
 
 const validTotalityParams: TwoParams_Result = {
-  directive: { value: "to" },
-  layer: { value: "project" },
+  type: "two",
+  params: ["to", "project"],
+  demonstrativeType: "to",
+  layerType: "project",
   options: {
     fromFile: "test.md",
   },
-} as any;
+};
+
+// Alternative structure with directive/layer objects for testing
+const validDirectiveLayerParams = {
+  directive: { value: "to", data: "to" },
+  layer: { value: "project", data: "project" },
+  options: {
+    fromFile: "test.md",
+  },
+};
 
 Deno.test("0_architecture: Smart Constructor pattern - private constructor enforced", () => {
   // ARCHITECTURE CONSTRAINT: Constructor must be private
@@ -127,6 +138,10 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
   
   const totalityResult = InputFilePathResolver.create(validConfig, validTotalityParams);
   assertEquals(totalityResult.ok, true);
+  
+  // Test directive/layer structure
+  const directiveLayerResult = InputFilePathResolver.create(validConfig, validDirectiveLayerParams as any);
+  assertEquals(directiveLayerResult.ok, true);
   
   // Test invalid legacy structure
   const invalidLegacy = {

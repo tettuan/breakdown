@@ -18,7 +18,7 @@ import {
   UnifiedError,
   ErrorFactory,
   extractUnifiedErrorMessage,
-} from "./unified_error_types.ts";
+} from "./mod.ts";
 
 Deno.test("1_behavior: ErrorFactory.pathError creates correct error variants", () => {
   // Test InvalidPath with reason
@@ -255,7 +255,7 @@ Deno.test("1_behavior: extractUnifiedErrorMessage produces correct messages", ()
   const pathErrors: Array<[PathError, string]> = [
     [
       { kind: "InvalidPath", path: "/test/path", reason: "Contains spaces" },
-      "InvalidPath: /test/path"
+      "InvalidPath: /test/path - Contains spaces"
     ],
     [
       { kind: "PathNotFound", path: "/missing" },

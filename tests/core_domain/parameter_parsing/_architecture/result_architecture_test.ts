@@ -15,6 +15,7 @@
 
 import { assertEquals, assertExists } from "../../lib/deps.ts";
 import { fromFileUrl } from "@std/path";
+import type { Result } from "./result.ts";
 
 /**
  * Architecture Test Suite: Result Type
@@ -31,8 +32,9 @@ Deno.test("Result Type Architecture", async (t) => {
     const filePath = fromFileUrl(new URL("./result.ts", import.meta.url));
     const resultContent = await Deno.readTextFile(filePath);
 
-    // Should not import any external modules
-    const importMatches = resultContent.match(/import.*from/g) || [];
+    // Should not import any external modules (excluding comments)
+    const lines = resultContent.split('\n').filter(line => !line.trim().startsWith('//'));
+    const importMatches = lines.join('\n').match(/import.*from/g) || [];
     assertEquals(importMatches.length, 0, "Should have no external imports");
 
     // Should not use any Node.js or Deno APIs in actual code (excluding comments)
@@ -108,7 +110,7 @@ Deno.test("Result Type Architecture", async (t) => {
 
     // All operations should handle both success and error cases
     const successResult = ok(10);
-    const errorResult = error("test error");
+    const errorResult: Result<number, string> = error("test error");
 
     // Map should preserve error
     const mappedSuccess = map(successResult, (x: number) => x * 2);
@@ -129,7 +131,7 @@ Deno.test("Result Type Architecture", async (t) => {
 
     // All should fail if any result fails
     const allSuccess = all([ok(1), ok(2), ok(3)]);
-    const allError = all([ok(1), error("fail"), ok(3)]);
+    const allError = all([ok(1), error(new Error("fail")), ok(3)]);
 
     assertEquals(allSuccess.ok, true);
     if (allSuccess.ok) assertEquals(allSuccess.data, [1, 2, 3]);

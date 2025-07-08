@@ -9,7 +9,7 @@
 
 import { assertEquals, assert } from "@std/assert";
 import { LayerTypeFactory } from "./layer_type_factory.ts";
-import { LayerType } from "./layer_type.ts";
+import { LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**

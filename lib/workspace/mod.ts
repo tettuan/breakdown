@@ -125,7 +125,6 @@ export {
   type WorkspaceResult,
   // Class-based error types for tests
   WorkspaceError,
-  WorkspaceInitError,
   WorkspaceConfigError,
   WorkspacePathError,
   WorkspaceDirectoryError,
@@ -136,6 +135,7 @@ export {
  * @see {@link ./workspace_init_error.ts}
  */
 export {
+  WorkspaceInitError,
   WorkspaceInitError as WorkspaceInitErrorClass,
   DirectoryCreationError,
   ConfigCreationError,
