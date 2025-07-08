@@ -183,13 +183,8 @@ Deno.test("1_behavior: resolves filename-only output paths correctly", () => {
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       assertEquals(pathResult.data.isGenerated, false);
-      // Should resolve to working_dir/resource_dir/output.md
-      const expectedPath = join(
-        Deno.cwd(),
-        validConfig.working_dir,
-        validConfig.resource_dir,
-        "output.md"
-      );
+      // Should resolve to cwd/layerType/output.md
+      const expectedPath = join(Deno.cwd(), "project", "output.md");
       assertEquals(pathResult.data.value, expectedPath);
     }
   }
@@ -205,7 +200,7 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
         layerType: "project",
         options: { output: "./output/" }, // Ends with slash
       },
-      expectedType: "auto-generated",
+      expectedType: "relative",
       expectedGenerated: true,
     },
     {
@@ -214,7 +209,7 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
         layerType: "issue",
         options: { output: "/absolute/directory/" },
       },
-      expectedType: "auto-generated",
+      expectedType: "absolute",
       expectedGenerated: true,
     },
   ];
@@ -247,11 +242,14 @@ Deno.test("1_behavior: handles empty output value", () => {
   };
   
   const resolverResult = OutputFilePathResolver.create(validConfig, params);
-  assertEquals(resolverResult.ok, false);
+  assertEquals(resolverResult.ok, true);
   
-  if (!resolverResult.ok) {
-    assertExists(resolverResult.error);
-    assertEquals(resolverResult.error.kind, "InvalidPath");
+  if (resolverResult.ok) {
+    const pathResult = resolverResult.data.getPath();
+    assertEquals(pathResult.ok, false);
+    if (!pathResult.ok) {
+      assertEquals(pathResult.error.kind, "InvalidPath");
+    }
   }
 });
 

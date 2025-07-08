@@ -88,6 +88,12 @@ export interface ResolvedOutputPath {
  * const filePath = resolver.getPath(); // "./output/result.md"
  * ```
  */
+// WeakMap for true private property storage
+const privateData = new WeakMap<OutputFilePathResolver, {
+  config: Record<string, unknown>;
+  cliParams: DoubleParams_Result | TwoParams_Result;
+}>();
+
 export class OutputFilePathResolver {
   /**
    * Creates a new OutputFilePathResolver instance with configuration and CLI parameters.
@@ -107,12 +113,22 @@ export class OutputFilePathResolver {
    * ```
    */
   private constructor(
-    private config: Record<string, unknown>,
-    private _cliParams: DoubleParams_Result | TwoParams_Result,
+    config: Record<string, unknown>,
+    cliParams: DoubleParams_Result | TwoParams_Result,
   ) {
-    // Deep copy to ensure immutability - inputs are already validated
-    this.config = this.deepCopyConfig(config);
-    this._cliParams = this.deepCopyCliParams(_cliParams);
+    // Store private data in WeakMap for true encapsulation
+    privateData.set(this, {
+      config: this.deepCopyConfig(config),
+      cliParams: this.deepCopyCliParams(cliParams),
+    });
+  }
+
+  private get config(): Record<string, unknown> {
+    return privateData.get(this)!.config;
+  }
+
+  private get _cliParams(): DoubleParams_Result | TwoParams_Result {
+    return privateData.get(this)!.cliParams;
   }
 
   /**
@@ -205,7 +221,15 @@ export class OutputFilePathResolver {
       const layerType = this.getLayerType();
 
       // No destination specified - auto-generate in layer directory
-      if (!destinationFile) {
+      if (!destinationFile || destinationFile.trim() === "") {
+        // Empty string is treated as invalid path, not auto-generation
+        if (destinationFile === "") {
+          return error({
+            kind: "InvalidPath",
+            path: destinationFile,
+            reason: "Empty path is not allowed",
+          });
+        }
         const filename = this.generateDefaultFilename();
         if (!filename.ok) {
           return error(filename.error);
@@ -413,6 +437,18 @@ export class OutputFilePathResolver {
    * @returns string - The layer type value
    */
   private getLayerType(): string {
+    // Check for Totality parameters structure
+    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
+      return p && typeof p === "object" && "directive" in p && "layer" in p &&
+        p.directive && typeof p.directive === "object" && "value" in p.directive &&
+        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    };
+
+    if (hasTotalityProps(this._cliParams)) {
+      // TotalityPromptCliParams structure - use layer.value
+      return this._cliParams.layer.value || this._cliParams.layer.data || "task";
+    }
+
     // Handle both legacy and new parameter structures
     if ("layerType" in this._cliParams && this._cliParams.layerType) {
       return this._cliParams.layerType;
@@ -433,12 +469,14 @@ export class OutputFilePathResolver {
   private getDestinationFile(): string | undefined {
     // Handle both legacy and new parameter structures
     if ("options" in this._cliParams) {
-      return this._cliParams.options?.destinationFile as string | undefined;
+      const options = this._cliParams.options as any;
+      // Support both 'output' and 'destinationFile' for backward compatibility
+      return options?.output || options?.destinationFile;
     }
     // For TwoParams_Result structure, adapt to legacy interface
     const twoParams = this._cliParams as TwoParams_Result;
-    return (twoParams as unknown as { options?: { destinationFile?: string } }).options
-      ?.destinationFile;
+    const options = (twoParams as unknown as { options?: { output?: string; destinationFile?: string } }).options;
+    return options?.output || options?.destinationFile;
   }
 
   /**
@@ -724,6 +762,13 @@ export class OutputFilePathResolver {
   private static validateParameterStructure(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): Result<void, OutputFilePathError> {
+    // Check for Totality parameters structure
+    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
+      return p && typeof p === "object" && "directive" in p && "layer" in p &&
+        p.directive && typeof p.directive === "object" && "value" in p.directive &&
+        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    };
+
     // Check for TwoParams_Result structure
     const hasTwoParamsStructure = (p: any): boolean => {
       return p && typeof p === "object" && "type" in p && p.type === "two" &&
@@ -737,10 +782,10 @@ export class OutputFilePathResolver {
         typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
     };
 
-    if (!hasTwoParamsStructure(cliParams) && !hasLegacyProps(cliParams)) {
+    if (!hasTotalityProps(cliParams) && !hasTwoParamsStructure(cliParams) && !hasLegacyProps(cliParams)) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have either TwoParams structure or legacy structure with demonstrativeType and layerType",
+        message: "CLI parameters must have Totality structure (directive/layer), TwoParams structure, or legacy structure with demonstrativeType and layerType",
       });
     }
 
