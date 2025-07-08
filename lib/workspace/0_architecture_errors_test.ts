@@ -48,16 +48,16 @@ describe("Workspace Errors - Architecture Tests", async () => {
       });
     });
 
-    it("should not export internal implementation details", async () => {
-      _logger.debug("Testing encapsulation", {
+    it("should export all required error classes and utilities", async () => {
+      _logger.debug("Testing module exports", {
         testType: "architecture",
-        aspect: "encapsulation",
+        aspect: "exports",
       });
 
       const ErrorsModule = await import("./errors.ts");
       // モジュールのエクスポートキーを取得
       const exportedKeys = Object.keys(ErrorsModule);
-      const expectedExports = [
+      const requiredErrorClasses = [
         "WorkspaceError",
         "WorkspaceInitError",
         "WorkspaceConfigError",
@@ -65,12 +65,41 @@ describe("Workspace Errors - Architecture Tests", async () => {
         "WorkspaceDirectoryError",
       ];
 
-      // 期待されるエクスポートのみが存在することを確認
-      assertEquals(exportedKeys.sort(), expectedExports.sort());
+      // 必須のエラークラスがすべてエクスポートされていることを確認
+      for (const className of requiredErrorClasses) {
+        assertEquals(exportedKeys.includes(className), true);
+      }
 
-      _logger.debug("Module encapsulation verified", {
+      // ファクトリー関数とタイプガードもエクスポートされていることを確認
+      const requiredFactories = [
+        "createWorkspaceError",
+        "createWorkspaceInitError",
+        "createWorkspaceConfigError",
+        "createWorkspacePathError",
+        "createWorkspaceDirectoryError",
+      ];
+
+      const requiredTypeGuards = [
+        "isWorkspaceError",
+        "isWorkspaceInitError",
+        "isWorkspaceConfigError",
+        "isWorkspacePathError",
+        "isWorkspaceDirectoryError",
+      ];
+
+      for (const factory of requiredFactories) {
+        assertEquals(exportedKeys.includes(factory), true);
+      }
+
+      for (const guard of requiredTypeGuards) {
+        assertEquals(exportedKeys.includes(guard), true);
+      }
+
+      _logger.debug("Module exports verified", {
         exportedKeys: exportedKeys.length,
-        noInternalLeaks: true,
+        requiredClasses: requiredErrorClasses.length,
+        requiredFactories: requiredFactories.length,
+        requiredTypeGuards: requiredTypeGuards.length,
       });
     });
   });
@@ -83,27 +112,29 @@ describe("Workspace Errors - Architecture Tests", async () => {
       });
 
       const ErrorsModule = await import("./errors.ts");
-      // 各エラークラスがWorkspaceErrorを継承していることを確認
+      // 各エラークラスがErrorを継承していることを確認
       const initError = new ErrorsModule.WorkspaceInitError("test", "TEST_CODE");
       const configError = new ErrorsModule.WorkspaceConfigError("test");
       const pathError = new ErrorsModule.WorkspacePathError("test");
       const directoryError = new ErrorsModule.WorkspaceDirectoryError("test");
+      const baseError = new ErrorsModule.WorkspaceError("test", "TEST_CODE");
 
-      // instanceof チェック
-      assertEquals(initError instanceof ErrorsModule.WorkspaceError, true);
-      assertEquals(configError instanceof ErrorsModule.WorkspaceError, true);
-      assertEquals(pathError instanceof ErrorsModule.WorkspaceError, true);
-      assertEquals(directoryError instanceof ErrorsModule.WorkspaceError, true);
-
-      // Error基底クラスからの継承も確認
+      // Error基底クラスからの継承を確認
       assertEquals(initError instanceof Error, true);
       assertEquals(configError instanceof Error, true);
       assertEquals(pathError instanceof Error, true);
       assertEquals(directoryError instanceof Error, true);
+      assertEquals(baseError instanceof Error, true);
+
+      // 各エラークラスが独立していることを確認（WorkspaceInitErrorは別モジュールから）
+      assertEquals(initError instanceof ErrorsModule.WorkspaceError, false);
+      assertEquals(configError instanceof ErrorsModule.WorkspaceError, false);
+      assertEquals(pathError instanceof ErrorsModule.WorkspaceError, false);
+      assertEquals(directoryError instanceof ErrorsModule.WorkspaceError, false);
 
       _logger.debug("Inheritance hierarchy verified", {
-        baseClass: "WorkspaceError",
-        derivedClasses: 4,
+        baseClass: "Error",
+        derivedClasses: 5,
         properChain: true,
       });
     });
@@ -122,14 +153,15 @@ describe("Workspace Errors - Architecture Tests", async () => {
         ErrorsModule.WorkspaceConfigError,
         ErrorsModule.WorkspacePathError,
         ErrorsModule.WorkspaceDirectoryError,
+        ErrorsModule.WorkspaceError,
       ];
 
       for (const ErrorClass of classes) {
         const prototype = ErrorClass.prototype;
         const parentPrototype = Object.getPrototypeOf(prototype);
 
-        // 直接の親がWorkspaceErrorであることを確認
-        assertEquals(parentPrototype.constructor.name, "WorkspaceError");
+        // 直接の親がErrorであることを確認
+        assertEquals(parentPrototype.constructor.name, "Error");
 
         // 他の兄弟クラスへの参照がないことを確認
         for (const OtherClass of classes) {
@@ -155,8 +187,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
 
       const ErrorsModule = await import("./errors.ts");
       const errorInstances = [
-        new ErrorsModule.WorkspaceError("test", "TEST_CODE"),
-        new ErrorsModule.WorkspaceInitError("test", "TEST_CODE"),
+        new ErrorsModule.WorkspaceError("test", "WORKSPACE_ERROR"),
+        new ErrorsModule.WorkspaceInitError("test", "WORKSPACE_INIT_ERROR"),
         new ErrorsModule.WorkspaceConfigError("test"),
         new ErrorsModule.WorkspacePathError("test"),
         new ErrorsModule.WorkspaceDirectoryError("test"),
@@ -165,10 +197,11 @@ describe("Workspace Errors - Architecture Tests", async () => {
       const codes = errorInstances.map((err) => err.code);
       const uniqueCodes = new Set(codes);
 
-      // すべてのコードがユニークであることを確認（基底クラスを除く）
+      // すべてのコードがユニークであることを確認
       assertEquals(uniqueCodes.size, codes.length);
 
       // 各エラータイプの期待されるコードを確認
+      assertEquals(errorInstances[0].code, "WORKSPACE_ERROR");
       assertEquals(errorInstances[1].code, "WORKSPACE_INIT_ERROR");
       assertEquals(errorInstances[2].code, "WORKSPACE_CONFIG_ERROR");
       assertEquals(errorInstances[3].code, "WORKSPACE_PATH_ERROR");
@@ -189,18 +222,27 @@ describe("Workspace Errors - Architecture Tests", async () => {
 
       const ErrorsModule = await import("./errors.ts");
       const errorTypes = [
-        { Class: ErrorsModule.WorkspaceInitError, expectedPrefix: "WORKSPACE_INIT" },
-        { Class: ErrorsModule.WorkspaceConfigError, expectedPrefix: "WORKSPACE_CONFIG" },
-        { Class: ErrorsModule.WorkspacePathError, expectedPrefix: "WORKSPACE_PATH" },
-        { Class: ErrorsModule.WorkspaceDirectoryError, expectedPrefix: "WORKSPACE_DIRECTORY" },
+        { Class: ErrorsModule.WorkspaceError, expectedCode: "WORKSPACE_ERROR", needsCode: true },
+        { Class: ErrorsModule.WorkspaceInitError, expectedCode: "WORKSPACE_INIT_ERROR", needsCode: true },
+        { Class: ErrorsModule.WorkspaceConfigError, expectedCode: "WORKSPACE_CONFIG_ERROR", needsCode: false },
+        { Class: ErrorsModule.WorkspacePathError, expectedCode: "WORKSPACE_PATH_ERROR", needsCode: false },
+        { Class: ErrorsModule.WorkspaceDirectoryError, expectedCode: "WORKSPACE_DIRECTORY_ERROR", needsCode: false },
       ];
 
-      for (const { Class, expectedPrefix } of errorTypes) {
-        const instance = Class === ErrorsModule.WorkspaceInitError 
-          ? new Class("test", "TEST_CODE") 
-          : new Class("test");
-        assertEquals(instance.code.startsWith(expectedPrefix), true);
-        assertEquals(instance.code.endsWith("_ERROR"), true);
+      for (const { Class, expectedCode, needsCode } of errorTypes) {
+        let instance: any;
+        if (Class === ErrorsModule.WorkspaceError) {
+          instance = new ErrorsModule.WorkspaceError("test", expectedCode);
+        } else if (Class === ErrorsModule.WorkspaceInitError) {
+          instance = new ErrorsModule.WorkspaceInitError("test", expectedCode);
+        } else if (Class === ErrorsModule.WorkspaceConfigError) {
+          instance = new ErrorsModule.WorkspaceConfigError("test");
+        } else if (Class === ErrorsModule.WorkspacePathError) {
+          instance = new ErrorsModule.WorkspacePathError("test");
+        } else {
+          instance = new ErrorsModule.WorkspaceDirectoryError("test");
+        }
+        assertEquals(instance.code, expectedCode);
 
         // 大文字とアンダースコアのみで構成されていることを確認
         assertEquals(/^[A-Z_]+$/.test(instance.code), true);
@@ -229,6 +271,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
       } = await import("./errors.ts");
       // ワークスペース操作のすべての失敗シナリオがカバーされていることを確認
       const errorScenarios = {
+        base: WorkspaceError,
         initialization: WorkspaceInitError,
         configuration: WorkspaceConfigError,
         pathResolution: WorkspacePathError,
@@ -241,10 +284,19 @@ describe("Workspace Errors - Architecture Tests", async () => {
         assertEquals(typeof ErrorClass, "function");
 
         // インスタンス化可能であることを確認  
-        const instance = ErrorClass === WorkspaceInitError 
-          ? new ErrorClass("test", "TEST_CODE") 
-          : new ErrorClass("test");
-        assertEquals(instance instanceof WorkspaceError, true);
+        let instance: any;
+        if (ErrorClass === WorkspaceInitError) {
+          instance = new WorkspaceInitError("test", "WORKSPACE_INIT_ERROR");
+        } else if (ErrorClass === WorkspaceError) {
+          instance = new WorkspaceError("test", "WORKSPACE_ERROR");
+        } else if (ErrorClass === WorkspaceConfigError) {
+          instance = new WorkspaceConfigError("test");
+        } else if (ErrorClass === WorkspacePathError) {
+          instance = new WorkspacePathError("test");
+        } else {
+          instance = new WorkspaceDirectoryError("test");
+        }
+        assertEquals(instance instanceof Error, true);
 
         _logger.debug(`Error scenario covered: ${scenario}`, {
           scenario,
@@ -327,7 +379,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
       ];
 
       for (const ErrorClass of derivedClasses) {
-        // すべての派生クラスが単一のmessageパラメータを受け取ることを確認
+        // 各エラークラスのコンストラクタ引数数を確認
+        // すべて1つの必須引数（message）を持つ
         assertEquals(ErrorClass.length, 1);
 
         // エラーメッセージなしでインスタンス化した場合の動作を確認

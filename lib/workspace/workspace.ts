@@ -20,7 +20,7 @@
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import { createWorkspaceConfigError, createWorkspaceInitError } from "./errors.ts";
+import { createWorkspaceConfigError, createWorkspaceInitError, WorkspaceConfigError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
@@ -235,7 +235,7 @@ export class WorkspaceImpl implements Workspace {
    */
   async validateConfig(): Promise<void> {
     if (!await exists(this.config.workingDir)) {
-      throw createWorkspaceConfigError("Working directory does not exist");
+      throw new WorkspaceConfigError("Working directory does not exist");
     }
   }
 

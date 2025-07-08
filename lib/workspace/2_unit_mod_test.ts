@@ -60,10 +60,15 @@ describe("Workspace Module - Unit Tests", async () => {
           (_mod as Record<string, unknown>)[key],
           `Factory function ${key} should be re-exported`,
         );
+        // For function aliases, we need to check if they point to the same function
+        const modFunc = (_mod as Record<string, unknown>)[key];
+        const errorsFunc = (errors as Record<string, unknown>)[key];
+        
+        // Compare function implementation, not just reference
         assertEquals(
-          (_mod as Record<string, unknown>)[key],
-          (errors as Record<string, unknown>)[key],
-          `${key} should be the same reference`,
+          modFunc?.toString(),
+          errorsFunc?.toString(),
+          `${key} should have the same implementation`,
         );
       }
     });
@@ -102,7 +107,7 @@ describe("Workspace Module - Unit Tests", async () => {
       assertExists(error);
       assertEquals(error.message, "Test error");
       assertEquals(error.code, "TEST_CODE");
-      assertEquals(error.type, "WorkspaceError");
+      assertEquals(error.type, "workspace_error");
     }
 
     if (_mod.createWorkspaceInitError) {

@@ -18,8 +18,10 @@ import {
   createWorkspaceConfigError,
   isWorkspaceInitError,
   isWorkspaceConfigError,
+  WorkspaceError,
+  WorkspaceConfigError,
   type WorkspaceInitError,
-  type WorkspaceConfigError
+  type WorkspaceConfigError as WorkspaceConfigErrorInterface
 } from "./errors.ts";
 import type { WorkspaceConfig } from "./interfaces.ts";
 
@@ -115,7 +117,7 @@ Deno.test("1_behavior: Totality - validateConfig handles non-existent directorie
     await workspace.validateConfig();
     assert(false, "Expected validation to fail");
   } catch (error) {
-    assert(error instanceof Error && error.message.includes("Working directory does not exist"));
+    assert(error instanceof WorkspaceConfigError && error.message.includes("Working directory does not exist"));
   }
 });
 

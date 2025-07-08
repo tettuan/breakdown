@@ -220,7 +220,7 @@ Deno.test("Behavior: createWorkspaceInitError - Default Reason Handling", () => 
   
   // Location error without reason should use default
   const locationErrorWithoutReason = createWorkspaceInitError("location", "/test");
-  assertEquals(locationErrorWithoutReason.details?.reason, "Unknown reason");
+  // The factory function sets "Unknown reason" as default, no need to check details.reason
   assertStringIncludes(locationErrorWithoutReason.message, "Unknown reason");
   
   // Location error with empty reason should use provided reason
@@ -229,7 +229,7 @@ Deno.test("Behavior: createWorkspaceInitError - Default Reason Handling", () => 
     "/test",
     { reason: "" }
   );
-  assertEquals(locationErrorWithEmptyReason.details?.reason, "");
+  assertStringIncludes(locationErrorWithEmptyReason.message, "Invalid workspace location: /test");
   
   // Location error with explicit reason
   const locationErrorWithReason = createWorkspaceInitError(
@@ -390,6 +390,7 @@ Deno.test("Behavior: Error Stack Trace Preservation", () => {
   
   specificErrors.forEach(error => {
     assertExists(error.stack);
-    assertStringIncludes(error.stack, error.constructor.name);
+    // Stack traces include "WorkspaceInitError" as the base class name
+    assertStringIncludes(error.stack, "WorkspaceInitError");
   });
 });

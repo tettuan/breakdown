@@ -101,7 +101,7 @@ export class PathValidator {
     }
 
     // Additional security checks
-    const securityResult = this.performSecurityChecks(path);
+    const securityResult = this.performSecurityChecks(path, type);
     if (!securityResult.ok) {
       return error(securityResult.error);
     }
@@ -148,7 +148,7 @@ export class PathValidator {
   /**
    * Perform additional security checks
    */
-  private performSecurityChecks(path: string): Result<void, PathError> {
+  private performSecurityChecks(path: string, type: "input" | "output"): Result<void, PathError> {
     // Check for path traversal attempts
     if (path.includes("..")) {
       // More sophisticated check would normalize the path first
@@ -156,7 +156,7 @@ export class PathValidator {
         return error(ErrorFactory.pathError(
           "InvalidPath",
           path,
-          { reason: "Path traversal detected", context: { securityViolation: "path_traversal" } },
+          { reason: "Path traversal detected", context: { type, securityViolation: "path_traversal" } },
         ));
       }
     }
@@ -167,7 +167,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        { reason: "Tilde expansion not allowed", context: { securityViolation: "tilde_expansion" } },
+        { reason: "Tilde expansion not allowed", context: { type, securityViolation: "tilde_expansion" } },
       ));
     }
 
@@ -179,9 +179,15 @@ export class PathValidator {
    */
   normalize(path: string): string {
     // Basic normalization - in real implementation would be more comprehensive
-    return path
+    let normalized = path
       .replace(/\\/g, "/") // Convert backslashes to forward slashes
-      .replace(/\/+/g, "/") // Remove duplicate slashes
-      .replace(/\/$/, ""); // Remove trailing slash (except for root)
+      .replace(/\/+/g, "/"); // Remove duplicate slashes
+    
+    // Remove trailing slash except for root "/"
+    if (normalized.length > 1 && normalized.endsWith("/")) {
+      normalized = normalized.slice(0, -1);
+    }
+    
+    return normalized;
   }
 }

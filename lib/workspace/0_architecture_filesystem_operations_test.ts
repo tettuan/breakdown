@@ -291,5 +291,6 @@ Deno.test("Workspace Architecture: Error creation is deterministic", () => {
   assertEquals(error1.type, error2.type);
   
   // But they should be different objects (not referentially equal)
-  assertNotEquals(error1, error2);
+  // Use strict equality to check reference equality
+  assertEquals(error1 === error2, false);
 });

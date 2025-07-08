@@ -58,7 +58,7 @@ Deno.test("2_structure: method signature consistency", () => {
   
   // Verify method signatures
   assertEquals(factory.create.length, 1); // Takes 1 parameter
-  assertEquals(factory.createFromText.length, 2); // Takes 2 parameters (text, source)
+  assertEquals(factory.createFromText.length, 1); // Takes 1 parameter (source has default)
   assertEquals(factory.createBatch.length, 1); // Takes 1 parameter
   assertEquals(factory.validate.length, 1); // Takes 1 parameter
   

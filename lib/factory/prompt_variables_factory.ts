@@ -136,7 +136,12 @@ export class PromptVariablesFactory {
     const pathOptions = pathOptionsResult.data;
 
     // Create path resolvers - for test environments we need to be more tolerant
-    this.pathResolvers = {} as any;
+    this.pathResolvers = {
+      template: undefined as any,
+      input: undefined as any,
+      output: undefined as any,
+      schema: undefined as any,
+    };
     
     // Create template resolver
     try {
@@ -183,7 +188,11 @@ export class PromptVariablesFactory {
 
     // Resolve paths immediately (but don't fail on path resolution errors)
     // Path resolution can fail in test environments, but factory creation should succeed
-    this.resolvePathsSafe();
+    const resolveResult = this.resolvePathsSafe();
+    if (!resolveResult.ok) {
+      // Path resolution failed, but we continue with factory creation
+      // This is acceptable in test environments
+    }
   }
 
   /**
@@ -588,6 +597,9 @@ export class PromptVariablesFactory {
         const templateResult = this.pathResolvers.template.getPath();
         if (templateResult.ok) {
           this._promptFilePath = templateResult.data.value;
+        } else {
+          // Template path resolution failed - use fallback
+          this._promptFilePath = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
         }
       } catch (error) {
         // Template path resolution failed - use fallback

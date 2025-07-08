@@ -5,7 +5,12 @@
  * Integration tests verify:
  * - Schema repository and schema aggregate collaboration
  * - Schema loading and validation workflows
- * - Schema dependency resolution
+ * - Schema dep  // Create and save schema
+  const schema = createMockSchema(
+    schemaPath,
+    { type: "object", properties: { title: { type: "string" } } },
+    createMockMetadata(createMockMetadata({ title: "Project Schema", description: "Base project schema", version: "1.0.0" })),
+  );y resolution
  * - Error handling across repository boundaries
  */
 
@@ -20,7 +25,7 @@ import type {
   SchemaValidationError,
   SchemaDependencyError,
 } from "../../../lib/domain/templates/schema_repository.ts";
-import type { Schema, SchemaPath } from "../../../lib/domain/templates/schema_management_aggregate.ts";
+import { Schema, SchemaPath, SchemaContent, type SchemaMetadata, type ValidationResult } from "../../../lib/domain/templates/schema_management_aggregate.ts";
 import type { DirectiveType, LayerType } from "../../../lib/types/mod.ts";
 
 const logger = new BreakdownLogger("schema-repository-integration");
@@ -39,7 +44,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async loadSchema(path: SchemaPath): Promise<Schema> {
-    logger.debug("Loading schema", "loadSchema", { path: path.getPath() });
+    logger.debug("Loading schema", { path: path.getPath() });
     const key = path.getPath();
     const schema = this.schemas.get(key);
     if (!schema) {
@@ -49,16 +54,16 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async loadSchemas(paths: SchemaPath[]): Promise<Map<string, Schema>> {
-    logger.debug("Loading multiple schemas", "loadSchemas", { pathCount: paths.length });
+    logger.debug("Loading multiple schemas", { pathCount: paths.length });
     const result = new Map<string, Schema>();
     for (const path of paths) {
       try {
         const schema = await this.loadSchema(path);
         result.set(path.getPath(), schema);
       } catch (error) {
-        logger.debug("Failed to load schema", "loadSchemas:error", { 
+        logger.debug("Failed to load schema", { 
           path: path.getPath(), 
-          error: error.message 
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     }
@@ -71,7 +76,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async listAvailable(options?: SchemaQueryOptions): Promise<SchemaManifest> {
-    logger.debug("Listing available schemas", "listAvailable", { options });
+    logger.debug("Listing available schemas", { options });
     let filteredSchemas = this.manifest.schemas;
 
     if (options?.directive) {
@@ -94,7 +99,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async save(schema: Schema): Promise<void> {
-    logger.debug("Saving schema", "save", { path: schema.getPath().getPath() });
+    logger.debug("Saving schema", { path: schema.getPath().getPath() });
     const key = schema.getPath().getPath();
     this.schemas.set(key, schema);
     
@@ -119,7 +124,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async saveAll(schemas: Schema[]): Promise<SchemaBatchResult> {
-    logger.debug("Saving multiple schemas", "saveAll", { schemaCount: schemas.length });
+    logger.debug("Saving multiple schemas", { schemaCount: schemas.length });
     const successful: string[] = [];
     const failed: Array<{ path: string; error: string }> = [];
 
@@ -130,7 +135,7 @@ class TestSchemaRepository implements SchemaRepository {
       } catch (error) {
         failed.push({
           path: schema.getPath().getPath(),
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -139,7 +144,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async delete(path: SchemaPath): Promise<void> {
-    logger.debug("Deleting schema", "delete", { path: path.getPath() });
+    logger.debug("Deleting schema", { path: path.getPath() });
     const key = path.getPath();
     if (!this.schemas.has(key)) {
       throw new Error(`Schema not found: ${key}`);
@@ -152,7 +157,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async deleteAll(paths: SchemaPath[]): Promise<SchemaBatchResult> {
-    logger.debug("Deleting multiple schemas", "deleteAll", { pathCount: paths.length });
+    logger.debug("Deleting multiple schemas", { pathCount: paths.length });
     const successful: string[] = [];
     const failed: Array<{ path: string; error: string }> = [];
 
@@ -163,7 +168,7 @@ class TestSchemaRepository implements SchemaRepository {
       } catch (error) {
         failed.push({
           path: path.getPath(),
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -172,14 +177,14 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async getDependencies(path: SchemaPath): Promise<SchemaPath[]> {
-    logger.debug("Getting schema dependencies", "getDependencies", { path: path.getPath() });
+    logger.debug("Getting schema dependencies", { path: path.getPath() });
     const schema = await this.loadSchema(path);
     // Mock dependency extraction - in real implementation would parse schema content
     return [];
   }
 
   async validateSchema(content: unknown): Promise<{ valid: boolean; errors?: string[] }> {
-    logger.debug("Validating schema content", "validateSchema", { hasContent: !!content });
+    logger.debug("Validating schema content", { hasContent: !!content });
     
     if (!content || typeof content !== 'object') {
       return {
@@ -207,7 +212,7 @@ class TestSchemaRepository implements SchemaRepository {
   }
 
   async refresh(): Promise<void> {
-    logger.debug("Refreshing schema repository", "refresh");
+    logger.debug("Refreshing schema repository");
     this.manifest.generatedAt = new Date();
   }
 
@@ -218,49 +223,39 @@ class TestSchemaRepository implements SchemaRepository {
   }
 }
 
-// Mock Schema and SchemaPath implementations
-class MockSchemaPath implements SchemaPath {
-  constructor(
-    private directive: DirectiveType,
-    private layer: LayerType,
-    private filename: string,
-  ) {}
-
-  getPath(): string {
-    return `${this.directive.getValue()}/${this.layer.getValue()}/${this.filename}`;
-  }
-
-  getDirective(): DirectiveType {
-    return this.directive;
-  }
-
-  getLayer(): LayerType {
-    return this.layer;
-  }
-
-  getFilename(): string {
-    return this.filename;
-  }
+// Helper function to create proper SchemaMetadata
+function createMockMetadata(partial: Partial<SchemaMetadata> = {}): SchemaMetadata {
+  return {
+    title: partial.title,
+    description: partial.description,
+    version: partial.version || "1.0.0",
+    author: partial.author || "test-author",
+    tags: partial.tags,
+    createdAt: partial.createdAt || new Date(),
+    updatedAt: partial.updatedAt || new Date(),
+  };
 }
 
-class MockSchema implements Schema {
-  constructor(
-    private path: SchemaPath,
-    private content: Record<string, unknown>,
-    private metadata: { title?: string; description?: string; version: string },
-  ) {}
-
-  getPath(): SchemaPath {
-    return this.path;
+// Helper functions to create mock objects
+function createMockSchemaPath(directive: DirectiveType, layer: LayerType, filename: string): SchemaPath {
+  const result = SchemaPath.create(directive, layer, filename + ".json"); // Ensure .json extension
+  if (!result.ok) {
+    throw new Error(`Failed to create SchemaPath: ${result.error}`);
   }
+  return result.data;
+}
 
-  getContent(): Record<string, unknown> {
-    return this.content;
+// Helper function to create Schema objects for testing
+function createMockSchema(
+  path: SchemaPath,
+  content: Record<string, unknown>,
+  metadata: Partial<SchemaMetadata> = {},
+): Schema {
+  const result = Schema.create(path, content, metadata);
+  if (!result.ok) {
+    throw new Error(`Failed to create Schema: ${result.error}`);
   }
-
-  getMetadata(): { title?: string; description?: string; version: string } {
-    return this.metadata;
-  }
+  return result.data;
 }
 
 // Mock DirectiveType and LayerType
@@ -273,22 +268,22 @@ const createMockLayer = (value: string): LayerType => ({
 } as LayerType);
 
 Deno.test("Schema Repository Integration: basic schema lifecycle", async () => {
-  logger.debug("Testing basic schema lifecycle", "integration:lifecycle");
+  logger.debug("Testing basic schema lifecycle");
   
   const repository = new TestSchemaRepository();
   const directive = createMockDirective("to");
   const layer = createMockLayer("project");
-  const schemaPath = new MockSchemaPath(directive, layer, "base.schema.md");
+  const schemaPath = createMockSchemaPath(directive, layer, "base.schema.md");
   
   // Initially schema should not exist
   const exists = await repository.exists(schemaPath);
   assertEquals(exists, false);
   
   // Create and save schema
-  const schema = new MockSchema(
+  const schema = createMockSchema(
     schemaPath,
     { type: "object", properties: { title: { type: "string" } } },
-    { title: "Project Schema", description: "Base project schema", version: "1.0.0" },
+    createMockMetadata({ title: "Project Schema", description: "Base project schema", version: "1.0.0" }),
   );
   
   await repository.save(schema);
@@ -305,26 +300,26 @@ Deno.test("Schema Repository Integration: basic schema lifecycle", async () => {
 });
 
 Deno.test("Schema Repository Integration: batch operations", async () => {
-  logger.debug("Testing batch operations", "integration:batch");
+  logger.debug("Testing batch operations");
   
   const repository = new TestSchemaRepository();
   
   // Create multiple schemas
   const schemas = [
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("to"), createMockLayer("project"), "schema1.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("to"), createMockLayer("project"), "schema1.md"),
       { type: "object" },
-      { version: "1.0.0" },
+      createMockMetadata({ version: "1.0.0" }),
     ),
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("to"), createMockLayer("issue"), "schema2.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("to"), createMockLayer("issue"), "schema2.md"),
       { type: "object" },
-      { version: "1.0.0" },
+      createMockMetadata({ version: "1.0.0" }),
     ),
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("summary"), createMockLayer("task"), "schema3.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("summary"), createMockLayer("task"), "schema3.md"),
       { type: "object" },
-      { version: "1.0.0" },
+      createMockMetadata({ version: "1.0.0" }),
     ),
   ];
   
@@ -347,26 +342,26 @@ Deno.test("Schema Repository Integration: batch operations", async () => {
 });
 
 Deno.test("Schema Repository Integration: query and manifest", async () => {
-  logger.debug("Testing query and manifest operations", "integration:query");
+  logger.debug("Testing query and manifest operations");
   
   const repository = new TestSchemaRepository();
   
   // Setup test data
   const schemas = [
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("to"), createMockLayer("project"), "to_project.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("to"), createMockLayer("project"), "to_project.md"),
       { type: "object" },
-      { title: "To Project", version: "1.0.0" },
+      createMockMetadata({ title: "To Project", version: "1.0.0" }),
     ),
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("to"), createMockLayer("issue"), "to_issue.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("to"), createMockLayer("issue"), "to_issue.md"),
       { type: "object" },
-      { title: "To Issue", version: "1.0.0" },
+      createMockMetadata({ title: "To Issue", version: "1.0.0" }),
     ),
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("summary"), createMockLayer("project"), "summary_project.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("summary"), createMockLayer("project"), "summary_project.md"),
       { type: "object" },
-      { title: "Summary Project", version: "1.0.0" },
+      createMockMetadata({ title: "Summary Project", version: "1.0.0" }),
     ),
   ];
   
@@ -402,7 +397,7 @@ Deno.test("Schema Repository Integration: query and manifest", async () => {
 });
 
 Deno.test("Schema Repository Integration: validation workflow", async () => {
-  logger.debug("Testing validation workflow", "integration:validation");
+  logger.debug("Testing validation workflow");
   
   const repository = new TestSchemaRepository();
   
@@ -442,10 +437,10 @@ Deno.test("Schema Repository Integration: validation workflow", async () => {
 });
 
 Deno.test("Schema Repository Integration: error handling", async () => {
-  logger.debug("Testing error handling scenarios", "integration:errors");
+  logger.debug("Testing error handling scenarios");
   
   const repository = new TestSchemaRepository();
-  const nonExistentPath = new MockSchemaPath(
+  const nonExistentPath = createMockSchemaPath(
     createMockDirective("nonexistent"),
     createMockLayer("layer"),
     "missing.md",
@@ -456,7 +451,8 @@ Deno.test("Schema Repository Integration: error handling", async () => {
     await repository.loadSchema(nonExistentPath);
     assertEquals(true, false, "Should have thrown an error");
   } catch (error) {
-    assertEquals(error.message.includes("Schema not found"), true);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    assertEquals(errorMessage.includes("Schema not found"), true);
   }
   
   // Test deleting non-existent schema
@@ -464,15 +460,16 @@ Deno.test("Schema Repository Integration: error handling", async () => {
     await repository.delete(nonExistentPath);
     assertEquals(true, false, "Should have thrown an error");
   } catch (error) {
-    assertEquals(error.message.includes("Schema not found"), true);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    assertEquals(errorMessage.includes("Schema not found"), true);
   }
   
   // Test batch operations with mixed success/failure
   const schemas = [
-    new MockSchema(
-      new MockSchemaPath(createMockDirective("valid"), createMockLayer("schema"), "valid.md"),
+    createMockSchema(
+      createMockSchemaPath(createMockDirective("valid"), createMockLayer("schema"), "valid.md"),
       { type: "object" },
-      { version: "1.0.0" },
+      createMockMetadata({ version: "1.0.0" }),
     ),
   ];
   
@@ -494,20 +491,20 @@ Deno.test("Schema Repository Integration: error handling", async () => {
 });
 
 Deno.test("Schema Repository Integration: dependency resolution", async () => {
-  logger.debug("Testing dependency resolution", "integration:dependencies");
+  logger.debug("Testing dependency resolution");
   
   const repository = new TestSchemaRepository();
   
   // Create schema with potential dependencies
-  const baseSchema = new MockSchema(
-    new MockSchemaPath(createMockDirective("to"), createMockLayer("project"), "base.md"),
+  const baseSchema = createMockSchema(
+    createMockSchemaPath(createMockDirective("to"), createMockLayer("project"), "base.md"),
     {
       type: "object",
       properties: {
         extends: { $ref: "#/definitions/base" },
       },
     },
-    { version: "1.0.0" },
+    createMockMetadata({ version: "1.0.0" }),
   );
   
   await repository.save(baseSchema);
@@ -521,7 +518,7 @@ Deno.test("Schema Repository Integration: dependency resolution", async () => {
 });
 
 Deno.test("Schema Repository Integration: refresh and cache management", async () => {
-  logger.debug("Testing refresh and cache management", "integration:refresh");
+  logger.debug("Testing refresh and cache management");
   
   const repository = new TestSchemaRepository();
   

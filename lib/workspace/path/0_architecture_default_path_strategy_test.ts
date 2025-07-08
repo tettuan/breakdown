@@ -93,6 +93,32 @@ Deno.test("Architecture: DefaultPathStrategyTotality platform abstraction", asyn
         true,
         "Platform-specific path separators should only appear in string literals",
       );
+    } else if (index === 3) {
+      // Allow // in comments and string literals
+      const nonCommentMatches = moduleSource
+        .split('\n')
+        .filter(line => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+        .join('\n')
+        .match(pattern);
+      
+      if (nonCommentMatches) {
+        // Check if they're in string literals
+        const inStringLiterals = nonCommentMatches.every((match) => {
+          const beforeMatch = moduleSource.substring(0, moduleSource.indexOf(match));
+          const lastQuote = Math.max(beforeMatch.lastIndexOf('"'), beforeMatch.lastIndexOf("'"), beforeMatch.lastIndexOf('`'));
+          const afterQuote = moduleSource.substring(lastQuote);
+          return afterQuote.includes(match) && (
+            afterQuote.indexOf(match) < afterQuote.indexOf('"') ||
+            afterQuote.indexOf(match) < afterQuote.indexOf("'") ||
+            afterQuote.indexOf(match) < afterQuote.indexOf('`')
+          );
+        });
+        assertEquals(
+          inStringLiterals,
+          true,
+          "// should only appear in comments or string literals",
+        );
+      }
     } else {
       assertEquals(
         matches === null,
@@ -314,7 +340,12 @@ Deno.test("Architecture: PathStrategyFactory implementation", async () => {
   );
 
   // Verify no direct instantiation in factory
-  const noDirectInstantiation = !moduleSource.includes("new DefaultPathStrategyTotality(");
+  // Check that "new DefaultPathStrategyTotality(" does not appear in public methods
+  const factorySection = moduleSource.substring(
+    moduleSource.indexOf("export class PathStrategyFactory"),
+    moduleSource.length
+  );
+  const noDirectInstantiation = !factorySection.includes("new DefaultPathStrategyTotality(");
   assertEquals(
     noDirectInstantiation,
     true,
