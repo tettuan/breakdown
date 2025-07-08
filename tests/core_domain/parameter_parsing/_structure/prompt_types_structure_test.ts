@@ -19,8 +19,8 @@ import {
   PromptPath,
   PromptResult,
   PromptVariables,
-} from "./prompt_types.ts";
-import { Result } from "./result.ts";
+} from "../../../../lib/types/prompt_types.ts";
+import { Result } from "../../../../lib/types/result.ts";
 
 /**
  * Test: PromptPath has single responsibility

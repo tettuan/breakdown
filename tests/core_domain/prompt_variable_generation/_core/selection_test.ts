@@ -19,8 +19,8 @@ import { afterEach, beforeEach, describe, it } from "jsr:@std/testing@^0.224.0/b
 import { join } from "jsr:@std/path@^0.224.0/join";
 import { relative } from "jsr:@std/path@^0.224.0/relative";
 import { BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
-import { PromptAdapterImpl } from "../../../lib/prompt/prompt_adapter.ts";
-import { PromptVariablesFactory } from "../../../lib/factory/prompt_variables_factory.ts";
+import { PromptAdapterImpl } from "../../../../lib/prompt/prompt_adapter.ts";
+import { PromptVariablesFactory } from "../../../../lib/factory/prompt_variables_factory.ts";
 import type {
   DemonstrativeType as _DemonstrativeType,
   LayerType as _LayerType,

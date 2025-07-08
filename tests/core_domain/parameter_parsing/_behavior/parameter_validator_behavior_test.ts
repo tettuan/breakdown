@@ -6,12 +6,12 @@
  */
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ParameterValidator } from "./parameter_validator.ts";
+import { ParameterValidator } from "../../../../lib/validator/parameter_validator.ts";
 import type {
   ConfigValidator,
   ValidatedParams as _ValidatedParams,
   ValidationError as _ValidationError,
-} from "./parameter_validator.ts";
+} from "../../../../lib/validator/parameter_validator.ts";
 import type { TypePatternProvider } from "../../../../lib/types/type_factory.ts";
 import type {
   OneParamsResult as _OneParamsResult,

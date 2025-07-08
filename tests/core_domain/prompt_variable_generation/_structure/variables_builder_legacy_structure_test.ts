@@ -9,8 +9,8 @@
  */
 
 import { assertEquals } from "../../lib/deps.ts";
-import { VariablesBuilder } from "./variables_builder.ts";
-import type { FactoryResolvedValues } from "./variables_builder.ts";
+import { VariablesBuilder } from "../../../../lib/builder/variables_builder.ts";
+import type { FactoryResolvedValues } from "../../../../lib/builder/variables_builder.ts";
 
 Deno.test("VariablesBuilder - Structure: Single Responsibility Principle", () => {
   // VariablesBuilder should only be responsible for building PromptVariables

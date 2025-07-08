@@ -8,7 +8,7 @@
  */
 
 import { assertEquals, assertExists } from "../../lib/deps.ts";
-import { VariablesBuilder } from "../variables_builder.ts";
+import { VariablesBuilder } from "../../../../lib/builder/variables_builder.ts";
 
 /**
  * Verify proper dependency direction - builder depends on types, not vice versa

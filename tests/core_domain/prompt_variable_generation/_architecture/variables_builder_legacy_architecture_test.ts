@@ -9,8 +9,8 @@
  */
 
 import { assertEquals, assertExists } from "../../lib/deps.ts";
-import { VariablesBuilder } from "./variables_builder.ts";
-import type { BuilderVariableError, FactoryResolvedValues } from "./variables_builder.ts";
+import { VariablesBuilder } from "../../../../lib/builder/variables_builder.ts";
+import type { BuilderVariableError, FactoryResolvedValues } from "../../../../lib/builder/variables_builder.ts";
 
 Deno.test("VariablesBuilder - Architecture: Builder pattern implementation", () => {
   // Builder pattern must have fluent interface

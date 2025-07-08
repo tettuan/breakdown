@@ -8,7 +8,7 @@
  */
 
 import { assertEquals, assertExists } from "../../lib/deps.ts";
-import { type BuilderVariableError, VariablesBuilder } from "../variables_builder.ts";
+import { type BuilderVariableError, VariablesBuilder } from "../../../../lib/builder/variables_builder.ts";
 
 /**
  * Test successful variable creation scenarios
