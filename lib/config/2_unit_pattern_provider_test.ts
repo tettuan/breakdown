@@ -10,7 +10,7 @@
  * @module config/2_unit_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "../deps.ts";
+import { assertEquals, assertExists, assertRejects, assert } from "../deps.ts";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "../types/directive_type.ts";
@@ -282,17 +282,15 @@ Deno.test("Unit: ConfigPatternProvider handles config errors gracefully", async 
  * ファクトリーメソッドが正しくインスタンスを作成するかを検証
  */
 Deno.test("Unit: ConfigPatternProvider.create factory method", async () => {
-  // createメソッドのエラーハンドリング
-  // 注: 実際のBreakdownConfig.createを呼ぶため、適切なモックが必要
-  await assertRejects(
-    async () => {
-      // 無効な設定名でエラーを発生させる
-      await ConfigPatternProvider.create("__invalid_config__", "/nonexistent/path");
-    },
-    Error,
-    "Failed to create BreakdownConfig",
-    "Should throw error when BreakdownConfig creation fails",
-  );
+  // createメソッドはResult型を返すため、エラー時は成功:falseが返される
+  const result = await ConfigPatternProvider.create("__invalid_config__", "/nonexistent/path");
+  
+  // Result型のエラーケースを検証
+  assertEquals(result.ok, false, "Should return failed Result when BreakdownConfig creation fails");
+  if (!result.ok) {
+    // ConfigurationErrorの構造に応じてエラー内容を検証
+    assert(result.error.kind !== undefined, "Error should have kind property");
+  }
 });
 
 /**

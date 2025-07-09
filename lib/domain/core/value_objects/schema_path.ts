@@ -223,9 +223,9 @@ export class SchemaPath extends BasePathValueObject {
     fullPath: string,
     private readonly schemaType: "json" | "markdown",
   ) {
-    super(fullPath);
-    // Additional immutability guarantee
-    Object.freeze(this);
+    super(fullPath, false); // Don't freeze immediately
+    // Freeze after all properties are set
+    this.freezeObject();
   }
 
   /**
@@ -357,7 +357,7 @@ export class SchemaPath extends BasePathValueObject {
   /**
    * Get the filename component
    */
-  getFilename(): string {
+  override getFilename(): string {
     return this.filename;
   }
 
@@ -387,7 +387,7 @@ export class SchemaPath extends BasePathValueObject {
   /**
    * Check if this schema path equals another
    */
-  equals(other: SchemaPath): boolean {
+  override equals(other: SchemaPath): boolean {
     return super.equals(other) &&
            this.directive.equals(other.directive) &&
            this.layer.equals(other.layer) &&

@@ -212,12 +212,13 @@ export class WorkingDirectoryPath extends BasePathValueObject {
   private constructor(
     private readonly originalPath: string,
     resolvedPath: string,
-    private readonly isAbsolute: boolean,
+    private readonly _isAbsolute: boolean,
     private readonly exists?: boolean,
   ) {
-    super(resolvedPath);
-    // Additional immutability guarantee
-    Object.freeze(this);
+    // Pass false to parent constructor to prevent premature freezing
+    super(resolvedPath, false);
+    // Now that all properties are set, freeze the object for immutability
+    this.freezeObject();
   }
 
   /**
@@ -269,7 +270,10 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     const baseValidation = super.createPath(
       resolvedPath,
       config.basePathConfig,
-      (normalizedPath) => normalizedPath, // We'll create the actual object later
+      (normalizedPath) => { 
+        // This will be replaced by actual object creation after verification
+        return new WorkingDirectoryPath(trimmedPath, normalizedPath, isAbsolute, undefined);
+      }
     );
 
     if (!baseValidation.ok) {
@@ -281,7 +285,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
       });
     }
 
-    const normalizedPath = baseValidation.data;
+    const normalizedPath = baseValidation.data.getValue();
 
     // Stage 4: File system verification (if enabled)
     const verificationResult = WorkingDirectoryPath.verifyFileSystem(normalizedPath, config);
@@ -302,13 +306,13 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     try {
       const cwd = Deno.cwd();
       return WorkingDirectoryPath.create(cwd);
-    } catch (error) {
+    } catch (err) {
       return error({
         kind: "FileSystemError",
         message: "Failed to get current working directory",
         path: ".",
         operation: "getcwd",
-        originalError: error instanceof Error ? error : undefined,
+        originalError: err instanceof Error ? err : undefined,
       });
     }
   }
@@ -320,13 +324,13 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     try {
       const tempDir = Deno.env.get("TMPDIR") || Deno.env.get("TEMP") || "/tmp";
       return WorkingDirectoryPath.create(tempDir);
-    } catch (error) {
+    } catch (err) {
       return error({
         kind: "FileSystemError",
         message: "Failed to get temporary directory",
         path: "TMPDIR",
         operation: "getenv",
-        originalError: error instanceof Error ? error : undefined,
+        originalError: err instanceof Error ? err : undefined,
       });
     }
   }
@@ -345,13 +349,13 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         });
       }
       return WorkingDirectoryPath.create(homeDir);
-    } catch (error) {
+    } catch (err) {
       return error({
         kind: "FileSystemError",
         message: "Failed to get home directory",
         path: "HOME",
         operation: "getenv",
-        originalError: error instanceof Error ? error : undefined,
+        originalError: err instanceof Error ? err : undefined,
       });
     }
   }
@@ -389,12 +393,14 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         message: "Cannot create relative path - paths are not related",
         originalPath: thisPath,
         resolvedPath: basePath,
+        resolutionError: { kind: "InvalidPath", path: thisPath, reason: "Paths are not related" },
       });
     } catch (resolutionError) {
       return error({
         kind: "PathResolutionGeneral",
         message: `Failed to calculate relative path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
         originalPath: this.getAbsolutePath(),
+        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: resolutionError instanceof Error ? resolutionError.message : String(resolutionError) },
       });
     }
   }
@@ -403,7 +409,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
    * Check if this is an absolute path
    */
   isAbsolutePath(): boolean {
-    return this.isAbsolute;
+    return this._isAbsolute;
   }
 
   /**
@@ -426,6 +432,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         kind: "PathResolutionGeneral",
         message: `Failed to join path components: ${joinError instanceof Error ? joinError.message : String(joinError)}`,
         originalPath: this.getAbsolutePath(),
+        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: joinError instanceof Error ? joinError.message : String(joinError) },
       });
     }
   }
@@ -443,6 +450,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         kind: "PathResolutionGeneral",
         message: `Failed to get parent directory: ${parentError instanceof Error ? parentError.message : String(parentError)}`,
         originalPath: this.getAbsolutePath(),
+        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: parentError instanceof Error ? parentError.message : String(parentError) },
       });
     }
   }
@@ -459,10 +467,14 @@ export class WorkingDirectoryPath extends BasePathValueObject {
   /**
    * Check if this directory path equals another
    */
-  equals(other: WorkingDirectoryPath): boolean {
+  override equals(other: BasePathValueObject): boolean {
+    if (!(other instanceof WorkingDirectoryPath)) {
+      return false;
+    }
+    
     return super.equals(other) &&
            this.originalPath === other.originalPath &&
-           this.isAbsolute === other.isAbsolute;
+           this._isAbsolute === other._isAbsolute;
   }
 
   /**
@@ -470,7 +482,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
    */
   toDebugString(): string {
     const existsInfo = this.exists !== undefined ? `, exists=${this.exists}` : '';
-    return `WorkingDirectoryPath{original=${this.originalPath}, resolved=${this.getAbsolutePath()}, absolute=${this.isAbsolute}${existsInfo}}`;
+    return `WorkingDirectoryPath{original=${this.originalPath}, resolved=${this.getAbsolutePath()}, absolute=${this._isAbsolute}${existsInfo}}`;
   }
 
   // Private validation methods
@@ -527,6 +539,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         kind: "PathResolutionGeneral",
         message: `Failed to resolve path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
         originalPath: path,
+        resolutionError: { kind: "InvalidPath", path: path, reason: resolutionError instanceof Error ? resolutionError.message : String(resolutionError) },
       });
     }
   }

@@ -8,6 +8,7 @@
  * @module lib/cli/error_handler
  */
 
+import type { Result } from "../types/result.ts";
 import type { TwoParamsHandlerError } from "./handlers/two_params_handler.ts";
 import type { UnifiedError } from "../types/unified_error_types.ts";
 import { extractUnifiedErrorMessage } from "../types/unified_error_types.ts";
@@ -15,10 +16,27 @@ import { extractUnifiedErrorMessage } from "../types/unified_error_types.ts";
 /**
  * Error severity levels for determining handling strategy
  */
-export enum ErrorSeverity {
-  CRITICAL = "critical",
-  WARNING = "warning",
-}
+export const ErrorSeverity = {
+  CRITICAL: "critical",
+  WARNING: "warning"
+} as const;
+
+export type ErrorSeverityType = typeof ErrorSeverity[keyof typeof ErrorSeverity];
+
+/**
+ * Error severity result type for determining handling strategy
+ */
+export type ErrorSeverityResult = 
+  | { kind: "critical" }
+  | { kind: "warning" };
+
+/**
+ * Configuration validation result
+ */
+export type ConfigValidationResult = 
+  | { ok: true; isValid: true; isTestScenario: false }
+  | { ok: true; isValid: true; isTestScenario: true }
+  | { ok: true; isValid: false; isTestScenario: false };
 
 /**
  * Analyzes an error to determine its severity
@@ -26,122 +44,204 @@ export enum ErrorSeverity {
  * @param error - The error to analyze
  * @returns The severity level of the error
  */
-export function analyzeErrorSeverity(error: unknown): ErrorSeverity {
-  if (!error || typeof error !== "object" || !("kind" in error)) {
-    return ErrorSeverity.CRITICAL;
+export function analyzeErrorSeverity(error: UnifiedError | TwoParamsHandlerError): ErrorSeverityResult {
+  // Type check for defensive programming
+  if (typeof error !== "object" || error === null) {
+    return { kind: "critical" };
   }
-
-  const errorObj = error as { kind: string; error?: unknown };
-
-  if (errorObj.kind === "PromptGenerationError" && errorObj.error) {
-    const errorMsg = extractErrorMessage(errorObj.error);
-
+  
+  // TwoParamsHandlerError specific logic
+  if ("kind" in error && error.kind === "PromptGenerationError") {
+    const handlerError = error as Extract<TwoParamsHandlerError, { kind: "PromptGenerationError" }>;
+    const errorMsg = handlerError.error;
+    
+    // Convert error to string for analysis
+    const errorStr = typeof errorMsg === "string" 
+      ? errorMsg 
+      : typeof errorMsg === "object" && errorMsg !== null && "message" in errorMsg
+      ? String((errorMsg as any).message)
+      : JSON.stringify(errorMsg);
+    
     // Check if this is a test scenario or critical path error
     if (
-      errorMsg.includes("/nonexistent/") ||
-      errorMsg.includes("nonexistent") ||
-      errorMsg.includes("absolute path") ||
-      errorMsg.includes("permission denied") ||
-      errorMsg.includes("access denied") ||
-      errorMsg.includes("Invalid configuration") ||
-      errorMsg.includes("critical") ||
-      errorMsg.includes("fatal")
+      errorStr.includes("/nonexistent/") ||
+      errorStr.includes("nonexistent") ||
+      errorStr.includes("absolute path") ||
+      errorStr.includes("permission denied") ||
+      errorStr.includes("access denied") ||
+      errorStr.includes("Invalid configuration") ||
+      errorStr.includes("critical") ||
+      errorStr.includes("fatal")
     ) {
-      return ErrorSeverity.CRITICAL;
+      return { kind: "critical" };
     }
-
-    return ErrorSeverity.WARNING;
+    
+    return { kind: "warning" };
   }
-
-  return ErrorSeverity.CRITICAL;
+  
+  return { kind: "critical" };
 }
 
 /**
  * Extracts a readable error message from various error formats
+ * Now returns a Result type following Totality principle
  *
  * @param error - The error object to extract message from
- * @returns A formatted error message string
+ * @returns Result containing formatted error message string
  */
-export function extractErrorMessage(error: unknown): string {
+export function extractErrorMessage(error: unknown): Result<string, { kind: "UnknownErrorType" }> {
   if (typeof error === "string") {
-    return error;
+    return { ok: true, data: error };
   }
-
-  // Handle unified error types
-  if (typeof error === "object" && error !== null && "kind" in error) {
-    try {
-      return extractUnifiedErrorMessage(error as UnifiedError);
-    } catch {
-      // Fall through to generic handling if not a unified error
-    }
-  }
-
+  
   if (typeof error === "object" && error !== null) {
-    const errorObj = error as { message?: string; error?: string };
-    return errorObj.message || errorObj.error || JSON.stringify(error);
+    // Try unified error handling first for objects with kind property
+    if ("kind" in error) {
+      try {
+        const unifiedMessage = extractUnifiedErrorMessage(error as UnifiedError);
+        // Only use unified message if it doesn't fall back to JSON.stringify
+        if (!unifiedMessage.startsWith("Unknown error:")) {
+          return { ok: true, data: unifiedMessage };
+        }
+      } catch {
+        // Fall through to standard property extraction
+      }
+    }
+    
+    // Type-safe property access
+    const errorObj = error as Record<string, unknown>;
+    
+    // Try standard message/error properties
+    if (typeof errorObj.message === "string") {
+      return { ok: true, data: errorObj.message };
+    }
+    if (typeof errorObj.error === "string") {
+      return { ok: true, data: errorObj.error };
+    }
+    
+    // JSON fallback for objects without standard properties
+    return { ok: true, data: JSON.stringify(error) };
   }
-
-  return String(error);
+  
+  return { ok: true, data: String(error) };
 }
 
 /**
- * Formats an error for display
+ * Formats an error for display using Result type
  *
  * @param error - The error to format
  * @param kind - Optional error kind prefix
- * @returns A formatted error string
+ * @returns Result containing formatted error string
  */
-export function formatError(error: unknown, kind?: string): string {
-  const baseMessage = typeof error === "object" && error !== null && "kind" in error
-    ? `${(error as { kind: string }).kind}: ${JSON.stringify(error).substring(0, 200)}`
-    : String(error);
-
-  return kind ? `${kind}: ${baseMessage}` : baseMessage;
+export function formatError(error: unknown, kind?: string): Result<string, { kind: "FormatError" }> {
+  if (typeof error === "object" && error !== null && "kind" in error) {
+    const errorWithKind = error as { kind: string };
+    const baseMessage = `${errorWithKind.kind}: ${JSON.stringify(error).substring(0, 200)}`;
+    return { ok: true, data: kind ? `${kind}: ${baseMessage}` : baseMessage };
+  }
+  
+  const baseMessage = String(error);
+  return { ok: true, data: kind ? `${kind}: ${baseMessage}` : baseMessage };
 }
 
 /**
  * Checks if the current configuration is testing error handling
+ * Returns a Result type following Totality principle
  *
  * @param config - The configuration object
- * @returns True if this is a test scenario for error handling
+ * @returns Result indicating if this is a test scenario
  */
-export function isTestingErrorHandling(config: Record<string, unknown>): boolean {
-  return !!(config && typeof config === "object" &&
-    "app_prompt" in config && config.app_prompt &&
-    typeof config.app_prompt === "object" && "base_dir" in config.app_prompt &&
-    config.app_prompt.base_dir === "/nonexistent/path");
+export function isTestingErrorHandling(config: unknown): ConfigValidationResult {
+  // Type guard: ensure config is a valid object
+  if (config === null || 
+      config === undefined || 
+      typeof config !== "object" || 
+      Array.isArray(config)) {
+    return { ok: true, isValid: false, isTestScenario: false };
+  }
+  
+  const configObj = config as Record<string, unknown>;
+  
+  // Check for app_prompt property
+  if (!("app_prompt" in configObj) || 
+      configObj.app_prompt === null || 
+      configObj.app_prompt === undefined ||
+      typeof configObj.app_prompt !== "object" ||
+      Array.isArray(configObj.app_prompt)) {
+    return { ok: true, isValid: false, isTestScenario: false };
+  }
+  
+  const appPrompt = configObj.app_prompt as Record<string, unknown>;
+  
+  // Check for base_dir property
+  if (!("base_dir" in appPrompt) || 
+      typeof appPrompt.base_dir !== "string") {
+    return { ok: true, isValid: true, isTestScenario: false };
+  }
+  
+  // Check if base_dir matches test scenario
+  if (appPrompt.base_dir === "/nonexistent/path") {
+    return { ok: true, isValid: true, isTestScenario: true };
+  }
+  
+  return { ok: true, isValid: true, isTestScenario: false };
 }
 
 /**
+ * Error handling result type
+ */
+export type ErrorHandlingResult = 
+  | { ok: true; handled: true; action: "logged_warning" }
+  | { ok: true; handled: false; reason: "critical_error" | "test_scenario" | "invalid_error_type" };
+
+/**
  * Handles errors from two params handler with appropriate severity
+ * Returns Result type following Totality principle
  *
  * @param handlerError - The error from two params handler
  * @param config - The configuration object
- * @returns True if the error was handled gracefully, false if it should be thrown
+ * @returns Result indicating if the error was handled gracefully
  */
 export function handleTwoParamsError(
   handlerError: unknown,
-  config: Record<string, unknown>,
-): boolean {
-  if (!handlerError || typeof handlerError !== "object" || !("kind" in handlerError)) {
-    return false;
+  config: unknown,
+): ErrorHandlingResult {
+  // Validate error type
+  if (!handlerError || 
+      typeof handlerError !== "object" || 
+      !("kind" in handlerError)) {
+    return { ok: true, handled: false, reason: "invalid_error_type" };
   }
-
-  const error = handlerError as TwoParamsHandlerError;
-
+  
+  const error = handlerError as { kind: string; error?: unknown };
+  
   if (error.kind !== "PromptGenerationError") {
-    return false;
+    return { ok: true, handled: false, reason: "invalid_error_type" };
   }
-
-  const errorMsg = extractErrorMessage(error.error);
-  const severity = analyzeErrorSeverity(error);
-
-  if (severity === ErrorSeverity.CRITICAL || isTestingErrorHandling(config)) {
-    return false;
+  
+  // Cast to specific error type after validation
+  const twoParamsError = error as TwoParamsHandlerError;
+  
+  // For PromptGenerationError, extract the error message
+  if (twoParamsError.kind === "PromptGenerationError") {
+    const promptError = twoParamsError as Extract<TwoParamsHandlerError, { kind: "PromptGenerationError" }>;
+    const errorMsgResult = extractErrorMessage(promptError.error);
+    if (!errorMsgResult.ok) {
+      return { ok: true, handled: false, reason: "invalid_error_type" };
+    }
+    
+    const severity = analyzeErrorSeverity(twoParamsError);
+    const configResult = isTestingErrorHandling(config);
+    
+    if (severity.kind === "critical" || (configResult.ok && configResult.isValid && configResult.isTestScenario)) {
+      return { ok: true, handled: false, reason: severity.kind === "critical" ? "critical_error" : "test_scenario" };
+    }
+    
+    // Handle as warning
+    console.warn(`⚠️ Prompt generation issue: ${errorMsgResult.data}`);
+    console.log("✅ Breakdown execution completed with warnings");
+    return { ok: true, handled: true, action: "logged_warning" };
   }
-
-  // Handle as warning
-  console.warn(`⚠️ Prompt generation issue: ${errorMsg}`);
-  console.log("✅ Breakdown execution completed with warnings");
-  return true;
+  
+  return { ok: true, handled: false, reason: "invalid_error_type" };
 }

@@ -67,7 +67,7 @@ Breakdown は Deno で実装された OSS ツールで、プロジェクト管�
    - 生成されたプロンプトの出力
    - エラー時の適切な処理
 
-詳細は[breakdownの処理フロー](./overview/processing-flow.ja.md)を参照してください。
+詳細は[breakdownの処理フロー](./generic_domain/system/overview/processing-flow.ja.md)を参照してください。
 
 ## 使用するJSRパッケージ
 
@@ -102,7 +102,7 @@ Breakdown ツールは、**DirectiveType**（処理方向）と**LayerType**（�
 - **DirectiveType**: `to`（変換）、`summary`（要約）、`defect`（欠陥検出）等
 - **LayerType**: `project`（プロジェクト）、`issue`（課題）、`task`（タスク）等
 
-これらの型の取りうる値は、`user.yml`でユーザーが自由に定義・カスタマイズ可能です。さらに、**BreakdownConfig**を使うことで、プロファイルプレフィクスを用いてDirectiveTypeとLayerTypeの組み合わせを用途ごとに切り替えることができます。
+これらの型の取りうる値は、`*-user.yml`でユーザーが自由に定義・カスタマイズ可能です。さらに、**BreakdownConfig**を使うことで、プロファイルプレフィクスを用いてDirectiveTypeとLayerTypeの組み合わせを用途ごとに切り替えることができます。
 
 ### 処理の流れ
 
@@ -193,9 +193,12 @@ Breakdown ツールは、**DirectiveType**（処理方向）と**LayerType**（�
 
 #### 3.2 設定インターフェース
 - **[設定管理](./interface/configuration.ja.md)** - 設定ファイルの準備と管理
-  - アプリケーション設定（app.yml）
-  - ユーザー設定（user.yml）
+  - アプリケーション設定（*-app.yml）
+  - ユーザー設定（*-user.yml）
   - プロファイルプレフィクスによる切り替え
+  - 初期値: "default" を用いる
+    - `default-app.yml`
+    - `default-user.yml`
 
 #### 3.3 パス解決インターフェース
 - **[パス解決ルール](./interface/path_resolution.ja.md)** - パラメータに応じたファイルパス解決

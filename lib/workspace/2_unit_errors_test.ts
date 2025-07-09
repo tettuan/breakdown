@@ -16,6 +16,16 @@ import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
+  createWorkspaceConfigError,
+  createWorkspaceDirectoryError,
+  createWorkspaceError,
+  createWorkspaceInitError,
+  createWorkspacePathError,
+  isWorkspaceConfigError,
+  isWorkspaceDirectoryError,
+  isWorkspaceError,
+  isWorkspaceInitError,
+  isWorkspacePathError,
   WorkspaceConfigError,
   WorkspaceDirectoryError,
   WorkspaceError,
@@ -142,7 +152,6 @@ describe("Workspace Errors - Unit Tests", async () => {
       assertEquals(error.code, "WORKSPACE_INIT_ERROR");
       assertEquals(error.name, "WorkspaceInitError");
       assertInstanceOf(error, Error);
-      assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceInitError);
 
       _logger.debug("WorkspaceInitError created successfully", {
@@ -199,7 +208,7 @@ describe("Workspace Errors - Unit Tests", async () => {
 
       // Positive checks
       assertInstanceOf(initError, WorkspaceInitError);
-      assertInstanceOf(initError, WorkspaceError);
+      assertInstanceOf(initError, Error);
 
       // Negative checks
       assertEquals(initError instanceof WorkspaceConfigError, false);
@@ -227,7 +236,6 @@ describe("Workspace Errors - Unit Tests", async () => {
       assertEquals(error.code, "WORKSPACE_CONFIG_ERROR");
       assertEquals(error.name, "WorkspaceConfigError");
       assertInstanceOf(error, Error);
-      assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceConfigError);
 
       _logger.debug("WorkspaceConfigError created successfully", {
@@ -319,7 +327,6 @@ describe("Workspace Errors - Unit Tests", async () => {
       assertEquals(error.code, "WORKSPACE_PATH_ERROR");
       assertEquals(error.name, "WorkspacePathError");
       assertInstanceOf(error, Error);
-      assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspacePathError);
 
       _logger.debug("WorkspacePathError created successfully", {
@@ -419,7 +426,6 @@ describe("Workspace Errors - Unit Tests", async () => {
       assertEquals(error.code, "WORKSPACE_DIRECTORY_ERROR");
       assertEquals(error.name, "WorkspaceDirectoryError");
       assertInstanceOf(error, Error);
-      assertInstanceOf(error, WorkspaceError);
       assertInstanceOf(error, WorkspaceDirectoryError);
 
       _logger.debug("WorkspaceDirectoryError created successfully", {
@@ -527,7 +533,7 @@ describe("Workspace Errors - Unit Tests", async () => {
 
       let errorMessage = "";
       let errorCode = "";
-      let isWorkspaceError = false;
+      let isWorkspaceInitError = false;
 
       try {
         riskyOperation();
@@ -535,19 +541,19 @@ describe("Workspace Errors - Unit Tests", async () => {
         if (error instanceof Error) {
           errorMessage = error.message;
         }
-        if (error instanceof WorkspaceError) {
+        if (error instanceof WorkspaceInitError) {
           errorCode = error.code;
-          isWorkspaceError = true;
+          isWorkspaceInitError = true;
         }
       }
 
       assertEquals(errorMessage, "Simulated failure");
       assertEquals(errorCode, "WORKSPACE_INIT_ERROR");
-      assertEquals(isWorkspaceError, true);
+      assertEquals(isWorkspaceInitError, true);
 
       _logger.debug("Standard error handling verified", {
         catchesAsError: true,
-        catchesAsWorkspaceError: true,
+        catchesAsWorkspaceInitError: true,
         preservesProperties: true,
       });
     });

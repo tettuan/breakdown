@@ -440,12 +440,12 @@ if (!source.fromFile && !source.stdinContent) {
 - [two_params_types.ja.md](./two_params_types.ja.md): DirectiveTypeとLayerTypeの詳細
 
 ### 実装詳細
-- [app_factory.ja.md](../technical/app_factory.ja.md): PromptVariablesFactoryの実装
-- [app_prompt.ja.md](../templates/app_prompt.ja.md): BreakdownPromptの使用方法
+- [app_factory.ja.md](../generic_domain/factory/app_factory.ja.md): PromptVariablesFactoryの実装
+- [app_prompt.ja.md](../supporting_domain/template_management/app_prompt.ja.md): BreakdownPromptの使用方法
 
 ### 仕様参考
-- [options.ja.md](../parameters/options.ja.md): CLIオプションの詳細仕様
-- [processing-flow.ja.md](../overview/processing-flow.ja.md): 全体の処理フロー
+- [CLIコマンド](../interface/cli_commands.ja.md): コマンドライン引数の詳細仕様
+- [processing-flow.ja.md](../generic_domain/system/overview/processing-flow.ja.md): 全体の処理フロー
 
 ---
 

@@ -489,7 +489,7 @@ export class ConfigSetNameCollection {
    * @returns Array of name strings
    */
   getNames(): readonly string[] {
-    return this._names.map(name => name.value);
+    return Object.freeze(this._names.map(name => name.value));
   }
 
   /**

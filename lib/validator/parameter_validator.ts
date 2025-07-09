@@ -14,6 +14,11 @@ import { DirectiveType } from "../types/directive_type.ts";
 import { LayerType } from "../types/layer_type.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
+import type { ValidationError } from "../types/unified_error_types.ts";
+import { ErrorFactory } from "../types/unified_error_types.ts";
+
+// Re-export ValidationError for test usage
+export type { ValidationError } from "../types/unified_error_types.ts";
 
 /**
  * Validated parameters after comprehensive validation
@@ -46,18 +51,8 @@ export type ValidationMetadata = {
   profileName?: string;
 };
 
-/**
- * Validation error types following discriminated union pattern
- */
-export type ValidationError =
-  | { kind: "InvalidParamsType"; expected: string; received: string }
-  | { kind: "MissingRequiredField"; field: string; source: string }
-  | { kind: "InvalidDirectiveType"; value: string; validPattern: string }
-  | { kind: "InvalidLayerType"; value: string; validPattern: string }
-  | { kind: "PathValidationFailed"; path: string; reason: string }
-  | { kind: "CustomVariableInvalid"; key: string; reason: string }
-  | { kind: "ConfigValidationFailed"; errors: string[] }
-  | { kind: "UnsupportedParamsType"; type: string };
+// ValidationError is now imported from unified_error_types.ts
+// This provides consistent error structure across all validators
 
 /**
  * Configuration validator interface (to be injected)
@@ -98,48 +93,43 @@ export class ParameterValidator {
   validateTwoParams(result: TwoParams_Result): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
     if (result.type !== "two") {
-      return error({
-        kind: "InvalidParamsType",
+      return error(ErrorFactory.validationError("InvalidParamsType", {
         expected: "two",
         received: result.type,
-      });
+      }));
     }
 
     // Validate required fields
     if (!result.demonstrativeType) {
-      return error({
-        kind: "MissingRequiredField",
+      return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "demonstrativeType",
         source: "TwoParams_Result",
-      });
+      }));
     }
 
     if (!result.layerType) {
-      return error({
-        kind: "MissingRequiredField",
+      return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "layerType",
         source: "TwoParams_Result",
-      });
+      }));
     }
 
     // Validate directive type against pattern
     const directivePattern = this.patternProvider.getDirectivePattern();
     if (!directivePattern || !directivePattern.test(result.demonstrativeType)) {
-      return error({
-        kind: "InvalidDirectiveType",
+      return error(ErrorFactory.validationError("InvalidDirectiveType", {
         value: result.demonstrativeType,
         validPattern: directivePattern ? directivePattern.getPattern() : "undefined",
-      });
+      }));
     }
 
     // Validate layer type against pattern
     const layerPattern = this.patternProvider.getLayerTypePattern();
     if (!layerPattern || !layerPattern.test(result.layerType)) {
-      return error({
-        kind: "InvalidLayerType",
+      return error(ErrorFactory.validationError("InvalidLayerType", {
         value: result.layerType,
         validPattern: layerPattern ? layerPattern.getPattern() : "undefined",
-      });
+      }));
     }
 
     // Create validated types from TwoParams_Result
@@ -183,21 +173,19 @@ export class ParameterValidator {
   validateOneParams(result: OneParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
     if (result.type !== "one") {
-      return error({
-        kind: "InvalidParamsType",
+      return error(ErrorFactory.validationError("InvalidParamsType", {
         expected: "one",
         received: result.type,
-      });
+      }));
     }
 
     // For one param, we need to determine directive/layer from context
     // This is a simplified implementation - actual logic would be more complex
     if (!result.params || result.params.length !== 1) {
-      return error({
-        kind: "MissingRequiredField",
+      return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "params",
         source: "OneParamsResult",
-      });
+      }));
     }
 
     // Create default directive and layer for one param case
@@ -231,11 +219,10 @@ export class ParameterValidator {
   validateZeroParams(result: ZeroParamsResult): Result<ValidatedParams, ValidationError> {
     // Verify correct params type
     if (result.type !== "zero") {
-      return error({
-        kind: "InvalidParamsType",
+      return error(ErrorFactory.validationError("InvalidParamsType", {
         expected: "zero",
         received: result.type,
-      });
+      }));
     }
 
     // For zero params, use complete defaults
@@ -302,11 +289,10 @@ export class ParameterValidator {
       if (key.startsWith("uv-")) {
         // Validate custom variable
         if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
-          return error({
-            kind: "CustomVariableInvalid",
+          return error(ErrorFactory.validationError("CustomVariableInvalid", {
             key,
             reason: "Value must be string, number, or boolean",
-          });
+          }));
         }
         customVariables[key] = String(value);
       }
@@ -375,20 +361,18 @@ export class ParameterValidator {
 
     // Check for invalid characters
     if (path.includes("\0")) {
-      return error({
-        kind: "PathValidationFailed",
+      return error(ErrorFactory.validationError("PathValidationFailed", {
         path,
         reason: "Path contains null character",
-      });
+      }));
     }
 
     // Check for empty path
     if (path.trim() === "") {
-      return error({
-        kind: "PathValidationFailed",
+      return error(ErrorFactory.validationError("PathValidationFailed", {
         path,
         reason: `${type} path cannot be empty`,
-      });
+      }));
     }
 
     return ok(undefined);

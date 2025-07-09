@@ -55,8 +55,8 @@ Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   assertEquals(typeof result.ok, "boolean");
   
   if (result.ok) {
-    assertExists(result.data);
-    assertEquals(result.data.constructor.name, "TemplateRequest");
+    assertExists(result.data!);
+    assertEquals(result.data!.constructor.name, "TemplateRequest");
   } else {
     assertExists(result.error);
     assertEquals(typeof result.error, "string");
@@ -133,7 +133,7 @@ Deno.test("1_behavior: creates valid TemplateRequest with required fields", () =
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    const request = result.data;
+    const request = result.data!;
     assertEquals(request.directive, validDirective);
     assertEquals(request.layer, validLayer);
     assertEquals(request.adaptation, undefined);
@@ -146,7 +146,7 @@ Deno.test("1_behavior: creates valid TemplateRequest with optional fields", () =
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    const request = result.data;
+    const request = result.data!;
     assertEquals(request.directive, validDirective);
     assertEquals(request.layer, validLayer);
     assertEquals(request.adaptation, "custom-adaptation");
@@ -233,8 +233,8 @@ Deno.test("1_behavior: preserves optional fields when provided", () => {
   const result = TemplateRequest.create(customData);
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.adaptation, "custom-style");
-    assertEquals(result.data.fromLayer, validLayer);
+    assertEquals(result.data!.adaptation, "custom-style");
+    assertEquals(result.data!.fromLayer, validLayer);
   }
 });
 
@@ -246,7 +246,7 @@ Deno.test("2_structure: TemplateRequest has immutable properties", () => {
   const result = TemplateRequest.create(validTemplateRequestData);
   
   if (result.ok) {
-    const request = result.data;
+    const request = result.data!;
     
     // Properties should be readonly - TypeScript enforces this at compile time
     // Runtime verification that properties exist and are accessible
@@ -267,7 +267,7 @@ Deno.test("2_structure: TemplateRequest maintains data integrity", () => {
   const result = TemplateRequest.create(originalData);
   
   if (result.ok) {
-    const request = result.data;
+    const request = result.data!;
     
     // Modifying original data should not affect created instance
     originalData.adaptation = "modified";
@@ -292,8 +292,8 @@ Deno.test("2_structure: success results have correct structure", () => {
   
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
-    assertExists(validResult.data);
-    assertEquals(validResult.data instanceof TemplateRequest, true);
+    assertExists(validResult.data!);
+    assertEquals(validResult.data! instanceof TemplateRequest, true);
     assertEquals(validResult.error, undefined);
   }
 });
@@ -302,7 +302,7 @@ Deno.test("2_structure: TemplateRequest readonly property access", () => {
   const result = TemplateRequest.create(validTemplateRequestDataWithOptionals);
   
   if (result.ok) {
-    const request = result.data;
+    const request = result.data!;
     
     // All properties should be accessible
     assertExists(request.directive);
@@ -324,15 +324,15 @@ Deno.test("2_structure: multiple instances are independent", () => {
   
   if (result1.ok && result2.ok) {
     // Different instances should be independent
-    assertEquals(result1.data === result2.data, false);
+    assertEquals(result1.data! === result2.data!, false);
     
     // But they should have the same directive and layer
-    assertEquals(result1.data.directive, result2.data.directive);
-    assertEquals(result1.data.layer, result2.data.layer);
+    assertEquals(result1.data!.directive, result2.data!.directive);
+    assertEquals(result1.data!.layer, result2.data!.layer);
     
     // Optional fields should be different
-    assertEquals(result1.data.adaptation, undefined);
-    assertEquals(result2.data.adaptation, "custom-adaptation");
+    assertEquals(result1.data!.adaptation, undefined);
+    assertEquals(result2.data!.adaptation, "custom-adaptation");
   }
 });
 
@@ -343,7 +343,7 @@ Deno.test("2_structure: TemplateRequestResult interface compliance", () => {
   // Valid result structure
   assertEquals(typeof validResult.ok, "boolean");
   if (validResult.ok) {
-    assertExists(validResult.data);
+    assertExists(validResult.data!);
     assertEquals(validResult.error, undefined);
   }
   

@@ -12,6 +12,8 @@ export {
   ParameterValidator,
   type ValidatedOptions,
   type ValidatedParams,
-  type ValidationError,
   type ValidationMetadata,
 } from "./parameter_validator.ts";
+
+// ValidationError is now re-exported from unified_error_types
+export type { ValidationError } from "../types/unified_error_types.ts";

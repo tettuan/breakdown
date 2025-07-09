@@ -19,11 +19,7 @@ export {
   BasePathValueObject,
   DEFAULT_PATH_CONFIG,
   type PathValidationConfig,
-  type BasePathError,
-  isInvalidPathError as isBasePathInvalidPathError,
-  isSecurityViolationError as isBasePathSecurityViolationError,
-  isValidationError as isBasePathValidationError,
-  formatBasePathError,
+  type PathValidationError,
 } from "./base_path.ts";
 
 // Template Path Value Object
@@ -66,7 +62,7 @@ export {
   isInvalidDirectoryPathError,
   isDirectoryNotFoundError,
   isPermissionDeniedError,
-  isPathResolutionError as isWorkingDirectoryPathResolutionError,
+  isPathResolutionGeneralError as isWorkingDirectoryPathResolutionError,
   isSecurityViolationError as isWorkingDirectorySecurityViolationError,
   isValidationError as isWorkingDirectoryValidationError,
   isFileSystemError,
@@ -78,7 +74,7 @@ export {
  * Enables handling any path-related error uniformly
  */
 export type PathValueObjectError = 
-  | import("./base_path.ts").BasePathError
+  | import("./base_path.ts").PathValidationError
   | import("./template_path.ts").TemplatePathError 
   | import("./schema_path.ts").SchemaPathError
   | import("./working_directory_path.ts").WorkingDirectoryPathError;
@@ -93,15 +89,16 @@ export function isPathValueObjectError(error: unknown): error is PathValueObject
   
   const errorObj = error as { kind?: string };
   const pathErrorKinds = [
-    // BasePathError kinds
-    "InvalidPath", "SecurityViolation", "ValidationError",
+    // PathValidationError kinds
+    "EMPTY_PATH", "PATH_TRAVERSAL", "INVALID_CHARACTERS", "TOO_LONG",
+    "ABSOLUTE_PATH_REQUIRED", "RELATIVE_PATH_REQUIRED", "INVALID_EXTENSION", "PLATFORM_INCOMPATIBLE",
     // TemplatePathError kinds  
-    "InvalidDirective", "InvalidLayer", "InvalidFilename", "PathConstructionError",
+    "InvalidDirective", "InvalidLayer", "InvalidFilename", "PathConstructionError", "SecurityViolation", "ValidationError",
     // SchemaPathError kinds
     "InvalidSchemaFilename", "SchemaPathConstructionError", "JsonSchemaValidationError",
     // WorkingDirectoryPathError kinds
     "InvalidDirectoryPath", "DirectoryNotFound", "PermissionDenied", 
-    "PathResolutionError", "FileSystemError"
+    "PathResolutionGeneral", "FileSystemError"
   ];
   
   return typeof errorObj.kind === 'string' && pathErrorKinds.includes(errorObj.kind);
@@ -111,27 +108,39 @@ export function isPathValueObjectError(error: unknown): error is PathValueObject
  * Format any path value object error for display
  * Provides unified error formatting across all path types
  */
-export function formatPathValueObjectError(error: PathValueObjectError): string {
-  // Import the specific formatters
-  const { formatBasePathError } = await import("./base_path.ts");
-  const { formatTemplatePathError } = await import("./template_path.ts");
-  const { formatSchemaPathError } = await import("./schema_path.ts");
-  const { formatWorkingDirectoryPathError } = await import("./working_directory_path.ts");
+export async function formatPathValueObjectError(error: PathValueObjectError): Promise<string> {
+  // Import all formatters at once to avoid potential module resolution issues
+  const [
+    { formatTemplatePathError },
+    { formatSchemaPathError },
+    { formatWorkingDirectoryPathError }
+  ] = await Promise.all([
+    import("./template_path.ts"),
+    import("./schema_path.ts"),
+    import("./working_directory_path.ts")
+  ]);
   
   // Type-safe error formatting based on error structure
   if ('kind' in error) {
     switch (error.kind) {
-      // BasePathError
-      case "InvalidPath":
-      case "SecurityViolation":
-      case "ValidationError":
-        return formatBasePathError(error as import("./base_path.ts").BasePathError);
+      // PathValidationError
+      case "EMPTY_PATH":
+      case "PATH_TRAVERSAL":
+      case "INVALID_CHARACTERS":
+      case "TOO_LONG":
+      case "ABSOLUTE_PATH_REQUIRED":
+      case "RELATIVE_PATH_REQUIRED":
+      case "INVALID_EXTENSION":
+      case "PLATFORM_INCOMPATIBLE":
+        return `Path validation error: ${error.message}`;
         
       // TemplatePathError  
       case "InvalidDirective":
       case "InvalidLayer":
       case "InvalidFilename":
       case "PathConstructionError":
+      case "SecurityViolation":
+      case "ValidationError":
         return formatTemplatePathError(error as import("./template_path.ts").TemplatePathError);
         
       // SchemaPathError
@@ -144,7 +153,7 @@ export function formatPathValueObjectError(error: PathValueObjectError): string 
       case "InvalidDirectoryPath":
       case "DirectoryNotFound":
       case "PermissionDenied":
-      case "PathResolutionError":
+      case "PathResolutionGeneral":
       case "FileSystemError":
         return formatWorkingDirectoryPathError(error as import("./working_directory_path.ts").WorkingDirectoryPathError);
     }
@@ -204,71 +213,90 @@ export class PathValueObjectFactory {
 }
 
 /**
- * Configuration presets for different environments
+ * Get configuration presets for different environments
+ * These functions return proper configurations by importing the defaults dynamically
  */
 export const PathValueObjectConfigs = {
   /**
-   * Development environment configuration
+   * Get development environment configuration
    */
-  development: {
-    template: {
-      ...DEFAULT_TEMPLATE_PATH_CONFIG,
-      allowCustomDirectives: true,
-      allowCustomLayers: true,
-    },
-    schema: {
-      ...DEFAULT_SCHEMA_PATH_CONFIG,
-      allowCustomDirectives: true,
-      allowCustomLayers: true,
-    },
-    workingDirectory: {
-      ...DEFAULT_WORKING_DIRECTORY_CONFIG,
-      createIfMissing: true,
-      requireWritePermission: true,
-    },
+  async development() {
+    const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
+    const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
+    const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
+    
+    return {
+      template: {
+        ...DEFAULT_TEMPLATE_PATH_CONFIG,
+        allowCustomDirectives: true,
+        allowCustomLayers: true,
+      },
+      schema: {
+        ...DEFAULT_SCHEMA_PATH_CONFIG,
+        allowCustomDirectives: true,
+        allowCustomLayers: true,
+      },
+      workingDirectory: {
+        ...DEFAULT_WORKING_DIRECTORY_CONFIG,
+        createIfMissing: true,
+        requireWritePermission: true,
+      },
+    };
   },
 
   /**
-   * Production environment configuration
+   * Get production environment configuration
    */
-  production: {
-    template: DEFAULT_TEMPLATE_PATH_CONFIG,
-    schema: DEFAULT_SCHEMA_PATH_CONFIG,
-    workingDirectory: {
-      ...DEFAULT_WORKING_DIRECTORY_CONFIG,
-      verifyExistence: true,
-      requireReadPermission: true,
-    },
+  async production() {
+    const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
+    const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
+    const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
+    
+    return {
+      template: DEFAULT_TEMPLATE_PATH_CONFIG,
+      schema: DEFAULT_SCHEMA_PATH_CONFIG,
+      workingDirectory: {
+        ...DEFAULT_WORKING_DIRECTORY_CONFIG,
+        verifyExistence: true,
+        requireReadPermission: true,
+      },
+    };
   },
 
   /**
-   * Testing environment configuration
+   * Get testing environment configuration
    */
-  testing: {
-    template: {
-      ...DEFAULT_TEMPLATE_PATH_CONFIG,
-      allowCustomDirectives: true,
-      allowCustomLayers: true,
-      basePathConfig: {
-        ...DEFAULT_TEMPLATE_PATH_CONFIG.basePathConfig,
-        maxLength: 50, // Shorter paths for tests
+  async testing() {
+    const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
+    const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
+    const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
+    
+    return {
+      template: {
+        ...DEFAULT_TEMPLATE_PATH_CONFIG,
+        allowCustomDirectives: true,
+        allowCustomLayers: true,
+        basePathConfig: {
+          ...DEFAULT_TEMPLATE_PATH_CONFIG.basePathConfig,
+          maxLength: 50, // Shorter paths for tests
+        },
       },
-    },
-    schema: {
-      ...DEFAULT_SCHEMA_PATH_CONFIG,
-      allowCustomDirectives: true,
-      allowCustomLayers: true,
-      basePathConfig: {
-        ...DEFAULT_SCHEMA_PATH_CONFIG.basePathConfig,
-        maxLength: 50, // Shorter paths for tests
+      schema: {
+        ...DEFAULT_SCHEMA_PATH_CONFIG,
+        allowCustomDirectives: true,
+        allowCustomLayers: true,
+        basePathConfig: {
+          ...DEFAULT_SCHEMA_PATH_CONFIG.basePathConfig,
+          maxLength: 50, // Shorter paths for tests
+        },
       },
-    },
-    workingDirectory: {
-      ...DEFAULT_WORKING_DIRECTORY_CONFIG,
-      verifyExistence: false, // Don't verify in tests
-      createIfMissing: true,
-      requireReadPermission: false,
-      requireWritePermission: false,
-    },
+      workingDirectory: {
+        ...DEFAULT_WORKING_DIRECTORY_CONFIG,
+        verifyExistence: false, // Don't verify in tests
+        createIfMissing: true,
+        requireReadPermission: false,
+        requireWritePermission: false,
+      },
+    };
   },
 } as const;

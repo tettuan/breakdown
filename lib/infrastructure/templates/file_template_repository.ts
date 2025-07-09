@@ -81,10 +81,16 @@ export class FileTemplateRepository implements TemplateRepository {
       const content = await Deno.readTextFile(fullPath);
       const stat = await Deno.stat(fullPath);
 
-      const template = PromptTemplate.create(path, content, {
+      const templateResult = PromptTemplate.create(path, content, {
         createdAt: stat.birthtime || new Date(),
         updatedAt: stat.mtime || new Date(),
       });
+
+      if (!templateResult.ok) {
+        throw new Error(`Failed to create template: ${templateResult.error}`);
+      }
+
+      const template = templateResult.data;
 
       // Cache if enabled
       if (this.config.cacheEnabled) {

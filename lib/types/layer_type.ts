@@ -10,6 +10,10 @@
  */
 
 import type { TwoParams_Result } from "../deps.ts";
+import type { Result } from "./result.ts";
+import { error, ok } from "./result.ts";
+import type { ValidationError } from "./unified_error_types.ts";
+import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
  * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン
@@ -26,11 +30,45 @@ export class TwoParamsLayerTypePattern {
    * @returns 成功時は TwoParamsLayerTypePattern、失敗時は null
    */
   static create(pattern: string): TwoParamsLayerTypePattern | null {
+    // Validate input type first
+    if (typeof pattern !== 'string' || pattern == null) {
+      return null;
+    }
+    
     try {
       const regex = new RegExp(pattern);
       return new TwoParamsLayerTypePattern(regex);
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * 文字列パターンから TwoParamsLayerTypePattern を作成（Result型版）
+   * 
+   * Totality原則に準拠し、エラーを明示的に返す。
+   * 
+   * @param pattern 正規表現文字列
+   * @returns 成功時は Result<TwoParamsLayerTypePattern>、失敗時はエラー情報
+   */
+  static createOrError(pattern: string): Result<TwoParamsLayerTypePattern, ValidationError> {
+    if (!pattern || pattern.length === 0) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: "Pattern cannot be empty",
+      }));
+    }
+
+    try {
+      const regex = new RegExp(pattern);
+      return ok(new TwoParamsLayerTypePattern(regex));
+    } catch (e) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
+      }));
     }
   }
 
@@ -131,6 +169,65 @@ export class LayerType {
    */
   static create(result: TwoParams_Result): LayerType {
     return new LayerType(result);
+  }
+
+  /**
+   * TwoParams_Result から LayerType を構築（Result型版）
+   *
+   * Totality原則に完全準拠し、すべてのエラーケースを明示的に扱う。
+   * LayerTypeの構築前に追加バリデーションを実行し、
+   * 失敗の可能性がある場合はResult型でエラーを返す。
+   *
+   * @param result TwoParams_Result（基本的なバリデーション済み）
+   * @param pattern オプショナル：追加バリデーション用のパターン
+   * @returns 成功時は Result<LayerType>、失敗時はエラー情報
+   *
+   * @example
+   * ```typescript
+   * const pattern = TwoParamsLayerTypePattern.createOrError("^(project|issue|task|bugs)$");
+   * if (pattern.ok) {
+   *   const layerResult = LayerType.createOrError(result, pattern.data);
+   *   if (layerResult.ok) {
+   *     // 型安全に使用可能
+   *     console.log(layerResult.data.value);
+   *   } else {
+   *     // エラーハンドリング
+   *     console.error(layerResult.error);
+   *   }
+   * }
+   * ```
+   */
+  static createOrError(
+    result: TwoParams_Result,
+    pattern?: TwoParamsLayerTypePattern
+  ): Result<LayerType, ValidationError> {
+    // 基本的なバリデーション
+    if (!result || result.type !== "two") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "result",
+        value: result,
+        reason: "Invalid TwoParams_Result: must have type 'two'",
+      }));
+    }
+
+    if (!result.layerType || typeof result.layerType !== "string") {
+      return error(ErrorFactory.validationError("MissingRequiredField", {
+        field: "layerType",
+        source: "TwoParams_Result",
+      }));
+    }
+
+    // パターンマッチングによる追加バリデーション（オプショナル）
+    if (pattern && !pattern.test(result.layerType)) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "layerType",
+        value: result.layerType,
+        reason: `Value does not match required pattern: ${pattern.getPattern()}`,
+      }));
+    }
+
+    // すべてのバリデーションに成功
+    return ok(new LayerType(result));
   }
 
   /**

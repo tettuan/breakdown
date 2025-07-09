@@ -8,11 +8,13 @@
  */
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { Result } from "../../types/result.ts";
+import { ok, error } from "../../types/result.ts";
 import type { TemplateRepository } from "./template_repository.ts";
 import type { SchemaRepository } from "./schema_repository.ts";
 import { PromptTemplate, TemplatePath } from "./prompt_generation_aggregate.ts";
 import { Schema, SchemaPath } from "./schema_management_aggregate.ts";
-import { SchemaId, TemplateId, TemplateVersion } from "./template_value_objects.ts";
+import { SchemaId as _SchemaId, TemplateId as _TemplateId, TemplateVersion } from "./template_value_objects.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
@@ -31,22 +33,30 @@ export interface TemplateResolutionRequest {
 }
 
 /**
- * Resolution result
+ * Resolution success result
  */
-export interface TemplateResolutionResult {
-  success: boolean;
-  template?: PromptTemplate;
+export interface TemplateResolutionSuccess {
+  template: PromptTemplate;
   schema?: Schema;
-  resolvedPath?: TemplatePath;
+  resolvedPath: TemplatePath;
   schemaPath?: SchemaPath;
   fallbackUsed?: boolean;
   warnings?: string[];
-  error?: {
-    type: ResolutionErrorType;
-    message: string;
-    details?: unknown;
-  };
 }
+
+/**
+ * Resolution error
+ */
+export interface TemplateResolutionError {
+  type: ResolutionErrorType;
+  message: string;
+  details?: unknown;
+}
+
+/**
+ * Resolution result using Result type for Totality principle
+ */
+export type TemplateResolutionResult = Result<TemplateResolutionSuccess, TemplateResolutionError>;
 
 /**
  * Resolution error types
@@ -106,28 +116,29 @@ export class ExactPathStrategy implements ResolutionStrategy {
       // Parse custom path
       const parts = customPath.split("/");
       if (parts.length < 3) {
-        return {
-          success: false,
-          error: {
-            type: "invalid_path",
-            message: `Invalid custom path format: ${customPath}`,
-          },
-        };
+        return error({
+          type: "invalid_path",
+          message: `Invalid custom path format: ${customPath}`,
+        });
       }
 
       const filename = parts[parts.length - 1];
-      const templatePath = TemplatePath.create(request.directive, request.layer, filename);
+      const templatePathResult = TemplatePath.create(request.directive, request.layer, filename);
+      if (!templatePathResult.ok) {
+        return error({
+          type: "invalid_path",
+          message: `Failed to create template path: ${templatePathResult.error}`,
+        });
+      }
 
+      const templatePath = templatePathResult.data;
       // Check if template exists
       const exists = await templateRepo.exists(templatePath);
       if (!exists) {
-        return {
-          success: false,
-          error: {
-            type: "template_not_found",
-            message: `Template not found at custom path: ${customPath}`,
-          },
-        };
+        return error({
+          type: "template_not_found",
+          message: `Template not found at custom path: ${customPath}`,
+        });
       }
 
       // Load template
@@ -137,33 +148,32 @@ export class ExactPathStrategy implements ResolutionStrategy {
       let schema: Schema | undefined;
       try {
         const schemaFilename = filename.replace(".md", ".json");
-        const schemaPath = SchemaPath.create(request.directive, request.layer, schemaFilename);
-        const schemaExists = await schemaRepo.exists(schemaPath);
-        if (schemaExists) {
-          schema = await schemaRepo.loadSchema(schemaPath);
+        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        if (schemaPathResult.ok) {
+          const schemaPath = schemaPathResult.data;
+          const schemaExists = await schemaRepo.exists(schemaPath);
+          if (schemaExists) {
+            schema = await schemaRepo.loadSchema(schemaPath);
+          }
         }
       } catch {
         // Schema loading is optional for custom paths
       }
 
-      return {
-        success: true,
+      return ok({
         template,
         schema,
         resolvedPath: templatePath,
         schemaPath: schema?.getPath(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          type: "validation_failed",
-          message: `Failed to resolve custom path: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          details: error,
-        },
-      };
+      });
+    } catch (catchError) {
+      return error({
+        type: "validation_failed",
+        message: `Failed to resolve custom path: ${
+          catchError instanceof Error ? catchError.message : String(catchError)
+        }`,
+        details: catchError,
+      });
     }
   }
 }
@@ -196,18 +206,22 @@ export class StandardNamingStrategy implements ResolutionStrategy {
     try {
       // Build standard filename
       const filename = `${this.defaultPrefix}${request.layer.getValue()}.md`;
-      const templatePath = TemplatePath.create(request.directive, request.layer, filename);
+      const templatePathResult = TemplatePath.create(request.directive, request.layer, filename);
+      if (!templatePathResult.ok) {
+        return error({
+          type: "invalid_path",
+          message: `Failed to create template path: ${templatePathResult.error}`,
+        });
+      }
 
+      const templatePath = templatePathResult.data;
       // Check if template exists
       const exists = await templateRepo.exists(templatePath);
       if (!exists) {
-        return {
-          success: false,
-          error: {
-            type: "template_not_found",
-            message: `Standard template not found: ${templatePath.getPath()}`,
-          },
-        };
+        return error({
+          type: "template_not_found",
+          message: `Standard template not found: ${templatePath.getPath()}`,
+        });
       }
 
       // Load template
@@ -232,56 +246,54 @@ export class StandardNamingStrategy implements ResolutionStrategy {
       let schemaPath: SchemaPath | undefined;
       try {
         const schemaFilename = filename.replace(".md", ".json");
-        schemaPath = SchemaPath.create(request.directive, request.layer, schemaFilename);
-        const schemaExists = await schemaRepo.exists(schemaPath);
-        if (schemaExists) {
-          schema = await schemaRepo.loadSchema(schemaPath);
-        } else if (request.options.strict) {
-          return {
-            success: false,
-            error: {
+        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        if (schemaPathResult.ok) {
+          schemaPath = schemaPathResult.data;
+          const schemaExists = await schemaRepo.exists(schemaPath);
+          if (schemaExists) {
+            schema = await schemaRepo.loadSchema(schemaPath);
+          } else if (request.options.strict) {
+            return error({
               type: "schema_not_found",
               message: `Required schema not found: ${schemaPath.getPath()}`,
-            },
-          };
+            });
+          }
+        } else if (request.options.strict) {
+          return error({
+            type: "schema_not_found",
+            message: `Failed to create schema path: ${schemaPathResult.error}`,
+          });
         }
-      } catch (error) {
+      } catch (schemaError) {
         if (request.options.strict) {
-          return {
-            success: false,
-            error: {
-              type: "schema_not_found",
-              message: `Failed to load schema: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-              details: error,
-            },
-          };
+          return error({
+            type: "schema_not_found",
+            message: `Failed to load schema: ${
+              schemaError instanceof Error ? schemaError.message : String(schemaError)
+            }`,
+            details: schemaError,
+          });
         }
         warnings.push(
-          `Schema loading failed: ${error instanceof Error ? error.message : String(error)}`,
+          `Schema loading failed: ${schemaError instanceof Error ? schemaError.message : String(schemaError)}`,
         );
       }
 
-      return {
-        success: true,
+      return ok({
         template,
         schema,
         resolvedPath: templatePath,
         schemaPath,
         warnings: warnings.length > 0 ? warnings : undefined,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          type: "validation_failed",
-          message: `Standard resolution failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          details: error,
-        },
-      };
+      });
+    } catch (catchError) {
+      return error({
+        type: "validation_failed",
+        message: `Standard resolution failed: ${
+          catchError instanceof Error ? catchError.message : String(catchError)
+        }`,
+        details: catchError,
+      });
     }
   }
 }
@@ -328,28 +340,30 @@ export class FallbackStrategy implements ResolutionStrategy {
     const fallbackFilename = this.fallbackMappings.get(key);
 
     if (!fallbackFilename) {
-      return {
-        success: false,
-        error: {
-          type: "template_not_found",
-          message: `No fallback mapping found for: ${key}`,
-        },
-      };
+      return error({
+        type: "template_not_found",
+        message: `No fallback mapping found for: ${key}`,
+      });
     }
 
     try {
-      const templatePath = TemplatePath.create(request.directive, request.layer, fallbackFilename);
+      const templatePathResult = TemplatePath.create(request.directive, request.layer, fallbackFilename);
+      if (!templatePathResult.ok) {
+        return error({
+          type: "invalid_path",
+          message: `Failed to create template path: ${templatePathResult.error}`,
+        });
+      }
+
+      const templatePath = templatePathResult.data;
 
       // Check if fallback template exists
       const exists = await templateRepo.exists(templatePath);
       if (!exists) {
-        return {
-          success: false,
-          error: {
-            type: "template_not_found",
-            message: `Fallback template not found: ${templatePath.getPath()}`,
-          },
-        };
+        return error({
+          type: "template_not_found",
+          message: `Fallback template not found: ${templatePath.getPath()}`,
+        });
       }
 
       // Load template
@@ -360,35 +374,34 @@ export class FallbackStrategy implements ResolutionStrategy {
       let schemaPath: SchemaPath | undefined;
       try {
         const schemaFilename = fallbackFilename.replace(".md", ".json");
-        schemaPath = SchemaPath.create(request.directive, request.layer, schemaFilename);
-        const schemaExists = await schemaRepo.exists(schemaPath);
-        if (schemaExists) {
-          schema = await schemaRepo.loadSchema(schemaPath);
+        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        if (schemaPathResult.ok) {
+          schemaPath = schemaPathResult.data;
+          const schemaExists = await schemaRepo.exists(schemaPath);
+          if (schemaExists) {
+            schema = await schemaRepo.loadSchema(schemaPath);
+          }
         }
       } catch {
         // Ignore schema loading errors for fallback
       }
 
-      return {
-        success: true,
+      return ok({
         template,
         schema,
         resolvedPath: templatePath,
         schemaPath,
         fallbackUsed: true,
         warnings: [`Used fallback template: ${fallbackFilename}`],
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          type: "validation_failed",
-          message: `Fallback resolution failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          details: error,
-        },
-      };
+      });
+    } catch (catchError) {
+      return error({
+        type: "validation_failed",
+        message: `Fallback resolution failed: ${
+          catchError instanceof Error ? catchError.message : String(catchError)
+        }`,
+        details: catchError,
+      });
     }
   }
 }
@@ -446,19 +459,19 @@ export class TemplateResolverService {
 
         const result = await strategy.resolve(request, this.templateRepo, this.schemaRepo);
 
-        if (result.success) {
+        if (result.ok) {
           this.logger.info("Template resolved successfully", {
             strategy: strategy.constructor.name,
-            templatePath: result.resolvedPath?.getPath(),
-            schemaPath: result.schemaPath?.getPath(),
-            fallbackUsed: result.fallbackUsed,
+            templatePath: result.data.resolvedPath.getPath(),
+            schemaPath: result.data.schemaPath?.getPath(),
+            fallbackUsed: result.data.fallbackUsed,
           });
           return result;
         } else {
-          errors.push(`${strategy.constructor.name}: ${result.error?.message}`);
+          errors.push(`${strategy.constructor.name}: ${result.error.message}`);
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+      } catch (catchError) {
+        const errorMessage = catchError instanceof Error ? catchError.message : String(catchError);
         errors.push(`${strategy.constructor.name}: ${errorMessage}`);
         this.logger.error("Strategy failed", {
           strategy: strategy.constructor.name,
@@ -469,14 +482,11 @@ export class TemplateResolverService {
 
     // All strategies failed
     this.logger.error("All resolution strategies failed", { errors });
-    return {
-      success: false,
-      error: {
-        type: "template_not_found",
-        message: `Failed to resolve template: ${errors.join("; ")}`,
-        details: errors,
-      },
-    };
+    return error({
+      type: "template_not_found",
+      message: `Failed to resolve template: ${errors.join("; ")}`,
+      details: errors,
+    });
   }
 
   /**
@@ -491,12 +501,14 @@ export class TemplateResolverService {
       if (options.customPath) {
         const parts = options.customPath.split("/");
         const filename = parts[parts.length - 1];
-        const templatePath = TemplatePath.create(directive, layer, filename);
-        return await this.templateRepo.exists(templatePath);
+        const templatePathResult = TemplatePath.create(directive, layer, filename);
+        if (!templatePathResult.ok) return false;
+        return await this.templateRepo.exists(templatePathResult.data);
       } else {
         const filename = `f_${layer.getValue()}.md`;
-        const templatePath = TemplatePath.create(directive, layer, filename);
-        return await this.templateRepo.exists(templatePath);
+        const templatePathResult = TemplatePath.create(directive, layer, filename);
+        if (!templatePathResult.ok) return false;
+        return await this.templateRepo.exists(templatePathResult.data);
       }
     } catch {
       return false;
@@ -534,7 +546,7 @@ export class TemplateResolverService {
   /**
    * Remove resolution strategy
    */
-  removeStrategy(strategyClass: new (...args: any[]) => ResolutionStrategy): void {
+  removeStrategy(strategyClass: new (...args: unknown[]) => ResolutionStrategy): void {
     const index = this.strategies.findIndex((s) => s instanceof strategyClass);
     if (index >= 0) {
       this.strategies.splice(index, 1);

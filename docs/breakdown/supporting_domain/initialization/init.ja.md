@@ -5,18 +5,18 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
 
 # 初期化の流れ
 
-1. プロジェクトのルートディレクトリに `app.yml` を作成する
-1-1. app.yml の初期の配置場所は、 `.agent/breakdown/config/app.yml` である
+1. プロジェクトのルートディレクトリに `default-app.yml` を作成する
+1-1. default-app.yml の初期の配置場所は、 `.agent/breakdown/config/default-app.yml` である
 1-2. `breakdown init` を呼び出した場所が起点である（プロジェクトのルートを想定）
 1-3. `.agent/breakdown/config/` 階層が存在しない場合は再起的に作成する
-2. `app.yml` へ、初期値を記載する
-3. `BreakdownConfig` を用いて設定を読み込む（`app.yml` を 読み込んだことになる）
+2. `default-app.yml` へ、初期値を記載する
+3. `BreakdownConfig` を用いて設定を読み込む（`default-app.yml` を 読み込んだことになる）
 4. 
 
 
 ## デフォルト作業ディレクトリ
 - デフォルトの作業ディレクトリは `.agent/breakdown/` とする。
-- `.agent/breakdown/config/app.yml` の `working_dir` 設定値に記載され、その設定値が使われて定まる。
+- `.agent/breakdown/config/default-app.yml` の `working_dir` 設定値に記載され、その設定値が使われて定まる。
 
 ## 初期化時に作成されるディレクトリ構成
 - `.agent/breakdown/`
@@ -34,7 +34,7 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
 
 ## 設定ファイル
 - コマンドがインストールされたフォルダを起点とする
-- `.agent/breakdown/config/app.yml` を自動生成（既存の場合は上書きしない）
+- `.agent/breakdown/config/default-app.yml` を自動生成（既存の場合は上書きしない）
 - 雛形例:
   ```yaml
   working_dir: .agent/breakdown # use for output and tmporary
@@ -49,7 +49,7 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
 
 ## 既存環境への対応
 - 既存ディレクトリ・ファイルは上書きしない
-- 既存 `app.yml` も上書きしない
+- 既存 `default-app.yml` も上書きしない
 
 ## エラー処理
 - ディレクトリ作成不可（ファイルが存在等）の場合はエラーを返す

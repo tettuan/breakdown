@@ -34,9 +34,15 @@ Deno.test("0_architecture: Smart Constructor enforces private constructor", () =
   const validResult = ConfigSetName.create("valid-name");
   assertEquals(validResult.ok, true);
   
-  // Should not be able to access constructor directly
-  // @ts-expect-error: Constructor is private
-  assertStrictEquals(typeof new ConfigSetName("test"), "undefined");
+  // The only way to create instances should be through the static create method
+  // TypeScript compiler should prevent direct constructor access
+  // We can verify that create method returns proper Result type
+  assertEquals(typeof validResult, "object");
+  assertEquals("ok" in validResult, true);
+  if (validResult.ok) {
+    assertEquals(typeof validResult.data, "object");
+    assertEquals(validResult.data.constructor.name, "ConfigSetName");
+  }
 });
 
 Deno.test("0_architecture: Result type pattern for error handling", () => {
@@ -59,7 +65,7 @@ Deno.test("0_architecture: Discriminated Union error types", () => {
   const errorCases = [
     { input: "", expectedKind: "EmptyName" },
     { input: "invalid/format", expectedKind: "InvalidCharacters" },
-    { input: "reserved", expectedKind: "ReservedName" },
+    { input: "default", expectedKind: "ReservedName" },
     { input: "a".repeat(70), expectedKind: "TooLong" },
     { input: "sys-prefix", expectedKind: "StartsWithReservedPrefix" },
   ] as const;
@@ -101,20 +107,35 @@ Deno.test("0_architecture: Type guards for error discrimination", () => {
 // ============================================================================
 
 Deno.test("1_behavior: empty name validation", () => {
-  const testCases = [
+  const emptyTestCases = [
     { input: null as any, description: "null input" },
     { input: undefined as any, description: "undefined input" },
     { input: "", description: "empty string" },
     { input: "   ", description: "whitespace only" },
-    { input: 123 as any, description: "non-string input" },
   ];
 
-  testCases.forEach(({ input, description }) => {
+  emptyTestCases.forEach(({ input, description }) => {
     const result = ConfigSetName.create(input);
     assertEquals(result.ok, false, `Should reject ${description}`);
     
     if (!result.ok) {
       assertEquals(result.error.kind, "EmptyName" as const);
+    }
+  });
+
+  // Non-string inputs should produce InvalidFormat error
+  const nonStringTestCases = [
+    { input: 123 as any, description: "number input" },
+    { input: {} as any, description: "object input" },
+    { input: [] as any, description: "array input" },
+  ];
+
+  nonStringTestCases.forEach(({ input, description }) => {
+    const result = ConfigSetName.create(input);
+    assertEquals(result.ok, false, `Should reject ${description}`);
+    
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat" as const);
     }
   });
 });
@@ -176,8 +197,10 @@ Deno.test("1_behavior: invalid characters rejection", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "InvalidCharacters");
-      assertEquals(typeof result.error.invalidChars, "object");
-      assertEquals(Array.isArray(result.error.invalidChars), true);
+      if (result.error.kind === "InvalidCharacters") {
+        assertEquals(typeof result.error.invalidChars, "object");
+        assertEquals(Array.isArray(result.error.invalidChars), true);
+      }
     }
   });
 });
@@ -201,8 +224,10 @@ Deno.test("1_behavior: length validation", () => {
   
   if (!longResult.ok) {
     assertEquals(longResult.error.kind, "TooLong");
-    assertEquals(longResult.error.maxLength, 64);
-    assertEquals(longResult.error.actualLength, 65);
+    if (longResult.error.kind === "TooLong") {
+      assertEquals(longResult.error.maxLength, 64);
+      assertEquals(longResult.error.actualLength, 65);
+    }
   }
 });
 
@@ -222,8 +247,10 @@ Deno.test("1_behavior: reserved names rejection", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "ReservedName");
-      assertEquals(typeof result.error.reserved, "object");
-      assertEquals(Array.isArray(result.error.reserved), true);
+      if (result.error.kind === "ReservedName") {
+        assertEquals(typeof result.error.reserved, "object");
+        assertEquals(Array.isArray(result.error.reserved), true);
+      }
     }
   });
 });
@@ -249,7 +276,9 @@ Deno.test("1_behavior: reserved prefix rejection", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "StartsWithReservedPrefix");
-      assertEquals(typeof result.error.prefix, "string");
+      if (result.error.kind === "StartsWithReservedPrefix") {
+        assertEquals(typeof result.error.prefix, "string");
+      }
     }
   });
 });
@@ -329,23 +358,25 @@ Deno.test("1_behavior: factory methods - forProject", () => {
 // ============================================================================
 
 Deno.test("2_structure: immutability of created instances", () => {
-  const result = ConfigSetName.create("test-config");
-  assertEquals(result.ok, true);
+  const result = ConfigSetName.create("valid-config");
+  if (!result.ok) {
+    throw new Error(`Failed to create ConfigSetName: ${JSON.stringify(result.error)}`);
+  }
   
-  if (result.ok) {
-    const config = result.data;
-    
-    // Object should be frozen
-    assertEquals(Object.isFrozen(config), true);
-    
-    // Should not be able to modify internal state
-    try {
-      (config as any)._value = "modified";
-      assertEquals(config.value, "test-config", "Internal value should not change");
-    } catch (error) {
-      // Expected in strict mode
-      assertEquals(error instanceof TypeError, true);
-    }
+  const config = result.data;
+  
+  // Object should be frozen (immutable)
+  assertEquals(Object.isFrozen(config), true);
+  
+  // Should not be able to modify internal state
+  const originalValue = config.value;
+  try {
+    (config as any)._value = "modified";
+    // Internal value should remain unchanged due to immutability
+    assertEquals(config.value, originalValue, "Internal value should not change");
+  } catch (error) {
+    // Expected in strict mode - TypeError should be thrown
+    assertEquals(error instanceof TypeError, true);
   }
 });
 
@@ -396,33 +427,33 @@ Deno.test("2_structure: case-sensitive and case-insensitive equality", () => {
 });
 
 Deno.test("2_structure: utility methods", () => {
-  const result = ConfigSetName.create("Test-Config_123");
-  assertEquals(result.ok, true);
+  const result = ConfigSetName.create("Valid-Config_123");
+  if (!result.ok) {
+    throw new Error(`Failed to create ConfigSetName: ${JSON.stringify(result.error)}`);
+  }
   
-  if (result.ok) {
-    const config = result.data;
+  const config = result.data;
+  
+  // Length
+  assertEquals(config.getLength(), 16);
     
-    // Length
-    assertEquals(config.getLength(), 15);
-    
-    // Case checks
-    assertEquals(config.isLowerCase(), false);
-    
-    const lowerResult = ConfigSetName.create("lower-case");
-    if (lowerResult.ok) {
-      assertEquals(lowerResult.data.isLowerCase(), true);
-    }
-    
-    // Naming convention checks
-    const kebabResult = ConfigSetName.create("kebab-case-name");
-    if (kebabResult.ok) {
-      assertEquals(kebabResult.data.isKebabCase(), true);
-    }
-    
-    const snakeResult = ConfigSetName.create("snake_case_name");
-    if (snakeResult.ok) {
-      assertEquals(snakeResult.data.isSnakeCase(), true);
-    }
+  // Case checks
+  assertEquals(config.isLowerCase(), false);
+  
+  const lowerResult = ConfigSetName.create("lower-case");
+  if (lowerResult.ok) {
+    assertEquals(lowerResult.data.isLowerCase(), true);
+  }
+  
+  // Naming convention checks
+  const kebabResult = ConfigSetName.create("kebab-case-name");
+  if (kebabResult.ok) {
+    assertEquals(kebabResult.data.isKebabCase(), true);
+  }
+  
+  const snakeResult = ConfigSetName.create("snake_case_name");
+  if (snakeResult.ok) {
+    assertEquals(snakeResult.data.isSnakeCase(), true);
   }
 });
 
@@ -484,27 +515,27 @@ Deno.test("2_structure: prefix and suffix methods", () => {
 });
 
 Deno.test("2_structure: string representations", () => {
-  const result = ConfigSetName.create("test-config");
-  assertEquals(result.ok, true);
-  
-  if (result.ok) {
-    const config = result.data;
-    
-    // value getter
-    assertEquals(config.value, "test-config");
-    
-    // toString() method
-    assertEquals(config.toString(), "ConfigSetName(test-config)");
-    
-    // JSON serialization
-    assertEquals(config.toJSON(), "test-config");
-    
-    // valueOf for primitive conversion
-    assertEquals(config.valueOf(), "test-config");
-    
-    // String concatenation
-    assertEquals(`Config: ${config}`, "Config: ConfigSetName(test-config)");
+  const result = ConfigSetName.create("valid-config");
+  if (!result.ok) {
+    throw new Error(`Failed to create ConfigSetName: ${JSON.stringify(result.error)}`);
   }
+  
+  const config = result.data;
+  
+  // value getter
+  assertEquals(config.value, "valid-config");
+  
+  // toString() method
+  assertEquals(config.toString(), "ConfigSetName(valid-config)");
+  
+  // JSON serialization
+  assertEquals(config.toJSON(), "valid-config");
+  
+  // valueOf for primitive conversion
+  assertEquals(config.valueOf(), "valid-config");
+  
+  // String concatenation
+  assertEquals(`Config: ${config}`, "Config: ConfigSetName(valid-config)");
 });
 
 // ============================================================================
@@ -564,10 +595,10 @@ Deno.test("deprecated_utility: createConfigSetName throws on error", () => {
   let threwError = false;
   try {
     createConfigSetName("");
-  } catch (error) {
+  } catch (caughtError) {
     threwError = true;
-    assertEquals(error instanceof Error, true);
-    assertEquals(error.message.includes("empty"), true);
+    assertEquals(caughtError instanceof Error, true);
+    assertEquals((caughtError as Error).message.includes("empty"), true);
   }
   assertEquals(threwError, true, "Should throw for invalid names");
 });

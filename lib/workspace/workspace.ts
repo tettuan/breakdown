@@ -20,7 +20,7 @@
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import { createWorkspaceConfigError, createWorkspaceInitError } from "./errors.ts";
+import { createWorkspaceConfigError, createWorkspaceInitError, WorkspaceConfigError } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
@@ -89,7 +89,7 @@ export class WorkspaceImpl implements Workspace {
 
       // Create config file if it doesn't exist
       const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-      const configFile = join(configDir, "app.yml");
+      const configFile = join(configDir, "default-app.yml");
 
       try {
         await Deno.stat(configFile);
@@ -235,7 +235,7 @@ export class WorkspaceImpl implements Workspace {
    */
   async validateConfig(): Promise<void> {
     if (!await exists(this.config.workingDir)) {
-      throw createWorkspaceConfigError("Working directory does not exist");
+      throw new WorkspaceConfigError("Working directory does not exist");
     }
   }
 
@@ -246,7 +246,7 @@ export class WorkspaceImpl implements Workspace {
   async reloadConfig(): Promise<void> {
     // Reload configuration from file
     const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-    const configFile = join(configDir, "app.yml");
+    const configFile = join(configDir, "default-app.yml");
 
     try {
       const configContent = await Deno.readTextFile(configFile);

@@ -74,6 +74,14 @@ export class StdinVariableFactory {
    * @returns Result containing StdinVariable or error
    */
   create(input: StdinFactoryInput): Result<StdinVariable, StdinVariableFactoryError> {
+    // Handle null/undefined input without throwing
+    if (!input || typeof input !== "object") {
+      return error({
+        kind: "NoStdinData",
+        context: "Invalid or missing factory input",
+      });
+    }
+
     // Validate input structure
     if (input.inputText === undefined) {
       return error({

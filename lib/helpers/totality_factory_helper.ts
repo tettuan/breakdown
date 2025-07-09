@@ -212,11 +212,17 @@ export function createValidatedCliParams(
       const err = typesResult.error;
       switch (err.kind) {
         case "PatternNotFound":
-          return err.message;
-        case "ValidationFailed":
+          return err.reason;
+        case "PatternValidationFailed":
           return `Validation failed for value "${err.value}" with pattern "${err.pattern}"`;
         case "InvalidPattern":
-          return `Invalid pattern "${err.pattern}": ${err.cause}`;
+          return `Invalid pattern "${err.pattern}": ${err.reason}`;
+        case "ProcessingFailed":
+          return `${err.operation}: ${err.reason}`;
+        case "TransformationFailed":
+          return `Failed to transform to ${err.targetType}: ${err.reason}`;
+        case "GenerationFailed":
+          return `${err.generator} failed: ${err.reason}`;
         default:
           return `Type validation failed`;
       }
@@ -226,7 +232,8 @@ export function createValidatedCliParams(
       ok: false,
       error: {
         kind: "PatternNotFound",
-        message: errorMessage,
+        operation: "type validation",
+        reason: errorMessage,
       },
     };
   }
@@ -297,11 +304,17 @@ export async function createTotalityPromptFactory(
       const err = paramsResult.error;
       switch (err.kind) {
         case "PatternNotFound":
-          return err.message;
-        case "ValidationFailed":
+          return err.reason;
+        case "PatternValidationFailed":
           return `Validation failed for value "${err.value}" with pattern "${err.pattern}"`;
         case "InvalidPattern":
-          return `Invalid pattern "${err.pattern}": ${err.cause}`;
+          return `Invalid pattern "${err.pattern}": ${err.reason}`;
+        case "ProcessingFailed":
+          return `${err.operation}: ${err.reason}`;
+        case "TransformationFailed":
+          return `Failed to transform to ${err.targetType}: ${err.reason}`;
+        case "GenerationFailed":
+          return `${err.generator} failed: ${err.reason}`;
         default:
           return `Type validation failed`;
       }
@@ -342,7 +355,14 @@ export async function validateConfigurationPatterns(
   workspacePath: string = Deno.cwd(),
 ): Promise<{ valid: boolean; details: string[] }> {
   try {
-    const provider = await ConfigPatternProvider.create(configSetName, workspacePath);
+    const providerResult = await ConfigPatternProvider.create(configSetName, workspacePath);
+    if (!providerResult.ok) {
+      return {
+        valid: false,
+        details: [`Failed to create ConfigPatternProvider: ${JSON.stringify(providerResult.error)}`]
+      };
+    }
+    const provider = providerResult.data;
     const directivePattern = provider.getDirectivePattern();
     const layerPattern = provider.getLayerTypePattern();
 

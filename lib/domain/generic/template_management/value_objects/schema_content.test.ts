@@ -54,7 +54,7 @@ Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   
   if (result.ok) {
     assertExists(result.data);
-    assertEquals(result.data.constructor.name, "SchemaContent");
+    assertEquals(result.data!.constructor.name, "SchemaContent");
   } else {
     assertExists(result.error);
     assertEquals(typeof result.error, "string");
@@ -135,8 +135,8 @@ Deno.test("1_behavior: creates SchemaContent with valid JSON", () => {
   
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.getValue(), validJsonSchema);
-    assertEquals(result.data.isValid(), true);
+    assertEquals(result.data!.getValue(), validJsonSchema);
+    assertEquals(result.data!.isValid(), true);
   }
 });
 
@@ -163,7 +163,7 @@ Deno.test("1_behavior: rejects invalid JSON", () => {
   
   assertEquals(result.ok, false);
   if (!result.ok) {
-    assertEquals(result.error.startsWith("Invalid JSON schema:"), true);
+    assertEquals(result.error!.startsWith("Invalid JSON schema:"), true);
   }
 });
 
@@ -171,7 +171,7 @@ Deno.test("1_behavior: parses valid JSON correctly", () => {
   const result = SchemaContent.create(simpleJsonContent);
   
   if (result.ok) {
-    const parsed = result.data.getParsedSchema();
+    const parsed = result.data!.getParsedSchema();
     assertExists(parsed);
     assertEquals((parsed as any).message, "hello");
   }
@@ -182,7 +182,7 @@ Deno.test("1_behavior: validates JSON on creation", () => {
   const invalidResult = SchemaContent.create(invalidJsonContent);
   
   if (validResult.ok) {
-    assertEquals(validResult.data.isValid(), true);
+    assertEquals(validResult.data!.isValid(), true);
   }
   
   assertEquals(invalidResult.ok, false);
@@ -192,8 +192,8 @@ Deno.test("1_behavior: provides content length", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    assertEquals(result.data.getLength(), validJsonSchema.length);
-    assertEquals(result.data.isEmpty(), false);
+    assertEquals(result.data!.getLength(), validJsonSchema.length);
+    assertEquals(result.data!.isEmpty(), false);
   }
 });
 
@@ -202,7 +202,7 @@ Deno.test("1_behavior: generates consistent hash", () => {
   const result2 = SchemaContent.create(validJsonSchema);
   
   if (result1.ok && result2.ok) {
-    assertEquals(result1.data.getHash(), result2.data.getHash());
+    assertEquals(result1.data!.getHash(), result2.data!.getHash());
   }
 });
 
@@ -210,7 +210,7 @@ Deno.test("1_behavior: formats JSON correctly", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const formatted = result.data.getFormattedJson();
+    const formatted = result.data!.getFormattedJson();
     
     // Should be valid JSON
     try {
@@ -228,7 +228,7 @@ Deno.test("1_behavior: minifies JSON correctly", () => {
   const result = SchemaContent.create(formattedJsonSchema);
   
   if (result.ok) {
-    const minified = result.data.getMinifiedJson();
+    const minified = result.data!.getMinifiedJson();
     
     // Should be valid JSON
     try {
@@ -249,8 +249,8 @@ Deno.test("1_behavior: handles malformed JSON gracefully in formatting", () => {
   
   if (result.ok) {
     // Both formatted and minified should work
-    const formatted = result.data.getFormattedJson();
-    const minified = result.data.getMinifiedJson();
+    const formatted = result.data!.getFormattedJson();
+    const minified = result.data!.getMinifiedJson();
     
     assertExists(formatted);
     assertExists(minified);
@@ -267,7 +267,7 @@ Deno.test("2_structure: SchemaContent immutability", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const content = result.data;
+    const content = result.data!;
     
     // getValue should always return the same content
     assertEquals(content.getValue(), validJsonSchema);
@@ -279,8 +279,8 @@ Deno.test("2_structure: parsed schema immutability", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const parsed1 = result.data.getParsedSchema();
-    const parsed2 = result.data.getParsedSchema();
+    const parsed1 = result.data!.getParsedSchema();
+    const parsed2 = result.data!.getParsedSchema();
     
     // Should return the same object reference
     assertEquals(parsed1, parsed2);
@@ -304,7 +304,7 @@ Deno.test("2_structure: success results have correct structure", () => {
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
     assertExists(validResult.data);
-    assertEquals(validResult.data instanceof SchemaContent, true);
+    assertEquals(validResult.data! instanceof SchemaContent, true);
     assertEquals(validResult.error, undefined);
   }
 });
@@ -313,7 +313,7 @@ Deno.test("2_structure: method return type consistency", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const content = result.data;
+    const content = result.data!;
     
     // Verify return types
     assertEquals(typeof content.getValue(), "string");
@@ -334,12 +334,12 @@ Deno.test("2_structure: equals method correctness", () => {
   
   if (result1.ok && result2.ok && result3.ok) {
     // Same content should be equal
-    assertEquals(result1.data.equals(result2.data), true);
-    assertEquals(result2.data.equals(result1.data), true);
+    assertEquals(result1.data!.equals(result2.data!), true);
+    assertEquals(result2.data!.equals(result1.data!), true);
     
     // Different content should not be equal
-    assertEquals(result1.data.equals(result3.data), false);
-    assertEquals(result3.data.equals(result1.data), false);
+    assertEquals(result1.data!.equals(result3.data!), false);
+    assertEquals(result3.data!.equals(result1.data!), false);
   }
 });
 
@@ -347,8 +347,8 @@ Deno.test("2_structure: toString implementation", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    assertEquals(result.data.toString(), validJsonSchema);
-    assertEquals(result.data.toString(), result.data.getValue());
+    assertEquals(result.data!.toString(), validJsonSchema);
+    assertEquals(result.data!.toString(), result.data!.getValue());
   }
 });
 
@@ -356,12 +356,12 @@ Deno.test("2_structure: JSON formatting preserves original", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const original = result.data.getValue();
-    const formatted = result.data.getFormattedJson();
-    const minified = result.data.getMinifiedJson();
+    const original = result.data!.getValue();
+    const formatted = result.data!.getFormattedJson();
+    const minified = result.data!.getMinifiedJson();
     
     // Original should be unchanged
-    assertEquals(result.data.getValue(), original);
+    assertEquals(result.data!.getValue(), original);
     
     // Formatted and minified should be different but valid
     // Note: formatted may be same as original if already formatted
@@ -376,12 +376,12 @@ Deno.test("2_structure: multiple instance independence", () => {
   
   if (result1.ok && result2.ok) {
     // Different instances should be independent
-    assertEquals(result1.data === result2.data, false);
-    assertEquals(result1.data.equals(result2.data), false);
+    assertEquals(result1.data! === result2.data!, false);
+    assertEquals(result1.data!.equals(result2.data!), false);
     
     // They should have different parsed schemas
-    const parsed1 = result1.data.getParsedSchema() as any;
-    const parsed2 = result2.data.getParsedSchema() as any;
+    const parsed1 = result1.data!.getParsedSchema() as any;
+    const parsed2 = result2.data!.getParsedSchema() as any;
     assertEquals(parsed1.type !== parsed2.type, true);
   }
 });
@@ -410,8 +410,8 @@ Deno.test("2_structure: validation consistency", () => {
   
   if (result.ok) {
     // isValid should be consistent with parsed schema existence
-    assertEquals(result.data.isValid(), true);
-    assertExists(result.data.getParsedSchema());
+    assertEquals(result.data!.isValid(), true);
+    assertExists(result.data!.getParsedSchema());
   }
 });
 
@@ -419,9 +419,9 @@ Deno.test("2_structure: hash consistency across calls", () => {
   const result = SchemaContent.create(validJsonSchema);
   
   if (result.ok) {
-    const hash1 = result.data.getHash();
-    const hash2 = result.data.getHash();
-    const hash3 = result.data.getHash();
+    const hash1 = result.data!.getHash();
+    const hash2 = result.data!.getHash();
+    const hash3 = result.data!.getHash();
     
     // Multiple calls should return same hash
     assertEquals(hash1, hash2);

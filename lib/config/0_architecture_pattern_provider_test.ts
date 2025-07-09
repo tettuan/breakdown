@@ -52,6 +52,8 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
     "../types/type_factory.ts",
     "../types/directive_type.ts",
     "../types/layer_type.ts",
+    "../types/result.ts",
+    "../types/unified_error_types.ts",
   ];
 
   for (const dep of internalDeps) {
@@ -364,11 +366,14 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
     "getLayerTypePattern should return null in catch block",
   );
 
-  // createメソッドがエラーをスローすることを確認
+  // createメソッドがエラーハンドリングを実装していることを確認
+  const hasErrorHandling = sourceCode.includes("return error(") || 
+                          sourceCode.includes("Failed to create BreakdownConfig") ||
+                          sourceCode.includes("ErrorFactory.configError");
   assertEquals(
-    sourceCode.includes("throw new Error(`Failed to create BreakdownConfig:"),
+    hasErrorHandling,
     true,
-    "create method should throw error on failure",
+    "create method should handle errors properly",
   );
 });
 

@@ -59,8 +59,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Standard I/O paths are not allowed",
-        { type, allowStdio },
+        { reason: "Standard I/O paths are not allowed", context: { type, allowStdio } },
       ));
     }
 
@@ -69,8 +68,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        `${type} path cannot be empty`,
-        { type },
+        { reason: `${type} path cannot be empty`, context: { type } },
       ));
     }
 
@@ -80,8 +78,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        `Path contains invalid characters: ${invalidChars.join(", ")}`,
-        { type, invalidChars },
+        { reason: `Path contains invalid characters: ${invalidChars.join(", ")}`, context: { type, invalidChars } },
       ));
     }
 
@@ -90,8 +87,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "PathTooLong",
         path,
-        undefined,
-        { type, actualLength: path.length },
+        { maxLength, context: { type, actualLength: path.length } },
       ));
     }
 
@@ -100,13 +96,12 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Path must be absolute",
-        { type, allowRelative },
+        { reason: "Path must be absolute", context: { type, allowRelative } },
       ));
     }
 
     // Additional security checks
-    const securityResult = this.performSecurityChecks(path);
+    const securityResult = this.performSecurityChecks(path, type);
     if (!securityResult.ok) {
       return error(securityResult.error);
     }
@@ -153,7 +148,7 @@ export class PathValidator {
   /**
    * Perform additional security checks
    */
-  private performSecurityChecks(path: string): Result<void, PathError> {
+  private performSecurityChecks(path: string, type: "input" | "output"): Result<void, PathError> {
     // Check for path traversal attempts
     if (path.includes("..")) {
       // More sophisticated check would normalize the path first
@@ -161,8 +156,7 @@ export class PathValidator {
         return error(ErrorFactory.pathError(
           "InvalidPath",
           path,
-          "Path traversal detected",
-          { securityViolation: "path_traversal" },
+          { reason: "Path traversal detected", context: { type, securityViolation: "path_traversal" } },
         ));
       }
     }
@@ -173,8 +167,7 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        "Tilde expansion not allowed",
-        { securityViolation: "tilde_expansion" },
+        { reason: "Tilde expansion not allowed", context: { type, securityViolation: "tilde_expansion" } },
       ));
     }
 
@@ -186,9 +179,15 @@ export class PathValidator {
    */
   normalize(path: string): string {
     // Basic normalization - in real implementation would be more comprehensive
-    return path
+    let normalized = path
       .replace(/\\/g, "/") // Convert backslashes to forward slashes
-      .replace(/\/+/g, "/") // Remove duplicate slashes
-      .replace(/\/$/, ""); // Remove trailing slash (except for root)
+      .replace(/\/+/g, "/"); // Remove duplicate slashes
+    
+    // Remove trailing slash except for root "/"
+    if (normalized.length > 1 && normalized.endsWith("/")) {
+      normalized = normalized.slice(0, -1);
+    }
+    
+    return normalized;
   }
 }

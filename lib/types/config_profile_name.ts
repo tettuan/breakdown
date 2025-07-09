@@ -53,7 +53,7 @@ export type ConfigProfileNameError =
  * if (!invalidResult.ok) {
  *   switch (invalidResult.error.kind) {
  *     case "InvalidFormat":
- *       console.error(`Invalid format: ${invalidResult.error.value}`);
+ *       console.error(`Invalid format: ${invalidResult.error.data}`);
  *       break;
  *   }
  * }
@@ -90,6 +90,36 @@ export class ConfigProfileName {
    * 読み取り専用のゲッターで、常に有効な値を返す（nullチェック不要）
    */
   get value(): string {
+    return this._value;
+  }
+
+  /**
+   * Smart Constructor完全実装 - getValue()メソッド
+   * 
+   * Totality原則に基づく型安全な値アクセスメソッド。
+   * Smart Constructorパターンの完全実装として、
+   * オブジェクトの不変条件を保証しつつ値を返します。
+   * 
+   * このメソッドは以下を保証します：
+   * - 常に非null値を返す
+   * - バリデーション済みの値のみを返す
+   * - 不変条件の維持
+   * - 型安全性の確保
+   * 
+   * @returns 検証済みの設定プロファイル名（常に有効な値）
+   * 
+   * @example
+   * ```typescript
+   * const profileResult = ConfigProfileName.create("production");
+   * if (profileResult.ok) {
+   *   const value = profileResult.data.getValue(); // "production"
+   *   // 常に有効な値が返される（nullチェック不要）
+   * }
+   * ```
+   */
+  getValue(): string {
+    // Smart Constructorパターンにより、この時点で_valueは
+    // 必ず有効な値であることが保証されている
     return this._value;
   }
 

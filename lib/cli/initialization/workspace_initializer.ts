@@ -41,7 +41,7 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
     console.log(`✅ Created directory: ${dirPath}`);
   }
 
-  // Create basic app.yml config file
+  // Create basic default-app.yml config file
   // TODO: Default patterns should be obtained from BreakdownParams
   // BreakdownParams should provide methods like:
   //   - getDefaultDemonstrativeTypes() => ["to", "summary", "defect"]
@@ -66,7 +66,7 @@ workspace:
 
   // TODO: BreakdownConfig should provide a write method for config files
   // This direct file writing should be delegated to BreakdownConfig
-  const configPath = `${baseDir}/config/app.yml`;
+  const configPath = `${baseDir}/config/default-app.yml`;
   await Deno.writeTextFile(configPath, configContent);
   console.log(`✅ Created config file: ${configPath}`);
 

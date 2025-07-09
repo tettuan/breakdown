@@ -51,7 +51,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns null if pattern creation fails (should not happen with valid defaults)
    */
   getDirectivePattern(): TwoParamsDirectivePattern | null {
-    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
     return TwoParamsDirectivePattern.create(pattern);
   }
 
@@ -82,7 +82,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    */
   getValidDirectiveValues(): string[] {
     // Extract values from regex pattern: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
-    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
     const match = pattern.match(/^\^\(([^)]+)\)\$$/);
     if (match) {
       return match[1].split("|");
@@ -119,7 +119,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   } {
     return {
       providerType: "DefaultTypePatternProvider",
-      directivePattern: _defaultConfigTwoParams.params.two.demonstrativeType.pattern,
+      directivePattern: _defaultConfigTwoParams.params.two.directiveType.pattern,
       layerPattern: _defaultConfigTwoParams.params.two.layerType.pattern,
       validDirectives: this.getValidDirectiveValues(),
       validLayers: this.getValidLayerValues(),

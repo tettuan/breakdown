@@ -100,10 +100,19 @@ export class FileSchemaRepository implements SchemaRepository {
         }
       }
 
-      const schema = Schema.create(path, schemaData, {
+      const schemaResult = Schema.create(path, schemaData, {
         createdAt: stat.birthtime || new Date(),
         updatedAt: stat.mtime || new Date(),
       });
+
+      if (!schemaResult.ok) {
+        throw new SchemaValidationError(
+          `Failed to create schema: ${schemaResult.error}`,
+          path,
+        );
+      }
+
+      const schema = schemaResult.data;
 
       // Cache if enabled
       if (this.config.cacheEnabled) {

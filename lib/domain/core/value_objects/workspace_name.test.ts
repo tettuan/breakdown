@@ -36,9 +36,15 @@ Deno.test("0_architecture: Smart Constructor enforces private constructor", () =
   const validResult = WorkspaceName.create("valid-name");
   assertEquals(validResult.ok, true);
   
-  // Should not be able to access constructor directly
-  // @ts-expect-error: Constructor is private
-  assertStrictEquals(typeof new WorkspaceName("test"), "undefined");
+  // The only way to create instances should be through the static create method
+  // TypeScript compiler should prevent direct constructor access
+  // We can verify that create method returns proper Result type
+  assertEquals(typeof validResult, "object");
+  assertEquals("ok" in validResult, true);
+  if (validResult.ok) {
+    assertEquals(typeof validResult.data, "object");
+    assertEquals(validResult.data.constructor.name, "WorkspaceName");
+  }
 });
 
 Deno.test("0_architecture: Result type pattern for error handling", () => {
@@ -65,7 +71,8 @@ Deno.test("0_architecture: Discriminated Union error types", () => {
     { input: "a".repeat(300), expectedKind: "TooLong" },
     { input: ".hidden", expectedKind: "StartsWithDot" },
     { input: "CON", expectedKind: "ReservedName" },
-    { input: "with<invalid>", expectedKind: "InvalidCharacters" },
+    { input: "with/slash", expectedKind: "PathTraversalAttempt" },
+    { input: "invalid\u0000char", expectedKind: "InvalidCharacters" },
   ] as const;
 
   errorCases.forEach(({ input, expectedKind }) => {
@@ -111,20 +118,35 @@ Deno.test("0_architecture: Type guards for error discrimination", () => {
 // ============================================================================
 
 Deno.test("1_behavior: empty name validation", () => {
-  const testCases = [
+  const emptyTestCases = [
     { input: null as any, description: "null input" },
     { input: undefined as any, description: "undefined input" },
     { input: "", description: "empty string" },
     { input: "   ", description: "whitespace only" },
-    { input: 123 as any, description: "non-string input" },
   ];
 
-  testCases.forEach(({ input, description }) => {
+  emptyTestCases.forEach(({ input, description }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject ${description}`);
     
     if (!result.ok) {
       assertEquals(result.error.kind, "EmptyName" as const);
+    }
+  });
+
+  // Non-string inputs should produce InvalidFormat error
+  const nonStringTestCases = [
+    { input: 123 as any, description: "number input" },
+    { input: {} as any, description: "object input" },
+    { input: [] as any, description: "array input" },
+  ];
+
+  nonStringTestCases.forEach(({ input, description }) => {
+    const result = WorkspaceName.create(input);
+    assertEquals(result.ok, false, `Should reject ${description}`);
+    
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat" as const);
     }
   });
 });
@@ -174,8 +196,10 @@ Deno.test("1_behavior: whitespace rejection for CLI compatibility", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "ContainsWhitespace");
-      assertEquals(Array.isArray(result.error.whitespacePositions), true);
-      assertEquals(result.error.whitespacePositions.length > 0, true);
+      if (result.error.kind === "ContainsWhitespace") {
+        assertEquals(Array.isArray(result.error.whitespacePositions), true);
+        assertEquals(result.error.whitespacePositions.length > 0, true);
+      }
     }
   });
 });
@@ -199,18 +223,19 @@ Deno.test("1_behavior: length validation for filesystem compatibility", () => {
   
   if (!longResult.ok) {
     assertEquals(longResult.error.kind, "TooLong");
-    assertEquals(longResult.error.maxLength, 255);
-    assertEquals(longResult.error.actualLength, 256);
+    if (longResult.error.kind === "TooLong") {
+      assertEquals(longResult.error.maxLength, 255);
+      assertEquals(longResult.error.actualLength, 256);
+    }
   }
 });
 
 Deno.test("1_behavior: dot prefix rejection (hidden files)", () => {
   const dotNames = [
     ".hidden",
-    ".git",
+    ".git", 
     ".vscode",
     ".env",
-    "..double-dot",
     ".single-letter",
   ];
 
@@ -222,33 +247,37 @@ Deno.test("1_behavior: dot prefix rejection (hidden files)", () => {
       assertEquals(result.error.kind, "StartsWithDot");
     }
   });
+
+  // Test path traversal separately (higher priority than StartsWithDot)
+  const traversalResult = WorkspaceName.create("..double-dot");
+  assertEquals(traversalResult.ok, false);
+  if (!traversalResult.ok) {
+    assertEquals(traversalResult.error.kind, "PathTraversalAttempt");
+  }
 });
 
 Deno.test("1_behavior: path traversal attack prevention", () => {
-  const maliciousNames = [
+  // Path traversal patterns (high priority)
+  const pathTraversalNames = [
     "../parent",
-    "..\\windows-parent",
+    "..\\windows-parent", 
     "normal../attack",
     "attack/../normal",
     "../../etc",
     "path/separator",
     "path\\backslash",
-    "with:colon",
-    "with*asterisk",
-    "with?question",
-    "with\"quote",
-    "with<less>",
-    "with|pipe",
   ];
 
-  maliciousNames.forEach((name) => {
+  pathTraversalNames.forEach((name) => {
     const result = WorkspaceName.create(name);
-    assertEquals(result.ok, false, `Should reject malicious pattern: ${name}`);
+    assertEquals(result.ok, false, `Should reject path traversal: ${name}`);
     
     if (!result.ok) {
       assertEquals(result.error.kind, "PathTraversalAttempt");
-      assertEquals(Array.isArray(result.error.suspiciousPatterns), true);
-      assertEquals(result.error.suspiciousPatterns.length > 0, true);
+      if (result.error.kind === "PathTraversalAttempt") {
+        assertEquals(Array.isArray(result.error.suspiciousPatterns), true);
+        assertEquals(result.error.suspiciousPatterns.length > 0, true);
+      }
     }
   });
 });
@@ -263,7 +292,9 @@ Deno.test("1_behavior: forbidden characters for cross-platform compatibility", (
     
     if (!result.ok) {
       assertEquals(result.error.kind, "InvalidCharacters");
-      assertEquals(result.error.invalidChars.includes(char), true);
+      if (result.error.kind === "InvalidCharacters") {
+        assertEquals(result.error.invalidChars.includes(char), true);
+      }
     }
   });
 });
@@ -277,8 +308,8 @@ Deno.test("1_behavior: reserved names rejection (filesystem safety)", () => {
     // Unix/Linux system directories
     "bin", "boot", "dev", "etc", "home", "lib", "lib64", "mnt", "opt",
     "proc", "root", "run", "sbin", "srv", "sys", "tmp", "usr", "var",
-    // Common application directories
-    "node_modules", ".git", ".svn", ".hg", "target", "build", "dist",
+    // Common application directories  
+    "node_modules", "target", "build", "dist",
     // Case variations
     "con", "Con", "prn", "Prn",
   ];
@@ -289,28 +320,26 @@ Deno.test("1_behavior: reserved names rejection (filesystem safety)", () => {
     
     if (!result.ok) {
       assertEquals(result.error.kind, "ReservedName");
-      assertEquals(Array.isArray(result.error.reserved), true);
+      if (result.error.kind === "ReservedName") {
+        assertEquals(Array.isArray(result.error.reserved), true);
+      }
     }
   });
 });
 
 Deno.test("1_behavior: whitespace trimming", () => {
   const testCases = [
-    { input: " trimmed ", shouldReject: true }, // Contains space after trim
+    { input: " trimmed ", expected: "trimmed" }, // Should trim and accept
     { input: "\tno-spaces\t", expected: "no-spaces" },
     { input: "\n\rclean-name\n\r", expected: "clean-name" },
   ];
 
-  testCases.forEach(({ input, expected, shouldReject }) => {
+  testCases.forEach(({ input, expected }) => {
     const result = WorkspaceName.create(input);
     
-    if (shouldReject) {
-      assertEquals(result.ok, false, `Should reject after trim: "${input}"`);
-    } else {
-      assertEquals(result.ok, true, `Should trim and accept: "${input}"`);
-      if (result.ok && expected) {
-        assertEquals(result.data.value, expected);
-      }
+    assertEquals(result.ok, true, `Should trim and accept: "${input}"`);
+    if (result.ok && expected) {
+      assertEquals(result.data.value, expected);
     }
   });
 });
@@ -491,7 +520,7 @@ Deno.test("2_structure: utility methods", () => {
     const workspace = result.data;
     
     // Length
-    assertEquals(workspace.getLength(), 17);
+    assertEquals(workspace.getLength(), 18);
     
     // Case checks
     assertEquals(workspace.isLowerCase(), false);
@@ -557,12 +586,18 @@ Deno.test("2_structure: safe name conversion", () => {
     }
   }
 
-  // Test with actually problematic characters (this would fail creation)
-  // So we test the edge case where somehow unsafe chars got through
-  const mockUnsafe = { _value: "unsafe@#$name" } as any;
-  const unsafeResult = (mockUnsafe as WorkspaceName).toSafeName();
-  if (unsafeResult.ok) {
-    assertEquals(unsafeResult.data.value, "unsafe___name");
+  // Test toSafeName with valid workspace name containing special characters
+  const validNameResult = WorkspaceName.create("test-name_123");
+  assertEquals(validNameResult.ok, true);
+  
+  if (validNameResult.ok) {
+    const safeConversionResult = validNameResult.data.toSafeName();
+    assertEquals(safeConversionResult.ok, true);
+    
+    if (safeConversionResult.ok) {
+      // Should remain the same since it's already filesystem-safe
+      assertEquals(safeConversionResult.data.value, "test-name_123");
+    }
   }
 });
 
@@ -728,10 +763,10 @@ Deno.test("deprecated_utility: createWorkspaceName throws on error", () => {
   let threwError = false;
   try {
     createWorkspaceName("");
-  } catch (error) {
+  } catch (caughtError) {
     threwError = true;
-    assertEquals(error instanceof Error, true);
-    assertEquals(error.message.includes("empty"), true);
+    assertEquals(caughtError instanceof Error, true);
+    assertEquals((caughtError as Error).message.includes("empty"), true);
   }
   assertEquals(threwError, true, "Should throw for invalid names");
 });

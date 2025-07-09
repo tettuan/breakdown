@@ -338,7 +338,16 @@ export async function handleTwoParams(
 
   // 6. Create factory and process prompt generation
   try {
-    const factory = await PromptVariablesFactory.create(cliParams);
+    const factoryResult = await PromptVariablesFactory.create(cliParams);
+
+    if (!factoryResult.ok) {
+      return error({
+        kind: "FactoryValidationError",
+        errors: [`Failed to create factory: ${factoryResult.error}`],
+      });
+    }
+
+    const factory = factoryResult.data;
 
     const contentResult = await processPromptGeneration(
       factory,

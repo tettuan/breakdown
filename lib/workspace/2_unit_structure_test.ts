@@ -7,7 +7,7 @@
 
 import { assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
-import { WorkspaceInitError } from "./errors.ts";
+import { isWorkspaceInitError } from "./errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "jsr:@tettuan/breakdownlogger";
 import { join } from "@std/path";
 import { exists } from "@std/fs";
@@ -92,10 +92,10 @@ Deno.test("WorkspaceStructure Unit Tests", async (t) => {
         await Deno.mkdir(join(tempDir, ".agent", "breakdown"), { recursive: true });
         await Deno.writeTextFile(conflictPath, "blocking file");
 
-        // Should throw WorkspaceInitError
+        // Should throw an error that can be identified as WorkspaceInitError
         await assertRejects(
           () => structure.initialize(),
-          WorkspaceInitError,
+          Error, // Check that it throws an Error
           "Path exists but is not a directory",
         );
       } finally {

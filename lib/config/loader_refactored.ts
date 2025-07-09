@@ -92,8 +92,14 @@ export async function loadBreakdownConfig(
 ): Promise<Result<Record<string, unknown>, ConfigLoadError>> {
   try {
     // Dynamic import using version from central management
-    const importUrl = getJsrImport("BREAKDOWN_CONFIG");
-    const { BreakdownConfig } = await import(importUrl);
+    const importUrlResult = getJsrImport("BREAKDOWN_CONFIG");
+    if (!importUrlResult.ok) {
+      return resultError({
+        kind: "BreakdownConfigError",
+        message: `Failed to get import URL: ${'reason' in importUrlResult.error ? importUrlResult.error.reason : importUrlResult.error.kind}`,
+      });
+    }
+    const { BreakdownConfig } = await import(importUrlResult.data);
 
     // Use BreakdownConfig static factory method (convert null to undefined)
     const configResult = await BreakdownConfig.create(
@@ -125,17 +131,18 @@ export async function loadBreakdownConfig(
  * Validate custom configuration structure
  */
 export function validateCustomConfig(config: unknown): Result<CustomConfig, ConfigLoadError> {
-  if (!config || typeof config !== "object") {
+  // Check for null, undefined, or non-object types
+  if (config === null || config === undefined || typeof config !== "object" || Array.isArray(config)) {
     return resultError({
       kind: "ValidationError",
-      message: "Configuration must be an object",
+      message: "Configuration must be a non-null object",
     });
   }
 
   const cfg = config as CustomConfig;
 
   // Validate customConfig if present
-  if (cfg.customConfig && typeof cfg.customConfig !== "object") {
+  if (cfg.customConfig !== undefined && (cfg.customConfig === null || typeof cfg.customConfig !== "object" || Array.isArray(cfg.customConfig))) {
     return resultError({
       kind: "ValidationError",
       message: "customConfig must be an object",
@@ -143,7 +150,7 @@ export function validateCustomConfig(config: unknown): Result<CustomConfig, Conf
   }
 
   // Validate breakdownParams if present
-  if (cfg.breakdownParams && typeof cfg.breakdownParams !== "object") {
+  if (cfg.breakdownParams !== undefined && (cfg.breakdownParams === null || typeof cfg.breakdownParams !== "object" || Array.isArray(cfg.breakdownParams))) {
     return resultError({
       kind: "ValidationError",
       message: "breakdownParams must be an object",
@@ -175,13 +182,16 @@ export function mergeConfigs(...configs: CustomConfig[]): CustomConfig {
   const result: CustomConfig = {};
 
   for (const config of configs) {
-    // Deep merge logic
+    // Deep merge logic with recursive merging
     for (const [key, value] of Object.entries(config)) {
       if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-        result[key] = {
-          ...(result[key] as Record<string, unknown> || {}),
-          ...(value as Record<string, unknown>),
-        };
+        // Recursively merge nested objects
+        const existingValue = result[key];
+        if (typeof existingValue === "object" && existingValue !== null && !Array.isArray(existingValue)) {
+          result[key] = mergeConfigs(existingValue as CustomConfig, value as CustomConfig);
+        } else {
+          result[key] = { ...(value as Record<string, unknown>) };
+        }
       } else {
         result[key] = value;
       }
@@ -197,15 +207,15 @@ export function mergeConfigs(...configs: CustomConfig[]): CustomConfig {
 export function formatConfigLoadError(error: ConfigLoadError): string {
   switch (error.kind) {
     case "FileReadError":
-      return `Failed to read configuration file: ${error.path}\n${error.message}`;
+      return `File read error occurred while loading configuration from ${error.path}: ${error.message}`;
 
     case "ParseError":
-      return `Failed to parse configuration file: ${error.path}\n${error.message}`;
+      return `Parse error occurred while processing configuration file ${error.path}: ${error.message}`;
 
     case "ValidationError":
-      return `Configuration validation failed: ${error.message}`;
+      return `Configuration validation error occurred: ${error.message}`;
 
     case "BreakdownConfigError":
-      return `BreakdownConfig error: ${error.message}`;
+      return `BreakdownConfig initialization error occurred: ${error.message}`;
   }
 }

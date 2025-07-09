@@ -1,9 +1,27 @@
 /**
- * ErrorSeverity - エラーの重要度を表現するValue Object
- * 
- * エラーの重要度レベルを型安全に扱うための不変オブジェクト。
- * ログレベルや通知レベルの判定に使用。
+ * @fileoverview Error Severity Value Object with Smart Constructor and Totality design
+ *
+ * This module provides a type-safe ErrorSeverity value object following
+ * Domain-Driven Design principles and the Totality pattern. All operations
+ * return Result types instead of throwing exceptions, ensuring complete
+ * type safety and explicit error handling.
+ *
+ * ## Design Patterns Applied
+ * - Smart Constructor: Type-safe creation with validation
+ * - Discriminated Union: Explicit error types with type guards
+ * - Result Type: No exceptions, all errors as values
+ * - Value Object: Immutable with domain logic encapsulation
+ *
+ * ## Domain Context
+ * ErrorSeverity represents the severity level of errors within the
+ * Breakdown application error management bounded context.
+ * It enforces domain rules for valid severity levels and impact scopes.
+ *
+ * @module domain/core/value_objects/error_severity
  */
+
+import type { Result } from "../../../types/result.ts";
+import { error, ok } from "../../../types/result.ts";
 
 /**
  * エラーの重要度レベル
@@ -38,6 +56,91 @@ export interface ErrorMetadata {
   readonly context?: Record<string, unknown>;
 }
 
+/**
+ * Discriminated Union for ErrorSeverity-specific errors
+ * 
+ * Each error type has a unique 'kind' discriminator for type safety
+ * and follows Domain-Driven Design principles for error handling.
+ * The error types reflect domain concepts and constraints.
+ */
+export type ErrorSeverityError =
+  | {
+    kind: "InvalidLevel";
+    message: string;
+    providedLevel: string;
+    validLevels: readonly string[];
+  }
+  | {
+    kind: "InvalidImpact";
+    message: string;
+    providedImpact: string;
+    validImpacts: readonly string[];
+  }
+  | {
+    kind: "InvalidMetadata";
+    message: string;
+    field: string;
+    value?: unknown;
+  }
+  | {
+    kind: "NullOrUndefined";
+    message: string;
+    parameter: string;
+  }
+  | {
+    kind: "InvalidType";
+    message: string;
+    expected: string;
+    actual: string;
+  };
+
+/**
+ * Type guards for ErrorSeverityError discrimination
+ * 
+ * These type guards enable exhaustive pattern matching over error types
+ * and provide type-safe access to error-specific properties.
+ */
+export function isInvalidLevelError(error: ErrorSeverityError): error is Extract<ErrorSeverityError, { kind: "InvalidLevel" }> {
+  return error.kind === "InvalidLevel";
+}
+
+export function isInvalidImpactError(error: ErrorSeverityError): error is Extract<ErrorSeverityError, { kind: "InvalidImpact" }> {
+  return error.kind === "InvalidImpact";
+}
+
+export function isInvalidMetadataError(error: ErrorSeverityError): error is Extract<ErrorSeverityError, { kind: "InvalidMetadata" }> {
+  return error.kind === "InvalidMetadata";
+}
+
+export function isNullOrUndefinedError(error: ErrorSeverityError): error is Extract<ErrorSeverityError, { kind: "NullOrUndefined" }> {
+  return error.kind === "NullOrUndefined";
+}
+
+export function isInvalidTypeError(error: ErrorSeverityError): error is Extract<ErrorSeverityError, { kind: "InvalidType" }> {
+  return error.kind === "InvalidType";
+}
+
+/**
+ * Format ErrorSeverityError for display
+ * 
+ * Provides human-readable error messages for all error types
+ * with contextual information to help users understand and fix issues.
+ */
+export function formatErrorSeverityError(severityError: ErrorSeverityError): string {
+  switch (severityError.kind) {
+    case "InvalidLevel":
+      return `Invalid severity level "${severityError.providedLevel}": ${severityError.message}. Valid levels: ${severityError.validLevels.join(", ")}`;
+    case "InvalidImpact":
+      return `Invalid impact scope "${severityError.providedImpact}": ${severityError.message}. Valid impacts: ${severityError.validImpacts.join(", ")}`;
+    case "InvalidMetadata":
+      return `Invalid metadata field "${severityError.field}": ${severityError.message}`;
+    case "NullOrUndefined":
+      return `Parameter "${severityError.parameter}" cannot be null or undefined: ${severityError.message}`;
+    case "InvalidType":
+      return `Invalid type for parameter: expected ${severityError.expected}, got ${severityError.actual}. ${severityError.message}`;
+  }
+}
+
 export class ErrorSeverity {
   private readonly level: SeverityLevel;
   private readonly impact: ImpactScope;
@@ -51,6 +154,8 @@ export class ErrorSeverity {
     this.level = level;
     this.impact = impact;
     this.metadata = Object.freeze({ ...metadata });
+    // Ensure complete immutability
+    Object.freeze(this);
   }
   
   /**
@@ -96,29 +201,224 @@ export class ErrorSeverity {
   }
   
   /**
-   * カスタムエラー重要度を生成
+   * Smart Constructor for ErrorSeverity with comprehensive validation
+   * 
+   * Validates all domain rules for error severity and returns
+   * a Result type containing either a valid ErrorSeverity or specific error.
+   * 
+   * @param level - The severity level
+   * @param impact - The impact scope
+   * @param metadata - Optional metadata
+   * @returns Result containing ErrorSeverity or ErrorSeverityError
+   * 
+   * @example
+   * ```typescript
+   * const result = ErrorSeverity.create(SeverityLevel.ERROR, ImpactScope.MODULE);
+   * if (result.ok) {
+   *   console.log(`Valid severity: ${result.data.getLevelName()}`);
+   * } else {
+   *   console.error(formatErrorSeverityError(result.error));
+   * }
+   * ```
+   */
+  static create(
+    level: SeverityLevel,
+    impact: ImpactScope,
+    metadata?: ErrorMetadata
+  ): Result<ErrorSeverity, ErrorSeverityError> {
+    // Validate level
+    if (level == null) {
+      return error({
+        kind: "NullOrUndefined",
+        message: "Severity level must be provided",
+        parameter: "level",
+      });
+    }
+
+    if (typeof level !== "number") {
+      return error({
+        kind: "InvalidType",
+        message: "Severity level must be a valid SeverityLevel enum value",
+        expected: "SeverityLevel (number)",
+        actual: typeof level,
+      });
+    }
+
+    const validLevels = Object.values(SeverityLevel).filter(v => typeof v === "number") as number[];
+    if (!validLevels.includes(level)) {
+      return error({
+        kind: "InvalidLevel",
+        message: "Provided level is not a valid SeverityLevel",
+        providedLevel: String(level),
+        validLevels: validLevels.map(l => `${SeverityLevel[l]}(${l})`),
+      });
+    }
+
+    // Validate impact
+    if (impact == null) {
+      return error({
+        kind: "NullOrUndefined",
+        message: "Impact scope must be provided",
+        parameter: "impact",
+      });
+    }
+
+    if (typeof impact !== "string") {
+      return error({
+        kind: "InvalidType",
+        message: "Impact scope must be a valid ImpactScope enum value",
+        expected: "ImpactScope (string)",
+        actual: typeof impact,
+      });
+    }
+
+    const validImpacts = Object.values(ImpactScope);
+    if (!validImpacts.includes(impact)) {
+      return error({
+        kind: "InvalidImpact",
+        message: "Provided impact is not a valid ImpactScope",
+        providedImpact: impact,
+        validImpacts,
+      });
+    }
+
+    // Validate metadata if provided
+    if (metadata != null) {
+      if (typeof metadata !== "object" || Array.isArray(metadata)) {
+        return error({
+          kind: "InvalidMetadata",
+          message: "Metadata must be an object",
+          field: "metadata",
+          value: metadata,
+        });
+      }
+
+      // Validate specific metadata fields
+      if (metadata.code != null && typeof metadata.code !== "string") {
+        return error({
+          kind: "InvalidMetadata",
+          message: "Code must be a string",
+          field: "code",
+          value: metadata.code,
+        });
+      }
+
+      if (metadata.category != null && typeof metadata.category !== "string") {
+        return error({
+          kind: "InvalidMetadata",
+          message: "Category must be a string",
+          field: "category",
+          value: metadata.category,
+        });
+      }
+
+      if (metadata.timestamp != null && !(metadata.timestamp instanceof Date)) {
+        return error({
+          kind: "InvalidMetadata",
+          message: "Timestamp must be a Date object",
+          field: "timestamp",
+          value: metadata.timestamp,
+        });
+      }
+
+      if (metadata.context != null && (typeof metadata.context !== "object" || Array.isArray(metadata.context))) {
+        return error({
+          kind: "InvalidMetadata",
+          message: "Context must be an object",
+          field: "context",
+          value: metadata.context,
+        });
+      }
+    }
+
+    // All validations passed - create immutable ErrorSeverity
+    return ok(new ErrorSeverity(level, impact, metadata));
+  }
+
+  /**
+   * カスタムエラー重要度を生成（レガシー互換性のため）
+   * @deprecated Use ErrorSeverity.create() for Result-based error handling
    */
   public static custom(
     level: SeverityLevel,
     impact: ImpactScope,
     metadata?: ErrorMetadata
   ): ErrorSeverity {
-    return new ErrorSeverity(level, impact, metadata);
+    const result = ErrorSeverity.create(level, impact, metadata);
+    if (!result.ok) {
+      throw new Error(formatErrorSeverityError(result.error));
+    }
+    return result.data;
   }
   
   /**
-   * 文字列からエラー重要度を生成
+   * Smart Constructor for creating ErrorSeverity from string with validation
+   * 
+   * @param levelStr - The severity level as string
+   * @param impact - Optional impact scope (defaults to appropriate level)
+   * @param metadata - Optional metadata
+   * @returns Result containing ErrorSeverity or ErrorSeverityError
    */
-  public static fromString(levelStr: string, impact?: ImpactScope, metadata?: ErrorMetadata): ErrorSeverity {
-    const normalizedLevel = levelStr.toUpperCase();
+  static fromString(
+    levelStr: string,
+    impact?: ImpactScope,
+    metadata?: ErrorMetadata
+  ): Result<ErrorSeverity, ErrorSeverityError> {
+    // Validate levelStr
+    if (levelStr == null) {
+      return error({
+        kind: "NullOrUndefined",
+        message: "Level string must be provided",
+        parameter: "levelStr",
+      });
+    }
+
+    if (typeof levelStr !== "string") {
+      return error({
+        kind: "InvalidType",
+        message: "Level must be a string",
+        expected: "string",
+        actual: typeof levelStr,
+      });
+    }
+
+    const trimmedLevel = levelStr.trim();
+    if (trimmedLevel.length === 0) {
+      return error({
+        kind: "InvalidLevel",
+        message: "Level string cannot be empty",
+        providedLevel: levelStr,
+        validLevels: Object.keys(SeverityLevel).filter(k => isNaN(Number(k))),
+      });
+    }
+
+    const normalizedLevel = trimmedLevel.toUpperCase();
     const level = SeverityLevel[normalizedLevel as keyof typeof SeverityLevel];
     
     if (level === undefined) {
-      throw new Error(`Invalid severity level: ${levelStr}`);
+      const validLevels = Object.keys(SeverityLevel).filter(k => isNaN(Number(k)));
+      return error({
+        kind: "InvalidLevel",
+        message: "Provided level string does not match any valid severity level",
+        providedLevel: levelStr,
+        validLevels,
+      });
     }
     
     const defaultImpact = this.getDefaultImpactForLevel(level);
-    return new ErrorSeverity(level, impact || defaultImpact, metadata);
+    return ErrorSeverity.create(level, impact || defaultImpact, metadata);
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use ErrorSeverity.fromString() for Result-based error handling
+   */
+  public static fromStringUnsafe(levelStr: string, impact?: ImpactScope, metadata?: ErrorMetadata): ErrorSeverity {
+    const result = ErrorSeverity.fromString(levelStr, impact, metadata);
+    if (!result.ok) {
+      throw new Error(formatErrorSeverityError(result.error));
+    }
+    return result.data;
   }
   
   /**

@@ -21,7 +21,7 @@
  * @example Basic usage
  * ```typescript
  * function parseNumber(input: string): Result<number, string> {
- *   const _num = parseInt(input);
+ *   const num = parseInt(input);
  *   if (isNaN(num)) {
  *     return { ok: false, error: "Invalid number format" };
  *   }
@@ -43,14 +43,14 @@ export type Result<T, E = Error> =
 /**
  * Create a successful result
  */
-export function ok<T>(data: T): Result<T, never> {
+export function ok<T, E = Error>(data: T): Result<T, E> {
   return { ok: true, data };
 }
 
 /**
  * Create an error result
  */
-export function error<E>(error: E): Result<never, E> {
+export function error<T, E>(error: E): Result<T, E> {
   return { ok: false, error };
 }
 

@@ -13,7 +13,7 @@
  */
 
 import { WorkspaceErrorHandler } from "./interfaces.ts";
-import { WorkspaceError } from "./errors.ts";
+import { WorkspaceError, isWorkspaceError } from "./errors.ts";
 
 /**
  * Implementation of the WorkspaceErrorHandler interface for handling and
@@ -55,7 +55,7 @@ export class WorkspaceErrorHandlerImpl implements WorkspaceErrorHandler {
    * ```
    */
   handleError(error: Error, type: string): void {
-    if (error instanceof WorkspaceError) {
+    if (isWorkspaceError(error)) {
       console.error(`[${type}] ${error.name}: ${error.message}`);
     } else {
       console.error(`[${type}] Unexpected error: ${error.message}`);

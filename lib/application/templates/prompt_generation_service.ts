@@ -10,11 +10,11 @@
 import type { CommandResult } from "../../commands/mod.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import {
-  type GenerationResult,
   PromptGenerationAggregate,
   PromptTemplate,
   TemplatePath,
   TemplateVariables,
+  type GeneratedPrompt,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { TemplateRepository } from "../../domain/templates/template_repository.ts";
 import type {
@@ -28,6 +28,16 @@ import {
   PromptGenerationServiceErrors,
   PromptGenerationServiceErrorFactory,
 } from "../../types/prompt_generation_service_error.ts";
+
+/**
+ * Generation result for internal use
+ */
+interface GenerationResult {
+  success: boolean;
+  prompt?: GeneratedPrompt;
+  error?: Error;
+  attempts: number;
+}
 
 /**
  * Prompt generation request
@@ -54,7 +64,8 @@ export interface PromptGenerationResponse {
   templatePath?: string;
   appliedVariables?: Record<string, string>;
   error?: {
-    type: string;
+    kind?: string; // Future unified support
+    type: string; // Legacy support  
     message: string;
     details?: unknown;
   };
@@ -140,7 +151,7 @@ export class PromptGenerationService {
       });
 
       // 1. Select appropriate template
-      const templatePath = await this.selectTemplate(request);
+      const templatePath = this.selectTemplate(request);
 
       // 2. Load template from repository
       const template = await this.deps.repository.loadTemplate(templatePath);
@@ -154,8 +165,12 @@ export class PromptGenerationService {
       // 5. Generate prompt
       const result = aggregate.generatePrompt(variables);
 
-      // 6. Handle result
-      return this.handleGenerationResult(result, templatePath);
+      // 6. Convert Result to GenerationResult and handle
+      const generationResult: GenerationResult = result.ok 
+        ? { success: true, prompt: result.data, attempts: aggregate.getState().attempts }
+        : { success: false, error: result.error, attempts: aggregate.getState().attempts };
+      
+      return this.handleGenerationResult(generationResult, templatePath);
     } catch (error) {
       this.logger.error("Prompt generation failed", { error });
       return this.createErrorResponse(error as Error);
@@ -174,7 +189,14 @@ export class PromptGenerationService {
         fallbackEnabled: false,
       };
 
-      const templatePath = this.deps.policy.selectTemplate(directive, layer, context);
+      const templatePathResult = this.deps.policy.selectTemplate(directive, layer, context);
+      if (!templatePathResult.ok) {
+        return {
+          valid: false,
+          errors: [`Template selection failed: ${templatePathResult.error}`],
+        };
+      }
+      const templatePath = templatePathResult.data;
       const exists = await this.deps.repository.exists(templatePath);
 
       if (!exists) {
@@ -197,7 +219,7 @@ export class PromptGenerationService {
    * List available templates
    */
   async listAvailableTemplates() {
-    return this.deps.repository.listAvailable();
+    return await this.deps.repository.listAvailable();
   }
 
   /**
@@ -223,24 +245,31 @@ export class PromptGenerationService {
         success: false,
         output: "",
         error: {
-          type: response.error?.type || "Unknown",
+          kind: response.error?.kind || "Unknown",
+          type: response.error?.type || "Unknown", // Legacy support
           message: response.error?.message || "Unknown error",
         },
       };
     }
   }
 
-  private async selectTemplate(request: PromptGenerationRequest): Promise<TemplatePath> {
+  private selectTemplate(request: PromptGenerationRequest): TemplatePath {
     const context: SelectionContext = {
       customPath: request.options.adaptation,
       fallbackEnabled: true,
     };
 
-    return this.deps.policy.selectTemplate(
+    const result = this.deps.policy.selectTemplate(
       request.directive,
       request.layer,
       context,
     );
+    
+    if (!result.ok) {
+      throw new Error(`Failed to select template: ${result.error}`);
+    }
+    
+    return result.data;
   }
 
   private async prepareVariables(
@@ -351,7 +380,11 @@ export class PromptGenerationService {
 
     let aggregate = this.aggregates.get(aggregateId);
     if (!aggregate) {
-      aggregate = PromptGenerationAggregate.create(aggregateId, template);
+      const aggregateResult = PromptGenerationAggregate.create(aggregateId, template);
+      if (!aggregateResult.ok) {
+        throw new Error(`Failed to create aggregate: ${aggregateResult.error}`);
+      }
+      aggregate = aggregateResult.data;
       this.aggregates.set(aggregateId, aggregate);
     }
 
@@ -392,6 +425,7 @@ export class PromptGenerationService {
     return {
       success: false,
       error: {
+        kind: error.name || "UnknownError",
         type: error.name || "UnknownError",
         message: error.message,
         details: error.stack,

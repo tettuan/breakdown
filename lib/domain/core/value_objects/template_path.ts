@@ -201,9 +201,9 @@ export class TemplatePath extends BasePathValueObject {
     private readonly filename: string,
     fullPath: string,
   ) {
-    super(fullPath);
-    // Additional immutability guarantee
-    Object.freeze(this);
+    super(fullPath, false); // Don't freeze immediately
+    // Freeze after all properties are set
+    this.freezeObject();
   }
 
   /**
@@ -332,7 +332,7 @@ export class TemplatePath extends BasePathValueObject {
   /**
    * Get the filename component
    */
-  getFilename(): string {
+  override getFilename(): string {
     return this.filename;
   }
 
@@ -355,7 +355,7 @@ export class TemplatePath extends BasePathValueObject {
   /**
    * Check if this template path equals another
    */
-  equals(other: TemplatePath): boolean {
+  override equals(other: TemplatePath): boolean {
     return super.equals(other) &&
            this.directive.equals(other.directive) &&
            this.layer.equals(other.layer) &&

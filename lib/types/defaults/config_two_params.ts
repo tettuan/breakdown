@@ -1,23 +1,23 @@
-export const _defaultConfigTwoParams = {
-  params: {
-    two: {
-      demonstrativeType: {
+export const _defaultConfigTwoParams = Object.freeze({
+  params: Object.freeze({
+    two: Object.freeze({
+      directiveType: Object.freeze({
         pattern: "^(to|summary|defect)$",
-      },
-      layerType: {
+      }),
+      layerType: Object.freeze({
         pattern: "^(project|issue|task)$",
-      },
-      validation: {
-        allowedFlagOptions: [],
-        allowedValueOptions: [
+      }),
+      validation: Object.freeze({
+        allowedFlagOptions: Object.freeze([]),
+        allowedValueOptions: Object.freeze([
           "from",
           "destination",
           "input",
           "config",
-        ],
+        ]),
         userVariableOption: true,
         stdinAllowed: true,
-      },
-    },
-  },
-};
+      }),
+    }),
+  }),
+});

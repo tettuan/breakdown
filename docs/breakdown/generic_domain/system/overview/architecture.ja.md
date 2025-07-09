@@ -186,7 +186,7 @@ PromptVariablesは以下の4つの変数型で構成される：
 以下の3点をユーザーが指定し、カスタム運用できる。
 
 1. config: 
-  - 標準: app.yml, user.yml
+  - 標準: default-app.yml, default-user.yml
   - カスタム: $profile-app.yml, $profile-user.yml
   - カスタム指定方法: CLI オプションで `--config/-c`を使う
     -例: `--config=production`, `-c=system`

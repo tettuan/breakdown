@@ -68,6 +68,7 @@ describe("PromptAdapter Architecture - Module Dependencies", () => {
       "../factory/",
       "../builder/",
       "./prompt_adapter_validator",
+      "../types/result",
     ];
 
     const imports = fileContent.match(/from\s+["']\.\.?\/[^"']+["']/g) || [];

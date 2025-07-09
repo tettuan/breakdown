@@ -12,6 +12,7 @@ import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { PromptVariablesProvider } from "./prompt_adapter.ts";
+import { ok } from "../types/result.ts";
 
 const _logger = new _BreakdownLogger("structure-prompt-adapter");
 
@@ -36,7 +37,7 @@ class MockPromptVariablesProvider implements PromptVariablesProvider {
   }
 
   getBaseDirError() {
-    return undefined;
+    return ok<void, string>(undefined);
   }
 
   get customVariables() {

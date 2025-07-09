@@ -49,10 +49,16 @@ export class PromptManagerAdapter {
   private readonly debug: boolean;
   private readonly templateDir?: string;
 
-  constructor(config?: PromptManagerAdapterConfig) {
-    this.promptManager = config?.promptManager ?? new PromptManager();
-    this.debug = config?.debug ?? false;
-    this.templateDir = config?.templateDir;
+  constructor(config: PromptManagerAdapterConfig = {}) {
+    this.promptManager = config && 'promptManager' in config && config.promptManager !== undefined
+      ? config.promptManager 
+      : new PromptManager();
+    this.debug = config && 'debug' in config && config.debug !== undefined
+      ? config.debug 
+      : false;
+    this.templateDir = config && 'templateDir' in config && config.templateDir !== undefined
+      ? config.templateDir 
+      : undefined;
   }
 
   /**

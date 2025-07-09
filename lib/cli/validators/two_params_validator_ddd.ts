@@ -17,22 +17,17 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { TypeFactory } from "$lib/types/type_factory.ts";
+import { DirectiveType as ImportedDirectiveType, TwoParamsDirectivePattern } from "$lib/types/directive_type.ts";
+import { LayerType as ImportedLayerType, TwoParamsLayerTypePattern } from "$lib/types/layer_type.ts";
+
+// Type aliases for domain usage
+export type DirectiveType = ImportedDirectiveType;
+export type LayerType = ImportedLayerType;
 
 // ============================================================================
 // Domain Value Objects - Type-safe parameter representation
 // ============================================================================
-
-/**
- * DirectiveType - Branded type for directive parameter
- * Represents the processing direction (to, summary, defect, etc.)
- */
-export type DirectiveType = string & { readonly __brand: "DirectiveType" };
-
-/**
- * LayerType - Branded type for layer parameter
- * Represents the processing layer (project, issue, task, etc.)
- */
-export type LayerType = string & { readonly __brand: "LayerType" };
 
 /**
  * ProfileName - Branded type for configuration profile
@@ -117,7 +112,7 @@ export type ValidationError =
 /**
  * DirectiveType Smart Constructor
  */
-export const DirectiveType = {
+export const ValidatorDirectiveType = {
   /**
    * Create DirectiveType with pattern validation
    */
@@ -139,7 +134,7 @@ export const DirectiveType = {
       });
     }
 
-    return ok(value as DirectiveType);
+    return ok(value as unknown as DirectiveType);
   },
 
   /**
@@ -163,14 +158,14 @@ export const DirectiveType = {
       });
     }
 
-    return ok(value as DirectiveType);
+    return ok(value as unknown as DirectiveType);
   },
 
   /**
    * Extract string value from DirectiveType
    */
   value(directive: DirectiveType): string {
-    return directive;
+    return directive as unknown as string;
   },
 
   /**
@@ -184,7 +179,7 @@ export const DirectiveType = {
 /**
  * LayerType Smart Constructor
  */
-export const LayerType = {
+export const ValidatorLayerType = {
   /**
    * Create LayerType with pattern validation
    */
@@ -206,7 +201,7 @@ export const LayerType = {
       });
     }
 
-    return ok(value as LayerType);
+    return ok(value as unknown as LayerType);
   },
 
   /**
@@ -230,14 +225,14 @@ export const LayerType = {
       });
     }
 
-    return ok(value as LayerType);
+    return ok(value as unknown as LayerType);
   },
 
   /**
    * Extract string value from LayerType
    */
   value(layer: LayerType): string {
-    return layer;
+    return layer as unknown as string;
   },
 
   /**
@@ -372,10 +367,10 @@ export class TwoParamsValidator {
    * @param profile - Optional profile name (defaults to constructor profile)
    * @returns Result with validated parameters or error
    */
-  async validate(
+  validate(
     params: readonly string[],
     profile?: string,
-  ): Promise<Result<ValidatedParams, ValidationError>> {
+  ): Result<ValidatedParams, ValidationError> {
     // 1. Validate parameter count
     if (!params || params.length < 2) {
       return error({
@@ -386,14 +381,16 @@ export class TwoParamsValidator {
     }
 
     // 2. Determine profile
-    const profileResult = profile ? ProfileName.create(profile) : ok(this.defaultProfile);
+    const profileResult: Result<ProfileName, ValidationError> = profile
+      ? ProfileName.create(profile)
+      : ok<ProfileName, ValidationError>(this.defaultProfile);
 
     if (!profileResult.ok) {
       return error(profileResult.error);
     }
 
     // 3. Get validation patterns
-    const patternsResult = await this.getValidationPatterns(profileResult.data);
+    const patternsResult = this.getValidationPatterns(profileResult.data);
     if (!patternsResult.ok) {
       return error(patternsResult.error);
     }
@@ -401,19 +398,49 @@ export class TwoParamsValidator {
     // 4. Extract parameters
     const [directiveStr, layerStr] = params;
 
-    // 5. Validate directive type
-    const directiveResult = DirectiveType.create(
-      directiveStr,
-      patternsResult.data.directivePatterns,
+    // 5. Validate directive type using TypeFactory
+    // Create ValidationPatterns adapter for TypeFactory
+    const directivePattern = TwoParamsDirectivePattern.create(
+      `^(${patternsResult.data.directivePatterns.join("|")})$`
     );
-    if (!directiveResult.ok) {
-      return error(directiveResult.error);
+    if (!directivePattern) {
+      return error({
+        kind: "InvalidConfiguration",
+        message: "Failed to create directive pattern",
+        details: `Invalid pattern: ^(${patternsResult.data.directivePatterns.join("|")})$`
+      });
     }
 
-    // 6. Validate layer type
-    const layerResult = LayerType.create(layerStr, patternsResult.data.layerPatterns);
+    const layerPattern = TwoParamsLayerTypePattern.create(
+      `^(${patternsResult.data.layerPatterns.join("|")})$`
+    );
+    if (!layerPattern) {
+      return error({
+        kind: "InvalidConfiguration",
+        message: "Failed to create layer pattern",
+        details: `Invalid pattern: ^(${patternsResult.data.layerPatterns.join("|")})$`
+      });
+    }
+    
+    const patternAdapter = {
+      getDirectivePattern: () => directivePattern,
+      getLayerTypePattern: () => layerPattern,
+    };
+    
+    const typeFactory = new TypeFactory(patternAdapter);
+    const directiveResult = typeFactory.createDirectiveType(directiveStr);
+    if (!directiveResult.ok) {
+      // Map TypeFactory errors to ValidationError with proper type safety
+      const directiveError = this.mapTypeFactoryError(directiveResult.error, "directive", directiveStr);
+      return error(directiveError);
+    }
+
+    // 6. Validate layer type using TypeFactory
+    const layerResult = typeFactory.createLayerType(layerStr);
     if (!layerResult.ok) {
-      return error(layerResult.error);
+      // Map TypeFactory errors to ValidationError with proper type safety
+      const layerError = this.mapTypeFactoryError(layerResult.error, "layer", layerStr);
+      return error(layerError);
     }
 
     // 7. Validate combination (optional, can be extended)
@@ -517,16 +544,48 @@ export class TwoParamsValidator {
   /**
    * Get available patterns for a profile
    */
-  async getAvailablePatterns(
+  getAvailablePatterns(
     profile?: string,
-  ): Promise<Result<ValidationPatterns, ValidationError>> {
-    const profileResult = profile ? ProfileName.create(profile) : ok(this.defaultProfile);
+  ): Result<ValidationPatterns, ValidationError> {
+    const profileResult: Result<ProfileName, ValidationError> = profile
+      ? ProfileName.create(profile)
+      : ok<ProfileName, ValidationError>(this.defaultProfile);
 
     if (!profileResult.ok) {
       return error(profileResult.error);
     }
 
     return this.getValidationPatterns(profileResult.data);
+  }
+
+  /**
+   * Map TypeFactory errors to ValidationError with proper type safety
+   */
+  private mapTypeFactoryError(error: unknown, type: "directive" | "layer", value: string): ValidationError {
+    // Handle TypeFactory errors with proper type safety
+    if (typeof error === "object" && error !== null) {
+      const errorObj = error as { kind?: string; message?: string };
+      if (errorObj.kind === "PatternMismatch") {
+        return type === "directive" 
+          ? {
+              kind: "InvalidDirectiveType",
+              value,
+              validTypes: [],
+            }
+          : {
+              kind: "InvalidLayerType",
+              value,
+              validTypes: [],
+            };
+      }
+    }
+    
+    // Default error mapping
+    return {
+      kind: "InvalidConfiguration",
+      message: `Invalid ${type} type: ${String(error)}`,
+      details: error,
+    };
   }
 }
 
@@ -541,9 +600,9 @@ export function createValidatorWithConfig(
   config: BreakdownConfig | Record<string, unknown>,
   defaultProfile?: string,
 ): TwoParamsValidator {
-  const profileResult = defaultProfile
+  const profileResult: Result<ProfileName, ValidationError> = defaultProfile
     ? ProfileName.create(defaultProfile)
-    : { ok: true, data: ProfileName.default() };
+    : ok(ProfileName.default());
 
   const profile = profileResult.ok ? profileResult.data : ProfileName.default();
 
@@ -554,9 +613,9 @@ export function createValidatorWithConfig(
  * Create validator with default patterns
  */
 export function createDefaultValidator(defaultProfile?: string): TwoParamsValidator {
-  const profileResult = defaultProfile
+  const profileResult: Result<ProfileName, ValidationError> = defaultProfile
     ? ProfileName.create(defaultProfile)
-    : { ok: true, data: ProfileName.default() };
+    : ok(ProfileName.default());
 
   const profile = profileResult.ok ? profileResult.data : ProfileName.default();
 

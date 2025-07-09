@@ -69,6 +69,38 @@ export interface SchemaFilePathNotResolvedError extends PromptVariablesFactoryEr
 }
 
 /**
+ * Error during prompt path resolution
+ */
+export interface PromptPathResolutionError extends PromptVariablesFactoryError {
+  readonly kind: "PromptPathResolutionFailed";
+  readonly details: string;
+}
+
+/**
+ * Error during input path resolution
+ */
+export interface InputPathResolutionError extends PromptVariablesFactoryError {
+  readonly kind: "InputPathResolutionFailed";
+  readonly details: string;
+}
+
+/**
+ * Error during output path resolution
+ */
+export interface OutputPathResolutionError extends PromptVariablesFactoryError {
+  readonly kind: "OutputPathResolutionFailed";
+  readonly details: string;
+}
+
+/**
+ * Error during schema path resolution
+ */
+export interface SchemaPathResolutionError extends PromptVariablesFactoryError {
+  readonly kind: "SchemaPathResolutionFailed";
+  readonly details: string;
+}
+
+/**
  * Union type for all PromptVariablesFactory errors
  */
 export type PromptVariablesFactoryErrors =
@@ -78,7 +110,11 @@ export type PromptVariablesFactoryErrors =
   | PromptFilePathNotResolvedError
   | InputFilePathNotResolvedError
   | OutputFilePathNotResolvedError
-  | SchemaFilePathNotResolvedError;
+  | SchemaFilePathNotResolvedError
+  | PromptPathResolutionError
+  | InputPathResolutionError
+  | OutputPathResolutionError
+  | SchemaPathResolutionError;
 
 /**
  * Factory functions for creating specific errors
@@ -120,5 +156,29 @@ export const PromptVariablesFactoryErrorFactory = {
   schemaFilePathNotResolved: (): SchemaFilePathNotResolvedError => ({
     kind: "SchemaFilePathNotResolved",
     message: "Schema file path not resolved",
+  }),
+
+  promptPathResolutionFailed: (details: string): PromptPathResolutionError => ({
+    kind: "PromptPathResolutionFailed",
+    message: `Failed to resolve prompt path: ${details}`,
+    details,
+  }),
+
+  inputPathResolutionFailed: (details: string): InputPathResolutionError => ({
+    kind: "InputPathResolutionFailed",
+    message: `Failed to resolve input path: ${details}`,
+    details,
+  }),
+
+  outputPathResolutionFailed: (details: string): OutputPathResolutionError => ({
+    kind: "OutputPathResolutionFailed",
+    message: `Failed to resolve output path: ${details}`,
+    details,
+  }),
+
+  schemaPathResolutionFailed: (details: string): SchemaPathResolutionError => ({
+    kind: "SchemaPathResolutionFailed",
+    message: `Failed to resolve schema path: ${details}`,
+    details,
   }),
 } as const;

@@ -468,7 +468,7 @@ Deno.test("DuckTypingPromptVariables - error handling for edge cases", () => {
   assertEquals(vars.ok, true);
 
   if (vars.ok) {
-    const invalidMap = vars.data.map((_key, value) => parseInt(value).toString());
+    const invalidMap = vars.data.map((_key, _value) => 123 as any); // Returns number instead of string
     assertEquals(invalidMap.ok, false);
   }
 

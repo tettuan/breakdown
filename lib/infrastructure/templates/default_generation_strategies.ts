@@ -15,6 +15,7 @@ import type {
   TemplateSelectionStrategy,
   VariableResolutionStrategy,
 } from "../../domain/templates/generation_policy.ts";
+import type { Result } from "../../types/result.ts";
 import { join } from "@std/path";
 import { exists } from "@std/fs";
 
@@ -26,7 +27,17 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
 
   async resolve(variableName: string, context: ResolutionContext): Promise<string | undefined> {
     const envName = this.prefix + variableName.toUpperCase();
-    return Deno.env.get(envName) || context.environmentVariables?.[envName];
+    const envValue = Deno.env.get(envName);
+    if (envValue !== undefined) {
+      return envValue;
+    }
+    
+    // Safely access environmentVariables with proper null checking
+    if (context.environmentVariables && typeof context.environmentVariables === 'object') {
+      return context.environmentVariables[envName];
+    }
+    
+    return undefined;
   }
 
   getPriority(): number {
@@ -39,22 +50,31 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
  */
 export class FilePathResolutionStrategy implements VariableResolutionStrategy {
   async resolve(variableName: string, context: ResolutionContext): Promise<string | undefined> {
+    // Ensure providedVariables exists and is an object
+    if (!context.providedVariables || typeof context.providedVariables !== 'object') {
+      return undefined;
+    }
+    
     // Special handling for file path variables
-    if (variableName === "input_text_file" && context.providedVariables.fromFile) {
-      const path = context.providedVariables.fromFile;
-      if (path === "-") return "stdin";
+    if (variableName === "input_text_file") {
+      const fromFile = context.providedVariables.fromFile;
+      if (fromFile !== undefined && typeof fromFile === 'string') {
+        if (fromFile === "-") return "stdin";
 
-      // Resolve relative paths
-      const absolutePath = join(context.workingDirectory, path);
-      if (await exists(absolutePath)) {
-        return absolutePath;
+        // Resolve relative paths
+        const absolutePath = join(context.workingDirectory, fromFile);
+        if (await exists(absolutePath)) {
+          return absolutePath;
+        }
+        return fromFile; // Return as-is if not found
       }
-      return path; // Return as-is if not found
     }
 
-    if (variableName === "destination_path" && context.providedVariables.destinationFile) {
-      const path = context.providedVariables.destinationFile;
-      return join(context.workingDirectory, path);
+    if (variableName === "destination_path") {
+      const destinationFile = context.providedVariables.destinationFile;
+      if (destinationFile !== undefined && typeof destinationFile === 'string') {
+        return join(context.workingDirectory, destinationFile);
+      }
     }
 
     return undefined;
@@ -100,9 +120,9 @@ export class StandardTemplateSelectionStrategy implements TemplateSelectionStrat
     directive: DirectiveType,
     layer: LayerType,
     context: SelectionContext,
-  ): TemplatePath {
+  ): Result<TemplatePath, string> {
     // Use custom path if provided
-    if (context.customPath) {
+    if (context.customPath !== undefined && typeof context.customPath === 'string') {
       const parts = context.customPath.split("/");
       if (parts.length >= 3) {
         const filename = parts[parts.length - 1];
@@ -129,10 +149,11 @@ export class FallbackTemplateSelectionStrategy implements TemplateSelectionStrat
     directive: DirectiveType,
     layer: LayerType,
     context: SelectionContext,
-  ): TemplatePath {
+  ): Result<TemplatePath, string> {
     const primaryPath = this.primary.selectTemplate(directive, layer, context);
 
-    if (!context.fallbackEnabled) {
+    // Ensure fallbackEnabled is boolean (required by interface)
+    if (context.fallbackEnabled !== true) {
       return primaryPath;
     }
 
@@ -140,7 +161,7 @@ export class FallbackTemplateSelectionStrategy implements TemplateSelectionStrat
     const key = `${directive.getValue()}/${layer.getValue()}`;
     const fallbackFilename = this.fallbackMappings.get(key);
 
-    if (fallbackFilename) {
+    if (fallbackFilename !== undefined) {
       return TemplatePath.create(directive, layer, fallbackFilename);
     }
 

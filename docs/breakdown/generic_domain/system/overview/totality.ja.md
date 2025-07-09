@@ -141,7 +141,10 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 - [`docs/breakdown/overview/totality-type.ja.yml`](./totality-type.ja.yml)
 
 ### 具体的な適用例
-- [`docs/breakdown/technical/totality-types.ja.md`](../technical/totality-types.ja.md) - LayerTypeとDirectiveTypeのSmart Constructor化実例
+- **LayerTypeとDirectiveTypeのSmart Constructor化実例**（実装予定）
+  - TYPE設計はドメイン駆動設計によって定義される
+  - 詳細なドメイン設計については [#file:domain_core](../../domain_core/) を参照
+  - 核心ドメインにおける型安全性の実装パターン
 
 ### 実例テンプレート
 ```markdown

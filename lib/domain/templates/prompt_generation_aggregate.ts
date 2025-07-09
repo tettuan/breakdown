@@ -8,6 +8,8 @@
  */
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { Result } from "../../types/result.ts";
+import { ok, error } from "../../types/result.ts";
 
 /**
  * Template path value object
@@ -19,11 +21,11 @@ export class TemplatePath {
     private readonly filename: string,
   ) {}
 
-  static create(directive: DirectiveType, layer: LayerType, filename: string): TemplatePath {
+  static create(directive: DirectiveType, layer: LayerType, filename: string): Result<TemplatePath, string> {
     if (!filename.endsWith(".md")) {
-      throw new Error(`Invalid template filename: ${filename}. Must end with .md`);
+      return error(`Invalid template filename: ${filename}. Must end with .md`);
     }
-    return new TemplatePath(directive, layer, filename);
+    return ok(new TemplatePath(directive, layer, filename));
   }
 
   getPath(): string {
@@ -127,7 +129,11 @@ export class PromptTemplate {
     path: TemplatePath,
     content: string,
     metadata?: Partial<TemplateMetadata>,
-  ): PromptTemplate {
+  ): Result<PromptTemplate, string> {
+    if (!content || content.trim() === "") {
+      return error("Template content cannot be empty");
+    }
+    
     const templateContent = TemplateContent.create(content);
     const fullMetadata: TemplateMetadata = {
       version: metadata?.version || "1.0.0",
@@ -136,7 +142,7 @@ export class PromptTemplate {
       createdAt: metadata?.createdAt || new Date(),
       updatedAt: metadata?.updatedAt || new Date(),
     };
-    return new PromptTemplate(path, templateContent, fullMetadata);
+    return ok(new PromptTemplate(path, templateContent, fullMetadata));
   }
 
   getPath(): TemplatePath {
@@ -154,16 +160,16 @@ export class PromptTemplate {
   /**
    * Generate prompt by applying variables to template
    */
-  generate(variables: TemplateVariables): GeneratedPrompt {
+  generate(variables: TemplateVariables): Result<GeneratedPrompt, PromptGenerationError> {
     const requiredVars = this.content.getRequiredVariables();
     const missingVars = requiredVars.filter((v) => !variables.has(v));
 
     if (missingVars.length > 0) {
-      throw new PromptGenerationError(
+      return error(new PromptGenerationError(
         `Missing required variables: ${missingVars.join(", ")}`,
         this.path,
         missingVars,
-      );
+      ));
     }
 
     let result = this.content.getContent();
@@ -172,7 +178,7 @@ export class PromptTemplate {
       result = result.replace(new RegExp(`\\{${varName}\\}`, "g"), value);
     }
 
-    return GeneratedPrompt.create(this, result, variables);
+    return ok(GeneratedPrompt.create(this, result, variables));
   }
 }
 
@@ -222,12 +228,15 @@ export class PromptGenerationAggregate {
     private state: GenerationState,
   ) {}
 
-  static create(id: string, template: PromptTemplate): PromptGenerationAggregate {
-    return new PromptGenerationAggregate(id, template, {
+  static create(id: string, template: PromptTemplate): Result<PromptGenerationAggregate, string> {
+    if (!id || id.trim() === "") {
+      return error("Aggregate ID cannot be empty");
+    }
+    return ok(new PromptGenerationAggregate(id, template, {
       status: "initialized",
       attempts: 0,
       errors: [],
-    });
+    }));
   }
 
   getId(): string {
@@ -245,40 +254,32 @@ export class PromptGenerationAggregate {
   /**
    * Generate prompt with validation and state management
    */
-  generatePrompt(variables: TemplateVariables): GenerationResult {
-    try {
-      this.state = {
-        ...this.state,
-        status: "generating",
-        attempts: this.state.attempts + 1,
-      };
+  generatePrompt(variables: TemplateVariables): Result<GeneratedPrompt, PromptGenerationError> {
+    this.state = {
+      ...this.state,
+      status: "generating",
+      attempts: this.state.attempts + 1,
+    };
 
-      const prompt = this.template.generate(variables);
+    const generateResult = this.template.generate(variables);
 
-      this.state = {
-        ...this.state,
-        status: "completed",
-        lastGenerated: prompt,
-      };
-
-      return {
-        success: true,
-        prompt,
-        attempts: this.state.attempts,
-      };
-    } catch (error) {
+    if (!generateResult.ok) {
       this.state = {
         ...this.state,
         status: "failed",
-        errors: [...this.state.errors, error as Error],
+        errors: [...this.state.errors, generateResult.error],
       };
-
-      return {
-        success: false,
-        error: error as Error,
-        attempts: this.state.attempts,
-      };
+      return error(generateResult.error);
     }
+
+    const prompt = generateResult.data;
+    this.state = {
+      ...this.state,
+      status: "completed",
+      lastGenerated: prompt,
+    };
+
+    return ok(prompt);
   }
 
   canRetry(): boolean {
@@ -303,19 +304,10 @@ interface TemplateMetadata {
 interface GenerationState {
   status: "initialized" | "generating" | "completed" | "failed";
   attempts: number;
-  errors: Error[];
+  errors: (Error | PromptGenerationError)[];
   lastGenerated?: GeneratedPrompt;
 }
 
-/**
- * Generation result
- */
-export interface GenerationResult {
-  success: boolean;
-  prompt?: GeneratedPrompt;
-  error?: Error;
-  attempts: number;
-}
 
 /**
  * Prompt generation error

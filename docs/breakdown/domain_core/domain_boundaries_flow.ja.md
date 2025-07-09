@@ -121,6 +121,11 @@ type LayerType = {
 
 /**
  * ConfigProfileName - 設定プロファイル名を表すバリューオブジェクト
+ * 
+ * 重要: ConfigProfileNameは必須オプションではない
+ * - CLIから未指定時は自動的に "default" が適用される
+ * - 型システム上は常にConfigProfileNameとして扱われる
+ * - デフォルト値の適用により、型安全性と利便性を両立
  */
 type ConfigProfileName = {
   readonly value: string;
@@ -131,6 +136,10 @@ type ConfigProfileName = {
   getConfigPath(): string;
   getDirectiveTypes(): readonly DirectiveType[];
   getLayerTypes(): readonly LayerType[];
+  
+  // デフォルト値関連の操作
+  static createDefault(): ConfigProfileName;
+  static fromCliOption(option: string | null | undefined): ConfigProfileName;
   
   // 型安全な比較
   equals(other: ConfigProfileName): boolean;
@@ -424,7 +433,7 @@ flowchart TD
 ```typescript
 // 境界インターフェース
 interface CLIToConfigBoundary {
-  // 入力
+  // 入力（自動的にデフォルト値適用）
   configProfileName: ConfigProfileName;
   
   // 出力
@@ -434,11 +443,17 @@ interface CLIToConfigBoundary {
   loadConfig(profileName: ConfigProfileName): Result<BreakdownConfig, ConfigError>;
 }
 
-// データ変換
+// データ変換（デフォルト値自動適用）
 const transformCLIToConfig = (args: string[]): ConfigProfileName => {
-  const configOption = extractConfigOption(args);
-  return ConfigProfileName.create(configOption ?? "breakdown");
+  const configOption = extractConfigOption(args); // null | undefined | string
+  return ConfigProfileName.fromCliOption(configOption); // 自動的にデフォルト値適用
 };
+
+// 使用例
+const cliArgs = ["to", "issue"]; // プロファイル指定なし
+const profile = transformCLIToConfig(cliArgs);
+console.log(profile.value); // "default"
+console.log(profile.isDefault); // true
 ```
 
 ### 2. 設定管理ドメイン → プロンプトパス決定ドメイン
@@ -655,7 +670,7 @@ flowchart TD
 ### 1. Smart Constructor パターン
 
 ```typescript
-// 境界での型安全な生成
+// 境界での型安全な生成（デフォルト値自動適用）
 namespace DirectiveType {
   export function create(
     value: string,
@@ -681,6 +696,42 @@ namespace DirectiveType {
       equals: (other) => other.value === value && other.profile.equals(profile),
       toString: () => value
     });
+  }
+}
+
+// ConfigProfileName用のSmart Constructor（デフォルト値自動適用）
+namespace ConfigProfileName {
+  export function createDefault(): ConfigProfileName {
+    return {
+      value: "default",
+      isDefault: true,
+      prefix: null,
+      getConfigPath: () => "./default.config.yml",
+      getDirectiveTypes: () => getDefaultDirectiveTypes(),
+      getLayerTypes: () => getDefaultLayerTypes(),
+      equals: (other) => other.value === "default" && other.isDefault,
+      toString: () => "default"
+    };
+  }
+  
+  export function create(value: string): ConfigProfileName {
+    return {
+      value,
+      isDefault: value === "default",
+      prefix: value === "default" ? null : value,
+      getConfigPath: () => value === "default" ? "./default.config.yml" : `./${value}.config.yml`,
+      getDirectiveTypes: () => getDirectiveTypesForProfile(value),
+      getLayerTypes: () => getLayerTypesForProfile(value),
+      equals: (other) => other.value === value,
+      toString: () => value
+    };
+  }
+  
+  export function fromCliOption(option: string | null | undefined): ConfigProfileName {
+    if (option === null || option === undefined || option === "") {
+      return ConfigProfileName.createDefault();
+    }
+    return ConfigProfileName.create(option);
   }
 }
 ```
@@ -755,8 +806,30 @@ class StandardPathResolutionStrategy implements PathResolutionStrategy {
 - バリューオブジェクトによる不変性
 - ユニオン型による状態の明確化
 - Smart Constructorによる生成時バリデーション
+- デフォルト値の自動適用による型安全性の維持
 
 ### 3. 責務の明確化
+- 各ドメインの単一責任
+- 境界での明確なデータ変換
+- エラー処理の局所化
+
+### 4. 拡張性の実現
+- 新しいドメインの追加容易性
+- 既存境界への影響最小化
+- 設定による動的な挙動変更
+
+### 5. 保守性の向上
+- ドメイン固有の用語による理解促進
+- 境界での変換ロジックの集約
+- テスト可能な設計
+
+### 6. 利便性の向上
+- **デフォルト値の自動適用**: 設定省略時の自動的な標準動作
+- **型安全性の維持**: null/undefinedを排除した型システム
+- **シンプルなAPI**: 複雑な設定なしに即座に利用可能
+- **段階的な設定**: 標準動作から始めて必要に応じてカスタマイズ
+
+### 7. 統合の容易性
 - 各ドメインの単一責任
 - 境界での明確なデータ変換
 - エラー処理の局所化

@@ -40,7 +40,7 @@ export class PromptFileGeneratorDDD {
     });
 
     // Initialize domain policy
-    const policy = GenerationPolicy.create(
+    const policyResult = GenerationPolicy.create(
       {
         requiredVariables: ["input_text_file", "destination_path"],
         optionalVariables: ["input_text", "schema_file", "adaptation"],
@@ -63,12 +63,22 @@ export class PromptFileGeneratorDDD {
       createDefaultSelectionStrategy(),
     );
 
-    // Initialize application service
-    this.service = new PromptGenerationService({
+    if (!policyResult.ok) {
+      throw new Error(`Policy creation failed: ${policyResult.error.message}`);
+    }
+
+    // Initialize application service using Smart Constructor
+    const serviceResult = PromptGenerationService.create({
       repository,
-      policy,
+      policy: policyResult.data,
       logger: this.logger,
     });
+
+    if (!serviceResult.ok) {
+      throw new Error(`Service creation failed: ${serviceResult.error}`);
+    }
+
+    this.service = serviceResult.data;
   }
 
   /**
@@ -123,7 +133,11 @@ export class PromptFileGeneratorDDD {
       let inputFilePath;
 
       try {
-        factory = await PromptVariablesFactory.create(cliParams);
+        const factoryResult = await PromptVariablesFactory.create(cliParams);
+        if (!factoryResult.ok) {
+          throw new Error(`Factory creation failed: ${factoryResult.error}`);
+        }
+        factory = factoryResult.data;
         factory.validateAll();
         const params = factory.getAllParams();
         promptFilePath = params.promptFilePath;

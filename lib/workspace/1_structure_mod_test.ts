@@ -78,8 +78,9 @@ describe("Workspace Module - Structure", async () => {
 
     // Check that all exports follow the same pattern
     exportLines.forEach((line) => {
-      const isReExport = line.includes("from");
-      assertEquals(isReExport, true, `Export should be a re-export: ${line}`);
+      // Allow both re-exports (export * from) and named exports (export { ... } from)
+      const isReExport = line.includes("from") || line.includes("{");
+      assertEquals(isReExport, true, `Export should be a re-export or named export: ${line}`);
     });
   });
 

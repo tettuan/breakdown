@@ -239,17 +239,8 @@ export class WorkspaceName {
       });
     }
 
-    // Validate not starting with dot (hidden files/directories)
-    if (trimmed.startsWith('.')) {
-      return error({
-        kind: "StartsWithDot",
-        name: trimmed,
-        message: "Workspace names cannot start with dot to avoid creating hidden directories",
-      });
-    }
-
-    // Validate against path traversal attacks
-    const SUSPICIOUS_PATTERNS = ["..", "/", "\\", ":", "*", "?", "\"", "<", ">", "|"] as const;
+    // Validate against path traversal attacks (check first, higher priority)
+    const SUSPICIOUS_PATTERNS = ["..", "/", "\\"] as const;
     const foundPatterns = SUSPICIOUS_PATTERNS.filter(pattern => 
       trimmed.includes(pattern)
     );
@@ -260,6 +251,15 @@ export class WorkspaceName {
         name: trimmed,
         suspiciousPatterns: foundPatterns,
         message: "Workspace names cannot contain path manipulation characters for security",
+      });
+    }
+
+    // Validate not starting with dot (hidden files/directories)
+    if (trimmed.startsWith('.')) {
+      return error({
+        kind: "StartsWithDot",
+        name: trimmed,
+        message: "Workspace names cannot start with dot to avoid creating hidden directories",
       });
     }
 
@@ -346,11 +346,10 @@ export class WorkspaceName {
 
     // Sanitize project name for filesystem safety
     const sanitizedProject = projectName.trim()
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/[^a-zA-Z0-9_-]/g, "-");
 
-    if (sanitizedProject.length === 0) {
+    // Check if only hyphens or empty after sanitization (invalid)
+    if (sanitizedProject.length === 0 || /^-+$/.test(sanitizedProject)) {
       return error({
         kind: "InvalidFormat",
         name: projectName,
@@ -634,7 +633,7 @@ export class WorkspaceNameCollection {
    * @returns Array of name strings
    */
   getNames(): readonly string[] {
-    return this._names.map(name => name.value);
+    return Object.freeze(this._names.map(name => name.value));
   }
 
   /**

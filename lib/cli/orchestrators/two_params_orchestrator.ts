@@ -186,9 +186,9 @@ export class TwoParamsOrchestrator {
   ): Promise<Result<string, TwoParamsHandlerError>> {
     try {
       // Create factory with robust fallback mechanisms
-      let factory;
+      let factoryResult;
       try {
-        factory = await PromptVariablesFactory.create(cliParams);
+        factoryResult = await PromptVariablesFactory.create(cliParams);
       } catch (_configError) {
         // Fallback: Use minimal config when main config loading fails
         const fallbackConfig = {
@@ -196,8 +196,22 @@ export class TwoParamsOrchestrator {
           app_prompt: { base_dir: ".agent/breakdown/prompts" },
           app_schema: { base_dir: ".agent/breakdown/schema" },
         };
-        factory = PromptVariablesFactory.createWithConfig(fallbackConfig, cliParams);
+        factoryResult = PromptVariablesFactory.createWithConfig(fallbackConfig, cliParams);
       }
+
+      // Handle Result type for factory with proper unwrapping
+      if (!factoryResult.ok) {
+        return {
+          ok: false,
+          error: {
+            kind: "FactoryCreationError",
+            error: `Factory creation failed: ${factoryResult.error}`,
+          } as TwoParamsHandlerError,
+        };
+      }
+
+      // Extract factory from Result
+      const factory = factoryResult.data;
 
       // Validate factory
       factory.validateAll();
