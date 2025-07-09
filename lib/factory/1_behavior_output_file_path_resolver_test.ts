@@ -226,7 +226,14 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(pathResult.data.isGenerated, expectedGenerated);
         // Should generate filename in the specified directory
-        assertEquals(pathResult.data.value.includes(params.options.output.replace(/\/$/, "")), true);
+        const expectedDir = params.options.output.replace(/\/$/, "");
+        const actualPath = pathResult.data.value;
+        if (expectedType === "absolute") {
+          assertEquals(actualPath.startsWith(expectedDir), true);
+        } else {
+          // For relative paths, check if it contains the directory portion
+          assertEquals(actualPath.includes(expectedDir) || actualPath.startsWith(join(Deno.cwd(), expectedDir)), true);
+        }
       }
     }
   }
