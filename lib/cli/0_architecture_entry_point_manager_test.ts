@@ -1,6 +1,6 @@
 /**
  * @fileoverview Architecture tests for Entry Point Manager
- * 
+ *
  * This test suite verifies that the Entry Point Manager implements the
  * Entry Point Design Pattern correctly:
  * - Proper lifecycle management
@@ -8,11 +8,11 @@
  * - Signal handling
  * - Error boundary implementation
  * - Factory pattern usage
- * 
+ *
  * @module lib/cli/0_architecture_entry_point_manager_test
  */
 
-import { assertEquals, assertExists, assert } from "../../tests/deps.ts";
+import { assert, assertEquals, assertExists } from "../../tests/deps.ts";
 import { EntryPointManager } from "./entry_point_manager.ts";
 
 Deno.test("Entry Point Manager Architecture - Factory methods provide different configurations", () => {
@@ -27,8 +27,14 @@ Deno.test("Entry Point Manager Architecture - Factory methods provide different 
 
   // All should be instances of EntryPointManager
   assert(standard instanceof EntryPointManager, "Standard should be EntryPointManager instance");
-  assert(development instanceof EntryPointManager, "Development should be EntryPointManager instance");
-  assert(production instanceof EntryPointManager, "Production should be EntryPointManager instance");
+  assert(
+    development instanceof EntryPointManager,
+    "Development should be EntryPointManager instance",
+  );
+  assert(
+    production instanceof EntryPointManager,
+    "Production should be EntryPointManager instance",
+  );
 });
 
 Deno.test("Entry Point Manager Architecture - Constructor accepts configuration", () => {
@@ -68,7 +74,7 @@ Deno.test("Entry Point Manager Architecture - Start method returns Result type",
     if (!result.ok) {
       assertExists(result.error, "Error result should have error property");
       assertExists(result.error.kind, "Error should have kind property");
-      
+
       // Use utility function to get message from any error type
       const { getEntryPointErrorMessage } = await import("./entry_point_manager.ts");
       const message = getEntryPointErrorMessage(result.error);
@@ -128,16 +134,19 @@ Deno.test("Entry Point Manager Architecture - Factory methods follow naming conv
   // Test that factory methods follow consistent naming
   const factoryMethods = [
     "createStandard",
-    "createDevelopment", 
+    "createDevelopment",
     "createProduction",
   ];
 
   for (const methodName of factoryMethods) {
     const method = (EntryPointManager as any)[methodName];
     assertEquals(typeof method, "function", `${methodName} should be a static method`);
-    
+
     // Method should start with "create"
-    assert(methodName.startsWith("create"), `${methodName} should follow create* naming convention`);
+    assert(
+      methodName.startsWith("create"),
+      `${methodName} should follow create* naming convention`,
+    );
   }
 });
 
@@ -167,11 +176,11 @@ Deno.test("Entry Point Manager Architecture - Start method is async", {
     verbose: false,
     validateEnvironment: false, // Skip to avoid signal handlers
   });
-  
+
   // Set testing environment
   const originalTesting = Deno.env.get("DENO_TESTING");
   Deno.env.set("DENO_TESTING", "true");
-  
+
   try {
     const result = manager.start([]);
 
@@ -193,14 +202,26 @@ Deno.test("Entry Point Manager Architecture - Manager implements proper encapsul
 
   // Should expose public interface
   assertEquals(typeof manager.start, "function", "Should expose start method");
-  
+
   // Should not expose factory methods as instance methods
-  assertEquals((manager as any).createStandard, undefined, "Factory methods should not be instance methods");
-  assertEquals((manager as any).createDevelopment, undefined, "Factory methods should not be instance methods");
-  assertEquals((manager as any).createProduction, undefined, "Factory methods should not be instance methods");
-  
+  assertEquals(
+    (manager as any).createStandard,
+    undefined,
+    "Factory methods should not be instance methods",
+  );
+  assertEquals(
+    (manager as any).createDevelopment,
+    undefined,
+    "Factory methods should not be instance methods",
+  );
+  assertEquals(
+    (manager as any).createProduction,
+    undefined,
+    "Factory methods should not be instance methods",
+  );
+
   // Test that private methods are not in the public interface (through descriptors)
-  const descriptor = Object.getOwnPropertyDescriptor(manager, 'validateEnvironment');
+  const descriptor = Object.getOwnPropertyDescriptor(manager, "validateEnvironment");
   assertEquals(descriptor, undefined, "Private methods should not be enumerable properties");
 });
 
@@ -209,16 +230,15 @@ Deno.test("Entry Point Manager Architecture - Error handling follows functional 
   // Set test environment to avoid signal handler registration
   const originalEnv = Deno.env.get("DENO_TESTING");
   Deno.env.set("DENO_TESTING", "true");
-  
+
   try {
     const manager = EntryPointManager.createStandard();
-    
+
     // Test with empty arguments (should show help)
     const result = await manager.start([]);
-    
+
     // Should return Result type
     assert(typeof result.ok === "boolean", "Should return Result type");
-    
   } catch (error) {
     // Manager should not throw, should return Result instead
     throw new Error(`Entry Point Manager should not throw, got: ${error}`);

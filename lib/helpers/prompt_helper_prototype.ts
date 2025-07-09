@@ -10,7 +10,10 @@
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { DirectiveType, LayerType } from "../types/mod.ts";
-import type { PromptTemplate, TemplateVariables } from "../domain/templates/prompt_generation_aggregate.ts";
+import type {
+  PromptTemplate,
+  TemplateVariables,
+} from "../domain/templates/prompt_generation_aggregate.ts";
 
 /**
  * Experimental prompt enhancement options
@@ -141,7 +144,7 @@ export class PromptHelperPrototype {
     }
 
     const allDetected = [...requiredVars, ...additionalVars];
-    const missing = allDetected.filter(v => !providedVars.includes(v));
+    const missing = allDetected.filter((v) => !providedVars.includes(v));
 
     // Generate suggested defaults based on variable names
     const suggestedDefaults = new Map<string, string>();
@@ -301,7 +304,9 @@ export class PromptHelperPrototype {
       };
     } catch (error) {
       throw new PromptPrototypeError(
-        `Dynamic content generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Dynamic content generation failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
         "generateDynamicContent",
         directive.getValue() + "/" + layer.getValue(),
       );
@@ -367,7 +372,7 @@ export class PromptHelperPrototype {
       "input": "Input Data",
       "output": "Output Result",
       "example": "Example",
-      "date": new Date().toISOString().split('T')[0],
+      "date": new Date().toISOString().split("T")[0],
       "author": "System",
     };
 
@@ -379,9 +384,13 @@ export class PromptHelperPrototype {
     const layerValue = layer.getValue();
 
     if (this.options.language === "ja") {
-      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${new Date().toLocaleString('ja-JP')}`;
+      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${
+        new Date().toLocaleString("ja-JP")
+      }`;
     } else {
-      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${new Date().toISOString()}`;
+      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${
+        new Date().toISOString()
+      }`;
     }
   }
 
@@ -481,7 +490,7 @@ export function isExperimentalFeature(featureName: string): boolean {
 export function getExperimentalFeatures(): string[] {
   return [
     "variable_detection",
-    "template_enhancement", 
+    "template_enhancement",
     "dynamic_content",
     "japanese_enhancements",
     "auto_context_generation",

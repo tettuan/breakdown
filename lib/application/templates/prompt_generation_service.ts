@@ -10,11 +10,11 @@
 import type { CommandResult } from "../../commands/mod.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import {
+  type GeneratedPrompt,
   PromptGenerationAggregate,
   PromptTemplate,
   TemplatePath,
   TemplateVariables,
-  type GeneratedPrompt,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { TemplateRepository } from "../../domain/templates/template_repository.ts";
 import type {
@@ -25,8 +25,8 @@ import type {
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { Result } from "../../types/result.ts";
 import {
-  PromptGenerationServiceErrors,
   PromptGenerationServiceErrorFactory,
+  PromptGenerationServiceErrors,
 } from "../../types/prompt_generation_service_error.ts";
 
 /**
@@ -65,7 +65,7 @@ export interface PromptGenerationResponse {
   appliedVariables?: Record<string, string>;
   error?: {
     kind?: string; // Future unified support
-    type: string; // Legacy support  
+    type: string; // Legacy support
     message: string;
     details?: unknown;
   };
@@ -96,7 +96,7 @@ export class PromptGenerationService {
 
   /**
    * Smart Constructor for creating PromptGenerationService with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all dependencies
@@ -111,7 +111,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Dependencies must be a non-null object"
+          "Dependencies must be a non-null object",
         ),
       };
     }
@@ -121,7 +121,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Template repository is required"
+          "Template repository is required",
         ),
       };
     }
@@ -130,7 +130,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Generation policy is required"
+          "Generation policy is required",
         ),
       };
     }
@@ -166,10 +166,10 @@ export class PromptGenerationService {
       const result = aggregate.generatePrompt(variables);
 
       // 6. Convert Result to GenerationResult and handle
-      const generationResult: GenerationResult = result.ok 
+      const generationResult: GenerationResult = result.ok
         ? { success: true, prompt: result.data, attempts: aggregate.getState().attempts }
         : { success: false, error: result.error, attempts: aggregate.getState().attempts };
-      
+
       return this.handleGenerationResult(generationResult, templatePath);
     } catch (error) {
       this.logger.error("Prompt generation failed", { error });
@@ -264,11 +264,11 @@ export class PromptGenerationService {
       request.layer,
       context,
     );
-    
+
     if (!result.ok) {
       throw new Error(`Failed to select template: ${result.error}`);
     }
-    
+
     return result.data;
   }
 
@@ -366,7 +366,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.promptGenerationFailed(
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         ),
       };
     }

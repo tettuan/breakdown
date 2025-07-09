@@ -204,8 +204,8 @@ UserVariable:
 
 # 設定管理型定義
 DefaultApplicationConfig:
-  # default_application_config.jsonの内容を表す型
-  # 具体的な構造は設定ファイルに依存
+# default_application_config.jsonの内容を表す型
+# 具体的な構造は設定ファイルに依存
 
 # ファイルパス型定義（基本型）
 FilePath:

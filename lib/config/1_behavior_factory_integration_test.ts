@@ -1,18 +1,18 @@
 /**
  * @fileoverview Behavior tests for factory integration
- * 
+ *
  * Tests the behavioral aspects and business logic of the factory integration module,
  * including Smart Constructor patterns, validation behaviors, and runtime dynamics.
  */
 
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import {
-  FactoryConfigAdapter,
-  ConfigurationMigrator,
-  UnifiedFactoryBuilder,
   ConfigCompatibilityLayer,
+  ConfigurationMigrator,
   createFactoryWithUnifiedConfig,
+  FactoryConfigAdapter,
   getUnifiedConfig,
+  UnifiedFactoryBuilder,
 } from "./factory_integration.ts";
 import type { PromptCliParams } from "../factory/prompt_variables_factory.ts";
 
@@ -155,11 +155,17 @@ Deno.test("Behavior: ConfigurationMigrator - Validation Error Detection", () => 
   const testCases = [
     {
       config: {},
-      expectedErrors: ["Missing 'paths' configuration section", "No type patterns configuration found"],
+      expectedErrors: [
+        "Missing 'paths' configuration section",
+        "No type patterns configuration found",
+      ],
     },
     {
       config: { paths: "not-an-object" },
-      expectedErrors: ["Missing 'paths' configuration section", "No type patterns configuration found"],
+      expectedErrors: [
+        "Missing 'paths' configuration section",
+        "No type patterns configuration found",
+      ],
     },
     {
       config: { paths: {} },
@@ -179,7 +185,11 @@ Deno.test("Behavior: ConfigurationMigrator - Validation Error Detection", () => 
     const errors = ConfigurationMigrator.validateMigration(config);
     assertEquals(errors.length, expectedErrors.length, `Test case ${index} error count mismatch`);
     expectedErrors.forEach((expectedError, errorIndex) => {
-      assertEquals(errors[errorIndex], expectedError, `Test case ${index} error ${errorIndex} mismatch`);
+      assertEquals(
+        errors[errorIndex],
+        expectedError,
+        `Test case ${index} error ${errorIndex} mismatch`,
+      );
     });
   });
 });
@@ -213,9 +223,9 @@ Deno.test("Behavior: ConfigCompatibilityLayer - Migration Detection Logic", () =
       reason: "has modern paths structure",
     },
     {
-      config: { 
+      config: {
         paths: { promptBaseDir: "/new" },
-        patterns: { directive: ["to"] }
+        patterns: { directive: ["to"] },
       },
       shouldMigrate: false,
       reason: "fully modern config",
@@ -241,9 +251,21 @@ Deno.test("Behavior: UnifiedFactoryBuilder - Consistent Interface", () => {
     const builder = new UnifiedFactoryBuilder(config as any);
 
     // All builders should provide same interface
-    assertEquals(typeof builder.buildPathResolvers, "function", `Builder ${index} missing buildPathResolvers`);
-    assertEquals(typeof builder.getPatternProvider, "function", `Builder ${index} missing getPatternProvider`);
-    assertEquals(typeof builder.getPathOptions, "function", `Builder ${index} missing getPathOptions`);
+    assertEquals(
+      typeof builder.buildPathResolvers,
+      "function",
+      `Builder ${index} missing buildPathResolvers`,
+    );
+    assertEquals(
+      typeof builder.getPatternProvider,
+      "function",
+      `Builder ${index} missing getPatternProvider`,
+    );
+    assertEquals(
+      typeof builder.getPathOptions,
+      "function",
+      `Builder ${index} missing getPathOptions`,
+    );
 
     // Path resolvers should always be created successfully
     const resolvers = builder.buildPathResolvers();
@@ -341,7 +363,6 @@ Deno.test("Behavior: Convenience Functions - createFactoryWithUnifiedConfig", as
       workingDirectory: Deno.cwd(),
     });
     assert(typeof result2.ok === "boolean", "Result should have ok property");
-
   } catch (error) {
     // Expected for test environment - verify error handling
     assertExists(error);
@@ -413,11 +434,11 @@ function createMockConfig(features: Record<string, boolean>) {
     config: mockConfig,
     patternProvider: mockPatternProvider,
     pathOptions: mockPathOptions,
-    
+
     getConfig: () => mockConfig,
     getPatternProvider: () => mockPatternProvider,
     getPathOptions: () => mockPathOptions,
-    
+
     get: (path: string) => {
       const parts = path.split(".");
       let current: any = mockConfig;
@@ -430,7 +451,7 @@ function createMockConfig(features: Record<string, boolean>) {
       }
       return current;
     },
-    
+
     has: (path: string) => {
       const parts = path.split(".");
       let current: any = mockConfig;
@@ -443,19 +464,19 @@ function createMockConfig(features: Record<string, boolean>) {
       }
       return true;
     },
-    
+
     async getAvailableProfiles() {
       return ["default", "test"];
     },
-    
+
     async switchProfile(profileName: string) {
       return { ok: true, data: this };
     },
-    
+
     validate() {
       return { ok: true, data: undefined };
     },
-    
+
     export() {
       return JSON.stringify(mockConfig, null, 2);
     },

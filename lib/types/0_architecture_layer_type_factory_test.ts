@@ -8,12 +8,16 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { LayerTypeFactory, type LayerTypeCreationError, type LayerTypeResult } from "./layer_type_factory.ts";
+import {
+  type LayerTypeCreationError,
+  LayerTypeFactory,
+  type LayerTypeResult,
+} from "./layer_type_factory.ts";
 import { LayerType } from "./mod.ts";
 
 /**
  * Architecture Test Suite for LayerTypeFactory
- * 
+ *
  * Verifies:
  * - Smart Constructor pattern implementation
  * - Factory method presence and signatures
@@ -26,21 +30,36 @@ Deno.test("LayerTypeFactory Architecture - Smart Constructor Pattern", () => {
 
   // 2. Smart Constructor methods should exist with proper signatures
   assertExists(LayerTypeFactory.fromString, "fromString static method should exist");
-  assertExists(LayerTypeFactory.fromTwoParamsResult, "fromTwoParamsResult static method should exist");
+  assertExists(
+    LayerTypeFactory.fromTwoParamsResult,
+    "fromTwoParamsResult static method should exist",
+  );
   assertExists(LayerTypeFactory.isValidLayer, "isValidLayer static method should exist");
   assertExists(LayerTypeFactory.getKnownLayers, "getKnownLayers static method should exist");
 
   // 3. Factory methods should be static (architectural requirement)
   assertEquals(typeof LayerTypeFactory.fromString, "function", "fromString should be a function");
-  assertEquals(typeof LayerTypeFactory.fromTwoParamsResult, "function", "fromTwoParamsResult should be a function");
-  assertEquals(typeof LayerTypeFactory.isValidLayer, "function", "isValidLayer should be a function");
-  assertEquals(typeof LayerTypeFactory.getKnownLayers, "function", "getKnownLayers should be a function");
+  assertEquals(
+    typeof LayerTypeFactory.fromTwoParamsResult,
+    "function",
+    "fromTwoParamsResult should be a function",
+  );
+  assertEquals(
+    typeof LayerTypeFactory.isValidLayer,
+    "function",
+    "isValidLayer should be a function",
+  );
+  assertEquals(
+    typeof LayerTypeFactory.getKnownLayers,
+    "function",
+    "getKnownLayers should be a function",
+  );
 });
 
 Deno.test("LayerTypeFactory Architecture - Result Type Structure", () => {
   // Test that result types follow the totality principle structure
   const validResult = LayerTypeFactory.fromString("project");
-  
+
   // Result should have 'ok' property for discrimination
   assertExists(validResult.ok, "Result should have 'ok' property");
   assertEquals(typeof validResult.ok, "boolean", "ok property should be boolean");
@@ -54,7 +73,7 @@ Deno.test("LayerTypeFactory Architecture - Result Type Structure", () => {
   // Test error result structure
   const errorResult = LayerTypeFactory.fromString("");
   assertEquals(errorResult.ok, false, "Empty input should return error result");
-  
+
   if (!errorResult.ok) {
     // Error case should have 'error' property
     assertExists(errorResult.error, "Error result should have 'error' property");
@@ -86,13 +105,17 @@ Deno.test("LayerTypeFactory Architecture - Error Type Coverage", () => {
   // Verify comprehensive error coverage
   const expectedErrorKinds: LayerTypeCreationError["kind"][] = [
     "NullInput",
-    "InvalidInput", 
+    "InvalidInput",
     "EmptyInput",
-    "UnknownLayer"
+    "UnknownLayer",
   ];
 
   for (const expectedKind of expectedErrorKinds) {
-    assertEquals(errorKinds.has(expectedKind), true, `Error kind '${expectedKind}' should be producible`);
+    assertEquals(
+      errorKinds.has(expectedKind),
+      true,
+      `Error kind '${expectedKind}' should be producible`,
+    );
   }
 });
 
@@ -137,11 +160,15 @@ Deno.test("LayerTypeFactory Architecture - Factory Encapsulation", () => {
 
   // Factory should not expose internal LayerType constructor directly
   const result = LayerTypeFactory.fromString("project");
-  
+
   if (result.ok) {
     // Created instance should be proper LayerType
-    assertEquals(result.data instanceof LayerType, true, "Factory should create LayerType instances");
-    
+    assertEquals(
+      result.data instanceof LayerType,
+      true,
+      "Factory should create LayerType instances",
+    );
+
     // Factory should provide the only safe way to create LayerType
     assertExists(result.data.getValue, "Created LayerType should have getValue method");
     assertEquals(typeof result.data.getValue(), "string", "getValue should return string");

@@ -1,24 +1,24 @@
 /**
  * @fileoverview Behavior tests for TwoParamsVariableProcessor
- * 
+ *
  * Testing focus areas:
  * 1. Custom variable extraction with uv- prefix
  * 2. Standard variable generation behavior
  * 3. Variable validation and error handling
  * 4. Variable combination and processing
  * 5. Result type behavior and error propagation
- * 
+ *
  * @module lib/cli/processors/1_behavior_two_params_variable_processor_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  TwoParamsVariableProcessor,
   type ProcessedVariables,
+  TwoParamsVariableProcessor,
   type VariableProcessorError,
 } from "./two_params_variable_processor.ts";
 import type { Result } from "$lib/types/result.ts";
-import { isOk, isError } from "$lib/types/result.ts";
+import { isError, isOk } from "$lib/types/result.ts";
 
 // =============================================================================
 // 1_behavior: Custom Variable Extraction Behavior Tests
@@ -30,7 +30,7 @@ Deno.test("1_behavior: processVariables extracts valid custom variables", () => 
     "uv-customVar1": "value1",
     "uv-customVar2": "value2",
     "uv-mySpecialVar": "special value",
-    "regularOption": "not extracted"
+    "regularOption": "not extracted",
   };
   const stdinContent = "test input";
 
@@ -51,7 +51,7 @@ Deno.test("1_behavior: processVariables handles empty custom variables", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
     "regularOption": "value",
-    "from": "input.txt"
+    "from": "input.txt",
   };
   const stdinContent = "test input";
 
@@ -72,7 +72,7 @@ Deno.test("1_behavior: processVariables rejects reserved variable names", () => 
     "uv-input_text": "should be rejected",
     "uv-destination_path": "also rejected",
     "uv-schema_file": "rejected too",
-    "uv-validVar": "this is ok"
+    "uv-validVar": "this is ok",
   };
   const stdinContent = "test input";
 
@@ -93,7 +93,7 @@ Deno.test("1_behavior: processVariables rejects empty variable values", () => {
   const options = {
     "uv-emptyVar": "",
     "uv-whitespaceVar": "   ",
-    "uv-validVar": "good value"
+    "uv-validVar": "good value",
   };
   const stdinContent = "test input";
 
@@ -116,7 +116,7 @@ Deno.test("1_behavior: processVariables generates standard variables correctly",
   const processor = new TwoParamsVariableProcessor();
   const options = {
     from: "input.txt",
-    destination: "output.md"
+    destination: "output.md",
   };
   const stdinContent = "test input content";
 
@@ -135,7 +135,7 @@ Deno.test("1_behavior: processVariables handles missing stdin content", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
     from: "input.txt",
-    destination: "output.md"
+    destination: "output.md",
   };
   const stdinContent = "";
 
@@ -153,7 +153,7 @@ Deno.test("1_behavior: processVariables handles missing stdin content", () => {
 Deno.test("1_behavior: processVariables defaults input file to stdin", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
-    destination: "output.md"
+    destination: "output.md",
     // No from/fromFile option
   };
   const stdinContent = "content from stdin";
@@ -172,7 +172,7 @@ Deno.test("1_behavior: processVariables defaults input file to stdin", () => {
 Deno.test("1_behavior: processVariables defaults destination to stdout", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
-    from: "input.txt"
+    from: "input.txt",
     // No destination option
   };
   const stdinContent = "test content";
@@ -192,7 +192,7 @@ Deno.test("1_behavior: processVariables handles fromFile option", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
     fromFile: "source.md",
-    destinationFile: "target.html"
+    destinationFile: "target.html",
   };
   const stdinContent = "test content";
 
@@ -210,7 +210,7 @@ Deno.test("1_behavior: processVariables handles output option", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
     from: "input.txt",
-    output: "result.json"
+    output: "result.json",
   };
   const stdinContent = "test content";
 
@@ -233,7 +233,7 @@ Deno.test("1_behavior: processVariables combines custom and standard variables",
     "uv-theme": "dark",
     "uv-author": "test user",
     from: "input.txt",
-    destination: "output.md"
+    destination: "output.md",
   };
   const stdinContent = "test content";
 
@@ -242,16 +242,16 @@ Deno.test("1_behavior: processVariables combines custom and standard variables",
   assertEquals(result.ok, true);
   if (result.ok) {
     const data = result.data;
-    
+
     // Check custom variables
     assertEquals(data.customVariables["uv-theme"], "dark");
     assertEquals(data.customVariables["uv-author"], "test user");
-    
+
     // Check standard variables
     assertEquals(data.standardVariables.input_text, "test content");
     assertEquals(data.standardVariables.input_text_file, "input.txt");
     assertEquals(data.standardVariables.destination_path, "output.md");
-    
+
     // Check combined variables
     assertEquals(data.allVariables["uv-theme"], "dark");
     assertEquals(data.allVariables["uv-author"], "test user");
@@ -265,7 +265,7 @@ Deno.test("1_behavior: processVariables handles variable name conflicts", () => 
   const processor = new TwoParamsVariableProcessor();
   const options = {
     "uv-destination_path": "custom destination", // Would conflict but should be rejected
-    destination: "standard destination"
+    destination: "standard destination",
   };
   const stdinContent = "test content";
 
@@ -287,7 +287,7 @@ Deno.test("1_behavior: processVariablesWithoutStdin works with empty stdin", () 
   const options = {
     "uv-testVar": "test value",
     from: "input.txt",
-    destination: "output.md"
+    destination: "output.md",
   };
 
   const result = processor.processVariablesWithoutStdin(options);
@@ -343,7 +343,7 @@ Deno.test("1_behavior: processVariables collects multiple validation errors", ()
     "uv-emptyVar": "",
     "uv-destination_path": "another reserved",
     "uv-whitespace": "   ",
-    "uv-validVar": "this is good"
+    "uv-validVar": "this is good",
   };
   const stdinContent = "test content";
 
@@ -353,9 +353,9 @@ Deno.test("1_behavior: processVariables collects multiple validation errors", ()
   if (!result.ok) {
     assertEquals(Array.isArray(result.error), true);
     assertEquals(result.error.length, 4); // 2 reserved + 2 empty
-    
+
     // Check error types
-    const errorKinds = result.error.map(e => e.kind);
+    const errorKinds = result.error.map((e) => e.kind);
     assertEquals(errorKinds.includes("ReservedVariableName"), true);
     assertEquals(errorKinds.includes("EmptyVariableValue"), true);
   }
@@ -369,7 +369,7 @@ Deno.test("1_behavior: processVariables returns proper Result structure on succe
   const processor = new TwoParamsVariableProcessor();
   const options = {
     "uv-testVar": "test value",
-    from: "input.txt"
+    from: "input.txt",
   };
   const stdinContent = "test content";
 
@@ -379,7 +379,7 @@ Deno.test("1_behavior: processVariables returns proper Result structure on succe
   assertEquals(typeof result, "object");
   assertExists(result);
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals("data" in result, true);
     assertEquals("error" in result, false);
@@ -393,7 +393,7 @@ Deno.test("1_behavior: processVariables returns proper Result structure on succe
 Deno.test("1_behavior: processVariables returns proper error structure on validation failure", () => {
   const processor = new TwoParamsVariableProcessor();
   const options = {
-    "uv-input_text": "reserved variable name"
+    "uv-input_text": "reserved variable name",
   };
   const stdinContent = "test content";
 
@@ -404,7 +404,7 @@ Deno.test("1_behavior: processVariables returns proper error structure on valida
   assertExists(result);
   assertEquals("ok" in result, true);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals("error" in result, true);
     assertEquals("data" in result, false);
@@ -430,7 +430,7 @@ Deno.test("1_behavior: Result type guards work correctly for success", () => {
   // Test type guards
   assertEquals(isOk(result), true);
   assertEquals(isError(result), false);
-  
+
   if (isOk(result)) {
     assertEquals(typeof result.data, "object");
     assertEquals("customVariables" in result.data, true);
@@ -447,7 +447,7 @@ Deno.test("1_behavior: Result type guards work correctly for error", () => {
   // Test type guards
   assertEquals(isError(result), true);
   assertEquals(isOk(result), false);
-  
+
   if (isError(result)) {
     assertEquals(Array.isArray(result.error), true);
     assertEquals(result.error[0].kind, "ReservedVariableName");
@@ -465,7 +465,7 @@ Deno.test("1_behavior: processVariables converts non-string values to strings", 
     "uv-booleanVar": true,
     "uv-objectVar": { nested: "value" },
     from: false,
-    destination: 456
+    destination: 456,
   };
   const stdinContent = "test content";
 
@@ -488,12 +488,12 @@ Deno.test("1_behavior: processVariables converts non-string values to strings", 
 
 Deno.test("1_behavior: processVariables handles multiple sequential calls", () => {
   const processor = new TwoParamsVariableProcessor();
-  
+
   const testCases = [
     { options: { "uv-var1": "value1" }, stdin: "content1" },
     { options: { "uv-var2": "value2", from: "file.txt" }, stdin: "content2" },
     { options: { destination: "output.md" }, stdin: "content3" },
-    { options: {}, stdin: "" }
+    { options: {}, stdin: "" },
   ];
 
   for (const testCase of testCases) {
@@ -508,15 +508,15 @@ Deno.test("1_behavior: processVariables handles multiple sequential calls", () =
 
 Deno.test("1_behavior: processor maintains state isolation between calls", () => {
   const processor = new TwoParamsVariableProcessor();
-  
+
   // Make concurrent calls with different configurations
   const results = Promise.all([
     processor.processVariables({ "uv-var1": "value1" }, "content1"),
     processor.processVariables({ "uv-var2": "value2" }, "content2"),
-    processor.processVariables({ "uv-var3": "value3" }, "content3")
+    processor.processVariables({ "uv-var3": "value3" }, "content3"),
   ]);
 
-  return results.then(resolvedResults => {
+  return results.then((resolvedResults) => {
     // All calls should succeed independently
     for (const result of resolvedResults) {
       assertEquals(result.ok, true);
@@ -535,7 +535,7 @@ Deno.test("1_behavior: processVariables handles very long variable values", () =
   const processor = new TwoParamsVariableProcessor();
   const longValue = "x".repeat(10000); // 10KB string
   const options = {
-    "uv-longVar": longValue
+    "uv-longVar": longValue,
   };
   const stdinContent = "test content";
 
@@ -549,7 +549,7 @@ Deno.test("1_behavior: processVariables handles very long variable values", () =
 
 Deno.test("1_behavior: processVariables handles many custom variables", () => {
   const processor = new TwoParamsVariableProcessor();
-  
+
   // Create many custom variables
   const options: Record<string, string> = {};
   for (let i = 0; i < 100; i++) {
@@ -571,8 +571,8 @@ Deno.test("1_behavior: processVariables handles unicode and special characters",
   const processor = new TwoParamsVariableProcessor();
   const options = {
     "uv-unicodeVar": "Test with unicode: 🚀 ∑ ∆",
-    "uv-quotesVar": 'Text with "quotes" and \'apostrophes\'',
-    "uv-newlineVar": "Text with\nmultiple\nlines"
+    "uv-quotesVar": "Text with \"quotes\" and 'apostrophes'",
+    "uv-newlineVar": "Text with\nmultiple\nlines",
   };
   const stdinContent = "Unicode content: 🎯 测试";
 
@@ -582,7 +582,7 @@ Deno.test("1_behavior: processVariables handles unicode and special characters",
   if (result.ok) {
     const data = result.data;
     assertEquals(data.customVariables["uv-unicodeVar"], "Test with unicode: 🚀 ∑ ∆");
-    assertEquals(data.customVariables["uv-quotesVar"], 'Text with "quotes" and \'apostrophes\'');
+    assertEquals(data.customVariables["uv-quotesVar"], "Text with \"quotes\" and 'apostrophes'");
     assertEquals(data.customVariables["uv-newlineVar"], "Text with\nmultiple\nlines");
     assertEquals(data.standardVariables.input_text, "Unicode content: 🎯 测试");
   }

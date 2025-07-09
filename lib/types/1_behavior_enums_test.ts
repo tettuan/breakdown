@@ -7,7 +7,7 @@
  */
 
 import { assertEquals, assertNotEquals } from "@std/assert";
-import { ResultStatus, Result } from "./enums.ts";
+import { Result, ResultStatus } from "./enums.ts";
 
 Deno.test({
   name: "Behavior: ResultStatus enum values should be usable for equality checks",
@@ -15,7 +15,7 @@ Deno.test({
     const status1 = ResultStatus.SUCCESS;
     const status2 = ResultStatus.SUCCESS;
     const status3 = ResultStatus.ERROR;
-    
+
     assertEquals(status1, status2);
     assertNotEquals(status1, status3);
     assertEquals(status1 === status2, true);
@@ -31,11 +31,11 @@ Deno.test({
     function isSuccess(status: typeof ResultStatus.SUCCESS | typeof ResultStatus.ERROR): boolean {
       return status === ResultStatus.SUCCESS;
     }
-    
+
     function isError(status: typeof ResultStatus.SUCCESS | typeof ResultStatus.ERROR): boolean {
       return status === ResultStatus.ERROR;
     }
-    
+
     assertEquals(isSuccess(ResultStatus.SUCCESS), true);
     assertEquals(isSuccess(ResultStatus.ERROR), false);
     assertEquals(isError(ResultStatus.ERROR), true);
@@ -48,9 +48,9 @@ Deno.test({
   fn() {
     const successResult: Result<string, Error> = {
       status: ResultStatus.SUCCESS,
-      data: "test data"
+      data: "test data",
     };
-    
+
     assertEquals(successResult.status, ResultStatus.SUCCESS);
     if (successResult.status === ResultStatus.SUCCESS) {
       assertEquals(successResult.data, "test data");
@@ -63,9 +63,9 @@ Deno.test({
   fn() {
     const errorResult: Result<string, { message: string }> = {
       status: ResultStatus.ERROR,
-      error: { message: "Something went wrong" }
+      error: { message: "Something went wrong" },
     };
-    
+
     assertEquals(errorResult.status, ResultStatus.ERROR);
     if (errorResult.status === ResultStatus.ERROR) {
       assertEquals(errorResult.error.message, "Something went wrong");
@@ -83,17 +83,17 @@ Deno.test({
         return `Error: ${result.error}`;
       }
     }
-    
+
     const successResult: Result<number, string> = {
       status: ResultStatus.SUCCESS,
-      data: 42
+      data: 42,
     };
-    
+
     const errorResult: Result<number, string> = {
       status: ResultStatus.ERROR,
-      error: "Invalid input"
+      error: "Invalid input",
     };
-    
+
     assertEquals(processResult(successResult), "Success: 42");
     assertEquals(processResult(errorResult), "Error: Invalid input");
   },
@@ -106,16 +106,16 @@ Deno.test({
       ResultStatus.SUCCESS,
       ResultStatus.ERROR,
       ResultStatus.SUCCESS,
-      ResultStatus.ERROR
+      ResultStatus.ERROR,
     ];
-    
-    const successResults = results.filter(r => r === ResultStatus.SUCCESS);
-    const errorResults = results.filter(r => r === ResultStatus.ERROR);
-    
+
+    const successResults = results.filter((r) => r === ResultStatus.SUCCESS);
+    const errorResults = results.filter((r) => r === ResultStatus.ERROR);
+
     assertEquals(successResults.length, 2);
     assertEquals(errorResults.length, 2);
-    assertEquals(successResults.every(r => r === ResultStatus.SUCCESS), true);
-    assertEquals(errorResults.every(r => r === ResultStatus.ERROR), true);
+    assertEquals(successResults.every((r) => r === ResultStatus.SUCCESS), true);
+    assertEquals(errorResults.every((r) => r === ResultStatus.ERROR), true);
   },
 });
 
@@ -127,36 +127,36 @@ Deno.test({
       name: string;
       email: string;
     }
-    
+
     interface ValidationError {
       field: string;
       message: string;
     }
-    
+
     const successResult: Result<UserData, ValidationError> = {
       status: ResultStatus.SUCCESS,
       data: {
         id: 1,
         name: "John Doe",
-        email: "john@example.com"
-      }
+        email: "john@example.com",
+      },
     };
-    
+
     const errorResult: Result<UserData, ValidationError> = {
       status: ResultStatus.ERROR,
       error: {
         field: "email",
-        message: "Invalid email format"
-      }
+        message: "Invalid email format",
+      },
     };
-    
+
     assertEquals(successResult.status, ResultStatus.SUCCESS);
     assertEquals(errorResult.status, ResultStatus.ERROR);
-    
+
     if (successResult.status === ResultStatus.SUCCESS) {
       assertEquals(successResult.data.name, "John Doe");
     }
-    
+
     if (errorResult.status === ResultStatus.ERROR) {
       assertEquals(errorResult.error.field, "email");
     }
@@ -168,12 +168,12 @@ Deno.test({
   fn() {
     const data = {
       status: ResultStatus.SUCCESS,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     const json = JSON.stringify(data);
     const parsed = JSON.parse(json);
-    
+
     assertEquals(parsed.status, "success");
     assertEquals(parsed.status, ResultStatus.SUCCESS);
   },
@@ -183,31 +183,31 @@ Deno.test({
   name: "Behavior: Result type should work with async operations",
   async fn() {
     async function asyncOperation(shouldSucceed: boolean): Promise<Result<string, Error>> {
-      await new Promise(resolve => setTimeout(resolve, 1));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1));
+
       if (shouldSucceed) {
         return {
           status: ResultStatus.SUCCESS,
-          data: "Async operation completed"
+          data: "Async operation completed",
         };
       } else {
         return {
           status: ResultStatus.ERROR,
-          error: new Error("Async operation failed")
+          error: new Error("Async operation failed"),
         };
       }
     }
-    
+
     const successResult = await asyncOperation(true);
     const errorResult = await asyncOperation(false);
-    
+
     assertEquals(successResult.status, ResultStatus.SUCCESS);
     assertEquals(errorResult.status, ResultStatus.ERROR);
-    
+
     if (successResult.status === ResultStatus.SUCCESS) {
       assertEquals(successResult.data, "Async operation completed");
     }
-    
+
     if (errorResult.status === ResultStatus.ERROR) {
       assertEquals(errorResult.error.message, "Async operation failed");
     }

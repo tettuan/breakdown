@@ -101,7 +101,8 @@ export class CLIParser {
   }
 
   static printHelp(): void {
-    console.log(`Usage: deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts [options]
+    console.log(
+      `Usage: deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts [options]
 
 Options:
   --single-file      Run tests one file at a time in debug mode
@@ -140,7 +141,8 @@ Examples:
   deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --silent
 
   # Show only error files list
-  deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --error-files-only`);
+  deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --error-files-only`,
+    );
   }
 
   static validateConfig(config: CIConfig): void {

@@ -176,7 +176,12 @@ export class UnifiedConfigInterface {
    * Create unified configuration with profile support
    */
   static async create(
-    options: ConfigBuilderOptions = { profile: null, workingDirectory: null, environmentOverrides: null, pathOverrides: null },
+    options: ConfigBuilderOptions = {
+      profile: null,
+      workingDirectory: null,
+      environmentOverrides: null,
+      pathOverrides: null,
+    },
   ): Promise<Result<UnifiedConfigInterface, ConfigurationError>> {
     try {
       // Load base configuration

@@ -9,7 +9,7 @@
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
 
 /**
  * Schema path value object
@@ -21,7 +21,11 @@ export class SchemaPath {
     private readonly filename: string,
   ) {}
 
-  static create(directive: DirectiveType, layer: LayerType, filename: string): Result<SchemaPath, string> {
+  static create(
+    directive: DirectiveType,
+    layer: LayerType,
+    filename: string,
+  ): Result<SchemaPath, string> {
     if (!filename.endsWith(".json")) {
       return error(`Invalid schema filename: ${filename}. Must end with .json`);
     }
@@ -151,7 +155,7 @@ export class Schema {
     if (!schemaContentResult.ok) {
       return error(schemaContentResult.error);
     }
-    
+
     const fullMetadata: SchemaMetadata = {
       version: metadata?.version || "1.0.0",
       author: metadata?.author || "system",
@@ -182,15 +186,18 @@ export class Schema {
     if (!updatedContentResult.ok) {
       return { ok: false, error: updatedContentResult.error };
     }
-    
-    return { ok: true, data: new Schema(
-      this.path,
-      updatedContentResult.data,
-      {
-        ...this.metadata,
-        updatedAt: new Date(),
-      },
-    ) };
+
+    return {
+      ok: true,
+      data: new Schema(
+        this.path,
+        updatedContentResult.data,
+        {
+          ...this.metadata,
+          updatedAt: new Date(),
+        },
+      ),
+    };
   }
 
   /**
@@ -325,16 +332,19 @@ export class SchemaManagementAggregate {
     if (!id || id.trim().length === 0) {
       return { ok: false, error: "Invalid aggregate ID: ID cannot be empty" };
     }
-    
-    return { ok: true, data: new SchemaManagementAggregate(
-      id,
-      new SchemaRegistry(),
-      {
-        initialized: true,
-        lastSync: null,
-        schemaCount: 0,
-      },
-    ) };
+
+    return {
+      ok: true,
+      data: new SchemaManagementAggregate(
+        id,
+        new SchemaRegistry(),
+        {
+          initialized: true,
+          lastSync: null,
+          schemaCount: 0,
+        },
+      ),
+    };
   }
 
   getId(): string {

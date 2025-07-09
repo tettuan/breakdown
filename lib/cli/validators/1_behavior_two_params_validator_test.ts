@@ -14,7 +14,11 @@
 import { assertEquals, assertExists } from "../../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { TwoParamsValidator, type ValidationError, type ValidatedParams } from "./two_params_validator.ts";
+import {
+  TwoParamsValidator,
+  type ValidatedParams,
+  type ValidationError,
+} from "./two_params_validator.ts";
 
 const logger = new BreakdownLogger("two-params-validator-behavior");
 
@@ -32,7 +36,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
         true,
         `Should accept valid demonstrative type: ${demoType}`,
       );
-      
+
       if (result.ok) {
         assertEquals(
           result.data.demonstrativeType,
@@ -58,7 +62,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
         true,
         `Should accept valid layer type: ${layerType}`,
       );
-      
+
       if (result.ok) {
         assertEquals(
           result.data.layerType,
@@ -92,7 +96,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
         true,
         `Should accept valid combination: ${demoType} ${layerType}`,
       );
-      
+
       if (result.ok) {
         assertEquals(
           result.data.demonstrativeType,
@@ -149,8 +153,17 @@ describe("Behavior: Invalid Parameter Rejection", () => {
 
     const validator = new TwoParamsValidator();
     const invalidDemonstrativeTypes = [
-      "invalid", "generate", "create", "build", "test", 
-      "TO", "SUMMARY", "123", "", " ", "to_project"
+      "invalid",
+      "generate",
+      "create",
+      "build",
+      "test",
+      "TO",
+      "SUMMARY",
+      "123",
+      "",
+      " ",
+      "to_project",
     ];
 
     for (const invalidType of invalidDemonstrativeTypes) {
@@ -160,7 +173,7 @@ describe("Behavior: Invalid Parameter Rejection", () => {
         false,
         `Should reject invalid demonstrative type: "${invalidType}"`,
       );
-      
+
       if (!result.ok) {
         const error = result.error;
         assertEquals(
@@ -195,8 +208,17 @@ describe("Behavior: Invalid Parameter Rejection", () => {
 
     const validator = new TwoParamsValidator();
     const invalidLayerTypes = [
-      "invalid", "component", "module", "service", "controller",
-      "PROJECT", "ISSUE", "456", "", " ", "project_task"
+      "invalid",
+      "component",
+      "module",
+      "service",
+      "controller",
+      "PROJECT",
+      "ISSUE",
+      "456",
+      "",
+      " ",
+      "project_task",
     ];
 
     for (const invalidType of invalidLayerTypes) {
@@ -206,7 +228,7 @@ describe("Behavior: Invalid Parameter Rejection", () => {
         false,
         `Should reject invalid layer type: "${invalidType}"`,
       );
-      
+
       if (!result.ok) {
         const error = result.error;
         assertEquals(
@@ -244,7 +266,7 @@ describe("Behavior: Invalid Parameter Rejection", () => {
     // First invalid parameter should be caught first
     const result = validator.validate(["invalid_demo", "invalid_layer"]);
     assertEquals(result.ok, false, "Should reject when both parameters are invalid");
-    
+
     if (!result.ok) {
       // Should catch the first validation error (demonstrative type)
       const error = result.error;
@@ -279,7 +301,7 @@ describe("Behavior: Edge Case Handling", () => {
       true,
       "Should accept valid parameters and ignore extras",
     );
-    
+
     if (result.ok) {
       assertEquals(
         result.data.demonstrativeType,
@@ -449,7 +471,7 @@ describe("Behavior: Error Message Quality", () => {
 
     const validator = new TwoParamsValidator();
     const invalidValue = "user_entered_invalid_value";
-    
+
     const result = validator.validate([invalidValue, "project"]);
     if (!result.ok && result.error.kind === "InvalidDemonstrativeType") {
       const error = result.error;

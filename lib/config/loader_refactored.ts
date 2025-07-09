@@ -96,7 +96,11 @@ export async function loadBreakdownConfig(
     if (!importUrlResult.ok) {
       return resultError({
         kind: "BreakdownConfigError",
-        message: `Failed to get import URL: ${'reason' in importUrlResult.error ? importUrlResult.error.reason : importUrlResult.error.kind}`,
+        message: `Failed to get import URL: ${
+          "reason" in importUrlResult.error
+            ? importUrlResult.error.reason
+            : importUrlResult.error.kind
+        }`,
       });
     }
     const { BreakdownConfig } = await import(importUrlResult.data);
@@ -110,7 +114,9 @@ export async function loadBreakdownConfig(
     if (!configResult.success) {
       return resultError({
         kind: "BreakdownConfigError",
-        message: `Failed to create BreakdownConfig: ${JSON.stringify(configResult.error) || "Unknown error"}`,
+        message: `Failed to create BreakdownConfig: ${
+          JSON.stringify(configResult.error) || "Unknown error"
+        }`,
       });
     }
 
@@ -132,7 +138,9 @@ export async function loadBreakdownConfig(
  */
 export function validateCustomConfig(config: unknown): Result<CustomConfig, ConfigLoadError> {
   // Check for null, undefined, or non-object types
-  if (config === null || config === undefined || typeof config !== "object" || Array.isArray(config)) {
+  if (
+    config === null || config === undefined || typeof config !== "object" || Array.isArray(config)
+  ) {
     return resultError({
       kind: "ValidationError",
       message: "Configuration must be a non-null object",
@@ -142,7 +150,11 @@ export function validateCustomConfig(config: unknown): Result<CustomConfig, Conf
   const cfg = config as CustomConfig;
 
   // Validate customConfig if present
-  if (cfg.customConfig !== undefined && (cfg.customConfig === null || typeof cfg.customConfig !== "object" || Array.isArray(cfg.customConfig))) {
+  if (
+    cfg.customConfig !== undefined &&
+    (cfg.customConfig === null || typeof cfg.customConfig !== "object" ||
+      Array.isArray(cfg.customConfig))
+  ) {
     return resultError({
       kind: "ValidationError",
       message: "customConfig must be an object",
@@ -150,7 +162,11 @@ export function validateCustomConfig(config: unknown): Result<CustomConfig, Conf
   }
 
   // Validate breakdownParams if present
-  if (cfg.breakdownParams !== undefined && (cfg.breakdownParams === null || typeof cfg.breakdownParams !== "object" || Array.isArray(cfg.breakdownParams))) {
+  if (
+    cfg.breakdownParams !== undefined &&
+    (cfg.breakdownParams === null || typeof cfg.breakdownParams !== "object" ||
+      Array.isArray(cfg.breakdownParams))
+  ) {
     return resultError({
       kind: "ValidationError",
       message: "breakdownParams must be an object",
@@ -187,7 +203,10 @@ export function mergeConfigs(...configs: CustomConfig[]): CustomConfig {
       if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         // Recursively merge nested objects
         const existingValue = result[key];
-        if (typeof existingValue === "object" && existingValue !== null && !Array.isArray(existingValue)) {
+        if (
+          typeof existingValue === "object" && existingValue !== null &&
+          !Array.isArray(existingValue)
+        ) {
           result[key] = mergeConfigs(existingValue as CustomConfig, value as CustomConfig);
         } else {
           result[key] = { ...(value as Record<string, unknown>) };

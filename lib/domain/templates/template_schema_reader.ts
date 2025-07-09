@@ -46,7 +46,7 @@ export interface SchemaBatchReadResult {
 
 /**
  * Template Schema Reader Service
- * 
+ *
  * Provides high-level schema reading functionality for template management.
  * Acts as a domain service that orchestrates schema loading, validation,
  * and dependency resolution.
@@ -59,10 +59,10 @@ export class TemplateSchemaReader {
    */
   async readSchema(
     path: SchemaPath,
-    options: SchemaReadOptions = {}
+    options: SchemaReadOptions = {},
   ): Promise<SchemaReadResult> {
     const schema = await this.schemaRepository.loadSchema(path);
-    
+
     let dependencies: Schema[] = [];
     if (options.resolveDependencies) {
       const depPaths = await this.schemaRepository.getDependencies(path);
@@ -72,7 +72,7 @@ export class TemplateSchemaReader {
     let validationPassed = true;
     if (options.validateContent) {
       const validation = await this.schemaRepository.validateSchema(
-        schema.getContent().getContent()
+        schema.getContent().getContent(),
       );
       validationPassed = validation.valid;
     }
@@ -93,7 +93,7 @@ export class TemplateSchemaReader {
    */
   async readSchemas(
     paths: SchemaPath[],
-    options: SchemaReadOptions = {}
+    options: SchemaReadOptions = {},
   ): Promise<SchemaBatchReadResult> {
     const successful: SchemaReadResult[] = [];
     const failed: Array<{ path: SchemaPath; error: string }> = [];
@@ -119,7 +119,7 @@ export class TemplateSchemaReader {
   async readSchemasByType(
     directive: DirectiveType,
     layer: LayerType,
-    options: SchemaReadOptions = {}
+    options: SchemaReadOptions = {},
   ): Promise<SchemaBatchReadResult> {
     const manifest = await this.schemaRepository.listAvailable({
       directive,
@@ -147,7 +147,7 @@ export class TemplateSchemaReader {
       // Try to load and validate
       const schema = await this.schemaRepository.loadSchema(path);
       const validation = await this.schemaRepository.validateSchema(
-        schema.getContent().getContent()
+        schema.getContent().getContent(),
       );
 
       return validation.valid;
@@ -167,7 +167,7 @@ export class TemplateSchemaReader {
 
   private async readSchemaRecursive(
     path: SchemaPath,
-    visited: Set<string>
+    visited: Set<string>,
   ): Promise<SchemaReadResult> {
     const pathStr = path.getPath();
     if (visited.has(pathStr)) {
@@ -178,7 +178,7 @@ export class TemplateSchemaReader {
 
     const schema = await this.schemaRepository.loadSchema(path);
     const depPaths = await this.schemaRepository.getDependencies(path);
-    
+
     const dependencies: Schema[] = [];
     for (const depPath of depPaths) {
       const depResult = await this.readSchemaRecursive(depPath, visited);
@@ -199,7 +199,7 @@ export class TemplateSchemaReader {
 
   private async loadDependencies(paths: SchemaPath[]): Promise<Schema[]> {
     const dependencies: Schema[] = [];
-    
+
     for (const path of paths) {
       try {
         const schema = await this.schemaRepository.loadSchema(path);
@@ -219,7 +219,7 @@ export class TemplateSchemaReader {
  * Schema reader factory function
  */
 export function createTemplateSchemaReader(
-  schemaRepository: SchemaRepository
+  schemaRepository: SchemaRepository,
 ): TemplateSchemaReader {
   return new TemplateSchemaReader(schemaRepository);
 }

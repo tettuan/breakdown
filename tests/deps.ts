@@ -10,110 +10,97 @@
 export * from "../lib/deps.ts";
 // Re-export from types/mod.ts but exclude ValidationError which is already exported from deps.ts
 export {
-  // Core type definitions
-  DirectiveType,
-  LayerType,
-  ConfigProfileName,
-  
-  // Factory and creation utilities
-  TypeFactory,
-  type TypeCreationResult,
-  type TypePatternProvider,
-  
-  // Pattern types
-  TwoParamsDirectivePattern,
-  TwoParamsLayerTypePattern,
-  
+  _defaultConfigTwoParams,
   // Result type for error handling
   all,
+  // Unified Error Types - excluding ValidationError to avoid conflict
+  type BaseError,
   chain,
-  error,
-  getOrElse,
-  isError,
-  isOk,
-  map,
-  ok,
-  type Result,
-  type ResultType,
-  
+  // Configuration types
+  ConfigError,
+  ConfigProfileName,
+  type ConfigurationError,
   // Variable types
   createEmptyValueError,
   createError,
   createInvalidNameError,
+  createPromptParams,
   createSuccess,
   createValidationFailedError,
-  type VariableError,
-  type VariableResult,
-  createPromptParams,
+  // Default implementations
+  DefaultTypePatternProvider,
+  // Deprecated legacy types (for backward compatibility)
+  type DemonstrativeType,
+  DemonstrativeTypeFactory,
+  DemonstrativeTypeGuards,
+  DirectiveFactory,
+  // Core type definitions
+  DirectiveType,
+  type EnumResult,
+  error,
+  ErrorFactory,
+  ErrorGuards,
+  type ErrorMetadata,
+  ErrorSeverity,
+  // Error severity types
+  ErrorSeverityClass,
+  type ErrorSeverityType,
+  type ExtendedTwoParams_Result,
+  extractUnifiedErrorMessage,
   FilePathVariable,
   FilePathVariableName,
+  getOrElse,
+  ImpactScope,
+  isError,
+  isOk,
+  LayerFactory,
+  LayerType,
+  // Layer type utilities
+  LayerTypeFactory,
+  type LegacyLayerType,
+  LegacyLayerTypeFactory,
+  LegacyLayerTypeGuards,
+  map,
+  ok,
+  type OneParamsResult,
+  ParamsCustomConfig,
+  type PathError,
+  type ProcessingError,
+  // Re-export types defined in factory to avoid circular dependencies
+  type PromptCliOptions,
+  type PromptCliParams,
+  type PromptVariable,
+  type PromptVariables,
+  type Result,
+  ResultStatus,
+  type ResultType,
+  SeverityLevel,
   StandardVariable,
   StandardVariableName,
   StdinVariable,
   StdinVariableName,
-  toPromptParamsVariables,
-  UserVariable,
-  type PromptVariable,
-  type PromptVariables,
-  
-  // Deprecated legacy types (for backward compatibility)
-  type DemonstrativeType,
-  type LegacyLayerType,
-  DemonstrativeTypeFactory,
-  DemonstrativeTypeGuards,
-  DirectiveFactory,
-  LayerFactory,
-  LegacyLayerTypeFactory,
-  LegacyLayerTypeGuards,
-  TwoParamsConfigFactory,
-  VariableResultFactory,
-  type ExtendedTwoParams_Result,
-  
-  // Layer type utilities
-  LayerTypeFactory,
-  
-  // Default implementations
-  DefaultTypePatternProvider,
-  _defaultConfigTwoParams,
-  
-  // Configuration types
-  ConfigError,
-  ParamsCustomConfig,
-  ResultStatus,
-  type EnumResult,
-  
-  // Error severity types
-  ErrorSeverityClass,
-  SeverityLevel,
-  ImpactScope,
-  type ErrorMetadata,
-  ErrorSeverity,
-  type ErrorSeverityType,
-  
-  // Re-export types defined in factory to avoid circular dependencies
-  type PromptCliOptions,
-  type PromptCliParams,
-  type TotalityPromptCliParams,
-  
-  // Re-export factory classes
-  TotalityPromptVariablesFactory,
-  
-  // Result types for parameter operations
-  type TwoParams_Result,
-  type OneParamsResult,
-  type ZeroParamsResult,
-  
-  // Unified Error Types - excluding ValidationError to avoid conflict
-  type BaseError,
   type SystemError,
   type SystemErrorKind,
-  type PathError,
-  type ConfigurationError,
-  type ProcessingError,
-  type WorkspaceError,
+  toPromptParamsVariables,
+  type TotalityPromptCliParams,
+  // Re-export factory classes
+  TotalityPromptVariablesFactory,
+  // Result types for parameter operations
+  type TwoParams_Result,
+  TwoParamsConfigFactory,
+  // Pattern types
+  TwoParamsDirectivePattern,
+  TwoParamsLayerTypePattern,
+  type TypeCreationResult,
+  // Factory and creation utilities
+  TypeFactory,
+  type TypePatternProvider,
   type UnifiedError,
   type UnifiedResult,
-  ErrorGuards,
-  ErrorFactory,
-  extractUnifiedErrorMessage,
+  UserVariable,
+  type VariableError,
+  type VariableResult,
+  VariableResultFactory,
+  type WorkspaceError,
+  type ZeroParamsResult,
 } from "../lib/types/mod.ts";

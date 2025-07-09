@@ -15,20 +15,20 @@ import { describe, it } from "@std/testing/bdd";
 
 // Import the types module and related implementations
 import {
-  DirectiveType,
-  LayerType,
   ConfigProfileName,
-  TypeFactory,
+  createPromptParams,
   DefaultTypePatternProvider,
-  ok,
+  DirectiveType,
   error,
-  isOk,
+  FilePathVariable,
   isError,
+  isOk,
+  LayerType,
+  ok,
   Result,
   StandardVariable,
-  FilePathVariable,
-  createPromptParams,
   TotalityPromptVariablesFactory,
+  TypeFactory,
 } from "./mod.ts";
 
 describe("0_architecture_mod_test", () => {
@@ -42,12 +42,12 @@ describe("0_architecture_mod_test", () => {
         params: ["to", "project"],
         options: {},
       });
-      
+
       // Verify DirectiveType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
       assertEquals(result.value, "to");
-      
+
       // Verify it's a DirectiveType instance
       assertExists(result.getValue);
       assertEquals(typeof result.getValue, "function");
@@ -62,12 +62,12 @@ describe("0_architecture_mod_test", () => {
         params: ["to", "project"],
         options: {},
       });
-      
+
       // Verify LayerType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
       assertEquals(result.value, "project");
-      
+
       // Verify it's a LayerType instance
       assertExists(result.getValue);
       assertEquals(typeof result.getValue, "function");
@@ -76,11 +76,11 @@ describe("0_architecture_mod_test", () => {
 
     it("should implement Smart Constructor for ConfigProfileName", () => {
       const result = ConfigProfileName.create("production");
-      
+
       assertExists(result);
       assertEquals(typeof result, "object");
       assertEquals("ok" in result, true);
-      
+
       if (isOk(result)) {
         assertExists(result.data);
         assertEquals(result.data.value, "production");
@@ -90,7 +90,7 @@ describe("0_architecture_mod_test", () => {
     it("should implement Smart Constructor for Variables", () => {
       const standardVar = StandardVariable.create("test", "value");
       const filePathVar = FilePathVariable.create("path", "/test/path");
-      
+
       assertExists(standardVar);
       assertExists(filePathVar);
       assertEquals(typeof standardVar, "object");
@@ -102,7 +102,7 @@ describe("0_architecture_mod_test", () => {
     it("should never throw exceptions in public APIs", () => {
       // Test ConfigProfileName with invalid input (doesn't throw)
       const invalidResult = ConfigProfileName.create("INVALID");
-      
+
       // Should return Result, not throw
       assertExists(invalidResult);
       assertEquals(typeof invalidResult, "object");
@@ -111,7 +111,7 @@ describe("0_architecture_mod_test", () => {
 
     it("should provide meaningful error messages", () => {
       const result = ConfigProfileName.create("INVALID");
-      
+
       if (!isOk(result)) {
         assertExists(result.error);
         assertEquals(typeof result.error, "object");
@@ -124,7 +124,7 @@ describe("0_architecture_mod_test", () => {
     it("should maintain Result type consistency", () => {
       const okResult = ok({ value: 42 });
       const errorResult = error("test error");
-      
+
       // Test Result type discrimination
       assertEquals(isOk(okResult), true);
       assertEquals(isError(okResult), false);
@@ -137,7 +137,7 @@ describe("0_architecture_mod_test", () => {
     it("should enforce strict typing without any/unknown", () => {
       // This test is more about code review, but we can test behavior
       const factory = new TypeFactory(new DefaultTypePatternProvider());
-      
+
       // Factory should handle type validation properly
       assertExists(factory);
       assertEquals(typeof factory, "object");
@@ -146,19 +146,19 @@ describe("0_architecture_mod_test", () => {
     it("should maintain immutability patterns", () => {
       const directive = StandardVariable.create("directive", "to");
       const layer = StandardVariable.create("layer", "project");
-      
+
       // Variables should be immutable
       assertExists(directive);
       assertExists(layer);
       assertEquals(typeof directive, "object");
       assertEquals(typeof layer, "object");
-      
+
       // Check that variables maintain their state
       if (directive && "ok" in directive && directive.ok) {
         assertExists(directive.data);
         assertEquals(typeof directive.data, "object");
       }
-      
+
       if (layer && "ok" in layer && layer.ok) {
         assertExists(layer.data);
         assertEquals(typeof layer.data, "object");
@@ -168,10 +168,10 @@ describe("0_architecture_mod_test", () => {
     it("should integrate with domain boundaries properly", () => {
       // Test that types integrate correctly with domain boundaries
       const profileResult = ConfigProfileName.create("test");
-      
+
       assertExists(profileResult);
       assertEquals(typeof profileResult, "object");
-      
+
       if (isOk(profileResult)) {
         assertExists(profileResult.data);
         assertEquals(typeof profileResult.data.getValue, "function");
@@ -185,17 +185,17 @@ describe("0_architecture_mod_test", () => {
       assertExists(DirectiveType);
       assertExists(LayerType);
       assertExists(ConfigProfileName);
-      
+
       // Factory types
       assertExists(TypeFactory);
       assertExists(DefaultTypePatternProvider);
-      
+
       // Result types
       assertExists(ok);
       assertExists(error);
       assertExists(isOk);
       assertExists(isError);
-      
+
       // Variable types
       assertExists(StandardVariable);
       assertExists(FilePathVariable);
@@ -215,8 +215,8 @@ describe("0_architecture_mod_test", () => {
         StandardVariable,
         FilePathVariable,
       ];
-      
-      coreExports.forEach(exportItem => {
+
+      coreExports.forEach((exportItem) => {
         // All exports should exist and be properly typed
         assertExists(exportItem);
       });
@@ -229,7 +229,7 @@ describe("0_architecture_mod_test", () => {
       const emptyResult = ConfigProfileName.create("");
       const nullResult = ConfigProfileName.create(null);
       const undefinedResult = ConfigProfileName.create(undefined);
-      
+
       // Should return Results, not undefined/null
       assertExists(emptyResult);
       assertExists(nullResult);
@@ -249,15 +249,15 @@ describe("0_architecture_mod_test", () => {
         "a".repeat(51), // Too long
         "invalid-CHARACTER", // Invalid characters
       ];
-      
-      scenarios.forEach(scenario => {
+
+      scenarios.forEach((scenario) => {
         const result = ConfigProfileName.create(scenario as any);
-        
+
         // Each scenario should return a Result
         assertExists(result);
         assertEquals(typeof result, "object");
         assertEquals("ok" in result, true);
-        
+
         // If error, should have meaningful error information
         if (!isOk(result)) {
           assertExists(result.error);
@@ -271,12 +271,12 @@ describe("0_architecture_mod_test", () => {
       // Test that Result types properly discriminate
       const successResult = ok("success");
       const errorResult = error("failure");
-      
+
       // Type discrimination should work consistently
       if (isOk(successResult)) {
         assertEquals(successResult.data, "success");
       }
-      
+
       if (isError(errorResult)) {
         assertEquals(errorResult.error, "failure");
       }

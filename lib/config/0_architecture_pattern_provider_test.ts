@@ -367,9 +367,9 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
   );
 
   // createメソッドがエラーハンドリングを実装していることを確認
-  const hasErrorHandling = sourceCode.includes("return error(") || 
-                          sourceCode.includes("Failed to create BreakdownConfig") ||
-                          sourceCode.includes("ErrorFactory.configError");
+  const hasErrorHandling = sourceCode.includes("return error(") ||
+    sourceCode.includes("Failed to create BreakdownConfig") ||
+    sourceCode.includes("ErrorFactory.configError");
   assertEquals(
     hasErrorHandling,
     true,

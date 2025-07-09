@@ -1,6 +1,6 @@
 /**
  * @fileoverview Template Resolver Service - Generic domain service for template resolution
- * 
+ *
  * This is a compatibility layer that wraps the actual template resolver service
  * from the templates domain to maintain backward compatibility with existing tests.
  */
@@ -73,7 +73,7 @@ export class TemplateResolverService {
           if (promptPathResult.ok) {
             const promptPath = promptPathResult.data.value;
             this.logger.debug("Prompt path resolved", { path: promptPath });
-            
+
             try {
               const promptFileContent = await Deno.readTextFile(promptPath);
               const promptResult = PromptContent.create(promptFileContent);
@@ -84,13 +84,18 @@ export class TemplateResolverService {
                 this.logger.debug("Failed to create prompt content", { error: promptResult.error });
               }
             } catch (readError) {
-              this.logger.debug("Failed to read prompt file", { path: promptPath, error: readError });
+              this.logger.debug("Failed to read prompt file", {
+                path: promptPath,
+                error: readError,
+              });
             }
           } else {
             this.logger.debug("Prompt path resolution failed", { error: promptPathResult.error });
           }
         } else {
-          this.logger.debug("Prompt resolver creation failed", { error: promptResolverResult.error });
+          this.logger.debug("Prompt resolver creation failed", {
+            error: promptResolverResult.error,
+          });
         }
       } catch (promptError) {
         this.logger.debug("Prompt resolution failed", { error: promptError });
@@ -98,14 +103,17 @@ export class TemplateResolverService {
 
       // Resolve schema
       try {
-        const schemaCliParams = { ...cliParams, options: { ...cliParams.options, useSchema: true } };
+        const schemaCliParams = {
+          ...cliParams,
+          options: { ...cliParams.options, useSchema: true },
+        };
         const schemaResolverResult = SchemaFilePathResolver.create(config, schemaCliParams);
         if (schemaResolverResult.ok) {
           const schemaPathResult = schemaResolverResult.data.getPath();
           if (schemaPathResult.ok) {
             const schemaPath = schemaPathResult.data.value;
             this.logger.debug("Schema path resolved", { path: schemaPath });
-            
+
             try {
               const schemaFileContent = await Deno.readTextFile(schemaPath);
               const schemaResult = SchemaContent.create(schemaFileContent);
@@ -116,13 +124,18 @@ export class TemplateResolverService {
                 this.logger.debug("Failed to create schema content", { error: schemaResult.error });
               }
             } catch (readError) {
-              this.logger.debug("Failed to read schema file", { path: schemaPath, error: readError });
+              this.logger.debug("Failed to read schema file", {
+                path: schemaPath,
+                error: readError,
+              });
             }
           } else {
             this.logger.debug("Schema path resolution failed", { error: schemaPathResult.error });
           }
         } else {
-          this.logger.debug("Schema resolver creation failed", { error: schemaResolverResult.error });
+          this.logger.debug("Schema resolver creation failed", {
+            error: schemaResolverResult.error,
+          });
         }
       } catch (schemaError) {
         this.logger.debug("Schema resolution failed", { error: schemaError });

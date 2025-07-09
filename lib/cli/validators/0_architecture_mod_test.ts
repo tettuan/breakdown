@@ -14,11 +14,11 @@
 import { assertEquals, assertExists } from "../../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
+import {
+  ParameterValidator,
   TwoParamsValidator,
   type ValidatedParams,
   type ValidationError,
-  ParameterValidator
 } from "./mod.ts";
 
 const logger = new BreakdownLogger("validators-mod-architecture");
@@ -73,7 +73,7 @@ describe("Architecture: Module Export Design", () => {
     // Should provide single import point for all validators
     const moduleExports = {
       TwoParamsValidator,
-      ParameterValidator
+      ParameterValidator,
     };
 
     for (const [name, exportedItem] of Object.entries(moduleExports)) {
@@ -88,7 +88,7 @@ describe("Architecture: Module Export Design", () => {
     // Should not expose internal implementation details
     const validator = new TwoParamsValidator();
     const methodString = validator.validate.toString();
-    
+
     // Internal methods should not be accessible through module
     assertEquals(
       (moduleExports as any).validateDemonstrativeType,
@@ -109,7 +109,10 @@ describe("Architecture: Module Export Design", () => {
 
     // Should re-export from validator utilities without creating circular dependencies
     // ParameterValidator requires patternProvider and configValidator arguments
-    assertExists(ParameterValidator, "Should re-export ParameterValidator class without circular dependency");
+    assertExists(
+      ParameterValidator,
+      "Should re-export ParameterValidator class without circular dependency",
+    );
 
     // Should provide clean interface to CLI validators
     const twoParamsValidator = new TwoParamsValidator();
@@ -124,7 +127,7 @@ describe("Architecture: Module Export Design", () => {
       false,
       "TwoParamsValidator should not have direct file system or network dependencies",
     );
-    
+
     // Test ParameterValidator class definition (constructor requires args)
     assertEquals(
       typeof ParameterValidator,
@@ -148,7 +151,7 @@ describe("Architecture: Module Organization", () => {
     // TwoParamsValidator: CLI-specific parameter validation
     const twoParamsValidator = new TwoParamsValidator();
     const twoParamsResult = twoParamsValidator.validate(["to", "project"]);
-    
+
     if (twoParamsResult.ok) {
       assertEquals(
         typeof twoParamsResult.data.demonstrativeType,
@@ -182,17 +185,20 @@ describe("Architecture: Module Organization", () => {
     function createCompositeValidator() {
       const twoParams = new TwoParamsValidator();
       // ParameterValidator requires constructor arguments - testing conceptual composition
-      
+
       return {
         validateTwoParams: (params: string[]) => twoParams.validate(params),
-        validateGeneral: (params: unknown) => ({ ok: true, data: params }) // Mock for architecture test
+        validateGeneral: (params: unknown) => ({ ok: true, data: params }), // Mock for architecture test
       };
     }
 
     const composite = createCompositeValidator();
-    
+
     assertExists(composite.validateTwoParams, "Should support composing CLI validators");
-    assertExists(composite.validateGeneral, "Should support composing general validators conceptually");
+    assertExists(
+      composite.validateGeneral,
+      "Should support composing general validators conceptually",
+    );
 
     // Validators should work together without conflicts
     const twoParamsResult = composite.validateTwoParams(["to", "project"]);
@@ -222,14 +228,14 @@ describe("Architecture: Module Organization", () => {
     // Should integrate with existing validator pattern
     const mockValidator = new MockValidator();
     const result = mockValidator.validate("test");
-    
+
     assertEquals(result.ok, true, "New validators should follow same interface pattern");
     assertEquals(typeof result.ok, "boolean", "Should maintain result type consistency");
 
     // Should work alongside existing validators
     const twoParams = new TwoParamsValidator();
     const twoParamsResult = twoParams.validate(["to", "project"]);
-    
+
     assertEquals(
       typeof twoParamsResult.ok,
       typeof result.ok,
@@ -246,7 +252,7 @@ describe("Architecture: Import/Export Management", () => {
 
     // Module should re-export without duplicating code
     const twoParamsFromMod = new TwoParamsValidator();
-    
+
     // Should provide same functionality as direct import
     const directResult = twoParamsFromMod.validate(["to", "project"]);
     assertEquals(
@@ -271,7 +277,7 @@ describe("Architecture: Import/Export Management", () => {
     // Should expose only intended public interfaces
     const moduleKeys = Object.keys({
       TwoParamsValidator,
-      ParameterValidator
+      ParameterValidator,
     });
 
     assertEquals(
@@ -329,7 +335,7 @@ describe("Architecture: Import/Export Management", () => {
     // Should not have side effects on import
     const beforeImport = Date.now();
     const afterImport = Date.now();
-    
+
     assertEquals(
       afterImport - beforeImport < 10,
       true,
@@ -339,10 +345,10 @@ describe("Architecture: Import/Export Management", () => {
     // Should not create global state
     const validator1 = new TwoParamsValidator();
     const validator2 = new TwoParamsValidator();
-    
+
     const result1 = validator1.validate(["to", "project"]);
     const result2 = validator2.validate(["summary", "issue"]);
-    
+
     // Results should be independent
     if (result1.ok && result2.ok) {
       assertEquals(
@@ -362,9 +368,11 @@ describe("Architecture: Module Stability", () => {
 
     // Core exports should be consistently available
     const coreExports = ["TwoParamsValidator", "ParameterValidator"];
-    
+
     for (const exportName of coreExports) {
-      const exported = exportName === "TwoParamsValidator" ? TwoParamsValidator : ParameterValidator;
+      const exported = exportName === "TwoParamsValidator"
+        ? TwoParamsValidator
+        : ParameterValidator;
       assertExists(exported, `${exportName} should be consistently available`);
       assertEquals(
         typeof exported,
@@ -390,7 +398,7 @@ describe("Architecture: Module Stability", () => {
     // Should handle repeated imports gracefully
     const firstImport = TwoParamsValidator;
     const secondImport = TwoParamsValidator;
-    
+
     assertEquals(
       firstImport === secondImport,
       true,
@@ -399,7 +407,7 @@ describe("Architecture: Module Stability", () => {
 
     // Should handle concurrent instantiation
     const validators = Array.from({ length: 5 }, () => new TwoParamsValidator());
-    
+
     for (let i = 0; i < validators.length; i++) {
       const result = validators[i].validate(["to", "project"]);
       assertEquals(

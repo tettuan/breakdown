@@ -60,7 +60,11 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
+      assertEquals(
+        error instanceof LegacyStdinError,
+        true,
+        "Should throw LegacyStdinError on timeout",
+      );
     }
 
     // Test with allowEmpty option
@@ -71,7 +75,11 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin with allowEmpty succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
+      assertEquals(
+        error instanceof LegacyStdinError,
+        true,
+        "Should throw LegacyStdinError on timeout",
+      );
     }
 
     logger.debug("readStdin timeout behavior verified");

@@ -1,12 +1,12 @@
 /**
  * @fileoverview Prompt template path resolution with full Totality principle applied.
- * 
+ *
  * This is a refactored version of PromptTemplatePathResolver that implements:
  * - Complete Result type usage (no partial functions)
  * - Discriminated unions for optional properties
  * - Exhaustive error handling
  * - No null returns or exceptions
- * 
+ *
  * @module factory/prompt_template_path_resolver_totality
  */
 
@@ -33,9 +33,17 @@ export type LayerTypeInferenceError = {
 /**
  * Configuration with explicit union types instead of optionals
  */
-export type PromptResolverConfig = 
-  | { kind: "WithPromptConfig"; app_prompt: { base_dir: string }; app_schema?: { base_dir?: string } }
-  | { kind: "WithSchemaConfig"; app_schema: { base_dir: string }; app_prompt?: { base_dir?: string } }
+export type PromptResolverConfig =
+  | {
+    kind: "WithPromptConfig";
+    app_prompt: { base_dir: string };
+    app_schema?: { base_dir?: string };
+  }
+  | {
+    kind: "WithSchemaConfig";
+    app_schema: { base_dir: string };
+    app_prompt?: { base_dir?: string };
+  }
   | { kind: "NoConfig" };
 
 /**
@@ -144,7 +152,9 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // Validate CLI parameters structure and content
-    const demonstrativeType = PromptTemplatePathResolverTotality.extractDemonstrativeType(cliParams);
+    const demonstrativeType = PromptTemplatePathResolverTotality.extractDemonstrativeType(
+      cliParams,
+    );
     const layerType = PromptTemplatePathResolverTotality.extractLayerType(cliParams);
 
     if (!demonstrativeType || !layerType) {
@@ -178,16 +188,16 @@ export class PromptTemplatePathResolverTotality {
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
 
     if (appPrompt?.base_dir) {
-      return { 
-        kind: "WithPromptConfig", 
+      return {
+        kind: "WithPromptConfig",
         app_prompt: { base_dir: appPrompt.base_dir },
-        app_schema: appSchema
+        app_schema: appSchema,
       };
     } else if (appSchema?.base_dir) {
-      return { 
-        kind: "WithSchemaConfig", 
+      return {
+        kind: "WithSchemaConfig",
         app_schema: { base_dir: appSchema.base_dir },
-        app_prompt: appPrompt
+        app_prompt: appPrompt,
       };
     } else {
       return { kind: "NoConfig" };
@@ -402,7 +412,7 @@ export class PromptTemplatePathResolverTotality {
         fromFile: opts?.fromFile as string | undefined,
       };
     }
-    
+
     // For TwoParams_Result structure
     const twoParams = this._cliParams as TwoParams_Result;
     const opts = (twoParams as unknown as { options?: Record<string, unknown> }).options || {};
@@ -496,7 +506,7 @@ export class PromptTemplatePathResolverTotality {
   public resolveFromLayerTypeSafe(): Result<string, LayerTypeInferenceError> {
     const layerType = this.getLayerType();
     const options = this.getOptions();
-    
+
     // Use explicit fromLayerType if provided
     if (options.fromLayerType) {
       return resultOk(options.fromLayerType);
@@ -518,7 +528,9 @@ export class PromptTemplatePathResolverTotality {
   /**
    * Infers layer type from a file name - returns Result instead of nullable
    */
-  private inferLayerTypeFromFileNameSafe(fileName: string): Result<string, LayerTypeInferenceError> {
+  private inferLayerTypeFromFileNameSafe(
+    fileName: string,
+  ): Result<string, LayerTypeInferenceError> {
     // Extract the base filename without extension
     const baseName = fileName.split("/").pop()?.replace(/\.[^.]*$/, "") || "";
 

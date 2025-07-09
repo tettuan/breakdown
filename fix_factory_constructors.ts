@@ -13,7 +13,7 @@ const filesToFix = [
 for (const filePath of filesToFix) {
   try {
     let content = await Deno.readTextFile(filePath);
-    
+
     // Replace all instances of "new PromptVariablesFactory(config)" patterns
     content = content.replace(
       /const factory = new PromptVariablesFactory\(([^)]+)\);/g,
@@ -21,9 +21,9 @@ for (const filePath of filesToFix) {
         return `const factoryResult = PromptVariablesFactory.createWithConfig(${configVar}, createTestParams("to", "project", {}));
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;`;
-      }
+      },
     );
-    
+
     // Replace other variations
     content = content.replace(
       /const ([a-zA-Z]+Factory) = new PromptVariablesFactory\(([^)]+)\);/g,
@@ -31,16 +31,19 @@ for (const filePath of filesToFix) {
         return `const ${factoryName}Result = PromptVariablesFactory.createWithConfig(${configVar}, createTestParams("to", "project", {}));
   if (!${factoryName}Result.ok) throw new Error("${factoryName} creation failed");
   const ${factoryName} = ${factoryName}Result.data;`;
-      }
+      },
     );
-    
+
     // Replace factory.create(params) with factory.toPromptParams()
     content = content.replace(/factory\.create\(params\)/g, "factory.toPromptParams()");
     content = content.replace(/factory\.create\([^)]+\)/g, "factory.toPromptParams()");
-    
+
     // Fix error handling
-    content = content.replace(/error\.message/g, "error instanceof Error ? error.message : String(error)");
-    
+    content = content.replace(
+      /error\.message/g,
+      "error instanceof Error ? error.message : String(error)",
+    );
+
     await Deno.writeTextFile(filePath, content);
     console.log(`Fixed: ${filePath}`);
   } catch (error) {

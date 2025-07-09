@@ -24,7 +24,7 @@ type DoubleParamsResult = PromptCliParams;
 /**
  * TypeCreationResult pattern for consistent factory interface
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
@@ -119,7 +119,6 @@ export class InputFilePathResolver {
 
     return copy;
   }
-
 
   /**
    * Deep copy CLI parameters manually to avoid JSON.parse
@@ -295,7 +294,10 @@ export class InputFilePathResolver {
           this.name = "InputFilePathResolutionError";
         }
       }
-      throw new InputFilePathResolutionError(`Path resolution failed: ${result.error.kind} - ${errorMessage}`, result.error.kind);
+      throw new InputFilePathResolutionError(
+        `Path resolution failed: ${result.error.kind} - ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data.value;
   }
@@ -445,7 +447,7 @@ export class InputFilePathResolver {
 
   /**
    * Check if a path exists on the filesystem
-   * 
+   *
    * Architecture-compliant implementation that doesn't access file system directly.
    * Path resolution should focus on logical path construction only.
    * Actual file existence should be checked by higher-level components.
@@ -453,7 +455,7 @@ export class InputFilePathResolver {
   private checkPathExists(path: string): boolean {
     // Special cases for valid paths
     if (path === "-" || path === "") return true;
-    
+
     // Return true for logical paths that appear valid
     // This maintains the interface while respecting layer boundaries
     return path.length > 0 && !path.includes("\0");
@@ -461,7 +463,7 @@ export class InputFilePathResolver {
 
   /**
    * Handle resolution errors and convert to appropriate error types
-   * 
+   *
    * Architecture-compliant error handling that doesn't depend on Deno-specific errors
    */
   private handleResolutionError(error: unknown): Result<ResolvedInputPath, InputFilePathError> {
@@ -499,7 +501,7 @@ export class InputFilePathResolver {
 
   /**
    * Smart Constructor for creating InputFilePathResolver with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all inputs
@@ -553,7 +555,7 @@ export class InputFilePathResolver {
 
     // Check for legacy parameters structure
     const hasLegacyProps = (p: any): p is { demonstrativeType: string; layerType: string } => {
-      return p && typeof p === "object" && 
+      return p && typeof p === "object" &&
         "demonstrativeType" in p && "layerType" in p &&
         typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
     };
@@ -561,7 +563,8 @@ export class InputFilePathResolver {
     if (!hasTotalityProps(cliParams) && !hasLegacyProps(cliParams)) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)",
+        message:
+          "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)",
       });
     }
 

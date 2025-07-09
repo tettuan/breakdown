@@ -1,7 +1,7 @@
 /**
  * @fileoverview Structure tests for Unified Error Types
  * Testing data structure integrity and type relationships
- * 
+ *
  * Structure tests verify:
  * - Type relationships and hierarchies
  * - Structural completeness
@@ -12,14 +12,14 @@
 import { assertEquals, assertExists } from "@std/assert";
 import type {
   BaseError,
+  ConfigurationError,
+  PathError,
+  ProcessingError,
   SystemError,
   SystemErrorKind,
-  PathError,
-  ValidationError,
-  ConfigurationError,
-  ProcessingError,
   UnifiedError,
   UnifiedResult,
+  ValidationError,
 } from "./mod.ts";
 import { ErrorFactory } from "./mod.ts";
 import type { Result } from "./result.ts";
@@ -29,10 +29,10 @@ Deno.test("2_structure: BaseError interface defines minimal required structure",
   const minimalError: BaseError = {
     kind: "TestError",
   };
-  
+
   assertExists(minimalError.kind);
   assertEquals(Object.keys(minimalError).length, 1);
-  
+
   // Test with optional properties
   const fullError: BaseError = {
     kind: "TestError",
@@ -48,7 +48,7 @@ Deno.test("2_structure: BaseError interface defines minimal required structure",
       },
     },
   };
-  
+
   assertExists(fullError.kind);
   assertExists(fullError.message);
   assertExists(fullError.context);
@@ -64,35 +64,35 @@ Deno.test("2_structure: SystemErrorKind covers all expected error categories", (
     "InvalidConfiguration",
     "ValidationFailed",
   ];
-  
+
   const fileSystemErrors: SystemErrorKind[] = [
     "FileNotFound",
     "DirectoryNotFound",
     "PermissionDenied",
     "PathNotFound",
   ];
-  
+
   const processingErrors: SystemErrorKind[] = [
     "ProcessingFailed",
     "TransformationFailed",
     "GenerationFailed",
   ];
-  
+
   const externalErrors: SystemErrorKind[] = [
     "ExternalServiceError",
     "TimeoutError",
   ];
-  
+
   const businessErrors: SystemErrorKind[] = [
     "BusinessRuleViolation",
     "StateTransitionInvalid",
   ];
-  
+
   const configErrors: SystemErrorKind[] = [
     "ConfigurationError",
     "ProfileNotFound",
   ];
-  
+
   // All should be valid SystemErrorKind values
   const allErrors = [
     ...validationErrors,
@@ -102,9 +102,9 @@ Deno.test("2_structure: SystemErrorKind covers all expected error categories", (
     ...businessErrors,
     ...configErrors,
   ];
-  
+
   assertEquals(allErrors.length, 17);
-  
+
   // Each should be a string
   for (const errorKind of allErrors) {
     assertEquals(typeof errorKind, "string");
@@ -137,12 +137,12 @@ Deno.test("2_structure: PathError discriminated union has correct variant struct
       maxLength: 4096,
     },
   ];
-  
+
   // Verify each variant has required properties
   for (const error of pathErrorVariants) {
     assertExists(error.kind);
     assertExists(error.path);
-    
+
     // Check variant-specific properties
     switch (error.kind) {
       case "InvalidPath":
@@ -189,11 +189,11 @@ Deno.test("2_structure: ValidationError discriminated union has correct variant 
       errors: ["Error 1", "Error 2"],
     },
   ];
-  
+
   // Verify each variant has required properties
   for (const error of validationErrorVariants) {
     assertExists(error.kind);
-    
+
     // Check variant-specific properties
     switch (error.kind) {
       case "InvalidInput":
@@ -249,11 +249,11 @@ Deno.test("2_structure: ConfigurationError discriminated union has correct varia
       reason: "Port out of range",
     },
   ];
-  
+
   // Verify each variant has required properties
   for (const error of configErrorVariants) {
     assertExists(error.kind);
-    
+
     // Check variant-specific properties
     switch (error.kind) {
       case "ConfigurationError":
@@ -314,11 +314,11 @@ Deno.test("2_structure: ProcessingError discriminated union has correct variant 
       reason: "Invalid regex pattern",
     },
   ];
-  
+
   // Verify each variant has required properties
   for (const error of processingErrorVariants) {
     assertExists(error.kind);
-    
+
     // Check variant-specific properties
     switch (error.kind) {
       case "ProcessingFailed":
@@ -369,64 +369,75 @@ Deno.test("2_structure: UnifiedError is a complete union of all error types", ()
     path: "/test",
     reason: "Invalid",
   };
-  
+
   const validationError: UnifiedError = {
     kind: "InvalidInput",
     field: "test",
     value: "val",
     reason: "Invalid",
   };
-  
+
   const configError: UnifiedError = {
     kind: "ConfigurationError",
     message: "Test",
   };
-  
+
   const processingError: UnifiedError = {
     kind: "ProcessingFailed",
     operation: "test",
     reason: "Failed",
   };
-  
+
   // All should be valid UnifiedError types
   const errors: UnifiedError[] = [pathError, validationError, configError, processingError];
-  
+
   for (const error of errors) {
     assertExists(error.kind);
     assertEquals(typeof error.kind, "string");
   }
-  
+
   // Test that all error kinds are covered
   const allKinds = [
     // PathError kinds
-    "InvalidPath", "PathNotFound", "DirectoryNotFound", "PermissionDenied", "PathTooLong",
+    "InvalidPath",
+    "PathNotFound",
+    "DirectoryNotFound",
+    "PermissionDenied",
+    "PathTooLong",
     // ValidationError kinds
-    "InvalidInput", "MissingRequiredField", "InvalidFieldType", "ValidationFailed",
+    "InvalidInput",
+    "MissingRequiredField",
+    "InvalidFieldType",
+    "ValidationFailed",
     // ConfigurationError kinds
-    "ConfigurationError", "ProfileNotFound", "InvalidConfiguration",
+    "ConfigurationError",
+    "ProfileNotFound",
+    "InvalidConfiguration",
     // ProcessingError kinds
-    "ProcessingFailed", "TransformationFailed", "GenerationFailed",
+    "ProcessingFailed",
+    "TransformationFailed",
+    "GenerationFailed",
   ];
-  
+
   assertEquals(allKinds.length, 15);
 });
 
 Deno.test("2_structure: UnifiedResult type correctly uses Result pattern", () => {
   // Test that UnifiedResult is correctly typed as Result<T, UnifiedError>
   type TestResult = UnifiedResult<string>;
-  
+
   // Success case
   const successResult: TestResult = {
     ok: true,
     data: "Success value",
   };
-  
+
   assertEquals(successResult.ok, true);
   if (successResult.ok) {
     assertEquals(successResult.data, "Success value");
     assertEquals("error" in successResult, false);
   }
-  
+
   // Error case with PathError
   const errorResult1: TestResult = {
     ok: false,
@@ -436,13 +447,13 @@ Deno.test("2_structure: UnifiedResult type correctly uses Result pattern", () =>
       reason: "Invalid",
     },
   };
-  
+
   assertEquals(errorResult1.ok, false);
   if (!errorResult1.ok) {
     assertEquals(errorResult1.error.kind, "InvalidPath");
     assertEquals("data" in errorResult1, false);
   }
-  
+
   // Error case with ValidationError
   const errorResult2: TestResult = {
     ok: false,
@@ -451,7 +462,7 @@ Deno.test("2_structure: UnifiedResult type correctly uses Result pattern", () =>
       errors: ["Error 1", "Error 2"],
     },
   };
-  
+
   assertEquals(errorResult2.ok, false);
   if (!errorResult2.ok) {
     assertEquals(errorResult2.error.kind, "ValidationFailed");
@@ -463,29 +474,29 @@ Deno.test("2_structure: UnifiedResult type correctly uses Result pattern", () =>
 
 Deno.test("2_structure: ErrorFactory maintains type relationships correctly", () => {
   // Test that factory methods produce correctly typed errors
-  
+
   // PathError factory
   const pathError1 = ErrorFactory.pathError("InvalidPath", "/test", { reason: "Invalid" });
   const pathError2 = ErrorFactory.pathError("PathTooLong", "/long");
-  
+
   // Both should satisfy PathError type
   const pathErrors: PathError[] = [pathError1, pathError2];
   assertEquals(pathErrors.length, 2);
-  
+
   // ValidationError factory
   const validationError1 = ErrorFactory.validationError(
     "InvalidInput",
-    { field: "test", value: "val", reason: "Invalid" }
+    { field: "test", value: "val", reason: "Invalid" },
   );
   const validationError2 = ErrorFactory.validationError(
     "ValidationFailed",
-    { errors: ["Error 1"] }
+    { errors: ["Error 1"] },
   );
-  
+
   // Both should satisfy ValidationError type
   const validationErrors: ValidationError[] = [validationError1, validationError2];
   assertEquals(validationErrors.length, 2);
-  
+
   // All should satisfy UnifiedError type
   const unifiedErrors: UnifiedError[] = [
     pathError1,
@@ -532,14 +543,14 @@ Deno.test("2_structure: Context property maintains type consistency", () => {
       },
     }),
   ];
-  
+
   // All contexts should be Record<string, unknown>
   for (const error of errorsWithContext) {
     assertExists(error.context);
     assertEquals(typeof error.context, "object");
     assertEquals(error.context === null, false);
     assertEquals(Array.isArray(error.context), false);
-    
+
     // Context values can be of any type
     for (const value of Object.values(error.context)) {
       // Value can be anything: string, number, boolean, object, array, null, undefined
@@ -553,7 +564,7 @@ Deno.test("2_structure: Error type hierarchy supports proper subtyping", () => {
   function processUnifiedError(error: UnifiedError): string {
     return error.kind;
   }
-  
+
   // All specific error types should be assignable to UnifiedError
   const pathError: PathError = {
     kind: "InvalidPath",
@@ -561,7 +572,7 @@ Deno.test("2_structure: Error type hierarchy supports proper subtyping", () => {
     reason: "Invalid",
   };
   assertEquals(processUnifiedError(pathError), "InvalidPath");
-  
+
   const validationError: ValidationError = {
     kind: "InvalidInput",
     field: "test",
@@ -569,13 +580,13 @@ Deno.test("2_structure: Error type hierarchy supports proper subtyping", () => {
     reason: "Invalid",
   };
   assertEquals(processUnifiedError(validationError), "InvalidInput");
-  
+
   const configError: ConfigurationError = {
     kind: "ConfigurationError",
     message: "Test",
   };
   assertEquals(processUnifiedError(configError), "ConfigurationError");
-  
+
   const processingError: ProcessingError = {
     kind: "ProcessingFailed",
     operation: "test",
@@ -595,7 +606,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "PermissionDenied":
       case "PathTooLong":
         return "path";
-      
+
       // ValidationError
       case "InvalidInput":
       case "MissingRequiredField":
@@ -609,14 +620,14 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "ConfigValidationFailed":
       case "UnsupportedParamsType":
         return "validation";
-      
+
       // ConfigurationError
       case "ConfigurationError":
       case "ProfileNotFound":
       case "InvalidConfiguration":
       case "ConfigLoadError":
         return "configuration";
-      
+
       // ProcessingError
       case "ProcessingFailed":
       case "TransformationFailed":
@@ -625,7 +636,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "PatternValidationFailed":
       case "InvalidPattern":
         return "processing";
-      
+
       // WorkspaceError
       case "WorkspaceInitError":
       case "WorkspaceConfigError":
@@ -633,14 +644,14 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "WorkspaceDirectoryError":
       case "WorkspaceError":
         return "workspace";
-      
+
       default:
         // This ensures exhaustive checking at compile time
         const _exhaustiveCheck: never = error;
         return _exhaustiveCheck;
     }
   }
-  
+
   // Test with all error categories
   const testCases: Array<[UnifiedError, string]> = [
     [{ kind: "InvalidPath", path: "/test", reason: "Invalid" }, "path"],
@@ -652,7 +663,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
     [{ kind: "ProcessingFailed", operation: "test", reason: "Failed" }, "processing"],
     [{ kind: "GenerationFailed", generator: "test", reason: "Failed" }, "processing"],
   ];
-  
+
   for (const [error, expectedCategory] of testCases) {
     assertEquals(getErrorCategory(error), expectedCategory);
   }

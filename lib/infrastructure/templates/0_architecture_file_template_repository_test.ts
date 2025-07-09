@@ -11,11 +11,15 @@ import { assertEquals, assertInstanceOf, assertRejects, assertThrows } from "@st
 import { describe, it } from "@std/testing/bdd";
 import type { TwoParams_Result } from "../../deps.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { TemplatePath, PromptTemplate, TemplateContent } from "../../domain/templates/prompt_generation_aggregate.ts";
+import {
+  PromptTemplate,
+  TemplateContent,
+  TemplatePath,
+} from "../../domain/templates/prompt_generation_aggregate.ts";
 import type {
-  TemplateRepository,
   TemplateManifest,
   TemplateQueryOptions,
+  TemplateRepository,
 } from "../../domain/templates/template_repository.ts";
 import { TemplateNotFoundError } from "../../domain/templates/template_repository.ts";
 import {
@@ -63,12 +67,12 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
       const templatePathResult = TemplatePath.create(directive, layer, "test.md");
-      
+
       if (!templatePathResult.ok) {
         throw new Error("Failed to create template path");
       }
@@ -108,7 +112,7 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
@@ -136,7 +140,7 @@ describe("FileTemplateRepository - Architecture", () => {
       const validConfig: FileTemplateRepositoryConfig = {
         baseDirectory: "/test/templates",
       };
-      
+
       const repository = new FileTemplateRepository(validConfig);
       assertEquals(repository instanceof FileTemplateRepository, true);
     });
@@ -203,7 +207,7 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "nonexistent",
         layerType: "missing",
         params: ["nonexistent", "missing"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
@@ -218,14 +222,14 @@ describe("FileTemplateRepository - Architecture", () => {
       await assertRejects(
         () => repository.loadTemplate(templatePath),
         TemplateNotFoundError,
-        "Template not found"
+        "Template not found",
       );
 
       // delete should throw TemplateNotFoundError
       await assertRejects(
         () => repository.delete(templatePath),
         TemplateNotFoundError,
-        "Template not found"
+        "Template not found",
       );
     });
 
@@ -235,7 +239,7 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
@@ -250,13 +254,13 @@ describe("FileTemplateRepository - Architecture", () => {
 
       // Should be instance of Error
       assertInstanceOf(error, Error);
-      
+
       // Should have correct name
       assertEquals(error.name, "TemplateNotFoundError");
-      
+
       // Should contain path information
       assertEquals(error.path, templatePath);
-      
+
       // Should have meaningful message
       assertEquals(typeof error.message, "string");
       assertEquals(error.message.includes("Template not found"), true);
@@ -276,7 +280,7 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
@@ -311,21 +315,47 @@ describe("FileTemplateRepository - Architecture", () => {
       // Internal properties should be private and not accessible
       const publicProperties = Object.getOwnPropertyNames(repository);
       const publicMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(repository));
-      
+
       // Should only expose TemplateRepository interface methods
-      const allowedMethods = ["constructor", "loadTemplate", "exists", "listAvailable", "save", "delete", "refresh", 
-                               "buildManifest", "filterManifest", "getFromCache", "addToCache", "invalidateCache", 
-                               "isManifestFresh", "startWatching"];
-      const exposedMethods = publicMethods.filter(m => !m.startsWith("_"));
-      
+      const allowedMethods = [
+        "constructor",
+        "loadTemplate",
+        "exists",
+        "listAvailable",
+        "save",
+        "delete",
+        "refresh",
+        "buildManifest",
+        "filterManifest",
+        "getFromCache",
+        "addToCache",
+        "invalidateCache",
+        "isManifestFresh",
+        "startWatching",
+      ];
+      const exposedMethods = publicMethods.filter((m) => !m.startsWith("_"));
+
       // Check that core interface methods are present
-      const requiredMethods = ["loadTemplate", "exists", "listAvailable", "save", "delete", "refresh"];
+      const requiredMethods = [
+        "loadTemplate",
+        "exists",
+        "listAvailable",
+        "save",
+        "delete",
+        "refresh",
+      ];
       for (const method of requiredMethods) {
         assertEquals(exposedMethods.includes(method), true, `Missing required method: ${method}`);
       }
-      
+
       // Should not expose many internal properties (some basic properties are acceptable)
-      assertEquals(publicProperties.length <= 5, true, `Too many exposed properties: ${publicProperties.length}. Properties: ${publicProperties.join(", ")}`); // Allow reasonable number of internal properties
+      assertEquals(
+        publicProperties.length <= 5,
+        true,
+        `Too many exposed properties: ${publicProperties.length}. Properties: ${
+          publicProperties.join(", ")
+        }`,
+      ); // Allow reasonable number of internal properties
     });
 
     it("should maintain separation from domain logic", () => {
@@ -337,10 +367,17 @@ describe("FileTemplateRepository - Architecture", () => {
       // Repository should only handle storage concerns
       // Should not contain business logic or validation beyond storage
       const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(repository));
-      const exposedMethods = methods.filter(m => !m.startsWith("_") && m !== "constructor");
-      
+      const exposedMethods = methods.filter((m) => !m.startsWith("_") && m !== "constructor");
+
       // Should only expose TemplateRepository interface methods
-      const expectedMethods = ["loadTemplate", "exists", "listAvailable", "save", "delete", "refresh"];
+      const expectedMethods = [
+        "loadTemplate",
+        "exists",
+        "listAvailable",
+        "save",
+        "delete",
+        "refresh",
+      ];
       for (const method of expectedMethods) {
         assertEquals(exposedMethods.includes(method), true, `Missing required method: ${method}`);
       }
@@ -372,7 +409,7 @@ describe("FileTemplateRepository - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);

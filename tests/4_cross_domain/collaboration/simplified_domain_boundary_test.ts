@@ -1,17 +1,13 @@
 /**
  * @fileoverview Simplified Domain Boundary Integration Test
- * 
+ *
  * This test suite validates basic domain boundary integrity without
  * complex dependencies. It focuses on core domain concepts and interfaces.
- * 
+ *
  * @module tests/4_cross_domain/collaboration/simplified_domain_boundary_test
  */
 
-import {
-  assertEquals,
-  assertExists,
-  assert,
-} from "../../../lib/deps.ts";
+import { assert, assertEquals, assertExists } from "../../../lib/deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -72,7 +68,7 @@ describe("Simplified Domain Boundary Integration", () => {
       assertEquals(validConfig.ok, true);
       assertEquals(invalidConfig.ok, false);
 
-      // Test WorkingDirectoryPath boundary  
+      // Test WorkingDirectoryPath boundary
       const validWorkDir = WorkingDirectoryPath.create(".");
       const invalidWorkDir = WorkingDirectoryPath.create("");
 
@@ -114,7 +110,7 @@ describe("Simplified Domain Boundary Integration", () => {
       // Core domain provides types
       const patternProvider = new DefaultTypePatternProvider();
       const typeFactory = new TypeFactory(patternProvider);
-      
+
       const typesResult = typeFactory.createBothTypes("to", "project");
       assertEquals(typesResult.ok, true);
 
@@ -151,7 +147,7 @@ describe("Simplified Domain Boundary Integration", () => {
       // Create errors in different domains
       const coreError = TypeFactory.prototype.createDirectiveType.call(
         new TypeFactory(new DefaultTypePatternProvider()),
-        "invalid_directive"
+        "invalid_directive",
       );
 
       const configError = ConfigProfileName.create("");
@@ -174,7 +170,7 @@ describe("Simplified Domain Boundary Integration", () => {
         !workDirError.ok ? workDirError.error.kind : "",
       ];
 
-      errorKinds.forEach(kind => {
+      errorKinds.forEach((kind) => {
         assert(typeof kind === "string" && kind.length > 0);
       });
 
@@ -198,7 +194,7 @@ describe("Simplified Domain Boundary Integration", () => {
 
         // These should be different types (verified by constructor names)
         assert(configValue.constructor.name !== workDirValue.constructor.name);
-        
+
         // Values should have their own specific methods
         assertExists(configValue.getValue);
         assertExists(workDirValue.getValue);
@@ -251,7 +247,7 @@ describe("Simplified Domain Boundary Integration", () => {
         // Step 2: Supporting Domain - Value Object Creation
         const configResult = ConfigProfileName.create("integration-test");
         const workDirResult = WorkingDirectoryPath.create(".");
-        
+
         assertEquals(configResult.ok, true);
         assertEquals(workDirResult.ok, true);
 
@@ -303,18 +299,18 @@ describe("Simplified Domain Boundary Integration", () => {
       operations.forEach((operation, index) => {
         try {
           const result = operation();
-          
+
           // Should always return a Result type
           assert("ok" in result);
           assertEquals(typeof result.ok, "boolean");
-          
+
           if (result.ok) {
             assertExists(result.data);
           } else {
             assertExists(result.error);
             assertExists(result.error.kind);
           }
-          
+
           logger.debug(`Operation ${index} maintained totality`);
         } catch (error) {
           // Should never throw - this would be a totality violation

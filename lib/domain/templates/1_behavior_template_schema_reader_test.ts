@@ -3,33 +3,37 @@
  * Tests the schema reading service behavior, filesystem operations, error handling, and Result type validation
  */
 
-import { assertEquals, assert, assertRejects } from "../../deps.ts";
-import { 
-  TemplateSchemaReader, 
+import { assert, assertEquals, assertRejects } from "../../deps.ts";
+import {
   createTemplateSchemaReader,
+  type SchemaBatchReadResult,
   type SchemaReadOptions,
   type SchemaReadResult,
-  type SchemaBatchReadResult,
+  TemplateSchemaReader,
 } from "./template_schema_reader.ts";
-import type { 
-  SchemaRepository, 
-  SchemaManifestEntry, 
+import type {
+  SchemaBatchResult,
   SchemaManifest,
+  SchemaManifestEntry,
   SchemaQueryOptions,
-  SchemaBatchResult
+  SchemaRepository,
 } from "./schema_repository.ts";
-import { Schema, SchemaPath, SchemaContent } from "./schema_management_aggregate.ts";
+import { Schema, SchemaContent, SchemaPath } from "./schema_management_aggregate.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 
 // Mock types for testing
 class MockDirectiveType {
   constructor(private value: string) {}
-  getValue(): string { return this.value; }
+  getValue(): string {
+    return this.value;
+  }
 }
 
 class MockLayerType {
   constructor(private value: string) {}
-  getValue(): string { return this.value; }
+  getValue(): string {
+    return this.value;
+  }
 }
 
 // Mock SchemaRepository for testing
@@ -46,15 +50,15 @@ class MockSchemaRepository implements SchemaRepository {
     // Setup test schemas
     const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
     const mockLayer = new MockLayerType("project") as unknown as LayerType;
-    
+
     const validSchemaContent = {
       $schema: "http://json-schema.org/draft-07/schema#",
       type: "object",
       properties: {
         name: { type: "string" },
-        version: { type: "string" }
+        version: { type: "string" },
       },
-      required: ["name"]
+      required: ["name"],
     };
 
     const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
@@ -78,11 +82,11 @@ class MockSchemaRepository implements SchemaRepository {
   async loadSchema(path: SchemaPath): Promise<Schema> {
     const pathStr = path.getPath();
     const schema = this.schemas.get(pathStr);
-    
+
     if (!schema) {
       throw new Error(`Schema not found: ${pathStr}`);
     }
-    
+
     return schema;
   }
 
@@ -111,12 +115,12 @@ class MockSchemaRepository implements SchemaRepository {
     if (!content || typeof content !== "object") {
       return { valid: false, errors: ["Invalid schema content"] };
     }
-    
+
     const schema = content as Record<string, unknown>;
     if (!schema.$schema || !schema.type) {
       return { valid: false, errors: ["Missing required schema properties"] };
     }
-    
+
     return { valid: true };
   }
 
@@ -132,21 +136,21 @@ class MockSchemaRepository implements SchemaRepository {
         layer: "project",
         filename: "valid.json",
         title: "Valid Schema",
-        version: "1.0.0"
+        version: "1.0.0",
       },
       {
         path: "to/task/simple.json",
         directive: "to",
         layer: "task",
         filename: "simple.json",
-        title: "Simple Schema"
-      }
+        title: "Simple Schema",
+      },
     ];
 
     return {
       schemas: entries,
       generatedAt: new Date(),
-      totalCount: entries.length
+      totalCount: entries.length,
     };
   }
 
@@ -165,7 +169,7 @@ class MockSchemaRepository implements SchemaRepository {
       } catch (error) {
         failed.push({
           path: schema.getPath().getPath(),
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -188,7 +192,7 @@ class MockSchemaRepository implements SchemaRepository {
       } catch (error) {
         failed.push({
           path: path.getPath(),
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -215,25 +219,30 @@ class MockSchemaRepository implements SchemaRepository {
 }
 
 // Helper function to create mock schema
-const createMockSchema = (directive: string, layer: string, filename: string, content?: unknown): Schema => {
+const createMockSchema = (
+  directive: string,
+  layer: string,
+  filename: string,
+  content?: unknown,
+): Schema => {
   const mockDirective = new MockDirectiveType(directive) as unknown as DirectiveType;
   const mockLayer = new MockLayerType(layer) as unknown as LayerType;
-  
+
   const defaultContent = {
     $schema: "http://json-schema.org/draft-07/schema#",
     type: "object",
-    properties: {}
+    properties: {},
   };
 
   const pathResult = SchemaPath.create(mockDirective, mockLayer, filename);
   if (!pathResult.ok) throw new Error(`Failed to create path: ${pathResult.error}`);
-  
+
   const contentResult = SchemaContent.create(content || defaultContent);
   if (!contentResult.ok) throw new Error(`Failed to create content: ${contentResult.error}`);
-  
+
   const schemaResult = Schema.create(pathResult.data, contentResult.data.getContent());
   if (!schemaResult.ok) throw new Error(`Failed to create schema: ${schemaResult.error}`);
-  
+
   return schemaResult.data;
 };
 
@@ -244,7 +253,7 @@ Deno.test("TemplateSchemaReader - Read single schema with basic options", async 
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const result = await reader.readSchema(pathResult.data);
 
@@ -265,7 +274,7 @@ Deno.test("TemplateSchemaReader - Read schema with validation enabled", async ()
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const options: SchemaReadOptions = { validateContent: true };
   const result = await reader.readSchema(pathResult.data, options);
@@ -284,7 +293,7 @@ Deno.test("TemplateSchemaReader - Read schema with dependency resolution", async
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const options: SchemaReadOptions = { resolveDependencies: true };
   const result = await reader.readSchema(pathResult.data, options);
@@ -305,12 +314,12 @@ Deno.test("TemplateSchemaReader - Read schema with all options enabled", async (
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
-  const options: SchemaReadOptions = { 
-    validateContent: true, 
+  const options: SchemaReadOptions = {
+    validateContent: true,
     resolveDependencies: true,
-    includeMetadata: true 
+    includeMetadata: true,
   };
   const result = await reader.readSchema(pathResult.data, options);
 
@@ -330,13 +339,13 @@ Deno.test("TemplateSchemaReader - Read multiple schemas successfully", async () 
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer1 = new MockLayerType("project") as unknown as LayerType;
   const mockLayer2 = new MockLayerType("task") as unknown as LayerType;
-  
+
   const path1Result = SchemaPath.create(mockDirective, mockLayer1, "valid.json");
   const path2Result = SchemaPath.create(mockDirective, mockLayer2, "simple.json");
-  
+
   assert(path1Result.ok && path2Result.ok);
   const paths = [path1Result.data, path2Result.data];
-  
+
   const result = await reader.readSchemas(paths);
 
   assertEquals(result.successful.length, 2);
@@ -350,13 +359,13 @@ Deno.test("TemplateSchemaReader - Read multiple schemas with failures", async ()
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer1 = new MockLayerType("project") as unknown as LayerType;
   const mockLayer2 = new MockLayerType("task") as unknown as LayerType;
-  
+
   const path1Result = SchemaPath.create(mockDirective, mockLayer1, "valid.json");
   const path2Result = SchemaPath.create(mockDirective, mockLayer2, "nonexistent.json");
-  
+
   assert(path1Result.ok && path2Result.ok);
   const paths = [path1Result.data, path2Result.data];
-  
+
   const result = await reader.readSchemas(paths);
 
   assertEquals(result.successful.length, 1);
@@ -371,7 +380,7 @@ Deno.test("TemplateSchemaReader - Read schemas by type", async () => {
 
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
-  
+
   const result = await reader.readSchemasByType(mockDirective, mockLayer);
 
   assertEquals(typeof result, "object");
@@ -387,7 +396,7 @@ Deno.test("TemplateSchemaReader - Check schema readability for existing schema",
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const isReadable = await reader.isSchemaReadable(pathResult.data);
 
@@ -401,7 +410,7 @@ Deno.test("TemplateSchemaReader - Check schema readability for non-existing sche
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "nonexistent.json");
-  
+
   assert(pathResult.ok);
   const isReadable = await reader.isSchemaReadable(pathResult.data);
 
@@ -416,7 +425,7 @@ Deno.test("TemplateSchemaReader - Check schema readability for invalid schema", 
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const isReadable = await reader.isSchemaReadable(pathResult.data);
 
@@ -434,7 +443,7 @@ Deno.test("TemplateSchemaReader - Get schema tree (recursive dependencies)", asy
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const result = await reader.getSchemaTree(pathResult.data);
 
@@ -450,18 +459,18 @@ Deno.test("TemplateSchemaReader - Detect circular dependency", async () => {
   // Create circular dependency
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
-  
+
   const path1Result = SchemaPath.create(mockDirective, mockLayer, "schema1.json");
   const path2Result = SchemaPath.create(mockDirective, mockLayer, "schema2.json");
-  
+
   assert(path1Result.ok && path2Result.ok);
-  
+
   const schema1 = createMockSchema("to", "project", "schema1.json");
   const schema2 = createMockSchema("to", "project", "schema2.json");
-  
+
   mockRepo.addMockSchema("to/project/schema1.json", schema1);
   mockRepo.addMockSchema("to/project/schema2.json", schema2);
-  
+
   // Create circular dependency: schema1 -> schema2 -> schema1
   mockRepo.addMockDependency("to/project/schema1.json", [path2Result.data]);
   mockRepo.addMockDependency("to/project/schema2.json", [path1Result.data]);
@@ -469,7 +478,7 @@ Deno.test("TemplateSchemaReader - Detect circular dependency", async () => {
   await assertRejects(
     async () => await reader.getSchemaTree(path1Result.data),
     Error,
-    "Circular dependency detected"
+    "Circular dependency detected",
   );
 });
 
@@ -480,9 +489,9 @@ Deno.test("TemplateSchemaReader - Handle missing dependency gracefully", async (
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
-  
+
   // Dependencies exist in config but not as actual schemas (will fail loading)
   const options: SchemaReadOptions = { resolveDependencies: true };
   const result = await reader.readSchema(pathResult.data, options);
@@ -508,13 +517,13 @@ Deno.test("TemplateSchemaReader - Error handling for invalid schema path", async
   const mockDirective = new MockDirectiveType("invalid") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("invalid") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "invalid.json");
-  
+
   assert(pathResult.ok);
 
   await assertRejects(
     async () => await reader.readSchema(pathResult.data),
     Error,
-    "Schema not found"
+    "Schema not found",
   );
 });
 
@@ -525,7 +534,7 @@ Deno.test("TemplateSchemaReader - Metadata contains correct information", async 
   const mockDirective = new MockDirectiveType("to") as unknown as DirectiveType;
   const mockLayer = new MockLayerType("project") as unknown as LayerType;
   const pathResult = SchemaPath.create(mockDirective, mockLayer, "valid.json");
-  
+
   assert(pathResult.ok);
   const beforeRead = new Date();
   const result = await reader.readSchema(pathResult.data);

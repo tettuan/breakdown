@@ -16,13 +16,13 @@ import type {
   VariableResolutionStrategy,
 } from "../../domain/templates/generation_policy.ts";
 import {
+  createDefaultSelectionStrategy,
+  createDefaultVariableStrategies,
   DefaultValueStrategy,
   EnvironmentVariableStrategy,
   FallbackTemplateSelectionStrategy,
   FilePathResolutionStrategy,
   StandardTemplateSelectionStrategy,
-  createDefaultSelectionStrategy,
-  createDefaultVariableStrategies,
 } from "./default_generation_strategies.ts";
 import type { TwoParams_Result } from "../../deps.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
@@ -47,7 +47,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           demonstrativeType: "test",
           layerType: "test",
           params: ["test", "test"],
-          options: {}
+          options: {},
         };
         const mockContext: ResolutionContext = {
           providedVariables: {},
@@ -55,7 +55,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           layer: LayerType.create(mockTwoParamsResult),
           workingDirectory: "/test",
         };
-        
+
         const result = strategy.resolve("test", mockContext);
         assertEquals(result instanceof Promise, true);
 
@@ -67,7 +67,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
     it("should enforce priority ordering contract", () => {
       const strategies = createDefaultVariableStrategies();
-      const priorities = strategies.map(s => s.getPriority());
+      const priorities = strategies.map((s) => s.getPriority());
 
       // Priorities should be distinct positive numbers
       assertEquals(new Set(priorities).size, priorities.length, "Priorities must be unique");
@@ -76,9 +76,9 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       }
 
       // FilePathResolutionStrategy (50) > EnvironmentVariableStrategy (10) > DefaultValueStrategy (1)
-      const filePathStrategy = strategies.find(s => s instanceof FilePathResolutionStrategy);
-      const envStrategy = strategies.find(s => s instanceof EnvironmentVariableStrategy);
-      const defaultStrategy = strategies.find(s => s instanceof DefaultValueStrategy);
+      const filePathStrategy = strategies.find((s) => s instanceof FilePathResolutionStrategy);
+      const envStrategy = strategies.find((s) => s instanceof EnvironmentVariableStrategy);
+      const defaultStrategy = strategies.find((s) => s instanceof DefaultValueStrategy);
 
       assertEquals(filePathStrategy!.getPriority(), 50);
       assertEquals(envStrategy!.getPriority(), 10);
@@ -99,7 +99,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         new StandardTemplateSelectionStrategy(),
         new FallbackTemplateSelectionStrategy(
           new StandardTemplateSelectionStrategy(),
-          new Map()
+          new Map(),
         ),
       ];
 
@@ -113,7 +113,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           demonstrativeType: "test",
           layerType: "test",
           params: ["test", "test"],
-          options: {}
+          options: {},
         };
         const directive = DirectiveType.create(mockTwoParamsResult);
         const layer = LayerType.create(mockTwoParamsResult);
@@ -122,7 +122,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         };
 
         const result = strategy.selectTemplate(directive, layer, context);
-        
+
         // Result should have 'ok' and either 'data' or 'error'
         assertEquals(typeof result.ok, "boolean");
         if (result.ok) {
@@ -138,7 +138,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       const fallbackMappings = new Map([["test/test", "fallback.md"]]);
       const fallbackStrategy = new FallbackTemplateSelectionStrategy(
         primaryStrategy,
-        fallbackMappings
+        fallbackMappings,
       );
 
       const mockTwoParamsResult: TwoParams_Result = {
@@ -146,7 +146,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
@@ -169,7 +169,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       const strategies2 = createDefaultVariableStrategies();
 
       assertEquals(strategies1.length, strategies2.length);
-      
+
       // Should create same types in same order
       for (let i = 0; i < strategies1.length; i++) {
         assertEquals(strategies1[i].constructor.name, strategies2[i].constructor.name);
@@ -179,22 +179,22 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
     it("should create valid selection strategy", () => {
       const strategy = createDefaultSelectionStrategy();
-      
+
       // Should be a FallbackTemplateSelectionStrategy
       assertEquals(strategy instanceof FallbackTemplateSelectionStrategy, true);
-      
+
       // Should work with valid inputs
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
         demonstrativeType: "defect",
         layerType: "project",
         params: ["defect", "project"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
       const context: SelectionContext = { fallbackEnabled: true };
-      
+
       const result = strategy.selectTemplate(directive, layer, context);
       assertEquals(result.ok, true);
     });
@@ -209,7 +209,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
       // Should work together without knowing about each other
       const strategies: VariableResolutionStrategy[] = [envStrategy, fileStrategy, defaultStrategy];
-      
+
       // All should implement the interface without coupling
       for (const strategy of strategies) {
         assertEquals(typeof strategy.resolve, "function");
@@ -230,7 +230,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const context: ResolutionContext = {
         providedVariables: {},
@@ -249,7 +249,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
     it("should enforce open/closed principle", () => {
       // Existing strategies should work without modification when new ones are added
       const originalStrategies = createDefaultVariableStrategies();
-      
+
       // Custom strategy implementation
       class CustomStrategy implements VariableResolutionStrategy {
         async resolve(): Promise<string | undefined> {
@@ -261,7 +261,7 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       }
 
       const extendedStrategies = [...originalStrategies, new CustomStrategy()];
-      
+
       // All strategies should still work
       for (const strategy of extendedStrategies) {
         assertEquals(typeof strategy.resolve, "function");
@@ -273,14 +273,14 @@ describe("DefaultGenerationStrategies - Architecture", () => {
   describe("Error Handling Architecture", () => {
     it("should handle invalid inputs gracefully", async () => {
       const strategy = new FilePathResolutionStrategy();
-      
+
       // Should handle null/undefined context properties without throwing
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const invalidContext: ResolutionContext = {
         providedVariables: null as any,
@@ -300,14 +300,14 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         demonstrativeType: "test",
         layerType: "test",
         params: ["test", "test"],
-        options: {}
+        options: {},
       };
       const directive = DirectiveType.create(mockTwoParamsResult);
       const layer = LayerType.create(mockTwoParamsResult);
       const context: SelectionContext = { fallbackEnabled: false };
 
       const result = strategy.selectTemplate(directive, layer, context);
-      
+
       // Should always return a valid Result type
       assertEquals(typeof result.ok, "boolean");
       if (result.ok) {

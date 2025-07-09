@@ -25,7 +25,7 @@ import { error, ok } from "../../../types/result.ts";
 
 /**
  * Discriminated Union for ConfigSetName-specific errors
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and follows Domain-Driven Design principles for error handling.
  * The error types reflect domain concepts and constraints.
@@ -69,37 +69,49 @@ export type ConfigSetNameError =
 
 /**
  * Type guards for ConfigSetNameError discrimination
- * 
+ *
  * These type guards enable exhaustive pattern matching over error types
  * and provide type-safe access to error-specific properties.
  */
-export function isEmptyNameError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "EmptyName" }> {
+export function isEmptyNameError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "EmptyName" }> {
   return error.kind === "EmptyName";
 }
 
-export function isInvalidFormatError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "InvalidFormat" }> {
+export function isInvalidFormatError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "InvalidFormat" }> {
   return error.kind === "InvalidFormat";
 }
 
-export function isReservedNameError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "ReservedName" }> {
+export function isReservedNameError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "ReservedName" }> {
   return error.kind === "ReservedName";
 }
 
-export function isTooLongError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "TooLong" }> {
+export function isTooLongError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "TooLong" }> {
   return error.kind === "TooLong";
 }
 
-export function isInvalidCharactersError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "InvalidCharacters" }> {
+export function isInvalidCharactersError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "InvalidCharacters" }> {
   return error.kind === "InvalidCharacters";
 }
 
-export function isStartsWithReservedPrefixError(error: ConfigSetNameError): error is Extract<ConfigSetNameError, { kind: "StartsWithReservedPrefix" }> {
+export function isStartsWithReservedPrefixError(
+  error: ConfigSetNameError,
+): error is Extract<ConfigSetNameError, { kind: "StartsWithReservedPrefix" }> {
   return error.kind === "StartsWithReservedPrefix";
 }
 
 /**
  * Format ConfigSetNameError for display
- * 
+ *
  * Provides human-readable error messages for all error types
  * with contextual information to help users understand and fix issues.
  */
@@ -110,11 +122,15 @@ export function formatConfigSetNameError(configError: ConfigSetNameError): strin
     case "InvalidFormat":
       return `Invalid configuration set name format: "${configError.name}" does not match pattern ${configError.pattern}. ${configError.message}`;
     case "ReservedName":
-      return `Configuration set name "${configError.name}" is reserved. Reserved names: ${configError.reserved.join(", ")}. ${configError.message}`;
+      return `Configuration set name "${configError.name}" is reserved. Reserved names: ${
+        configError.reserved.join(", ")
+      }. ${configError.message}`;
     case "TooLong":
       return `Configuration set name "${configError.name}" is too long (${configError.actualLength} characters). Maximum allowed: ${configError.maxLength}. ${configError.message}`;
     case "InvalidCharacters":
-      return `Configuration set name "${configError.name}" contains invalid characters: ${configError.invalidChars.join(", ")}. ${configError.message}`;
+      return `Configuration set name "${configError.name}" contains invalid characters: ${
+        configError.invalidChars.join(", ")
+      }. ${configError.message}`;
     case "StartsWithReservedPrefix":
       return `Configuration set name "${configError.name}" starts with reserved prefix "${configError.prefix}". ${configError.message}`;
   }
@@ -122,7 +138,7 @@ export function formatConfigSetNameError(configError: ConfigSetNameError): strin
 
 /**
  * ConfigSetName Value Object with Smart Constructor
- * 
+ *
  * Represents a valid configuration set name within the Breakdown application.
  * Enforces domain rules for configuration set naming including:
  * - Non-empty name requirement
@@ -130,7 +146,7 @@ export function formatConfigSetNameError(configError: ConfigSetNameError): strin
  * - Length limitations
  * - Reserved name restrictions
  * - Reserved prefix restrictions
- * 
+ *
  * The value object is immutable and provides type-safe access to the name.
  */
 export class ConfigSetName {
@@ -141,13 +157,13 @@ export class ConfigSetName {
 
   /**
    * Smart Constructor for ConfigSetName with comprehensive validation
-   * 
+   *
    * Validates all domain rules for configuration set names and returns
    * a Result type containing either a valid ConfigSetName or specific error.
-   * 
+   *
    * @param name - The configuration set name to validate and create
    * @returns Result containing ConfigSetName or ConfigSetNameError
-   * 
+   *
    * @example
    * ```typescript
    * const result = ConfigSetName.create("my-config");
@@ -203,24 +219,47 @@ export class ConfigSetName {
     const VALID_FORMAT_PATTERN = /^[a-zA-Z0-9_-]+$/;
     if (!VALID_FORMAT_PATTERN.test(trimmed)) {
       // Extract invalid characters for detailed error reporting
-      const invalidChars = [...new Set(
-        trimmed.split('').filter(char => !/[a-zA-Z0-9_-]/.test(char))
-      )];
-      
+      const invalidChars = [
+        ...new Set(
+          trimmed.split("").filter((char) => !/[a-zA-Z0-9_-]/.test(char)),
+        ),
+      ];
+
       return error({
         kind: "InvalidCharacters",
         name: trimmed,
         invalidChars,
-        message: "Only alphanumeric characters, hyphens, and underscores are allowed for cross-platform compatibility",
+        message:
+          "Only alphanumeric characters, hyphens, and underscores are allowed for cross-platform compatibility",
       });
     }
 
     // Validate against reserved names (system-level configuration names)
     const RESERVED_NAMES = [
-      "default", "system", "global", "local", "temp", "tmp", "cache",
-      "config", "configuration", "settings", "app", "application",
-      "user", "profile", "env", "environment", "dev", "development",
-      "prod", "production", "test", "testing", "stage", "staging"
+      "default",
+      "system",
+      "global",
+      "local",
+      "temp",
+      "tmp",
+      "cache",
+      "config",
+      "configuration",
+      "settings",
+      "app",
+      "application",
+      "user",
+      "profile",
+      "env",
+      "environment",
+      "dev",
+      "development",
+      "prod",
+      "production",
+      "test",
+      "testing",
+      "stage",
+      "staging",
     ] as const;
 
     if (RESERVED_NAMES.includes(trimmed.toLowerCase() as typeof RESERVED_NAMES[number])) {
@@ -234,7 +273,7 @@ export class ConfigSetName {
 
     // Validate against reserved prefixes (system namespaces)
     const RESERVED_PREFIXES = ["sys-", "system-", "app-", "tmp-", "temp-", "test-"] as const;
-    const foundReservedPrefix = RESERVED_PREFIXES.find(prefix => 
+    const foundReservedPrefix = RESERVED_PREFIXES.find((prefix) =>
       trimmed.toLowerCase().startsWith(prefix.toLowerCase())
     );
 
@@ -243,7 +282,8 @@ export class ConfigSetName {
         kind: "StartsWithReservedPrefix",
         name: trimmed,
         prefix: foundReservedPrefix,
-        message: "Reserved prefixes are protected to maintain clear separation between user and system configurations",
+        message:
+          "Reserved prefixes are protected to maintain clear separation between user and system configurations",
       });
     }
 
@@ -253,7 +293,7 @@ export class ConfigSetName {
 
   /**
    * Factory method for creating a standard default configuration set name
-   * 
+   *
    * @returns Result containing the default ConfigSetName or error
    */
   static defaultSet(): Result<ConfigSetName, ConfigSetNameError> {
@@ -262,7 +302,7 @@ export class ConfigSetName {
 
   /**
    * Factory method for creating development-specific configuration set names
-   * 
+   *
    * @param suffix - Optional suffix to distinguish development configurations
    * @returns Result containing the development ConfigSetName or error
    */
@@ -273,7 +313,7 @@ export class ConfigSetName {
 
   /**
    * Factory method for creating project-specific configuration set names
-   * 
+   *
    * @param projectName - The project identifier
    * @returns Result containing the project ConfigSetName or error
    */
@@ -291,7 +331,7 @@ export class ConfigSetName {
 
   /**
    * Get the validated configuration set name
-   * 
+   *
    * @returns The immutable string value of the configuration set name
    */
   get value(): string {
@@ -300,7 +340,7 @@ export class ConfigSetName {
 
   /**
    * Check if this configuration set name equals another
-   * 
+   *
    * @param other - Another ConfigSetName to compare with
    * @returns True if the names are equal (case-sensitive)
    */
@@ -310,7 +350,7 @@ export class ConfigSetName {
 
   /**
    * Check if this configuration set name equals another (case-insensitive)
-   * 
+   *
    * @param other - Another ConfigSetName to compare with
    * @returns True if the names are equal (case-insensitive)
    */
@@ -320,7 +360,7 @@ export class ConfigSetName {
 
   /**
    * Get the length of the configuration set name
-   * 
+   *
    * @returns The character count of the name
    */
   getLength(): number {
@@ -329,7 +369,7 @@ export class ConfigSetName {
 
   /**
    * Check if the name contains only lowercase characters
-   * 
+   *
    * @returns True if the name is all lowercase
    */
   isLowerCase(): boolean {
@@ -338,7 +378,7 @@ export class ConfigSetName {
 
   /**
    * Check if the name follows kebab-case convention
-   * 
+   *
    * @returns True if the name uses kebab-case (lowercase with hyphens)
    */
   isKebabCase(): boolean {
@@ -347,7 +387,7 @@ export class ConfigSetName {
 
   /**
    * Check if the name follows snake_case convention
-   * 
+   *
    * @returns True if the name uses snake_case (lowercase with underscores)
    */
   isSnakeCase(): boolean {
@@ -356,7 +396,7 @@ export class ConfigSetName {
 
   /**
    * Convert to lowercase variant (creates new ConfigSetName if different)
-   * 
+   *
    * @returns Result containing lowercase ConfigSetName or error
    */
   toLowerCase(): Result<ConfigSetName, ConfigSetNameError> {
@@ -369,7 +409,7 @@ export class ConfigSetName {
 
   /**
    * Create a prefixed version of this configuration set name
-   * 
+   *
    * @param prefix - The prefix to add (will be validated)
    * @returns Result containing prefixed ConfigSetName or error
    */
@@ -388,7 +428,7 @@ export class ConfigSetName {
 
   /**
    * Create a suffixed version of this configuration set name
-   * 
+   *
    * @param suffix - The suffix to add (will be validated)
    * @returns Result containing suffixed ConfigSetName or error
    */
@@ -407,7 +447,7 @@ export class ConfigSetName {
 
   /**
    * String representation for debugging and logging
-   * 
+   *
    * @returns String representation of the ConfigSetName
    */
   toString(): string {
@@ -416,7 +456,7 @@ export class ConfigSetName {
 
   /**
    * JSON serialization support
-   * 
+   *
    * @returns The string value for JSON serialization
    */
   toJSON(): string {
@@ -425,7 +465,7 @@ export class ConfigSetName {
 
   /**
    * Value for primitive conversion
-   * 
+   *
    * @returns The string value
    */
   valueOf(): string {
@@ -440,7 +480,7 @@ export type ConfigSetNameResult = Result<ConfigSetName, ConfigSetNameError>;
 
 /**
  * Utility function to create ConfigSetName from string with error handling
- * 
+ *
  * @param name - The name string to convert
  * @returns ConfigSetName instance or throws formatted error
  * @throws {Error} Formatted error message if validation fails
@@ -465,13 +505,13 @@ export class ConfigSetNameCollection {
 
   /**
    * Create a collection from string names
-   * 
+   *
    * @param names - Array of name strings to validate and convert
    * @returns Result containing ConfigSetNameCollection or first validation error
    */
   static create(names: readonly string[]): Result<ConfigSetNameCollection, ConfigSetNameError> {
     const validatedNames: ConfigSetName[] = [];
-    
+
     for (const name of names) {
       const result = ConfigSetName.create(name);
       if (!result.ok) {
@@ -485,16 +525,16 @@ export class ConfigSetNameCollection {
 
   /**
    * Get all names as strings
-   * 
+   *
    * @returns Array of name strings
    */
   getNames(): readonly string[] {
-    return Object.freeze(this._names.map(name => name.value));
+    return Object.freeze(this._names.map((name) => name.value));
   }
 
   /**
    * Get all ConfigSetName instances
-   * 
+   *
    * @returns Array of ConfigSetName instances
    */
   getConfigSetNames(): readonly ConfigSetName[] {
@@ -503,27 +543,27 @@ export class ConfigSetNameCollection {
 
   /**
    * Check if collection contains a specific name
-   * 
+   *
    * @param name - ConfigSetName to search for
    * @returns True if the collection contains the name
    */
   contains(name: ConfigSetName): boolean {
-    return this._names.some(existing => existing.equals(name));
+    return this._names.some((existing) => existing.equals(name));
   }
 
   /**
    * Check if collection contains a specific name (case-insensitive)
-   * 
+   *
    * @param name - ConfigSetName to search for
    * @returns True if the collection contains the name (case-insensitive)
    */
   containsIgnoreCase(name: ConfigSetName): boolean {
-    return this._names.some(existing => existing.equalsIgnoreCase(name));
+    return this._names.some((existing) => existing.equalsIgnoreCase(name));
   }
 
   /**
    * Get the number of names in the collection
-   * 
+   *
    * @returns The count of names
    */
   getCount(): number {
@@ -532,7 +572,7 @@ export class ConfigSetNameCollection {
 
   /**
    * Check if the collection is empty
-   * 
+   *
    * @returns True if the collection has no names
    */
   isEmpty(): boolean {

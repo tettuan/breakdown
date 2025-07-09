@@ -1,31 +1,38 @@
 /**
  * @fileoverview Architecture constraint tests for PromptVariablesFactory
- * 
+ *
  * Tests the architectural integrity of the factory including:
- * - Smart Constructor pattern compliance  
+ * - Smart Constructor pattern compliance
  * - Type safety boundaries
  * - Domain boundary integration
  * - Totality principle adherence
  */
 
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { PromptVariablesFactory, type PromptCliParams, type PromptCliOptions } from "./prompt_variables_factory.ts";
+import {
+  type PromptCliOptions,
+  type PromptCliParams,
+  PromptVariablesFactory,
+} from "./prompt_variables_factory.ts";
 
 describe("0_architecture_prompt_variables_factory_test", () => {
   describe("Smart Constructor Pattern", () => {
     it("should follow Smart Constructor pattern with private constructor", () => {
       // Verify the constructor is not directly accessible
       // @ts-expect-error Testing that constructor is private
-      assert(() => new PromptVariablesFactory() === undefined, 
-        "Constructor should be private and not directly accessible");
+      assert(
+        () => new PromptVariablesFactory() === undefined,
+        "Constructor should be private and not directly accessible",
+      );
     });
 
     it("should provide static create methods that return Result types", () => {
-      assertExists(PromptVariablesFactory.create, 
-        "Static create method should exist");
-      assertExists(PromptVariablesFactory.createWithConfig, 
-        "Static createWithConfig method should exist");
+      assertExists(PromptVariablesFactory.create, "Static create method should exist");
+      assertExists(
+        PromptVariablesFactory.createWithConfig,
+        "Static createWithConfig method should exist",
+      );
       assertEquals(typeof PromptVariablesFactory.create, "function");
       assertEquals(typeof PromptVariablesFactory.createWithConfig, "function");
     });
@@ -38,23 +45,23 @@ describe("0_architecture_prompt_variables_factory_test", () => {
         promptDir: "./test",
         fromLayerType: "task",
         input_text: "test",
-        customVariables: {}
+        customVariables: {},
       };
 
       const mockCliParams: PromptCliParams = {
         demonstrativeType: "to",
         layerType: "task",
-        options: mockOptions
+        options: mockOptions,
       };
 
       const result = await PromptVariablesFactory.create(mockCliParams);
-      
+
       // Verify Result structure
       assertExists(result, "Result should exist");
       assert(typeof result === "object", "Result should be an object");
       assert("ok" in result, "Result should have 'ok' property");
       assert(typeof result.ok === "boolean", "Result.ok should be boolean");
-      
+
       if (result.ok) {
         assertExists(result.data, "Success result should have data property");
       } else {
@@ -80,10 +87,10 @@ describe("0_architecture_prompt_variables_factory_test", () => {
           destinationFile: undefined,
           adaptation: undefined,
           promptDir: "./test",
-          fromLayerType: "task", 
+          fromLayerType: "task",
           input_text: "original",
-          customVariables: { key: "value" }
-        }
+          customVariables: { key: "value" },
+        },
       };
 
       const originalParams = JSON.stringify(cliParams);
@@ -92,8 +99,11 @@ describe("0_architecture_prompt_variables_factory_test", () => {
       await PromptVariablesFactory.create(cliParams);
 
       // Verify inputs remain unchanged
-      assertEquals(JSON.stringify(cliParams), originalParams, 
-        "CLI params object should remain immutable");
+      assertEquals(
+        JSON.stringify(cliParams),
+        originalParams,
+        "CLI params object should remain immutable",
+      );
     });
   });
 
@@ -102,16 +112,20 @@ describe("0_architecture_prompt_variables_factory_test", () => {
       // Verify that the factory properly delegates to PromptVariableTransformer
       // This is tested by ensuring the factory doesn't directly implement transformation logic
       const factorySource = PromptVariablesFactory.toString();
-      assert(factorySource.includes("PromptVariableTransformer") || 
-             factorySource.includes("transformer"), 
-        "Factory should delegate to PromptVariableTransformer domain service");
+      assert(
+        factorySource.includes("PromptVariableTransformer") ||
+          factorySource.includes("transformer"),
+        "Factory should delegate to PromptVariableTransformer domain service",
+      );
     });
 
     it("should integrate with path resolver services", () => {
       const factorySource = PromptVariablesFactory.toString();
-      assert(factorySource.includes("PathResolver") || 
-             factorySource.includes("Resolver"), 
-        "Factory should integrate with path resolver services");
+      assert(
+        factorySource.includes("PathResolver") ||
+          factorySource.includes("Resolver"),
+        "Factory should integrate with path resolver services",
+      );
     });
 
     it("should enforce proper error propagation across domain boundaries", async () => {
@@ -125,16 +139,16 @@ describe("0_architecture_prompt_variables_factory_test", () => {
           promptDir: "./nonexistent",
           fromLayerType: "invalid",
           input_text: undefined,
-          customVariables: {}
-        }
+          customVariables: {},
+        },
       };
 
       const result = await PromptVariablesFactory.create(mockCliParams);
-      
+
       // Should handle domain boundary errors gracefully
       assertExists(result, "Result should exist even for invalid inputs");
       assert("ok" in result, "Result should have ok property");
-      
+
       if (!result.ok) {
         assertExists(result.error, "Error should be properly propagated");
         assertExists(result.error.kind, "Error should have kind discriminator");
@@ -149,7 +163,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
         { demonstrativeType: "", layerType: "", options: {} },
         { demonstrativeType: null as any, layerType: "project", options: {} },
         { demonstrativeType: "to", layerType: null as any, options: {} },
-        { demonstrativeType: "to", layerType: "project", options: { fromFile: null } as any }
+        { demonstrativeType: "to", layerType: "project", options: { fromFile: null } as any },
       ];
 
       for (const invalidInput of invalidInputs) {
@@ -175,12 +189,12 @@ describe("0_architecture_prompt_variables_factory_test", () => {
           promptDir: "",
           fromLayerType: "",
           input_text: undefined,
-          customVariables: {}
-        }
+          customVariables: {},
+        },
       };
 
       const result = await PromptVariablesFactory.create(invalidCliParams);
-      
+
       if (!result.ok) {
         assertExists(result.error, "Error should exist");
         assertExists(result.error.kind, "Error should have kind discriminator");
@@ -202,15 +216,15 @@ describe("0_architecture_prompt_variables_factory_test", () => {
           promptDir: "./",
           fromLayerType: "task",
           input_text: "test content",
-          customVariables: {}
-        }
+          customVariables: {},
+        },
       };
 
       const result = await PromptVariablesFactory.create(validCliParams);
-      
+
       // Result must be discriminated union - either ok:true or ok:false, never both or neither
       assert(typeof result.ok === "boolean", "Result.ok must be boolean");
-      
+
       if (result.ok) {
         assert(!("error" in result), "Success result should not have error property");
         assertExists(result.data, "Success result must have data");

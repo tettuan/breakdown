@@ -12,7 +12,7 @@ import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
-import { Result, ok, error } from "../types/result.ts";
+import { error, ok, Result } from "../types/result.ts";
 import { ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";
 
 /**
@@ -121,7 +121,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
         {
           message: `Failed to create BreakdownConfig: ${configResult.error}`,
           source: "ConfigPatternProvider.create",
-        }
+        },
       ));
     }
     const config = configResult.data;
@@ -224,7 +224,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
             err instanceof Error ? err.message : String(err)
           }`,
           source: "ConfigPatternProvider.getConfigData",
-        }
+        },
       ));
     }
   }

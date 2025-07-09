@@ -31,10 +31,10 @@ import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { formatSchemaError, SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
-import { Result, ok, error as resultError } from "../types/result.ts";
+import { error as resultError, ok, Result } from "../types/result.ts";
 import {
-  PromptVariablesFactoryErrors,
   PromptVariablesFactoryErrorFactory,
+  PromptVariablesFactoryErrors,
 } from "../types/prompt_variables_factory_error.ts";
 
 /**
@@ -142,7 +142,7 @@ export class PromptVariablesFactory {
       output: undefined as any,
       schema: undefined as any,
     };
-    
+
     // Create template resolver
     try {
       const templateResolverResult = PromptTemplatePathResolver.create(this.config, this.cliParams);
@@ -172,7 +172,7 @@ export class PromptVariablesFactory {
     } catch (error) {
       // Input resolver creation failed - this is acceptable in test environments
     }
-    
+
     // Create output resolver
     try {
       const outputResolverResult = OutputFilePathResolver.create(this.config, this.cliParams);
@@ -198,7 +198,9 @@ export class PromptVariablesFactory {
   /**
    * Create factory with automatic configuration loading
    */
-  static async create(cliParams: PromptCliParams): Promise<Result<PromptVariablesFactory, PromptVariablesFactoryErrors>> {
+  static async create(
+    cliParams: PromptCliParams,
+  ): Promise<Result<PromptVariablesFactory, PromptVariablesFactoryErrors>> {
     try {
       // TODO: Re-enable BreakdownConfig when API is stable
       // For now, always use default config to avoid compilation errors
@@ -210,16 +212,28 @@ export class PromptVariablesFactory {
       if (error instanceof Error) {
         const message = error.message;
         if (message.includes("path options")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message),
+          };
         }
         if (message.includes("template resolver")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message),
+          };
         }
         if (message.includes("schema resolver")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message),
+          };
         }
       }
-      return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)) };
+      return {
+        ok: false,
+        error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)),
+      };
     }
   }
 
@@ -238,16 +252,28 @@ export class PromptVariablesFactory {
       if (error instanceof Error) {
         const message = error.message;
         if (message.includes("path options")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(message),
+          };
         }
         if (message.includes("template resolver")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(message),
+          };
         }
         if (message.includes("schema resolver")) {
-          return { ok: false, error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message) };
+          return {
+            ok: false,
+            error: PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(message),
+          };
         }
       }
-      return { ok: false, error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)) };
+      return {
+        ok: false,
+        error: PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(String(error)),
+      };
     }
   }
 
@@ -395,8 +421,8 @@ export class PromptVariablesFactory {
    */
   public hasValidBaseDir(): boolean {
     const promptBaseDir = this.config.app_prompt?.base_dir;
-    return promptBaseDir !== undefined && promptBaseDir !== null && 
-           promptBaseDir.trim() !== "" && promptBaseDir.trim() !== "   ";
+    return promptBaseDir !== undefined && promptBaseDir !== null &&
+      promptBaseDir.trim() !== "" && promptBaseDir.trim() !== "   ";
   }
 
   /**
@@ -518,7 +544,7 @@ export class PromptVariablesFactory {
 
       // Stage 2-3: Transform through domain service (synchronous version)
       const templatePath = this.promptFilePath;
-      
+
       // Create PromptParams object with correct structure
       const promptParams: PromptParams = {
         template_file: this.promptFilePath,
@@ -599,15 +625,18 @@ export class PromptVariablesFactory {
           this._promptFilePath = templateResult.data.value;
         } else {
           // Template path resolution failed - use fallback
-          this._promptFilePath = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+          this._promptFilePath =
+            `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
         }
       } catch (error) {
         // Template path resolution failed - use fallback
-        this._promptFilePath = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+        this._promptFilePath =
+          `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       }
     } else {
       // No template resolver - use fallback path
-      this._promptFilePath = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+      this._promptFilePath =
+        `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
     }
 
     // Resolve input path using new Result-based API (if resolver exists)
@@ -651,11 +680,13 @@ export class PromptVariablesFactory {
         }
       } catch (error) {
         // Schema path resolution failed - use fallback
-        this._schemaFilePath = `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+        this._schemaFilePath =
+          `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       }
     } else {
       // No schema resolver - use fallback path
-      this._schemaFilePath = `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      this._schemaFilePath =
+        `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
 
     return { ok: true, data: undefined };

@@ -31,12 +31,12 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
     if (envValue !== undefined) {
       return envValue;
     }
-    
+
     // Safely access environmentVariables with proper null checking
-    if (context.environmentVariables && typeof context.environmentVariables === 'object') {
+    if (context.environmentVariables && typeof context.environmentVariables === "object") {
       return context.environmentVariables[envName];
     }
-    
+
     return undefined;
   }
 
@@ -51,14 +51,14 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
 export class FilePathResolutionStrategy implements VariableResolutionStrategy {
   async resolve(variableName: string, context: ResolutionContext): Promise<string | undefined> {
     // Ensure providedVariables exists and is an object
-    if (!context.providedVariables || typeof context.providedVariables !== 'object') {
+    if (!context.providedVariables || typeof context.providedVariables !== "object") {
       return undefined;
     }
-    
+
     // Special handling for file path variables
     if (variableName === "input_text_file") {
       const fromFile = context.providedVariables.fromFile;
-      if (fromFile !== undefined && typeof fromFile === 'string') {
+      if (fromFile !== undefined && typeof fromFile === "string") {
         if (fromFile === "-") return "stdin";
 
         // Resolve relative paths
@@ -72,7 +72,7 @@ export class FilePathResolutionStrategy implements VariableResolutionStrategy {
 
     if (variableName === "destination_path") {
       const destinationFile = context.providedVariables.destinationFile;
-      if (destinationFile !== undefined && typeof destinationFile === 'string') {
+      if (destinationFile !== undefined && typeof destinationFile === "string") {
         return join(context.workingDirectory, destinationFile);
       }
     }
@@ -122,7 +122,7 @@ export class StandardTemplateSelectionStrategy implements TemplateSelectionStrat
     context: SelectionContext,
   ): Result<TemplatePath, string> {
     // Use custom path if provided
-    if (context.customPath !== undefined && typeof context.customPath === 'string') {
+    if (context.customPath !== undefined && typeof context.customPath === "string") {
       const parts = context.customPath.split("/");
       if (parts.length >= 3) {
         const filename = parts[parts.length - 1];

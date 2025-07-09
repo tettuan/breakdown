@@ -18,8 +18,14 @@ import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TypeFactory } from "$lib/types/type_factory.ts";
-import { DirectiveType as ImportedDirectiveType, TwoParamsDirectivePattern } from "$lib/types/directive_type.ts";
-import { LayerType as ImportedLayerType, TwoParamsLayerTypePattern } from "$lib/types/layer_type.ts";
+import {
+  DirectiveType as ImportedDirectiveType,
+  TwoParamsDirectivePattern,
+} from "$lib/types/directive_type.ts";
+import {
+  LayerType as ImportedLayerType,
+  TwoParamsLayerTypePattern,
+} from "$lib/types/layer_type.ts";
 
 // Type aliases for domain usage
 export type DirectiveType = ImportedDirectiveType;
@@ -401,37 +407,41 @@ export class TwoParamsValidator {
     // 5. Validate directive type using TypeFactory
     // Create ValidationPatterns adapter for TypeFactory
     const directivePattern = TwoParamsDirectivePattern.create(
-      `^(${patternsResult.data.directivePatterns.join("|")})$`
+      `^(${patternsResult.data.directivePatterns.join("|")})$`,
     );
     if (!directivePattern) {
       return error({
         kind: "InvalidConfiguration",
         message: "Failed to create directive pattern",
-        details: `Invalid pattern: ^(${patternsResult.data.directivePatterns.join("|")})$`
+        details: `Invalid pattern: ^(${patternsResult.data.directivePatterns.join("|")})$`,
       });
     }
 
     const layerPattern = TwoParamsLayerTypePattern.create(
-      `^(${patternsResult.data.layerPatterns.join("|")})$`
+      `^(${patternsResult.data.layerPatterns.join("|")})$`,
     );
     if (!layerPattern) {
       return error({
         kind: "InvalidConfiguration",
         message: "Failed to create layer pattern",
-        details: `Invalid pattern: ^(${patternsResult.data.layerPatterns.join("|")})$`
+        details: `Invalid pattern: ^(${patternsResult.data.layerPatterns.join("|")})$`,
       });
     }
-    
+
     const patternAdapter = {
       getDirectivePattern: () => directivePattern,
       getLayerTypePattern: () => layerPattern,
     };
-    
+
     const typeFactory = new TypeFactory(patternAdapter);
     const directiveResult = typeFactory.createDirectiveType(directiveStr);
     if (!directiveResult.ok) {
       // Map TypeFactory errors to ValidationError with proper type safety
-      const directiveError = this.mapTypeFactoryError(directiveResult.error, "directive", directiveStr);
+      const directiveError = this.mapTypeFactoryError(
+        directiveResult.error,
+        "directive",
+        directiveStr,
+      );
       return error(directiveError);
     }
 
@@ -561,25 +571,29 @@ export class TwoParamsValidator {
   /**
    * Map TypeFactory errors to ValidationError with proper type safety
    */
-  private mapTypeFactoryError(error: unknown, type: "directive" | "layer", value: string): ValidationError {
+  private mapTypeFactoryError(
+    error: unknown,
+    type: "directive" | "layer",
+    value: string,
+  ): ValidationError {
     // Handle TypeFactory errors with proper type safety
     if (typeof error === "object" && error !== null) {
       const errorObj = error as { kind?: string; message?: string };
       if (errorObj.kind === "PatternMismatch") {
-        return type === "directive" 
+        return type === "directive"
           ? {
-              kind: "InvalidDirectiveType",
-              value,
-              validTypes: [],
-            }
+            kind: "InvalidDirectiveType",
+            value,
+            validTypes: [],
+          }
           : {
-              kind: "InvalidLayerType",
-              value,
-              validTypes: [],
-            };
+            kind: "InvalidLayerType",
+            value,
+            validTypes: [],
+          };
       }
     }
-    
+
     // Default error mapping
     return {
       kind: "InvalidConfiguration",

@@ -1,24 +1,24 @@
 /**
  * @fileoverview Behavior tests for TwoParamsOrchestrator
- * 
+ *
  * Testing focus areas:
  * 1. Orchestration flow behavior and component coordination
  * 2. Parameter validation and transformation behavior
  * 3. Error handling and propagation behavior
  * 4. Resource management and cleanup behavior
  * 5. Result type behavior and data flow
- * 
+ *
  * @module lib/cli/handlers/1_behavior_two_params_orchestrator_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  TwoParamsOrchestrator,
   handleTwoParamsWithOrchestrator,
   type OrchestratorError,
+  TwoParamsOrchestrator,
 } from "./two_params_orchestrator.ts";
 import type { Result } from "$lib/types/result.ts";
-import { isOk, isError } from "$lib/types/result.ts";
+import { isError, isOk } from "$lib/types/result.ts";
 
 // =============================================================================
 // 1_behavior: Basic Orchestration Flow Behavior Tests
@@ -35,7 +35,7 @@ Deno.test("1_behavior: orchestrator processes valid two params successfully", as
   // Should complete the full orchestration pipeline
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals(result.data, undefined); // void return type
   }
@@ -47,11 +47,11 @@ Deno.test("1_behavior: orchestrator handles different demonstrative types", asyn
   const options = { skipStdin: true };
 
   const demonstrativeTypes = ["to", "summary", "defect"];
-  
+
   for (const demType of demonstrativeTypes) {
     const params: string[] = [demType, "project"];
     const result = await orchestrator.orchestrate(params, config, options);
-    
+
     assertEquals(typeof result, "object", `Failed for demonstrative type: ${demType}`);
     assertEquals("ok" in result, true);
   }
@@ -63,11 +63,11 @@ Deno.test("1_behavior: orchestrator handles different layer types", async () => 
   const options = { skipStdin: true };
 
   const layerTypes = ["project", "issue", "task"];
-  
+
   for (const layerType of layerTypes) {
     const params: string[] = ["to", layerType];
     const result = await orchestrator.orchestrate(params, config, options);
-    
+
     assertEquals(typeof result, "object", `Failed for layer type: ${layerType}`);
     assertEquals("ok" in result, true);
   }
@@ -133,7 +133,11 @@ Deno.test("1_behavior: orchestrator accepts extra parameters", async () => {
   const config = { timeout: 5000 };
   const options = { skipStdin: true };
 
-  const result = await orchestrator.orchestrate(["to", "project", "extra", "params"] as string[], config, options);
+  const result = await orchestrator.orchestrate(
+    ["to", "project", "extra", "params"] as string[],
+    config,
+    options,
+  );
 
   // Should not fail for extra parameters (uses first two)
   assertEquals(typeof result, "object");
@@ -145,7 +149,11 @@ Deno.test("1_behavior: orchestrator validates demonstrative type values", async 
   const config = { timeout: 5000 };
   const options = { skipStdin: true };
 
-  const result = await orchestrator.orchestrate(["invalid_directive", "project"] as string[], config, options);
+  const result = await orchestrator.orchestrate(
+    ["invalid_directive", "project"] as string[],
+    config,
+    options,
+  );
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -161,7 +169,11 @@ Deno.test("1_behavior: orchestrator validates layer type values", async () => {
   const config = { timeout: 5000 };
   const options = { skipStdin: true };
 
-  const result = await orchestrator.orchestrate(["to", "invalid_layer"] as string[], config, options);
+  const result = await orchestrator.orchestrate(
+    ["to", "invalid_layer"] as string[],
+    config,
+    options,
+  );
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -198,7 +210,7 @@ Deno.test("1_behavior: orchestrator attempts stdin when from is dash", async () 
   // Should attempt stdin reading (may succeed or fail in test environment)
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (!result.ok) {
     // Could fail with either StdinReadError or PromptGenerationError depending on the failure point
     const validErrorKinds = ["StdinReadError", "PromptGenerationError"];
@@ -213,10 +225,10 @@ Deno.test("1_behavior: orchestrator attempts stdin when from is dash", async () 
 Deno.test("1_behavior: orchestrator processes custom variables", async () => {
   const orchestrator = new TwoParamsOrchestrator();
   const config = { timeout: 5000 };
-  const options = { 
+  const options = {
     skipStdin: true,
     "uv-customVar": "test value",
-    "uv-author": "test user"
+    "uv-author": "test user",
   };
 
   const result = await orchestrator.orchestrate(["defect", "project"] as string[], config, options);
@@ -229,9 +241,9 @@ Deno.test("1_behavior: orchestrator processes custom variables", async () => {
 Deno.test("1_behavior: orchestrator handles variable processing errors", async () => {
   const orchestrator = new TwoParamsOrchestrator();
   const config = { timeout: 5000 };
-  const options = { 
+  const options = {
     skipStdin: true,
-    "uv-input_text": "reserved variable name" // Should cause error
+    "uv-input_text": "reserved variable name", // Should cause error
   };
 
   const result = await orchestrator.orchestrate(["to", "project"] as string[], config, options);
@@ -251,14 +263,14 @@ Deno.test("1_behavior: orchestrator handles variable processing errors", async (
 
 Deno.test("1_behavior: orchestrator coordinates prompt generation", async () => {
   const orchestrator = new TwoParamsOrchestrator();
-  const config = { 
+  const config = {
     timeout: 5000,
     promptDir: "/test/prompts",
-    schemaDir: "/test/schemas"
+    schemaDir: "/test/schemas",
   };
-  const options = { 
+  const options = {
     skipStdin: true,
-    destination: "output.md"
+    destination: "output.md",
   };
 
   const result = await orchestrator.orchestrate(["summary", "task"] as string[], config, options);
@@ -266,7 +278,7 @@ Deno.test("1_behavior: orchestrator coordinates prompt generation", async () => 
   // Should attempt prompt generation (may succeed or fail depending on file availability)
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (!result.ok) {
     // If it fails, should be a prompt generation error
     assertEquals(result.error.kind, "PromptGenerationError");
@@ -282,7 +294,11 @@ Deno.test("1_behavior: orchestrator propagates parameter validation errors", asy
   const config = {};
   const options = { skipStdin: true };
 
-  const result = await orchestrator.orchestrate(["invalid", "also_invalid"] as string[], config, options);
+  const result = await orchestrator.orchestrate(
+    ["invalid", "also_invalid"] as string[],
+    config,
+    options,
+  );
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -302,7 +318,7 @@ Deno.test("1_behavior: orchestrator handles component failures gracefully", asyn
   // Should handle component failures and return proper error
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (!result.ok) {
     const validErrorKinds = [
       "InvalidParameterCount",
@@ -311,7 +327,7 @@ Deno.test("1_behavior: orchestrator handles component failures gracefully", asyn
       "StdinReadError",
       "VariableProcessingError",
       "PromptGenerationError",
-      "OutputWriteError"
+      "OutputWriteError",
     ];
     assertEquals(validErrorKinds.includes(result.error.kind), true);
   }
@@ -331,7 +347,7 @@ Deno.test("1_behavior: handleTwoParamsWithOrchestrator maintains compatibility",
   // Should produce same result as direct orchestrator usage
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals(result.data, undefined);
   }
@@ -365,7 +381,7 @@ Deno.test("1_behavior: orchestrator handles various configuration formats", asyn
     {},
     { timeout: 5000 },
     { stdin: { timeout_ms: 3000 } },
-    { promptDir: "/custom/prompts", schemaDir: "/custom/schemas" }
+    { promptDir: "/custom/prompts", schemaDir: "/custom/schemas" },
   ];
 
   for (const config of configVariations) {
@@ -390,7 +406,7 @@ Deno.test("1_behavior: orchestrator cleans up resources on completion", async ()
   // Should complete without resource leaks
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   // Make another call to ensure clean state
   const result2 = await orchestrator.orchestrate(params, config, options);
   assertEquals(typeof result2, "object");
@@ -406,7 +422,7 @@ Deno.test("1_behavior: orchestrator handles multiple concurrent orchestrations",
   const promises = [
     orchestrator.orchestrate(["to", "project"] as string[], config, options),
     orchestrator.orchestrate(["summary", "issue"] as string[], config, options),
-    orchestrator.orchestrate(["defect", "task"] as string[], config, options)
+    orchestrator.orchestrate(["defect", "task"] as string[], config, options),
   ];
 
   const results = await Promise.all(promises);
@@ -434,7 +450,7 @@ Deno.test("1_behavior: orchestrator returns proper Result structure on success",
   assertEquals(typeof result, "object");
   assertExists(result);
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals("data" in result, true);
     assertEquals("error" in result, false);
@@ -455,7 +471,7 @@ Deno.test("1_behavior: orchestrator returns proper error structure on failure", 
   assertExists(result);
   assertEquals("ok" in result, true);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals("error" in result, true);
     assertEquals("data" in result, false);
@@ -480,7 +496,7 @@ Deno.test("1_behavior: Result type guards work correctly for success", async () 
   if (isOk(result)) {
     assertEquals(result.data, undefined);
   }
-  
+
   // At minimum, one should be true
   assertEquals(isOk(result) || isError(result), true);
 });
@@ -496,7 +512,7 @@ Deno.test("1_behavior: Result type guards work correctly for error", async () =>
   // Should be error
   assertEquals(isError(result), true);
   assertEquals(isOk(result), false);
-  
+
   if (isError(result)) {
     assertEquals(typeof result.error, "object");
     assertEquals("kind" in result.error, true);
@@ -511,10 +527,10 @@ Deno.test("1_behavior: orchestrator executes pipeline steps in correct order", a
   const orchestrator = new TwoParamsOrchestrator();
   const params: string[] = ["to", "task"];
   const config = { timeout: 5000 };
-  const options = { 
+  const options = {
     skipStdin: true,
     "uv-testVar": "test value",
-    destination: "output.md"
+    destination: "output.md",
   };
 
   const result = await orchestrator.orchestrate(params, config, options);
@@ -549,27 +565,27 @@ Deno.test("1_behavior: orchestrator maintains state isolation between calls", as
 
   // First call with valid parameters
   const result1 = await orchestrator.orchestrate(
-    ["to", "project"] as string[], 
-    config, 
-    { skipStdin: true }
+    ["to", "project"] as string[],
+    config,
+    { skipStdin: true },
   );
 
   // Second call with invalid parameters
   const result2 = await orchestrator.orchestrate(
-    ["invalid", "project"] as string[], 
-    config, 
-    { skipStdin: true }
+    ["invalid", "project"] as string[],
+    config,
+    { skipStdin: true },
   );
 
   // First call should not be affected by second call's failure
   assertEquals(typeof result1, "object");
   assertEquals(typeof result2, "object");
-  
+
   // Results should be independent
   if (result1.ok) {
     assertEquals(result1.data, undefined);
   }
-  
+
   if (!result2.ok) {
     assertEquals(result2.error.kind, "InvalidDemonstrativeType");
   }
@@ -581,21 +597,25 @@ Deno.test("1_behavior: orchestrator handles mixed success/failure scenarios", as
 
   const testCases = [
     { params: ["to", "project"] as string[], options: { skipStdin: true }, shouldSucceed: true },
-    { params: ["invalid", "project"] as string[], options: { skipStdin: true }, shouldSucceed: false },
+    {
+      params: ["invalid", "project"] as string[],
+      options: { skipStdin: true },
+      shouldSucceed: false,
+    },
     { params: ["summary", "issue"] as string[], options: { skipStdin: true }, shouldSucceed: true },
-    { params: [] as string[], options: { skipStdin: true }, shouldSucceed: false }
+    { params: [] as string[], options: { skipStdin: true }, shouldSucceed: false },
   ];
 
   for (const testCase of testCases) {
     const result = await orchestrator.orchestrate(
       testCase.params,
       config,
-      testCase.options
+      testCase.options,
     );
-    
+
     assertEquals(typeof result, "object");
     assertEquals("ok" in result, true);
-    
+
     if (testCase.shouldSucceed) {
       // Don't assert success as it may fail due to environment issues
       // Just ensure it's a valid result

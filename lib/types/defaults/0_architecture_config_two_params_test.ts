@@ -1,6 +1,6 @@
 /**
  * @fileoverview Architecture tests for defaultConfigTwoParams
- * 
+ *
  * Tests the architectural constraints and structural integrity of the default
  * configuration object used throughout the type system.
  */
@@ -52,7 +52,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
   await t.step("should have valid regex patterns", () => {
     const directivePattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
     const layerPattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-    
+
     // Test patterns are valid regex - should not throw when creating RegExp
     try {
       new RegExp(directivePattern);
@@ -60,7 +60,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     } catch (e) {
       throw new Error(`Invalid regex pattern: ${e}`);
     }
-    
+
     // Test patterns match expected format
     assertEquals(directivePattern.startsWith("^"), true);
     assertEquals(directivePattern.endsWith("$"), true);
@@ -70,13 +70,13 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
 
   await t.step("should have specific expected values", () => {
     const config = _defaultConfigTwoParams.params.two;
-    
+
     // Test directiveType pattern contains expected values
     assertEquals(config.directiveType.pattern, "^(to|summary|defect)$");
-    
+
     // Test layerType pattern contains expected values
     assertEquals(config.layerType.pattern, "^(project|issue|task)$");
-    
+
     // Test validation configuration
     assertObjectMatch(config.validation, {
       allowedFlagOptions: [],
@@ -93,7 +93,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
 Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
   await t.step("should maintain structural integrity", () => {
     const original = JSON.stringify(_defaultConfigTwoParams);
-    
+
     // Try to modify (should not affect the original)
     try {
       // @ts-ignore - intentionally trying to modify
@@ -101,7 +101,7 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
     } catch {
       // Expected to fail in strict mode
     }
-    
+
     // Verify original structure is preserved
     const current = JSON.stringify(_defaultConfigTwoParams);
     assertEquals(original, current);
@@ -110,7 +110,7 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
   await t.step("should provide consistent references", () => {
     const ref1 = _defaultConfigTwoParams;
     const ref2 = _defaultConfigTwoParams;
-    
+
     assertEquals(ref1 === ref2, true);
     assertEquals(ref1.params === ref2.params, true);
     assertEquals(ref1.params.two === ref2.params.two, true);
@@ -123,12 +123,12 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
 Deno.test("defaultConfigTwoParams - Pattern Validation", async (t) => {
   await t.step("should validate directiveType pattern", () => {
     const pattern = new RegExp(_defaultConfigTwoParams.params.two.directiveType.pattern);
-    
+
     // Valid values should match
     assertEquals(pattern.test("to"), true);
     assertEquals(pattern.test("summary"), true);
     assertEquals(pattern.test("defect"), true);
-    
+
     // Invalid values should not match
     assertEquals(pattern.test("invalid"), false);
     assertEquals(pattern.test("TO"), false);
@@ -139,12 +139,12 @@ Deno.test("defaultConfigTwoParams - Pattern Validation", async (t) => {
 
   await t.step("should validate layerType pattern", () => {
     const pattern = new RegExp(_defaultConfigTwoParams.params.two.layerType.pattern);
-    
+
     // Valid values should match
     assertEquals(pattern.test("project"), true);
     assertEquals(pattern.test("issue"), true);
     assertEquals(pattern.test("task"), true);
-    
+
     // Invalid values should not match
     assertEquals(pattern.test("invalid"), false);
     assertEquals(pattern.test("PROJECT"), false);

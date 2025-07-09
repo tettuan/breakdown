@@ -1,7 +1,7 @@
 /**
  * @fileoverview 1_behavior tests for OutputFilePathResolver
  * Testing functional behavior and business logic
- * 
+ *
  * Behavior tests verify:
  * - Correct resolution of various output path types
  * - Proper handling of auto-generated filenames
@@ -13,7 +13,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { join, isAbsolute } from "@std/path";
+import { isAbsolute, join } from "@std/path";
 
 const logger = new BreakdownLogger("behavior-output-file-path-resolver");
 
@@ -25,7 +25,7 @@ const validConfig = {
 
 Deno.test("1_behavior: generates output filename automatically when not specified", () => {
   logger.debug("Testing automatic filename generation");
-  
+
   const testCases = [
     {
       params: {
@@ -46,15 +46,15 @@ Deno.test("1_behavior: generates output filename automatically when not specifie
       expectedGenerated: true,
     },
   ];
-  
+
   for (const { params, expectedType, expectedGenerated } of testCases) {
     const resolverResult = OutputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(pathResult.data.isGenerated, expectedGenerated);
@@ -68,7 +68,7 @@ Deno.test("1_behavior: generates output filename automatically when not specifie
 
 Deno.test("1_behavior: resolves absolute output paths correctly", () => {
   logger.debug("Testing absolute path resolution");
-  
+
   const testCases = [
     {
       params: {
@@ -95,15 +95,15 @@ Deno.test("1_behavior: resolves absolute output paths correctly", () => {
       },
     },
   ];
-  
+
   for (const { params, expected } of testCases) {
     const resolverResult = OutputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expected.type);
         assertEquals(pathResult.data.value, expected.value);
@@ -116,7 +116,7 @@ Deno.test("1_behavior: resolves absolute output paths correctly", () => {
 
 Deno.test("1_behavior: resolves relative output paths correctly", () => {
   logger.debug("Testing relative path resolution");
-  
+
   const testCases = [
     {
       params: {
@@ -146,15 +146,15 @@ Deno.test("1_behavior: resolves relative output paths correctly", () => {
       expectedGenerated: false,
     },
   ];
-  
+
   for (const { params, expectedType, expectedGenerated } of testCases) {
     const resolverResult = OutputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(pathResult.data.isGenerated, expectedGenerated);
@@ -166,20 +166,20 @@ Deno.test("1_behavior: resolves relative output paths correctly", () => {
 
 Deno.test("1_behavior: resolves filename-only output paths correctly", () => {
   logger.debug("Testing filename-only path resolution");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: { destinationFile: "output.md" },
   };
-  
+
   const resolverResult = OutputFilePathResolver.create(validConfig, params);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       assertEquals(pathResult.data.isGenerated, false);
@@ -192,7 +192,7 @@ Deno.test("1_behavior: resolves filename-only output paths correctly", () => {
 
 Deno.test("1_behavior: handles directory-only output paths", () => {
   logger.debug("Testing directory-only output paths");
-  
+
   const testCases = [
     {
       params: {
@@ -213,15 +213,15 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
       expectedGenerated: true,
     },
   ];
-  
+
   for (const { params, expectedType, expectedGenerated } of testCases) {
     const resolverResult = OutputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(pathResult.data.isGenerated, expectedGenerated);
@@ -232,7 +232,11 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
           assertEquals(actualPath.startsWith(expectedDir), true);
         } else {
           // For relative paths, check if it contains the directory portion
-          assertEquals(actualPath.includes(expectedDir) || actualPath.startsWith(join(Deno.cwd(), expectedDir)), true);
+          assertEquals(
+            actualPath.includes(expectedDir) ||
+              actualPath.startsWith(join(Deno.cwd(), expectedDir)),
+            true,
+          );
         }
       }
     }
@@ -241,16 +245,16 @@ Deno.test("1_behavior: handles directory-only output paths", () => {
 
 Deno.test("1_behavior: handles empty output value", () => {
   logger.debug("Testing empty output value");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: { destinationFile: "" },
   };
-  
+
   const resolverResult = OutputFilePathResolver.create(validConfig, params);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, false);
@@ -262,7 +266,7 @@ Deno.test("1_behavior: handles empty output value", () => {
 
 Deno.test("1_behavior: supports TwoParams_Result format", () => {
   logger.debug("Testing TwoParams_Result format support");
-  
+
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     params: ["to", "project"],
@@ -272,14 +276,14 @@ Deno.test("1_behavior: supports TwoParams_Result format", () => {
       output: "test-output.md",
     },
   };
-  
+
   const resolverResult = OutputFilePathResolver.create(validConfig, twoParamsResult);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       assertEquals(pathResult.data.isGenerated, false);
@@ -290,7 +294,7 @@ Deno.test("1_behavior: supports TwoParams_Result format", () => {
 
 Deno.test("1_behavior: supports directive/layer object format", () => {
   logger.debug("Testing directive/layer object format support");
-  
+
   const directiveLayerParams = {
     directive: { value: "to", data: "to" },
     layer: { value: "project", data: "project" },
@@ -298,14 +302,14 @@ Deno.test("1_behavior: supports directive/layer object format", () => {
       output: "./local/output.md",
     },
   };
-  
+
   const resolverResult = OutputFilePathResolver.create(validConfig, directiveLayerParams as any);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "relative");
       assertEquals(pathResult.data.isGenerated, false);
@@ -316,7 +320,7 @@ Deno.test("1_behavior: supports directive/layer object format", () => {
 
 Deno.test("1_behavior: handles special characters in output paths", () => {
   logger.debug("Testing special characters in paths");
-  
+
   const testCases = [
     {
       output: "file with spaces.md",
@@ -339,21 +343,21 @@ Deno.test("1_behavior: handles special characters in output paths", () => {
       expectedGenerated: false,
     },
   ];
-  
+
   for (const { output, expectedType, expectedGenerated } of testCases) {
     const params: PromptCliParams = {
       demonstrativeType: "to",
       layerType: "project",
       options: { destinationFile: output },
     };
-    
+
     const resolverResult = OutputFilePathResolver.create(validConfig, params);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(pathResult.data.isGenerated, expectedGenerated);
@@ -364,26 +368,26 @@ Deno.test("1_behavior: handles special characters in output paths", () => {
 
 Deno.test("1_behavior: generates unique filenames for auto-generated output", () => {
   logger.debug("Testing unique filename generation");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: {}, // No output specified
   };
-  
+
   const resolverResult1 = OutputFilePathResolver.create(validConfig, params);
   const resolverResult2 = OutputFilePathResolver.create(validConfig, params);
-  
+
   assertEquals(resolverResult1.ok, true);
   assertEquals(resolverResult2.ok, true);
-  
+
   if (resolverResult1.ok && resolverResult2.ok) {
     const pathResult1 = resolverResult1.data.getPath();
     const pathResult2 = resolverResult2.data.getPath();
-    
+
     assertEquals(pathResult1.ok, true);
     assertEquals(pathResult2.ok, true);
-    
+
     if (pathResult1.ok && pathResult2.ok) {
       // Auto-generated filenames should be unique
       assertEquals(pathResult1.data.value !== pathResult2.data.value, true);

@@ -61,9 +61,11 @@ export type PromptGenerationServiceErrors =
  * Factory functions for creating specific errors
  */
 export const PromptGenerationServiceErrorFactory = {
-  variableValidationFailed: (validationErrors: Array<{ message: string }>): VariableValidationError => ({
+  variableValidationFailed: (
+    validationErrors: Array<{ message: string }>,
+  ): VariableValidationError => ({
     kind: "VariableValidationFailed",
-    message: `Variable validation failed: ${validationErrors.map(e => e.message).join(", ")}`,
+    message: `Variable validation failed: ${validationErrors.map((e) => e.message).join(", ")}`,
     validationErrors,
   }),
 

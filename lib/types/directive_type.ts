@@ -34,10 +34,10 @@ export class TwoParamsDirectivePattern {
    */
   static create(pattern: string): TwoParamsDirectivePattern | null {
     // Validate input type first
-    if (typeof pattern !== 'string' || pattern == null) {
+    if (typeof pattern !== "string" || pattern == null) {
       return null;
     }
-    
+
     try {
       const regex = new RegExp(pattern);
       return new TwoParamsDirectivePattern(regex);
@@ -48,9 +48,9 @@ export class TwoParamsDirectivePattern {
 
   /**
    * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
-   * 
+   *
    * Totality原則に準拠し、エラーを明示的に返す。
-   * 
+   *
    * @param pattern 正規表現文字列
    * @returns 成功時は Result<TwoParamsDirectivePattern>、失敗時はエラー情報
    */
@@ -211,7 +211,7 @@ export class DirectiveType {
    */
   static createOrError(
     result: TwoParams_Result,
-    pattern?: TwoParamsDirectivePattern
+    pattern?: TwoParamsDirectivePattern,
   ): Result<DirectiveType, ValidationError> {
     // 基本的なバリデーション
     if (!result || result.type !== "two") {

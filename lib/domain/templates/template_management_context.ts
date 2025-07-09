@@ -18,7 +18,11 @@ import {
   PromptTemplate as _PromptTemplate,
   TemplatePath,
 } from "./prompt_generation_aggregate.ts";
-import { Schema as _Schema, SchemaManagementAggregate, SchemaPath } from "./schema_management_aggregate.ts";
+import {
+  Schema as _Schema,
+  SchemaManagementAggregate,
+  SchemaPath,
+} from "./schema_management_aggregate.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
@@ -77,7 +81,11 @@ export type TemplateManagementError =
   | { readonly kind: "SchemaLoadError"; readonly path: string; readonly cause: string }
   // Dependency errors
   | { readonly kind: "DependencyError"; readonly path: string; readonly dependency: string }
-  | { readonly kind: "CircularDependency"; readonly path: string; readonly cycle: readonly string[] }
+  | {
+    readonly kind: "CircularDependency";
+    readonly path: string;
+    readonly cycle: readonly string[];
+  }
   // System errors
   | { readonly kind: "RepositoryError"; readonly operation: string; readonly cause: string }
   | { readonly kind: "InitializationError"; readonly component: string; readonly cause: string };
@@ -87,7 +95,12 @@ export type TemplateManagementError =
  */
 export type TemplateManagementWarning =
   | { readonly kind: "OptionalMissing"; readonly path: string; readonly description?: string }
-  | { readonly kind: "VersionMismatch"; readonly path: string; readonly expected: string; readonly actual: string }
+  | {
+    readonly kind: "VersionMismatch";
+    readonly path: string;
+    readonly expected: string;
+    readonly actual: string;
+  }
   | { readonly kind: "Deprecated"; readonly path: string; readonly replacement?: string }
   | { readonly kind: "PerformanceWarning"; readonly path: string; readonly issue: string };
 
@@ -227,13 +240,13 @@ export class TemplateRegistry {
         // Simplified path creation without DirectiveType/LayerType validation
         // TODO: Integrate with TypeFactory for proper type construction
         const pathString = `templates/${item.directive}/${item.layer}/${item.filename}`;
-        
+
         // For now, create a simplified entry without full type validation
         // This would be replaced with proper DirectiveType/LayerType construction
         registry.register({
           templatePath: { getPath: () => pathString } as TemplatePath,
           required: item.required,
-          description: `Default ${item.directive} template for ${item.layer} layer`
+          description: `Default ${item.directive} template for ${item.layer} layer`,
         });
       }
 
@@ -243,7 +256,7 @@ export class TemplateRegistry {
       return error({
         kind: "InitializationError",
         component: "TemplateRegistry",
-        cause: errorMessage
+        cause: errorMessage,
       });
     }
   }
@@ -281,7 +294,7 @@ export class ValidationPolicy {
   private createTemplateError(
     kind: TemplateManagementError["kind"],
     path: string,
-    details: string
+    details: string,
   ): TemplateManagementError {
     switch (kind) {
       case "MissingTemplate":
@@ -516,7 +529,7 @@ export class TemplateManagementContext {
     try {
       const logger = new BreakdownLogger("template-management-context");
       const registryResult = TemplateRegistry.createDefault();
-      
+
       if (!registryResult.ok) {
         return error(registryResult.error);
       }
@@ -534,7 +547,7 @@ export class TemplateManagementContext {
       return error({
         kind: "InitializationError",
         component: "TemplateManagementContext",
-        cause: errorMessage
+        cause: errorMessage,
       });
     }
   }

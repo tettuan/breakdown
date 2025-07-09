@@ -22,12 +22,12 @@ describe("Behavior: Command Recognition", () => {
   it("should recognize and execute init command", async () => {
     logger.debug("Testing init command recognition");
 
-    // Mock the initialization function to avoid actual file operations  
+    // Mock the initialization function to avoid actual file operations
     // In test environment, we skip the actual initialization import
     const originalInitialize = undefined;
-    
+
     let initializationCalled = false;
-    
+
     // For testing purposes, we'll check if the function attempts to call initialization
     // In a real test environment, we would mock the dependency
 
@@ -90,7 +90,7 @@ describe("Behavior: Command Recognition", () => {
     for (const command of caseVariations) {
       try {
         await handleOneParams([command], {}, {});
-        
+
         if (command === "init") {
           // This is the correct case, should be processed
           assertEquals(true, true, "Lowercase 'init' should be recognized");
@@ -172,7 +172,11 @@ describe("Behavior: Parameter Validation", () => {
       try {
         await handleOneParams(params, {}, {});
         // Should use only first parameter, ignore rest
-        assertEquals(true, true, `Should handle excess parameters gracefully: ${JSON.stringify(params)}`);
+        assertEquals(
+          true,
+          true,
+          `Should handle excess parameters gracefully: ${JSON.stringify(params)}`,
+        );
       } catch (error) {
         // Should not fail due to excess parameters
         assertEquals(
@@ -323,7 +327,7 @@ describe("Behavior: Async Operation Handling", () => {
 
     for (const testCase of testCases) {
       const result = handleOneParams(testCase.params, testCase.config, testCase.options);
-      
+
       // Should always return a Promise
       assertExists(result.then, "Should return thenable Promise");
       assertExists(result.catch, "Should return catchable Promise");
@@ -347,18 +351,17 @@ describe("Behavior: Async Operation Handling", () => {
 
     // Test that init command attempts async operation
     const startTime = Date.now();
-    
+
     try {
       await handleOneParams(["init"], {}, {});
       const endTime = Date.now();
-      
+
       // Should have attempted async operation (even if it fails in test env)
       assertEquals(true, true, "Should attempt async initialization");
-      
     } catch (error) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // Should have attempted async operation before failing
       assertEquals(
         duration >= 0,
@@ -379,19 +382,18 @@ describe("Behavior: Async Operation Handling", () => {
     logger.debug("Testing non-blocking behavior for unknown commands");
 
     const startTime = Date.now();
-    
+
     try {
       await handleOneParams(["unknown"], {}, {});
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // Should complete quickly for unknown commands
       assertEquals(
         duration < 100, // Should complete in under 100ms
         true,
         "Unknown commands should not block execution",
       );
-      
     } catch (error) {
       assertEquals(
         false,
@@ -447,7 +449,11 @@ describe("Behavior: Future Extensibility", () => {
     for (const variation of paramVariations) {
       try {
         await handleOneParams(variation.params, {}, {});
-        assertEquals(true, true, `Should handle param variation: ${JSON.stringify(variation.params)}`);
+        assertEquals(
+          true,
+          true,
+          `Should handle param variation: ${JSON.stringify(variation.params)}`,
+        );
       } catch (error) {
         assertEquals(
           false,
@@ -471,10 +477,10 @@ describe("Behavior: Future Extensibility", () => {
 
     for (const test of interfaceTests) {
       const result = handleOneParams(test.params, test.config, test.options);
-      
+
       // Should maintain Promise interface
       assertEquals(typeof result.then, "function", "Should maintain Promise interface");
-      
+
       try {
         await result;
         assertEquals(true, true, "Should maintain interface compatibility");

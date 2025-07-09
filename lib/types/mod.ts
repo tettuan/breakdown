@@ -140,13 +140,17 @@ export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
 // Error severity types
-export { ErrorSeverity as ErrorSeverityClass, SeverityLevel, ImpactScope } from "../domain/core/value_objects/error_severity.ts";
+export {
+  ErrorSeverity as ErrorSeverityClass,
+  ImpactScope,
+  SeverityLevel,
+} from "../domain/core/value_objects/error_severity.ts";
 export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
 
 // CLI Error severity enum for backward compatibility
 export const ErrorSeverity = {
   CRITICAL: "critical",
-  WARNING: "warning"
+  WARNING: "warning",
 } as const;
 
 export type ErrorSeverityType = typeof ErrorSeverity[keyof typeof ErrorSeverity];
@@ -165,23 +169,19 @@ export { TotalityPromptVariablesFactory } from "../factory/prompt_variables_fact
  * Result types for parameter operations.
  * Re-exported from breakdownparams for consistency.
  */
-export type { TwoParams_Result, OneParamsResult, ZeroParamsResult } from "../deps.ts";
+export type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 
 // Unified Error Types - Totality-compliant error handling system
 export type {
   BaseError,
+  ConfigurationError,
+  PathError,
+  ProcessingError,
   SystemError,
   SystemErrorKind,
-  PathError,
-  ValidationError,
-  ConfigurationError,
-  ProcessingError,
-  WorkspaceError,
   UnifiedError,
   UnifiedResult,
+  ValidationError,
+  WorkspaceError,
 } from "./unified_error_types.ts";
-export {
-  ErrorGuards,
-  ErrorFactory,
-  extractUnifiedErrorMessage,
-} from "./unified_error_types.ts";
+export { ErrorFactory, ErrorGuards, extractUnifiedErrorMessage } from "./unified_error_types.ts";

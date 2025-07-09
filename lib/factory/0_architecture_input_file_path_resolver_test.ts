@@ -1,7 +1,7 @@
 /**
  * @fileoverview 0_architecture tests for InputFilePathResolver
  * Testing architectural constraints and design patterns compliance
- * 
+ *
  * Architecture tests verify:
  * - Smart Constructor pattern enforcement
  * - Domain boundary constraints
@@ -52,7 +52,7 @@ Deno.test("0_architecture: Smart Constructor pattern - private constructor enfor
   // Direct instantiation should be impossible via TypeScript
   // @ts-expect-error - Verifying private constructor constraint
   const attemptDirectConstruction = () => new InputFilePathResolver(validConfig, validLegacyParams);
-  
+
   // Verify factory method exists as the only construction path
   assertEquals(typeof InputFilePathResolver.create, "function");
   assertExists(InputFilePathResolver.create);
@@ -61,11 +61,11 @@ Deno.test("0_architecture: Smart Constructor pattern - private constructor enfor
 Deno.test("0_architecture: Smart Constructor pattern - factory method returns Result type", () => {
   // ARCHITECTURE CONSTRAINT: Factory must return Result<T, E> type
   const result = InputFilePathResolver.create(validConfig, validLegacyParams);
-  
+
   // Verify Result type structure
   assertExists(result);
   assertEquals(typeof result.ok, "boolean");
-  
+
   // Result must have either data or error, never both
   if (result.ok) {
     assertExists(result.data);
@@ -80,7 +80,7 @@ Deno.test("0_architecture: Smart Constructor pattern - factory method returns Re
 Deno.test("0_architecture: Domain boundary constraint - no exceptions across boundary", () => {
   // ARCHITECTURE CONSTRAINT: Domain boundaries must not leak exceptions
   // All errors must be represented as Result.error
-  
+
   const boundaryViolationTests = [
     { desc: "null config", config: null, params: validLegacyParams },
     { desc: "null params", config: validConfig, params: null },
@@ -94,7 +94,7 @@ Deno.test("0_architecture: Domain boundary constraint - no exceptions across bou
   for (const { desc, config, params } of boundaryViolationTests) {
     // Should never throw - all errors must be captured in Result type
     const result = InputFilePathResolver.create(config as any, params as any);
-    
+
     assertEquals(result.ok, false, `Failed for test case: ${desc}`);
     if (!result.ok) {
       assertExists(result.error, `Error should exist for test case: ${desc}`);
@@ -106,7 +106,7 @@ Deno.test("0_architecture: Domain boundary constraint - no exceptions across bou
 Deno.test("0_architecture: Result type constraint - error categorization", () => {
   // ARCHITECTURE CONSTRAINT: Errors must be properly categorized
   // All errors must have a structured error type with 'kind' discriminator
-  
+
   // Test configuration error
   const configErrorResult = InputFilePathResolver.create(null as any, validLegacyParams);
   assertEquals(configErrorResult.ok, false);
@@ -116,7 +116,7 @@ Deno.test("0_architecture: Result type constraint - error categorization", () =>
       assertExists(configErrorResult.error.message);
     }
   }
-  
+
   // Test parameter structure error
   const paramErrorResult = InputFilePathResolver.create(validConfig, { invalid: true } as any);
   assertEquals(paramErrorResult.ok, false);
@@ -131,18 +131,21 @@ Deno.test("0_architecture: Result type constraint - error categorization", () =>
 Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", () => {
   // ARCHITECTURE CONSTRAINT: All input combinations must be handled
   // Totality pattern requires handling all possible input states
-  
+
   // Test both supported parameter structures
   const legacyResult = InputFilePathResolver.create(validConfig, validLegacyParams);
   assertEquals(legacyResult.ok, true);
-  
+
   const totalityResult = InputFilePathResolver.create(validConfig, validTotalityParams);
   assertEquals(totalityResult.ok, true);
-  
+
   // Test directive/layer structure
-  const directiveLayerResult = InputFilePathResolver.create(validConfig, validDirectiveLayerParams as any);
+  const directiveLayerResult = InputFilePathResolver.create(
+    validConfig,
+    validDirectiveLayerParams as any,
+  );
   assertEquals(directiveLayerResult.ok, true);
-  
+
   // Test invalid legacy structure
   const invalidLegacy = {
     demonstrativeType: 123, // Wrong type
@@ -153,7 +156,7 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
   if (!invalidLegacyResult.ok) {
     assertExists(invalidLegacyResult.error);
   }
-  
+
   // Test invalid totality structure
   const invalidTotality = {
     directive: "to", // Should be object with value property
@@ -169,18 +172,18 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
 Deno.test("0_architecture: Immutability constraint - input parameter isolation", () => {
   // ARCHITECTURE CONSTRAINT: Constructor must not mutate input parameters
   // Domain objects must maintain referential transparency
-  
+
   const originalConfig = { ...validConfig };
   const originalParams = { ...validLegacyParams, options: { ...validLegacyParams.options } };
-  
+
   const result = InputFilePathResolver.create(originalConfig, originalParams);
   assertEquals(result.ok, true);
-  
+
   // Mutate original inputs after construction
   originalConfig.working_dir = "MUTATED";
   originalParams.demonstrativeType = "MUTATED";
   originalParams.options!.fromFile = "MUTATED.md";
-  
+
   if (result.ok) {
     // Verify internal state is isolated from mutations
     const pathResult = result.data.getPath();
@@ -196,16 +199,16 @@ Deno.test("0_architecture: Immutability constraint - input parameter isolation",
 Deno.test("0_architecture: Type safety constraint - compile-time guarantees", () => {
   // ARCHITECTURE CONSTRAINT: Type system must prevent invalid usage
   // TypeScript types must encode architectural constraints
-  
+
   const result = InputFilePathResolver.create(validConfig, validLegacyParams);
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     // Verify method availability on successful construction
     assertEquals(typeof result.data.getPath, "function");
     assertEquals(typeof result.data.getPathLegacy, "function");
     assertEquals(typeof result.data.getPathLegacyUnsafe, "function");
-    
+
     // Verify methods return appropriate types
     const pathResult = result.data.getPath();
     assertExists(pathResult);
@@ -216,19 +219,22 @@ Deno.test("0_architecture: Type safety constraint - compile-time guarantees", ()
 Deno.test("0_architecture: Factory pattern constraint - single creation pathway", () => {
   // ARCHITECTURE CONSTRAINT: Only one way to create instances
   // Factory pattern must be the exclusive creation mechanism
-  
+
   // Verify static factory method exists
   assertEquals(typeof InputFilePathResolver.create, "function");
-  
+
   // Verify no other static creation methods
   const staticMethods = Object.getOwnPropertyNames(InputFilePathResolver)
-    .filter(name => typeof (InputFilePathResolver as any)[name] === "function")
-    .filter(name => name !== "create");
-  
+    .filter((name) => typeof (InputFilePathResolver as any)[name] === "function")
+    .filter((name) => name !== "create");
+
   // Should only have standard constructor-related methods and validation helpers
   const allowedMethods = ["length", "name", "prototype", "validateParameterStructure"];
   for (const method of staticMethods) {
-    assertEquals(allowedMethods.includes(method), true, 
-      `Unexpected static method found: ${method}. Factory pattern violation.`);
+    assertEquals(
+      allowedMethods.includes(method),
+      true,
+      `Unexpected static method found: ${method}. Factory pattern violation.`,
+    );
   }
 });

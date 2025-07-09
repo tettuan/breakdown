@@ -21,7 +21,7 @@ export type TwoParamsOutputError = {
 
 /**
  * Two Params Output Processor
- * 
+ *
  * Responsible for writing processed output to standard output.
  * Encapsulates infrastructure access (Deno.stdout) within processor layer.
  */

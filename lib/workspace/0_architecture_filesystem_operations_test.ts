@@ -1,45 +1,45 @@
 /**
  * @fileoverview Architecture tests for workspace filesystem operations
- * 
+ *
  * Tests the fundamental filesystem operation constraints that support
  * the workspace domain's responsibility for safe workspace management.
  * These are architecture tests that validate the core principles and
  * constraints of the workspace subsystem.
- * 
+ *
  * Architecture tests focus on:
  * - Workspace directory structure constraints
  * - Result-based error handling for workspace operations
  * - Type safety of workspace configuration contracts
  * - Proper workspace resource management
- * 
+ *
  * @module
  */
 
 import { assertEquals, assertExists, assertNotEquals } from "@std/assert";
 import { join } from "@std/path";
-import { ok, error, type Result } from "../types/result.ts";
+import { error, ok, type Result } from "../types/result.ts";
 import {
-  type WorkspaceOptions,
   type WorkspaceConfig,
-  type WorkspaceStructure,
   type WorkspaceConfigManager,
+  type WorkspaceOptions,
   type WorkspacePaths,
+  type WorkspaceStructure,
 } from "./types.ts";
 import {
-  type WorkspaceError,
-  type WorkspaceInitError,
-  type WorkspaceConfigError,
-  type WorkspacePathError,
-  type WorkspaceDirectoryError,
-  createWorkspaceInitError,
   createWorkspaceConfigError,
-  createWorkspacePathError,
   createWorkspaceDirectoryError,
-  isWorkspaceInitError,
+  createWorkspaceInitError,
+  createWorkspacePathError,
   isWorkspaceConfigError,
-  isWorkspacePathError,
   isWorkspaceDirectoryError,
   isWorkspaceError,
+  isWorkspaceInitError,
+  isWorkspacePathError,
+  type WorkspaceConfigError,
+  type WorkspaceDirectoryError,
+  type WorkspaceError,
+  type WorkspaceInitError,
+  type WorkspacePathError,
 } from "./errors.ts";
 
 /**
@@ -50,18 +50,18 @@ Deno.test("Workspace Architecture: WorkspaceOptions follows interface contract",
   const minimalOptions: WorkspaceOptions = {
     workingDir: ".agent/breakdown",
   };
-  
+
   assertEquals(minimalOptions.workingDir, ".agent/breakdown");
   assertEquals(minimalOptions.promptBaseDir, undefined);
   assertEquals(minimalOptions.schemaBaseDir, undefined);
-  
+
   // Test optional fields constraint
   const fullOptions: WorkspaceOptions = {
     workingDir: "/custom/workspace",
     promptBaseDir: "templates/prompts",
     schemaBaseDir: "schemas/validation",
   };
-  
+
   assertEquals(fullOptions.workingDir, "/custom/workspace");
   assertEquals(fullOptions.promptBaseDir, "templates/prompts");
   assertEquals(fullOptions.schemaBaseDir, "schemas/validation");
@@ -78,11 +78,11 @@ Deno.test("Workspace Architecture: WorkspaceConfig follows persistent structure"
       base_dir: "lib/breakdown/schema",
     },
   };
-  
+
   assertEquals(config.working_dir, ".agent/breakdown");
   assertEquals(config.app_prompt.base_dir, "lib/breakdown/prompts");
   assertEquals(config.app_schema.base_dir, "lib/breakdown/schema");
-  
+
   // Architecture constraint: nested structure integrity
   assertExists(config.app_prompt);
   assertExists(config.app_schema);
@@ -99,19 +99,19 @@ Deno.test("Workspace Architecture: Error types follow discriminated union patter
   const configError = createWorkspaceConfigError("Configuration invalid");
   const pathError = createWorkspacePathError("Path resolution failed");
   const dirError = createWorkspaceDirectoryError("Directory creation failed");
-  
+
   // Architecture constraint: unique type discriminators
   assertEquals(initError.type, "workspace_init_error");
   assertEquals(configError.type, "workspace_config_error");
   assertEquals(pathError.type, "workspace_path_error");
   assertEquals(dirError.type, "workspace_directory_error");
-  
+
   // Architecture constraint: unique error codes
   assertEquals(initError.code, "WORKSPACE_INIT_ERROR");
   assertEquals(configError.code, "WORKSPACE_CONFIG_ERROR");
   assertEquals(pathError.code, "WORKSPACE_PATH_ERROR");
   assertEquals(dirError.code, "WORKSPACE_DIRECTORY_ERROR");
-  
+
   // Architecture constraint: all errors have messages
   assertExists(initError.message);
   assertExists(configError.message);
@@ -124,25 +124,25 @@ Deno.test("Workspace Architecture: Type guards work correctly", () => {
   const configError = createWorkspaceConfigError("Config failed");
   const pathError = createWorkspacePathError("Path failed");
   const dirError = createWorkspaceDirectoryError("Dir failed");
-  
+
   // Test positive cases
   assertEquals(isWorkspaceInitError(initError), true);
   assertEquals(isWorkspaceConfigError(configError), true);
   assertEquals(isWorkspacePathError(pathError), true);
   assertEquals(isWorkspaceDirectoryError(dirError), true);
-  
+
   // Test negative cases (cross-validation)
   assertEquals(isWorkspaceInitError(configError), false);
   assertEquals(isWorkspaceConfigError(pathError), false);
   assertEquals(isWorkspacePathError(dirError), false);
   assertEquals(isWorkspaceDirectoryError(initError), false);
-  
+
   // Test general workspace error detection
   assertEquals(isWorkspaceError(initError), true);
   assertEquals(isWorkspaceError(configError), true);
   assertEquals(isWorkspaceError(pathError), true);
   assertEquals(isWorkspaceError(dirError), true);
-  
+
   // Test non-workspace errors
   assertEquals(isWorkspaceError("not an error"), false);
   assertEquals(isWorkspaceError(null), false);
@@ -157,30 +157,30 @@ Deno.test("Workspace Architecture: WorkspaceStructure interface contract", () =>
   // Mock implementation to test interface constraints
   class MockWorkspaceStructure implements WorkspaceStructure {
     constructor(private workingDir: string) {}
-    
+
     async getPromptBaseDir(): Promise<string> {
       return join(this.workingDir, "prompts");
     }
-    
+
     async getSchemaBaseDir(): Promise<string> {
       return join(this.workingDir, "schemas");
     }
-    
+
     getWorkingDir(): string {
       return this.workingDir;
     }
-    
+
     async initialize(): Promise<void> {
       // Mock implementation
     }
-    
+
     async ensureDirectories(): Promise<void> {
       // Mock implementation
     }
   }
-  
+
   const structure = new MockWorkspaceStructure("/test/workspace");
-  
+
   // Test interface contract compliance
   assertEquals(structure.getWorkingDir(), "/test/workspace");
   assertExists(structure.getPromptBaseDir);
@@ -193,26 +193,26 @@ Deno.test("Workspace Architecture: WorkspaceConfigManager interface contract", (
   // Mock implementation to test interface constraints
   class MockWorkspaceConfigManager implements WorkspaceConfigManager {
     constructor(private config: WorkspaceConfig) {}
-    
+
     async getConfig(): Promise<WorkspaceConfig> {
       return this.config;
     }
-    
+
     async validateConfig(): Promise<void> {
       if (!this.config.working_dir) {
         throw createWorkspaceConfigError("Missing working_dir");
       }
     }
   }
-  
+
   const validConfig: WorkspaceConfig = {
     working_dir: ".agent/breakdown",
     app_prompt: { base_dir: "prompts" },
     app_schema: { base_dir: "schemas" },
   };
-  
+
   const manager = new MockWorkspaceConfigManager(validConfig);
-  
+
   // Test interface contract compliance
   assertExists(manager.getConfig);
   assertExists(manager.validateConfig);
@@ -226,26 +226,26 @@ Deno.test("Workspace Architecture: WorkspacePaths interface contract", () => {
       private schemaBaseDir: string,
       private workingDir: string,
     ) {}
-    
+
     resolvePromptPath(name: string): string {
       return join(this.promptBaseDir, `${name}.md`);
     }
-    
+
     resolveSchemaPath(name: string): string {
       return join(this.schemaBaseDir, `${name}.json`);
     }
-    
+
     resolveOutputPath(name: string): string {
       return join(this.workingDir, "output", name);
     }
   }
-  
+
   const paths = new MockWorkspacePaths(
     "/workspace/prompts",
     "/workspace/schemas",
     "/workspace",
   );
-  
+
   // Test path resolution contract
   assertEquals(
     paths.resolvePromptPath("test"),
@@ -266,12 +266,12 @@ Deno.test("Workspace Architecture: WorkspacePaths interface contract", () => {
  */
 Deno.test("Workspace Architecture: Error objects are immutable", () => {
   const error = createWorkspaceInitError("Test error");
-  
+
   // Architecture constraint: readonly properties
   assertEquals(error.message, "Test error");
   assertEquals(error.code, "WORKSPACE_INIT_ERROR");
   assertEquals(error.type, "workspace_init_error");
-  
+
   // Attempt to modify should be prevented by TypeScript (readonly)
   // This is enforced at compile time
   assertExists(error.message);
@@ -281,15 +281,15 @@ Deno.test("Workspace Architecture: Error objects are immutable", () => {
 
 Deno.test("Workspace Architecture: Error creation is deterministic", () => {
   const message = "Consistent error message";
-  
+
   const error1 = createWorkspaceInitError(message);
   const error2 = createWorkspaceInitError(message);
-  
+
   // Architecture constraint: same inputs produce equivalent outputs
   assertEquals(error1.message, error2.message);
   assertEquals(error1.code, error2.code);
   assertEquals(error1.type, error2.type);
-  
+
   // But they should be different objects (not referentially equal)
   // Use strict equality to check reference equality
   assertEquals(error1 === error2, false);

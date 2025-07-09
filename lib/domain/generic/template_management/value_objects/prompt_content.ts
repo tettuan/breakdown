@@ -1,6 +1,6 @@
 /**
  * @fileoverview Prompt Content Value Object
- * 
+ *
  * Represents prompt template content with validation and access methods.
  */
 
@@ -27,7 +27,7 @@ export class PromptContent {
    */
   static create(content: string): PromptContentResult {
     try {
-      if (!content || content.trim() === '') {
+      if (!content || content.trim() === "") {
         return {
           ok: false,
           error: "Prompt content cannot be empty",
@@ -36,8 +36,8 @@ export class PromptContent {
 
       // Extract variables from content (simple regex for {{variable}} pattern)
       const variableMatches = content.match(/\{\{([^}]+)\}\}/g);
-      const variables = variableMatches 
-        ? variableMatches.map(match => match.slice(2, -2).trim())
+      const variables = variableMatches
+        ? variableMatches.map((match) => match.slice(2, -2).trim())
         : [];
 
       return {
@@ -84,7 +84,7 @@ export class PromptContent {
    * Check if content is empty
    */
   isEmpty(): boolean {
-    return this.content.trim() === '';
+    return this.content.trim() === "";
   }
 
   /**
@@ -105,12 +105,12 @@ export class PromptContent {
    */
   replaceVariables(replacements: Record<string, string>): string {
     let result = this.content;
-    
+
     for (const [key, value] of Object.entries(replacements)) {
-      const pattern = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+      const pattern = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "g");
       result = result.replace(pattern, value);
     }
-    
+
     return result;
   }
 
@@ -121,14 +121,14 @@ export class PromptContent {
     if (this.content.length <= 100) {
       return this.content;
     }
-    return this.content.substring(0, 100) + '...';
+    return this.content.substring(0, 100) + "...";
   }
 
   /**
    * Count lines in content
    */
   getLineCount(): number {
-    return this.content.split('\n').length;
+    return this.content.split("\n").length;
   }
 
   /**

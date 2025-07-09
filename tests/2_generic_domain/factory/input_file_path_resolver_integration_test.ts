@@ -1,7 +1,7 @@
 /**
  * @fileoverview InputFilePathResolver Integration Tests
  * Testing path resolution coordination and factory pattern implementation
- * 
+ *
  * Integration tests verify:
  * - Input path resolution across different input types
  * - Factory pattern responsibility separation
@@ -12,7 +12,10 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { InputFilePathResolver } from "../../../lib/factory/input_file_path_resolver.ts";
-import type { PromptCliParams, PromptCliOptions } from "../../../lib/factory/prompt_variables_factory.ts";
+import type {
+  PromptCliOptions,
+  PromptCliParams,
+} from "../../../lib/factory/prompt_variables_factory.ts";
 import type { Result } from "../../../lib/types/result.ts";
 
 const logger = new BreakdownLogger("input-file-path-resolver-integration");
@@ -51,7 +54,7 @@ class InputPathResolutionService {
     params: PromptCliParams,
   ): Promise<Result<InputFilePathResolver, any>> {
     const resolverId = `${params.demonstrativeType}-${params.layerType}-${Date.now()}`;
-    
+
     try {
       const resolverResult = InputFilePathResolver.create(config, params);
       if (resolverResult.ok) {
@@ -60,9 +63,12 @@ class InputPathResolutionService {
       }
       return resolverResult;
     } catch (error) {
-      return { 
-        ok: false, 
-        error: { kind: "CreationFailed", message: error instanceof Error ? error.message : String(error) } 
+      return {
+        ok: false,
+        error: {
+          kind: "CreationFailed",
+          message: error instanceof Error ? error.message : String(error),
+        },
       };
     }
   }
@@ -80,7 +86,7 @@ class InputPathResolutionService {
       });
 
       const resolverResult = await this.createResolver(config, params);
-      
+
       if (!resolverResult.ok) {
         results.push({
           success: false,
@@ -126,7 +132,7 @@ Deno.test("InputFilePathResolver Integration: stdin input processing workflow", 
   logger.debug("Testing stdin input processing workflow");
 
   const service = new InputPathResolutionService();
-  
+
   // Test various stdin input scenarios
   const stdinTestCases = [
     {
@@ -136,9 +142,9 @@ Deno.test("InputFilePathResolver Integration: stdin input processing workflow", 
     },
     {
       name: "Piped content simulation",
-      params: createTestParams("summary", "issue", { 
+      params: createTestParams("summary", "issue", {
         fromFile: "-",
-        input_text: "Piped content from external source" 
+        input_text: "Piped content from external source",
       }),
       expectedType: "stdin",
     },
@@ -163,15 +169,19 @@ Deno.test("InputFilePathResolver Integration: stdin input processing workflow", 
     });
 
     const resolverResult = await service.createResolver(mockConfig, params);
-    
+
     assertEquals(resolverResult.ok, true, `Resolver creation should succeed for ${name}`);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true, `Path resolution should succeed for ${name}`);
-      
+
       if (pathResult.ok) {
-        assertEquals(pathResult.data.type, expectedType, `Expected type ${expectedType} for ${name}`);
+        assertEquals(
+          pathResult.data.type,
+          expectedType,
+          `Expected type ${expectedType} for ${name}`,
+        );
         assertEquals(pathResult.data.value, "-", `Expected stdin value for ${name}`);
         assertEquals(pathResult.data.exists, true, `Stdin should always exist for ${name}`);
       }
@@ -183,7 +193,7 @@ Deno.test("InputFilePathResolver Integration: file path type coordination", asyn
   logger.debug("Testing file path type coordination");
 
   const service = new InputPathResolutionService();
-  
+
   // Test coordination between different path types
   const pathTypeTestCases = [
     {
@@ -213,21 +223,27 @@ Deno.test("InputFilePathResolver Integration: file path type coordination", asyn
   ];
 
   const results = await service.processMultipleInputs(pathTypeTestCases);
-  
+
   // Verify all path types were processed
   assertEquals(results.length, pathTypeTestCases.length);
-  
+
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const testCase = pathTypeTestCases[i];
-    
+
     assertEquals(result.success, true, `Path resolution should succeed for case ${i}`);
-    
+
     if (result.success && result.path) {
-      assertEquals(result.path.type, testCase.expectedType, 
-        `Expected type ${testCase.expectedType} for case ${i}`);
-      assertEquals(result.path.exists, testCase.expectedExists,
-        `Expected exists ${testCase.expectedExists} for case ${i}`);
+      assertEquals(
+        result.path.type,
+        testCase.expectedType,
+        `Expected type ${testCase.expectedType} for case ${i}`,
+      );
+      assertEquals(
+        result.path.exists,
+        testCase.expectedExists,
+        `Expected exists ${testCase.expectedExists} for case ${i}`,
+      );
     }
   }
 
@@ -241,7 +257,7 @@ Deno.test("InputFilePathResolver Integration: configuration dependency injection
   logger.debug("Testing configuration dependency injection");
 
   const service = new InputPathResolutionService();
-  
+
   // Test different configuration scenarios
   const configVariations = [
     {
@@ -283,10 +299,10 @@ Deno.test("InputFilePathResolver Integration: configuration dependency injection
     });
 
     const resolverResult = await service.createResolver(config, params);
-    
+
     if (shouldSucceed) {
       assertEquals(resolverResult.ok, true, `Configuration ${name} should succeed`);
-      
+
       if (resolverResult.ok) {
         const pathResult = resolverResult.data.getPath();
         assertEquals(pathResult.ok, true, `Path resolution should work with ${name}`);
@@ -301,7 +317,7 @@ Deno.test("InputFilePathResolver Integration: error handling and recovery", asyn
   logger.debug("Testing error handling and recovery");
 
   const service = new InputPathResolutionService();
-  
+
   // Test various error scenarios
   const errorTestCases = [
     {
@@ -325,8 +341,8 @@ Deno.test("InputFilePathResolver Integration: error handling and recovery", asyn
     {
       name: "Extremely long path",
       config: mockConfig,
-      params: createTestParams("to", "project", { 
-        fromFile: "a".repeat(1000) + ".md" 
+      params: createTestParams("to", "project", {
+        fromFile: "a".repeat(1000) + ".md",
       }),
       expectedError: "path",
     },
@@ -334,26 +350,31 @@ Deno.test("InputFilePathResolver Integration: error handling and recovery", asyn
 
   for (const { name, config, params, expectedError } of errorTestCases) {
     logger.debug(`Testing error case: ${name}`, {
-      fromFile: params.options.fromFile ? 
-        (params.options.fromFile.length > 50 ? 
-          params.options.fromFile.substring(0, 50) + "..." : 
-          params.options.fromFile) : 
-        "undefined",
+      fromFile: params.options.fromFile
+        ? (params.options.fromFile.length > 50
+          ? params.options.fromFile.substring(0, 50) + "..."
+          : params.options.fromFile)
+        : "undefined",
       expectedErrorType: expectedError,
     });
 
     const resolverResult = await service.createResolver(config, params);
-    
+
     // Error handling should be graceful
     assertExists(resolverResult, `Result should exist for error case: ${name}`);
-    assertEquals(typeof resolverResult.ok, "boolean", 
-      `Result should have ok property for: ${name}`);
-    
+    assertEquals(
+      typeof resolverResult.ok,
+      "boolean",
+      `Result should have ok property for: ${name}`,
+    );
+
     if (!resolverResult.ok) {
       assertExists(resolverResult.error, `Error should be present for: ${name}`);
       logger.debug(`Error properly captured: ${name}`, {
         errorKind: resolverResult.error.kind,
-        hasMessage: resolverResult.error instanceof Error ? resolverResult.error.message : String(resolverResult.error),
+        hasMessage: resolverResult.error instanceof Error
+          ? resolverResult.error.message
+          : String(resolverResult.error),
       });
     }
   }
@@ -363,7 +384,7 @@ Deno.test("InputFilePathResolver Integration: factory pattern responsibility sep
   logger.debug("Testing factory pattern responsibilities");
 
   const service = new InputPathResolutionService();
-  
+
   // Test that factory properly separates creation from resolution
   const params = createTestParams("to", "project", {
     fromFile: "factory_test.md",
@@ -371,26 +392,25 @@ Deno.test("InputFilePathResolver Integration: factory pattern responsibility sep
   });
 
   const resolverResult = await service.createResolver(mockConfig, params);
-  
+
   // Factory should create resolver successfully
   assertEquals(resolverResult.ok, true, "Factory should create resolver");
-  
+
   if (resolverResult.ok) {
     const resolver = resolverResult.data;
-    
+
     // Verify factory delegates resolution to resolver
     const pathResult = resolver.getPath();
     assertExists(pathResult, "Resolver should handle path resolution");
     assertEquals(typeof pathResult.ok, "boolean", "Resolver should return Result type");
-    
+
     // Test factory doesn't expose internal implementation details
     const resolverMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(resolver))
-      .filter(name => name !== 'constructor' && typeof (resolver as any)[name] === 'function');
-    
+      .filter((name) => name !== "constructor" && typeof (resolver as any)[name] === "function");
+
     // Resolver should have minimal public interface
-    assertEquals(resolverMethods.includes('getPath'), true, 
-      "Resolver should have getPath method");
-    
+    assertEquals(resolverMethods.includes("getPath"), true, "Resolver should have getPath method");
+
     logger.debug("Factory pattern verified", {
       hasResolver: !!resolver,
       publicMethods: resolverMethods,
@@ -403,7 +423,7 @@ Deno.test("InputFilePathResolver Integration: concurrent processing", async () =
   logger.debug("Testing concurrent processing");
 
   const service = new InputPathResolutionService();
-  
+
   // Create multiple concurrent input processing requests
   const concurrentInputs = [
     {
@@ -425,10 +445,10 @@ Deno.test("InputFilePathResolver Integration: concurrent processing", async () =
   ];
 
   const startTime = performance.now();
-  
+
   // Process all inputs concurrently
   const results = await service.processMultipleInputs(concurrentInputs);
-  
+
   const endTime = performance.now();
   const duration = endTime - startTime;
 
@@ -439,30 +459,27 @@ Deno.test("InputFilePathResolver Integration: concurrent processing", async () =
   });
 
   // Verify all inputs were processed
-  assertEquals(results.length, concurrentInputs.length, 
-    "All inputs should be processed");
-  
+  assertEquals(results.length, concurrentInputs.length, "All inputs should be processed");
+
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     assertEquals(result.success, true, `Input ${i} should be processed successfully`);
-    
+
     if (result.success && result.path) {
       assertExists(result.path.value, `Input ${i} should have resolved path`);
-      assertEquals(typeof result.path.type, "string", 
-        `Input ${i} should have path type`);
+      assertEquals(typeof result.path.type, "string", `Input ${i} should have path type`);
     }
   }
 
   // Performance should be reasonable (less than 500ms total)
-  assertEquals(duration < 500, true, 
-    `Duration ${duration}ms should be less than 500ms`);
+  assertEquals(duration < 500, true, `Duration ${duration}ms should be less than 500ms`);
 });
 
 Deno.test("InputFilePathResolver Integration: memory management", async () => {
   logger.debug("Testing memory management");
 
   const service = new InputPathResolutionService();
-  
+
   // Test memory usage with multiple resolver operations
   const iterations = 100;
   const results: any[] = [];
@@ -478,7 +495,7 @@ Deno.test("InputFilePathResolver Integration: memory management", async () => {
 
     const resolverResult = await service.createResolver(mockConfig, params);
     results.push(resolverResult);
-    
+
     // Periodically clear resolvers to test cleanup
     if (i % 20 === 0) {
       service.clearResolvers();
@@ -487,21 +504,23 @@ Deno.test("InputFilePathResolver Integration: memory management", async () => {
 
   // Verify all operations completed
   assertEquals(results.length, iterations, "All iterations should complete");
-  
+
   // Verify factory doesn't accumulate excessive state
   const finalResolverCount = service.getResolverCount();
-  assertEquals(finalResolverCount <= 20, true, 
-    `Final resolver count ${finalResolverCount} should be reasonable`);
+  assertEquals(
+    finalResolverCount <= 20,
+    true,
+    `Final resolver count ${finalResolverCount} should be reasonable`,
+  );
 
   // Test resolver state independence
   for (let i = 0; i < 5; i++) {
     const params = createTestParams("summary", "task", {
       fromFile: `independence_${i}.md`,
     });
-    
+
     const resolverResult = await service.createResolver(mockConfig, params);
-    assertEquals(resolverResult.ok, true, 
-      `Independence test ${i} should succeed`);
+    assertEquals(resolverResult.ok, true, `Independence test ${i} should succeed`);
   }
 
   logger.debug("Memory management verified", {
@@ -515,7 +534,7 @@ Deno.test("InputFilePathResolver Integration: complex input scenarios", async ()
   logger.debug("Testing complex input scenarios");
 
   const service = new InputPathResolutionService();
-  
+
   // Test complex real-world scenarios
   const complexScenarios = [
     {
@@ -573,25 +592,28 @@ Deno.test("InputFilePathResolver Integration: complex input scenarios", async ()
     });
 
     const resolverResult = await service.createResolver(config, params);
-    
-    assertEquals(resolverResult.ok, true, 
-      `Complex scenario ${name} should succeed`);
-    
+
+    assertEquals(resolverResult.ok, true, `Complex scenario ${name} should succeed`);
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
-      assertEquals(pathResult.ok, true, 
-        `Path resolution should work for ${name}`);
-      
+      assertEquals(pathResult.ok, true, `Path resolution should work for ${name}`);
+
       if (pathResult.ok) {
-        assertEquals(pathResult.data.type, expectedType, 
-          `Expected type ${expectedType} for ${name}`);
-        assertExists(pathResult.data.value, 
-          `Path value should exist for ${name}`);
+        assertEquals(
+          pathResult.data.type,
+          expectedType,
+          `Expected type ${expectedType} for ${name}`,
+        );
+        assertExists(pathResult.data.value, `Path value should exist for ${name}`);
       }
     }
   }
 
   // Verify service handled all complex scenarios
-  assertEquals(service.getResolverCount(), complexScenarios.length,
-    "All complex scenarios should create resolvers");
+  assertEquals(
+    service.getResolverCount(),
+    complexScenarios.length,
+    "All complex scenarios should create resolvers",
+  );
 });

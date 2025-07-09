@@ -171,19 +171,19 @@ Deno.test("UserPromptVariables - provides individual access methods", () => {
   assertEquals(result.ok, true);
   if (result.ok) {
     const variables = result.data;
-    
+
     const getUser = variables.get("userName");
     assertEquals(getUser.ok, true);
     if (getUser.ok) {
       assertEquals(getUser.data, "太郎");
     }
-    
+
     const getProject = variables.get("projectName");
     assertEquals(getProject.ok, true);
     if (getProject.ok) {
       assertEquals(getProject.data, "マイプロジェクト");
     }
-    
+
     const getNonexistent = variables.get("nonexistent");
     assertEquals(getNonexistent.ok, false);
 
@@ -328,7 +328,7 @@ Deno.test("UserPromptVariables - immutable operations", () => {
   assertEquals(result.ok, true);
   if (result.ok) {
     const original = result.data;
-    
+
     // Test with() method
     const withResult = original.with("version", "1.0.0");
     assertEquals(withResult.ok, true);
@@ -385,7 +385,7 @@ Deno.test("UserPromptVariables - with() validates new variables", () => {
   assertEquals(createResult.ok, true);
   if (createResult.ok) {
     const variables = createResult.data;
-    
+
     const emptyKeyResult = variables.with("", "value");
     assertEquals(emptyKeyResult.ok, false);
     if (!emptyKeyResult.ok) {
@@ -426,7 +426,7 @@ Deno.test("UserPromptVariables - merge() validates merged variables", () => {
   assertEquals(createResult.ok, true);
   if (createResult.ok) {
     const variables = createResult.data;
-    
+
     const emptyKeyResult = variables.merge({
       "": "value",
     });

@@ -1,9 +1,9 @@
 /**
  * @fileoverview Validator Module 1_behavior Tests - Module Behavior and Integration Validation
- * 
+ *
  * Validator module の動作とモジュール統合の検証。
  * エクスポートされた機能の動作、型の実用性、実際の使用パターンの検証。
- * 
+ *
  * テスト構成:
  * - エクスポートされた機能の動作確認
  * - 型の実用性とインスタンス化
@@ -12,14 +12,14 @@
  * - 実際の使用シナリオの検証
  */
 
-import { assertEquals, assertExists, assert } from "https://deno.land/std@0.210.0/assert/mod.ts";
+import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
 import {
   type ConfigValidator,
   ParameterValidator,
   type ValidatedOptions,
   type ValidatedParams,
-  type ValidationMetadata,
   type ValidationError,
+  type ValidationMetadata,
 } from "./mod.ts";
 
 // =============================================================================
@@ -33,7 +33,7 @@ function createMockConfigValidator(): ConfigValidator {
         return { ok: true, data: undefined };
       }
       return { ok: false, error: ["Invalid configuration"] };
-    }
+    },
   };
 }
 
@@ -42,19 +42,19 @@ function createMockTypePatternProvider() {
     test: (value: string) => /^(to|summary|defect)$/.test(value),
     getPattern: () => "^(to|summary|defect)$",
     toString: () => "/^(to|summary|defect)$/",
-    getDirectivePattern: () => "^(to|summary|defect)$"
+    getDirectivePattern: () => "^(to|summary|defect)$",
   };
-  
+
   const layerPattern = {
     test: (value: string) => /^(project|issue|task)$/.test(value),
     getPattern: () => "^(project|issue|task)$",
     toString: () => "/^(project|issue|task)$/",
-    getLayerTypePattern: () => "^(project|issue|task)$"
+    getLayerTypePattern: () => "^(project|issue|task)$",
   };
-  
+
   return {
     getDirectivePattern: () => directivePattern as any,
-    getLayerTypePattern: () => layerPattern as any
+    getLayerTypePattern: () => layerPattern as any,
   };
 }
 
@@ -65,13 +65,13 @@ function createMockTypePatternProvider() {
 Deno.test("1_behavior - ParameterValidator can be instantiated with dependencies", () => {
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  
+
   // Should be able to create instance
   const validator = new ParameterValidator(patternProvider, configValidator);
-  
+
   assertExists(validator);
   assert(validator instanceof ParameterValidator);
-  
+
   // Should have expected methods
   assertExists(validator.validateTwoParams);
   assertEquals(typeof validator.validateTwoParams, "function");
@@ -79,12 +79,12 @@ Deno.test("1_behavior - ParameterValidator can be instantiated with dependencies
 
 Deno.test("1_behavior - ConfigValidator interface works with mock implementation", () => {
   const configValidator = createMockConfigValidator();
-  
+
   // Should validate valid config
   const validResult = configValidator.validateConfig({ some: "config" });
   assert(validResult.ok);
   assertEquals(validResult.data, undefined);
-  
+
   // Should reject invalid config
   const invalidResult = configValidator.validateConfig(null);
   assert(!invalidResult.ok);
@@ -97,24 +97,24 @@ Deno.test("1_behavior - ValidatedOptions type supports all validation scenarios"
   // Minimal valid options
   const minimalOptions: ValidatedOptions = {
     inputPath: "/path/to/input",
-    outputPath: "/path/to/output"
+    outputPath: "/path/to/output",
   };
-  
+
   assertEquals(minimalOptions.inputPath, "/path/to/input");
   assertEquals(minimalOptions.outputPath, "/path/to/output");
   assertEquals(minimalOptions.schemaPath, undefined);
   assertEquals(minimalOptions.promptPath, undefined);
   assertEquals(minimalOptions.stdin, undefined);
-  
+
   // Full options with all fields
   const fullOptions: ValidatedOptions = {
     inputPath: "/path/to/input",
     outputPath: "/path/to/output",
     schemaPath: "/path/to/schema.json",
     promptPath: "/path/to/prompt.md",
-    stdin: "input data from stdin"
+    stdin: "input data from stdin",
   };
-  
+
   assertEquals(fullOptions.inputPath, "/path/to/input");
   assertEquals(fullOptions.outputPath, "/path/to/output");
   assertEquals(fullOptions.schemaPath, "/path/to/schema.json");
@@ -125,26 +125,26 @@ Deno.test("1_behavior - ValidatedOptions type supports all validation scenarios"
 Deno.test("1_behavior - ValidatedParams type integrates all validation components", () => {
   const mockDirective = { getValue: () => "to" };
   const mockLayer = { getValue: () => "project" };
-  
+
   const validatedParams: ValidatedParams = {
     directive: mockDirective as any,
     layer: mockLayer as any,
     options: {
       inputPath: "/input",
       outputPath: "/output",
-      schemaPath: "/schema.json"
+      schemaPath: "/schema.json",
     },
     customVariables: {
       "var1": "value1",
-      "var2": "value2"
+      "var2": "value2",
     },
     metadata: {
       validatedAt: new Date(),
       source: "TwoParams_Result",
-      profileName: "test-profile"
-    }
+      profileName: "test-profile",
+    },
   };
-  
+
   // Should maintain all components
   assertEquals(validatedParams.directive.getValue(), "to");
   assertEquals(validatedParams.layer.getValue(), "project");
@@ -156,35 +156,35 @@ Deno.test("1_behavior - ValidatedParams type integrates all validation component
 
 Deno.test("1_behavior - ValidationMetadata tracks validation lifecycle", () => {
   const startTime = new Date();
-  
+
   // Create metadata for different sources
   const twoParamsMetadata: ValidationMetadata = {
     validatedAt: new Date(),
     source: "TwoParams_Result",
-    profileName: "prod"
+    profileName: "prod",
   };
-  
+
   const oneParamsMetadata: ValidationMetadata = {
     validatedAt: new Date(),
-    source: "OneParamsResult"
+    source: "OneParamsResult",
   };
-  
+
   const zeroParamsMetadata: ValidationMetadata = {
     validatedAt: new Date(),
     source: "ZeroParamsResult",
-    profileName: "dev"
+    profileName: "dev",
   };
-  
+
   // Should track timing
   assert(twoParamsMetadata.validatedAt >= startTime);
   assert(oneParamsMetadata.validatedAt >= startTime);
   assert(zeroParamsMetadata.validatedAt >= startTime);
-  
+
   // Should distinguish sources
   assertEquals(twoParamsMetadata.source, "TwoParams_Result");
   assertEquals(oneParamsMetadata.source, "OneParamsResult");
   assertEquals(zeroParamsMetadata.source, "ZeroParamsResult");
-  
+
   // Should handle optional profile
   assertEquals(twoParamsMetadata.profileName, "prod");
   assertEquals(oneParamsMetadata.profileName, undefined);
@@ -197,54 +197,54 @@ Deno.test("1_behavior - ValidationError discriminated union enables proper error
     kind: "InvalidParamsType",
     expected: "two",
     received: "one",
-    context: { error: "Invalid parameters structure" }
+    context: { error: "Invalid parameters structure" },
   };
-  
+
   const pathError: ValidationError = {
-    kind: "PathValidationFailed", 
+    kind: "PathValidationFailed",
     path: "/some/path",
     reason: "Path does not exist",
-    context: {}
+    context: {},
   };
-  
+
   const directiveError: ValidationError = {
     kind: "InvalidDirectiveType",
     value: "invalid",
     validPattern: "^(to|summary|defect)$",
-    context: { error: "Cannot normalize options" }
+    context: { error: "Cannot normalize options" },
   };
-  
+
   const variableError: ValidationError = {
     kind: "CustomVariableInvalid",
     key: "var1",
     reason: "Invalid custom variable",
-    context: {}
+    context: {},
   };
-  
+
   const configError: ValidationError = {
     kind: "ConfigValidationFailed",
     errors: ["Invalid configuration"],
-    context: {}
+    context: {},
   };
-  
+
   // Error handling function
   function handleValidationError(error: ValidationError): string {
     switch (error.kind) {
       case "InvalidParamsType":
-        return `Params error: ${error.context?.error || 'Invalid params type'}`;
+        return `Params error: ${error.context?.error || "Invalid params type"}`;
       case "PathValidationFailed":
         return `Path error: ${error.reason}`;
       case "InvalidDirectiveType":
-        return `Options error: ${error.context?.error || 'Invalid directive'}`;
+        return `Options error: ${error.context?.error || "Invalid directive"}`;
       case "CustomVariableInvalid":
         return `Variable error: ${error.reason}`;
       case "ConfigValidationFailed":
-        return `Config error: ${error.errors.join(', ')}`;
+        return `Config error: ${error.errors.join(", ")}`;
       default:
         return `Unknown error`;
     }
   }
-  
+
   // Should handle all error types properly
   assertEquals(handleValidationError(paramsError), "Params error: Invalid parameters structure");
   assertEquals(handleValidationError(pathError), "Path error: Path does not exist");
@@ -257,41 +257,41 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
   // Simulate a complete validation workflow
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  
+
   // 1. Create validator instance
   const validator = new ParameterValidator(patternProvider, configValidator);
   assertExists(validator);
-  
+
   // 2. Prepare validation input
   const mockTwoParamsResult = {
     type: "two" as const,
     demonstrativeType: "to",
-    layerType: "project", 
+    layerType: "project",
     params: ["to", "project"],
     options: {
       input: "/input/file.txt",
-      output: "/output/file.txt"
-    }
+      output: "/output/file.txt",
+    },
   };
-  
+
   // 3. Validate (would typically call validator.validate)
   // Note: This is a mock test of the workflow structure
-  
+
   // 4. Create expected result structure
   const expectedValidatedParams: ValidatedParams = {
     directive: { getValue: () => "to" } as any,
     layer: { getValue: () => "project" } as any,
     options: {
       inputPath: "/input/file.txt",
-      outputPath: "/output/file.txt"
+      outputPath: "/output/file.txt",
     },
     customVariables: {},
     metadata: {
       validatedAt: new Date(),
-      source: "TwoParams_Result"
-    }
+      source: "TwoParams_Result",
+    },
   };
-  
+
   // Should have proper structure for workflow
   assertExists(expectedValidatedParams.directive);
   assertExists(expectedValidatedParams.layer);
@@ -304,47 +304,47 @@ Deno.test("1_behavior - Type exports support runtime type checking patterns", ()
   // Runtime type guards
   function isValidatedOptions(obj: unknown): obj is ValidatedOptions {
     return obj !== null &&
-           typeof obj === "object" &&
-           "inputPath" in obj &&
-           "outputPath" in obj &&
-           typeof (obj as any).inputPath === "string" &&
-           typeof (obj as any).outputPath === "string";
+      typeof obj === "object" &&
+      "inputPath" in obj &&
+      "outputPath" in obj &&
+      typeof (obj as any).inputPath === "string" &&
+      typeof (obj as any).outputPath === "string";
   }
-  
+
   function isValidationMetadata(obj: unknown): obj is ValidationMetadata {
     return obj !== null &&
-           typeof obj === "object" &&
-           "validatedAt" in obj &&
-           "source" in obj &&
-           (obj as any).validatedAt instanceof Date &&
-           ["TwoParams_Result", "OneParamsResult", "ZeroParamsResult"].includes((obj as any).source);
+      typeof obj === "object" &&
+      "validatedAt" in obj &&
+      "source" in obj &&
+      (obj as any).validatedAt instanceof Date &&
+      ["TwoParams_Result", "OneParamsResult", "ZeroParamsResult"].includes((obj as any).source);
   }
-  
+
   // Test valid objects
   const validOptions = {
     inputPath: "/input",
-    outputPath: "/output"
+    outputPath: "/output",
   };
-  
+
   const validMetadata = {
     validatedAt: new Date(),
-    source: "TwoParams_Result" as const
+    source: "TwoParams_Result" as const,
   };
-  
+
   assert(isValidatedOptions(validOptions));
   assert(isValidationMetadata(validMetadata));
-  
+
   // Test invalid objects
   const invalidOptions = {
-    inputPath: "/input"
+    inputPath: "/input",
     // Missing outputPath
   };
-  
+
   const invalidMetadata = {
     validatedAt: new Date(),
-    source: "InvalidSource"
+    source: "InvalidSource",
   };
-  
+
   assert(!isValidatedOptions(invalidOptions));
   assert(!isValidationMetadata(invalidMetadata));
 });
@@ -352,49 +352,49 @@ Deno.test("1_behavior - Type exports support runtime type checking patterns", ()
 Deno.test("1_behavior - Error types enable comprehensive error categorization", () => {
   // Collect different types of errors
   const errors: ValidationError[] = [];
-  
+
   // Simulate various error scenarios
   errors.push({
     kind: "InvalidParamsType",
     expected: "two",
     received: "one",
-    context: { message: "Params validation failed" }
+    context: { message: "Params validation failed" },
   });
-  
+
   errors.push({
-    kind: "PathValidationFailed", 
+    kind: "PathValidationFailed",
     path: "/some/file",
     reason: "File not found",
-    context: {}
+    context: {},
   });
-  
+
   errors.push({
     kind: "InvalidDirectiveType",
     value: "unknown_directive",
     validPattern: "^(to|summary|defect)$",
-    context: {}
+    context: {},
   });
-  
+
   // Should categorize errors properly
   assertEquals(errors.length, 3);
   assertEquals(errors[0].kind, "InvalidParamsType");
   assertEquals(errors[1].kind, "PathValidationFailed");
   assertEquals(errors[2].kind, "InvalidDirectiveType");
-  
+
   // Should enable error-specific handling
-  const errorMessages = errors.map(error => {
+  const errorMessages = errors.map((error) => {
     switch (error.kind) {
       case "InvalidParamsType":
-        return `${error.kind}: ${error.context?.message || 'Invalid params type'}`;
+        return `${error.kind}: ${error.context?.message || "Invalid params type"}`;
       case "PathValidationFailed":
         return `${error.kind}: ${error.reason}`;
-      case "InvalidDirectiveType": 
+      case "InvalidDirectiveType":
         return `${error.kind}: directive = ${error.value}`;
       default:
         return `Unknown error`;
     }
   });
-  
+
   assertEquals(errorMessages[0], "InvalidParamsType: Params validation failed");
   assertEquals(errorMessages[1], "PathValidationFailed: File not found");
   assertEquals(errorMessages[2], "InvalidDirectiveType: directive = unknown_directive");
@@ -408,22 +408,22 @@ Deno.test("1_behavior - Module supports dependency injection patterns", () => {
         return { ok: false, error: ["Config must be an object"] };
       }
       return { ok: true, data: undefined };
-    }
+    },
   };
-  
+
   const lenientValidator: ConfigValidator = {
-    validateConfig: () => ({ ok: true, data: undefined })
+    validateConfig: () => ({ ok: true, data: undefined }),
   };
-  
+
   const patternProvider = createMockTypePatternProvider();
-  
+
   // Should work with different validator implementations
   const strictValidatorInstance = new ParameterValidator(patternProvider, strictValidator);
   const lenientValidatorInstance = new ParameterValidator(patternProvider, lenientValidator);
-  
+
   assertExists(strictValidatorInstance);
   assertExists(lenientValidatorInstance);
-  
+
   // Both should be valid ParameterValidator instances
   assert(strictValidatorInstance instanceof ParameterValidator);
   assert(lenientValidatorInstance instanceof ParameterValidator);
@@ -431,28 +431,28 @@ Deno.test("1_behavior - Module supports dependency injection patterns", () => {
 
 Deno.test("1_behavior - Validation metadata enables audit trails", () => {
   const validations: ValidationMetadata[] = [];
-  
+
   // Simulate multiple validations
   for (let i = 0; i < 3; i++) {
     validations.push({
       validatedAt: new Date(Date.now() + i * 1000),
       source: i === 0 ? "TwoParams_Result" : i === 1 ? "OneParamsResult" : "ZeroParamsResult",
-      profileName: `profile-${i}`
+      profileName: `profile-${i}`,
     });
   }
-  
+
   // Should track validation history
   assertEquals(validations.length, 3);
-  
+
   // Should have chronological ordering
   assert(validations[0].validatedAt < validations[1].validatedAt);
   assert(validations[1].validatedAt < validations[2].validatedAt);
-  
+
   // Should distinguish validation sources
   assertEquals(validations[0].source, "TwoParams_Result");
   assertEquals(validations[1].source, "OneParamsResult");
   assertEquals(validations[2].source, "ZeroParamsResult");
-  
+
   // Should track profile context
   assertEquals(validations[0].profileName, "profile-0");
   assertEquals(validations[1].profileName, "profile-1");

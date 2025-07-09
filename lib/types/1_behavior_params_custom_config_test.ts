@@ -1,27 +1,24 @@
 /**
  * @fileoverview Behavior tests for ParamsCustomConfig
- * 
+ *
  * Tests the behavioral aspects of ParamsCustomConfig including:
  * - Configuration creation and merging logic
  * - Override behaviors and precedence
  * - Error handling scenarios
  * - Missing configuration detection
- * 
+ *
  * @module types/params_custom_config_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import {
-  ConfigError,
-  ParamsCustomConfig,
-} from "./params_custom_config.ts";
+import { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
 import { ResultStatus } from "./enums.ts";
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";
 
 Deno.test("ParamsCustomConfig - Behavior: create returns undefined for empty config", () => {
   const emptyConfig = {};
   const result = ParamsCustomConfig.create(emptyConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
   if (result.status === ResultStatus.SUCCESS) {
     assertEquals(result.data, undefined);
@@ -34,9 +31,9 @@ Deno.test("ParamsCustomConfig - Behavior: create returns undefined for missing b
       someValue: "test",
     },
   };
-  
+
   const result = ParamsCustomConfig.create(configWithoutBreakdown);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
   if (result.status === ResultStatus.SUCCESS) {
     assertEquals(result.data, undefined);
@@ -59,22 +56,25 @@ Deno.test("ParamsCustomConfig - Behavior: create handles partial params override
   };
 
   const result = ParamsCustomConfig.create(partialConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Should override demonstrativeType
     assertEquals(result.data.params.two.demonstrativeType.pattern, "^(custom|test)$");
-    assertEquals(result.data.params.two.demonstrativeType.errorMessage, "Custom demonstrative error");
-    
+    assertEquals(
+      result.data.params.two.demonstrativeType.errorMessage,
+      "Custom demonstrative error",
+    );
+
     // Should preserve default layerType
     assertEquals(
       result.data.params.two.layerType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern
+      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern,
     );
     assertEquals(
       result.data.params.two.layerType.errorMessage,
-      DEFAULT_CUSTOM_CONFIG.params.two.layerType.errorMessage
+      DEFAULT_CUSTOM_CONFIG.params.two.layerType.errorMessage,
     );
   }
 });
@@ -98,9 +98,9 @@ Deno.test("ParamsCustomConfig - Behavior: create handles complete params overrid
   };
 
   const result = ParamsCustomConfig.create(completeConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     assertEquals(result.data.params.two.demonstrativeType.pattern, "^custom_demo$");
     assertEquals(result.data.params.two.demonstrativeType.errorMessage, "Custom demo error");
@@ -122,9 +122,9 @@ Deno.test("ParamsCustomConfig - Behavior: create handles options override", () =
   };
 
   const result = ParamsCustomConfig.create(configWithOptions);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     assertEquals(result.data.options.customVariables.pattern, "^custom-.*$");
     assertEquals(result.data.options.customVariables.description, "Custom variables pattern");
@@ -150,19 +150,19 @@ Deno.test("ParamsCustomConfig - Behavior: create handles validation override", (
   };
 
   const result = ParamsCustomConfig.create(configWithValidation);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     assertEquals(result.data.validation.zero.allowedOptions, ["--custom-help", "--custom-version"]);
     assertEquals(result.data.validation.zero.allowCustomVariables, true);
     assertEquals(result.data.validation.one.allowedOptions, ["--from", "--output"]);
     assertEquals(result.data.validation.one.allowCustomVariables, false);
-    
+
     // Non-overridden section should use defaults
     assertEquals(
       result.data.validation.two.allowedOptions,
-      DEFAULT_CUSTOM_CONFIG.validation.two.allowedOptions
+      DEFAULT_CUSTOM_CONFIG.validation.two.allowedOptions,
     );
   }
 });
@@ -179,9 +179,9 @@ Deno.test("ParamsCustomConfig - Behavior: create handles errorHandling override"
   };
 
   const result = ParamsCustomConfig.create(configWithErrorHandling);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     assertEquals(result.data.errorHandling.unknownOption, "warn");
     assertEquals(result.data.errorHandling.duplicateOption, "ignore");
@@ -207,29 +207,29 @@ Deno.test("ParamsCustomConfig - Behavior: create handles mixed section overrides
   };
 
   const result = ParamsCustomConfig.create(mixedConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Params override should work
     assertEquals(result.data.params.two.demonstrativeType.pattern, "^mixed$");
     assertEquals(result.data.params.two.demonstrativeType.errorMessage, "Mixed error");
-    
+
     // ErrorHandling override should work
     assertEquals(result.data.errorHandling.unknownOption, "warn");
-    
+
     // Non-overridden sections should use defaults
     assertEquals(
       result.data.params.two.layerType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern
+      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern,
     );
     assertEquals(
       result.data.errorHandling.duplicateOption,
-      DEFAULT_CUSTOM_CONFIG.errorHandling.duplicateOption
+      DEFAULT_CUSTOM_CONFIG.errorHandling.duplicateOption,
     );
     assertEquals(
       result.data.options.customVariables.pattern,
-      DEFAULT_CUSTOM_CONFIG.options.customVariables.pattern
+      DEFAULT_CUSTOM_CONFIG.options.customVariables.pattern,
     );
   }
 });
@@ -250,16 +250,16 @@ Deno.test("ParamsCustomConfig - Behavior: create ignores invalid field types", (
   };
 
   const result = ParamsCustomConfig.create(invalidConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid demonstrativeType should be ignored, default should be used
     assertEquals(
       result.data.params.two.demonstrativeType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern
+      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern,
     );
-    
+
     // Valid layerType should be used
     assertEquals(result.data.params.two.layerType.pattern, "valid_pattern");
     assertEquals(result.data.params.two.layerType.errorMessage, "valid error");
@@ -278,16 +278,16 @@ Deno.test("ParamsCustomConfig - Behavior: create ignores invalid errorHandling v
   };
 
   const result = ParamsCustomConfig.create(invalidErrorHandlingConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid value should be ignored, default should be used
     assertEquals(
       result.data.errorHandling.unknownOption,
-      DEFAULT_CUSTOM_CONFIG.errorHandling.unknownOption
+      DEFAULT_CUSTOM_CONFIG.errorHandling.unknownOption,
     );
-    
+
     // Valid values should be used
     assertEquals(result.data.errorHandling.duplicateOption, "warn");
     assertEquals(result.data.errorHandling.emptyValue, "error");
@@ -314,16 +314,16 @@ Deno.test("ParamsCustomConfig - Behavior: create handles deeply nested invalid s
   };
 
   const result = ParamsCustomConfig.create(deeplyInvalidConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid demonstrativeType should be ignored
     assertEquals(
       result.data.params.two.demonstrativeType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern
+      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern,
     );
-    
+
     // Valid layerType should be used (extra fields ignored)
     assertEquals(result.data.params.two.layerType.pattern, "valid");
     assertEquals(result.data.params.two.layerType.errorMessage, "valid");
@@ -345,29 +345,29 @@ Deno.test("ParamsCustomConfig - Behavior: create preserves all defaults for unsp
   };
 
   const result = ParamsCustomConfig.create(minimalConfig);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Specified override should work
     assertEquals(result.data.params.two.demonstrativeType.pattern, "^minimal$");
-    
+
     // All other sections should match defaults exactly
     assertEquals(
       JSON.stringify(result.data.options),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.options)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.options),
     );
     assertEquals(
       JSON.stringify(result.data.validation),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.validation)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.validation),
     );
     assertEquals(
       JSON.stringify(result.data.errorHandling),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.errorHandling)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.errorHandling),
     );
     assertEquals(
       result.data.params.two.layerType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern
+      DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern,
     );
   }
 });
@@ -387,22 +387,22 @@ Deno.test("ParamsCustomConfig - Behavior: create handles null and undefined valu
   };
 
   const result = ParamsCustomConfig.create(configWithNulls);
-  
+
   assertEquals(result.status, ResultStatus.SUCCESS);
-  
+
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Should use defaults for null/undefined sections
     assertEquals(
       JSON.stringify(result.data.params.two),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.params.two)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.params.two),
     );
     assertEquals(
       JSON.stringify(result.data.options),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.options)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.options),
     );
     assertEquals(
       JSON.stringify(result.data.validation),
-      JSON.stringify(DEFAULT_CUSTOM_CONFIG.validation)
+      JSON.stringify(DEFAULT_CUSTOM_CONFIG.validation),
     );
   }
 });

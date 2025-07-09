@@ -20,7 +20,11 @@
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import { createWorkspaceConfigError, createWorkspaceInitError, WorkspaceConfigError } from "./errors.ts";
+import {
+  createWorkspaceConfigError,
+  createWorkspaceInitError,
+  WorkspaceConfigError,
+} from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";

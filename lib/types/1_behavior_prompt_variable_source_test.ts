@@ -1,12 +1,12 @@
 /**
  * @fileoverview Behavior tests for PromptVariableSource
- * 
+ *
  * Tests the behavioral aspects of PromptVariableSource including:
  * - Factory method behaviors
  * - Merge priority logic
  * - Validation logic
  * - Data transformation behaviors
- * 
+ *
  * @module types/prompt_variable_source_test
  */
 
@@ -95,10 +95,10 @@ Deno.test("PromptVariableSource - Behavior: merge respects priority order", () =
   // CLI should win for directive and layer
   assertEquals(merged.directive, "cli-directive");
   assertEquals(merged.layer, "cli-layer");
-  
+
   // STDIN content should be preserved
   assertEquals(merged.stdinContent, "stdin content");
-  
+
   // Merged metadata
   assertEquals(merged.metadata?.source, DataSource.MERGED);
 });
@@ -119,10 +119,10 @@ Deno.test("PromptVariableSource - Behavior: merge handles partial overrides", ()
 
   // CLI directive should override
   assertEquals(merged.directive, "cli-directive");
-  
+
   // Config layer should remain (CLI didn't specify)
   assertEquals(merged.layer, "config-layer");
-  
+
   // CLI user variables should be present
   assertEquals(merged.userVariables?.cliVar, "cliValue");
 });
@@ -179,7 +179,7 @@ Deno.test("PromptVariableSource - Behavior: validateSource rejects missing direc
 
   const result = validateSource(invalidSource);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals(result.error.length, 1);
     assertEquals(result.error[0].field, "directive");
@@ -196,7 +196,7 @@ Deno.test("PromptVariableSource - Behavior: validateSource rejects missing input
 
   const result = validateSource(invalidSource);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals(result.error.length, 1);
     assertEquals(result.error[0].field, "inputFile");
@@ -212,11 +212,11 @@ Deno.test("PromptVariableSource - Behavior: validateSource accumulates multiple 
 
   const result = validateSource(invalidSource);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals(result.error.length, 2);
-    
-    const fields = result.error.map(e => e.field);
+
+    const fields = result.error.map((e) => e.field);
     assertEquals(fields.includes("directive"), true);
     assertEquals(fields.includes("inputFile"), true);
   }
@@ -224,15 +224,15 @@ Deno.test("PromptVariableSource - Behavior: validateSource accumulates multiple 
 
 Deno.test("PromptVariableSource - Behavior: Factory methods generate different timestamps", async () => {
   const source1 = PromptVariableSourceFactory.fromCLI({ directive: "test" });
-  
+
   // Small delay to ensure different timestamps
-  await new Promise(resolve => setTimeout(resolve, 1));
-  
+  await new Promise((resolve) => setTimeout(resolve, 1));
+
   const source2 = PromptVariableSourceFactory.fromCLI({ directive: "test" });
 
   assertNotEquals(
     source1.metadata?.timestamp.getTime(),
-    source2.metadata?.timestamp.getTime()
+    source2.metadata?.timestamp.getTime(),
   );
 });
 
@@ -254,7 +254,7 @@ Deno.test("PromptVariableSource - Behavior: merge preserves all undefined values
 
   // Both should be preserved since they come from different fields
   assertEquals(merged.directive, "test1"); // From sparseSource1 (but CLI has higher priority, however CLI source didn't set directive)
-  assertEquals(merged.layer, "test2");     // From sparseSource2 (CLI)
+  assertEquals(merged.layer, "test2"); // From sparseSource2 (CLI)
   assertEquals(merged.inputFile, "test.md"); // From sparseSource2 (CLI)
 });
 

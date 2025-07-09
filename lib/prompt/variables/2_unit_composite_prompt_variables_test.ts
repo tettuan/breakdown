@@ -178,7 +178,7 @@ Deno.test("CompositePromptVariables - with real implementations", () => {
   if (!standard.ok) {
     throw new Error("Failed to create standard variables");
   }
-  
+
   // Check if user creation succeeded
   if (!user.ok) {
     throw new Error("Failed to create user variables");
@@ -213,7 +213,7 @@ Deno.test("CompositePromptVariables - override standard variables with user vari
   if (!standard.ok) {
     throw new Error("Failed to create standard variables");
   }
-  
+
   // Check if user creation succeeded
   if (!user.ok) {
     throw new Error("Failed to create user variables");

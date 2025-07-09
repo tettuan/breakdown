@@ -10,7 +10,7 @@
  * @module config/2_unit_pattern_provider_test
  */
 
-import { assertEquals, assertExists, assertRejects, assert } from "../deps.ts";
+import { assert, assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "../types/directive_type.ts";
@@ -284,7 +284,7 @@ Deno.test("Unit: ConfigPatternProvider handles config errors gracefully", async 
 Deno.test("Unit: ConfigPatternProvider.create factory method", async () => {
   // createメソッドはResult型を返すため、エラー時は成功:falseが返される
   const result = await ConfigPatternProvider.create("__invalid_config__", "/nonexistent/path");
-  
+
   // Result型のエラーケースを検証
   assertEquals(result.ok, false, "Should return failed Result when BreakdownConfig creation fails");
   if (!result.ok) {

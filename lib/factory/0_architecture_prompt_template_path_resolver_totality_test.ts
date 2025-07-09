@@ -1,6 +1,6 @@
 /**
  * @fileoverview Architecture tests for PromptTemplatePathResolverTotality
- * 
+ *
  * Tests verify:
  * - Smart constructor validation
  * - Result type usage throughout
@@ -10,7 +10,10 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PromptTemplatePathResolverTotality, type PromptResolverConfig } from "./prompt_template_path_resolver_totality.ts";
+import {
+  type PromptResolverConfig,
+  PromptTemplatePathResolverTotality,
+} from "./prompt_template_path_resolver_totality.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 
 Deno.test("PromptTemplatePathResolverTotality - Smart Constructor validates inputs", () => {
@@ -26,7 +29,7 @@ Deno.test("PromptTemplatePathResolverTotality - Smart Constructor validates inpu
   for (const config of invalidConfigs) {
     const result = PromptTemplatePathResolverTotality.create(
       config as any,
-      { demonstrativeType: "to", layerType: "project", options: {} }
+      { demonstrativeType: "to", layerType: "project", options: {} },
     );
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -47,7 +50,7 @@ Deno.test("PromptTemplatePathResolverTotality - Smart Constructor validates inpu
   for (const params of invalidParams) {
     const result = PromptTemplatePathResolverTotality.create(
       validConfig,
-      params as any
+      params as any,
     );
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -62,7 +65,7 @@ Deno.test("PromptTemplatePathResolverTotality - validates required parameters", 
   // Missing demonstrativeType
   const result1 = PromptTemplatePathResolverTotality.create(
     config,
-    { demonstrativeType: "", layerType: "project", options: {} }
+    { demonstrativeType: "", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, false);
   if (!result1.ok) {
@@ -72,7 +75,7 @@ Deno.test("PromptTemplatePathResolverTotality - validates required parameters", 
   // Missing layerType
   const result2 = PromptTemplatePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "", options: {} }
+    { demonstrativeType: "to", layerType: "", options: {} },
   );
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -82,7 +85,7 @@ Deno.test("PromptTemplatePathResolverTotality - validates required parameters", 
   // Valid parameters
   const result3 = PromptTemplatePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} }
+    { demonstrativeType: "to", layerType: "project", options: {} },
   );
   assertEquals(result3.ok, true);
 });
@@ -91,38 +94,38 @@ Deno.test("PromptTemplatePathResolverTotality - normalizes config to discriminat
   // WithPromptConfig
   const result1 = PromptTemplatePathResolverTotality.create(
     { app_prompt: { base_dir: "prompts" } },
-    { demonstrativeType: "to", layerType: "project", options: {} }
+    { demonstrativeType: "to", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, true);
 
   // WithSchemaConfig
   const result2 = PromptTemplatePathResolverTotality.create(
     { app_schema: { base_dir: "schema" } },
-    { demonstrativeType: "to", layerType: "project", options: {} }
+    { demonstrativeType: "to", layerType: "project", options: {} },
   );
   assertEquals(result2.ok, true);
 
   // NoConfig
   const result3 = PromptTemplatePathResolverTotality.create(
     {},
-    { demonstrativeType: "to", layerType: "project", options: {} }
+    { demonstrativeType: "to", layerType: "project", options: {} },
   );
   assertEquals(result3.ok, true);
 });
 
 Deno.test("PromptTemplatePathResolverTotality - resolveFromLayerTypeSafe returns Result", () => {
   const config = { app_prompt: { base_dir: "." } };
-  
+
   // With explicit fromLayerType
   const resolverResult1 = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: { fromLayerType: "issue" } 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: { fromLayerType: "issue" },
+    },
   );
-  
+
   assertEquals(resolverResult1.ok, true);
   if (resolverResult1.ok) {
     const resolver = resolverResult1.data;
@@ -134,13 +137,13 @@ Deno.test("PromptTemplatePathResolverTotality - resolveFromLayerTypeSafe returns
   // With fromFile that contains layer type
   const resolverResult2 = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: { fromFile: "issue_details.md" } 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: { fromFile: "issue_details.md" },
+    },
   );
-  
+
   assertEquals(resolverResult2.ok, true);
   if (resolverResult2.ok) {
     const resolver = resolverResult2.data;
@@ -151,13 +154,13 @@ Deno.test("PromptTemplatePathResolverTotality - resolveFromLayerTypeSafe returns
   // Without fromLayerType or fromFile - falls back to layerType
   const resolverResult3 = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: {} 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: {},
+    },
   );
-  
+
   assertEquals(resolverResult3.ok, true);
   if (resolverResult3.ok) {
     const resolver = resolverResult3.data;
@@ -168,18 +171,18 @@ Deno.test("PromptTemplatePathResolverTotality - resolveFromLayerTypeSafe returns
 
 Deno.test("PromptTemplatePathResolverTotality - handles schema file resolution", () => {
   const config = { app_schema: { base_dir: "schema" } };
-  
+
   const resolverResult = PromptTemplatePathResolverTotality.create(
     config,
-    { 
+    {
       type: "two" as const,
-      demonstrativeType: "to", 
-      layerType: "project", 
+      demonstrativeType: "to",
+      layerType: "project",
       params: ["to", "project"],
-      options: { useSchema: true } 
-    }
+      options: { useSchema: true },
+    },
   );
-  
+
   assertEquals(resolverResult.ok, true);
   if (resolverResult.ok) {
     const resolver = resolverResult.data;
@@ -190,17 +193,17 @@ Deno.test("PromptTemplatePathResolverTotality - handles schema file resolution",
 
 Deno.test("PromptTemplatePathResolverTotality - handles adaptation options", () => {
   const config = { app_prompt: { base_dir: "." } };
-  
+
   // With adaptation
   const resolverResult1 = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: { adaptation: "analysis" } 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: { adaptation: "analysis" },
+    },
   );
-  
+
   assertEquals(resolverResult1.ok, true);
   if (resolverResult1.ok) {
     const resolver = resolverResult1.data;
@@ -211,13 +214,13 @@ Deno.test("PromptTemplatePathResolverTotality - handles adaptation options", () 
   // Without adaptation
   const resolverResult2 = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: {} 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: {},
+    },
   );
-  
+
   assertEquals(resolverResult2.ok, true);
   if (resolverResult2.ok) {
     const resolver = resolverResult2.data;
@@ -228,12 +231,12 @@ Deno.test("PromptTemplatePathResolverTotality - handles adaptation options", () 
 
 Deno.test("PromptTemplatePathResolverTotality - buildPromptPath constructs correct paths", () => {
   const config = { app_prompt: { base_dir: "prompts" } };
-  
+
   const resolverResult = PromptTemplatePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} }
+    { demonstrativeType: "to", layerType: "project", options: {} },
   );
-  
+
   assertEquals(resolverResult.ok, true);
   if (resolverResult.ok) {
     const resolver = resolverResult.data;
@@ -244,17 +247,17 @@ Deno.test("PromptTemplatePathResolverTotality - buildPromptPath constructs corre
 
 Deno.test("PromptTemplatePathResolverTotality - handles TwoParams_Result structure", () => {
   const config = { app_prompt: { base_dir: "." } };
-  
+
   const twoParams = {
     type: "two" as const,
     params: ["summary", "issue"],
     demonstrativeType: "summary",
     layerType: "issue",
-    options: { adaptation: "brief" }
+    options: { adaptation: "brief" },
   };
-  
+
   const resolverResult = PromptTemplatePathResolverTotality.create(config, twoParams);
-  
+
   assertEquals(resolverResult.ok, true);
   if (resolverResult.ok) {
     const resolver = resolverResult.data;
@@ -265,17 +268,17 @@ Deno.test("PromptTemplatePathResolverTotality - handles TwoParams_Result structu
 
 Deno.test("PromptTemplatePathResolverTotality - inference failure returns meaningful error", () => {
   const config = { app_prompt: { base_dir: "." } };
-  
+
   // With fromFile that doesn't contain any layer type
   const resolverResult = PromptTemplatePathResolverTotality.create(
     config,
-    { 
-      demonstrativeType: "to", 
-      layerType: "project", 
-      options: { fromFile: "random_file.md" } 
-    }
+    {
+      demonstrativeType: "to",
+      layerType: "project",
+      options: { fromFile: "random_file.md" },
+    },
   );
-  
+
   assertEquals(resolverResult.ok, true);
   if (resolverResult.ok) {
     const resolver = resolverResult.data;

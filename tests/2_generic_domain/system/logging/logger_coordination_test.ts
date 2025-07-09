@@ -1,10 +1,10 @@
 /**
  * @fileoverview Logger System Coordination Integration Test
- * 
+ *
  * ログシステムの協調動作と複雑なシナリオでの信頼性を検証します。
  * 複数モジュールからの同時ログ出力、フィルタリング、パフォーマンスを
  * 重点的にテストします。
- * 
+ *
  * @module tests/2_generic_domain/system/logging/logger_coordination_test
  */
 
@@ -15,7 +15,7 @@ const logger = new BreakdownLogger("logger-coordination");
 
 /**
  * ログシステム協調動作テスト群
- * 
+ *
  * 複雑なログシナリオでの信頼性を検証：
  * 1. 複数モジュールからの同時ログ出力
  * 2. ログレベルフィルタリングの動作
@@ -45,7 +45,7 @@ Deno.test("Logger Coordination: Multiple modules concurrent logging", async () =
   const concurrentLogTasks = modules.map((module, moduleIndex) => {
     return async () => {
       const results = [];
-      
+
       for (let i = 0; i < 50; i++) {
         const logData = {
           moduleIndex,
@@ -74,22 +74,22 @@ Deno.test("Logger Coordination: Multiple modules concurrent logging", async () =
           results.push({ ...logData, success: true });
         } catch (error) {
           const err = error as Error;
-          results.push({ 
-            ...logData, 
-            success: false, 
-            error: err.message 
+          results.push({
+            ...logData,
+            success: false,
+            error: err.message,
           });
         }
 
         // 小さな遅延を追加してリアルな並行性を模擬
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 10));
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 10));
       }
 
       return {
         moduleName: module.name,
         totalLogs: results.length,
-        successfulLogs: results.filter(r => r.success).length,
-        failedLogs: results.filter(r => !r.success).length,
+        successfulLogs: results.filter((r) => r.success).length,
+        failedLogs: results.filter((r) => !r.success).length,
         results,
       };
     };
@@ -97,7 +97,7 @@ Deno.test("Logger Coordination: Multiple modules concurrent logging", async () =
 
   // すべてのモジュールの並行ログ出力を実行
   const moduleResults = await Promise.all(
-    concurrentLogTasks.map(task => task())
+    concurrentLogTasks.map((task) => task()),
   );
 
   // 結果の検証
@@ -105,7 +105,7 @@ Deno.test("Logger Coordination: Multiple modules concurrent logging", async () =
   let totalSuccessful = 0;
   let totalFailed = 0;
 
-  moduleResults.forEach(result => {
+  moduleResults.forEach((result) => {
     totalLogs += result.totalLogs;
     totalSuccessful += result.successfulLogs;
     totalFailed += result.failedLogs;
@@ -128,8 +128,11 @@ Deno.test("Logger Coordination: Multiple modules concurrent logging", async () =
   });
 
   // 高い成功率を期待（95%以上）
-  assertEquals(totalSuccessful >= Math.floor(totalLogs * 0.95), true,
-    `Log success rate should be at least 95%, got ${totalSuccessful}/${totalLogs}`);
+  assertEquals(
+    totalSuccessful >= Math.floor(totalLogs * 0.95),
+    true,
+    `Log success rate should be at least 95%, got ${totalSuccessful}/${totalLogs}`,
+  );
 });
 
 Deno.test("Logger Coordination: Log level filtering verification", () => {
@@ -140,7 +143,7 @@ Deno.test("Logger Coordination: Log level filtering verification", () => {
 
   // 異なるログレベルでの出力テスト
   const testLogger = new BreakdownLogger("level-filter-test");
-  
+
   // 現在のログレベル設定に関係なく、
   // メソッド呼び出しが正常に動作することを確認
   const logTests = [
@@ -150,7 +153,7 @@ Deno.test("Logger Coordination: Log level filtering verification", () => {
     { level: "error", method: () => testLogger.error("Error test message", { level: "error" }) },
   ];
 
-  logTests.forEach(test => {
+  logTests.forEach((test) => {
     try {
       test.method();
       logger.debug(`ログレベル${test.level}出力成功`, {
@@ -191,7 +194,7 @@ Deno.test("Logger Coordination: Log key filtering accuracy", () => {
     { key: "hierarchical/path/key", logger: new BreakdownLogger("hierarchical/path/key") },
   ];
 
-  keyTestCases.forEach(testCase => {
+  keyTestCases.forEach((testCase) => {
     // 各キーパターンで様々なデータ構造をテスト
     const testData = {
       simpleString: "Simple string value",
@@ -237,7 +240,6 @@ Deno.test("Logger Coordination: Log key filtering accuracy", () => {
         levelsTestsed: ["debug", "info", "warn", "error"],
         success: true,
       });
-
     } catch (error) {
       const err = error as Error;
       logger.error(`キー${testCase.key}フィルタリングエラー`, {
@@ -310,13 +312,19 @@ Deno.test("Logger Coordination: High volume logging performance", async () => {
     totalTimeMs: Math.round(totalTime),
     logsPerSecond,
     averageTimePerLog: `${(totalTime / logCount).toFixed(3)}ms`,
-    performanceCategory: totalTime < 1000 ? "excellent" : 
-                        totalTime < 5000 ? "good" : "needs_optimization",
+    performanceCategory: totalTime < 1000
+      ? "excellent"
+      : totalTime < 5000
+      ? "good"
+      : "needs_optimization",
   });
 
   // パフォーマンス基準の確認（1秒で1000ログ以上）
-  assertEquals(totalTime < 10000, true, 
-    `Logging 1000 entries should complete within 10 seconds, took ${totalTime}ms`);
+  assertEquals(
+    totalTime < 10000,
+    true,
+    `Logging 1000 entries should complete within 10 seconds, took ${totalTime}ms`,
+  );
 });
 
 Deno.test("Logger Coordination: Error context logging integrity", async () => {
@@ -396,7 +404,6 @@ Deno.test("Logger Coordination: Error context logging integrity", async () => {
         errorLogged: true,
         contextLogged: true,
       });
-
     } catch (loggingError) {
       const err = loggingError as Error;
       logger.error(`エラーログ出力失敗: ${scenario.name}`, {
@@ -436,9 +443,7 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
         });
 
         // 非同期処理のシミュレーション
-        await new Promise(resolve => 
-          setTimeout(resolve, Math.random() * 100)
-        );
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
 
         // ランダムでエラーを発生させる
         if (Math.random() < 0.2) { // 20%の確率でエラー
@@ -453,9 +458,7 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
         });
 
         // さらなる非同期処理
-        await new Promise(resolve => 
-          setTimeout(resolve, Math.random() * 50)
-        );
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 50));
 
         const endTime = performance.now();
         asyncLogger.debug(`非同期タスク${taskId}完了`, {
@@ -466,11 +469,10 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
         });
 
         return { taskId, success: true, totalTime: endTime - startTime };
-
       } catch (error) {
         const err = error as Error;
         const errorTime = performance.now();
-        
+
         asyncLogger.error(`非同期タスク${taskId}エラー`, {
           taskId,
           error: err.message,
@@ -479,11 +481,11 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
           success: false,
         });
 
-        return { 
-          taskId, 
-          success: false, 
+        return {
+          taskId,
+          success: false,
           error: err.message,
-          totalTime: errorTime - startTime 
+          totalTime: errorTime - startTime,
         };
       }
     };
@@ -491,12 +493,12 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
 
   // すべての非同期タスクを並行実行
   const results = await Promise.all(
-    asyncTasks.map(task => task())
+    asyncTasks.map((task) => task()),
   );
 
   // 結果の集計
-  const successfulTasks = results.filter(r => r.success);
-  const failedTasks = results.filter(r => !r.success);
+  const successfulTasks = results.filter((r) => r.success);
+  const failedTasks = results.filter((r) => !r.success);
   const averageTime = results.reduce((sum, r) => sum + r.totalTime, 0) / results.length;
 
   logger.debug("非同期ログ出力信頼性テスト結果", {
@@ -509,6 +511,5 @@ Deno.test("Logger Coordination: Asynchronous logging reliability", async () => {
   });
 
   // すべてのタスクがログ出力を完了していることを確認
-  assertEquals(results.length, asyncOperations,
-    "All async tasks should complete with logging");
+  assertEquals(results.length, asyncOperations, "All async tasks should complete with logging");
 });

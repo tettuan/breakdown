@@ -11,15 +11,8 @@
  * @module factory/1_behavior_schema_file_path_resolver_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../deps.ts";
-import {
-  SchemaFilePathResolver,
-  SchemaPath,
-} from "./schema_file_path_resolver.ts";
+import { assert, assertEquals, assertStringIncludes } from "../deps.ts";
+import { SchemaFilePathResolver, SchemaPath } from "./schema_file_path_resolver.ts";
 import { ensureDir, exists } from "../deps.ts";
 import { join, resolve } from "@std/path";
 
@@ -313,12 +306,28 @@ Deno.test("SchemaFilePathResolver Behavior - Legacy methods work correctly", asy
 Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
   // Test SchemaPath.create validation
   const validCases = [
-    { path: "/absolute/path.md", metadata: { baseDir: "/test", demonstrativeType: "to", layerType: "project", fileName: "base.schema.md" } },
+    {
+      path: "/absolute/path.md",
+      metadata: {
+        baseDir: "/test",
+        demonstrativeType: "to",
+        layerType: "project",
+        fileName: "base.schema.md",
+      },
+    },
   ];
-  
+
   // Add Windows path only on Windows platform
   if (Deno.build.os === "windows") {
-    validCases.push({ path: "C:\\Windows\\path.md", metadata: { baseDir: "C:\\test", demonstrativeType: "to", layerType: "project", fileName: "base.schema.md" } });
+    validCases.push({
+      path: "C:\\Windows\\path.md",
+      metadata: {
+        baseDir: "C:\\test",
+        demonstrativeType: "to",
+        layerType: "project",
+        fileName: "base.schema.md",
+      },
+    });
   }
 
   for (const testCase of validCases) {
@@ -328,9 +337,33 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
 
   // Test invalid cases
   const invalidCases = [
-    { path: "", metadata: { baseDir: "/test", demonstrativeType: "to", layerType: "project", fileName: "base.schema.md" } },
-    { path: "   ", metadata: { baseDir: "/test", demonstrativeType: "to", layerType: "project", fileName: "base.schema.md" } },
-    { path: "relative/path.md", metadata: { baseDir: "/test", demonstrativeType: "to", layerType: "project", fileName: "base.schema.md" } },
+    {
+      path: "",
+      metadata: {
+        baseDir: "/test",
+        demonstrativeType: "to",
+        layerType: "project",
+        fileName: "base.schema.md",
+      },
+    },
+    {
+      path: "   ",
+      metadata: {
+        baseDir: "/test",
+        demonstrativeType: "to",
+        layerType: "project",
+        fileName: "base.schema.md",
+      },
+    },
+    {
+      path: "relative/path.md",
+      metadata: {
+        baseDir: "/test",
+        demonstrativeType: "to",
+        layerType: "project",
+        fileName: "base.schema.md",
+      },
+    },
   ];
 
   for (const testCase of invalidCases) {
@@ -343,7 +376,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles complex configurations", as
   // Create actual directory for complex config test
   const testDir = join(Deno.cwd(), ".test_complex_config", "schema", "base");
   await ensureDir(testDir);
-  
+
   try {
     // Test with nested configuration and extra properties
     const complexConfig = {
@@ -358,7 +391,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles complex configurations", as
 
     const params = {
       demonstrativeType: "to",
-      layerType: "project", 
+      layerType: "project",
       options: {
         fromFile: "input.txt",
         destinationFile: "output.md",
@@ -371,10 +404,14 @@ Deno.test("SchemaFilePathResolver Behavior - Handles complex configurations", as
 
     const baseDir = resolverResult.data.resolveBaseDir();
     // Base directory might be resolved to absolute path, check if it ends with the expected path
-    assert(baseDir.endsWith("schema/base") || baseDir === testDir, 
-      `Base dir should end with schema/base, got: ${baseDir}`);
+    assert(
+      baseDir.endsWith("schema/base") || baseDir === testDir,
+      `Base dir should end with schema/base, got: ${baseDir}`,
+    );
   } finally {
-    await Deno.remove(join(Deno.cwd(), ".test_complex_config"), { recursive: true }).catch(() => {});
+    await Deno.remove(join(Deno.cwd(), ".test_complex_config"), { recursive: true }).catch(
+      () => {},
+    );
   }
 });
 
@@ -407,16 +444,16 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
   // Should fail because demonstrativeType/layerType exist but are empty
   assert(!mixedResult.ok, "Should fail when type properties exist but are empty");
   assertEquals(mixedResult.error.kind, "InvalidParameterCombination");
-  
+
   // Test with params array where demonstrativeType/layerType are derived from params
   const paramsOnlyInput = {
     type: "two" as const,
     params: ["to", "project"],
-    demonstrativeType: "to",  // Should match params[0]
-    layerType: "project",      // Should match params[1]
+    demonstrativeType: "to", // Should match params[0]
+    layerType: "project", // Should match params[1]
     options: {},
   };
-  
+
   const paramsOnlyResult = SchemaFilePathResolver.create(config, paramsOnlyInput);
   assert(paramsOnlyResult.ok, "Should succeed when properties match params array");
 });

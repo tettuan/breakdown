@@ -1,7 +1,7 @@
 /**
  * @fileoverview 1_behavior tests for InputFilePathResolver
  * Testing functional behavior and business logic
- * 
+ *
  * Behavior tests verify:
  * - Correct resolution of various input path types
  * - Proper handling of stdin input
@@ -13,7 +13,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { join, isAbsolute } from "@std/path";
+import { isAbsolute, join } from "@std/path";
 
 const logger = new BreakdownLogger("behavior-input-file-path-resolver");
 
@@ -25,7 +25,7 @@ const validConfig = {
 
 Deno.test("1_behavior: resolves stdin input correctly", () => {
   logger.debug("Testing stdin input resolution");
-  
+
   const testCases = [
     {
       params: {
@@ -44,15 +44,15 @@ Deno.test("1_behavior: resolves stdin input correctly", () => {
       expected: { type: "filename", exists: true },
     },
   ];
-  
+
   for (const { params, expected } of testCases) {
     const resolverResult = InputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expected.type);
         if (expected.value !== undefined) {
@@ -66,7 +66,7 @@ Deno.test("1_behavior: resolves stdin input correctly", () => {
 
 Deno.test("1_behavior: resolves absolute paths correctly", () => {
   logger.debug("Testing absolute path resolution");
-  
+
   const testCases = [
     {
       params: {
@@ -91,15 +91,15 @@ Deno.test("1_behavior: resolves absolute paths correctly", () => {
       },
     },
   ];
-  
+
   for (const { params, expected } of testCases) {
     const resolverResult = InputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expected.type);
         assertEquals(pathResult.data.value, expected.value);
@@ -111,7 +111,7 @@ Deno.test("1_behavior: resolves absolute paths correctly", () => {
 
 Deno.test("1_behavior: resolves relative paths correctly", () => {
   logger.debug("Testing relative path resolution");
-  
+
   const testCases = [
     {
       params: {
@@ -138,15 +138,15 @@ Deno.test("1_behavior: resolves relative paths correctly", () => {
       expectedType: "relative",
     },
   ];
-  
+
   for (const { params, expectedType } of testCases) {
     const resolverResult = InputFilePathResolver.create(validConfig, params as PromptCliParams);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
         assertEquals(isAbsolute(pathResult.data.value), true); // Resolved to absolute
@@ -157,20 +157,20 @@ Deno.test("1_behavior: resolves relative paths correctly", () => {
 
 Deno.test("1_behavior: resolves filename-only paths correctly", () => {
   logger.debug("Testing filename-only path resolution");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: { fromFile: "input.md" },
   };
-  
+
   const resolverResult = InputFilePathResolver.create(validConfig, params);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       // Should resolve to current working directory + filename
@@ -182,16 +182,16 @@ Deno.test("1_behavior: resolves filename-only paths correctly", () => {
 
 Deno.test("1_behavior: handles missing fromFile option", () => {
   logger.debug("Testing missing fromFile option");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: {}, // No fromFile
   };
-  
+
   const resolverResult = InputFilePathResolver.create(validConfig, params);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
@@ -204,16 +204,16 @@ Deno.test("1_behavior: handles missing fromFile option", () => {
 
 Deno.test("1_behavior: handles empty fromFile value", () => {
   logger.debug("Testing empty fromFile value");
-  
+
   const params: PromptCliParams = {
     demonstrativeType: "to",
     layerType: "project",
     options: { fromFile: "" },
   };
-  
+
   const resolverResult = InputFilePathResolver.create(validConfig, params);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
@@ -226,7 +226,7 @@ Deno.test("1_behavior: handles empty fromFile value", () => {
 
 Deno.test("1_behavior: supports TwoParams_Result format", () => {
   logger.debug("Testing TwoParams_Result format support");
-  
+
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     params: ["to", "project"],
@@ -236,14 +236,14 @@ Deno.test("1_behavior: supports TwoParams_Result format", () => {
       fromFile: "test-input.md",
     },
   };
-  
+
   const resolverResult = InputFilePathResolver.create(validConfig, twoParamsResult);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       assertExists(pathResult.data.value);
@@ -253,7 +253,7 @@ Deno.test("1_behavior: supports TwoParams_Result format", () => {
 
 Deno.test("1_behavior: supports directive/layer object format", () => {
   logger.debug("Testing directive/layer object format support");
-  
+
   const directiveLayerParams = {
     directive: { value: "to", data: "to" },
     layer: { value: "project", data: "project" },
@@ -261,14 +261,14 @@ Deno.test("1_behavior: supports directive/layer object format", () => {
       fromFile: "./local/file.md",
     },
   };
-  
+
   const resolverResult = InputFilePathResolver.create(validConfig, directiveLayerParams as any);
   assertEquals(resolverResult.ok, true);
-  
+
   if (resolverResult.ok) {
     const pathResult = resolverResult.data.getPath();
     assertEquals(pathResult.ok, true);
-    
+
     if (pathResult.ok) {
       assertEquals(pathResult.data.type, "filename");
       assertExists(pathResult.data.value);
@@ -278,7 +278,7 @@ Deno.test("1_behavior: supports directive/layer object format", () => {
 
 Deno.test("1_behavior: handles special characters in paths", () => {
   logger.debug("Testing special characters in paths");
-  
+
   const testCases = [
     {
       fromFile: "file with spaces.md",
@@ -297,21 +297,21 @@ Deno.test("1_behavior: handles special characters in paths", () => {
       expectedType: "filename",
     },
   ];
-  
+
   for (const { fromFile, expectedType } of testCases) {
     const params: PromptCliParams = {
       demonstrativeType: "to",
       layerType: "project",
       options: { fromFile },
     };
-    
+
     const resolverResult = InputFilePathResolver.create(validConfig, params);
     assertEquals(resolverResult.ok, true);
-    
+
     if (resolverResult.ok) {
       const pathResult = resolverResult.data.getPath();
       assertEquals(pathResult.ok, true);
-      
+
       if (pathResult.ok) {
         assertEquals(pathResult.data.type, expectedType);
       }

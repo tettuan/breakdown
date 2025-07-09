@@ -1,21 +1,24 @@
 /**
  * @fileoverview Architecture tests for PromptGenerationService
- * 
+ *
  * Tests focused on:
  * - Domain boundaries adherence
  * - Dependency injection patterns
  * - Service initialization via Smart Constructor
  * - Interface contracts enforcement
- * 
+ *
  * @module application/templates/0_architecture_prompt_generation_service_test
  */
 
 import { assertEquals } from "@std/assert";
-import { 
+import {
+  type PromptGenerationDependencies,
   PromptGenerationService,
-  type PromptGenerationDependencies 
 } from "./prompt_generation_service.ts";
-import type { TemplateRepository, TemplateManifest } from "../../domain/templates/template_repository.ts";
+import type {
+  TemplateManifest,
+  TemplateRepository,
+} from "../../domain/templates/template_repository.ts";
 import { GenerationPolicy } from "../../domain/templates/generation_policy.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -23,11 +26,12 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 const createMockRepository = (): TemplateRepository => ({
   loadTemplate: () => Promise.resolve({} as any),
   exists: () => Promise.resolve(true),
-  listAvailable: () => Promise.resolve({
-    templates: [],
-    generatedAt: new Date(),
-    totalCount: 0,
-  } as TemplateManifest),
+  listAvailable: () =>
+    Promise.resolve({
+      templates: [],
+      generatedAt: new Date(),
+      totalCount: 0,
+    } as TemplateManifest),
   save: () => Promise.resolve(),
   delete: () => Promise.resolve(),
   refresh: () => Promise.resolve(),
@@ -42,11 +46,11 @@ const createMockPolicy = (): GenerationPolicy => {
     timeoutMs: 30000,
     fallbackStrategies: [],
   };
-  
+
   const selectionStrategy = {
     selectTemplate: () => ({} as any),
   };
-  
+
   const policyResult = GenerationPolicy.create(config, [], selectionStrategy);
   if (!policyResult.ok) {
     throw new Error(`Failed to create mock policy: ${policyResult.error.message}`);
@@ -61,7 +65,7 @@ Deno.test("PromptGenerationService - Architecture - Smart Constructor pattern en
   };
 
   const result = PromptGenerationService.create(deps);
-  
+
   // Verify Result type usage (Totality principle)
   assertEquals(result.ok, true);
   if (result.ok) {
@@ -121,23 +125,23 @@ Deno.test("PromptGenerationService - Architecture - Interface segregation", () =
   const result = PromptGenerationService.create(deps);
   if (result.ok) {
     const service = result.data;
-    
+
     // Verify public interface
     assertEquals(typeof service.generatePrompt, "function");
     assertEquals(typeof service.validateTemplate, "function");
     assertEquals(typeof service.listAvailableTemplates, "function");
     assertEquals(typeof service.refreshTemplates, "function");
     assertEquals(typeof service.toCommandResult, "function");
-    
+
     // Verify that attempting to access private members through the type system
     // would result in TypeScript errors (runtime access is still possible in JS)
     // This test verifies the architectural intent rather than runtime behavior
-    
+
     // These would cause TypeScript errors if uncommented:
     // service.deps
     // service.logger
     // service.aggregates
-    
+
     // Instead, verify that the service instance is properly encapsulated
     assertEquals(typeof service, "object");
     assertEquals(service !== null, true);
@@ -152,20 +156,20 @@ Deno.test("PromptGenerationService - Architecture - Domain boundary respect", ()
 
   const result = PromptGenerationService.create(deps);
   assertEquals(result.ok, true);
-  
+
   // Service should not expose domain internals
   if (result.ok) {
     const service = result.data;
-    
+
     // Verify internal domain methods are not part of the public API
     // These methods should only be accessible internally
-    
+
     // These would cause TypeScript errors if uncommented:
     // service.selectTemplate
     // service.prepareVariables
     // service.getOrCreateAggregate
     // service.handleGenerationResult
-    
+
     // Verify the service follows domain boundary principles
     assertEquals(typeof service.generatePrompt, "function");
     assertEquals(typeof service.validateTemplate, "function");

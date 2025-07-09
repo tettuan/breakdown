@@ -1,7 +1,7 @@
 /**
  * @fileoverview Behavior tests for DirectiveType module
  * Testing business logic and expected behaviors with Result-based Totality
- * 
+ *
  * Behavior tests verify:
  * - Business rules and invariants
  * - Error handling with Result type
@@ -17,7 +17,7 @@ import type { TwoParams_Result } from "../deps.ts";
 const createTwoParamsResult = (
   demonstrativeType: string,
   layerType: string = "project",
-  options: Record<string, unknown> = {}
+  options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
   demonstrativeType,
@@ -42,7 +42,7 @@ Deno.test("1_behavior: DirectiveType correctly extracts demonstrativeType value"
   for (const { input, expected } of testCases) {
     const result = createTwoParamsResult(input);
     const directiveType = DirectiveType.create(result);
-    
+
     assertEquals(directiveType.value, expected);
     assertEquals(directiveType.getValue(), expected); // Deprecated method compatibility
   }
@@ -109,8 +109,10 @@ Deno.test("1_behavior: DirectiveType toString provides consistent format", () =>
     { value: "summary", expected: "DirectiveType(summary)" },
     { value: "custom-value", expected: "DirectiveType(custom-value)" },
     { value: "", expected: "DirectiveType()" },
-    { value: "very_long_directive_type_name_that_exceeds_normal_length", 
-      expected: "DirectiveType(very_long_directive_type_name_that_exceeds_normal_length)" },
+    {
+      value: "very_long_directive_type_name_that_exceeds_normal_length",
+      expected: "DirectiveType(very_long_directive_type_name_that_exceeds_normal_length)",
+    },
   ];
 
   for (const { value, expected } of testCases) {
@@ -141,11 +143,11 @@ Deno.test("1_behavior: TwoParamsDirectivePattern handles complex regex patterns"
   // Pattern allowing alphanumeric with hyphens
   const alphanumericPattern = TwoParamsDirectivePattern.create("^[a-z0-9-]+$");
   assertExists(alphanumericPattern);
-  
+
   assertEquals(alphanumericPattern.test("valid-name"), true);
   assertEquals(alphanumericPattern.test("name123"), true);
   assertEquals(alphanumericPattern.test("123-456"), true);
-  
+
   assertEquals(alphanumericPattern.test("INVALID"), false);
   assertEquals(alphanumericPattern.test("invalid_name"), false);
   assertEquals(alphanumericPattern.test("invalid name"), false);
@@ -154,7 +156,7 @@ Deno.test("1_behavior: TwoParamsDirectivePattern handles complex regex patterns"
   // Pattern with alternatives
   const alternativePattern = TwoParamsDirectivePattern.create("^(dev|staging|prod)$");
   assertExists(alternativePattern);
-  
+
   assertEquals(alternativePattern.test("dev"), true);
   assertEquals(alternativePattern.test("staging"), true);
   assertEquals(alternativePattern.test("prod"), true);
@@ -211,7 +213,7 @@ Deno.test("1_behavior: DirectiveType handles special characters in demonstrative
   for (const specialValue of specialCases) {
     const result = createTwoParamsResult(specialValue);
     const directiveType = DirectiveType.create(result);
-    
+
     // DirectiveType doesn't validate - it trusts TwoParams_Result
     assertEquals(directiveType.value, specialValue);
     assertEquals(directiveType.originalResult.demonstrativeType, specialValue);
@@ -225,10 +227,10 @@ Deno.test("1_behavior: DirectiveType works with different layerType values", () 
   for (const layerType of layerTypes) {
     const result = createTwoParamsResult(demonstrativeType, layerType);
     const directiveType = DirectiveType.create(result);
-    
+
     // DirectiveType focuses on demonstrativeType
     assertEquals(directiveType.value, demonstrativeType);
-    
+
     // But preserves the full context
     assertEquals(directiveType.originalResult.layerType, layerType);
   }
@@ -242,7 +244,7 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   const value1 = directiveType.value;
   const value2 = directiveType.value;
   const value3 = directiveType.getValue();
-  
+
   assertEquals(value1, "consistent");
   assertEquals(value2, "consistent");
   assertEquals(value3, "consistent");
@@ -252,7 +254,7 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   // Original result should remain unchanged
   const original1 = directiveType.originalResult;
   const original2 = directiveType.originalResult;
-  
+
   assertEquals(original1.demonstrativeType, "consistent");
   assertEquals(original2.demonstrativeType, "consistent");
 });

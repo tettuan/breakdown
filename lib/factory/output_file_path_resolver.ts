@@ -24,7 +24,7 @@ type DoubleParams_Result = PromptCliParams;
 /**
  * TypeCreationResult pattern for consistent factory interface
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
@@ -410,7 +410,10 @@ export class OutputFilePathResolver {
           this.name = "OutputFilePathResolutionError";
         }
       }
-      throw new OutputFilePathResolutionError(`Path resolution failed: ${result.error.kind} - ${errorMessage}`, result.error.kind);
+      throw new OutputFilePathResolutionError(
+        `Path resolution failed: ${result.error.kind} - ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data.value;
   }
@@ -475,7 +478,8 @@ export class OutputFilePathResolver {
     }
     // For TwoParams_Result structure, adapt to legacy interface
     const twoParams = this._cliParams as TwoParams_Result;
-    const options = (twoParams as unknown as { options?: { output?: string; destinationFile?: string } }).options;
+    const options =
+      (twoParams as unknown as { options?: { output?: string; destinationFile?: string } }).options;
     return options?.output || options?.destinationFile;
   }
 
@@ -573,7 +577,10 @@ export class OutputFilePathResolver {
           this.name = "FilenameGenerationError";
         }
       }
-      throw new FilenameGenerationError(`Filename generation failed: ${errorMessage}`, result.error.kind);
+      throw new FilenameGenerationError(
+        `Filename generation failed: ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data;
   }
@@ -604,7 +611,7 @@ export class OutputFilePathResolver {
     // Architecture-compliant implementation that doesn't access file system directly
     // Path resolution should focus on logical path construction only
     // Actual directory existence should be checked by higher-level components
-    
+
     // Logical check: paths ending with "/" are likely directories
     return p.endsWith("/") || p.endsWith("\\");
   }
@@ -662,7 +669,7 @@ export class OutputFilePathResolver {
 
   /**
    * Check if a directory exists on the filesystem
-   * 
+   *
    * Architecture-compliant implementation that doesn't access file system directly
    */
   private checkDirectoryExists(path: string): boolean {
@@ -717,7 +724,7 @@ export class OutputFilePathResolver {
 
   /**
    * Smart Constructor for creating OutputFilePathResolver with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all inputs
@@ -777,15 +784,19 @@ export class OutputFilePathResolver {
 
     // Check for legacy parameters structure
     const hasLegacyProps = (p: any): boolean => {
-      return p && typeof p === "object" && 
+      return p && typeof p === "object" &&
         "demonstrativeType" in p && "layerType" in p &&
         typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
     };
 
-    if (!hasTotalityProps(cliParams) && !hasTwoParamsStructure(cliParams) && !hasLegacyProps(cliParams)) {
+    if (
+      !hasTotalityProps(cliParams) && !hasTwoParamsStructure(cliParams) &&
+      !hasLegacyProps(cliParams)
+    ) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have Totality structure (directive/layer), TwoParams structure, or legacy structure with demonstrativeType and layerType",
+        message:
+          "CLI parameters must have Totality structure (directive/layer), TwoParams structure, or legacy structure with demonstrativeType and layerType",
       });
     }
 

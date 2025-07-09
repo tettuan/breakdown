@@ -78,7 +78,7 @@ describe("Workspace Module - Architecture", async () => {
     // mod.ts should only import from its direct children
     // Use URL to get the file path for dependency injection
     const modPath = new URL("./mod.ts", import.meta.url).pathname;
-    
+
     // Architecture tests should use test data instead of actual file I/O
     const modContent = `
 // Mock mod.ts content for architecture testing

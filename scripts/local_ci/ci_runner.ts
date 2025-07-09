@@ -40,7 +40,7 @@ export class CIRunner {
       }
 
       this.logger.section("Starting CI execution in optimized mode");
-      
+
       const mode = CLIParser.getExecutionMode(this.config);
       this.logger.info(`Mode: ${mode}`);
       this.logger.info(`Batch Size: ${this.config.batchSize}`);
@@ -49,7 +49,7 @@ export class CIRunner {
       // Track error files for silent mode
       const errorFiles = {
         typeCheckErrors: [] as string[],
-        testFailures: [] as string[]
+        testFailures: [] as string[],
       };
 
       // Initialize lockfile
@@ -60,8 +60,12 @@ export class CIRunner {
       if (!typeCheckResult.success) {
         this.logger.failure("Type checks failed");
         errorFiles.typeCheckErrors = typeCheckResult.failedFiles;
-        this.logger.errorFileList("Type Check Failures", typeCheckResult.failedFiles, typeCheckResult.errors);
-        
+        this.logger.errorFileList(
+          "Type Check Failures",
+          typeCheckResult.failedFiles,
+          typeCheckResult.errors,
+        );
+
         if (this.logger.getMode() === "silent") {
           this.logger.errorSummary(errorFiles.typeCheckErrors, errorFiles.testFailures);
         }
@@ -79,22 +83,28 @@ export class CIRunner {
 
       // Run tests
       const testResults = await this.runTests();
-      const failedTests = testResults.filter(result => !result.success);
-      
+      const failedTests = testResults.filter((result) => !result.success);
+
       if (failedTests.length > 0) {
         this.logger.failure(`Test execution completed with ${failedTests.length} failures`);
-        errorFiles.testFailures = failedTests.map(test => test.filePath);
-        this.logger.errorFileList("Test Failures", errorFiles.testFailures, failedTests.map(test => test.error || ""));
-        
+        errorFiles.testFailures = failedTests.map((test) => test.filePath);
+        this.logger.errorFileList(
+          "Test Failures",
+          errorFiles.testFailures,
+          failedTests.map((test) => test.error || ""),
+        );
+
         if (this.logger.getMode() === "silent") {
           this.logger.errorSummary(errorFiles.typeCheckErrors, errorFiles.testFailures);
         }
-        
+
         // In batch mode, don't exit immediately - show full results
         if (this.config.batchMode) {
-          this.logger.info(`Batch mode completed processing all files. Total failures: ${failedTests.length}`);
+          this.logger.info(
+            `Batch mode completed processing all files. Total failures: ${failedTests.length}`,
+          );
         }
-        
+
         return false;
       }
 
@@ -114,7 +124,6 @@ export class CIRunner {
 
       this.logger.success("Local checks completed successfully");
       return true;
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(`CI execution failed: ${errorMessage}`);
@@ -131,7 +140,7 @@ export class CIRunner {
 
     this.logger.info("Regenerating deno.lock...");
     const result = await ProcessRunner.runDeno("cache", ["--reload", "mod.ts"]);
-    
+
     if (!result.success) {
       throw new Error(`Failed to regenerate deno.lock: ${result.stderr}`);
     }
@@ -142,7 +151,9 @@ export class CIRunner {
    */
   private async runTypeChecks(): Promise<TypeCheckResult> {
     if (this.config.singleFileMode) {
-      this.logger.info("Skipping comprehensive type checking in single-file mode (will be done per test file)");
+      this.logger.info(
+        "Skipping comprehensive type checking in single-file mode (will be done per test file)",
+      );
       return { success: true, failedFiles: [], errors: [] };
     }
 
@@ -158,7 +169,7 @@ export class CIRunner {
    */
   private async runOptimizedTypeChecks(): Promise<TypeCheckResult> {
     this.logger.info("Running optimized type checking for batch mode...");
-    
+
     const tsFiles = await FileSystem.findTypeScriptFiles();
     if (tsFiles.length === 0) {
       this.logger.info("No TypeScript files found for type checking");
@@ -167,16 +178,16 @@ export class CIRunner {
 
     // Take sample of files for quick check
     const sampleFiles = tsFiles.slice(0, Math.min(50, tsFiles.length));
-    
+
     this.logger.info(`Running type check on ${sampleFiles.length} sample TypeScript files...`);
     const result = await ProcessRunner.runDeno("check", sampleFiles);
 
     if (!result.success) {
       this.logger.info("Type check failed on sample files. Running batch type checking...");
-      
+
       const failedFiles: string[] = [];
       const errors: string[] = [];
-      
+
       // Check in smaller batches to identify specific failures
       const chunks = FileSystem.chunk(sampleFiles, 10);
       for (const chunk of chunks) {
@@ -193,7 +204,7 @@ export class CIRunner {
           }
         }
       }
-      
+
       if (failedFiles.length > 0) {
         this.logger.error("Type checking failed. Please run: deno check lib/**/*.ts");
         return { success: false, failedFiles, errors };
@@ -209,7 +220,7 @@ export class CIRunner {
    */
   private async runComprehensiveTypeChecks(): Promise<TypeCheckResult> {
     this.logger.info("Running comprehensive type checks...");
-    
+
     const tsFiles = await FileSystem.findTypeScriptFiles();
     if (tsFiles.length === 0) {
       this.logger.info("No TypeScript files found for type checking");
@@ -222,7 +233,7 @@ export class CIRunner {
     if (!result.success) {
       this.logger.subsection("COMPREHENSIVE TYPE CHECK FAILED");
       this.logger.info("Running individual file checks to identify specific issues...");
-      
+
       const failedFiles: string[] = [];
       const errors: string[] = [];
 
@@ -239,7 +250,7 @@ export class CIRunner {
       this.logger.subsection("TYPE CHECK FAILURES DETECTED");
       this.logger.error("Please fix type errors and re-run the script.");
       this.logger.error("For detailed error information, run: deno check [failing-file]");
-      
+
       return { success: false, failedFiles, errors };
     }
 
@@ -252,7 +263,7 @@ export class CIRunner {
    */
   private async runJSRChecks(): Promise<boolean> {
     this.logger.info("Running JSR type check...");
-    
+
     const result = await ProcessRunner.runDeno("publish", ["--dry-run", "--allow-dirty"]);
     if (!result.success) {
       this.handleJSRError(result.stderr);
@@ -260,7 +271,11 @@ export class CIRunner {
     }
 
     this.logger.info("Running comprehensive JSR publish test...");
-    const publishResult = await ProcessRunner.runDeno("publish", ["--dry-run", "--allow-dirty", "--no-check"]);
+    const publishResult = await ProcessRunner.runDeno("publish", [
+      "--dry-run",
+      "--allow-dirty",
+      "--no-check",
+    ]);
     if (!publishResult.success) {
       this.handleJSRPublishError(publishResult.stderr);
       return false;
@@ -291,21 +306,21 @@ export class CIRunner {
    */
   private async runSingleFileTests(): Promise<TestResult[]> {
     this.logger.section("SINGLE FILE MODE: Running tests one file at a time in debug mode");
-    
+
     const results: TestResult[] = [];
 
     // Phase 1: Run lib tests
     this.logger.subsection("Phase 1: Running lib/ directory tests");
     const libTests = await FileSystem.findTestFiles(["lib"]);
-    
+
     if (libTests.length > 0) {
       for (let i = 0; i < libTests.length; i++) {
         const testFile = libTests[i];
         this.logger.subsection(`Processing lib test file ${i + 1}: ${testFile}`);
-        
+
         const result = await this.runSingleTest(testFile, true);
         results.push(result);
-        
+
         if (!result.success) {
           this.logger.subsection("SINGLE FILE MODE: EXECUTION STOPPED IN LIB PHASE");
           this.logger.error(`Test execution failed in ${testFile}`);
@@ -322,15 +337,15 @@ export class CIRunner {
     // Phase 2: Run tests directory tests
     this.logger.subsection("Phase 2: Running tests/ directory tests");
     const testsTests = await FileSystem.findTestFiles(["tests"]);
-    
+
     if (testsTests.length > 0) {
       for (let i = 0; i < testsTests.length; i++) {
         const testFile = testsTests[i];
         this.logger.subsection(`Processing tests test file ${i + 1}: ${testFile}`);
-        
+
         const result = await this.runSingleTest(testFile, true);
         results.push(result);
-        
+
         if (!result.success) {
           this.logger.subsection("SINGLE FILE MODE: EXECUTION STOPPED IN TESTS PHASE");
           this.logger.error(`Test execution failed in ${testFile}`);
@@ -352,7 +367,7 @@ export class CIRunner {
    */
   private async runBatchTests(): Promise<TestResult[]> {
     this.logger.section("BATCH MODE: Running tests in batches with automatic fallback");
-    
+
     const allTestFiles = await FileSystem.findTestFiles(["lib", "tests"]);
     if (allTestFiles.length === 0) {
       this.logger.info("No test files found");
@@ -361,36 +376,44 @@ export class CIRunner {
 
     const results: TestResult[] = [];
     const batches = FileSystem.chunk(allTestFiles, this.config.batchSize);
-    
-    this.logger.info(`Running ${allTestFiles.length} test files in ${batches.length} batches of ${this.config.batchSize} files each...`);
+
+    this.logger.info(
+      `Running ${allTestFiles.length} test files in ${batches.length} batches of ${this.config.batchSize} files each...`,
+    );
 
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const batchNumber = i + 1;
-      
-      this.logger.subsection(`Processing batch ${batchNumber}/${batches.length} (${batch.length} files)`);
-      
+
+      this.logger.subsection(
+        `Processing batch ${batchNumber}/${batches.length} (${batch.length} files)`,
+      );
+
       const batchResult = await this.runBatch(batch, batchNumber);
-      
+
       if (!batchResult.success) {
         if (this.config.fallbackToSingleFile) {
-          this.logger.subsection(`BATCH ${batchNumber} FAILED - Attempting individual file execution`);
-          
+          this.logger.subsection(
+            `BATCH ${batchNumber} FAILED - Attempting individual file execution`,
+          );
+
           // Run failed batch files individually
           let batchHasCriticalFailure = false;
           for (const file of batch) {
             const result = await this.runSingleTest(file, true);
             results.push(result);
-            
+
             if (!result.success) {
               this.logger.error(`Individual test failed: ${file}`);
               batchHasCriticalFailure = true;
               // Continue with other files in the batch instead of stopping immediately
             }
           }
-          
+
           if (batchHasCriticalFailure) {
-            this.logger.error(`Batch ${batchNumber} has critical failures - continuing with remaining batches`);
+            this.logger.error(
+              `Batch ${batchNumber} has critical failures - continuing with remaining batches`,
+            );
           } else {
             this.logger.success(`Batch ${batchNumber} recovered through individual file execution`);
           }
@@ -419,24 +442,24 @@ export class CIRunner {
     }
 
     this.logger.success(`All ${batches.length} batches completed`);
-    
+
     // Report summary
     const totalFiles = results.length;
-    const passedFiles = results.filter(r => r.success).length;
-    const failedFiles = results.filter(r => !r.success).length;
-    
+    const passedFiles = results.filter((r) => r.success).length;
+    const failedFiles = results.filter((r) => !r.success).length;
+
     this.logger.subsection("BATCH MODE SUMMARY");
     this.logger.info(`Total files processed: ${totalFiles}`);
     this.logger.info(`Passed: ${passedFiles}`);
     this.logger.info(`Failed: ${failedFiles}`);
-    
+
     if (failedFiles > 0) {
       this.logger.error("Failed files:");
-      results.filter(r => !r.success).forEach(r => {
+      results.filter((r) => !r.success).forEach((r) => {
         this.logger.error(`  - ${r.filePath}`);
       });
     }
-    
+
     return results;
   }
 
@@ -445,18 +468,18 @@ export class CIRunner {
    */
   private async runLegacyTests(): Promise<TestResult[]> {
     this.logger.section("LEGACY MODE: Running all tests with memory optimizations");
-    
+
     const optimalJobs = await ProcessRunner.getOptimalJobCount();
     this.logger.info(`Using ${optimalJobs} parallel jobs for test execution...`);
-    
+
     const result = await ProcessRunner.runDeno("test", [
       "--v8-flags=--max-old-space-size=4096",
       "--allow-env",
-      "--allow-write", 
+      "--allow-write",
       "--allow-read",
-      "--allow-run"
+      "--allow-run",
     ], {
-      env: { DENO_JOBS: optimalJobs.toString() }
+      env: { DENO_JOBS: optimalJobs.toString() },
     });
 
     if (!result.success) {
@@ -481,16 +504,16 @@ export class CIRunner {
    */
   private async runSingleTest(testFile: string, debug = false): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     // Type check the test file first
     this.logger.info(`Type checking ${testFile}...`);
     const typeCheckResult = await ProcessRunner.runDeno("check", [testFile]);
-    
+
     if (!typeCheckResult.success) {
       this.logger.subsection(`TYPE CHECK FAILED FOR: ${testFile}`);
       this.logger.error(typeCheckResult.stderr);
       this.logger.error("Please fix the type errors before proceeding.");
-      
+
       return {
         filePath: testFile,
         success: false,
@@ -498,12 +521,12 @@ export class CIRunner {
         duration: Date.now() - startTime,
       };
     }
-    
+
     this.logger.success(`Type check passed for ${testFile}`);
-    
+
     // Run the test
     const env = debug ? { LOG_LEVEL: "debug", LOG_LENGTH: "W" } : undefined;
-    
+
     if (debug) {
       this.logger.subsection(`RUNNING TEST IN DEBUG MODE: ${testFile}`);
       this.logger.debug(`Command: deno task test ${testFile}`);
@@ -511,15 +534,15 @@ export class CIRunner {
     } else {
       this.logger.info(`Running test: ${testFile}`);
     }
-    
+
     const testResult = await ProcessRunner.runDeno("task", ["test", testFile], { env });
-    
+
     if (!testResult.success) {
       this.logger.error(`Test failed for ${testFile}`);
       this.logger.debug(`Exit code: ${testResult.code}`);
       this.logger.debug(`Stderr: ${testResult.stderr}`);
       this.logger.debug(`Stdout: ${testResult.stdout}`);
-      
+
       return {
         filePath: testFile,
         success: false,
@@ -527,9 +550,9 @@ export class CIRunner {
         duration: Date.now() - startTime,
       };
     }
-    
+
     this.logger.success(`${testFile}`);
-    
+
     return {
       filePath: testFile,
       success: true,
@@ -543,13 +566,13 @@ export class CIRunner {
   private async runBatch(files: string[], batchNumber: number): Promise<BatchResult> {
     const result = await ProcessRunner.runDeno("test", [
       "--allow-env",
-      "--allow-write", 
+      "--allow-write",
       "--allow-read",
       "--allow-run",
       "--v8-flags=--max-old-space-size=2048,--expose-gc",
-      ...files
+      ...files,
     ], {
-      env: { DENO_JOBS: "1" }
+      env: { DENO_JOBS: "1" },
     });
 
     if (!result.success) {
@@ -559,7 +582,7 @@ export class CIRunner {
       for (const file of files) {
         this.logger.error(`  - ${file}`);
       }
-      
+
       return {
         batchNumber,
         files,
@@ -581,7 +604,7 @@ export class CIRunner {
    */
   private async runFinalChecks(): Promise<boolean> {
     this.logger.info("All tests passed. Running final comprehensive type check...");
-    
+
     // Final type check
     const finalTsFiles = await FileSystem.findTypeScriptFiles();
     if (finalTsFiles.length > 0) {
@@ -625,7 +648,9 @@ export class CIRunner {
       const sampleFiles = finalCheckFiles.slice(0, 100);
       const result = await ProcessRunner.runDeno("check", ["--all", ...sampleFiles]);
       if (!result.success) {
-        this.logger.error("Final --all type check failed. Please run: deno check --all lib/**/*.ts");
+        this.logger.error(
+          "Final --all type check failed. Please run: deno check --all lib/**/*.ts",
+        );
         return false;
       }
     }
@@ -698,18 +723,20 @@ export class CIRunner {
   /**
    * Run comprehensive error file listing for silent mode
    */
-  private async runComprehensiveErrorListing(): Promise<{ typeCheckErrors: string[], testFailures: string[] }> {
+  private async runComprehensiveErrorListing(): Promise<
+    { typeCheckErrors: string[]; testFailures: string[] }
+  > {
     const errorFiles = {
       typeCheckErrors: [] as string[],
-      testFailures: [] as string[]
+      testFailures: [] as string[],
     };
 
     // Get all TypeScript files for type checking
     const tsFiles = await FileSystem.findTypeScriptFiles();
-    
+
     if (tsFiles.length > 0) {
       this.logger.info(`Checking ${tsFiles.length} TypeScript files...`);
-      
+
       // Check all files individually to get complete error list
       for (const file of tsFiles) {
         const result = await ProcessRunner.runDeno("check", [file]);
@@ -721,10 +748,10 @@ export class CIRunner {
 
     // Get all test files
     const testFiles = await FileSystem.findTestFiles(["lib", "tests"]);
-    
+
     if (testFiles.length > 0) {
       this.logger.info(`Checking ${testFiles.length} test files...`);
-      
+
       // Check all test files individually
       for (const file of testFiles) {
         const result = await this.runSingleTest(file, false);

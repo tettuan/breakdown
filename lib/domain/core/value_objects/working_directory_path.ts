@@ -3,7 +3,7 @@
  *
  * This module provides a unified WorkingDirectoryPath value object that manages
  * working directory paths with comprehensive validation and type safety.
- * 
+ *
  * Design Principles:
  * 1. Smart Constructor pattern for type-safe creation
  * 2. Discriminated Union for comprehensive error handling
@@ -20,7 +20,7 @@ import type { PathResolutionError } from "../../../types/path_resolution_option.
 
 /**
  * Working Directory Path specific error types using Discriminated Union
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and provides specific context for different failure scenarios.
  */
@@ -72,31 +72,45 @@ export type WorkingDirectoryPathError =
  * Type guards for WorkingDirectoryPathError discrimination
  * Enables type-safe error handling throughout the application
  */
-export function isInvalidDirectoryPathError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "InvalidDirectoryPath" }> {
+export function isInvalidDirectoryPathError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "InvalidDirectoryPath" }> {
   return error.kind === "InvalidDirectoryPath";
 }
 
-export function isDirectoryNotFoundError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "DirectoryNotFound" }> {
+export function isDirectoryNotFoundError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "DirectoryNotFound" }> {
   return error.kind === "DirectoryNotFound";
 }
 
-export function isPermissionDeniedError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "PermissionDenied" }> {
+export function isPermissionDeniedError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "PermissionDenied" }> {
   return error.kind === "PermissionDenied";
 }
 
-export function isPathResolutionGeneralError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "PathResolutionGeneral" }> {
+export function isPathResolutionGeneralError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "PathResolutionGeneral" }> {
   return error.kind === "PathResolutionGeneral";
 }
 
-export function isSecurityViolationError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "SecurityViolation" }> {
+export function isSecurityViolationError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "SecurityViolation" }> {
   return error.kind === "SecurityViolation";
 }
 
-export function isValidationError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "ValidationError" }> {
+export function isValidationError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "ValidationError" }> {
   return error.kind === "ValidationError";
 }
 
-export function isFileSystemError(error: WorkingDirectoryPathError): error is Extract<WorkingDirectoryPathError, { kind: "FileSystemError" }> {
+export function isFileSystemError(
+  error: WorkingDirectoryPathError,
+): error is Extract<WorkingDirectoryPathError, { kind: "FileSystemError" }> {
   return error.kind === "FileSystemError";
 }
 
@@ -104,7 +118,9 @@ export function isFileSystemError(error: WorkingDirectoryPathError): error is Ex
  * Format working directory path error for display
  * Provides consistent error messaging across the application
  */
-export function formatWorkingDirectoryPathError(workingDirError: WorkingDirectoryPathError): string {
+export function formatWorkingDirectoryPathError(
+  workingDirError: WorkingDirectoryPathError,
+): string {
   switch (workingDirError.kind) {
     case "InvalidDirectoryPath":
       return `Invalid directory path '${workingDirError.path}': ${workingDirError.message}`;
@@ -161,10 +177,10 @@ export const DEFAULT_WORKING_DIRECTORY_CONFIG: WorkingDirectoryPathConfig = {
 
 /**
  * Working Directory Path Value Object
- * 
+ *
  * Represents a validated working directory path with comprehensive validation
  * and optional file system verification.
- * 
+ *
  * This class provides:
  * - Type-safe construction through Smart Constructor pattern
  * - Directory-specific validation with specific error types
@@ -172,7 +188,7 @@ export const DEFAULT_WORKING_DIRECTORY_CONFIG: WorkingDirectoryPathConfig = {
  * - Security validation to prevent path traversal attacks
  * - Optional file system verification (existence, permissions)
  * - Path resolution capabilities (relative to absolute)
- * 
+ *
  * @example Basic usage
  * ```typescript
  * const pathResult = WorkingDirectoryPath.create("/home/user/projects");
@@ -180,7 +196,7 @@ export const DEFAULT_WORKING_DIRECTORY_CONFIG: WorkingDirectoryPathConfig = {
  *   console.log(pathResult.data.getAbsolutePath());
  * }
  * ```
- * 
+ *
  * @example With custom configuration
  * ```typescript
  * const config: WorkingDirectoryPathConfig = {
@@ -188,10 +204,10 @@ export const DEFAULT_WORKING_DIRECTORY_CONFIG: WorkingDirectoryPathConfig = {
  *   createIfMissing: true,
  *   requireWritePermission: true,
  * };
- * 
+ *
  * const pathResult = WorkingDirectoryPath.createWithConfig("./workspace", config);
  * ```
- * 
+ *
  * @example Current working directory
  * ```typescript
  * const cwdResult = WorkingDirectoryPath.current();
@@ -203,7 +219,7 @@ export const DEFAULT_WORKING_DIRECTORY_CONFIG: WorkingDirectoryPathConfig = {
 export class WorkingDirectoryPath extends BasePathValueObject {
   /**
    * Private constructor enforcing Smart Constructor pattern
-   * 
+   *
    * @param originalPath The original input path
    * @param resolvedPath The resolved absolute path
    * @param isAbsolute Whether the path is absolute
@@ -223,10 +239,10 @@ export class WorkingDirectoryPath extends BasePathValueObject {
 
   /**
    * Smart Constructor for WorkingDirectoryPath with default configuration
-   * 
+   *
    * Creates a validated WorkingDirectoryPath instance using standard validation rules.
    * This is the primary factory method for most use cases.
-   * 
+   *
    * @param path The directory path (relative or absolute)
    * @returns Result containing WorkingDirectoryPath or specific error
    */
@@ -238,10 +254,10 @@ export class WorkingDirectoryPath extends BasePathValueObject {
 
   /**
    * Smart Constructor for WorkingDirectoryPath with custom configuration
-   * 
+   *
    * Provides full control over validation rules and file system verification.
    * Useful for testing, custom environments, or special use cases.
-   * 
+   *
    * @param path The directory path
    * @param config Custom validation configuration
    * @returns Result containing WorkingDirectoryPath or specific error
@@ -270,10 +286,10 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     const baseValidation = super.createPath(
       resolvedPath,
       config.basePathConfig,
-      (normalizedPath) => { 
+      (normalizedPath) => {
         // This will be replaced by actual object creation after verification
         return new WorkingDirectoryPath(trimmedPath, normalizedPath, isAbsolute, undefined);
-      }
+      },
     );
 
     if (!baseValidation.ok) {
@@ -381,13 +397,13 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     try {
       const basePath = baseDir.getAbsolutePath();
       const thisPath = this.getAbsolutePath();
-      
+
       // Simple relative path calculation
       if (thisPath.startsWith(basePath)) {
         const relativePath = thisPath.slice(basePath.length);
-        return ok(relativePath.startsWith('/') ? relativePath.slice(1) : relativePath);
+        return ok(relativePath.startsWith("/") ? relativePath.slice(1) : relativePath);
       }
-      
+
       return error({
         kind: "PathResolutionGeneral",
         message: "Cannot create relative path - paths are not related",
@@ -398,9 +414,17 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     } catch (resolutionError) {
       return error({
         kind: "PathResolutionGeneral",
-        message: `Failed to calculate relative path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
+        message: `Failed to calculate relative path: ${
+          resolutionError instanceof Error ? resolutionError.message : String(resolutionError)
+        }`,
         originalPath: this.getAbsolutePath(),
-        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: resolutionError instanceof Error ? resolutionError.message : String(resolutionError) },
+        resolutionError: {
+          kind: "InvalidPath",
+          path: this.getAbsolutePath(),
+          reason: resolutionError instanceof Error
+            ? resolutionError.message
+            : String(resolutionError),
+        },
       });
     }
   }
@@ -425,14 +449,20 @@ export class WorkingDirectoryPath extends BasePathValueObject {
   join(...components: string[]): Result<WorkingDirectoryPath, WorkingDirectoryPathError> {
     try {
       const basePath = this.getAbsolutePath();
-      const joinedPath = [basePath, ...components].join('/').replace(/\/+/g, '/');
+      const joinedPath = [basePath, ...components].join("/").replace(/\/+/g, "/");
       return WorkingDirectoryPath.create(joinedPath);
     } catch (joinError) {
       return error({
         kind: "PathResolutionGeneral",
-        message: `Failed to join path components: ${joinError instanceof Error ? joinError.message : String(joinError)}`,
+        message: `Failed to join path components: ${
+          joinError instanceof Error ? joinError.message : String(joinError)
+        }`,
         originalPath: this.getAbsolutePath(),
-        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: joinError instanceof Error ? joinError.message : String(joinError) },
+        resolutionError: {
+          kind: "InvalidPath",
+          path: this.getAbsolutePath(),
+          reason: joinError instanceof Error ? joinError.message : String(joinError),
+        },
       });
     }
   }
@@ -443,14 +473,20 @@ export class WorkingDirectoryPath extends BasePathValueObject {
   getParent(): Result<WorkingDirectoryPath, WorkingDirectoryPathError> {
     try {
       const currentPath = this.getAbsolutePath();
-      const parentPath = currentPath.split('/').slice(0, -1).join('/') || '/';
+      const parentPath = currentPath.split("/").slice(0, -1).join("/") || "/";
       return WorkingDirectoryPath.create(parentPath);
     } catch (parentError) {
       return error({
         kind: "PathResolutionGeneral",
-        message: `Failed to get parent directory: ${parentError instanceof Error ? parentError.message : String(parentError)}`,
+        message: `Failed to get parent directory: ${
+          parentError instanceof Error ? parentError.message : String(parentError)
+        }`,
         originalPath: this.getAbsolutePath(),
-        resolutionError: { kind: "InvalidPath", path: this.getAbsolutePath(), reason: parentError instanceof Error ? parentError.message : String(parentError) },
+        resolutionError: {
+          kind: "InvalidPath",
+          path: this.getAbsolutePath(),
+          reason: parentError instanceof Error ? parentError.message : String(parentError),
+        },
       });
     }
   }
@@ -460,8 +496,8 @@ export class WorkingDirectoryPath extends BasePathValueObject {
    */
   getDirectoryName(): string {
     const path = this.getAbsolutePath();
-    const parts = path.split('/').filter(part => part.length > 0);
-    return parts[parts.length - 1] || '';
+    const parts = path.split("/").filter((part) => part.length > 0);
+    return parts[parts.length - 1] || "";
   }
 
   /**
@@ -471,17 +507,17 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     if (!(other instanceof WorkingDirectoryPath)) {
       return false;
     }
-    
+
     return super.equals(other) &&
-           this.originalPath === other.originalPath &&
-           this._isAbsolute === other._isAbsolute;
+      this.originalPath === other.originalPath &&
+      this._isAbsolute === other._isAbsolute;
   }
 
   /**
    * Convert to debug string representation
    */
   toDebugString(): string {
-    const existsInfo = this.exists !== undefined ? `, exists=${this.exists}` : '';
+    const existsInfo = this.exists !== undefined ? `, exists=${this.exists}` : "";
     return `WorkingDirectoryPath{original=${this.originalPath}, resolved=${this.getAbsolutePath()}, absolute=${this._isAbsolute}${existsInfo}}`;
   }
 
@@ -491,7 +527,7 @@ export class WorkingDirectoryPath extends BasePathValueObject {
    * Validate basic input
    */
   private static validateInput(path: string): Result<void, WorkingDirectoryPathError> {
-    if (!path || typeof path !== 'string') {
+    if (!path || typeof path !== "string") {
       return error({
         kind: "InvalidDirectoryPath",
         message: "Path cannot be null, undefined, or non-string",
@@ -519,27 +555,38 @@ export class WorkingDirectoryPath extends BasePathValueObject {
     config: WorkingDirectoryPathConfig,
   ): Result<{ resolvedPath: string; isAbsolute: boolean }, WorkingDirectoryPathError> {
     try {
-      const isAbsolute = path.startsWith('/') || /^[a-zA-Z]:/.test(path);
-      
+      const isAbsolute = path.startsWith("/") || /^[a-zA-Z]:/.test(path);
+
       let resolvedPath: string;
       if (config.resolveToAbsolute && !isAbsolute) {
         // Resolve relative path to absolute
         const cwd = Deno.cwd();
-        resolvedPath = `${cwd}/${path}`.replace(/\/+/g, '/');
+        resolvedPath = `${cwd}/${path}`.replace(/\/+/g, "/");
       } else {
         resolvedPath = path;
       }
 
       // Normalize path separators
-      resolvedPath = resolvedPath.replace(/\\+/g, '/').replace(/\/+/g, '/');
+      resolvedPath = resolvedPath.replace(/\\+/g, "/").replace(/\/+/g, "/");
 
-      return ok({ resolvedPath, isAbsolute: resolvedPath.startsWith('/') || /^[a-zA-Z]:/.test(resolvedPath) });
+      return ok({
+        resolvedPath,
+        isAbsolute: resolvedPath.startsWith("/") || /^[a-zA-Z]:/.test(resolvedPath),
+      });
     } catch (resolutionError) {
       return error({
         kind: "PathResolutionGeneral",
-        message: `Failed to resolve path: ${resolutionError instanceof Error ? resolutionError.message : String(resolutionError)}`,
+        message: `Failed to resolve path: ${
+          resolutionError instanceof Error ? resolutionError.message : String(resolutionError)
+        }`,
         originalPath: path,
-        resolutionError: { kind: "InvalidPath", path: path, reason: resolutionError instanceof Error ? resolutionError.message : String(resolutionError) },
+        resolutionError: {
+          kind: "InvalidPath",
+          path: path,
+          reason: resolutionError instanceof Error
+            ? resolutionError.message
+            : String(resolutionError),
+        },
       });
     }
   }
@@ -566,7 +613,9 @@ export class WorkingDirectoryPath extends BasePathValueObject {
             } catch (createError) {
               return error({
                 kind: "FileSystemError",
-                message: `Failed to create directory: ${createError instanceof Error ? createError.message : String(createError)}`,
+                message: `Failed to create directory: ${
+                  createError instanceof Error ? createError.message : String(createError)
+                }`,
                 path: path,
                 operation: "mkdir",
                 originalError: createError instanceof Error ? createError : undefined,
@@ -588,7 +637,9 @@ export class WorkingDirectoryPath extends BasePathValueObject {
           } catch (readError) {
             return error({
               kind: "PermissionDenied",
-              message: `Cannot read directory: ${readError instanceof Error ? readError.message : String(readError)}`,
+              message: `Cannot read directory: ${
+                readError instanceof Error ? readError.message : String(readError)
+              }`,
               path: path,
               operation: "read",
             });
@@ -604,18 +655,21 @@ export class WorkingDirectoryPath extends BasePathValueObject {
           } catch (writeError) {
             return error({
               kind: "PermissionDenied",
-              message: `Cannot write to directory: ${writeError instanceof Error ? writeError.message : String(writeError)}`,
+              message: `Cannot write to directory: ${
+                writeError instanceof Error ? writeError.message : String(writeError)
+              }`,
               path: path,
               operation: "write",
             });
           }
         }
-
       } catch (statError) {
         if (config.verifyExistence) {
           return error({
             kind: "DirectoryNotFound",
-            message: `Directory does not exist: ${statError instanceof Error ? statError.message : String(statError)}`,
+            message: `Directory does not exist: ${
+              statError instanceof Error ? statError.message : String(statError)
+            }`,
             path: path,
           });
         }

@@ -223,10 +223,26 @@ describe("Workspace Errors - Architecture Tests", async () => {
       const ErrorsModule = await import("./errors.ts");
       const errorTypes = [
         { Class: ErrorsModule.WorkspaceError, expectedCode: "WORKSPACE_ERROR", needsCode: true },
-        { Class: ErrorsModule.WorkspaceInitError, expectedCode: "WORKSPACE_INIT_ERROR", needsCode: true },
-        { Class: ErrorsModule.WorkspaceConfigError, expectedCode: "WORKSPACE_CONFIG_ERROR", needsCode: false },
-        { Class: ErrorsModule.WorkspacePathError, expectedCode: "WORKSPACE_PATH_ERROR", needsCode: false },
-        { Class: ErrorsModule.WorkspaceDirectoryError, expectedCode: "WORKSPACE_DIRECTORY_ERROR", needsCode: false },
+        {
+          Class: ErrorsModule.WorkspaceInitError,
+          expectedCode: "WORKSPACE_INIT_ERROR",
+          needsCode: true,
+        },
+        {
+          Class: ErrorsModule.WorkspaceConfigError,
+          expectedCode: "WORKSPACE_CONFIG_ERROR",
+          needsCode: false,
+        },
+        {
+          Class: ErrorsModule.WorkspacePathError,
+          expectedCode: "WORKSPACE_PATH_ERROR",
+          needsCode: false,
+        },
+        {
+          Class: ErrorsModule.WorkspaceDirectoryError,
+          expectedCode: "WORKSPACE_DIRECTORY_ERROR",
+          needsCode: false,
+        },
       ];
 
       for (const { Class, expectedCode, needsCode } of errorTypes) {
@@ -283,7 +299,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
         assertExists(ErrorClass);
         assertEquals(typeof ErrorClass, "function");
 
-        // インスタンス化可能であることを確認  
+        // インスタンス化可能であることを確認
         let instance: any;
         if (ErrorClass === WorkspaceInitError) {
           instance = new WorkspaceInitError("test", "WORKSPACE_INIT_ERROR");
@@ -332,8 +348,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
       ];
 
       for (const { Class, message } of testCases) {
-        const instance = Class === WorkspaceInitError 
-          ? new Class(message, "TEST_CODE") 
+        const instance = Class === WorkspaceInitError
+          ? new Class(message, "TEST_CODE")
           : new Class(message);
 
         // 必須プロパティが設定されていることを確認
@@ -384,8 +400,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
         assertEquals(ErrorClass.length, 1);
 
         // エラーメッセージなしでインスタンス化した場合の動作を確認
-        const instanceWithoutMessage = ErrorClass === WorkspaceInitError 
-          ? new ErrorClass("", "TEST_CODE") 
+        const instanceWithoutMessage = ErrorClass === WorkspaceInitError
+          ? new ErrorClass("", "TEST_CODE")
           : new ErrorClass("");
         assertEquals(instanceWithoutMessage.message, "");
         assertExists(instanceWithoutMessage.code);

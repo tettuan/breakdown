@@ -9,12 +9,16 @@
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
 import type { TemplateRepository } from "./template_repository.ts";
 import type { SchemaRepository } from "./schema_repository.ts";
 import { PromptTemplate, TemplatePath } from "./prompt_generation_aggregate.ts";
 import { Schema, SchemaPath } from "./schema_management_aggregate.ts";
-import { SchemaId as _SchemaId, TemplateId as _TemplateId, TemplateVersion } from "./template_value_objects.ts";
+import {
+  SchemaId as _SchemaId,
+  TemplateId as _TemplateId,
+  TemplateVersion,
+} from "./template_value_objects.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
@@ -148,7 +152,11 @@ export class ExactPathStrategy implements ResolutionStrategy {
       let schema: Schema | undefined;
       try {
         const schemaFilename = filename.replace(".md", ".json");
-        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        const schemaPathResult = SchemaPath.create(
+          request.directive,
+          request.layer,
+          schemaFilename,
+        );
         if (schemaPathResult.ok) {
           const schemaPath = schemaPathResult.data;
           const schemaExists = await schemaRepo.exists(schemaPath);
@@ -246,7 +254,11 @@ export class StandardNamingStrategy implements ResolutionStrategy {
       let schemaPath: SchemaPath | undefined;
       try {
         const schemaFilename = filename.replace(".md", ".json");
-        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        const schemaPathResult = SchemaPath.create(
+          request.directive,
+          request.layer,
+          schemaFilename,
+        );
         if (schemaPathResult.ok) {
           schemaPath = schemaPathResult.data;
           const schemaExists = await schemaRepo.exists(schemaPath);
@@ -275,7 +287,9 @@ export class StandardNamingStrategy implements ResolutionStrategy {
           });
         }
         warnings.push(
-          `Schema loading failed: ${schemaError instanceof Error ? schemaError.message : String(schemaError)}`,
+          `Schema loading failed: ${
+            schemaError instanceof Error ? schemaError.message : String(schemaError)
+          }`,
         );
       }
 
@@ -347,7 +361,11 @@ export class FallbackStrategy implements ResolutionStrategy {
     }
 
     try {
-      const templatePathResult = TemplatePath.create(request.directive, request.layer, fallbackFilename);
+      const templatePathResult = TemplatePath.create(
+        request.directive,
+        request.layer,
+        fallbackFilename,
+      );
       if (!templatePathResult.ok) {
         return error({
           type: "invalid_path",
@@ -374,7 +392,11 @@ export class FallbackStrategy implements ResolutionStrategy {
       let schemaPath: SchemaPath | undefined;
       try {
         const schemaFilename = fallbackFilename.replace(".md", ".json");
-        const schemaPathResult = SchemaPath.create(request.directive, request.layer, schemaFilename);
+        const schemaPathResult = SchemaPath.create(
+          request.directive,
+          request.layer,
+          schemaFilename,
+        );
         if (schemaPathResult.ok) {
           schemaPath = schemaPathResult.data;
           const schemaExists = await schemaRepo.exists(schemaPath);

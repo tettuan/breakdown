@@ -12,10 +12,10 @@
  */
 
 import { assertEquals } from "jsr:@std/assert";
-import { 
+import {
   ConfigSetName,
-  type ConfigSetNameError,
   ConfigSetNameCollection,
+  type ConfigSetNameError,
 } from "./config_set_name.ts";
 
 // ============================================================================
@@ -29,7 +29,7 @@ Deno.test("1_behavior: rejects null and undefined inputs", () => {
     assertEquals(nullResult.error.kind, "EmptyName");
     assertEquals(nullResult.error.message.includes("null or undefined"), true);
   }
-  
+
   const undefinedResult = ConfigSetName.create(undefined as any);
   assertEquals(undefinedResult.ok, false);
   if (!undefinedResult.ok) {
@@ -45,7 +45,7 @@ Deno.test("1_behavior: rejects empty string and whitespace-only inputs", () => {
     assertEquals(emptyResult.error.kind, "EmptyName");
     assertEquals(emptyResult.error.message.includes("empty"), true);
   }
-  
+
   const whitespaceInputs = [
     " ",
     "   ",
@@ -55,7 +55,7 @@ Deno.test("1_behavior: rejects empty string and whitespace-only inputs", () => {
     "\t\n\r",
     "   \t   ",
   ];
-  
+
   whitespaceInputs.forEach((input) => {
     const result = ConfigSetName.create(input);
     assertEquals(result.ok, false, `Should reject whitespace: "${input}"`);
@@ -77,7 +77,7 @@ Deno.test("1_behavior: rejects non-string inputs with InvalidFormat error", () =
     { input: Symbol("test"), desc: "symbol" },
     { input: new Date(), desc: "Date" },
   ];
-  
+
   nonStringInputs.forEach(({ input, desc }) => {
     const result = ConfigSetName.create(input as any);
     assertEquals(result.ok, false, `Should reject ${desc}`);
@@ -119,7 +119,7 @@ Deno.test("1_behavior: accepts valid alphanumeric names with hyphens and undersc
     // Max allowed characters
     "valid-with_Numbers123_and-Symbols",
   ];
-  
+
   validNames.forEach((name) => {
     const result = ConfigSetName.create(name);
     assertEquals(result.ok, true, `Should accept: ${name}`);
@@ -150,7 +150,7 @@ Deno.test("1_behavior: rejects invalid characters", () => {
     { input: "config:name", chars: [":"] },
     { input: "config;name", chars: [";"] },
     { input: "config'name", chars: ["'"] },
-    { input: "config\"name", chars: ["\""] },
+    { input: 'config"name', chars: ['"'] },
     { input: "config<name>", chars: ["<", ">"] },
     { input: "config?name", chars: ["?"] },
     { input: "config.name", chars: ["."] },
@@ -160,7 +160,7 @@ Deno.test("1_behavior: rejects invalid characters", () => {
     { input: "config!name", chars: ["!"] },
     { input: "múltiple@#$%", chars: ["ú", "@", "#", "$", "%"] },
   ];
-  
+
   invalidCharTests.forEach(({ input, chars }) => {
     const result = ConfigSetName.create(input);
     assertEquals(result.ok, false, `Should reject: ${input}`);
@@ -173,7 +173,7 @@ Deno.test("1_behavior: rejects invalid characters", () => {
           assertEquals(
             error.invalidChars.includes(char),
             true,
-            `Should detect invalid char: ${char}`
+            `Should detect invalid char: ${char}`,
           );
         });
       }
@@ -187,7 +187,7 @@ Deno.test("1_behavior: rejects invalid characters", () => {
 
 Deno.test("1_behavior: accepts names up to 64 characters", () => {
   const lengths = [1, 10, 32, 63, 64];
-  
+
   lengths.forEach((length) => {
     const name = "a".repeat(length);
     const result = ConfigSetName.create(name);
@@ -197,7 +197,7 @@ Deno.test("1_behavior: accepts names up to 64 characters", () => {
 
 Deno.test("1_behavior: rejects names longer than 64 characters", () => {
   const lengths = [65, 100, 256];
-  
+
   lengths.forEach((length) => {
     const name = "a".repeat(length);
     const result = ConfigSetName.create(name);
@@ -220,15 +220,35 @@ Deno.test("1_behavior: rejects names longer than 64 characters", () => {
 Deno.test("1_behavior: rejects reserved system configuration names", () => {
   const reservedNames = [
     // System level
-    "default", "system", "global", "local", "temp", "tmp", "cache",
+    "default",
+    "system",
+    "global",
+    "local",
+    "temp",
+    "tmp",
+    "cache",
     // Configuration related
-    "config", "configuration", "settings", "app", "application",
+    "config",
+    "configuration",
+    "settings",
+    "app",
+    "application",
     // User/profile related
-    "user", "profile", "env", "environment",
+    "user",
+    "profile",
+    "env",
+    "environment",
     // Environment names
-    "dev", "development", "prod", "production", "test", "testing", "stage", "staging",
+    "dev",
+    "development",
+    "prod",
+    "production",
+    "test",
+    "testing",
+    "stage",
+    "staging",
   ];
-  
+
   reservedNames.forEach((name) => {
     const result = ConfigSetName.create(name);
     assertEquals(result.ok, false, `Should reject reserved: ${name}`);
@@ -245,12 +265,20 @@ Deno.test("1_behavior: rejects reserved system configuration names", () => {
 
 Deno.test("1_behavior: reserved names are case-insensitive", () => {
   const caseVariations = [
-    "DEFAULT", "Default", "DeFaUlT",
-    "SYSTEM", "System", "SyStEm",
-    "CONFIG", "Config", "CoNfIg",
-    "PRODUCTION", "Production", "PrOdUcTiOn",
+    "DEFAULT",
+    "Default",
+    "DeFaUlT",
+    "SYSTEM",
+    "System",
+    "SyStEm",
+    "CONFIG",
+    "Config",
+    "CoNfIg",
+    "PRODUCTION",
+    "Production",
+    "PrOdUcTiOn",
   ];
-  
+
   caseVariations.forEach((name) => {
     const result = ConfigSetName.create(name);
     assertEquals(result.ok, false, `Should reject case variation: ${name}`);
@@ -273,7 +301,7 @@ Deno.test("1_behavior: rejects names starting with reserved prefixes", () => {
     { name: "temp-file", prefix: "temp-" },
     { name: "test-config", prefix: "test-" },
   ];
-  
+
   reservedPrefixTests.forEach(({ name, prefix }) => {
     const result = ConfigSetName.create(name);
     assertEquals(result.ok, false, `Should reject prefix: ${name}`);
@@ -289,12 +317,20 @@ Deno.test("1_behavior: rejects names starting with reserved prefixes", () => {
 
 Deno.test("1_behavior: reserved prefixes are case-insensitive", () => {
   const caseVariations = [
-    "SYS-config", "Sys-Config", "SyS-config",
-    "SYSTEM-config", "System-Config", "SyStEm-config",
-    "APP-config", "App-Config", "ApP-config",
-    "TMP-config", "Tmp-Config", "TmP-config",
+    "SYS-config",
+    "Sys-Config",
+    "SyS-config",
+    "SYSTEM-config",
+    "System-Config",
+    "SyStEm-config",
+    "APP-config",
+    "App-Config",
+    "ApP-config",
+    "TMP-config",
+    "Tmp-Config",
+    "TmP-config",
   ];
-  
+
   caseVariations.forEach((name) => {
     const result = ConfigSetName.create(name);
     assertEquals(result.ok, false, `Should reject case variation: ${name}`);
@@ -319,7 +355,7 @@ Deno.test("1_behavior: trims leading and trailing whitespace", () => {
     { input: "\r\ntrimmed\r\n", expected: "trimmed" },
     { input: "  \t  trimmed  \t  ", expected: "trimmed" },
   ];
-  
+
   whitespaceTests.forEach(({ input, expected }) => {
     const result = ConfigSetName.create(input);
     assertEquals(result.ok, true, `Should trim: "${input}"`);
@@ -348,7 +384,7 @@ Deno.test("1_behavior: development factory creates development configs", () => {
   if (defaultDev.ok) {
     assertEquals(defaultDev.data.value, "development-main");
   }
-  
+
   // With suffix
   const suffixTests = [
     { suffix: "api", expected: "dev-api" },
@@ -356,7 +392,7 @@ Deno.test("1_behavior: development factory creates development configs", () => {
     { suffix: "backend", expected: "dev-backend" },
     { suffix: "test", expected: "dev-test" },
   ];
-  
+
   suffixTests.forEach(({ suffix, expected }) => {
     const result = ConfigSetName.development(suffix);
     assertEquals(result.ok, true);
@@ -376,7 +412,7 @@ Deno.test("1_behavior: forProject factory sanitizes project names", () => {
     { input: "complex.project/name", expected: "project-complex-project-name" },
     { input: "123-numbers", expected: "project-123-numbers" },
   ];
-  
+
   projectTests.forEach(({ input, expected }) => {
     const result = ConfigSetName.forProject(input);
     assertEquals(result.ok, true, `Should sanitize: ${input}`);
@@ -393,7 +429,7 @@ Deno.test("1_behavior: forProject factory rejects empty project names", () => {
     null as any,
     undefined as any,
   ];
-  
+
   emptyInputs.forEach((input) => {
     const result = ConfigSetName.forProject(input);
     assertEquals(result.ok, false, `Should reject empty: ${input}`);
@@ -410,28 +446,30 @@ Deno.test("1_behavior: forProject factory rejects empty project names", () => {
 
 Deno.test("1_behavior: handles edge cases in validation order", () => {
   // Test that validation happens in the correct order
-  
+
   // Empty check comes before format check
   const emptyNonString = ConfigSetName.create(null as any);
   assertEquals(emptyNonString.ok, false);
   if (!emptyNonString.ok) {
     assertEquals(emptyNonString.error.kind, "EmptyName"); // Not InvalidFormat
   }
-  
+
   // Format check comes before length check
-  const longNonString = ConfigSetName.create(123456789012345678901234567890123456789012345678901234567890123456789 as any);
+  const longNonString = ConfigSetName.create(
+    123456789012345678901234567890123456789012345678901234567890123456789 as any,
+  );
   assertEquals(longNonString.ok, false);
   if (!longNonString.ok) {
     assertEquals(longNonString.error.kind, "InvalidFormat"); // Not TooLong
   }
-  
+
   // Length check comes before character check
   const longInvalidChars = ConfigSetName.create("a".repeat(65) + "@#$");
   assertEquals(longInvalidChars.ok, false);
   if (!longInvalidChars.ok) {
     assertEquals(longInvalidChars.error.kind, "TooLong"); // Not InvalidCharacters
   }
-  
+
   // Character check comes before reserved check
   const reservedWithInvalid = ConfigSetName.create("default@123");
   assertEquals(reservedWithInvalid.ok, false);
@@ -445,16 +483,16 @@ Deno.test("1_behavior: handles boundary values correctly", () => {
   const exactly64 = "a".repeat(64);
   const result64 = ConfigSetName.create(exactly64);
   assertEquals(result64.ok, true);
-  
+
   // Just over length limit
   const exactly65 = "a".repeat(65);
   const result65 = ConfigSetName.create(exactly65);
   assertEquals(result65.ok, false);
-  
+
   // Single character (minimum valid)
   const single = ConfigSetName.create("a");
   assertEquals(single.ok, true);
-  
+
   // Mixed case at boundaries
   const mixedBoundary = ConfigSetName.create("A".repeat(32) + "a".repeat(32));
   assertEquals(mixedBoundary.ok, true);
@@ -467,7 +505,7 @@ Deno.test("1_behavior: handles boundary values correctly", () => {
 Deno.test("1_behavior: collection validates all names", () => {
   const mixedNames = ["valid1", "valid2", "invalid@", "valid3"];
   const result = ConfigSetNameCollection.create(mixedNames);
-  
+
   // Should fail on first invalid name
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -478,7 +516,7 @@ Deno.test("1_behavior: collection validates all names", () => {
 Deno.test("1_behavior: collection preserves order", () => {
   const names = ["config-c", "config-a", "config-b"];
   const result = ConfigSetNameCollection.create(names);
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const retrievedNames = result.data.getNames();

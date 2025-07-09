@@ -15,7 +15,7 @@ import { error, ok } from "./result.ts";
 /**
  * ConfigProfileName validation errors
  */
-export type ConfigProfileNameError = 
+export type ConfigProfileNameError =
   | { kind: "EmptyInput"; message: string }
   | { kind: "InvalidFormat"; value: string; pattern: string; message: string }
   | { kind: "TooLong"; value: string; maxLength: number; message: string };
@@ -95,19 +95,19 @@ export class ConfigProfileName {
 
   /**
    * Smart Constructor完全実装 - getValue()メソッド
-   * 
+   *
    * Totality原則に基づく型安全な値アクセスメソッド。
    * Smart Constructorパターンの完全実装として、
    * オブジェクトの不変条件を保証しつつ値を返します。
-   * 
+   *
    * このメソッドは以下を保証します：
    * - 常に非null値を返す
    * - バリデーション済みの値のみを返す
    * - 不変条件の維持
    * - 型安全性の確保
-   * 
+   *
    * @returns 検証済みの設定プロファイル名（常に有効な値）
-   * 
+   *
    * @example
    * ```typescript
    * const profileResult = ConfigProfileName.create("production");
@@ -145,12 +145,14 @@ export class ConfigProfileName {
    * }
    * ```
    */
-  static create(value: string | null | undefined): Result<ConfigProfileName, ConfigProfileNameError> {
+  static create(
+    value: string | null | undefined,
+  ): Result<ConfigProfileName, ConfigProfileNameError> {
     // Case 1: null/undefined/空文字の処理
     if (!value || typeof value !== "string" || value.trim() === "") {
       return error({
         kind: "EmptyInput",
-        message: "ConfigProfileName cannot be empty, null, or undefined"
+        message: "ConfigProfileName cannot be empty, null, or undefined",
       });
     }
 
@@ -160,7 +162,7 @@ export class ConfigProfileName {
         kind: "TooLong",
         value,
         maxLength: 50,
-        message: `ConfigProfileName "${value}" exceeds maximum length of 50 characters`
+        message: `ConfigProfileName "${value}" exceeds maximum length of 50 characters`,
       });
     }
 
@@ -170,7 +172,8 @@ export class ConfigProfileName {
         kind: "InvalidFormat",
         value,
         pattern: ConfigProfileName.#PROFILE_NAME_PATTERN.source,
-        message: `ConfigProfileName "${value}" contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed.`
+        message:
+          `ConfigProfileName "${value}" contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed.`,
       });
     }
 

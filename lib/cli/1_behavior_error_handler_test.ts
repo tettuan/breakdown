@@ -14,13 +14,13 @@
 import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
-  ErrorSeverity,
+import {
   analyzeErrorSeverity,
+  ErrorSeverity,
   extractErrorMessage,
   formatError,
+  handleTwoParamsError,
   isTestingErrorHandling,
-  handleTwoParamsError
 } from "./error_handler.ts";
 import type { TwoParamsHandlerError } from "./handlers/two_params_handler.ts";
 
@@ -107,8 +107,8 @@ describe("Behavior: Error Severity Analysis", () => {
       kind: "PromptGenerationError",
       error: {
         message: "permission denied on critical file",
-        details: { path: "/nonexistent/path", code: "ENOENT" }
-      }
+        details: { path: "/nonexistent/path", code: "ENOENT" },
+      },
     };
 
     const severity = analyzeErrorSeverity(nestedError as any);
@@ -128,7 +128,7 @@ describe("Behavior: Error Message Extraction", () => {
 
     const stringError = "Simple error message";
     const messageResult = extractErrorMessage(stringError);
-    
+
     assertEquals(
       messageResult.ok,
       true,
@@ -188,7 +188,7 @@ describe("Behavior: Error Message Extraction", () => {
     const unifiedError = {
       kind: "ValidationError",
       message: "Unified error message",
-      details: { field: "param1", value: "invalid" }
+      details: { field: "param1", value: "invalid" },
     };
 
     const messageResult = extractErrorMessage(unifiedError);
@@ -200,7 +200,7 @@ describe("Behavior: Error Message Extraction", () => {
 
     // Should handle gracefully if unified error extraction fails
     const malformedUnified = {
-      kind: "MalformedError"
+      kind: "MalformedError",
       // Missing required properties
     };
 
@@ -245,7 +245,11 @@ describe("Behavior: Error Message Extraction", () => {
       const messageResult = extractErrorMessage(error);
       assertEquals(messageResult.ok, true, `Should successfully handle ${typeof error}`);
       if (messageResult.ok) {
-        assertEquals(typeof messageResult.data, "string", `Should convert ${typeof error} to string`);
+        assertEquals(
+          typeof messageResult.data,
+          "string",
+          `Should convert ${typeof error} to string`,
+        );
         assertExists(messageResult.data, `Should provide message for ${typeof error}`);
       }
     }
@@ -270,7 +274,7 @@ describe("Behavior: Error Formatting", () => {
       if (formattedResult.ok) {
         assertExists(formattedResult.data, "Should return formatted error");
         assertEquals(typeof formattedResult.data, "string", "Should return string format");
-        
+
         if (typeof error === "object" && error !== null && "kind" in error) {
           assertEquals(
             formattedResult.data.includes((error as any).kind),
@@ -289,10 +293,10 @@ describe("Behavior: Error Formatting", () => {
 
     const error = { message: "Test error message" };
     const kind = "ValidationError";
-    
+
     const formattedResult = formatError(error, kind);
     assertEquals(formattedResult.ok, true, "Should successfully format error with kind");
-    
+
     if (formattedResult.ok) {
       assertEquals(
         formattedResult.data.startsWith(kind),
@@ -315,12 +319,12 @@ describe("Behavior: Error Formatting", () => {
     const longError = {
       kind: "LongError",
       data: "a".repeat(300), // Very long data
-      additionalInfo: "b".repeat(200)
+      additionalInfo: "b".repeat(200),
     };
 
     const formattedResult = formatError(longError);
     assertEquals(formattedResult.ok, true, "Should successfully format long error");
-    
+
     if (formattedResult.ok) {
       assertEquals(
         formattedResult.data.length <= 250, // Should be truncated (200 char limit + kind info)
@@ -353,16 +357,16 @@ describe("Behavior: Configuration Testing Detection", () => {
     const testConfigs: ErrorTestConfig[] = [
       {
         app_prompt: {
-          base_dir: "/nonexistent/path"
-        }
+          base_dir: "/nonexistent/path",
+        },
       },
       {
         app_prompt: {
           base_dir: "/nonexistent/path",
-          other_setting: "value"
+          other_setting: "value",
         },
-        other_config: "data"
-      }
+        other_config: "data",
+      },
     ];
 
     for (const config of testConfigs) {
@@ -383,21 +387,21 @@ describe("Behavior: Configuration Testing Detection", () => {
     const nonTestConfigs = [
       {
         app_prompt: {
-          base_dir: "/real/path"
-        }
+          base_dir: "/real/path",
+        },
       },
       {
         app_prompt: {
-          base_dir: "/usr/local/lib"
-        }
+          base_dir: "/usr/local/lib",
+        },
       },
       {
-        other_config: "value"
+        other_config: "value",
       },
       {},
       null,
       undefined,
-      "string config"
+      "string config",
     ];
 
     for (const config of nonTestConfigs) {
@@ -419,11 +423,11 @@ describe("Behavior: Two Params Error Handling", () => {
 
     const warningError = {
       kind: "PromptGenerationError",
-      error: "Template not found, using default"
+      error: "Template not found, using default",
     };
 
     const config = {
-      app_prompt: { base_dir: "/real/path" }
+      app_prompt: { base_dir: "/real/path" },
     };
 
     // Capture console output
@@ -431,14 +435,22 @@ describe("Behavior: Two Params Error Handling", () => {
     let logOutput = "";
     const originalWarn = console.warn;
     const originalLog = console.log;
-    
-    console.warn = (msg: string) => { warnOutput += msg; };
-    console.log = (msg: string) => { logOutput += msg; };
+
+    console.warn = (msg: string) => {
+      warnOutput += msg;
+    };
+    console.log = (msg: string) => {
+      logOutput += msg;
+    };
 
     try {
       const handledResult = handleTwoParamsError(warningError, config);
-      
-      assertEquals(handledResult.ok && handledResult.handled, true, "Should handle warning-level PromptGenerationError");
+
+      assertEquals(
+        handledResult.ok && handledResult.handled,
+        true,
+        "Should handle warning-level PromptGenerationError",
+      );
       assertEquals(
         warnOutput.includes("⚠️"),
         true,
@@ -462,15 +474,15 @@ describe("Behavior: Two Params Error Handling", () => {
 
     const criticalError = {
       kind: "PromptGenerationError",
-      error: "nonexistent path access denied"
+      error: "nonexistent path access denied",
     };
 
     const config = {
-      app_prompt: { base_dir: "/real/path" }
+      app_prompt: { base_dir: "/real/path" },
     };
 
     const handledResult = handleTwoParamsError(criticalError, config);
-    
+
     assertEquals(
       handledResult.ok && handledResult.handled,
       false,
@@ -488,7 +500,7 @@ describe("Behavior: Two Params Error Handling", () => {
       { kind: "NetworkError", message: "connection failed" },
       "string error",
       null,
-      { message: "no kind property" }
+      { message: "no kind property" },
     ];
 
     const config = { app_prompt: { base_dir: "/real/path" } };
@@ -510,17 +522,17 @@ describe("Behavior: Two Params Error Handling", () => {
 
     const error = {
       kind: "PromptGenerationError",
-      error: "Template not found"
+      error: "Template not found",
     };
 
     const testConfig = {
       app_prompt: {
-        base_dir: "/nonexistent/path"
-      }
+        base_dir: "/nonexistent/path",
+      },
     };
 
     const handledResult = handleTwoParamsError(error, testConfig);
-    
+
     assertEquals(
       handledResult.ok && handledResult.handled,
       false,

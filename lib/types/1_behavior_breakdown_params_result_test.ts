@@ -1,7 +1,7 @@
 /**
  * @fileoverview Behavior tests for BreakdownParamsResult module
  * Testing business logic and expected behaviors with Result-based Totality
- * 
+ *
  * Behavior tests verify:
  * - Business rules and invariants
  * - Error handling with Result type
@@ -12,13 +12,13 @@
 import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
 import {
   type BreakdownParamsResult,
-  type BreakdownParamsResultSuccess,
   type BreakdownParamsResultFailure,
-  isSuccess,
-  isFailure,
-  success,
+  type BreakdownParamsResultSuccess,
   failure,
+  isFailure,
+  isSuccess,
   match,
+  success,
 } from "./breakdown_params_result.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -26,7 +26,7 @@ import type { TwoParams_Result } from "../deps.ts";
 const createTwoParamsResult = (
   demonstrativeType: string,
   layerType: string = "project",
-  options: Record<string, unknown> = {}
+  options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
   demonstrativeType,
@@ -59,7 +59,7 @@ Deno.test("1_behavior: success() creates correct success variant", () => {
 
   for (const { input, description } of testCases) {
     const result = success(input);
-    
+
     assertEquals(result.type, "success", `Failed for ${description}`);
     assertEquals(result.data, input, `Data mismatch for ${description}`);
     assertEquals(isSuccess(result), true, `Type guard failed for ${description}`);
@@ -93,7 +93,7 @@ Deno.test("1_behavior: failure() creates correct failure variant", () => {
 
   for (const { error, description } of testCases) {
     const result = failure(error);
-    
+
     assertEquals(result.type, "failure", `Failed for ${description}`);
     assertStrictEquals(result.error, error, `Error mismatch for ${description}`);
     assertEquals(isFailure(result), true, `Type guard failed for ${description}`);
@@ -170,7 +170,7 @@ Deno.test("1_behavior: match() handles all variants correctly", () => {
     message: string;
     processed: false;
   };
-  
+
   const complexMatch: ComplexResult = match(successResult, {
     success: (data): ComplexResult => ({
       type: "processed",
@@ -232,7 +232,7 @@ Deno.test("1_behavior: Results preserve original data integrity", () => {
   assertEquals(config.features.length, 3);
   assertEquals(
     config.metadata.settings.deep.nested.value,
-    "preserved"
+    "preserved",
   );
 
   // Original object reference check
@@ -245,7 +245,7 @@ Deno.test("1_behavior: Error information is fully preserved", () => {
     constructor(
       message: string,
       public code: string,
-      public details: Record<string, unknown>
+      public details: Record<string, unknown>,
     ) {
       super(message);
       this.name = "CustomError";
@@ -259,7 +259,7 @@ Deno.test("1_behavior: Error information is fully preserved", () => {
       timestamp: new Date().toISOString(),
       context: "test",
       data: { foo: "bar" },
-    }
+    },
   );
 
   const result = failure(customError);
@@ -293,10 +293,11 @@ Deno.test("1_behavior: Pattern matching with edge cases", () => {
   // Test with chained matching
   const chainResult = success(createTwoParamsResult("chain", "test"));
   const chainedOutput = match(chainResult, {
-    success: (data) => match(success(data), {
-      success: (inner) => `Double success: ${inner.demonstrativeType}`,
-      failure: (_) => "Should not happen",
-    }),
+    success: (data) =>
+      match(success(data), {
+        success: (inner) => `Double success: ${inner.demonstrativeType}`,
+        failure: (_) => "Should not happen",
+      }),
     failure: (_) => "Outer failure",
   });
   assertEquals(chainedOutput, "Double success: chain");

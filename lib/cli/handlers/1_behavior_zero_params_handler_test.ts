@@ -402,7 +402,9 @@ describe("Behavior: Edge Case Handling", () => {
         assertEquals(
           routingResults[0],
           expectedResults[i],
-          `Should route correctly despite unexpected properties: ${JSON.stringify(unexpectedOptions[i])}`,
+          `Should route correctly despite unexpected properties: ${
+            JSON.stringify(unexpectedOptions[i])
+          }`,
         );
       }
     } finally {
@@ -504,17 +506,21 @@ describe("Behavior: Consistency and Reliability", () => {
     ];
 
     const originalLog = console.log;
-    
+
     for (const testCase of testCases) {
       let firstOutput: string[] = [];
       let secondOutput: string[] = [];
 
       // First call
-      console.log = (msg: string) => { firstOutput.push(msg); };
+      console.log = (msg: string) => {
+        firstOutput.push(msg);
+      };
       handleZeroParams([], {}, testCase.options);
 
       // Second call
-      console.log = (msg: string) => { secondOutput.push(msg); };
+      console.log = (msg: string) => {
+        secondOutput.push(msg);
+      };
       handleZeroParams([], {}, testCase.options);
 
       // Should produce identical output
@@ -605,7 +611,7 @@ describe("Behavior: Consistency and Reliability", () => {
 
       for (let i = 0; i < rapidCalls.length; i++) {
         handleZeroParams([], {}, rapidCalls[i].options);
-        
+
         assertEquals(
           callResults[i],
           rapidCalls[i].expected,

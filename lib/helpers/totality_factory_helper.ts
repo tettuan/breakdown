@@ -143,11 +143,13 @@ export async function createTotalityFactory(
     ): Promise<TotalityPromptVariablesFactory> => {
       const configData = await config!.getConfig();
       const result = TotalityPromptVariablesFactory.createWithConfig(configData, params);
-      
+
       if (!result.ok) {
-        throw new Error(`Failed to create PromptVariablesFactory: ${result.error.message || 'Unknown error'}`);
+        throw new Error(
+          `Failed to create PromptVariablesFactory: ${result.error.message || "Unknown error"}`,
+        );
       }
-      
+
       return result.data;
     };
 
@@ -359,7 +361,9 @@ export async function validateConfigurationPatterns(
     if (!providerResult.ok) {
       return {
         valid: false,
-        details: [`Failed to create ConfigPatternProvider: ${JSON.stringify(providerResult.error)}`]
+        details: [
+          `Failed to create ConfigPatternProvider: ${JSON.stringify(providerResult.error)}`,
+        ],
       };
     }
     const provider = providerResult.data;

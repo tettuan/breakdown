@@ -3,7 +3,7 @@
  * @description Logging utilities for the CI system
  */
 
-import type { LogLevel, LogMode, LogConfig } from "./types.ts";
+import type { LogConfig, LogLevel, LogMode } from "./types.ts";
 
 export class Logger {
   private config: LogConfig;
@@ -20,35 +20,35 @@ export class Logger {
     if (this.config.mode === "silent") {
       return level === "error";
     }
-    
+
     if (this.config.mode === "debug") {
       return true; // Show all levels in debug mode
     }
-    
+
     // Normal mode: show info, warn, error
     return level !== "debug";
   }
 
   private formatMessage(level: LogLevel, message: string, status?: string): string {
     const timestamp = new Date().toISOString().substring(11, 19); // HH:mm:ss
-    
+
     if (this.config.mode === "debug") {
       return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
     }
-    
+
     if (this.config.mode === "silent") {
       return status ? `✗ ${status}: ${message}` : `✗ ${message}`;
     }
-    
+
     // Normal mode: concise format
     if (level === "info") {
       return status ? `${status}` : message;
     }
-    
+
     if (level === "error") {
       return status ? `✗ ${status}` : `✗ ${message}`;
     }
-    
+
     return message;
   }
 
@@ -85,7 +85,7 @@ export class Logger {
     if (this.config.mode === "silent") {
       return; // No section headers in silent mode
     }
-    
+
     if (this.config.mode === "debug") {
       const separator = "=".repeat(79);
       console.log(`
@@ -102,7 +102,7 @@ ${separator}`);
     if (this.config.mode === "silent") {
       return; // No subsection headers in silent mode
     }
-    
+
     if (this.config.mode === "debug") {
       console.log(`
 -------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ ${separator}`);
     if (this.config.mode === "silent") {
       return; // No progress in silent mode
     }
-    
+
     if (this.config.mode === "debug") {
       const percentage = Math.round((current / total) * 100);
       console.log(`[${current}/${total}] (${percentage}%) ${item}`);
@@ -215,15 +215,15 @@ ${separator}`);
     }
 
     console.error(`\n✗ FAILED: ${totalErrors} error(s) found`);
-    
+
     if (typeCheckErrors.length > 0) {
       console.error(`  Type Check Errors: ${typeCheckErrors.length}`);
-      typeCheckErrors.forEach(file => console.error(`    ${file}`));
+      typeCheckErrors.forEach((file) => console.error(`    ${file}`));
     }
-    
+
     if (testFailures.length > 0) {
       console.error(`  Test Failures: ${testFailures.length}`);
-      testFailures.forEach(file => console.error(`    ${file}`));
+      testFailures.forEach((file) => console.error(`    ${file}`));
     }
   }
 }

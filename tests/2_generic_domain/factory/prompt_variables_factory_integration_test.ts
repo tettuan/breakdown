@@ -1,7 +1,7 @@
 /**
  * @fileoverview PromptVariablesFactory Integration Tests
  * Testing factory pattern implementation and coordination
- * 
+ *
  * Integration tests verify:
  * - PromptVariablesFactory orchestration and delegation
  * - 3-stage transformation process coordination
@@ -12,9 +12,9 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  PromptVariablesFactory,
-  type PromptCliParams,
   type PromptCliOptions,
+  type PromptCliParams,
+  PromptVariablesFactory,
   type TotalityPromptCliParams,
 } from "../../../lib/factory/prompt_variables_factory.ts";
 import type { Result } from "../../../lib/types/result.ts";
@@ -64,7 +64,10 @@ function createTotalityParams(
 Deno.test("PromptVariablesFactory Integration: complete transformation workflow", async () => {
   logger.debug("Testing complete transformation workflow");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
   const _params = createTestParams("to", "project", {
@@ -85,26 +88,34 @@ Deno.test("PromptVariablesFactory Integration: complete transformation workflow"
     logger.debug("Factory transformation failed", {
       error: result.error.message,
       promptFilePath: (() => {
-        try { return factory.promptFilePath; } catch(e) { return `Error: ${e}`; }
+        try {
+          return factory.promptFilePath;
+        } catch (e) {
+          return `Error: ${e}`;
+        }
       })(),
       inputFilePath: (() => {
-        try { return factory.inputFilePath; } catch(e) { return `Error: ${e}`; }
+        try {
+          return factory.inputFilePath;
+        } catch (e) {
+          return `Error: ${e}`;
+        }
       })(),
     });
   }
 
   // Verify successful transformation
   assertEquals(result.ok, true, "Factory should successfully create prompt variables");
-  
+
   if (result.ok) {
     const promptParams = result.data;
     assertExists(promptParams, "PromptParams should be created");
-    
+
     // Verify the transformation included all stages
     // Stage 1: PromptVariableSource creation
     // Stage 2: Path resolution
     // Stage 3: Final PromptParams assembly
-    
+
     logger.debug("Transformation stages completed", {
       hasPromptParams: !!promptParams,
       parameterCount: Object.keys(promptParams || {}).length,
@@ -115,10 +126,13 @@ Deno.test("PromptVariablesFactory Integration: complete transformation workflow"
 Deno.test("PromptVariablesFactory Integration: path resolver coordination", async () => {
   logger.debug("Testing path resolver coordination");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Test different path resolution scenarios
   const pathTestCases = [
     {
@@ -155,12 +169,12 @@ Deno.test("PromptVariablesFactory Integration: path resolver coordination", asyn
     });
 
     const result = await factory.toPromptParams();
-    
-    // Even if path resolution fails due to missing files, 
+
+    // Even if path resolution fails due to missing files,
     // the factory should handle it gracefully
     assertExists(result, `Result should exist for ${name}`);
     assertEquals(typeof result.ok, "boolean", `Result should have ok property for ${name}`);
-    
+
     if (!result.ok) {
       logger.debug(`Path resolution handled error gracefully: ${name}`, {
         errorType: typeof result.error,
@@ -202,8 +216,11 @@ Deno.test("PromptVariablesFactory Integration: dependency injection verification
     });
 
     // Factory should accept different configurations
-    const factoryResult = PromptVariablesFactory.createWithConfig(config, createTestParams("to", "project", {}));
-    
+    const factoryResult = PromptVariablesFactory.createWithConfig(
+      config,
+      createTestParams("to", "project", {}),
+    );
+
     // Empty configuration should fail
     if (name === "Empty configuration") {
       assertEquals(factoryResult.ok, false, "Empty configuration should fail");
@@ -212,7 +229,7 @@ Deno.test("PromptVariablesFactory Integration: dependency injection verification
       }
       continue;
     }
-    
+
     // Other configurations should succeed
     if (!factoryResult.ok) throw new Error(`Factory creation failed for ${name}`);
     const factory = factoryResult.data;
@@ -232,7 +249,10 @@ Deno.test("PromptVariablesFactory Integration: dependency injection verification
 Deno.test("PromptVariablesFactory Integration: error propagation and handling", async () => {
   logger.debug("Testing error propagation");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
 
@@ -275,11 +295,11 @@ Deno.test("PromptVariablesFactory Integration: error propagation and handling", 
     });
 
     const result = await factory.toPromptParams();
-    
+
     // Error should be handled gracefully
     assertExists(result, `Result should exist for error case: ${name}`);
     assertEquals(typeof result.ok, "boolean", `Result should have ok property for: ${name}`);
-    
+
     if (!result.ok) {
       assertExists(result.error, `Error should be present for: ${name}`);
       logger.debug(`Error properly captured: ${name}`, {
@@ -293,10 +313,13 @@ Deno.test("PromptVariablesFactory Integration: error propagation and handling", 
 Deno.test("PromptVariablesFactory Integration: totality compliance", async () => {
   logger.debug("Testing totality compliance");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Test with totality-compliant parameters
   const totalityParams = createTotalityParams("summary", "issue", {
     fromFile: "issue_details.md",
@@ -308,15 +331,15 @@ Deno.test("PromptVariablesFactory Integration: totality compliance", async () =>
   });
 
   const result = await factory.toPromptParams();
-  
+
   // Totality parameters should be handled correctly
   assertExists(result, "Result should exist for totality parameters");
   assertEquals(typeof result.ok, "boolean", "Result should have ok property");
-  
+
   if (result.ok) {
     const promptParams = result.data;
     assertExists(promptParams, "PromptParams should be created");
-    
+
     logger.debug("Totality compliance verified", {
       hasPromptParams: !!promptParams,
       parametersProcessed: true,
@@ -327,10 +350,13 @@ Deno.test("PromptVariablesFactory Integration: totality compliance", async () =>
 Deno.test("PromptVariablesFactory Integration: factory pattern responsibility separation", async () => {
   logger.debug("Testing factory pattern responsibilities");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Test that factory properly delegates responsibilities
   const params = createTestParams("defect", "task", {
     fromFile: "defect_report.md",
@@ -343,35 +369,39 @@ Deno.test("PromptVariablesFactory Integration: factory pattern responsibility se
   });
 
   const result = await factory.toPromptParams();
-  
+
   // Factory should orchestrate but not implement transformation logic
   assertExists(result, "Factory should orchestrate transformation");
   assertEquals(typeof result.ok, "boolean", "Factory should return Result type");
-  
+
   // Test factory's orchestration role
   logger.debug("Factory orchestration verified", {
     factoryExists: !!factory,
     resultType: typeof result,
-    hasResultProperty: 'ok' in result,
+    hasResultProperty: "ok" in result,
   });
-  
+
   // Verify factory doesn't expose internal implementation details
   const factoryPrototype = Object.getPrototypeOf(factory);
   const allPropertyNames = Object.getOwnPropertyNames(factoryPrototype);
-  const factoryMethods = allPropertyNames.filter(name => {
-    if (name === 'constructor') return false;
+  const factoryMethods = allPropertyNames.filter((name) => {
+    if (name === "constructor") return false;
     try {
       const descriptor = Object.getOwnPropertyDescriptor(factoryPrototype, name);
-      return descriptor && typeof descriptor.value === 'function';
+      return descriptor && typeof descriptor.value === "function";
     } catch (e) {
       // Skip properties that throw errors
       return false;
     }
   });
-  
+
   // Factory should have minimal public interface
   // Note: 'create' is a static method, not an instance method
-  assertEquals(factoryMethods.includes('toPromptParams'), true, "Factory should have toPromptParams method");
+  assertEquals(
+    factoryMethods.includes("toPromptParams"),
+    true,
+    "Factory should have toPromptParams method",
+  );
   logger.debug("Factory interface verified", {
     publicMethods: factoryMethods,
     methodCount: factoryMethods.length,
@@ -381,10 +411,13 @@ Deno.test("PromptVariablesFactory Integration: factory pattern responsibility se
 Deno.test("PromptVariablesFactory Integration: concurrent processing", async () => {
   logger.debug("Testing concurrent processing");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Create multiple concurrent requests
   const concurrentRequests = [
     createTestParams("to", "project", { fromFile: "project1.md" }),
@@ -394,12 +427,12 @@ Deno.test("PromptVariablesFactory Integration: concurrent processing", async () 
   ];
 
   const startTime = performance.now();
-  
+
   // Process all requests concurrently
   const results = await Promise.all(
-    concurrentRequests.map(params => factory.toPromptParams())
+    concurrentRequests.map((params) => factory.toPromptParams()),
   );
-  
+
   const endTime = performance.now();
   const duration = endTime - startTime;
 
@@ -411,7 +444,7 @@ Deno.test("PromptVariablesFactory Integration: concurrent processing", async () 
 
   // Verify all requests were processed
   assertEquals(results.length, concurrentRequests.length, "All requests should be processed");
-  
+
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     assertExists(result, `Result ${i} should exist`);
@@ -425,10 +458,13 @@ Deno.test("PromptVariablesFactory Integration: concurrent processing", async () 
 Deno.test("PromptVariablesFactory Integration: memory management", async () => {
   logger.debug("Testing memory management");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Test memory usage with multiple operations
   const iterations = 50;
   const results: any[] = [];
@@ -449,13 +485,13 @@ Deno.test("PromptVariablesFactory Integration: memory management", async () => {
 
   // Verify all operations completed
   assertEquals(results.length, iterations, "All iterations should complete");
-  
+
   // Verify factory doesn't accumulate state
   for (let i = 0; i < 5; i++) {
     const params = createTestParams("summary", "task", {
       fromFile: `verify_${i}.md`,
     });
-    
+
     const result = await factory.toPromptParams();
     assertExists(result, `Verification result ${i} should exist`);
   }
@@ -470,10 +506,13 @@ Deno.test("PromptVariablesFactory Integration: memory management", async () => {
 Deno.test("PromptVariablesFactory Integration: custom variables processing", async () => {
   logger.debug("Testing custom variables processing");
 
-  const factoryResult = PromptVariablesFactory.createWithConfig(mockConfig, createTestParams("to", "project", {}));
+  const factoryResult = PromptVariablesFactory.createWithConfig(
+    mockConfig,
+    createTestParams("to", "project", {}),
+  );
   if (!factoryResult.ok) throw new Error("Factory creation failed");
   const factory = factoryResult.data;
-  
+
   // Test complex custom variables
   const complexVariables = {
     user_info: JSON.stringify({ name: "Alice", role: "developer" }),
@@ -501,16 +540,16 @@ Deno.test("PromptVariablesFactory Integration: custom variables processing", asy
   });
 
   const result = await factory.toPromptParams();
-  
+
   assertExists(result, "Result should exist for complex variables");
   assertEquals(typeof result.ok, "boolean", "Result should have ok property");
-  
+
   logger.debug("Complex variables processed", {
     variableCount: Object.keys(complexVariables).length,
     resultExists: !!result,
     hasComplexData: true,
   });
-  
+
   // Verify factory handles complex data structures
   const variableKeys = Object.keys(complexVariables);
   assertEquals(variableKeys.length, 4, "All custom variables should be accounted for");

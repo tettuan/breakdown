@@ -1,6 +1,6 @@
 /**
  * @fileoverview Architecture tests for VariablesBuilder
- * 
+ *
  * Tests dependency constraints, layer violations, and circular references
  * for the variables_builder module following DDD principles.
  */
@@ -9,7 +9,7 @@ import { assertEquals } from "jsr:@std/assert@1";
 
 /**
  * Architecture constraint tests for VariablesBuilder
- * 
+ *
  * Ensures:
  * 1. No circular dependencies
  * 2. Proper layer boundaries (builder -> types, no reverse)
@@ -18,7 +18,7 @@ import { assertEquals } from "jsr:@std/assert@1";
  */
 Deno.test("VariablesBuilder - architecture constraints", async () => {
   const moduleContent = await Deno.readTextFile(
-    new URL("./variables_builder.ts", import.meta.url)
+    new URL("./variables_builder.ts", import.meta.url),
   );
 
   // Test 1: Check allowed imports only
@@ -26,18 +26,18 @@ Deno.test("VariablesBuilder - architecture constraints", async () => {
     "../types/result.ts",
     "../types/prompt_variables.ts",
     "../types/variable_result.ts",
-    "jsr:@std/path"
+    "jsr:@std/path",
   ];
 
   const importMatches = moduleContent.matchAll(/from\s+["']([^"']+)["']/g);
-  const actualImports = Array.from(importMatches).map(match => match[1]);
+  const actualImports = Array.from(importMatches).map((match) => match[1]);
 
   for (const imp of actualImports) {
-    const isAllowed = allowedImports.some(allowed => imp.includes(allowed));
+    const isAllowed = allowedImports.some((allowed) => imp.includes(allowed));
     assertEquals(
       isAllowed,
       true,
-      `Unauthorized import detected: ${imp}. Builder layer should only import from types layer.`
+      `Unauthorized import detected: ${imp}. Builder layer should only import from types layer.`,
     );
   }
 
@@ -51,14 +51,14 @@ Deno.test("VariablesBuilder - architecture constraints", async () => {
     /Deno\.create/,
     /Deno\.remove/,
     /Deno\.rename/,
-    /fs\./  // No fs module usage
+    /fs\./, // No fs module usage
   ];
 
   for (const pattern of forbiddenPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `Direct file system operation detected: ${pattern}. Builder should not access file system directly.`
+      `Direct file system operation detected: ${pattern}. Builder should not access file system directly.`,
     );
   }
 
@@ -69,14 +69,14 @@ Deno.test("VariablesBuilder - architecture constraints", async () => {
     "/workspace/",
     "/cli/",
     "/commands/",
-    "/processor/"
+    "/processor/",
   ];
 
   for (const forbidden of forbiddenImports) {
     assertEquals(
       moduleContent.includes(forbidden),
       false,
-      `Infrastructure layer import detected: ${forbidden}. Builder should not depend on infrastructure.`
+      `Infrastructure layer import detected: ${forbidden}. Builder should not depend on infrastructure.`,
     );
   }
 
@@ -84,21 +84,21 @@ Deno.test("VariablesBuilder - architecture constraints", async () => {
   assertEquals(
     moduleContent.includes("Result<"),
     true,
-    "Builder should use Result type for error handling"
+    "Builder should use Result type for error handling",
   );
 
   // Test 5: No console.log or direct logging
   const loggingPatterns = [
     /console\./,
     /BreakdownLogger/,
-    /logger\./
+    /logger\./,
   ];
 
   for (const pattern of loggingPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `Direct logging detected: ${pattern}. Builder should not perform logging.`
+      `Direct logging detected: ${pattern}. Builder should not perform logging.`,
     );
   }
 });
@@ -123,7 +123,7 @@ Deno.test("VariablesBuilder - dependency direction", () => {
  */
 Deno.test("VariablesBuilder - layer isolation", async () => {
   const moduleContent = await Deno.readTextFile(
-    new URL("./variables_builder.ts", import.meta.url)
+    new URL("./variables_builder.ts", import.meta.url),
   );
 
   // Builder should not know about CLI specifics
@@ -132,14 +132,14 @@ Deno.test("VariablesBuilder - layer isolation", async () => {
     /Deno\.args/,
     /commander/,
     /yargs/,
-    /cli-/
+    /cli-/,
   ];
 
   for (const pattern of cliPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `CLI-specific code detected: ${pattern}. Builder should be CLI-agnostic.`
+      `CLI-specific code detected: ${pattern}. Builder should be CLI-agnostic.`,
     );
   }
 
@@ -149,14 +149,14 @@ Deno.test("VariablesBuilder - layer isolation", async () => {
     /http/,
     /https/,
     /WebSocket/,
-    /XMLHttpRequest/
+    /XMLHttpRequest/,
   ];
 
   for (const pattern of networkPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `Network code detected: ${pattern}. Builder should not handle network operations.`
+      `Network code detected: ${pattern}. Builder should not handle network operations.`,
     );
   }
 });
@@ -166,7 +166,7 @@ Deno.test("VariablesBuilder - layer isolation", async () => {
  */
 Deno.test("VariablesBuilder - single responsibility", async () => {
   const moduleContent = await Deno.readTextFile(
-    new URL("./variables_builder.ts", import.meta.url)
+    new URL("./variables_builder.ts", import.meta.url),
   );
 
   // Check that class has focused responsibility
@@ -179,14 +179,14 @@ Deno.test("VariablesBuilder - single responsibility", async () => {
     /class.*Validator/,
     /class.*Repository/,
     /class.*Service/,
-    /class.*Controller/
+    /class.*Controller/,
   ];
 
   for (const pattern of unrelatedPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `Unrelated responsibility detected: ${pattern}. Builder should only build variables.`
+      `Unrelated responsibility detected: ${pattern}. Builder should only build variables.`,
     );
   }
 });
@@ -196,19 +196,21 @@ Deno.test("VariablesBuilder - single responsibility", async () => {
  */
 Deno.test("VariablesBuilder - interface segregation", async () => {
   const moduleContent = await Deno.readTextFile(
-    new URL("./variables_builder.ts", import.meta.url)
+    new URL("./variables_builder.ts", import.meta.url),
   );
 
   // Check FactoryResolvedValues interface is focused
-  const interfaceMatch = moduleContent.match(/export\s+interface\s+FactoryResolvedValues\s*{([^}]+)}/s);
+  const interfaceMatch = moduleContent.match(
+    /export\s+interface\s+FactoryResolvedValues\s*{([^}]+)}/s,
+  );
   if (interfaceMatch) {
     const interfaceBody = interfaceMatch[1];
     const propertyCount = (interfaceBody.match(/\w+\s*[?:]?\s*:/g) || []).length;
-    
+
     assertEquals(
       propertyCount <= 10,
       true,
-      `Interface too large: ${propertyCount} properties. Consider splitting into smaller interfaces.`
+      `Interface too large: ${propertyCount} properties. Consider splitting into smaller interfaces.`,
     );
   }
 });
@@ -218,20 +220,20 @@ Deno.test("VariablesBuilder - interface segregation", async () => {
  */
 Deno.test("VariablesBuilder - open/closed principle", async () => {
   const moduleContent = await Deno.readTextFile(
-    new URL("./variables_builder.ts", import.meta.url)
+    new URL("./variables_builder.ts", import.meta.url),
   );
 
   // Should use method chaining for extensibility
   assertEquals(
     moduleContent.includes("return this;"),
     true,
-    "Builder should support method chaining for extensibility"
+    "Builder should support method chaining for extensibility",
   );
 
   // Should have factory methods for common use cases
   assertEquals(
     moduleContent.includes("static fromFactoryValues"),
     true,
-    "Builder should provide factory methods for extensibility"
+    "Builder should provide factory methods for extensibility",
   );
 });

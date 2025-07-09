@@ -25,8 +25,8 @@ import {
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
-  SchemaFilePathResolver,
   type SchemaFilePathError,
+  SchemaFilePathResolver,
   SchemaPath,
 } from "./schema_file_path_resolver.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
@@ -123,7 +123,7 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
   // Resolver should maintain original values
   const currentBaseDir = result.data.resolveBaseDir();
   const currentPath = result.data.buildSchemaPath("/test", "file.md");
-  
+
   assertEquals(currentBaseDir, originalBaseDir, "Base dir should not change");
   assertEquals(currentPath, originalPath, "Built path should not change");
   assert(currentPath.includes("/to/project/"), "Should use original params");
@@ -241,7 +241,7 @@ Deno.test("SchemaFilePathResolver Architecture - PathResolutionError conversion 
 
 Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintained", () => {
   const config = { app_schema: { base_dir: "/test" } };
-  
+
   // Test with legacy DoubleParams_Result structure
   const legacyParams = {
     demonstrativeType: "to",
@@ -257,7 +257,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
     type: "two" as const,
     params: ["to", "project"],
     demonstrativeType: "to",
-    layerType: "project", 
+    layerType: "project",
     options: {},
   };
 

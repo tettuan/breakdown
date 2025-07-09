@@ -1,7 +1,7 @@
 import { PromptVariables } from "../../types/prompt_types.ts";
 import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
-import { UserVariableError, formatUserVariableError } from "./user_variable_error.ts";
+import { error, ok } from "../../types/result.ts";
+import { formatUserVariableError, UserVariableError } from "./user_variable_error.ts";
 
 /**
  * UserPromptVariables - User-defined prompt variables implementation
@@ -68,7 +68,7 @@ export class UserPromptVariables implements PromptVariables {
 
   /**
    * Gets a specific variable value (unsafe version for backward compatibility)
-   * 
+   *
    * @deprecated Use get() instead for Result-based error handling
    * @param key - The variable key
    * @returns The variable value or undefined if not found
@@ -220,7 +220,9 @@ export class UserPromptVariables implements PromptVariables {
    * }
    * ```
    */
-  static fromOptions(options: Record<string, unknown>): Result<UserPromptVariables, UserVariableError> {
+  static fromOptions(
+    options: Record<string, unknown>,
+  ): Result<UserPromptVariables, UserVariableError> {
     const userVariables: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(options)) {
@@ -241,7 +243,7 @@ export class UserPromptVariables implements PromptVariables {
 
   /**
    * Creates a new UserPromptVariables instance (unsafe version for backward compatibility)
-   * 
+   *
    * @deprecated Use create() instead for Result-based error handling
    * @param variables - Record of user-defined variables
    * @returns A new UserPromptVariables instance
@@ -257,7 +259,7 @@ export class UserPromptVariables implements PromptVariables {
 
   /**
    * Creates a new instance with an additional variable (unsafe version)
-   * 
+   *
    * @deprecated Use with() instead for Result-based error handling
    * @param key - The variable key
    * @param value - The variable value
@@ -274,7 +276,7 @@ export class UserPromptVariables implements PromptVariables {
 
   /**
    * Creates a new instance by merging with other variables (unsafe version)
-   * 
+   *
    * @deprecated Use merge() instead for Result-based error handling
    * @param other - Other variables to merge
    * @returns A new UserPromptVariables instance
@@ -290,7 +292,7 @@ export class UserPromptVariables implements PromptVariables {
 
   /**
    * Creates UserPromptVariables from CLI arguments (unsafe version)
-   * 
+   *
    * @deprecated Use fromOptions() instead for Result-based error handling
    * @param options - Options object containing uv-prefixed properties
    * @returns A new UserPromptVariables instance

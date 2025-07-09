@@ -99,7 +99,7 @@ export class PromptFileGenerator {
           },
         };
       }
-      
+
       factory = factoryResult.data;
       const params = factory.getAllParams();
       promptFilePath = params.promptFilePath;
@@ -170,7 +170,9 @@ export class PromptFileGenerator {
     // 6. テンプレート処理
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
     // PromptVariablesFactory implements PromptVariablesProvider interface
-    const _adapter = new PromptAdapterImpl(factory as import("../prompt/prompt_adapter.ts").PromptVariablesProvider);
+    const _adapter = new PromptAdapterImpl(
+      factory as import("../prompt/prompt_adapter.ts").PromptVariablesProvider,
+    );
     const result = await _adapter.validateAndGenerate();
     if (result.success) {
       return {

@@ -1,7 +1,7 @@
 /**
  * @fileoverview Tests for createOrError pattern with Result type
  * Testing Result type usage with ValidationError and ErrorFactory
- * 
+ *
  * This test demonstrates how Result type can be used with
  * createOrError pattern similar to DirectiveType implementation
  */
@@ -13,11 +13,11 @@ import { ErrorFactory, ValidationError } from "./mod.ts";
 // Example domain type with createOrError pattern
 class ExampleDomainType {
   private constructor(private readonly value: string) {}
-  
+
   getValue(): string {
     return this.value;
   }
-  
+
   /**
    * Create instance with validation using Result type
    * Similar to DirectiveType.createOrError pattern
@@ -28,7 +28,7 @@ class ExampleDomainType {
       minLength?: number;
       maxLength?: number;
       pattern?: RegExp;
-    }
+    },
   ): Result<ExampleDomainType, ValidationError> {
     // Validate empty string
     if (!value || value.trim().length === 0) {
@@ -37,7 +37,7 @@ class ExampleDomainType {
         source: "ExampleDomainType",
       }));
     }
-    
+
     // Validate minimum length
     if (options?.minLength && value.length < options.minLength) {
       return error(ErrorFactory.validationError("InvalidInput", {
@@ -46,7 +46,7 @@ class ExampleDomainType {
         reason: `Value must be at least ${options.minLength} characters long`,
       }));
     }
-    
+
     // Validate maximum length
     if (options?.maxLength && value.length > options.maxLength) {
       return error(ErrorFactory.validationError("InvalidInput", {
@@ -55,7 +55,7 @@ class ExampleDomainType {
         reason: `Value must not exceed ${options.maxLength} characters`,
       }));
     }
-    
+
     // Validate pattern
     if (options?.pattern && !options.pattern.test(value)) {
       return error(ErrorFactory.validationError("InvalidInput", {
@@ -64,7 +64,7 @@ class ExampleDomainType {
         reason: `Value does not match required pattern: ${options.pattern.source}`,
       }));
     }
-    
+
     // All validations passed
     return ok(new ExampleDomainType(value));
   }
@@ -79,7 +79,7 @@ Deno.test("1_behavior: createOrError pattern validates empty input", () => {
       assertEquals(result1.error.field, "value");
     }
   }
-  
+
   const result2 = ExampleDomainType.createOrError("   ");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -97,7 +97,7 @@ Deno.test("1_behavior: createOrError pattern validates length constraints", () =
       assertEquals(tooShort.error.reason, "Value must be at least 3 characters long");
     }
   }
-  
+
   // Test maximum length
   const tooLong = ExampleDomainType.createOrError("hello world", { maxLength: 5 });
   assertEquals(tooLong.ok, false);
@@ -107,7 +107,7 @@ Deno.test("1_behavior: createOrError pattern validates length constraints", () =
       assertEquals(tooLong.error.reason, "Value must not exceed 5 characters");
     }
   }
-  
+
   // Test valid length
   const valid = ExampleDomainType.createOrError("hello", { minLength: 3, maxLength: 10 });
   assertEquals(valid.ok, true);
@@ -118,7 +118,7 @@ Deno.test("1_behavior: createOrError pattern validates length constraints", () =
 
 Deno.test("1_behavior: createOrError pattern validates regex patterns", () => {
   const alphanumericPattern = /^[a-zA-Z0-9]+$/;
-  
+
   // Test invalid pattern match
   const invalid = ExampleDomainType.createOrError("hello world!", { pattern: alphanumericPattern });
   assertEquals(invalid.ok, false);
@@ -128,7 +128,7 @@ Deno.test("1_behavior: createOrError pattern validates regex patterns", () => {
       assertEquals(invalid.error.reason, "Value does not match required pattern: ^[a-zA-Z0-9]+$");
     }
   }
-  
+
   // Test valid pattern match
   const valid = ExampleDomainType.createOrError("hello123", { pattern: alphanumericPattern });
   assertEquals(valid.ok, true);
@@ -143,7 +143,7 @@ Deno.test("1_behavior: createOrError pattern combines multiple validations", () 
     maxLength: 10,
     pattern: /^[A-Z][a-z]+$/,
   };
-  
+
   // Test all validation failures
   const testCases = [
     { input: "abc", expectedError: "Value must be at least 5 characters long" },
@@ -152,10 +152,10 @@ Deno.test("1_behavior: createOrError pattern combines multiple validations", () 
     { input: "Valid", expectedSuccess: true },
     { input: "Validation", expectedSuccess: true },
   ];
-  
+
   for (const { input, expectedError, expectedSuccess } of testCases) {
     const result = ExampleDomainType.createOrError(input, options);
-    
+
     if (expectedSuccess) {
       assertEquals(result.ok, true, `Expected success for input: ${input}`);
       if (result.ok) {
@@ -174,14 +174,14 @@ Deno.test("1_behavior: Result type with ErrorFactory provides clear error messag
   // Simulating DirectiveType-like validation
   function validateDirectiveType(value: string): Result<string, ValidationError> {
     const validDirectives = ["to", "from", "summary", "defect"];
-    
+
     if (!value) {
       return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "directiveType",
         source: "DirectiveValidator",
       }));
     }
-    
+
     if (!validDirectives.includes(value)) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "directiveType",
@@ -189,10 +189,10 @@ Deno.test("1_behavior: Result type with ErrorFactory provides clear error messag
         reason: `Invalid directive type. Must be one of: ${validDirectives.join(", ")}`,
       }));
     }
-    
+
     return ok(value);
   }
-  
+
   // Test missing field
   const missing = validateDirectiveType("");
   assertEquals(missing.ok, false);
@@ -202,7 +202,7 @@ Deno.test("1_behavior: Result type with ErrorFactory provides clear error messag
       assertEquals(missing.error.field, "directiveType");
     }
   }
-  
+
   // Test invalid value
   const invalid = validateDirectiveType("invalid");
   assertEquals(invalid.ok, false);
@@ -214,7 +214,7 @@ Deno.test("1_behavior: Result type with ErrorFactory provides clear error messag
       assertEquals(invalid.error.reason.includes("to, from, summary, defect"), true);
     }
   }
-  
+
   // Test valid value
   const valid = validateDirectiveType("summary");
   assertEquals(valid.ok, true);
@@ -226,16 +226,16 @@ Deno.test("1_behavior: Result type with ErrorFactory provides clear error messag
 Deno.test("1_behavior: createOrError pattern ensures Totality principle", () => {
   // Every possible input produces a defined output (no exceptions)
   const inputs = [
-    "",            // Empty string
-    "   ",         // Whitespace
-    "valid",       // Normal string
+    "", // Empty string
+    "   ", // Whitespace
+    "valid", // Normal string
     "a".repeat(100), // Very long string
-    "特殊文字",    // Unicode
-    "🎯",          // Emoji
-    null as any,   // Invalid type
+    "特殊文字", // Unicode
+    "🎯", // Emoji
+    null as any, // Invalid type
     undefined as any, // Invalid type
   ];
-  
+
   for (const input of inputs) {
     // Should never throw, always return Result
     let result: Result<ExampleDomainType, ValidationError>;

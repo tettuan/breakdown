@@ -11,11 +11,7 @@
  * @module types/1_behavior_legacy_factories_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertStrictEquals,
-} from "../deps.ts";
+import { assert, assertEquals, assertStrictEquals } from "../deps.ts";
 import {
   type DemonstrativeType,
   DemonstrativeTypeFactory,
@@ -50,9 +46,15 @@ Deno.test("Legacy Factories Behavior - DemonstrativeTypeFactory string conversio
 
   // Test case insensitive conversion
   const caseVariations = [
-    "TO", "To", "tO",
-    "SUMMARY", "Summary", "SuMmArY",
-    "DEFECT", "Defect", "DeFeCt",
+    "TO",
+    "To",
+    "tO",
+    "SUMMARY",
+    "Summary",
+    "SuMmArY",
+    "DEFECT",
+    "Defect",
+    "DeFeCt",
   ];
 
   for (const input of caseVariations) {
@@ -65,7 +67,11 @@ Deno.test("Legacy Factories Behavior - DemonstrativeTypeFactory string conversio
 
   // Test whitespace handling
   const whitespaceInputs = [
-    "  to  ", "\tto\t", "\nto\n", " to", "to ",
+    "  to  ",
+    "\tto\t",
+    "\nto\n",
+    " to",
+    "to ",
   ];
 
   for (const input of whitespaceInputs) {
@@ -78,7 +84,13 @@ Deno.test("Legacy Factories Behavior - DemonstrativeTypeFactory string conversio
 
   // Test invalid inputs return null
   const invalidInputs = [
-    "", "   ", "invalid", "unknown", "123", "to-extra", "to_variant"
+    "",
+    "   ",
+    "invalid",
+    "unknown",
+    "123",
+    "to-extra",
+    "to_variant",
   ];
 
   for (const input of invalidInputs) {
@@ -108,9 +120,15 @@ Deno.test("Legacy Factories Behavior - LegacyLayerTypeFactory string conversion"
 
   // Test case insensitive conversion
   const caseVariations = [
-    "PROJECT", "Project", "PrOjEcT",
-    "ISSUE", "Issue", "IsSuE",
-    "TASK", "Task", "TaSk",
+    "PROJECT",
+    "Project",
+    "PrOjEcT",
+    "ISSUE",
+    "Issue",
+    "IsSuE",
+    "TASK",
+    "Task",
+    "TaSk",
   ];
 
   for (const input of caseVariations) {
@@ -123,7 +141,12 @@ Deno.test("Legacy Factories Behavior - LegacyLayerTypeFactory string conversion"
 
   // Test invalid inputs return null
   const invalidInputs = [
-    "", "   ", "invalid", "unknown", "layer", "project-extra"
+    "",
+    "   ",
+    "invalid",
+    "unknown",
+    "layer",
+    "project-extra",
   ];
 
   for (const input of invalidInputs) {
@@ -149,7 +172,7 @@ Deno.test("Legacy Factories Behavior - Type guard accuracy", () => {
 
     // Test other guards return false
     const otherGuards = ["isTo", "isSummary", "isDefect", "isInit", "isFind"]
-      .filter(guard => guard !== expectedGuard);
+      .filter((guard) => guard !== expectedGuard);
 
     for (const otherGuard of otherGuards) {
       const otherResult = (DemonstrativeTypeGuards as any)[otherGuard](type);
@@ -173,7 +196,7 @@ Deno.test("Legacy Factories Behavior - Type guard accuracy", () => {
 
     // Test other guards return false
     const otherGuards = ["isProject", "isIssue", "isTask", "isBugs", "isTemp"]
-      .filter(guard => guard !== expectedGuard);
+      .filter((guard) => guard !== expectedGuard);
 
     for (const otherGuard of otherGuards) {
       const otherResult = (LegacyLayerTypeGuards as any)[otherGuard](type);
@@ -195,7 +218,7 @@ Deno.test("Legacy Factories Behavior - Factory method consistency", () => {
   for (const factory of demonstrativeTests) {
     const result1 = factory();
     const result2 = factory();
-    
+
     // Should be equivalent but different instances
     assertEquals(result1.kind, result2.kind, "Multiple calls should produce equivalent kinds");
     assertEquals(result1.value, result2.value, "Multiple calls should produce equivalent values");
@@ -213,7 +236,7 @@ Deno.test("Legacy Factories Behavior - Factory method consistency", () => {
   for (const factory of layerTests) {
     const result1 = factory();
     const result2 = factory();
-    
+
     assertEquals(result1.kind, result2.kind, "Multiple calls should produce equivalent kinds");
     assertEquals(result1.value, result2.value, "Multiple calls should produce equivalent values");
   }
@@ -232,9 +255,17 @@ Deno.test("Legacy Factories Behavior - Alias factory equivalence", () => {
   for (const { method, expected } of directiveAliasTests) {
     const originalResult = (DemonstrativeTypeFactory as any)[method]();
     const aliasResult = (DirectiveFactory as any)[method]();
-    
-    assertEquals(originalResult.kind, aliasResult.kind, `DirectiveFactory.${method} should match original`);
-    assertEquals(originalResult.value, aliasResult.value, `DirectiveFactory.${method} should match original`);
+
+    assertEquals(
+      originalResult.kind,
+      aliasResult.kind,
+      `DirectiveFactory.${method} should match original`,
+    );
+    assertEquals(
+      originalResult.value,
+      aliasResult.value,
+      `DirectiveFactory.${method} should match original`,
+    );
     assertEquals(originalResult.kind, expected, `Should produce expected result: ${expected}`);
   }
 
@@ -249,18 +280,30 @@ Deno.test("Legacy Factories Behavior - Alias factory equivalence", () => {
   for (const { method, expected } of layerAliasTests) {
     const originalResult = (LegacyLayerTypeFactory as any)[method]();
     const aliasResult = (LayerFactory as any)[method]();
-    
-    assertEquals(originalResult.kind, aliasResult.kind, `LayerFactory.${method} should match original`);
-    assertEquals(originalResult.value, aliasResult.value, `LayerFactory.${method} should match original`);
+
+    assertEquals(
+      originalResult.kind,
+      aliasResult.kind,
+      `LayerFactory.${method} should match original`,
+    );
+    assertEquals(
+      originalResult.value,
+      aliasResult.value,
+      `LayerFactory.${method} should match original`,
+    );
     assertEquals(originalResult.kind, expected, `Should produce expected result: ${expected}`);
   }
 
   // Test fromString methods also work through aliases
   const directiveFromString = DirectiveFactory.fromString("to");
   const originalFromString = DemonstrativeTypeFactory.fromString("to");
-  
+
   if (directiveFromString && originalFromString) {
-    assertEquals(directiveFromString.kind, originalFromString.kind, "fromString should work through alias");
+    assertEquals(
+      directiveFromString.kind,
+      originalFromString.kind,
+      "fromString should work through alias",
+    );
   }
 });
 
@@ -268,7 +311,7 @@ Deno.test("Legacy Factories Behavior - Placeholder factory functionality", () =>
   // Test TwoParamsConfigFactory
   const configResult = TwoParamsConfigFactory.create();
   assertEquals(typeof configResult, "object", "TwoParamsConfigFactory should return object");
-  
+
   // Multiple calls should work (even if they return empty objects)
   const configResult2 = TwoParamsConfigFactory.create();
   assertEquals(typeof configResult2, "object", "TwoParamsConfigFactory should work consistently");
@@ -336,7 +379,10 @@ Deno.test("Legacy Factories Behavior - Edge case string handling", () => {
   for (const input of unicodeWhitespace) {
     const result = DemonstrativeTypeFactory.fromString(input);
     // Behavior depends on implementation of trim() - some may handle Unicode whitespace
-    assert(result === null || result.kind === "to", `Should handle Unicode whitespace predictably: "${input}"`);
+    assert(
+      result === null || result.kind === "to",
+      `Should handle Unicode whitespace predictably: "${input}"`,
+    );
   }
 });
 

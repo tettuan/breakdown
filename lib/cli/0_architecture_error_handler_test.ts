@@ -14,13 +14,13 @@
 import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
-  ErrorSeverity,
+import {
   analyzeErrorSeverity,
+  ErrorSeverity,
   extractErrorMessage,
   formatError,
+  handleTwoParamsError,
   isTestingErrorHandling,
-  handleTwoParamsError
 } from "./error_handler.ts";
 
 const logger = new BreakdownLogger("error-handler-architecture");
@@ -45,11 +45,23 @@ describe("Architecture: Error Handler Module Structure", () => {
     assertExists(handleTwoParamsError, "handleTwoParamsError function must be exported");
 
     // Function types
-    assertEquals(typeof analyzeErrorSeverity, "function", "analyzeErrorSeverity must be a function");
+    assertEquals(
+      typeof analyzeErrorSeverity,
+      "function",
+      "analyzeErrorSeverity must be a function",
+    );
     assertEquals(typeof extractErrorMessage, "function", "extractErrorMessage must be a function");
     assertEquals(typeof formatError, "function", "formatError must be a function");
-    assertEquals(typeof isTestingErrorHandling, "function", "isTestingErrorHandling must be a function");
-    assertEquals(typeof handleTwoParamsError, "function", "handleTwoParamsError must be a function");
+    assertEquals(
+      typeof isTestingErrorHandling,
+      "function",
+      "isTestingErrorHandling must be a function",
+    );
+    assertEquals(
+      typeof handleTwoParamsError,
+      "function",
+      "handleTwoParamsError must be a function",
+    );
 
     logger.debug("Module exports verification completed");
   });
@@ -101,8 +113,9 @@ describe("Architecture: Error Handler Module Structure", () => {
     // Each function should have a focused responsibility
     const analyzeString = analyzeErrorSeverity.toString();
     assertEquals(
-      analyzeString.includes("severity") || analyzeString.includes("CRITICAL") || analyzeString.includes("WARNING") || 
-      analyzeString.includes("critical") || analyzeString.includes("warning"),
+      analyzeString.includes("severity") || analyzeString.includes("CRITICAL") ||
+        analyzeString.includes("WARNING") ||
+        analyzeString.includes("critical") || analyzeString.includes("warning"),
       true,
       "analyzeErrorSeverity should focus on severity analysis",
     );
@@ -149,7 +162,8 @@ describe("Architecture: Error Handler Module Structure", () => {
 
     // Should reference unified error types
     assertEquals(
-      extractString.includes("extractUnifiedErrorMessage") || extractString.includes("UnifiedError"),
+      extractString.includes("extractUnifiedErrorMessage") ||
+        extractString.includes("UnifiedError"),
       true,
       "extractErrorMessage should integrate with unified error types",
     );
@@ -197,7 +211,8 @@ describe("Architecture: Error Processing Design", () => {
       "handleTwoParamsError should use error analysis",
     );
     assertEquals(
-      handleString.includes("console.") || handleString.includes("warn") || handleString.includes("log"),
+      handleString.includes("console.") || handleString.includes("warn") ||
+        handleString.includes("log"),
       true,
       "handleTwoParamsError should perform actual handling",
     );
@@ -234,7 +249,8 @@ describe("Architecture: Error Processing Design", () => {
 
     // Should validate error structure before processing
     assertEquals(
-      handleString.includes("typeof") && handleString.includes("object") && handleString.includes("kind"),
+      handleString.includes("typeof") && handleString.includes("object") &&
+        handleString.includes("kind"),
       true,
       "handleTwoParamsError should validate error structure",
     );
@@ -245,11 +261,11 @@ describe("Architecture: Error Processing Design", () => {
   it("should maintain immutable error processing", () => {
     logger.debug("Testing immutable error processing");
 
-    const testError = { 
-      kind: "WorkspaceError", 
-      type: "workspace_error", 
+    const testError = {
+      kind: "WorkspaceError",
+      type: "workspace_error",
       code: "TEST_ERROR",
-      message: "test message" 
+      message: "test message",
     } as const;
     const originalError = JSON.stringify(testError);
 
@@ -277,13 +293,17 @@ describe("Architecture: Error Processing Design", () => {
 
     // Verify processing results
     assertExists(severity, "Should return severity analysis");
-    assertEquals(severity.kind === "critical" || severity.kind === "warning", true, "Should return valid severity");
-    
+    assertEquals(
+      severity.kind === "critical" || severity.kind === "warning",
+      true,
+      "Should return valid severity",
+    );
+
     assertEquals(messageResult.ok, true, "Should successfully extract message");
     if (messageResult.ok) {
       assertExists(messageResult.data, "Should return extracted message");
     }
-    
+
     assertEquals(formattedResult.ok, true, "Should successfully format error");
     if (formattedResult.ok) {
       assertExists(formattedResult.data, "Should return formatted error");
@@ -322,21 +342,25 @@ describe("Architecture: Configuration Integration", () => {
     interface ArchitectureTestConfig {
       readonly app_prompt: { readonly base_dir: string };
     }
-    
+
     const testConfig: ArchitectureTestConfig = { app_prompt: { base_dir: "/test" } };
     const originalConfig = JSON.stringify(testConfig);
-    
+
     const testingResult = isTestingErrorHandling(testConfig);
     assertEquals(
       JSON.stringify(testConfig),
       originalConfig,
       "isTestingErrorHandling should not modify config",
     );
-    
+
     // Verify result structure
     assertEquals(testingResult.ok, true, "Should return valid result");
     assertEquals(typeof testingResult.isValid, "boolean", "Should have isValid property");
-    assertEquals(typeof testingResult.isTestScenario, "boolean", "Should have isTestScenario property");
+    assertEquals(
+      typeof testingResult.isTestScenario,
+      "boolean",
+      "Should have isTestScenario property",
+    );
 
     logger.debug("Configuration integration verified");
   });
@@ -349,28 +373,40 @@ describe("Architecture: Configuration Integration", () => {
     assertEquals(nullResult.ok, true, "Should handle null config");
     assertEquals(nullResult.isValid, false, "Null config should be invalid");
     assertEquals(nullResult.isTestScenario, false, "Null config should not be test scenario");
-    
+
     const undefinedResult = isTestingErrorHandling(undefined as any);
     assertEquals(undefinedResult.ok, true, "Should handle undefined config");
     assertEquals(undefinedResult.isValid, false, "Undefined config should be invalid");
-    assertEquals(undefinedResult.isTestScenario, false, "Undefined config should not be test scenario");
+    assertEquals(
+      undefinedResult.isTestScenario,
+      false,
+      "Undefined config should not be test scenario",
+    );
 
     // Should handle malformed config
     const emptyResult = isTestingErrorHandling({} as any);
     assertEquals(emptyResult.ok, true, "Should handle empty config");
     assertEquals(emptyResult.isValid, false, "Empty config should be invalid");
     assertEquals(emptyResult.isTestScenario, false, "Empty config should not be test scenario");
-    
+
     const malformedResult = isTestingErrorHandling({ app_prompt: null } as any);
     assertEquals(malformedResult.ok, true, "Should handle malformed config");
     assertEquals(malformedResult.isValid, false, "Malformed config should be invalid");
-    assertEquals(malformedResult.isTestScenario, false, "Malformed config should not be test scenario");
+    assertEquals(
+      malformedResult.isTestScenario,
+      false,
+      "Malformed config should not be test scenario",
+    );
 
     // Should handle non-object config
     const invalidResult = isTestingErrorHandling("invalid" as any);
     assertEquals(invalidResult.ok, true, "Should handle non-object config");
     assertEquals(invalidResult.isValid, false, "Non-object config should be invalid");
-    assertEquals(invalidResult.isTestScenario, false, "Non-object config should not be test scenario");
+    assertEquals(
+      invalidResult.isTestScenario,
+      false,
+      "Non-object config should not be test scenario",
+    );
 
     logger.debug("Configuration edge case handling verified");
   });
@@ -385,22 +421,23 @@ describe("Architecture: Error Severity Classification", () => {
     // Should have clear classification criteria
     assertEquals(
       (analyzeString.includes("CRITICAL") && analyzeString.includes("WARNING")) ||
-      (analyzeString.includes("critical") && analyzeString.includes("warning")),
+        (analyzeString.includes("critical") && analyzeString.includes("warning")),
       true,
       "Should classify errors into CRITICAL and WARNING",
     );
 
     // Should have specific patterns for critical errors
     assertEquals(
-      analyzeString.includes("nonexistent") || analyzeString.includes("permission") || analyzeString.includes("critical"),
+      analyzeString.includes("nonexistent") || analyzeString.includes("permission") ||
+        analyzeString.includes("critical"),
       true,
       "Should have specific patterns for critical errors",
     );
 
     // Should default to appropriate severity
     assertEquals(
-      analyzeString.includes("return ErrorSeverity.CRITICAL") || 
-      analyzeString.includes('kind: "critical"'),
+      analyzeString.includes("return ErrorSeverity.CRITICAL") ||
+        analyzeString.includes('kind: "critical"'),
       true,
       "Should have appropriate default severity",
     );
@@ -420,10 +457,10 @@ describe("Architecture: Error Severity Classification", () => {
 
     // Same error should always produce same severity
     const testError = { kind: "PromptGenerationError", error: "test error" } as const;
-    
+
     const severity1 = analyzeErrorSeverity(testError as any);
     const severity2 = analyzeErrorSeverity(testError as any);
-    
+
     assertEquals(
       severity1.kind,
       severity2.kind,
@@ -433,7 +470,7 @@ describe("Architecture: Error Severity Classification", () => {
     // Unknown errors should have predictable classification
     const unknownError = { kind: "PromptGenerationError", error: "unknown error" } as const;
     const unknownSeverity = analyzeErrorSeverity(unknownError as any);
-    
+
     assertEquals(
       ["critical", "warning"].includes(unknownSeverity.kind),
       true,

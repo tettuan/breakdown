@@ -11,11 +11,7 @@
  * @module types/0_architecture_legacy_factories_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertExists,
-} from "../deps.ts";
+import { assert, assertEquals, assertExists } from "../deps.ts";
 import {
   type DemonstrativeType,
   DemonstrativeTypeFactory,
@@ -39,26 +35,44 @@ Deno.test("Legacy Factories Architecture - Backward compatibility structure", ()
   assertExists(VariableResultFactory, "VariableResultFactory should exist");
 
   // Verify alias relationships
-  assertEquals(DirectiveFactory, DemonstrativeTypeFactory, "DirectiveFactory should alias DemonstrativeTypeFactory");
-  assertEquals(LayerFactory, LegacyLayerTypeFactory, "LayerFactory should alias LegacyLayerTypeFactory");
+  assertEquals(
+    DirectiveFactory,
+    DemonstrativeTypeFactory,
+    "DirectiveFactory should alias DemonstrativeTypeFactory",
+  );
+  assertEquals(
+    LayerFactory,
+    LegacyLayerTypeFactory,
+    "LayerFactory should alias LegacyLayerTypeFactory",
+  );
 });
 
 Deno.test("Legacy Factories Architecture - Factory pattern compliance", () => {
   // All factories should follow factory pattern (methods return instances, not constructors)
   const demonstrativeFactoryMethods = [
-    "to", "summary", "defect", "init", "find", "fromString"
+    "to",
+    "summary",
+    "defect",
+    "init",
+    "find",
+    "fromString",
   ];
-  
+
   const layerFactoryMethods = [
-    "project", "issue", "task", "bugs", "temp", "fromString"
+    "project",
+    "issue",
+    "task",
+    "bugs",
+    "temp",
+    "fromString",
   ];
 
   // Verify DemonstrativeTypeFactory methods
   for (const method of demonstrativeFactoryMethods) {
     assertEquals(
-      typeof (DemonstrativeTypeFactory as any)[method], 
-      "function", 
-      `DemonstrativeTypeFactory.${method} should be a function`
+      typeof (DemonstrativeTypeFactory as any)[method],
+      "function",
+      `DemonstrativeTypeFactory.${method} should be a function`,
     );
   }
 
@@ -67,7 +81,7 @@ Deno.test("Legacy Factories Architecture - Factory pattern compliance", () => {
     assertEquals(
       typeof (LegacyLayerTypeFactory as any)[method],
       "function",
-      `LegacyLayerTypeFactory.${method} should be a function`
+      `LegacyLayerTypeFactory.${method} should be a function`,
     );
   }
 
@@ -84,11 +98,19 @@ Deno.test("Legacy Factories Architecture - Factory pattern compliance", () => {
 Deno.test("Legacy Factories Architecture - Type guard pattern compliance", () => {
   // Type guards should follow consistent pattern
   const demonstrativeGuardMethods = [
-    "isTo", "isSummary", "isDefect", "isInit", "isFind"
+    "isTo",
+    "isSummary",
+    "isDefect",
+    "isInit",
+    "isFind",
   ];
-  
+
   const layerGuardMethods = [
-    "isProject", "isIssue", "isTask", "isBugs", "isTemp"
+    "isProject",
+    "isIssue",
+    "isTask",
+    "isBugs",
+    "isTemp",
   ];
 
   // Verify DemonstrativeTypeGuards methods
@@ -96,7 +118,7 @@ Deno.test("Legacy Factories Architecture - Type guard pattern compliance", () =>
     assertEquals(
       typeof (DemonstrativeTypeGuards as any)[method],
       "function",
-      `DemonstrativeTypeGuards.${method} should be a function`
+      `DemonstrativeTypeGuards.${method} should be a function`,
     );
   }
 
@@ -105,7 +127,7 @@ Deno.test("Legacy Factories Architecture - Type guard pattern compliance", () =>
     assertEquals(
       typeof (LegacyLayerTypeGuards as any)[method],
       "function",
-      `LegacyLayerTypeGuards.${method} should be a function`
+      `LegacyLayerTypeGuards.${method} should be a function`,
     );
   }
 
@@ -166,7 +188,7 @@ Deno.test("Legacy Factories Architecture - Const assertion compliance", () => {
   for (const factory of factoryObjects) {
     assertEquals(typeof factory, "object", "Factory should be an object");
     assert(factory !== null, "Factory should not be null");
-    
+
     // Verify factory has expected methods (basic smoke test)
     const methods = Object.keys(factory);
     assert(methods.length > 0, "Factory should have methods");
@@ -175,16 +197,24 @@ Deno.test("Legacy Factories Architecture - Const assertion compliance", () => {
   // Test that factories are consistently accessible
   const sameInstance1 = DemonstrativeTypeFactory.to();
   const sameInstance2 = DemonstrativeTypeFactory.to();
-  
+
   // Should create equivalent but separate instances
-  assertEquals(sameInstance1.kind, sameInstance2.kind, "Factory should create consistent instances");
-  assertEquals(sameInstance1.value, sameInstance2.value, "Factory should create consistent instances");
+  assertEquals(
+    sameInstance1.kind,
+    sameInstance2.kind,
+    "Factory should create consistent instances",
+  );
+  assertEquals(
+    sameInstance1.value,
+    sameInstance2.value,
+    "Factory should create consistent instances",
+  );
 });
 
 Deno.test("Legacy Factories Architecture - Deprecation pattern compliance", () => {
   // Legacy factories should maintain functionality while being marked deprecated
   // This is verified by checking that they produce working outputs
-  
+
   // Test DemonstrativeTypeFactory produces valid output
   const demonstrativeResult = DemonstrativeTypeFactory.to();
   assertEquals(demonstrativeResult.kind, "to", "Legacy factory should produce valid output");
@@ -225,7 +255,7 @@ Deno.test("Legacy Factories Architecture - Type system exhaustiveness", () => {
   for (const expectedKind of expectedDemonstrativeKinds) {
     assert(
       demonstrativeKinds.includes(expectedKind as any),
-      `Should include demonstrative kind: ${expectedKind}`
+      `Should include demonstrative kind: ${expectedKind}`,
     );
   }
 
@@ -241,14 +271,14 @@ Deno.test("Legacy Factories Architecture - Type system exhaustiveness", () => {
   for (const expectedKind of expectedLayerKinds) {
     assert(
       layerKinds.includes(expectedKind as any),
-      `Should include layer kind: ${expectedKind}`
+      `Should include layer kind: ${expectedKind}`,
     );
   }
 });
 
 Deno.test("Legacy Factories Architecture - Method signature consistency", () => {
   // Factory methods should have consistent signatures
-  
+
   // Test parameterless factory methods
   const parameterlessMethods = [
     () => DemonstrativeTypeFactory.to(),
@@ -279,26 +309,35 @@ Deno.test("Legacy Factories Architecture - Method signature consistency", () => 
   for (const method of stringInputMethods) {
     const validResult = method("valid-input-will-be-tested-in-behavior");
     // fromString can return null for invalid input, so we test this in behavior tests
-    assert(validResult === null || typeof validResult === "object", "fromString should return object or null");
+    assert(
+      validResult === null || typeof validResult === "object",
+      "fromString should return object or null",
+    );
   }
 });
 
 Deno.test("Legacy Factories Architecture - Interface boundary isolation", () => {
   // Legacy factories should not depend on new type system directly
   // This ensures clean boundary between legacy and new systems
-  
+
   // Test that legacy factories work independently
   const demonstrativeType = DemonstrativeTypeFactory.to();
   const layerType = LegacyLayerTypeFactory.project();
-  
+
   // Should not require new type system imports or dependencies
   assertEquals(demonstrativeType.kind, "to", "Legacy factory should work independently");
   assertEquals(layerType.kind, "project", "Legacy factory should work independently");
-  
+
   // Test type guards work independently
-  assert(DemonstrativeTypeGuards.isTo(demonstrativeType), "Legacy type guards should work independently");
-  assert(LegacyLayerTypeGuards.isProject(layerType), "Legacy type guards should work independently");
-  
+  assert(
+    DemonstrativeTypeGuards.isTo(demonstrativeType),
+    "Legacy type guards should work independently",
+  );
+  assert(
+    LegacyLayerTypeGuards.isProject(layerType),
+    "Legacy type guards should work independently",
+  );
+
   // Test aliases maintain compatibility
   assertEquals(DirectiveFactory.to().kind, "to", "Alias should maintain compatibility");
   assertEquals(LayerFactory.project().kind, "project", "Alias should maintain compatibility");

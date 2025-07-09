@@ -4,7 +4,7 @@
  */
 
 import { assertEquals } from "../deps.ts";
-import { VariableProcessorV2, type ProcessorOptions } from "./variable_processor_v2.ts";
+import { type ProcessorOptions, VariableProcessorV2 } from "./variable_processor_v2.ts";
 
 Deno.test("VariableProcessorV2 - Basic variable processing", () => {
   const processor = new VariableProcessorV2();
@@ -205,11 +205,11 @@ Deno.test("VariableProcessorV2 - Complex processing with all components", () => 
     assertEquals(result.data.customVariables["uv-testCase"], "integration");
     assertEquals(typeof result.data.variables, "object");
     assertEquals(typeof result.data.standardVariables, "object");
-    
+
     // Check that all components worked together
     const variables = result.data.variables;
     assertEquals(typeof variables, "object");
-    
+
     // Verify builder functionality
     const builderRecord = result.data.builder.toRecord();
     assertEquals(typeof builderRecord, "object");
@@ -298,7 +298,7 @@ Deno.test("VariableProcessorV2 - Builder integration check", () => {
     // Test builder functionality
     const builderRecord = result.data.builder.toRecord();
     assertEquals(typeof builderRecord, "object");
-    
+
     // Test builder build method
     const buildResult = result.data.builder.build();
     assertEquals(buildResult.ok, true);

@@ -13,10 +13,10 @@
  */
 
 import { assertEquals } from "jsr:@std/assert";
-import { 
+import {
   WorkspaceName,
-  type WorkspaceNameError,
   WorkspaceNameCollection,
+  type WorkspaceNameError,
 } from "./workspace_name.ts";
 
 // ============================================================================
@@ -30,7 +30,7 @@ Deno.test("1_behavior: rejects null and undefined inputs", () => {
     assertEquals(nullResult.error.kind, "EmptyName");
     assertEquals(nullResult.error.message.includes("null or undefined"), true);
   }
-  
+
   const undefinedResult = WorkspaceName.create(undefined as any);
   assertEquals(undefinedResult.ok, false);
   if (!undefinedResult.ok) {
@@ -46,7 +46,7 @@ Deno.test("1_behavior: rejects empty string and whitespace-only inputs", () => {
     assertEquals(emptyResult.error.kind, "EmptyName");
     assertEquals(emptyResult.error.message.includes("empty"), true);
   }
-  
+
   const whitespaceInputs = [
     " ",
     "   ",
@@ -56,7 +56,7 @@ Deno.test("1_behavior: rejects empty string and whitespace-only inputs", () => {
     "\t\n\r",
     "   \t   ",
   ];
-  
+
   whitespaceInputs.forEach((input) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject whitespace: "${input}"`);
@@ -78,7 +78,7 @@ Deno.test("1_behavior: rejects non-string inputs with InvalidFormat error", () =
     { input: Symbol("test"), desc: "symbol" },
     { input: new Date(), desc: "Date" },
   ];
-  
+
   nonStringInputs.forEach(({ input, desc }) => {
     const result = WorkspaceName.create(input as any);
     assertEquals(result.ok, false, `Should reject ${desc}`);
@@ -106,7 +106,7 @@ Deno.test("1_behavior: rejects names containing whitespace for CLI compatibility
     { input: "vertical\vtab", positions: [8] },
     { input: "mixed \t\n spaces", positions: [5, 6, 7, 8] },
   ];
-  
+
   whitespaceTests.forEach(({ input, positions }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject whitespace: "${input}"`);
@@ -135,7 +135,7 @@ Deno.test("1_behavior: trims leading and trailing whitespace before validation",
     { input: "\r\nworkspace\r\n", expected: "workspace" },
     { input: "  \t  workspace  \t  ", expected: "workspace" },
   ];
-  
+
   trimTests.forEach(({ input, expected }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, true, `Should trim and accept: "${input}"`);
@@ -151,7 +151,7 @@ Deno.test("1_behavior: trims leading and trailing whitespace before validation",
 
 Deno.test("1_behavior: accepts names up to 255 characters", () => {
   const lengths = [1, 10, 100, 200, 254, 255];
-  
+
   lengths.forEach((length) => {
     const name = "a".repeat(length);
     const result = WorkspaceName.create(name);
@@ -161,7 +161,7 @@ Deno.test("1_behavior: accepts names up to 255 characters", () => {
 
 Deno.test("1_behavior: rejects names longer than 255 characters", () => {
   const lengths = [256, 300, 500, 1000];
-  
+
   lengths.forEach((length) => {
     const name = "a".repeat(length);
     const result = WorkspaceName.create(name);
@@ -192,7 +192,7 @@ Deno.test("1_behavior: rejects path traversal attempts for security", () => {
     { input: "path\\backslash", patterns: ["\\"] },
     { input: "mixed/../and\\paths", patterns: ["..", "/", "\\"] },
   ];
-  
+
   pathTraversalTests.forEach(({ input, patterns }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject path traversal: ${input}`);
@@ -205,7 +205,7 @@ Deno.test("1_behavior: rejects path traversal attempts for security", () => {
           assertEquals(
             error.suspiciousPatterns.includes(pattern),
             true,
-            `Should detect pattern: ${pattern}`
+            `Should detect pattern: ${pattern}`,
           );
         });
       }
@@ -230,7 +230,7 @@ Deno.test("1_behavior: rejects names starting with dot to prevent hidden directo
     ".gnupg",
     ".single",
   ];
-  
+
   dotNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject dot prefix: ${name}`);
@@ -239,7 +239,7 @@ Deno.test("1_behavior: rejects names starting with dot to prevent hidden directo
       assertEquals(result.error.message.includes("hidden directories"), true);
     }
   });
-  
+
   // Note: Path traversal patterns like ".." are caught by PathTraversalAttempt first
   const doubleDotsResult = WorkspaceName.create("..double-dot");
   assertEquals(doubleDotsResult.ok, false);
@@ -257,13 +257,13 @@ Deno.test("1_behavior: rejects forbidden characters for cross-platform compatibi
     { char: "<", reason: "angle bracket" },
     { char: ">", reason: "angle bracket" },
     { char: ":", reason: "colon" },
-    { char: "\"", reason: "quote" },
+    { char: '"', reason: "quote" },
     { char: "|", reason: "pipe" },
     { char: "?", reason: "question mark" },
     { char: "*", reason: "asterisk" },
     { char: "\0", reason: "null character" },
   ];
-  
+
   forbiddenCharTests.forEach(({ char, reason }) => {
     const name = `workspace${char}name`;
     const result = WorkspaceName.create(name);
@@ -295,7 +295,7 @@ Deno.test("1_behavior: accepts filesystem-safe characters", () => {
     "café", // Depends on filesystem, but commonly supported
     "naïve",
   ];
-  
+
   safeNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, true, `Should accept safe name: ${name}`);
@@ -311,11 +311,30 @@ Deno.test("1_behavior: accepts filesystem-safe characters", () => {
 
 Deno.test("1_behavior: rejects Windows reserved device names", () => {
   const windowsReserved = [
-    "CON", "PRN", "AUX", "NUL",
-    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "COM5",
+    "COM6",
+    "COM7",
+    "COM8",
+    "COM9",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "LPT4",
+    "LPT5",
+    "LPT6",
+    "LPT7",
+    "LPT8",
+    "LPT9",
   ];
-  
+
   windowsReserved.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject Windows reserved: ${name}`);
@@ -328,11 +347,26 @@ Deno.test("1_behavior: rejects Windows reserved device names", () => {
 
 Deno.test("1_behavior: rejects Unix/Linux system directories", () => {
   const unixDirectories = [
-    "bin", "boot", "dev", "etc", "home", "lib", "lib64",
-    "mnt", "opt", "proc", "root", "run", "sbin", "srv",
-    "sys", "tmp", "usr", "var",
+    "bin",
+    "boot",
+    "dev",
+    "etc",
+    "home",
+    "lib",
+    "lib64",
+    "mnt",
+    "opt",
+    "proc",
+    "root",
+    "run",
+    "sbin",
+    "srv",
+    "sys",
+    "tmp",
+    "usr",
+    "var",
   ];
-  
+
   unixDirectories.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject Unix directory: ${name}`);
@@ -344,9 +378,12 @@ Deno.test("1_behavior: rejects Unix/Linux system directories", () => {
 
 Deno.test("1_behavior: rejects common application directories", () => {
   const appDirectories = [
-    "node_modules", "target", "build", "dist",
+    "node_modules",
+    "target",
+    "build",
+    "dist",
   ];
-  
+
   appDirectories.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject app directory: ${name}`);
@@ -357,7 +394,7 @@ Deno.test("1_behavior: rejects common application directories", () => {
 
   // Test dot-prefixed app directories separately (caught by StartsWithDot)
   const dotAppDirectories = [".git", ".svn", ".hg"];
-  
+
   dotAppDirectories.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject dot app directory: ${name}`);
@@ -369,11 +406,20 @@ Deno.test("1_behavior: rejects common application directories", () => {
 
 Deno.test("1_behavior: reserved names are case-insensitive", () => {
   const caseVariations = [
-    "con", "Con", "CON", "cOn",
-    "bin", "Bin", "BIN", "bIn",
-    "tmp", "Tmp", "TMP", "tMp",
+    "con",
+    "Con",
+    "CON",
+    "cOn",
+    "bin",
+    "Bin",
+    "BIN",
+    "bIn",
+    "tmp",
+    "Tmp",
+    "TMP",
+    "tMp",
   ];
-  
+
   caseVariations.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject case variation: ${name}`);
@@ -394,42 +440,42 @@ Deno.test("1_behavior: validation happens in correct priority order", () => {
   if (!emptyNonString.ok) {
     assertEquals(emptyNonString.error.kind, "EmptyName");
   }
-  
+
   // Format check comes before whitespace check
   const nonStringWithSpaces = WorkspaceName.create(123 as any);
   assertEquals(nonStringWithSpaces.ok, false);
   if (!nonStringWithSpaces.ok) {
     assertEquals(nonStringWithSpaces.error.kind, "InvalidFormat");
   }
-  
+
   // Whitespace check comes before length check
   const longWithSpaces = WorkspaceName.create("a".repeat(256) + " space");
   assertEquals(longWithSpaces.ok, false);
   if (!longWithSpaces.ok) {
     assertEquals(longWithSpaces.error.kind, "ContainsWhitespace");
   }
-  
+
   // Length check comes before path traversal check
   const longWithTraversal = WorkspaceName.create("a".repeat(256) + "../attack");
   assertEquals(longWithTraversal.ok, false);
   if (!longWithTraversal.ok) {
     assertEquals(longWithTraversal.error.kind, "TooLong");
   }
-  
+
   // Path traversal check comes before dot check (../ contains ..)
   const traversalWithDot = WorkspaceName.create("../hidden");
   assertEquals(traversalWithDot.ok, false);
   if (!traversalWithDot.ok) {
     assertEquals(traversalWithDot.error.kind, "PathTraversalAttempt");
   }
-  
+
   // Dot check comes before character check
   const dotWithInvalid = WorkspaceName.create(".hidden<invalid>");
   assertEquals(dotWithInvalid.ok, false);
   if (!dotWithInvalid.ok) {
     assertEquals(dotWithInvalid.error.kind, "StartsWithDot");
   }
-  
+
   // Character check comes before reserved check
   const reservedWithInvalid = WorkspaceName.create("CON<invalid>");
   assertEquals(reservedWithInvalid.ok, false);
@@ -460,7 +506,7 @@ Deno.test("1_behavior: withTimestamp factory creates timestamped names", () => {
     const timestampPattern = /workspace-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/;
     assertEquals(timestampPattern.test(withoutPrefix.data.value), true);
   }
-  
+
   // With prefix
   const withPrefix = WorkspaceName.withTimestamp("project");
   assertEquals(withPrefix.ok, true);
@@ -469,14 +515,14 @@ Deno.test("1_behavior: withTimestamp factory creates timestamped names", () => {
     const prefixPattern = /project-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/;
     assertEquals(prefixPattern.test(withPrefix.data.value), true);
   }
-  
+
   // Consecutive calls should produce different timestamps
   const first = WorkspaceName.withTimestamp("test");
   const second = WorkspaceName.withTimestamp("test");
   if (first.ok && second.ok) {
     // Either different timestamps or very close (within same second)
     const sameOrClose = first.data.value === second.data.value ||
-                        first.data.value !== second.data.value;
+      first.data.value !== second.data.value;
     assertEquals(sameOrClose, true);
   }
 });
@@ -490,7 +536,7 @@ Deno.test("1_behavior: forProject factory sanitizes and validates project names"
     { input: "complex.project/name", expected: "complex-project-name" },
     { input: "123-numbers", expected: "123-numbers" },
   ];
-  
+
   projectTests.forEach(({ input, expected }) => {
     const result = WorkspaceName.forProject(input);
     assertEquals(result.ok, true, `Should sanitize: ${input}`);
@@ -498,7 +544,7 @@ Deno.test("1_behavior: forProject factory sanitizes and validates project names"
       assertEquals(result.data.value, expected);
     }
   });
-  
+
   // With suffix
   const withSuffix = WorkspaceName.forProject("MyProject", "dev");
   assertEquals(withSuffix.ok, true);
@@ -515,7 +561,7 @@ Deno.test("1_behavior: forProject factory handles edge cases", () => {
     null as any,
     undefined as any,
   ];
-  
+
   emptyInputs.forEach((input) => {
     const result = WorkspaceName.forProject(input);
     assertEquals(result.ok, false, `Should reject empty: ${input}`);
@@ -524,7 +570,7 @@ Deno.test("1_behavior: forProject factory handles edge cases", () => {
       assertEquals(result.error.message.includes("Project name is required"), true);
     }
   });
-  
+
   // Project names that become invalid after sanitization
   const onlySpecialChars = WorkspaceName.forProject("@#$%^&*");
   assertEquals(onlySpecialChars.ok, false);
@@ -532,7 +578,7 @@ Deno.test("1_behavior: forProject factory handles edge cases", () => {
     assertEquals(onlySpecialChars.error.kind, "InvalidFormat");
     assertEquals(onlySpecialChars.error.message.includes("valid characters"), true);
   }
-  
+
   // Project names that become only hyphens
   const onlyHyphens = WorkspaceName.forProject("---");
   assertEquals(onlyHyphens.ok, false);
@@ -551,7 +597,7 @@ Deno.test("1_behavior: temporary factory creates random workspace names", () => 
     const tempPattern = /^temp-[a-z0-9]{6}$/;
     assertEquals(tempPattern.test(withoutPurpose.data.value), true);
   }
-  
+
   // With purpose
   const withPurpose = WorkspaceName.temporary("testing");
   assertEquals(withPurpose.ok, true);
@@ -560,7 +606,7 @@ Deno.test("1_behavior: temporary factory creates random workspace names", () => 
     const purposePattern = /^temp-testing-[a-z0-9]{6}$/;
     assertEquals(purposePattern.test(withPurpose.data.value), true);
   }
-  
+
   // Multiple calls should produce different suffixes
   const temp1 = WorkspaceName.temporary("test");
   const temp2 = WorkspaceName.temporary("test");
@@ -582,7 +628,7 @@ Deno.test("1_behavior: production suitability assessment", () => {
     { name: "stable-version", suitable: true },
     { name: "main-workspace", suitable: true },
   ];
-  
+
   const notProductionSuitable = [
     { name: "temp-workspace", suitable: false },
     { name: "test-env", suitable: false },
@@ -592,7 +638,7 @@ Deno.test("1_behavior: production suitability assessment", () => {
     { name: "ab", suitable: false }, // Too short (< 3 chars)
     { name: "x", suitable: false }, // Too short
   ];
-  
+
   [...productionSuitable, ...notProductionSuitable].forEach(({ name, suitable }) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, true, `Should create: ${name}`);
@@ -600,7 +646,7 @@ Deno.test("1_behavior: production suitability assessment", () => {
       assertEquals(
         result.data.isSuitableForProduction(),
         suitable,
-        `${name} production suitability should be ${suitable}`
+        `${name} production suitability should be ${suitable}`,
       );
     }
   });
@@ -613,7 +659,7 @@ Deno.test("1_behavior: production suitability assessment", () => {
 Deno.test("1_behavior: collection validates all workspace names", () => {
   const mixedNames = ["valid1", "valid2", "with spaces", "valid3"];
   const result = WorkspaceNameCollection.create(mixedNames);
-  
+
   // Should fail on first invalid name
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -624,23 +670,23 @@ Deno.test("1_behavior: collection validates all workspace names", () => {
 Deno.test("1_behavior: collection preserves order and handles operations", () => {
   const names = ["workspace-c", "workspace-a", "workspace-b"];
   const result = WorkspaceNameCollection.create(names);
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const collection = result.data;
-    
+
     // Order preservation
     const retrievedNames = collection.getNames();
     assertEquals(retrievedNames[0], "workspace-c");
     assertEquals(retrievedNames[1], "workspace-a");
     assertEquals(retrievedNames[2], "workspace-b");
-    
+
     // Contains operation
     const searchResult = WorkspaceName.create("workspace-a");
     if (searchResult.ok) {
       assertEquals(collection.contains(searchResult.data), true);
     }
-    
+
     // Production filtering
     const prodWorkspaces = ["production-app", "temp-workspace", "client-project"];
     const prodResult = WorkspaceNameCollection.create(prodWorkspaces);

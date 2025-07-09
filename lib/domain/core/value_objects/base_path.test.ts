@@ -9,11 +9,11 @@
  */
 
 import { assertEquals, assertStrictEquals } from "jsr:@std/assert";
-import { 
-  BasePathValueObject, 
+import {
+  BasePathValueObject,
   DEFAULT_PATH_CONFIG,
   type PathValidationConfig,
-  type PathValidationError
+  type PathValidationError,
 } from "./base_path.ts";
 import { error, ok } from "../../../types/result.ts";
 
@@ -23,7 +23,7 @@ class TestPath extends BasePathValueObject {
     super(value, false); // Don't auto-freeze in parent constructor
     this.freezeObject(); // Explicitly freeze after construction
   }
-  
+
   static create(path: string, config: PathValidationConfig = DEFAULT_PATH_CONFIG) {
     return super.createPath(path, config, (normalized) => new TestPath(normalized));
   }
@@ -36,23 +36,23 @@ class TestPath extends BasePathValueObject {
 Deno.test("0_architecture: Smart Constructor enforces private constructor", () => {
   // Constructor should be protected/private - cannot instantiate directly
   // This test validates the Smart Constructor pattern is properly implemented
-  
+
   const validResult = TestPath.create("valid/path");
   assertEquals(validResult.ok, true);
-  
+
   if (validResult.ok) {
     // Smart Constructor pattern: Only static create method should be used
     // TypeScript prevents direct constructor access due to protected modifier
     // This demonstrates proper encapsulation - only factory method is accessible
-    
+
     // Verify the Smart Constructor pattern creates proper instances
     assertStrictEquals(typeof validResult.data, "object");
     assertEquals(validResult.data.getValue(), "valid/path");
-    
+
     // Demonstrate that constructor is properly encapsulated
     // The following line would cause TS2674 error if uncommented:
     // const directInstance = new TestPath("test");
-    
+
     // Instead, only the factory method should be used
     const anotherValidResult = TestPath.create("another/path");
     assertEquals(anotherValidResult.ok, true);
@@ -61,27 +61,27 @@ Deno.test("0_architecture: Smart Constructor enforces private constructor", () =
 
 Deno.test("0_architecture: Result type pattern for error handling", () => {
   // All creation should return Result<T, E> - no exceptions thrown
-  
+
   const invalidResult = TestPath.create("");
   assertEquals(invalidResult.ok, false);
-  
+
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "EMPTY_PATH");
   }
-  
+
   const validResult = TestPath.create("valid/path");
   assertEquals(validResult.ok, true);
 });
 
 Deno.test("0_architecture: Template Method pattern in createPath", () => {
   // Validates that createPath follows Template Method pattern with validation stages
-  
+
   const stages = [
     { input: null as any, expectedError: "EMPTY_PATH" },
     { input: "../../etc/passwd", expectedError: "PATH_TRAVERSAL" },
     { input: "a".repeat(300), expectedError: "TOO_LONG" },
   ];
-  
+
   stages.forEach(({ input, expectedError }) => {
     const result = TestPath.create(input);
     assertEquals(result.ok, false);
@@ -92,7 +92,7 @@ Deno.test("0_architecture: Template Method pattern in createPath", () => {
 });
 
 // ============================================================================
-// 1_behavior: Domain Logic Validation Tests  
+// 1_behavior: Domain Logic Validation Tests
 // ============================================================================
 
 Deno.test("1_behavior: basic path validation - empty paths", () => {
@@ -107,7 +107,7 @@ Deno.test("1_behavior: basic path validation - empty paths", () => {
   testCases.forEach(({ input, description }) => {
     const result = TestPath.create(input);
     assertEquals(result.ok, false, `Should reject ${description}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "EMPTY_PATH");
     }
@@ -118,7 +118,7 @@ Deno.test("1_behavior: security validation - path traversal prevention", () => {
   const maliciousPaths = [
     "../etc/passwd",
     "..\\windows\\system32",
-    "/../../etc/passwd", 
+    "/../../etc/passwd",
     "valid\\..\\malicious",
     "normal/../../../etc/passwd",
   ];
@@ -126,13 +126,13 @@ Deno.test("1_behavior: security validation - path traversal prevention", () => {
   maliciousPaths.forEach((path) => {
     const result = TestPath.create(path);
     assertEquals(result.ok, false, `Should reject path traversal: ${path}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "PATH_TRAVERSAL");
       if (result.error.kind === "PATH_TRAVERSAL") {
         // attemptedPath contains the normalized version of the path
         // due to normalization, path separators are converted to forward slashes
-        const expectedNormalizedPath = path.replace(/[\\]/g, '/');
+        const expectedNormalizedPath = path.replace(/[\\]/g, "/");
         assertEquals(result.error.attemptedPath, expectedNormalizedPath);
       }
     }
@@ -149,7 +149,7 @@ Deno.test("1_behavior: security validation - control characters", () => {
   pathsWithControlChars.forEach((path) => {
     const result = TestPath.create(path);
     assertEquals(result.ok, false, `Should reject control characters: ${path}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "INVALID_CHARACTERS");
     }
@@ -172,7 +172,7 @@ Deno.test("1_behavior: length validation", () => {
   // Should reject paths exceeding limit
   const longResult = TestPath.create(tooLongPath);
   assertEquals(longResult.ok, false);
-  
+
   if (!longResult.ok) {
     assertEquals(longResult.error.kind, "TOO_LONG");
     if (longResult.error.kind === "TOO_LONG") {
@@ -212,7 +212,7 @@ Deno.test("1_behavior: path type validation - absolute vs relative", () => {
     assertEquals(result.ok, false, `Should reject absolute path: ${path}`);
   });
 
-  // Test restricting to absolute only  
+  // Test restricting to absolute only
   const absoluteOnlyConfig: PathValidationConfig = {
     ...DEFAULT_PATH_CONFIG,
     allowRelative: false,
@@ -232,7 +232,7 @@ Deno.test("1_behavior: extension validation", () => {
 
   const validPaths = [
     "document.txt",
-    "readme.md", 
+    "readme.md",
     "path/to/file.TXT", // Case insensitive
   ];
 
@@ -250,7 +250,7 @@ Deno.test("1_behavior: extension validation", () => {
   invalidPaths.forEach((path) => {
     const result = TestPath.create(path, configWithExtensions);
     assertEquals(result.ok, false, `Should reject invalid extension: ${path}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "INVALID_EXTENSION");
     }
@@ -282,7 +282,7 @@ Deno.test("1_behavior: custom forbidden characters", () => {
   invalidPaths.forEach((path) => {
     const result = TestPath.create(path, configWithForbiddenChars);
     assertEquals(result.ok, false, `Should reject path with forbidden chars: ${path}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "INVALID_CHARACTERS");
     }
@@ -300,7 +300,7 @@ Deno.test("1_behavior: path normalization", () => {
   testCases.forEach(({ input, expected }) => {
     const result = TestPath.create(input);
     assertEquals(result.ok, true, `Should normalize path: ${input}`);
-    
+
     if (result.ok) {
       assertEquals(result.data.getValue(), expected);
     }
@@ -314,13 +314,13 @@ Deno.test("1_behavior: path normalization", () => {
 Deno.test("2_structure: immutability of created instances", () => {
   const result = TestPath.create("test/path");
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const path = result.data;
-    
+
     // Object should be frozen
     assertEquals(Object.isFrozen(path), true);
-    
+
     // Should not be able to modify internal state
     try {
       (path as any)._value = "modified";
@@ -336,24 +336,24 @@ Deno.test("2_structure: value equality semantics", () => {
   const path1Result = TestPath.create("same/path");
   const path2Result = TestPath.create("same/path");
   const path3Result = TestPath.create("different/path");
-  
+
   assertEquals(path1Result.ok, true);
   assertEquals(path2Result.ok, true);
   assertEquals(path3Result.ok, true);
-  
+
   if (path1Result.ok && path2Result.ok && path3Result.ok) {
     const path1 = path1Result.data;
     const path2 = path2Result.data;
     const path3 = path3Result.data;
-    
+
     // Equal values should be equal
     assertEquals(path1.equals(path2), true);
     assertEquals(path2.equals(path1), true);
-    
+
     // Different values should not be equal
     assertEquals(path1.equals(path3), false);
     assertEquals(path3.equals(path1), false);
-    
+
     // Should equal itself
     assertEquals(path1.equals(path1), true);
   }
@@ -369,7 +369,7 @@ Deno.test("2_structure: path component extraction methods", () => {
     },
     {
       path: "/absolute/path/document.md",
-      expectedFilename: "document.md", 
+      expectedFilename: "document.md",
       expectedDirectory: "/absolute/path",
       expectedExtension: ".md",
     },
@@ -382,7 +382,7 @@ Deno.test("2_structure: path component extraction methods", () => {
     {
       path: "hidden/.dotfile",
       expectedFilename: ".dotfile",
-      expectedDirectory: "hidden", 
+      expectedDirectory: "hidden",
       expectedExtension: "",
     },
   ];
@@ -390,7 +390,7 @@ Deno.test("2_structure: path component extraction methods", () => {
   testCases.forEach(({ path, expectedFilename, expectedDirectory, expectedExtension }) => {
     const result = TestPath.create(path);
     assertEquals(result.ok, true, `Should create path: ${path}`);
-    
+
     if (result.ok) {
       const pathObj = result.data;
       assertEquals(pathObj.getFilename(), expectedFilename, `Filename for ${path}`);
@@ -403,7 +403,7 @@ Deno.test("2_structure: path component extraction methods", () => {
 Deno.test("2_structure: absolute vs relative path detection", () => {
   const absolutePaths = [
     "/unix/absolute",
-    "C:\\windows\\absolute", 
+    "C:\\windows\\absolute",
     "\\\\network\\unc",
   ];
 
@@ -417,7 +417,7 @@ Deno.test("2_structure: absolute vs relative path detection", () => {
   absolutePaths.forEach((path) => {
     const result = TestPath.create(path);
     assertEquals(result.ok, true, `Should create absolute path: ${path}`);
-    
+
     if (result.ok) {
       assertEquals(result.data.isAbsolute(), true, `${path} should be absolute`);
       assertEquals(result.data.isRelative(), false, `${path} should not be relative`);
@@ -428,7 +428,7 @@ Deno.test("2_structure: absolute vs relative path detection", () => {
     // For paths containing "..", we need to handle path traversal security checks
     // This demonstrates proper Result type guard handling
     const result = TestPath.create(path);
-    
+
     if (path.includes("..")) {
       // Path traversal should be rejected by security validation
       assertEquals(result.ok, false, `Should reject path traversal: ${path}`);
@@ -437,7 +437,7 @@ Deno.test("2_structure: absolute vs relative path detection", () => {
       }
     } else {
       assertEquals(result.ok, true, `Should create relative path: ${path}`);
-      
+
       if (result.ok) {
         assertEquals(result.data.isRelative(), true, `${path} should be relative`);
         assertEquals(result.data.isAbsolute(), false, `${path} should not be absolute`);
@@ -450,16 +450,16 @@ Deno.test("2_structure: string representation methods", () => {
   const path = "test/path/file.txt";
   const result = TestPath.create(path);
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const pathObj = result.data;
-    
+
     // getValue() should return the normalized path
     assertEquals(pathObj.getValue(), path);
-    
+
     // toString() should return the normalized path
     assertEquals(pathObj.toString(), path);
-    
+
     // Should work with string concatenation
     assertEquals(`Path: ${pathObj}`, `Path: ${path}`);
   }
@@ -491,13 +491,13 @@ Deno.test("edge_cases: error message quality and context", () => {
   testCases.forEach(({ input, expectedKind, shouldContainMessage }) => {
     const result = TestPath.create(input);
     assertEquals(result.ok, false, `Should reject: ${input}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, expectedKind);
       assertEquals(
         result.error.message.toLowerCase().includes(shouldContainMessage.toLowerCase()),
         true,
-        `Error message should contain "${shouldContainMessage}": ${result.error.message}`
+        `Error message should contain "${shouldContainMessage}": ${result.error.message}`,
       );
     }
   });
@@ -527,7 +527,7 @@ Deno.test("edge_cases: config edge cases", () => {
 
   const result = TestPath.create("a", zeroLengthConfig);
   assertEquals(result.ok, false);
-  
+
   if (!result.ok) {
     assertEquals(result.error.kind, "TOO_LONG");
   }

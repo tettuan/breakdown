@@ -1,13 +1,13 @@
 /**
  * @fileoverview Structure tests for PromptVariableSource
- * 
+ *
  * Tests structural integrity and relationships within the PromptVariableSource
  * system including:
  * - Type relationships and constraints
  * - Data structure integrity
  * - Interface consistency
  * - Enum value consistency
- * 
+ *
  * @module types/prompt_variable_source_test
  */
 
@@ -106,7 +106,7 @@ Deno.test("PromptVariableSource - Structure: SourceValidationError interface con
   // Field should be a key of PromptVariableSource
   const validFields: Array<keyof PromptVariableSource> = [
     "directive",
-    "layer", 
+    "layer",
     "inputFile",
     "destinationPath",
     "schemaFile",
@@ -114,7 +114,7 @@ Deno.test("PromptVariableSource - Structure: SourceValidationError interface con
     "userVariables",
     "metadata",
   ];
-  
+
   assertEquals(validFields.includes(validError.field), true);
   assertEquals(typeof validError.message, "string");
   assertEquals(typeof validError.source, "string");
@@ -140,7 +140,7 @@ Deno.test("PromptVariableSource - Structure: SourceValidationResult type consist
   // Test success result structure
   const successResult = validateSource(source);
   assertEquals(typeof successResult.ok, "boolean");
-  
+
   if (successResult.ok) {
     assertEquals(typeof successResult.data, "object");
     assertEquals("error" in successResult, false);
@@ -149,11 +149,11 @@ Deno.test("PromptVariableSource - Structure: SourceValidationResult type consist
   // Test error result structure
   const invalidSource: PromptVariableSource = {};
   const errorResult = validateSource(invalidSource);
-  
+
   if (!errorResult.ok) {
     assertEquals(Array.isArray(errorResult.error), true);
     assertEquals("data" in errorResult, false);
-    
+
     // Each error should have proper structure
     errorResult.error.forEach((error) => {
       assertEquals(typeof error.field, "string");
@@ -258,14 +258,14 @@ Deno.test("PromptVariableSource - Structure: validation error field names match 
       const validKeys: Array<keyof PromptVariableSource> = [
         "directive",
         "layer",
-        "inputFile", 
+        "inputFile",
         "destinationPath",
         "schemaFile",
         "stdinContent",
         "userVariables",
         "metadata",
       ];
-      
+
       assertEquals(validKeys.includes(error.field), true);
     });
   }
@@ -281,11 +281,11 @@ Deno.test("PromptVariableSource - Structure: source metadata relationship consis
   sources.forEach((source) => {
     // All sources should have metadata
     assertEquals(source.metadata !== undefined, true);
-    
+
     // Metadata should have required fields
     assertEquals(typeof source.metadata!.source, "string");
     assertEquals(source.metadata!.timestamp instanceof Date, true);
-    
+
     // Source field should be valid DataSource enum value
     const validSources = Object.values(DataSource);
     assertEquals(validSources.includes(source.metadata!.source), true);
@@ -301,7 +301,7 @@ Deno.test("PromptVariableSource - Structure: empty object handling", () => {
   // Should be able to merge with empty sources
   const normalSource = PromptVariableSourceFactory.fromCLI({ directive: "test" });
   const merged = PromptVariableSourceFactory.merge(empty, normalSource);
-  
+
   assertEquals(typeof merged, "object");
   assertEquals(merged.directive, "test");
 });

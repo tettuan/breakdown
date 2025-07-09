@@ -94,9 +94,9 @@ const createValidZeroParamsResult = (): ZeroParamsResult => ({
 Deno.test("ParameterValidator: Smart Constructor - creates instance with valid dependencies", () => {
   const patternProvider = new MockTypePatternProvider();
   const configValidator = new MockConfigValidator();
-  
+
   const validator = new ParameterValidator(patternProvider, configValidator);
-  
+
   // Should not throw and be properly initialized
   assertEquals(typeof validator.validateTwoParams, "function");
   assertEquals(typeof validator.validateOneParams, "function");
@@ -110,12 +110,12 @@ Deno.test("ParameterValidator: Smart Constructor - creates instance with valid d
 Deno.test("ParameterValidator: validateTwoParams - valid parameters return success", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const validResult = createValidTwoParamsResult();
   const result = validator.validateTwoParams(validResult);
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const validated: ValidatedParams = result.data;
@@ -131,12 +131,12 @@ Deno.test("ParameterValidator: validateTwoParams - valid parameters return succe
 Deno.test("ParameterValidator: validateTwoParams - invalid params type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidTwoParamsResult(), type: "invalid" as "two" };
   const result = validator.validateTwoParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -152,12 +152,12 @@ Deno.test("ParameterValidator: validateTwoParams - invalid params type returns e
 Deno.test("ParameterValidator: validateTwoParams - missing demonstrativeType returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidTwoParamsResult(), demonstrativeType: "" };
   const result = validator.validateTwoParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -173,12 +173,12 @@ Deno.test("ParameterValidator: validateTwoParams - missing demonstrativeType ret
 Deno.test("ParameterValidator: validateTwoParams - missing layerType returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidTwoParamsResult(), layerType: "" };
   const result = validator.validateTwoParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -193,12 +193,12 @@ Deno.test("ParameterValidator: validateTwoParams - missing layerType returns err
 Deno.test("ParameterValidator: validateTwoParams - invalid directive type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidTwoParamsResult(), demonstrativeType: "invalid" };
   const result = validator.validateTwoParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -212,12 +212,12 @@ Deno.test("ParameterValidator: validateTwoParams - invalid directive type return
 Deno.test("ParameterValidator: validateTwoParams - invalid layer type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidTwoParamsResult(), layerType: "invalid" };
   const result = validator.validateTwoParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -235,12 +235,12 @@ Deno.test("ParameterValidator: validateTwoParams - invalid layer type returns er
 Deno.test("ParameterValidator: validateOneParams - valid parameters return success", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const validResult = createValidOneParamsResult();
   const result = validator.validateOneParams(validResult);
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const validated: ValidatedParams = result.data;
@@ -253,12 +253,12 @@ Deno.test("ParameterValidator: validateOneParams - valid parameters return succe
 Deno.test("ParameterValidator: validateOneParams - invalid params type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidOneParamsResult(), type: "invalid" as "one" };
   const result = validator.validateOneParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -273,12 +273,12 @@ Deno.test("ParameterValidator: validateOneParams - invalid params type returns e
 Deno.test("ParameterValidator: validateOneParams - missing params returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidOneParamsResult(), params: [] };
   const result = validator.validateOneParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -297,12 +297,12 @@ Deno.test("ParameterValidator: validateOneParams - missing params returns error"
 Deno.test("ParameterValidator: validateZeroParams - valid parameters return success", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const validResult = createValidZeroParamsResult();
   const result = validator.validateZeroParams(validResult);
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const validated: ValidatedParams = result.data;
@@ -315,12 +315,12 @@ Deno.test("ParameterValidator: validateZeroParams - valid parameters return succ
 Deno.test("ParameterValidator: validateZeroParams - invalid params type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const invalidResult = { ...createValidZeroParamsResult(), type: "invalid" as "zero" };
   const result = validator.validateZeroParams(invalidResult);
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     const error: ValidationError = result.error;
@@ -339,14 +339,14 @@ Deno.test("ParameterValidator: validateZeroParams - invalid params type returns 
 Deno.test("ParameterValidator: path validation - stdin/stdout are valid", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = {}; // No paths specified, should default to stdin/stdout
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, true);
   if (validationResult.ok) {
     assertEquals(validationResult.data.options.inputPath, "stdin");
@@ -357,14 +357,14 @@ Deno.test("ParameterValidator: path validation - stdin/stdout are valid", () => 
 Deno.test("ParameterValidator: path validation - null character in path returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = { fromFile: "test\0file.md" };
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "PathValidationFailed");
@@ -377,14 +377,14 @@ Deno.test("ParameterValidator: path validation - null character in path returns 
 Deno.test("ParameterValidator: path validation - empty path returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = { fromFile: "   " }; // Empty/whitespace path
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "PathValidationFailed");
@@ -401,9 +401,9 @@ Deno.test("ParameterValidator: path validation - empty path returns error", () =
 Deno.test("ParameterValidator: custom variables - valid uv- prefixed variables", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = {
     "uv-stringVar": "text",
@@ -411,9 +411,9 @@ Deno.test("ParameterValidator: custom variables - valid uv- prefixed variables",
     "uv-boolVar": true,
     "normalVar": "ignored",
   };
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, true);
   if (validationResult.ok) {
     const customVars = validationResult.data.customVariables;
@@ -427,16 +427,16 @@ Deno.test("ParameterValidator: custom variables - valid uv- prefixed variables",
 Deno.test("ParameterValidator: custom variables - invalid variable type returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = {
     "uv-invalidVar": { nested: "object" },
   };
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.kind, "CustomVariableInvalid");
@@ -454,9 +454,9 @@ Deno.test("ParameterValidator: custom variables - invalid variable type returns 
 Deno.test("ParameterValidator: options extraction - multiple input path keys", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   // Test priority: fromFile > from > input
   const testCases = [
     { options: { fromFile: "file1", from: "file2", input: "file3" }, expected: "file1" },
@@ -464,13 +464,13 @@ Deno.test("ParameterValidator: options extraction - multiple input path keys", (
     { options: { input: "file3" }, expected: "file3" },
     { options: {}, expected: "stdin" },
   ];
-  
+
   for (const testCase of testCases) {
     const result = createValidTwoParamsResult();
     result.options = testCase.options;
-    
+
     const validationResult = validator.validateTwoParams(result);
-    
+
     assertEquals(validationResult.ok, true);
     if (validationResult.ok) {
       assertEquals(validationResult.data.options.inputPath, testCase.expected);
@@ -481,23 +481,26 @@ Deno.test("ParameterValidator: options extraction - multiple input path keys", (
 Deno.test("ParameterValidator: options extraction - multiple output path keys", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   // Test priority: destinationFile > destination > output
   const testCases = [
-    { options: { destinationFile: "file1", destination: "file2", output: "file3" }, expected: "file1" },
+    {
+      options: { destinationFile: "file1", destination: "file2", output: "file3" },
+      expected: "file1",
+    },
     { options: { destination: "file2", output: "file3" }, expected: "file2" },
     { options: { output: "file3" }, expected: "file3" },
     { options: {}, expected: "stdout" },
   ];
-  
+
   for (const testCase of testCases) {
     const result = createValidTwoParamsResult();
     result.options = testCase.options;
-    
+
     const validationResult = validator.validateTwoParams(result);
-    
+
     assertEquals(validationResult.ok, true);
     if (validationResult.ok) {
       assertEquals(validationResult.data.options.outputPath, testCase.expected);
@@ -508,9 +511,9 @@ Deno.test("ParameterValidator: options extraction - multiple output path keys", 
 Deno.test("ParameterValidator: options extraction - optional paths with multiple keys", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = createValidTwoParamsResult();
   result.options = {
     schemaFile: "schema1.json",
@@ -519,9 +522,9 @@ Deno.test("ParameterValidator: options extraction - optional paths with multiple
     prompt: "prompt2.md", // Should be ignored due to priority
     template: "template.md", // Should be ignored due to priority
   };
-  
+
   const validationResult = validator.validateTwoParams(result);
-  
+
   assertEquals(validationResult.ok, true);
   if (validationResult.ok) {
     assertEquals(validationResult.data.options.schemaPath, "schema1.json");
@@ -536,13 +539,13 @@ Deno.test("ParameterValidator: options extraction - optional paths with multiple
 Deno.test("ParameterValidator: metadata - includes validation timestamp", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const before = new Date();
   const result = validator.validateTwoParams(createValidTwoParamsResult());
   const after = new Date();
-  
+
   assertEquals(result.ok, true);
   if (result.ok) {
     const validatedAt = result.data.metadata.validatedAt;
@@ -554,22 +557,22 @@ Deno.test("ParameterValidator: metadata - includes validation timestamp", () => 
 Deno.test("ParameterValidator: metadata - profile name extraction", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const testCases = [
     { options: { profile: "test-profile" }, expected: "test-profile" },
     { options: { configProfile: "config-profile" }, expected: "config-profile" },
     { options: { profile: "prof1", configProfile: "prof2" }, expected: "prof1" }, // Priority test
     { options: {}, expected: undefined },
   ];
-  
+
   for (const testCase of testCases) {
     const result = createValidTwoParamsResult();
     result.options = testCase.options;
-    
+
     const validationResult = validator.validateTwoParams(result);
-    
+
     assertEquals(validationResult.ok, true);
     if (validationResult.ok) {
       assertEquals(validationResult.data.metadata.profileName, testCase.expected);
@@ -584,10 +587,10 @@ Deno.test("ParameterValidator: metadata - profile name extraction", () => {
 Deno.test("ParameterValidator: error totality - all ValidationError kinds testable", () => {
   // This test ensures we can create all possible ValidationError types
   // This serves as a compile-time check for totality
-  
+
   const errorKinds: ValidationError["kind"][] = [
     "InvalidParamsType",
-    "MissingRequiredField", 
+    "MissingRequiredField",
     "InvalidDirectiveType",
     "InvalidLayerType",
     "PathValidationFailed",
@@ -595,11 +598,11 @@ Deno.test("ParameterValidator: error totality - all ValidationError kinds testab
     "ConfigValidationFailed",
     "UnsupportedParamsType",
   ];
-  
+
   // Verify we can create each error type
   for (const kind of errorKinds) {
     let errorCreated = false;
-    
+
     switch (kind) {
       case "InvalidParamsType":
         const error1: ValidationError = { kind, expected: "test", received: "test" };
@@ -634,7 +637,7 @@ Deno.test("ParameterValidator: error totality - all ValidationError kinds testab
         errorCreated = true;
         break;
     }
-    
+
     assertEquals(errorCreated, true, `Failed to create error of kind: ${kind}`);
   }
 });
@@ -648,19 +651,19 @@ Deno.test("ParameterValidator: integration - pattern provider without patterns",
     getDirectivePattern() {
       return null;
     }
-    
+
     getLayerTypePattern() {
       return null;
     }
   }
-  
+
   const validator = new ParameterValidator(
     new EmptyPatternProvider(),
-    new MockConfigValidator()
+    new MockConfigValidator(),
   );
-  
+
   const result = validator.validateTwoParams(createValidTwoParamsResult());
-  
+
   assertEquals(result.ok, false);
   if (!result.ok) {
     assertEquals(result.error.kind, "InvalidDirectiveType");
@@ -673,13 +676,13 @@ Deno.test("ParameterValidator: integration - pattern provider without patterns",
 Deno.test("ParameterValidator: integration - failing config validator", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
-    new MockConfigValidator(true) // Configure to fail
+    new MockConfigValidator(true), // Configure to fail
   );
-  
+
   // Note: Current implementation doesn't use configValidator in validation flow
   // This test ensures the dependency injection works correctly
   const result = validator.validateTwoParams(createValidTwoParamsResult());
-  
+
   // Should still succeed since configValidator isn't called in current implementation
   assertEquals(result.ok, true);
 });

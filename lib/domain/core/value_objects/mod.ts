@@ -3,7 +3,7 @@
  *
  * This module provides a centralized export point for all core domain value objects
  * following Domain-Driven Design and Totality design principles.
- * 
+ *
  * All value objects in this module implement:
  * - Smart Constructor pattern for type-safe creation
  * - Discriminated Union error types for comprehensive error handling
@@ -24,58 +24,58 @@ export {
 
 // Template Path Value Object
 export {
-  TemplatePath,
   DEFAULT_TEMPLATE_PATH_CONFIG,
-  type TemplatePathConfig,
-  type TemplatePathError,
+  formatTemplatePathError,
   isInvalidDirectiveError as isTemplatePathInvalidDirectiveError,
-  isInvalidLayerError as isTemplatePathInvalidLayerError,
   isInvalidFilenameError as isTemplatePathInvalidFilenameError,
+  isInvalidLayerError as isTemplatePathInvalidLayerError,
   isPathConstructionError as isTemplatePathConstructionError,
   isSecurityViolationError as isTemplatePathSecurityViolationError,
   isValidationError as isTemplatePathValidationError,
-  formatTemplatePathError,
+  TemplatePath,
+  type TemplatePathConfig,
+  type TemplatePathError,
 } from "./template_path.ts";
 
 // Schema Path Value Object
 export {
-  SchemaPath,
   DEFAULT_SCHEMA_PATH_CONFIG,
-  type SchemaPathConfig,
-  type SchemaPathError,
+  formatSchemaPathError,
   isInvalidDirectiveError as isSchemaPathInvalidDirectiveError,
   isInvalidLayerError as isSchemaPathInvalidLayerError,
   isInvalidSchemaFilenameError,
-  isSchemaPathConstructionError,
   isJsonSchemaValidationError,
+  isSchemaPathConstructionError,
   isSecurityViolationError as isSchemaPathSecurityViolationError,
   isValidationError as isSchemaPathValidationError,
-  formatSchemaPathError,
+  SchemaPath,
+  type SchemaPathConfig,
+  type SchemaPathError,
 } from "./schema_path.ts";
 
 // Working Directory Path Value Object
 export {
-  WorkingDirectoryPath,
   DEFAULT_WORKING_DIRECTORY_CONFIG,
-  type WorkingDirectoryPathConfig,
-  type WorkingDirectoryPathError,
-  isInvalidDirectoryPathError,
+  formatWorkingDirectoryPathError,
   isDirectoryNotFoundError,
-  isPermissionDeniedError,
+  isFileSystemError,
+  isInvalidDirectoryPathError,
   isPathResolutionGeneralError as isWorkingDirectoryPathResolutionError,
+  isPermissionDeniedError,
   isSecurityViolationError as isWorkingDirectorySecurityViolationError,
   isValidationError as isWorkingDirectoryValidationError,
-  isFileSystemError,
-  formatWorkingDirectoryPathError,
+  WorkingDirectoryPath,
+  type WorkingDirectoryPathConfig,
+  type WorkingDirectoryPathError,
 } from "./working_directory_path.ts";
 
 /**
  * Union type for all path value object errors
  * Enables handling any path-related error uniformly
  */
-export type PathValueObjectError = 
+export type PathValueObjectError =
   | import("./base_path.ts").PathValidationError
-  | import("./template_path.ts").TemplatePathError 
+  | import("./template_path.ts").TemplatePathError
   | import("./schema_path.ts").SchemaPathError
   | import("./working_directory_path.ts").WorkingDirectoryPathError;
 
@@ -83,25 +83,41 @@ export type PathValueObjectError =
  * Type guard to check if an error is any path value object error
  */
 export function isPathValueObjectError(error: unknown): error is PathValueObjectError {
-  if (typeof error !== 'object' || error === null) {
+  if (typeof error !== "object" || error === null) {
     return false;
   }
-  
+
   const errorObj = error as { kind?: string };
   const pathErrorKinds = [
     // PathValidationError kinds
-    "EMPTY_PATH", "PATH_TRAVERSAL", "INVALID_CHARACTERS", "TOO_LONG",
-    "ABSOLUTE_PATH_REQUIRED", "RELATIVE_PATH_REQUIRED", "INVALID_EXTENSION", "PLATFORM_INCOMPATIBLE",
-    // TemplatePathError kinds  
-    "InvalidDirective", "InvalidLayer", "InvalidFilename", "PathConstructionError", "SecurityViolation", "ValidationError",
+    "EMPTY_PATH",
+    "PATH_TRAVERSAL",
+    "INVALID_CHARACTERS",
+    "TOO_LONG",
+    "ABSOLUTE_PATH_REQUIRED",
+    "RELATIVE_PATH_REQUIRED",
+    "INVALID_EXTENSION",
+    "PLATFORM_INCOMPATIBLE",
+    // TemplatePathError kinds
+    "InvalidDirective",
+    "InvalidLayer",
+    "InvalidFilename",
+    "PathConstructionError",
+    "SecurityViolation",
+    "ValidationError",
     // SchemaPathError kinds
-    "InvalidSchemaFilename", "SchemaPathConstructionError", "JsonSchemaValidationError",
+    "InvalidSchemaFilename",
+    "SchemaPathConstructionError",
+    "JsonSchemaValidationError",
     // WorkingDirectoryPathError kinds
-    "InvalidDirectoryPath", "DirectoryNotFound", "PermissionDenied", 
-    "PathResolutionGeneral", "FileSystemError"
+    "InvalidDirectoryPath",
+    "DirectoryNotFound",
+    "PermissionDenied",
+    "PathResolutionGeneral",
+    "FileSystemError",
   ];
-  
-  return typeof errorObj.kind === 'string' && pathErrorKinds.includes(errorObj.kind);
+
+  return typeof errorObj.kind === "string" && pathErrorKinds.includes(errorObj.kind);
 }
 
 /**
@@ -113,15 +129,15 @@ export async function formatPathValueObjectError(error: PathValueObjectError): P
   const [
     { formatTemplatePathError },
     { formatSchemaPathError },
-    { formatWorkingDirectoryPathError }
+    { formatWorkingDirectoryPathError },
   ] = await Promise.all([
     import("./template_path.ts"),
     import("./schema_path.ts"),
-    import("./working_directory_path.ts")
+    import("./working_directory_path.ts"),
   ]);
-  
+
   // Type-safe error formatting based on error structure
-  if ('kind' in error) {
+  if ("kind" in error) {
     switch (error.kind) {
       // PathValidationError
       case "EMPTY_PATH":
@@ -133,8 +149,8 @@ export async function formatPathValueObjectError(error: PathValueObjectError): P
       case "INVALID_EXTENSION":
       case "PLATFORM_INCOMPATIBLE":
         return `Path validation error: ${error.message}`;
-        
-      // TemplatePathError  
+
+      // TemplatePathError
       case "InvalidDirective":
       case "InvalidLayer":
       case "InvalidFilename":
@@ -142,23 +158,25 @@ export async function formatPathValueObjectError(error: PathValueObjectError): P
       case "SecurityViolation":
       case "ValidationError":
         return formatTemplatePathError(error as import("./template_path.ts").TemplatePathError);
-        
+
       // SchemaPathError
       case "InvalidSchemaFilename":
       case "SchemaPathConstructionError":
       case "JsonSchemaValidationError":
         return formatSchemaPathError(error as import("./schema_path.ts").SchemaPathError);
-        
+
       // WorkingDirectoryPathError
       case "InvalidDirectoryPath":
       case "DirectoryNotFound":
       case "PermissionDenied":
       case "PathResolutionGeneral":
       case "FileSystemError":
-        return formatWorkingDirectoryPathError(error as import("./working_directory_path.ts").WorkingDirectoryPathError);
+        return formatWorkingDirectoryPathError(
+          error as import("./working_directory_path.ts").WorkingDirectoryPathError,
+        );
     }
   }
-  
+
   // Fallback for unknown error types
   return `Unknown path error: ${JSON.stringify(error)}`;
 }
@@ -175,7 +193,7 @@ export class PathValueObjectFactory {
     layer: import("../../../types/layer_type.ts").LayerType,
     filename: string,
   ) {
-    return import("./template_path.ts").then(({ TemplatePath }) => 
+    return import("./template_path.ts").then(({ TemplatePath }) =>
       TemplatePath.create(directive, layer, filename)
     );
   }
@@ -188,7 +206,7 @@ export class PathValueObjectFactory {
     layer: import("../../../types/layer_type.ts").LayerType,
     filename: string,
   ) {
-    return import("./schema_path.ts").then(({ SchemaPath }) => 
+    return import("./schema_path.ts").then(({ SchemaPath }) =>
       SchemaPath.create(directive, layer, filename)
     );
   }
@@ -197,7 +215,7 @@ export class PathValueObjectFactory {
    * Create a working directory path
    */
   static createWorkingDirectoryPath(path: string) {
-    return import("./working_directory_path.ts").then(({ WorkingDirectoryPath }) => 
+    return import("./working_directory_path.ts").then(({ WorkingDirectoryPath }) =>
       WorkingDirectoryPath.create(path)
     );
   }
@@ -206,7 +224,7 @@ export class PathValueObjectFactory {
    * Get current working directory as WorkingDirectoryPath
    */
   static getCurrentWorkingDirectory() {
-    return import("./working_directory_path.ts").then(({ WorkingDirectoryPath }) => 
+    return import("./working_directory_path.ts").then(({ WorkingDirectoryPath }) =>
       WorkingDirectoryPath.current()
     );
   }
@@ -224,7 +242,7 @@ export const PathValueObjectConfigs = {
     const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
     const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
     const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
-    
+
     return {
       template: {
         ...DEFAULT_TEMPLATE_PATH_CONFIG,
@@ -251,7 +269,7 @@ export const PathValueObjectConfigs = {
     const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
     const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
     const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
-    
+
     return {
       template: DEFAULT_TEMPLATE_PATH_CONFIG,
       schema: DEFAULT_SCHEMA_PATH_CONFIG,
@@ -270,7 +288,7 @@ export const PathValueObjectConfigs = {
     const { DEFAULT_TEMPLATE_PATH_CONFIG } = await import("./template_path.ts");
     const { DEFAULT_SCHEMA_PATH_CONFIG } = await import("./schema_path.ts");
     const { DEFAULT_WORKING_DIRECTORY_CONFIG } = await import("./working_directory_path.ts");
-    
+
     return {
       template: {
         ...DEFAULT_TEMPLATE_PATH_CONFIG,

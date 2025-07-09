@@ -274,7 +274,7 @@ describe("Architecture: Error handling architecture", () => {
     // Test StdinError class exists and can be instantiated
     const StdinErrorClass = mod.StdinError as new (message: string) => Error;
     assertExists(StdinErrorClass, "StdinError class should exist");
-    
+
     const testError = new StdinErrorClass("test error");
     assertEquals(testError instanceof Error, true, "StdinError should extend Error");
     assertEquals(testError.name, "StdinError", "Should have correct error name");

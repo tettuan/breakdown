@@ -96,10 +96,10 @@ export class ConfigPrefixDetector {
     if (!args || !Array.isArray(args)) {
       return null;
     }
-    
+
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      
+
       // Skip non-string elements
       if (typeof arg !== "string") {
         continue;
