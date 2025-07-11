@@ -76,25 +76,25 @@ export class TwoParamsOrchestrator {
    */
   #extractParameters(params: string[]): Result<ValidatedTwoParams, OrchestratorError> {
     const [demonstrativeType, layerType] = params;
-    
+
     // Basic validation - these would be replaced by ParameterValidator
     const validDemonstrativeTypes = ["to", "summary", "defect", "from"];
     const validLayerTypes = ["project", "issue", "task", "file"];
-    
+
     if (!validDemonstrativeTypes.includes(demonstrativeType)) {
       return error({
         kind: "InvalidDemonstrativeType",
         value: demonstrativeType,
       });
     }
-    
+
     if (!validLayerTypes.includes(layerType)) {
       return error({
         kind: "InvalidLayerType",
         value: layerType,
       });
     }
-    
+
     return ok({ demonstrativeType, layerType });
   }
 

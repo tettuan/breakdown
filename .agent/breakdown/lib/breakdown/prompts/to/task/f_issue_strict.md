@@ -3,7 +3,9 @@
 This prompt helps convert issues into strictly structured tasks with enhanced validation.
 
 ## Input
+
 The input is an issue containing:
+
 - Issue title (required)
 - Description (required)
 - Acceptance criteria (required)
@@ -13,7 +15,9 @@ The input is an issue containing:
 - Technical requirements (required)
 
 ## Output
+
 The output must be a strictly structured JSON file with:
+
 - Task title (required, max 80 chars)
 - Description (required, min 30 chars)
 - Steps to complete (required, min 2 steps)
@@ -26,6 +30,7 @@ The output must be a strictly structured JSON file with:
 - Definition of Done items (required)
 
 ## Instructions
+
 1. Strictly validate issue format
 2. Break down into atomic tasks only
 3. Enforce detailed step descriptions
@@ -35,4 +40,4 @@ The output must be a strictly structured JSON file with:
 7. Enforce technical specifications
 8. Define validation criteria
 9. Specify testing requirements
-10. List Definition of Done items 
+10. List Definition of Done items

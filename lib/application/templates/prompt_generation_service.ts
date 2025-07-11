@@ -10,11 +10,11 @@
 import type { CommandResult } from "../../commands/mod.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import {
+  type GeneratedPrompt,
   PromptGenerationAggregate,
   PromptTemplate,
   TemplatePath,
   TemplateVariables,
-  type GeneratedPrompt,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { TemplateRepository } from "../../domain/templates/template_repository.ts";
 import type {
@@ -25,8 +25,8 @@ import type {
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { Result } from "../../types/result.ts";
 import {
-  PromptGenerationServiceErrors,
   PromptGenerationServiceErrorFactory,
+  PromptGenerationServiceErrors,
 } from "../../types/prompt_generation_service_error.ts";
 
 /**
@@ -65,7 +65,7 @@ export interface PromptGenerationResponse {
   appliedVariables?: Record<string, string>;
   error?: {
     kind?: string; // Future unified support
-    type: string; // Legacy support  
+    type: string; // Legacy support
     message: string;
     details?: unknown;
   };
@@ -96,7 +96,7 @@ export class PromptGenerationService {
 
   /**
    * Smart Constructor for creating PromptGenerationService with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all dependencies
@@ -111,7 +111,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Dependencies must be a non-null object"
+          "Dependencies must be a non-null object",
         ),
       };
     }
@@ -121,7 +121,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Template repository is required"
+          "Template repository is required",
         ),
       };
     }
@@ -130,7 +130,7 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.serviceConfigurationError(
-          "Generation policy is required"
+          "Generation policy is required",
         ),
       };
     }
@@ -141,40 +141,48 @@ export class PromptGenerationService {
   }
 
   /**
-   * Generate prompt from template
+   * Generate prompt from template with full Result type safety
+   * Implements Totality principle - all operations return Result types
    */
   async generatePrompt(request: PromptGenerationRequest): Promise<PromptGenerationResponse> {
-    try {
-      this.logger.debug("Starting prompt generation", {
-        directive: request.directive.getValue(),
-        layer: request.layer.getValue(),
-      });
+    this.logger.debug("Starting prompt generation", {
+      directive: request.directive.getValue(),
+      layer: request.layer.getValue(),
+    });
 
-      // 1. Select appropriate template
-      const templatePath = this.selectTemplate(request);
-
-      // 2. Load template from repository
-      const template = await this.deps.repository.loadTemplate(templatePath);
-
-      // 3. Prepare variables
-      const variables = await this.prepareVariables(request, template);
-
-      // 4. Create or retrieve aggregate
-      const aggregate = this.getOrCreateAggregate(templatePath, template);
-
-      // 5. Generate prompt
-      const result = aggregate.generatePrompt(variables);
-
-      // 6. Convert Result to GenerationResult and handle
-      const generationResult: GenerationResult = result.ok 
-        ? { success: true, prompt: result.data, attempts: aggregate.getState().attempts }
-        : { success: false, error: result.error, attempts: aggregate.getState().attempts };
-      
-      return this.handleGenerationResult(generationResult, templatePath);
-    } catch (error) {
-      this.logger.error("Prompt generation failed", { error });
-      return this.createErrorResponse(error as Error);
+    // 1. Select appropriate template
+    const templatePathResult = this.selectTemplateSafe(request);
+    if (!templatePathResult.ok) {
+      return this.createErrorResponseFromServiceError(templatePathResult.error);
     }
+    const templatePath = templatePathResult.data;
+
+    // 2. Load template from repository
+    const templateResult = await this.loadTemplateSafe(templatePath);
+    if (!templateResult.ok) {
+      return this.createErrorResponseFromServiceError(templateResult.error);
+    }
+    const template = templateResult.data;
+
+    // 3. Prepare variables
+    const variablesResult = await this.prepareVariablesSafe(request, template);
+    if (!variablesResult.ok) {
+      return this.createErrorResponseFromServiceError(variablesResult.error);
+    }
+    const variables = variablesResult.data;
+
+    // 4. Create or retrieve aggregate
+    const aggregateResult = this.getOrCreateAggregateSafe(templatePath, template);
+    if (!aggregateResult.ok) {
+      return this.createErrorResponseFromServiceError(aggregateResult.error);
+    }
+    const aggregate = aggregateResult.data;
+
+    // 5. Generate prompt
+    const result = aggregate.generatePrompt(variables);
+
+    // 6. Handle generation result
+    return this.handleGenerationResultSafe(result, templatePath, aggregate.getState().attempts);
   }
 
   /**
@@ -191,10 +199,10 @@ export class PromptGenerationService {
 
       const templatePathResult = this.deps.policy.selectTemplate(directive, layer, context);
       if (!templatePathResult.ok) {
-        return {
+        return Promise.resolve({
           valid: false,
           errors: [`Template selection failed: ${templatePathResult.error}`],
-        };
+        });
       }
       const templatePath = templatePathResult.data;
       const exists = await this.deps.repository.exists(templatePath);
@@ -253,7 +261,12 @@ export class PromptGenerationService {
     }
   }
 
-  private selectTemplate(request: PromptGenerationRequest): TemplatePath {
+  /**
+   * Safe template selection using Result type
+   */
+  private selectTemplateSafe(
+    request: PromptGenerationRequest,
+  ): Result<TemplatePath, PromptGenerationServiceErrors> {
     const context: SelectionContext = {
       customPath: request.options.adaptation,
       fallbackEnabled: true,
@@ -264,54 +277,46 @@ export class PromptGenerationService {
       request.layer,
       context,
     );
-    
+
+    if (!result.ok) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.templateSelectionFailed(
+          `Template selection failed: ${result.error}`,
+        ),
+      };
+    }
+
+    return { ok: true, data: result.data };
+  }
+
+  /**
+   * Legacy method - kept for backward compatibility
+   * @deprecated Use selectTemplateSafe instead
+   */
+  private selectTemplate(request: PromptGenerationRequest): TemplatePath {
+    const result = this.selectTemplateSafe(request);
     if (!result.ok) {
       throw new Error(`Failed to select template: ${result.error}`);
     }
-    
     return result.data;
   }
 
+  /**
+   * Legacy method - kept for backward compatibility
+   * @deprecated Use prepareVariablesSafe instead
+   */
   private async prepareVariables(
     request: PromptGenerationRequest,
     template: PromptTemplate,
   ): Promise<TemplateVariables> {
-    // Base variables from request
-    const baseVariables: Record<string, string> = {
-      ...request.variables,
-      input_text: request.options.inputText || "",
-      input_text_file: request.options.fromFile || "",
-      destination_path: request.options.toFile || "",
-    };
-
-    const provided = TemplateVariables.create(baseVariables);
-
-    // Validate provided variables
-    const validation = this.deps.policy.validateVariables(provided);
-    if (!validation.isValid) {
-      // Legacy behavior: still throw for now, but add Result-based alternative
+    const result = await this.prepareVariablesSafe(request, template);
+    if (!result.ok) {
       throw new Error(
-        `Variable validation failed: ${validation.errors.map((e) => e.message).join(", ")}`,
+        `Variable preparation failed: ${result.error}`,
       );
     }
-
-    // Resolve missing variables
-    const required = template.getContent().getRequiredVariables();
-    const context: ResolutionContext = {
-      providedVariables: baseVariables,
-      directive: request.directive,
-      layer: request.layer,
-      workingDirectory: Deno.cwd(),
-    };
-
-    const resolved = await this.deps.policy.resolveMissingVariables(
-      provided,
-      required,
-      context,
-    );
-
-    // Transform variables according to policy
-    return this.deps.policy.transformVariables(resolved);
+    return result.data;
   }
 
   /**
@@ -366,31 +371,89 @@ export class PromptGenerationService {
       return {
         ok: false,
         error: PromptGenerationServiceErrorFactory.promptGenerationFailed(
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         ),
       };
     }
   }
 
-  private getOrCreateAggregate(
+  /**
+   * Safe aggregate creation/retrieval using Result type
+   */
+  private getOrCreateAggregateSafe(
     path: TemplatePath,
     template: PromptTemplate,
-  ): PromptGenerationAggregate {
+  ): Result<PromptGenerationAggregate, PromptGenerationServiceErrors> {
     const aggregateId = path.getPath();
 
     let aggregate = this.aggregates.get(aggregateId);
     if (!aggregate) {
       const aggregateResult = PromptGenerationAggregate.create(aggregateId, template);
       if (!aggregateResult.ok) {
-        throw new Error(`Failed to create aggregate: ${aggregateResult.error}`);
+        return {
+          ok: false,
+          error: PromptGenerationServiceErrorFactory.promptGenerationFailed(
+            `Failed to create aggregate: ${aggregateResult.error}`,
+          ),
+        };
       }
       aggregate = aggregateResult.data;
       this.aggregates.set(aggregateId, aggregate);
     }
 
-    return aggregate;
+    return { ok: true, data: aggregate };
   }
 
+  /**
+   * Legacy method - kept for backward compatibility
+   * @deprecated Use getOrCreateAggregateSafe instead
+   */
+  private getOrCreateAggregate(
+    path: TemplatePath,
+    template: PromptTemplate,
+  ): PromptGenerationAggregate {
+    const result = this.getOrCreateAggregateSafe(path, template);
+    if (!result.ok) {
+      throw new Error(`Failed to create aggregate: ${result.error}`);
+    }
+    return result.data;
+  }
+
+  /**
+   * Safe generation result handling using Result type
+   */
+  private handleGenerationResultSafe(
+    result: Result<GeneratedPrompt, unknown>,
+    templatePath: TemplatePath,
+    _attempts: number,
+  ): PromptGenerationResponse {
+    if (result.ok) {
+      return {
+        success: true,
+        content: result.data.getContent(),
+        templatePath: templatePath.getPath(),
+        appliedVariables: result.data.getAppliedVariables().toObject(),
+      };
+    } else {
+      const error = result.error instanceof Error ? result.error : new Error(String(result.error));
+      const fallbackAction = this.deps.policy.handleFailure(error);
+
+      if (fallbackAction?.type === "useDefault") {
+        return {
+          success: true,
+          content: fallbackAction.defaultValue,
+          templatePath: templatePath.getPath(),
+        };
+      }
+
+      return this.createErrorResponse(error);
+    }
+  }
+
+  /**
+   * Legacy method - kept for backward compatibility
+   * @deprecated Use handleGenerationResultSafe instead
+   */
   private handleGenerationResult(
     result: GenerationResult,
     templatePath: TemplatePath,
@@ -421,6 +484,26 @@ export class PromptGenerationService {
     }
   }
 
+  /**
+   * Create error response from service error (Totality principle)
+   */
+  private createErrorResponseFromServiceError(
+    error: PromptGenerationServiceErrors,
+  ): PromptGenerationResponse {
+    return {
+      success: false,
+      error: {
+        kind: error.kind,
+        type: error.kind, // Legacy support
+        message: error.message,
+        details: error.details,
+      },
+    };
+  }
+
+  /**
+   * Create error response from generic error
+   */
   private createErrorResponse(error: Error): PromptGenerationResponse {
     return {
       success: false,
@@ -431,5 +514,24 @@ export class PromptGenerationService {
         details: error.stack,
       },
     };
+  }
+
+  /**
+   * Safe template loading using Result type
+   */
+  private async loadTemplateSafe(
+    templatePath: TemplatePath,
+  ): Promise<Result<PromptTemplate, PromptGenerationServiceErrors>> {
+    try {
+      const template = await this.deps.repository.loadTemplate(templatePath);
+      return { ok: true, data: template };
+    } catch (error) {
+      return {
+        ok: false,
+        error: PromptGenerationServiceErrorFactory.templateLoadingFailed(
+          error instanceof Error ? error.message : String(error),
+        ),
+      };
+    }
   }
 }

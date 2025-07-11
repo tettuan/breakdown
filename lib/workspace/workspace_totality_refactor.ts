@@ -11,7 +11,7 @@
  */
 
 import { dirname, join, resolve } from "@std/path";
-import { ensureDir, exists } from "@std/fs";
+import { ensureDir } from "@std/fs";
 import { parse } from "@std/yaml";
 import { stringify } from "@std/yaml";
 import { prompts } from "../templates/prompts.ts";
@@ -391,14 +391,14 @@ export class WorkspaceTotality {
   /**
    * Initializes the workspace
    */
-  async initialize(): Promise<Result<void, WorkspaceErrorKind>> {
+  initialize(): Promise<Result<void, WorkspaceErrorKind>> {
     return this.initializer.initialize();
   }
 
   /**
    * Validates configuration
    */
-  async validateConfig(): Promise<Result<void, WorkspaceErrorKind>> {
+  validateConfig(): Promise<Result<void, WorkspaceErrorKind>> {
     return this.configManager.validate();
   }
 
@@ -438,7 +438,7 @@ export class WorkspaceTotality {
 /**
  * Initialize a new Breakdown workspace with Totality design
  */
-export async function initWorkspaceTotality(
+export function initWorkspaceTotality(
   workingDir = ".",
   config?: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } },
 ): Promise<Result<void, WorkspaceErrorKind>> {
@@ -448,7 +448,7 @@ export async function initWorkspaceTotality(
     config?.app_schema?.base_dir,
   );
 
-  if (!workspaceResult.ok) return workspaceResult;
+  if (!workspaceResult.ok) return Promise.resolve(workspaceResult);
 
   return workspaceResult.data.initialize();
 }

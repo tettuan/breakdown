@@ -15,9 +15,12 @@ import {
   createValidatedCliParams,
   validateConfigurationPatterns,
 } from "./totality_factory_helper.ts";
-import type { TotalityFactoryBundle, TotalityFactoryOptions } from "./totality_factory_helper.ts";
+import type {
+  TotalityFactoryBundle,
+  TotalityFactoryOptions as _TotalityFactoryOptions,
+} from "./totality_factory_helper.ts";
 
-Deno.test("TotalityFactoryHelper - Structure: Single Responsibility Principle", async () => {
+Deno.test("TotalityFactoryHelper - Structure: Single Responsibility Principle", () => {
   // Module should only be responsible for factory creation and configuration
   // It should not handle file I/O, CLI parsing, or other unrelated concerns
 
@@ -41,7 +44,7 @@ Deno.test("TotalityFactoryHelper - Structure: Single Responsibility Principle", 
   // (Module does not expose functions for unrelated concerns)
 });
 
-Deno.test("TotalityFactoryHelper - Structure: Responsibility separation by function purpose", async () => {
+Deno.test("TotalityFactoryHelper - Structure: Responsibility separation by function purpose", () => {
   // Factory creation functions (grouped responsibility)
   const factoryFunctions = [
     createTotalityFactory,
@@ -92,12 +95,12 @@ Deno.test("TotalityFactoryHelper - Structure: Configuration abstraction levels",
 
     // Should not expose configuration file details
     assertEquals(
-      bundle.hasOwnProperty("configFilePath"),
+      Object.prototype.hasOwnProperty.call(bundle, "configFilePath"),
       false,
       "Should not expose config file paths",
     );
     assertEquals(
-      bundle.hasOwnProperty("rawConfigData"),
+      Object.prototype.hasOwnProperty.call(bundle, "rawConfigData"),
       false,
       "Should not expose raw config data",
     );
@@ -172,12 +175,12 @@ Deno.test("TotalityFactoryHelper - Structure: Factory bundle composition", async
 
     // Components should not know about each other's internal structure
     assertEquals(
-      typeFactory.hasOwnProperty("patternProvider"),
+      Object.prototype.hasOwnProperty.call(typeFactory, "patternProvider"),
       false,
       "TypeFactory should not expose patternProvider",
     );
     assertEquals(
-      patternProvider.hasOwnProperty("config"),
+      Object.prototype.hasOwnProperty.call(patternProvider, "config"),
       false,
       "PatternProvider should not expose config",
     );
@@ -262,13 +265,13 @@ Deno.test("TotalityFactoryHelper - Structure: Abstraction layer separation", asy
 
   // Each level should handle appropriate concerns
   assertEquals(
-    configValidation.hasOwnProperty("typeFactory"),
+    Object.prototype.hasOwnProperty.call(configValidation, "typeFactory"),
     false,
     "Config level should not expose factories",
   );
   if (factoryResult.ok) {
     assertEquals(
-      factoryResult.data.hasOwnProperty("promptFilePath"),
+      Object.prototype.hasOwnProperty.call(factoryResult.data, "promptFilePath"),
       false,
       "Factory level should not expose file paths",
     );
@@ -343,7 +346,7 @@ Deno.test("TotalityFactoryHelper - Structure: Dependency injection design", asyn
   }
 });
 
-Deno.test("TotalityFactoryHelper - Structure: Helper function granularity", async () => {
+Deno.test("TotalityFactoryHelper - Structure: Helper function granularity", () => {
   // Helper functions should have appropriate granularity
 
   // Atomic operations

@@ -1,6 +1,6 @@
 /**
  * Factory-specific error types for Totality implementation
- * 
+ *
  * Provides comprehensive error handling for prompt variables factory operations
  * following the Totality principle.
  */
@@ -12,13 +12,22 @@ export type FactoryInitError =
   | { kind: "InvalidConfig"; type?: "factory_invalid_config"; reason: string }
   | { kind: "MissingParameter"; type?: "factory_missing_parameter"; parameter: string }
   | { kind: "ConfigValidation"; type?: "factory_config_validation"; field: string; reason: string }
-  | { kind: "DependencyFailure"; type?: "factory_dependency_failure"; dependency: string; reason: string };
+  | {
+    kind: "DependencyFailure";
+    type?: "factory_dependency_failure";
+    dependency: string;
+    reason: string;
+  };
 
 /**
  * Path resolution errors
  */
 export type PathResolutionError =
-  | { kind: "NotResolved"; type?: "factory_not_resolved"; resource: "promptFilePath" | "inputFilePath" | "outputFilePath" | "schemaFilePath" }
+  | {
+    kind: "NotResolved";
+    type?: "factory_not_resolved";
+    resource: "promptFilePath" | "inputFilePath" | "outputFilePath" | "schemaFilePath";
+  }
   | { kind: "InvalidPath"; type?: "factory_invalid_path"; path: string; reason: string }
   | { kind: "FileNotFound"; type?: "factory_file_not_found"; path: string }
   | { kind: "DirectoryNotFound"; type?: "factory_directory_not_found"; path: string }

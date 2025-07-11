@@ -16,14 +16,14 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("architecture-workspace-mod");
 
-describe("Workspace Module - Architecture", async () => {
+describe("Workspace Module - Architecture", () => {
   it("should export all required types from types.ts", async () => {
     _logger.debug("Testing types exports");
 
     const _mod = await import("./mod.ts");
 
     // Core type exports that should be available
-    const expectedTypes = [
+    const _expectedTypes = [
       "WorkspaceOptions",
       "WorkspaceConfig",
       "WorkspaceStructure",
@@ -72,13 +72,13 @@ describe("Workspace Module - Architecture", async () => {
     assertEquals(moduleKeys.length > 0, true);
   });
 
-  it("should follow dependency hierarchy", async () => {
+  it("should follow dependency hierarchy", () => {
     _logger.debug("Testing dependency hierarchy");
 
     // mod.ts should only import from its direct children
     // Use URL to get the file path for dependency injection
-    const modPath = new URL("./mod.ts", import.meta.url).pathname;
-    
+    const _modPath = new URL("./mod.ts", import.meta.url).pathname;
+
     // Architecture tests should use test data instead of actual file I/O
     const modContent = `
 // Mock mod.ts content for architecture testing

@@ -1,18 +1,18 @@
 /**
  * @fileoverview Entry Point Manager for Breakdown Application
- * 
+ *
  * This module implements the Entry Point Design Pattern providing:
  * - Centralized application entry point management
  * - Environment-aware initialization
  * - Error boundary for application startup
  * - Graceful shutdown handling
  * - Resource cleanup coordination
- * 
+ *
  * @module lib/cli/entry_point_manager
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 
 /**
  * Entry point configuration options
@@ -36,11 +36,21 @@ export interface EntryPointConfig {
 /**
  * Application startup errors
  */
-export type EntryPointError = 
+export type EntryPointError =
   | { kind: "EnvironmentValidationError"; message: string; requirements: string[] }
   | { kind: "StartupError"; message: string; cause?: unknown }
   | { kind: "SignalHandlerError"; signal: string; error: string; message: string }
-  | { kind: "ShutdownError"; message: string; cause?: unknown };
+  | { kind: "ShutdownError"; message: string; cause?: unknown }
+  | {
+    kind: "ConfigurationError";
+    message: string;
+    config: {
+      verbose?: boolean;
+      validateEnvironment?: boolean;
+      hasErrorHandler: boolean;
+      hasSignalHandlers: boolean;
+    };
+  };
 
 /**
  * Extract error message from EntryPointError union type
@@ -50,6 +60,7 @@ export function getEntryPointErrorMessage(error: EntryPointError): string {
     case "EnvironmentValidationError":
     case "StartupError":
     case "ShutdownError":
+    case "ConfigurationError":
       return error.message;
     case "SignalHandlerError":
       return error.error;
@@ -62,7 +73,7 @@ export function getEntryPointErrorMessage(error: EntryPointError): string {
 
 /**
  * Entry Point Manager implementing the Entry Point Design Pattern
- * 
+ *
  * This class provides a robust, standardized way to initialize and manage
  * the application's lifecycle, following enterprise application patterns.
  */
@@ -84,21 +95,21 @@ export class EntryPointManager {
 
   /**
    * Main application entry point
-   * 
+   *
    * This method orchestrates the complete application startup:
    * 1. Environment validation
    * 2. Signal handler setup
    * 3. Application initialization
    * 4. Command execution
    * 5. Graceful shutdown
-   * 
+   *
    * @param args - Command line arguments
    * @returns Result indicating success or failure with detailed error information
    */
   async start(args: string[] = Deno.args): Promise<Result<void, EntryPointError>> {
     try {
       this.startupTime = new Date();
-      
+
       if (this.config.verbose) {
         console.log("🚀 Starting Breakdown application...");
       }
@@ -118,11 +129,20 @@ export class EntryPointManager {
       }
 
       // 3. Execute main application logic
-      if (this.config.mainFunction) {
-        await this.config.mainFunction(args);
-      } else {
-        throw new Error("Main function not provided to EntryPointManager");
+      if (!this.config.mainFunction) {
+        return error({
+          kind: "ConfigurationError",
+          message: "Main function not provided to EntryPointManager",
+          config: {
+            verbose: this.config.verbose,
+            validateEnvironment: this.config.validateEnvironment,
+            hasErrorHandler: !!this.config.errorHandler,
+            hasSignalHandlers: !!this.config.signalHandlers,
+          },
+        });
       }
+
+      await this.config.mainFunction(args);
 
       if (this.config.verbose) {
         const duration = Date.now() - this.startupTime.getTime();
@@ -130,10 +150,9 @@ export class EntryPointManager {
       }
 
       return ok(undefined);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      
+
       if (this.config.errorHandler) {
         this.config.errorHandler(err instanceof Error ? err : new Error(errorMessage));
       }
@@ -219,7 +238,6 @@ export class EntryPointManager {
       }
 
       return ok(undefined);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       return error({
@@ -242,7 +260,7 @@ export class EntryPointManager {
     }
 
     this.isShuttingDown = true;
-    
+
     if (this.config.verbose) {
       console.log(`📤 Received ${signal}, shutting down gracefully...`);
     }
@@ -264,7 +282,7 @@ export class EntryPointManager {
   /**
    * Performs graceful application shutdown
    */
-  private async shutdown(): Promise<Result<void, EntryPointError>> {
+  private shutdown(): Promise<Result<void, EntryPointError>> {
     try {
       // Cleanup signal handlers
       this.cleanupSignalHandlers();
@@ -275,14 +293,13 @@ export class EntryPointManager {
       // - Cancel ongoing operations
       // - Release resources
 
-      return ok(undefined);
-
+      return Promise.resolve(ok(undefined));
     } catch (err) {
-      return error({
+      return Promise.resolve(error({
         kind: "ShutdownError",
         message: "Error during application shutdown",
         cause: err,
-      });
+      }));
     }
   }
 
@@ -311,7 +328,10 @@ export class EntryPointManager {
   /**
    * Factory method to create a standard entry point manager
    */
-  static createStandard(verbose = false, mainFunction?: (args: string[]) => Promise<unknown>): EntryPointManager {
+  static createStandard(
+    verbose = false,
+    mainFunction?: (args: string[]) => Promise<unknown>,
+  ): EntryPointManager {
     return new EntryPointManager({
       verbose,
       validateEnvironment: true,
@@ -350,7 +370,7 @@ export class EntryPointManager {
       verbose: false,
       validateEnvironment: true,
       mainFunction,
-      errorHandler: (error) => {
+      errorHandler: (_error) => {
         // In production, log errors but don't expose details
         console.error("Application error occurred");
         // Future: Send to error tracking service

@@ -9,12 +9,12 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import type {
+  PromptGenerationError,
   PromptGenerationServiceError,
   PromptGenerationServiceErrors,
-  VariableValidationError,
-  TemplateResolutionError,
-  PromptGenerationError,
   ServiceConfigurationError,
+  TemplateResolutionError,
+  VariableValidationError,
 } from "./prompt_generation_service_error.ts";
 import { PromptGenerationServiceErrorFactory } from "./prompt_generation_service_error.ts";
 
@@ -28,7 +28,7 @@ Deno.test("Architecture: PromptGenerationServiceError base interface structure",
   // Base interface must have required fields
   assertEquals(typeof mockError.kind, "string");
   assertEquals(typeof mockError.message, "string");
-  
+
   // Context is optional
   assertExists(mockError.context);
   assertEquals(typeof mockError.context, "object");
@@ -41,7 +41,7 @@ Deno.test("Architecture: All error types extend base interface", () => {
     message: "Variable validation failed",
     validationErrors: [{ message: "Test error" }],
   };
-  
+
   assertEquals(typeof variableError.kind, "string");
   assertEquals(typeof variableError.message, "string");
   assertEquals(Array.isArray(variableError.validationErrors), true);
@@ -52,7 +52,7 @@ Deno.test("Architecture: All error types extend base interface", () => {
     message: "Template resolution failed",
     templatePath: "/test/path",
   };
-  
+
   assertEquals(typeof templateError.kind, "string");
   assertEquals(typeof templateError.message, "string");
   assertEquals(typeof templateError.templatePath, "string");
@@ -63,7 +63,7 @@ Deno.test("Architecture: All error types extend base interface", () => {
     message: "Prompt generation failed",
     reason: "Test reason",
   };
-  
+
   assertEquals(typeof promptError.kind, "string");
   assertEquals(typeof promptError.message, "string");
   assertEquals(typeof promptError.reason, "string");
@@ -74,7 +74,7 @@ Deno.test("Architecture: All error types extend base interface", () => {
     message: "Service configuration error",
     configurationIssue: "Test issue",
   };
-  
+
   assertEquals(typeof configError.kind, "string");
   assertEquals(typeof configError.message, "string");
   assertEquals(typeof configError.configurationIssue, "string");
@@ -115,7 +115,7 @@ Deno.test("Architecture: Union type completeness", () => {
 Deno.test("Architecture: Error factory functions exist and are properly typed", () => {
   // Verify factory object exists
   assertExists(PromptGenerationServiceErrorFactory);
-  
+
   // Verify all factory methods exist
   assertEquals(typeof PromptGenerationServiceErrorFactory.variableValidationFailed, "function");
   assertEquals(typeof PromptGenerationServiceErrorFactory.templateResolutionFailed, "function");
@@ -127,7 +127,7 @@ Deno.test("Architecture: Kind discriminator uniqueness", () => {
   // Verify each error type has unique kind value
   const kinds = [
     "VariableValidationFailed",
-    "TemplateResolutionFailed", 
+    "TemplateResolutionFailed",
     "PromptGenerationFailed",
     "ServiceConfigurationError",
   ];
@@ -146,12 +146,12 @@ Deno.test("Architecture: Readonly properties constraint", () => {
   assertEquals(error.kind, "VariableValidationFailed");
   assertEquals(typeof error.message, "string");
   assertEquals(Array.isArray(error.validationErrors), true);
-  
+
   // TypeScript readonly is compile-time only, not runtime
   // This test verifies that the interface declares readonly properties
   // Runtime immutability would require Object.freeze() or similar
   const originalKind = error.kind;
-  
+
   // In JavaScript/TypeScript, readonly is only a compile-time constraint
   // The actual runtime behavior allows modification unless Object.freeze() is used
   // This test documents the expected compile-time readonly behavior
@@ -168,7 +168,7 @@ Deno.test("Architecture: Context field is optional across all error types", () =
   };
 
   const templateError: TemplateResolutionError = {
-    kind: "TemplateResolutionFailed", 
+    kind: "TemplateResolutionFailed",
     message: "Test",
     // context is intentionally omitted
   };

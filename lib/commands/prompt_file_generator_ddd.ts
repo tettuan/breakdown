@@ -279,7 +279,7 @@ export class PromptFileGeneratorDDD {
   /**
    * List available templates
    */
-  async listTemplates() {
+  listTemplates() {
     return this.service.listAvailableTemplates();
   }
 }

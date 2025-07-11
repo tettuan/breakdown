@@ -14,7 +14,7 @@ import { StdoutWriteConfiguration } from "./stdout.ts";
 
 /**
  * Discriminated Union for stdin-specific errors
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and follows Domain-Driven Design principles for error handling.
  */
@@ -50,27 +50,39 @@ export type StdinErrorType =
 /**
  * Type guards for StdinErrorType discrimination
  */
-export function isReadError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ReadError" }> {
+export function isReadError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "ReadError" }> {
   return error.kind === "ReadError";
 }
 
-export function isTimeoutError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "TimeoutError" }> {
+export function isTimeoutError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "TimeoutError" }> {
   return error.kind === "TimeoutError";
 }
 
-export function isEmptyInputError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "EmptyInputError" }> {
+export function isEmptyInputError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "EmptyInputError" }> {
   return error.kind === "EmptyInputError";
 }
 
-export function isNotAvailableError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "NotAvailableError" }> {
+export function isNotAvailableError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "NotAvailableError" }> {
   return error.kind === "NotAvailableError";
 }
 
-export function isValidationError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ValidationError" }> {
+export function isValidationError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "ValidationError" }> {
   return error.kind === "ValidationError";
 }
 
-export function isConfigurationError(error: StdinErrorType): error is Extract<StdinErrorType, { kind: "ConfigurationError" }> {
+export function isConfigurationError(
+  error: StdinErrorType,
+): error is Extract<StdinErrorType, { kind: "ConfigurationError" }> {
   return error.kind === "ConfigurationError";
 }
 
@@ -90,7 +102,9 @@ export function formatStdinError(stdinError: StdinErrorType): string {
     case "ValidationError":
       return `Validation error in ${stdinError.field}: ${stdinError.message}`;
     case "ConfigurationError":
-      return `Configuration error for ${stdinError.setting}${stdinError.value ? `: ${stdinError.value}` : ""}`;
+      return `Configuration error for ${stdinError.setting}${
+        stdinError.value ? `: ${stdinError.value}` : ""
+      }`;
   }
 }
 
@@ -229,7 +243,7 @@ export interface StdinOptions {
  * Type-safe stdin reading with Result-based error handling
  * Uses enhanced stdin reader with TimeoutManager support
  * Follows Totality principle - no exceptions thrown
- * 
+ *
  * @param config - Type-safe configuration for stdin reading
  * @returns Result containing stdin content or specific error
  */
@@ -248,24 +262,30 @@ export async function readStdinSafe(
           timeout: config.timeout,
         });
       }
-      
+
       if (caughtError.message.includes("empty") || caughtError.message.includes("No input")) {
         return error({
           kind: "EmptyInputError",
           message: caughtError.message,
         });
       }
-      
-      if (caughtError.message.includes("not available") || caughtError.message.includes("CI") || caughtError.message.includes("test")) {
-        const environment = caughtError.message.includes("CI") ? "CI" : 
-                           caughtError.message.includes("test") ? "test" : "unknown";
+
+      if (
+        caughtError.message.includes("not available") || caughtError.message.includes("CI") ||
+        caughtError.message.includes("test")
+      ) {
+        const environment = caughtError.message.includes("CI")
+          ? "CI"
+          : caughtError.message.includes("test")
+          ? "test"
+          : "unknown";
         return error({
           kind: "NotAvailableError",
           environment,
         });
       }
     }
-    
+
     return error({
       kind: "ReadError",
       message: caughtError instanceof Error ? caughtError.message : String(caughtError),
@@ -312,22 +332,26 @@ export class StdinAvailability {
     try {
       // Check if stdin is a terminal (TTY)
       const isTerminal = Deno.stdin.isTerminal();
-      
+
       if (isTerminal) {
-        return ok(new StdinAvailability(
-          false, 
-          true, 
-          "stdin is connected to a terminal"
-        ));
+        return ok(
+          new StdinAvailability(
+            false,
+            true,
+            "stdin is connected to a terminal",
+          ),
+        );
       }
 
       // For non-TTY (piped input), we can't check without consuming
       // So we return true if stdin is available (piped)
-      return ok(new StdinAvailability(
-        true, 
-        false, 
-        "stdin is piped or redirected"
-      ));
+      return ok(
+        new StdinAvailability(
+          true,
+          false,
+          "stdin is piped or redirected",
+        ),
+      );
     } catch (caughtError) {
       return error({
         kind: "ReadError",
@@ -369,7 +393,7 @@ export class StdinAvailability {
 /**
  * Type-safe stdin availability checking with Result-based error handling
  * Follows Totality principle - no exceptions thrown
- * 
+ *
  * @returns Result containing availability status or specific error
  */
 export function checkStdinAvailability(): Result<StdinAvailability, StdinErrorType> {
@@ -404,7 +428,7 @@ export { StdoutWriteConfiguration } from "./stdout.ts";
 /**
  * Type-safe stdout writing with Result-based error handling
  * Follows Totality principle - no exceptions thrown
- * 
+ *
  * @param content - Content to write to stdout
  * @param config - Configuration for writing
  * @returns Result indicating success or specific error
@@ -417,17 +441,19 @@ export function writeStdoutSafe(
     const encoder = new TextEncoder();
     const data = encoder.encode(content);
     Deno.stdout.writeSync(data);
-    
+
     if (config.flushImmediate) {
-      // Note: Deno doesn't have explicit flush for stdout, 
+      // Note: Deno doesn't have explicit flush for stdout,
       // but writeSync is synchronous and effectively flushes
     }
-    
+
     return ok(undefined);
   } catch (caughtError) {
     return error({
       kind: "ReadError", // Actually a write error, but we use ReadError for I/O operations
-      message: `Failed to write to stdout: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+      message: `Failed to write to stdout: ${
+        caughtError instanceof Error ? caughtError.message : String(caughtError)
+      }`,
       originalError: caughtError instanceof Error ? caughtError : undefined,
     });
   }
@@ -653,7 +679,7 @@ export class StdinAvailabilityCheckOptions {
 /**
  * Type-safe stdin availability checking with Result-based error handling
  * Follows Totality principle - no exceptions thrown
- * 
+ *
  * @param options - Configuration for availability checking
  * @returns Result containing boolean availability status or specific error
  */
@@ -663,15 +689,15 @@ export function isStdinAvailableSafe(
   try {
     // For testability, allow isTerminal to be injected
     let isTerminal: boolean;
-    
+
     if (options.isTerminalOverride !== undefined) {
       isTerminal = options.isTerminalOverride;
     } else {
       isTerminal = Deno.stdin.isTerminal();
     }
-    
+
     return ok(!isTerminal);
-  } catch (caughtError) {
+  } catch (_caughtError) {
     return error(new StdinError("Failed to check stdin availability"));
   }
 }

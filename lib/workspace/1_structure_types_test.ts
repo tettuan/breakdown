@@ -10,7 +10,7 @@
  * @module workspace/1_structure_types_test
  */
 
-import { assertEquals, assertExists } from "../deps.ts";
+import { assertEquals } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -164,7 +164,7 @@ describe.ignore("Workspace Types - Structure", () => {
     // Find positions of different type categories
     const configPos = typeContent.indexOf("WorkspaceConfig");
     const optionsPos = typeContent.indexOf("WorkspaceOptions");
-    const structurePos = typeContent.indexOf("WorkspaceStructure");
+    const _structurePos = typeContent.indexOf("WorkspaceStructure");
 
     // Related types should be near each other
     if (configPos !== -1 && optionsPos !== -1) {

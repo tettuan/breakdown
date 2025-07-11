@@ -15,7 +15,7 @@ import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
 import { SchemaFilePathResolver } from "./schema_file_path_resolver.ts";
 import type { TwoParams_Result } from "../deps.ts";
-import { Result, ok, error as resultError } from "../types/result.ts";
+import { error as resultError, ok, Result } from "../types/result.ts";
 import { FactoryInitError, formatFactoryInitError } from "./factory_error.ts";
 
 /**
@@ -150,27 +150,41 @@ export class UnifiedPromptVariablesFactory {
 
     // Create resolvers with unified adapter
     const resolverAdapter = this.createResolverAdapter();
-    
+
     // Use static create methods for Smart Constructor pattern
     const promptPathResolverResult = PromptTemplatePathResolver.create(config, resolverAdapter);
     const inputPathResolverResult = InputFilePathResolver.create(config, resolverAdapter);
     const outputPathResolverResult = OutputFilePathResolver.create(config, resolverAdapter);
     const schemaPathResolverResult = SchemaFilePathResolver.create(config, resolverAdapter);
-    
+
     // Handle creation errors
     if (!promptPathResolverResult.ok) {
-      throw new Error(`Failed to create PromptTemplatePathResolver: ${JSON.stringify(promptPathResolverResult.error)}`);
+      throw new Error(
+        `Failed to create PromptTemplatePathResolver: ${
+          JSON.stringify(promptPathResolverResult.error)
+        }`,
+      );
     }
     if (!inputPathResolverResult.ok) {
-      throw new Error(`Failed to create InputFilePathResolver: ${JSON.stringify(inputPathResolverResult.error)}`);
+      throw new Error(
+        `Failed to create InputFilePathResolver: ${JSON.stringify(inputPathResolverResult.error)}`,
+      );
     }
     if (!outputPathResolverResult.ok) {
-      throw new Error(`Failed to create OutputFilePathResolver: ${JSON.stringify(outputPathResolverResult.error)}`);
+      throw new Error(
+        `Failed to create OutputFilePathResolver: ${
+          JSON.stringify(outputPathResolverResult.error)
+        }`,
+      );
     }
     if (!schemaPathResolverResult.ok) {
-      throw new Error(`Failed to create SchemaFilePathResolver: ${JSON.stringify(schemaPathResolverResult.error)}`);
+      throw new Error(
+        `Failed to create SchemaFilePathResolver: ${
+          JSON.stringify(schemaPathResolverResult.error)
+        }`,
+      );
     }
-    
+
     this._promptPathResolver = promptPathResolverResult.data;
     this._inputPathResolver = inputPathResolverResult.data;
     this._outputPathResolver = outputPathResolverResult.data;
@@ -193,7 +207,9 @@ export class UnifiedPromptVariablesFactory {
   /**
    * Factory method to create UnifiedPromptVariablesFactory with configuration loading.
    */
-  static async create(cliParams: UnifiedPromptCliParams): Promise<Result<UnifiedPromptVariablesFactory, FactoryInitError>> {
+  static async create(
+    cliParams: UnifiedPromptCliParams,
+  ): Promise<Result<UnifiedPromptVariablesFactory, FactoryInitError>> {
     try {
       const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
       const configSetName = cliParams.options.config || "default";
@@ -224,7 +240,7 @@ export class UnifiedPromptVariablesFactory {
         return resultError({
           kind: "ConfigValidation",
           field: "configuration",
-          reason: error.message
+          reason: error.message,
         });
       }
 
@@ -236,13 +252,17 @@ export class UnifiedPromptVariablesFactory {
 
   /**
    * Factory method to create UnifiedPromptVariablesFactory (unsafe version for backward compatibility)
-   * 
+   *
    * @deprecated Use create() instead for Result-based error handling
    */
-  static async createUnsafe(cliParams: UnifiedPromptCliParams): Promise<UnifiedPromptVariablesFactory> {
+  static async createUnsafe(
+    cliParams: UnifiedPromptCliParams,
+  ): Promise<UnifiedPromptVariablesFactory> {
     const result = await UnifiedPromptVariablesFactory.create(cliParams);
     if (!result.ok) {
-      throw new Error(`UnifiedPromptVariablesFactory creation failed: ${formatFactoryInitError(result.error)}`);
+      throw new Error(
+        `UnifiedPromptVariablesFactory creation failed: ${formatFactoryInitError(result.error)}`,
+      );
     }
     return result.data;
   }
@@ -261,14 +281,14 @@ export class UnifiedPromptVariablesFactory {
     } catch (error) {
       return resultError({
         kind: "InvalidConfig",
-        reason: error instanceof Error ? error.message : String(error)
+        reason: error instanceof Error ? error.message : String(error),
       });
     }
   }
 
   /**
    * Factory method with pre-loaded configuration (unsafe version for backward compatibility).
-   * 
+   *
    * @deprecated Use createWithConfig() instead for Result-based error handling
    */
   static createWithConfigUnsafe(
@@ -322,7 +342,9 @@ export class UnifiedPromptVariablesFactory {
     if (!this.config) throw new Error("config is required");
     if (!this.hasValidBaseDir()) {
       const baseDirResult = this.getBaseDirError();
-      throw new Error(`Invalid base directory: ${baseDirResult.ok ? "Unknown error" : baseDirResult.error}`);
+      throw new Error(
+        `Invalid base directory: ${baseDirResult.ok ? "Unknown error" : baseDirResult.error}`,
+      );
     }
     if (!this.promptFilePath) throw new Error("Prompt file path is required");
     if (!this.schemaFilePath) throw new Error("Schema file path is required");
@@ -408,7 +430,7 @@ export class LegacyToUnifiedAdapter {
   /**
    * Converts legacy PromptCliParams to UnifiedPromptCliParams
    */
-  static async adapt(
+  static adapt(
     legacyParams: {
       demonstrativeType: string;
       layerType: string;
@@ -430,17 +452,17 @@ export class LegacyToUnifiedAdapter {
       params: [legacyParams.demonstrativeType, legacyParams.layerType],
       demonstrativeType: legacyParams.demonstrativeType,
       layerType: legacyParams.layerType,
-      options: legacyParams.options
+      options: legacyParams.options,
     };
 
     const directive = DirectiveType.create(twoParamsResult);
     const layer = LayerType.create(twoParamsResult);
 
-    return {
+    return Promise.resolve({
       directive,
       layer,
       options: legacyParams.options,
-    };
+    });
   }
 }
 

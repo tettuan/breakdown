@@ -1,6 +1,6 @@
 /**
  * User variable validation error types
- * 
+ *
  * Provides comprehensive error handling for user-defined prompt variables
  * following the Totality principle.
  */

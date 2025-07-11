@@ -107,17 +107,17 @@ export class UnixPathStrategyTotality {
   /**
    * Resolves a path with full validation
    */
-  async resolve(path: string): Promise<Result<string, PathErrorKind>> {
+  resolve(path: string): Promise<Result<string, PathErrorKind>> {
     const pathResult = UnixPath.create(path);
     if (!pathResult.ok) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: pathResult.error,
         },
-      };
+      });
     }
 
     try {
@@ -128,26 +128,26 @@ export class UnixPathStrategyTotality {
       const normalizedResolved = normalize(resolved);
 
       if (!normalizedResolved.startsWith(normalizedBase)) {
-        return {
+        return Promise.resolve({
           ok: false,
           error: {
             kind: "SECURITY_VIOLATION",
             path,
             violation: "Path escapes base directory",
           },
-        };
+        });
       }
 
-      return { ok: true, data: normalizedResolved };
+      return Promise.resolve({ ok: true, data: normalizedResolved });
     } catch (error) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "NORMALIZATION_FAILED",
           path,
           cause: error as Error,
         },
-      };
+      });
     }
   }
 
@@ -179,51 +179,52 @@ export class UnixPathStrategyTotality {
   /**
    * Validates a Unix path
    */
-  validate(path: string): Result<boolean, PathErrorKind> {
+  validate(path: string): Promise<Result<boolean, PathErrorKind>> {
     // Check for empty path
     if (!path || path.trim() === "") {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Empty path",
         },
-      };
+      });
     }
 
     // Check for path traversal
     if (path.includes("..")) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "SECURITY_VIOLATION",
           path,
           violation: "Path traversal attempt",
         },
-      };
+      });
     }
 
     // Check for invalid characters in Unix
+    // deno-lint-ignore no-control-regex
     const invalidChars = /[\x00-\x1f\x7f]/;
     if (invalidChars.test(path)) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Path contains invalid control characters",
         },
-      };
+      });
     }
 
     // Check normalization doesn't change the path significantly
     const normalizeResult = this.normalize(path);
     if (!normalizeResult.ok) {
-      return normalizeResult;
+      return Promise.resolve(normalizeResult);
     }
 
-    return { ok: true, data: true };
+    return Promise.resolve({ ok: true, data: true });
   }
 
   /**

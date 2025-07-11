@@ -191,7 +191,7 @@ describe("PromptAdapter Architecture - Error Handling Consistency", () => {
     assertEquals(hasThrow.length, 0, "Should not throw exceptions directly");
   });
 
-  it("should validate all required dependencies exist", async () => {
+  it("should validate all required dependencies exist", () => {
     _logger.debug("Testing dependency existence");
 
     // Verify required modules exist

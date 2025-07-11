@@ -24,7 +24,7 @@ type DoubleParams_Result = PromptCliParams;
 /**
  * TypeCreationResult pattern for consistent factory interface
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
@@ -410,7 +410,10 @@ export class OutputFilePathResolver {
           this.name = "OutputFilePathResolutionError";
         }
       }
-      throw new OutputFilePathResolutionError(`Path resolution failed: ${result.error.kind} - ${errorMessage}`, result.error.kind);
+      throw new OutputFilePathResolutionError(
+        `Path resolution failed: ${result.error.kind} - ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data.value;
   }
@@ -438,10 +441,22 @@ export class OutputFilePathResolver {
    */
   private getLayerType(): string {
     // Check for Totality parameters structure
-    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === "object" && "directive" in p && "layer" in p &&
-        p.directive && typeof p.directive === "object" && "value" in p.directive &&
-        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    const hasTotalityProps = (
+      p: unknown,
+    ): p is {
+      directive: { value?: string; data?: string };
+      layer: { value?: string; data?: string };
+      options?: unknown;
+    } => {
+      if (p === null || typeof p !== "object") return false;
+      const obj = p as Record<string, unknown>;
+      const hasDirective = "directive" in obj;
+      const hasLayer = "layer" in obj;
+      if (!hasDirective || !hasLayer) return false;
+      return Boolean(obj.directive) && typeof obj.directive === "object" &&
+        obj.directive !== null && "value" in obj.directive &&
+        Boolean(obj.layer) && typeof obj.layer === "object" && obj.layer !== null &&
+        "value" in obj.layer;
     };
 
     if (hasTotalityProps(this._cliParams)) {
@@ -469,13 +484,14 @@ export class OutputFilePathResolver {
   private getDestinationFile(): string | undefined {
     // Handle both legacy and new parameter structures
     if ("options" in this._cliParams) {
-      const options = this._cliParams.options as any;
+      const options = this._cliParams.options as unknown as Record<string, unknown>;
       // Support both 'output' and 'destinationFile' for backward compatibility
-      return options?.output || options?.destinationFile;
+      return (options?.output || options?.destinationFile) as string | undefined;
     }
     // For TwoParams_Result structure, adapt to legacy interface
     const twoParams = this._cliParams as TwoParams_Result;
-    const options = (twoParams as unknown as { options?: { output?: string; destinationFile?: string } }).options;
+    const options =
+      (twoParams as unknown as { options?: { output?: string; destinationFile?: string } }).options;
     return options?.output || options?.destinationFile;
   }
 
@@ -573,7 +589,10 @@ export class OutputFilePathResolver {
           this.name = "FilenameGenerationError";
         }
       }
-      throw new FilenameGenerationError(`Filename generation failed: ${errorMessage}`, result.error.kind);
+      throw new FilenameGenerationError(
+        `Filename generation failed: ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data;
   }
@@ -604,7 +623,7 @@ export class OutputFilePathResolver {
     // Architecture-compliant implementation that doesn't access file system directly
     // Path resolution should focus on logical path construction only
     // Actual directory existence should be checked by higher-level components
-    
+
     // Logical check: paths ending with "/" are likely directories
     return p.endsWith("/") || p.endsWith("\\");
   }
@@ -662,7 +681,7 @@ export class OutputFilePathResolver {
 
   /**
    * Check if a directory exists on the filesystem
-   * 
+   *
    * Architecture-compliant implementation that doesn't access file system directly
    */
   private checkDirectoryExists(path: string): boolean {
@@ -717,7 +736,7 @@ export class OutputFilePathResolver {
 
   /**
    * Smart Constructor for creating OutputFilePathResolver with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all inputs
@@ -763,29 +782,50 @@ export class OutputFilePathResolver {
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): Result<void, OutputFilePathError> {
     // Check for Totality parameters structure
-    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === "object" && "directive" in p && "layer" in p &&
-        p.directive && typeof p.directive === "object" && "value" in p.directive &&
-        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    const hasTotalityProps = (
+      p: unknown,
+    ): p is {
+      directive: { value?: string; data?: string };
+      layer: { value?: string; data?: string };
+      options?: unknown;
+    } => {
+      if (p === null || typeof p !== "object") return false;
+      const obj = p as Record<string, unknown>;
+      const hasDirective = "directive" in obj;
+      const hasLayer = "layer" in obj;
+      if (!hasDirective || !hasLayer) return false;
+      return Boolean(obj.directive) && typeof obj.directive === "object" &&
+        obj.directive !== null && "value" in obj.directive &&
+        Boolean(obj.layer) && typeof obj.layer === "object" && obj.layer !== null &&
+        "value" in obj.layer;
     };
 
     // Check for TwoParams_Result structure
-    const hasTwoParamsStructure = (p: any): boolean => {
-      return p && typeof p === "object" && "type" in p && p.type === "two" &&
-        "demonstrativeType" in p && "layerType" in p;
+    const hasTwoParamsStructure = (p: unknown): boolean => {
+      if (p === null || typeof p !== "object") return false;
+      const obj = p as Record<string, unknown>;
+      return "type" in obj && obj.type === "two" &&
+        "demonstrativeType" in obj && "layerType" in obj;
     };
 
     // Check for legacy parameters structure
-    const hasLegacyProps = (p: any): boolean => {
-      return p && typeof p === "object" && 
-        "demonstrativeType" in p && "layerType" in p &&
-        typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
+    const hasLegacyProps = (p: unknown): boolean => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return Boolean(
+        "demonstrativeType" in obj && "layerType" in obj &&
+          typeof obj.demonstrativeType === "string" && typeof obj.layerType === "string",
+      );
     };
 
-    if (!hasTotalityProps(cliParams) && !hasTwoParamsStructure(cliParams) && !hasLegacyProps(cliParams)) {
+    if (
+      !hasTotalityProps(cliParams) && !hasTwoParamsStructure(cliParams) &&
+      !hasLegacyProps(cliParams)
+    ) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have Totality structure (directive/layer), TwoParams structure, or legacy structure with demonstrativeType and layerType",
+        message:
+          "CLI parameters must have Totality structure (directive/layer), TwoParams structure, or legacy structure with demonstrativeType and layerType",
       });
     }
 

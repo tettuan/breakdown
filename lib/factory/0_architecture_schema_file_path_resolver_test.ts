@@ -11,13 +11,7 @@
  * @module factory/0_architecture_schema_file_path_resolver_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertInstanceOf,
-  assertNotStrictEquals,
-  assertThrows,
-} from "../deps.ts";
+import { assert, assertEquals, assertThrows } from "../deps.ts";
 import {
   formatSchemaError,
   formatSchemaFilePathError,
@@ -25,12 +19,12 @@ import {
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
-  SchemaFilePathResolver,
   type SchemaFilePathError,
+  SchemaFilePathResolver,
   SchemaPath,
 } from "./schema_file_path_resolver.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
-import { isError, isOk, type Result } from "../types/result.ts";
+import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 
 Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces validation", () => {
   // Valid inputs should create instance
@@ -54,7 +48,10 @@ Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces vali
   ];
 
   for (const config of invalidConfigs) {
-    const result = SchemaFilePathResolver.create(config as any, validParams);
+    const result = SchemaFilePathResolver.create(
+      config as unknown as typeof validConfig,
+      validParams,
+    );
     assert(!result.ok, `Should fail with invalid config: ${config}`);
     assertEquals(result.error.kind, "InvalidConfiguration");
   }
@@ -73,7 +70,10 @@ Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces vali
   ];
 
   for (const params of invalidParams) {
-    const result = SchemaFilePathResolver.create(validConfig, params as any);
+    const result = SchemaFilePathResolver.create(
+      validConfig,
+      params as unknown as typeof validParams,
+    );
     assert(!result.ok, `Should fail with invalid params: ${JSON.stringify(params)}`);
     if (params && typeof params === "object" && !Array.isArray(params)) {
       assertEquals(result.error.kind, "InvalidParameterCombination");
@@ -123,7 +123,7 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
   // Resolver should maintain original values
   const currentBaseDir = result.data.resolveBaseDir();
   const currentPath = result.data.buildSchemaPath("/test", "file.md");
-  
+
   assertEquals(currentBaseDir, originalBaseDir, "Base dir should not change");
   assertEquals(currentPath, originalPath, "Built path should not change");
   assert(currentPath.includes("/to/project/"), "Should use original params");
@@ -241,7 +241,7 @@ Deno.test("SchemaFilePathResolver Architecture - PathResolutionError conversion 
 
 Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintained", () => {
   const config = { app_schema: { base_dir: "/test" } };
-  
+
   // Test with legacy DoubleParams_Result structure
   const legacyParams = {
     demonstrativeType: "to",
@@ -257,7 +257,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
     type: "two" as const,
     params: ["to", "project"],
     demonstrativeType: "to",
-    layerType: "project", 
+    layerType: "project",
     options: {},
   };
 
@@ -310,8 +310,8 @@ Deno.test("SchemaFilePathResolver Architecture - Domain boundaries respected", (
 Deno.test("SchemaFilePathResolver Architecture - Exhaustive error handling", () => {
   // Ensure all error paths are covered
   const testCases: Array<{
-    config: any;
-    params: any;
+    config: unknown;
+    params: unknown;
     expectedError: PathResolutionError["kind"];
   }> = [
     {
@@ -337,7 +337,10 @@ Deno.test("SchemaFilePathResolver Architecture - Exhaustive error handling", () 
   ];
 
   for (const testCase of testCases) {
-    const result = SchemaFilePathResolver.create(testCase.config, testCase.params);
+    const result = SchemaFilePathResolver.create(
+      testCase.config as { app_schema?: { base_dir?: string } } & Record<string, unknown>,
+      testCase.params as PromptCliParams | TwoParams_Result,
+    );
     assert(!result.ok, `Should fail for ${JSON.stringify(testCase)}`);
     assertEquals(result.error.kind, testCase.expectedError);
   }

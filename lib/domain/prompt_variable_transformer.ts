@@ -272,30 +272,30 @@ export class PromptVariableTransformer {
   /**
    * Transform and validate file paths
    */
-  private async transformPath(
+  private transformPath(
     raw: string,
     type: "input" | "output" | "schema",
   ): Promise<Result<string, TransformationError>> {
     // Basic validation
     if (!raw || raw.trim().length === 0) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           stage: "variables",
           field: type,
           message: `${type} path cannot be empty`,
         },
-      };
+      });
     }
 
     // Path validation if enabled
     if (this.config.validatePaths && this.config.pathOptions) {
       // TODO: Integrate with path resolution service
       // For now, just return the cleaned path
-      return { ok: true, data: raw.trim() };
+      return Promise.resolve({ ok: true, data: raw.trim() });
     }
 
-    return { ok: true, data: raw.trim() };
+    return Promise.resolve({ ok: true, data: raw.trim() });
   }
 }
 

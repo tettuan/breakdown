@@ -11,14 +11,10 @@
  * @module types/1_behavior_prompt_variables_factory_error_test
  */
 
+import { assert, assertEquals, assertStringIncludes } from "../deps.ts";
 import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../deps.ts";
-import {
-  type PromptVariablesFactoryErrors,
   PromptVariablesFactoryErrorFactory,
+  type PromptVariablesFactoryErrors,
 } from "./prompt_variables_factory_error.ts";
 
 Deno.test("PromptVariablesFactoryError Behavior - Factory function consistency", () => {
@@ -40,11 +36,13 @@ Deno.test("PromptVariablesFactoryError Behavior - Error message composition", ()
       expectedInMessage: ["Failed to create path options", "invalid path"],
     },
     {
-      factory: () => PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("missing config"),
+      factory: () =>
+        PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("missing config"),
       expectedInMessage: ["Failed to create template resolver", "missing config"],
     },
     {
-      factory: () => PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed("schema not found"),
+      factory: () =>
+        PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed("schema not found"),
       expectedInMessage: ["Failed to create schema resolver", "schema not found"],
     },
     {
@@ -68,8 +66,11 @@ Deno.test("PromptVariablesFactoryError Behavior - Error message composition", ()
   for (const { factory, expectedInMessage } of testCases) {
     const error = factory();
     for (const expectedText of expectedInMessage) {
-      assertStringIncludes(error.message, expectedText, 
-        `Message "${error.message}" should contain "${expectedText}"`);
+      assertStringIncludes(
+        error.message,
+        expectedText,
+        `Message "${error.message}" should contain "${expectedText}"`,
+      );
     }
   }
 });
@@ -80,11 +81,15 @@ Deno.test("PromptVariablesFactoryError Behavior - Error categorization by conten
   assertEquals(pathError.pathOptionsError, "detail");
   assertStringIncludes(pathError.message, "detail");
 
-  const templateError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("template issue");
+  const templateError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(
+    "template issue",
+  );
   assertEquals(templateError.resolverError, "template issue");
   assertStringIncludes(templateError.message, "template issue");
 
-  const schemaError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed("schema problem");
+  const schemaError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(
+    "schema problem",
+  );
   assertEquals(schemaError.resolverError, "schema problem");
   assertStringIncludes(schemaError.message, "schema problem");
 
@@ -112,18 +117,14 @@ Deno.test("PromptVariablesFactoryError Behavior - Error filtering and categoriza
   ];
 
   // Filter creation errors (have additional details)
-  const creationErrors = errors.filter(error => 
-    error.kind.includes("CreationFailed")
-  );
+  const creationErrors = errors.filter((error) => error.kind.includes("CreationFailed"));
   assertEquals(creationErrors.length, 3);
   for (const error of creationErrors) {
     assert("resolverError" in error || "pathOptionsError" in error);
   }
 
   // Filter path resolution errors (simple errors)
-  const pathResolutionErrors = errors.filter(error => 
-    error.kind.includes("NotResolved")
-  );
+  const pathResolutionErrors = errors.filter((error) => error.kind.includes("NotResolved"));
   assertEquals(pathResolutionErrors.length, 4);
   for (const error of pathResolutionErrors) {
     assert(!("resolverError" in error));
@@ -190,14 +191,17 @@ Deno.test("PromptVariablesFactoryError Behavior - Input validation and edge case
 
   // Test with special characters
   const specialCharsError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(
-    "Error with symbols: !@#$%^&*()_+{}|:<>?[];',./~`"
+    "Error with symbols: !@#$%^&*()_+{}|:<>?[];',./~`",
   );
   assertEquals(specialCharsError.resolverError, "Error with symbols: !@#$%^&*()_+{}|:<>?[];',./~`");
-  assertStringIncludes(specialCharsError.message, "Error with symbols: !@#$%^&*()_+{}|:<>?[];',./~`");
+  assertStringIncludes(
+    specialCharsError.message,
+    "Error with symbols: !@#$%^&*()_+{}|:<>?[];',./~`",
+  );
 
   // Test with unicode characters
   const unicodeError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(
-    "Erreur avec des caractères unicode: αβγδε 中文 🚀"
+    "Erreur avec des caractères unicode: αβγδε 中文 🚀",
   );
   assertEquals(unicodeError.resolverError, "Erreur avec des caractères unicode: αβγδε 中文 🚀");
   assertStringIncludes(unicodeError.message, "Erreur avec des caractères unicode: αβγδε 中文 🚀");
@@ -225,7 +229,9 @@ Deno.test("PromptVariablesFactoryError Behavior - Error context and debugging", 
   }
 
   // Test error properties for debugging
-  const debugError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("debug info");
+  const debugError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(
+    "debug info",
+  );
   assert(debugError.kind.length > 0, "Kind should be non-empty for debugging");
   assert(debugError.message.length > 0, "Message should be non-empty for debugging");
   assert(debugError.resolverError.length > 0, "Resolver error should be non-empty for debugging");
@@ -234,10 +240,12 @@ Deno.test("PromptVariablesFactoryError Behavior - Error context and debugging", 
 Deno.test("PromptVariablesFactoryError Behavior - Error aggregation scenarios", () => {
   // Test collecting multiple errors
   const errors: PromptVariablesFactoryErrors[] = [];
-  
+
   // Simulate multiple failures
   errors.push(PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed("invalid config"));
-  errors.push(PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("missing template"));
+  errors.push(
+    PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("missing template"),
+  );
   errors.push(PromptVariablesFactoryErrorFactory.promptFilePathNotResolved());
 
   assertEquals(errors.length, 3);
@@ -288,7 +296,7 @@ Deno.test("PromptVariablesFactoryError Behavior - Error serialization and loggin
     // Test JSON serialization
     const serialized = JSON.stringify(error);
     assert(serialized.length > 0, "Error should be serializable");
-    
+
     const parsed = JSON.parse(serialized);
     assertEquals(parsed.kind, error.kind);
     assertEquals(parsed.message, error.message);
@@ -305,7 +313,7 @@ Deno.test("PromptVariablesFactoryError Behavior - Factory method robustness", ()
   // Test all factory methods exist and are callable
   const factoryMethods = [
     "pathOptionsCreationFailed",
-    "templateResolverCreationFailed", 
+    "templateResolverCreationFailed",
     "schemaResolverCreationFailed",
     "promptFilePathNotResolved",
     "inputFilePathNotResolved",
@@ -314,17 +322,17 @@ Deno.test("PromptVariablesFactoryError Behavior - Factory method robustness", ()
   ];
 
   for (const methodName of factoryMethods) {
-    const method = (PromptVariablesFactoryErrorFactory as any)[methodName];
+    const method = (PromptVariablesFactoryErrorFactory as Record<string, unknown>)[methodName];
     assertEquals(typeof method, "function", `${methodName} should be a function`);
-    
+
     // Test that method can be called (with appropriate arguments)
     let error: PromptVariablesFactoryErrors;
     if (methodName.includes("CreationFailed")) {
-      error = method("test");
+      error = (method as (arg: string) => PromptVariablesFactoryErrors)("test");
     } else {
-      error = method();
+      error = (method as () => PromptVariablesFactoryErrors)();
     }
-    
+
     assert(error.kind.length > 0, `${methodName} should produce valid error`);
     assert(error.message.length > 0, `${methodName} should produce valid message`);
   }

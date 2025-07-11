@@ -19,10 +19,15 @@
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { AsyncConfigPatternProvider } from "./pattern_provider_async.ts";
-import { type CustomConfig, loadBreakdownConfig, mergeConfigs } from "./loader_refactored.ts";
+import {
+  type CustomConfig as _CustomConfig,
+  loadBreakdownConfig,
+  mergeConfigs as _mergeConfigs,
+} from "./loader_refactored.ts";
 import { DEPENDENCY_VERSIONS } from "./versions.ts";
 import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";
+import { type BaseConfigStructure, extractBaseDir, extractNestedProperty } from "./types.ts";
 
 /**
  * Configuration errors (unified with system-wide error types)
@@ -176,7 +181,12 @@ export class UnifiedConfigInterface {
    * Create unified configuration with profile support
    */
   static async create(
-    options: ConfigBuilderOptions = { profile: null, workingDirectory: null, environmentOverrides: null, pathOverrides: null },
+    options: ConfigBuilderOptions = {
+      profile: null,
+      workingDirectory: null,
+      environmentOverrides: null,
+      pathOverrides: null,
+    },
   ): Promise<Result<UnifiedConfigInterface, ConfigurationError>> {
     try {
       // Load base configuration
@@ -192,7 +202,7 @@ export class UnifiedConfigInterface {
         });
       }
 
-      const baseConfig = baseConfigResult.data;
+      const baseConfig = baseConfigResult.data as BaseConfigStructure;
 
       // Create pattern provider
       const patternProviderResult = await AsyncConfigPatternProvider.create(
@@ -263,18 +273,17 @@ export class UnifiedConfigInterface {
    * Build unified configuration from components
    */
   private static async buildUnifiedConfig(
-    baseConfig: Record<string, unknown>,
+    baseConfig: BaseConfigStructure,
     patternProvider: AsyncConfigPatternProvider,
     workingDir: string,
     options: ConfigBuilderOptions,
   ): Promise<Result<UnifiedConfig, ConfigurationError>> {
-    // Extract paths with defaults (type-safe property access)
-    const typedBaseConfig = baseConfig as Record<string, any>;
-    const promptBaseDir = typedBaseConfig.app_prompt?.base_dir as string ||
+    // Extract paths with defaults using type-safe helpers
+    const promptBaseDir = extractBaseDir(baseConfig, "app_prompt") ||
       ".agent/breakdown/prompts";
-    const schemaBaseDir = typedBaseConfig.app_schema?.base_dir as string ||
+    const schemaBaseDir = extractBaseDir(baseConfig, "app_schema") ||
       ".agent/breakdown/schema";
-    const outputBaseDir = typedBaseConfig.output?.base_dir as string || "output";
+    const outputBaseDir = extractBaseDir(baseConfig, "output") || "output";
 
     // Get patterns from provider
     const patternsResult = await patternProvider.getAllPatterns();
@@ -290,7 +299,11 @@ export class UnifiedConfigInterface {
     const config: UnifiedConfig = {
       profile: {
         name: options.profile || "default",
-        description: typedBaseConfig.profile?.description as string || null,
+        description: extractNestedProperty<string | null>(
+          baseConfig,
+          ["profile", "description"],
+          null,
+        ),
         environment: this.detectEnvironment(),
         priority: 0,
         source: options.profile ? "user" : "default",
@@ -314,29 +327,60 @@ export class UnifiedConfigInterface {
       app: {
         version: DEPENDENCY_VERSIONS.BREAKDOWN_CONFIG,
         features: {
-          extendedThinking: (typedBaseConfig.features as any)?.extendedThinking ?? false,
-          debugMode: (typedBaseConfig.features as any)?.debugMode ?? false,
-          strictValidation: (typedBaseConfig.features as any)?.strictValidation ?? true,
-          autoSchema: (typedBaseConfig.features as any)?.autoSchema ?? true,
+          extendedThinking: extractNestedProperty<boolean>(baseConfig, [
+            "features",
+            "extendedThinking",
+          ], false),
+          debugMode: extractNestedProperty<boolean>(baseConfig, ["features", "debugMode"], false),
+          strictValidation: extractNestedProperty<boolean>(baseConfig, [
+            "features",
+            "strictValidation",
+          ], true),
+          autoSchema: extractNestedProperty<boolean>(baseConfig, ["features", "autoSchema"], true),
         },
         limits: {
-          maxFileSize: (typedBaseConfig.limits as any)?.maxFileSize ?? 10485760, // 10MB
-          maxPromptLength: (typedBaseConfig.limits as any)?.maxPromptLength ?? 50000,
-          maxVariables: (typedBaseConfig.limits as any)?.maxVariables ?? 100,
+          maxFileSize: extractNestedProperty<number>(
+            baseConfig,
+            ["limits", "maxFileSize"],
+            10485760,
+          ), // 10MB
+          maxPromptLength: extractNestedProperty<number>(
+            baseConfig,
+            ["limits", "maxPromptLength"],
+            50000,
+          ),
+          maxVariables: extractNestedProperty<number>(baseConfig, ["limits", "maxVariables"], 100),
         },
       },
 
       user: {
-        customVariables: (typedBaseConfig.user as any)?.customVariables || null,
-        aliases: (typedBaseConfig.user as any)?.aliases || null,
-        templates: (typedBaseConfig.user as any)?.templates || null,
+        customVariables: extractNestedProperty<Record<string, string> | null>(baseConfig, [
+          "user",
+          "customVariables",
+        ], null),
+        aliases: extractNestedProperty<Record<string, string> | null>(baseConfig, [
+          "user",
+          "aliases",
+        ], null),
+        templates: extractNestedProperty<Record<string, string> | null>(baseConfig, [
+          "user",
+          "templates",
+        ], null),
       },
 
       environment: {
-        logLevel: this.getLogLevel(typedBaseConfig),
-        colorOutput: (typedBaseConfig.environment as any)?.colorOutput ?? true,
-        timezone: (typedBaseConfig.environment as any)?.timezone || null,
-        locale: (typedBaseConfig.environment as any)?.locale || null,
+        logLevel: this.getLogLevel(baseConfig),
+        colorOutput: extractNestedProperty<boolean>(
+          baseConfig,
+          ["environment", "colorOutput"],
+          true,
+        ),
+        timezone: extractNestedProperty<string | null>(
+          baseConfig,
+          ["environment", "timezone"],
+          null,
+        ),
+        locale: extractNestedProperty<string | null>(baseConfig, ["environment", "locale"], null),
         ...(options.environmentOverrides || {}),
       },
 
@@ -372,11 +416,11 @@ export class UnifiedConfigInterface {
    */
   get<T = unknown>(path: string): T | undefined {
     const parts = path.split(".");
-    let current: any = this.config;
+    let current: unknown = this.config;
 
     for (const part of parts) {
       if (current && typeof current === "object" && part in current) {
-        current = current[part];
+        current = extractNestedProperty(current, [part], undefined);
       } else {
         return undefined;
       }
@@ -535,10 +579,10 @@ export class UnifiedConfigInterface {
    * Helper: Get log level from config or environment
    */
   private static getLogLevel(
-    config: Record<string, unknown>,
+    config: BaseConfigStructure,
   ): UnifiedConfig["environment"]["logLevel"] {
     const envLevel = Deno.env.get("LOG_LEVEL");
-    const configLevel = (config.environment as any)?.logLevel;
+    const configLevel = extractNestedProperty<string>(config, ["environment", "logLevel"], "info");
 
     const level = envLevel || configLevel || "info";
 

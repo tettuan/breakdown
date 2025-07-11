@@ -16,14 +16,14 @@ import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  createWorkspaceConfigError,
-  createWorkspaceDirectoryError,
-  createWorkspaceInitError,
-  createWorkspacePathError,
-  isWorkspaceConfigError,
-  isWorkspaceDirectoryError,
-  isWorkspaceInitError,
-  isWorkspacePathError,
+  createWorkspaceConfigError as _createWorkspaceConfigError,
+  createWorkspaceDirectoryError as _createWorkspaceDirectoryError,
+  createWorkspaceInitError as _createWorkspaceInitError,
+  createWorkspacePathError as _createWorkspacePathError,
+  isWorkspaceConfigError as _isWorkspaceConfigError,
+  isWorkspaceDirectoryError as _isWorkspaceDirectoryError,
+  isWorkspaceInitError as _isWorkspaceInitError,
+  isWorkspacePathError as _isWorkspacePathError,
   WorkspaceConfigError,
   WorkspaceDirectoryError,
   WorkspaceError,
@@ -33,9 +33,9 @@ import {
 
 const _logger = new _BreakdownLogger("test-structure-errors");
 
-describe("Workspace Errors - Structure Tests", async () => {
-  describe("Single Responsibility Principle", async () => {
-    it("should have each error class handle a single concern", async () => {
+describe("Workspace Errors - Structure Tests", () => {
+  describe("Single Responsibility Principle", () => {
+    it("should have each error class handle a single concern", () => {
       _logger.debug("Testing single responsibility", {
         testType: "structure",
         principle: "SRP",
@@ -169,8 +169,8 @@ describe("Workspace Errors - Structure Tests", async () => {
     });
   });
 
-  describe("Class cohesion and coupling", async () => {
-    it("should have high cohesion within each error class", async () => {
+  describe("Class cohesion and coupling", () => {
+    it("should have high cohesion within each error class", () => {
       _logger.debug("Testing class cohesion", {
         testType: "structure",
         aspect: "cohesion",
@@ -212,7 +212,7 @@ describe("Workspace Errors - Structure Tests", async () => {
       });
     });
 
-    it("should have loose coupling between error classes", async () => {
+    it("should have loose coupling between error classes", () => {
       _logger.debug("Testing class coupling", {
         testType: "structure",
         aspect: "coupling",
@@ -259,8 +259,8 @@ describe("Workspace Errors - Structure Tests", async () => {
     });
   });
 
-  describe("Abstraction levels", async () => {
-    it("should maintain consistent abstraction levels", async () => {
+  describe("Abstraction levels", () => {
+    it("should maintain consistent abstraction levels", () => {
       _logger.debug("Testing abstraction consistency", {
         testType: "structure",
         aspect: "abstraction_levels",
@@ -299,7 +299,7 @@ describe("Workspace Errors - Structure Tests", async () => {
       });
     });
 
-    it("should not mix abstraction levels within classes", async () => {
+    it("should not mix abstraction levels within classes", () => {
       _logger.debug("Testing abstraction level separation", {
         testType: "structure",
         aspect: "abstraction_purity",
@@ -345,7 +345,7 @@ describe("Workspace Errors - Structure Tests", async () => {
     });
   });
 
-  describe("Error information structure", async () => {
+  describe("Error information structure", () => {
     it("should structure error information consistently", async () => {
       _logger.debug("Testing error information structure", {
         testType: "structure",
@@ -457,7 +457,7 @@ describe("Workspace Errors - Structure Tests", async () => {
     });
   });
 
-  describe("Extensibility and maintainability", async () => {
+  describe("Extensibility and maintainability", () => {
     it("should be easily extensible for new error types", async () => {
       _logger.debug("Testing extensibility", {
         testType: "structure",

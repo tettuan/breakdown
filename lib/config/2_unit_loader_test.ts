@@ -381,7 +381,7 @@ describe("Unit: loadBreakdownConfig Integration", () => {
     }
   });
 
-  it("should convert null prefix to undefined", async () => {
+  it("should convert null prefix to undefined", () => {
     _logger.debug("Testing null to undefined conversion");
 
     // This is verified through code inspection
@@ -398,7 +398,7 @@ describe("Unit: loadBreakdownConfig Integration", () => {
     _logger.debug("Null to undefined conversion verified");
   });
 
-  it("should maintain version compatibility", async () => {
+  it("should maintain version compatibility", () => {
     _logger.debug("Testing version compatibility maintenance");
 
     const functionString = loadBreakdownConfig.toString();

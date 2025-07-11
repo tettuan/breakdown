@@ -127,7 +127,7 @@ export const PromptVariablesFactoryErrorFactory = {
   }),
 
   templateResolverCreationFailed: (resolverError: string): TemplateResolverCreationError => ({
-    kind: "TemplateResolverCreationFailed", 
+    kind: "TemplateResolverCreationFailed",
     message: `Failed to create template resolver: ${resolverError}`,
     resolverError,
   }),
@@ -144,7 +144,7 @@ export const PromptVariablesFactoryErrorFactory = {
   }),
 
   inputFilePathNotResolved: (): InputFilePathNotResolvedError => ({
-    kind: "InputFilePathNotResolved", 
+    kind: "InputFilePathNotResolved",
     message: "Input file path not resolved",
   }),
 

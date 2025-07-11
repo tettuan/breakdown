@@ -10,7 +10,10 @@
 
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { DirectiveType, LayerType } from "../types/mod.ts";
-import type { PromptTemplate, TemplateVariables } from "../domain/templates/prompt_generation_aggregate.ts";
+import type {
+  PromptTemplate,
+  TemplateVariables,
+} from "../domain/templates/prompt_generation_aggregate.ts";
 
 /**
  * Experimental prompt enhancement options
@@ -113,10 +116,10 @@ export class PromptHelperPrototype {
   /**
    * Detect variables in template content
    */
-  async detectVariables(
+  detectVariables(
     template: PromptTemplate,
     providedVariables?: TemplateVariables,
-  ): Promise<VariableDetectionResult> {
+  ): VariableDetectionResult {
     if (!this.options.autoDetectVariables) {
       throw new PromptPrototypeError(
         "Variable detection is disabled",
@@ -141,7 +144,7 @@ export class PromptHelperPrototype {
     }
 
     const allDetected = [...requiredVars, ...additionalVars];
-    const missing = allDetected.filter(v => !providedVars.includes(v));
+    const missing = allDetected.filter((v) => !providedVars.includes(v));
 
     // Generate suggested defaults based on variable names
     const suggestedDefaults = new Map<string, string>();
@@ -169,16 +172,18 @@ export class PromptHelperPrototype {
   /**
    * Enhance template with experimental features
    */
-  async enhanceTemplate(
+  enhanceTemplate(
     template: PromptTemplate,
     directive: DirectiveType,
     layer: LayerType,
   ): Promise<TemplateEnhancementResult> {
     if (!this.options.validateTemplate) {
-      throw new PromptPrototypeError(
-        "Template enhancement is disabled",
-        "enhanceTemplate",
-        "Enable validateTemplate option",
+      return Promise.reject(
+        new PromptPrototypeError(
+          "Template enhancement is disabled",
+          "enhanceTemplate",
+          "Enable validateTemplate option",
+        ),
       );
     }
 
@@ -223,31 +228,31 @@ export class PromptHelperPrototype {
         });
       }
 
-      return {
+      return Promise.resolve({
         enhancedContent,
         appliedEnhancements,
         issues,
         success: true,
-      };
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      return {
+      return Promise.resolve({
         enhancedContent: content,
         appliedEnhancements,
         issues: [...issues, `Enhancement failed: ${errorMessage}`],
         success: false,
-      };
+      });
     }
   }
 
   /**
    * Generate dynamic content for templates
    */
-  async generateDynamicContent(
+  generateDynamicContent(
     directive: DirectiveType,
     layer: LayerType,
     context?: Record<string, unknown>,
-  ): Promise<DynamicContentResult> {
+  ): DynamicContentResult {
     if (!this.options.enableDynamicContent) {
       throw new PromptPrototypeError(
         "Dynamic content generation is disabled",
@@ -301,7 +306,9 @@ export class PromptHelperPrototype {
       };
     } catch (error) {
       throw new PromptPrototypeError(
-        `Dynamic content generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Dynamic content generation failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
         "generateDynamicContent",
         directive.getValue() + "/" + layer.getValue(),
       );
@@ -367,7 +374,7 @@ export class PromptHelperPrototype {
       "input": "Input Data",
       "output": "Output Result",
       "example": "Example",
-      "date": new Date().toISOString().split('T')[0],
+      "date": new Date().toISOString().split("T")[0],
       "author": "System",
     };
 
@@ -379,13 +386,17 @@ export class PromptHelperPrototype {
     const layerValue = layer.getValue();
 
     if (this.options.language === "ja") {
-      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${new Date().toLocaleString('ja-JP')}`;
+      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${
+        new Date().toLocaleString("ja-JP")
+      }`;
     } else {
-      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${new Date().toISOString()}`;
+      return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${
+        new Date().toISOString()
+      }`;
     }
   }
 
-  private generateOutputFormat(directive: DirectiveType, layer: LayerType): string {
+  private generateOutputFormat(directive: DirectiveType, _layer: LayerType): string {
     const directiveValue = directive.getValue();
 
     if (this.options.language === "ja") {
@@ -481,7 +492,7 @@ export function isExperimentalFeature(featureName: string): boolean {
 export function getExperimentalFeatures(): string[] {
   return [
     "variable_detection",
-    "template_enhancement", 
+    "template_enhancement",
     "dynamic_content",
     "japanese_enhancements",
     "auto_context_generation",

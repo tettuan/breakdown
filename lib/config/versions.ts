@@ -31,8 +31,8 @@ export const DEPENDENCY_VERSIONS = {
   },
 } as const;
 
-import { Result, ok, error } from "../types/result.ts";
-import { ValidationError, ErrorFactory } from "../types/unified_error_types.ts";
+import { error, ok, Result } from "../types/result.ts";
+import { ErrorFactory, ValidationError } from "../types/unified_error_types.ts";
 
 /**
  * Get JSR import URL for a dependency
@@ -55,8 +55,10 @@ export function getJsrImport(packageName: string): Result<string, ValidationErro
           field: "packageName",
           value: packageName,
           reason: `Unknown package: ${packageName}`,
-          context: { availablePackages: Object.keys(DEPENDENCY_VERSIONS).filter(k => k !== "STD") }
-        }
+          context: {
+            availablePackages: Object.keys(DEPENDENCY_VERSIONS).filter((k) => k !== "STD"),
+          },
+        },
       ));
   }
 }

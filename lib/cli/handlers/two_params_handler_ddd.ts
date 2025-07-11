@@ -18,6 +18,7 @@ import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
+import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator.ts";
@@ -209,7 +210,7 @@ class TwoParamsHandlerService {
     }
 
     // 5. Process variables with domain rules
-    const variablesResult = await this.processVariables(optionsResult.data, inputResult.data);
+    const variablesResult = this.processVariables(optionsResult.data, inputResult.data);
     if (!variablesResult.ok) {
       return error(variablesResult.error);
     }
@@ -349,10 +350,10 @@ class TwoParamsHandlerService {
   /**
    * Process variables with domain rules
    */
-  private async processVariables(
+  private processVariables(
     options: Options,
     inputText: string,
-  ): Promise<Result<unknown, TwoParamsHandlerError>> {
+  ): Result<ProcessedVariables, TwoParamsHandlerError> {
     const variablesResult = this.variableProcessor.processVariables(
       options as Record<string, unknown>,
       inputText,
@@ -369,10 +370,11 @@ class TwoParamsHandlerService {
               return `${e.kind}: ${e.key}`;
             case "InvalidOptions":
               return `${e.kind}: ${e.message}`;
-            default:
+            default: {
               // Exhaustive check
               const _exhaustive: never = e;
               return String(_exhaustive);
+            }
           }
         }),
         details: variablesResult.error,
@@ -389,7 +391,7 @@ class TwoParamsHandlerService {
     config: Configuration,
     params: ValidatedParams,
     options: Options,
-    variables: unknown,
+    variables: ProcessedVariables,
   ): Promise<Result<string, TwoParamsHandlerError>> {
     const promptResult = await this.promptGenerator.generatePrompt(
       config as Record<string, unknown>,
@@ -398,7 +400,7 @@ class TwoParamsHandlerService {
         layerType: LayerType.value(params.layer),
       },
       options as Record<string, unknown>,
-      variables as any,
+      variables,
     );
 
     if (!promptResult.ok) {
@@ -477,6 +479,7 @@ class TwoParamsHandlerService {
       errors?: string[];
       message?: string;
       error?: string;
+      missingProperties?: string[];
     };
 
     switch (promptError.kind) {
@@ -504,7 +507,7 @@ class TwoParamsHandlerService {
         return {
           kind: "ConfigurationError",
           message: promptError.message || String(error),
-          missingFields: (promptError as any).missingProperties,
+          missingFields: promptError.missingProperties,
         };
       default:
         return {
@@ -592,7 +595,7 @@ export function isValidatedParams(value: unknown): value is ValidatedParams {
     value !== null &&
     "directive" in value &&
     "layer" in value &&
-    isDirectiveType((value as any).directive) &&
-    isLayerType((value as any).layer)
+    isDirectiveType((value as Record<string, unknown>).directive) &&
+    isLayerType((value as Record<string, unknown>).layer)
   );
 }

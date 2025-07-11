@@ -8,7 +8,7 @@
  * @module workspace/path/0_architecture_default_path_strategy_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals } from "../../deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**
@@ -24,7 +24,7 @@ Deno.test("Architecture: DefaultPathStrategyTotality implementation contract", a
 
   // Check correct import of PlatformAgnosticStrategyTotality
   const hasPlatformImport = moduleSource.includes(
-    'import { PlatformAgnosticStrategyTotality }',
+    "import { PlatformAgnosticStrategyTotality }",
   );
   assertEquals(
     hasPlatformImport,
@@ -96,21 +96,25 @@ Deno.test("Architecture: DefaultPathStrategyTotality platform abstraction", asyn
     } else if (index === 3) {
       // Allow // in comments and string literals
       const nonCommentMatches = moduleSource
-        .split('\n')
-        .filter(line => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
-        .join('\n')
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("*") && !line.trim().startsWith("//"))
+        .join("\n")
         .match(pattern);
-      
+
       if (nonCommentMatches) {
         // Check if they're in string literals
         const inStringLiterals = nonCommentMatches.every((match) => {
           const beforeMatch = moduleSource.substring(0, moduleSource.indexOf(match));
-          const lastQuote = Math.max(beforeMatch.lastIndexOf('"'), beforeMatch.lastIndexOf("'"), beforeMatch.lastIndexOf('`'));
+          const lastQuote = Math.max(
+            beforeMatch.lastIndexOf('"'),
+            beforeMatch.lastIndexOf("'"),
+            beforeMatch.lastIndexOf("`"),
+          );
           const afterQuote = moduleSource.substring(lastQuote);
           return afterQuote.includes(match) && (
             afterQuote.indexOf(match) < afterQuote.indexOf('"') ||
             afterQuote.indexOf(match) < afterQuote.indexOf("'") ||
-            afterQuote.indexOf(match) < afterQuote.indexOf('`')
+            afterQuote.indexOf(match) < afterQuote.indexOf("`")
           );
         });
         assertEquals(
@@ -181,7 +185,7 @@ Deno.test("Architecture: DefaultPathStrategyTotality interface compliance", asyn
     moduleSource.includes("Result<string, PathErrorKind>");
   assertEquals(normalizeSignature, true, "normalize should return Result");
 
-  const validateSignature = moduleSource.includes("async validate(") &&
+  const validateSignature = moduleSource.includes("validate(") &&
     moduleSource.includes("Promise<Result<boolean, PathErrorKind>>");
   assertEquals(validateSignature, true, "validate should return Promise<Result>");
 
@@ -343,7 +347,7 @@ Deno.test("Architecture: PathStrategyFactory implementation", async () => {
   // Check that "new DefaultPathStrategyTotality(" does not appear in public methods
   const factorySection = moduleSource.substring(
     moduleSource.indexOf("export class PathStrategyFactory"),
-    moduleSource.length
+    moduleSource.length,
   );
   const noDirectInstantiation = !factorySection.includes("new DefaultPathStrategyTotality(");
   assertEquals(

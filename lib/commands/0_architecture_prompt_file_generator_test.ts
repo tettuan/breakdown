@@ -114,18 +114,18 @@ describe("Architecture: PromptFileGenerator Class Structure", () => {
 
     // Should not expose factory or adapter instances
     assertEquals(
-      (generator as any).factory,
+      (generator as unknown as { factory: unknown }).factory,
       undefined,
       "Should not expose factory instance",
     );
     assertEquals(
-      (generator as any).adapter,
+      (generator as unknown as { adapter: unknown }).adapter,
       undefined,
       "Should not expose adapter instance",
     );
 
     // Verify dependency imports through code inspection
-    const classString = PromptFileGenerator.toString();
+    const _classString = PromptFileGenerator.toString();
     const methodString = generator.generateWithPrompt.toString();
 
     // Should use dynamic imports for heavy dependencies

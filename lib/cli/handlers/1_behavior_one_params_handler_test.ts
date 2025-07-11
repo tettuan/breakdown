@@ -22,12 +22,12 @@ describe("Behavior: Command Recognition", () => {
   it("should recognize and execute init command", async () => {
     logger.debug("Testing init command recognition");
 
-    // Mock the initialization function to avoid actual file operations  
+    // Mock the initialization function to avoid actual file operations
     // In test environment, we skip the actual initialization import
-    const originalInitialize = undefined;
-    
-    let initializationCalled = false;
-    
+    const _originalInitialize = undefined;
+
+    const _initializationCalled = false;
+
     // For testing purposes, we'll check if the function attempts to call initialization
     // In a real test environment, we would mock the dependency
 
@@ -35,11 +35,11 @@ describe("Behavior: Command Recognition", () => {
       await handleOneParams(["init"], {}, {});
       // If we reach here without error, the command was processed
       assertEquals(true, true, "Init command should be processed without throwing");
-    } catch (error) {
+    } catch (_error) {
       // In test environment, initialization might fail - that's expected
       // We're testing the command recognition, not the actual initialization
       assertEquals(
-        error instanceof Error,
+        _error instanceof Error,
         true,
         "Should handle initialization errors gracefully",
       );
@@ -64,7 +64,7 @@ describe("Behavior: Command Recognition", () => {
         await handleOneParams([command], {}, {});
         // Should complete without error even for unknown commands
         assertEquals(true, true, `Should handle unknown command gracefully: ${command}`);
-      } catch (error) {
+      } catch (_error) {
         // Unknown commands should not cause failures
         assertEquals(
           false,
@@ -90,7 +90,7 @@ describe("Behavior: Command Recognition", () => {
     for (const command of caseVariations) {
       try {
         await handleOneParams([command], {}, {});
-        
+
         if (command === "init") {
           // This is the correct case, should be processed
           assertEquals(true, true, "Lowercase 'init' should be recognized");
@@ -98,7 +98,7 @@ describe("Behavior: Command Recognition", () => {
           // Other cases should be ignored (not throw errors)
           assertEquals(true, true, `Case variation should be handled gracefully: ${command}`);
         }
-      } catch (error) {
+      } catch (_error) {
         // Should not throw errors for any case variation
         assertEquals(
           false,
@@ -120,7 +120,7 @@ describe("Behavior: Parameter Validation", () => {
       await handleOneParams([], {}, {});
       // Should complete without error for empty array
       assertEquals(true, true, "Should handle empty parameter array gracefully");
-    } catch (error) {
+    } catch (_error) {
       assertEquals(
         false,
         true,
@@ -146,10 +146,10 @@ describe("Behavior: Parameter Validation", () => {
       try {
         await handleOneParams(params, {}, {});
         assertEquals(true, true, `Should handle single parameter: ${JSON.stringify(params)}`);
-      } catch (error) {
+      } catch (_error) {
         // Should handle gracefully, not throw
         assertEquals(
-          error instanceof Error,
+          _error instanceof Error,
           true,
           `If error occurs, should be proper Error for: ${JSON.stringify(params)}`,
         );
@@ -172,11 +172,15 @@ describe("Behavior: Parameter Validation", () => {
       try {
         await handleOneParams(params, {}, {});
         // Should use only first parameter, ignore rest
-        assertEquals(true, true, `Should handle excess parameters gracefully: ${JSON.stringify(params)}`);
-      } catch (error) {
+        assertEquals(
+          true,
+          true,
+          `Should handle excess parameters gracefully: ${JSON.stringify(params)}`,
+        );
+      } catch (_error) {
         // Should not fail due to excess parameters
         assertEquals(
-          error instanceof Error,
+          _error instanceof Error,
           true,
           `If error occurs, should be proper Error for: ${JSON.stringify(params)}`,
         );
@@ -203,7 +207,7 @@ describe("Behavior: Parameter Validation", () => {
         await handleOneParams(params, {}, {});
         // Special characters should not break the handler
         assertEquals(true, true, `Should handle special characters: ${JSON.stringify(params)}`);
-      } catch (error) {
+      } catch (_error) {
         assertEquals(
           false,
           true,
@@ -232,10 +236,10 @@ describe("Behavior: Configuration and Options", () => {
       try {
         await handleOneParams(["init"], config || {}, {});
         assertEquals(true, true, `Should accept config: ${JSON.stringify(config)}`);
-      } catch (error) {
+      } catch (_error) {
         // Config should not cause failures in command recognition
         assertEquals(
-          error instanceof Error,
+          _error instanceof Error,
           true,
           `If error occurs, should be proper Error for config: ${JSON.stringify(config)}`,
         );
@@ -260,10 +264,10 @@ describe("Behavior: Configuration and Options", () => {
       try {
         await handleOneParams(["init"], {}, option);
         assertEquals(true, true, `Should accept options: ${JSON.stringify(option)}`);
-      } catch (error) {
+      } catch (_error) {
         // Options should not cause failures in command recognition
         assertEquals(
-          error instanceof Error,
+          _error instanceof Error,
           true,
           `If error occurs, should be proper Error for options: ${JSON.stringify(option)}`,
         );
@@ -286,7 +290,7 @@ describe("Behavior: Configuration and Options", () => {
 
     try {
       await handleOneParams(originalParams, originalConfig, originalOptions);
-    } catch (error) {
+    } catch (_error) {
       // Expected in test environment
     }
 
@@ -323,7 +327,7 @@ describe("Behavior: Async Operation Handling", () => {
 
     for (const testCase of testCases) {
       const result = handleOneParams(testCase.params, testCase.config, testCase.options);
-      
+
       // Should always return a Promise
       assertExists(result.then, "Should return thenable Promise");
       assertExists(result.catch, "Should return catchable Promise");
@@ -334,8 +338,8 @@ describe("Behavior: Async Operation Handling", () => {
       try {
         await result;
         assertEquals(true, true, "Promise should resolve or reject");
-      } catch (error) {
-        assertEquals(error instanceof Error, true, "Should throw proper Error if rejected");
+      } catch (_error) {
+        assertEquals(_error instanceof Error, true, "Should throw proper Error if rejected");
       }
     }
 
@@ -347,18 +351,17 @@ describe("Behavior: Async Operation Handling", () => {
 
     // Test that init command attempts async operation
     const startTime = Date.now();
-    
+
     try {
       await handleOneParams(["init"], {}, {});
-      const endTime = Date.now();
-      
+      const _endTime = Date.now();
+
       // Should have attempted async operation (even if it fails in test env)
       assertEquals(true, true, "Should attempt async initialization");
-      
-    } catch (error) {
+    } catch (_error) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // Should have attempted async operation before failing
       assertEquals(
         duration >= 0,
@@ -366,7 +369,7 @@ describe("Behavior: Async Operation Handling", () => {
         "Should have attempted async operation before error",
       );
       assertEquals(
-        error instanceof Error,
+        _error instanceof Error,
         true,
         "Should throw proper Error for initialization failures",
       );
@@ -379,20 +382,19 @@ describe("Behavior: Async Operation Handling", () => {
     logger.debug("Testing non-blocking behavior for unknown commands");
 
     const startTime = Date.now();
-    
+
     try {
       await handleOneParams(["unknown"], {}, {});
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // Should complete quickly for unknown commands
       assertEquals(
         duration < 100, // Should complete in under 100ms
         true,
         "Unknown commands should not block execution",
       );
-      
-    } catch (error) {
+    } catch (_error) {
       assertEquals(
         false,
         true,
@@ -422,7 +424,7 @@ describe("Behavior: Future Extensibility", () => {
         await handleOneParams([command], {}, {});
         // Should handle gracefully (do nothing for unknown commands)
         assertEquals(true, true, `Should handle future command gracefully: ${command}`);
-      } catch (error) {
+      } catch (_error) {
         assertEquals(
           false,
           true,
@@ -447,8 +449,12 @@ describe("Behavior: Future Extensibility", () => {
     for (const variation of paramVariations) {
       try {
         await handleOneParams(variation.params, {}, {});
-        assertEquals(true, true, `Should handle param variation: ${JSON.stringify(variation.params)}`);
-      } catch (error) {
+        assertEquals(
+          true,
+          true,
+          `Should handle param variation: ${JSON.stringify(variation.params)}`,
+        );
+      } catch (_error) {
         assertEquals(
           false,
           true,
@@ -471,17 +477,17 @@ describe("Behavior: Future Extensibility", () => {
 
     for (const test of interfaceTests) {
       const result = handleOneParams(test.params, test.config, test.options);
-      
+
       // Should maintain Promise interface
       assertEquals(typeof result.then, "function", "Should maintain Promise interface");
-      
+
       try {
         await result;
         assertEquals(true, true, "Should maintain interface compatibility");
-      } catch (error) {
+      } catch (_error) {
         // Interface should not break even with new config/options
         assertEquals(
-          error instanceof Error,
+          _error instanceof Error,
           true,
           "Should maintain error interface compatibility",
         );

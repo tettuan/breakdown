@@ -16,16 +16,6 @@ import { assertEquals, assertExists, assertInstanceOf } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  createWorkspaceConfigError,
-  createWorkspaceDirectoryError,
-  createWorkspaceError,
-  createWorkspaceInitError,
-  createWorkspacePathError,
-  isWorkspaceConfigError,
-  isWorkspaceDirectoryError,
-  isWorkspaceError,
-  isWorkspaceInitError,
-  isWorkspacePathError,
   WorkspaceConfigError,
   WorkspaceDirectoryError,
   WorkspaceError,
@@ -35,8 +25,8 @@ import {
 
 const _logger = new _BreakdownLogger("test-unit-errors");
 
-describe("Workspace Errors - Unit Tests", async () => {
-  describe("WorkspaceError (Base Class)", async () => {
+describe("Workspace Errors - Unit Tests", () => {
+  describe("WorkspaceError (Base Class)", () => {
     it("should create WorkspaceError with message and code", async () => {
       _logger.debug("Testing WorkspaceError instantiation", {
         testType: "unit",
@@ -137,14 +127,14 @@ describe("Workspace Errors - Unit Tests", async () => {
     });
   });
 
-  describe("WorkspaceInitError", async () => {
+  describe("WorkspaceInitError", () => {
     it("should create WorkspaceInitError with proper defaults", async () => {
       _logger.debug("Testing WorkspaceInitError instantiation", {
         testType: "unit",
         target: "WorkspaceInitError",
       });
 
-      const { WorkspaceError, WorkspaceInitError } = await import("./errors.ts");
+      const { WorkspaceInitError } = await import("./errors.ts");
       const message = "Failed to initialize workspace";
       const error = new WorkspaceInitError(message);
 
@@ -161,7 +151,7 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
     });
 
-    it("should handle various initialization failure messages", async () => {
+    it("should handle various initialization failure messages", () => {
       _logger.debug("Testing various init failure scenarios", {
         testType: "unit",
         target: "WorkspaceInitError",
@@ -196,7 +186,7 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
     });
 
-    it("should be distinguishable from other error types", async () => {
+    it("should be distinguishable from other error types", () => {
       _logger.debug("Testing error type distinction", {
         testType: "unit",
         target: "WorkspaceInitError",
@@ -204,7 +194,7 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
 
       const initError = new WorkspaceInitError("Init error");
-      const configError = new WorkspaceConfigError("Config error");
+      const _configError = new WorkspaceConfigError("Config error");
 
       // Positive checks
       assertInstanceOf(initError, WorkspaceInitError);
@@ -222,8 +212,8 @@ describe("Workspace Errors - Unit Tests", async () => {
     });
   });
 
-  describe("WorkspaceConfigError", async () => {
-    it("should create WorkspaceConfigError with proper defaults", async () => {
+  describe("WorkspaceConfigError", () => {
+    it("should create WorkspaceConfigError with proper defaults", () => {
       _logger.debug("Testing WorkspaceConfigError instantiation", {
         testType: "unit",
         target: "WorkspaceConfigError",
@@ -245,7 +235,7 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
     });
 
-    it("should handle various configuration error messages", async () => {
+    it("should handle various configuration error messages", () => {
       _logger.debug("Testing various config error scenarios", {
         testType: "unit",
         target: "WorkspaceConfigError",
@@ -312,14 +302,14 @@ describe("Workspace Errors - Unit Tests", async () => {
     });
   });
 
-  describe("WorkspacePathError", async () => {
+  describe("WorkspacePathError", () => {
     it("should create WorkspacePathError with proper defaults", async () => {
       _logger.debug("Testing WorkspacePathError instantiation", {
         testType: "unit",
         target: "WorkspacePathError",
       });
 
-      const { WorkspaceError, WorkspacePathError } = await import("./errors.ts");
+      const { WorkspacePathError } = await import("./errors.ts");
       const message = "Invalid path format";
       const error = new WorkspacePathError(message);
 
@@ -411,14 +401,14 @@ describe("Workspace Errors - Unit Tests", async () => {
     });
   });
 
-  describe("WorkspaceDirectoryError", async () => {
+  describe("WorkspaceDirectoryError", () => {
     it("should create WorkspaceDirectoryError with proper defaults", async () => {
       _logger.debug("Testing WorkspaceDirectoryError instantiation", {
         testType: "unit",
         target: "WorkspaceDirectoryError",
       });
 
-      const { WorkspaceError, WorkspaceDirectoryError } = await import("./errors.ts");
+      const { WorkspaceDirectoryError } = await import("./errors.ts");
       const message = "Failed to create directory";
       const error = new WorkspaceDirectoryError(message);
 
@@ -519,14 +509,14 @@ describe("Workspace Errors - Unit Tests", async () => {
     });
   });
 
-  describe("Error interoperability", async () => {
+  describe("Error interoperability", () => {
     it("should work with standard error handling", async () => {
       _logger.debug("Testing standard error handling compatibility", {
         testType: "unit",
         aspect: "interoperability",
       });
 
-      const { WorkspaceError, WorkspaceInitError } = await import("./errors.ts");
+      const { WorkspaceInitError } = await import("./errors.ts");
       function riskyOperation(): void {
         throw new WorkspaceInitError("Simulated failure");
       }
@@ -565,8 +555,8 @@ describe("Workspace Errors - Unit Tests", async () => {
       });
 
       const { WorkspaceConfigError } = await import("./errors.ts");
-      async function asyncOperation(): Promise<void> {
-        throw new WorkspaceConfigError("Async config error");
+      function asyncOperation(): Promise<void> {
+        return Promise.reject(new WorkspaceConfigError("Async config error"));
       }
 
       let caught = false;

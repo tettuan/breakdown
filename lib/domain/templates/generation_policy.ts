@@ -122,17 +122,26 @@ export class GenerationPolicy {
   ): Result<GenerationPolicy, { kind: "InvalidConfiguration"; message: string }> {
     // Validate inputs
     if (!config) {
-      return { ok: false, error: { kind: "InvalidConfiguration", message: "Configuration is required" } };
+      return {
+        ok: false,
+        error: { kind: "InvalidConfiguration", message: "Configuration is required" },
+      };
     }
-    
+
     if (!selectionStrategy) {
-      return { ok: false, error: { kind: "InvalidConfiguration", message: "Template selection strategy is required" } };
+      return {
+        ok: false,
+        error: { kind: "InvalidConfiguration", message: "Template selection strategy is required" },
+      };
     }
-    
+
     if (!Array.isArray(variableStrategies)) {
-      return { ok: false, error: { kind: "InvalidConfiguration", message: "Variable strategies must be an array" } };
+      return {
+        ok: false,
+        error: { kind: "InvalidConfiguration", message: "Variable strategies must be an array" },
+      };
     }
-    
+
     return { ok: true, data: new GenerationPolicy(config, variableStrategies, selectionStrategy) };
   }
 

@@ -53,7 +53,8 @@ describe("Architecture: OneParamsHandler Function Structure", () => {
     // Parameters should be: params, config, options
     const functionString = handleOneParams.toString();
     assertEquals(
-      functionString.includes("params") && functionString.includes("config") && functionString.includes("options"),
+      functionString.includes("params") && functionString.includes("config") &&
+        functionString.includes("options"),
       true,
       "Function should accept params, config, and options parameters",
     );
@@ -80,7 +81,8 @@ describe("Architecture: OneParamsHandler Function Structure", () => {
 
     // Should not mix concerns
     assertEquals(
-      functionString.includes("console.log") && functionString.includes("config") && functionString.includes("validation"),
+      functionString.includes("console.log") && functionString.includes("config") &&
+        functionString.includes("validation"),
       false,
       "Should not mix logging, config, and validation concerns",
     );
@@ -192,7 +194,7 @@ describe("Architecture: Async Operation Design", () => {
     // Should return Promise<void>
     const testResult = handleOneParams(["init"], {}, {});
     assertExists(testResult.then, "Should return thenable");
-    
+
     // Promise should resolve to void - await to prevent resource leaks
     try {
       const result = await testResult;

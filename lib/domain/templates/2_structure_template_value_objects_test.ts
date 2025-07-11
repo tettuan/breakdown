@@ -1,60 +1,68 @@
 /**
  * @fileoverview Template Value Objects Structure Tests
- * 
+ *
  * Tests for structural integrity and immutability guarantees of template value objects.
  * Focuses on data consistency, value object contracts, and structural constraints.
- * 
+ *
  * @module domain/templates/2_structure_template_value_objects_test
  */
 
-import { assertEquals, assert, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import {
-  TemplateId,
-  SchemaId,
-  TemplateContent,
-  VariableSubstitution,
-  TemplateVersion,
-  TemplateChecksum,
-  type ContentMetadata,
-  type SubstitutionStrategy,
   type ChecksumAlgorithm,
+  type ContentMetadata,
+  SchemaId,
+  type SubstitutionStrategy as _SubstitutionStrategy,
+  TemplateChecksum,
+  TemplateContent,
+  TemplateId,
+  TemplateVersion,
+  VariableSubstitution,
 } from "./template_value_objects.ts";
+import { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { TwoParams_Result } from "../../deps.ts";
 
-// Mock types for testing
-interface MockDirectiveType {
-  getValue(): string;
+// Helper functions for creating test instances
+function createMockDirectiveType(value: string): DirectiveType {
+  const mockResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: value,
+    layerType: "project",
+    options: {},
+    params: [value, "project"],
+  };
+  return DirectiveType.create(mockResult);
 }
 
-interface MockLayerType {
-  getValue(): string;
-}
-
-function createMockDirectiveType(value: string): MockDirectiveType {
-  return { getValue: () => value };
-}
-
-function createMockLayerType(value: string): MockLayerType {
-  return { getValue: () => value };
+function createMockLayerType(value: string): LayerType {
+  const mockResult: TwoParams_Result = {
+    type: "two",
+    demonstrativeType: "to",
+    layerType: value,
+    options: {},
+    params: ["to", value],
+  };
+  return LayerType.create(mockResult);
 }
 
 describe("TemplateValueObjects_Structure", () => {
   describe("TemplateId Structure", () => {
     it("should_maintain_immutable_structure", () => {
-      const directive = createMockDirectiveType("to") as any;
-      const layer = createMockLayerType("project") as any;
+      const directive = createMockDirectiveType("to");
+      const layer = createMockLayerType("project");
       const templateId = TemplateId.create(directive, layer, "template.md");
 
       // Test immutability - value should be consistent
       const originalValue = templateId.getValue();
       const expectedValue = "to/project/template.md";
-      
+
       assertEquals(originalValue, expectedValue);
-      
+
       // Verify that getValue() always returns the same value (immutability)
       assertEquals(templateId.getValue(), originalValue);
       assertEquals(templateId.getValue(), templateId.getValue());
-      
+
       // Test that parts are consistently extracted
       assertEquals(templateId.getDirectivePart(), "to");
       assertEquals(templateId.getLayerPart(), "project");
@@ -86,7 +94,7 @@ describe("TemplateValueObjects_Structure", () => {
           () => TemplateId.fromString(invalidCase),
           Error,
           undefined,
-          `Should throw for invalid ID: "${invalidCase}"`
+          `Should throw for invalid ID: "${invalidCase}"`,
         );
       }
     });
@@ -99,7 +107,7 @@ describe("TemplateValueObjects_Structure", () => {
       // Value equality
       assertEquals(id1.equals(id2), true);
       assertEquals(id1.equals(id3), false);
-      
+
       // String representation consistency
       assertEquals(id1.toString(), id2.toString());
       assert(id1.toString() !== id3.toString());
@@ -107,21 +115,22 @@ describe("TemplateValueObjects_Structure", () => {
 
     it("should_maintain_part_extraction_consistency", () => {
       const complexId = TemplateId.fromString("summary/nested/deep/template.md");
-      
+
       assertEquals(complexId.getDirectivePart(), "summary");
       assertEquals(complexId.getLayerPart(), "nested");
       assertEquals(complexId.getFilenamePart(), "template.md");
-      
+
       // Test reconstruction consistency
-      const reconstructed = `${complexId.getDirectivePart()}/${complexId.getLayerPart()}/deep/${complexId.getFilenamePart()}`;
+      const reconstructed =
+        `${complexId.getDirectivePart()}/${complexId.getLayerPart()}/deep/${complexId.getFilenamePart()}`;
       assertEquals(reconstructed, complexId.getValue());
     });
   });
 
   describe("SchemaId Structure", () => {
     it("should_maintain_parallel_structure_with_templateid", () => {
-      const directive = createMockDirectiveType("defect") as any;
-      const layer = createMockLayerType("issue") as any;
+      const directive = createMockDirectiveType("defect");
+      const layer = createMockLayerType("issue");
       const schemaId = SchemaId.create(directive, layer, "schema.json");
 
       // Test parallel structure with TemplateId
@@ -143,7 +152,7 @@ describe("TemplateValueObjects_Structure", () => {
           () => SchemaId.fromString(`to/project/${filename}`),
           Error,
           "must end with .json",
-          `Should reject non-JSON extension: ${filename}`
+          `Should reject non-JSON extension: ${filename}`,
         );
       }
     });
@@ -166,11 +175,11 @@ describe("TemplateValueObjects_Structure", () => {
 
       // Test content immutability
       assertEquals(templateContent.getContent(), originalContent);
-      
+
       // Metadata should be immutable copy
       const metadata1 = templateContent.getMetadata();
       const metadata2 = templateContent.getMetadata();
-      
+
       assert(metadata1 !== metadata2); // Different references
       assertEquals(JSON.stringify(metadata1), JSON.stringify(metadata2)); // Same content
     });
@@ -202,23 +211,29 @@ describe("TemplateValueObjects_Structure", () => {
       for (const testCase of testCases) {
         const content = TemplateContent.create(testCase.content);
         const variables = content.getVariables();
-        
+
         // Variables should be extracted according to implementation patterns
-        
+
         // Variables should be sorted and unique
         const expectedUniqueVars = Array.from(new Set(testCase.expectedVars)).sort();
-        
+
         // More flexible check - verify that expected variables are present
         for (const expectedVar of expectedUniqueVars) {
           assert(
             content.hasVariable(expectedVar),
-            `Should detect variable "${expectedVar}" in "${testCase.content}". Found: [${variables.join(", ")}]`
+            `Should detect variable "${expectedVar}" in "${testCase.content}". Found: [${
+              variables.join(", ")
+            }]`,
           );
         }
-        
+
         // Check that we don't have unexpected extra variables (allowing for implementation differences)
         if (expectedUniqueVars.length === 0) {
-          assertEquals(variables.length, 0, `Expected no variables but found: [${variables.join(", ")}]`);
+          assertEquals(
+            variables.length,
+            0,
+            `Expected no variables but found: [${variables.join(", ")}]`,
+          );
         }
       }
     });
@@ -259,19 +274,19 @@ describe("TemplateValueObjects_Structure", () => {
       assertThrows(
         () => TemplateContent.create(""),
         Error,
-        "cannot be empty"
+        "cannot be empty",
       );
 
       assertThrows(
-        () => TemplateContent.create(123 as any as string),
+        () => TemplateContent.create(123 as unknown as string),
         Error,
-        "must be a string"
+        "must be a string",
       );
 
       assertThrows(
         () => TemplateContent.create("Malformed {{variable"),
         Error,
-        "malformed variable syntax"
+        "malformed variable syntax",
       );
     });
 
@@ -293,7 +308,7 @@ describe("TemplateValueObjects_Structure", () => {
       // Test immutability
       const originalAll = substitution.getAll();
       variables.name = "Modified"; // Modify original object
-      
+
       assertEquals(substitution.get("name"), "John"); // Should not change
       assertEquals(originalAll.name, "John"); // Returned copy should not change
     });
@@ -312,13 +327,13 @@ describe("TemplateValueObjects_Structure", () => {
           () => VariableSubstitution.create(invalidVars),
           Error,
           undefined,
-          `Should reject invalid variable names: ${Object.keys(invalidVars)[0]}`
+          `Should reject invalid variable names: ${Object.keys(invalidVars)[0]}`,
         );
       }
     });
 
     it("should_validate_variable_values_consistently", () => {
-      const invalidValues: Record<string, any>[] = [
+      const invalidValues: Record<string, unknown>[] = [
         { name: 123 }, // Non-string value
         { name: null }, // Null value
         { name: undefined }, // Undefined value
@@ -330,20 +345,20 @@ describe("TemplateValueObjects_Structure", () => {
           () => VariableSubstitution.create(invalidVars),
           Error,
           "must be a string",
-          `Should reject non-string values`
+          `Should reject non-string values`,
         );
       }
     });
 
     it("should_implement_substitution_strategies_consistently", () => {
       const content = TemplateContent.create("Hello {name}, welcome to {place}!");
-      
+
       // Test strict strategy
       const strictSub = VariableSubstitution.create({ name: "John" }, "strict");
       assertThrows(
         () => strictSub.apply(content),
         Error,
-        "Missing required variables: place"
+        "Missing required variables: place",
       );
 
       // Test ignore strategy
@@ -360,13 +375,13 @@ describe("TemplateValueObjects_Structure", () => {
     it("should_handle_merge_operations_immutably", () => {
       const sub1 = VariableSubstitution.create({ a: "1", b: "2" });
       const sub2 = VariableSubstitution.create({ b: "overridden", c: "3" });
-      
+
       const merged = sub1.merge(sub2);
-      
+
       // Original objects should not be modified
       assertEquals(sub1.get("b"), "2");
       assertEquals(sub2.get("a"), undefined);
-      
+
       // Merged should have combined values with sub2 taking precedence
       assertEquals(merged.get("a"), "1");
       assertEquals(merged.get("b"), "overridden");
@@ -388,15 +403,15 @@ describe("TemplateValueObjects_Structure", () => {
       // Use a valid variable name for testing regex escaping
       const content = TemplateContent.create("Pattern {regex_test} test");
       const substitution = VariableSubstitution.create({ "regex_test": "replaced" });
-      
+
       const result = substitution.apply(content);
       assertEquals(result, "Pattern replaced test");
-      
+
       // Test that regex special characters in variable names are handled properly
       // Note: According to validation rules, variable names can only contain alphanumeric and underscore
       const content2 = TemplateContent.create("Test {var_name} with special chars");
       const substitution2 = VariableSubstitution.create({ "var_name": "value" });
-      
+
       const result2 = substitution2.apply(content2);
       assertEquals(result2, "Test value with special chars");
     });
@@ -413,7 +428,7 @@ describe("TemplateValueObjects_Structure", () => {
 
       for (const testCase of testCases) {
         const version = TemplateVersion.create(testCase.input);
-        
+
         assertEquals(version.getMajor(), testCase.expected.major);
         assertEquals(version.getMinor(), testCase.expected.minor);
         assertEquals(version.getPatch(), testCase.expected.patch);
@@ -424,12 +439,12 @@ describe("TemplateValueObjects_Structure", () => {
 
     it("should_reject_invalid_version_formats", () => {
       const invalidVersions = [
-        "1.0",        // Missing patch
-        "1",          // Only major
-        "1.0.0.0",    // Too many parts
-        "a.b.c",      // Non-numeric
-        "1.0.0-",     // Empty prerelease
-        "",           // Empty string
+        "1.0", // Missing patch
+        "1", // Only major
+        "1.0.0.0", // Too many parts
+        "a.b.c", // Non-numeric
+        "1.0.0-", // Empty prerelease
+        "", // Empty string
       ];
 
       for (const invalid of invalidVersions) {
@@ -437,21 +452,21 @@ describe("TemplateValueObjects_Structure", () => {
           () => TemplateVersion.create(invalid),
           Error,
           "Invalid version format",
-          `Should reject invalid version: "${invalid}"`
+          `Should reject invalid version: "${invalid}"`,
         );
       }
     });
 
     it("should_implement_version_increment_immutably", () => {
       const version = TemplateVersion.create("1.2.3");
-      
+
       const majorIncrement = version.incrementMajor();
       const minorIncrement = version.incrementMinor();
       const patchIncrement = version.incrementPatch();
-      
+
       // Original should not be modified
       assertEquals(version.toString(), "1.2.3");
-      
+
       // Increments should follow semantic versioning rules
       assertEquals(majorIncrement.toString(), "2.0.0");
       assertEquals(minorIncrement.toString(), "1.3.0");
@@ -462,11 +477,11 @@ describe("TemplateValueObjects_Structure", () => {
       const v1_0_0 = TemplateVersion.create("1.0.0");
       const v1_2_3 = TemplateVersion.create("1.2.3");
       const v2_0_0 = TemplateVersion.create("2.0.0");
-      
+
       // Same major version = compatible
       assertEquals(v1_0_0.isCompatibleWith(v1_2_3), true);
       assertEquals(v1_2_3.isCompatibleWith(v1_0_0), true);
-      
+
       // Different major version = incompatible
       assertEquals(v1_0_0.isCompatibleWith(v2_0_0), false);
       assertEquals(v2_0_0.isCompatibleWith(v1_0_0), false);
@@ -492,7 +507,7 @@ describe("TemplateValueObjects_Structure", () => {
       const stable = TemplateVersion.create("1.0.0");
       const alpha = TemplateVersion.create("1.0.0-alpha");
       const beta = TemplateVersion.create("1.0.0-beta");
-      
+
       assertEquals(stable.isNewerThan(alpha), true);
       assertEquals(stable.isNewerThan(beta), true);
       assertEquals(beta.isNewerThan(alpha), true); // beta > alpha lexicographically
@@ -502,7 +517,7 @@ describe("TemplateValueObjects_Structure", () => {
       const v1 = TemplateVersion.create("1.2.3-alpha");
       const v2 = TemplateVersion.create("1.2.3-alpha");
       const v3 = TemplateVersion.create("1.2.3-beta");
-      
+
       assertEquals(v1.equals(v2), true);
       assertEquals(v1.equals(v3), false);
     });
@@ -511,10 +526,10 @@ describe("TemplateValueObjects_Structure", () => {
   describe("TemplateChecksum Structure", () => {
     it("should_create_consistent_checksums", async () => {
       const content = "Test content for checksum";
-      
+
       const checksum1 = await TemplateChecksum.create(content, "sha256");
       const checksum2 = await TemplateChecksum.create(content, "sha256");
-      
+
       assertEquals(checksum1.getValue(), checksum2.getValue());
       assertEquals(checksum1.getAlgorithm(), "sha256");
       assertEquals(checksum1.equals(checksum2), true);
@@ -523,10 +538,10 @@ describe("TemplateValueObjects_Structure", () => {
     it("should_produce_different_checksums_for_different_content", async () => {
       const content1 = "Content one";
       const content2 = "Content two";
-      
+
       const checksum1 = await TemplateChecksum.create(content1);
       const checksum2 = await TemplateChecksum.create(content2);
-      
+
       assert(checksum1.getValue() !== checksum2.getValue());
       assertEquals(checksum1.equals(checksum2), false);
     });
@@ -534,25 +549,25 @@ describe("TemplateValueObjects_Structure", () => {
     it("should_verify_content_integrity", async () => {
       const originalContent = "Original content";
       const modifiedContent = "Modified content";
-      
+
       const checksum = await TemplateChecksum.create(originalContent);
-      
+
       const originalVerification = await checksum.verify(originalContent);
       const modifiedVerification = await checksum.verify(modifiedContent);
-      
+
       assertEquals(originalVerification, true);
       assertEquals(modifiedVerification, false);
     });
 
     it("should_handle_different_algorithms", async () => {
       const content = "Test content";
-      
+
       const sha256Checksum = await TemplateChecksum.create(content, "sha256");
       const sha1Checksum = await TemplateChecksum.create(content, "sha1");
-      
+
       assertEquals(sha256Checksum.getAlgorithm(), "sha256");
       assertEquals(sha1Checksum.getAlgorithm(), "sha1");
-      
+
       // Different algorithms should produce different values
       assert(sha256Checksum.getValue() !== sha1Checksum.getValue());
       assertEquals(sha256Checksum.equals(sha1Checksum), false);
@@ -560,23 +575,26 @@ describe("TemplateValueObjects_Structure", () => {
 
     it("should_reject_unsupported_algorithms", async () => {
       const content = "Test content";
-      
+
       // Test with an algorithm that should be rejected
       try {
         await TemplateChecksum.create(content, "md5" as ChecksumAlgorithm);
         assert(false, "Should have thrown an error for unsupported algorithm");
       } catch (error) {
         assert(error instanceof Error);
-        assert(error.message.includes("MD5 not supported") || error.message.includes("Unsupported algorithm"));
+        assert(
+          error.message.includes("MD5 not supported") ||
+            error.message.includes("Unsupported algorithm"),
+        );
       }
     });
 
     it("should_format_string_representation_consistently", async () => {
       const content = "Test content";
       const checksum = await TemplateChecksum.create(content, "sha256");
-      
+
       const stringRepresentation = checksum.toString();
-      
+
       assert(stringRepresentation.startsWith("sha256:"));
       assertEquals(stringRepresentation, `sha256:${checksum.getValue()}`);
     });
@@ -601,13 +619,13 @@ describe("TemplateValueObjects_Structure", () => {
       // Test that all value objects implement proper equality
       const templateId1 = TemplateId.fromString("to/project/test.md");
       const templateId2 = TemplateId.fromString("to/project/test.md");
-      
+
       const schemaId1 = SchemaId.fromString("to/project/test.json");
       const schemaId2 = SchemaId.fromString("to/project/test.json");
-      
+
       const version1 = TemplateVersion.create("1.0.0");
       const version2 = TemplateVersion.create("1.0.0");
-      
+
       assertEquals(templateId1.equals(templateId2), true);
       assertEquals(schemaId1.equals(schemaId2), true);
       assertEquals(version1.equals(version2), true);
@@ -618,7 +636,7 @@ describe("TemplateValueObjects_Structure", () => {
       const templateId = TemplateId.fromString("to/project/test.md");
       const schemaId = SchemaId.fromString("to/project/test.json");
       const version = TemplateVersion.create("1.0.0");
-      
+
       assertEquals(templateId.toString(), "to/project/test.md");
       assertEquals(schemaId.toString(), "to/project/test.json");
       assertEquals(version.toString(), "1.0.0");
@@ -629,10 +647,10 @@ describe("TemplateValueObjects_Structure", () => {
     it("should_prevent_external_mutation_of_internal_state", () => {
       const content = TemplateContent.create("Test {var} content");
       const variables = content.getVariables();
-      
+
       // Attempt to modify returned array
       variables.push("newVar");
-      
+
       // Should not affect original
       const freshVariables = content.getVariables();
       assertEquals(freshVariables.includes("newVar"), false);
@@ -642,10 +660,10 @@ describe("TemplateValueObjects_Structure", () => {
       const substitution = VariableSubstitution.create({ a: "1", b: "2" });
       const allVars1 = substitution.getAll();
       const allVars2 = substitution.getAll();
-      
+
       // Should be different objects
       assert(allVars1 !== allVars2);
-      
+
       // But with same content
       assertEquals(JSON.stringify(allVars1), JSON.stringify(allVars2));
     });

@@ -75,6 +75,7 @@ export class AgnosticPath {
     const dangerousPatterns = [
       /^~/, // Home directory expansion
       /\$\{/, // Variable expansion
+      // deno-lint-ignore no-control-regex
       /[<>:"|?*\x00-\x1f]/, // Invalid characters across platforms
     ];
 
@@ -122,7 +123,7 @@ export class AgnosticBaseDirectory {
           return { ok: false, error: "Unix base directory must be absolute or relative" };
         }
         break;
-      case "WINDOWS":
+      case "WINDOWS": {
         const drivePattern = /^[A-Za-z]:\\/;
         const uncPattern = /^\\\\/;
         const relativePattern = /^\.[\\/]/;
@@ -130,6 +131,7 @@ export class AgnosticBaseDirectory {
           return { ok: false, error: "Windows base directory must be absolute or relative" };
         }
         break;
+      }
       case "UNKNOWN":
         // Allow any non-empty path for unknown platforms
         break;
@@ -279,74 +281,77 @@ export class PlatformAgnosticStrategyTotality {
   /**
    * Validates a path for security and correctness
    */
-  async validate(path: string): Promise<Result<boolean, PathErrorKind>> {
+  validate(path: string): Promise<Result<boolean, PathErrorKind>> {
     // Check for empty path
     if (!path || path.trim() === "") {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Empty path",
         },
-      };
+      });
     }
 
     // Check for path traversal
     if (path.includes("..")) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "SECURITY_VIOLATION",
           path,
           violation: "Path traversal attempt",
         },
-      };
+      });
     }
 
     // Platform-specific validation
     switch (this.platform.kind) {
       case "UNIX":
         // Check for null bytes and control characters
+        // deno-lint-ignore no-control-regex
         if (/[\x00-\x1f\x7f]/.test(path)) {
-          return {
+          return Promise.resolve({
             ok: false,
             error: {
               kind: "INVALID_PATH",
               path,
               reason: "Path contains control characters",
             },
-          };
+          });
         }
         break;
 
-      case "WINDOWS":
+      case "WINDOWS": {
         // Check for invalid Windows characters
+        // deno-lint-ignore no-control-regex
         const invalidWinChars = /[<>:"|?*\x00-\x1f]/;
         const pathWithoutDrive = path.replace(/^[A-Za-z]:/, "");
         if (invalidWinChars.test(pathWithoutDrive)) {
-          return {
+          return Promise.resolve({
             ok: false,
             error: {
               kind: "INVALID_PATH",
               path,
               reason: "Path contains invalid Windows characters",
             },
-          };
+          });
         }
         break;
-
+      }
       case "UNKNOWN":
         // Basic validation only
+        // deno-lint-ignore no-control-regex
         if (/[\x00]/.test(path)) {
-          return {
+          return Promise.resolve({
             ok: false,
             error: {
               kind: "INVALID_PATH",
               path,
               reason: "Path contains null bytes",
             },
-          };
+          });
         }
         break;
     }
@@ -354,10 +359,10 @@ export class PlatformAgnosticStrategyTotality {
     // Check normalized form doesn't differ significantly
     const normalizeResult = this.normalize(path);
     if (!normalizeResult.ok) {
-      return normalizeResult;
+      return Promise.resolve(normalizeResult);
     }
 
-    return { ok: true, data: true };
+    return Promise.resolve({ ok: true, data: true });
   }
 
   /**

@@ -23,9 +23,9 @@ Deno.test({
   fn() {
     const expectedKeys = ["SUCCESS", "ERROR"];
     const actualKeys = Object.keys(ResultStatus);
-    
+
     assertEquals(actualKeys.length, expectedKeys.length);
-    
+
     for (const key of expectedKeys) {
       assertEquals(actualKeys.includes(key), true, `Missing key: ${key}`);
     }
@@ -37,7 +37,7 @@ Deno.test({
   fn() {
     assertEquals(ResultStatus.SUCCESS, "success");
     assertEquals(ResultStatus.ERROR, "error");
-    
+
     // Ensure values are strings
     assertEquals(typeof ResultStatus.SUCCESS, "string");
     assertEquals(typeof ResultStatus.ERROR, "string");
@@ -50,7 +50,7 @@ Deno.test({
     // Test that enum values cannot be reassigned
     const originalSuccess = ResultStatus.SUCCESS;
     const originalError = ResultStatus.ERROR;
-    
+
     // These should not change the enum values
     try {
       // @ts-ignore Testing immutability
@@ -60,7 +60,7 @@ Deno.test({
     } catch {
       // Expected in strict mode
     }
-    
+
     // Values should remain unchanged
     assertEquals(ResultStatus.SUCCESS, originalSuccess);
     assertEquals(ResultStatus.ERROR, originalError);
@@ -72,19 +72,19 @@ Deno.test({
   fn() {
     // Enum name should be PascalCase
     assertEquals(typeof ResultStatus, "object");
-    
+
     // Enum keys should be UPPER_CASE
     const keys = Object.keys(ResultStatus);
     for (const key of keys) {
       assertEquals(
         key,
         key.toUpperCase(),
-        `Enum key ${key} should be uppercase`
+        `Enum key ${key} should be uppercase`,
       );
       assertEquals(
         key.includes(" "),
         false,
-        `Enum key ${key} should not contain spaces`
+        `Enum key ${key} should not contain spaces`,
       );
     }
   },
@@ -94,19 +94,21 @@ Deno.test({
   name: "Architecture: Module should export only necessary items",
   fn() {
     // This test ensures we don't accidentally export internal implementation details
-    
+
     const exports = Object.keys(enumsModule);
     const expectedExports = ["ResultStatus"];
-    
+
     // Should have exactly the expected exports (Result type is a type export, not a runtime value)
-    const runtimeExports = exports.filter(key => typeof enumsModule[key as keyof typeof enumsModule] !== "undefined");
+    const runtimeExports = exports.filter((key) =>
+      typeof enumsModule[key as keyof typeof enumsModule] !== "undefined"
+    );
     assertEquals(runtimeExports.length, expectedExports.length);
-    
+
     for (const expectedExport of expectedExports) {
       assertEquals(
         exports.includes(expectedExport),
         true,
-        `Missing export: ${expectedExport}`
+        `Missing export: ${expectedExport}`,
       );
     }
   },
@@ -117,11 +119,11 @@ Deno.test({
   fn() {
     const values = Object.values(ResultStatus);
     const uniqueValues = new Set(values);
-    
+
     assertEquals(
       values.length,
       uniqueValues.size,
-      "Enum values should be unique"
+      "Enum values should be unique",
     );
   },
 });
@@ -141,7 +143,7 @@ Deno.test({
           throw new Error("Unexpected status value");
       }
     }
-    
+
     assertEquals(testSwitch(ResultStatus.SUCCESS), "success case");
     assertEquals(testSwitch(ResultStatus.ERROR), "error case");
   },

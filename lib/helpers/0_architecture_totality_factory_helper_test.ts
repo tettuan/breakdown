@@ -16,12 +16,12 @@ import {
   validateConfigurationPatterns,
 } from "./totality_factory_helper.ts";
 import type {
-  FactoryCreation_Result,
+  FactoryCreation_Result as _FactoryCreation_Result,
   TotalityFactoryBundle,
   TotalityFactoryOptions,
 } from "./totality_factory_helper.ts";
 
-Deno.test("TotalityFactoryHelper - Architecture: Module exports structure", async () => {
+Deno.test("TotalityFactoryHelper - Architecture: Module exports structure", () => {
   // Primary factory creation function must exist
   assertEquals(typeof createTotalityFactory, "function", "createTotalityFactory must be exported");
 
@@ -43,7 +43,7 @@ Deno.test("TotalityFactoryHelper - Architecture: Module exports structure", asyn
   );
 });
 
-Deno.test("TotalityFactoryHelper - Architecture: Dependency direction", async () => {
+Deno.test("TotalityFactoryHelper - Architecture: Dependency direction", () => {
   // Helper should depend on core modules, not vice versa
   // This is verified by successful import without circular references
 
@@ -54,7 +54,7 @@ Deno.test("TotalityFactoryHelper - Architecture: Dependency direction", async ()
   // (Private implementation details are not accessible from outside)
 });
 
-Deno.test("TotalityFactoryHelper - Architecture: Type interface consistency", async () => {
+Deno.test("TotalityFactoryHelper - Architecture: Type interface consistency", () => {
   // TotalityFactoryOptions interface should have expected structure
   const mockOptions: TotalityFactoryOptions = {
     configSetName: "test",
@@ -127,7 +127,7 @@ Deno.test("TotalityFactoryHelper - Architecture: Error hierarchy consistency", a
   assertEquals(typeof result, "object", "Should return result object, not throw");
 });
 
-Deno.test("TotalityFactoryHelper - Architecture: Async function signatures", async () => {
+Deno.test("TotalityFactoryHelper - Architecture: Async function signatures", () => {
   // Factory creation functions requiring I/O should be async
   assertEquals(
     createTotalityFactory.constructor.name,
@@ -166,16 +166,20 @@ Deno.test("TotalityFactoryHelper - Architecture: Factory bundle component isolat
 
     // Components should not have circular references to bundle
     assertEquals(
-      typeFactory.hasOwnProperty("bundle"),
+      Object.prototype.hasOwnProperty.call(typeFactory, "bundle"),
       false,
       "TypeFactory should not reference bundle",
     );
     assertEquals(
-      patternProvider.hasOwnProperty("bundle"),
+      Object.prototype.hasOwnProperty.call(patternProvider, "bundle"),
       false,
       "PatternProvider should not reference bundle",
     );
-    assertEquals(config.hasOwnProperty("bundle"), false, "Config should not reference bundle");
+    assertEquals(
+      Object.prototype.hasOwnProperty.call(config, "bundle"),
+      false,
+      "Config should not reference bundle",
+    );
   }
 });
 
@@ -257,5 +261,9 @@ Deno.test("TotalityFactoryHelper - Architecture: Validation utility separation",
   assertEquals(Array.isArray(validation.details), true, "Details should be array");
 
   // Should not return FactoryCreationResult pattern
-  assertEquals(validation.hasOwnProperty("ok"), false, "Validation should not use Result pattern");
+  assertEquals(
+    Object.prototype.hasOwnProperty.call(validation, "ok"),
+    false,
+    "Validation should not use Result pattern",
+  );
 });

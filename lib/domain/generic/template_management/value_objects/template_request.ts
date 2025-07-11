@@ -1,6 +1,6 @@
 /**
  * @fileoverview Template Request Value Object
- * 
+ *
  * Represents a request for template resolution with directive and layer information.
  */
 

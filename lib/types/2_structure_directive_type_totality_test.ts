@@ -1,7 +1,7 @@
 /**
  * @fileoverview Structure tests for DirectiveType with Totality improvements
  * Testing data structure integrity with Result-based patterns
- * 
+ *
  * Structure tests verify:
  * - Immutability guarantees
  * - Result type integration
@@ -12,7 +12,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
-import { isOk, isError } from "./result.ts";
+import { isError, isOk } from "./result.ts";
 
 // Test helper
 const createTwoParamsResult = (demonstrativeType: string): TwoParams_Result => ({
@@ -28,7 +28,7 @@ Deno.test("2_structure: TwoParamsDirectivePattern.createOrError follows Result p
   const validResult = TwoParamsDirectivePattern.createOrError("^(to|from)$");
   assertExists(validResult);
   assertEquals(isOk(validResult), true);
-  
+
   if (validResult.ok) {
     const pattern = validResult.data;
     assertEquals(pattern.test("to"), true);
@@ -40,7 +40,7 @@ Deno.test("2_structure: TwoParamsDirectivePattern.createOrError follows Result p
   const invalidResult = TwoParamsDirectivePattern.createOrError("invalid[regex");
   assertExists(invalidResult);
   assertEquals(isError(invalidResult), true);
-  
+
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "InvalidInput");
     if (invalidResult.error.kind === "InvalidInput") {
@@ -54,7 +54,7 @@ Deno.test("2_structure: TwoParamsDirectivePattern.createOrError follows Result p
   // Error case with empty pattern
   const emptyResult = TwoParamsDirectivePattern.createOrError("");
   assertEquals(isError(emptyResult), true);
-  
+
   if (!emptyResult.ok) {
     assertEquals(emptyResult.error.kind, "InvalidInput");
     if (emptyResult.error.kind === "InvalidInput") {
@@ -67,10 +67,10 @@ Deno.test("2_structure: TwoParamsDirectivePattern provides backward compatibilit
   // Both create methods should work
   const nullPattern = TwoParamsDirectivePattern.create("^test$");
   const resultPattern = TwoParamsDirectivePattern.createOrError("^test$");
-  
+
   assertExists(nullPattern);
   assertEquals(isOk(resultPattern), true);
-  
+
   if (resultPattern.ok) {
     // Both should produce functionally equivalent patterns
     assertEquals(nullPattern.test("test"), true);
@@ -83,17 +83,17 @@ Deno.test("2_structure: TwoParamsDirectivePattern provides backward compatibilit
 Deno.test("2_structure: DirectiveType immutability with frozen objects", () => {
   const result = createTwoParamsResult("immutable");
   const directiveType = DirectiveType.create(result);
-  
+
   // Value should be immutable
   const value1 = directiveType.value;
   const value2 = directiveType.value;
   assertEquals(value1, value2);
   assertEquals(value1, "immutable");
-  
+
   // Original result should be readonly
   const original = directiveType.originalResult;
   assertEquals(original.demonstrativeType, "immutable");
-  
+
   // Attempting to modify should not affect the DirectiveType
   const mutableCopy = { ...result };
   mutableCopy.demonstrativeType = "modified";
@@ -115,11 +115,11 @@ Deno.test("2_structure: DirectiveType handles null/undefined in TwoParams_Result
       },
     },
   };
-  
+
   const directiveType = DirectiveType.create(resultWithNullOptions);
   assertExists(directiveType);
   assertEquals(directiveType.value, "test");
-  
+
   // Original result should preserve null/undefined
   assertEquals(directiveType.originalResult.options.nullValue, null);
   assertEquals(directiveType.originalResult.options.undefinedValue, undefined);
@@ -140,17 +140,17 @@ Deno.test("2_structure: TwoParamsDirectivePattern error messages are informative
       expectedInError: ["Invalid regex"],
     },
   ];
-  
+
   for (const { pattern, expectedInError } of testCases) {
     const result = TwoParamsDirectivePattern.createOrError(pattern);
     assertEquals(isError(result), true);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "InvalidInput");
       if (result.error.kind === "InvalidInput") {
         assertEquals(result.error.field, "pattern");
         assertEquals(result.error.value, pattern);
-        
+
         // Check that error message contains expected keywords
         const errorMessage = result.error.reason.toLowerCase();
         for (const expected of expectedInError) {
@@ -169,7 +169,7 @@ Deno.test("2_structure: DirectiveType value extraction is consistent", () => {
   const testValue = "consistent-value";
   const result = createTwoParamsResult(testValue);
   const directiveType = DirectiveType.create(result);
-  
+
   // All access methods should return identical values
   const accessMethods = [
     () => directiveType.value,
@@ -177,8 +177,8 @@ Deno.test("2_structure: DirectiveType value extraction is consistent", () => {
     () => directiveType.originalResult.demonstrativeType,
     () => directiveType.toString().match(/DirectiveType\((.*)\)/)![1],
   ];
-  
-  const values = accessMethods.map(method => method());
+
+  const values = accessMethods.map((method) => method());
   for (const value of values) {
     assertEquals(value, testValue);
   }
@@ -207,33 +207,39 @@ Deno.test("2_structure: DirectiveType preserves complex nested structures", () =
       ],
     },
   };
-  
+
   const directiveType = DirectiveType.create(complexResult);
-  
+
   // Core functionality unaffected by complexity
   assertEquals(directiveType.value, "complex");
-  
+
   // Complex structures preserved
   const original = directiveType.originalResult;
   assertEquals(Array.isArray(original.options.arrays), true);
-  assertEquals((original.options.arrays as any[])[0].length, 3);
-  assertEquals((original.options.objects as any).level1.level2.level3.deep, "value");
+  assertEquals(((original.options.arrays as (number | string)[][])[0] as number[]).length, 3);
+  const level1 = (original.options.objects as Record<string, unknown>).level1 as Record<
+    string,
+    unknown
+  >;
+  const level2 = level1.level2 as Record<string, unknown>;
+  const level3 = level2.level3 as Record<string, unknown>;
+  assertEquals(level3.deep, "value");
   assertEquals(Array.isArray(original.options.mixed), true);
-  assertEquals((original.options.mixed as any[])[0].name, "first");
+  assertEquals((original.options.mixed as Array<{ name: string }>)[0].name, "first");
 });
 
 Deno.test("2_structure: TwoParamsDirectivePattern maintains method consistency", () => {
   const pattern = TwoParamsDirectivePattern.create("^[a-z]+$");
   assertExists(pattern);
-  
+
   // All string representation methods should be consistent
   const toString = pattern.toString();
   const getPattern = pattern.getPattern();
-  
+
   assertEquals(typeof toString, "string");
   assertEquals(typeof getPattern, "string");
   assertEquals(getPattern, "^[a-z]+$");
-  
+
   // getDirectivePattern should return the same instance
   const self1 = pattern.getDirectivePattern();
   const self2 = pattern.getDirectivePattern();

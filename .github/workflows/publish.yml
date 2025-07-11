@@ -54,15 +54,9 @@ jobs:
             echo "Tag version ($TAG_VERSION) is not newer than JSR latest ($LATEST_JSR_VERSION). Skipping publish.";
             exit 78;
           fi
-      # Run tests before publishing
-      - name: Run tests
-        run: deno test --allow-env --allow-write --allow-read --allow-run
-      # Run format check
-      - name: Check formatting
-        run: deno fmt --check
-      # Run lint check
-      - name: Run linter
-        run: deno lint
+      # Run CI tasks (tests, format check, and lint)
+      - name: Run CI
+        run: deno task ci
       # Publish to JSR using OIDC (no token required)
       - name: Publish to JSR (OIDC)
         run: deno publish

@@ -3,11 +3,11 @@
  *
  * This module provides a unified SchemaPath value object that replaces all existing
  * scattered implementations with a single, comprehensive, type-safe solution.
- * 
+ *
  * Replaces:
  * - lib/domain/generic/template_management/value_objects/schema_path.ts (basic Result)
  * - Similar implementations scattered throughout the codebase
- * 
+ *
  * Design Principles:
  * 1. Smart Constructor pattern for type-safe creation
  * 2. Discriminated Union for comprehensive error handling
@@ -25,7 +25,7 @@ import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "
 
 /**
  * Schema Path specific error types using Discriminated Union
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and provides specific context for different failure scenarios.
  */
@@ -78,31 +78,45 @@ export type SchemaPathError =
  * Type guards for SchemaPathError discrimination
  * Enables type-safe error handling throughout the application
  */
-export function isInvalidDirectiveError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "InvalidDirective" }> {
+export function isInvalidDirectiveError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "InvalidDirective" }> {
   return error.kind === "InvalidDirective";
 }
 
-export function isInvalidLayerError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "InvalidLayer" }> {
+export function isInvalidLayerError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "InvalidLayer" }> {
   return error.kind === "InvalidLayer";
 }
 
-export function isInvalidSchemaFilenameError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "InvalidSchemaFilename" }> {
+export function isInvalidSchemaFilenameError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "InvalidSchemaFilename" }> {
   return error.kind === "InvalidSchemaFilename";
 }
 
-export function isSchemaPathConstructionError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "SchemaPathConstructionError" }> {
+export function isSchemaPathConstructionError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "SchemaPathConstructionError" }> {
   return error.kind === "SchemaPathConstructionError";
 }
 
-export function isJsonSchemaValidationError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "JsonSchemaValidationError" }> {
+export function isJsonSchemaValidationError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "JsonSchemaValidationError" }> {
   return error.kind === "JsonSchemaValidationError";
 }
 
-export function isSecurityViolationError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "SecurityViolation" }> {
+export function isSecurityViolationError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "SecurityViolation" }> {
   return error.kind === "SecurityViolation";
 }
 
-export function isValidationError(error: SchemaPathError): error is Extract<SchemaPathError, { kind: "ValidationError" }> {
+export function isValidationError(
+  error: SchemaPathError,
+): error is Extract<SchemaPathError, { kind: "ValidationError" }> {
   return error.kind === "ValidationError";
 }
 
@@ -117,7 +131,9 @@ export function formatSchemaPathError(schemaError: SchemaPathError): string {
     case "InvalidLayer":
       return `Invalid layer: ${schemaError.message}`;
     case "InvalidSchemaFilename":
-      return `Invalid schema filename '${schemaError.filename}': ${schemaError.message}. Constraints: ${schemaError.constraints.join(", ")}`;
+      return `Invalid schema filename '${schemaError.filename}': ${schemaError.message}. Constraints: ${
+        schemaError.constraints.join(", ")
+      }`;
     case "SchemaPathConstructionError":
       return `Schema path construction failed: ${schemaError.message}`;
     case "JsonSchemaValidationError":
@@ -151,7 +167,7 @@ export interface SchemaPathConfig {
  * Default schema path configuration
  */
 export const DEFAULT_SCHEMA_PATH_CONFIG: SchemaPathConfig = {
-  allowedExtensions: ['.schema.md', '.json'],
+  allowedExtensions: [".schema.md", ".json"],
   maxFilenameLength: 120,
   allowCustomDirectives: false,
   allowCustomLayers: false,
@@ -159,29 +175,29 @@ export const DEFAULT_SCHEMA_PATH_CONFIG: SchemaPathConfig = {
   basePathConfig: {
     ...DEFAULT_PATH_CONFIG,
     allowAbsolute: false, // Schema paths are always relative
-    requiredExtensions: ['.schema.md', '.json'],
+    requiredExtensions: [".schema.md", ".json"],
     maxLength: 220, // directive/layer/filename.schema.md
   },
 };
 
 /**
  * Schema Path Value Object
- * 
+ *
  * Represents a validated path to a JSON schema file within the schema directory structure.
  * Follows the pattern: directive/layer/filename.schema.md or directive/layer/filename.json
- * 
+ *
  * This class unifies all previous schema path implementations and provides:
  * - Type-safe construction through Smart Constructor pattern
  * - JSON Schema-specific validation with specific error types
  * - Immutable design following DDD principles
  * - Security validation to prevent path traversal attacks
  * - Integration with DirectiveType and LayerType domain objects
- * 
+ *
  * @example Basic usage
  * ```typescript
  * const directiveResult = DirectiveType.create(twoParamsResult);
  * const layerResult = LayerType.create(twoParamsResult);
- * 
+ *
  * if (directiveResult && layerResult) {
  *   const pathResult = SchemaPath.create(directiveResult, layerResult, "base.schema.md");
  *   if (pathResult.ok) {
@@ -189,12 +205,12 @@ export const DEFAULT_SCHEMA_PATH_CONFIG: SchemaPathConfig = {
  *   }
  * }
  * ```
- * 
+ *
  * @example With JSON file
  * ```typescript
  * const pathResult = SchemaPath.create(directive, layer, "output.json");
  * ```
- * 
+ *
  * @example With custom configuration
  * ```typescript
  * const config: SchemaPathConfig = {
@@ -202,16 +218,16 @@ export const DEFAULT_SCHEMA_PATH_CONFIG: SchemaPathConfig = {
  *   allowedExtensions: ['.json', '.yaml'],
  *   validateJsonSyntax: true,
  * };
- * 
+ *
  * const pathResult = SchemaPath.createWithConfig(directive, layer, "custom.json", config);
  * ```
  */
 export class SchemaPath extends BasePathValueObject {
   /**
    * Private constructor enforcing Smart Constructor pattern
-   * 
+   *
    * @param directive The validated directive type
-   * @param layer The validated layer type  
+   * @param layer The validated layer type
    * @param filename The validated schema filename
    * @param fullPath The complete validated path string
    * @param schemaType The detected schema type (json or markdown)
@@ -230,10 +246,10 @@ export class SchemaPath extends BasePathValueObject {
 
   /**
    * Smart Constructor for SchemaPath with default configuration
-   * 
+   *
    * Creates a validated SchemaPath instance using standard schema path rules.
    * This is the primary factory method for most use cases.
-   * 
+   *
    * @param directive The directive type (e.g., "to", "summary", "defect")
    * @param layer The layer type (e.g., "project", "issue", "task")
    * @param filename The schema filename (must end with .schema.md or .json)
@@ -249,10 +265,10 @@ export class SchemaPath extends BasePathValueObject {
 
   /**
    * Smart Constructor for SchemaPath with custom configuration
-   * 
+   *
    * Provides full control over validation rules and constraints.
    * Useful for testing, custom environments, or special use cases.
-   * 
+   *
    * @param directive The directive type
    * @param layer The layer type
    * @param filename The schema filename
@@ -325,17 +341,23 @@ export class SchemaPath extends BasePathValueObject {
    */
   static createJsonSchema(layer: LayerType, filename: string): Result<SchemaPath, SchemaPathError> {
     const toResult = { getValue: () => "to" } as DirectiveType;
-    const jsonFilename = filename.endsWith('.json') ? filename : `${filename}.json`;
+    const jsonFilename = filename.endsWith(".json") ? filename : `${filename}.json`;
     return SchemaPath.create(toResult, layer, jsonFilename);
   }
 
-  static createMarkdownSchema(layer: LayerType, filename: string): Result<SchemaPath, SchemaPathError> {
+  static createMarkdownSchema(
+    layer: LayerType,
+    filename: string,
+  ): Result<SchemaPath, SchemaPathError> {
     const toResult = { getValue: () => "to" } as DirectiveType;
-    const mdFilename = filename.endsWith('.schema.md') ? filename : `${filename}.schema.md`;
+    const mdFilename = filename.endsWith(".schema.md") ? filename : `${filename}.schema.md`;
     return SchemaPath.create(toResult, layer, mdFilename);
   }
 
-  static createDefectSchema(layer: LayerType, filename: string): Result<SchemaPath, SchemaPathError> {
+  static createDefectSchema(
+    layer: LayerType,
+    filename: string,
+  ): Result<SchemaPath, SchemaPathError> {
     const defectResult = { getValue: () => "defect" } as DirectiveType;
     return SchemaPath.create(defectResult, layer, filename);
   }
@@ -380,7 +402,7 @@ export class SchemaPath extends BasePathValueObject {
    * Get path relative to a base directory
    */
   getRelativePath(baseDir: string): string {
-    const cleanBase = baseDir.replace(/[/\\]+$/, ''); // Remove trailing slashes
+    const cleanBase = baseDir.replace(/[/\\]+$/, ""); // Remove trailing slashes
     return `${cleanBase}/${this.getFullPath()}`;
   }
 
@@ -389,10 +411,10 @@ export class SchemaPath extends BasePathValueObject {
    */
   override equals(other: SchemaPath): boolean {
     return super.equals(other) &&
-           this.directive.equals(other.directive) &&
-           this.layer.equals(other.layer) &&
-           this.filename === other.filename &&
-           this.schemaType === other.schemaType;
+      this.directive.equals(other.directive) &&
+      this.layer.equals(other.layer) &&
+      this.filename === other.filename &&
+      this.schemaType === other.schemaType;
   }
 
   /**
@@ -472,7 +494,7 @@ export class SchemaPath extends BasePathValueObject {
       });
     }
 
-    if (!filename || typeof filename !== 'string') {
+    if (!filename || typeof filename !== "string") {
       return error({
         kind: "InvalidSchemaFilename",
         message: "Schema filename cannot be null, undefined, or non-string",
@@ -499,11 +521,11 @@ export class SchemaPath extends BasePathValueObject {
    */
   private static validateDirective(
     directive: DirectiveType,
-    config: SchemaPathConfig,
+    _config: SchemaPathConfig,
   ): Result<void, SchemaPathError> {
     try {
       const directiveValue = directive.getValue();
-      
+
       if (!directiveValue || directiveValue.trim().length === 0) {
         return error({
           kind: "InvalidDirective",
@@ -513,12 +535,14 @@ export class SchemaPath extends BasePathValueObject {
       }
 
       // Additional directive-specific validation could go here
-      
+
       return ok(undefined);
     } catch (dirError) {
       return error({
         kind: "InvalidDirective",
-        message: `Failed to validate directive: ${dirError instanceof Error ? dirError.message : String(dirError)}`,
+        message: `Failed to validate directive: ${
+          dirError instanceof Error ? dirError.message : String(dirError)
+        }`,
       });
     }
   }
@@ -528,11 +552,11 @@ export class SchemaPath extends BasePathValueObject {
    */
   private static validateLayer(
     layer: LayerType,
-    config: SchemaPathConfig,
+    _config: SchemaPathConfig,
   ): Result<void, SchemaPathError> {
     try {
       const layerValue = layer.getValue();
-      
+
       if (!layerValue || layerValue.trim().length === 0) {
         return error({
           kind: "InvalidLayer",
@@ -542,12 +566,14 @@ export class SchemaPath extends BasePathValueObject {
       }
 
       // Additional layer-specific validation could go here
-      
+
       return ok(undefined);
     } catch (layerError) {
       return error({
         kind: "InvalidLayer",
-        message: `Failed to validate layer: ${layerError instanceof Error ? layerError.message : String(layerError)}`,
+        message: `Failed to validate layer: ${
+          layerError instanceof Error ? layerError.message : String(layerError)
+        }`,
       });
     }
   }
@@ -574,12 +600,12 @@ export class SchemaPath extends BasePathValueObject {
     }
 
     // Extension validation
-    const hasValidExtension = config.allowedExtensions.some(ext => 
+    const hasValidExtension = config.allowedExtensions.some((ext) =>
       trimmedFilename.toLowerCase().endsWith(ext.toLowerCase())
     );
 
     if (!hasValidExtension) {
-      constraints.push(`must end with: ${config.allowedExtensions.join(', ')}`);
+      constraints.push(`must end with: ${config.allowedExtensions.join(", ")}`);
       return error({
         kind: "InvalidSchemaFilename",
         message: "Invalid schema file extension",
@@ -589,14 +615,14 @@ export class SchemaPath extends BasePathValueObject {
     }
 
     // Character validation (basic security)
-    const suspiciousChars = ['\0', '\r', '\n', '..', '<', '>', '|', '*', '?', '"'];
-    const foundSuspicious = suspiciousChars.filter(char => trimmedFilename.includes(char));
-    
+    const suspiciousChars = ["\0", "\r", "\n", "..", "<", ">", "|", "*", "?", '"'];
+    const foundSuspicious = suspiciousChars.filter((char) => trimmedFilename.includes(char));
+
     if (foundSuspicious.length > 0) {
       constraints.push("no suspicious characters");
       return error({
         kind: "InvalidSchemaFilename",
-        message: `Contains forbidden characters: ${foundSuspicious.join(', ')}`,
+        message: `Contains forbidden characters: ${foundSuspicious.join(", ")}`,
         filename: trimmedFilename,
         constraints,
       });
@@ -610,15 +636,15 @@ export class SchemaPath extends BasePathValueObject {
    */
   private static detectSchemaType(filename: string): "json" | "markdown" {
     const trimmedFilename = filename.trim().toLowerCase();
-    
-    if (trimmedFilename.endsWith('.json')) {
+
+    if (trimmedFilename.endsWith(".json")) {
       return "json";
     }
-    
-    if (trimmedFilename.endsWith('.schema.md')) {
+
+    if (trimmedFilename.endsWith(".schema.md")) {
       return "markdown";
     }
-    
+
     // Default to markdown for backward compatibility
     return "markdown";
   }
@@ -643,7 +669,9 @@ export class SchemaPath extends BasePathValueObject {
     } catch (constructionError) {
       return error({
         kind: "SchemaPathConstructionError",
-        message: `Failed to construct schema path: ${constructionError instanceof Error ? constructionError.message : String(constructionError)}`,
+        message: `Failed to construct schema path: ${
+          constructionError instanceof Error ? constructionError.message : String(constructionError)
+        }`,
         components: {
           directive: directive?.getValue(),
           layer: layer?.getValue(),

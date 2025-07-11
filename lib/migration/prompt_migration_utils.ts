@@ -10,7 +10,7 @@
 import { PromptPath } from "../types/prompt_types.ts";
 import type { PromptCliParams, PromptVariables } from "../types/prompt_variables.ts";
 import {
-  FilePathVariable,
+  FilePathVariable as _FilePathVariable,
   StandardVariable,
   StdinVariable,
   UserVariable,
@@ -270,7 +270,7 @@ export function migratePromptCliParams(
  * @returns Summary string
  */
 export function createMigrationSummary(
-  original: PromptCliParams,
+  _original: PromptCliParams,
   result: MigrationResult,
 ): string {
   const lines: string[] = ["Migration Summary:"];

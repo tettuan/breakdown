@@ -31,16 +31,15 @@ import { Result } from "../types/result.ts";
 
 // Re-export specific classes from workspace_init_error.ts
 export {
-  DirectoryCreationError,
   ConfigCreationError,
+  createWorkspaceInitError as createWorkspaceInitErrorFromClass,
+  DirectoryCreationError,
   InvalidWorkspaceLocationError,
   WorkspaceExistsError,
-  createWorkspaceInitError as createWorkspaceInitErrorFromClass,
 } from "./workspace_init_error.ts";
 
 // Re-export the WorkspaceInitError class for tests
 export { WorkspaceInitError } from "./workspace_init_error.ts";
-
 
 /**
  * Base interface for all workspace-related errors in the Breakdown system.
@@ -115,7 +114,7 @@ export type WorkspaceInitErrorType = WorkspaceInitErrorInterface;
  * @example
  * ```typescript
  * const error = createWorkspaceInitErrorInterface("Failed to create projects directory: Permission denied");
- * 
+ *
  * // Usage with Result type
  * function initializeWorkspace(): Result<void, WorkspaceInitErrorInterface> {
  *   // Implementation logic here
@@ -179,7 +178,7 @@ export interface WorkspaceConfigErrorInterface extends WorkspaceErrorBase {
  * @example
  * ```typescript
  * const error = createWorkspaceConfigError("Working directory not specified in configuration");
- * 
+ *
  * // Usage with Result type
  * function loadWorkspaceConfig(): Result<Config, WorkspaceConfigErrorInterface> {
  *   if (configMissing) {
@@ -197,7 +196,7 @@ export function createWorkspaceConfigError(message: string): WorkspaceConfigErro
   };
 }
 
-// Alias for backward compatibility  
+// Alias for backward compatibility
 export const createWorkspaceConfigErrorInterface = createWorkspaceConfigError;
 
 /**
@@ -236,7 +235,7 @@ export interface WorkspacePathErrorInterface extends WorkspaceErrorBase {
  * @example
  * ```typescript
  * const error = createWorkspacePathError("Invalid relative path: '../../../etc/passwd'");
- * 
+ *
  * // Usage with Result type
  * function resolvePath(path: string): Result<string, WorkspacePathErrorInterface> {
  *   if (isInvalidPath(path)) {
@@ -293,7 +292,7 @@ export interface WorkspaceDirectoryErrorInterface extends WorkspaceErrorBase {
  * @example
  * ```typescript
  * const error = createWorkspaceDirectoryError("Failed to create directory: Permission denied");
- * 
+ *
  * // Usage with Result type
  * function createDirectory(path: string): Result<void, WorkspaceDirectoryError> {
  *   if (permissionDenied) {
@@ -329,7 +328,7 @@ export function isWorkspaceDirectoryError(
 /**
  * Union type of all workspace error types for discriminated union support.
  */
-export type WorkspaceErrorType = 
+export type WorkspaceErrorType =
   | WorkspaceInitErrorInterface
   | WorkspaceConfigErrorInterface
   | WorkspacePathErrorInterface
@@ -346,10 +345,10 @@ export function isWorkspaceError(error: unknown): error is WorkspaceErrorType {
   return typeof error === "object" && error !== null &&
     "type" in error && typeof error.type === "string" &&
     (error.type === "workspace_init_error" ||
-     error.type === "workspace_config_error" ||
-     error.type === "workspace_path_error" ||
-     error.type === "workspace_directory_error" ||
-     error.type === "workspace_error");
+      error.type === "workspace_config_error" ||
+      error.type === "workspace_path_error" ||
+      error.type === "workspace_directory_error" ||
+      error.type === "workspace_error");
 }
 
 /**

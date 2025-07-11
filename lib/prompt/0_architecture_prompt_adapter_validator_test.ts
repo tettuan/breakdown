@@ -8,7 +8,7 @@
  * - Clean dependency structure
  */
 
-import { assertEquals, assertExists } from "../deps.ts";
+import { assertEquals } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -90,10 +90,10 @@ describe("PromptAdapterValidator Architecture - Module Dependencies", () => {
 });
 
 describe("PromptAdapterValidator Architecture - Single Responsibility", () => {
-  it("should only handle validation concerns", async () => {
+  it("should only handle validation concerns", () => {
     _logger.debug("Testing single responsibility");
 
-    const fileContent = await Deno.readTextFile(
+    const fileContent = Deno.readTextFileSync(
       fromFileUrl(new URL("./prompt_adapter_validator.ts", import.meta.url)),
     );
 

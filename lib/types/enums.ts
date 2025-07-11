@@ -12,10 +12,12 @@
  * Used throughout the application for consistent result handling
  * Implemented as const object for immutability (Dependency Injection principle)
  */
-export const ResultStatus = Object.freeze({
-  SUCCESS: "success",
-  ERROR: "error",
-} as const);
+export const ResultStatus = Object.freeze(
+  {
+    SUCCESS: "success",
+    ERROR: "error",
+  } as const,
+);
 
 export type ResultStatusType = typeof ResultStatus[keyof typeof ResultStatus];
 

@@ -25,22 +25,22 @@ import { TwoParamsOutputProcessor } from "../processors/two_params_output_proces
 
 /**
  * Complete Discriminated Union Error Types for TwoParamsHandler
- * 
+ *
  * This uses the Complete Discriminated Union Pattern ensuring:
  * - All error cases are explicitly handled
  * - Type safety through exhaustive checking
  * - Backward compatibility maintained
  */
-export type TwoParamsHandlerError = 
-  | { kind: "InvalidParameterCount", received: number, expected: number }
-  | { kind: "InvalidDemonstrativeType", value: string, validTypes: string[] }
-  | { kind: "InvalidLayerType", value: string, validTypes: string[] }
-  | { kind: "StdinReadError", error: string }
-  | { kind: "FactoryCreationError", error: string }
-  | { kind: "FactoryValidationError", errors: string[] }
-  | { kind: "VariablesBuilderError", errors: string[] }
-  | { kind: "PromptGenerationError", error: string }
-  | { kind: "OutputWriteError", error: string, cause?: unknown };
+export type TwoParamsHandlerError =
+  | { kind: "InvalidParameterCount"; received: number; expected: number }
+  | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
+  | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
+  | { kind: "StdinReadError"; error: string }
+  | { kind: "FactoryCreationError"; error: string }
+  | { kind: "FactoryValidationError"; errors: string[] }
+  | { kind: "VariablesBuilderError"; errors: string[] }
+  | { kind: "PromptGenerationError"; error: string }
+  | { kind: "OutputWriteError"; error: string; cause?: unknown };
 
 /**
  * Internal orchestrator for two params processing
@@ -147,8 +147,8 @@ class TwoParamsOrchestrator {
       error.kind === "InvalidParameterCount" &&
       "received" in error &&
       "expected" in error &&
-      typeof (error as any).received === "number" &&
-      typeof (error as any).expected === "number"
+      typeof (error as { received: unknown }).received === "number" &&
+      typeof (error as { expected: unknown }).expected === "number"
     );
   }
 
@@ -165,8 +165,8 @@ class TwoParamsOrchestrator {
       error.kind === "InvalidDemonstrativeType" &&
       "value" in error &&
       "validTypes" in error &&
-      typeof (error as any).value === "string" &&
-      Array.isArray((error as any).validTypes)
+      typeof (error as { value: unknown }).value === "string" &&
+      Array.isArray((error as { validTypes: unknown }).validTypes)
     );
   }
 
@@ -183,8 +183,8 @@ class TwoParamsOrchestrator {
       error.kind === "InvalidLayerType" &&
       "value" in error &&
       "validTypes" in error &&
-      typeof (error as any).value === "string" &&
-      Array.isArray((error as any).validTypes)
+      typeof (error as { value: unknown }).value === "string" &&
+      Array.isArray((error as { validTypes: unknown }).validTypes)
     );
   }
 
@@ -248,7 +248,7 @@ class TwoParamsOrchestrator {
       typeof error === "object" &&
       error !== null &&
       "message" in error &&
-      typeof (error as any).message === "string"
+      typeof (error as { message: unknown }).message === "string"
     );
   }
 
@@ -259,7 +259,7 @@ class TwoParamsOrchestrator {
     // Check if it's a FactoryValidationError
     if (this.isFactoryValidationError(error)) {
       const errors: string[] = [];
-      
+
       // Safely extract errors array
       if ("errors" in error && Array.isArray(error.errors)) {
         errors.push(...error.errors);
@@ -268,7 +268,7 @@ class TwoParamsOrchestrator {
       } else {
         errors.push(String(error));
       }
-      
+
       return {
         kind: "FactoryValidationError",
         errors,

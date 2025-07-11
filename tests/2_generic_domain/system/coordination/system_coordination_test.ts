@@ -1,13 +1,17 @@
 /**
  * @fileoverview System Coordination Integration Test
- * 
+ *
  * システム全体の協調動作を検証し、複数のシステム基盤コンポーネント
  * （ファイルシステム、ログ、初期化）が連携して正常に動作することを確認します。
- * 
+ *
  * @module tests/2_generic_domain/system/coordination/system_coordination_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "../../../../lib/deps.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertStringIncludes as _assertStringIncludes,
+} from "../../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
@@ -16,7 +20,7 @@ const logger = new BreakdownLogger("system-coordination");
 
 /**
  * システム協調動作テスト群
- * 
+ *
  * 複数システムコンポーネントの協調動作を検証：
  * 1. ファイルシステム + ログシステムの協調
  * 2. 初期化 + ファイルシステム + ログの連携
@@ -68,7 +72,6 @@ class SystemCoordinationManager {
       });
 
       return true;
-
     } catch (error) {
       const err = error as Error;
       this.logger.error("システム初期化失敗", {
@@ -109,7 +112,7 @@ class SystemCoordinationManager {
 
     await Deno.writeTextFile(
       join(this.workspaceDir, "config", "system.json"),
-      JSON.stringify(configContent, null, 2)
+      JSON.stringify(configContent, null, 2),
     );
   }
 
@@ -131,7 +134,7 @@ class SystemCoordinationManager {
 
     await Deno.writeTextFile(
       join(logDir, "system.log"),
-      JSON.stringify(logEntry) + "\n"
+      JSON.stringify(logEntry) + "\n",
     );
   }
 
@@ -146,26 +149,26 @@ class SystemCoordinationManager {
 
     await Deno.writeTextFile(
       join(this.workspaceDir, "workspace.json"),
-      JSON.stringify(workspaceConfig, null, 2)
+      JSON.stringify(workspaceConfig, null, 2),
     );
 
     // データディレクトリにサンプルファイル作成
     await Deno.writeTextFile(
       join(this.workspaceDir, "data", "sample.txt"),
-      "Sample data for system coordination test"
+      "Sample data for system coordination test",
     );
   }
 
-  async performCoordinatedOperation(operationName: string): Promise<{
+  async performCoordinatedOperation(operationName: string, useUniqueFiles = false): Promise<{
     success: boolean;
-    results: Map<string, any>;
+    results: Map<string, unknown>;
     errors?: string[];
   }> {
     if (!this.isInitialized) {
       throw new Error("System not initialized");
     }
 
-    const results = new Map<string, any>();
+    const results = new Map<string, unknown>();
     const errors: string[] = [];
 
     this.logger.debug(`協調動作${operationName}開始`, {
@@ -176,13 +179,13 @@ class SystemCoordinationManager {
     try {
       switch (operationName) {
         case "file_log_coordination":
-          await this.fileLogCoordination(results, errors);
+          await this.fileLogCoordination(results, errors, useUniqueFiles);
           break;
         case "backup_operation":
-          await this.backupOperation(results, errors);
+          await this.backupOperation(results, errors, useUniqueFiles);
           break;
         case "data_processing":
-          await this.dataProcessing(results, errors);
+          await this.dataProcessing(results, errors, useUniqueFiles);
           break;
         default:
           throw new Error(`Unknown operation: ${operationName}`);
@@ -197,7 +200,6 @@ class SystemCoordinationManager {
       });
 
       return { success, results, errors: errors.length > 0 ? errors : undefined };
-
     } catch (error) {
       const err = error as Error;
       errors.push(err.message);
@@ -205,11 +207,26 @@ class SystemCoordinationManager {
     }
   }
 
-  private async fileLogCoordination(results: Map<string, any>, errors: string[]): Promise<void> {
+  private async fileLogCoordination(
+    results: Map<string, unknown>,
+    errors: string[],
+    useUniqueFiles = false,
+  ): Promise<void> {
     try {
       // ファイル操作とログ出力の協調
-      const dataFile = join(this.workspaceDir, "data", "coordination_test.txt");
-      const logFile = join(this.workspaceDir, "logs", "coordination.log");
+      const operationId = useUniqueFiles
+        ? `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        : "";
+      const dataFile = join(
+        this.workspaceDir,
+        "data",
+        useUniqueFiles ? `coordination_test_${operationId}.txt` : "coordination_test.txt",
+      );
+      const logFile = join(
+        this.workspaceDir,
+        "logs",
+        useUniqueFiles ? `coordination_${operationId}.log` : "coordination.log",
+      );
 
       // 1. ファイル作成
       const content = `Coordination test data: ${Date.now()}`;
@@ -241,27 +258,37 @@ class SystemCoordinationManager {
         logRecorded: true,
         verified: true,
       });
-
     } catch (error) {
       const err = error as Error;
       errors.push(`File-Log coordination error: ${err.message}`);
     }
   }
 
-  private async backupOperation(results: Map<string, any>, errors: string[]): Promise<void> {
+  private async backupOperation(
+    results: Map<string, unknown>,
+    errors: string[],
+    useUniqueFiles = false,
+  ): Promise<void> {
     try {
       // バックアップ操作での協調動作
+      const operationId = useUniqueFiles
+        ? `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        : "";
       const sourceDir = join(this.workspaceDir, "data");
-      const backupDir = join(this.workspaceDir, "backup");
-      
+      const backupDir = join(this.workspaceDir, "backup", useUniqueFiles ? operationId : "");
+
       await ensureDir(backupDir);
 
       // ソースファイル一覧取得
       const sourceFiles: string[] = [];
-      for await (const entry of Deno.readDir(sourceDir)) {
-        if (entry.isFile) {
-          sourceFiles.push(entry.name);
+      try {
+        for await (const entry of Deno.readDir(sourceDir)) {
+          if (entry.isFile) {
+            sourceFiles.push(entry.name);
+          }
         }
+      } catch {
+        // ディレクトリが存在しない場合は空のファイルリストとして処理を続行
       }
 
       // ファイルバックアップとログ記録
@@ -271,7 +298,7 @@ class SystemCoordinationManager {
         const backupPath = join(backupDir, `${fileName}.backup`);
 
         await Deno.copyFile(sourcePath, backupPath);
-        
+
         const logEntry = {
           timestamp: new Date().toISOString(),
           operation: "backup",
@@ -279,11 +306,15 @@ class SystemCoordinationManager {
           destination: backupPath,
           success: true,
         };
-        
+
         await Deno.writeTextFile(
-          join(this.workspaceDir, "logs", "backup.log"),
+          join(
+            this.workspaceDir,
+            "logs",
+            useUniqueFiles ? `backup_${operationId}.log` : "backup.log",
+          ),
           JSON.stringify(logEntry) + "\n",
-          { append: true }
+          { append: true },
         );
 
         backupResults.push({ source: fileName, backup: `${fileName}.backup` });
@@ -293,19 +324,37 @@ class SystemCoordinationManager {
         filesBackedUp: backupResults.length,
         backupFiles: backupResults,
       });
-
     } catch (error) {
       const err = error as Error;
       errors.push(`Backup operation error: ${err.message}`);
     }
   }
 
-  private async dataProcessing(results: Map<string, any>, errors: string[]): Promise<void> {
+  private async dataProcessing(
+    results: Map<string, unknown>,
+    errors: string[],
+    useUniqueFiles = false,
+  ): Promise<void> {
     try {
       // データ処理での協調動作
-      const inputFile = join(this.workspaceDir, "data", "input.json");
-      const outputFile = join(this.workspaceDir, "data", "output.json");
-      const tempFile = join(this.workspaceDir, "temp", "processing.tmp");
+      const operationId = useUniqueFiles
+        ? `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        : "";
+      const inputFile = join(
+        this.workspaceDir,
+        "data",
+        useUniqueFiles ? `input_${operationId}.json` : "input.json",
+      );
+      const outputFile = join(
+        this.workspaceDir,
+        "data",
+        useUniqueFiles ? `output_${operationId}.json` : "output.json",
+      );
+      const tempFile = join(
+        this.workspaceDir,
+        "temp",
+        useUniqueFiles ? `processing_${operationId}.tmp` : "processing.tmp",
+      );
 
       // 1. 入力データ作成
       const inputData = {
@@ -345,9 +394,13 @@ class SystemCoordinationManager {
       };
 
       await Deno.writeTextFile(
-        join(this.workspaceDir, "logs", "processing.log"),
+        join(
+          this.workspaceDir,
+          "logs",
+          useUniqueFiles ? `processing_${operationId}.log` : "processing.log",
+        ),
         JSON.stringify(logEntry) + "\n",
-        { append: true }
+        { append: true },
       );
 
       results.set("dataProcessing", {
@@ -355,7 +408,6 @@ class SystemCoordinationManager {
         processingTime,
         outputGenerated: true,
       });
-
     } catch (error) {
       const err = error as Error;
       errors.push(`Data processing error: ${err.message}`);
@@ -404,7 +456,6 @@ Deno.test("System Coordination: Complete system initialization", async () => {
       logExists,
       workspaceExists,
     });
-
   } finally {
     await manager.cleanup();
   }
@@ -421,13 +472,17 @@ Deno.test("System Coordination: File and logging coordination", async () => {
 
   try {
     await manager.initializeSystem();
-    
+
     const result = await manager.performCoordinatedOperation("file_log_coordination");
-    
+
     assertEquals(result.success, true, "File-log coordination should succeed");
     assertExists(result.results.get("fileLogCoordination"), "Coordination results should exist");
-    
-    const coordination = result.results.get("fileLogCoordination");
+
+    const coordination = result.results.get("fileLogCoordination") as unknown as {
+      fileCreated: boolean;
+      logRecorded: boolean;
+      verified: boolean;
+    };
     assertEquals(coordination.fileCreated, true, "File should be created");
     assertEquals(coordination.logRecorded, true, "Log should be recorded");
     assertEquals(coordination.verified, true, "Operations should be verified");
@@ -436,7 +491,6 @@ Deno.test("System Coordination: File and logging coordination", async () => {
       success: result.success,
       results: coordination,
     });
-
   } finally {
     await manager.cleanup();
   }
@@ -461,19 +515,19 @@ Deno.test("System Coordination: Multi-operation workflow", async () => {
     for (const operation of operations) {
       const result = await manager.performCoordinatedOperation(operation);
       workflowResults.push({ operation, ...result });
-      
+
       assertEquals(result.success, true, `Operation ${operation} should succeed`);
     }
 
     // ワークフロー全体の検証
-    const allSuccessful = workflowResults.every(r => r.success);
+    const allSuccessful = workflowResults.every((r) => r.success);
     assertEquals(allSuccessful, true, "All workflow operations should succeed");
 
     // 生成されたファイル・ログの検証
     const backupExists = await exists(join(testDir, "backup"));
     const outputExists = await exists(join(testDir, "data", "output.json"));
     const logFiles = ["coordination.log", "backup.log", "processing.log"];
-    
+
     assertEquals(backupExists, true, "Backup directory should exist");
     assertEquals(outputExists, true, "Output file should exist");
 
@@ -484,12 +538,11 @@ Deno.test("System Coordination: Multi-operation workflow", async () => {
 
     logger.debug("複数操作ワークフロー結果", {
       totalOperations: operations.length,
-      successfulOperations: workflowResults.filter(r => r.success).length,
+      successfulOperations: workflowResults.filter((r) => r.success).length,
       backupExists,
       outputExists,
       logFilesCreated: logFiles.length,
     });
-
   } finally {
     await manager.cleanup();
   }
@@ -510,11 +563,11 @@ Deno.test("System Coordination: Error handling and recovery", async () => {
     // エラー状況をシミュレート
     const protectedDir = join(testDir, "protected");
     await ensureDir(protectedDir);
-    
+
     // 権限制限ファイルの作成（読み取り専用）
     const protectedFile = join(protectedDir, "readonly.txt");
     await Deno.writeTextFile(protectedFile, "protected content");
-    
+
     // ファイルを読み取り専用に設定を試行
     try {
       await Deno.chmod(protectedFile, 0o444);
@@ -533,11 +586,10 @@ Deno.test("System Coordination: Error handling and recovery", async () => {
 
       // 保護されたファイルの変更を試行（エラーが発生する可能性）
       await Deno.writeTextFile(protectedFile, "modified content");
-      
     } catch (error) {
       errorOccurred = true;
       const err = error as Error;
-      
+
       logger.debug("予期されたエラー発生", {
         error: err.message,
         errorType: err.name,
@@ -549,10 +601,9 @@ Deno.test("System Coordination: Error handling and recovery", async () => {
         // 代替ファイルでの操作
         const alternativeFile = join(testDir, "data", "alternative.txt");
         await Deno.writeTextFile(alternativeFile, "recovery content");
-        
+
         const recoveryExists = await exists(alternativeFile);
         assertEquals(recoveryExists, true, "Recovery file should be created");
-        
       } catch (recoveryError) {
         const recErr = recoveryError as Error;
         logger.error("復旧処理失敗", {
@@ -570,7 +621,6 @@ Deno.test("System Coordination: Error handling and recovery", async () => {
     // システムが引き続き機能することを確認
     const postErrorResult = await manager.performCoordinatedOperation("data_processing");
     assertEquals(postErrorResult.success, true, "System should continue functioning after error");
-
   } finally {
     await manager.cleanup();
   }
@@ -591,16 +641,16 @@ Deno.test("System Coordination: High load system stability", async () => {
     // 高負荷シミュレーション
     const concurrentOperations = 10;
     const operationTypes = ["file_log_coordination", "backup_operation", "data_processing"];
-    
+
     const loadTasks = Array.from({ length: concurrentOperations }, (_, i) => {
       return async () => {
         const operationType = operationTypes[i % operationTypes.length];
         const startTime = performance.now();
-        
+
         try {
-          const result = await manager.performCoordinatedOperation(operationType);
+          const result = await manager.performCoordinatedOperation(operationType, true);
           const endTime = performance.now();
-          
+
           return {
             taskId: i,
             operationType,
@@ -622,12 +672,13 @@ Deno.test("System Coordination: High load system stability", async () => {
     });
 
     // すべての負荷タスクを並行実行
-    const loadResults = await Promise.all(loadTasks.map(task => task()));
+    const loadResults = await Promise.all(loadTasks.map((task) => task()));
 
     // 負荷テスト結果の分析
-    const successfulTasks = loadResults.filter(r => r.success);
-    const failedTasks = loadResults.filter(r => !r.success);
-    const averageDuration = loadResults.reduce((sum, r) => sum + r.duration, 0) / loadResults.length;
+    const successfulTasks = loadResults.filter((r) => r.success);
+    const failedTasks = loadResults.filter((r) => !r.success);
+    const averageDuration = loadResults.reduce((sum, r) => sum + r.duration, 0) /
+      loadResults.length;
 
     logger.debug("高負荷システム安定性結果", {
       totalTasks: loadResults.length,
@@ -639,13 +690,18 @@ Deno.test("System Coordination: High load system stability", async () => {
     });
 
     // 高い成功率とシステム安定性を確認（60%以上で安定と判定）
-    assertEquals(successfulTasks.length >= Math.floor(loadResults.length * 0.6), true,
-      "At least 60% of high-load operations should succeed");
-    
-    // パフォーマンスの適切性確認（1操作あたり5秒以内）
-    assertEquals(averageDuration < 5000, true,
-      "Average operation duration should be under 5 seconds");
+    assertEquals(
+      successfulTasks.length >= Math.floor(loadResults.length * 0.6),
+      true,
+      "At least 60% of high-load operations should succeed",
+    );
 
+    // パフォーマンスの適切性確認（1操作あたり5秒以内）
+    assertEquals(
+      averageDuration < 5000,
+      true,
+      "Average operation duration should be under 5 seconds",
+    );
   } finally {
     await manager.cleanup();
   }

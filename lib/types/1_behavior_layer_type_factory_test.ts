@@ -7,14 +7,14 @@
  * @module types/1_behavior_layer_type_factory_test
  */
 
-import { assertEquals, assert } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { LayerTypeFactory } from "./layer_type_factory.ts";
 import { LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
  * Behavior Test Suite for LayerTypeFactory
- * 
+ *
  * Verifies:
  * - Valid layer type generation from strings
  * - Valid layer type generation from TwoParams_Result
@@ -33,13 +33,21 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from String", () => 
     // Test uppercase input
     const upperResult = LayerTypeFactory.fromString(layer.toUpperCase());
     assert(upperResult.ok, `Should create LayerType for uppercase layer: ${layer.toUpperCase()}`);
-    assertEquals(upperResult.data.getValue(), layer, `Uppercase input should normalize to: ${layer}`);
+    assertEquals(
+      upperResult.data.getValue(),
+      layer,
+      `Uppercase input should normalize to: ${layer}`,
+    );
 
     // Test mixed case input
     const mixedCase = layer.charAt(0).toUpperCase() + layer.slice(1);
     const mixedResult = LayerTypeFactory.fromString(mixedCase);
     assert(mixedResult.ok, `Should create LayerType for mixed case layer: ${mixedCase}`);
-    assertEquals(mixedResult.data.getValue(), layer, `Mixed case input should normalize to: ${layer}`);
+    assertEquals(
+      mixedResult.data.getValue(),
+      layer,
+      `Mixed case input should normalize to: ${layer}`,
+    );
 
     // Test input with whitespace
     const paddedResult = LayerTypeFactory.fromString(`  ${layer}  `);
@@ -57,7 +65,7 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from TwoParams_Resul
       demonstrativeType: "to",
       layerType: layer,
       params: ["to", layer],
-      options: {}
+      options: {},
     };
 
     const result = LayerTypeFactory.fromTwoParamsResult(twoParamsResult);
@@ -73,8 +81,16 @@ Deno.test("LayerTypeFactory Behavior - Layer Validation", () => {
   // Test valid layers
   for (const layer of knownLayers) {
     assertEquals(LayerTypeFactory.isValidLayer(layer), true, `${layer} should be valid`);
-    assertEquals(LayerTypeFactory.isValidLayer(layer.toUpperCase()), true, `${layer.toUpperCase()} should be valid`);
-    assertEquals(LayerTypeFactory.isValidLayer(`  ${layer}  `), true, `"  ${layer}  " should be valid`);
+    assertEquals(
+      LayerTypeFactory.isValidLayer(layer.toUpperCase()),
+      true,
+      `${layer.toUpperCase()} should be valid`,
+    );
+    assertEquals(
+      LayerTypeFactory.isValidLayer(`  ${layer}  `),
+      true,
+      `"  ${layer}  " should be valid`,
+    );
   }
 
   // Test invalid layers
@@ -114,15 +130,24 @@ Deno.test("LayerTypeFactory Behavior - Suggestion Generation", () => {
   const partialResult = LayerTypeFactory.fromString("pro");
   assert(!partialResult.ok, "Partial match should fail");
   if (!partialResult.ok && partialResult.error.kind === "UnknownLayer") {
-    assert(partialResult.error.suggestions.length > 0, "Should provide suggestions for partial match");
-    assert(partialResult.error.suggestions.includes("project"), "Should suggest 'project' for 'pro'");
+    assert(
+      partialResult.error.suggestions.length > 0,
+      "Should provide suggestions for partial match",
+    );
+    assert(
+      partialResult.error.suggestions.includes("project"),
+      "Should suggest 'project' for 'pro'",
+    );
   }
 
   // Test suggestions for similar inputs
   const similarResult = LayerTypeFactory.fromString("proj");
   assert(!similarResult.ok, "Similar input should fail");
   if (!similarResult.ok && similarResult.error.kind === "UnknownLayer") {
-    assert(similarResult.error.suggestions.length > 0, "Should provide suggestions for similar input");
+    assert(
+      similarResult.error.suggestions.length > 0,
+      "Should provide suggestions for similar input",
+    );
   }
 
   // Test suggestions for completely unknown inputs
@@ -132,7 +157,10 @@ Deno.test("LayerTypeFactory Behavior - Suggestion Generation", () => {
     assert(unknownResult.error.suggestions.length > 0, "Should provide fallback suggestions");
     // Should provide all known layers as fallback
     const knownLayers = LayerTypeFactory.getKnownLayers();
-    assert(unknownResult.error.suggestions.length >= knownLayers.length, "Should include all known layers as fallback");
+    assert(
+      unknownResult.error.suggestions.length >= knownLayers.length,
+      "Should include all known layers as fallback",
+    );
   }
 });
 
@@ -141,14 +169,17 @@ Deno.test("LayerTypeFactory Behavior - Input Normalization", () => {
     { input: "PROJECT", expected: "project" },
     { input: "  task  ", expected: "task" },
     { input: "Issue", expected: "issue" },
-    { input: "\t\nbugs\t\n", expected: "bugs" }
+    { input: "\t\nbugs\t\n", expected: "bugs" },
   ];
 
   for (const testCase of testCases) {
     const result = LayerTypeFactory.fromString(testCase.input);
     assert(result.ok, `Should handle normalized input: "${testCase.input}"`);
-    assertEquals(result.data.getValue(), testCase.expected, 
-      `Input "${testCase.input}" should normalize to "${testCase.expected}"`);
+    assertEquals(
+      result.data.getValue(),
+      testCase.expected,
+      `Input "${testCase.input}" should normalize to "${testCase.expected}"`,
+    );
   }
 });
 

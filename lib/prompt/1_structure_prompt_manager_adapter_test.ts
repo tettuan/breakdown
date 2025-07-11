@@ -33,11 +33,11 @@ Deno.test("PromptManagerAdapter - follows single responsibility principle", () =
 
   for (const method of publicMethods) {
     assertExists(
-      (adapter as any)[method],
+      (adapter as unknown as Record<string, unknown>)[method],
       `Should have ${method} method`,
     );
     assertEquals(
-      typeof (adapter as any)[method],
+      typeof (adapter as unknown as Record<string, unknown>)[method],
       "function",
       `${method} should be a function`,
     );
@@ -58,7 +58,7 @@ Deno.test("PromptManagerAdapter - encapsulates configuration", () => {
   // Configuration should not be directly accessible
   // Note: In TypeScript, private fields are accessible at runtime,
   // but type system prevents access at compile time
-  const adapterAny = adapter as any;
+  const adapterAny = adapter as unknown as Record<string, unknown>;
 
   // Check that we have the expected private fields
   assertExists(adapterAny.promptManager, "Should have promptManager field");
@@ -75,16 +75,16 @@ Deno.test("PromptManagerAdapter - encapsulates configuration", () => {
 /**
  * Test: Methods have clear, focused responsibilities
  */
-Deno.test("PromptManagerAdapter - methods have focused responsibilities", async () => {
+Deno.test("PromptManagerAdapter - methods have focused responsibilities", () => {
   const adapter = new PromptManagerAdapter();
 
   // Mock implementations for testing
-  const mockPath = {
+  const _mockPath = {
     toString: () => "/test/path",
     equals: () => true,
   } as unknown as PromptPath;
 
-  const mockVariables: PromptVariables = {
+  const _mockVariables: PromptVariables = {
     toRecord: () => ({ test: "value" }),
   };
 
@@ -261,11 +261,11 @@ Deno.test("PromptManagerAdapter - has minimal public API", () => {
 
   for (const method of expectedPublicMethods) {
     assertExists(
-      (adapter as any)[method],
+      (adapter as unknown as Record<string, unknown>)[method],
       `Should have public method: ${method}`,
     );
     assertEquals(
-      typeof (adapter as any)[method],
+      typeof (adapter as unknown as Record<string, unknown>)[method],
       "function",
       `${method} should be a function`,
     );
@@ -285,7 +285,7 @@ Deno.test("PromptManagerAdapter - has minimal public API", () => {
   for (const method of shouldBePrivateMethods) {
     // The methods exist at runtime
     assertExists(
-      (adapter as any)[method],
+      (adapter as unknown as Record<string, unknown>)[method],
       `Private method ${method} should exist at runtime`,
     );
   }

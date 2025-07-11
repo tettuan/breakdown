@@ -1,14 +1,18 @@
 /**
  * @fileoverview I/O Boundary Error Handling Integration Test
- * 
+ *
  * I/O操作の境界条件におけるエラーハンドリングの信頼性を検証します。
  * システム全体のエラー伝播、復旧処理、エラー状態の一貫性を
  * 重点的にテストします。
- * 
+ *
  * @module tests/2_generic_domain/system/error_handling/io_boundary_error_test
  */
 
-import { assertEquals, assertRejects, assertStringIncludes } from "../../../../lib/deps.ts";
+import {
+  assertEquals,
+  assertRejects as _assertRejects,
+  assertStringIncludes,
+} from "../../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
@@ -17,7 +21,7 @@ const logger = new BreakdownLogger("io-boundary-error");
 
 /**
  * I/O境界エラーハンドリングテスト群
- * 
+ *
  * システム境界でのエラー処理信頼性を検証：
  * 1. ファイルアクセス権限エラーの適切な処理
  * 2. ディスク容量不足エラーの対応
@@ -66,7 +70,7 @@ class ErrorScenarioManager {
       await ensureDir(tempDir);
       const linkPath = join(tempDir, "broken_link");
       const targetPath = join(tempDir, "nonexistent_target");
-      
+
       // 壊れたシンボリックリンクを作成
       await Deno.symlink(targetPath, linkPath);
       await Deno.readTextFile(linkPath);
@@ -109,7 +113,7 @@ Deno.test("I/O Boundary Error: File permission error handling", async () => {
 
   for (const scenario of permissionScenarios) {
     const result = await errorManager.executeScenario(scenario);
-    
+
     logger.debug(`権限エラーシナリオ${scenario}結果`, {
       scenario,
       expectError: true,
@@ -120,17 +124,19 @@ Deno.test("I/O Boundary Error: File permission error handling", async () => {
 
     // エラーが適切に発生することを確認
     assertEquals(result.success, false, `Scenario ${scenario} should fail with permission error`);
-    
+
     if (result.error) {
       // 権限関連のエラーであることを確認
-      const isPermissionError = 
-        result.error.name === "PermissionDenied" ||
+      const isPermissionError = result.error.name === "PermissionDenied" ||
         result.error.message.toLowerCase().includes("permission") ||
         result.error.message.toLowerCase().includes("access") ||
         result.error.message.toLowerCase().includes("no such file or directory");
-      
-      assertEquals(isPermissionError, true, 
-        `Error should be permission-related: ${result.error.message}`);
+
+      assertEquals(
+        isPermissionError,
+        true,
+        `Error should be permission-related: ${result.error.message}`,
+      );
     }
   }
 });
@@ -151,10 +157,10 @@ Deno.test("I/O Boundary Error: File system operation error recovery", async () =
         name: "temporary_file_lock",
         operation: async () => {
           const filePath = join(testDir, "locked_file.txt");
-          
+
           // ファイルを作成してロック状態をシミュレート
           const file1 = await Deno.open(filePath, { create: true, write: true });
-          
+
           try {
             // 同じファイルに同時書き込みを試行（エラーを引き起こす可能性）
             const file2 = await Deno.open(filePath, { write: true, truncate: true });
@@ -169,7 +175,7 @@ Deno.test("I/O Boundary Error: File system operation error recovery", async () =
         recovery: async () => {
           // リトライによる復旧
           const filePath = join(testDir, "locked_file.txt");
-          await new Promise(resolve => setTimeout(resolve, 100)); // 待機
+          await new Promise((resolve) => setTimeout(resolve, 100)); // 待機
           await Deno.writeTextFile(filePath, "recovery successful");
           const content = await Deno.readTextFile(filePath);
           return content === "recovery successful";
@@ -203,7 +209,7 @@ Deno.test("I/O Boundary Error: File system operation error recovery", async () =
       } catch (error) {
         operationFailed = true;
         const err = error as Error;
-        
+
         logger.debug(`シナリオ${scenario.name}でエラー発生`, {
           scenario: scenario.name,
           error: err.message,
@@ -214,13 +220,12 @@ Deno.test("I/O Boundary Error: File system operation error recovery", async () =
       // 復旧操作の実行
       try {
         recoverySuccessful = await scenario.recovery();
-        
+
         logger.debug(`シナリオ${scenario.name}復旧結果`, {
           scenario: scenario.name,
           operationFailed,
           recoverySuccessful,
         });
-        
       } catch (error) {
         const err = error as Error;
         logger.error(`シナリオ${scenario.name}復旧失敗`, {
@@ -230,10 +235,12 @@ Deno.test("I/O Boundary Error: File system operation error recovery", async () =
       }
 
       // 復旧が成功することを確認（操作が失敗しても復旧は可能であるべき）
-      assertEquals(recoverySuccessful, true, 
-        `Recovery should succeed for scenario ${scenario.name}`);
+      assertEquals(
+        recoverySuccessful,
+        true,
+        `Recovery should succeed for scenario ${scenario.name}`,
+      );
     }
-
   } finally {
     // クリーンアップ
     try {
@@ -276,28 +283,27 @@ Deno.test("I/O Boundary Error: Concurrent access error handling", async () => {
         try {
           // 競合状態を引き起こす可能性のある操作
           const content = `Operation ${operationId} content at ${Date.now()}`;
-          
+
           // ファイルの排他制御なしでの書き込み
           await Deno.writeTextFile(sharedResource, content);
-          
+
           // 読み込みで内容確認
           const readContent = await Deno.readTextFile(sharedResource);
           success = readContent.includes(`Operation ${operationId}`);
-          
         } catch (err) {
           const e = err as Error;
           error = e.message;
-          
+
           // エラー発生時の復旧処理
           recoveryAttempted = true;
-          
+
           try {
             // リトライによる復旧
-            await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+            await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
             const retryContent = `Retry ${operationId} at ${Date.now()}`;
             await Deno.writeTextFile(sharedResource, retryContent);
             recoverySuccessful = true;
-          } catch (retryErr) {
+          } catch (_retryErr) {
             // 復旧も失敗
             recoverySuccessful = false;
           }
@@ -314,14 +320,14 @@ Deno.test("I/O Boundary Error: Concurrent access error handling", async () => {
     });
 
     // すべての操作を並行実行
-    const results = await Promise.all(operations.map(op => op()));
+    const results = await Promise.all(operations.map((op) => op()));
     errorHandlingResults.push(...results);
 
     // エラーハンドリング結果の分析
-    const successfulOperations = results.filter(r => r.success);
-    const failedOperations = results.filter(r => !r.success);
-    const recoveryAttempts = results.filter(r => r.recoveryAttempted);
-    const successfulRecoveries = results.filter(r => r.recoverySuccessful);
+    const successfulOperations = results.filter((r) => r.success);
+    const failedOperations = results.filter((r) => !r.success);
+    const recoveryAttempts = results.filter((r) => r.recoveryAttempted);
+    const successfulRecoveries = results.filter((r) => r.recoverySuccessful);
 
     logger.debug("同時アクセスエラーハンドリング結果", {
       totalOperations: results.length,
@@ -330,21 +336,23 @@ Deno.test("I/O Boundary Error: Concurrent access error handling", async () => {
       recoveryAttempts: recoveryAttempts.length,
       successfulRecoveries: successfulRecoveries.length,
       overallSuccessRate: `${(successfulOperations.length / results.length * 100).toFixed(1)}%`,
-      recoverySuccessRate: recoveryAttempts.length > 0 ? 
-        `${(successfulRecoveries.length / recoveryAttempts.length * 100).toFixed(1)}%` : "N/A",
+      recoverySuccessRate: recoveryAttempts.length > 0
+        ? `${(successfulRecoveries.length / recoveryAttempts.length * 100).toFixed(1)}%`
+        : "N/A",
     });
 
     // エラー処理の有効性を確認
     // 完全な成功は期待しないが、適切なエラーハンドリングが機能することを確認
-    assertEquals(results.length, concurrentOperations, 
-      "All operations should complete");
-    
+    assertEquals(results.length, concurrentOperations, "All operations should complete");
+
     // 復旧試行があった場合、復旧成功率が適切であることを確認
     if (recoveryAttempts.length > 0) {
-      assertEquals(successfulRecoveries.length >= recoveryAttempts.length * 0.5, true,
-        "At least 50% of recovery attempts should succeed");
+      assertEquals(
+        successfulRecoveries.length >= recoveryAttempts.length * 0.5,
+        true,
+        "At least 50% of recovery attempts should succeed",
+      );
     }
-
   } finally {
     // クリーンアップ
     try {
@@ -376,7 +384,7 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
             metadata: { created: new Date().toISOString() },
           });
           await Deno.writeTextFile(filePath, originalContent);
-          
+
           // ファイルを途中で切断してデータ破損をシミュレート
           const file = await Deno.open(filePath, { write: true });
           await file.truncate(originalContent.length / 2);
@@ -397,7 +405,9 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
         setup: async (filePath: string) => {
           // 無効なUTF-8シーケンスを含むデータを作成
           const invalidBytes = new Uint8Array([
-            0xFF, 0xFE, 0xFD, // 無効なUTF-8バイト
+            0xFF,
+            0xFE,
+            0xFD, // 無効なUTF-8バイト
             ...new TextEncoder().encode("valid text after invalid bytes"),
           ]);
           await Deno.writeFile(filePath, invalidBytes);
@@ -415,12 +425,12 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
         name: "partial_write",
         setup: async (filePath: string) => {
           const largeData = "x".repeat(10000);
-          
+
           // 書き込み途中でのエラーをシミュレート
           const file = await Deno.open(filePath, { create: true, write: true });
           const encoder = new TextEncoder();
           const data = encoder.encode(largeData);
-          
+
           // 半分だけ書き込んで停止
           await file.write(data.slice(0, data.length / 2));
           file.close();
@@ -439,13 +449,13 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
 
     for (const scenario of corruptionScenarios) {
       const filePath = join(testDir, `${scenario.name}_test.txt`);
-      
+
       // データ破損のセットアップ
       await scenario.setup(filePath);
-      
+
       // 破損データの検出
       const validationResult = await scenario.validate(filePath);
-      
+
       logger.debug(`データ破損シナリオ${scenario.name}結果`, {
         scenario: scenario.name,
         validationResult,
@@ -454,7 +464,7 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
       // 復旧処理の実装
       if (!validationResult.valid) {
         let recoverySuccessful = false;
-        
+
         try {
           // バックアップからの復旧をシミュレート
           const backupContent = JSON.stringify({
@@ -462,19 +472,18 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
             data: ["backup-item-1", "backup-item-2"],
             metadata: { created: new Date().toISOString(), restored: true },
           });
-          
+
           const backupPath = `${filePath}.backup`;
           await Deno.writeTextFile(backupPath, backupContent);
-          
+
           // バックアップから復旧
           await Deno.copyFile(backupPath, filePath);
-          
+
           // 復旧後の検証
           const recoveredContent = await Deno.readTextFile(filePath);
           const recoveredData = JSON.parse(recoveredContent);
-          
+
           recoverySuccessful = recoveredData.metadata?.restored === true;
-          
         } catch (error) {
           const err = error as Error;
           logger.error(`復旧処理失敗: ${scenario.name}`, {
@@ -482,18 +491,20 @@ Deno.test("I/O Boundary Error: Data corruption detection and handling", async ()
             error: err.message,
           });
         }
-        
+
         logger.debug(`データ復旧結果: ${scenario.name}`, {
           scenario: scenario.name,
           recoverySuccessful,
         });
-        
+
         // 復旧処理が実装されていることを確認
-        assertEquals(typeof recoverySuccessful, "boolean",
-          "Recovery should be attempted for corrupted data");
+        assertEquals(
+          typeof recoverySuccessful,
+          "boolean",
+          "Recovery should be attempted for corrupted data",
+        );
       }
     }
-
   } finally {
     // クリーンアップ
     try {
@@ -519,12 +530,12 @@ Deno.test("I/O Boundary Error: Error propagation and logging consistency", async
       this.logger = new BreakdownLogger(moduleName);
     }
 
-    async lowLevelOperation(shouldFail = false): Promise<string> {
+    lowLevelOperation(shouldFail = false): Promise<string> {
       try {
         if (shouldFail) {
           throw new Error("Low-level I/O operation failed");
         }
-        return "success";
+        return Promise.resolve("success");
       } catch (error) {
         const err = error as Error;
         this.errorHistory.push({ level: "low", error: err, timestamp: Date.now() });
@@ -532,7 +543,7 @@ Deno.test("I/O Boundary Error: Error propagation and logging consistency", async
           error: err.message,
           level: "low",
         });
-        throw new Error(`Low-level failure: ${err.message}`);
+        return Promise.reject(new Error(`Low-level failure: ${err.message}`));
       }
     }
 
@@ -584,37 +595,41 @@ Deno.test("I/O Boundary Error: Error propagation and logging consistency", async
   // 正常ケースのテスト
   const successResult = await chain.highLevelOperation(false);
   assertEquals(typeof successResult, "string", "Normal operation should succeed");
-  assertEquals(chain.getErrorHistory().length, 0, "No errors should be recorded for successful operation");
+  assertEquals(
+    chain.getErrorHistory().length,
+    0,
+    "No errors should be recorded for successful operation",
+  );
 
   // エラー伝播のテスト
   chain.clearHistory();
-  
+
   try {
     await chain.highLevelOperation(true);
     assertEquals(true, false, "Error case should throw");
   } catch (error) {
     const err = error as Error;
     assertStringIncludes(err.message, "High-level failure", "Error should propagate to high level");
-    
+
     const errorHistory = chain.getErrorHistory();
     assertEquals(errorHistory.length, 3, "Should have errors from all three levels");
-    
+
     // エラーレベルの順序確認
     assertEquals(errorHistory[0].level, "low", "First error should be from low level");
     assertEquals(errorHistory[1].level, "mid", "Second error should be from mid level");
     assertEquals(errorHistory[2].level, "high", "Third error should be from high level");
-    
+
     // エラータイムスタンプの順序確認
     assertEquals(
       errorHistory[0].timestamp <= errorHistory[1].timestamp &&
-      errorHistory[1].timestamp <= errorHistory[2].timestamp,
+        errorHistory[1].timestamp <= errorHistory[2].timestamp,
       true,
-      "Error timestamps should be in chronological order"
+      "Error timestamps should be in chronological order",
     );
-    
+
     logger.debug("エラー伝播チェーン検証完了", {
       totalErrors: errorHistory.length,
-      errorLevels: errorHistory.map(e => e.level),
+      errorLevels: errorHistory.map((e) => e.level),
       propagationCorrect: true,
     });
   }

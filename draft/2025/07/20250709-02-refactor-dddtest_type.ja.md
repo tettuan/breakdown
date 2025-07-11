@@ -38,7 +38,7 @@
 
 ### 全ての変更が完了した後
 
-10. `deno task ci:error-files` を通して、passするまでテストを完成させる
+10. `deno task ci` を通して、passするまでテストを完成させる
 
 ## 完了条件
 

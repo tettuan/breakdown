@@ -1,12 +1,12 @@
 /**
  * @fileoverview Totality pattern compliance tests for LayerType
- * 
+ *
  * This test file verifies that LayerType follows the Totality principle:
  * - Complete error handling with Result type
  * - No partial functions
  * - Exhaustive pattern matching
  * - Smart constructor patterns with explicit error cases
- * 
+ *
  * @module lib/types/1_totality_layer_type_test
  */
 
@@ -19,7 +19,7 @@ import type { ValidationError } from "./mod.ts";
 const createTwoParamsResult = (
   layerType: string,
   demonstrativeType: string = "to",
-  options: Record<string, unknown> = {}
+  options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
   demonstrativeType,
@@ -81,7 +81,7 @@ Deno.test("1_totality: LayerType.createOrError validates all input conditions", 
 
   // Test invalid result type
   const invalidTypeResult = {
-    type: "one" as any,
+    type: "one" as unknown,
     demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
@@ -102,7 +102,7 @@ Deno.test("1_totality: LayerType.createOrError validates all input conditions", 
     demonstrativeType: "to",
     params: ["to", ""],
     options: {},
-  } as any;
+  } as unknown as TwoParams_Result;
   const missingFieldLayer = LayerType.createOrError(missingFieldResult);
   assertEquals(missingFieldLayer.ok, false);
   if (!missingFieldLayer.ok) {
@@ -114,7 +114,7 @@ Deno.test("1_totality: LayerType.createOrError validates all input conditions", 
   }
 
   // Test null result
-  const nullLayer = LayerType.createOrError(null as any);
+  const nullLayer = LayerType.createOrError(null as unknown as TwoParams_Result);
   assertEquals(nullLayer.ok, false);
   if (!nullLayer.ok) {
     assertEquals(nullLayer.error.kind, "InvalidInput");
@@ -125,7 +125,7 @@ Deno.test("1_totality: LayerType.createOrError validates pattern matching", () =
   // Create a pattern for allowed layers
   const patternResult = TwoParamsLayerTypePattern.createOrError("^(project|issue|task|bugs|temp)$");
   assertEquals(patternResult.ok, true);
-  
+
   if (patternResult.ok) {
     const pattern = patternResult.data;
 
@@ -153,7 +153,7 @@ Deno.test("1_totality: LayerType.createOrError validates pattern matching", () =
           assertEquals(layerResult.error.value, layer);
           assertEquals(
             layerResult.error.reason,
-            `Value does not match required pattern: ^(project|issue|task|bugs|temp)$`
+            `Value does not match required pattern: ^(project|issue|task|bugs|temp)$`,
           );
         }
       }
@@ -201,7 +201,7 @@ Deno.test("1_totality: LayerType.createOrError without pattern allows any valid 
 
 Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
   // This test verifies that all error cases are handled with specific error types
-  
+
   function handleLayerError(error: ValidationError): string {
     switch (error.kind) {
       case "InvalidInput":
@@ -226,17 +226,20 @@ Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
         return `Config validation failed: ${error.errors.join(", ")}`;
       case "UnsupportedParamsType":
         return `Unsupported params type: ${error.type}`;
-      default:
+      default: {
         const _exhaustive: never = error;
         throw new Error(`Unhandled error kind: ${_exhaustive}`);
+      }
     }
   }
 
   // Test each error type
   const errorCases = [
-    LayerType.createOrError(null as any),
-    LayerType.createOrError({ type: "one" } as any),
-    LayerType.createOrError({ type: "two", demonstrativeType: "to" } as any),
+    LayerType.createOrError(null as unknown as TwoParams_Result),
+    LayerType.createOrError({ type: "one" } as unknown as TwoParams_Result),
+    LayerType.createOrError(
+      { type: "two", demonstrativeType: "to" } as unknown as TwoParams_Result,
+    ),
   ];
 
   for (const result of errorCases) {
@@ -251,7 +254,7 @@ Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
 
 Deno.test("1_totality: Pattern and LayerType composition maintains totality", () => {
   // Test that composing pattern validation with layer creation maintains totality
-  
+
   // Chain pattern creation and layer creation
   const patternResult = TwoParamsLayerTypePattern.createOrError("^[a-z]+(-[a-z]+)*$");
   assertEquals(patternResult.ok, true);
@@ -270,7 +273,7 @@ Deno.test("1_totality: Pattern and LayerType composition maintains totality", ()
     for (const { value, shouldPass } of testCases) {
       const result = createTwoParamsResult(value);
       const layerResult = LayerType.createOrError(result, patternResult.data);
-      
+
       assertEquals(layerResult.ok, shouldPass);
       if (layerResult.ok) {
         assertEquals(layerResult.data.value, value);
@@ -289,11 +292,11 @@ Deno.test("1_totality: Legacy create method maintains backward compatibility", (
   // The original create method should still work without Result type
   const result = createTwoParamsResult("legacy");
   const layer = LayerType.create(result);
-  
+
   assertExists(layer);
   assertEquals(layer.value, "legacy");
   assertEquals(layer instanceof LayerType, true);
-  
+
   // It should accept any valid TwoParams_Result without validation
   const emptyLayer = LayerType.create(createTwoParamsResult(""));
   assertEquals(emptyLayer.value, "");
@@ -301,17 +304,17 @@ Deno.test("1_totality: Legacy create method maintains backward compatibility", (
 
 Deno.test("1_totality: createOrError provides better error context than create", () => {
   // Demonstrate the advantage of Result-based error handling
-  
+
   const invalidInput = {
     type: "two",
     demonstrativeType: "to",
     layerType: null,
-  } as any;
-  
+  } as unknown as TwoParams_Result;
+
   // Legacy create would just return an object with null value
   const legacyLayer = LayerType.create(invalidInput);
   assertEquals(legacyLayer.value, null);
-  
+
   // createOrError provides detailed error information
   const resultLayer = LayerType.createOrError(invalidInput);
   assertEquals(resultLayer.ok, false);
@@ -326,10 +329,10 @@ Deno.test("1_totality: createOrError provides better error context than create",
 
 Deno.test("1_totality: LayerType hierarchy methods work with createOrError", () => {
   // Test that additional LayerType methods work correctly with createOrError
-  
+
   const standardLayers = ["project", "issue", "task"];
   const nonStandardLayers = ["bugs", "temp", "custom"];
-  
+
   // Test standard hierarchy layers
   for (const layer of standardLayers) {
     const result = createTwoParamsResult(layer);
@@ -340,7 +343,7 @@ Deno.test("1_totality: LayerType hierarchy methods work with createOrError", () 
       assertEquals(layerResult.data.getHierarchyLevel() > 0, true);
     }
   }
-  
+
   // Test non-standard layers
   for (const layer of nonStandardLayers) {
     const result = createTwoParamsResult(layer);
@@ -365,28 +368,112 @@ Deno.test("1_totality: LayerType - handles all valid TwoParams_Result without ex
   // Totality principle: All valid inputs must be handled without throwing
   const testCases: TwoParams_Result[] = [
     // Standard hierarchy types
-    { type: "two", demonstrativeType: "to", layerType: "project", options: {}, params: ["to", "project"] },
-    { type: "two", demonstrativeType: "to", layerType: "issue", options: {}, params: ["to", "issue"] },
-    { type: "two", demonstrativeType: "to", layerType: "task", options: {}, params: ["to", "task"] },
-    
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "project",
+      options: {},
+      params: ["to", "project"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "issue",
+      options: {},
+      params: ["to", "issue"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "task",
+      options: {},
+      params: ["to", "task"],
+    },
+
     // Special types
-    { type: "two", demonstrativeType: "summary", layerType: "bugs", options: {}, params: ["summary", "bugs"] },
-    { type: "two", demonstrativeType: "defect", layerType: "temp", options: {}, params: ["defect", "temp"] },
-    
+    {
+      type: "two",
+      demonstrativeType: "summary",
+      layerType: "bugs",
+      options: {},
+      params: ["summary", "bugs"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "defect",
+      layerType: "temp",
+      options: {},
+      params: ["defect", "temp"],
+    },
+
     // Extended types (environment-specific)
-    { type: "two", demonstrativeType: "to", layerType: "epic", options: {}, params: ["to", "epic"] },
-    { type: "two", demonstrativeType: "to", layerType: "system", options: {}, params: ["to", "system"] },
-    { type: "two", demonstrativeType: "to", layerType: "todos", options: {}, params: ["to", "todos"] },
-    { type: "two", demonstrativeType: "to", layerType: "comments", options: {}, params: ["to", "comments"] },
-    { type: "two", demonstrativeType: "to", layerType: "notes", options: {}, params: ["to", "notes"] },
-    
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "epic",
+      options: {},
+      params: ["to", "epic"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "system",
+      options: {},
+      params: ["to", "system"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "todos",
+      options: {},
+      params: ["to", "todos"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "comments",
+      options: {},
+      params: ["to", "comments"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "notes",
+      options: {},
+      params: ["to", "notes"],
+    },
+
     // Edge cases that must be handled
     { type: "two", demonstrativeType: "to", layerType: "", options: {}, params: ["to", ""] }, // Empty string
-    { type: "two", demonstrativeType: "to", layerType: "unknown_type", options: {}, params: ["to", "unknown_type"] }, // Unknown type
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "unknown_type",
+      options: {},
+      params: ["to", "unknown_type"],
+    }, // Unknown type
     { type: "two", demonstrativeType: "to", layerType: "123", options: {}, params: ["to", "123"] }, // Numeric string
-    { type: "two", demonstrativeType: "to", layerType: "with-dash", options: {}, params: ["to", "with-dash"] }, // Special characters
-    { type: "two", demonstrativeType: "to", layerType: "with_underscore", options: {}, params: ["to", "with_underscore"] },
-    { type: "two", demonstrativeType: "to", layerType: "UPPERCASE", options: {}, params: ["to", "UPPERCASE"] },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "with-dash",
+      options: {},
+      params: ["to", "with-dash"],
+    }, // Special characters
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "with_underscore",
+      options: {},
+      params: ["to", "with_underscore"],
+    },
+    {
+      type: "two",
+      demonstrativeType: "to",
+      layerType: "UPPERCASE",
+      options: {},
+      params: ["to", "UPPERCASE"],
+    },
   ];
 
   // Totality: Every input produces a valid output without throwing
@@ -408,7 +495,7 @@ Deno.test("1_totality: TwoParamsLayerTypePattern - total function for pattern cr
     { input: "bugs?", expected: true },
     { input: "(temp|tmp)", expected: true },
     { input: "[a-z]+", expected: true },
-    
+
     // Invalid patterns
     { input: "[", expected: false }, // Unclosed bracket
     { input: "(", expected: false }, // Unclosed parenthesis
@@ -417,10 +504,10 @@ Deno.test("1_totality: TwoParamsLayerTypePattern - total function for pattern cr
     { input: "*", expected: false }, // Invalid quantifier
     { input: "(?P<name>)", expected: false }, // Python-style named group
   ];
-  
+
   for (const { input, expected } of testCases) {
     const pattern = TwoParamsLayerTypePattern.create(input);
-    
+
     if (expected) {
       assertExists(pattern);
       assertEquals(pattern instanceof TwoParamsLayerTypePattern, true);

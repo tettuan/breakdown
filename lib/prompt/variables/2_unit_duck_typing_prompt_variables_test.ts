@@ -33,15 +33,21 @@ Deno.test("DuckTypingPromptVariables - fromRecord validates input", () => {
   assertEquals(invalidKey.ok, false);
 
   // Test null value
-  const nullValue = DuckTypingPromptVariables.fromRecord({ key: null } as unknown as { key: string });
+  const nullValue = DuckTypingPromptVariables.fromRecord(
+    { key: null } as unknown as { key: string },
+  );
   assertEquals(nullValue.ok, false);
 
   // Test undefined value
-  const undefinedValue = DuckTypingPromptVariables.fromRecord({ key: undefined } as unknown as { key: string });
+  const undefinedValue = DuckTypingPromptVariables.fromRecord(
+    { key: undefined } as unknown as { key: string },
+  );
   assertEquals(undefinedValue.ok, false);
 
   // Test non-string value
-  const nonStringValue = DuckTypingPromptVariables.fromRecord({ key: 123 } as unknown as { key: string });
+  const nonStringValue = DuckTypingPromptVariables.fromRecord(
+    { key: 123 } as unknown as { key: string },
+  );
   assertEquals(nonStringValue.ok, false);
 });
 
@@ -468,7 +474,7 @@ Deno.test("DuckTypingPromptVariables - error handling for edge cases", () => {
   assertEquals(vars.ok, true);
 
   if (vars.ok) {
-    const invalidMap = vars.data.map((_key, _value) => 123 as any); // Returns number instead of string
+    const invalidMap = vars.data.map((_key, _value) => 123 as unknown as string); // Returns number instead of string
     assertEquals(invalidMap.ok, false);
   }
 

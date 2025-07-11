@@ -141,13 +141,15 @@ export class LayerTypeFactory {
         ok: true,
         data: layerType,
       };
-    } catch (_error) {
+    } catch (error) {
       return {
         ok: false,
         error: {
           kind: "ValidationFailed",
           input: result.layerType,
-          pattern: "TwoParams_Result validation",
+          pattern: `TwoParams_Result validation: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         },
       };
     }

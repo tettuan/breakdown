@@ -10,16 +10,19 @@
  * @module commands/prompt_file_generator_structure_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "../deps.ts";
+import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";
-import type { CommandResult } from "./mod.ts";
+import {
+  PromptFileErrorType as _PromptFileErrorType,
+  PromptFileGenerator,
+} from "./prompt_file_generator.ts";
+import type { CommandResult as _CommandResult } from "./mod.ts";
 
 const logger = new BreakdownLogger("prompt-generator-structure");
 
 describe("Structure: PromptFileGenerator Method Contracts", () => {
-  it("should maintain validateInputFile contract", async () => {
+  it("should maintain validateInputFile contract", () => {
     logger.debug("Testing validateInputFile method contract");
 
     const generator = new PromptFileGenerator();
@@ -62,7 +65,7 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
     logger.debug("validateInputFile contract verification completed");
   });
 
-  it("should maintain generateWithPrompt parameter structure", async () => {
+  it("should maintain generateWithPrompt parameter structure", () => {
     logger.debug("Testing generateWithPrompt parameter structure");
 
     const generator = new PromptFileGenerator();
@@ -107,7 +110,7 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
     logger.debug("generateWithPrompt parameter structure verified");
   });
 
-  it("should structure options parameter correctly", async () => {
+  it("should structure options parameter correctly", () => {
     logger.debug("Testing options parameter structure");
 
     const generator = new PromptFileGenerator();
@@ -141,7 +144,7 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
 });
 
 describe("Structure: Data Flow Patterns", () => {
-  it("should transform parameters into CLI params structure", async () => {
+  it("should transform parameters into CLI params structure", () => {
     logger.debug("Testing parameter transformation flow");
 
     const generator = new PromptFileGenerator();
@@ -184,7 +187,7 @@ describe("Structure: Data Flow Patterns", () => {
     logger.debug("Parameter transformation flow verified");
   });
 
-  it("should follow factory creation and validation flow", async () => {
+  it("should follow factory creation and validation flow", () => {
     logger.debug("Testing factory creation and validation flow");
 
     const generator = new PromptFileGenerator();
@@ -218,7 +221,7 @@ describe("Structure: Data Flow Patterns", () => {
     logger.debug("Factory creation and validation flow verified");
   });
 
-  it("should handle stdin input flow separately", async () => {
+  it("should handle stdin input flow separately", () => {
     logger.debug("Testing stdin input flow handling");
 
     const generator = new PromptFileGenerator();
@@ -252,7 +255,7 @@ describe("Structure: Data Flow Patterns", () => {
 });
 
 describe("Structure: Error Handling Patterns", () => {
-  it("should structure error returns consistently", async () => {
+  it("should structure error returns consistently", () => {
     logger.debug("Testing error return structure consistency");
 
     const generator = new PromptFileGenerator();
@@ -295,7 +298,7 @@ describe("Structure: Error Handling Patterns", () => {
     logger.debug("Error return structure consistency verified");
   });
 
-  it("should map errors to appropriate error types", async () => {
+  it("should map errors to appropriate error types", () => {
     logger.debug("Testing error type mapping");
 
     const generator = new PromptFileGenerator();
@@ -325,7 +328,7 @@ describe("Structure: Error Handling Patterns", () => {
     logger.debug("Error type mapping verified");
   });
 
-  it("should handle validation errors from factory", async () => {
+  it("should handle validation errors from factory", () => {
     logger.debug("Testing factory validation error handling");
 
     const generator = new PromptFileGenerator();
@@ -346,7 +349,7 @@ describe("Structure: Error Handling Patterns", () => {
 });
 
 describe("Structure: Template Processing Integration", () => {
-  it("should structure adapter creation and usage", async () => {
+  it("should structure adapter creation and usage", () => {
     logger.debug("Testing adapter creation structure");
 
     const generator = new PromptFileGenerator();
@@ -386,7 +389,7 @@ describe("Structure: Template Processing Integration", () => {
     logger.debug("Adapter creation structure verified");
   });
 
-  it("should handle adapter results properly", async () => {
+  it("should handle adapter results properly", () => {
     logger.debug("Testing adapter result handling");
 
     const generator = new PromptFileGenerator();
@@ -428,7 +431,7 @@ describe("Structure: Template Processing Integration", () => {
 });
 
 describe("Structure: File System Validation", () => {
-  it("should structure file existence checks", async () => {
+  it("should structure file existence checks", () => {
     logger.debug("Testing file existence check structure");
 
     const generator = new PromptFileGenerator();
@@ -465,7 +468,7 @@ describe("Structure: File System Validation", () => {
     logger.debug("File existence check structure verified");
   });
 
-  it("should structure validation error messages", async () => {
+  it("should structure validation error messages", () => {
     logger.debug("Testing validation error message structure");
 
     const generator = new PromptFileGenerator();
@@ -493,7 +496,7 @@ describe("Structure: File System Validation", () => {
 });
 
 describe("Structure: CommandResult Interface Compliance", () => {
-  it("should return CommandResult with all required fields", async () => {
+  it("should return CommandResult with all required fields", () => {
     logger.debug("Testing CommandResult interface compliance");
 
     const generator = new PromptFileGenerator();

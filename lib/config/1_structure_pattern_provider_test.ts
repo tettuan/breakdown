@@ -26,7 +26,7 @@ Deno.test("Structure: ConfigPatternProvider class structure", () => {
   // モックBreakdownConfigを作成
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -51,7 +51,7 @@ Deno.test("Structure: ConfigPatternProvider class structure", () => {
 Deno.test("Structure: Pattern cache mechanism structure", () => {
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -111,7 +111,7 @@ Deno.test("Structure: Factory method structure", () => {
 Deno.test("Structure: Pattern getter methods consistency", () => {
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -146,7 +146,7 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
       directivePattern: "test-pattern",
       layerTypePattern: "test-layer-pattern",
     }),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -159,7 +159,7 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
         layer: { pattern: "nested-layer-pattern" },
       },
     }),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const providerNested = new ConfigPatternProvider(_mockConfigNested);
@@ -178,7 +178,7 @@ Deno.test("Structure: Configuration extraction responsibility separation", () =>
 Deno.test("Structure: Debug information structure", () => {
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -217,7 +217,7 @@ Deno.test("Structure: Debug information structure", () => {
 Deno.test("Structure: hasValidPatterns method logic structure", () => {
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);
@@ -253,7 +253,7 @@ Deno.test("Structure: Error handling structural consistency", () => {
     getConfig: () => {
       throw new Error("Config error");
     },
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfigWithError);
@@ -283,7 +283,7 @@ Deno.test("Structure: Error handling structural consistency", () => {
 Deno.test("Structure: Responsibility cohesion", () => {
   const _mockConfig = {
     getConfig: () => ({}),
-    loadConfig: async () => {},
+    loadConfig: () => {},
   } as unknown as BreakdownConfig;
 
   const provider = new ConfigPatternProvider(_mockConfig);

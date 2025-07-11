@@ -1,6 +1,6 @@
 /**
  * @fileoverview Infrastructure abstractions for Dependency Injection
- * 
+ *
  * This module provides interface abstractions for external dependencies
  * following the Dependency Inversion Principle. These interfaces allow
  * for proper dependency injection and testability.
@@ -17,22 +17,22 @@ export interface FileSystemProvider {
    * Get file or directory information
    */
   stat(path: string): Promise<Result<Deno.FileInfo, FileSystemError>>;
-  
+
   /**
    * Read text file contents
    */
   readTextFile(path: string): Promise<Result<string, FileSystemError>>;
-  
+
   /**
    * Write text to file
    */
   writeTextFile(path: string, content: string): Promise<Result<void, FileSystemError>>;
-  
+
   /**
    * Create directory
    */
   mkdir(path: string, options?: Deno.MkdirOptions): Promise<Result<void, FileSystemError>>;
-  
+
   /**
    * Check if path exists
    */
@@ -48,12 +48,12 @@ export interface ConfigurationRepository {
    * Load configuration from file
    */
   load<T>(path: string): Promise<Result<T, ConfigurationError>>;
-  
+
   /**
    * Save configuration to file
    */
   save<T>(path: string, config: T): Promise<Result<void, ConfigurationError>>;
-  
+
   /**
    * Check if configuration exists
    */
@@ -69,12 +69,12 @@ export interface TemplateRepository {
    * Deploy templates to target directory
    */
   deployTemplates(targetDir: string): Promise<Result<void, TemplateError>>;
-  
+
   /**
    * Get template content by name
    */
   getTemplate(name: string): Promise<Result<string, TemplateError>>;
-  
+
   /**
    * List available templates
    */
@@ -90,17 +90,17 @@ export interface PathResolver {
    * Resolve relative path to absolute
    */
   resolve(...paths: string[]): string;
-  
+
   /**
    * Get directory name
    */
   dirname(path: string): string;
-  
+
   /**
    * Join path segments
    */
   join(...paths: string[]): string;
-  
+
   /**
    * Check if path is absolute
    */
@@ -121,7 +121,11 @@ export interface FileSystemError {
  * Configuration error types
  */
 export interface ConfigurationError {
-  kind: "ConfigurationNotFound" | "InvalidConfiguration" | "ConfigurationParseError" | "ConfigurationWriteError";
+  kind:
+    | "ConfigurationNotFound"
+    | "InvalidConfiguration"
+    | "ConfigurationParseError"
+    | "ConfigurationWriteError";
   path?: string;
   message: string;
   cause?: unknown;
@@ -146,17 +150,17 @@ export interface ServiceContainer {
    * Get file system provider instance
    */
   getFileSystemProvider(): FileSystemProvider;
-  
+
   /**
    * Get configuration repository instance
    */
   getConfigurationRepository(): ConfigurationRepository;
-  
+
   /**
    * Get template repository instance
    */
   getTemplateRepository(): TemplateRepository;
-  
+
   /**
    * Get path resolver instance
    */
@@ -184,7 +188,7 @@ export class DenoFileSystemProvider implements FileSystemProvider {
       };
     }
   }
-  
+
   async readTextFile(path: string): Promise<Result<string, FileSystemError>> {
     try {
       const content = await Deno.readTextFile(path);
@@ -201,7 +205,7 @@ export class DenoFileSystemProvider implements FileSystemProvider {
       };
     }
   }
-  
+
   async writeTextFile(path: string, content: string): Promise<Result<void, FileSystemError>> {
     try {
       await Deno.writeTextFile(path, content);
@@ -218,7 +222,7 @@ export class DenoFileSystemProvider implements FileSystemProvider {
       };
     }
   }
-  
+
   async mkdir(path: string, options?: Deno.MkdirOptions): Promise<Result<void, FileSystemError>> {
     try {
       await Deno.mkdir(path, options);
@@ -235,7 +239,7 @@ export class DenoFileSystemProvider implements FileSystemProvider {
       };
     }
   }
-  
+
   async exists(path: string): Promise<boolean> {
     try {
       await Deno.stat(path);
@@ -244,7 +248,7 @@ export class DenoFileSystemProvider implements FileSystemProvider {
       return false;
     }
   }
-  
+
   private mapDenoError(error: unknown): FileSystemError["kind"] {
     if (error instanceof Deno.errors.NotFound) {
       return "FileNotFound";
@@ -263,14 +267,14 @@ export class DenoFileSystemProvider implements FileSystemProvider {
 export class MockFileSystemProvider implements FileSystemProvider {
   private files: Map<string, string> = new Map();
   private directories: Set<string> = new Set();
-  
+
   constructor(initialFiles: Record<string, string> = {}) {
     for (const [path, content] of Object.entries(initialFiles)) {
       this.files.set(path, content);
     }
   }
-  
-  async stat(path: string): Promise<Result<Deno.FileInfo, FileSystemError>> {
+
+  stat(path: string): Promise<Result<Deno.FileInfo, FileSystemError>> {
     if (this.files.has(path)) {
       const fileInfo: Deno.FileInfo = {
         isFile: true,
@@ -295,9 +299,9 @@ export class MockFileSystemProvider implements FileSystemProvider {
         isFifo: false,
         isSocket: false,
       };
-      return { ok: true, data: fileInfo };
+      return Promise.resolve({ ok: true, data: fileInfo });
     }
-    
+
     if (this.directories.has(path)) {
       const fileInfo: Deno.FileInfo = {
         isFile: false,
@@ -322,56 +326,56 @@ export class MockFileSystemProvider implements FileSystemProvider {
         isFifo: false,
         isSocket: false,
       };
-      return { ok: true, data: fileInfo };
+      return Promise.resolve({ ok: true, data: fileInfo });
     }
-    
-    return {
+
+    return Promise.resolve({
       ok: false,
       error: {
         kind: "FileNotFound",
         path,
         message: `File or directory not found: ${path}`,
       },
-    };
+    });
   }
-  
-  async readTextFile(path: string): Promise<Result<string, FileSystemError>> {
+
+  readTextFile(path: string): Promise<Result<string, FileSystemError>> {
     const content = this.files.get(path);
     if (content !== undefined) {
-      return { ok: true, data: content };
+      return Promise.resolve({ ok: true, data: content });
     }
-    
-    return {
+
+    return Promise.resolve({
       ok: false,
       error: {
         kind: "FileNotFound",
         path,
         message: `File not found: ${path}`,
       },
-    };
+    });
   }
-  
-  async writeTextFile(path: string, content: string): Promise<Result<void, FileSystemError>> {
+
+  writeTextFile(path: string, content: string): Promise<Result<void, FileSystemError>> {
     this.files.set(path, content);
-    return { ok: true, data: undefined };
+    return Promise.resolve({ ok: true, data: undefined });
   }
-  
-  async mkdir(path: string, _options?: Deno.MkdirOptions): Promise<Result<void, FileSystemError>> {
+
+  mkdir(path: string, _options?: Deno.MkdirOptions): Promise<Result<void, FileSystemError>> {
     this.directories.add(path);
-    return { ok: true, data: undefined };
+    return Promise.resolve({ ok: true, data: undefined });
   }
-  
-  async exists(path: string): Promise<boolean> {
-    return this.files.has(path) || this.directories.has(path);
+
+  exists(path: string): Promise<boolean> {
+    return Promise.resolve(this.files.has(path) || this.directories.has(path));
   }
-  
+
   /**
    * Test helper: Set file content
    */
   setFile(path: string, content: string): void {
     this.files.set(path, content);
   }
-  
+
   /**
    * Test helper: Create directory
    */

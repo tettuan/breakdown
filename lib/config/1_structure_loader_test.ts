@@ -35,7 +35,7 @@ describe("Structure: loadConfig Function Contract", () => {
     _logger.debug("Function signature verification completed");
   });
 
-  it("should maintain consistent error structure", async () => {
+  it("should maintain consistent error structure", () => {
     _logger.debug("Testing error structure consistency");
 
     // Verify error handling structure through code analysis
@@ -66,7 +66,7 @@ describe("Structure: loadConfig Function Contract", () => {
     _logger.debug("Error structure consistency verified");
   });
 
-  it("should preserve input path in error messages", async () => {
+  it("should preserve input path in error messages", () => {
     _logger.debug("Testing error message path preservation");
 
     // Verify path preservation through code analysis
@@ -129,7 +129,7 @@ describe("Structure: loadBreakdownConfig Function Contract", () => {
     _logger.debug("Function signature flexibility verified");
   });
 
-  it("should properly handle null to undefined conversion", async () => {
+  it("should properly handle null to undefined conversion", () => {
     _logger.debug("Testing null to undefined conversion");
 
     // The function should convert null configPrefix to undefined for BreakdownConfig
@@ -152,7 +152,7 @@ describe("Structure: loadBreakdownConfig Function Contract", () => {
     _logger.debug("Null to undefined conversion pattern verified");
   });
 
-  it("should maintain error handling consistency", async () => {
+  it("should maintain error handling consistency", () => {
     _logger.debug("Testing error handling consistency");
 
     // Mock a failure scenario
@@ -183,7 +183,7 @@ describe("Structure: loadBreakdownConfig Function Contract", () => {
 });
 
 describe("Structure: Data Flow and Type Safety", () => {
-  it("should maintain CustomConfig structure integrity", async () => {
+  it("should maintain CustomConfig structure integrity", () => {
     _logger.debug("Testing CustomConfig structure");
 
     // Test complete CustomConfig structure
@@ -224,7 +224,7 @@ describe("Structure: Data Flow and Type Safety", () => {
     _logger.debug("CustomConfig structure integrity verified");
   });
 
-  it("should support partial CustomConfig structures", async () => {
+  it("should support partial CustomConfig structures", () => {
     _logger.debug("Testing partial CustomConfig support");
 
     // Test various partial configurations
@@ -275,7 +275,7 @@ describe("Structure: Data Flow and Type Safety", () => {
 });
 
 describe("Structure: Integration Points and Contracts", () => {
-  it("should maintain clear contracts with external dependencies", async () => {
+  it("should maintain clear contracts with external dependencies", () => {
     _logger.debug("Testing external dependency contracts");
 
     // loadConfig depends on:
@@ -320,7 +320,7 @@ describe("Structure: Integration Points and Contracts", () => {
     _logger.debug("External dependency contracts verified");
   });
 
-  it("should handle working directory parameter appropriately", async () => {
+  it("should handle working directory parameter appropriately", () => {
     _logger.debug("Testing working directory parameter handling");
 
     // The _workingDir parameter is prefixed with underscore, indicating it's unused

@@ -21,10 +21,35 @@ import { error, ok } from "../types/result.ts";
 // Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
 
+// Type interfaces for better type safety
+interface DirectiveValueObject {
+  value: string;
+  [key: string]: unknown;
+}
+
+interface LayerValueObject {
+  value: string;
+  [key: string]: unknown;
+}
+
+interface TotalityPromptCliParams {
+  directive: DirectiveValueObject;
+  layer: LayerValueObject;
+  options?: Record<string, unknown>;
+}
+
+interface LegacyPromptCliParams {
+  demonstrativeType: string;
+  layerType: string;
+  options?: Record<string, unknown>;
+}
+
+// Remove UnknownObject type as it's no longer needed
+
 /**
  * TypeCreationResult pattern for consistent factory interface
  */
-export type TypeCreationResult<T> = 
+export type TypeCreationResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
@@ -120,7 +145,6 @@ export class InputFilePathResolver {
     return copy;
   }
 
-
   /**
    * Deep copy CLI parameters manually to avoid JSON.parse
    * @param cliParams - The CLI parameters to copy
@@ -131,31 +155,36 @@ export class InputFilePathResolver {
   ): DoubleParamsResult | TwoParams_Result {
     // Check if it's TotalityPromptCliParams by checking for directive and layer properties
     // Note: TwoParams_Result from breakdownparams may have different structure
-    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === "object" && "directive" in p && "layer" in p &&
-        p.directive && typeof p.directive === "object" && "value" in p.directive &&
-        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return Boolean(
+        "directive" in obj && "layer" in obj &&
+          obj.directive && typeof obj.directive === "object" &&
+          "value" in (obj.directive as Record<string, unknown>) &&
+          obj.layer && typeof obj.layer === "object" &&
+          "value" in (obj.layer as Record<string, unknown>),
+      );
     };
 
-    if (hasTotalityProps(cliParams)) {
+    if (hasTotalityProps(cliParams as unknown)) {
       // TotalityPromptCliParams structure
-      const copy: any = {
-        directive: cliParams.directive,
-        layer: cliParams.layer,
-        options: { ...cliParams.options },
+      const totalityParams = cliParams as unknown as TotalityPromptCliParams;
+      // Return as PromptCliParams for compatibility
+      const copy: PromptCliParams = {
+        demonstrativeType: totalityParams.directive?.value || "",
+        layerType: totalityParams.layer?.value || "",
+        options: { ...totalityParams.options },
       };
       return copy;
     } else {
       // DoubleParamsResult (PromptCliParams)
       const doubleParams = cliParams as DoubleParamsResult;
-      const copy: any = {
+      const copy: PromptCliParams = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
+        options: doubleParams.options ? { ...doubleParams.options } : {},
       };
-
-      if (doubleParams.options) {
-        copy.options = { ...doubleParams.options };
-      }
 
       return copy;
     }
@@ -295,7 +324,10 @@ export class InputFilePathResolver {
           this.name = "InputFilePathResolutionError";
         }
       }
-      throw new InputFilePathResolutionError(`Path resolution failed: ${result.error.kind} - ${errorMessage}`, result.error.kind);
+      throw new InputFilePathResolutionError(
+        `Path resolution failed: ${result.error.kind} - ${errorMessage}`,
+        result.error.kind,
+      );
     }
     return result.data.value;
   }
@@ -426,16 +458,23 @@ export class InputFilePathResolver {
    */
   private getDirectory(): string {
     // Check if it's TotalityPromptCliParams structure
-    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === "object" && "directive" in p && "layer" in p &&
-        p.directive && typeof p.directive === "object" && "value" in p.directive &&
-        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return Boolean(
+        "directive" in obj && "layer" in obj &&
+          obj.directive && typeof obj.directive === "object" &&
+          "value" in (obj.directive as Record<string, unknown>) &&
+          obj.layer && typeof obj.layer === "object" &&
+          "value" in (obj.layer as Record<string, unknown>),
+      );
     };
 
-    if (hasTotalityProps(this._cliParams)) {
-      // TotalityPromptCliParams structure - use layer.data
-      const fromLayerType = this._cliParams.options?.fromLayerType as string | undefined;
-      return fromLayerType || this._cliParams.layer.data || "";
+    if (hasTotalityProps(this._cliParams as unknown)) {
+      // TotalityPromptCliParams structure - use layer.value
+      const totalityParams = this._cliParams as unknown as TotalityPromptCliParams;
+      const fromLayerType = totalityParams.options?.fromLayerType as string | undefined;
+      return fromLayerType || totalityParams.layer.value || "";
     } else {
       // Legacy PromptCliParams structure
       const legacyParams = this._cliParams as DoubleParamsResult;
@@ -445,7 +484,7 @@ export class InputFilePathResolver {
 
   /**
    * Check if a path exists on the filesystem
-   * 
+   *
    * Architecture-compliant implementation that doesn't access file system directly.
    * Path resolution should focus on logical path construction only.
    * Actual file existence should be checked by higher-level components.
@@ -453,7 +492,7 @@ export class InputFilePathResolver {
   private checkPathExists(path: string): boolean {
     // Special cases for valid paths
     if (path === "-" || path === "") return true;
-    
+
     // Return true for logical paths that appear valid
     // This maintains the interface while respecting layer boundaries
     return path.length > 0 && !path.includes("\0");
@@ -461,7 +500,7 @@ export class InputFilePathResolver {
 
   /**
    * Handle resolution errors and convert to appropriate error types
-   * 
+   *
    * Architecture-compliant error handling that doesn't depend on Deno-specific errors
    */
   private handleResolutionError(error: unknown): Result<ResolvedInputPath, InputFilePathError> {
@@ -499,7 +538,7 @@ export class InputFilePathResolver {
 
   /**
    * Smart Constructor for creating InputFilePathResolver with validation
-   * 
+   *
    * Following Totality principle:
    * - Private constructor enforces creation through smart constructor
    * - Comprehensive validation of all inputs
@@ -545,23 +584,31 @@ export class InputFilePathResolver {
     cliParams: DoubleParamsResult | TwoParams_Result,
   ): Result<void, InputFilePathError> {
     // Check for Totality parameters structure
-    const hasTotalityProps = (p: any): p is { directive: any; layer: any; options?: any } => {
-      return p && typeof p === "object" && "directive" in p && "layer" in p &&
-        p.directive && typeof p.directive === "object" && "value" in p.directive &&
-        p.layer && typeof p.layer === "object" && "value" in p.layer;
+    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return Boolean(
+        "directive" in obj && "layer" in obj &&
+          obj.directive && typeof obj.directive === "object" &&
+          "value" in (obj.directive as Record<string, unknown>) &&
+          obj.layer && typeof obj.layer === "object" &&
+          "value" in (obj.layer as Record<string, unknown>),
+      );
     };
 
     // Check for legacy parameters structure
-    const hasLegacyProps = (p: any): p is { demonstrativeType: string; layerType: string } => {
-      return p && typeof p === "object" && 
-        "demonstrativeType" in p && "layerType" in p &&
-        typeof p.demonstrativeType === "string" && typeof p.layerType === "string";
+    const hasLegacyProps = (p: unknown): p is LegacyPromptCliParams => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return "demonstrativeType" in obj && "layerType" in obj &&
+        typeof obj.demonstrativeType === "string" && typeof obj.layerType === "string";
     };
 
-    if (!hasTotalityProps(cliParams) && !hasLegacyProps(cliParams)) {
+    if (!hasTotalityProps(cliParams as unknown) && !hasLegacyProps(cliParams as unknown)) {
       return error({
         kind: "ConfigurationError",
-        message: "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)",
+        message:
+          "CLI parameters must have either Totality structure (directive.data, layer.data) or legacy structure (demonstrativeType, layerType)",
       });
     }
 

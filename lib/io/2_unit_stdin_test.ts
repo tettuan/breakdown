@@ -12,7 +12,12 @@
  * @module io/stdin_unit_test
  */
 
-import { assertEquals, assertExists, assertRejects, assertThrows } from "../deps.ts";
+import {
+  assertEquals,
+  assertExists as _assertExists,
+  assertRejects,
+  assertThrows as _assertThrows,
+} from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -31,7 +36,7 @@ import {
 const logger = new BreakdownLogger("stdin-unit");
 
 describe("Unit: Core I/O functions", () => {
-  it("should create and handle StdinError correctly", async () => {
+  it("should create and handle StdinError correctly", () => {
     logger.debug("Testing StdinError creation and properties");
 
     const error = new StdinError("Test error message");
@@ -60,7 +65,11 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
+      assertEquals(
+        error instanceof LegacyStdinError,
+        true,
+        "Should throw LegacyStdinError on timeout",
+      );
     }
 
     // Test with allowEmpty option
@@ -71,13 +80,17 @@ describe("Unit: Core I/O functions", () => {
       // If it succeeds, that's ok - might be in special test environment
       logger.debug("readStdin with allowEmpty succeeded unexpectedly (test environment)");
     } catch (error) {
-      assertEquals(error instanceof LegacyStdinError, true, "Should throw LegacyStdinError on timeout");
+      assertEquals(
+        error instanceof LegacyStdinError,
+        true,
+        "Should throw LegacyStdinError on timeout",
+      );
     }
 
     logger.debug("readStdin timeout behavior verified");
   });
 
-  it("should check stdin content availability", async () => {
+  it("should check stdin content availability", () => {
     logger.debug("Testing hasStdinContent function");
 
     const hasContent = hasStdinContent();
@@ -91,7 +104,7 @@ describe("Unit: Core I/O functions", () => {
     logger.debug("hasStdinContent verified");
   });
 
-  it("should check stdin availability", async () => {
+  it("should check stdin availability", () => {
     logger.debug("Testing isStdinAvailable function");
 
     // Test default behavior
@@ -108,7 +121,7 @@ describe("Unit: Core I/O functions", () => {
     logger.debug("isStdinAvailable verified");
   });
 
-  it("should write to stdout correctly", async () => {
+  it("should write to stdout correctly", () => {
     logger.debug("Testing writeStdout function");
 
     // Test with normal content - should not throw
@@ -126,7 +139,7 @@ describe("Unit: Core I/O functions", () => {
 });
 
 describe("Unit: ProgressBar functionality", () => {
-  it("should create ProgressBar with various configurations", async () => {
+  it("should create ProgressBar with various configurations", () => {
     logger.debug("Testing ProgressBar creation");
 
     // Test with minimal configuration
@@ -153,7 +166,7 @@ describe("Unit: ProgressBar functionality", () => {
     logger.debug("ProgressBar creation verified");
   });
 
-  it("should update progress correctly", async () => {
+  it("should update progress correctly", () => {
     logger.debug("Testing ProgressBar update functionality");
 
     // Test with enabled progress bar (quiet: false) since quiet mode skips updates
@@ -189,7 +202,7 @@ describe("Unit: ProgressBar functionality", () => {
     logger.debug("ProgressBar update verified");
   });
 
-  it("should handle edge cases in ProgressBar", async () => {
+  it("should handle edge cases in ProgressBar", () => {
     logger.debug("Testing ProgressBar edge cases");
 
     // Test with zero total
@@ -212,7 +225,7 @@ describe("Unit: ProgressBar functionality", () => {
 });
 
 describe("Unit: Spinner functionality", () => {
-  it("should create Spinner with various configurations", async () => {
+  it("should create Spinner with various configurations", () => {
     logger.debug("Testing Spinner creation");
 
     // Test with default configuration
@@ -234,7 +247,7 @@ describe("Unit: Spinner functionality", () => {
     logger.debug("Spinner creation verified");
   });
 
-  it("should handle Spinner lifecycle correctly", async () => {
+  it("should handle Spinner lifecycle correctly", () => {
     logger.debug("Testing Spinner lifecycle");
 
     const spinner = new Spinner({ quiet: true }); // Quiet to avoid actual spinning
@@ -258,7 +271,7 @@ describe("Unit: Spinner functionality", () => {
     logger.debug("Spinner lifecycle verified");
   });
 
-  it("should handle Spinner frames correctly", async () => {
+  it("should handle Spinner frames correctly", () => {
     logger.debug("Testing Spinner frames");
 
     const spinner = new Spinner({ quiet: true });
@@ -284,7 +297,7 @@ describe("Unit: Spinner functionality", () => {
     logger.debug("Spinner frames verified");
   });
 
-  it("should provide proper AbortController management", async () => {
+  it("should provide proper AbortController management", () => {
     logger.debug("Testing Spinner AbortController");
 
     const spinner = new Spinner({ quiet: true });
@@ -306,7 +319,7 @@ describe("Unit: Spinner functionality", () => {
 });
 
 describe("Unit: Options and configuration", () => {
-  it("should handle StdinOptions correctly", async () => {
+  it("should handle StdinOptions correctly", () => {
     logger.debug("Testing StdinOptions");
 
     // Test that readStdin accepts various option combinations
@@ -335,7 +348,7 @@ describe("Unit: Options and configuration", () => {
     logger.debug("StdinOptions verified");
   });
 
-  it("should handle UI component options consistently", async () => {
+  it("should handle UI component options consistently", () => {
     logger.debug("Testing UI component options");
 
     // Test ProgressBar options
@@ -387,7 +400,7 @@ describe("Unit: Error handling and edge cases", () => {
     logger.debug("Error scenarios verified");
   });
 
-  it("should handle UI component edge cases", async () => {
+  it("should handle UI component edge cases", () => {
     logger.debug("Testing UI component edge cases");
 
     // Test ProgressBar with edge values (using enabled progress bar)
@@ -446,7 +459,7 @@ describe("Unit: Integration behavior", () => {
     logger.debug("Enhanced stdin integration verified");
   });
 
-  it("should maintain consistent behavior across all functions", async () => {
+  it("should maintain consistent behavior across all functions", () => {
     logger.debug("Testing behavior consistency");
 
     // Test that sync functions are truly synchronous
@@ -471,7 +484,7 @@ describe("Unit: Integration behavior", () => {
     logger.debug("Behavior consistency verified");
   });
 
-  it("should support testability through option injection", async () => {
+  it("should support testability through option injection", () => {
     logger.debug("Testing testability features");
 
     // Test isStdinAvailable with injected isTerminal

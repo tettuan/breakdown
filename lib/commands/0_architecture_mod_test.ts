@@ -94,21 +94,21 @@ describe("Architecture: Commands Module Structure", () => {
 
     // All command functions should return CommandResult (Promise<CommandResult> for async)
     const helpResult = mod.displayHelp();
-    const versionResult = mod.displayVersion();
+    const _versionResult = mod.displayVersion();
 
     // Verify CommandResult structure
     assertExists(helpResult.success, "Help result should have success field");
     assertExists(helpResult.output, "Help result should have output field");
     assertExists(helpResult.error !== undefined, "Help result should have error field");
 
-    assertExists(versionResult.success, "Version result should have success field");
-    assertExists(versionResult.output, "Version result should have output field");
-    assertExists(versionResult.error !== undefined, "Version result should have error field");
+    assertExists(_versionResult.success, "Version result should have success field");
+    assertExists(_versionResult.output, "Version result should have output field");
+    assertExists(_versionResult.error !== undefined, "Version result should have error field");
 
     assertEquals(typeof helpResult.success, "boolean", "Success should be boolean");
     assertEquals(typeof helpResult.output, "string", "Output should be string");
-    assertEquals(typeof versionResult.success, "boolean", "Success should be boolean");
-    assertEquals(typeof versionResult.output, "string", "Output should be string");
+    assertEquals(typeof _versionResult.success, "boolean", "Success should be boolean");
+    assertEquals(typeof _versionResult.output, "string", "Output should be string");
 
     logger.debug("Command orchestration patterns verification completed");
   });
@@ -141,8 +141,8 @@ describe("Architecture: Commands Module Structure", () => {
 
     // Should not expose internal runPromptProcessing function
     assertEquals(
-      (mod as any).runPromptProcessing,
-      undefined,
+      "runPromptProcessing" in mod,
+      false,
       "runPromptProcessing should not be exported (internal function)",
     );
 
@@ -156,7 +156,7 @@ describe("Architecture: Interface Design", () => {
 
     // Test interface through actual usage
     const helpResult = mod.displayHelp();
-    const versionResult = mod.displayVersion();
+    const _versionResult = mod.displayVersion();
 
     // Required fields
     assertExists(helpResult.success, "CommandResult must have success field");
@@ -306,13 +306,13 @@ describe("Architecture: Command Function Contracts", () => {
 
     // Both should return CommandResult immediately
     const helpResult = mod.displayHelp();
-    const versionResult = mod.displayVersion();
+    const _versionResult = mod.displayVersion();
 
     assertEquals(helpResult.success, true, "displayHelp should return success");
-    assertEquals(versionResult.success, true, "displayVersion should return success");
+    assertEquals(_versionResult.success, true, "displayVersion should return success");
     assertEquals(typeof helpResult.output, "string", "displayHelp should return string output");
     assertEquals(
-      typeof versionResult.output,
+      typeof _versionResult.output,
       "string",
       "displayVersion should return string output",
     );
@@ -331,7 +331,7 @@ describe("Architecture: Command Function Contracts", () => {
 
     // Version should contain version number
     assertEquals(
-      versionResult.output.includes("Breakdown v"),
+      _versionResult.output.includes("Breakdown v"),
       true,
       "Version output should contain version prefix",
     );

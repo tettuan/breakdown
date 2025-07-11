@@ -1,9 +1,9 @@
 /**
  * @fileoverview Type extension for TwoParams_Result to add missing params property
- * 
+ *
  * This module extends the TwoParams_Result type from @tettuan/breakdownparams
  * to include the missing params property that is used throughout the codebase.
- * 
+ *
  * @module types/two_params_result_extension
  */
 
@@ -11,7 +11,7 @@ import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakd
 
 /**
  * Extended TwoParams_Result interface with params property
- * 
+ *
  * This interface extends the base TwoParamsResult from BreakdownParams
  * to include the params array property that is expected by the codebase.
  */
@@ -25,25 +25,25 @@ export interface TwoParams_Result extends BaseTwoParamsResult {
  */
 export function isTwoParamsResult(obj: unknown): obj is TwoParams_Result {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'type' in obj &&
-    'params' in obj &&
-    'demonstrativeType' in obj &&
-    'layerType' in obj &&
-    Array.isArray((obj as any).params)
+    "type" in obj &&
+    "params" in obj &&
+    "demonstrativeType" in obj &&
+    "layerType" in obj &&
+    Array.isArray((obj as Record<string, unknown>).params)
   );
 }
 
 /**
  * Creates a TwoParams_Result from base TwoParamsResult
- * 
+ *
  * Ensures the params array is populated from demonstrativeType and layerType
  */
 export function createTwoParamsResult(
   demonstrativeType: string,
   layerType: string,
-  options?: Record<string, unknown>
+  options?: Record<string, unknown>,
 ): TwoParams_Result {
   return {
     type: "two",

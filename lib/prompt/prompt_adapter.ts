@@ -16,11 +16,10 @@
  */
 import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
 import { basename } from "@std/path/basename";
-import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
-import { Result, ok, error } from "../types/result.ts";
+import { Result } from "../types/result.ts";
 
 /**
  * Interface for providing prompt variables and configuration.
@@ -29,21 +28,21 @@ import { Result, ok, error } from "../types/result.ts";
 /**
  * Type for parameters that may or may not have custom variables
  */
-export type PromptParams = 
+export type PromptParams =
   | {
-      promptFilePath: string;
-      inputFilePath: string;
-      outputFilePath: string;
-      schemaFilePath: string;
-      customVariables: Record<string, string>;
-    }
+    promptFilePath: string;
+    inputFilePath: string;
+    outputFilePath: string;
+    schemaFilePath: string;
+    customVariables: Record<string, string>;
+  }
   | {
-      promptFilePath: string;
-      inputFilePath: string;
-      outputFilePath: string;
-      schemaFilePath: string;
-      customVariables?: never;
-    };
+    promptFilePath: string;
+    inputFilePath: string;
+    outputFilePath: string;
+    schemaFilePath: string;
+    customVariables?: never;
+  };
 
 export interface PromptVariablesProvider {
   getAllParams(): PromptParams;

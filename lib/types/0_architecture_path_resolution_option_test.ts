@@ -8,7 +8,11 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PathResolutionOption, PathResolutionPresets } from "./path_resolution_option.ts";
+import {
+  PathResolutionOption,
+  PathResolutionPresets,
+  type PathValidationRule,
+} from "./path_resolution_option.ts";
 
 /**
  * Architecture Test Group: Smart Constructor Pattern Enforcement
@@ -23,8 +27,8 @@ Deno.test("PathResolutionOption Architecture - Smart Constructor pattern enforce
   } catch (error) {
     // Expected behavior - constructor is private or throws error
     // Note: In JavaScript/TypeScript, private constructors may throw different error types
-    const isExpectedError = error instanceof TypeError || 
-                           error instanceof Error && error.message === "Constructor should be private";
+    const isExpectedError = error instanceof TypeError ||
+      error instanceof Error && error.message === "Constructor should be private";
     assertEquals(isExpectedError, true);
   }
 });
@@ -46,18 +50,18 @@ Deno.test("PathResolutionOption Architecture - Factory methods exist", () => {
 Deno.test("PathResolutionOption Architecture - Immutability enforcement", () => {
   const result = PathResolutionOption.create("absolute", "/test");
   if (!result.ok) throw new Error("Failed to create PathResolutionOption");
-  
+
   const option = result.data;
   const config = option.getConfig();
-  
+
   // fallbacks should be readonly
   assertEquals(Array.isArray(config.fallbacks), true);
-  
+
   // validationRules should be readonly
   assertEquals(Array.isArray(config.validationRules), true);
-  
+
   // Attempting to modify should not affect the original
-  const modifiedFallbacks = [...config.fallbacks, "new-fallback"];
+  const _modifiedFallbacks = [...config.fallbacks, "new-fallback"];
   const configAfter = option.getConfig();
   assertEquals(config.fallbacks.length, configAfter.fallbacks.length);
 });
@@ -74,7 +78,7 @@ Deno.test("PathResolutionOption Architecture - Result pattern consistency", () =
   } else {
     assertExists(absoluteResult.error);
   }
-  
+
   const relativeResult = PathResolutionOption.relative("/test");
   assertExists(relativeResult.ok);
   if (relativeResult.ok) {
@@ -82,7 +86,7 @@ Deno.test("PathResolutionOption Architecture - Result pattern consistency", () =
   } else {
     assertExists(relativeResult.error);
   }
-  
+
   const workspaceResult = PathResolutionOption.workspace("/test");
   assertExists(workspaceResult.ok);
   if (workspaceResult.ok) {
@@ -102,7 +106,7 @@ Deno.test("PathResolutionOption Architecture - Domain error types", () => {
   if (!invalidStrategyResult.ok) {
     assertEquals(invalidStrategyResult.error.kind, "InvalidStrategy");
   }
-  
+
   // Test empty base directory error
   const emptyBaseDirResult = PathResolutionOption.create("absolute", "");
   assertEquals(emptyBaseDirResult.ok, false);
@@ -119,16 +123,16 @@ Deno.test("PathResolutionOption Architecture - Strategy pattern separation", () 
   const absoluteResult = PathResolutionOption.absolute("/base");
   const relativeResult = PathResolutionOption.relative("/base");
   const workspaceResult = PathResolutionOption.workspace("/base");
-  
+
   assertEquals(absoluteResult.ok, true);
   assertEquals(relativeResult.ok, true);
   assertEquals(workspaceResult.ok, true);
-  
+
   if (absoluteResult.ok && relativeResult.ok && workspaceResult.ok) {
     const absoluteConfig = absoluteResult.data.getConfig();
     const relativeConfig = relativeResult.data.getConfig();
     const workspaceConfig = workspaceResult.data.getConfig();
-    
+
     assertEquals(absoluteConfig.strategy, "absolute");
     assertEquals(relativeConfig.strategy, "relative");
     assertEquals(workspaceConfig.strategy, "workspace");
@@ -145,17 +149,17 @@ Deno.test("PathResolutionOption Architecture - Presets factory pattern", () => {
   assertExists(PathResolutionPresets.schemaFiles);
   assertExists(PathResolutionPresets.configFiles);
   assertExists(PathResolutionPresets.outputFiles);
-  
+
   // Presets should return valid PathResolutionOption instances
   const promptResult = PathResolutionPresets.promptTemplates("/test");
   assertEquals(promptResult.ok, true);
-  
+
   const schemaResult = PathResolutionPresets.schemaFiles("/test");
   assertEquals(schemaResult.ok, true);
-  
+
   const configResult = PathResolutionPresets.configFiles("/test");
   assertEquals(configResult.ok, true);
-  
+
   const outputResult = PathResolutionPresets.outputFiles("/test");
   assertEquals(outputResult.ok, true);
 });
@@ -166,19 +170,19 @@ Deno.test("PathResolutionOption Architecture - Presets factory pattern", () => {
 Deno.test("PathResolutionOption Architecture - Public interface stability", () => {
   const result = PathResolutionOption.absolute("/test");
   if (!result.ok) throw new Error("Failed to create PathResolutionOption");
-  
+
   const option = result.data;
-  
+
   // Public methods should exist and be callable
   assertExists(option.resolve);
   assertExists(option.resolveWithFallbacks);
   assertExists(option.validatePath);
   assertExists(option.getConfig);
-  
+
   // Methods should return expected types
   const resolveResult = option.resolve("test-path");
   assertExists(resolveResult.ok);
-  
+
   const config = option.getConfig();
   assertExists(config.strategy);
   assertExists(config.baseDir);
@@ -192,15 +196,15 @@ Deno.test("PathResolutionOption Architecture - Public interface stability", () =
 Deno.test("PathResolutionOption Architecture - Type safety enforcement", () => {
   // Valid strategy types should be accepted
   const validStrategies = ["absolute", "relative", "workspace"];
-  
+
   for (const strategy of validStrategies) {
     const result = PathResolutionOption.create(strategy, "/test");
     assertEquals(result.ok, true);
   }
-  
+
   // Invalid strategy types should be rejected
   const invalidStrategies = ["invalid", "unknown", "", null, undefined];
-  
+
   for (const strategy of invalidStrategies) {
     const result = PathResolutionOption.create(strategy as string, "/test");
     assertEquals(result.ok, false);
@@ -211,18 +215,18 @@ Deno.test("PathResolutionOption Architecture - Type safety enforcement", () => {
  * Architecture Test Group: Validation Rule Architecture
  */
 Deno.test("PathResolutionOption Architecture - Validation rule system", () => {
-  const validationRules = [
+  const validationRules: PathValidationRule[] = [
     "must-exist",
-    "must-be-directory", 
+    "must-be-directory",
     "must-be-file",
     "must-be-readable",
-    "must-be-writable"
+    "must-be-writable",
   ];
-  
+
   // Each rule should be handled in the validation system
   for (const rule of validationRules) {
     const result = PathResolutionOption.create("absolute", "/test", [], {
-      required: [rule as any]
+      required: [rule],
     });
     assertEquals(result.ok, true);
   }

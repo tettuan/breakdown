@@ -134,7 +134,7 @@ Deno.test("Architecture: Proper separation of error creation and handling", () =
 
   // Should not have handling logic
   assertEquals(
-    typeof (error as any).detect,
+    typeof (error as { detect?: unknown }).detect,
     "undefined",
     "TemplateError should not have detection methods",
   );

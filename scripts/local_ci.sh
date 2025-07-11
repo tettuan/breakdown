@@ -529,7 +529,7 @@ run_tests_in_batches() {
 ==============================================================================="
         
         # Run batch with memory constraints and explicit garbage collection
-        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc "${batch_files[@]}" 2>&1; then
+        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
             echo "
 ===============================================================================
 >>> BATCH $batch_num FAILED <<<
@@ -836,7 +836,7 @@ run_tests_in_batches_with_fallback() {
 ==============================================================================="
         
         # Run batch with memory constraints
-        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc "${batch_files[@]}" 2>&1; then
+        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
             echo "
 ===============================================================================
 >>> BATCH $batch_num FAILED - Attempting individual file execution <<<

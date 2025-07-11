@@ -14,14 +14,14 @@
 import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
+import {
   _VERSION,
   APP_NAME,
-  type HelpTextConfig,
   HELP_TEXT,
-  showVersion,
+  type HelpTextConfig,
   showHelp,
-  showUsage
+  showUsage,
+  showVersion,
 } from "./help.ts";
 
 const logger = new BreakdownLogger("help-architecture");
@@ -34,7 +34,7 @@ describe("Architecture: Help Module Structure", () => {
     assertExists(_VERSION, "_VERSION constant must be exported");
     assertExists(APP_NAME, "APP_NAME constant must be exported");
     assertExists(HELP_TEXT, "HELP_TEXT constant must be exported");
-    
+
     assertEquals(typeof _VERSION, "string", "_VERSION must be a string");
     assertEquals(typeof APP_NAME, "string", "APP_NAME must be a string");
     assertEquals(typeof HELP_TEXT, "string", "HELP_TEXT must be a string");
@@ -43,7 +43,7 @@ describe("Architecture: Help Module Structure", () => {
     assertExists(showVersion, "showVersion function must be exported");
     assertExists(showHelp, "showHelp function must be exported");
     assertExists(showUsage, "showUsage function must be exported");
-    
+
     assertEquals(typeof showVersion, "function", "showVersion must be a function");
     assertEquals(typeof showHelp, "function", "showHelp must be a function");
     assertEquals(typeof showUsage, "function", "showUsage must be a function");
@@ -75,7 +75,7 @@ describe("Architecture: Help Module Structure", () => {
     const versionResult = showVersion();
     const helpResult = showHelp();
     const usageResult = showUsage();
-    
+
     assertEquals(versionResult, undefined, "showVersion should return void");
     assertEquals(helpResult, undefined, "showHelp should return void");
     assertEquals(usageResult, undefined, "showUsage should return void");
@@ -132,7 +132,7 @@ describe("Architecture: Help Module Structure", () => {
     );
 
     // Should not have heavy external dependencies
-    const moduleCode = [showVersion, showHelp, showUsage].map(f => f.toString()).join();
+    const moduleCode = [showVersion, showHelp, showUsage].map((f) => f.toString()).join();
     assertEquals(
       moduleCode.includes("import(") || moduleCode.includes("require("),
       false,
@@ -156,7 +156,7 @@ describe("Architecture: Interface Design", () => {
     const testConfig: HelpTextConfig = {
       commands: [{ name: "test", description: "test command" }],
       options: [{ flags: "--test", description: "test option" }],
-      examples: ["test example"]
+      examples: ["test example"],
     };
 
     // Should accept valid configuration
@@ -166,11 +166,19 @@ describe("Architecture: Interface Design", () => {
 
     // Commands should have proper structure
     assertEquals(typeof testConfig.commands[0].name, "string", "Command name should be string");
-    assertEquals(typeof testConfig.commands[0].description, "string", "Command description should be string");
+    assertEquals(
+      typeof testConfig.commands[0].description,
+      "string",
+      "Command description should be string",
+    );
 
     // Options should have proper structure
     assertEquals(typeof testConfig.options[0].flags, "string", "Option flags should be string");
-    assertEquals(typeof testConfig.options[0].description, "string", "Option description should be string");
+    assertEquals(
+      typeof testConfig.options[0].description,
+      "string",
+      "Option description should be string",
+    );
 
     // Examples should be strings
     assertEquals(typeof testConfig.examples[0], "string", "Examples should be strings");
@@ -184,7 +192,7 @@ describe("Architecture: Interface Design", () => {
     // HELP_TEXT should be generated at module load time
     const helpText1 = HELP_TEXT;
     const helpText2 = HELP_TEXT;
-    
+
     assertEquals(
       helpText1,
       helpText2,
@@ -294,7 +302,9 @@ describe("Architecture: Output Strategy", () => {
     // Capture console output for analysis
     let capturedOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { capturedOutput.push(msg); };
+    console.log = (msg: string) => {
+      capturedOutput.push(msg);
+    };
 
     try {
       // Test each function
@@ -311,40 +321,39 @@ describe("Architecture: Output Strategy", () => {
 
       // Version output should include version and app name
       assertEquals(
-        versionOutput.some(line => line.includes(_VERSION)),
+        versionOutput.some((line) => line.includes(_VERSION)),
         true,
         "Version output should include version number",
       );
       assertEquals(
-        versionOutput.some(line => line.includes(APP_NAME)),
+        versionOutput.some((line) => line.includes(APP_NAME)),
         true,
         "Version output should include app name",
       );
 
       // Help output should include app name and help text
       assertEquals(
-        helpOutput.some(line => line.includes(APP_NAME)),
+        helpOutput.some((line) => line.includes(APP_NAME)),
         true,
         "Help output should include app name",
       );
       assertEquals(
-        helpOutput.some(line => line.includes("Usage:")),
+        helpOutput.some((line) => line.includes("Usage:")),
         true,
         "Help output should include usage information",
       );
 
       // Usage output should include app name and guidance
       assertEquals(
-        usageOutput.some(line => line.includes(APP_NAME)),
+        usageOutput.some((line) => line.includes(APP_NAME)),
         true,
         "Usage output should include app name",
       );
       assertEquals(
-        usageOutput.some(line => line.includes("--help")),
+        usageOutput.some((line) => line.includes("--help")),
         true,
         "Usage output should reference help option",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -357,7 +366,7 @@ describe("Architecture: Output Strategy", () => {
 
     // Functions should only perform console output (no file I/O, network, etc.)
     const allFunctionCode = [showVersion, showHelp, showUsage]
-      .map(f => f.toString())
+      .map((f) => f.toString())
       .join();
 
     assertEquals(
@@ -379,7 +388,9 @@ describe("Architecture: Output Strategy", () => {
     // Should be safe to call multiple times
     let outputCount = 0;
     const originalLog = console.log;
-    console.log = () => { outputCount++; };
+    console.log = () => {
+      outputCount++;
+    };
 
     try {
       showVersion();
@@ -424,19 +435,23 @@ describe("Architecture: Configuration-Driven Design", () => {
     // Configuration should be extensible
     const customConfig: HelpTextConfig = {
       commands: [
-        { name: "custom", description: "Custom command" }
+        { name: "custom", description: "Custom command" },
       ],
       options: [
-        { flags: "--custom", description: "Custom option" }
+        { flags: "--custom", description: "Custom option" },
       ],
       examples: [
-        "breakdown custom"
-      ]
+        "breakdown custom",
+      ],
     };
 
     // Should be able to use custom configuration (testing interface design)
     assertExists(customConfig.commands, "Custom config should have commands");
-    assertEquals(customConfig.commands[0].name, "custom", "Custom config should be properly structured");
+    assertEquals(
+      customConfig.commands[0].name,
+      "custom",
+      "Custom config should be properly structured",
+    );
 
     logger.debug("Configuration-driven help generation verification completed");
   });
@@ -479,7 +494,7 @@ describe("Architecture: Configuration-Driven Design", () => {
     const configCheck: HelpTextConfig = {
       commands: [],
       options: [],
-      examples: []
+      examples: [],
     };
 
     // Required properties should exist

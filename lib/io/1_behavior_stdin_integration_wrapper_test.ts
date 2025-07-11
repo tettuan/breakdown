@@ -15,12 +15,12 @@ import {
   type StdinMigrationConfig,
 } from "./stdin_integration_wrapper.ts";
 
-Deno.test("StdinIntegrationWrapper - Basic instantiation", async () => {
+Deno.test("StdinIntegrationWrapper - Basic instantiation", () => {
   const _wrapper = new StdinIntegrationWrapper();
   assertExists(_wrapper);
 });
 
-Deno.test("StdinIntegrationWrapper - Custom config instantiation", async () => {
+Deno.test("StdinIntegrationWrapper - Custom config instantiation", () => {
   const config: StdinMigrationConfig = {
     useEnhanced: true,
     debug: false,
@@ -31,7 +31,7 @@ Deno.test("StdinIntegrationWrapper - Custom config instantiation", async () => {
   assertExists(wrapper);
 });
 
-Deno.test("StdinIntegrationWrapper - isStdinAvailable returns Result", async () => {
+Deno.test("StdinIntegrationWrapper - isStdinAvailable returns Result", () => {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.isStdinAvailable();
 
@@ -43,7 +43,7 @@ Deno.test("StdinIntegrationWrapper - isStdinAvailable returns Result", async () 
   }
 });
 
-Deno.test("StdinIntegrationWrapper - isStdinAvailable with terminal option", async () => {
+Deno.test("StdinIntegrationWrapper - isStdinAvailable with terminal option", () => {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.isStdinAvailable({ isTerminal: true });
 
@@ -92,7 +92,7 @@ Deno.test("StdinIntegrationWrapper - readStdinSafe returns comprehensive Result"
   }
 });
 
-Deno.test("StdinIntegrationWrapper - getEnvironmentInfo returns Result", async () => {
+Deno.test("StdinIntegrationWrapper - getEnvironmentInfo returns Result", () => {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.getEnvironmentInfo();
 
@@ -105,7 +105,7 @@ Deno.test("StdinIntegrationWrapper - getEnvironmentInfo returns Result", async (
   }
 });
 
-Deno.test("StdinIntegrationWrapper - shouldSkipStdin returns Result", async () => {
+Deno.test("StdinIntegrationWrapper - shouldSkipStdin returns Result", () => {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.shouldSkipStdin();
 
@@ -115,7 +115,7 @@ Deno.test("StdinIntegrationWrapper - shouldSkipStdin returns Result", async () =
   }
 });
 
-Deno.test("StdinIntegrationWrapper - shouldSkipStdin with forceRead", async () => {
+Deno.test("StdinIntegrationWrapper - shouldSkipStdin with forceRead", () => {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.shouldSkipStdin({ forceRead: true });
 
@@ -125,7 +125,7 @@ Deno.test("StdinIntegrationWrapper - shouldSkipStdin with forceRead", async () =
   }
 });
 
-Deno.test("StdinIntegrationWrapper - forceFallback configuration", async () => {
+Deno.test("StdinIntegrationWrapper - forceFallback configuration", () => {
   const config: StdinMigrationConfig = {
     forceFallback: true,
     useEnhanced: false,
@@ -137,7 +137,7 @@ Deno.test("StdinIntegrationWrapper - forceFallback configuration", async () => {
   assertEquals(typeof result.ok, "boolean");
 });
 
-Deno.test("StdinIntegrationWrapper - environment overrides", async () => {
+Deno.test("StdinIntegrationWrapper - environment overrides", () => {
   const config: StdinMigrationConfig = {
     useEnhanced: true,
     environmentOverrides: {
@@ -160,7 +160,7 @@ Deno.test("StdinIntegrationWrapper - environment overrides", async () => {
 });
 
 // Test deprecated backward compatibility functions
-Deno.test("Backward compatibility - isStdinAvailable function", async () => {
+Deno.test("Backward compatibility - isStdinAvailable function", () => {
   const result = isStdinAvailable();
   assertEquals(typeof result, "boolean");
 });
@@ -184,7 +184,7 @@ Deno.test("Backward compatibility - readStdinSafe function", async () => {
   assertEquals(typeof result.skipped, "boolean");
 });
 
-Deno.test("Backward compatibility - getEnvironmentInfo function", async () => {
+Deno.test("Backward compatibility - getEnvironmentInfo function", () => {
   const result = getEnvironmentInfo();
 
   assertExists(result);
@@ -193,7 +193,7 @@ Deno.test("Backward compatibility - getEnvironmentInfo function", async () => {
   assertEquals(typeof result.isTest, "boolean");
 });
 
-Deno.test("Backward compatibility - shouldSkipStdin function", async () => {
+Deno.test("Backward compatibility - shouldSkipStdin function", () => {
   const result = shouldSkipStdin();
   assertEquals(typeof result, "boolean");
 });
@@ -273,7 +273,7 @@ Deno.test("StdinIntegrationWrapper - error handling in readStdinSafe", async () 
   }
 });
 
-Deno.test("StdinIntegrationWrapper - migration config defaults", async () => {
+Deno.test("StdinIntegrationWrapper - migration config defaults", () => {
   const wrapper = new StdinIntegrationWrapper();
 
   // Test that default configuration works

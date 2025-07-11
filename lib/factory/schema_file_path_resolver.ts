@@ -30,7 +30,7 @@ type DoubleParams_Result = PromptCliParams;
 
 /**
  * Discriminated Union for schema file path specific errors
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and follows Domain-Driven Design principles for error handling.
  */
@@ -214,7 +214,7 @@ export class SchemaFilePathResolver {
   private deepCopyConfig(
     config: { app_schema?: { base_dir?: string } } & Record<string, unknown>,
   ): { app_schema?: { base_dir?: string } } & Record<string, unknown> {
-    const copy: any = {};
+    const copy: { app_schema?: { base_dir?: string } } & Record<string, unknown> = {};
 
     // Copy app_schema
     if (config.app_schema) {
@@ -256,14 +256,11 @@ export class SchemaFilePathResolver {
     } else {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
-      const copy: any = {
+      const copy: PromptCliParams = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
+        options: doubleParams.options ? { ...doubleParams.options } : {},
       };
-
-      if (doubleParams.options) {
-        copy.options = { ...doubleParams.options };
-      }
 
       return copy;
     }
@@ -619,19 +616,27 @@ export function formatSchemaError(error: PathResolutionError): string {
  * Type guards for SchemaFilePathError discrimination
  * Enables type-safe error handling throughout the application
  */
-export function isSchemaNotFoundError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "SchemaNotFound" }> {
+export function isSchemaNotFoundError(
+  error: SchemaFilePathError,
+): error is Extract<SchemaFilePathError, { kind: "SchemaNotFound" }> {
   return error.kind === "SchemaNotFound";
 }
 
-export function isInvalidParametersError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "InvalidParameters" }> {
+export function isInvalidParametersError(
+  error: SchemaFilePathError,
+): error is Extract<SchemaFilePathError, { kind: "InvalidParameters" }> {
   return error.kind === "InvalidParameters";
 }
 
-export function isConfigurationError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "ConfigurationError" }> {
+export function isConfigurationError(
+  error: SchemaFilePathError,
+): error is Extract<SchemaFilePathError, { kind: "ConfigurationError" }> {
   return error.kind === "ConfigurationError";
 }
 
-export function isFileSystemError(error: SchemaFilePathError): error is Extract<SchemaFilePathError, { kind: "FileSystemError" }> {
+export function isFileSystemError(
+  error: SchemaFilePathError,
+): error is Extract<SchemaFilePathError, { kind: "FileSystemError" }> {
   return error.kind === "FileSystemError";
 }
 

@@ -26,18 +26,18 @@ describe("Behavior: Configuration Data Modeling", () => {
       {
         working_directory: "/home/user/project",
         output_directory: "/home/user/project/output",
-        default_config_path: "/home/user/project/.breakdown.yml"
+        default_config_path: "/home/user/project/.breakdown.yml",
       },
       {
         working_directory: ".",
         output_directory: "./out",
-        default_config_path: "./breakdown.config.yml"
+        default_config_path: "./breakdown.config.yml",
       },
       {
         working_directory: "/var/lib/breakdown",
         output_directory: "/var/lib/breakdown/generated",
-        default_config_path: "/etc/breakdown/config.yml"
-      }
+        default_config_path: "/etc/breakdown/config.yml",
+      },
     ];
 
     for (const config of typicalConfigs) {
@@ -46,7 +46,7 @@ describe("Behavior: Configuration Data Modeling", () => {
       assertEquals(
         typeof config.working_directory,
         "string",
-        "Working directory should be string"
+        "Working directory should be string",
       );
 
       // Should model output directories
@@ -54,7 +54,7 @@ describe("Behavior: Configuration Data Modeling", () => {
       assertEquals(
         typeof config.output_directory,
         "string",
-        "Output directory should be string"
+        "Output directory should be string",
       );
 
       // Should model config file paths
@@ -62,24 +62,24 @@ describe("Behavior: Configuration Data Modeling", () => {
       assertEquals(
         typeof config.default_config_path,
         "string",
-        "Config path should be string"
+        "Config path should be string",
       );
 
       // Paths should be non-empty
       assertEquals(
         config.working_directory.length > 0,
         true,
-        "Working directory should not be empty"
+        "Working directory should not be empty",
       );
       assertEquals(
         config.output_directory.length > 0,
         true,
-        "Output directory should not be empty"
+        "Output directory should not be empty",
       );
       assertEquals(
         config.default_config_path.length > 0,
         true,
-        "Config path should not be empty"
+        "Config path should not be empty",
       );
     }
 
@@ -95,33 +95,33 @@ describe("Behavior: Configuration Data Modeling", () => {
         config: {
           working_directory: "/home/user/breakdown",
           output_directory: "/home/user/breakdown/output",
-          default_config_path: "/home/user/.breakdown.yml"
-        }
+          default_config_path: "/home/user/.breakdown.yml",
+        },
       },
       {
         name: "absolute_windows_style",
         config: {
           working_directory: "C:\\Users\\user\\breakdown",
           output_directory: "C:\\Users\\user\\breakdown\\output",
-          default_config_path: "C:\\Users\\user\\.breakdown.yml"
-        }
+          default_config_path: "C:\\Users\\user\\.breakdown.yml",
+        },
       },
       {
         name: "relative_paths",
         config: {
           working_directory: ".",
           output_directory: "./output",
-          default_config_path: "./config.yml"
-        }
+          default_config_path: "./config.yml",
+        },
       },
       {
         name: "mixed_formats",
         config: {
           working_directory: "./project",
           output_directory: "/tmp/breakdown-output",
-          default_config_path: "~/.breakdown.yml"
-        }
-      }
+          default_config_path: "~/.breakdown.yml",
+        },
+      },
     ];
 
     for (const format of pathFormats) {
@@ -131,34 +131,34 @@ describe("Behavior: Configuration Data Modeling", () => {
       assertEquals(
         typeof config.working_directory,
         "string",
-        `${format.name}: working_directory should be string`
+        `${format.name}: working_directory should be string`,
       );
       assertEquals(
         typeof config.output_directory,
         "string",
-        `${format.name}: output_directory should be string`
+        `${format.name}: output_directory should be string`,
       );
       assertEquals(
         typeof config.default_config_path,
         "string",
-        `${format.name}: default_config_path should be string`
+        `${format.name}: default_config_path should be string`,
       );
 
       // Should preserve original path format
       assertEquals(
         config.working_directory,
         format.config.working_directory,
-        `${format.name}: should preserve working directory format`
+        `${format.name}: should preserve working directory format`,
       );
       assertEquals(
         config.output_directory,
         format.config.output_directory,
-        `${format.name}: should preserve output directory format`
+        `${format.name}: should preserve output directory format`,
       );
       assertEquals(
         config.default_config_path,
         format.config.default_config_path,
-        `${format.name}: should preserve config path format`
+        `${format.name}: should preserve config path format`,
       );
     }
 
@@ -174,32 +174,32 @@ describe("Behavior: Runtime Options Modeling", () => {
       {
         name: "empty_options",
         options: {},
-        description: "No overrides specified"
+        description: "No overrides specified",
       },
       {
         name: "config_path_only",
         options: { configPath: "/custom/config.yml" },
-        description: "Only config path override"
+        description: "Only config path override",
       },
       {
         name: "working_dir_only",
         options: { workingDir: "/custom/workspace" },
-        description: "Only working directory override"
+        description: "Only working directory override",
       },
       {
         name: "output_dir_only",
         options: { outputDir: "/custom/output" },
-        description: "Only output directory override"
+        description: "Only output directory override",
       },
       {
         name: "all_overrides",
         options: {
           configPath: "/custom/config.yml",
           workingDir: "/custom/workspace",
-          outputDir: "/custom/output"
+          outputDir: "/custom/output",
         },
-        description: "All options overridden"
-      }
+        description: "All options overridden",
+      },
     ];
 
     for (const scenario of optionScenarios) {
@@ -210,12 +210,12 @@ describe("Behavior: Runtime Options Modeling", () => {
         assertEquals(
           typeof options.configPath,
           "string",
-          `${scenario.name}: configPath should be string when present`
+          `${scenario.name}: configPath should be string when present`,
         );
         assertEquals(
           options.configPath.length > 0,
           true,
-          `${scenario.name}: configPath should not be empty when present`
+          `${scenario.name}: configPath should not be empty when present`,
         );
       }
 
@@ -223,12 +223,12 @@ describe("Behavior: Runtime Options Modeling", () => {
         assertEquals(
           typeof options.workingDir,
           "string",
-          `${scenario.name}: workingDir should be string when present`
+          `${scenario.name}: workingDir should be string when present`,
         );
         assertEquals(
           options.workingDir.length > 0,
           true,
-          `${scenario.name}: workingDir should not be empty when present`
+          `${scenario.name}: workingDir should not be empty when present`,
         );
       }
 
@@ -236,12 +236,12 @@ describe("Behavior: Runtime Options Modeling", () => {
         assertEquals(
           typeof options.outputDir,
           "string",
-          `${scenario.name}: outputDir should be string when present`
+          `${scenario.name}: outputDir should be string when present`,
         );
         assertEquals(
           options.outputDir.length > 0,
           true,
-          `${scenario.name}: outputDir should not be empty when present`
+          `${scenario.name}: outputDir should not be empty when present`,
         );
       }
 
@@ -249,12 +249,12 @@ describe("Behavior: Runtime Options Modeling", () => {
       assertEquals(
         typeof options,
         "object",
-        `${scenario.name}: should be object type`
+        `${scenario.name}: should be object type`,
       );
       assertEquals(
         options !== null,
         true,
-        `${scenario.name}: should not be null`
+        `${scenario.name}: should not be null`,
       );
     }
 
@@ -303,7 +303,7 @@ describe("Behavior: Configuration Validation Patterns", () => {
     // Pattern: Required field validation
     function validateRequiredConfig(config: BreakdownConfig): string[] {
       const errors: string[] = [];
-      
+
       if (!config.working_directory) {
         errors.push("working_directory is required");
       }
@@ -313,37 +313,37 @@ describe("Behavior: Configuration Validation Patterns", () => {
       if (!config.default_config_path) {
         errors.push("default_config_path is required");
       }
-      
+
       return errors;
     }
 
     const validConfig: BreakdownConfig = {
       working_directory: "/valid",
       output_directory: "/valid/out",
-      default_config_path: "/valid/config.yml"
+      default_config_path: "/valid/config.yml",
     };
 
     const invalidConfig = {
       working_directory: "",
       output_directory: "/out",
-      default_config_path: ""
+      default_config_path: "",
     } as BreakdownConfig;
 
     assertEquals(
       validateRequiredConfig(validConfig).length,
       0,
-      "Valid config should pass validation"
+      "Valid config should pass validation",
     );
     assertEquals(
       validateRequiredConfig(invalidConfig).length > 0,
       true,
-      "Invalid config should fail validation"
+      "Invalid config should fail validation",
     );
 
     // Pattern: Optional field validation
     function validateOptionalConfig(options: ConfigOptions): string[] {
       const errors: string[] = [];
-      
+
       if (options.configPath !== undefined && !options.configPath) {
         errors.push("configPath cannot be empty string");
       }
@@ -353,28 +353,28 @@ describe("Behavior: Configuration Validation Patterns", () => {
       if (options.outputDir !== undefined && !options.outputDir) {
         errors.push("outputDir cannot be empty string");
       }
-      
+
       return errors;
     }
 
     const validOptions: ConfigOptions = {
-      configPath: "/valid/config.yml"
+      configPath: "/valid/config.yml",
     };
 
     const invalidOptions: ConfigOptions = {
       configPath: "",
-      workingDir: "/valid"
+      workingDir: "/valid",
     };
 
     assertEquals(
       validateOptionalConfig(validOptions).length,
       0,
-      "Valid options should pass validation"
+      "Valid options should pass validation",
     );
     assertEquals(
       validateOptionalConfig(invalidOptions).length > 0,
       true,
-      "Options with empty strings should fail validation"
+      "Options with empty strings should fail validation",
     );
 
     logger.debug("Validation patterns completed");
@@ -389,14 +389,14 @@ describe("Behavior: Configuration Validation Patterns", () => {
       return path.trim().length > 0;
     }
 
-    // Pattern: Path type validation  
-    function validatePathType(path: string, expectedType: 'file' | 'directory'): boolean {
-      if (expectedType === 'file') {
+    // Pattern: Path type validation
+    function validatePathType(path: string, expectedType: "file" | "directory"): boolean {
+      if (expectedType === "file") {
         // Config files should have extensions
-        return path.includes('.') && !path.endsWith('/');
+        return path.includes(".") && !path.endsWith("/");
       } else {
         // Directories can end with / or not
-        return !path.includes('.') || path.endsWith('/');
+        return !path.includes(".") || path.endsWith("/");
       }
     }
 
@@ -406,7 +406,7 @@ describe("Behavior: Configuration Validation Patterns", () => {
       { path: "", type: "directory" as const, valid: false },
       { path: "   ", type: "file" as const, valid: false },
       { path: "/directory/", type: "directory" as const, valid: true },
-      { path: "/file.txt", type: "file" as const, valid: true }
+      { path: "/file.txt", type: "file" as const, valid: true },
     ];
 
     for (const test of testPaths) {
@@ -417,13 +417,13 @@ describe("Behavior: Configuration Validation Patterns", () => {
         assertEquals(
           formatValid && typeValid,
           true,
-          `Path should be valid: ${test.path} (${test.type})`
+          `Path should be valid: ${test.path} (${test.type})`,
         );
       } else {
         assertEquals(
           formatValid,
           false,
-          `Path should be invalid: ${test.path} (${test.type})`
+          `Path should be invalid: ${test.path} (${test.type})`,
         );
       }
     }
@@ -441,19 +441,19 @@ describe("Behavior: Configuration Composition", () => {
       return {
         working_directory: options.workingDir ?? base.working_directory,
         output_directory: options.outputDir ?? base.output_directory,
-        default_config_path: options.configPath ?? base.default_config_path
+        default_config_path: options.configPath ?? base.default_config_path,
       };
     }
 
     const baseConfig: BreakdownConfig = {
       working_directory: "/base/work",
       output_directory: "/base/output",
-      default_config_path: "/base/config.yml"
+      default_config_path: "/base/config.yml",
     };
 
     const partialOverride: ConfigOptions = {
       workingDir: "/override/work",
-      configPath: "/override/config.yml"
+      configPath: "/override/config.yml",
       // outputDir intentionally omitted
     };
 
@@ -466,29 +466,41 @@ describe("Behavior: Configuration Composition", () => {
     // Strategy: Conditional merging
     function mergeWithConditions(base: BreakdownConfig, options: ConfigOptions): BreakdownConfig {
       return {
-        working_directory: (options.workingDir && options.workingDir.length > 0) 
-          ? options.workingDir 
+        working_directory: (options.workingDir && options.workingDir.length > 0)
+          ? options.workingDir
           : base.working_directory,
         output_directory: (options.outputDir && options.outputDir.length > 0)
-          ? options.outputDir 
+          ? options.outputDir
           : base.output_directory,
         default_config_path: (options.configPath && options.configPath.length > 0)
-          ? options.configPath 
-          : base.default_config_path
+          ? options.configPath
+          : base.default_config_path,
       };
     }
 
     const conditionalOptions: ConfigOptions = {
       workingDir: "", // Empty string should not override
       outputDir: "/valid/output", // Valid string should override
-      configPath: undefined // Undefined should not override
+      configPath: undefined, // Undefined should not override
     };
 
     const conditionalMerged = mergeWithConditions(baseConfig, conditionalOptions);
 
-    assertEquals(conditionalMerged.working_directory, "/base/work", "Should not override with empty string");
-    assertEquals(conditionalMerged.output_directory, "/valid/output", "Should override with valid string");
-    assertEquals(conditionalMerged.default_config_path, "/base/config.yml", "Should not override with undefined");
+    assertEquals(
+      conditionalMerged.working_directory,
+      "/base/work",
+      "Should not override with empty string",
+    );
+    assertEquals(
+      conditionalMerged.output_directory,
+      "/valid/output",
+      "Should override with valid string",
+    );
+    assertEquals(
+      conditionalMerged.default_config_path,
+      "/base/config.yml",
+      "Should not override with undefined",
+    );
 
     logger.debug("Configuration merging completed");
   });
@@ -499,57 +511,81 @@ describe("Behavior: Configuration Composition", () => {
     // Transform: Normalize paths
     function normalizeConfig(config: BreakdownConfig): BreakdownConfig {
       const normalizePath = (path: string): string => {
-        return path.replace(/\\/g, '/').replace(/\/+/g, '/');
+        return path.replace(/\\/g, "/").replace(/\/+/g, "/");
       };
 
       return {
         working_directory: normalizePath(config.working_directory),
         output_directory: normalizePath(config.output_directory),
-        default_config_path: normalizePath(config.default_config_path)
+        default_config_path: normalizePath(config.default_config_path),
       };
     }
 
     const unnormalizedConfig: BreakdownConfig = {
       working_directory: "C:\\Users\\user\\\\project",
       output_directory: "/home//user///output",
-      default_config_path: "..\\..\\config.yml"
+      default_config_path: "..\\..\\config.yml",
     };
 
     const normalized = normalizeConfig(unnormalizedConfig);
 
-    assertEquals(normalized.working_directory, "C:/Users/user/project", "Should normalize backslashes and duplicates");
-    assertEquals(normalized.output_directory, "/home/user/output", "Should normalize duplicate slashes");
-    assertEquals(normalized.default_config_path, "../../config.yml", "Should normalize relative path separators");
+    assertEquals(
+      normalized.working_directory,
+      "C:/Users/user/project",
+      "Should normalize backslashes and duplicates",
+    );
+    assertEquals(
+      normalized.output_directory,
+      "/home/user/output",
+      "Should normalize duplicate slashes",
+    );
+    assertEquals(
+      normalized.default_config_path,
+      "../../config.yml",
+      "Should normalize relative path separators",
+    );
 
     // Transform: Resolve relative paths
     function resolveRelativePaths(config: BreakdownConfig, basePath: string): BreakdownConfig {
       const resolvePath = (path: string): string => {
-        if (path.startsWith('/') || path.includes(':')) {
+        if (path.startsWith("/") || path.includes(":")) {
           return path; // Absolute path
         }
         // Remove ./ prefix and normalize path
-        const cleanPath = path.replace(/^\.\//, '');
-        return `${basePath}/${cleanPath}`.replace(/\/+/g, '/');
+        const cleanPath = path.replace(/^\.\//, "");
+        return `${basePath}/${cleanPath}`.replace(/\/+/g, "/");
       };
 
       return {
         working_directory: resolvePath(config.working_directory),
         output_directory: resolvePath(config.output_directory),
-        default_config_path: resolvePath(config.default_config_path)
+        default_config_path: resolvePath(config.default_config_path),
       };
     }
 
     const relativeConfig: BreakdownConfig = {
       working_directory: "./workspace",
       output_directory: "./output",
-      default_config_path: "./config.yml"
+      default_config_path: "./config.yml",
     };
 
     const resolved = resolveRelativePaths(relativeConfig, "/home/user/project");
 
-    assertEquals(resolved.working_directory, "/home/user/project/workspace", "Should resolve relative working directory");
-    assertEquals(resolved.output_directory, "/home/user/project/output", "Should resolve relative output directory");
-    assertEquals(resolved.default_config_path, "/home/user/project/config.yml", "Should resolve relative config path");
+    assertEquals(
+      resolved.working_directory,
+      "/home/user/project/workspace",
+      "Should resolve relative working directory",
+    );
+    assertEquals(
+      resolved.output_directory,
+      "/home/user/project/output",
+      "Should resolve relative output directory",
+    );
+    assertEquals(
+      resolved.default_config_path,
+      "/home/user/project/config.yml",
+      "Should resolve relative config path",
+    );
 
     logger.debug("Configuration transformation completed");
   });

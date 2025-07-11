@@ -1,13 +1,13 @@
 /**
  * @fileoverview Schema file path resolution with full Totality principle applied.
- * 
+ *
  * This is a refactored version of SchemaFilePathResolver that implements:
  * - Complete Result type usage (no partial functions)
  * - Discriminated unions for optional properties
  * - Exhaustive error handling
  * - No null returns or exceptions
  * - Improved type safety
- * 
+ *
  * @module factory/schema_file_path_resolver_totality
  */
 
@@ -35,7 +35,7 @@ export type SchemaPathError =
 /**
  * Configuration with explicit union types instead of optionals
  */
-export type SchemaResolverConfig = 
+export type SchemaResolverConfig =
   | { kind: "WithSchemaConfig"; app_schema: { base_dir: string } }
   | { kind: "NoSchemaConfig" };
 
@@ -68,7 +68,7 @@ export class SchemaPath {
     if (!isAbsolute(path)) {
       return resultError(new Error("Schema path must be absolute"));
     }
-    
+
     // Validate schema file naming convention
     if (!path.endsWith("/base.schema.md")) {
       return resultError(new Error("Schema file must be named 'base.schema.md'"));
@@ -102,7 +102,7 @@ export class SchemaPath {
     return join(
       this.metadata.baseDir,
       this.metadata.demonstrativeType,
-      this.metadata.layerType
+      this.metadata.layerType,
     );
   }
 }
@@ -127,7 +127,7 @@ export class SchemaFilePathResolverTotality {
 
   /**
    * Creates a new resolver instance with full validation
-   * 
+   *
    * Validates all inputs and ensures type safety throughout
    */
   static create(
@@ -185,9 +185,9 @@ export class SchemaFilePathResolverTotality {
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
 
     if (appSchema?.base_dir && typeof appSchema.base_dir === "string") {
-      return { 
-        kind: "WithSchemaConfig", 
-        app_schema: { base_dir: appSchema.base_dir }
+      return {
+        kind: "WithSchemaConfig",
+        app_schema: { base_dir: appSchema.base_dir },
       };
     } else {
       return { kind: "NoSchemaConfig" };
@@ -225,7 +225,7 @@ export class SchemaFilePathResolverTotality {
 
   /**
    * Resolves the complete schema file path with comprehensive error handling
-   * 
+   *
    * Always returns a Result type - never throws exceptions
    */
   public getPath(): Result<SchemaPath, PathResolutionError> {
@@ -267,7 +267,7 @@ export class SchemaFilePathResolverTotality {
         kind: "TemplateNotFound",
         attempted: [schemaPath],
         fallback: `Schema file not found. Expected location: ${schemaPath}\n` +
-                 `Ensure the schema directory exists: ${directory}`,
+          `Ensure the schema directory exists: ${directory}`,
       });
     }
 
@@ -289,9 +289,10 @@ export class SchemaFilePathResolverTotality {
         baseDir = DEFAULT_SCHEMA_BASE_DIR;
         break;
       // Exhaustive check - TypeScript ensures all cases are handled
-      default:
+      default: {
         const _exhaustive: never = this.config;
         return _exhaustive;
+      }
     }
 
     // Ensure absolute path
@@ -334,7 +335,7 @@ export class SchemaFilePathResolverTotality {
   public buildSchemaPath(baseDir: string, fileName: string): string {
     const demonstrativeType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
-    
+
     // Validate path components
     if (!demonstrativeType || !layerType) {
       // This should never happen due to constructor validation

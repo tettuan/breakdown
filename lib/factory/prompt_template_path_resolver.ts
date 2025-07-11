@@ -216,7 +216,9 @@ export class PromptTemplatePathResolver {
   ):
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown> {
-    const copy: any = {};
+    const copy:
+      & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
+      & Record<string, unknown> = {};
 
     // Copy app_prompt
     if (config.app_prompt) {
@@ -266,14 +268,11 @@ export class PromptTemplatePathResolver {
     } else {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
-      const copy: any = {
+      const copy: PromptCliParams = {
         demonstrativeType: doubleParams.demonstrativeType,
         layerType: doubleParams.layerType,
+        options: doubleParams.options ? { ...doubleParams.options } : {},
       };
-
-      if (doubleParams.options) {
-        copy.options = { ...doubleParams.options };
-      }
 
       return copy;
     }
@@ -660,7 +659,7 @@ export function formatPathResolutionError(error: PathResolutionError): string {
         `  Layer Type: ${error.layerType}\n` +
         `Both parameters are required for prompt resolution.`;
 
-    case "TemplateNotFound":
+    case "TemplateNotFound": {
       const message = [
         `パスは正確に生成されました: ${error.attempted[0]}`,
         `しかし、このファイルは存在しません。`,
@@ -677,6 +676,7 @@ export function formatPathResolutionError(error: PathResolutionError): string {
 
       message.push(`プロンプトテンプレートファイルの準備が必要です。`);
       return message.join("\n");
+    }
 
     case "InvalidStrategy":
       return `Invalid Strategy: ${error.strategy}`;

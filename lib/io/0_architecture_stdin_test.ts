@@ -16,6 +16,8 @@ import { assertEquals, assertExists } from "../deps.ts";
 import { fromFileUrl } from "@std/path";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import type { StdinOptions } from "./stdin.ts";
+import type { EnhancedStdinOptions } from "./enhanced_stdin.ts";
 
 // Type for module exports to avoid any
 interface StdinModule {
@@ -274,7 +276,7 @@ describe("Architecture: Error handling architecture", () => {
     // Test StdinError class exists and can be instantiated
     const StdinErrorClass = mod.StdinError as new (message: string) => Error;
     assertExists(StdinErrorClass, "StdinError class should exist");
-    
+
     const testError = new StdinErrorClass("test error");
     assertEquals(testError instanceof Error, true, "StdinError should extend Error");
     assertEquals(testError.name, "StdinError", "Should have correct error name");
@@ -326,19 +328,34 @@ describe("Architecture: Performance and resource management", () => {
         40,
         { quiet: true },
       );
-    assertExists((progressBar as any).update, "ProgressBar should have update method");
-    assertEquals(typeof (progressBar as any).update, "function", "update should be function");
+    assertExists(
+      (progressBar as Record<string, unknown>).update,
+      "ProgressBar should have update method",
+    );
+    assertEquals(
+      typeof (progressBar as Record<string, unknown>).update,
+      "function",
+      "update should be function",
+    );
 
     // Spinner should support lifecycle management
     const spinner = new (mod.Spinner as new (options?: unknown) => unknown)({ quiet: true });
-    assertExists((spinner as any).start, "Spinner should have start method");
-    assertExists((spinner as any).stop, "Spinner should have stop method");
-    assertEquals(typeof (spinner as any).start, "function", "start should be function");
-    assertEquals(typeof (spinner as any).stop, "function", "stop should be function");
+    assertExists((spinner as Record<string, unknown>).start, "Spinner should have start method");
+    assertExists((spinner as Record<string, unknown>).stop, "Spinner should have stop method");
+    assertEquals(
+      typeof (spinner as Record<string, unknown>).start,
+      "function",
+      "start should be function",
+    );
+    assertEquals(
+      typeof (spinner as Record<string, unknown>).stop,
+      "function",
+      "stop should be function",
+    );
 
     // Test cleanup
-    (spinner as any).start();
-    (spinner as any).stop(); // Should not throw
+    (spinner as { start: () => void; stop: () => void }).start();
+    (spinner as { start: () => void; stop: () => void }).stop(); // Should not throw
 
     logger.debug("UI component resource management verified");
   });
@@ -377,7 +394,9 @@ describe("Architecture: Integration layer compliance", () => {
     // readStdin should accept timeout options
     const mod = _mod as StdinModule;
 
-    const readStdinFn = (mod.readStdin as Function).toString();
+    // Apply Totality principle: Define exact function type instead of using Function
+    type ReadStdinFunction = (options?: StdinOptions & EnhancedStdinOptions) => Promise<string>;
+    const readStdinFn = (mod.readStdin as ReadStdinFunction).toString();
 
     // Function should handle timeout parameter
     assertEquals(

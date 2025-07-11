@@ -5,7 +5,7 @@
  * with proper resource management and AbortSignal support.
  */
 
-import { readAll } from "jsr:@std/io@0.224.9/read-all";
+import { readAll as _readAll } from "jsr:@std/io@0.224.9/read-all";
 
 /**
  * Core interface for reading from stdin-like sources
@@ -214,7 +214,7 @@ export class DenoStdinReader implements StdinReader {
     const message = this.getErrorMessage(error);
     const err = new Error(message);
     err.name = "StdinReaderError";
-    (err as any).details = error;
+    (err as Error & { details: StdinReaderError }).details = error;
     return err;
   }
 
@@ -284,9 +284,9 @@ export class MockStdinReader implements StdinReader {
     return this.data.slice(); // Return a copy
   }
 
-  private async simulateDelay(ms: number, signal?: AbortSignal): Promise<void> {
+  private simulateDelay(ms: number, signal?: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
-      let timeoutId: number;
+      let timeoutId: number | undefined = undefined;
       let abortHandler: (() => void) | undefined;
 
       const cleanup = () => {

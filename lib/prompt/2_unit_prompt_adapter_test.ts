@@ -93,8 +93,10 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = inputPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath =
+        promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath =
+        inputPath;
 
       // Create adapter and generate prompt
       const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
@@ -125,8 +127,10 @@ Deno.test({
 
       // Create factory without custom variables
       const factory = new TestPromptVariablesFactory({});
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = "";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath =
+        promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath =
+        "";
 
       // Create adapter and generate prompt
       const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
@@ -165,8 +169,10 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = "";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath =
+        promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath =
+        "";
 
       // Create adapter and generate prompt
       const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);
@@ -208,9 +214,15 @@ Deno.test({
       };
 
       const factory = new TestPromptVariablesFactory(customVariables);
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath = promptPath;
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath = inputPath;
-      (factory._allParams as { promptFilePath?: string; inputFilePath?: string; outputFilePath?: string }).outputFilePath = "/default/output.md";
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).promptFilePath =
+        promptPath;
+      (factory._allParams as { promptFilePath?: string; inputFilePath?: string }).inputFilePath =
+        inputPath;
+      (factory._allParams as {
+        promptFilePath?: string;
+        inputFilePath?: string;
+        outputFilePath?: string;
+      }).outputFilePath = "/default/output.md";
 
       // Create adapter and generate prompt
       const adapter = new PromptAdapterImpl(factory as unknown as _PromptVariablesFactory);

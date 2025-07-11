@@ -11,17 +11,10 @@
  * @module cli/help_behavior_test
  */
 
-import { assertEquals, assertExists } from "../deps.ts";
+import { assertEquals, assertExists as _assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { 
-  _VERSION,
-  APP_NAME,
-  HELP_TEXT,
-  showVersion,
-  showHelp,
-  showUsage
-} from "./help.ts";
+import { _VERSION, APP_NAME, HELP_TEXT, showHelp, showUsage, showVersion } from "./help.ts";
 
 const logger = new BreakdownLogger("help-behavior");
 
@@ -203,9 +196,11 @@ describe("Behavior: Version Display", () => {
   it("should display version information correctly", () => {
     logger.debug("Testing version information display");
 
-    let capturedOutput: string[] = [];
+    const capturedOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { capturedOutput.push(msg); };
+    console.log = (msg: string) => {
+      capturedOutput.push(msg);
+    };
 
     try {
       showVersion();
@@ -237,7 +232,6 @@ describe("Behavior: Version Display", () => {
         true,
         "Version should follow semantic versioning format",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -280,9 +274,11 @@ describe("Behavior: Help Display", () => {
   it("should display complete help information", () => {
     logger.debug("Testing complete help information display");
 
-    let capturedOutput: string[] = [];
+    const capturedOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { capturedOutput.push(msg); };
+    console.log = (msg: string) => {
+      capturedOutput.push(msg);
+    };
 
     try {
       showHelp();
@@ -307,7 +303,6 @@ describe("Behavior: Help Display", () => {
         2,
         "Should output exactly 2 items (app name + help text)",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -357,9 +352,11 @@ describe("Behavior: Usage Display", () => {
   it("should display minimal usage guidance", () => {
     logger.debug("Testing minimal usage guidance");
 
-    let capturedOutput: string[] = [];
+    const capturedOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { capturedOutput.push(msg); };
+    console.log = (msg: string) => {
+      capturedOutput.push(msg);
+    };
 
     try {
       showUsage();
@@ -389,7 +386,6 @@ describe("Behavior: Usage Display", () => {
         2,
         "Should output exactly 2 lines",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -400,9 +396,11 @@ describe("Behavior: Usage Display", () => {
   it("should guide users to detailed help", () => {
     logger.debug("Testing guidance to detailed help");
 
-    let capturedOutput: string[] = [];
+    const capturedOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { capturedOutput.push(msg); };
+    console.log = (msg: string) => {
+      capturedOutput.push(msg);
+    };
 
     try {
       showUsage();
@@ -431,7 +429,6 @@ describe("Behavior: Usage Display", () => {
         true,
         "Should be informative message",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -444,9 +441,9 @@ describe("Behavior: Output Formatting Consistency", () => {
   it("should use consistent app name presentation", () => {
     logger.debug("Testing app name presentation consistency");
 
-    let versionOutput: string[] = [];
-    let helpOutput: string[] = [];
-    let usageOutput: string[] = [];
+    const versionOutput: string[] = [];
+    const helpOutput: string[] = [];
+    const usageOutput: string[] = [];
 
     const originalLog = console.log;
     console.log = (msg: string) => {
@@ -462,25 +459,25 @@ describe("Behavior: Output Formatting Consistency", () => {
 
       // All should include app name
       assertEquals(
-        versionOutput.some(line => line.includes("Breakdown")),
+        versionOutput.some((line) => line.includes("Breakdown")),
         true,
         "Version output should include app name",
       );
       assertEquals(
-        helpOutput.some(line => line.includes("Breakdown")),
+        helpOutput.some((line) => line.includes("Breakdown")),
         true,
         "Help output should include app name",
       );
       assertEquals(
-        usageOutput.some(line => line.includes("Breakdown")),
+        usageOutput.some((line) => line.includes("Breakdown")),
         true,
         "Usage output should include app name",
       );
 
       // App name should be presented consistently
-      const appNameInVersion = versionOutput.find(line => line.includes("Breakdown"));
-      const appNameInHelp = helpOutput.find(line => line === APP_NAME);
-      const appNameInUsage = usageOutput.find(line => line === APP_NAME);
+      const _appNameInVersion = versionOutput.find((line) => line.includes("Breakdown"));
+      const appNameInHelp = helpOutput.find((line) => line === APP_NAME);
+      const appNameInUsage = usageOutput.find((line) => line === APP_NAME);
 
       assertEquals(
         appNameInHelp,
@@ -492,7 +489,6 @@ describe("Behavior: Output Formatting Consistency", () => {
         APP_NAME,
         "Usage should show exact app name",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -506,13 +502,15 @@ describe("Behavior: Output Formatting Consistency", () => {
     const functions = [
       { name: "showVersion", func: showVersion, expectedLines: 2 },
       { name: "showHelp", func: showHelp, expectedLines: 2 },
-      { name: "showUsage", func: showUsage, expectedLines: 2 }
+      { name: "showUsage", func: showUsage, expectedLines: 2 },
     ];
 
     for (const { name, func, expectedLines } of functions) {
-      let outputLines: string[] = [];
+      const outputLines: string[] = [];
       const originalLog = console.log;
-      console.log = (msg: string) => { outputLines.push(msg); };
+      console.log = (msg: string) => {
+        outputLines.push(msg);
+      };
 
       try {
         func();
@@ -537,17 +535,23 @@ describe("Behavior: Output Formatting Consistency", () => {
       let secondOutput: string[] = [];
 
       const originalLog = console.log;
-      
+
       // First call
-      console.log = (msg: string) => { firstOutput.push(msg); };
+      console.log = (msg: string) => {
+        firstOutput.push(msg);
+      };
       func();
-      
+
       // Second call
       firstOutput = [];
       secondOutput = [];
-      console.log = (msg: string) => { firstOutput.push(msg); };
+      console.log = (msg: string) => {
+        firstOutput.push(msg);
+      };
       func();
-      console.log = (msg: string) => { secondOutput.push(msg); };
+      console.log = (msg: string) => {
+        secondOutput.push(msg);
+      };
       func();
 
       try {
@@ -578,37 +582,40 @@ describe("Behavior: User Interaction Scenarios", () => {
     logger.debug("Testing new user scenario");
 
     // New users likely see usage first, then help
-    let usageOutput: string[] = [];
-    let helpOutput: string[] = [];
+    const usageOutput: string[] = [];
+    const helpOutput: string[] = [];
 
     const originalLog = console.log;
-    
-    console.log = (msg: string) => { usageOutput.push(msg); };
+
+    console.log = (msg: string) => {
+      usageOutput.push(msg);
+    };
     showUsage();
-    
-    console.log = (msg: string) => { helpOutput.push(msg); };
+
+    console.log = (msg: string) => {
+      helpOutput.push(msg);
+    };
     showHelp();
 
     try {
       // Usage should guide to help
       assertEquals(
-        usageOutput.some(line => line.includes("--help")),
+        usageOutput.some((line) => line.includes("--help")),
         true,
         "Usage should guide users to help option",
       );
 
       // Help should provide complete guidance
       assertEquals(
-        helpOutput.some(line => line.includes("Commands:")),
+        helpOutput.some((line) => line.includes("Commands:")),
         true,
         "Help should list available commands",
       );
       assertEquals(
-        helpOutput.some(line => line.includes("Examples:")),
+        helpOutput.some((line) => line.includes("Examples:")),
         true,
         "Help should provide usage examples",
       );
-
     } finally {
       console.log = originalLog;
     }
@@ -619,21 +626,23 @@ describe("Behavior: User Interaction Scenarios", () => {
   it("should provide appropriate response for version checking", () => {
     logger.debug("Testing version checking scenario");
 
-    let versionOutput: string[] = [];
+    const versionOutput: string[] = [];
     const originalLog = console.log;
-    console.log = (msg: string) => { versionOutput.push(msg); };
+    console.log = (msg: string) => {
+      versionOutput.push(msg);
+    };
 
     try {
       showVersion();
 
       // Should provide both version number and app identification
       assertEquals(
-        versionOutput.some(line => /v\d+\.\d+\.\d+/.test(line)),
+        versionOutput.some((line) => /v\d+\.\d+\.\d+/.test(line)),
         true,
         "Should show version number in recognizable format",
       );
       assertEquals(
-        versionOutput.some(line => line.includes("Breakdown")),
+        versionOutput.some((line) => line.includes("Breakdown")),
         true,
         "Should identify the application",
       );
@@ -644,7 +653,6 @@ describe("Behavior: User Interaction Scenarios", () => {
         true,
         "Version output should be concise",
       );
-
     } finally {
       console.log = originalLog;
     }

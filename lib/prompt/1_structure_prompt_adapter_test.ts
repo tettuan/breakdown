@@ -46,7 +46,7 @@ class MockPromptVariablesProvider implements PromptVariablesProvider {
 }
 
 describe("PromptAdapter Structure - Interface Design", () => {
-  it("should define clear interface contracts", async () => {
+  it("should define clear interface contracts", () => {
     _logger.debug("Testing interface definitions");
 
     // Test PromptVariablesProvider interface
@@ -125,7 +125,7 @@ describe("PromptAdapter Structure - Class Organization", () => {
     );
 
     // Extract method definitions with their visibility
-    const methodPattern = /^\s{2}(private\s+)?(async\s+)?(\w+)\s*\(/gm;
+    const _methodPattern = /^\s{2}(private\s+)?(async\s+)?(\w+)\s*\(/gm;
     const methods: Array<{ name: string; isPrivate: boolean; line: number }> = [];
     let match;
     let lineNum = 0;
@@ -133,7 +133,8 @@ describe("PromptAdapter Structure - Class Organization", () => {
     const lines = fileContent.split("\n");
     for (const line of lines) {
       lineNum++;
-      if (match = line.match(/^\s{2}(private\s+)?(async\s+)?(\w+)\s*\(/)) {
+      match = line.match(/^\s{2}(private\s+)?(async\s+)?(\w+)\s*\(/);
+      if (match) {
         methods.push({
           name: match[3],
           isPrivate: !!match[1],
@@ -144,7 +145,7 @@ describe("PromptAdapter Structure - Class Organization", () => {
 
     // Check that methods are reasonably organized
     // Allow for logical grouping where private helpers are near their public users
-    const privateCount = methods.filter((m) => m.isPrivate).length;
+    const _privateCount = methods.filter((m) => m.isPrivate).length;
     const publicCount = methods.filter((m) => !m.isPrivate).length;
 
     // Should have a reasonable mix of public and private methods
@@ -204,7 +205,7 @@ describe("PromptAdapter Structure - Data Flow", () => {
     assertEquals(publicFields.length, 0, "Should not have public fields");
 
     // Should access state through methods or getters
-    const hasGetters = fileContent.includes("get ") || fileContent.includes("public get");
+    const _hasGetters = fileContent.includes("get ") || fileContent.includes("public get");
     const hasMethods = fileContent.includes("()");
 
     assertEquals(hasMethods, true, "Should access state through methods");

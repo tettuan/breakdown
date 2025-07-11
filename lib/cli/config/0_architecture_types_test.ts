@@ -26,19 +26,35 @@ describe("Architecture: Type Interface Design", () => {
     const testConfig: BreakdownConfig = {
       working_directory: "/test",
       output_directory: "/output",
-      default_config_path: "/config.yml"
+      default_config_path: "/config.yml",
     };
 
     const testOptions: ConfigOptions = {
-      configPath: "/test/config.yml"
+      configPath: "/test/config.yml",
     };
 
     // Type checking ensures interfaces are properly exported
-    assertEquals(typeof testConfig.working_directory, "string", "BreakdownConfig should have string working_directory");
-    assertEquals(typeof testConfig.output_directory, "string", "BreakdownConfig should have string output_directory");
-    assertEquals(typeof testConfig.default_config_path, "string", "BreakdownConfig should have string default_config_path");
+    assertEquals(
+      typeof testConfig.working_directory,
+      "string",
+      "BreakdownConfig should have string working_directory",
+    );
+    assertEquals(
+      typeof testConfig.output_directory,
+      "string",
+      "BreakdownConfig should have string output_directory",
+    );
+    assertEquals(
+      typeof testConfig.default_config_path,
+      "string",
+      "BreakdownConfig should have string default_config_path",
+    );
 
-    assertEquals(typeof testOptions.configPath, "string", "ConfigOptions should have optional string configPath");
+    assertEquals(
+      typeof testOptions.configPath,
+      "string",
+      "ConfigOptions should have optional string configPath",
+    );
 
     logger.debug("Type interface exports verification completed");
   });
@@ -49,20 +65,20 @@ describe("Architecture: Type Interface Design", () => {
     // BreakdownConfig should have required properties
     const requiredConfigProps = [
       "working_directory",
-      "output_directory", 
-      "default_config_path"
+      "output_directory",
+      "default_config_path",
     ];
 
     const testConfig: BreakdownConfig = {
       working_directory: "/test",
-      output_directory: "/output", 
-      default_config_path: "/config"
+      output_directory: "/output",
+      default_config_path: "/config",
     };
 
     for (const prop of requiredConfigProps) {
       assertExists(
         testConfig[prop as keyof BreakdownConfig],
-        `BreakdownConfig should have required property: ${prop}`
+        `BreakdownConfig should have required property: ${prop}`,
       );
     }
 
@@ -72,7 +88,7 @@ describe("Architecture: Type Interface Design", () => {
       { configPath: "/path" },
       { workingDir: "/work" },
       { outputDir: "/out" },
-      { configPath: "/path", workingDir: "/work", outputDir: "/out" }
+      { configPath: "/path", workingDir: "/work", outputDir: "/out" },
     ];
 
     for (const options of validConfigOptions) {
@@ -80,7 +96,7 @@ describe("Architecture: Type Interface Design", () => {
       assertEquals(
         typeof options === "object",
         true,
-        `Should accept valid ConfigOptions: ${JSON.stringify(options)}`
+        `Should accept valid ConfigOptions: ${JSON.stringify(options)}`,
       );
     }
 
@@ -94,7 +110,7 @@ describe("Architecture: Type Interface Design", () => {
     const minimalConfig: BreakdownConfig = {
       working_directory: "",
       output_directory: "",
-      default_config_path: ""
+      default_config_path: "",
     };
 
     // Should be able to create minimal config
@@ -110,7 +126,7 @@ describe("Architecture: Type Interface Design", () => {
       assertEquals(
         propName.includes("_") || propName === propName.toLowerCase(),
         true,
-        `Property names should follow snake_case or camelCase: ${propName}`
+        `Property names should follow snake_case or camelCase: ${propName}`,
       );
     }
 
@@ -124,24 +140,48 @@ describe("Architecture: Type Interface Design", () => {
     const validConfig: BreakdownConfig = {
       working_directory: "/valid/path",
       output_directory: "/valid/output",
-      default_config_path: "/valid/config.yml"
+      default_config_path: "/valid/config.yml",
     };
 
     // Should accept valid string values
-    assertEquals(typeof validConfig.working_directory, "string", "Should accept string working_directory");
-    assertEquals(typeof validConfig.output_directory, "string", "Should accept string output_directory"); 
-    assertEquals(typeof validConfig.default_config_path, "string", "Should accept string default_config_path");
+    assertEquals(
+      typeof validConfig.working_directory,
+      "string",
+      "Should accept string working_directory",
+    );
+    assertEquals(
+      typeof validConfig.output_directory,
+      "string",
+      "Should accept string output_directory",
+    );
+    assertEquals(
+      typeof validConfig.default_config_path,
+      "string",
+      "Should accept string default_config_path",
+    );
 
     // Optional properties should be properly typed
     const optionsWithAllProps: ConfigOptions = {
       configPath: "/config",
       workingDir: "/work",
-      outputDir: "/output"
+      outputDir: "/output",
     };
 
-    assertEquals(typeof optionsWithAllProps.configPath, "string", "configPath should be string when present");
-    assertEquals(typeof optionsWithAllProps.workingDir, "string", "workingDir should be string when present");
-    assertEquals(typeof optionsWithAllProps.outputDir, "string", "outputDir should be string when present");
+    assertEquals(
+      typeof optionsWithAllProps.configPath,
+      "string",
+      "configPath should be string when present",
+    );
+    assertEquals(
+      typeof optionsWithAllProps.workingDir,
+      "string",
+      "workingDir should be string when present",
+    );
+    assertEquals(
+      typeof optionsWithAllProps.outputDir,
+      "string",
+      "outputDir should be string when present",
+    );
 
     logger.debug("Type safety support verification completed");
   });
@@ -155,37 +195,46 @@ describe("Architecture: Configuration Modeling", () => {
     const coreConfig: BreakdownConfig = {
       working_directory: "/project",
       output_directory: "/project/output",
-      default_config_path: "/project/.breakdown.yml"
+      default_config_path: "/project/.breakdown.yml",
     };
 
     // Should represent paths and directories
     assertEquals(
       coreConfig.working_directory.startsWith("/"),
       true,
-      "Should model directory paths"
+      "Should model directory paths",
     );
     assertEquals(
       coreConfig.output_directory.includes("output"),
       true,
-      "Should model output directory"
+      "Should model output directory",
     );
     assertEquals(
-      coreConfig.default_config_path.includes("config") || coreConfig.default_config_path.includes(".yml"),
+      coreConfig.default_config_path.includes("config") ||
+        coreConfig.default_config_path.includes(".yml"),
       true,
-      "Should model configuration file path"
+      "Should model configuration file path",
     );
 
     // ConfigOptions should model runtime overrides
     const runtimeOptions: ConfigOptions = {
       configPath: "/custom/config.yml",
       workingDir: "/custom/work",
-      outputDir: "/custom/output"
+      outputDir: "/custom/output",
     };
 
     // Should allow overriding core config values
     assertEquals(typeof runtimeOptions.configPath, "string", "Should allow config path override");
-    assertEquals(typeof runtimeOptions.workingDir, "string", "Should allow working directory override");
-    assertEquals(typeof runtimeOptions.outputDir, "string", "Should allow output directory override");
+    assertEquals(
+      typeof runtimeOptions.workingDir,
+      "string",
+      "Should allow working directory override",
+    );
+    assertEquals(
+      typeof runtimeOptions.outputDir,
+      "string",
+      "Should allow output directory override",
+    );
 
     logger.debug("Configuration concern modeling verification completed");
   });
@@ -198,13 +247,13 @@ describe("Architecture: Configuration Modeling", () => {
     const testConfig: BreakdownConfig = {
       working_directory: "/test",
       output_directory: "/test/out",
-      default_config_path: "/test/config.yml"
+      default_config_path: "/test/config.yml",
     };
 
     for (const field of coreRequiredFields) {
       assertExists(
         testConfig[field as keyof BreakdownConfig],
-        `Core config should require: ${field}`
+        `Core config should require: ${field}`,
       );
     }
 
@@ -216,24 +265,24 @@ describe("Architecture: Configuration Modeling", () => {
       assertEquals(
         emptyOptions[field as keyof ConfigOptions],
         undefined,
-        `Runtime options should be optional: ${field}`
+        `Runtime options should be optional: ${field}`,
       );
     }
 
     // Should have different property naming patterns
     const configKeys = Object.keys(testConfig);
-    const hasSnakeCase = configKeys.some(key => key.includes("_"));
+    const hasSnakeCase = configKeys.some((key) => key.includes("_"));
     assertEquals(
       hasSnakeCase,
       true,
-      "Core config uses snake_case naming (properties contain underscores)"
+      "Core config uses snake_case naming (properties contain underscores)",
     );
 
     const optionsWithProps: ConfigOptions = { workingDir: "/test" };
     assertEquals(
       "workingDir" in optionsWithProps,
       true,
-      "Runtime options use camelCase naming"
+      "Runtime options use camelCase naming",
     );
 
     logger.debug("Core config and runtime options separation verification completed");
@@ -249,9 +298,9 @@ describe("Architecture: Configuration Modeling", () => {
 
     const extendedConfig: ExtendedBreakdownConfig = {
       working_directory: "/test",
-      output_directory: "/test/out", 
+      output_directory: "/test/out",
       default_config_path: "/test/config.yml",
-      new_feature_path: "/test/feature"
+      new_feature_path: "/test/feature",
     };
 
     // Should maintain compatibility with base interface
@@ -259,7 +308,7 @@ describe("Architecture: Configuration Modeling", () => {
     assertEquals(
       baseConfig.working_directory,
       extendedConfig.working_directory,
-      "Extended interface should be compatible with base"
+      "Extended interface should be compatible with base",
     );
 
     // Should support additional optional properties
@@ -271,7 +320,7 @@ describe("Architecture: Configuration Modeling", () => {
     const extendedOptions: ExtendedConfigOptions = {
       configPath: "/custom/config.yml",
       debugMode: true,
-      verboseLogging: false
+      verboseLogging: false,
     };
 
     // Should maintain compatibility
@@ -279,7 +328,7 @@ describe("Architecture: Configuration Modeling", () => {
     assertEquals(
       baseOptions.configPath,
       extendedOptions.configPath,
-      "Extended options should be compatible with base"
+      "Extended options should be compatible with base",
     );
 
     logger.debug("Configuration extensibility verification completed");
@@ -301,11 +350,11 @@ describe("Architecture: Type System Integration", () => {
     const validConfig = {
       working_directory: "/test",
       output_directory: "/out",
-      default_config_path: "/config"
+      default_config_path: "/config",
     };
 
     const invalidConfig = {
-      working_directory: "/test"
+      working_directory: "/test",
       // missing required fields
     };
 
@@ -314,16 +363,24 @@ describe("Architecture: Type System Integration", () => {
 
     // Should support utility types
     type ConfigKeys = keyof BreakdownConfig;
-    const configKeys: ConfigKeys[] = ["working_directory", "output_directory", "default_config_path"];
-    
+    const configKeys: ConfigKeys[] = [
+      "working_directory",
+      "output_directory",
+      "default_config_path",
+    ];
+
     assertEquals(configKeys.length, 3, "Should support keyof utility type");
 
     type PartialConfig = Partial<BreakdownConfig>;
     const partialConfig: PartialConfig = {
-      working_directory: "/test"
+      working_directory: "/test",
     };
 
-    assertEquals(typeof partialConfig.working_directory, "string", "Should support Partial utility type");
+    assertEquals(
+      typeof partialConfig.working_directory,
+      "string",
+      "Should support Partial utility type",
+    );
 
     logger.debug("TypeScript type system integration verification completed");
   });
@@ -340,14 +397,14 @@ describe("Architecture: Type System Integration", () => {
     const standardConfig: BreakdownConfig = {
       working_directory: "/test",
       output_directory: "/out",
-      default_config_path: "/config"
+      default_config_path: "/config",
     };
 
     const processedConfig = processConfig(standardConfig);
     assertEquals(
       processedConfig.working_directory,
       standardConfig.working_directory,
-      "Should work with generic functions"
+      "Should work with generic functions",
     );
 
     // Should support mapped types
@@ -371,11 +428,11 @@ describe("Architecture: Type System Integration", () => {
     function validateConfigStructure(config: BreakdownConfig): boolean {
       const requiredStringProps = [
         "working_directory",
-        "output_directory", 
-        "default_config_path"
+        "output_directory",
+        "default_config_path",
       ] as const;
 
-      return requiredStringProps.every(prop => 
+      return requiredStringProps.every((prop) =>
         typeof config[prop] === "string" && config[prop].length > 0
       );
     }
@@ -383,32 +440,32 @@ describe("Architecture: Type System Integration", () => {
     const validConfig: BreakdownConfig = {
       working_directory: "/valid",
       output_directory: "/valid/out",
-      default_config_path: "/valid/config.yml"
+      default_config_path: "/valid/config.yml",
     };
 
     assertEquals(
       validateConfigStructure(validConfig),
       true,
-      "Should maintain type contracts at module boundaries"
+      "Should maintain type contracts at module boundaries",
     );
 
     // Should support config option validation
     function validateConfigOptions(options: ConfigOptions): boolean {
       const optionalStringProps = ["configPath", "workingDir", "outputDir"] as const;
-      
-      return optionalStringProps.every(prop => 
+
+      return optionalStringProps.every((prop) =>
         options[prop] === undefined || typeof options[prop] === "string"
       );
     }
 
     const validOptions: ConfigOptions = {
-      configPath: "/custom/config.yml"
+      configPath: "/custom/config.yml",
     };
 
     assertEquals(
       validateConfigOptions(validOptions),
       true,
-      "Should maintain option type contracts"
+      "Should maintain option type contracts",
     );
 
     logger.debug("Module boundary type safety verification completed");
@@ -422,31 +479,39 @@ describe("Architecture: Type System Integration", () => {
       return {
         working_directory: options.workingDir || base.working_directory,
         output_directory: options.outputDir || base.output_directory,
-        default_config_path: options.configPath || base.default_config_path
+        default_config_path: options.configPath || base.default_config_path,
       };
     }
 
     const baseConfig: BreakdownConfig = {
       working_directory: "/base",
       output_directory: "/base/out",
-      default_config_path: "/base/config.yml"
+      default_config_path: "/base/config.yml",
     };
 
     const overrideOptions: ConfigOptions = {
       workingDir: "/override",
-      configPath: "/override/config.yml"
+      configPath: "/override/config.yml",
     };
 
     const mergedConfig = mergeConfigs(baseConfig, overrideOptions);
 
     assertEquals(mergedConfig.working_directory, "/override", "Should merge working directory");
     assertEquals(mergedConfig.output_directory, "/base/out", "Should keep base output directory");
-    assertEquals(mergedConfig.default_config_path, "/override/config.yml", "Should merge config path");
+    assertEquals(
+      mergedConfig.default_config_path,
+      "/override/config.yml",
+      "Should merge config path",
+    );
 
     // Result should still be valid BreakdownConfig
     assertEquals(typeof mergedConfig.working_directory, "string", "Merged config should be valid");
     assertEquals(typeof mergedConfig.output_directory, "string", "Merged config should be valid");
-    assertEquals(typeof mergedConfig.default_config_path, "string", "Merged config should be valid");
+    assertEquals(
+      typeof mergedConfig.default_config_path,
+      "string",
+      "Merged config should be valid",
+    );
 
     logger.debug("Configuration composition patterns verification completed");
   });

@@ -101,7 +101,7 @@ Deno.test("Structure: schema avoids duplication and redundancy", () => {
     return match ? match[1] : "";
   });
 
-  const uniquePatterns = new Set(propertyPatterns);
+  const _uniquePatterns = new Set(propertyPatterns);
   assertEquals(propertyPatterns.length > 0, true, "Should have property patterns");
 });
 

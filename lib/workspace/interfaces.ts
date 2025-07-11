@@ -57,7 +57,7 @@ export interface WorkspaceConfig {
  * @example Unix path strategy implementation
  * ```typescript
  * class UnixStrategy implements PathResolutionStrategy {
- *   async resolve(path: string): Promise<string> {
+ *   resolve(path: string): Promise<string> {
  *     return join(this.baseDir, path.replace(/\\/g, '/'));
  *   }
  * }

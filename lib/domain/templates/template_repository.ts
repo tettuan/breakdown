@@ -11,6 +11,16 @@ import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { PromptTemplate, TemplatePath } from "./prompt_generation_aggregate.ts";
 
 /**
+ * Template data type alias - represents a loaded template
+ */
+export type TemplateData = PromptTemplate;
+
+/**
+ * Selection result type alias - represents the result of template selection
+ */
+export type SelectionResult = TemplatePath;
+
+/**
  * Template manifest entry
  */
 export interface TemplateManifestEntry {

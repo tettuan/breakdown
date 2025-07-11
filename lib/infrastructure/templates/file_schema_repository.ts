@@ -9,7 +9,7 @@
 
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
-import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
 import { Schema, SchemaPath } from "../../domain/templates/schema_management_aggregate.ts";
 import type {
   SchemaBatchResult,
@@ -40,7 +40,7 @@ export interface FileSchemaRepositoryConfig {
 /**
  * Schema cache entry
  */
-interface SchemaCacheEntry {
+export interface SchemaCacheEntry {
   schema: Schema;
   loadedAt: Date;
   size: number;
@@ -161,7 +161,7 @@ export class FileSchemaRepository implements SchemaRepository {
     return result;
   }
 
-  async exists(path: SchemaPath): Promise<boolean> {
+  exists(path: SchemaPath): Promise<boolean> {
     const fullPath = join(this.schemaDir, path.getPath());
     return exists(fullPath);
   }
@@ -278,7 +278,7 @@ export class FileSchemaRepository implements SchemaRepository {
       // Convert references to SchemaPath objects
       // This is simplified - real implementation would need proper path resolution
       const dependencies: SchemaPath[] = [];
-      for (const ref of references) {
+      for (const _ref of references) {
         // Parse reference and create SchemaPath
         // Implementation depends on reference format
       }
@@ -292,13 +292,13 @@ export class FileSchemaRepository implements SchemaRepository {
     }
   }
 
-  async validateSchema(content: unknown): Promise<{ valid: boolean; errors?: string[] }> {
+  validateSchema(content: unknown): Promise<{ valid: boolean; errors?: string[] }> {
     const errors: string[] = [];
 
     // Basic JSON schema validation
     if (typeof content !== "object" || content === null) {
       errors.push("Schema must be an object");
-      return { valid: false, errors };
+      return Promise.resolve({ valid: false, errors });
     }
 
     const schema = content as Record<string, unknown>;
@@ -321,18 +321,18 @@ export class FileSchemaRepository implements SchemaRepository {
     // More comprehensive validation would use a proper JSON schema validator
     // like ajv or similar
 
-    return {
+    return Promise.resolve({
       valid: errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
-    };
+    });
   }
 
-  async refresh(): Promise<void> {
+  refresh(): Promise<void> {
     this.cache.clear();
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
-
     this.logger.info("Schema repository cache cleared");
+    return Promise.resolve();
   }
 
   private async buildManifest(options?: SchemaQueryOptions): Promise<SchemaManifest> {

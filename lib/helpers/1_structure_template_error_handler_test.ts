@@ -18,7 +18,7 @@ import {
   withTemplateErrorHandling,
 } from "./template_error_handler.ts";
 
-Deno.test("Structure: TemplateError constructor parameters", async () => {
+Deno.test("Structure: TemplateError constructor parameters", () => {
   // Test required parameters
   const error1 = new TemplateError("Message", TemplateErrorType.TEMPLATE_NOT_FOUND);
   assertEquals(error1.message, "Message", "Should set message");
@@ -44,7 +44,7 @@ Deno.test("Structure: TemplateError constructor parameters", async () => {
   assertExists(error2.cause, "Should set cause");
 });
 
-Deno.test("Structure: TemplateErrorHandler static method signatures", async () => {
+Deno.test("Structure: TemplateErrorHandler static method signatures", () => {
   // detectTemplateError method
   assertEquals(
     TemplateErrorHandler.detectTemplateError.length,
@@ -60,7 +60,7 @@ Deno.test("Structure: TemplateErrorHandler static method signatures", async () =
   );
 });
 
-Deno.test("Structure: TemplateError instance method signatures", async () => {
+Deno.test("Structure: TemplateError instance method signatures", () => {
   const error = new TemplateError("Test", TemplateErrorType.TEMPLATE_NOT_FOUND);
 
   // getDetailedMessage method
@@ -78,7 +78,7 @@ Deno.test("Structure: TemplateError instance method signatures", async () => {
   );
 });
 
-Deno.test("Structure: Error message formatting patterns", async () => {
+Deno.test("Structure: Error message formatting patterns", () => {
   const error = new TemplateError(
     "Template not found",
     TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -123,7 +123,7 @@ Deno.test("Structure: Error message formatting patterns", async () => {
   );
 });
 
-Deno.test("Structure: Recovery commands generation structure", async () => {
+Deno.test("Structure: Recovery commands generation structure", () => {
   // Test different error types produce different commands
   const errorTypes = [
     TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -151,7 +151,7 @@ Deno.test("Structure: Recovery commands generation structure", async () => {
   }
 });
 
-Deno.test("Structure: Error detection logic structure", async () => {
+Deno.test("Structure: Error detection logic structure", () => {
   // Test detection logic for different error patterns
   const testCases = [
     {
@@ -188,7 +188,7 @@ Deno.test("Structure: Error detection logic structure", async () => {
   }
 });
 
-Deno.test("Structure: Error context parameter structure", async () => {
+Deno.test("Structure: Error context parameter structure", () => {
   const context = {
     templatePath: "/prompts/test.md",
     operation: "template_load",
@@ -227,9 +227,9 @@ Deno.test("Structure: Error handler return types", async () => {
   }
 });
 
-Deno.test("Structure: withTemplateErrorHandling wrapper structure", async () => {
+Deno.test("Structure: withTemplateErrorHandling wrapper structure", () => {
   // Should accept operation function and context
-  const operation = async () => "test result";
+  const operation = () => Promise.resolve("test result");
   const context = {
     templatePath: "/test/path",
     operation: "test_operation",
@@ -261,7 +261,7 @@ Deno.test("Structure: Auto-resolution options structure", async () => {
   assertEquals(typeof result.message, "string");
 });
 
-Deno.test("Structure: Error suggestions follow consistent format", async () => {
+Deno.test("Structure: Error suggestions follow consistent format", () => {
   const errorWithSuggestions = new TemplateError(
     "Test error",
     TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -292,7 +292,7 @@ Deno.test("Structure: Error suggestions follow consistent format", async () => {
   }
 });
 
-Deno.test("Structure: Error type specific command patterns", async () => {
+Deno.test("Structure: Error type specific command patterns", () => {
   const commandPatterns = {
     [TemplateErrorType.TEMPLATE_NOT_FOUND]: [
       "bash scripts/template_generator.sh generate",

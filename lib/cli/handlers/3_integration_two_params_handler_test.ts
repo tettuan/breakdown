@@ -11,7 +11,7 @@ import { assertEquals, assertExists } from "../../deps.ts";
 import { handleTwoParams } from "./two_params_handler.ts";
 
 // Mock implementations for testing
-class MockBreakdownConfig {
+class _MockBreakdownConfig {
   constructor(public data: Record<string, unknown> = {}) {}
 }
 
@@ -284,7 +284,7 @@ Deno.test("TwoParamsHandler Integration - Performance and memory", async () => {
   // All results should have proper structure
   for (const _loopResult of results) {
     assertExists(_loopResult);
-    assertEquals(typeof (_loopResult as any).ok, "boolean");
+    assertEquals(typeof (_loopResult as unknown as { ok: boolean }).ok, "boolean");
   }
 });
 

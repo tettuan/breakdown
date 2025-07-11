@@ -104,30 +104,30 @@ export * from "./types.ts";
  * @see {@link ./errors.ts}
  */
 export {
-  // Interface-based error types  
-  createWorkspaceError,
   createWorkspaceConfigError,
-  createWorkspacePathError,
   createWorkspaceDirectoryError,
-  isWorkspaceInitError,
+  // Interface-based error types
+  createWorkspaceError,
+  createWorkspacePathError,
   isWorkspaceConfigError,
-  isWorkspacePathError,
   isWorkspaceDirectoryError,
   isWorkspaceError,
-  // Type aliases
-  type WorkspaceErrorBase,
-  type WorkspaceInitErrorType,
-  type WorkspaceInitErrorInterface,
+  isWorkspaceInitError,
+  isWorkspacePathError,
+  WorkspaceConfigError,
   type WorkspaceConfigErrorInterface,
-  type WorkspacePathErrorInterface,
+  WorkspaceDirectoryError,
   type WorkspaceDirectoryErrorInterface,
-  type WorkspaceErrorType,
-  type WorkspaceResult,
   // Class-based error types for tests
   WorkspaceError,
-  WorkspaceConfigError,
+  // Type aliases
+  type WorkspaceErrorBase,
+  type WorkspaceErrorType,
+  type WorkspaceInitErrorInterface,
+  type WorkspaceInitErrorType,
   WorkspacePathError,
-  WorkspaceDirectoryError,
+  type WorkspacePathErrorInterface,
+  type WorkspaceResult,
 } from "./errors.ts";
 
 /**
@@ -135,13 +135,13 @@ export {
  * @see {@link ./workspace_init_error.ts}
  */
 export {
-  WorkspaceInitError,
-  WorkspaceInitError as WorkspaceInitErrorClass,
-  DirectoryCreationError,
   ConfigCreationError,
+  createWorkspaceInitError,
+  DirectoryCreationError,
   InvalidWorkspaceLocationError,
   WorkspaceExistsError,
-  createWorkspaceInitError,
+  WorkspaceInitError,
+  WorkspaceInitError as WorkspaceInitErrorClass,
 } from "./workspace_init_error.ts";
 
 /**

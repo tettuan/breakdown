@@ -3,7 +3,9 @@
 This prompt helps analyze and document critical defects in tasks with enhanced severity assessment.
 
 ## Input
+
 The input is a task containing:
+
 - Task title
 - Description
 - Steps to complete
@@ -18,7 +20,9 @@ The input is a task containing:
 - Business impact assessment
 
 ## Output
+
 The output should be a critical defect analysis with:
+
 - Severity assessment
   - User impact level
   - Business impact level
@@ -52,6 +56,7 @@ The output should be a critical defect analysis with:
   - Process improvements
 
 ## Instructions
+
 1. Assess defect severity and impact
 2. Document incident timeline
 3. Perform deep technical analysis
@@ -61,4 +66,4 @@ The output should be a critical defect analysis with:
 7. Create recovery strategy
 8. Specify testing requirements
 9. Plan preventive measures
-10. Document lessons learned 
+10. Document lessons learned

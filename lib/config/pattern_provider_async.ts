@@ -199,25 +199,28 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   /**
    * Gets all available patterns
    */
-  async getAllPatterns(): Promise<Result<{ directive: TwoParamsDirectivePattern | null; layer: TwoParamsLayerTypePattern | null }, PatternProviderError>> {
+  getAllPatterns(): Result<
+    { directive: TwoParamsDirectivePattern | null; layer: TwoParamsLayerTypePattern | null },
+    PatternProviderError
+  > {
     if (!this._initialized) {
       return resultError({
-        kind: "NotInitialized"
+        kind: "NotInitialized",
       });
     }
 
     try {
       const directive = this.getDirectivePattern();
       const layer = this.getLayerTypePattern();
-      
+
       return resultOk({
         directive,
-        layer
+        layer,
       });
     } catch (error) {
       return resultError({
         kind: "ConfigLoadFailed",
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
       });
     }
   }

@@ -20,7 +20,7 @@ import {
 const _logger = new _BreakdownLogger("structure-prompt-adapter-validator");
 
 describe("PromptAdapterValidator Structure - Class Design", () => {
-  it("should instantiate without configuration", async () => {
+  it("should instantiate without configuration", () => {
     _logger.debug("Testing instantiation");
 
     const _validator = new PromptAdapterValidator();
@@ -31,7 +31,7 @@ describe("PromptAdapterValidator Structure - Class Design", () => {
     assertExists(_validator.validateDirectory, "Should have validateDirectory method");
   });
 
-  it("should have consistent method naming", async () => {
+  it("should have consistent method naming", () => {
     _logger.debug("Testing method naming consistency");
 
     const _validator = new PromptAdapterValidator();
@@ -54,11 +54,11 @@ describe("PromptAdapterValidator Structure - Class Design", () => {
     });
   });
 
-  it("should follow consistent validation flow", async () => {
+  it("should follow consistent validation flow", () => {
     _logger.debug("Testing validation flow structure");
 
-    const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url),
+    const fileContent = Deno.readTextFileSync(
+      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
     );
 
     // Each validate method should follow: sanitize -> validate -> check pattern
@@ -78,7 +78,7 @@ describe("PromptAdapterValidator Structure - Class Design", () => {
 });
 
 describe("PromptAdapterValidator Structure - Result Type Usage", () => {
-  it("should use discriminated union for results", async () => {
+  it("should use discriminated union for results", () => {
     _logger.debug("Testing result type structure");
 
     // Test the structure by attempting to use it
@@ -104,7 +104,7 @@ describe("PromptAdapterValidator Structure - Result Type Usage", () => {
     }
   });
 
-  it("should have comprehensive error types", async () => {
+  it("should have comprehensive error types", () => {
     _logger.debug("Testing error type completeness");
 
     // All error types should be accessible
@@ -124,7 +124,7 @@ describe("PromptAdapterValidator Structure - Result Type Usage", () => {
 });
 
 describe("PromptAdapterValidator Structure - Method Signatures", () => {
-  it("should have consistent async method signatures", async () => {
+  it("should have consistent async method signatures", () => {
     _logger.debug("Testing method signatures");
 
     const _validator = new PromptAdapterValidator();
@@ -141,7 +141,7 @@ describe("PromptAdapterValidator Structure - Method Signatures", () => {
     );
   });
 
-  it("should accept consistent parameters", async () => {
+  it("should accept consistent parameters", () => {
     _logger.debug("Testing parameter consistency");
 
     const _validator = new PromptAdapterValidator();
@@ -163,11 +163,11 @@ describe("PromptAdapterValidator Structure - Method Signatures", () => {
 });
 
 describe("PromptAdapterValidator Structure - Internal Organization", () => {
-  it("should separate public and private methods", async () => {
+  it("should separate public and private methods", () => {
     _logger.debug("Testing method visibility organization");
 
-    const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url),
+    const fileContent = Deno.readTextFileSync(
+      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
     );
 
     // Extract method definitions - improved pattern to catch more variations
@@ -218,11 +218,11 @@ describe("PromptAdapterValidator Structure - Internal Organization", () => {
     }
   });
 
-  it("should have logical method grouping", async () => {
+  it("should have logical method grouping", () => {
     _logger.debug("Testing method grouping");
 
-    const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url),
+    const fileContent = Deno.readTextFileSync(
+      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
     );
 
     // Methods should be grouped by functionality
@@ -241,11 +241,11 @@ describe("PromptAdapterValidator Structure - Internal Organization", () => {
 });
 
 describe("PromptAdapterValidator Structure - Error Message Consistency", () => {
-  it("should use consistent error message format", async () => {
+  it("should use consistent error message format", () => {
     _logger.debug("Testing error message patterns");
 
-    const fileContent = await Deno.readTextFile(
-      new URL("./prompt_adapter_validator.ts", import.meta.url),
+    const fileContent = Deno.readTextFileSync(
+      new URL("./prompt_adapter_validator.ts", import.meta.url).pathname,
     );
 
     // Error messages should include the label

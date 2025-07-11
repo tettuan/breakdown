@@ -66,7 +66,7 @@ Deno.test("Architecture: Stdin provider interface is properly segregated", async
   const methodNames = methods.map((m) => m.split("(")[0].trim());
 
   // Check each method has a single purpose
-  const expectedMethods = ["readAll", "isTerminal"];
+  const _expectedMethods = ["readAll", "isTerminal"];
   const coreMethods = methodNames.filter((m) => !m.includes("?"));
 
   // Core methods should be focused
@@ -179,7 +179,7 @@ Deno.test("Architecture: Stdin provider follows provider pattern correctly", asy
   // Verify factory or provider selection mechanism
   const hasDenoProvider = moduleSource.includes("DenoStdinProvider") ||
     moduleSource.includes("ActualStdinProvider");
-  const hasMultipleProviders = hasMockImplementation && hasDenoProvider;
+  const _hasMultipleProviders = hasMockImplementation && hasDenoProvider;
 
   // At minimum, should have mock provider
   assertEquals(hasMockImplementation, true, "Should implement provider pattern with mock");

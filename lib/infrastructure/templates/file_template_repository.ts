@@ -9,7 +9,7 @@
 
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
-import type { DirectiveType, LayerType } from "../../types/mod.ts";
+import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
 import {
   PromptTemplate,
   TemplatePath,
@@ -107,7 +107,7 @@ export class FileTemplateRepository implements TemplateRepository {
     }
   }
 
-  async exists(path: TemplatePath): Promise<boolean> {
+  exists(path: TemplatePath): Promise<boolean> {
     const fullPath = join(this.config.baseDirectory, "prompts", path.getPath());
     return exists(fullPath);
   }
@@ -161,12 +161,13 @@ export class FileTemplateRepository implements TemplateRepository {
     }
   }
 
-  async refresh(): Promise<void> {
+  refresh(): Promise<void> {
     this.cache.clear();
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
 
     this.logger.info("Repository cache cleared");
+    return Promise.resolve();
   }
 
   private async buildManifest(): Promise<TemplateManifest> {

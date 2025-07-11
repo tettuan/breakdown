@@ -3,11 +3,11 @@
  *
  * This module provides a unified TemplatePath value object that replaces all existing
  * scattered implementations with a single, comprehensive, type-safe solution.
- * 
+ *
  * Replaces:
  * - lib/domain/templates/prompt_generation_aggregate.ts::TemplatePath (exception-based)
  * - lib/domain/generic/template_management/value_objects/prompt_path.ts (basic Result)
- * 
+ *
  * Design Principles:
  * 1. Smart Constructor pattern for type-safe creation
  * 2. Discriminated Union for comprehensive error handling
@@ -25,7 +25,7 @@ import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "
 
 /**
  * Template Path specific error types using Discriminated Union
- * 
+ *
  * Each error type has a unique 'kind' discriminator for type safety
  * and provides specific context for different failure scenarios.
  */
@@ -72,27 +72,39 @@ export type TemplatePathError =
  * Type guards for TemplatePathError discrimination
  * Enables type-safe error handling throughout the application
  */
-export function isInvalidDirectiveError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "InvalidDirective" }> {
+export function isInvalidDirectiveError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "InvalidDirective" }> {
   return error.kind === "InvalidDirective";
 }
 
-export function isInvalidLayerError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "InvalidLayer" }> {
+export function isInvalidLayerError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "InvalidLayer" }> {
   return error.kind === "InvalidLayer";
 }
 
-export function isInvalidFilenameError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "InvalidFilename" }> {
+export function isInvalidFilenameError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "InvalidFilename" }> {
   return error.kind === "InvalidFilename";
 }
 
-export function isPathConstructionError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "PathConstructionError" }> {
+export function isPathConstructionError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "PathConstructionError" }> {
   return error.kind === "PathConstructionError";
 }
 
-export function isSecurityViolationError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "SecurityViolation" }> {
+export function isSecurityViolationError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "SecurityViolation" }> {
   return error.kind === "SecurityViolation";
 }
 
-export function isValidationError(error: TemplatePathError): error is Extract<TemplatePathError, { kind: "ValidationError" }> {
+export function isValidationError(
+  error: TemplatePathError,
+): error is Extract<TemplatePathError, { kind: "ValidationError" }> {
   return error.kind === "ValidationError";
 }
 
@@ -107,7 +119,9 @@ export function formatTemplatePathError(templateError: TemplatePathError): strin
     case "InvalidLayer":
       return `Invalid layer: ${templateError.message}`;
     case "InvalidFilename":
-      return `Invalid filename '${templateError.filename}': ${templateError.message}. Constraints: ${templateError.constraints.join(", ")}`;
+      return `Invalid filename '${templateError.filename}': ${templateError.message}. Constraints: ${
+        templateError.constraints.join(", ")
+      }`;
     case "PathConstructionError":
       return `Path construction failed: ${templateError.message}`;
     case "SecurityViolation":
@@ -137,36 +151,36 @@ export interface TemplatePathConfig {
  * Default template path configuration
  */
 export const DEFAULT_TEMPLATE_PATH_CONFIG: TemplatePathConfig = {
-  allowedExtensions: ['.md'],
+  allowedExtensions: [".md"],
   maxFilenameLength: 100,
   allowCustomDirectives: false,
   allowCustomLayers: false,
   basePathConfig: {
     ...DEFAULT_PATH_CONFIG,
     allowAbsolute: false, // Template paths are always relative
-    requiredExtensions: ['.md'],
+    requiredExtensions: [".md"],
     maxLength: 200, // directive/layer/filename.md
   },
 };
 
 /**
  * Template Path Value Object
- * 
+ *
  * Represents a validated path to a prompt template file within the template directory structure.
  * Follows the pattern: directive/layer/filename.md
- * 
+ *
  * This class unifies all previous template path implementations and provides:
  * - Type-safe construction through Smart Constructor pattern
  * - Comprehensive validation with specific error types
  * - Immutable design following DDD principles
  * - Security validation to prevent path traversal attacks
  * - Integration with DirectiveType and LayerType domain objects
- * 
+ *
  * @example Basic usage
  * ```typescript
  * const directiveResult = DirectiveType.create(twoParamsResult);
  * const layerResult = LayerType.create(twoParamsResult);
- * 
+ *
  * if (directiveResult && layerResult) {
  *   const pathResult = TemplatePath.create(directiveResult, layerResult, "base.md");
  *   if (pathResult.ok) {
@@ -174,7 +188,7 @@ export const DEFAULT_TEMPLATE_PATH_CONFIG: TemplatePathConfig = {
  *   }
  * }
  * ```
- * 
+ *
  * @example With custom configuration
  * ```typescript
  * const config: TemplatePathConfig = {
@@ -182,16 +196,16 @@ export const DEFAULT_TEMPLATE_PATH_CONFIG: TemplatePathConfig = {
  *   allowedExtensions: ['.md', '.txt'],
  *   allowCustomDirectives: true,
  * };
- * 
+ *
  * const pathResult = TemplatePath.createWithConfig(directive, layer, "custom.txt", config);
  * ```
  */
 export class TemplatePath extends BasePathValueObject {
   /**
    * Private constructor enforcing Smart Constructor pattern
-   * 
+   *
    * @param directive The validated directive type
-   * @param layer The validated layer type  
+   * @param layer The validated layer type
    * @param filename The validated filename
    * @param fullPath The complete validated path string
    */
@@ -208,10 +222,10 @@ export class TemplatePath extends BasePathValueObject {
 
   /**
    * Smart Constructor for TemplatePath with default configuration
-   * 
+   *
    * Creates a validated TemplatePath instance using standard template path rules.
    * This is the primary factory method for most use cases.
-   * 
+   *
    * @param directive The directive type (e.g., "to", "summary", "defect")
    * @param layer The layer type (e.g., "project", "issue", "task")
    * @param filename The template filename (must end with .md)
@@ -227,10 +241,10 @@ export class TemplatePath extends BasePathValueObject {
 
   /**
    * Smart Constructor for TemplatePath with custom configuration
-   * 
+   *
    * Provides full control over validation rules and constraints.
    * Useful for testing, custom environments, or special use cases.
-   * 
+   *
    * @param directive The directive type
    * @param layer The layer type
    * @param filename The template filename
@@ -298,19 +312,28 @@ export class TemplatePath extends BasePathValueObject {
   /**
    * Factory for common template types
    */
-  static createSummaryTemplate(layer: LayerType, filename: string): Result<TemplatePath, TemplatePathError> {
+  static createSummaryTemplate(
+    layer: LayerType,
+    filename: string,
+  ): Result<TemplatePath, TemplatePathError> {
     // This would need DirectiveType.createSummary() method to be implemented
     // For now, we'll simulate it
     const summaryResult = { getValue: () => "summary" } as DirectiveType;
     return TemplatePath.create(summaryResult, layer, filename);
   }
 
-  static createDefectTemplate(layer: LayerType, filename: string): Result<TemplatePath, TemplatePathError> {
+  static createDefectTemplate(
+    layer: LayerType,
+    filename: string,
+  ): Result<TemplatePath, TemplatePathError> {
     const defectResult = { getValue: () => "defect" } as DirectiveType;
     return TemplatePath.create(defectResult, layer, filename);
   }
 
-  static createToTemplate(layer: LayerType, filename: string): Result<TemplatePath, TemplatePathError> {
+  static createToTemplate(
+    layer: LayerType,
+    filename: string,
+  ): Result<TemplatePath, TemplatePathError> {
     const toResult = { getValue: () => "to" } as DirectiveType;
     return TemplatePath.create(toResult, layer, filename);
   }
@@ -348,7 +371,7 @@ export class TemplatePath extends BasePathValueObject {
    * Get path relative to a base directory
    */
   getRelativePath(baseDir: string): string {
-    const cleanBase = baseDir.replace(/[/\\]+$/, ''); // Remove trailing slashes
+    const cleanBase = baseDir.replace(/[/\\]+$/, ""); // Remove trailing slashes
     return `${cleanBase}/${this.getFullPath()}`;
   }
 
@@ -357,9 +380,9 @@ export class TemplatePath extends BasePathValueObject {
    */
   override equals(other: TemplatePath): boolean {
     return super.equals(other) &&
-           this.directive.equals(other.directive) &&
-           this.layer.equals(other.layer) &&
-           this.filename === other.filename;
+      this.directive.equals(other.directive) &&
+      this.layer.equals(other.layer) &&
+      this.filename === other.filename;
   }
 
   /**
@@ -411,7 +434,7 @@ export class TemplatePath extends BasePathValueObject {
       });
     }
 
-    if (!filename || typeof filename !== 'string') {
+    if (!filename || typeof filename !== "string") {
       return error({
         kind: "InvalidFilename",
         message: "Filename cannot be null, undefined, or non-string",
@@ -438,11 +461,11 @@ export class TemplatePath extends BasePathValueObject {
    */
   private static validateDirective(
     directive: DirectiveType,
-    config: TemplatePathConfig,
+    _config: TemplatePathConfig,
   ): Result<void, TemplatePathError> {
     try {
       const directiveValue = directive.getValue();
-      
+
       if (!directiveValue || directiveValue.trim().length === 0) {
         return error({
           kind: "InvalidDirective",
@@ -453,12 +476,14 @@ export class TemplatePath extends BasePathValueObject {
 
       // Additional directive-specific validation could go here
       // For example, checking against a whitelist if allowCustomDirectives is false
-      
+
       return ok(undefined);
     } catch (dirError) {
       return error({
         kind: "InvalidDirective",
-        message: `Failed to validate directive: ${dirError instanceof Error ? dirError.message : String(dirError)}`,
+        message: `Failed to validate directive: ${
+          dirError instanceof Error ? dirError.message : String(dirError)
+        }`,
       });
     }
   }
@@ -468,11 +493,11 @@ export class TemplatePath extends BasePathValueObject {
    */
   private static validateLayer(
     layer: LayerType,
-    config: TemplatePathConfig,
+    _config: TemplatePathConfig,
   ): Result<void, TemplatePathError> {
     try {
       const layerValue = layer.getValue();
-      
+
       if (!layerValue || layerValue.trim().length === 0) {
         return error({
           kind: "InvalidLayer",
@@ -482,12 +507,14 @@ export class TemplatePath extends BasePathValueObject {
       }
 
       // Additional layer-specific validation could go here
-      
+
       return ok(undefined);
     } catch (layerError) {
       return error({
         kind: "InvalidLayer",
-        message: `Failed to validate layer: ${layerError instanceof Error ? layerError.message : String(layerError)}`,
+        message: `Failed to validate layer: ${
+          layerError instanceof Error ? layerError.message : String(layerError)
+        }`,
       });
     }
   }
@@ -514,12 +541,12 @@ export class TemplatePath extends BasePathValueObject {
     }
 
     // Extension validation
-    const hasValidExtension = config.allowedExtensions.some(ext => 
+    const hasValidExtension = config.allowedExtensions.some((ext) =>
       trimmedFilename.toLowerCase().endsWith(ext.toLowerCase())
     );
 
     if (!hasValidExtension) {
-      constraints.push(`must end with: ${config.allowedExtensions.join(', ')}`);
+      constraints.push(`must end with: ${config.allowedExtensions.join(", ")}`);
       return error({
         kind: "InvalidFilename",
         message: "Invalid file extension",
@@ -529,14 +556,14 @@ export class TemplatePath extends BasePathValueObject {
     }
 
     // Character validation (basic security)
-    const suspiciousChars = ['\0', '\r', '\n', '..', '<', '>', '|', '*', '?', '"'];
-    const foundSuspicious = suspiciousChars.filter(char => trimmedFilename.includes(char));
-    
+    const suspiciousChars = ["\0", "\r", "\n", "..", "<", ">", "|", "*", "?", '"'];
+    const foundSuspicious = suspiciousChars.filter((char) => trimmedFilename.includes(char));
+
     if (foundSuspicious.length > 0) {
       constraints.push("no suspicious characters");
       return error({
         kind: "InvalidFilename",
-        message: `Contains forbidden characters: ${foundSuspicious.join(', ')}`,
+        message: `Contains forbidden characters: ${foundSuspicious.join(", ")}`,
         filename: trimmedFilename,
         constraints,
       });
@@ -565,7 +592,9 @@ export class TemplatePath extends BasePathValueObject {
     } catch (constructionError) {
       return error({
         kind: "PathConstructionError",
-        message: `Failed to construct path: ${constructionError instanceof Error ? constructionError.message : String(constructionError)}`,
+        message: `Failed to construct path: ${
+          constructionError instanceof Error ? constructionError.message : String(constructionError)
+        }`,
         components: {
           directive: directive?.getValue(),
           layer: layer?.getValue(),

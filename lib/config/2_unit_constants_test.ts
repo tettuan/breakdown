@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "../deps.ts";
+import { assertEquals } from "../deps.ts";
 import {
   _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_PROMPT_BASE_DIR,
@@ -47,7 +47,7 @@ Deno.test("Unit: DirectoryType allows only valid directory keys", () => {
 
   // TypeScript prevents invalid types at compile time
   // @ts-expect-error - "invalid" is not a valid DirectoryType
-  const invalidType: DirectoryType = "invalid";
+  const _invalidType: DirectoryType = "invalid";
 });
 
 Deno.test("Unit: Smart Constructor pattern for workspace paths", () => {

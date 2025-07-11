@@ -128,16 +128,16 @@ export abstract class BasePathValueObject {
    * @returns The file extension (including dot) or empty string
    */
   getExtension(): string {
-    const lastDot = this.value.lastIndexOf('.');
-    const lastSlash = Math.max(this.value.lastIndexOf('/'), this.value.lastIndexOf('\\'));
-    
+    const lastDot = this.value.lastIndexOf(".");
+    const lastSlash = Math.max(this.value.lastIndexOf("/"), this.value.lastIndexOf("\\"));
+
     // Extension must be after directory separator and not at the start of filename
     // This handles dotfiles correctly (e.g., ".dotfile" has no extension)
     if (lastDot > lastSlash && lastDot > lastSlash + 1) {
       return this.value.substring(lastDot);
     }
-    
-    return '';
+
+    return "";
   }
 
   /**
@@ -145,7 +145,7 @@ export abstract class BasePathValueObject {
    * @returns The filename portion of the path
    */
   getFilename(): string {
-    const lastSlash = Math.max(this.value.lastIndexOf('/'), this.value.lastIndexOf('\\'));
+    const lastSlash = Math.max(this.value.lastIndexOf("/"), this.value.lastIndexOf("\\"));
     return this.value.substring(lastSlash + 1);
   }
 
@@ -154,8 +154,8 @@ export abstract class BasePathValueObject {
    * @returns The directory path without filename
    */
   getDirectory(): string {
-    const lastSlash = Math.max(this.value.lastIndexOf('/'), this.value.lastIndexOf('\\'));
-    if (lastSlash < 0) return '';
+    const lastSlash = Math.max(this.value.lastIndexOf("/"), this.value.lastIndexOf("\\"));
+    if (lastSlash < 0) return "";
     return this.value.substring(0, lastSlash);
   }
 
@@ -165,12 +165,12 @@ export abstract class BasePathValueObject {
    */
   isAbsolute(): boolean {
     // Windows: starts with drive letter or UNC path
-    if (/^[a-zA-Z]:[/\\]/.test(this.value) || this.value.startsWith('\\\\')) {
+    if (/^[a-zA-Z]:[/\\]/.test(this.value) || this.value.startsWith("\\\\")) {
       return true;
     }
-    
+
     // Unix-like: starts with forward slash
-    return this.value.startsWith('/');
+    return this.value.startsWith("/");
   }
 
   /**
@@ -256,7 +256,7 @@ export abstract class BasePathValueObject {
       });
     }
 
-    if (typeof rawPath !== 'string') {
+    if (typeof rawPath !== "string") {
       return error({
         kind: "EMPTY_PATH",
         message: "Path must be a string",
@@ -282,10 +282,10 @@ export abstract class BasePathValueObject {
 
     if (config.normalizeSeparators) {
       // Convert all separators to forward slashes for consistent processing
-      normalized = normalized.replace(/[/\\]+/g, '/');
-      
+      normalized = normalized.replace(/[/\\]+/g, "/");
+
       // Remove trailing slashes except for root
-      if (normalized.length > 1 && normalized.endsWith('/')) {
+      if (normalized.length > 1 && normalized.endsWith("/")) {
         normalized = normalized.slice(0, -1);
       }
     }
@@ -299,31 +299,34 @@ export abstract class BasePathValueObject {
   private static validateSecurity(path: string): Result<void, PathValidationError> {
     // Check for path traversal attacks
     const pathTraversalPatterns = [
-      '../',
-      '..\\',
-      '/..',
-      '\\..',
+      "../",
+      "..\\",
+      "/..",
+      "\\..",
     ];
 
     for (const pattern of pathTraversalPatterns) {
       if (path.includes(pattern)) {
         return error({
           kind: "PATH_TRAVERSAL",
-          message: "Path contains path traversal sequences which are not allowed for security reasons",
+          message:
+            "Path contains path traversal sequences which are not allowed for security reasons",
           attemptedPath: path,
         });
       }
     }
 
     // Check for suspicious characters that might indicate injection attempts
-    const suspiciousChars = ['\0', '\r', '\n'];
-    const foundSuspicious = suspiciousChars.filter(char => path.includes(char));
-    
+    const suspiciousChars = ["\0", "\r", "\n"];
+    const foundSuspicious = suspiciousChars.filter((char) => path.includes(char));
+
     if (foundSuspicious.length > 0) {
       return error({
         kind: "INVALID_CHARACTERS",
         message: "Path contains control characters which are not allowed",
-        invalidChars: foundSuspicious.map(char => `\\x${char.charCodeAt(0).toString(16).padStart(2, '0')}`),
+        invalidChars: foundSuspicious.map((char) =>
+          `\\x${char.charCodeAt(0).toString(16).padStart(2, "0")}`
+        ),
       });
     }
 
@@ -333,7 +336,10 @@ export abstract class BasePathValueObject {
   /**
    * Validate path type (absolute vs relative)
    */
-  private static validatePathType(path: string, config: PathValidationConfig): Result<void, PathValidationError> {
+  private static validatePathType(
+    path: string,
+    config: PathValidationConfig,
+  ): Result<void, PathValidationError> {
     const isAbsolute = this.isAbsolutePath(path);
 
     if (isAbsolute && !config.allowAbsolute) {
@@ -358,12 +364,12 @@ export abstract class BasePathValueObject {
    */
   private static isAbsolutePath(path: string): boolean {
     // Windows: starts with drive letter or UNC path
-    if (/^[a-zA-Z]:[/\\]/.test(path) || path.startsWith('\\\\')) {
+    if (/^[a-zA-Z]:[/\\]/.test(path) || path.startsWith("\\\\")) {
       return true;
     }
-    
+
     // Unix-like: starts with forward slash
-    return path.startsWith('/');
+    return path.startsWith("/");
   }
 
   /**
@@ -374,15 +380,15 @@ export abstract class BasePathValueObject {
     requiredExtensions: readonly string[],
   ): Result<void, PathValidationError> {
     const actualExtension = this.getFileExtension(path);
-    
-    const hasValidExtension = requiredExtensions.some(ext => 
+
+    const hasValidExtension = requiredExtensions.some((ext) =>
       actualExtension.toLowerCase() === ext.toLowerCase()
     );
 
     if (!hasValidExtension) {
       return error({
         kind: "INVALID_EXTENSION",
-        message: `File must have one of the following extensions: ${requiredExtensions.join(', ')}`,
+        message: `File must have one of the following extensions: ${requiredExtensions.join(", ")}`,
         expected: [...requiredExtensions],
         actual: actualExtension,
       });
@@ -395,22 +401,25 @@ export abstract class BasePathValueObject {
    * Get file extension from path
    */
   private static getFileExtension(path: string): string {
-    const lastDot = path.lastIndexOf('.');
-    const lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
-    
+    const lastDot = path.lastIndexOf(".");
+    const lastSlash = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+
     // Extension must be after directory separator and not at the start of filename
     // This handles dotfiles correctly (e.g., ".dotfile" has no extension)
     if (lastDot > lastSlash && lastDot > lastSlash + 1) {
       return path.substring(lastDot);
     }
-    
-    return '';
+
+    return "";
   }
 
   /**
    * Validate path length
    */
-  private static validateLength(path: string, maxLength: number): Result<void, PathValidationError> {
+  private static validateLength(
+    path: string,
+    maxLength: number,
+  ): Result<void, PathValidationError> {
     if (path.length > maxLength) {
       return error({
         kind: "TOO_LONG",
@@ -430,12 +439,12 @@ export abstract class BasePathValueObject {
     path: string,
     forbiddenChars: readonly string[],
   ): Result<void, PathValidationError> {
-    const foundForbidden = forbiddenChars.filter(char => path.includes(char));
-    
+    const foundForbidden = forbiddenChars.filter((char) => path.includes(char));
+
     if (foundForbidden.length > 0) {
       return error({
         kind: "INVALID_CHARACTERS",
-        message: `Path contains forbidden characters: ${foundForbidden.join(', ')}`,
+        message: `Path contains forbidden characters: ${foundForbidden.join(", ")}`,
         invalidChars: foundForbidden,
       });
     }

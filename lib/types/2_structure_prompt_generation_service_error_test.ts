@@ -7,14 +7,14 @@
  * @module types/2_structure_prompt_generation_service_error_test
  */
 
-import { assertEquals, assert } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import type {
+  PromptGenerationError,
   PromptGenerationServiceError,
   PromptGenerationServiceErrors,
-  VariableValidationError,
-  TemplateResolutionError,
-  PromptGenerationError,
   ServiceConfigurationError,
+  TemplateResolutionError,
+  VariableValidationError,
 } from "./prompt_generation_service_error.ts";
 import { PromptGenerationServiceErrorFactory } from "./prompt_generation_service_error.ts";
 
@@ -47,7 +47,7 @@ Deno.test("Structure: VariableValidationError specific properties", () => {
   assertEquals(typeof error.message, "string");
   assert(Array.isArray(error.validationErrors));
   assertEquals(error.validationErrors.length, 2);
-  
+
   // Verify validation error structure
   error.validationErrors.forEach((validationError) => {
     assert(typeof validationError === "object");
@@ -146,7 +146,7 @@ Deno.test("Structure: Union type discriminated by kind property", () => {
         assertEquals(typeof error.configurationIssue, "string");
         break;
       default:
-        assert(false, `Unexpected error kind: ${(error as any).kind}`);
+        assert(false, `Unexpected error kind: ${(error as { kind: string }).kind}`);
     }
   });
 });
@@ -156,7 +156,7 @@ Deno.test("Structure: Factory-generated errors maintain proper structure", () =>
   const variableError = PromptGenerationServiceErrorFactory.variableValidationFailed([
     { message: "Test validation error" },
   ]);
-  
+
   assertEquals(variableError.kind, "VariableValidationFailed");
   assertEquals(typeof variableError.message, "string");
   assert(Array.isArray(variableError.validationErrors));
@@ -164,21 +164,21 @@ Deno.test("Structure: Factory-generated errors maintain proper structure", () =>
 
   // Test TemplateResolutionError factory
   const templateError = PromptGenerationServiceErrorFactory.templateResolutionFailed("/test/path");
-  
+
   assertEquals(templateError.kind, "TemplateResolutionFailed");
   assertEquals(typeof templateError.message, "string");
   assertEquals(typeof templateError.templatePath, "string");
 
   // Test PromptGenerationError factory
   const promptError = PromptGenerationServiceErrorFactory.promptGenerationFailed("test reason");
-  
+
   assertEquals(promptError.kind, "PromptGenerationFailed");
   assertEquals(typeof promptError.message, "string");
   assertEquals(typeof promptError.reason, "string");
 
   // Test ServiceConfigurationError factory
   const configError = PromptGenerationServiceErrorFactory.serviceConfigurationError("test issue");
-  
+
   assertEquals(configError.kind, "ServiceConfigurationError");
   assertEquals(typeof configError.message, "string");
   assertEquals(typeof configError.configurationIssue, "string");
@@ -258,25 +258,35 @@ Deno.test("Structure: Factory object structure and immutability", () => {
     "templateResolutionFailed",
     "promptGenerationFailed",
     "serviceConfigurationError",
+    "templateSelectionFailed",
+    "templateLoadingFailed",
   ];
 
   assertEquals(factoryKeys.length, expectedKeys.length);
   expectedKeys.forEach((key) => {
     assert(factoryKeys.includes(key));
-    assertEquals(typeof PromptGenerationServiceErrorFactory[key as keyof typeof PromptGenerationServiceErrorFactory], "function");
+    assertEquals(
+      typeof PromptGenerationServiceErrorFactory[
+        key as keyof typeof PromptGenerationServiceErrorFactory
+      ],
+      "function",
+    );
   });
 
   // Verify factory is immutable (const assertion)
   const originalFactory = PromptGenerationServiceErrorFactory;
-  
+
   // Should not be able to modify factory methods
   try {
     // @ts-expect-error - Testing immutability
-    PromptGenerationServiceErrorFactory.variableValidationFailed = () => ({ kind: "Modified", message: "Modified" });
+    PromptGenerationServiceErrorFactory.variableValidationFailed = () => ({
+      kind: "Modified",
+      message: "Modified",
+    });
   } catch {
     // Expected to fail in strict mode
   }
-  
+
   // Factory should remain unchanged
   assertEquals(PromptGenerationServiceErrorFactory, originalFactory);
 });

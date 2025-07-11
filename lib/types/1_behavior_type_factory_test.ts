@@ -1,16 +1,16 @@
 /**
  * @fileoverview TypeFactory Behavior Tests - 動作検証
- * 
+ *
  * TypeFactoryの動作仕様を検証するテスト。
  * 正常系・異常系の動作、エラーハンドリング、境界値テストを実施。
- * 
+ *
  * @module types/1_behavior_type_factory_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
 import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
-import { TwoParamsDirectivePattern, DirectiveType } from "./mod.ts";
-import { TwoParamsLayerTypePattern, LayerType } from "./mod.ts";
+import { TwoParamsDirectivePattern } from "./mod.ts";
+import { TwoParamsLayerTypePattern } from "./mod.ts";
 
 /**
  * テスト用のモックパターンプロバイダー
@@ -39,10 +39,10 @@ Deno.test("TypeFactory Behavior - createDirectiveType success cases", () => {
 
   // 正常系：有効な値での構築
   const testCases = ["to", "summary", "defect"];
-  
+
   for (const value of testCases) {
     const result = factory.createDirectiveType(value);
-    
+
     assertEquals(result.ok, true);
     if (result.ok) {
       assertExists(result.data);
@@ -56,23 +56,26 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
   // ケース1: パターンが見つからない
   const nullProvider = new MockPatternProvider(null, null);
   const factory1 = new TypeFactory(nullProvider);
-  
+
   const result1 = factory1.createDirectiveType("any");
   assertEquals(result1.ok, false);
   if (!result1.ok) {
     assertEquals(result1.error.kind, "PatternNotFound");
     if (result1.error.kind === "PatternNotFound") {
-      assertEquals(result1.error.reason, "DirectiveType validation pattern not found in configuration");
+      assertEquals(
+        result1.error.reason,
+        "DirectiveType validation pattern not found in configuration",
+      );
     }
   }
-  
+
   // ケース2: バリデーション失敗
   const strictProvider = new MockPatternProvider(
     TwoParamsDirectivePattern.create("^(to|summary)$")!,
     null,
   );
   const factory2 = new TypeFactory(strictProvider);
-  
+
   const result2 = factory2.createDirectiveType("invalid");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -93,10 +96,10 @@ Deno.test("TypeFactory Behavior - createLayerType success cases", () => {
 
   // 正常系：有効な値での構築
   const testCases = ["project", "issue", "task", "bugs"];
-  
+
   for (const value of testCases) {
     const result = factory.createLayerType(value);
-    
+
     assertEquals(result.ok, true);
     if (result.ok) {
       assertExists(result.data);
@@ -110,7 +113,7 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
   // ケース1: パターンが見つからない
   const nullProvider = new MockPatternProvider(null, null);
   const factory1 = new TypeFactory(nullProvider);
-  
+
   const result1 = factory1.createLayerType("any");
   assertEquals(result1.ok, false);
   if (!result1.ok) {
@@ -119,14 +122,14 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
       assertEquals(result1.error.reason, "LayerType validation pattern not found in configuration");
     }
   }
-  
+
   // ケース2: バリデーション失敗
   const strictProvider = new MockPatternProvider(
     null,
     TwoParamsLayerTypePattern.create("^(project|issue)$")!,
   );
   const factory2 = new TypeFactory(strictProvider);
-  
+
   const result2 = factory2.createLayerType("task");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -231,7 +234,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   );
   const factory1 = new TypeFactory(fullProvider);
   const availability1 = factory1.getPatternAvailability();
-  
+
   assertEquals(availability1.directive, true);
   assertEquals(availability1.layer, true);
   assertEquals(availability1.both, true);
@@ -243,7 +246,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   );
   const factory2 = new TypeFactory(directiveOnlyProvider);
   const availability2 = factory2.getPatternAvailability();
-  
+
   assertEquals(availability2.directive, true);
   assertEquals(availability2.layer, false);
   assertEquals(availability2.both, false);
@@ -255,7 +258,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   );
   const factory3 = new TypeFactory(layerOnlyProvider);
   const availability3 = factory3.getPatternAvailability();
-  
+
   assertEquals(availability3.directive, false);
   assertEquals(availability3.layer, true);
   assertEquals(availability3.both, false);
@@ -264,7 +267,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   const nullProvider = new MockPatternProvider(null, null);
   const factory4 = new TypeFactory(nullProvider);
   const availability4 = factory4.getPatternAvailability();
-  
+
   assertEquals(availability4.directive, false);
   assertEquals(availability4.layer, false);
   assertEquals(availability4.both, false);
@@ -278,7 +281,7 @@ Deno.test("TypeFactory Behavior - debug method behavior", () => {
   const factory = new TypeFactory(provider);
 
   const debug = factory.debug();
-  
+
   assertEquals(debug.patternProvider, "MockPatternProvider");
   assertExists(debug.availability);
   assertEquals(debug.availability.directive, true);

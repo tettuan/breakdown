@@ -1,6 +1,6 @@
 /**
  * @fileoverview Prompt Path Value Object
- * 
+ *
  * Represents a path to a prompt template file with validation and formatting capabilities.
  */
 
@@ -42,7 +42,7 @@ export class PromptPath {
         };
       }
 
-      if (!filename.endsWith('.md')) {
+      if (!filename.endsWith(".md")) {
         return {
           ok: false,
           error: "Prompt filename must end with .md",

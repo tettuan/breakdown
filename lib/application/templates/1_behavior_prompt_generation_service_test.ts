@@ -1,69 +1,82 @@
 /**
  * @fileoverview Behavior tests for PromptGenerationService
- * 
+ *
  * Tests focused on:
  * - Normal operation flows
  * - Error handling behaviors
  * - State transitions
  * - Business logic validation
- * 
+ *
  * @module application/templates/1_behavior_prompt_generation_service_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { 
-  PromptGenerationService,
+import {
   type PromptGenerationDependencies,
   type PromptGenerationRequest,
-  type PromptGenerationResponse
+  type PromptGenerationResponse,
+  PromptGenerationService,
 } from "./prompt_generation_service.ts";
-import type { TemplateRepository, TemplateManifest } from "../../domain/templates/template_repository.ts";
-import { GenerationPolicy, type ValidationResult, type SelectionContext } from "../../domain/templates/generation_policy.ts";
+import type {
+  TemplateManifest,
+  TemplateRepository,
+} from "../../domain/templates/template_repository.ts";
+import {
+  GenerationPolicy,
+  type SelectionContext,
+  type ValidationResult,
+} from "../../domain/templates/generation_policy.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { PromptTemplate, TemplatePath, TemplateVariables } from "../../domain/templates/prompt_generation_aggregate.ts";
+import {
+  PromptTemplate,
+  TemplatePath,
+} from "../../domain/templates/prompt_generation_aggregate.ts";
 
 // Enhanced mock implementations
 class MockTemplateRepository implements TemplateRepository {
   private templates = new Map<string, PromptTemplate>();
-  
-  async loadTemplate(path: TemplatePath): Promise<PromptTemplate> {
+
+  loadTemplate(path: TemplatePath): Promise<PromptTemplate> {
     const pathStr = path.getPath();
     const template = this.templates.get(pathStr);
     if (!template) {
       throw new Error(`Template not found: ${pathStr}`);
     }
-    return template;
+    return Promise.resolve(template);
   }
-  
-  async exists(path: TemplatePath): Promise<boolean> {
-    return this.templates.has(path.getPath());
+
+  exists(path: TemplatePath): Promise<boolean> {
+    return Promise.resolve(this.templates.has(path.getPath()));
   }
-  
-  async listAvailable(): Promise<TemplateManifest> {
-    return {
-      templates: Array.from(this.templates.keys()).map(path => ({
+
+  listAvailable(): Promise<TemplateManifest> {
+    return Promise.resolve({
+      templates: Array.from(this.templates.keys()).map((path) => ({
         path,
-        directive: path.split('-')[0],
-        layer: path.split('-')[1]?.replace('.md', '') || '',
+        directive: path.split("-")[0],
+        layer: path.split("-")[1]?.replace(".md", "") || "",
         filename: path,
       })),
       generatedAt: new Date(),
       totalCount: this.templates.size,
-    };
+    });
   }
-  
-  async save(): Promise<void> {
+
+  save(): Promise<void> {
     // Mock implementation
+    return Promise.resolve();
   }
-  
-  async delete(): Promise<void> {
+
+  delete(): Promise<void> {
     // Mock implementation
+    return Promise.resolve();
   }
-  
-  async refresh(): Promise<void> {
+
+  refresh(): Promise<void> {
     // Simulate refresh
+    return Promise.resolve();
   }
-  
+
   setTemplate(path: string, template: PromptTemplate): void {
     this.templates.set(path, template);
   }
@@ -80,31 +93,34 @@ const createMockPolicy = (options?: {
     timeoutMs: 30000,
     fallbackStrategies: [],
   };
-  
+
   const selectionStrategy = {
-    selectTemplate: (directive: DirectiveType, layer: LayerType, context?: SelectionContext) => {
+    selectTemplate: (directive: DirectiveType, layer: LayerType, _context?: SelectionContext) => {
       const filename = `${directive.getValue()}-${layer.getValue()}.md`;
       return TemplatePath.create(directive, layer, filename);
     },
   };
-  
+
   const policyResult = GenerationPolicy.create(config, [], selectionStrategy);
   if (!policyResult.ok) {
     throw new Error(`Failed to create mock policy: ${policyResult.error.message}`);
   }
-  
+
   const policy = policyResult.data;
-  
+
   // Override methods if needed for testing
   if (options?.validateVariablesResult) {
-    (policy as any).validateVariables = () => options.validateVariablesResult;
+    (policy as unknown as { validateVariables: () => ValidationResult }).validateVariables = () =>
+      options.validateVariablesResult!;
   }
-  
+
   return policy;
 };
 
 // Test helpers
-const createTestDependencies = (): PromptGenerationDependencies & { repository: MockTemplateRepository } => {
+const createTestDependencies = (): PromptGenerationDependencies & {
+  repository: MockTemplateRepository;
+} => {
   return {
     repository: new MockTemplateRepository(),
     policy: createMockPolicy(),
@@ -120,10 +136,10 @@ const createTestRequest = (): PromptGenerationRequest => {
     params: ["test1", "test2"],
     options: {},
   };
-  
+
   const directive = DirectiveType.create(directiveResult);
-  
-  // Create valid TwoParams_Result for LayerType  
+
+  // Create valid TwoParams_Result for LayerType
   const layerResult = {
     type: "two" as const,
     demonstrativeType: "to",
@@ -131,9 +147,9 @@ const createTestRequest = (): PromptGenerationRequest => {
     params: ["test1", "test2"],
     options: {},
   };
-  
+
   const layer = LayerType.create(layerResult);
-  
+
   return {
     directive,
     layer,
@@ -150,13 +166,13 @@ const createTestRequest = (): PromptGenerationRequest => {
 Deno.test("PromptGenerationService - Behavior - Successful prompt generation", async () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
-  
+
   // Setup mock template
   const mockContent = {
     getContent: () => "Hello {{project_name}} by {{user_name}}",
@@ -178,7 +194,7 @@ Deno.test("PromptGenerationService - Behavior - Successful prompt generation", a
       createdAt: new Date(),
       updatedAt: new Date(),
     }),
-    generate: (variables: any) => ({
+    generate: (variables: Record<string, unknown>) => ({
       ok: true,
       data: {
         getContent: () => "Generated content",
@@ -188,13 +204,13 @@ Deno.test("PromptGenerationService - Behavior - Successful prompt generation", a
       },
     }),
   } as unknown as PromptTemplate;
-  
+
   // Template path should match the TemplatePath.create format: directive/layer/filename
   deps.repository.setTemplate("to/task/to-task.md", mockTemplate);
-  
+
   const request = createTestRequest();
   const response = await service.generatePrompt(request);
-  
+
   assertEquals(response.success, true);
   assertExists(response.content);
   assertEquals(response.templatePath, "to/task/to-task.md");
@@ -204,17 +220,17 @@ Deno.test("PromptGenerationService - Behavior - Successful prompt generation", a
 Deno.test("PromptGenerationService - Behavior - Template not found error", async () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
   const request = createTestRequest();
-  
+
   // No template set, so it should fail
   const response = await service.generatePrompt(request);
-  
+
   assertEquals(response.success, false);
   assertExists(response.error);
   assertEquals(response.error.message.includes("Template not found"), true);
@@ -223,11 +239,11 @@ Deno.test("PromptGenerationService - Behavior - Template not found error", async
 Deno.test("PromptGenerationService - Behavior - Template validation", async () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
   const result = {
     type: "two" as const,
@@ -236,20 +252,20 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
     params: ["test1", "test2"],
     options: {},
   };
-  
+
   const directive = DirectiveType.create(result);
   const layer = LayerType.create(result);
-  
+
   // Template doesn't exist
   const validation1 = await service.validateTemplate(
     directive,
-    layer
+    layer,
   );
-  
+
   assertEquals(validation1.valid, false);
   assertExists(validation1.errors);
   assertEquals(validation1.errors.length > 0, true);
-  
+
   // Add template
   const mockTemplate = {
     getId: () => "test-template",
@@ -267,7 +283,7 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
       createdAt: new Date(),
       updatedAt: new Date(),
     }),
-    generate: (variables: any) => ({
+    generate: (variables: Record<string, unknown>) => ({
       ok: true,
       data: {
         getContent: () => "Generated content",
@@ -276,16 +292,16 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
         getGeneratedAt: () => new Date(),
       },
     }),
-  } as any;
+  } as unknown as PromptTemplate;
   // Template path should match the TemplatePath.create format: directive/layer/filename
   deps.repository.setTemplate("to/task/to-task.md", mockTemplate);
-  
+
   // Template exists
   const validation2 = await service.validateTemplate(
     directive,
-    layer
+    layer,
   );
-  
+
   assertEquals(validation2.valid, true);
   assertEquals(validation2.errors, undefined);
 });
@@ -293,52 +309,52 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
 Deno.test("PromptGenerationService - Behavior - List available templates", async () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
-  
+
   // Initially empty
   const list1 = await service.listAvailableTemplates();
   assertEquals(list1.totalCount, 0);
   assertEquals(list1.templates.length, 0);
-  
+
   // Add some templates
-  deps.repository.setTemplate("template1.md", {} as any);
-  deps.repository.setTemplate("template2.md", {} as any);
-  
+  deps.repository.setTemplate("template1.md", {} as PromptTemplate);
+  deps.repository.setTemplate("template2.md", {} as PromptTemplate);
+
   const list2 = await service.listAvailableTemplates();
   assertEquals(list2.totalCount, 2);
   assertEquals(list2.templates.length, 2);
-  const paths = list2.templates.map(t => t.path);
+  const paths = list2.templates.map((t) => t.path);
   assertEquals(paths.includes("template1.md"), true);
   assertEquals(paths.includes("template2.md"), true);
 });
 
-Deno.test("PromptGenerationService - Behavior - CommandResult conversion", async () => {
+Deno.test("PromptGenerationService - Behavior - CommandResult conversion", () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
-  
+
   // Success response
   const successResponse: PromptGenerationResponse = {
     success: true,
     content: "Generated content",
     templatePath: "test.md",
   };
-  
+
   const successResult = service.toCommandResult(successResponse);
   assertEquals(successResult.success, true);
   assertEquals(successResult.output, "Generated content");
   assertEquals(successResult.error, null);
-  
+
   // Error response
   const errorResponse: PromptGenerationResponse = {
     success: false,
@@ -348,7 +364,7 @@ Deno.test("PromptGenerationService - Behavior - CommandResult conversion", async
       message: "Test error message",
     },
   };
-  
+
   const errorResult = service.toCommandResult(errorResponse);
   assertEquals(errorResult.success, false);
   assertEquals(errorResult.output, "");
@@ -357,7 +373,7 @@ Deno.test("PromptGenerationService - Behavior - CommandResult conversion", async
     // CommandResult.error has structure: { kind?: string; type: string; message: string; }
     assertEquals(errorResult.error.type, "TestError");
     assertEquals(errorResult.error.message, "Test error message");
-    
+
     // Optional kind property check
     if ("kind" in errorResult.error && errorResult.error.kind) {
       assertEquals(errorResult.error.kind, "TestError");
@@ -370,13 +386,13 @@ Deno.test("PromptGenerationService - Behavior - CommandResult conversion", async
 Deno.test("PromptGenerationService - Behavior - Refresh templates clears aggregate cache", async () => {
   const deps = createTestDependencies();
   const serviceResult = PromptGenerationService.create(deps);
-  
+
   if (!serviceResult.ok) {
     throw new Error("Service creation failed");
   }
-  
+
   const service = serviceResult.data;
-  
+
   // Setup and generate once to populate cache
   const mockTemplate = {
     getId: () => "test-template",
@@ -397,7 +413,7 @@ Deno.test("PromptGenerationService - Behavior - Refresh templates clears aggrega
       createdAt: new Date(),
       updatedAt: new Date(),
     }),
-    generate: (variables: any) => ({
+    generate: (variables: Record<string, unknown>) => ({
       ok: true,
       data: {
         getContent: () => "Generated content",
@@ -406,16 +422,16 @@ Deno.test("PromptGenerationService - Behavior - Refresh templates clears aggrega
         getGeneratedAt: () => new Date(),
       },
     }),
-  } as any;
+  } as unknown as PromptTemplate;
   // Template path should match the TemplatePath.create format: directive/layer/filename
   deps.repository.setTemplate("to/task/to-task.md", mockTemplate);
-  
+
   const request = createTestRequest();
   await service.generatePrompt(request);
-  
+
   // Refresh should clear the aggregate cache
   await service.refreshTemplates();
-  
+
   // Should still work after refresh
   const response = await service.generatePrompt(request);
   assertEquals(response.success, true);

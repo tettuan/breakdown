@@ -176,7 +176,7 @@ export class WorkspaceStructureTotality {
   /**
    * Initializes the workspace structure
    */
-  async initialize(): Promise<Result<void, StructureErrorKind>> {
+  initialize(): Promise<Result<void, StructureErrorKind>> {
     return this.ensureDirectories();
   }
 
@@ -252,17 +252,17 @@ export class WorkspaceStructureTotality {
   /**
    * Creates a directory with validation
    */
-  async createDirectory(path: string): Promise<Result<void, StructureErrorKind>> {
+  createDirectory(path: string): Promise<Result<void, StructureErrorKind>> {
     const pathResult = WorkspaceDirectoryPath.create(path);
     if (!pathResult.ok) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: pathResult.error,
         },
-      };
+      });
     }
 
     const fullPath = join(this.workingDir, pathResult.data.toString());

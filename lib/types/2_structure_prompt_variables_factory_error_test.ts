@@ -11,17 +11,13 @@
  * @module types/2_structure_prompt_variables_factory_error_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertObjectMatch,
-} from "../deps.ts";
+import { assert, assertEquals, assertObjectMatch } from "../deps.ts";
 import {
   type InputFilePathNotResolvedError,
   type PathOptionsCreationError,
   type PromptVariablesFactoryError,
-  type PromptVariablesFactoryErrors,
   PromptVariablesFactoryErrorFactory,
+  type PromptVariablesFactoryErrors,
   type SchemaResolverCreationError,
   type TemplateResolverCreationError,
 } from "./prompt_variables_factory_error.ts";
@@ -50,7 +46,7 @@ Deno.test("PromptVariablesFactoryError Structure - Base interface compliance", (
     // Readonly properties verification
     const originalKind = error.kind;
     const originalMessage = error.message;
-    
+
     // Properties should be readonly (TypeScript enforces this at compile time)
     assertEquals(error.kind, originalKind);
     assertEquals(error.message, originalMessage);
@@ -65,7 +61,8 @@ Deno.test("PromptVariablesFactoryError Structure - Base interface compliance", (
 
 Deno.test("PromptVariablesFactoryError Structure - Extended interface properties", () => {
   // Test PathOptionsCreationError structure
-  const pathError: PathOptionsCreationError = PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed("test error");
+  const pathError: PathOptionsCreationError = PromptVariablesFactoryErrorFactory
+    .pathOptionsCreationFailed("test error");
   assertEquals(pathError.kind, "PathOptionsCreationFailed");
   assertEquals(typeof pathError.pathOptionsError, "string");
   assertEquals(pathError.pathOptionsError, "test error");
@@ -75,7 +72,8 @@ Deno.test("PromptVariablesFactoryError Structure - Extended interface properties
   });
 
   // Test TemplateResolverCreationError structure
-  const templateError: TemplateResolverCreationError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("template issue");
+  const templateError: TemplateResolverCreationError = PromptVariablesFactoryErrorFactory
+    .templateResolverCreationFailed("template issue");
   assertEquals(templateError.kind, "TemplateResolverCreationFailed");
   assertEquals(typeof templateError.resolverError, "string");
   assertEquals(templateError.resolverError, "template issue");
@@ -85,7 +83,8 @@ Deno.test("PromptVariablesFactoryError Structure - Extended interface properties
   });
 
   // Test SchemaResolverCreationError structure
-  const schemaError: SchemaResolverCreationError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed("schema problem");
+  const schemaError: SchemaResolverCreationError = PromptVariablesFactoryErrorFactory
+    .schemaResolverCreationFailed("schema problem");
   assertEquals(schemaError.kind, "SchemaResolverCreationFailed");
   assertEquals(typeof schemaError.resolverError, "string");
   assertEquals(schemaError.resolverError, "schema problem");
@@ -95,7 +94,8 @@ Deno.test("PromptVariablesFactoryError Structure - Extended interface properties
   });
 
   // Test simple error structure (no additional properties)
-  const inputError: InputFilePathNotResolvedError = PromptVariablesFactoryErrorFactory.inputFilePathNotResolved();
+  const inputError: InputFilePathNotResolvedError = PromptVariablesFactoryErrorFactory
+    .inputFilePathNotResolved();
   assertEquals(inputError.kind, "InputFilePathNotResolved");
   assertEquals(typeof inputError.message, "string");
   // Should not have additional properties beyond base interface
@@ -119,14 +119,14 @@ Deno.test("PromptVariablesFactoryError Structure - Union type completeness", () 
   assertEquals(errors.length, 7);
 
   // Verify unique kinds
-  const kinds = errors.map(e => e.kind);
+  const kinds = errors.map((e) => e.kind);
   const uniqueKinds = new Set(kinds);
   assertEquals(uniqueKinds.size, 7, "All error kinds should be unique");
 
   // Verify expected kinds are present
   const expectedKinds = [
     "PathOptionsCreationFailed",
-    "TemplateResolverCreationFailed", 
+    "TemplateResolverCreationFailed",
     "SchemaResolverCreationFailed",
     "PromptFilePathNotResolved",
     "InputFilePathNotResolved",
@@ -135,7 +135,7 @@ Deno.test("PromptVariablesFactoryError Structure - Union type completeness", () 
   ];
 
   for (const expectedKind of expectedKinds) {
-    assert(kinds.includes(expectedKind as any), `Union should include ${expectedKind}`);
+    assert((kinds as string[]).includes(expectedKind), `Union should include ${expectedKind}`);
   }
 });
 
@@ -145,7 +145,7 @@ Deno.test("PromptVariablesFactoryError Structure - Factory object structure", ()
   const expectedMethods = [
     "pathOptionsCreationFailed",
     "templateResolverCreationFailed",
-    "schemaResolverCreationFailed", 
+    "schemaResolverCreationFailed",
     "promptFilePathNotResolved",
     "inputFilePathNotResolved",
     "outputFilePathNotResolved",
@@ -153,16 +153,26 @@ Deno.test("PromptVariablesFactoryError Structure - Factory object structure", ()
   ];
 
   // Pattern 2: Flexible handling - factory may have additional methods
-  assert(factoryKeys.length >= expectedMethods.length, `Factory should have at least ${expectedMethods.length} methods, found ${factoryKeys.length}`);
-  
+  assert(
+    factoryKeys.length >= expectedMethods.length,
+    `Factory should have at least ${expectedMethods.length} methods, found ${factoryKeys.length}`,
+  );
+
   for (const method of expectedMethods) {
     assert(factoryKeys.includes(method), `Factory should have method: ${method}`);
-    assertEquals(typeof (PromptVariablesFactoryErrorFactory as any)[method], "function");
+    assertEquals(
+      typeof (PromptVariablesFactoryErrorFactory as Record<string, unknown>)[method],
+      "function",
+    );
   }
-  
+
   // Verify all factory methods are functions (Pattern 2: Comprehensive validation)
   for (const key of factoryKeys) {
-    assertEquals(typeof (PromptVariablesFactoryErrorFactory as any)[key], "function", `All factory exports should be functions: ${key}`);
+    assertEquals(
+      typeof (PromptVariablesFactoryErrorFactory as Record<string, unknown>)[key],
+      "function",
+      `All factory exports should be functions: ${key}`,
+    );
   }
 
   // Verify factory is read-only (const assertion)
@@ -171,13 +181,41 @@ Deno.test("PromptVariablesFactoryError Structure - Factory object structure", ()
   assert(factory !== null);
 
   // Verify method signatures by parameter count
-  assertEquals(factory.pathOptionsCreationFailed.length, 1, "pathOptionsCreationFailed should take 1 parameter");
-  assertEquals(factory.templateResolverCreationFailed.length, 1, "templateResolverCreationFailed should take 1 parameter");
-  assertEquals(factory.schemaResolverCreationFailed.length, 1, "schemaResolverCreationFailed should take 1 parameter");
-  assertEquals(factory.promptFilePathNotResolved.length, 0, "promptFilePathNotResolved should take 0 parameters");
-  assertEquals(factory.inputFilePathNotResolved.length, 0, "inputFilePathNotResolved should take 0 parameters");
-  assertEquals(factory.outputFilePathNotResolved.length, 0, "outputFilePathNotResolved should take 0 parameters");
-  assertEquals(factory.schemaFilePathNotResolved.length, 0, "schemaFilePathNotResolved should take 0 parameters");
+  assertEquals(
+    factory.pathOptionsCreationFailed.length,
+    1,
+    "pathOptionsCreationFailed should take 1 parameter",
+  );
+  assertEquals(
+    factory.templateResolverCreationFailed.length,
+    1,
+    "templateResolverCreationFailed should take 1 parameter",
+  );
+  assertEquals(
+    factory.schemaResolverCreationFailed.length,
+    1,
+    "schemaResolverCreationFailed should take 1 parameter",
+  );
+  assertEquals(
+    factory.promptFilePathNotResolved.length,
+    0,
+    "promptFilePathNotResolved should take 0 parameters",
+  );
+  assertEquals(
+    factory.inputFilePathNotResolved.length,
+    0,
+    "inputFilePathNotResolved should take 0 parameters",
+  );
+  assertEquals(
+    factory.outputFilePathNotResolved.length,
+    0,
+    "outputFilePathNotResolved should take 0 parameters",
+  );
+  assertEquals(
+    factory.schemaFilePathNotResolved.length,
+    0,
+    "schemaFilePathNotResolved should take 0 parameters",
+  );
 });
 
 Deno.test("PromptVariablesFactoryError Structure - Error property types", () => {
@@ -187,10 +225,14 @@ Deno.test("PromptVariablesFactoryError Structure - Error property types", () => 
   assertEquals(typeof pathError.message, "string");
   assertEquals(typeof pathError.pathOptionsError, "string");
 
-  const templateError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("resolver input");
+  const templateError = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed(
+    "resolver input",
+  );
   assertEquals(typeof templateError.resolverError, "string");
 
-  const schemaError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed("schema input");
+  const schemaError = PromptVariablesFactoryErrorFactory.schemaResolverCreationFailed(
+    "schema input",
+  );
   assertEquals(typeof schemaError.resolverError, "string");
 
   // Test simple errors
@@ -269,19 +311,19 @@ Deno.test("PromptVariablesFactoryError Structure - Type discrimination propertie
     switch (error.kind) {
       case "PathOptionsCreationFailed": {
         assert("pathOptionsError" in error);
-        assertEquals(typeof (error as any).pathOptionsError, "string");
+        assertEquals(typeof (error as { pathOptionsError: string }).pathOptionsError, "string");
         assert(!("resolverError" in error));
         break;
       }
       case "TemplateResolverCreationFailed": {
         assert("resolverError" in error);
-        assertEquals(typeof (error as any).resolverError, "string");
+        assertEquals(typeof (error as { resolverError: string }).resolverError, "string");
         assert(!("pathOptionsError" in error));
         break;
       }
       case "SchemaResolverCreationFailed": {
         assert("resolverError" in error);
-        assertEquals(typeof (error as any).resolverError, "string");
+        assertEquals(typeof (error as { resolverError: string }).resolverError, "string");
         assert(!("pathOptionsError" in error));
         break;
       }
@@ -300,7 +342,7 @@ Deno.test("PromptVariablesFactoryError Structure - Type discrimination propertie
 Deno.test("PromptVariablesFactoryError Structure - Object immutability", () => {
   // Test that created error objects have consistent structure
   const error = PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed("original");
-  
+
   const originalKind = error.kind;
   const originalMessage = error.message;
   const originalPathOptionsError = error.pathOptionsError;
@@ -333,10 +375,13 @@ Deno.test("PromptVariablesFactoryError Structure - JSON serialization structure"
 
     // Additional properties should be preserved
     if ("pathOptionsError" in error) {
-      assertEquals(parsed.pathOptionsError, (error as any).pathOptionsError);
+      assertEquals(
+        parsed.pathOptionsError,
+        (error as { pathOptionsError: string }).pathOptionsError,
+      );
     }
     if ("resolverError" in error) {
-      assertEquals(parsed.resolverError, (error as any).resolverError);
+      assertEquals(parsed.resolverError, (error as { resolverError: string }).resolverError);
     }
 
     // Functions should not be serialized
@@ -389,9 +434,9 @@ Deno.test("PromptVariablesFactoryError Structure - Type system exhaustiveness", 
 
   // Verify expected distribution
   const categories = allErrors.map(categorizeError);
-  const creationCount = categories.filter(c => c === "creation").length;
-  const resolutionCount = categories.filter(c => c === "resolution").length;
-  
+  const creationCount = categories.filter((c) => c === "creation").length;
+  const resolutionCount = categories.filter((c) => c === "resolution").length;
+
   assertEquals(creationCount, 3, "Should have 3 creation errors");
   assertEquals(resolutionCount, 4, "Should have 4 resolution errors");
 });

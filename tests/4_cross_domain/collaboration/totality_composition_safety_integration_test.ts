@@ -280,7 +280,7 @@ Deno.test("Composition Safety: Type safety preserved across domain boundaries", 
  * Tests pipeline composition safety
  * Verifies that multi-stage pipelines maintain totality throughout
  */
-Deno.test("Composition Safety: Pipeline composition maintains totality", async () => {
+Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
   logger.debug("Testing pipeline composition totality");
 
   // Create a multi-stage pipeline that crosses domain boundaries

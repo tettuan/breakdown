@@ -16,7 +16,7 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("unit-workspace-mod");
 
-describe("Workspace Module - Unit Tests", async () => {
+describe("Workspace Module - Unit Tests", () => {
   it("should successfully import the module", async () => {
     _logger.debug("Testing module import");
 
@@ -51,9 +51,9 @@ describe("Workspace Module - Unit Tests", async () => {
       "createWorkspaceError",
       "createWorkspaceConfigError",
       "createWorkspacePathError",
-      "createWorkspaceDirectoryError"
+      "createWorkspaceDirectoryError",
     ];
-    
+
     factoryFunctions.forEach((key) => {
       if ((errors as Record<string, unknown>)[key]) {
         assertExists(
@@ -63,7 +63,7 @@ describe("Workspace Module - Unit Tests", async () => {
         // For function aliases, we need to check if they point to the same function
         const modFunc = (_mod as Record<string, unknown>)[key];
         const errorsFunc = (errors as Record<string, unknown>)[key];
-        
+
         // Compare function implementation, not just reference
         assertEquals(
           modFunc?.toString(),
@@ -77,7 +77,7 @@ describe("Workspace Module - Unit Tests", async () => {
     if (_mod.createWorkspaceInitError) {
       assertExists(
         (workspaceInitError as Record<string, unknown>).createWorkspaceInitError,
-        "createWorkspaceInitError should exist in workspace_init_error.ts"
+        "createWorkspaceInitError should exist in workspace_init_error.ts",
       );
       assertEquals(
         _mod.createWorkspaceInitError,

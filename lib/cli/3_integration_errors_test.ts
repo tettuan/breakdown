@@ -17,7 +17,7 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("cli-errors-integration-test");
 
-Deno.test("Integration: CliError with command line argument simulation", async () => {
+Deno.test("Integration: CliError with command line argument simulation", () => {
   // Simulate real CLI scenarios that would produce these errors
 
   // Scenario 1: Invalid option detection
@@ -83,7 +83,7 @@ Deno.test("Integration: CliError with command line argument simulation", async (
   assertStringIncludes(conflictError.message, "--quiet and --verbose");
 });
 
-Deno.test("Integration: CliError with parameter validation", async () => {
+Deno.test("Integration: CliError with parameter validation", () => {
   // Simulate parameter validation scenarios
 
   interface CliConfig {
@@ -182,7 +182,7 @@ Deno.test("Integration: CliError with parameter validation", async () => {
   }
 });
 
-Deno.test("Integration: CliError with required argument validation", async () => {
+Deno.test("Integration: CliError with required argument validation", () => {
   // Simulate command structure validation
 
   interface CommandSpec {
@@ -250,7 +250,7 @@ Deno.test("Integration: CliError with required argument validation", async () =>
   assertEquals(validCommand, null, "Should accept valid command");
 });
 
-Deno.test("Integration: CliError with logging and error reporting", async () => {
+Deno.test("Integration: CliError with logging and error reporting", () => {
   // Test integration with BreakdownLogger
 
   const reportError = (error: CliError): { logged: boolean; userMessage: string } => {
@@ -304,7 +304,7 @@ Deno.test("Integration: CliError with logging and error reporting", async () => 
   assertStringIncludes(report2.userMessage, "Check the command usage");
 });
 
-Deno.test("Integration: CliError in command execution workflow", async () => {
+Deno.test("Integration: CliError in command execution workflow", () => {
   // Simulate full command execution with error handling
 
   interface ExecutionResult {
@@ -314,11 +314,11 @@ Deno.test("Integration: CliError in command execution workflow", async () => {
     exitCode: number;
   }
 
-  const executeCommand = async (
+  const executeCommand = (
     command: string,
     args: string[],
     options: Record<string, string> = {},
-  ): Promise<ExecutionResult> => {
+  ): ExecutionResult => {
     try {
       // Step 1: Validate command
       const validCommands = ["to", "summary", "find", "init"];
@@ -400,30 +400,30 @@ Deno.test("Integration: CliError in command execution workflow", async () => {
   };
 
   // Test successful execution
-  const successResult = await executeCommand("to", ["project", "input.md"]);
+  const successResult = executeCommand("to", ["project", "input.md"]);
   assertEquals(successResult.success, true);
   assertEquals(successResult.exitCode, 0);
   assertExists(successResult.output);
 
   // Test invalid command
-  const invalidCommandResult = await executeCommand("invalid", []);
+  const invalidCommandResult = executeCommand("invalid", []);
   assertEquals(invalidCommandResult.success, false);
   assertEquals(invalidCommandResult.exitCode, 1);
   assertExists(invalidCommandResult.error);
   assertEquals(invalidCommandResult.error?.code, CliErrorCode.INVALID_PARAMETERS);
 
   // Test missing arguments
-  const missingArgsResult = await executeCommand("to", ["project"]);
+  const missingArgsResult = executeCommand("to", ["project"]);
   assertEquals(missingArgsResult.success, false);
   assertEquals(missingArgsResult.error?.code, CliErrorCode.MISSING_REQUIRED);
 
   // Test invalid option
-  const invalidOptionResult = await executeCommand("init", [], { "invalid": "value" });
+  const invalidOptionResult = executeCommand("init", [], { "invalid": "value" });
   assertEquals(invalidOptionResult.success, false);
   assertEquals(invalidOptionResult.error?.code, CliErrorCode.INVALID_OPTION);
 
   // Test conflicting options
-  const conflictResult = await executeCommand("summary", ["task"], {
+  const conflictResult = executeCommand("summary", ["task"], {
     "verbose": "true",
     "quiet": "true",
   });
@@ -431,7 +431,7 @@ Deno.test("Integration: CliError in command execution workflow", async () => {
   assertEquals(conflictResult.error?.code, CliErrorCode.INVALID_OPTION);
 });
 
-Deno.test("Integration: CliError error recovery and suggestions", async () => {
+Deno.test("Integration: CliError error recovery and suggestions", () => {
   // Test error recovery patterns and user guidance
 
   const generateErrorHelp = (error: CliError): string[] => {

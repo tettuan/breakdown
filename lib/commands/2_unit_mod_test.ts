@@ -10,11 +10,11 @@
  * @module commands/mod_unit_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "../deps.ts";
+import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  type CommandResult,
+  type CommandResult as _CommandResult,
   displayHelp,
   displayVersion,
   generateWithPrompt,
@@ -24,7 +24,7 @@ import {
 
 const logger = new BreakdownLogger("mod-unit");
 
-describe("Unit: initWorkspace Function", async () => {
+describe("Unit: initWorkspace Function", () => {
   let tempDir: string;
 
   beforeEach(() => {
@@ -149,7 +149,7 @@ describe("Unit: initWorkspace Function", async () => {
   });
 });
 
-describe("Unit: generateWithPrompt Function", async () => {
+describe("Unit: generateWithPrompt Function", () => {
   it("should handle basic prompt generation request", async () => {
     logger.debug("Testing basic prompt generation");
 
@@ -261,8 +261,8 @@ describe("Unit: generateWithPrompt Function", async () => {
   });
 });
 
-describe("Unit: Display Functions", async () => {
-  it("should display help information correctly", async () => {
+describe("Unit: Display Functions", () => {
+  it("should display help information correctly", () => {
     logger.debug("Testing help display");
 
     const result = displayHelp();
@@ -282,7 +282,7 @@ describe("Unit: Display Functions", async () => {
     logger.debug("Help display verified");
   });
 
-  it("should display version information correctly", async () => {
+  it("should display version information correctly", () => {
     logger.debug("Testing version display");
 
     const result = displayVersion();
@@ -299,7 +299,7 @@ describe("Unit: Display Functions", async () => {
     logger.debug("Version display verified");
   });
 
-  it("should return consistent CommandResult structure", async () => {
+  it("should return consistent CommandResult structure", () => {
     logger.debug("Testing CommandResult consistency");
 
     const helpResult = displayHelp();
@@ -322,14 +322,14 @@ describe("Unit: Display Functions", async () => {
   });
 });
 
-describe("Unit: Error Handling and Edge Cases", async () => {
+describe("Unit: Error Handling and Edge Cases", () => {
   it("should handle null parameters gracefully", async () => {
     logger.debug("Testing null parameter handling");
 
     const result = await generateWithPrompt(
-      null as any,
-      null as any,
-      null as any,
+      (null as unknown) as string,
+      (null as unknown) as string,
+      (null as unknown) as string,
       false,
     );
 
@@ -344,9 +344,9 @@ describe("Unit: Error Handling and Edge Cases", async () => {
     logger.debug("Testing undefined parameter handling");
 
     const result = await generateWithPrompt(
-      undefined as any,
-      undefined as any,
-      undefined as any,
+      (undefined as unknown) as string,
+      (undefined as unknown) as string,
+      (undefined as unknown) as string,
       false,
     );
 
@@ -405,7 +405,7 @@ describe("Unit: Error Handling and Edge Cases", async () => {
   });
 });
 
-describe("Unit: Integration with Dependencies", async () => {
+describe("Unit: Integration with Dependencies", () => {
   it("should integrate with Workspace class properly", async () => {
     logger.debug("Testing Workspace integration");
 
@@ -449,7 +449,7 @@ describe("Unit: Integration with Dependencies", async () => {
   });
 });
 
-describe("Unit: Performance and Resource Management", async () => {
+describe("Unit: Performance and Resource Management", () => {
   it("should handle multiple sequential calls efficiently", async () => {
     logger.debug("Testing sequential call performance");
 

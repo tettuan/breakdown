@@ -18,8 +18,8 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("test-architecture-errors");
 
-describe("Workspace Errors - Architecture Tests", async () => {
-  describe("Module exports completeness", async () => {
+describe("Workspace Errors - Architecture Tests", () => {
+  describe("Module exports completeness", () => {
     it("should export all required error classes", async () => {
       _logger.debug("Testing module exports", {
         testType: "architecture",
@@ -104,7 +104,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
     });
   });
 
-  describe("Error hierarchy structure", async () => {
+  describe("Error hierarchy structure", () => {
     it("should establish proper inheritance chain", async () => {
       _logger.debug("Testing inheritance hierarchy", {
         testType: "architecture",
@@ -178,7 +178,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
     });
   });
 
-  describe("Error code uniqueness and consistency", async () => {
+  describe("Error code uniqueness and consistency", () => {
     it("should have unique error codes for each error type", async () => {
       _logger.debug("Testing error code uniqueness", {
         testType: "architecture",
@@ -223,14 +223,35 @@ describe("Workspace Errors - Architecture Tests", async () => {
       const ErrorsModule = await import("./errors.ts");
       const errorTypes = [
         { Class: ErrorsModule.WorkspaceError, expectedCode: "WORKSPACE_ERROR", needsCode: true },
-        { Class: ErrorsModule.WorkspaceInitError, expectedCode: "WORKSPACE_INIT_ERROR", needsCode: true },
-        { Class: ErrorsModule.WorkspaceConfigError, expectedCode: "WORKSPACE_CONFIG_ERROR", needsCode: false },
-        { Class: ErrorsModule.WorkspacePathError, expectedCode: "WORKSPACE_PATH_ERROR", needsCode: false },
-        { Class: ErrorsModule.WorkspaceDirectoryError, expectedCode: "WORKSPACE_DIRECTORY_ERROR", needsCode: false },
+        {
+          Class: ErrorsModule.WorkspaceInitError,
+          expectedCode: "WORKSPACE_INIT_ERROR",
+          needsCode: true,
+        },
+        {
+          Class: ErrorsModule.WorkspaceConfigError,
+          expectedCode: "WORKSPACE_CONFIG_ERROR",
+          needsCode: false,
+        },
+        {
+          Class: ErrorsModule.WorkspacePathError,
+          expectedCode: "WORKSPACE_PATH_ERROR",
+          needsCode: false,
+        },
+        {
+          Class: ErrorsModule.WorkspaceDirectoryError,
+          expectedCode: "WORKSPACE_DIRECTORY_ERROR",
+          needsCode: false,
+        },
       ];
 
-      for (const { Class, expectedCode, needsCode } of errorTypes) {
-        let instance: any;
+      for (const { Class, expectedCode, needsCode: _needsCode } of errorTypes) {
+        let instance:
+          | InstanceType<typeof ErrorsModule.WorkspaceError>
+          | InstanceType<typeof ErrorsModule.WorkspaceInitError>
+          | InstanceType<typeof ErrorsModule.WorkspaceConfigError>
+          | InstanceType<typeof ErrorsModule.WorkspacePathError>
+          | InstanceType<typeof ErrorsModule.WorkspaceDirectoryError>;
         if (Class === ErrorsModule.WorkspaceError) {
           instance = new ErrorsModule.WorkspaceError("test", expectedCode);
         } else if (Class === ErrorsModule.WorkspaceInitError) {
@@ -255,7 +276,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
     });
   });
 
-  describe("Totality pattern compliance", async () => {
+  describe("Totality pattern compliance", () => {
     it("should cover all workspace operation error scenarios", async () => {
       _logger.debug("Testing totality pattern coverage", {
         testType: "architecture",
@@ -283,8 +304,13 @@ describe("Workspace Errors - Architecture Tests", async () => {
         assertExists(ErrorClass);
         assertEquals(typeof ErrorClass, "function");
 
-        // インスタンス化可能であることを確認  
-        let instance: any;
+        // インスタンス化可能であることを確認
+        let instance:
+          | InstanceType<typeof WorkspaceInitError>
+          | InstanceType<typeof WorkspaceError>
+          | InstanceType<typeof WorkspaceConfigError>
+          | InstanceType<typeof WorkspacePathError>
+          | InstanceType<typeof WorkspaceDirectoryError>;
         if (ErrorClass === WorkspaceInitError) {
           instance = new WorkspaceInitError("test", "WORKSPACE_INIT_ERROR");
         } else if (ErrorClass === WorkspaceError) {
@@ -332,8 +358,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
       ];
 
       for (const { Class, message } of testCases) {
-        const instance = Class === WorkspaceInitError 
-          ? new Class(message, "TEST_CODE") 
+        const instance = Class === WorkspaceInitError
+          ? new Class(message, "TEST_CODE")
           : new Class(message);
 
         // 必須プロパティが設定されていることを確認
@@ -357,7 +383,7 @@ describe("Workspace Errors - Architecture Tests", async () => {
     });
   });
 
-  describe("Interface consistency", async () => {
+  describe("Interface consistency", () => {
     it("should maintain consistent constructor signatures", async () => {
       _logger.debug("Testing constructor consistency", {
         testType: "architecture",
@@ -384,8 +410,8 @@ describe("Workspace Errors - Architecture Tests", async () => {
         assertEquals(ErrorClass.length, 1);
 
         // エラーメッセージなしでインスタンス化した場合の動作を確認
-        const instanceWithoutMessage = ErrorClass === WorkspaceInitError 
-          ? new ErrorClass("", "TEST_CODE") 
+        const instanceWithoutMessage = ErrorClass === WorkspaceInitError
+          ? new ErrorClass("", "TEST_CODE")
           : new ErrorClass("");
         assertEquals(instanceWithoutMessage.message, "");
         assertExists(instanceWithoutMessage.code);

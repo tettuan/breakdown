@@ -1,17 +1,13 @@
 /**
  * @fileoverview ConfigProfileName unit tests
- * 
+ *
  * Tests for ConfigProfileName implementation following the Totality principle.
  * Covers architecture constraints, behavior verification, and structure validation.
- * 
+ *
  * @module config/config_profile_name.test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertExists,
-} from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { ConfigProfileName } from "./config_profile_name.ts";
 
 // =============================================================================
@@ -31,28 +27,28 @@ Deno.test("0_architecture: ConfigProfileName follows Smart Constructor pattern",
 
 Deno.test("0_architecture: ConfigProfileName prevents invalid state at type level", () => {
   // ConfigProfileName always produces valid instance with non-empty value
-  
+
   // Valid inputs produce ConfigProfileName
   const valid = ConfigProfileName.create("production");
   assertExists(valid);
   assertEquals(valid.value, "production");
-  
+
   // Invalid inputs automatically convert to default
   const empty = ConfigProfileName.create("");
   assertEquals(empty.value, "default");
-  
+
   const nullInput = ConfigProfileName.create(null);
   assertEquals(nullInput.value, "default");
-  
+
   const undefinedInput = ConfigProfileName.create(undefined);
   assertEquals(undefinedInput.value, "default");
-  
+
   // Type system allows string | null | undefined
   const withString: ConfigProfileName = ConfigProfileName.create("test");
   const withNull: ConfigProfileName = ConfigProfileName.create(null);
   const withUndefined: ConfigProfileName = ConfigProfileName.create(undefined);
   const withoutParam: ConfigProfileName = ConfigProfileName.create();
-  
+
   // All produce valid instances
   assertExists(withString);
   assertExists(withNull);
@@ -87,7 +83,7 @@ Deno.test("0_architecture: ConfigProfileName implements Totality principle", () 
 
 Deno.test("0_architecture: ConfigProfileName.create is exhaustive for all input types", () => {
   // Exhaustiveness: create() handles ALL possible input types
-  
+
   // String inputs
   const stringInputs = [
     "normal",
@@ -104,20 +100,20 @@ Deno.test("0_architecture: ConfigProfileName.create is exhaustive for all input 
     "日本語",
     "a".repeat(1000), // Very long string
   ];
-  
+
   for (const input of stringInputs) {
     const profile = ConfigProfileName.create(input);
     assertExists(profile);
     assert(profile.value.length > 0);
   }
-  
+
   // Null and undefined
   const nullProfile = ConfigProfileName.create(null);
   assertEquals(nullProfile.value, "default");
-  
+
   const undefinedProfile = ConfigProfileName.create(undefined);
   assertEquals(undefinedProfile.value, "default");
-  
+
   const noParamProfile = ConfigProfileName.create();
   assertEquals(noParamProfile.value, "default");
 });
@@ -127,7 +123,7 @@ Deno.test("0_architecture: ConfigProfileName is immutable at interface level", (
 
   // Value property is read-only (getter-only, no setter)
   const originalValue = profileName.value;
-  
+
   // ConfigProfileName provides immutable interface
   try {
     // This should fail at runtime (getter-only property)
@@ -136,10 +132,10 @@ Deno.test("0_architecture: ConfigProfileName is immutable at interface level", (
     // Expected: TypeError for read-only property
     assert(error instanceof TypeError);
   }
-  
+
   // Value remains unchanged
   assertEquals(profileName.value, originalValue);
-  
+
   // Private field is not accessible
   // @ts-expect-error - Testing that profileName field is private
   const _attemptPrivateAccess = () => profileName.profileName;
@@ -149,7 +145,7 @@ Deno.test("0_architecture: ConfigProfileName.DEFAULT constant is immutable", () 
   // DEFAULT is a readonly constant
   assertEquals(ConfigProfileName.DEFAULT, "default");
   assertEquals(typeof ConfigProfileName.DEFAULT, "string");
-  
+
   // Type system prevents modification
   // The following line would cause a TypeScript error if uncommented:
   // ConfigProfileName.DEFAULT = "modified"; // Error: Cannot assign to 'DEFAULT' because it is a read-only property
@@ -161,20 +157,20 @@ Deno.test("0_architecture: ConfigProfileName.DEFAULT constant is immutable", () 
     // Expected: Cannot assign to read only property
     assert(error instanceof TypeError);
   }
-  
+
   // Value remains unchanged
   assertEquals(ConfigProfileName.DEFAULT, "default");
 });
 
 Deno.test("0_architecture: Type-level guarantees prevent invalid ConfigProfileName states", () => {
   // The type system guarantees that ConfigProfileName can only exist in valid states
-  
+
   // 1. Always has a non-empty value
   // 2. Cannot be modified after creation
   // 3. Always has required methods and properties
-  
+
   const profileName = ConfigProfileName.create("test");
-  
+
   // Type system ensures all instances have required methods and properties
   assertExists(profileName.value);
   assertEquals(typeof profileName.isDefault, "function");
@@ -182,7 +178,7 @@ Deno.test("0_architecture: Type-level guarantees prevent invalid ConfigProfileNa
   assertEquals(typeof profileName.toString, "function");
   assertEquals(typeof profileName.getFilePrefix, "function");
   assertEquals(typeof profileName.getConfigFileName, "function");
-  
+
   // All methods work correctly
   assertEquals(profileName.value, "test");
   assertEquals(profileName.isDefault(), false);
@@ -199,18 +195,18 @@ Deno.test("1_behavior: ConfigProfileName.createOrError provides validation feedb
   // Valid inputs return successful Result
   const validInputs = [
     "production",
-    "staging", 
+    "staging",
     "development",
     "test",
     "custom-profile",
   ];
-  
+
   for (const input of validInputs) {
     const result = ConfigProfileName.createOrError(input);
     assert(result.ok);
     assertEquals(result.data.value, input);
   }
-  
+
   // Invalid inputs return error with explanation
   const invalidInputs = [
     "",
@@ -221,7 +217,7 @@ Deno.test("1_behavior: ConfigProfileName.createOrError provides validation feedb
     "\n",
     "  \t\n  ",
   ];
-  
+
   for (const input of invalidInputs) {
     const result = ConfigProfileName.createOrError(input);
     assert(!result.ok);
@@ -241,16 +237,16 @@ Deno.test("1_behavior: ConfigProfileName.createOrError trims whitespace before v
     { input: "\tproduction\t", expected: "production" },
     { input: "\nproduction\n", expected: "production" },
   ];
-  
+
   for (const { input, expected } of validWithWhitespace) {
     const result = ConfigProfileName.createOrError(input);
     assert(result.ok);
     assertEquals(result.data.value, expected);
   }
-  
+
   // Whitespace-only strings fail
   const whitespaceOnly = ["   ", "\t", "\n", "  \t\n  "];
-  
+
   for (const input of whitespaceOnly) {
     const result = ConfigProfileName.createOrError(input);
     assert(!result.ok);
@@ -271,7 +267,7 @@ Deno.test("1_behavior: ConfigProfileName.create applies default for empty inputs
     "  \t\n  ",
     " \r\n ",
   ];
-  
+
   for (const input of emptyInputs) {
     const profileName = ConfigProfileName.create(input);
     assertEquals(profileName.value, "default");
@@ -297,7 +293,7 @@ Deno.test("1_behavior: ConfigProfileName.create preserves valid profile names", 
     { input: "-", expected: "-" },
     { input: "_", expected: "_" },
   ];
-  
+
   for (const { input, expected } of validInputs) {
     const profileName = ConfigProfileName.create(input);
     assertEquals(profileName.value, expected);
@@ -315,7 +311,7 @@ Deno.test("1_behavior: ConfigProfileName.create trims whitespace correctly", () 
     { input: "  custom-profile  ", expected: "custom-profile" },
     { input: " \t\n production \n\t ", expected: "production" },
   ];
-  
+
   for (const { input, expected } of trimTests) {
     const profileName = ConfigProfileName.create(input);
     assertEquals(profileName.value, expected);
@@ -328,30 +324,32 @@ Deno.test("1_behavior: ConfigProfileName.createFromConfig delegates correctly", 
   const config1 = { profilePrefix: "production" };
   const profile1 = ConfigProfileName.createFromConfig(config1);
   assertEquals(profile1.value, "production");
-  
+
   // With empty profilePrefix
   const config2 = { profilePrefix: "" };
   const profile2 = ConfigProfileName.createFromConfig(config2);
   assertEquals(profile2.value, "default");
-  
+
   // With null profilePrefix
   const config3 = { profilePrefix: null };
   const profile3 = ConfigProfileName.createFromConfig(config3);
   assertEquals(profile3.value, "default");
-  
+
   // With undefined profilePrefix
   const config4 = {};
   const profile4 = ConfigProfileName.createFromConfig(config4);
   assertEquals(profile4.value, "default");
-  
+
   // With undefined config
   const profile5 = ConfigProfileName.createFromConfig(undefined);
   assertEquals(profile5.value, "default");
-  
+
   // With null config
-  const profile6 = ConfigProfileName.createFromConfig(null as unknown as { profilePrefix?: string });
+  const profile6 = ConfigProfileName.createFromConfig(
+    null as unknown as { profilePrefix?: string },
+  );
   assertEquals(profile6.value, "default");
-  
+
   // With whitespace profilePrefix
   const config7 = { profilePrefix: "  staging  " };
   const profile7 = ConfigProfileName.createFromConfig(config7);
@@ -365,14 +363,14 @@ Deno.test("1_behavior: ConfigProfileName.equals compares values correctly", () =
   const production1 = ConfigProfileName.create("production");
   const production2 = ConfigProfileName.create("production");
   const staging = ConfigProfileName.create("staging");
-  
+
   // Same values should be equal
   assert(default1.equals(default2));
   assert(default1.equals(default3));
   assert(default2.equals(default3));
   assert(production1.equals(production2));
   assert(production2.equals(production1));
-  
+
   // Different values should not be equal
   assert(!default1.equals(production1));
   assert(!production1.equals(staging));
@@ -382,10 +380,10 @@ Deno.test("1_behavior: ConfigProfileName.equals compares values correctly", () =
 Deno.test("1_behavior: ConfigProfileName.toString provides readable representation", () => {
   const defaultProfile = ConfigProfileName.create("");
   assertEquals(defaultProfile.toString(), "ConfigProfileName(default)");
-  
+
   const production = ConfigProfileName.create("production");
   assertEquals(production.toString(), "ConfigProfileName(production)");
-  
+
   const custom = ConfigProfileName.create("custom-profile");
   assertEquals(custom.toString(), "ConfigProfileName(custom-profile)");
 });
@@ -402,7 +400,7 @@ Deno.test("1_behavior: ConfigProfileName.getFilePrefix returns correct prefix", 
     { profileName: "with-dash", expected: "with-dash-" },
     { profileName: "with_underscore", expected: "with_underscore-" },
   ];
-  
+
   for (const { profileName, expected } of testCases) {
     const config = ConfigProfileName.create(profileName);
     assertEquals(config.getFilePrefix(), expected);
@@ -414,11 +412,11 @@ Deno.test("1_behavior: ConfigProfileName.getConfigFileName constructs filenames"
   assertEquals(production.getConfigFileName("app.yml"), "production-app.yml");
   assertEquals(production.getConfigFileName("user.yml"), "production-user.yml");
   assertEquals(production.getConfigFileName("config.json"), "production-config.json");
-  
+
   const defaultProfile = ConfigProfileName.create("");
   assertEquals(defaultProfile.getConfigFileName("app.yml"), "default-app.yml");
   assertEquals(defaultProfile.getConfigFileName("user.yml"), "default-user.yml");
-  
+
   const staging = ConfigProfileName.create("staging");
   assertEquals(staging.getConfigFileName("settings.toml"), "staging-settings.toml");
   assertEquals(staging.getConfigFileName("env"), "staging-env");
@@ -427,7 +425,7 @@ Deno.test("1_behavior: ConfigProfileName.getConfigFileName constructs filenames"
 
 Deno.test("1_behavior: ConfigProfileName handles edge case values (totality)", () => {
   // Totality: ANY string input produces a valid ConfigProfileName
-  
+
   const edgeCaseValues = [
     // Special string values
     { input: "null", expected: "null" },
@@ -438,34 +436,34 @@ Deno.test("1_behavior: ConfigProfileName handles edge case values (totality)", (
     { input: "-1", expected: "-1" },
     { input: "NaN", expected: "NaN" },
     { input: "Infinity", expected: "Infinity" },
-    
+
     // Special characters
     { input: "'quoted'", expected: "'quoted'" },
     { input: '"double-quoted"', expected: '"double-quoted"' },
     { input: "with spaces", expected: "with spaces" },
     { input: "with\ttab", expected: "with\ttab" },
     { input: "with\nnewline", expected: "with\nnewline" },
-    
+
     // Unicode
     { input: "日本語プロファイル", expected: "日本語プロファイル" },
     { input: "🚀emoji", expected: "🚀emoji" },
     { input: "مرحبا", expected: "مرحبا" },
     { input: "Привет", expected: "Привет" },
-    
+
     // Very long strings
     { input: "a".repeat(100), expected: "a".repeat(100) },
     { input: "profile-".repeat(50), expected: "profile-".repeat(50) },
   ];
-  
+
   for (const { input, expected } of edgeCaseValues) {
     const profileName = ConfigProfileName.create(input);
     assertEquals(profileName.value, expected);
     assertEquals(profileName.isDefault(), false);
-    
+
     // Methods work correctly for all values
     assertEquals(profileName.toString(), `ConfigProfileName(${expected})`);
     assertEquals(profileName.getFilePrefix(), `${expected}-`);
-    
+
     // Equality works for all values
     const sameProfile = ConfigProfileName.create(input);
     assert(profileName.equals(sameProfile));
@@ -478,7 +476,7 @@ Deno.test("1_behavior: ConfigProfileName handles edge case values (totality)", (
 
 Deno.test("2_structure: ConfigProfileName maintains referential transparency", () => {
   const input = "production";
-  
+
   // Multiple calls with same input produce equivalent results
   const profile1 = ConfigProfileName.create(input);
   const profile2 = ConfigProfileName.create(input);
@@ -492,16 +490,16 @@ Deno.test("2_structure: ConfigProfileName maintains referential transparency", (
 
 Deno.test("2_structure: ConfigProfileName.value is consistent across all accesses", () => {
   const profileName = ConfigProfileName.create("staging");
-  
+
   // Multiple accesses should return the same value
   const value1 = profileName.value;
   const value2 = profileName.value;
   const value3 = profileName.value;
-  
+
   assertEquals(value1, value2);
   assertEquals(value2, value3);
   assertEquals(value1, "staging");
-  
+
   // Value is consistent with other methods
   assertEquals(profileName.toString(), "ConfigProfileName(staging)");
   assertEquals(profileName.getFilePrefix(), "staging-");
@@ -510,13 +508,13 @@ Deno.test("2_structure: ConfigProfileName.value is consistent across all accesse
 
 Deno.test("2_structure: ConfigProfileName type consistency across methods", () => {
   const profileName = ConfigProfileName.create("test");
-  
+
   // All string-returning methods should return consistent type
   assertEquals(typeof profileName.value, "string");
   assertEquals(typeof profileName.toString(), "string");
   assertEquals(typeof profileName.getFilePrefix(), "string");
   assertEquals(typeof profileName.getConfigFileName("test"), "string");
-  
+
   // All boolean-returning methods should return consistent type
   assertEquals(typeof profileName.isDefault(), "boolean");
   assertEquals(typeof profileName.equals(profileName), "boolean");
@@ -533,7 +531,7 @@ Deno.test("2_structure: ConfigProfileName default value consistency", () => {
     ConfigProfileName.create("default"),
     ConfigProfileName.create("  default  "),
   ];
-  
+
   // All should have the same value
   for (const profile of profiles) {
     assertEquals(profile.value, "default");
@@ -541,7 +539,7 @@ Deno.test("2_structure: ConfigProfileName default value consistency", () => {
     assertEquals(profile.toString(), "ConfigProfileName(default)");
     assertEquals(profile.getFilePrefix(), "default-");
   }
-  
+
   // All should be equal to each other
   for (let i = 0; i < profiles.length; i++) {
     for (let j = 0; j < profiles.length; j++) {
@@ -552,7 +550,7 @@ Deno.test("2_structure: ConfigProfileName default value consistency", () => {
 
 Deno.test("2_structure: ConfigProfileName handles special filename construction", () => {
   const profile = ConfigProfileName.create("test");
-  
+
   // Various filename patterns
   const filenames = [
     { base: "app.yml", expected: "test-app.yml" },
@@ -565,7 +563,7 @@ Deno.test("2_structure: ConfigProfileName handles special filename construction"
     { base: "", expected: "test-" }, // Empty filename
     { base: "   ", expected: "test-   " }, // Whitespace filename
   ];
-  
+
   for (const { base, expected } of filenames) {
     assertEquals(profile.getConfigFileName(base), expected);
   }
@@ -573,7 +571,7 @@ Deno.test("2_structure: ConfigProfileName handles special filename construction"
 
 Deno.test("2_structure: ConfigProfileName.createFromConfig structural integrity", () => {
   // Test various config object structures
-  
+
   // Standard config object
   const standardConfig = {
     profilePrefix: "production",
@@ -582,7 +580,7 @@ Deno.test("2_structure: ConfigProfileName.createFromConfig structural integrity"
   };
   const standard = ConfigProfileName.createFromConfig(standardConfig);
   assertEquals(standard.value, "production");
-  
+
   // Config with extra fields
   const extraFieldsConfig = {
     profilePrefix: "staging",
@@ -593,17 +591,17 @@ Deno.test("2_structure: ConfigProfileName.createFromConfig structural integrity"
   };
   const extraFields = ConfigProfileName.createFromConfig(extraFieldsConfig);
   assertEquals(extraFields.value, "staging");
-  
+
   // Minimal config
   const minimalConfig = { profilePrefix: "minimal" };
   const minimal = ConfigProfileName.createFromConfig(minimalConfig);
   assertEquals(minimal.value, "minimal");
-  
+
   // Empty object
   const emptyConfig = {};
   const empty = ConfigProfileName.createFromConfig(emptyConfig);
   assertEquals(empty.value, "default");
-  
+
   // Object with null prototype
   const nullProtoConfig = Object.create(null);
   nullProtoConfig.profilePrefix = "nullproto";
@@ -613,19 +611,19 @@ Deno.test("2_structure: ConfigProfileName.createFromConfig structural integrity"
 
 Deno.test("2_structure: ConfigProfileName preserves trimmed values consistently", () => {
   // Ensure trimming is consistent across all creation methods
-  
+
   const directCreate = ConfigProfileName.create("  trimmed  ");
   const configCreate = ConfigProfileName.createFromConfig({ profilePrefix: "  trimmed  " });
-  
+
   // Both should produce the same trimmed value
   assertEquals(directCreate.value, "trimmed");
   assertEquals(configCreate.value, "trimmed");
   assert(directCreate.equals(configCreate));
-  
+
   // Edge cases with internal spaces
   const withInternalSpaces = ConfigProfileName.create("  has internal spaces  ");
   assertEquals(withInternalSpaces.value, "has internal spaces");
-  
+
   const multipleSpaces = ConfigProfileName.create("  multiple   spaces  ");
   assertEquals(multipleSpaces.value, "multiple   spaces");
 });

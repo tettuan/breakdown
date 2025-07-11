@@ -1,13 +1,13 @@
 /**
  * @fileoverview Type-safe stdout operations with Result-based error handling
- * 
+ *
  * This module provides unified stdout writing functionality following
  * the Totality principle and Domain-Driven Design.
- * 
+ *
  * @module io/stdout
  */
 
-import { Result, ok, error } from "../types/result.ts";
+import { error, ok, Result } from "../types/result.ts";
 
 /**
  * Error types for stdout operations
@@ -29,7 +29,9 @@ export function formatStdoutError(err: StdoutErrorType): string {
     case "EncodingError":
       return `Encoding error (${err.encoding}): ${err.message}`;
     case "ConfigurationError":
-      return `Configuration error for ${err.setting}: ${err.value !== undefined ? String(err.value) : "invalid value"}`;
+      return `Configuration error for ${err.setting}: ${
+        err.value !== undefined ? String(err.value) : "invalid value"
+      }`;
     case "FlushError":
       return `Flush error: ${err.message}`;
   }
@@ -84,7 +86,7 @@ export class StdoutWriteConfiguration {
 /**
  * Type-safe stdout writing with Result-based error handling
  * Follows Totality principle - no exceptions thrown
- * 
+ *
  * @param content - Content to write to stdout
  * @param config - Configuration for writing
  * @returns Result indicating success or specific error
@@ -98,10 +100,10 @@ export function writeStdoutSafe(
     const encoder = new TextEncoder();
     const data = encoder.encode(outputContent);
     Deno.stdout.writeSync(data);
-    
-    // Note: Deno doesn't have explicit flush for stdout, 
+
+    // Note: Deno doesn't have explicit flush for stdout,
     // but writeSync is synchronous and effectively flushes
-    
+
     return ok(undefined);
   } catch (caughtError) {
     return error({
@@ -114,11 +116,11 @@ export function writeStdoutSafe(
 
 /**
  * Write a line to stdout (adds newline automatically)
- * 
+ *
  * @param content - Content to write (newline will be appended)
  * @returns Result indicating success or specific error
  */
-export async function writeLineSafe(content: string): Promise<Result<void, StdoutErrorType>> {
+export function writeLineSafe(content: string): Result<void, StdoutErrorType> {
   const configResult = StdoutWriteConfiguration.line();
   if (!configResult.ok) {
     return configResult;
@@ -135,12 +137,12 @@ export interface OutputWriter {
    * Write content without newline
    */
   write(content: string): Result<void, StdoutErrorType>;
-  
+
   /**
    * Write content with newline
    */
   writeLine(content: string): Promise<Result<void, StdoutErrorType>>;
-  
+
   /**
    * Write error message to stderr
    */
@@ -173,8 +175,8 @@ export class StandardOutputWriter implements OutputWriter {
     return writeStdoutSafe(content, this.config);
   }
 
-  async writeLine(content: string): Promise<Result<void, StdoutErrorType>> {
-    return writeLineSafe(content);
+  writeLine(content: string): Promise<Result<void, StdoutErrorType>> {
+    return Promise.resolve(writeLineSafe(content));
   }
 
   writeError(content: string): Result<void, StdoutErrorType> {
@@ -186,7 +188,9 @@ export class StandardOutputWriter implements OutputWriter {
     } catch (caughtError) {
       return error({
         kind: "WriteError",
-        message: `Failed to write to stderr: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+        message: `Failed to write to stderr: ${
+          caughtError instanceof Error ? caughtError.message : String(caughtError)
+        }`,
         originalError: caughtError instanceof Error ? caughtError : undefined,
       });
     }
@@ -195,7 +199,7 @@ export class StandardOutputWriter implements OutputWriter {
 
 /**
  * Helper function to create and use an output writer
- * 
+ *
  * @example
  * ```typescript
  * const result = await withOutputWriter(async (writer) => {
@@ -212,7 +216,7 @@ export async function withOutputWriter<T>(
   if (!writerResult.ok) {
     return writerResult;
   }
-  
+
   try {
     const result = await fn(writerResult.data);
     return ok(result);

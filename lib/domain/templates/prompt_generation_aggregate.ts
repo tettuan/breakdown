@@ -9,7 +9,7 @@
 
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import type { Result } from "../../types/result.ts";
-import { ok, error } from "../../types/result.ts";
+import { error, ok } from "../../types/result.ts";
 
 /**
  * Template path value object
@@ -21,7 +21,11 @@ export class TemplatePath {
     private readonly filename: string,
   ) {}
 
-  static create(directive: DirectiveType, layer: LayerType, filename: string): Result<TemplatePath, string> {
+  static create(
+    directive: DirectiveType,
+    layer: LayerType,
+    filename: string,
+  ): Result<TemplatePath, string> {
     if (!filename.endsWith(".md")) {
       return error(`Invalid template filename: ${filename}. Must end with .md`);
     }
@@ -133,7 +137,7 @@ export class PromptTemplate {
     if (!content || content.trim() === "") {
       return error("Template content cannot be empty");
     }
-    
+
     const templateContent = TemplateContent.create(content);
     const fullMetadata: TemplateMetadata = {
       version: metadata?.version || "1.0.0",
@@ -165,11 +169,13 @@ export class PromptTemplate {
     const missingVars = requiredVars.filter((v) => !variables.has(v));
 
     if (missingVars.length > 0) {
-      return error(new PromptGenerationError(
-        `Missing required variables: ${missingVars.join(", ")}`,
-        this.path,
-        missingVars,
-      ));
+      return error(
+        new PromptGenerationError(
+          `Missing required variables: ${missingVars.join(", ")}`,
+          this.path,
+          missingVars,
+        ),
+      );
     }
 
     let result = this.content.getContent();
@@ -232,11 +238,13 @@ export class PromptGenerationAggregate {
     if (!id || id.trim() === "") {
       return error("Aggregate ID cannot be empty");
     }
-    return ok(new PromptGenerationAggregate(id, template, {
-      status: "initialized",
-      attempts: 0,
-      errors: [],
-    }));
+    return ok(
+      new PromptGenerationAggregate(id, template, {
+        status: "initialized",
+        attempts: 0,
+        errors: [],
+      }),
+    );
   }
 
   getId(): string {
@@ -307,7 +315,6 @@ interface GenerationState {
   errors: (Error | PromptGenerationError)[];
   lastGenerated?: GeneratedPrompt;
 }
-
 
 /**
  * Prompt generation error

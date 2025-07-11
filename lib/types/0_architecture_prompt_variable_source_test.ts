@@ -1,9 +1,9 @@
 /**
  * @fileoverview Architecture tests for PromptVariableSource
- * 
+ *
  * Tests architectural constraints and completeness of the PromptVariableSource
  * system including Factory methods, merge functionality, and validation.
- * 
+ *
  * @module types/prompt_variable_source_test
  */
 
@@ -93,7 +93,7 @@ Deno.test("PromptVariableSource - Architecture: SourceValidationError completene
 
 Deno.test("PromptVariableSource - Architecture: validateSource function exists", () => {
   assertEquals(typeof validateSource, "function");
-  
+
   // Test basic validation structure
   const source: PromptVariableSource = {
     directive: "test",
@@ -103,7 +103,7 @@ Deno.test("PromptVariableSource - Architecture: validateSource function exists",
       timestamp: new Date(),
     },
   };
-  
+
   const result = validateSource(source);
   assertEquals(typeof result, "object");
   assertEquals(typeof result.ok, "boolean");
@@ -137,14 +137,14 @@ Deno.test("PromptVariableSource - Architecture: merge function completeness", ()
   const source1 = PromptVariableSourceFactory.fromConfig({
     directive: "config-directive",
   });
-  
+
   const source2 = PromptVariableSourceFactory.fromCLI({
     directive: "cli-directive",
     layer: "task",
   });
 
   const merged = PromptVariableSourceFactory.merge(source1, source2);
-  
+
   // CLI should override config
   assertEquals(merged.directive, "cli-directive");
   assertEquals(merged.layer, "task");
@@ -175,7 +175,7 @@ Deno.test("PromptVariableSource - Architecture: Type safety constraints", () => 
       key2: "value2",
     },
   };
-  
+
   assertEquals(typeof sourceWithUserVars.userVariables?.key1, "string");
   assertEquals(typeof sourceWithUserVars.userVariables?.key2, "string");
 });

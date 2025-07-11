@@ -72,7 +72,7 @@ describe("Structure: Function categorization", () => {
     ];
 
     // Sync operations (should return immediate values)
-    const syncOps = [
+    const _syncOps = [
       StdinModule.hasStdinContent,
       StdinModule.writeStdout,
       StdinModule.isStdinAvailable,
@@ -387,7 +387,7 @@ describe("Structure: Module organization principles", () => {
 
     Object.entries(responsibilities).forEach(([name, responsibility]) => {
       assertExists(
-        (StdinModule as any)[name],
+        (StdinModule as Record<string, unknown>)[name],
         `${name} should exist for responsibility: ${responsibility}`,
       );
     });

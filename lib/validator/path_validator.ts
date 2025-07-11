@@ -78,7 +78,10 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        { reason: `Path contains invalid characters: ${invalidChars.join(", ")}`, context: { type, invalidChars } },
+        {
+          reason: `Path contains invalid characters: ${invalidChars.join(", ")}`,
+          context: { type, invalidChars },
+        },
       ));
     }
 
@@ -156,7 +159,10 @@ export class PathValidator {
         return error(ErrorFactory.pathError(
           "InvalidPath",
           path,
-          { reason: "Path traversal detected", context: { type, securityViolation: "path_traversal" } },
+          {
+            reason: "Path traversal detected",
+            context: { type, securityViolation: "path_traversal" },
+          },
         ));
       }
     }
@@ -167,7 +173,10 @@ export class PathValidator {
       return error(ErrorFactory.pathError(
         "InvalidPath",
         path,
-        { reason: "Tilde expansion not allowed", context: { type, securityViolation: "tilde_expansion" } },
+        {
+          reason: "Tilde expansion not allowed",
+          context: { type, securityViolation: "tilde_expansion" },
+        },
       ));
     }
 
@@ -182,12 +191,12 @@ export class PathValidator {
     let normalized = path
       .replace(/\\/g, "/") // Convert backslashes to forward slashes
       .replace(/\/+/g, "/"); // Remove duplicate slashes
-    
+
     // Remove trailing slash except for root "/"
     if (normalized.length > 1 && normalized.endsWith("/")) {
       normalized = normalized.slice(0, -1);
     }
-    
+
     return normalized;
   }
 }

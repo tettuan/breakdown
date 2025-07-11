@@ -16,7 +16,7 @@ import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("structure-workspace-mod");
 
-describe("Workspace Module - Structure", async () => {
+describe("Workspace Module - Structure", () => {
   it("should organize exports by functional area", async () => {
     _logger.debug("Testing export organization");
 
@@ -158,7 +158,10 @@ describe("Workspace Module - Structure", async () => {
     const errorExports = Object.keys(errors);
     errorExports.forEach((key) => {
       if (key !== "default" && (errors as Record<string, unknown>)[key]) {
-        const errorClass = (errors as Record<string, unknown>)[key] as any;
+        const errorClass = (errors as Record<string, unknown>)[key] as {
+          prototype?: unknown;
+          name?: string;
+        };
         const isError = errorClass?.prototype instanceof Error ||
           errorClass?.name?.includes("Error");
         assertEquals(isError, true, `${key} should be an Error class`);
@@ -179,7 +182,7 @@ describe("Workspace Module - Structure", async () => {
     // Each export should have a documentation comment
     const exportBlocks = modContent.split(/export\s+\*\s+from/);
 
-    exportBlocks.slice(1).forEach((block, index) => {
+    exportBlocks.slice(1).forEach((_block, index) => {
       // Check for preceding documentation
       const previousBlock = exportBlocks[index];
       const hasDocComment = previousBlock.includes("/**") || previousBlock.includes("*");

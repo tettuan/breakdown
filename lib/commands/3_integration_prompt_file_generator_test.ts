@@ -11,12 +11,16 @@
  * @module commands/3_integration_prompt_file_generator_test
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "../deps.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertStringIncludes as _assertStringIncludes,
+} from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";
 import type { CommandResult } from "./mod.ts";
-import { dirname, join } from "@std/path";
+import { dirname as _dirname, join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
 const logger = new BreakdownLogger("prompt-file-generator-integration-test");
@@ -116,7 +120,7 @@ Convert the input into a project structure.
     logger.debug("Generation result", {
       success: result.success,
       hasOutput: !!result.output,
-      errorType: result.error ? (result.error as any).type : "none",
+      errorType: result.error ? (result.error as { type: string }).type : "none",
     });
 
     // May fail due to missing PromptAdapterImpl implementation
@@ -168,7 +172,7 @@ Layer: {{layer_type}}
 
     logger.debug("Stdin integration result", {
       success: result.success,
-      errorType: result.error ? (result.error as any).type : "none",
+      errorType: result.error ? (result.error as { type: string }).type : "none",
     });
 
     // Verify result structure
@@ -228,7 +232,7 @@ Layer: {{layer_type}}
     // System uses fallback configuration, may succeed or fail depending on template availability
     logger.debug("Prompt dir validation result", {
       success: result.success,
-      errorType: result.error ? (result.error as any).type : "none",
+      errorType: result.error ? (result.error as { type: string }).type : "none",
     });
 
     // Test passes regardless of success/failure since system is designed to be resilient
@@ -446,7 +450,7 @@ Adaptation: {{adaptation}}
     // System may fail or succeed depending on fallback behavior
     logger.debug("Template file scenario result", {
       success: result.success,
-      errorType: result.error ? (result.error as any).type : "none",
+      errorType: result.error ? (result.error as { type: string }).type : "none",
     });
 
     // Test verifies the result structure is consistent

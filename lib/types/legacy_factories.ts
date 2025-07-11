@@ -264,6 +264,6 @@ export const TwoParamsConfigFactory = {
  * @deprecated Use VariableResult functions directly
  */
 export const VariableResultFactory = {
-  createSuccess: <T>(data: T) => ({ ok: true, data }),
-  createError: <E>(error: E) => ({ ok: false, error }),
+  createSuccess: <T>(data: T): { ok: true; data: T } => ({ ok: true, data }),
+  createError: <E>(error: E): { ok: false; error: E } => ({ ok: false, error }),
 };

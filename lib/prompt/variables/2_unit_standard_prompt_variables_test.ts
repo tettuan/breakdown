@@ -17,13 +17,16 @@ import { assertEquals } from "../../deps.ts";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
 
 // Test helper to verify error messages for Result types
-function assertErrorResult<T>(result: { ok: boolean; error?: any }, expectedMessage: string): void {
+function assertErrorResult<T>(
+  result: { ok: boolean; error?: Error },
+  expectedMessage: string,
+): void {
   assertEquals(result.ok, false, "Expected failed result");
   assertEquals(result.error?.message, expectedMessage);
 }
 
 // Helper to get data from result or throw
-function getDataOrThrow<T>(result: { ok: boolean; data?: T; error?: any }): T {
+function _getDataOrThrow<T>(result: { ok: boolean; data?: T; error?: Error }): T {
   if (!result.ok) {
     throw new Error("Expected successful creation but got error");
   }
@@ -126,12 +129,12 @@ Deno.test("StandardPromptVariables - validates additional variable keys", () => 
 
 Deno.test("StandardPromptVariables - validates additional variable values", () => {
   const nullValueResult = StandardPromptVariables.create("input.txt", "output.md", {
-    "key": null as any,
+    "key": null as unknown as string,
   });
   assertErrorResult(nullValueResult, "Variable value for 'key' cannot be null or undefined");
 
   const undefinedValueResult = StandardPromptVariables.create("input.txt", "output.md", {
-    "key": undefined as any,
+    "key": undefined as unknown as string,
   });
   assertErrorResult(undefinedValueResult, "Variable value for 'key' cannot be null or undefined");
 });
@@ -287,7 +290,7 @@ Deno.test("StandardPromptVariables - with methods validate input", () => {
   const emptyKeyResult = variables.withAdditionalVariables({ "": "value" });
   assertErrorResult(emptyKeyResult, "Variable key cannot be empty");
 
-  const nullValueResult = variables.withAdditionalVariables({ "key": null as any });
+  const nullValueResult = variables.withAdditionalVariables({ "key": null as unknown as string });
   assertErrorResult(nullValueResult, "Variable value for 'key' cannot be null or undefined");
 });
 

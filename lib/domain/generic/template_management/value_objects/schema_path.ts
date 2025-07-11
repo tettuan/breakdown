@@ -1,6 +1,6 @@
 /**
  * @fileoverview Schema Path Value Object
- * 
+ *
  * Represents a path to a schema file with validation and formatting capabilities.
  */
 
@@ -42,7 +42,7 @@ export class SchemaPath {
         };
       }
 
-      if (!filename.endsWith('.json')) {
+      if (!filename.endsWith(".json")) {
         return {
           ok: false,
           error: "Schema filename must end with .json",

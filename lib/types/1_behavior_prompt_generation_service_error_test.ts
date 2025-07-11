@@ -144,12 +144,12 @@ Deno.test("Behavior: Factory functions produce immutable objects", () => {
   // In TypeScript, readonly is compile-time only
   // Runtime immutability would require Object.freeze() or similar
   // This test documents the expected behavior
-  
+
   // Verify factory produces consistent structure
   assertEquals(error.kind, originalKind);
   assertEquals(error.message, originalMessage);
   assertEquals(error.validationErrors, originalValidationErrors);
-  
+
   // Verify the structure is correct
   assertEquals(error.kind, "VariableValidationFailed");
   assertEquals(typeof error.message, "string");
@@ -171,7 +171,9 @@ Deno.test("Behavior: Error factory functions handle edge cases", () => {
 
   // Test with very long messages
   const longMessage = "A".repeat(1000);
-  const longMessageError = PromptGenerationServiceErrorFactory.serviceConfigurationError(longMessage);
+  const longMessageError = PromptGenerationServiceErrorFactory.serviceConfigurationError(
+    longMessage,
+  );
   assertEquals(longMessageError.kind, "ServiceConfigurationError");
   assertEquals(longMessageError.configurationIssue, longMessage);
 });

@@ -11,16 +11,12 @@
  * @module types/0_architecture_prompt_variables_factory_error_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertNotStrictEquals,
-} from "../deps.ts";
+import { assert, assertEquals, assertNotStrictEquals } from "../deps.ts";
 import {
   type PathOptionsCreationError,
   type PromptVariablesFactoryError,
-  type PromptVariablesFactoryErrors,
   PromptVariablesFactoryErrorFactory,
+  type PromptVariablesFactoryErrors,
   type SchemaFilePathNotResolvedError,
   type TemplateResolverCreationError,
 } from "./prompt_variables_factory_error.ts";
@@ -43,7 +39,7 @@ Deno.test("PromptVariablesFactoryError Architecture - Base interface structure",
     assert("message" in error, "Error should have 'message' property");
     assertEquals(typeof error.kind, "string", "kind should be string");
     assertEquals(typeof error.message, "string", "message should be string");
-    
+
     // Optional context property
     if ("context" in error) {
       assertEquals(typeof error.context, "object", "context should be object when present");
@@ -131,17 +127,21 @@ Deno.test("PromptVariablesFactoryError Architecture - Factory function immutabil
   // Test that factory functions create new objects each time
   const error1 = PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed("test");
   const error2 = PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed("test");
-  
+
   assertNotStrictEquals(error1, error2, "Factory should create new objects");
   assertEquals(error1.kind, error2.kind, "Same inputs should produce same kind");
   assertEquals(error1.message, error2.message, "Same inputs should produce same message");
-  assertEquals(error1.pathOptionsError, error2.pathOptionsError, "Same inputs should produce same error details");
+  assertEquals(
+    error1.pathOptionsError,
+    error2.pathOptionsError,
+    "Same inputs should produce same error details",
+  );
 
   // Test readonly properties (compile-time check)
   const error = PromptVariablesFactoryErrorFactory.templateResolverCreationFailed("test");
   const originalKind = error.kind;
   const originalMessage = error.message;
-  
+
   // TypeScript enforces readonly at compile time
   // Runtime immutability depends on implementation
   assertEquals(typeof error.kind, "string", "kind should be string");
@@ -218,14 +218,18 @@ Deno.test("PromptVariablesFactoryError Architecture - Factory object is const", 
     "schemaPathResolutionFailed",
   ];
 
-  assertEquals(factoryKeys.length, expectedKeys.length, "Factory should have expected number of methods");
+  assertEquals(
+    factoryKeys.length,
+    expectedKeys.length,
+    "Factory should have expected number of methods",
+  );
   for (const key of expectedKeys) {
     assert(factoryKeys.includes(key), `Factory should have method: ${key}`);
   }
 
   // All factory methods should be functions
   for (const key of factoryKeys) {
-    const value = (PromptVariablesFactoryErrorFactory as any)[key];
+    const value = (PromptVariablesFactoryErrorFactory as Record<string, unknown>)[key];
     assertEquals(typeof value, "function", `${key} should be a function`);
   }
 
@@ -235,7 +239,7 @@ Deno.test("PromptVariablesFactoryError Architecture - Factory object is const", 
   assertEquals(
     PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed,
     originalMethod,
-    "Factory methods should be consistent"
+    "Factory methods should be consistent",
   );
 });
 
@@ -263,7 +267,7 @@ Deno.test("PromptVariablesFactoryError Architecture - Error message consistency"
   for (const { error, expectedPattern } of testCases) {
     assert(
       expectedPattern.test(error.message),
-      `Message "${error.message}" should match pattern ${expectedPattern}`
+      `Message "${error.message}" should match pattern ${expectedPattern}`,
     );
   }
 });
@@ -271,13 +275,13 @@ Deno.test("PromptVariablesFactoryError Architecture - Error message consistency"
 Deno.test("PromptVariablesFactoryError Architecture - Type narrowing with custom type guards", () => {
   // Custom type guards for each error type
   function isPathOptionsCreationError(
-    error: PromptVariablesFactoryErrors
+    error: PromptVariablesFactoryErrors,
   ): error is PathOptionsCreationError {
     return error.kind === "PathOptionsCreationFailed";
   }
 
   function isSchemaFilePathNotResolvedError(
-    error: PromptVariablesFactoryErrors
+    error: PromptVariablesFactoryErrors,
   ): error is SchemaFilePathNotResolvedError {
     return error.kind === "SchemaFilePathNotResolved";
   }
@@ -291,7 +295,7 @@ Deno.test("PromptVariablesFactoryError Architecture - Type narrowing with custom
 
   assert(isPathOptionsCreationError(pathError), "Should identify path options error");
   assert(!isPathOptionsCreationError(schemaError), "Should not misidentify schema error");
-  
+
   assert(isSchemaFilePathNotResolvedError(schemaError), "Should identify schema error");
   assert(!isSchemaFilePathNotResolvedError(pathError), "Should not misidentify path error");
 

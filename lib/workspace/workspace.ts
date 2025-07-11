@@ -20,7 +20,11 @@
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
 import { parse } from "@std/yaml";
-import { createWorkspaceConfigError, createWorkspaceInitError, WorkspaceConfigError } from "./errors.ts";
+import {
+  createWorkspaceConfigError,
+  createWorkspaceInitError,
+  WorkspaceConfigError,
+} from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
@@ -133,7 +137,7 @@ export class WorkspaceImpl implements Workspace {
         const destPath = join(customPromptDir, relPath);
         try {
           await Deno.stat(destPath);
-        } catch (e) {
+        } catch (e: unknown) {
           if (e instanceof Deno.errors.NotFound) {
             await ensureDir(dirname(destPath));
             await Deno.writeTextFile(destPath, content);
@@ -148,7 +152,7 @@ export class WorkspaceImpl implements Workspace {
         const destPath = join(customSchemaDir, relPath);
         try {
           await Deno.stat(destPath);
-        } catch (e) {
+        } catch (e: unknown) {
           if (e instanceof Deno.errors.NotFound) {
             await ensureDir(dirname(destPath));
             await Deno.writeTextFile(destPath, content);
@@ -250,7 +254,11 @@ export class WorkspaceImpl implements Workspace {
 
     try {
       const configContent = await Deno.readTextFile(configFile);
-      const config = parse(configContent) as {
+      const parsedContent = parse(configContent);
+      if (!parsedContent || typeof parsedContent !== "object") {
+        throw createWorkspaceConfigError("Invalid configuration file format");
+      }
+      const config = parsedContent as {
         working_dir: string;
         app_prompt: { base_dir: string };
         app_schema: { base_dir: string };

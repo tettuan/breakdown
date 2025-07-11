@@ -336,7 +336,7 @@ export class TwoParamsPromptGenerator {
   /**
    * Create and validate factory
    */
-  private async createAndValidateFactory(
+  private createAndValidateFactory(
     context: GenerationContext,
     config: Record<string, unknown>,
   ): Promise<Result<PromptVariablesFactory, PromptGeneratorError>> {
@@ -347,29 +347,29 @@ export class TwoParamsPromptGenerator {
       // Create factory - Result型チェック→factory抽出パターン
       const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
       if (!factoryResult.ok) {
-        return error({
+        return Promise.resolve(error({
           kind: "FactoryCreationError",
           message: factoryResult.error.message,
           cause: factoryResult.error,
-        });
+        }));
       }
       const factory = factoryResult.data;
 
       // Validate factory
       const validationResult = this.validateFactory(factory);
       if (!validationResult.ok) {
-        return error(validationResult.error);
+        return Promise.resolve(error(validationResult.error));
       }
 
-      return ok(factory);
+      return Promise.resolve(ok(factory));
     } catch (err) {
-      return error({
+      return Promise.resolve(error({
         kind: "FactoryCreationError",
         message: `Unexpected error creating factory: ${
           err instanceof Error ? err.message : String(err)
         }`,
         cause: err,
-      });
+      }));
     }
   }
 
@@ -426,7 +426,7 @@ export class TwoParamsPromptGenerator {
   /**
    * Build variables with complete error handling
    */
-  private async buildVariables(
+  private buildVariables(
     factory: PromptVariablesFactory,
     context: GenerationContext,
   ): Promise<Result<Record<string, string>, PromptGeneratorError>> {
@@ -455,11 +455,11 @@ export class TwoParamsPromptGenerator {
           return String(e);
         });
 
-        return error({
+        return Promise.resolve(error({
           kind: "VariablesBuilderError",
           errors,
           phase: "validation",
-        });
+        }));
       }
 
       // Add values to builder
@@ -475,20 +475,20 @@ export class TwoParamsPromptGenerator {
           return String(e);
         });
 
-        return error({
+        return Promise.resolve(error({
           kind: "VariablesBuilderError",
           errors,
           phase: "build",
-        });
+        }));
       }
 
-      return ok(builder.toRecord());
+      return Promise.resolve(ok(builder.toRecord()));
     } catch (err) {
-      return error({
+      return Promise.resolve(error({
         kind: "VariablesBuilderError",
         errors: [err instanceof Error ? err.message : String(err)],
         phase: "unexpected",
-      });
+      }));
     }
   }
 
@@ -578,10 +578,11 @@ export class TwoParamsPromptGenerator {
         return `Failed to parse template ${error.template}: ${error.error}`;
       case "ConfigurationError":
         return `Configuration error: ${error.message}`;
-      default:
+      default: {
         // Exhaustive check
         const _exhaustive: never = error;
         return `Unknown error: ${JSON.stringify(_exhaustive)}`;
+      }
     }
   }
 }

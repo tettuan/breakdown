@@ -67,7 +67,7 @@ export class ConfigFilePath {
     if (typeof path !== "string") {
       return error({
         kind: "EmptyPath",
-        message: "Configuration file path must be a string"
+        message: "Configuration file path must be a string",
       });
     }
 
@@ -75,27 +75,27 @@ export class ConfigFilePath {
     if (!path || path === "") {
       return error({
         kind: "EmptyPath",
-        message: "Configuration file path cannot be empty"
+        message: "Configuration file path cannot be empty",
       });
     }
 
     // Validate path is properly trimmed
     const trimmed = path.trim();
-    
+
     // Check if path becomes empty after trimming
     if (trimmed.length === 0) {
       return error({
         kind: "EmptyPath",
-        message: "Configuration file path cannot be empty after trimming"
+        message: "Configuration file path cannot be empty after trimming",
       });
     }
-    
+
     // Check if path had whitespace
     if (trimmed !== path) {
       return error({
         kind: "InvalidFormat",
         message: "Configuration file path cannot have leading or trailing whitespace",
-        path
+        path,
       });
     }
 
@@ -103,7 +103,7 @@ export class ConfigFilePath {
       return error({
         kind: "PathTooLong",
         message: "Configuration file path is too long (max 1000 characters)",
-        path: trimmed
+        path: trimmed,
       });
     }
 
@@ -149,7 +149,7 @@ export class ConfigPrefix {
       return error({
         kind: "InvalidType",
         message: "Configuration prefix must be a string or null",
-        received: typeof prefix
+        received: typeof prefix,
       });
     }
 
@@ -164,7 +164,7 @@ export class ConfigPrefix {
       return error({
         kind: "InvalidFormat",
         message: "Configuration prefix cannot have leading or trailing whitespace",
-        prefix
+        prefix,
       });
     }
 
@@ -173,8 +173,9 @@ export class ConfigPrefix {
     if (!VALID_PREFIX_PATTERN.test(trimmed)) {
       return error({
         kind: "InvalidCharacters",
-        message: "Configuration prefix can only contain alphanumeric characters, hyphens, and underscores",
-        prefix: trimmed
+        message:
+          "Configuration prefix can only contain alphanumeric characters, hyphens, and underscores",
+        prefix: trimmed,
       });
     }
 
@@ -183,7 +184,7 @@ export class ConfigPrefix {
       return error({
         kind: "PrefixTooLong",
         message: "Configuration prefix is too long (max 100 characters)",
-        prefix: trimmed
+        prefix: trimmed,
       });
     }
 
@@ -236,7 +237,7 @@ export class WorkingDirectory {
       return error({
         kind: "InvalidPath",
         path: String(path),
-        reason: "Working directory path must be a string or undefined"
+        reason: "Working directory path must be a string or undefined",
       });
     }
 
@@ -245,7 +246,7 @@ export class WorkingDirectory {
       return error({
         kind: "InvalidPath",
         path: path,
-        reason: "Working directory path cannot be an empty string"
+        reason: "Working directory path cannot be an empty string",
       });
     }
 
@@ -253,7 +254,7 @@ export class WorkingDirectory {
     if (trimmed.length === 0) {
       return error({
         kind: "EmptyPath",
-        message: "Working directory path cannot be empty after trimming"
+        message: "Working directory path cannot be empty after trimming",
       });
     }
 
@@ -338,14 +339,14 @@ export class ConfigLoader {
           return error({
             kind: "FileNotFound",
             message: "Path exists but is not a file",
-            path: configPath.value
+            path: configPath.value,
           });
         }
       } catch {
         return error({
           kind: "FileNotFound",
           message: "Configuration file not found",
-          path: configPath.value
+          path: configPath.value,
         });
       }
 
@@ -358,7 +359,7 @@ export class ConfigLoader {
           kind: "FileReadError",
           message: "Failed to read configuration file",
           path: configPath.value,
-          cause: readError instanceof Error ? readError.message : String(readError)
+          cause: readError instanceof Error ? readError.message : String(readError),
         });
       }
 
@@ -371,7 +372,7 @@ export class ConfigLoader {
           kind: "ParseError",
           message: "Failed to parse YAML configuration",
           path: configPath.value,
-          cause: parseError instanceof Error ? parseError.message : String(parseError)
+          cause: parseError instanceof Error ? parseError.message : String(parseError),
         });
       }
 
@@ -380,7 +381,7 @@ export class ConfigLoader {
         return error({
           kind: "ValidationError",
           message: "Configuration structure is invalid",
-          path: configPath.value
+          path: configPath.value,
         });
       }
 
@@ -390,7 +391,7 @@ export class ConfigLoader {
         kind: "FileReadError",
         message: "Unexpected error during configuration loading",
         path: configPath.value,
-        cause: unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError)
+        cause: unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError),
       });
     }
   }
@@ -398,12 +399,12 @@ export class ConfigLoader {
   /**
    * Load configuration using BreakdownConfig with type safety
    * @param configPrefix Optional config prefix for BreakdownConfig
-   * @param workingDir Working directory for BreakdownConfig  
+   * @param workingDir Working directory for BreakdownConfig
    * @returns Result with merged configuration or BreakdownConfigLoadError
    */
   static async loadBreakdownConfig(
     configPrefix?: unknown,
-    workingDir?: unknown
+    workingDir?: unknown,
   ): Promise<Result<Record<string, unknown>, BreakdownConfigLoadError>> {
     // Validate config prefix using Smart Constructor
     const prefixResult = ConfigPrefix.create(configPrefix as string | null | undefined);
@@ -418,7 +419,7 @@ export class ConfigLoader {
     }
 
     const prefix = prefixResult.data;
-    const workDir = workingDirResult.data;
+    const _workDir = workingDirResult.data;
 
     try {
       // Dynamic import using latest version (managed in versions.ts: 1.1.4)
@@ -430,12 +431,12 @@ export class ConfigLoader {
         return error({
           kind: "CreateError",
           message: "Failed to create BreakdownConfig instance",
-          cause: "BreakdownConfig.create returned failure"
+          cause: "BreakdownConfig.create returned failure",
         });
       }
 
       const config = configResult.data;
-      
+
       // Load configuration
       try {
         await config.loadConfig();
@@ -443,7 +444,7 @@ export class ConfigLoader {
         return error({
           kind: "LoadError",
           message: "Failed to load BreakdownConfig",
-          cause: loadError instanceof Error ? loadError.message : String(loadError)
+          cause: loadError instanceof Error ? loadError.message : String(loadError),
         });
       }
 
@@ -455,7 +456,7 @@ export class ConfigLoader {
         return error({
           kind: "ConfigError",
           message: "Failed to get configuration data",
-          cause: getConfigError instanceof Error ? getConfigError.message : String(getConfigError)
+          cause: getConfigError instanceof Error ? getConfigError.message : String(getConfigError),
         });
       }
 
@@ -464,7 +465,7 @@ export class ConfigLoader {
       return error({
         kind: "CreateError",
         message: "Failed to import or initialize BreakdownConfig",
-        cause: importError instanceof Error ? importError.message : String(importError)
+        cause: importError instanceof Error ? importError.message : String(importError),
       });
     }
   }
@@ -479,7 +480,7 @@ export class ConfigLoader {
     if (config === null || config === undefined) {
       return true;
     }
-    
+
     if (typeof config !== "object") {
       return false;
     }

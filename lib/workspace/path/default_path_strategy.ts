@@ -87,10 +87,10 @@ export class DefaultPathStrategyTotality {
   /**
    * Validates a path with default rules
    */
-  async validate(path: string): Promise<Result<boolean, PathErrorKind>> {
+  validate(path: string): Promise<Result<boolean, PathErrorKind>> {
     // Empty path is valid (treated as current directory)
     if (!path || path.trim() === "") {
-      return { ok: true, data: true };
+      return Promise.resolve({ ok: true, data: true });
     }
 
     return this.strategy.validate(path);

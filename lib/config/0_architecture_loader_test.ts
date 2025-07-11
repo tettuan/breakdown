@@ -7,19 +7,14 @@
  * @module config/0_architecture_loader_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertExists,
-  assertInstanceOf,
-} from "../deps.ts";
+import { assert, assertEquals, assertExists } from "../deps.ts";
 import {
   ConfigFilePath,
+  type ConfigFilePathError,
   ConfigLoader,
   ConfigPrefix,
-  WorkingDirectory,
-  type ConfigFilePathError,
   type ConfigPrefixError,
+  WorkingDirectory,
   type WorkingDirectoryError,
 } from "./loader.ts";
 
@@ -75,7 +70,7 @@ Deno.test("0_architecture: ConfigLoader prevents direct instantiation", () => {
 
 Deno.test("0_architecture: ConfigFilePath implements Totality principle", () => {
   // create() method is total - returns Result<ConfigFilePath, ConfigFilePathError> for ALL inputs
-  
+
   // Valid paths return ok result
   const validPaths = [
     "config.yml",
@@ -86,13 +81,13 @@ Deno.test("0_architecture: ConfigFilePath implements Totality principle", () => 
     "simple",
     "a".repeat(999), // Max length - 1
   ];
-  
+
   for (const path of validPaths) {
     const result = ConfigFilePath.create(path);
     assert(result.ok, `Expected valid path for: ${path}`);
     assertEquals(result.data.value, path);
   }
-  
+
   // Invalid paths return error result (not throw)
   const invalidPaths: Array<{ input: string; expectedKind: ConfigFilePathError["kind"] }> = [
     { input: "", expectedKind: "EmptyPath" },
@@ -103,7 +98,7 @@ Deno.test("0_architecture: ConfigFilePath implements Totality principle", () => 
     { input: "config.yml\n", expectedKind: "InvalidFormat" },
     { input: "a".repeat(1001), expectedKind: "PathTooLong" },
   ];
-  
+
   for (const { input, expectedKind } of invalidPaths) {
     const result = ConfigFilePath.create(input);
     assert(!result.ok, `Expected invalid path for: ${JSON.stringify(input)}`);
@@ -113,7 +108,7 @@ Deno.test("0_architecture: ConfigFilePath implements Totality principle", () => 
 
 Deno.test("0_architecture: ConfigPrefix implements Totality principle", () => {
   // create() method is total - returns Result<ConfigPrefix, ConfigPrefixError> for ALL inputs
-  
+
   // Valid prefixes return ok result (including null/undefined)
   const validPrefixes = [
     null,
@@ -128,7 +123,7 @@ Deno.test("0_architecture: ConfigPrefix implements Totality principle", () => {
     "mixed123_test-env",
     "a".repeat(100), // Max length
   ];
-  
+
   for (const prefix of validPrefixes) {
     const result = ConfigPrefix.create(prefix);
     assert(result.ok, `Expected valid prefix for: ${prefix}`);
@@ -140,7 +135,7 @@ Deno.test("0_architecture: ConfigPrefix implements Totality principle", () => {
       assertEquals(result.data.hasValue, true);
     }
   }
-  
+
   // Invalid prefixes return error result (not throw)
   const invalidPrefixes: Array<{ input: unknown; expectedKind: ConfigPrefixError["kind"] }> = [
     { input: 123, expectedKind: "InvalidType" },
@@ -157,7 +152,7 @@ Deno.test("0_architecture: ConfigPrefix implements Totality principle", () => {
     { input: "test/env", expectedKind: "InvalidCharacters" },
     { input: "a".repeat(101), expectedKind: "PrefixTooLong" },
   ];
-  
+
   for (const { input, expectedKind } of invalidPrefixes) {
     const result = ConfigPrefix.create(input as string);
     assert(!result.ok, `Expected invalid prefix for: ${JSON.stringify(input)}`);
@@ -167,7 +162,7 @@ Deno.test("0_architecture: ConfigPrefix implements Totality principle", () => {
 
 Deno.test("0_architecture: WorkingDirectory implements Totality principle", () => {
   // create() method is total - returns Result<WorkingDirectory, WorkingDirectoryError> for ALL inputs
-  
+
   // Valid directories return ok result
   const validDirs = [
     ".",
@@ -179,14 +174,14 @@ Deno.test("0_architecture: WorkingDirectory implements Totality principle", () =
     "/absolute/path",
     undefined, // Should default to Deno.cwd()
   ];
-  
+
   for (const dir of validDirs) {
     const result = WorkingDirectory.create(dir);
     assert(result.ok, `Expected valid directory for: ${dir}`);
     assertExists(result.data.value);
     assertEquals(typeof result.data.value, "string");
   }
-  
+
   // Invalid directories return error result (not throw)
   const invalidDirs: Array<{ input: unknown; expectedKind: WorkingDirectoryError["kind"] }> = [
     { input: "", expectedKind: "InvalidPath" }, // Empty string is falsy, so InvalidPath
@@ -197,7 +192,7 @@ Deno.test("0_architecture: WorkingDirectory implements Totality principle", () =
     { input: [], expectedKind: "InvalidPath" },
     { input: {}, expectedKind: "InvalidPath" },
   ];
-  
+
   for (const { input, expectedKind } of invalidDirs) {
     const result = WorkingDirectory.create(input as string);
     assert(!result.ok, `Expected invalid directory for: ${JSON.stringify(input)}`);
@@ -210,41 +205,41 @@ Deno.test("0_architecture: Value objects are immutable at interface level", () =
   const pathResult = ConfigFilePath.create("test.yml");
   assert(pathResult.ok);
   const path = pathResult.data;
-  
+
   const originalValue = path.value;
   try {
     // Attempt to modify readonly property
-    (path as any).value = "modified";
+    (path as unknown as { value: string }).value = "modified";
   } catch (error) {
     // Expected: TypeError for read-only property
     assert(error instanceof TypeError);
   }
   assertEquals(path.value, originalValue);
-  
+
   // ConfigPrefix immutability
   const prefixResult = ConfigPrefix.create("test");
   assert(prefixResult.ok);
   const prefix = prefixResult.data;
-  
+
   const originalPrefix = prefix.value;
   const originalHasValue = prefix.hasValue;
   try {
-    (prefix as any).value = "modified";
-    (prefix as any).hasValue = false;
+    (prefix as unknown as { value: string }).value = "modified";
+    (prefix as unknown as { hasValue: boolean }).hasValue = false;
   } catch (error) {
     assert(error instanceof TypeError);
   }
   assertEquals(prefix.value, originalPrefix);
   assertEquals(prefix.hasValue, originalHasValue);
-  
+
   // WorkingDirectory immutability
   const dirResult = WorkingDirectory.create(".");
   assert(dirResult.ok);
   const dir = dirResult.data;
-  
+
   const originalDir = dir.value;
   try {
-    (dir as any).value = "modified";
+    (dir as unknown as { value: string }).value = "modified";
   } catch (error) {
     assert(error instanceof TypeError);
   }
@@ -253,21 +248,21 @@ Deno.test("0_architecture: Value objects are immutable at interface level", () =
 
 Deno.test("0_architecture: Error types implement discriminated union pattern", () => {
   // All error types use discriminated union with 'kind' field
-  
+
   // ConfigFilePathError variants
   const filePathErrors = [
     { kind: "EmptyPath", message: "test" },
     { kind: "InvalidFormat", message: "test", path: "test" },
     { kind: "PathTooLong", message: "test", path: "test" },
   ] satisfies ConfigFilePathError[];
-  
+
   for (const error of filePathErrors) {
     assertExists(error.kind);
     assertExists(error.message);
     assertEquals(typeof error.kind, "string");
     assertEquals(typeof error.message, "string");
   }
-  
+
   // ConfigPrefixError variants
   const prefixErrors = [
     { kind: "InvalidType", message: "test", received: "test" },
@@ -275,23 +270,23 @@ Deno.test("0_architecture: Error types implement discriminated union pattern", (
     { kind: "InvalidCharacters", message: "test", prefix: "test" },
     { kind: "PrefixTooLong", message: "test", prefix: "test" },
   ] satisfies ConfigPrefixError[];
-  
+
   for (const error of prefixErrors) {
     assertExists(error.kind);
     assertExists(error.message);
   }
-  
+
   // WorkingDirectoryError variants
   const dirErrors = [
     { kind: "InvalidPath", path: "test", reason: "test" },
     { kind: "EmptyPath", message: "test" },
   ] satisfies WorkingDirectoryError[];
-  
+
   for (const error of dirErrors) {
     assertExists(error.kind);
-    if ('message' in error) {
+    if ("message" in error) {
       assertExists(error.message);
-    } else if ('reason' in error) {
+    } else if ("reason" in error) {
       assertExists(error.reason);
     }
   }
@@ -299,7 +294,7 @@ Deno.test("0_architecture: Error types implement discriminated union pattern", (
 
 Deno.test("0_architecture: ConfigLoader.loadConfig returns Result type", async () => {
   // loadConfig method follows Result pattern for ALL inputs
-  
+
   // Method signature guarantees Result return type
   const testPaths = [
     "nonexistent.yml",
@@ -307,22 +302,22 @@ Deno.test("0_architecture: ConfigLoader.loadConfig returns Result type", async (
     "invalid-path-with-spaces ",
     "a".repeat(1001),
   ];
-  
+
   for (const path of testPaths) {
     const result = await ConfigLoader.loadConfig(path);
     // Result must have 'ok' property
     assertExists("ok" in result);
     assertEquals(typeof result.ok, "boolean");
-    
+
     if (result.ok) {
       assertExists(result.data);
     } else {
       assertExists(result.error);
       assertExists(result.error.kind);
-      if ('message' in result.error && result.error.message) {
+      if ("message" in result.error && result.error.message) {
         assertExists(result.error.message);
       }
-      if ('reason' in result.error && result.error.reason) {
+      if ("reason" in result.error && result.error.reason) {
         assertExists(result.error.reason);
       }
     }
@@ -331,31 +326,31 @@ Deno.test("0_architecture: ConfigLoader.loadConfig returns Result type", async (
 
 Deno.test("0_architecture: ConfigLoader.loadBreakdownConfig returns Result type", async () => {
   // loadBreakdownConfig method follows Result pattern for ALL inputs
-  
+
   const testConfigs = [
     { prefix: "test", workingDir: "." },
     { prefix: null, workingDir: undefined },
     { prefix: 123 as unknown as string, workingDir: "." },
     { prefix: "invalid@prefix", workingDir: "." },
   ];
-  
+
   for (const { prefix, workingDir } of testConfigs) {
     const result = await ConfigLoader.loadBreakdownConfig(prefix, workingDir);
-    
+
     // Result must have 'ok' property
     assertExists("ok" in result);
     assertEquals(typeof result.ok, "boolean");
-    
+
     if (result.ok) {
       assertExists(result.data);
       assertEquals(typeof result.data, "object");
     } else {
       assertExists(result.error);
       assertExists(result.error.kind);
-      if ('message' in result.error && result.error.message) {
+      if ("message" in result.error && result.error.message) {
         assertExists(result.error.message);
       }
-      if ('reason' in result.error && result.error.reason) {
+      if ("reason" in result.error && result.error.reason) {
         assertExists(result.error.reason);
       }
     }
@@ -364,42 +359,42 @@ Deno.test("0_architecture: ConfigLoader.loadBreakdownConfig returns Result type"
 
 Deno.test("0_architecture: Value objects prevent invalid state at type level", () => {
   // Smart Constructors prevent invalid states through type system
-  
+
   // ConfigFilePath can only exist in valid states
   const validPath = ConfigFilePath.create("valid.yml");
   assert(validPath.ok);
-  
+
   // Type system prevents accessing non-existent properties
   assertExists(validPath.data.value);
   assertEquals(typeof validPath.data.toString, "function");
-  
-  // ConfigPrefix can only exist in valid states  
+
+  // ConfigPrefix can only exist in valid states
   const validPrefix = ConfigPrefix.create("valid");
   assert(validPrefix.ok);
-  
+
   assertExists("value" in validPrefix.data);
   assertExists("hasValue" in validPrefix.data);
   assertEquals(typeof validPrefix.data.toString, "function");
-  
+
   // WorkingDirectory can only exist in valid states
   const validDir = WorkingDirectory.create(".");
   assert(validDir.ok);
-  
+
   assertExists(validDir.data.value);
   assertEquals(typeof validDir.data.toString, "function");
 });
 
 Deno.test("0_architecture: All constructors use Object.freeze for immutability", () => {
   // Verify that value objects are properly frozen
-  
+
   const pathResult = ConfigFilePath.create("test.yml");
   assert(pathResult.ok);
   assert(Object.isFrozen(pathResult.data));
-  
+
   const prefixResult = ConfigPrefix.create("test");
   assert(prefixResult.ok);
   assert(Object.isFrozen(prefixResult.data));
-  
+
   const dirResult = WorkingDirectory.create(".");
   assert(dirResult.ok);
   assert(Object.isFrozen(dirResult.data));
@@ -407,19 +402,19 @@ Deno.test("0_architecture: All constructors use Object.freeze for immutability",
 
 Deno.test("0_architecture: String representation follows consistent pattern", () => {
   // All value objects provide consistent toString() format
-  
+
   const pathResult = ConfigFilePath.create("test.yml");
   assert(pathResult.ok);
   assertEquals(pathResult.data.toString(), "ConfigFilePath(test.yml)");
-  
+
   const prefixResult = ConfigPrefix.create("test");
   assert(prefixResult.ok);
   assertEquals(prefixResult.data.toString(), "ConfigPrefix(test)");
-  
+
   const nullPrefixResult = ConfigPrefix.create(null);
   assert(nullPrefixResult.ok);
   assertEquals(nullPrefixResult.data.toString(), "ConfigPrefix(null)");
-  
+
   const dirResult = WorkingDirectory.create(".");
   assert(dirResult.ok);
   assertEquals(dirResult.data.toString(), "WorkingDirectory(.)");
@@ -427,36 +422,58 @@ Deno.test("0_architecture: String representation follows consistent pattern", ()
 
 Deno.test("0_architecture: Exhaustive error handling covers all failure modes", () => {
   // Every possible failure mode is represented in error types
-  
+
   // File path validation covers all edge cases
   const pathFailures = [
-    "", "  ", " path", "path ", "\tpath", "path\n", "a".repeat(1001)
+    "",
+    "  ",
+    " path",
+    "path ",
+    "\tpath",
+    "path\n",
+    "a".repeat(1001),
   ];
-  
+
   for (const invalidPath of pathFailures) {
     const result = ConfigFilePath.create(invalidPath);
     assert(!result.ok);
     assert(["EmptyPath", "InvalidFormat", "PathTooLong"].includes(result.error.kind));
   }
-  
+
   // Prefix validation covers all edge cases
   const prefixFailures = [
-    123, true, [], {}, " prefix", "prefix ", "prefix@env", "a".repeat(101)
+    123,
+    true,
+    [],
+    {},
+    " prefix",
+    "prefix ",
+    "prefix@env",
+    "a".repeat(101),
   ];
-  
+
   for (const invalidPrefix of prefixFailures) {
     const result = ConfigPrefix.create(invalidPrefix as string);
     assert(!result.ok);
     assert([
-      "InvalidType", "InvalidFormat", "InvalidCharacters", "PrefixTooLong"
+      "InvalidType",
+      "InvalidFormat",
+      "InvalidCharacters",
+      "PrefixTooLong",
     ].includes(result.error.kind));
   }
-  
+
   // Directory validation covers all edge cases
   const dirFailures = [
-    "", "   ", null, 123, true, [], {}
+    "",
+    "   ",
+    null,
+    123,
+    true,
+    [],
+    {},
   ];
-  
+
   for (const invalidDir of dirFailures) {
     const result = WorkingDirectory.create(invalidDir as string);
     assert(!result.ok);

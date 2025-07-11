@@ -11,12 +11,7 @@
  * @module factory/2_structure_schema_file_path_resolver_test
  */
 
-import {
-  assert,
-  assertEquals,
-  assertExists,
-  assertObjectMatch,
-} from "../deps.ts";
+import { assert, assertEquals, assertExists, assertObjectMatch } from "../deps.ts";
 import {
   formatSchemaError,
   formatSchemaFilePathError,
@@ -24,8 +19,8 @@ import {
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
-  SchemaFilePathResolver,
   type SchemaFilePathError,
+  SchemaFilePathResolver,
   SchemaPath,
 } from "./schema_file_path_resolver.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
@@ -129,13 +124,14 @@ Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure"
     assert(result.ok);
     if (result.ok) {
       const schemaPath = result.data;
-      
+
       // Verify structure
       assertEquals(schemaPath.value, testCase.path);
       assertObjectMatch(schemaPath.metadata, testCase.metadata);
-      
+
       // Verify description format
-      const expectedDesc = `Schema: ${testCase.metadata.demonstrativeType}/${testCase.metadata.layerType}/${testCase.metadata.fileName}`;
+      const expectedDesc =
+        `Schema: ${testCase.metadata.demonstrativeType}/${testCase.metadata.layerType}/${testCase.metadata.fileName}`;
       assertEquals(schemaPath.getDescription(), expectedDesc);
     }
   }
@@ -148,7 +144,7 @@ Deno.test("SchemaFilePathResolver Structure - Error type discrimination structur
     message: "Schema not found",
     path: "/test/path",
   };
-  
+
   assert(isSchemaNotFoundError(schemaNotFound));
   assertEquals(schemaNotFound.path, "/test/path");
 
@@ -158,7 +154,7 @@ Deno.test("SchemaFilePathResolver Structure - Error type discrimination structur
     demonstrativeType: "invalid",
     layerType: "type",
   };
-  
+
   assert(isInvalidParametersError(invalidParams));
   assertEquals(invalidParams.demonstrativeType, "invalid");
   assertEquals(invalidParams.layerType, "type");
@@ -168,7 +164,7 @@ Deno.test("SchemaFilePathResolver Structure - Error type discrimination structur
     message: "Config error",
     setting: "base_dir",
   };
-  
+
   assert(isConfigurationError(configError));
   assertEquals(configError.setting, "base_dir");
 
@@ -178,7 +174,7 @@ Deno.test("SchemaFilePathResolver Structure - Error type discrimination structur
     operation: "read",
     originalError: new Error("Original"),
   };
-  
+
   assert(isFileSystemError(fsError));
   assertEquals(fsError.operation, "read");
   assertExists(fsError.originalError);
@@ -281,19 +277,22 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
 
   const config = { app_schema: { base_dir: "/test" } };
   const params = { demonstrativeType: "to", layerType: "project", options: {} };
-  
+
   const result = SchemaFilePathResolver.create(config, params);
   assert(result.ok);
   if (result.ok) {
     const resolver = result.data;
-    
+
     for (const mapping of mappings) {
       // Access private method through type casting (for testing only)
-      const converted = (resolver as any).convertToSchemaFilePathError(mapping.input);
+      const converted = (resolver as unknown as {
+        convertToSchemaFilePathError: (input: unknown) => { kind: string };
+      }).convertToSchemaFilePathError(mapping.input);
       assertEquals(converted.kind, mapping.expectedKind);
-      
+
       if (mapping.checkProperties) {
-        mapping.checkProperties(converted);
+        // deno-lint-ignore no-explicit-any
+        mapping.checkProperties(converted as any);
       }
     }
   }
@@ -353,18 +352,18 @@ Deno.test("SchemaFilePathResolver Structure - Path construction structure", () =
   assert(result.ok);
   if (result.ok) {
     const resolver = result.data;
-    
+
     // Test path structure components
     const baseDir = resolver.resolveBaseDir();
     const fileName = resolver.buildFileName();
     const fullPath = resolver.buildSchemaPath(baseDir, fileName);
-    
+
     // Verify path structure
     assert(fullPath.startsWith(baseDir));
     assert(fullPath.includes(params.demonstrativeType));
     assert(fullPath.includes(params.layerType));
     assert(fullPath.endsWith(fileName));
-    
+
     // Verify path format: baseDir/demonstrativeType/layerType/fileName
     const expectedPath = `${baseDir}/${params.demonstrativeType}/${params.layerType}/${fileName}`;
     assertEquals(fullPath, expectedPath);
@@ -377,7 +376,7 @@ Deno.test("SchemaFilePathResolver Structure - Options structure preservation", (
     {},
     { fromFile: "input.txt" },
     { destinationFile: "output.md", adaptation: "custom" },
-    { 
+    {
       fromFile: "in.txt",
       destinationFile: "out.md",
       promptDir: "/prompts",
@@ -428,7 +427,7 @@ Deno.test("SchemaFilePathResolver Structure - Error formatting completeness", ()
   for (const error of schemaErrors) {
     const formatted = formatSchemaFilePathError(error);
     assert(formatted.length > 0, `Should format ${error.kind}`);
-    
+
     // Verify format includes key information
     switch (error.kind) {
       case "SchemaNotFound":

@@ -81,7 +81,7 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
  * ConfigPatternProviderがTypePatternProviderインターフェースを
  * 完全に実装していることを検証
  */
-Deno.test("Architecture: Complete TypePatternProvider interface implementation", async () => {
+Deno.test("Architecture: Complete TypePatternProvider interface implementation", () => {
   // インターフェースの実装を型レベルで検証
   const provider = {} as ConfigPatternProvider;
   const interfaceCheck: TypePatternProvider = provider;
@@ -188,7 +188,7 @@ Deno.test("Architecture: No circular dependencies", async () => {
  *
  * ConfigPatternProviderが適切なレイヤー境界を守っていることを検証
  */
-Deno.test("Architecture: Layer boundary compliance", async () => {
+Deno.test("Architecture: Layer boundary compliance", () => {
   // ConfigPatternProviderはconfig層に属する
   // 以下への依存のみ許可:
   // 1. 外部パッケージ（@tettuan/breakdownconfig）
@@ -220,7 +220,7 @@ Deno.test("Architecture: Layer boundary compliance", async () => {
  *
  * ConfigPatternProviderの公開APIが安定していることを検証
  */
-Deno.test("Architecture: Public API stability", async () => {
+Deno.test("Architecture: Public API stability", () => {
   const publicMethods = [
     "constructor",
     "getDirectivePattern",
@@ -261,7 +261,7 @@ Deno.test("Architecture: Public API stability", async () => {
  *
  * ConfigPatternProviderが依存性注入パターンを正しく実装していることを検証
  */
-Deno.test("Architecture: Dependency injection implementation", async () => {
+Deno.test("Architecture: Dependency injection implementation", () => {
   // コンストラクタインジェクションの検証
   assertEquals(
     ConfigPatternProvider.length,
@@ -347,7 +347,7 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
     }
 
     // メソッドの終了を検出（インデントレベル2の}）
-    if ((inGetDirectivePattern || inGetLayerTypePattern) && line.match(/^  \}/)) {
+    if ((inGetDirectivePattern || inGetLayerTypePattern) && line.match(/^ {2}\}/)) {
       inGetDirectivePattern = false;
       inGetLayerTypePattern = false;
       inCatchBlock = false;
@@ -367,9 +367,9 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
   );
 
   // createメソッドがエラーハンドリングを実装していることを確認
-  const hasErrorHandling = sourceCode.includes("return error(") || 
-                          sourceCode.includes("Failed to create BreakdownConfig") ||
-                          sourceCode.includes("ErrorFactory.configError");
+  const hasErrorHandling = sourceCode.includes("return error(") ||
+    sourceCode.includes("Failed to create BreakdownConfig") ||
+    sourceCode.includes("ErrorFactory.configError");
   assertEquals(
     hasErrorHandling,
     true,
@@ -382,7 +382,7 @@ Deno.test("Architecture: Consistent error handling strategy", async () => {
  *
  * ConfigPatternProviderの内部実装が適切にカプセル化されていることを検証
  */
-Deno.test("Architecture: Private method encapsulation", async () => {
+Deno.test("Architecture: Private method encapsulation", () => {
   const prototype = ConfigPatternProvider.prototype;
 
   // プライベートメソッドのリスト
@@ -413,7 +413,7 @@ Deno.test("Architecture: Private method encapsulation", async () => {
  *
  * ConfigPatternProviderが単一の責任に集中していることを検証
  */
-Deno.test("Architecture: Single Responsibility Principle", async () => {
+Deno.test("Architecture: Single Responsibility Principle", () => {
   // ConfigPatternProviderの責任:
   // 1. BreakdownConfigからパターンを取得
   // 2. パターンをキャッシュ

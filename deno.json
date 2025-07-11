@@ -38,23 +38,16 @@
     ]
   },
   "tasks": {
-    "test": "deno test --allow-env --allow-write --allow-read --allow-run",
-    "test:watch": "deno test --watch --allow-env --allow-write --allow-read --allow-run",
-    "check": "deno check lib/**/*.ts cli/**/*.ts tests/**/*.ts mod.ts",
-    "ci": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts",
-    "ci:silent": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --silent",
-    "ci:error-files": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --error-files-only",
-    "ci:debug": "deno run --allow-read --allow-write --allow-run --allow-env scripts/local_ci.ts --debug",
-    "ci:sh": "sh scripts/local_ci.sh",
-    "breakdown": "deno run -A jsr:@tettuan/breakdown/cli",
-    "kill-nodes": "bash scripts/kill_node_panes.sh",
-    "kill-nodes-force": "bash scripts/kill_node_panes.sh --force"
+    "ci": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci",
+    "ci:dirty": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci --allow-dirty",
+    "paneclear": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/tmux-monitor --onetime --clear"
   },
   "fmt": {
     "indentWidth": 2,
     "singleQuote": false,
     "lineWidth": 100,
     "exclude": [
+      "tmp/",
       "examples/",
       "**/*.md",
       "**/*.markdown"
@@ -64,6 +57,9 @@
     "include": [
       "lib/",
       "tests/"
+    ],
+    "exclude": [
+      "tmp/"
     ],
     "rules": {
       "tags": [
@@ -76,5 +72,13 @@
     "lib": [
       "deno.window"
     ]
-  }
+  },
+  "test": {
+    "exclude": [
+      "tmp/"
+    ]
+  },
+  "exclude": [
+    "tmp/"
+  ]
 }

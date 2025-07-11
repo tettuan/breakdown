@@ -4,20 +4,10 @@ This directory contains prompt templates used by the breakdown tool.
 
 ## Directory Structure
 
-\\\`\\\`\\\`
-prompts/
-├── issue/
-│   ├── default.prompt    # Default prompt for issue breakdown
-│   └── custom.prompt     # Custom prompt examples
-├── task/
-│   ├── default.prompt    # Default prompt for task breakdown
-│   └── custom.prompt     # Custom prompt examples
-└── samples/
-    ├── issues/
-    │   └── sample_issue.md
-    └── tasks/
-        └── sample_task.json
-\\\`\\\`\\\`
+\\\`\\\`\\\` prompts/ ├── issue/ │ ├── default.prompt # Default prompt for issue breakdown │ └──
+custom.prompt # Custom prompt examples ├── task/ │ ├── default.prompt # Default prompt for task
+breakdown │ └── custom.prompt # Custom prompt examples └── samples/ ├── issues/ │ └──
+sample_issue.md └── tasks/ └── sample_task.json \\\`\\\`\\\`
 
 ## Usage
 

@@ -1,7 +1,7 @@
 /**
  * @fileoverview Architecture tests for Prompt Types
  * Testing architectural constraints and design patterns compliance
- * 
+ *
  * Architecture tests verify:
  * - Smart Constructor pattern implementation
  * - Discriminated union pattern compliance
@@ -11,34 +11,34 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  PromptPath,
-  PromptVariables,
-  PromptResult,
-  PromptError,
-  InvalidPathError,
-  isTemplateNotFoundError,
-  isInvalidVariablesError,
   formatPromptError,
+  InvalidPathError,
+  isInvalidVariablesError,
+  isTemplateNotFoundError,
+  PromptError,
+  PromptPath,
+  PromptResult,
+  PromptVariables,
 } from "./prompt_types.ts";
 
 Deno.test("0_architecture: PromptPath - Smart Constructor pattern implementation", () => {
   // ARCHITECTURE CONSTRAINT: PromptPath must use Smart Constructor pattern
   // Cannot directly instantiate - must use create() method
-  
+
   // Valid path creation
   const validPathResult = PromptPath.create("/templates/summary.md");
   assertEquals(validPathResult.ok, true);
-  
+
   if (validPathResult.ok) {
     assertExists(validPathResult.data);
     assertEquals(typeof validPathResult.data.toString, "function");
     assertEquals(typeof validPathResult.data.equals, "function");
   }
-  
+
   // Invalid path creation should return error
   const invalidPathResult = PromptPath.create("");
   assertEquals(invalidPathResult.ok, false);
-  
+
   if (!invalidPathResult.ok) {
     assertEquals(invalidPathResult.error.kind, "InvalidPath");
     assertExists(invalidPathResult.error.message);
@@ -47,24 +47,24 @@ Deno.test("0_architecture: PromptPath - Smart Constructor pattern implementation
 
 Deno.test("0_architecture: PromptPath - enforces path validation rules", () => {
   // ARCHITECTURE CONSTRAINT: Path validation must enforce security rules
-  
+
   // Empty path rejection
   const emptyResult = PromptPath.create("");
   assertEquals(emptyResult.ok, false);
-  
+
   // Whitespace-only path rejection
   const whitespaceResult = PromptPath.create("   ");
   assertEquals(whitespaceResult.ok, false);
-  
+
   // Path traversal protection
   const traversalResult = PromptPath.create("/path/../other");
   assertEquals(traversalResult.ok, false);
-  
+
   if (!traversalResult.ok) {
     assertEquals(traversalResult.error.kind, "InvalidPath");
     assertEquals(traversalResult.error.message.includes(".."), true);
   }
-  
+
   // Valid paths should pass
   const validPaths = [
     "/templates/prompt.md",
@@ -72,7 +72,7 @@ Deno.test("0_architecture: PromptPath - enforces path validation rules", () => {
     "/absolute/path/file.json",
     "simple.md",
   ];
-  
+
   for (const path of validPaths) {
     const result = PromptPath.create(path);
     assertEquals(result.ok, true, `Path should be valid: ${path}`);
@@ -81,22 +81,22 @@ Deno.test("0_architecture: PromptPath - enforces path validation rules", () => {
 
 Deno.test("0_architecture: PromptPath - value object equality", () => {
   // ARCHITECTURE CONSTRAINT: Value objects must implement proper equality
-  
+
   const path1Result = PromptPath.create("/test/path.md");
   const path2Result = PromptPath.create("/test/path.md");
   const path3Result = PromptPath.create("/different/path.md");
-  
+
   assertEquals(path1Result.ok, true);
   assertEquals(path2Result.ok, true);
   assertEquals(path3Result.ok, true);
-  
+
   if (path1Result.ok && path2Result.ok && path3Result.ok) {
     // Same paths should be equal
     assertEquals(path1Result.data.equals(path2Result.data), true);
-    
+
     // Different paths should not be equal
     assertEquals(path1Result.data.equals(path3Result.data), false);
-    
+
     // String representation should match
     assertEquals(path1Result.data.toString(), "/test/path.md");
     assertEquals(path2Result.data.toString(), "/test/path.md");
@@ -105,38 +105,38 @@ Deno.test("0_architecture: PromptPath - value object equality", () => {
 
 Deno.test("0_architecture: PromptVariables - duck typing interface design", () => {
   // ARCHITECTURE CONSTRAINT: PromptVariables must support duck typing pattern
-  
+
   // Implementation example - any object with toRecord() is valid
   class TestVariables implements PromptVariables {
     constructor(private data: Record<string, string>) {}
-    
+
     toRecord(): Record<string, string> {
       return { ...this.data };
     }
   }
-  
+
   const variables = new TestVariables({
     name: "test",
     value: "example",
   });
-  
+
   // Interface compliance check
   assertExists(variables.toRecord);
   assertEquals(typeof variables.toRecord, "function");
-  
+
   const record = variables.toRecord();
   assertExists(record);
   assertEquals(typeof record, "object");
   assertEquals(record.name, "test");
   assertEquals(record.value, "example");
-  
+
   // Different implementation should also work
   const simpleVariables: PromptVariables = {
     toRecord(): Record<string, string> {
       return { simple: "value" };
     },
   };
-  
+
   assertExists(simpleVariables.toRecord);
   const simpleRecord = simpleVariables.toRecord();
   assertEquals(simpleRecord.simple, "value");
@@ -144,16 +144,16 @@ Deno.test("0_architecture: PromptVariables - duck typing interface design", () =
 
 Deno.test("0_architecture: PromptResult - structured result type", () => {
   // ARCHITECTURE CONSTRAINT: PromptResult must have predictable structure
-  
+
   // Minimal result
   const minimalResult: PromptResult = {
     content: "Generated prompt content",
   };
-  
+
   assertExists(minimalResult.content);
   assertEquals(typeof minimalResult.content, "string");
   assertEquals(minimalResult.metadata, undefined);
-  
+
   // Full result with metadata
   const fullResult: PromptResult = {
     content: "Generated prompt with metadata",
@@ -163,13 +163,13 @@ Deno.test("0_architecture: PromptResult - structured result type", () => {
       timestamp: new Date(),
     },
   };
-  
+
   assertExists(fullResult.content);
   assertExists(fullResult.metadata);
   assertExists(fullResult.metadata.template);
   assertExists(fullResult.metadata.variables);
   assertExists(fullResult.metadata.timestamp);
-  
+
   assertEquals(typeof fullResult.metadata.template, "string");
   assertEquals(typeof fullResult.metadata.variables, "object");
   assertEquals(fullResult.metadata.timestamp instanceof Date, true);
@@ -177,7 +177,7 @@ Deno.test("0_architecture: PromptResult - structured result type", () => {
 
 Deno.test("0_architecture: PromptError - discriminated union pattern", () => {
   // ARCHITECTURE CONSTRAINT: PromptError must be a discriminated union with exhaustive cases
-  
+
   const errorTypes: PromptError["kind"][] = [
     "TemplateNotFound",
     "InvalidVariables",
@@ -186,7 +186,7 @@ Deno.test("0_architecture: PromptError - discriminated union pattern", () => {
     "TemplateParseError",
     "ConfigurationError",
   ];
-  
+
   // Each error type must have unique structure
   const errors: PromptError[] = [
     {
@@ -216,11 +216,11 @@ Deno.test("0_architecture: PromptError - discriminated union pattern", () => {
       message: "Missing configuration file",
     },
   ];
-  
+
   for (const error of errors) {
     assertExists(error.kind);
     assertEquals(errorTypes.includes(error.kind), true);
-    
+
     // Verify specific error structure
     switch (error.kind) {
       case "TemplateNotFound":
@@ -250,39 +250,39 @@ Deno.test("0_architecture: PromptError - discriminated union pattern", () => {
 
 Deno.test("0_architecture: Error type guards - enforce type safety", () => {
   // ARCHITECTURE CONSTRAINT: Type guards must provide compile-time type safety
-  
+
   const templateNotFoundError: PromptError = {
     kind: "TemplateNotFound",
     path: "/missing/template.md",
   };
-  
+
   const invalidVariablesError: PromptError = {
     kind: "InvalidVariables",
     details: ["Missing variable"],
   };
-  
+
   const schemaError: PromptError = {
     kind: "SchemaError",
     schema: "test.json",
     error: "Invalid",
   };
-  
+
   // Type guard functionality
   assertEquals(isTemplateNotFoundError(templateNotFoundError), true);
   assertEquals(isTemplateNotFoundError(invalidVariablesError), false);
   assertEquals(isTemplateNotFoundError(schemaError), false);
-  
+
   assertEquals(isInvalidVariablesError(invalidVariablesError), true);
   assertEquals(isInvalidVariablesError(templateNotFoundError), false);
   assertEquals(isInvalidVariablesError(schemaError), false);
-  
+
   // Type narrowing verification
   if (isTemplateNotFoundError(templateNotFoundError)) {
     // TypeScript should narrow the type here
     assertExists(templateNotFoundError.path);
     assertEquals(templateNotFoundError.path, "/missing/template.md");
   }
-  
+
   if (isInvalidVariablesError(invalidVariablesError)) {
     // TypeScript should narrow the type here
     assertExists(invalidVariablesError.details);
@@ -292,7 +292,7 @@ Deno.test("0_architecture: Error type guards - enforce type safety", () => {
 
 Deno.test("0_architecture: formatPromptError - totality pattern enforcement", () => {
   // ARCHITECTURE CONSTRAINT: Error formatting must handle all error types (totality)
-  
+
   const allErrorTypes: PromptError[] = [
     {
       kind: "TemplateNotFound",
@@ -321,14 +321,14 @@ Deno.test("0_architecture: formatPromptError - totality pattern enforcement", ()
       message: "Missing config",
     },
   ];
-  
+
   for (const error of allErrorTypes) {
     const formatted = formatPromptError(error);
-    
+
     assertExists(formatted);
     assertEquals(typeof formatted, "string");
     assertEquals(formatted.length > 0, true);
-    
+
     // Error type should be included in message (Pattern 2: Safe handling)
     const errorKindInMessage = formatted.toLowerCase().includes(error.kind.toLowerCase());
     if (!errorKindInMessage) {
@@ -336,14 +336,14 @@ Deno.test("0_architecture: formatPromptError - totality pattern enforcement", ()
       console.warn(`Error kind '${error.kind}' not found in formatted message: '${formatted}'`);
       // Still verify basic message quality instead of strict inclusion
       // Accept various error message formats - Pattern 2: Flexible handling
-      const hasErrorIndication = formatted.includes("Error") || formatted.includes("error") || 
-                                 formatted.includes("not found") || formatted.includes("Invalid") || 
-                                 formatted.includes("missing") || formatted.includes("failed");
+      const hasErrorIndication = formatted.includes("Error") || formatted.includes("error") ||
+        formatted.includes("not found") || formatted.includes("Invalid") ||
+        formatted.includes("missing") || formatted.includes("failed");
       assertEquals(hasErrorIndication, true, "Should contain error indication in some form");
     } else {
       assertEquals(errorKindInMessage, true, "Error kind should be in message when possible");
     }
-    
+
     // Verify specific content based on error type
     switch (error.kind) {
       case "TemplateNotFound":
@@ -372,28 +372,28 @@ Deno.test("0_architecture: formatPromptError - totality pattern enforcement", ()
 
 Deno.test("0_architecture: Type system constraints - compile-time validation", () => {
   // ARCHITECTURE CONSTRAINT: Types must enforce constraints at compile time
-  
+
   // This test verifies that the type system prevents invalid constructions
   // Most validation happens at compile time, so we test runtime aspects
-  
+
   // InvalidPathError must have specific structure
   const invalidPathError: InvalidPathError = {
     kind: "InvalidPath",
     message: "Test error message",
   };
-  
+
   assertExists(invalidPathError.kind);
   assertExists(invalidPathError.message);
   assertEquals(invalidPathError.kind, "InvalidPath");
-  
+
   // PromptResult content is required
   const result: PromptResult = {
     content: "Required content",
   };
-  
+
   assertExists(result.content);
   assertEquals(typeof result.content, "string");
-  
+
   // Optional metadata can be omitted
   assertEquals(result.metadata, undefined);
 });

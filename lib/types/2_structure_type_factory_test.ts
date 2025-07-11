@@ -1,18 +1,16 @@
 /**
  * @fileoverview TypeFactory Structure Tests - 構造整合性テスト
- * 
+ *
  * TypeFactoryの構造的な整合性を検証するテスト。
  * 型の一貫性、インターフェース準拠、データ構造の正確性を確認。
- * 
+ *
  * @module types/2_structure_type_factory_test
  */
 
 import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
-import { TypeFactory, TypePatternProvider, TypeCreationResult } from "./type_factory.ts";
-import type { ProcessingError } from "./mod.ts";
-import { TwoParamsDirectivePattern, DirectiveType } from "./mod.ts";
-import { TwoParamsLayerTypePattern, LayerType } from "./mod.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
+import { TwoParamsDirectivePattern } from "./mod.ts";
+import { TwoParamsLayerTypePattern } from "./mod.ts";
 
 /**
  * 構造テスト用のパターンプロバイダー
@@ -42,12 +40,12 @@ Deno.test("TypeFactory Structure - TypeCreationResult type structure", () => {
   // 成功ケースの構造
   const successResult = factory.createDirectiveType("to");
   assertEquals("ok" in successResult, true);
-  
+
   if (successResult.ok) {
     assertEquals(successResult.ok, true);
     assertExists(successResult.data);
     assertEquals("error" in successResult, false);
-    
+
     // dataはDirectiveType型
     assertStrictEquals(successResult.data.constructor.name, "DirectiveType");
   }
@@ -55,15 +53,19 @@ Deno.test("TypeFactory Structure - TypeCreationResult type structure", () => {
   // 失敗ケースの構造
   const errorResult = factory.createDirectiveType("invalid");
   assertEquals("ok" in errorResult, true);
-  
+
   if (!errorResult.ok) {
     assertEquals(errorResult.ok, false);
     assertExists(errorResult.error);
     assertEquals("data" in errorResult, false);
-    
+
     // errorはProcessingError型
     assertEquals("kind" in errorResult.error, true);
-    assertEquals("operation" in errorResult.error || "value" in errorResult.error || "pattern" in errorResult.error, true);
+    assertEquals(
+      "operation" in errorResult.error || "value" in errorResult.error ||
+        "pattern" in errorResult.error,
+      true,
+    );
   }
 });
 
@@ -71,7 +73,7 @@ Deno.test("TypeFactory Structure - ProcessingError variants", () => {
   // PatternNotFoundエラーの構造
   const nullProvider = new StructureTestProvider(null, null);
   const factory1 = new TypeFactory(nullProvider);
-  
+
   const patternNotFoundResult = factory1.createDirectiveType("any");
   if (!patternNotFoundResult.ok) {
     const error = patternNotFoundResult.error;
@@ -88,7 +90,7 @@ Deno.test("TypeFactory Structure - ProcessingError variants", () => {
     null,
   );
   const factory2 = new TypeFactory(strictProvider);
-  
+
   const validationFailedResult = factory2.createDirectiveType("invalid");
   if (!validationFailedResult.ok) {
     const error = validationFailedResult.error;
@@ -113,19 +115,19 @@ Deno.test("TypeFactory Structure - Created types internal structure", () => {
   const directiveResult = factory.createDirectiveType("to");
   if (directiveResult.ok) {
     const directive = directiveResult.data;
-    
+
     // valueプロパティ
     assertExists(directive.value);
     assertEquals(directive.value, "to");
-    
+
     // getValueメソッド（互換性のため）
     assertEquals(directive.getValue(), "to");
-    
+
     // originalResultプロパティ
     assertExists(directive.originalResult);
     assertEquals(directive.originalResult.type, "two");
     assertEquals(directive.originalResult.demonstrativeType, "to");
-    
+
     // toStringメソッド
     assertEquals(directive.toString(), "DirectiveType(to)");
   }
@@ -134,19 +136,19 @@ Deno.test("TypeFactory Structure - Created types internal structure", () => {
   const layerResult = factory.createLayerType("project");
   if (layerResult.ok) {
     const layer = layerResult.data;
-    
+
     // valueプロパティ
     assertExists(layer.value);
     assertEquals(layer.value, "project");
-    
+
     // getValueメソッド（互換性のため）
     assertEquals(layer.getValue(), "project");
-    
+
     // originalResultプロパティ
     assertExists(layer.originalResult);
     assertEquals(layer.originalResult.type, "two");
     assertEquals(layer.originalResult.layerType, "project");
-    
+
     // toStringメソッド
     assertEquals(layer.toString(), "LayerType(project)");
   }
@@ -160,17 +162,17 @@ Deno.test("TypeFactory Structure - createBothTypes result structure", () => {
   const factory = new TypeFactory(provider);
 
   const result = factory.createBothTypes("to", "project");
-  
+
   if (result.ok) {
     // 成功時の構造
     assertExists(result.data);
     assertExists(result.data.directive);
     assertExists(result.data.layer);
-    
+
     // 各型が正しいインスタンス
     assertStrictEquals(result.data.directive.constructor.name, "DirectiveType");
     assertStrictEquals(result.data.layer.constructor.name, "LayerType");
-    
+
     // 値の確認
     assertEquals(result.data.directive.value, "to");
     assertEquals(result.data.layer.value, "project");
@@ -185,21 +187,21 @@ Deno.test("TypeFactory Structure - Pattern availability structure", () => {
   const factory = new TypeFactory(provider);
 
   const availability = factory.getPatternAvailability();
-  
+
   // 返り値の構造確認
   assertExists(availability);
   assertEquals(typeof availability, "object");
-  
+
   // 必須プロパティの存在確認
   assertEquals("directive" in availability, true);
   assertEquals("layer" in availability, true);
   assertEquals("both" in availability, true);
-  
+
   // プロパティの型確認
   assertEquals(typeof availability.directive, "boolean");
   assertEquals(typeof availability.layer, "boolean");
   assertEquals(typeof availability.both, "boolean");
-  
+
   // bothの計算ロジック確認
   assertEquals(availability.both, availability.directive && availability.layer);
 });
@@ -212,22 +214,22 @@ Deno.test("TypeFactory Structure - Debug information structure", () => {
   const factory = new TypeFactory(provider);
 
   const debug = factory.debug();
-  
+
   // デバッグ情報の構造確認
   assertExists(debug);
   assertEquals(typeof debug, "object");
-  
+
   // 必須プロパティの存在確認
   assertEquals("patternProvider" in debug, true);
   assertEquals("availability" in debug, true);
-  
+
   // プロパティの型確認
   assertEquals(typeof debug.patternProvider, "string");
   assertEquals(typeof debug.availability, "object");
-  
+
   // patternProviderはクラス名
   assertEquals(debug.patternProvider, "StructureTestProvider");
-  
+
   // availabilityは getPatternAvailability() と同じ構造
   assertEquals(debug.availability.directive, true);
   assertEquals(debug.availability.layer, true);
@@ -245,7 +247,7 @@ Deno.test("TypeFactory Structure - TwoParams_Result integration", () => {
   const directiveResult = factory.createDirectiveType("to");
   if (directiveResult.ok) {
     const originalResult = directiveResult.data.originalResult;
-    
+
     // TwoParams_Result の必須プロパティ
     assertEquals(originalResult.type, "two");
     assertEquals(originalResult.demonstrativeType, "to");
@@ -263,7 +265,7 @@ Deno.test("TypeFactory Structure - TwoParams_Result integration", () => {
   const layerResult = factory.createLayerType("project");
   if (layerResult.ok) {
     const originalResult = layerResult.data.originalResult;
-    
+
     // TwoParams_Result の必須プロパティ
     assertEquals(originalResult.type, "two");
     assertEquals(originalResult.demonstrativeType, "to"); // デフォルト値
@@ -288,35 +290,35 @@ Deno.test("TypeFactory Structure - Method return types consistency", () => {
   // createDirectiveType の戻り値型
   const directiveResult1 = factory.createDirectiveType("to");
   const directiveResult2 = factory.createDirectiveType("invalid");
-  
+
   assertEquals("ok" in directiveResult1, true);
   assertEquals("ok" in directiveResult2, true);
-  
+
   // createLayerType の戻り値型
   const layerResult1 = factory.createLayerType("project");
   const layerResult2 = factory.createLayerType("invalid");
-  
+
   assertEquals("ok" in layerResult1, true);
   assertEquals("ok" in layerResult2, true);
-  
+
   // createBothTypes の戻り値型
   const bothResult1 = factory.createBothTypes("to", "project");
   const bothResult2 = factory.createBothTypes("invalid", "project");
-  
+
   assertEquals("ok" in bothResult1, true);
   assertEquals("ok" in bothResult2, true);
-  
+
   // validateBothValues の戻り値型
   const validateResult1 = factory.validateBothValues("to", "project");
   const validateResult2 = factory.validateBothValues("invalid", "invalid");
-  
+
   assertEquals(typeof validateResult1, "boolean");
   assertEquals(typeof validateResult2, "boolean");
-  
+
   // getPatternAvailability の戻り値型
   const availability = factory.getPatternAvailability();
   assertEquals(typeof availability, "object");
-  
+
   // debug の戻り値型
   const debug = factory.debug();
   assertEquals(typeof debug, "object");
@@ -332,12 +334,12 @@ Deno.test("TypeFactory Structure - Immutability and consistency", () => {
   // 同じ入力で同じ結果が得られることを確認
   const result1 = factory.createDirectiveType("to");
   const result2 = factory.createDirectiveType("to");
-  
+
   if (result1.ok && result2.ok) {
     // 別のインスタンスだが同じ値
     assertEquals(result1.data.value, result2.data.value);
     assertEquals(result1.data.toString(), result2.data.toString());
-    
+
     // equals メソッドで比較可能
     assertEquals(result1.data.equals(result2.data), true);
   }
@@ -345,7 +347,7 @@ Deno.test("TypeFactory Structure - Immutability and consistency", () => {
   // Pattern availability は常に同じ
   const availability1 = factory.getPatternAvailability();
   const availability2 = factory.getPatternAvailability();
-  
+
   assertEquals(availability1.directive, availability2.directive);
   assertEquals(availability1.layer, availability2.layer);
   assertEquals(availability1.both, availability2.both);

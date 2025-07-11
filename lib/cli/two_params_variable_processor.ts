@@ -36,9 +36,9 @@ export class TwoParamsVariableProcessor {
    * Validate result for variable processing
    */
   static isValid(result: TwoParams_Result): boolean {
-    return result.type === "two" && 
-           result.params.length === 2 &&
-           result.demonstrativeType.length > 0 &&
-           result.layerType.length > 0;
+    return result.type === "two" &&
+      result.params.length === 2 &&
+      result.demonstrativeType.length > 0 &&
+      result.layerType.length > 0;
   }
 }

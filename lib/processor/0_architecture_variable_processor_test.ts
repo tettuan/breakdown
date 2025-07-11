@@ -17,13 +17,13 @@ import {
   TwoParamsVariableProcessor,
   type VariableProcessorError,
 } from "./variable_processor.ts";
-import type { Result } from "../types/result.ts";
+import type { Result as _Result } from "../types/result.ts";
 
 // Type for architecture testing
 interface ProcessorArchitecture {
   [key: string]: unknown;
 }
-import type { PromptVariable } from "../types/prompt_variables.ts";
+import type { PromptVariable as _PromptVariable } from "../types/prompt_variables.ts";
 
 /**
  * Architecture constraints for Variable Processor
@@ -62,7 +62,7 @@ Deno.test("Architecture: Variable Processor should use Result type pattern", () 
 
 Deno.test("Architecture: Variable Processor should have consistent error types", () => {
   // Verify that all error types follow the expected pattern
-  const errorKinds = [
+  const _errorKinds = [
     "InvalidOption",
     "StdinVariableError",
     "BuilderError",

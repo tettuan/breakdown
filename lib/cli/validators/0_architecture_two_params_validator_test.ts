@@ -14,7 +14,11 @@
 import { assertEquals, assertExists } from "../../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { TwoParamsValidator, type ValidationError, type ValidatedParams } from "./two_params_validator.ts";
+import {
+  TwoParamsValidator,
+  type ValidatedParams as _ValidatedParams,
+  type ValidationError as _ValidationError,
+} from "./two_params_validator.ts";
 
 const logger = new BreakdownLogger("two-params-validator-architecture");
 
@@ -33,12 +37,19 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
     // Required type exports
     const validator = new TwoParamsValidator();
     const mockValidResult = validator.validate(["to", "project"]);
-    
+
     if (mockValidResult.ok) {
       // Verify ValidatedParams interface structure
-      assertExists(mockValidResult.data.demonstrativeType, "ValidatedParams must have demonstrativeType");
+      assertExists(
+        mockValidResult.data.demonstrativeType,
+        "ValidatedParams must have demonstrativeType",
+      );
       assertExists(mockValidResult.data.layerType, "ValidatedParams must have layerType");
-      assertEquals(typeof mockValidResult.data.demonstrativeType, "string", "demonstrativeType must be string");
+      assertEquals(
+        typeof mockValidResult.data.demonstrativeType,
+        "string",
+        "demonstrativeType must be string",
+      );
       assertEquals(typeof mockValidResult.data.layerType, "string", "layerType must be string");
     }
 
@@ -73,14 +84,14 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
       );
 
     // Only count methods that are truly public (not marked as private in source)
-    const publicMethods = allMethods.filter(name => !name.includes("private") && name.length > 0);
-    
+    const publicMethods = allMethods.filter((name) => !name.includes("private") && name.length > 0);
+
     logger.debug("All detected methods:", allMethods);
     logger.debug("Public methods:", publicMethods);
 
     // Should have only validate as the main public method
     assertEquals(publicMethods.includes("validate"), true, "Should have validate method");
-    
+
     // Accept the actual number of public methods found (likely just validate)
     assertEquals(
       publicMethods.length >= 1,
@@ -111,16 +122,16 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
     );
 
     // Verify focused responsibility through method inspection
-    const validateString = validator.validate.toString();
-    
+    const _validateString = validator.validate.toString();
+
     // Should only handle validation, not generation or processing
     assertEquals(
-      validateString.includes("demonstrative") && validateString.includes("layer"),
+      _validateString.includes("demonstrative") && _validateString.includes("layer"),
       true,
       "Should validate both demonstrative and layer types",
     );
     assertEquals(
-      validateString.includes("PromptVariables") || validateString.includes("Factory"),
+      _validateString.includes("PromptVariables") || _validateString.includes("Factory"),
       false,
       "Should not handle prompt generation or factory creation",
     );
@@ -137,17 +148,17 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
 
     // Should not hold references to external services
     assertEquals(
-      (validator as any).factory,
+      (validator as unknown as { factory?: unknown }).factory,
       undefined,
       "Should not hold factory reference",
     );
     assertEquals(
-      (validator as any).config,
+      (validator as unknown as { config?: unknown }).config,
       undefined,
       "Should not hold config reference",
     );
     assertEquals(
-      (validator as any).logger,
+      (validator as unknown as { logger?: unknown }).logger,
       undefined,
       "Should not hold logger reference",
     );
@@ -213,7 +224,11 @@ describe("Architecture: Result Type Compliance", () => {
     const demoTypeResult = validator.validate(["invalid", "project"]);
     if (!demoTypeResult.ok) {
       const error = demoTypeResult.error;
-      assertEquals(error.kind, "InvalidDemonstrativeType", "Should categorize demonstrative type errors");
+      assertEquals(
+        error.kind,
+        "InvalidDemonstrativeType",
+        "Should categorize demonstrative type errors",
+      );
       if (error.kind === "InvalidDemonstrativeType") {
         assertExists(error.value, "Should include invalid value");
         assertExists(error.validTypes, "Should include valid types list");
@@ -242,10 +257,10 @@ describe("Architecture: Result Type Compliance", () => {
 
     if (result.ok) {
       const originalData = result.data;
-      
+
       // Attempt to modify returned data
-      (result.data as any).demonstrativeType = "modified";
-      
+      (result.data as unknown as { demonstrativeType: string }).demonstrativeType = "modified";
+
       // Second validation should not be affected
       const secondResult = validator.validate(["summary", "issue"]);
       if (secondResult.ok) {
@@ -296,7 +311,8 @@ describe("Architecture: Validation Logic Design", () => {
 
     // Should return early on validation failures
     assertEquals(
-      methodString.includes("return error") || methodString.includes("!") && methodString.includes(".ok"),
+      methodString.includes("return error") ||
+        methodString.includes("!") && methodString.includes(".ok"),
       true,
       "Should return early on validation failures",
     );
@@ -312,17 +328,24 @@ describe("Architecture: Validation Logic Design", () => {
 
     // Should use compile-time type safety patterns
     logger.debug("Class string preview:", classString.substring(0, 200));
-    
+
     // Check for type safety patterns in the class definition or its types
-    const hasResultTypes = classString.includes("Result<") || validator.validate.toString().includes("Result");
+    const hasResultTypes = classString.includes("Result<") ||
+      validator.validate.toString().includes("Result");
     const hasConstTypes = classString.includes("as const") || classString.includes("readonly");
     const hasPrivateFields = classString.includes("private");
-    const hasTypedInterfaces = classString.includes("ValidationError") || classString.includes("ValidatedParams");
-    
+    const hasTypedInterfaces = classString.includes("ValidationError") ||
+      classString.includes("ValidatedParams");
+
     const hasTypeSafety = hasResultTypes || hasConstTypes || hasPrivateFields || hasTypedInterfaces;
-    
-    logger.debug("Type safety patterns found:", { hasResultTypes, hasConstTypes, hasPrivateFields, hasTypedInterfaces });
-    
+
+    logger.debug("Type safety patterns found:", {
+      hasResultTypes,
+      hasConstTypes,
+      hasPrivateFields,
+      hasTypedInterfaces,
+    });
+
     assertEquals(
       hasTypeSafety,
       true,
@@ -330,14 +353,18 @@ describe("Architecture: Validation Logic Design", () => {
     );
 
     // Method should have proper type annotations
-    const validateString = validator.validate.toString();
-    
+    const _validateString = validator.validate.toString();
+
     // Result should be properly typed
     const result = validator.validate(["to", "project"]);
     assertEquals(typeof result.ok, "boolean", "Result.ok should be boolean typed");
 
     if (result.ok) {
-      assertEquals(typeof result.data.demonstrativeType, "string", "demonstrativeType should be string typed");
+      assertEquals(
+        typeof result.data.demonstrativeType,
+        "string",
+        "demonstrativeType should be string typed",
+      );
       assertEquals(typeof result.data.layerType, "string", "layerType should be string typed");
     } else {
       assertEquals(typeof result.error.kind, "string", "error.kind should be string typed");
@@ -356,7 +383,7 @@ describe("Architecture: Validation Logic Design", () => {
     const result2 = validator.validate(["to", "project"]);
 
     assertEquals(result1.ok, result2.ok, "Same input should produce consistent results");
-    
+
     if (result1.ok && result2.ok) {
       assertEquals(
         result1.data.demonstrativeType,
@@ -371,7 +398,7 @@ describe("Architecture: Validation Logic Design", () => {
     }
 
     // Validator should be stateless
-    const errorResult = validator.validate(["invalid", "invalid"]);
+    const _errorResult = validator.validate(["invalid", "invalid"]);
     const validResult = validator.validate(["to", "project"]);
 
     assertEquals(

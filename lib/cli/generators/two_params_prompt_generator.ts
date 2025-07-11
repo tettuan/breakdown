@@ -163,7 +163,7 @@ export class TwoParamsPromptGenerator {
 
       // Create adapter and generate prompt
       const adapter = new PromptManagerAdapter();
-      
+
       const result = await adapter.generatePrompt(
         pathResult.data,
         promptVariables,
@@ -175,7 +175,7 @@ export class TwoParamsPromptGenerator {
           error: this.formatPromptError(result.error),
         });
       }
-      
+
       return ok(result.data.content);
     } catch (err) {
       return error({
@@ -257,7 +257,7 @@ export class TwoParamsPromptGenerator {
         message: factoryResult.error.message,
       });
     }
-    
+
     const factory = factoryResult.data;
 
     // Validate factory

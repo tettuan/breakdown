@@ -169,7 +169,7 @@ Deno.test("Integration: withTemplateErrorHandling wrapper with real operations",
     }
 
     // Test non-template error pass-through
-    const networkError = async () => {
+    const networkError = () => {
       throw new Error("Network connection failed");
     };
 

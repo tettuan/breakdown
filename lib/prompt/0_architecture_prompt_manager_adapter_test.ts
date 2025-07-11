@@ -259,11 +259,11 @@ Deno.test("prompt_manager_adapter - validates adapter pattern", () => {
 
   REQUIRED_ADAPTER_METHODS.forEach((method) => {
     assertExists(
-      (adapterInstance as any)[method],
+      (adapterInstance as unknown as Record<string, unknown>)[method],
       `Adapter must have ${method} method`,
     );
 
-    const methodType = typeof (adapterInstance as any)[method];
+    const methodType = typeof (adapterInstance as unknown as Record<string, unknown>)[method];
     assertEquals(
       methodType,
       "function",
@@ -321,7 +321,7 @@ Deno.test("prompt_manager_adapter - dependency injection validation", () => {
 
   // Configuration should not be accessible
   assertEquals(
-    (defaultInstance as any).config,
+    (defaultInstance as unknown as Record<string, unknown>).config,
     undefined,
     "Should not expose config object",
   );

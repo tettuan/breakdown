@@ -27,7 +27,7 @@ Deno.test.ignore("Workspace Interfaces Architecture", async (t) => {
   const _logger = new _BreakdownLogger("architecture-interfaces-test");
   const interfaces = await import("./interfaces.ts");
 
-  await t.step("should define all core workspace interfaces", async () => {
+  await t.step("should define all core workspace interfaces", () => {
     _logger.debug("Testing interface definitions completeness");
 
     // Verify all interfaces are exported in the module
@@ -178,11 +178,11 @@ Deno.test.ignore("Workspace Interfaces Architecture", async (t) => {
   await t.step("should support event-driven architecture", () => {
     _logger.debug("Testing event-driven communication support");
 
-    const eventEmitter = {} as WorkspaceEventEmitter;
+    const _eventEmitter = {} as WorkspaceEventEmitter;
 
     // Event system allows loose coupling
-    assertExists(eventEmitter.on, "Supports event subscription");
-    assertExists(eventEmitter.emit, "Supports event emission");
+    assertExists(_eventEmitter.on, "Supports event subscription");
+    assertExists(_eventEmitter.emit, "Supports event emission");
 
     // Events use string identifiers and unknown data for flexibility
     _logger.debug("Verified flexible event system design");
@@ -286,7 +286,7 @@ Deno.test.ignore("Interface Consistency and Completeness", async (t) => {
     // Interfaces accept standard types as parameters
 
     // Example: PathResolutionStrategy methods accept strings
-    const strategy = {} as PathResolutionStrategy;
+    const _strategy = {} as PathResolutionStrategy;
     // resolve(path: string): Promise<string>
     // normalize(path: string): Promise<string>
     // validate(path: string): Promise<boolean>
@@ -339,7 +339,7 @@ Deno.test.ignore("Module Boundary and Integration Points", async (t) => {
     _logger.debug("Testing extensibility design");
 
     // Event system allows adding new features without changing interfaces
-    const eventEmitter = {} as WorkspaceEventEmitter;
+    const _eventEmitter = {} as WorkspaceEventEmitter;
     // Can emit any event type with any data
 
     // Strategy pattern allows adding new path resolution strategies

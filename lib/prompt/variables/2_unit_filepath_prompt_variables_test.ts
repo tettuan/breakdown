@@ -13,7 +13,6 @@
 
 import { assertEquals, assertExists } from "../../deps.ts";
 import {
-  type FilePathError,
   FilePathPromptVariables,
   isFileNotFoundError,
   isSecurityViolationError,

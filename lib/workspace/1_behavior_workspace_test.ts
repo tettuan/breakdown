@@ -9,19 +9,18 @@
  * @module workspace/workspace_test
  */
 
-import { assertEquals, assertRejects, assert } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import { ensureDir, exists } from "@std/fs";
 import { join } from "@std/path";
-import { WorkspaceImpl, initWorkspace } from "./workspace.ts";
-import { 
-  createWorkspaceInitError, 
+import { initWorkspace, WorkspaceImpl } from "./workspace.ts";
+import {
   createWorkspaceConfigError,
-  isWorkspaceInitError,
+  createWorkspaceInitError,
   isWorkspaceConfigError,
-  WorkspaceError,
+  isWorkspaceInitError,
   WorkspaceConfigError,
-  type WorkspaceInitError,
-  type WorkspaceConfigError as WorkspaceConfigErrorInterface
+  type WorkspaceConfigError as _WorkspaceConfigErrorInterface,
+  WorkspaceError as _WorkspaceError,
 } from "./errors.ts";
 import type { WorkspaceConfig } from "./interfaces.ts";
 
@@ -36,7 +35,7 @@ Deno.test("0_architecture: WorkspaceImpl enforces valid configuration types", ()
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   const workspace = new WorkspaceImpl(validConfig);
   assert(workspace instanceof WorkspaceImpl);
 });
@@ -47,12 +46,12 @@ Deno.test("0_architecture: Configuration immutability enforcement", async () => 
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   const workspace = new WorkspaceImpl(config);
-  
+
   // Modify original config
   config.workingDir = "/tmp/modified";
-  
+
   // Workspace should maintain original values
   const workingDir = await workspace.getWorkingDir();
   assertEquals(workingDir, "/tmp/test-workspace-immutable");
@@ -61,10 +60,10 @@ Deno.test("0_architecture: Configuration immutability enforcement", async () => 
 Deno.test("0_architecture: Smart Constructor pattern - initWorkspace validates inputs", async () => {
   // Should handle default values
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     await initWorkspace(tempDir);
-    
+
     // Verify workspace structure was created
     assert(await exists(join(tempDir, ".agent", "breakdown")));
   } finally {
@@ -78,22 +77,22 @@ Deno.test("0_architecture: Smart Constructor pattern - initWorkspace validates i
 
 Deno.test("1_behavior: Totality - initialize handles all possible filesystem states", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     const config: WorkspaceConfig = {
       workingDir: tempDir,
       promptBaseDir: "prompts",
       schemaBaseDir: "schema",
     };
-    
+
     const workspace = new WorkspaceImpl(config);
-    
+
     // Should succeed even if directory doesn't exist
     await workspace.initialize();
-    
+
     // Should be idempotent - running again should not fail
     await workspace.initialize();
-    
+
     // Verify all required directories exist
     assert(await exists(join(tempDir, "prompts")));
     assert(await exists(join(tempDir, "schema")));
@@ -109,36 +108,39 @@ Deno.test("1_behavior: Totality - validateConfig handles non-existent directorie
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   const workspace = new WorkspaceImpl(config);
-  
+
   // Should reject with error for non-existent directory
   try {
     await workspace.validateConfig();
     assert(false, "Expected validation to fail");
   } catch (error) {
-    assert(error instanceof WorkspaceConfigError && error.message.includes("Working directory does not exist"));
+    assert(
+      error instanceof WorkspaceConfigError &&
+        error.message.includes("Working directory does not exist"),
+    );
   }
 });
 
 Deno.test("1_behavior: Directory operations maintain consistency", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     const config: WorkspaceConfig = {
       workingDir: tempDir,
       promptBaseDir: "prompts",
       schemaBaseDir: "schema",
     };
-    
+
     const workspace = new WorkspaceImpl(config);
     await workspace.initialize();
-    
+
     // Test directory creation
     const testDirPath = join(tempDir, "test-dir");
     await workspace.createDirectory(testDirPath);
     assert(await workspace.exists(testDirPath));
-    
+
     // Test directory removal
     await workspace.removeDirectory(testDirPath);
     assert(!await workspace.exists(testDirPath));
@@ -149,25 +151,25 @@ Deno.test("1_behavior: Directory operations maintain consistency", async () => {
 
 Deno.test("1_behavior: Path resolution is deterministic", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     const config: WorkspaceConfig = {
       workingDir: tempDir,
       promptBaseDir: "custom-prompts",
       schemaBaseDir: "custom-schema",
     };
-    
+
     const workspace = new WorkspaceImpl(config);
-    
+
     const promptDir = await workspace.getPromptBaseDir();
     const schemaDir = await workspace.getSchemaBaseDir();
     const workingDir = await workspace.getWorkingDir();
-    
+
     // Path resolution should be consistent
     assertEquals(await workspace.getPromptBaseDir(), promptDir);
     assertEquals(await workspace.getSchemaBaseDir(), schemaDir);
     assertEquals(await workspace.getWorkingDir(), workingDir);
-    
+
     // Paths should contain expected components
     assert(promptDir.includes("custom-prompts"));
     assert(schemaDir.includes("custom-schema"));
@@ -179,23 +181,23 @@ Deno.test("1_behavior: Path resolution is deterministic", async () => {
 
 Deno.test("1_behavior: Configuration reload maintains state consistency", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     const config: WorkspaceConfig = {
       workingDir: tempDir,
       promptBaseDir: "prompts",
       schemaBaseDir: "schema",
     };
-    
+
     const workspace = new WorkspaceImpl(config);
     await workspace.initialize();
-    
+
     // Initial state
     const initialPromptDir = await workspace.getPromptBaseDir();
-    
+
     // Reload configuration
     await workspace.reloadConfig();
-    
+
     // State should remain consistent
     const reloadedPromptDir = await workspace.getPromptBaseDir();
     assertEquals(reloadedPromptDir, initialPromptDir);
@@ -207,19 +209,19 @@ Deno.test("1_behavior: Configuration reload maintains state consistency", async 
 Deno.test("1_behavior: Error handling follows Result pattern principles", async () => {
   // Test permission denied scenario (simulated)
   const restrictedPath = "/root/restricted-workspace";
-  
+
   const config: WorkspaceConfig = {
     workingDir: restrictedPath,
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   const workspace = new WorkspaceImpl(config);
-  
+
   // Should handle permission errors gracefully
   await assertRejects(
     () => workspace.initialize(),
-    Error // Will be PermissionDenied in actual restricted environment
+    Error, // Will be PermissionDenied in actual restricted environment
   );
 });
 
@@ -229,16 +231,16 @@ Deno.test("1_behavior: Error handling follows Result pattern principles", async 
 
 Deno.test("1_behavior: Workspace operations compose correctly", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     const config: WorkspaceConfig = {
       workingDir: tempDir,
       promptBaseDir: "prompts",
       schemaBaseDir: "schema",
     };
-    
+
     const workspace = new WorkspaceImpl(config);
-    
+
     // Operations should compose without side effects
     const operations = [
       () => workspace.initialize(),
@@ -247,12 +249,12 @@ Deno.test("1_behavior: Workspace operations compose correctly", async () => {
       () => workspace.getPromptBaseDir(),
       () => workspace.getSchemaBaseDir(),
     ];
-    
+
     // All operations should succeed in sequence
     for (const operation of operations) {
       await operation();
     }
-    
+
     // Operations should be idempotent
     for (const operation of operations) {
       await operation();
@@ -266,15 +268,15 @@ Deno.test("1_behavior: Workspace operations compose correctly", async () => {
 // 2_structure: Structural Correctness Tests
 // =============================================================================
 
-Deno.test("2_structure: Workspace implements required interfaces", async () => {
+Deno.test("2_structure: Workspace implements required interfaces", () => {
   const config: WorkspaceConfig = {
     workingDir: "/tmp/test-workspace",
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   const workspace = new WorkspaceImpl(config);
-  
+
   // Verify all required methods exist
   assert(typeof workspace.initialize === "function");
   assert(typeof workspace.createDirectory === "function");
@@ -294,12 +296,12 @@ Deno.test("2_structure: Configuration object maintains expected shape", () => {
     promptBaseDir: "prompts",
     schemaBaseDir: "schema",
   };
-  
+
   // Verify configuration has required properties
   assert("workingDir" in config);
   assert("promptBaseDir" in config);
   assert("schemaBaseDir" in config);
-  
+
   assertEquals(typeof config.workingDir, "string");
   assertEquals(typeof config.promptBaseDir, "string");
   assertEquals(typeof config.schemaBaseDir, "string");
@@ -308,12 +310,12 @@ Deno.test("2_structure: Configuration object maintains expected shape", () => {
 Deno.test("2_structure: Error types have correct structure", () => {
   const initError = createWorkspaceInitError("test init error");
   const configError = createWorkspaceConfigError("test config error");
-  
+
   assert(isWorkspaceInitError(initError));
   assertEquals(initError.type, "workspace_init_error");
   assertEquals(initError.code, "WORKSPACE_INIT_ERROR");
   assertEquals(initError.message, "test init error");
-  
+
   assert(isWorkspaceConfigError(configError));
   assertEquals(configError.type, "workspace_config_error");
   assertEquals(configError.code, "WORKSPACE_CONFIG_ERROR");
@@ -322,17 +324,17 @@ Deno.test("2_structure: Error types have correct structure", () => {
 
 Deno.test("2_structure: initWorkspace function signature and defaults", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     // Test with minimal arguments
     await initWorkspace(tempDir);
-    
+
     // Test with custom configuration
     await initWorkspace(tempDir, {
       app_prompt: { base_dir: "custom-prompts" },
       app_schema: { base_dir: "custom-schema" },
     });
-    
+
     // Verify structure exists
     assert(await exists(join(tempDir, ".agent", "breakdown")));
   } finally {
@@ -346,7 +348,7 @@ Deno.test("2_structure: initWorkspace function signature and defaults", async ()
 
 Deno.test("2_structure: Workspace integrates with supporting domain patterns", async () => {
   const tempDir = await Deno.makeTempDir();
-  
+
   try {
     // Test workspace creation with various configurations
     const configs = [
@@ -354,24 +356,24 @@ Deno.test("2_structure: Workspace integrates with supporting domain patterns", a
       { promptBaseDir: "custom/prompts", schemaBaseDir: "custom/schema" },
       { promptBaseDir: ".templates/prompts", schemaBaseDir: ".templates/schema" },
     ];
-    
+
     for (const [index, configPart] of configs.entries()) {
       const workspaceDir = join(tempDir, `workspace-${index}`);
       await ensureDir(workspaceDir);
-      
+
       const config: WorkspaceConfig = {
         workingDir: workspaceDir,
         ...configPart,
       };
-      
+
       const workspace = new WorkspaceImpl(config);
       await workspace.initialize();
-      
+
       // Verify each workspace is isolated and correctly configured
       assert(await workspace.exists());
       const promptDir = await workspace.getPromptBaseDir();
       const schemaDir = await workspace.getSchemaBaseDir();
-      
+
       assert(promptDir.includes(configPart.promptBaseDir));
       assert(schemaDir.includes(configPart.schemaBaseDir));
     }

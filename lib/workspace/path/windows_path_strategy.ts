@@ -143,17 +143,17 @@ export class WindowsPathStrategyTotality {
   /**
    * Resolves a path with full validation
    */
-  async resolve(path: string): Promise<Result<string, PathErrorKind>> {
+  resolve(path: string): Promise<Result<string, PathErrorKind>> {
     const pathResult = WindowsPath.create(path);
     if (!pathResult.ok) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: pathResult.error,
         },
-      };
+      });
     }
 
     try {
@@ -164,27 +164,27 @@ export class WindowsPathStrategyTotality {
       const normalizedResolved = normalize(resolved).toLowerCase();
 
       if (!normalizedResolved.startsWith(normalizedBase)) {
-        return {
+        return Promise.resolve({
           ok: false,
           error: {
             kind: "SECURITY_VIOLATION",
             path,
             violation: "Path escapes base directory",
           },
-        };
+        });
       }
 
       // Return with original casing
-      return { ok: true, data: normalize(resolved) };
+      return Promise.resolve({ ok: true, data: normalize(resolved) });
     } catch (error) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "NORMALIZATION_FAILED",
           path,
           cause: error as Error,
         },
-      };
+      });
     }
   }
 
@@ -218,65 +218,66 @@ export class WindowsPathStrategyTotality {
   /**
    * Validates a Windows path
    */
-  validate(path: string): Result<boolean, PathErrorKind> {
+  validate(path: string): Promise<Result<boolean, PathErrorKind>> {
     // Check for empty path
     if (!path || path.trim() === "") {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Empty path",
         },
-      };
+      });
     }
 
     // Check for path traversal
     if (path.includes("..")) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "SECURITY_VIOLATION",
           path,
           violation: "Path traversal attempt",
         },
-      };
+      });
     }
 
     // Check for invalid Windows characters
+    // deno-lint-ignore no-control-regex
     const invalidChars = /[<>:"|?*\x00-\x1f]/;
     // Allow colon only in drive letter position
     const pathWithoutDrive = path.replace(/^[A-Za-z]:/, "");
     if (invalidChars.test(pathWithoutDrive)) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Path contains invalid Windows characters",
         },
-      };
+      });
     }
 
     // Check normalization
     const normalizeResult = this.normalize(path);
     if (!normalizeResult.ok) {
-      return normalizeResult;
+      return Promise.resolve(normalizeResult);
     }
 
     // Check for double backslashes (except UNC paths)
     if (!path.startsWith("\\\\") && normalizeResult.data.includes("\\\\")) {
-      return {
+      return Promise.resolve({
         ok: false,
         error: {
           kind: "INVALID_PATH",
           path,
           reason: "Path contains double backslashes",
         },
-      };
+      });
     }
 
-    return { ok: true, data: true };
+    return Promise.resolve({ ok: true, data: true });
   }
 
   /**

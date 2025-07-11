@@ -8,7 +8,7 @@
  * @module workspace/path/0_architecture_strategies_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals } from "../../deps.ts";
 import { fromFileUrl } from "@std/path";
 
 /**

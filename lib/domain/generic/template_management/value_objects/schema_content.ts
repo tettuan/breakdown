@@ -1,6 +1,6 @@
 /**
  * @fileoverview Schema Content Value Object
- * 
+ *
  * Represents JSON schema content with validation and access methods.
  */
 
@@ -27,7 +27,7 @@ export class SchemaContent {
    */
   static create(content: string): SchemaContentResult {
     try {
-      if (!content || content.trim() === '') {
+      if (!content || content.trim() === "") {
         return {
           ok: false,
           error: "Schema content cannot be empty",
@@ -41,7 +41,9 @@ export class SchemaContent {
       } catch (parseError) {
         return {
           ok: false,
-          error: `Invalid JSON schema: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`,
+          error: `Invalid JSON schema: ${
+            parseError instanceof Error ? parseError.message : "Unknown parse error"
+          }`,
         };
       }
 
@@ -119,7 +121,7 @@ export class SchemaContent {
    * Check if content is empty
    */
   isEmpty(): boolean {
-    return this.content.trim() === '';
+    return this.content.trim() === "";
   }
 
   /**

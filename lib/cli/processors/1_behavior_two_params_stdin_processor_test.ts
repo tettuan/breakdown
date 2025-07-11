@@ -1,23 +1,23 @@
 /**
  * @fileoverview Behavior tests for TwoParamsStdinProcessor
- * 
+ *
  * Testing focus areas:
  * 1. STDIN reading behavior with various options
  * 2. File reading functionality and error handling
  * 3. Option parsing and decision logic
  * 4. Timeout and resource management behavior
  * 5. Error handling and Result type behavior
- * 
+ *
  * @module lib/cli/processors/1_behavior_two_params_stdin_processor_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
 import {
+  type InputProcessorError as _InputProcessorError,
   TwoParamsStdinProcessor,
-  type InputProcessorError,
 } from "./two_params_stdin_processor.ts";
-import type { Result } from "$lib/types/result.ts";
-import { isOk, isError } from "$lib/types/result.ts";
+import type { Result as _Result } from "$lib/types/result.ts";
+import { isError, isOk } from "$lib/types/result.ts";
 
 // =============================================================================
 // 1_behavior: Option Parsing Behavior Tests
@@ -47,7 +47,7 @@ Deno.test("1_behavior: process attempts stdin when from is dash", async () => {
   // Should attempt to read stdin, but in test environment may return empty or error
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals(typeof result.data, "string");
   } else {
@@ -65,7 +65,7 @@ Deno.test("1_behavior: process attempts stdin when fromFile is dash", async () =
   // Should attempt to read stdin, similar to from: "-"
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals(typeof result.data, "string");
   } else {
@@ -83,7 +83,7 @@ Deno.test("1_behavior: process skips stdin when from is not dash", async () => {
   // Should attempt to read file, not stdin
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   // Since file likely doesn't exist, should return empty string for missing files
   if (result.ok) {
     assertEquals(result.data, "");
@@ -100,7 +100,7 @@ Deno.test("1_behavior: process skips stdin when fromFile is not dash", async () 
   // Should attempt to read file, not stdin
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   // Since file likely doesn't exist, should return empty string for missing files
   if (result.ok) {
     assertEquals(result.data, "");
@@ -182,7 +182,7 @@ Deno.test("1_behavior: processWithDefaultTimeout handles stdin flags", async () 
   // Should attempt stdin reading with default timeout
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals(typeof result.data, "string");
   } else {
@@ -218,7 +218,7 @@ Deno.test("1_behavior: process handles invalid permissions gracefully", async ()
   // Should handle permission/directory errors
   assertEquals(typeof result, "object");
   assertEquals("ok" in result, true);
-  
+
   if (!result.ok) {
     assertEquals(result.error.kind, "FileReadError");
     assertExists(result.error.message);
@@ -241,7 +241,7 @@ Deno.test("1_behavior: process returns proper Result structure on success", asyn
   assertEquals(typeof result, "object");
   assertExists(result);
   assertEquals("ok" in result, true);
-  
+
   if (result.ok) {
     assertEquals("data" in result, true);
     assertEquals("error" in result, false);
@@ -260,7 +260,7 @@ Deno.test("1_behavior: process returns proper error structure on stdin failure",
   assertEquals(typeof result, "object");
   assertExists(result);
   assertEquals("ok" in result, true);
-  
+
   if (!result.ok) {
     assertEquals("error" in result, true);
     assertEquals("data" in result, false);
@@ -284,7 +284,7 @@ Deno.test("1_behavior: Result type guards work correctly for success", async () 
   // Test type guards
   assertEquals(isOk(result), true);
   assertEquals(isError(result), false);
-  
+
   if (isOk(result)) {
     assertEquals(typeof result.data, "string");
   }
@@ -314,10 +314,10 @@ Deno.test("1_behavior: Result type guards work correctly for file errors", async
 Deno.test("1_behavior: process handles conflicting options correctly", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  const options = { 
-    from: "-",           // Should read stdin
+  const options = {
+    from: "-", // Should read stdin
     fromFile: "test.txt", // But also has file
-    skipStdin: false
+    skipStdin: false,
   };
 
   const result = await processor.process(config, options);
@@ -330,9 +330,9 @@ Deno.test("1_behavior: process handles conflicting options correctly", async () 
 Deno.test("1_behavior: process prioritizes file over stdin", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  const options = { 
+  const options = {
     from: "priority_file.txt", // File should take priority
-    fromFile: "-"              // Even if fromFile says stdin
+    fromFile: "-", // Even if fromFile says stdin
   };
 
   const result = await processor.process(config, options);
@@ -352,12 +352,12 @@ Deno.test("1_behavior: process prioritizes file over stdin", async () => {
 Deno.test("1_behavior: process handles multiple sequential calls", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  
+
   const testCases = [
     { skipStdin: true },
     { from: "nonexistent1.txt" },
     { fromFile: "nonexistent2.txt" },
-    { skipStdin: true }
+    { skipStdin: true },
   ];
 
   for (const options of testCases) {
@@ -372,12 +372,12 @@ Deno.test("1_behavior: process handles multiple sequential calls", async () => {
 Deno.test("1_behavior: processor maintains state isolation between calls", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  
+
   // Make calls with different configurations
   const results = await Promise.all([
     processor.process(config, { skipStdin: true }),
     processor.process(config, { from: "file1.txt" }),
-    processor.process(config, { fromFile: "file2.txt" })
+    processor.process(config, { fromFile: "file2.txt" }),
   ]);
 
   // All calls should succeed independently
@@ -395,12 +395,12 @@ Deno.test("1_behavior: processor maintains state isolation between calls", async
 
 Deno.test("1_behavior: process handles various timeout configurations", async () => {
   const processor = new TwoParamsStdinProcessor();
-  
+
   const configVariations = [
     { timeout: 1000 },
     { timeout: 10000 },
     { stdin: { timeout_ms: 3000 } },
-    {}  // Empty config
+    {}, // Empty config
   ];
 
   const options = { skipStdin: true };
@@ -423,7 +423,7 @@ Deno.test("1_behavior: process handles empty and null configurations", async () 
     {},
     { stdin: {} },
     { timeout: 0 },
-    { stdin: { timeout_ms: 1000 } }
+    { stdin: { timeout_ms: 1000 } },
   ];
 
   for (const config of configs) {
@@ -456,10 +456,10 @@ Deno.test("1_behavior: process handles empty options object", async () => {
 Deno.test("1_behavior: process handles null and undefined option values", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  const options = { 
+  const options = {
     from: null,
     fromFile: undefined,
-    skipStdin: null
+    skipStdin: null,
   };
 
   const result = await processor.process(config, options);
@@ -474,10 +474,10 @@ Deno.test("1_behavior: process handles null and undefined option values", async 
 Deno.test("1_behavior: process handles boolean and numeric option values", async () => {
   const processor = new TwoParamsStdinProcessor();
   const config = { timeout: 5000 };
-  const options = { 
-    from: true,      // Non-string value
-    fromFile: 123,   // Numeric value
-    skipStdin: true
+  const options = {
+    from: true, // Non-string value
+    fromFile: 123, // Numeric value
+    skipStdin: true,
   };
 
   const result = await processor.process(config, options);

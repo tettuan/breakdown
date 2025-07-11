@@ -53,7 +53,8 @@ describe("Architecture: ZeroParamsHandler Function Structure", () => {
     // Parameters should be: args, config, options
     const functionString = handleZeroParams.toString();
     assertEquals(
-      functionString.includes("_args") && functionString.includes("_config") && functionString.includes("options"),
+      functionString.includes("_args") && functionString.includes("_config") &&
+        functionString.includes("options"),
       true,
       "Function should accept args, config, and options parameters",
     );
@@ -72,14 +73,16 @@ describe("Architecture: ZeroParamsHandler Function Structure", () => {
 
     // Should focus on option-based routing
     assertEquals(
-      functionString.includes("options") && (functionString.includes("help") || functionString.includes("version")),
+      functionString.includes("options") &&
+        (functionString.includes("help") || functionString.includes("version")),
       true,
       "Should focus on option-based command routing",
     );
 
     // Should delegate to help module
     assertEquals(
-      functionString.includes("showHelp") || functionString.includes("showVersion") || functionString.includes("showUsage"),
+      functionString.includes("showHelp") || functionString.includes("showVersion") ||
+        functionString.includes("showUsage"),
       true,
       "Should delegate to help display functions",
     );
@@ -93,7 +96,8 @@ describe("Architecture: ZeroParamsHandler Function Structure", () => {
 
     // Should not handle complex business logic
     assertEquals(
-      functionString.includes("initialize") || functionString.includes("process") || functionString.includes("generate"),
+      functionString.includes("initialize") || functionString.includes("process") ||
+        functionString.includes("generate"),
       false,
       "Should not handle complex business logic",
     );
@@ -108,7 +112,8 @@ describe("Architecture: ZeroParamsHandler Function Structure", () => {
 
     // Should depend on help module
     assertEquals(
-      functionString.includes("showHelp") && functionString.includes("showVersion") && functionString.includes("showUsage"),
+      functionString.includes("showHelp") && functionString.includes("showVersion") &&
+        functionString.includes("showUsage"),
       true,
       "Should depend on help module functions",
     );
@@ -198,7 +203,7 @@ describe("Architecture: Option Processing Design", () => {
     // Should check help before version
     const helpIndex = functionString.indexOf("help");
     const versionIndex = functionString.indexOf("version");
-    
+
     assertEquals(
       helpIndex < versionIndex,
       true,
@@ -214,7 +219,8 @@ describe("Architecture: Option Processing Design", () => {
 
     // Should use if-else-if pattern for precedence
     assertEquals(
-      functionString.includes("if") && functionString.includes("else if") && functionString.includes("else"),
+      functionString.includes("if") && functionString.includes("else if") &&
+        functionString.includes("else"),
       true,
       "Should use if-else-if pattern for clear precedence",
     );
@@ -290,7 +296,8 @@ describe("Architecture: Interface Contracts", () => {
 
     // Should handle null/undefined gracefully
     assertEquals(
-      functionString.includes("null") || functionString.includes("undefined") || functionString.includes("||"),
+      functionString.includes("null") || functionString.includes("undefined") ||
+        functionString.includes("||"),
       true,
       "Should handle null/undefined options",
     );
@@ -330,9 +337,9 @@ describe("Architecture: Error Handling Design", () => {
 
     for (const options of malformedOptions) {
       try {
-        const result = handleZeroParams([], {}, options as any);
+        const result = handleZeroParams([], {}, options as unknown as Record<string, unknown>);
         assertEquals(result, undefined, "Should handle malformed options without throwing");
-      } catch (error) {
+      } catch (_error) {
         assertEquals(
           false,
           true,
@@ -351,7 +358,8 @@ describe("Architecture: Error Handling Design", () => {
 
     // Should call display functions directly (not wrapped in try-catch)
     assertEquals(
-      functionString.includes("showHelp()") || functionString.includes("showVersion()") || functionString.includes("showUsage()"),
+      functionString.includes("showHelp()") || functionString.includes("showVersion()") ||
+        functionString.includes("showUsage()"),
       true,
       "Should call display functions directly",
     );
@@ -382,15 +390,17 @@ describe("Architecture: Modularity and Reusability", () => {
     // Should be callable multiple times
     let callCount = 0;
     const originalLog = console.log;
-    console.log = () => { callCount++; };
+    console.log = () => {
+      callCount++;
+    };
 
     try {
       handleZeroParams([], {}, {});
       const firstCallCount = callCount;
-      
+
       handleZeroParams([], {}, {});
       const secondCallCount = callCount;
-      
+
       assertEquals(
         secondCallCount - firstCallCount,
         firstCallCount,

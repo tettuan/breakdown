@@ -68,7 +68,7 @@ const VALID_LAYER_TYPES = [
 function validateDemonstrativeType(
   value: string,
 ): Result<DemonstrativeType, TwoParamsHandlerError> {
-  if (_VALID_DEMONSTRATIVE_TYPES.includes(value as any)) {
+  if (_VALID_DEMONSTRATIVE_TYPES.includes(value as typeof _VALID_DEMONSTRATIVE_TYPES[number])) {
     // Create the proper DemonstrativeType object
     const demonstrativeType = DemonstrativeTypeFactory.fromString(value);
     if (demonstrativeType) {
@@ -276,6 +276,92 @@ async function writeOutput(content: string): Promise<Result<void, TwoParamsHandl
 }
 
 /**
+ * Execute from CLI with async processing
+ *
+ * @param args - Command line arguments
+ * @returns Result with void on success or TwoParamsHandlerError on failure
+ */
+export async function executeFromCLI(
+  args: string[],
+): Promise<Result<void, TwoParamsHandlerError>> {
+  // Parse arguments and delegate to handleTwoParams
+  if (args.length < 2) {
+    return error({
+      kind: "InvalidParameterCount",
+      received: args.length,
+      expected: 2,
+    });
+  }
+
+  // Default config and options for CLI execution
+  const config = {};
+  const options = {};
+
+  return await handleTwoParams(args, config, options);
+}
+
+/**
+ * Process with options using async processing
+ *
+ * @param params - Command line parameters
+ * @param options - Processing options
+ * @returns Result with void on success or TwoParamsHandlerError on failure
+ */
+export async function processWithOptions(
+  params: string[],
+  options: Record<string, unknown>,
+): Promise<Result<void, TwoParamsHandlerError>> {
+  // Default config for processing with options
+  const config = {};
+
+  return await handleTwoParams(params, config, options);
+}
+
+/**
+ * Execute with factory using async processing
+ *
+ * @param factory - PromptVariablesFactory instance
+ * @param options - Execution options
+ * @returns Result with void on success or TwoParamsHandlerError on failure
+ */
+export async function executeWithFactory(
+  factory: PromptVariablesFactory,
+  options: Record<string, unknown>,
+): Promise<Result<void, TwoParamsHandlerError>> {
+  try {
+    // Extract custom variables
+    const customVariables = extractCustomVariables(options);
+
+    // Read stdin if available
+    const inputText = options.input_text as string || "";
+
+    // Process prompt generation
+    const contentResult = await processPromptGeneration(
+      factory,
+      inputText,
+      customVariables,
+    );
+
+    if (!contentResult.ok) {
+      return error(contentResult.error);
+    }
+
+    // Write output
+    const outputResult = await writeOutput(contentResult.data);
+    if (!outputResult.ok) {
+      return error(outputResult.error);
+    }
+
+    return ok(undefined);
+  } catch (e) {
+    return error({
+      kind: "PromptGenerationError",
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
+}
+
+/**
  * Handle two parameters case with Totality principle
  *
  * @param params - Command line parameters from BreakdownParams
@@ -366,10 +452,10 @@ export async function handleTwoParams(
     }
 
     return ok(undefined);
-  } catch (err) {
+  } catch (e) {
     return error({
       kind: "FactoryValidationError",
-      errors: [err instanceof Error ? err.message : String(err)],
+      errors: [e instanceof Error ? e.message : String(e)],
     });
   }
 }

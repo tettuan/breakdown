@@ -5,12 +5,12 @@
  * 各メソッドの動作、エッジケース、エラーハンドリングを確認します。
  */
 
-import { assertEquals, assertExists } from "../deps.ts";
+import { assertEquals, assertExists as _assertExists } from "../deps.ts";
 import { join } from "@std/path";
 import {
   DEFAULT_TEMPLATE_MAPPINGS,
   TemplateMapping,
-  TemplateValidation_Result,
+  TemplateValidation_Result as _TemplateValidation_Result,
   TemplateValidator,
   validateTemplatesForExamples,
 } from "./template_validator.ts";
@@ -249,7 +249,7 @@ Deno.test("Unit: TemplateValidator preflight check passes with complete setup", 
   }
 });
 
-Deno.test("Unit: DEFAULT_TEMPLATE_MAPPINGS contains expected templates", async () => {
+Deno.test("Unit: DEFAULT_TEMPLATE_MAPPINGS contains expected templates", () => {
   // デフォルトマッピングに期待されるテンプレートが含まれる
   const expectedPatterns = [
     "summary/issue",

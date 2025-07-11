@@ -156,7 +156,7 @@ export interface WorkspaceConfig {
  *     await this.ensureDirectories();
  *   }
  *
- *   async getPromptBaseDir(): Promise<string> {
+ *   getPromptBaseDir(): Promise<string> {
  *     return "custom/prompts";
  *   }
  * }
@@ -208,7 +208,7 @@ export interface WorkspaceStructure {
  *     return config;
  *   }
  *
- *   async validateConfig(): Promise<void> {
+ *   validateConfig(): Promise<void> {
  *     // Validate configuration settings
  *   }
  * }

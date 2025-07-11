@@ -120,7 +120,7 @@ Deno.test("PathResolutionStrategy Structure", async (t) => {
       normalize: (path: string): Promise<string> => {
         return Promise.resolve(path);
       },
-      validate: (path: string): Promise<boolean> => {
+      validate: (_path: string): Promise<boolean> => {
         return Promise.resolve(true);
       },
     };
@@ -136,7 +136,7 @@ Deno.test("PathResolutionStrategy Structure", async (t) => {
     assertInstanceOf(strategy.validate("test"), Promise, "validate returns Promise");
   });
 
-  await t.step("should have consistent parameter and return types", () => {
+  await t.step("should have consistent parameter and return types", async () => {
     _logger.debug("Testing method type consistency");
 
     const strategy: PathResolutionStrategy = {
@@ -147,17 +147,14 @@ Deno.test("PathResolutionStrategy Structure", async (t) => {
 
     // Test parameter types (all accept string)
     // Test return types
-    strategy.resolve("test").then((result) => {
-      assertEquals(typeof result, "string", "resolve returns string");
-    });
+    const resolveResult = await strategy.resolve("test");
+    assertEquals(typeof resolveResult, "string", "resolve returns string");
 
-    strategy.normalize("test").then((result) => {
-      assertEquals(typeof result, "string", "normalize returns string");
-    });
+    const normalizeResult = await strategy.normalize("test");
+    assertEquals(typeof normalizeResult, "string", "normalize returns string");
 
-    strategy.validate("test").then((result) => {
-      assertEquals(typeof result, "boolean", "validate returns boolean");
-    });
+    const validateResult = await strategy.validate("test");
+    assertEquals(typeof validateResult, "boolean", "validate returns boolean");
   });
 });
 
@@ -189,9 +186,9 @@ Deno.test("WorkspaceStructure Structure", async (t) => {
     const structure: WorkspaceStructure = {
       initialize: () => Promise.resolve(),
       ensureDirectories: () => Promise.resolve(),
-      exists: async (path?: string) => {
+      exists: (path?: string) => {
         // Should handle both with and without path
-        return path ? path.length > 0 : true;
+        return Promise.resolve(path ? path.length > 0 : true);
       },
       createDirectory: (_path: string) => Promise.resolve(),
       removeDirectory: (_path: string) => Promise.resolve(),
@@ -238,7 +235,7 @@ Deno.test("WorkspaceConfigManager Structure", async (t) => {
           promptBaseDir: "/prompts",
           schemaBaseDir: "/schemas",
         }),
-      update: (config: Partial<WorkspaceConfig>) => Promise.resolve(),
+      update: (_config: Partial<WorkspaceConfig>) => Promise.resolve(),
       validate: () => Promise.resolve(),
     };
 
@@ -254,16 +251,18 @@ Deno.test("WorkspaceConfigManager Structure", async (t) => {
 
     const configManager: WorkspaceConfigManager = {
       load: () => Promise.resolve(),
-      get: async () => ({
-        workingDir: "/test",
-        promptBaseDir: "/prompts",
-        schemaBaseDir: "/schemas",
-      }),
-      update: async (config: Partial<WorkspaceConfig>) => {
+      get: () =>
+        Promise.resolve({
+          workingDir: "/test",
+          promptBaseDir: "/prompts",
+          schemaBaseDir: "/schemas",
+        }),
+      update: (config: Partial<WorkspaceConfig>) => {
         // Should accept partial configs
         assertExists(config, "Partial config accepted");
+        return Promise.resolve();
       },
-      validate: async () => {},
+      validate: () => Promise.resolve(),
     };
 
     // Test partial updates
@@ -286,7 +285,7 @@ Deno.test("WorkspacePathResolver Structure", async (t) => {
       resolve: (_path: string) => Promise.resolve("/resolved"),
       normalize: (path: string) => Promise.resolve(path),
       validate: (_path: string) => Promise.resolve(true),
-      updateStrategy: (strategy: PathResolutionStrategy) => {},
+      updateStrategy: (_strategy: PathResolutionStrategy) => {},
     };
 
     // Has all PathResolutionStrategy methods
@@ -302,7 +301,7 @@ Deno.test("WorkspacePathResolver Structure", async (t) => {
     _logger.debug("Testing updateStrategy synchronicity");
 
     const pathResolver: WorkspacePathResolver = {
-      resolve: async (path: string) => path,
+      resolve: (path: string) => Promise.resolve(path),
       normalize: (path: string) => Promise.resolve(path),
       validate: (_path: string) => Promise.resolve(true),
       updateStrategy: (strategy: PathResolutionStrategy) => {
@@ -330,11 +329,11 @@ Deno.test("WorkspaceErrorHandler Structure", async (t) => {
     _logger.debug("Testing ErrorHandler method structure");
 
     const errorHandler: WorkspaceErrorHandler = {
-      handleError: (error: Error, type: string) => {
-        _logger.debug(`Handling ${type} error: ${error.message}`);
+      handleError: (_error: Error, _type: string) => {
+        _logger.debug(`Handling ${_type} error: ${_error.message}`);
       },
-      logError: (error: Error, context: Record<string, unknown>) => {
-        _logger.debug(`Logging error with context`, context);
+      logError: (_error: Error, _context: Record<string, unknown>) => {
+        _logger.debug(`Logging error with context`, _context);
       },
     };
 
@@ -355,10 +354,10 @@ Deno.test("WorkspaceErrorHandler Structure", async (t) => {
     _logger.debug("Testing context parameter flexibility");
 
     const errorHandler: WorkspaceErrorHandler = {
-      handleError: (error: Error, type: string) => {},
-      logError: (error: Error, context: Record<string, unknown>) => {
+      handleError: (_error: Error, _type: string) => {},
+      logError: (_error: Error, _context: Record<string, unknown>) => {
         // Context can contain any properties
-        assertExists(context, "Context provided");
+        assertExists(_context, "Context provided");
       },
     };
 
@@ -387,8 +386,8 @@ Deno.test("WorkspaceEventEmitter Structure", async (t) => {
         assertExists(event, "Event name provided");
         assertExists(listener, "Listener function provided");
       },
-      emit: (event: string, data: unknown) => {
-        assertExists(event, "Event name provided");
+      emit: (_event: string, _data: unknown) => {
+        assertExists(_event, "Event name provided");
         // data can be undefined
       },
     };
@@ -523,7 +522,7 @@ Deno.test("Type Completeness and Constraints", async (t) => {
 
     // WorkspaceConfig - all required
     // @ts-expect-error - Missing required property
-    const invalidConfig1: WorkspaceConfig = {
+    const _invalidConfig1: WorkspaceConfig = {
       workingDir: "/test",
       promptBaseDir: "/prompts",
       // Missing schemaBaseDir
@@ -547,27 +546,27 @@ Deno.test("Type Completeness and Constraints", async (t) => {
     _logger.debug("Testing type appropriateness");
 
     // String for paths
-    const pathTypes = {
+    const _pathTypes = {
       workingDir: "/path" as string,
       promptBaseDir: "/path" as string,
       schemaBaseDir: "/path" as string,
     };
 
     // Error for error handling
-    const errorHandler: WorkspaceErrorHandler = {
-      handleError: (error: Error, type: string) => {
-        assertInstanceOf(error, Error, "Error parameter is Error type");
-        assertEquals(typeof type, "string", "Type parameter is string");
+    const _errorHandler: WorkspaceErrorHandler = {
+      handleError: (_error: Error, _type: string) => {
+        assertInstanceOf(_error, Error, "Error parameter is Error type");
+        assertEquals(typeof _type, "string", "Type parameter is string");
       },
-      logError: (error: Error, context: Record<string, unknown>) => {
-        assertInstanceOf(error, Error, "Error parameter is Error type");
+      logError: (_error: Error, _context: Record<string, unknown>) => {
+        assertInstanceOf(_error, Error, "Error parameter is Error type");
       },
     };
 
     // Unknown for flexible event data
-    const eventEmitter: WorkspaceEventEmitter = {
-      on: (event: string, listener: (data: unknown) => void) => {},
-      emit: (event: string, data: unknown) => {
+    const _eventEmitter: WorkspaceEventEmitter = {
+      on: (_event: string, _listener: (data: unknown) => void) => {},
+      emit: (_event: string, _data: unknown) => {
         // Can emit any type
       },
     };
@@ -577,7 +576,7 @@ Deno.test("Type Completeness and Constraints", async (t) => {
     _logger.debug("Testing balance of type safety and flexibility");
 
     // Strict where needed
-    const config: WorkspaceConfig = {
+    const _config: WorkspaceConfig = {
       workingDir: "/strict",
       promptBaseDir: "/strict",
       schemaBaseDir: "/strict",
@@ -586,7 +585,7 @@ Deno.test("Type Completeness and Constraints", async (t) => {
     };
 
     // Flexible where appropriate
-    const errorContext: Record<string, unknown> = {
+    const _errorContext: Record<string, unknown> = {
       anything: "goes",
       nested: { objects: true },
       arrays: [1, 2, 3],
@@ -594,7 +593,7 @@ Deno.test("Type Completeness and Constraints", async (t) => {
     };
 
     // Partial for updates
-    const partialUpdate: Partial<WorkspaceConfig> = {
+    const _partialUpdate: Partial<WorkspaceConfig> = {
       workingDir: "/updated", // Can update just one field
     };
   });

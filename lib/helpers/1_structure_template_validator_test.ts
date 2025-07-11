@@ -24,7 +24,7 @@ Deno.test("Structure: TemplateValidator class has proper encapsulation", () => {
   // @ts-expect-error: private field - TypeScript prevents access at compile time
   const _templateMappings = _validator.templateMappings;
   // @ts-expect-error: private field - TypeScript prevents access at compile time
-  const logger = _validator.logger;
+  const _logger = _validator.logger;
 
   // パブリックメソッドのみアクセス可能
   assertExists(_validator.validateTemplates);

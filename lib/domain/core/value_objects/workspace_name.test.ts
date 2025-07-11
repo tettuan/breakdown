@@ -8,21 +8,21 @@
  * - 2_structure tests for immutability and value object semantics
  */
 
-import { assertEquals, assertStrictEquals } from "jsr:@std/assert";
-import { 
-  WorkspaceName,
-  type WorkspaceNameError,
-  formatWorkspaceNameError,
-  isEmptyNameError,
-  isInvalidCharactersError,
-  isPathTraversalAttemptError,
-  isTooLongError,
-  isStartsWithDotError,
-  isReservedNameError,
-  isInvalidFormatError,
-  isContainsWhitespaceError,
+import { assertEquals, assertStrictEquals as _assertStrictEquals } from "jsr:@std/assert";
+import {
   createWorkspaceName,
+  formatWorkspaceNameError,
+  isContainsWhitespaceError,
+  isEmptyNameError,
+  isInvalidCharactersError as _isInvalidCharactersError,
+  isInvalidFormatError,
+  isPathTraversalAttemptError,
+  isReservedNameError,
+  isStartsWithDotError,
+  isTooLongError,
+  WorkspaceName,
   WorkspaceNameCollection,
+  type WorkspaceNameError as _WorkspaceNameError,
 } from "./workspace_name.ts";
 
 // ============================================================================
@@ -32,10 +32,10 @@ import {
 Deno.test("0_architecture: Smart Constructor enforces private constructor", () => {
   // Constructor should be private - cannot instantiate directly
   // This validates the Smart Constructor pattern implementation
-  
+
   const validResult = WorkspaceName.create("valid-name");
   assertEquals(validResult.ok, true);
-  
+
   // The only way to create instances should be through the static create method
   // TypeScript compiler should prevent direct constructor access
   // We can verify that create method returns proper Result type
@@ -49,21 +49,21 @@ Deno.test("0_architecture: Smart Constructor enforces private constructor", () =
 
 Deno.test("0_architecture: Result type pattern for error handling", () => {
   // All creation should return Result<T, E> - no exceptions thrown
-  
+
   const invalidResult = WorkspaceName.create("");
   assertEquals(invalidResult.ok, false);
-  
+
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "EmptyName");
   }
-  
+
   const validResult = WorkspaceName.create("valid-name");
   assertEquals(validResult.ok, true);
 });
 
 Deno.test("0_architecture: Discriminated Union error types", () => {
   // Each error should have a unique 'kind' discriminator
-  
+
   const errorCases = [
     { input: "", expectedKind: "EmptyName" },
     { input: "with spaces", expectedKind: "ContainsWhitespace" },
@@ -78,7 +78,7 @@ Deno.test("0_architecture: Discriminated Union error types", () => {
   errorCases.forEach(({ input, expectedKind }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject: ${input}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, expectedKind);
     }
@@ -87,7 +87,7 @@ Deno.test("0_architecture: Discriminated Union error types", () => {
 
 Deno.test("0_architecture: Type guards for error discrimination", () => {
   // Type guards should correctly identify error types
-  
+
   const emptyResult = WorkspaceName.create("");
   if (!emptyResult.ok) {
     assertEquals(isEmptyNameError(emptyResult.error), true);
@@ -119,8 +119,8 @@ Deno.test("0_architecture: Type guards for error discrimination", () => {
 
 Deno.test("1_behavior: empty name validation", () => {
   const emptyTestCases = [
-    { input: null as any, description: "null input" },
-    { input: undefined as any, description: "undefined input" },
+    { input: null as unknown as string, description: "null input" },
+    { input: undefined as unknown as string, description: "undefined input" },
     { input: "", description: "empty string" },
     { input: "   ", description: "whitespace only" },
   ];
@@ -128,7 +128,7 @@ Deno.test("1_behavior: empty name validation", () => {
   emptyTestCases.forEach(({ input, description }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject ${description}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "EmptyName" as const);
     }
@@ -136,15 +136,15 @@ Deno.test("1_behavior: empty name validation", () => {
 
   // Non-string inputs should produce InvalidFormat error
   const nonStringTestCases = [
-    { input: 123 as any, description: "number input" },
-    { input: {} as any, description: "object input" },
-    { input: [] as any, description: "array input" },
+    { input: 123 as unknown as string, description: "number input" },
+    { input: {} as unknown as string, description: "object input" },
+    { input: [] as unknown as string, description: "array input" },
   ];
 
   nonStringTestCases.forEach(({ input, description }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject ${description}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "InvalidFormat" as const);
     }
@@ -169,7 +169,7 @@ Deno.test("1_behavior: valid filesystem-safe names", () => {
   validNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, true, `Should accept valid name: ${name}`);
-    
+
     if (result.ok) {
       assertEquals(result.data.value, name);
     }
@@ -193,7 +193,7 @@ Deno.test("1_behavior: whitespace rejection for CLI compatibility", () => {
   namesWithWhitespace.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject whitespace: "${name}"`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "ContainsWhitespace");
       if (result.error.kind === "ContainsWhitespace") {
@@ -207,7 +207,7 @@ Deno.test("1_behavior: whitespace rejection for CLI compatibility", () => {
 Deno.test("1_behavior: length validation for filesystem compatibility", () => {
   const validLengths = [
     "a",
-    "ab", 
+    "ab",
     "a".repeat(255), // Maximum length
   ];
 
@@ -220,7 +220,7 @@ Deno.test("1_behavior: length validation for filesystem compatibility", () => {
 
   const longResult = WorkspaceName.create(tooLong);
   assertEquals(longResult.ok, false, "Should reject too long names");
-  
+
   if (!longResult.ok) {
     assertEquals(longResult.error.kind, "TooLong");
     if (longResult.error.kind === "TooLong") {
@@ -233,7 +233,7 @@ Deno.test("1_behavior: length validation for filesystem compatibility", () => {
 Deno.test("1_behavior: dot prefix rejection (hidden files)", () => {
   const dotNames = [
     ".hidden",
-    ".git", 
+    ".git",
     ".vscode",
     ".env",
     ".single-letter",
@@ -242,7 +242,7 @@ Deno.test("1_behavior: dot prefix rejection (hidden files)", () => {
   dotNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject dot prefix: ${name}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "StartsWithDot");
     }
@@ -260,7 +260,7 @@ Deno.test("1_behavior: path traversal attack prevention", () => {
   // Path traversal patterns (high priority)
   const pathTraversalNames = [
     "../parent",
-    "..\\windows-parent", 
+    "..\\windows-parent",
     "normal../attack",
     "attack/../normal",
     "../../etc",
@@ -271,7 +271,7 @@ Deno.test("1_behavior: path traversal attack prevention", () => {
   pathTraversalNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject path traversal: ${name}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "PathTraversalAttempt");
       if (result.error.kind === "PathTraversalAttempt") {
@@ -283,13 +283,13 @@ Deno.test("1_behavior: path traversal attack prevention", () => {
 });
 
 Deno.test("1_behavior: forbidden characters for cross-platform compatibility", () => {
-  const forbiddenChars = ['<', '>', ':', '"', '|', '?', '*', '\0'];
-  
+  const forbiddenChars = ["<", ">", ":", '"', "|", "?", "*", "\0"];
+
   forbiddenChars.forEach((char) => {
     const name = `test${char}name`;
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject forbidden character: ${char}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "InvalidCharacters");
       if (result.error.kind === "InvalidCharacters") {
@@ -302,22 +302,51 @@ Deno.test("1_behavior: forbidden characters for cross-platform compatibility", (
 Deno.test("1_behavior: reserved names rejection (filesystem safety)", () => {
   const reservedNames = [
     // Windows reserved names
-    "CON", "PRN", "AUX", "NUL",
-    "COM1", "COM2", "COM9",
-    "LPT1", "LPT2", "LPT9",
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "COM1",
+    "COM2",
+    "COM9",
+    "LPT1",
+    "LPT2",
+    "LPT9",
     // Unix/Linux system directories
-    "bin", "boot", "dev", "etc", "home", "lib", "lib64", "mnt", "opt",
-    "proc", "root", "run", "sbin", "srv", "sys", "tmp", "usr", "var",
-    // Common application directories  
-    "node_modules", "target", "build", "dist",
+    "bin",
+    "boot",
+    "dev",
+    "etc",
+    "home",
+    "lib",
+    "lib64",
+    "mnt",
+    "opt",
+    "proc",
+    "root",
+    "run",
+    "sbin",
+    "srv",
+    "sys",
+    "tmp",
+    "usr",
+    "var",
+    // Common application directories
+    "node_modules",
+    "target",
+    "build",
+    "dist",
     // Case variations
-    "con", "Con", "prn", "Prn",
+    "con",
+    "Con",
+    "prn",
+    "Prn",
   ];
 
   reservedNames.forEach((name) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, false, `Should reject reserved name: ${name}`);
-    
+
     if (!result.ok) {
       assertEquals(result.error.kind, "ReservedName");
       if (result.error.kind === "ReservedName") {
@@ -336,7 +365,7 @@ Deno.test("1_behavior: whitespace trimming", () => {
 
   testCases.forEach(({ input, expected }) => {
     const result = WorkspaceName.create(input);
-    
+
     assertEquals(result.ok, true, `Should trim and accept: "${input}"`);
     if (result.ok && expected) {
       assertEquals(result.data.value, expected);
@@ -351,7 +380,7 @@ Deno.test("1_behavior: whitespace trimming", () => {
 Deno.test("1_behavior: factory methods - defaultWorkspace", () => {
   const result = WorkspaceName.defaultWorkspace();
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     assertEquals(result.data.value, "default-workspace");
   }
@@ -360,7 +389,7 @@ Deno.test("1_behavior: factory methods - defaultWorkspace", () => {
 Deno.test("1_behavior: factory methods - withTimestamp", () => {
   const withoutPrefix = WorkspaceName.withTimestamp();
   assertEquals(withoutPrefix.ok, true);
-  
+
   if (withoutPrefix.ok) {
     assertEquals(withoutPrefix.data.value.startsWith("workspace-"), true);
     // Should contain timestamp-like pattern (YYYY-MM-DD_HH-MM-SS)
@@ -370,7 +399,7 @@ Deno.test("1_behavior: factory methods - withTimestamp", () => {
 
   const withPrefix = WorkspaceName.withTimestamp("project");
   assertEquals(withPrefix.ok, true);
-  
+
   if (withPrefix.ok) {
     assertEquals(withPrefix.data.value.startsWith("project-"), true);
   }
@@ -379,42 +408,42 @@ Deno.test("1_behavior: factory methods - withTimestamp", () => {
 Deno.test("1_behavior: factory methods - forProject", () => {
   const validProject = WorkspaceName.forProject("MyProject");
   assertEquals(validProject.ok, true);
-  
+
   if (validProject.ok) {
     assertEquals(validProject.data.value, "MyProject");
   }
 
   const projectWithSpaces = WorkspaceName.forProject("My Project Name");
   assertEquals(projectWithSpaces.ok, true);
-  
+
   if (projectWithSpaces.ok) {
     assertEquals(projectWithSpaces.data.value, "My-Project-Name");
   }
 
   const projectWithSpecialChars = WorkspaceName.forProject("Project@#$%");
   assertEquals(projectWithSpecialChars.ok, true);
-  
+
   if (projectWithSpecialChars.ok) {
     assertEquals(projectWithSpecialChars.data.value, "Project----");
   }
 
   const withSuffix = WorkspaceName.forProject("MyProject", "dev");
   assertEquals(withSuffix.ok, true);
-  
+
   if (withSuffix.ok) {
     assertEquals(withSuffix.data.value, "MyProject-dev");
   }
 
   const emptyProject = WorkspaceName.forProject("");
   assertEquals(emptyProject.ok, false);
-  
+
   if (!emptyProject.ok) {
     assertEquals(emptyProject.error.kind, "EmptyName");
   }
 
   const onlySpecialChars = WorkspaceName.forProject("@#$%");
   assertEquals(onlySpecialChars.ok, false);
-  
+
   if (!onlySpecialChars.ok) {
     assertEquals(onlySpecialChars.error.kind, "InvalidFormat");
   }
@@ -423,7 +452,7 @@ Deno.test("1_behavior: factory methods - forProject", () => {
 Deno.test("1_behavior: factory methods - temporary", () => {
   const withoutPurpose = WorkspaceName.temporary();
   assertEquals(withoutPurpose.ok, true);
-  
+
   if (withoutPurpose.ok) {
     assertEquals(withoutPurpose.data.value.startsWith("temp-"), true);
     // Should end with random 6-character suffix
@@ -433,7 +462,7 @@ Deno.test("1_behavior: factory methods - temporary", () => {
 
   const withPurpose = WorkspaceName.temporary("testing");
   assertEquals(withPurpose.ok, true);
-  
+
   if (withPurpose.ok) {
     assertEquals(withPurpose.data.value.startsWith("temp-testing-"), true);
     const purposePattern = /^temp-testing-[a-z0-9]{6}$/;
@@ -448,16 +477,16 @@ Deno.test("1_behavior: factory methods - temporary", () => {
 Deno.test("2_structure: immutability of created instances", () => {
   const result = WorkspaceName.create("test-workspace");
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const workspace = result.data;
-    
+
     // Object should be frozen
     assertEquals(Object.isFrozen(workspace), true);
-    
+
     // Should not be able to modify internal state
     try {
-      (workspace as any)._value = "modified";
+      (workspace as unknown as { _value: string })._value = "modified";
       assertEquals(workspace.value, "test-workspace", "Internal value should not change");
     } catch (error) {
       // Expected in strict mode
@@ -470,24 +499,24 @@ Deno.test("2_structure: value equality semantics", () => {
   const workspace1Result = WorkspaceName.create("same-name");
   const workspace2Result = WorkspaceName.create("same-name");
   const workspace3Result = WorkspaceName.create("different-name");
-  
+
   assertEquals(workspace1Result.ok, true);
   assertEquals(workspace2Result.ok, true);
   assertEquals(workspace3Result.ok, true);
-  
+
   if (workspace1Result.ok && workspace2Result.ok && workspace3Result.ok) {
     const workspace1 = workspace1Result.data;
     const workspace2 = workspace2Result.data;
     const workspace3 = workspace3Result.data;
-    
+
     // Equal values should be equal
     assertEquals(workspace1.equals(workspace2), true);
     assertEquals(workspace2.equals(workspace1), true);
-    
+
     // Different values should not be equal
     assertEquals(workspace1.equals(workspace3), false);
     assertEquals(workspace3.equals(workspace1), false);
-    
+
     // Should equal itself
     assertEquals(workspace1.equals(workspace1), true);
   }
@@ -496,17 +525,17 @@ Deno.test("2_structure: value equality semantics", () => {
 Deno.test("2_structure: case-sensitive and case-insensitive equality", () => {
   const lowerResult = WorkspaceName.create("lowercase");
   const upperResult = WorkspaceName.create("LOWERCASE");
-  
+
   assertEquals(lowerResult.ok, true);
   assertEquals(upperResult.ok, true);
-  
+
   if (lowerResult.ok && upperResult.ok) {
     const lower = lowerResult.data;
     const upper = upperResult.data;
-    
+
     // Case-sensitive should be different
     assertEquals(lower.equals(upper), false);
-    
+
     // Case-insensitive should be equal
     assertEquals(lower.equalsIgnoreCase(upper), true);
   }
@@ -515,27 +544,27 @@ Deno.test("2_structure: case-sensitive and case-insensitive equality", () => {
 Deno.test("2_structure: utility methods", () => {
   const result = WorkspaceName.create("Test-Workspace_123");
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const workspace = result.data;
-    
+
     // Length
     assertEquals(workspace.getLength(), 18);
-    
+
     // Case checks
     assertEquals(workspace.isLowerCase(), false);
-    
+
     const lowerResult = WorkspaceName.create("lower-case");
     if (lowerResult.ok) {
       assertEquals(lowerResult.data.isLowerCase(), true);
     }
-    
+
     // Naming convention checks
     const kebabResult = WorkspaceName.create("kebab-case-name");
     if (kebabResult.ok) {
       assertEquals(kebabResult.data.isKebabCase(), true);
     }
-    
+
     const snakeResult = WorkspaceName.create("snake_case_name");
     if (snakeResult.ok) {
       assertEquals(snakeResult.data.isSnakeCase(), true);
@@ -561,12 +590,12 @@ Deno.test("2_structure: production suitability check", () => {
   [...prodSuitableCases, ...nonProdCases].forEach(({ name, suitable }) => {
     const result = WorkspaceName.create(name);
     assertEquals(result.ok, true, `Should create: ${name}`);
-    
+
     if (result.ok) {
       assertEquals(
         result.data.isSuitableForProduction(),
         suitable,
-        `${name} production suitability should be ${suitable}`
+        `${name} production suitability should be ${suitable}`,
       );
     }
   });
@@ -575,11 +604,11 @@ Deno.test("2_structure: production suitability check", () => {
 Deno.test("2_structure: safe name conversion", () => {
   const problematicResult = WorkspaceName.create("name-with_valid-chars");
   assertEquals(problematicResult.ok, true);
-  
+
   if (problematicResult.ok) {
     const safeResult = problematicResult.data.toSafeName();
     assertEquals(safeResult.ok, true);
-    
+
     if (safeResult.ok) {
       // Should remain the same since it's already safe
       assertEquals(safeResult.data.value, "name-with_valid-chars");
@@ -589,11 +618,11 @@ Deno.test("2_structure: safe name conversion", () => {
   // Test toSafeName with valid workspace name containing special characters
   const validNameResult = WorkspaceName.create("test-name_123");
   assertEquals(validNameResult.ok, true);
-  
+
   if (validNameResult.ok) {
     const safeConversionResult = validNameResult.data.toSafeName();
     assertEquals(safeConversionResult.ok, true);
-    
+
     if (safeConversionResult.ok) {
       // Should remain the same since it's already filesystem-safe
       assertEquals(safeConversionResult.data.value, "test-name_123");
@@ -604,17 +633,17 @@ Deno.test("2_structure: safe name conversion", () => {
 Deno.test("2_structure: case conversion methods", () => {
   const mixedResult = WorkspaceName.create("Mixed-Case_Name");
   assertEquals(mixedResult.ok, true);
-  
+
   if (mixedResult.ok) {
     const mixed = mixedResult.data;
-    
+
     const lowerResult = mixed.toLowerCase();
     assertEquals(lowerResult.ok, true);
-    
+
     if (lowerResult.ok) {
       assertEquals(lowerResult.data.value, "mixed-case_name");
     }
-    
+
     // Converting already lowercase should return same instance
     const alreadyLowerResult = WorkspaceName.create("already-lower");
     if (alreadyLowerResult.ok) {
@@ -629,30 +658,30 @@ Deno.test("2_structure: case conversion methods", () => {
 Deno.test("2_structure: prefix and suffix methods", () => {
   const baseResult = WorkspaceName.create("base");
   assertEquals(baseResult.ok, true);
-  
+
   if (baseResult.ok) {
     const base = baseResult.data;
-    
+
     // Prefix
     const prefixedResult = base.withPrefix("env");
     assertEquals(prefixedResult.ok, true);
-    
+
     if (prefixedResult.ok) {
       assertEquals(prefixedResult.data.value, "env-base");
     }
-    
+
     // Suffix
     const suffixedResult = base.withSuffix("workspace");
     assertEquals(suffixedResult.ok, true);
-    
+
     if (suffixedResult.ok) {
       assertEquals(suffixedResult.data.value, "base-workspace");
     }
-    
+
     // Empty prefix/suffix should fail
     const emptyPrefixResult = base.withPrefix("");
     assertEquals(emptyPrefixResult.ok, false);
-    
+
     const emptySuffixResult = base.withSuffix("");
     assertEquals(emptySuffixResult.ok, false);
   }
@@ -661,13 +690,13 @@ Deno.test("2_structure: prefix and suffix methods", () => {
 Deno.test("2_structure: directory path generation", () => {
   const result = WorkspaceName.create("my-workspace");
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const workspace = result.data;
-    
+
     // Without base path
     assertEquals(workspace.toDirectoryPath(), "my-workspace");
-    
+
     // With base path
     assertEquals(workspace.toDirectoryPath("/home/user"), "/home/user/my-workspace");
     assertEquals(workspace.toDirectoryPath("./projects"), "./projects/my-workspace");
@@ -677,22 +706,22 @@ Deno.test("2_structure: directory path generation", () => {
 Deno.test("2_structure: string representations", () => {
   const result = WorkspaceName.create("test-workspace");
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const workspace = result.data;
-    
+
     // value getter
     assertEquals(workspace.value, "test-workspace");
-    
+
     // toString() method
     assertEquals(workspace.toString(), "WorkspaceName(test-workspace)");
-    
+
     // JSON serialization
     assertEquals(workspace.toJSON(), "test-workspace");
-    
+
     // valueOf for primitive conversion
     assertEquals(workspace.valueOf(), "test-workspace");
-    
+
     // String concatenation
     assertEquals(`Workspace: ${workspace}`, "Workspace: WorkspaceName(test-workspace)");
   }
@@ -737,17 +766,17 @@ Deno.test("error_formatting: formatWorkspaceNameError produces readable messages
   errorCases.forEach(({ input, shouldContain }) => {
     const result = WorkspaceName.create(input);
     assertEquals(result.ok, false, `Should reject: ${input}`);
-    
+
     if (!result.ok) {
       const message = formatWorkspaceNameError(result.error);
       assertEquals(typeof message, "string");
       assertEquals(message.length > 0, true);
-      
+
       shouldContain.forEach((substring) => {
         assertEquals(
           message.toLowerCase().includes(substring.toLowerCase()),
           true,
-          `Error message should contain "${substring}": ${message}`
+          `Error message should contain "${substring}": ${message}`,
         );
       });
     }
@@ -758,7 +787,7 @@ Deno.test("deprecated_utility: createWorkspaceName throws on error", () => {
   // Valid name should work
   const validWorkspace = createWorkspaceName("valid-name");
   assertEquals(validWorkspace.value, "valid-name");
-  
+
   // Invalid name should throw
   let threwError = false;
   try {
@@ -779,18 +808,18 @@ Deno.test("collection: WorkspaceNameCollection creation and operations", () => {
   const validNames = ["workspace1", "workspace2", "workspace3"];
   const collectionResult = WorkspaceNameCollection.create(validNames);
   assertEquals(collectionResult.ok, true);
-  
+
   if (collectionResult.ok) {
     const collection = collectionResult.data;
-    
+
     // Basic properties
     assertEquals(collection.getCount(), 3);
     assertEquals(collection.isEmpty(), false);
-    
+
     // Get names
     const names = collection.getNames();
     assertEquals(names, validNames);
-    
+
     // Get WorkspaceName instances
     const workspaceNames = collection.getWorkspaceNames();
     assertEquals(workspaceNames.length, 3);
@@ -803,16 +832,16 @@ Deno.test("collection: WorkspaceNameCollection contains method", () => {
   const collectionResult = WorkspaceNameCollection.create(validNames);
   const searchResult = WorkspaceName.create("workspace1");
   const notFoundResult = WorkspaceName.create("workspace4");
-  
+
   assertEquals(collectionResult.ok, true);
   assertEquals(searchResult.ok, true);
   assertEquals(notFoundResult.ok, true);
-  
+
   if (collectionResult.ok && searchResult.ok && notFoundResult.ok) {
     const collection = collectionResult.data;
     const search = searchResult.data;
     const notFound = notFoundResult.data;
-    
+
     assertEquals(collection.contains(search), true);
     assertEquals(collection.contains(notFound), false);
   }
@@ -822,11 +851,11 @@ Deno.test("collection: WorkspaceNameCollection production filtering", () => {
   const mixedNames = ["production-app", "temp-workspace", "client-project", "test-env"];
   const collectionResult = WorkspaceNameCollection.create(mixedNames);
   assertEquals(collectionResult.ok, true);
-  
+
   if (collectionResult.ok) {
     const collection = collectionResult.data;
     const productionOnly = collection.filterProductionSuitable();
-    
+
     const prodNames = productionOnly.getNames();
     assertEquals(prodNames.includes("production-app"), true);
     assertEquals(prodNames.includes("client-project"), true);
@@ -839,7 +868,7 @@ Deno.test("collection: WorkspaceNameCollection error propagation", () => {
   const invalidNames = ["valid1", "", "valid2"]; // Contains empty name
   const collectionResult = WorkspaceNameCollection.create(invalidNames);
   assertEquals(collectionResult.ok, false);
-  
+
   if (!collectionResult.ok) {
     assertEquals(collectionResult.error.kind, "EmptyName");
   }
@@ -848,7 +877,7 @@ Deno.test("collection: WorkspaceNameCollection error propagation", () => {
 Deno.test("collection: empty WorkspaceNameCollection", () => {
   const emptyResult = WorkspaceNameCollection.create([]);
   assertEquals(emptyResult.ok, true);
-  
+
   if (emptyResult.ok) {
     const empty = emptyResult.data;
     assertEquals(empty.isEmpty(), true);

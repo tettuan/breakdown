@@ -250,20 +250,20 @@ export class VariableSubstitution {
   ) {}
 
   static create(
-    variables: Record<string, string>,
+    variables: Record<string, unknown>,
     strategy: SubstitutionStrategy = "strict",
   ): VariableSubstitution {
     const variableMap = new Map<string, string>();
 
     for (const [key, value] of Object.entries(variables)) {
       VariableSubstitution.validateVariable(key, value);
-      variableMap.set(key.trim(), value);
+      variableMap.set(key.trim(), value as string);
     }
 
     return new VariableSubstitution(variableMap, strategy);
   }
 
-  private static validateVariable(key: string, value: string): void {
+  private static validateVariable(key: string, value: unknown): void {
     if (!key || key.trim().length === 0) {
       throw new Error("Variable name cannot be empty");
     }

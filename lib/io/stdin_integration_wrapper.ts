@@ -322,6 +322,27 @@ export function shouldSkipStdin(options?: {
 }
 
 /**
+ * Read stdin content with Result type and async support
+ */
+export async function readStdinContent(
+  options: StdinOptions = {},
+): Promise<Result<string, string>> {
+  const wrapper = new StdinIntegrationWrapper();
+  return await wrapper.readStdin(options);
+}
+
+/**
+ * Read stdin with timeout and Result type with async support
+ */
+export async function readStdinWithTimeout(
+  timeout: number = 5000,
+  options: StdinOptions = {},
+): Promise<Result<string, string>> {
+  const wrapper = new StdinIntegrationWrapper();
+  return await wrapper.readStdin({ ...options, timeout });
+}
+
+/**
  * CLI integration helper for breakdown.ts with Totality principle
  */
 export async function handleStdinForCLI(options: {

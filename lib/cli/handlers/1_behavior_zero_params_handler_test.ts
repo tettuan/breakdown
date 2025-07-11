@@ -12,7 +12,7 @@
  * @module cli/handlers/zero_params_handler_behavior_test
  */
 
-import { assertEquals, assertExists } from "../../deps.ts";
+import { assertEquals, assertExists as _assertExists } from "../../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { handleZeroParams } from "./zero_params_handler.ts";
@@ -355,7 +355,7 @@ describe("Behavior: Edge Case Handling", () => {
         usageCalled = false;
 
         // Should not throw error
-        handleZeroParams([], {}, options as any);
+        handleZeroParams([], {}, options as unknown as Record<string, unknown>);
 
         assertEquals(
           usageCalled,
@@ -402,7 +402,9 @@ describe("Behavior: Edge Case Handling", () => {
         assertEquals(
           routingResults[0],
           expectedResults[i],
-          `Should route correctly despite unexpected properties: ${JSON.stringify(unexpectedOptions[i])}`,
+          `Should route correctly despite unexpected properties: ${
+            JSON.stringify(unexpectedOptions[i])
+          }`,
         );
       }
     } finally {
@@ -438,7 +440,7 @@ describe("Behavior: Parameter Compatibility", () => {
         usageCalled = false;
 
         // Args should not affect behavior
-        handleZeroParams(args as any, {}, {});
+        handleZeroParams(args as unknown as string[], {}, {});
 
         assertEquals(
           usageCalled,
@@ -477,7 +479,7 @@ describe("Behavior: Parameter Compatibility", () => {
         usageCalled = false;
 
         // Config should not affect behavior
-        handleZeroParams([], config as any, {});
+        handleZeroParams([], config as unknown as Record<string, unknown>, {});
 
         assertEquals(
           usageCalled,
@@ -504,17 +506,21 @@ describe("Behavior: Consistency and Reliability", () => {
     ];
 
     const originalLog = console.log;
-    
+
     for (const testCase of testCases) {
-      let firstOutput: string[] = [];
-      let secondOutput: string[] = [];
+      const firstOutput: string[] = [];
+      const secondOutput: string[] = [];
 
       // First call
-      console.log = (msg: string) => { firstOutput.push(msg); };
+      console.log = (msg: string) => {
+        firstOutput.push(msg);
+      };
       handleZeroParams([], {}, testCase.options);
 
       // Second call
-      console.log = (msg: string) => { secondOutput.push(msg); };
+      console.log = (msg: string) => {
+        secondOutput.push(msg);
+      };
       handleZeroParams([], {}, testCase.options);
 
       // Should produce identical output
@@ -605,7 +611,7 @@ describe("Behavior: Consistency and Reliability", () => {
 
       for (let i = 0; i < rapidCalls.length; i++) {
         handleZeroParams([], {}, rapidCalls[i].options);
-        
+
         assertEquals(
           callResults[i],
           rapidCalls[i].expected,

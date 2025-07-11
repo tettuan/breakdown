@@ -1,15 +1,18 @@
 # Bug Detection Analysis Template
 
 ## Input
+
 - {input_text_file}
 - {input_text}
 
 ## Output
+
 - {destination_path}
 
 ---
 
 ## Analysis Perspectives
+
 - **Code Quality Issues**: Syntax errors, logic flaws, performance bottlenecks
 - **Security Vulnerabilities**: Input validation, authentication, authorization issues
 - **Error Handling**: Missing try-catch blocks, unhandled exceptions, error propagation
@@ -20,6 +23,7 @@
 - **Configuration Problems**: Environment variables, config file issues, default values
 
 ## Instructions
+
 1. Analyze the input code/text from the above perspectives.
 2. Identify potential bugs, vulnerabilities, and code quality issues.
 3. For each issue found, provide:
@@ -33,6 +37,7 @@
 5. Use structured output format according to the bug analysis schema.
 
 ## Output Format
+
 - Output as structured Markdown following the bug analysis schema
 - Include code snippets where relevant
 - Provide actionable recommendations for each identified issue

@@ -13,7 +13,7 @@
  */
 
 import { WorkspaceErrorHandler } from "./interfaces.ts";
-import { WorkspaceError, isWorkspaceError } from "./errors.ts";
+import { isWorkspaceError } from "./errors.ts";
 
 /**
  * Implementation of the WorkspaceErrorHandler interface for handling and

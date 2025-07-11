@@ -18,6 +18,7 @@ import { InputFilePathResolver } from "../factory/input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "../factory/output_file_path_resolver.ts";
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
+import { extractBaseDir } from "./types.ts";
 
 /**
  * Factory configuration interface
@@ -88,10 +89,10 @@ export class FactoryConfigAdapter {
   /**
    * Create PromptVariablesFactory with unified configuration
    */
-  static async createPromptVariablesFactory(
+  static createPromptVariablesFactory(
     unifiedConfig: UnifiedConfigInterface,
     cliParams: PromptCliParams,
-  ): Promise<Result<PromptVariablesFactory, Error>> {
+  ): Result<PromptVariablesFactory, Error> {
     try {
       const factoryConfig = this.toFactoryConfig(unifiedConfig.getConfig());
       const factoryResult = PromptVariablesFactory.createWithConfig(factoryConfig, cliParams);
@@ -111,7 +112,6 @@ export class FactoryConfigAdapter {
    */
   static createPathResolvers(unifiedConfig: UnifiedConfigInterface) {
     const config = unifiedConfig.getConfig();
-    const pathOptions = unifiedConfig.getPathOptions();
     const factoryConfig = this.toFactoryConfig(config);
 
     // Create dummy CLI params for resolvers that need them
@@ -146,18 +146,21 @@ export class ConfigurationMigrator {
       migrated.paths = {};
     }
 
-    // Type-safe property access for old config
-    const typedOldConfig = oldConfig as any;
-    const typedMigrated = migrated as any;
+    // Use type-safe extraction helpers
+    const appPromptBaseDir = extractBaseDir(oldConfig, "app_prompt");
+    const appSchemaBaseDir = extractBaseDir(oldConfig, "app_schema");
+
+    // Ensure paths is an object
+    const paths = migrated.paths as Record<string, unknown>;
 
     // Migrate app_prompt to paths.promptBaseDir
-    if (typedOldConfig.app_prompt?.base_dir && !typedMigrated.paths.promptBaseDir) {
-      typedMigrated.paths.promptBaseDir = typedOldConfig.app_prompt.base_dir;
+    if (appPromptBaseDir && !paths.promptBaseDir) {
+      paths.promptBaseDir = appPromptBaseDir;
     }
 
     // Migrate app_schema to paths.schemaBaseDir
-    if (typedOldConfig.app_schema?.base_dir && !typedMigrated.paths.schemaBaseDir) {
-      typedMigrated.paths.schemaBaseDir = typedOldConfig.app_schema.base_dir;
+    if (appSchemaBaseDir && !paths.schemaBaseDir) {
+      paths.schemaBaseDir = appSchemaBaseDir;
     }
 
     // Migrate features
@@ -214,9 +217,9 @@ export class UnifiedFactoryBuilder {
   /**
    * Build PromptVariablesFactory
    */
-  async buildPromptVariablesFactory(
+  buildPromptVariablesFactory(
     cliParams: PromptCliParams,
-  ): Promise<Result<PromptVariablesFactory, Error>> {
+  ): Result<PromptVariablesFactory, Error> {
     return FactoryConfigAdapter.createPromptVariablesFactory(
       this.unifiedConfig,
       cliParams,
@@ -274,7 +277,7 @@ export class ConfigCompatibilityLayer {
   ): Promise<Result<UnifiedConfigInterface, Error>> {
     try {
       // First migrate the config
-      const migrated = ConfigurationMigrator.migrateConfig(legacyConfig);
+      const _migrated = ConfigurationMigrator.migrateConfig(legacyConfig);
 
       // Create unified config with migrated data
       const result = await UnifiedConfigInterface.create({

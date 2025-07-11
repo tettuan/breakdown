@@ -19,7 +19,7 @@ import {
   withTemplateErrorHandling,
 } from "./template_error_handler.ts";
 
-Deno.test("Unit: TemplateError creation with all options", async () => {
+Deno.test("Unit: TemplateError creation with all options", () => {
   const cause = new Error("Original file system error");
   const error = new TemplateError(
     "Failed to load template",
@@ -46,7 +46,7 @@ Deno.test("Unit: TemplateError creation with all options", async () => {
   assertEquals(error.cause, cause);
 });
 
-Deno.test("Unit: TemplateErrorHandler detects file not found errors", async () => {
+Deno.test("Unit: TemplateErrorHandler detects file not found errors", () => {
   const testCases = [
     {
       error: new Error("ENOENT: no such file or directory"),
@@ -82,7 +82,7 @@ Deno.test("Unit: TemplateErrorHandler detects file not found errors", async () =
   }
 });
 
-Deno.test("Unit: TemplateErrorHandler detects permission errors", async () => {
+Deno.test("Unit: TemplateErrorHandler detects permission errors", () => {
   const testCases = [
     new Error("EACCES: permission denied"),
     new Error("Permission denied accessing file"),
@@ -109,7 +109,7 @@ Deno.test("Unit: TemplateErrorHandler detects permission errors", async () => {
   }
 });
 
-Deno.test("Unit: TemplateErrorHandler detects invalid template errors", async () => {
+Deno.test("Unit: TemplateErrorHandler detects invalid template errors", () => {
   const testCases = [
     new Error("Invalid template format detected"),
     new Error("Malformed template structure"),
@@ -137,7 +137,7 @@ Deno.test("Unit: TemplateErrorHandler detects invalid template errors", async ()
   }
 });
 
-Deno.test("Unit: TemplateErrorHandler ignores non-template errors", async () => {
+Deno.test("Unit: TemplateErrorHandler ignores non-template errors", () => {
   const nonTemplateErrors = [
     new Error("Network connection failed"),
     new Error("Invalid JSON syntax"),
@@ -151,7 +151,7 @@ Deno.test("Unit: TemplateErrorHandler ignores non-template errors", async () => 
   }
 });
 
-Deno.test("Unit: TemplateError generates detailed messages correctly", async () => {
+Deno.test("Unit: TemplateError generates detailed messages correctly", () => {
   const error = new TemplateError(
     "Template compilation failed",
     TemplateErrorType.TEMPLATE_GENERATION_FAILED,
@@ -190,7 +190,7 @@ Deno.test("Unit: TemplateError generates detailed messages correctly", async () 
   );
 });
 
-Deno.test("Unit: TemplateError generates recovery commands by type", async () => {
+Deno.test("Unit: TemplateError generates recovery commands by type", () => {
   const testCases = [
     {
       errorType: TemplateErrorType.TEMPLATE_NOT_FOUND,
@@ -261,12 +261,12 @@ Deno.test("Unit: TemplateErrorHandler handles auto-resolution attempts", async (
 
 Deno.test("Unit: withTemplateErrorHandling wrapper functionality", async () => {
   // Test successful operation
-  const successfulOperation = async () => "success result";
+  const successfulOperation = () => Promise.resolve("success result");
   const result1 = await withTemplateErrorHandling(successfulOperation);
   assertEquals(result1, "success result", "Should return result for successful operation");
 
   // Test with non-template error
-  const nonTemplateErrorOperation = async () => {
+  const nonTemplateErrorOperation = () => {
     throw new Error("Network error");
   };
 
@@ -278,7 +278,7 @@ Deno.test("Unit: withTemplateErrorHandling wrapper functionality", async () => {
   }
 
   // Test with template error (would attempt auto-resolution)
-  const templateErrorOperation = async () => {
+  const templateErrorOperation = () => {
     throw new Error("ENOENT: no such file or directory");
   };
 
@@ -293,7 +293,7 @@ Deno.test("Unit: withTemplateErrorHandling wrapper functionality", async () => {
   }
 });
 
-Deno.test("Unit: TemplateError handles edge cases", async () => {
+Deno.test("Unit: TemplateError handles edge cases", () => {
   // Empty message
   const error1 = new TemplateError("", TemplateErrorType.TEMPLATE_NOT_FOUND);
   assertEquals(error1.message, "", "Should accept empty message");
@@ -328,7 +328,7 @@ Deno.test("Unit: TemplateError handles edge cases", async () => {
   assertEquals(error4.cause, undefined, "Should handle undefined cause");
 });
 
-Deno.test("Unit: TemplateErrorHandler handles detection edge cases", async () => {
+Deno.test("Unit: TemplateErrorHandler handles detection edge cases", () => {
   // Case-insensitive detection
   const upperCaseError = new Error("PERMISSION DENIED");
   const result1 = TemplateErrorHandler.detectTemplateError(upperCaseError);
@@ -354,7 +354,7 @@ Deno.test("Unit: TemplateErrorHandler handles detection edge cases", async () =>
   assertEquals(result4?.templatePath, undefined, "Should handle missing template path");
 });
 
-Deno.test("Unit: TemplateError message formatting without optional fields", async () => {
+Deno.test("Unit: TemplateError message formatting without optional fields", () => {
   const minimalError = new TemplateError(
     "Basic error",
     TemplateErrorType.TEMPLATE_INVALID,
@@ -368,7 +368,7 @@ Deno.test("Unit: TemplateError message formatting without optional fields", asyn
   assertEquals(message.includes("🔧"), false, "Should not include auto-resolution section");
 });
 
-Deno.test("Unit: Recovery commands for unknown error types", async () => {
+Deno.test("Unit: Recovery commands for unknown error types", () => {
   // Create custom error type (simulating future extension)
   const customError = new TemplateError("Custom", "CUSTOM_ERROR" as TemplateErrorType);
   const commands = customError.getRecoveryCommands();

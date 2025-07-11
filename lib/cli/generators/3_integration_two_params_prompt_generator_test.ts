@@ -214,7 +214,7 @@ Deno.test("Integration: TwoParamsPromptGenerator with PromptVariablesFactory", a
       assertEquals(factoryResult.ok, false, "Factory creation should fail with test environment");
       return;
     }
-    
+
     const factory = factoryResult.data;
     let allParams;
     try {
