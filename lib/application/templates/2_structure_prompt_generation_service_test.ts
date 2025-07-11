@@ -33,7 +33,6 @@ import {
   TemplateVariables,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
-import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Create a mock TypePatternProvider for tests
 const mockTypePatternProvider = {
@@ -154,7 +153,6 @@ Deno.test("PromptGenerationService - Structure - Dependencies structure validati
 
   assertExists(minimalDeps.repository);
   assertExists(minimalDeps.policy);
-  assertEquals(minimalDeps.logger, undefined);
 
   // Full dependencies
   const fullDeps: PromptGenerationDependencies = {
@@ -167,12 +165,10 @@ Deno.test("PromptGenerationService - Structure - Dependencies structure validati
       handleFailure: () => null,
       getConfig: () => mockGenerationPolicyConfig,
     } as unknown as GenerationPolicy,
-    logger: {} as BreakdownLogger,
   };
 
   assertExists(fullDeps.repository);
   assertExists(fullDeps.policy);
-  assertExists(fullDeps.logger);
 });
 
 Deno.test("PromptGenerationService - Structure - CommandResult conversion structure", () => {

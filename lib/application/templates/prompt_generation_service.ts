@@ -22,7 +22,6 @@ import type {
   ResolutionContext,
   SelectionContext,
 } from "../../domain/templates/generation_policy.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { Result } from "../../types/result.ts";
 import {
   PromptGenerationServiceErrorFactory,
@@ -77,20 +76,17 @@ export interface PromptGenerationResponse {
 export interface PromptGenerationDependencies {
   repository: TemplateRepository;
   policy: GenerationPolicy;
-  logger?: BreakdownLogger;
 }
 
 /**
  * Prompt generation application service
  */
 export class PromptGenerationService {
-  private readonly logger: BreakdownLogger;
   private readonly aggregates: Map<string, PromptGenerationAggregate>;
 
   private constructor(
     private readonly deps: PromptGenerationDependencies,
   ) {
-    this.logger = deps.logger || new BreakdownLogger("prompt-generation-service");
     this.aggregates = new Map();
   }
 
@@ -145,11 +141,6 @@ export class PromptGenerationService {
    * Implements Totality principle - all operations return Result types
    */
   async generatePrompt(request: PromptGenerationRequest): Promise<PromptGenerationResponse> {
-    this.logger.debug("Starting prompt generation", {
-      directive: request.directive.getValue(),
-      layer: request.layer.getValue(),
-    });
-
     // 1. Select appropriate template
     const templatePathResult = this.selectTemplateSafe(request);
     if (!templatePathResult.ok) {

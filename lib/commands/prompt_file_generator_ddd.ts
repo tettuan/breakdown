@@ -19,7 +19,6 @@ import {
 import { PromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 import { dirname } from "@std/path";
 import { existsSync } from "@std/fs";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * DDD-based implementation of PromptFileGenerator
@@ -27,11 +26,8 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
  */
 export class PromptFileGeneratorDDD {
   private readonly service: PromptGenerationService;
-  private readonly logger: BreakdownLogger;
 
   constructor() {
-    this.logger = new BreakdownLogger("prompt-file-generator-ddd");
-
     // Initialize infrastructure
     const repository = new FileTemplateRepository({
       baseDirectory: Deno.cwd(),
@@ -71,7 +67,6 @@ export class PromptFileGeneratorDDD {
     const serviceResult = PromptGenerationService.create({
       repository,
       policy: policyResult.data,
-      logger: this.logger,
     });
 
     if (!serviceResult.ok) {
@@ -257,7 +252,7 @@ export class PromptFileGeneratorDDD {
       // Convert to CommandResult
       return this.service.toCommandResult(response);
     } catch (error) {
-      this.logger.error("Unexpected error in generateWithPrompt", { error });
+      // Error logging removed - using standard error handling
       return {
         success: false,
         output: "",

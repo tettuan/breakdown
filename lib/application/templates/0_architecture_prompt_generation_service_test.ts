@@ -22,7 +22,6 @@ import type {
   TemplateRepository,
 } from "../../domain/templates/template_repository.ts";
 import { GenerationPolicy } from "../../domain/templates/generation_policy.ts";
-import type { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TemplatePath } from "../../domain/templates/prompt_generation_aggregate.ts";
 
 // Test fixtures
@@ -65,7 +64,6 @@ Deno.test("PromptGenerationService - Architecture - Smart Constructor pattern en
   const deps: PromptGenerationDependencies = {
     repository: createMockRepository(),
     policy: createMockPolicy(),
-    logger: {} as BreakdownLogger,
   };
 
   const result = PromptGenerationService.create(deps);
@@ -110,12 +108,10 @@ Deno.test("PromptGenerationService - Architecture - Dependency injection validat
   }
 });
 
-Deno.test("PromptGenerationService - Architecture - Optional logger injection", () => {
-  const logger = {} as BreakdownLogger;
+Deno.test("PromptGenerationService - Architecture - Service creation without logger", () => {
   const deps: PromptGenerationDependencies = {
     repository: createMockRepository(),
     policy: createMockPolicy(),
-    logger,
   };
 
   const result = PromptGenerationService.create(deps);
@@ -126,7 +122,6 @@ Deno.test("PromptGenerationService - Architecture - Interface segregation", () =
   const deps: PromptGenerationDependencies = {
     repository: createMockRepository(),
     policy: createMockPolicy(),
-    logger: {} as BreakdownLogger,
   };
 
   const result = PromptGenerationService.create(deps);
@@ -159,7 +154,6 @@ Deno.test("PromptGenerationService - Architecture - Domain boundary respect", ()
   const deps: PromptGenerationDependencies = {
     repository: createMockRepository(),
     policy: createMockPolicy(),
-    logger: {} as BreakdownLogger,
   };
 
   const result = PromptGenerationService.create(deps);
