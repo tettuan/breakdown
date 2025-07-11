@@ -9,7 +9,7 @@
  */
 
 import { parse } from "jsr:@std/yaml@^1.0.6";
-import { getJsrImport } from "./versions.ts";
+// import { getJsrImport } from "./versions.ts"; // No longer needed - using static import
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 
 /**
