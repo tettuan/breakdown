@@ -46,7 +46,7 @@ export class CLIParser {
           config.singleFileMode = false;
           break;
 
-        case "--batch-size":
+        case "--batch-size": {
           if (i + 1 >= args.length) {
             throw new Error("--batch-size requires a value");
           }
@@ -57,6 +57,7 @@ export class CLIParser {
           config.batchSize = batchSize;
           i++; // Skip the next argument
           break;
+        }
 
         case "--legacy":
           config.legacyMode = true;

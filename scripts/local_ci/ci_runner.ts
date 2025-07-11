@@ -6,8 +6,8 @@
 import type {
   BatchResult,
   CIConfig,
-  CIResult,
-  ProcessResult,
+  CIResult as _CIResult,
+  ProcessResult as _ProcessResult,
   TestResult,
   TypeCheckResult,
 } from "./types.ts";

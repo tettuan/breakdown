@@ -12,21 +12,21 @@
 
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { loadBreakdownConfig } from "$lib/config/loader.ts";
-import { BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
+import { BreakdownConfig as _BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.3";
-import { showHelp, showVersion } from "$lib/cli/help.ts";
+import { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
 import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
 import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
-import { formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
+import { formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
 import type {
-  ConfigurationError,
-  ProcessingError,
-  ValidationError,
+  ConfigurationError as _ConfigurationError,
+  ProcessingError as _ProcessingError,
+  ValidationError as _ValidationError,
 } from "$lib/types/unified_error_types.ts";
 
 /**
@@ -50,7 +50,7 @@ type BreakdownError =
  * Legacy main function - kept for backward compatibility
  * @deprecated Use EntryPointManager for enhanced entry point management
  */
-async function main() {
+async function _main() {
   await runBreakdown();
 }
 
@@ -208,13 +208,12 @@ export async function runBreakdown(
           ok: false,
           error: {
             kind: "UnknownResultType",
+            // deno-lint-ignore no-explicit-any
             type: (result as any).type || "unknown",
           },
         };
       }
     }
-    // Success case
-    return { ok: true, data: undefined };
   } catch (error) {
     // Catch any unexpected errors and convert to Result type
     return {

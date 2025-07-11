@@ -167,7 +167,7 @@ export class FileSystem {
     let size = 0;
 
     try {
-      await this.walkDirectory(directory, (filePath) => {
+      await this.walkDirectory(directory, (_filePath) => {
         // This is approximate since we can't await in the callback
         // For accurate size, we'd need to restructure this
         size += 1; // Just count files for now

@@ -372,7 +372,8 @@ async function createMockUnifiedConfig(): Promise<Result<UnifiedConfigInterface,
     get: <T = unknown>(_path: string): T | undefined => undefined,
     has: (_path: string) => false,
     getAvailableProfiles: () => ["default", "test"],
-    switchProfile: (_profileName: string) => Promise.resolve({ ok: true, data: mockInterface as unknown as UnifiedConfigInterface }),
+    switchProfile: (_profileName: string) =>
+      Promise.resolve({ ok: true, data: mockInterface as unknown as UnifiedConfigInterface }),
     validate: () => ({ ok: true, data: undefined }),
     export: () => JSON.stringify(mockConfig, null, 2),
   };
