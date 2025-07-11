@@ -92,18 +92,8 @@ export async function loadBreakdownConfig(
 ): Promise<Result<Record<string, unknown>, ConfigLoadError>> {
   try {
     // Dynamic import using version from central management
-    const importUrlResult = getJsrImport("BREAKDOWN_CONFIG");
-    if (!importUrlResult.ok) {
-      return resultError({
-        kind: "BreakdownConfigError",
-        message: `Failed to get import URL: ${
-          "reason" in importUrlResult.error
-            ? importUrlResult.error.reason
-            : importUrlResult.error.kind
-        }`,
-      });
-    }
-    const { BreakdownConfig } = await import(importUrlResult.data);
+    // Import BreakdownConfig directly to avoid dynamic import analysis issues
+    const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
 
     // Use BreakdownConfig static factory method (convert null to undefined)
     const configResult = await BreakdownConfig.create(
