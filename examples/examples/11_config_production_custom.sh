@@ -425,7 +425,7 @@ echo
 echo "=== Configuration Locations ==="
 echo "The new structure uses:"
 echo "  • System config: .agent/breakdown/config/app.yml"
-echo "  • User config: .agent/breakdown/config/user.yml"
+echo "  • User config: .agent/breakdown/config/default-user.yml"
 echo "  • Production config: .agent/breakdown/config/production-user.yml"
 echo
 
@@ -442,6 +442,42 @@ echo
 
 echo
 echo "=== Example Complete ==="
+
+# Validate created artifacts
+echo
+echo "Validation Results:"
+
+# Check if configuration was created
+if [ -f "$CONFIG_FILE" ]; then
+    echo "✅ Production configuration created at: $CONFIG_FILE"
+    echo "   File size: $(wc -c < "$CONFIG_FILE" | tr -d ' ') bytes"
+else
+    echo "❌ Production configuration not created"
+fi
+
+# Check if test project was created
+if [ -d "$TEST_DIR" ] && [ "$(find "$TEST_DIR" -type f | wc -l)" -gt 0 ]; then
+    file_count=$(find "$TEST_DIR" -type f | wc -l | tr -d ' ')
+    echo "✅ Test project created with $file_count files"
+else
+    echo "❌ Test project not created or empty"
+fi
+
+# Check if output directory and test script exist
+if [ -f "$OUTPUT_DIR/test_breakdown.ts" ]; then
+    echo "✅ JSR test script created"
+else
+    echo "❌ JSR test script not created"
+fi
+
+# Check if prompts directory was created
+if [ -d "prompts/find/bugs" ]; then
+    echo "✅ Local prompts directory created"
+else
+    echo "❌ Local prompts directory not created"
+fi
+
+echo
 echo "This example demonstrated:"
 echo "  • Moving config files to new .agent/breakdown/config/ structure"
 echo "  • Using JSR package instead of binary"
@@ -449,8 +485,15 @@ echo "  • Current status of 'find bugs' functionality"
 echo "  • How to enable the feature when ready"
 echo
 echo "For more information, see:"
-echo "  • .agent/breakdown/config/ - Configuration directory"
-echo "  • lib/breakdown/prompts/find/bugs/ - Find bugs prompts"
-echo "  • lib/breakdown/schema/find/bugs/ - Find bugs schema"
+echo "  • $CONFIG_DIR - Configuration directory"
+echo "  • ../lib/breakdown/prompts/find/bugs/ - Find bugs prompts"
+echo "  • ../lib/breakdown/schema/find/bugs/ - Find bugs schema"
 
-echo -e "\nExample completed successfully!"
+# Final status
+if [ -f "$CONFIG_FILE" ] && [ -d "$TEST_DIR" ] && [ -f "$OUTPUT_DIR/test_breakdown.ts" ]; then
+    echo
+    echo "✅ Example completed successfully!"
+else
+    echo
+    echo "⚠️  Example completed with warnings - check validation results above"
+fi

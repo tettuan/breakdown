@@ -96,7 +96,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ./examples/03_create_user_config.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
-- `./.agent/breakdown/config/user.yml` の作成
+- `./.agent/breakdown/config/default-user.yml` の作成
 - working_dirの設定（`./.agent/breakdown/examples`）
 - 基本設定の構成
 

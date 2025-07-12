@@ -2,10 +2,10 @@ export const _defaultConfigTwoParams = Object.freeze({
   params: Object.freeze({
     two: Object.freeze({
       directiveType: Object.freeze({
-        pattern: "^(to|summary|defect)$",
+        pattern: "^(to|summary|defect|find)$",
       }),
       layerType: Object.freeze({
-        pattern: "^(project|issue|task)$",
+        pattern: "^(project|issue|task|bugs)$",
       }),
       validation: Object.freeze({
         allowedFlagOptions: Object.freeze([]),

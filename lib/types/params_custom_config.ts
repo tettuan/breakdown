@@ -174,10 +174,12 @@ export class ParamsCustomConfig {
         // Override demonstrativeType if provided
         if (two.demonstrativeType && typeof two.demonstrativeType === "object") {
           const demo = two.demonstrativeType as Record<string, unknown>;
-          if (typeof demo.pattern === "string" && typeof demo.errorMessage === "string") {
+          if (typeof demo.pattern === "string") {
             paramsOverride.demonstrativeType = {
               pattern: demo.pattern,
-              errorMessage: demo.errorMessage,
+              errorMessage: typeof demo.errorMessage === "string" 
+                ? demo.errorMessage 
+                : `Invalid demonstrative type. Must match pattern: ${demo.pattern}`,
             };
           }
         }
@@ -185,10 +187,12 @@ export class ParamsCustomConfig {
         // Override layerType if provided
         if (two.layerType && typeof two.layerType === "object") {
           const layer = two.layerType as Record<string, unknown>;
-          if (typeof layer.pattern === "string" && typeof layer.errorMessage === "string") {
+          if (typeof layer.pattern === "string") {
             paramsOverride.layerType = {
               pattern: layer.pattern,
-              errorMessage: layer.errorMessage,
+              errorMessage: typeof layer.errorMessage === "string" 
+                ? layer.errorMessage 
+                : `Invalid layer type. Must match pattern: ${layer.pattern}`,
             };
           }
         }

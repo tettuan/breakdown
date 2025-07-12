@@ -85,3 +85,7 @@ tmp/*
 
 # Deno compiled binaries
 debug*.ts
+
+# agent files
+.agent/
+.agent/*

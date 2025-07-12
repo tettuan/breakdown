@@ -13,7 +13,7 @@
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { loadBreakdownConfig } from "$lib/config/loader.ts";
 import { BreakdownConfig as _BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
-import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.3";
+import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.7";
 import { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
 import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
@@ -149,7 +149,9 @@ export async function runBreakdown(
     }
 
     // 3. Pass BreakdownConfig settings to BreakdownParams using ParamsCustomConfig
-    const configResult = ParamsCustomConfig.create(config);
+    // Fix the config structure - wrap in 'breakdown' key as expected by ParamsCustomConfig
+    const wrappedConfig = { breakdown: config };
+    const configResult = ParamsCustomConfig.create(wrappedConfig);
 
     let customConfig;
     if (configResult.status === ResultStatus.SUCCESS) {
@@ -161,9 +163,7 @@ export async function runBreakdown(
 
     const paramsParser = new ParamsParser(undefined, customConfig);
 
-    //     console.log("🔍 DEBUG: Calling parse() with args:", args);
     const result = paramsParser.parse(args);
-    //     console.log("🔍 DEBUG: ParamsParser result:", JSON.stringify(result, null, 2));
 
     // 4. Determine zero/one/two params and branch
     switch (result.type) {
