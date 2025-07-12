@@ -7,7 +7,7 @@
  * @module types/layer_type_factory
  */
 
-import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
@@ -110,11 +110,22 @@ export class LayerTypeFactory {
         options: {},
       };
 
-      const layerType = LayerType.create(twoParamsResult);
-      return {
-        ok: true,
-        data: layerType,
-      };
+      const layerTypeResult = LayerType.create(twoParamsResult);
+      if (layerTypeResult.ok) {
+        return {
+          ok: true,
+          data: layerTypeResult.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            kind: "ValidationFailed" as const,
+            input: normalized,
+            pattern: layerTypeResult.error.message,
+          },
+        };
+      }
     }
 
     // Unknown layer - provide suggestions
@@ -136,11 +147,22 @@ export class LayerTypeFactory {
    */
   static fromTwoParamsResult(result: TwoParams_Result): LayerTypeResult<LayerType> {
     try {
-      const layerType = LayerType.create(result);
-      return {
-        ok: true,
-        data: layerType,
-      };
+      const layerTypeResult = LayerType.create(result);
+      if (layerTypeResult.ok) {
+        return {
+          ok: true,
+          data: layerTypeResult.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            kind: "ValidationFailed" as const,
+            input: result.layerType,
+            pattern: layerTypeResult.error.message,
+          },
+        };
+      }
     } catch (error) {
       return {
         ok: false,

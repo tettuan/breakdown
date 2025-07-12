@@ -199,4 +199,121 @@ describe("ConfigProfileName - Unit Tests", () => {
       }
     });
   });
+
+  describe("Domain methods - isDefault and prefix", () => {
+    it("should correctly identify default profile", () => {
+      const defaultProfile = ConfigProfileName.create("default");
+      assertEquals(defaultProfile.ok, true);
+      if (defaultProfile.ok) {
+        assertEquals(defaultProfile.data.isDefault, true);
+        assertEquals(defaultProfile.data.prefix, null);
+      }
+
+      const customProfile = ConfigProfileName.create("staging");
+      assertEquals(customProfile.ok, true);
+      if (customProfile.ok) {
+        assertEquals(customProfile.data.isDefault, false);
+        assertEquals(customProfile.data.prefix, "staging");
+      }
+    });
+  });
+
+  describe("createDefault static method", () => {
+    it("should create default profile correctly", () => {
+      const defaultProfile = ConfigProfileName.createDefault();
+      assertEquals(defaultProfile.value, "default");
+      assertEquals(defaultProfile.isDefault, true);
+      assertEquals(defaultProfile.prefix, null);
+    });
+  });
+
+  describe("fromCliOption static method", () => {
+    it("should create profile from CLI option", () => {
+      // Valid CLI option
+      const staging = ConfigProfileName.fromCliOption("staging");
+      assertEquals(staging.value, "staging");
+      assertEquals(staging.isDefault, false);
+
+      // Null/undefined should return default
+      const fromNull = ConfigProfileName.fromCliOption(null);
+      assertEquals(fromNull.value, "default");
+      assertEquals(fromNull.isDefault, true);
+
+      const fromUndefined = ConfigProfileName.fromCliOption(undefined);
+      assertEquals(fromUndefined.value, "default");
+      assertEquals(fromUndefined.isDefault, true);
+
+      // Empty string should return default
+      const fromEmpty = ConfigProfileName.fromCliOption("");
+      assertEquals(fromEmpty.value, "default");
+      assertEquals(fromEmpty.isDefault, true);
+
+      // Whitespace should return default
+      const fromWhitespace = ConfigProfileName.fromCliOption("   ");
+      assertEquals(fromWhitespace.value, "default");
+      assertEquals(fromWhitespace.isDefault, true);
+    });
+
+    it("should fallback to default for invalid CLI options", () => {
+      // Invalid format should fallback to default (with warning)
+      const invalid = ConfigProfileName.fromCliOption("INVALID");
+      assertEquals(invalid.value, "default");
+      assertEquals(invalid.isDefault, true);
+    });
+  });
+
+  describe("getConfigPath method", () => {
+    it("should return correct config path", () => {
+      const defaultProfile = ConfigProfileName.createDefault();
+      assertEquals(defaultProfile.getConfigPath(), "default");
+
+      const staging = ConfigProfileName.fromCliOption("staging");
+      assertEquals(staging.getConfigPath(), "staging");
+    });
+  });
+
+  describe("getDirectiveTypes and getLayerTypes methods", () => {
+    it("should return directive and layer types arrays", () => {
+      const profile = ConfigProfileName.createDefault();
+
+      const directives = profile.getDirectiveTypes();
+      assertEquals(Array.isArray(directives), true);
+      assertEquals(directives.includes("to"), true);
+      assertEquals(directives.includes("summary"), true);
+      assertEquals(directives.includes("defect"), true);
+
+      const layers = profile.getLayerTypes();
+      assertEquals(Array.isArray(layers), true);
+      assertEquals(layers.includes("project"), true);
+      assertEquals(layers.includes("issue"), true);
+      assertEquals(layers.includes("task"), true);
+    });
+  });
+
+  describe("equals method", () => {
+    it("should correctly compare ConfigProfileName instances", () => {
+      const profile1 = ConfigProfileName.create("staging");
+      const profile2 = ConfigProfileName.create("staging");
+      const profile3 = ConfigProfileName.create("production");
+
+      assertEquals(profile1.ok, true);
+      assertEquals(profile2.ok, true);
+      assertEquals(profile3.ok, true);
+
+      if (profile1.ok && profile2.ok && profile3.ok) {
+        assertEquals(profile1.data.equals(profile2.data), true);
+        assertEquals(profile1.data.equals(profile3.data), false);
+      }
+    });
+  });
+
+  describe("toString method", () => {
+    it("should return string representation", () => {
+      const profile = ConfigProfileName.create("staging");
+      assertEquals(profile.ok, true);
+      if (profile.ok) {
+        assertEquals(profile.data.toString(), "staging");
+      }
+    });
+  });
 });

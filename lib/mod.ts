@@ -27,12 +27,13 @@
 export { initWorkspace } from "./workspace/workspace.ts";
 
 /**
- * Types representing the available demonstrative and layer types for Breakdown.
+ * Types representing the available directive and layer types for Breakdown.
  * These types define the core structure and functionality of the Breakdown tool.
  *
  * @see {@link ./types/mod.ts}
  */
-export type { DemonstrativeType } from "./types/mod.ts";
+// NOTE: DemonstrativeType replaced with DirectiveType during refactor
+// export type { DemonstrativeType } from "./types/mod.ts";
 
 // Export core types and utilities
 export {
@@ -45,8 +46,8 @@ export {
   type TypePatternProvider,
 } from "./types/mod.ts";
 
-// Export Result types
-export { error, ok, type Result } from "./types/result.ts";
+// Export Result types (Result type already exported via types/mod.ts)
+export { error, ok } from "./types/result.ts";
 
 // Export unified error types following Totality principle
 export type { ProcessingError, UnifiedError } from "./types/unified_error_types.ts";

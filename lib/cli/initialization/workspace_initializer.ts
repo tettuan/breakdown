@@ -8,6 +8,8 @@
  */
 
 import { ensureDir } from "@std/fs";
+import { BreakdownConfig } from "../../deps.ts";
+import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pattern_provider.ts";
 
 /**
  * Initialize breakdown configuration and directory structure
@@ -21,15 +23,19 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   const baseDir = `${_cwd}/.agent/breakdown`;
 
   // Create directory structure
-  // TODO: Layer-specific directories should be derived from BreakdownParams
-  // e.g., const layerTypes = BreakdownParams.getDefaultLayerTypes();
-  //       const directories = ["config", ...layerTypes.map(t => t + "s"), "temp", "prompts", "schema"];
-  // This would dynamically create "projects", "issues", "tasks" based on defaults
+  // Get default configuration from DefaultTypePatternProvider
+  const patternProvider = new DefaultTypePatternProvider();
+  const defaultConfig = patternProvider.getDefaultConfig();
+  
+  // Extract layer types from default configuration
+  const layerTypes = defaultConfig.params?.two?.layerType?.pattern
+    ?.match(/\^?\((.*?)\)\$?/)?.[1]
+    ?.split("|") || ["project", "issue", "task"];
+  
+  // Create directories dynamically based on layer types
   const directories = [
     "config",
-    "projects",
-    "issues",
-    "tasks",
+    ...layerTypes.map(type => `${type}s`), // pluralize layer types
     "temp",
     "prompts",
     "schema",
@@ -41,12 +47,13 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
     console.log(`✅ Created directory: ${dirPath}`);
   }
 
-  // Create basic default-app.yml config file
-  // TODO: Default patterns should be obtained from BreakdownParams
-  // BreakdownParams should provide methods like:
-  //   - getDefaultDemonstrativeTypes() => ["to", "summary", "defect"]
-  //   - getDefaultLayerTypes() => ["project", "issue", "task"]
-  // This ensures consistency across the ecosystem
+  // Create basic default-app.yml config file using dynamic values from BreakdownParams
+  // Extract demonstrative types from default configuration
+  const demonstrativeTypes = defaultConfig.params?.two?.directiveType?.pattern
+    ?.match(/\^?\((.*?)\)\$?/)?.[1]
+    ?.split("|") || ["to", "summary", "defect"];
+  
+  // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
 working_dir: ".agent/breakdown"
 app_prompt:
@@ -56,17 +63,18 @@ app_schema:
 params:
   two:
     demonstrativeType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(${demonstrativeTypes.join("|")})$"
     layerType:
-      pattern: "^(project|issue|task)$"
+      pattern: "^(${layerTypes.join("|")})$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
 `;
 
-  // TODO: BreakdownConfig should provide a write method for config files
-  // This direct file writing should be delegated to BreakdownConfig
+  // Use BreakdownConfig for configuration management
   const configPath = `${baseDir}/config/default-app.yml`;
+  
+  // Write configuration file
   await Deno.writeTextFile(configPath, configContent);
   console.log(`✅ Created config file: ${configPath}`);
 

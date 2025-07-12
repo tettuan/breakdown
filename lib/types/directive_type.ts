@@ -17,6 +17,7 @@ import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
 import type { ValidationError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
+import { ConfigProfileName } from "./config_profile_name.ts";
 
 /**
  * TwoParamsDirectivePattern - DirectiveType用のバリデーションパターン
@@ -31,19 +32,12 @@ export class TwoParamsDirectivePattern {
    * 文字列パターンから TwoParamsDirectivePattern を作成
    * @param pattern 正規表現文字列
    * @returns 成功時は TwoParamsDirectivePattern、失敗時は null
+   * @deprecated Use createOrError() for Totality-compliant error handling
    */
   static create(pattern: string): TwoParamsDirectivePattern | null {
-    // Validate input type first
-    if (typeof pattern !== "string" || pattern == null) {
-      return null;
-    }
-
-    try {
-      const regex = new RegExp(pattern);
-      return new TwoParamsDirectivePattern(regex);
-    } catch {
-      return null;
-    }
+    // Totality原則準拠版のcreateOrErrorを使用し、nullで結果を返すレガシーメソッド
+    const result = TwoParamsDirectivePattern.createOrError(pattern);
+    return result.ok ? result.data : null;
   }
 
   /**
@@ -158,7 +152,11 @@ export class DirectiveType {
    * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制。
    * これにより型の整合性と将来の拡張性を保証する。
    */
-  private constructor(private readonly result: TwoParams_Result) {}
+  private constructor(
+    private readonly result: TwoParams_Result,
+    private readonly _profile: ConfigProfileName,
+    private readonly _validatedByPattern: boolean = true,
+  ) {}
 
   /**
    * TwoParams_Result から DirectiveType を構築
@@ -168,19 +166,23 @@ export class DirectiveType {
    * 常に成功し、例外も発生しない（Total Function）。
    *
    * @param result BreakdownParamsで検証済みのTwoParams_Result
+   * @param profile 設定プロファイル名（デフォルトを使用する場合はoptional）
    * @returns DirectiveType インスタンス（常に成功）
    *
    * @example
    * ```typescript
    * const result = await breakdownParams.parse(args);
    * if (_result.type === "two") {
-   *   const directive = DirectiveType.create(result);
+   *   const directive = DirectiveType.create(result, configProfile);
    *   // 型安全に使用可能
    * }
    * ```
    */
-  static create(result: TwoParams_Result): DirectiveType {
-    return new DirectiveType(result);
+  static create(result: TwoParams_Result, profile?: ConfigProfileName): DirectiveType {
+    // ConfigProfileNameが未指定の場合は、デフォルトプロファイルを作成
+    // Totality原則に準拠し、型アサーションを回避
+    const defaultProfile = profile || ConfigProfileName.createDefault();
+    return new DirectiveType(result, defaultProfile, true);
   }
 
   /**
@@ -212,6 +214,7 @@ export class DirectiveType {
   static createOrError(
     result: TwoParams_Result,
     pattern?: TwoParamsDirectivePattern,
+    profile?: ConfigProfileName,
   ): Result<DirectiveType, ValidationError> {
     // 基本的なバリデーション
     if (!result || result.type !== "two") {
@@ -239,7 +242,9 @@ export class DirectiveType {
     }
 
     // すべてのバリデーションに成功
-    return ok(new DirectiveType(result));
+    // Totality原則に準拠し、型アサーションを回避してデフォルトプロファイルを作成
+    const defaultProfile = profile || ConfigProfileName.createDefault();
+    return ok(new DirectiveType(result, defaultProfile, pattern ? true : false));
   }
 
   /**
@@ -256,6 +261,28 @@ export class DirectiveType {
   }
 
   /**
+   * 設定プロファイル名を取得
+   *
+   * DirectiveTypeに関連付けられた設定プロファイル名を返す。
+   *
+   * @returns ConfigProfileName インスタンス
+   */
+  get profile(): ConfigProfileName {
+    return this._profile;
+  }
+
+  /**
+   * パターンバリデーションが実行されたかどうか
+   *
+   * DirectiveTypeがパターンベースバリデーションで検証されたかを示す。
+   *
+   * @returns バリデーション実行済みの場合 true
+   */
+  get validatedByPattern(): boolean {
+    return this._validatedByPattern;
+  }
+
+  /**
    * getValue method for compatibility with test files
    * @deprecated Use .value property instead
    */
@@ -268,6 +295,190 @@ export class DirectiveType {
    */
   equals(other: DirectiveType): boolean {
     return this.value === other.value;
+  }
+
+  /**
+   * プロファイルのバリデーション
+   *
+   * 指定されたプロファイルでDirectiveTypeが有効かどうかを判定。
+   *
+   * @param profile 検証対象のConfigProfileName
+   * @returns 有効な場合 true
+   */
+  isValidForProfile(profile: ConfigProfileName): boolean {
+    // TODO: 実際の実装では設定ファイルから検証
+    // 現在はプレースホルダー実装
+    return this._profile?.equals(profile) ?? true;
+  }
+
+  /**
+   * プロンプトディレクトリパスを取得
+   *
+   * DirectiveTypeとLayerTypeからプロンプトファイルのディレクトリパスを生成。
+   *
+   * @param baseDir ベースディレクトリ
+   * @param layer LayerType インスタンス
+   * @returns ディレクトリパス
+   */
+  getPromptDirectory(baseDir: string, layer: { value: string }): string {
+    return `${baseDir}/${this.value}/${layer.value}`;
+  }
+
+  /**
+   * スキーマディレクトリパスを取得
+   *
+   * DirectiveTypeとLayerTypeからスキーマファイルのディレクトリパスを生成。
+   *
+   * @param baseDir ベースディレクトリ
+   * @param layer LayerType インスタンス
+   * @returns ディレクトリパス
+   */
+  getSchemaDirectory(baseDir: string, layer: { value: string }): string {
+    return `${baseDir}/${this.value}/${layer.value}`;
+  }
+
+  /**
+   * リソースパス用の有効性チェック
+   *
+   * DirectiveTypeがファイルシステムリソースのパス解決に使用可能かを判定。
+   *
+   * @returns パス解決に使用可能な場合 true
+   */
+  isValidForResourcePath(): boolean {
+    // ファイルシステムで使用不可能な文字をチェック
+    // deno-lint-ignore no-control-regex
+    const invalidChars = /[<>:"|?*\x00-\x1f]/;
+    return !invalidChars.test(this.value) && this.value.length > 0;
+  }
+
+  // パス解決メソッド群（設計仕様に基づく実装）
+
+  /**
+   * プロンプトテンプレートファイルのパスを取得
+   *
+   * DirectiveTypeとLayerTypeの組み合わせから、適切なプロンプトテンプレートファイルのパスを生成します。
+   * パターン: {baseDir}/{directiveType}/{layerType}/f_{fromLayerType}[_{adaptation}].md
+   *
+   * @param layer LayerType インスタンス
+   * @param baseDir ベースディレクトリ（デフォルト: "prompts"）
+   * @param fromLayerType 変換元の階層タイプ（デフォルト: layerTypeと同じ）
+   * @param adaptation 適応タイプ（オプション）
+   * @returns プロンプトテンプレートファイルのパス
+   *
+   * @example
+   * ```typescript
+   * const directive = DirectiveType.create(result);
+   * const layer = LayerType.create(result);
+   *
+   * // 基本的な使用例
+   * const path = directive.getPromptPath(layer);
+   * // 結果: "prompts/to/project/f_project.md"
+   *
+   * // 適応タイプ付きの使用例
+   * const adaptedPath = directive.getPromptPath(layer, "prompts", "issue", "analysis");
+   * // 結果: "prompts/to/project/f_issue_analysis.md"
+   * ```
+   */
+  getPromptPath(
+    layer: { value: string },
+    baseDir = "prompts",
+    fromLayerType?: string,
+    adaptation?: string,
+  ): string {
+    const actualFromLayerType = fromLayerType || layer.value;
+    const fileName = adaptation
+      ? `f_${actualFromLayerType}_${adaptation}.md`
+      : `f_${actualFromLayerType}.md`;
+
+    return `${baseDir}/${this.value}/${layer.value}/${fileName}`;
+  }
+
+  /**
+   * スキーマファイルのパスを取得
+   *
+   * DirectiveTypeとLayerTypeの組み合わせから、JSONスキーマファイルのパスを生成します。
+   * パターン: {baseDir}/{directiveType}/{layerType}/base.schema.md
+   *
+   * @param layer LayerType インスタンス
+   * @param baseDir ベースディレクトリ（デフォルト: "schema"）
+   * @returns スキーマファイルのパス
+   *
+   * @example
+   * ```typescript
+   * const directive = DirectiveType.create(result);
+   * const layer = LayerType.create(result);
+   *
+   * const schemaPath = directive.getSchemaPath(layer);
+   * // 結果: "schema/to/project/base.schema.md"
+   * ```
+   */
+  getSchemaPath(
+    layer: { value: string },
+    baseDir = "schema",
+  ): string {
+    return `${baseDir}/${this.value}/${layer.value}/base.schema.md`;
+  }
+
+  /**
+   * 出力ファイルのパスを解決
+   *
+   * 入力ファイルパスまたは自動生成ルールに基づいて、出力ファイルのパスを生成します。
+   * 自動生成パターン: {YYYYMMDD}_{timestampHash}{randomHash}.md
+   *
+   * @param input 入力ファイルパスまたは自動生成のための基準文字列
+   * @param layer LayerType インスタンス（オプション、自動生成時のディレクトリ分けに使用）
+   * @param baseDir 出力ベースディレクトリ（デフォルト: "output"）
+   * @returns 出力ファイルのパス
+   *
+   * @example
+   * ```typescript
+   * const directive = DirectiveType.create(result);
+   * const layer = LayerType.create(result);
+   *
+   * // 自動生成
+   * const autoPath = directive.resolveOutputPath("", layer);
+   * // 結果: "output/to/project/20250712_1a2b3c4d.md"
+   *
+   * // 指定ファイル名ベース
+   * const namedPath = directive.resolveOutputPath("my-analysis.md", layer);
+   * // 結果: "output/to/project/my-analysis.md"
+   * ```
+   */
+  resolveOutputPath(
+    input: string,
+    layer?: { value: string },
+    baseDir = "output",
+  ): string {
+    // 層別ディレクトリ構造
+    const layerDir = layer ? `/${this.value}/${layer.value}` : `/${this.value}`;
+
+    // 入力が空または自動生成を指示する場合
+    if (!input || input.trim() === "" || input === "-") {
+      // 自動ファイル名生成（lib/factory/output_file_path_resolver.tsのロジックを参考）
+      const now = new Date();
+      const dateStr = now.getFullYear().toString() +
+        (now.getMonth() + 1).toString().padStart(2, "0") +
+        now.getDate().toString().padStart(2, "0");
+
+      // タイムスタンプハッシュ（ミリ秒からの変換）
+      const timestampHash = Math.floor(performance.now() * 1000).toString(16).slice(-4);
+
+      // ランダムハッシュ
+      const randomHash = Math.random().toString(16).slice(2, 5);
+
+      const fileName = `${dateStr}_${timestampHash}${randomHash}.md`;
+      return `${baseDir}${layerDir}/${fileName}`;
+    }
+
+    // 入力ファイル名がある場合はそのまま使用
+    // パスの正規化とバリデーション
+    // deno-lint-ignore no-control-regex
+    const sanitizedInput = input.replace(/[<>:"|?*\x00-\x1f]/g, "_");
+
+    // 拡張子の確認と付与
+    const fileName = sanitizedInput.endsWith(".md") ? sanitizedInput : `${sanitizedInput}.md`;
+
+    return `${baseDir}${layerDir}/${fileName}`;
   }
 
   /**

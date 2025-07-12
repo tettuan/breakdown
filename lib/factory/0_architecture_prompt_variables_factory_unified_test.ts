@@ -17,7 +17,7 @@ import {
   UnifiedPromptVariablesFactory,
 } from "./prompt_variables_factory_unified.ts";
 import { DirectiveType } from "../types/directive_type.ts";
-import { LayerType } from "../types/layer_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const logger = new BreakdownLogger("factory-unified-behavior-test");

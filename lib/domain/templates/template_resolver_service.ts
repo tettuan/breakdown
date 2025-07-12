@@ -20,6 +20,7 @@ import {
   TemplateVersion,
 } from "./template_value_objects.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
  * Resolution request
@@ -190,10 +191,10 @@ export class ExactPathStrategy implements ResolutionStrategy {
  * Standard naming convention strategy
  */
 export class StandardNamingStrategy implements ResolutionStrategy {
-  private readonly defaultPrefix: string;
+  private readonly config?: BreakdownConfig;
 
-  constructor(defaultPrefix = "f_") {
-    this.defaultPrefix = defaultPrefix;
+  constructor(config?: BreakdownConfig) {
+    this.config = config;
   }
 
   getPriority(): number {
@@ -213,7 +214,8 @@ export class StandardNamingStrategy implements ResolutionStrategy {
 
     try {
       // Build standard filename
-      const filename = `${this.defaultPrefix}${request.layer.getValue()}.md`;
+      const defaultPrefix = this.getDefaultPrefix();
+      const filename = `${defaultPrefix}${request.layer.getValue()}.md`;
       const templatePathResult = TemplatePath.create(request.directive, request.layer, filename);
       if (!templatePathResult.ok) {
         return error({
@@ -310,31 +312,56 @@ export class StandardNamingStrategy implements ResolutionStrategy {
       });
     }
   }
+
+  /**
+   * BreakdownConfigからデフォルトプレフィクスを取得（StandardNamingStrategy用）
+   */
+  private getDefaultPrefix(): string {
+    // デフォルト値を直接返す（設定との統合は後で改善）
+    return "f_";
+  }
 }
 
 /**
  * Fallback resolution strategy
  */
 export class FallbackStrategy implements ResolutionStrategy {
-  private readonly fallbackMappings: Map<string, string>;
+  private readonly config?: BreakdownConfig;
 
-  constructor(fallbackMappings?: Map<string, string>) {
-    this.fallbackMappings = fallbackMappings || this.createDefaultMappings();
+  constructor(config?: BreakdownConfig) {
+    this.config = config;
   }
 
-  private createDefaultMappings(): Map<string, string> {
-    return new Map([
-      ["defect/project", "f_project.md"],
-      ["defect/issue", "f_issue.md"],
-      ["defect/task", "f_task.md"],
-      ["summary/project", "f_project.md"],
-      ["summary/issue", "f_issue.md"],
-      ["summary/task", "f_task.md"],
-      ["to/project", "f_project.md"],
-      ["to/issue", "f_issue.md"],
-      ["to/task", "f_task.md"],
-      ["find/bugs", "f_bugs.md"],
-    ]);
+  /**
+   * BreakdownConfigからフォールバックマッピングを動的生成
+   */
+  private createFallbackMappings(): Map<string, string> {
+    // デフォルト値を使用（設定との統合は後で改善）
+    const directiveTypes = ["to", "find", "summary", "defect"];
+    const layerTypes = ["project", "issue", "task", "bugs"];
+    const defaultPrefix = this.getDefaultPrefix();
+
+    const mappings = new Map<string, string>();
+    
+    for (const directive of directiveTypes) {
+      for (const layer of layerTypes) {
+        if (directive === "find" && layer === "bugs") {
+          mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
+        } else if (directive !== "find") {
+          mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
+        }
+      }
+    }
+
+    return mappings;
+  }
+
+  /**
+   * BreakdownConfigからデフォルトプレフィクスを取得（FallbackStrategy用）
+   */
+  private getDefaultPrefix(): string {
+    // デフォルト値を直接返す（設定との統合は後で改善）
+    return "f_";
   }
 
   getPriority(): number {
@@ -351,7 +378,8 @@ export class FallbackStrategy implements ResolutionStrategy {
     schemaRepo: SchemaRepository,
   ): Promise<TemplateResolutionResult> {
     const key = `${request.directive.getValue()}/${request.layer.getValue()}`;
-    const fallbackFilename = this.fallbackMappings.get(key);
+    const fallbackMappings = this.createFallbackMappings();
+    const fallbackFilename = fallbackMappings.get(key);
 
     if (!fallbackFilename) {
       return error({
@@ -438,6 +466,7 @@ export class TemplateResolverService {
   constructor(
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
+    private readonly config?: BreakdownConfig,
     strategies?: ResolutionStrategy[],
   ) {
     this.logger = new BreakdownLogger("template-resolver-service");
@@ -450,8 +479,8 @@ export class TemplateResolverService {
   private createDefaultStrategies(): ResolutionStrategy[] {
     return [
       new ExactPathStrategy(),
-      new StandardNamingStrategy(),
-      new FallbackStrategy(),
+      new StandardNamingStrategy(this.config),
+      new FallbackStrategy(this.config),
     ];
   }
 
@@ -527,7 +556,8 @@ export class TemplateResolverService {
         if (!templatePathResult.ok) return false;
         return await this.templateRepo.exists(templatePathResult.data);
       } else {
-        const filename = `f_${layer.getValue()}.md`;
+        const defaultPrefix = this.getDefaultPrefix();
+        const filename = `${defaultPrefix}${layer.getValue()}.md`;
         const templatePathResult = TemplatePath.create(directive, layer, filename);
         if (!templatePathResult.ok) return false;
         return await this.templateRepo.exists(templatePathResult.data);
@@ -573,5 +603,13 @@ export class TemplateResolverService {
     if (index >= 0) {
       this.strategies.splice(index, 1);
     }
+  }
+
+  /**
+   * BreakdownConfigからデフォルトプレフィクスを取得（TemplateResolverService用）
+   */
+  private getDefaultPrefix(): string {
+    // デフォルト値を直接返す（設定との統合は後で改善）
+    return "f_";
   }
 }

@@ -1,0 +1,32 @@
+# Development user configuration for integration tests
+directive_patterns: "to|summary|defect|find|analyze|extract|debug|trace"
+layer_patterns: "project|issue|task|component|module|function|test"
+
+custom_variables:
+  author: "Development Team"
+  version: "dev-${timestamp}"
+  organization: "Breakdown Development"
+  environment: "development"
+  
+aliases:
+  proj: "project"
+  iss: "issue"
+  t: "task"
+  comp: "component"
+  mod: "module"
+  fn: "function"
+  dbg: "debug"
+  
+templates:
+  dev_prompt: "DEV MODE: Process the following content:\n\n${input}\n\nOutput to: ${output}\n\nDebug info: ${debug_info}"
+  error_template: "DEV ERROR: ${error}\nStack: ${stack}\nSuggestion: ${suggestion}"
+  debug_template: "DEBUG: ${message}\nContext: ${context}"
+  
+user:
+  name: "Dev User"
+  email: "dev@example.com"
+  preferences:
+    verboseOutput: true
+    confirmActions: false
+    enableDebugOutput: true
+    preserveLogs: true

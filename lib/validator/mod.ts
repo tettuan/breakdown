@@ -7,13 +7,20 @@
  * @module validator
  */
 
+// DDD版Validatorをプライマリエクスポートとして使用
 export {
   type ConfigValidator,
-  ParameterValidator,
+  ParameterValidatorV2 as ParameterValidator,
   type ValidatedOptions,
   type ValidatedParams,
   type ValidationMetadata,
+  type ValidationError,
+} from "./parameter_validator_v2.ts";
+
+// レガシー版は明示的な名前でエクスポート
+export {
+  ParameterValidator as LegacyParameterValidator,
 } from "./parameter_validator.ts";
 
-// ValidationError is now re-exported from unified_error_types
-export type { ValidationError } from "../types/unified_error_types.ts";
+// 統一エラータイプも継続エクスポート
+export type { ValidationError as UnifiedValidationError } from "../types/unified_error_types.ts";

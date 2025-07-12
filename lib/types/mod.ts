@@ -73,22 +73,29 @@
  * @module types
  */
 
-// Core type definitions
-export { DirectiveType } from "./directive_type.ts";
-export { LayerType } from "./layer_type.ts";
+// Core type definitions - Unified implementation
+export { 
+  DirectiveType, 
+  TwoParamsDirectivePattern,
+  type DirectiveTypeError 
+} from "../domain/core/value_objects/directive_type.ts";
+export { 
+  LayerType, 
+  TwoParamsLayerTypePattern,
+  type LayerTypeError 
+} from "../domain/core/value_objects/layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
 export type { TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
 
-// Pattern types
-export { TwoParamsDirectivePattern } from "./directive_type.ts";
-export { TwoParamsLayerTypePattern } from "./layer_type.ts";
+// Pattern types - LayerType pattern (now unified with domain implementation)
+// Note: TwoParamsLayerTypePattern is now exported from domain/core/value_objects/layer_type.ts above
 
 // Result type for error handling
 export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.ts";
-export type { Result, Result as ResultType } from "./result.ts";
+export type { Result } from "./result.ts";
 
 // Variable types
 export {
@@ -113,17 +120,19 @@ export {
 export type { PromptVariable, PromptVariables } from "./prompt_variables.ts";
 
 // Deprecated legacy types (for backward compatibility)
-export type { DemonstrativeType, LegacyLayerType } from "./legacy_factories.ts";
-export {
-  DemonstrativeTypeFactory,
-  DemonstrativeTypeGuards,
-  DirectiveFactory,
-  LayerFactory,
-  LegacyLayerTypeFactory,
-  LegacyLayerTypeGuards,
-  TwoParamsConfigFactory,
-  VariableResultFactory,
-} from "./legacy_factories.ts";
+// NOTE: Legacy factories removed during DemonstrativeType -> DirectiveType refactor
+// TODO: Remove legacy test files that depend on these exports
+// export type { DemonstrativeType, LegacyLayerType } from "./legacy_factories.ts";
+// export {
+//   DemonstrativeTypeFactory,
+//   DemonstrativeTypeGuards,
+//   DirectiveFactory,
+//   LayerFactory,
+//   LegacyLayerTypeFactory,
+//   LegacyLayerTypeGuards,
+//   TwoParamsConfigFactory,
+//   VariableResultFactory,
+// } from "./legacy_factories.ts";
 // export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
 export type { ExtendedTwoParams_Result as ExtendedTwoParams_Result } from "./variable_result.ts";
 

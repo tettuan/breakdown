@@ -29,7 +29,7 @@ describe("Behavior: Help Text Content", () => {
       "Should include init command",
     );
     assertEquals(
-      HELP_TEXT.includes("to <type> <layer>"),
+      HELP_TEXT.includes("to <layer> [from_layer] [adaptation]"),
       true,
       "Should include two-parameter command with placeholders",
     );
@@ -41,7 +41,7 @@ describe("Behavior: Help Text Content", () => {
       "Should include init command description",
     );
     assertEquals(
-      HELP_TEXT.includes("Process with two parameters"),
+      HELP_TEXT.includes("Process directive with layer parameters"),
       true,
       "Should include two-parameter command description",
     );
@@ -118,7 +118,7 @@ describe("Behavior: Help Text Content", () => {
       "Should include config usage example",
     );
     assertEquals(
-      HELP_TEXT.includes("breakdown to issue < input.md"),
+      HELP_TEXT.includes("breakdown to issue from_task < input.md"),
       true,
       "Should include stdin usage example",
     );

@@ -18,7 +18,7 @@ import {
   TwoParamsValidator,
   type ValidatedParams as _ValidatedParams,
   type ValidationError as _ValidationError,
-} from "./two_params_validator.ts";
+} from "./two_params_validator_ddd.ts";
 
 const logger = new BreakdownLogger("two-params-validator-architecture");
 

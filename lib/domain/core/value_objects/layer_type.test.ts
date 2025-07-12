@@ -1,0 +1,611 @@
+/**
+ * @fileoverview LayerType Value Object Tests
+ *
+ * Test suite for LayerType following DDD principles and Totality principle.
+ * Tests cover Smart Constructor validation, Result type handling, and domain operations.
+ */
+
+import { assertEquals } from "jsr:@std/assert";
+import { LayerType } from "./layer_type.ts";
+
+Deno.test("LayerType - Smart Constructor Tests", async (t) => {
+  await t.step("should create valid LayerType with valid input", () => {
+    const result = LayerType.create("issue");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "issue");
+      assertEquals(result.data.validatedByPattern, true);
+    }
+  });
+
+  await t.step("should reject empty input", () => {
+    const result = LayerType.create("");
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "EmptyInput");
+      assertEquals(result.error.message, "LayerType cannot be empty, null, or undefined");
+    }
+  });
+
+  await t.step("should reject null input", () => {
+    const result = LayerType.create(null);
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "EmptyInput");
+    }
+  });
+
+  await t.step("should reject undefined input", () => {
+    const result = LayerType.create(undefined);
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "EmptyInput");
+    }
+  });
+
+  await t.step("should reject input that is too long", () => {
+    const longValue = "a".repeat(31); // Exceeds MAX_LENGTH (30)
+    const result = LayerType.create(longValue);
+
+    assertEquals(result.ok, false);
+    if (!result.ok && result.error.kind === "TooLong") {
+      assertEquals(result.error.value, longValue);
+      assertEquals(result.error.maxLength, 30);
+    }
+  });
+
+  await t.step("should reject invalid format", () => {
+    const result = LayerType.create("INVALID_LAYER");
+
+    assertEquals(result.ok, false);
+    if (!result.ok && result.error.kind === "InvalidFormat") {
+      assertEquals(result.error.value, "INVALID_LAYER");
+    }
+  });
+
+  await t.step("should accept valid layer types", () => {
+    const validLayers = ["project", "issue", "task", "bugs", "feature"];
+
+    for (const layer of validLayers) {
+      const result = LayerType.create(layer);
+      assertEquals(result.ok, true, `Layer "${layer}" should be valid`);
+    }
+  });
+});
+
+Deno.test("LayerType - Domain Operations", async (t) => {
+  const layerResult = LayerType.create("issue");
+
+  if (!layerResult.ok) {
+    throw new Error("Failed to create test LayerType");
+  }
+
+  const layer = layerResult.data;
+
+  await t.step("should validate compatibility with directive", () => {
+    const directive = { value: "to" };
+    assertEquals(layer.isValidForDirective(directive), true);
+  });
+
+  await t.step("should reject empty directive", () => {
+    const directive = { value: "" };
+    assertEquals(layer.isValidForDirective(directive), false);
+  });
+
+  await t.step("should generate prompt filename", () => {
+    const filename = layer.getPromptFilename("project");
+    assertEquals(filename, "f_issue.md");
+  });
+
+  await t.step("should generate prompt filename with adaptation", () => {
+    const filename = layer.getPromptFilename("project", "strict");
+    assertEquals(filename, "f_issue_strict.md");
+  });
+
+  await t.step("should generate schema filename", () => {
+    const filename = layer.getSchemaFilename();
+    assertEquals(filename, "base.schema.json");
+  });
+
+  await t.step("should validate for resource path generation", () => {
+    assertEquals(layer.isValidForResourcePath(), true);
+  });
+
+  await t.step("should provide debug string", () => {
+    const debugString = layer.toDebugString();
+    assertEquals(debugString, 'LayerType(value="issue", validated=true)');
+  });
+});
+
+Deno.test("LayerType - Common Layer Types", async (t) => {
+  await t.step("should identify common layer types", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
+    assertEquals(commonTypes.includes("project"), true);
+    assertEquals(commonTypes.includes("issue"), true);
+    assertEquals(commonTypes.includes("task"), true);
+    assertEquals(commonTypes.includes("bugs"), true);
+  });
+
+  await t.step("should identify if layer type is common", () => {
+    const projectResult = LayerType.create("project");
+    const customResult = LayerType.create("custom-layer");
+
+    if (!projectResult.ok || !customResult.ok) {
+      throw new Error("Failed to create test LayerTypes");
+    }
+
+    assertEquals(projectResult.data.isCommonLayerType(), true);
+    assertEquals(customResult.data.isCommonLayerType(), false);
+  });
+});
+
+Deno.test("LayerType - Equality and Comparison", async (t) => {
+  await t.step("should be equal to itself", () => {
+    const layer1Result = LayerType.create("task");
+    const layer2Result = LayerType.create("task");
+
+    if (!layer1Result.ok || !layer2Result.ok) {
+      throw new Error("Failed to create test LayerTypes");
+    }
+
+    assertEquals(layer1Result.data.equals(layer2Result.data), true);
+  });
+
+  await t.step("should not be equal to different layer", () => {
+    const layer1Result = LayerType.create("task");
+    const layer2Result = LayerType.create("issue");
+
+    if (!layer1Result.ok || !layer2Result.ok) {
+      throw new Error("Failed to create test LayerTypes");
+    }
+
+    assertEquals(layer1Result.data.equals(layer2Result.data), false);
+  });
+
+  await t.step("should have correct string representation", () => {
+    const layerResult = LayerType.create("project");
+
+    if (!layerResult.ok) {
+      throw new Error("Failed to create test LayerType");
+    }
+
+    assertEquals(layerResult.data.toString(), "project");
+  });
+});
+
+Deno.test("LayerType - Edge Cases", async (t) => {
+  await t.step("should trim whitespace from input", () => {
+    const result = LayerType.create("  task  ");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "task");
+    }
+  });
+
+  await t.step("should handle boundary length values", () => {
+    const maxLengthValue = "a".repeat(30); // Exactly MAX_LENGTH
+    const result = LayerType.create(maxLengthValue);
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, maxLengthValue);
+    }
+  });
+
+  await t.step("should handle hyphenated layer types", () => {
+    const result = LayerType.create("sub-task");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "sub-task");
+    }
+  });
+
+  await t.step("should handle underscored layer types", () => {
+    const result = LayerType.create("user_story");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "user_story");
+    }
+  });
+
+  await t.step("should handle whitespace-only input", () => {
+    const result = LayerType.create("   ");
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "EmptyInput");
+    }
+  });
+
+  await t.step("should handle tabs and newlines", () => {
+    const result = LayerType.create("\t\ntask\t\n");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "task");
+    }
+  });
+
+  await t.step("should reject non-string types", () => {
+    // Test with number
+    // deno-lint-ignore no-explicit-any
+    const numberResult = LayerType.create(123 as any);
+    assertEquals(numberResult.ok, false);
+    if (!numberResult.ok) {
+      assertEquals(numberResult.error.kind, "EmptyInput");
+    }
+
+    // Test with object
+    // deno-lint-ignore no-explicit-any
+    const objectResult = LayerType.create({ value: "task" } as any);
+    assertEquals(objectResult.ok, false);
+    if (!objectResult.ok) {
+      assertEquals(objectResult.error.kind, "EmptyInput");
+    }
+
+    // Test with array
+    // deno-lint-ignore no-explicit-any
+    const arrayResult = LayerType.create(["task"] as any);
+    assertEquals(arrayResult.ok, false);
+    if (!arrayResult.ok) {
+      assertEquals(arrayResult.error.kind, "EmptyInput");
+    }
+  });
+});
+
+Deno.test("LayerType - Pattern Validation Edge Cases", async (t) => {
+  await t.step("should reject uppercase letters", () => {
+    const result = LayerType.create("TASK");
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      if (result.error.kind === "InvalidFormat") {
+        assertEquals(result.error.value, "TASK");
+      }
+    }
+  });
+
+  await t.step("should reject mixed case", () => {
+    const result = LayerType.create("Task");
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      if (result.error.kind === "InvalidFormat") {
+        assertEquals(result.error.value, "Task");
+      }
+    }
+  });
+
+  await t.step("should reject special characters", () => {
+    const specialChars = [
+      "@",
+      "#",
+      "$",
+      "%",
+      "^",
+      "&",
+      "*",
+      "(",
+      ")",
+      "+",
+      "=",
+      "!",
+      "?",
+      "/",
+      "\\",
+      ".",
+      ",",
+    ];
+
+    for (const char of specialChars) {
+      const result = LayerType.create(`task${char}`);
+      assertEquals(result.ok, false, `Character '${char}' should be rejected`);
+      if (!result.ok) {
+        assertEquals(result.error.kind, "InvalidFormat");
+      }
+    }
+  });
+
+  await t.step("should accept valid characters", () => {
+    const validInputs = [
+      "a",
+      "z",
+      "0",
+      "9",
+      "_",
+      "-",
+      "task_1",
+      "sub-task",
+      "feature-123",
+      "bug_fix",
+    ];
+
+    for (const input of validInputs) {
+      const result = LayerType.create(input);
+      assertEquals(result.ok, true, `Input '${input}' should be valid format`);
+    }
+  });
+
+  await t.step("should reject empty after trimming", () => {
+    const result = LayerType.create("");
+
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "EmptyInput");
+    }
+  });
+
+  await t.step("should handle numerical layer types", () => {
+    const result = LayerType.create("level1");
+
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "level1");
+    }
+  });
+});
+
+Deno.test("LayerType - Domain Operations Comprehensive", async (t) => {
+  const layerResult = LayerType.create("issue");
+
+  if (!layerResult.ok) {
+    throw new Error("Failed to create test LayerType");
+  }
+
+  const layer = layerResult.data;
+
+  await t.step("should handle edge cases in filename generation", () => {
+    // Test prompt filename with empty from layer type
+    const filename1 = layer.getPromptFilename("");
+    assertEquals(filename1, "f_issue.md");
+
+    // Test prompt filename with special characters in adaptation
+    const filename2 = layer.getPromptFilename("project", "strict-mode_v2");
+    assertEquals(filename2, "f_issue_strict-mode_v2.md");
+
+    // Test with very long adaptation
+    const longAdaptation = "a".repeat(50);
+    const filename3 = layer.getPromptFilename("project", longAdaptation);
+    assertEquals(filename3, `f_issue_${longAdaptation}.md`);
+  });
+
+  await t.step("should maintain consistent schema filename", () => {
+    // Schema filename should always be the same regardless of layer type
+    const taskLayer = LayerType.create("task");
+    const projectLayer = LayerType.create("project");
+
+    if (!taskLayer.ok || !projectLayer.ok) {
+      throw new Error("Failed to create test LayerTypes");
+    }
+
+    assertEquals(layer.getSchemaFilename(), taskLayer.data.getSchemaFilename());
+    assertEquals(layer.getSchemaFilename(), projectLayer.data.getSchemaFilename());
+    assertEquals(layer.getSchemaFilename(), "base.schema.json");
+  });
+
+  await t.step("should validate directive compatibility comprehensively", () => {
+    // Test with valid directive
+    assertEquals(layer.isValidForDirective({ value: "to" }), true);
+    assertEquals(layer.isValidForDirective({ value: "summary" }), true);
+    assertEquals(layer.isValidForDirective({ value: "defect" }), true);
+
+    // Test with empty directive
+    assertEquals(layer.isValidForDirective({ value: "" }), false);
+
+    // Test with very long directive
+    const longDirective = "a".repeat(100);
+    assertEquals(layer.isValidForDirective({ value: longDirective }), true);
+  });
+
+  await t.step("should provide consistent resource path validation", () => {
+    assertEquals(layer.isValidForResourcePath(), true);
+
+    // Test with different layer types
+    const customLayer = LayerType.create("custom-layer-type");
+    if (customLayer.ok) {
+      assertEquals(customLayer.data.isValidForResourcePath(), true);
+    }
+  });
+});
+
+Deno.test("LayerType - Common Layer Types Comprehensive", async (t) => {
+  await t.step("should maintain consistent common layer types list", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
+
+    // Verify it's an array
+    assertEquals(Array.isArray(commonTypes), true);
+
+    // Verify expected types are present
+    const expectedTypes = ["project", "issue", "task", "bugs", "feature", "epic"];
+    for (const expected of expectedTypes) {
+      assertEquals(commonTypes.includes(expected), true, `${expected} should be in common types`);
+    }
+
+    // Verify all types are valid LayerType values
+    for (const commonType of commonTypes) {
+      const result = LayerType.create(commonType);
+      assertEquals(result.ok, true, `Common type "${commonType}" should be valid`);
+    }
+  });
+
+  await t.step("should correctly identify common vs custom layer types", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
+
+    for (const commonType of commonTypes) {
+      const result = LayerType.create(commonType);
+      if (result.ok) {
+        assertEquals(
+          result.data.isCommonLayerType(),
+          true,
+          `${commonType} should be identified as common`,
+        );
+      }
+    }
+
+    // Test custom types
+    const customTypes = ["custom", "special-layer", "my_type", "domain-specific"];
+    for (const customType of customTypes) {
+      const result = LayerType.create(customType);
+      if (result.ok) {
+        assertEquals(
+          result.data.isCommonLayerType(),
+          false,
+          `${customType} should not be identified as common`,
+        );
+      }
+    }
+  });
+});
+
+Deno.test("LayerType - Immutability and Thread Safety", async (t) => {
+  const layerResult = LayerType.create("task");
+
+  if (!layerResult.ok) {
+    throw new Error("Failed to create test LayerType");
+  }
+
+  const layer = layerResult.data;
+
+  await t.step("should be immutable", () => {
+    const originalValue = layer.value;
+    const originalValidated = layer.validatedByPattern;
+
+    // Attempt to modify (should fail silently due to Object.freeze)
+    try {
+      // deno-lint-ignore no-explicit-any
+      (layer as any)._value = "modified";
+      // deno-lint-ignore no-explicit-any
+      (layer as any)._validatedByPattern = false;
+    } catch {
+      // Expected to throw in strict mode
+    }
+
+    // Values should remain unchanged
+    assertEquals(layer.value, originalValue);
+    assertEquals(layer.validatedByPattern, originalValidated);
+  });
+
+  await t.step("should support concurrent access", () => {
+    // Simulate concurrent access patterns
+    const promises = Array.from({ length: 10 }, (_, i) =>
+      Promise.resolve().then(() => {
+        return layer.getPromptFilename("concurrent", `test${i}`);
+      }));
+
+    return Promise.all(promises).then((results) => {
+      // All results should be valid and consistent
+      results.forEach((result, i) => {
+        assertEquals(result, `f_task_test${i}.md`);
+      });
+    });
+  });
+
+  await t.step("should handle concurrent common type checks", () => {
+    const promises = Array.from(
+      { length: 100 },
+      () => Promise.resolve().then(() => layer.isCommonLayerType()),
+    );
+
+    return Promise.all(promises).then((results) => {
+      // All results should be the same
+      const firstResult = results[0];
+      assertEquals(results.every((result) => result === firstResult), true);
+    });
+  });
+});
+
+Deno.test("LayerType - Error Message Quality", async (t) => {
+  await t.step("should provide actionable error messages", () => {
+    const tooLongResult = LayerType.create("a".repeat(31));
+    assertEquals(tooLongResult.ok, false);
+    if (!tooLongResult.ok) {
+      assertEquals(tooLongResult.error.message.includes("exceeds maximum length"), true);
+      assertEquals(tooLongResult.error.message.includes("30"), true);
+    }
+
+    const invalidFormatResult = LayerType.create("INVALID");
+    assertEquals(invalidFormatResult.ok, false);
+    if (!invalidFormatResult.ok) {
+      assertEquals(invalidFormatResult.error.message.includes("invalid characters"), true);
+      assertEquals(invalidFormatResult.error.message.includes("lowercase"), true);
+    }
+
+    const emptyResult = LayerType.create("");
+    assertEquals(emptyResult.ok, false);
+    if (!emptyResult.ok) {
+      assertEquals(emptyResult.error.message.includes("cannot be empty"), true);
+    }
+  });
+
+  await t.step("should include context in error messages", () => {
+    const invalidValue = "TASK@#$";
+    const result = LayerType.create(invalidValue);
+    assertEquals(result.ok, false);
+    if (!result.ok && result.error.kind === "InvalidFormat") {
+      assertEquals(result.error.message.includes(invalidValue), true);
+      assertEquals(result.error.value, invalidValue);
+      assertEquals(typeof result.error.pattern, "string");
+    }
+  });
+});
+
+Deno.test("LayerType - Performance and Memory", async (t) => {
+  await t.step("should handle large number of instances", () => {
+    const instances: LayerType[] = [];
+
+    // Create many instances
+    for (let i = 0; i < 1000; i++) {
+      const result = LayerType.create("task");
+      if (result.ok) {
+        instances.push(result.data);
+      }
+    }
+
+    assertEquals(instances.length, 1000);
+
+    // All instances should be functionally equal
+    for (let i = 1; i < instances.length; i++) {
+      assertEquals(instances[0].equals(instances[i]), true);
+    }
+  });
+
+  await t.step("should have consistent hash-like behavior", () => {
+    const layer1 = LayerType.create("issue");
+    const layer2 = LayerType.create("issue");
+
+    if (!layer1.ok || !layer2.ok) {
+      throw new Error("Failed to create test LayerTypes");
+    }
+
+    // Same input should produce equivalent objects
+    assertEquals(layer1.data.equals(layer2.data), true);
+    assertEquals(layer1.data.toString(), layer2.data.toString());
+    assertEquals(layer1.data.toDebugString(), layer2.data.toDebugString());
+  });
+
+  await t.step("should efficiently handle filename generation", () => {
+    const layer = LayerType.create("task");
+    if (!layer.ok) {
+      throw new Error("Failed to create test LayerType");
+    }
+
+    // Generate many filenames
+    const filenames = Array.from(
+      { length: 1000 },
+      (_, i) => layer.data.getPromptFilename("test", `variant${i}`),
+    );
+
+    assertEquals(filenames.length, 1000);
+    assertEquals(filenames[0], "f_task_variant0.md");
+    assertEquals(filenames[999], "f_task_variant999.md");
+  });
+});

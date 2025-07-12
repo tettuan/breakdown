@@ -12,21 +12,33 @@
 import { assertEquals, assertExists } from "@std/assert";
 import {
   type ConfigValidator,
-  ParameterValidator,
+  ParameterValidatorV2 as ParameterValidator,
   type ValidationError,
-} from "./parameter_validator.ts";
+} from "./parameter_validator_v2.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import { isError, isOk } from "../types/result.ts";
-import { DirectiveType } from "../types/directive_type.ts";
-import { LayerType } from "../types/layer_type.ts";
-
-// Import pattern types
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 
 // Mock implementations
 class MockPatternProvider implements TypePatternProvider {
+  validateDirectiveType(value: string): boolean {
+    return ["to", "summary", "defect"].includes(value);
+  }
+
+  validateLayerType(value: string): boolean {
+    return ["project", "issue", "task"].includes(value);
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    return ["to", "summary", "defect"];
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    return ["project", "issue", "task"];
+  }
+
   getDirectivePattern(): TwoParamsDirectivePattern | null {
     return TwoParamsDirectivePattern.create("^(to|summary|defect)$");
   }

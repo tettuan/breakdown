@@ -9,7 +9,7 @@
  */
 
 import { DirectiveType, TwoParamsDirectivePattern } from "../types/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
 import { InputFilePathResolver } from "./input_file_path_resolver.ts";
 import { OutputFilePathResolver } from "./output_file_path_resolver.ts";

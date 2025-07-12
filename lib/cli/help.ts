@@ -22,7 +22,10 @@ export interface HelpTextConfig {
 const DEFAULT_HELP_CONFIG: HelpTextConfig = {
   commands: [
     { name: "init", description: "Initialize breakdown configuration" },
-    { name: "to <type> <layer>", description: "Process with two parameters" },
+    {
+      name: "to <layer> [from_layer] [adaptation]",
+      description: "Process directive with layer parameters",
+    },
   ],
   options: [
     { flags: "--config/-c <prefix>", description: "Use custom config prefix" },
@@ -32,7 +35,8 @@ const DEFAULT_HELP_CONFIG: HelpTextConfig = {
   examples: [
     "breakdown init",
     "breakdown to project --config=custom",
-    "breakdown to issue < input.md",
+    "breakdown to issue from_task < input.md",
+    "breakdown to task issue adaptation=strict",
   ],
 };
 

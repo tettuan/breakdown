@@ -209,7 +209,7 @@ Deno.test("TwoParamsHandler - Component dependency analysis", async () => {
     try {
       switch (component) {
         case "TwoParamsValidator":
-          await import("../validators/two_params_validator.ts");
+          await import("../validators/two_params_validator_ddd.ts");
           results[component] = true;
           break;
         case "TwoParamsStdinProcessor":

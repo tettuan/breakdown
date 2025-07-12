@@ -8,8 +8,8 @@
  * @module types/type_factory
  */
 
-import { DirectiveType, TwoParamsDirectivePattern } from "./directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "./layer_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import type { Result } from "./result.ts";
 import type { ProcessingError } from "./unified_error_types.ts";
@@ -21,16 +21,42 @@ import { ErrorFactory } from "./unified_error_types.ts";
  */
 export interface TypePatternProvider {
   /**
-   * DirectiveType用パターンを取得
-   * @returns DirectiveType用バリデーションパターン
+   * DirectiveType用バリデーション結果を取得
+   * @param value 検証対象の値
+   * @returns バリデーション結果
    */
-  getDirectivePattern(): TwoParamsDirectivePattern | null;
+  validateDirectiveType(value: string): boolean;
 
   /**
-   * LayerType用パターンを取得
-   * @returns LayerType用バリデーションパターン
+   * LayerType用バリデーション結果を取得
+   * @param value 検証対象の値
+   * @returns バリデーション結果
    */
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null;
+  validateLayerType(value: string): boolean;
+
+  /**
+   * 利用可能なDirectiveType値を取得
+   * @returns 設定で許可されたDirectiveType値の配列
+   */
+  getValidDirectiveTypes(): readonly string[];
+
+  /**
+   * 利用可能なLayerType値を取得
+   * @returns 設定で許可されたLayerType値の配列
+   */
+  getValidLayerTypes(): readonly string[];
+
+  /**
+   * DirectiveType用パターンオブジェクトを取得
+   * @returns DirectiveType用のパターンオブジェクト
+   */
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null;
+
+  /**
+   * LayerType用パターンオブジェクトを取得
+   * @returns LayerType用のパターンオブジェクト
+   */
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null;
 }
 
 /**
@@ -40,10 +66,10 @@ export interface TypePatternProvider {
 export type TypeCreationResult<T> = Result<T, ProcessingError>;
 
 // TypeCreationError は ProcessingError に統一されました
-// 使用方法:
-// - PatternNotFound -> ProcessingError with kind "PatternNotFound"
-// - ValidationFailed -> ProcessingError with kind "PatternValidationFailed"
-// - InvalidPattern -> ProcessingError with kind "InvalidPattern"
+// 新しいDirectiveType/LayerTypeとの連携:
+// - 型構築はDirectiveType.create()/LayerType.create()に委譲
+// - パターンバリデーションはTypePatternProviderが担当
+// - エラーハンドリングはResult型で統一
 
 /**
  * TypeFactory - 型構築のためのファクトリー
@@ -78,100 +104,76 @@ export class TypeFactory {
   /**
    * DirectiveType を安全に構築
    * @param value 構築対象の値
+   * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は DirectiveType、失敗した場合は Error
    */
-  createDirectiveType(value: string): TypeCreationResult<DirectiveType> {
-    const pattern = this.patternProvider.getDirectivePattern();
-
-    if (!pattern) {
-      return {
-        ok: false,
-        error: ErrorFactory.processingError("PatternNotFound", {
-          operation: "type_creation",
-          reason: "DirectiveType validation pattern not found in configuration",
-        }),
-      };
-    }
-
-    // DirectiveType.create() は TwoParams_Result のみを受け取る
-    // パターンバリデーションは事前に実行する必要がある
-    if (!pattern.test(value)) {
+  createDirectiveType(value: string, profile?: any): TypeCreationResult<DirectiveType> {
+    // TypePatternProviderによるバリデーション
+    if (!this.patternProvider.validateDirectiveType(value)) {
       return {
         ok: false,
         error: ErrorFactory.processingError("PatternValidationFailed", {
           value,
-          pattern: pattern.getPattern(),
+          pattern: "directive_type_pattern",
           operation: "type_creation",
         }),
       };
     }
 
-    // 仮の TwoParams_Result を作成（実際にはBreakdownParamsから取得すべき）
-    const twoParamsResult: TwoParams_Result = {
-      type: "two",
-      demonstrativeType: value,
-      layerType: "project", // デフォルト値
-      params: [value, "project"],
-      options: {},
-    };
+    // 新しいDirectiveTypeのcreateメソッドを使用
+    const directiveResult = DirectiveType.create(value, profile);
 
-    const directiveType = DirectiveType.create(twoParamsResult);
-
-    // DirectiveType.create() は常に成功する（TwoParams_Result前提のため）
+    if (!directiveResult.ok) {
+      return {
+        ok: false,
+        error: ErrorFactory.processingError("ProcessingFailed", {
+          operation: "type_creation",
+          reason: directiveResult.error.message,
+        }),
+      };
+    }
 
     return {
       ok: true,
-      data: directiveType,
+      data: directiveResult.data,
     };
   }
 
   /**
    * LayerType を安全に構築
    * @param value 構築対象の値
+   * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は LayerType、失敗した場合は Error
    */
-  createLayerType(value: string): TypeCreationResult<LayerType> {
-    const pattern = this.patternProvider.getLayerTypePattern();
-
-    if (!pattern) {
-      return {
-        ok: false,
-        error: ErrorFactory.processingError("PatternNotFound", {
-          operation: "type_creation",
-          reason: "LayerType validation pattern not found in configuration",
-        }),
-      };
-    }
-
-    // LayerType.create() は TwoParams_Result のみを受け取る
-    // パターンバリデーションは事前に実行する必要がある
-    if (!pattern.test(value)) {
+  createLayerType(value: string, profile?: any): TypeCreationResult<LayerType> {
+    // TypePatternProviderによるバリデーション
+    if (!this.patternProvider.validateLayerType(value)) {
       return {
         ok: false,
         error: ErrorFactory.processingError("PatternValidationFailed", {
           value,
-          pattern: pattern.getPattern(),
+          pattern: "layer_type_pattern",
           operation: "type_creation",
         }),
       };
     }
 
-    // 仮の TwoParams_Result を作成（実際にはBreakdownParamsから取得すべき）
-    const twoParamsResult: TwoParams_Result = {
-      type: "two",
-      demonstrativeType: "to", // デフォルト値
-      layerType: value,
-      params: ["to", value],
-      options: {},
-    };
+    // 新しいLayerTypeのcreateメソッドを使用
+    const layerResult = LayerType.create(value, profile);
 
-    const layerType = LayerType.create(twoParamsResult);
-
-    // LayerType.create() は常に成功する（TwoParams_Result前提のため）
+    if (!layerResult.ok) {
+      return {
+        ok: false,
+        error: ErrorFactory.processingError("ProcessingFailed", {
+          operation: "type_creation",
+          reason: layerResult.error.message,
+        }),
+      };
+    }
 
     return {
       ok: true,
-      data: layerType,
+      data: layerResult.data,
     };
   }
 
@@ -188,13 +190,14 @@ export class TypeFactory {
   createBothTypes(
     directiveValue: string,
     layerValue: string,
+    profile?: any,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
-    const directiveResult = this.createDirectiveType(directiveValue);
+    const directiveResult = this.createDirectiveType(directiveValue, profile);
     if (!directiveResult.ok) {
       return directiveResult;
     }
 
-    const layerResult = this.createLayerType(layerValue);
+    const layerResult = this.createLayerType(layerValue, profile);
     if (!layerResult.ok) {
       return layerResult;
     }
@@ -218,14 +221,8 @@ export class TypeFactory {
    * @returns 両方が有効な場合 true
    */
   validateBothValues(directiveValue: string, layerValue: string): boolean {
-    const directivePattern = this.patternProvider.getDirectivePattern();
-    const layerPattern = this.patternProvider.getLayerTypePattern();
-
-    if (!directivePattern || !layerPattern) {
-      return false;
-    }
-
-    return directivePattern.test(directiveValue) && layerPattern.test(layerValue);
+    return this.patternProvider.validateDirectiveType(directiveValue) &&
+      this.patternProvider.validateLayerType(layerValue);
   }
 
   /**
@@ -237,13 +234,13 @@ export class TypeFactory {
     layer: boolean;
     both: boolean;
   } {
-    const directivePattern = this.patternProvider.getDirectivePattern();
-    const layerPattern = this.patternProvider.getLayerTypePattern();
+    const directiveTypes = this.patternProvider.getValidDirectiveTypes();
+    const layerTypes = this.patternProvider.getValidLayerTypes();
 
     return {
-      directive: directivePattern !== null,
-      layer: layerPattern !== null,
-      both: directivePattern !== null && layerPattern !== null,
+      directive: directiveTypes.length > 0,
+      layer: layerTypes.length > 0,
+      both: directiveTypes.length > 0 && layerTypes.length > 0,
     };
   }
 
@@ -254,10 +251,14 @@ export class TypeFactory {
   debug(): {
     patternProvider: string;
     availability: ReturnType<TypeFactory["getPatternAvailability"]>;
+    validDirectives: readonly string[];
+    validLayers: readonly string[];
   } {
     return {
       patternProvider: this.patternProvider.constructor.name,
       availability: this.getPatternAvailability(),
+      validDirectives: this.patternProvider.getValidDirectiveTypes(),
+      validLayers: this.patternProvider.getValidLayerTypes(),
     };
   }
 }

@@ -18,6 +18,22 @@ import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // Mock pattern provider
 class MockPatternProvider implements TypePatternProvider {
+  validateDirectiveType(value: string): boolean {
+    return ["to", "summary", "defect", "init"].includes(value);
+  }
+
+  validateLayerType(value: string): boolean {
+    return ["project", "issue", "task"].includes(value);
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    return ["to", "summary", "defect", "init"];
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    return ["project", "issue", "task"];
+  }
+
   getDirectivePattern(): TwoParamsDirectivePattern | null {
     return TwoParamsDirectivePattern.create("^(to|summary|defect|init)$");
   }
@@ -325,6 +341,22 @@ Deno.test("2_structure: ParamsResult interface compatibility", () => {
 Deno.test("2_structure: Error pattern consistency across validation methods", () => {
   // Test with null pattern provider
   class NullPatternProvider implements TypePatternProvider {
+    validateDirectiveType(value: string): boolean {
+      return false;
+    }
+
+    validateLayerType(value: string): boolean {
+      return false;
+    }
+
+    getValidDirectiveTypes(): readonly string[] {
+      return [];
+    }
+
+    getValidLayerTypes(): readonly string[] {
+      return [];
+    }
+
     getDirectivePattern(): TwoParamsDirectivePattern | null {
       return null;
     }

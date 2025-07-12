@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Issue Summary Output",
+  "type": "object",
+  "properties": {
+    "issueSummary": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Brief issue description"
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "medium", "complex"]
+        },
+        "totalEstimatedEffort": {
+          "type": "string",
+          "pattern": "^\\d+\\s+(hours?|days?|weeks?)$"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["feature", "bug", "enhancement", "technical-debt", "documentation"]
+        }
+      },
+      "required": ["title", "complexity", "totalEstimatedEffort"]
+    },
+    "taskCategories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/taskCategory"
+      },
+      "minItems": 1
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/dependency"
+      }
+    },
+    "criticalPath": {
+      "type": "object",
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "totalDuration": {
+          "type": "string",
+          "pattern": "^\\d+\\s+(hours?|days?)$"
+        }
+      },
+      "required": ["tasks", "totalDuration"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string"
+        },
+        "totalTasks": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "definitions": {
+    "taskCategory": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task"
+          }
+        }
+      },
+      "required": ["name", "priority", "tasks"]
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^T-\\d+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "effort": {
+          "type": "string",
+          "pattern": "^\\d+\\s+(hours?|days?)$"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "name", "effort"]
+    },
+    "dependency": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^T-\\d+$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^T-\\d+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["blocking", "interdependent", "optional"]
+        }
+      },
+      "required": ["from", "to", "type"]
+    }
+  },
+  "required": ["issueSummary", "taskCategories"]
+}

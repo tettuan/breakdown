@@ -15,7 +15,7 @@
  * - Smart Constructor pattern compliance
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { PromptVariablesFactory } from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "./prompt_variables_factory.ts";
 import type { PromptParams } from "@tettuan/breakdownprompt";
@@ -158,7 +158,14 @@ Deno.test("PromptVariablesFactory - 2_structure - 3-stage transformation data in
       // Stage 2-3: PromptVariableSource → PromptVariables → PromptParams
       let promptParams: PromptParams;
       try {
-        promptParams = factory.build();
+        const buildResult = factory.build();
+        if (buildResult.ok) {
+          promptParams = buildResult.data;
+        } else {
+          logger.debug("3-stage transformation failed - Result error", { error: buildResult.error });
+          assertEquals(buildResult.error instanceof Error, true, "Should have proper Error in Result");
+          return; // Skip remaining validation - structure test passed
+        }
       } catch (error) {
         // In test environment, build() may fail due to missing files
         // This is acceptable for structural validation - we skip detailed validation
@@ -328,31 +335,37 @@ Deno.test("PromptVariablesFactory - 2_structure - Immutability and invariants pr
 
       logger.debug("Immutability test", { result1, result2, result3 });
 
+      // Ensure all results are successful before comparing
+      assert(result1.ok, "result1 should be successful");
+      assert(result2.ok, "result2 should be successful");
+      // Note: result3 from getAllParams() is not a Result type, it's a plain object
+      assertExists(result3, "result3 should exist");
+
       // Structural invariants validation
       assertEquals(
-        result1.variables.demonstrative_type,
-        result2.variables.demonstrative_type,
+        result1.data.variables.demonstrative_type,
+        result2.data.variables.demonstrative_type,
         "demonstrative_type should be immutable",
       );
       assertEquals(
-        result1.variables.layer_type,
-        result2.variables.layer_type,
+        result1.data.variables.layer_type,
+        result2.data.variables.layer_type,
         "layer_type should be immutable",
       );
       assertEquals(
-        result1.template_file,
-        result2.template_file,
+        result1.data.template_file,
+        result2.data.template_file,
         "template_file should be immutable",
       );
 
       // Cross-method consistency validation
       assertEquals(
-        result1.variables.demonstrative_type,
+        result1.data.variables.demonstrative_type,
         testCliParams.demonstrativeType,
         "demonstrative_type should match original input",
       );
       assertEquals(
-        result1.variables.layer_type,
+        result1.data.variables.layer_type,
         testCliParams.layerType,
         "layer_type should match original input",
       );
@@ -364,30 +377,30 @@ Deno.test("PromptVariablesFactory - 2_structure - Immutability and invariants pr
       const currentSchemaResult = factory.getSchemaFilePath();
 
       // Validate path consistency if paths are resolved
-      if (currentPromptResult.ok) {
+      if (currentPromptResult.ok && result1.ok) {
         assertEquals(
-          result1.variables.prompt_path,
+          result1.data.variables.prompt_path,
           currentPromptResult.data,
           "prompt_path should be consistent between build() and getPromptFilePath()",
         );
       }
-      if (currentInputResult.ok) {
+      if (currentInputResult.ok && result1.ok) {
         assertEquals(
-          result1.variables.input_file,
+          result1.data.variables.input_file,
           currentInputResult.data,
           "input_file should be consistent between build() and getInputFilePath()",
         );
       }
-      if (currentOutputResult.ok) {
+      if (currentOutputResult.ok && result1.ok) {
         assertEquals(
-          result1.variables.output_file,
+          result1.data.variables.output_file,
           currentOutputResult.data,
           "output_file should be consistent between build() and getOutputFilePath()",
         );
       }
-      if (currentSchemaResult.ok) {
+      if (currentSchemaResult.ok && result1.ok) {
         assertEquals(
-          result1.variables.schema_path,
+          result1.data.variables.schema_path,
           currentSchemaResult.data,
           "schema_path should be consistent between build() and getSchemaFilePath()",
         );

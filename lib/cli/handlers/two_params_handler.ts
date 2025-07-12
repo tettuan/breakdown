@@ -20,7 +20,7 @@ import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import { TwoParamsValidator } from "../validators/two_params_validator.ts";
+import { TwoParamsValidator } from "../validators/two_params_validator_ddd.ts";
 import { TwoParamsOutputProcessor } from "../processors/two_params_output_processor.ts";
 
 /**

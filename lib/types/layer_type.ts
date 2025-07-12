@@ -31,7 +31,7 @@ export class TwoParamsLayerTypePattern {
    */
   static create(pattern: string): TwoParamsLayerTypePattern | null {
     // Validate input type first
-    if (typeof pattern !== "string" || pattern == null) {
+    if (typeof pattern !== "string" || pattern == null || pattern.trim().length === 0) {
       return null;
     }
 
@@ -52,7 +52,15 @@ export class TwoParamsLayerTypePattern {
    * @returns 成功時は Result<TwoParamsLayerTypePattern>、失敗時はエラー情報
    */
   static createOrError(pattern: string): Result<TwoParamsLayerTypePattern, ValidationError> {
-    if (!pattern || pattern.length === 0) {
+    if (typeof pattern !== "string") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: "Pattern must be a string",
+      }));
+    }
+    
+    if (!pattern || pattern.trim().length === 0) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "pattern",
         value: pattern,
@@ -155,7 +163,22 @@ export class LayerType {
    * Private constructor - Smart Constructor パターンの実装
    * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制
    */
-  private constructor(private readonly result: TwoParams_Result) {}
+  private constructor(
+    private readonly result: TwoParams_Result,
+    private readonly _validatedByPattern?: TwoParamsLayerTypePattern,
+  ) {}
+
+  /**
+   * バリデーションに使用されたパターン
+   *
+   * このプロパティは、LayerTypeが作成時にバリデーションされたパターンを保持します。
+   * パターンが使用されていない場合はundefinedになります。
+   *
+   * @returns バリデーションに使用されたパターン、または undefined
+   */
+  get validatedByPattern(): TwoParamsLayerTypePattern | undefined {
+    return this._validatedByPattern;
+  }
 
   /**
    * TwoParams_Result からバリデーション済み LayerType を構築
@@ -165,10 +188,11 @@ export class LayerType {
    * バリデーションは BreakdownParams 側で実行済み。
    *
    * @param result TwoParams_Result 型の検証済みデータ
+   * @param pattern オプショナル：バリデーションに使用されたパターン
    * @returns LayerType インスタンス（TwoParams_Result は既にバリデーション済みのため常に成功）
    */
-  static create(result: TwoParams_Result): LayerType {
-    return new LayerType(result);
+  static create(result: TwoParams_Result, pattern?: TwoParamsLayerTypePattern): LayerType {
+    return new LayerType(result, pattern);
   }
 
   /**
@@ -227,7 +251,7 @@ export class LayerType {
     }
 
     // すべてのバリデーションに成功
-    return ok(new LayerType(result));
+    return ok(new LayerType(result, pattern));
   }
 
   /**
@@ -303,5 +327,159 @@ export class LayerType {
    */
   get originalResult(): Readonly<TwoParams_Result> {
     return this.result;
+  }
+
+  // パス解決メソッド群
+
+  /**
+   * プロンプトテンプレートのファイルパスを解決
+   *
+   * DirectiveTypeと組み合わせてプロンプトテンプレートのパスを構築します。
+   *
+   * @param directiveType プロンプトの方向性を表すタイプ
+   * @param baseDir ベースディレクトリ（デフォルト: "prompts"）
+   * @returns プロンプトテンプレートのファイルパス
+   */
+  resolvePromptTemplatePath(directiveType: string, baseDir = "prompts"): string {
+    return `${baseDir}/${directiveType}/${this.value}.md`;
+  }
+
+  /**
+   * スキーマファイルのパスを解決
+   *
+   * DirectiveTypeと組み合わせてJSONスキーマファイルのパスを構築します。
+   *
+   * @param directiveType プロンプトの方向性を表すタイプ
+   * @param baseDir ベースディレクトリ（デフォルト: "schema"）
+   * @returns スキーマファイルのパス
+   */
+  resolveSchemaPath(directiveType: string, baseDir = "schema"): string {
+    return `${baseDir}/${directiveType}-${this.value}.json`;
+  }
+
+  /**
+   * 出力ファイルのパスを解決
+   *
+   * DirectiveTypeと組み合わせて出力ファイルのパスを構築します。
+   *
+   * @param directiveType プロンプトの方向性を表すタイプ
+   * @param extension ファイル拡張子（デフォルト: ".md"）
+   * @param baseDir ベースディレクトリ（デフォルト: "output"）
+   * @returns 出力ファイルのパス
+   */
+  resolveOutputPath(directiveType: string, extension = ".md", baseDir = "output"): string {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return `${baseDir}/${directiveType}-${this.value}-${timestamp}${extension}`;
+  }
+
+  /**
+   * 設定ファイルのパスを解決
+   *
+   * LayerType固有の設定ファイルパスを構築します。
+   *
+   * @param configType 設定のタイプ（"app" | "user"）
+   * @param profile プロファイル名（デフォルト: "default"）
+   * @param baseDir ベースディレクトリ（デフォルト: "config"）
+   * @returns 設定ファイルのパス
+   */
+  resolveConfigPath(configType: "app" | "user", profile = "default", baseDir = "config"): string {
+    return `${baseDir}/${profile}-${configType}.yml`;
+  }
+
+  // 検証メソッド群
+
+  /**
+   * 指定されたDirectiveTypeに対してこのLayerTypeが有効かどうかを検証
+   *
+   * LayerTypeとDirectiveTypeの組み合わせの妥当性を検証します。
+   * 例えば、"defect"（欠陥検出）は"bugs"（バグ）LayerTypeに適しているが、
+   * "project"（プロジェクト）LayerTypeには適していない場合があります。
+   *
+   * @param directiveType 検証対象のDirectiveType
+   * @param validCombinations 有効な組み合わせを定義するマップ（オプション）
+   * @returns 有効な組み合わせの場合 true
+   *
+   * @example
+   * ```typescript
+   * const layerType = LayerType.create(result);
+   * const isValid = layerType.isValidForDirective("to");
+   * console.log(isValid); // true または false
+   *
+   * // カスタム組み合わせルールを使用
+   * const customRules = {
+   *   "defect": ["bugs", "issue"],
+   *   "summary": ["project", "issue", "task"],
+   *   "to": ["project", "issue", "task"]
+   * };
+   * const isValidCustom = layerType.isValidForDirective("defect", customRules);
+   * ```
+   */
+  isValidForDirective(
+    directiveType: string,
+    validCombinations?: Record<string, string[]>,
+  ): boolean {
+    // デフォルトの有効な組み合わせルール
+    const defaultCombinations: Record<string, string[]> = {
+      "to": ["project", "issue", "task", "bugs", "temp"],
+      "summary": ["project", "issue", "task"],
+      "defect": ["bugs", "issue", "task"],
+      "analysis": ["project", "issue"],
+      "review": ["project", "issue", "task"],
+      "doc": ["project", "issue"],
+      "test": ["project", "issue", "task"],
+    };
+
+    const combinations = validCombinations || defaultCombinations;
+    const validLayerTypes = combinations[directiveType];
+
+    // DirectiveTypeが定義されていない場合は、すべてのLayerTypeで有効とする
+    if (!validLayerTypes) {
+      return true;
+    }
+
+    return validLayerTypes.includes(this.value);
+  }
+
+  /**
+   * 指定されたDirectiveTypeに対してこのLayerTypeが有効かどうかを検証（Result型版）
+   *
+   * isValidForDirectiveのResult型版で、詳細なエラー情報を提供します。
+   *
+   * @param directiveType 検証対象のDirectiveType
+   * @param validCombinations 有効な組み合わせを定義するマップ（オプション）
+   * @returns 成功時は Result<true>、失敗時はエラー情報
+   */
+  isValidForDirectiveOrError(
+    directiveType: string,
+    validCombinations?: Record<string, string[]>,
+  ): Result<true, ValidationError> {
+    if (!directiveType || typeof directiveType !== "string") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "directiveType",
+        value: directiveType,
+        reason: "DirectiveType must be a non-empty string",
+      }));
+    }
+
+    const isValid = this.isValidForDirective(directiveType, validCombinations);
+
+    if (!isValid) {
+      const combinations = validCombinations || {};
+      const validLayerTypes = combinations[directiveType];
+
+      return error(ErrorFactory.validationError("ValidationFailed", {
+        errors: [
+          `LayerType '${this.value}' is not valid for DirectiveType '${directiveType}'. Valid LayerTypes: ${
+            validLayerTypes ? validLayerTypes.join(", ") : "any"
+          }`,
+        ],
+        context: {
+          field: "layerType-directiveType",
+          value: `${this.value}-${directiveType}`,
+        },
+      }));
+    }
+
+    return ok(true as const);
   }
 }

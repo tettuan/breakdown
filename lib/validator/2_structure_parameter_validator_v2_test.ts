@@ -33,6 +33,10 @@ import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
 
 function createMockTypePatternProvider(): TypePatternProvider {
   return {
+    validateDirectiveType: (value: string) => ["to", "summary", "defect"].includes(value),
+    validateLayerType: (value: string) => ["project", "issue", "task"].includes(value),
+    getValidDirectiveTypes: () => ["to", "summary", "defect"],
+    getValidLayerTypes: () => ["project", "issue", "task"],
     getDirectivePattern: () => {
       const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
       return pattern;
@@ -56,9 +60,16 @@ function createMockConfigValidator(): ConfigValidator {
 
 Deno.test("2_structure - ValidatedParams maintains hierarchical data integrity", () => {
   const result = createTwoParamsResult("to", "project");
+  const directiveResult = DirectiveType.create(result.demonstrativeType);
+  const layerResult = LayerType.create(result.layerType);
+  
+  if (!directiveResult.ok || !layerResult.ok) {
+    throw new Error("Failed to create domain objects for test");
+  }
+  
   const validatedParams: ValidatedParams = {
-    directive: DirectiveType.create(result),
-    layer: LayerType.create(result),
+    directive: directiveResult.data,
+    layer: layerResult.data,
     options: {
       inputPath: "/absolute/path/to/input.txt",
       outputPath: "/absolute/path/to/output.txt",

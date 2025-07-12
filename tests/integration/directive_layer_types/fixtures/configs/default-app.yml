@@ -1,0 +1,26 @@
+# Default application configuration for integration tests
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+  
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+  
+output:
+  base_dir: "output"
+  
+features:
+  extendedThinking: false
+  debugMode: true
+  strictValidation: true
+  autoSchema: true
+  
+limits:
+  maxFileSize: 10485760  # 10MB
+  maxPromptLength: 50000
+  maxVariables: 100
+  
+environment:
+  logLevel: "debug"
+  colorOutput: true
+  timezone: "UTC"
+  locale: "en-US"

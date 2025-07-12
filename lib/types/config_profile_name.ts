@@ -189,6 +189,98 @@ export class ConfigProfileName {
   }
 
   /**
+   * デフォルトプロファイル名かどうかを判定
+   */
+  get isDefault(): boolean {
+    return this._value === "default";
+  }
+
+  /**
+   * プレフィックス値を取得（ファイル名用）
+   * デフォルトプロファイルの場合は"default"文字列を返す
+   */
+  get prefix(): string {
+    return this.isDefault ? "default" : this._value;
+  }
+
+  /**
+   * デフォルトのConfigProfileNameを作成
+   *
+   * @returns デフォルトプロファイル("default")のConfigProfileName
+   */
+  static createDefault(): ConfigProfileName {
+    // "default"は有効なパターンなので、createの成功は保証されている
+    const result = ConfigProfileName.create("default");
+    if (!result.ok) {
+      // 理論的には到達しないが、型安全性のため
+      throw new Error("Failed to create default ConfigProfileName");
+    }
+    return result.data;
+  }
+
+  /**
+   * CLIオプションからConfigProfileNameを作成
+   *
+   * null/undefinedの場合はデフォルトプロファイルを返す
+   *
+   * @param option CLIの--configオプション値（null, undefined, または文字列）
+   * @returns 常にConfigProfileName（デフォルト値自動適用）
+   */
+  static fromCliOption(option: string | null | undefined): ConfigProfileName {
+    if (!option || typeof option !== "string" || option.trim() === "") {
+      return ConfigProfileName.createDefault();
+    }
+
+    const result = ConfigProfileName.create(option);
+    if (result.ok) {
+      return result.data;
+    } else {
+      // 無効な値の場合もデフォルトを返す（CLIの利便性のため）
+      console.warn(`Invalid config profile "${option}", using default profile`);
+      return ConfigProfileName.createDefault();
+    }
+  }
+
+  /**
+   * 設定ファイルパスを取得
+   *
+   * プロファイル名に基づいて設定ファイルのパスを生成
+   *
+   * @returns 設定ファイルのベースパス
+   */
+  getConfigPath(): string {
+    return this.isDefault ? "default" : this._value;
+  }
+
+  /**
+   * 利用可能なDirectiveTypesを取得
+   *
+   * 注意: 実際の実装では設定ファイルから読み込む必要がある
+   * ここではプレースホルダーとして空配列を返す
+   *
+   * @returns DirectiveTypeの配列（将来の実装で設定から読み込み）
+   */
+  getDirectiveTypes(): readonly string[] {
+    // TODO: 実際の実装では設定ファイルから読み込む
+    // for now, return common directive types
+    return ["to", "summary", "defect"] as const;
+  }
+
+  /**
+   * 利用可能なLayerTypesを取得
+   *
+   * 注意: 実際の実装では設定ファイルから読み込む必要がある
+   * ここではプレースホルダーとして空配列を返す
+   *
+   * @returns LayerTypeの配列（将来の実装で設定から読み込み）
+   */
+  getLayerTypes(): readonly string[] {
+    // TODO: 実際の実装では設定ファイルから読み込む
+    // for now, return common layer types
+    return ["project", "issue", "task"] as const;
+  }
+
+  /**
    * 文字列表現
    */
   toString(): string {

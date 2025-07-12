@@ -18,8 +18,8 @@
  * @module domain/core/value_objects/template_path
  */
 
-import type { DirectiveType } from "../../../types/directive_type.ts";
-import type { LayerType } from "../../../types/layer_type.ts";
+import type { DirectiveType } from "./directive_type.ts";
+import type { LayerType } from "./layer_type.ts";
 import { error, ok, Result } from "../../../types/result.ts";
 import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "./base_path.ts";
 

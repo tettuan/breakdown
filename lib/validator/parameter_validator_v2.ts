@@ -9,14 +9,15 @@
 
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-import { DirectiveType } from "../types/directive_type.ts";
-import { LayerType } from "../types/layer_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
 import { CustomVariableExtractor } from "../processor/custom_variable_extractor.ts";
+import { ConfigProfileName } from "../types/config_profile_name.ts";
 
 /**
  * Validated parameters after comprehensive validation
@@ -189,7 +190,7 @@ export class ParameterValidatorV2 {
       });
     }
 
-    // 5. Create validated types
+    // 5. Create validated types with DDD approach
     const twoParamsResult: TwoParams_Result = {
       type: "two",
       demonstrativeType: typeValidation.data.demonstrativeType,
@@ -198,8 +199,33 @@ export class ParameterValidatorV2 {
       options: typeValidation.data.options,
     };
 
-    const directive = DirectiveType.create(twoParamsResult);
-    const layer = LayerType.create(twoParamsResult);
+    // Use DDD DirectiveType with Smart Constructor pattern
+    const directiveResult = DirectiveType.create(
+      typeValidation.data.demonstrativeType,
+      this.getConfigProfile(normalizedOptions.data.profile)
+    );
+    if (!directiveResult.ok) {
+      return error({
+        kind: "TypeCreationError",
+        type: "directive",
+        value: typeValidation.data.demonstrativeType,
+      });
+    }
+
+    // Use DDD LayerType with Smart Constructor pattern  
+    const layerResult = LayerType.create(
+      typeValidation.data.layerType
+    );
+    if (!layerResult.ok) {
+      return error({
+        kind: "TypeCreationError",
+        type: "layer",
+        value: typeValidation.data.layerType,
+      });
+    }
+
+    const directive = directiveResult.data;
+    const layer = layerResult.data;
 
     // 6. Create validated options
     const validatedOptions: ValidatedOptions = {
@@ -224,5 +250,17 @@ export class ParameterValidatorV2 {
       customVariables: customVarsResult.data,
       metadata,
     });
+  }
+
+  /**
+   * Get ConfigProfileName from profile string with fallback to default
+   */
+  private getConfigProfile(profileName?: string): ConfigProfileName {
+    if (!profileName) {
+      return ConfigProfileName.createDefault();
+    }
+    
+    const result = ConfigProfileName.create(profileName);
+    return result.ok ? result.data : ConfigProfileName.createDefault();
   }
 }

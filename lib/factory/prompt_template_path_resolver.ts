@@ -20,7 +20,7 @@
 
 import { isAbsolute, join, resolve } from "@std/path";
 import { existsSync } from "@std/fs";
-import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
@@ -118,6 +118,7 @@ export class PromptTemplatePathResolver {
     & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
     & Record<string, unknown>;
   private readonly _cliParams: DoubleParams_Result | TwoParams_Result;
+  private readonly breakdownConfig?: BreakdownConfig;
 
   /**
    * Private constructor following Smart Constructor pattern
@@ -128,10 +129,12 @@ export class PromptTemplatePathResolver {
       & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
       & Record<string, unknown>,
     cliParams: DoubleParams_Result | TwoParams_Result,
+    breakdownConfig?: BreakdownConfig,
   ) {
     // Deep copy to ensure immutability - inputs are already validated
     this.config = this.deepCopyConfig(config);
     this._cliParams = this.deepCopyCliParams(cliParams);
+    this.breakdownConfig = breakdownConfig;
   }
 
   /**
@@ -163,6 +166,7 @@ export class PromptTemplatePathResolver {
       & { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } }
       & Record<string, unknown>,
     cliParams: DoubleParams_Result | TwoParams_Result,
+    breakdownConfig?: BreakdownConfig,
   ): Result<PromptTemplatePathResolver, PathResolutionError> {
     // Validate configuration presence and type
     if (!config || typeof config !== "object" || Array.isArray(config)) {
@@ -201,7 +205,7 @@ export class PromptTemplatePathResolver {
       });
     }
 
-    return resultOk(new PromptTemplatePathResolver(config, cliParams));
+    return resultOk(new PromptTemplatePathResolver(config, cliParams, breakdownConfig));
   }
 
   /**
@@ -388,8 +392,8 @@ export class PromptTemplatePathResolver {
   public resolveBaseDir(): string {
     const result = this.resolveBaseDirSafe();
     if (!result.ok) {
-      // Maintain backward compatibility by returning default
-      return resolve(Deno.cwd(), DEFAULT_PROMPT_BASE_DIR);
+      // Maintain backward compatibility by returning hardcoded default for sync method
+      return resolve(Deno.cwd(), "prompts");
     }
     return result.data;
   }
@@ -407,7 +411,7 @@ export class PromptTemplatePathResolver {
     if (useSchema && this.config.app_schema?.base_dir) {
       baseDir = this.config.app_schema.base_dir;
     } else {
-      baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
+      baseDir = this.config.app_prompt?.base_dir || this.getDefaultPromptBaseDir();
     }
 
     if (!isAbsolute(baseDir)) {
@@ -638,6 +642,14 @@ export class PromptTemplatePathResolver {
     }
 
     return null;
+  }
+
+  /**
+   * BreakdownConfigからデフォルトプロンプトベースディレクトリを取得
+   */
+  private getDefaultPromptBaseDir(): string {
+    // デフォルト値を直接返す（設定との統合は後で改善）
+    return "prompts";
   }
 }
 

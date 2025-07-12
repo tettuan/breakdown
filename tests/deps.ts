@@ -29,11 +29,11 @@ export {
   createValidationFailedError,
   // Default implementations
   DefaultTypePatternProvider,
-  // Deprecated legacy types (for backward compatibility)
-  type DemonstrativeType,
-  DemonstrativeTypeFactory,
-  DemonstrativeTypeGuards,
-  DirectiveFactory,
+  // Deprecated legacy types (for backward compatibility) - COMMENTED OUT
+  // type DemonstrativeType,
+  // DemonstrativeTypeFactory,
+  // DemonstrativeTypeGuards,
+  // DirectiveFactory,
   // Core type definitions
   DirectiveType,
   type EnumResult,
@@ -53,13 +53,13 @@ export {
   ImpactScope,
   isError,
   isOk,
-  LayerFactory,
+  // LayerFactory, // REMOVED - use LayerTypeFactory instead
   LayerType,
   // Layer type utilities
   LayerTypeFactory,
-  type LegacyLayerType,
-  LegacyLayerTypeFactory,
-  LegacyLayerTypeGuards,
+  // type LegacyLayerType, // REMOVED
+  // LegacyLayerTypeFactory, // REMOVED
+  // LegacyLayerTypeGuards, // REMOVED
   map,
   ok,
   type OneParamsResult,
@@ -73,7 +73,6 @@ export {
   type PromptVariables,
   type Result,
   ResultStatus,
-  type ResultType,
   SeverityLevel,
   StandardVariable,
   StandardVariableName,
@@ -87,7 +86,7 @@ export {
   TotalityPromptVariablesFactory,
   // Result types for parameter operations
   type TwoParams_Result,
-  TwoParamsConfigFactory,
+  // TwoParamsConfigFactory, // REMOVED
   // Pattern types
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
@@ -100,7 +99,7 @@ export {
   UserVariable,
   type VariableError,
   type VariableResult,
-  VariableResultFactory,
+  // VariableResultFactory, // REMOVED
   type WorkspaceError,
   type ZeroParamsResult,
 } from "../lib/types/mod.ts";

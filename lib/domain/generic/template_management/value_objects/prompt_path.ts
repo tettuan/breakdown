@@ -5,7 +5,7 @@
  */
 
 import type { DirectiveType } from "../../../../types/directive_type.ts";
-import type { LayerType } from "../../../../types/layer_type.ts";
+import type { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 
 /**
  * Prompt path result

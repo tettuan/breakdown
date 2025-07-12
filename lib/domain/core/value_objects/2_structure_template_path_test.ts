@@ -29,7 +29,7 @@ import {
   TemplatePathError,
 } from "./template_path.ts";
 import type { DirectiveType } from "../../../types/directive_type.ts";
-import type { LayerType } from "../../../types/layer_type.ts";
+import type { LayerType } from "../../../domain/core/value_objects/layer_type.ts";
 
 // =============================================================================
 // 0_ARCHITECTURE: Smart Constructor & Result Type & Discriminated Union Tests

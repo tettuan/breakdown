@@ -11,7 +11,7 @@ import {
   type TemplateRequestResult,
 } from "./template_request.ts";
 import { DirectiveType } from "../../../../types/directive_type.ts";
-import { LayerType } from "../../../../types/layer_type.ts";
+import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../../../../types/two_params_result_extension.ts";
 
 // Test fixtures

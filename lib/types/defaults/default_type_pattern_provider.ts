@@ -5,11 +5,15 @@
  * the patterns defined in defaultConfigTwoParams. This allows TypeFactory to work
  * with sensible defaults without requiring external configuration.
  *
+ * **DDD Version Priority Policy**: This implementation follows Domain Driven Design
+ * principles and integrates with parameter_validator_v2.ts, using the new createOrError
+ * methods for Totality-compliant error handling instead of deprecated create methods.
+ *
  * @module types/defaults/default_type_pattern_provider
  */
 
-import { TwoParamsDirectivePattern } from "../directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../layer_type.ts";
+import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../../domain/core/value_objects/layer_type.ts";
 import type { TypePatternProvider } from "../type_factory.ts";
 import { _defaultConfigTwoParams } from "./config_two_params.ts";
 
@@ -19,6 +23,10 @@ import { _defaultConfigTwoParams } from "./config_two_params.ts";
  * Uses patterns from defaultConfigTwoParams to provide sensible defaults
  * for DirectiveType and LayerType validation. This enables TypeFactory
  * to work out-of-the-box without requiring external configuration.
+ *
+ * **DDD Compliance**: This implementation uses createOrError methods for 
+ * Totality-compliant error handling, ensuring compatibility with 
+ * parameter_validator_v2.ts and the DDD version priority policy.
  *
  * @example Basic usage
  * ```typescript
@@ -45,25 +53,67 @@ import { _defaultConfigTwoParams } from "./config_two_params.ts";
  */
 export class DefaultTypePatternProvider implements TypePatternProvider {
   /**
-   * Get DirectiveType validation pattern from default configuration
+   * Get DirectiveType validation pattern from default configuration (TypePatternProvider interface)
    *
-   * @returns TwoParamsDirectivePattern for validating DirectiveType values
-   * @returns null if pattern creation fails (should not happen with valid defaults)
+   * Uses the new createOrError implementation for Totality-compliant error handling.
+   * This method follows DDD principles by delegating to the domain object's factory method.
+   *
+   * @returns Pattern object for validating DirectiveType values
    */
-  getDirectivePattern(): TwoParamsDirectivePattern | null {
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
-    return TwoParamsDirectivePattern.create(pattern);
+    const result = TwoParamsDirectivePattern.createOrError(pattern);
+    if (!result.ok) {
+      return null;
+    }
+    return result.data;
   }
 
   /**
-   * Get LayerType validation pattern from default configuration
+   * Get DirectiveType validation pattern from default configuration (internal method)
+   *
+   * @returns TwoParamsDirectivePattern for validating DirectiveType values
+   * @throws Error if pattern creation fails (should not happen with valid defaults)
+   */
+  getDirectivePatternObject(): TwoParamsDirectivePattern {
+    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
+    const result = TwoParamsDirectivePattern.createOrError(pattern);
+    if (!result.ok) {
+      throw new Error(`Failed to create directive pattern: ${result.error.kind} - ${JSON.stringify(result.error)}`);
+    }
+    return result.data;
+  }
+
+  /**
+   * Get LayerType validation pattern from default configuration (TypePatternProvider interface)
+   *
+   * Uses the new createOrError implementation for Totality-compliant error handling.
+   * This method follows DDD principles by delegating to the domain object's factory method.
+   *
+   * @returns Pattern object for validating LayerType values
+   */
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
+    const pattern = _defaultConfigTwoParams.params.two.layerType.pattern;
+    const result = TwoParamsLayerTypePattern.createOrError(pattern);
+    if (!result.ok) {
+      return null;
+    }
+    return result.data;
+  }
+
+  /**
+   * Get LayerType validation pattern from default configuration (internal method)
    *
    * @returns TwoParamsLayerTypePattern for validating LayerType values
-   * @returns null if pattern creation fails (should not happen with valid defaults)
+   * @throws Error if pattern creation fails (should not happen with valid defaults)
    */
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null {
+  getLayerTypePatternObject(): TwoParamsLayerTypePattern {
     const pattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-    return TwoParamsLayerTypePattern.create(pattern);
+    const result = TwoParamsLayerTypePattern.createOrError(pattern);
+    if (!result.ok) {
+      throw new Error(`Failed to create layer type pattern: ${result.error.kind} - ${JSON.stringify(result.error)}`);
+    }
+    return result.data;
   }
 
   /**
@@ -73,6 +123,46 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    */
   getDefaultConfig(): typeof _defaultConfigTwoParams {
     return _defaultConfigTwoParams;
+  }
+
+  /**
+   * Validate DirectiveType value against the pattern
+   *
+   * @param value The value to validate
+   * @returns true if the value matches the pattern
+   */
+  validateDirectiveType(value: string): boolean {
+    const pattern = this.getDirectivePatternObject();
+    return pattern.test(value);
+  }
+
+  /**
+   * Validate LayerType value against the pattern
+   *
+   * @param value The value to validate
+   * @returns true if the value matches the pattern
+   */
+  validateLayerType(value: string): boolean {
+    const pattern = this.getLayerTypePatternObject();
+    return pattern.test(value);
+  }
+
+  /**
+   * Get available DirectiveType values (interface compliance)
+   *
+   * @returns Readonly array of valid DirectiveType string values
+   */
+  getValidDirectiveTypes(): readonly string[] {
+    return this.getValidDirectiveValues();
+  }
+
+  /**
+   * Get available LayerType values (interface compliance)
+   *
+   * @returns Readonly array of valid LayerType string values
+   */
+  getValidLayerTypes(): readonly string[] {
+    return this.getValidLayerValues();
   }
 
   /**

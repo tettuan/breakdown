@@ -7,7 +7,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { SchemaPath, type SchemaPathResult } from "./schema_path.ts";
 import { DirectiveType } from "../../../../types/directive_type.ts";
-import { LayerType } from "../../../../types/layer_type.ts";
+import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../../../../deps.ts";
 
 // Test fixtures

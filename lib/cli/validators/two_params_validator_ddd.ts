@@ -21,11 +21,11 @@ import { TypeFactory } from "$lib/types/type_factory.ts";
 import {
   DirectiveType as ImportedDirectiveType,
   TwoParamsDirectivePattern,
-} from "$lib/types/directive_type.ts";
+} from "$lib/domain/core/value_objects/directive_type.ts";
 import {
   LayerType as ImportedLayerType,
   TwoParamsLayerTypePattern,
-} from "$lib/types/layer_type.ts";
+} from "$lib/domain/core/value_objects/layer_type.ts";
 
 // Type aliases for domain usage
 export type DirectiveType = ImportedDirectiveType;

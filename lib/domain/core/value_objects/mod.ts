@@ -189,8 +189,8 @@ export class PathValueObjectFactory {
    * Create a template path for a specific directive and layer
    */
   static createTemplatePath(
-    directive: import("../../../types/directive_type.ts").DirectiveType,
-    layer: import("../../../types/layer_type.ts").LayerType,
+    directive: import("./directive_type.ts").DirectiveType,
+    layer: import("./layer_type.ts").LayerType,
     filename: string,
   ) {
     return import("./template_path.ts").then(({ TemplatePath }) =>
@@ -202,8 +202,8 @@ export class PathValueObjectFactory {
    * Create a schema path for a specific directive and layer
    */
   static createSchemaPath(
-    directive: import("../../../types/directive_type.ts").DirectiveType,
-    layer: import("../../../types/layer_type.ts").LayerType,
+    directive: import("./directive_type.ts").DirectiveType,
+    layer: import("./layer_type.ts").LayerType,
     filename: string,
   ) {
     return import("./schema_path.ts").then(({ SchemaPath }) =>
@@ -280,6 +280,20 @@ export {
   isStartsWithReservedPrefixError,
   isTooLongError as isConfigSetTooLongError,
 } from "./config_set_name.ts";
+
+// Directive Type Value Object  
+export {
+  DirectiveType,
+  TwoParamsDirectivePattern,
+  type DirectiveTypeError,
+} from "./directive_type.ts";
+
+// Layer Type Value Object
+export {
+  LayerType,
+  TwoParamsLayerTypePattern,
+  type LayerTypeError,
+} from "./layer_type.ts";
 
 /**
  * Get configuration presets for different environments

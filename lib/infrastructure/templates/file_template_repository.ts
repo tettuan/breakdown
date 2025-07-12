@@ -9,6 +9,7 @@
 
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
 import {
   PromptTemplate,
@@ -31,6 +32,7 @@ export interface FileTemplateRepositoryConfig {
   cacheEnabled?: boolean;
   cacheTTLMs?: number;
   watchForChanges?: boolean;
+  breakdownConfig?: BreakdownConfig;
 }
 
 /**
@@ -75,7 +77,8 @@ export class FileTemplateRepository implements TemplateRepository {
     }
 
     // Load from file system
-    const fullPath = join(this.config.baseDirectory, "prompts", pathString);
+    const promptsSubDir = this.getPromptsSubDirectory();
+    const fullPath = join(this.config.baseDirectory, promptsSubDir, pathString);
 
     try {
       const content = await Deno.readTextFile(fullPath);
@@ -107,8 +110,9 @@ export class FileTemplateRepository implements TemplateRepository {
     }
   }
 
-  exists(path: TemplatePath): Promise<boolean> {
-    const fullPath = join(this.config.baseDirectory, "prompts", path.getPath());
+  async exists(path: TemplatePath): Promise<boolean> {
+    const promptsSubDir = this.getPromptsSubDirectory();
+    const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
     return exists(fullPath);
   }
 
@@ -128,7 +132,8 @@ export class FileTemplateRepository implements TemplateRepository {
 
   async save(template: PromptTemplate): Promise<void> {
     const path = template.getPath();
-    const fullPath = join(this.config.baseDirectory, "prompts", path.getPath());
+    const promptsSubDir = this.getPromptsSubDirectory();
+    const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
 
     // Ensure directory exists
     const dir = fullPath.substring(0, fullPath.lastIndexOf("/"));
@@ -145,7 +150,8 @@ export class FileTemplateRepository implements TemplateRepository {
   }
 
   async delete(path: TemplatePath): Promise<void> {
-    const fullPath = join(this.config.baseDirectory, "prompts", path.getPath());
+    const promptsSubDir = this.getPromptsSubDirectory();
+    const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
 
     try {
       await Deno.remove(fullPath);
@@ -172,7 +178,8 @@ export class FileTemplateRepository implements TemplateRepository {
 
   private async buildManifest(): Promise<TemplateManifest> {
     const templates: TemplateManifestEntry[] = [];
-    const promptsDir = join(this.config.baseDirectory, "prompts");
+    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsDir = join(this.config.baseDirectory, promptsSubDir);
 
     try {
       for await (
@@ -277,5 +284,13 @@ export class FileTemplateRepository implements TemplateRepository {
     // Placeholder for file watching implementation
     // This would use Deno.watchFs to monitor template directory
     this.logger.info("File watching not yet implemented");
+  }
+
+  /**
+   * BreakdownConfigからプロンプトディレクトリ名を取得
+   */
+  private getPromptsSubDirectory(): string {
+    // デフォルト値を直接返す（設定との統合は後で改善）
+    return "prompts";
   }
 }

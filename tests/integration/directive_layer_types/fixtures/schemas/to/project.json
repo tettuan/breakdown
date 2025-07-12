@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project to Issue Conversion Output",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Project title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Project scope definition"
+        }
+      },
+      "required": ["title", "description"]
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/issue"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "totalIssues": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "estimatedEffort": {
+          "type": "string",
+          "pattern": "^\\d+\\s+(hours?|days?|weeks?)$"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        }
+      },
+      "required": ["totalIssues"]
+    }
+  },
+  "definitions": {
+    "issue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]+-\\d+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "effort": {
+          "type": "string",
+          "pattern": "^\\d+\\s+(hours?|days?)$"
+        },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]+-\\d+$"
+          }
+        }
+      },
+      "required": ["id", "title", "description", "priority", "effort", "acceptanceCriteria"]
+    }
+  },
+  "required": ["project", "issues", "metadata"]
+}

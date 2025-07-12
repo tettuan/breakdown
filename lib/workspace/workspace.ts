@@ -28,6 +28,7 @@ import {
 import { stringify } from "jsr:@std/yaml@1.0.6";
 import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
+import { BreakdownConfig } from "../deps.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
 import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
 import { resolve } from "jsr:@std/path@1.0.0";
@@ -248,26 +249,28 @@ export class WorkspaceImpl implements Workspace {
    * @throws {WorkspaceConfigError} If the configuration file is not found
    */
   async reloadConfig(): Promise<void> {
-    // Reload configuration from file
-    const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
-    const configFile = join(configDir, "default-app.yml");
-
+    // Reload configuration using BreakdownConfig
     try {
-      const configContent = await Deno.readTextFile(configFile);
-      const parsedContent = parse(configContent);
-      if (!parsedContent || typeof parsedContent !== "object") {
-        throw createWorkspaceConfigError("Invalid configuration file format");
+      // Create BreakdownConfig instance with default profile using static factory method
+      const breakdownConfigResult = await BreakdownConfig.create("default", this.config.workingDir);
+      
+      if (!breakdownConfigResult.success || !breakdownConfigResult.data) {
+        throw createWorkspaceConfigError(`Failed to create BreakdownConfig`);
       }
-      const config = parsedContent as {
-        working_dir: string;
-        app_prompt: { base_dir: string };
-        app_schema: { base_dir: string };
-      };
-
+      
+      const breakdownConfig = breakdownConfigResult.data;
+      
+      // Load configuration
+      await breakdownConfig.loadConfig();
+      
+      // Get merged configuration
+      const mergedConfig = await breakdownConfig.getConfig();
+      
+      // Extract the necessary configuration values
       this.config = {
         workingDir: this.config.workingDir,
-        promptBaseDir: config.app_prompt.base_dir,
-        schemaBaseDir: config.app_schema.base_dir,
+        promptBaseDir: mergedConfig.app_prompt?.base_dir || "prompts",
+        schemaBaseDir: mergedConfig.app_schema?.base_dir || "schema",
       };
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {

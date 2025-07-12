@@ -1,0 +1,24 @@
+# Default user configuration for integration tests
+directive_patterns: "to|summary|defect|find|analyze|extract"
+layer_patterns: "project|issue|task|component|module"
+
+custom_variables:
+  author: "Integration Test Suite"
+  version: "1.0.0"
+  organization: "Breakdown Testing"
+  
+aliases:
+  proj: "project"
+  iss: "issue"
+  t: "task"
+  
+templates:
+  default_prompt: "Please process the following content:\n\n${input}\n\nOutput to: ${output}"
+  error_template: "Error occurred: ${error}\nSuggestion: ${suggestion}"
+  
+user:
+  name: "Test User"
+  email: "test@example.com"
+  preferences:
+    verboseOutput: true
+    confirmActions: false
