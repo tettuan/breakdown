@@ -10,9 +10,13 @@ BreakdownはCLIツールとしての利用が主目的です。
 **Deno公式/JSR標準の方法**で、以下のコマンドでインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-net --allow-env --allow-run -f --global breakdown jsr:@tettuan/breakdown
 ```
-- `-A` : すべての権限を許可（推奨）
+- `--allow-read` : ファイル読み取り権限
+- `--allow-write` : ファイル書き込み権限  
+- `--allow-net` : ネットワーク接続権限
+- `--allow-env` : 環境変数アクセス権限
+- `--allow-run` : サブプロセス実行権限
 - `-f` : 既存のコマンドを上書き
 - `--global` : グローバルインストール
 - `breakdown` : コマンド名
@@ -28,7 +32,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 新しいバージョンが公開された場合も、同じコマンドで上書きインストールできます。
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-net --allow-env --allow-run -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 ---
@@ -55,7 +59,7 @@ deno add @tettuan/breakdown
 特定のプロジェクト内でのみbreakdownコマンドを使用したい場合は、`--root`オプションを使用して`.deno/bin`にインストールできます：
 
 ```bash
-deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-net --allow-env --allow-run -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
 
 インストール後、binディレクトリをPATHに追加します：
@@ -77,15 +81,10 @@ which breakdown
 
 2. 直接実行でテスト:
 ```bash
-deno run --allow-all jsr:@tettuan/breakdown
+deno run --allow-read --allow-write --allow-net --allow-env --allow-run jsr:@tettuan/breakdown
 ```
 
-3. バイナリとしてコンパイル:
-```bash
-deno compile -A -o ~/.deno/bin/breakdown jsr:@tettuan/breakdown
-```
-
-4. パスの確認:
+3. パスの確認:
 ```bash
 echo $PATH
 ```
