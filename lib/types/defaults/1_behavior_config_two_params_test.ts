@@ -20,7 +20,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
 
     // Test directiveType pattern behavior
     const directiveRegex = new RegExp(config.directiveType.pattern);
-    const validDirective = ["to", "summary", "defect"];
+    const validDirective = ["to", "summary", "defect", "find"];
     const invalidDirective = ["invalid", "TO", "summary2", ""];
 
     validDirective.forEach((value) => {
@@ -37,7 +37,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
 
     // Test layerType pattern behavior
     const layerRegex = new RegExp(config.layerType.pattern);
-    const validLayer = ["project", "issue", "task"];
+    const validLayer = ["project", "issue", "task", "bugs"];
     const invalidLayer = ["invalid", "PROJECT", "task1", ""];
 
     validLayer.forEach((value) => {
@@ -71,20 +71,20 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     // Test directiveType pattern extraction
     const directiveMatch = config.directiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(directiveMatch);
-    assertEquals(directiveMatch[1], "to|summary|defect");
+    assertEquals(directiveMatch[1], "to|summary|defect|find");
 
     const directiveValues = directiveMatch[1].split("|");
-    assertEquals(directiveValues.length, 3);
-    assertEquals(directiveValues, ["to", "summary", "defect"]);
+    assertEquals(directiveValues.length, 4);
+    assertEquals(directiveValues, ["to", "summary", "defect", "find"]);
 
     // Test layerType pattern extraction
     const layerMatch = config.layerType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(layerMatch);
-    assertEquals(layerMatch[1], "project|issue|task");
+    assertEquals(layerMatch[1], "project|issue|task|bugs");
 
     const layerValues = layerMatch[1].split("|");
-    assertEquals(layerValues.length, 3);
-    assertEquals(layerValues, ["project", "issue", "task"]);
+    assertEquals(layerValues.length, 4);
+    assertEquals(layerValues, ["project", "issue", "task", "bugs"]);
   });
 
   await t.step("should support deep object traversal", () => {
@@ -149,13 +149,13 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     };
 
     // Verify original is unchanged
-    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect)$");
+    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect|find)$");
 
     // Verify custom config has new pattern
     assertEquals(customConfig.params.two.directiveType.pattern, "^(custom|pattern)$");
 
     // Verify other properties are preserved
-    assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task)$");
+    assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task|bugs)$");
     assertEquals(customConfig.params.two.validation.userVariableOption, true);
   });
 

@@ -7,9 +7,9 @@ app_schema:
 params:
   two:
     demonstrativeType:
-      pattern: "^(to|summary|defect|find)$"
+      pattern: "^(to|summary|defect)$"
     layerType:
-      pattern: "^(project|issue|task|bugs)$"
+      pattern: "^(project|issue|task)$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
