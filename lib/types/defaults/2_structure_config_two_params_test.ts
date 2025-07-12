@@ -86,7 +86,8 @@ Deno.test("defaultConfigTwoParams - Cross-Domain Consistency", async (t) => {
     assertEquals(values.includes("to"), true, "Should include 'to' directive");
     assertEquals(values.includes("summary"), true, "Should include 'summary' directive");
     assertEquals(values.includes("defect"), true, "Should include 'defect' directive");
-    assertEquals(values.length, 3, "Should have exactly 3 directive types");
+    assertEquals(values.includes("find"), true, "Should include 'find' directive");
+    assertEquals(values.length, 4, "Should have exactly 4 directive types");
   });
 
   await t.step("should be consistent with LayerType expectations", () => {
@@ -101,7 +102,8 @@ Deno.test("defaultConfigTwoParams - Cross-Domain Consistency", async (t) => {
     assertEquals(values.includes("project"), true, "Should include 'project' layer");
     assertEquals(values.includes("issue"), true, "Should include 'issue' layer");
     assertEquals(values.includes("task"), true, "Should include 'task' layer");
-    assertEquals(values.length, 3, "Should have exactly 3 layer types");
+    assertEquals(values.includes("bugs"), true, "Should include 'bugs' layer");
+    assertEquals(values.length, 4, "Should have exactly 4 layer types");
   });
 
   await t.step("should be consistent with validation system expectations", () => {
@@ -186,8 +188,8 @@ Deno.test("defaultConfigTwoParams - Schema Validation", async (t) => {
     assertObjectMatch(config, {
       params: {
         two: {
-          directiveType: { pattern: "^(to|summary|defect)$" },
-          layerType: { pattern: "^(project|issue|task)$" },
+          directiveType: { pattern: "^(to|summary|defect|find)$" },
+          layerType: { pattern: "^(project|issue|task|bugs)$" },
           validation: {
             allowedFlagOptions: [],
             allowedValueOptions: ["from", "destination", "input", "config"],

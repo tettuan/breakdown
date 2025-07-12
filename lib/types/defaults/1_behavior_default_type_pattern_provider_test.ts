@@ -227,10 +227,10 @@ Deno.test("DefaultTypePatternProvider - Debug Behavior", async (t) => {
 
     // Test debug info structure
     assertEquals(debugInfo.providerType, "DefaultTypePatternProvider");
-    assertEquals(debugInfo.directivePattern, "^(to|summary|defect)$");
-    assertEquals(debugInfo.layerPattern, "^(project|issue|task)$");
-    assertEquals(debugInfo.validDirectives, ["to", "summary", "defect"]);
-    assertEquals(debugInfo.validLayers, ["project", "issue", "task"]);
+    assertEquals(debugInfo.directivePattern, "^(to|summary|defect|find)$");
+    assertEquals(debugInfo.layerPattern, "^(project|issue|task|bugs)$");
+    assertEquals(debugInfo.validDirectives, ["to", "summary", "defect", "find"]);
+    assertEquals(debugInfo.validLayers, ["project", "issue", "task", "bugs"]);
   });
 
   await t.step("should maintain debug consistency", () => {
