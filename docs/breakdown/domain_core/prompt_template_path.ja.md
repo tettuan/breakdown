@@ -33,7 +33,7 @@ Breakdown CLIにおいて、AIが理解すべきプロンプトテンプレー�
 
 ### 値オブジェクト群: パス構成要素
 
-**DemonstrativeType**: ユーザーの「何をしたいか」（to/summary/defect）を表現し、プロンプトディレクトリの第1階層を決定する**意図の表現**です。
+**DirectiveType**: ユーザーの「何をしたいか」（to/summary/defect）を表現し、プロンプトディレクトリの第1階層を決定する**意図の表現**です。
 
 **LayerType**: ユーザーの「どの粒度で作業するか」（project/issue/task）を表現し、プロンプトディレクトリの第2階層を決定する**作業範囲の表現**です。
 
@@ -102,7 +102,7 @@ interface ConfigurationContext {
 #### パラメータ材料（Parameter Ecosystem）  
 ```typescript
 interface ParameterContext {
-  demonstrativeType: DemonstrativeType;  // ユーザーの意図（主指令）
+  directiveType: DirectiveType;          // ユーザーの意図（主指令）
   layerType: LayerType;                  // ユーザーの対象（副指令）  
   adaptation?: string;                   // ユーザーの特化要求（個性）
   fromInput?: string;                    // ユーザーの起点指定（明示）
@@ -178,11 +178,11 @@ enum PathResolutionErrorType {
 
   private buildFoundation(context: PathResolutionContext): FoundationResult {
     const baseDir = this.configService.getPromptBaseDirectory();
-    const directory = `${baseDir}/${context.demonstrativeType}/${context.layerType}`;
+    const directory = `${baseDir}/${context.directiveType}/${context.layerType}`;
     
     return {
       directoryPath: directory,
-      isValid: this.validateParameterCombination(context.demonstrativeType, context.layerType)
+      isValid: this.validateParameterCombination(context.directiveType, context.layerType)
     };
   }
 
@@ -231,7 +231,7 @@ enum PathResolutionErrorType {
 ```typescript
 // ユーザー入力: breakdown to task -f issue.md
 const context: PathResolutionContext = {
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "task", 
   fromFile: "issue.md",
   adaptation: undefined
@@ -245,7 +245,7 @@ const result = pathResolver.resolve(context);
 ```typescript
 // ユーザー入力: breakdown summary project --adaptation=strict
 const context: PathResolutionContext = {
-  demonstrativeType: "summary",
+  directiveType: "summary",
   layerType: "project",
   fromFile: undefined,
   inputOption: "project",  // --input project
@@ -260,7 +260,7 @@ const result = pathResolver.resolve(context);
 ```typescript
 // 存在しないファイルへの要求
 const context: PathResolutionContext = {
-  demonstrativeType: "defect",
+  directiveType: "defect",
   layerType: "task",
   fromFile: "complex_task.md",
   adaptation: "experimental"  // 存在しない適応タイプ

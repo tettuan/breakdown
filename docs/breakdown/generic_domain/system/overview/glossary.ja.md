@@ -83,7 +83,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
 | DirectiveType | options.ja.md, path.ja.md | 処理の方向性を指定するパラメータ。`to`（変換）、`summary`（要約）、`defect`（欠陥検出）、`init`（初期化）などの値を取り、どの方向に処理を向かわせるかを決定する。取りうる値は*-user.ymlでユーザーが自由に定義可能。パターンベースバリデーションにより型安全性を保証。 | LayerType, コマンド, 処理方向型, *-user.yml |
-| layerType | options.ja.md, path.ja.md | 処理対象の階層を指定するパラメータ。`project`、`issue`、`task` のいずれかを指定し、処理対象の粒度を決定する。階層値には次の処理への方向性（ベクトル情報）も含まれる。取りうる値は*-user.ymlでユーザーが自由に定義可能。 | demonstrativeType, コマンド, 階層型, *-user.yml |
+| layerType | options.ja.md, path.ja.md | 処理対象の階層を指定するパラメータ。`project`、`issue`、`task` のいずれかを指定し、処理対象の粒度を決定する。階層値には次の処理への方向性（ベクトル情報）も含まれる。取りうる値は*-user.ymlでユーザーが自由に定義可能。 | DirectiveType, コマンド, 階層型, *-user.yml |
 | adaptationType | options.ja.md, path.ja.md | プロンプトの種類を指定するパラメータ（-a, --adaptation）。`strict`、`a` などの値を取り、プロンプトファイル名のsuffixとして使用される。 | -a, --adaptation, プロンプト種別 |
 
 #### 1.2 ファイル・ディレクトリ管理

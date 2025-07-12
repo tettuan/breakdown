@@ -137,11 +137,11 @@ Users can specify and customize the following three points.
     - Example: `--config=production`, `-c=system`
 2. Demonstrative words usable in two parameters
   - Standard: 
-    - demonstrativeType: to, summary, defect
+    - directiveType: to, summary, defect
     - layerType: project, issue, task
   - Custom: Regular expression patterns
   - Custom specification method: 
-    - demonstrativeType: `params.two.demonstrativeType.pattern` in config
+    - directiveType: `params.two.directiveType.pattern` in config
     - layerType: `params.two.layerType.pattern` in config
     - Example: `--config=production`, `-c=system`
 3. User variables in prompts

@@ -287,7 +287,7 @@ function processCommand(result: ParameterResult) {
     case "one":
       return handleManagementOperation(result.command, result.options);
     case "two":
-      return handlePromptGeneration(result.demonstrativeType, result.layerType, result.options);
+      return handlePromptGeneration(result.directiveType, result.layerType, result.options);
   }
 }
 ```

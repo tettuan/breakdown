@@ -277,7 +277,7 @@ sequenceDiagram
     Core->>Params: Result取得
     Params->>Core: two params result
     
-    Core->>Core: demonstrativeType, layerType設定
+    Core->>Core: directiveType, layerType設定
     Core->>Config: app_prompt.base_dir取得
     Core->>Config: app_schema.base_dir取得
     Core->>Core: プロンプトPATH構築
@@ -311,7 +311,7 @@ sequenceDiagram
     participant PathResolver as PATH解決処理
     participant Prompt as BreakdownPrompt
     
-    Core->>PathResolver: demonstrativeType, layerType
+    Core->>PathResolver: directiveType, layerType
     
     Note over PathResolver: パラメータとオプション値の組み合わせ
     PathResolver->>Config: app_prompt.base_dir

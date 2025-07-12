@@ -61,7 +61,7 @@ DirectiveTypeResult:
 
 DirectiveType:
   受け入れ可能型:
-    - TwoParams_Result.demonstrativeType # バリデーション済み値のみ受け入れ
+    - TwoParams_Result.directiveType # バリデーション済み値のみ受け入れ
   受け入れ不可型:
     - 値なし # 未検証文字列は受け入れない
 
@@ -119,7 +119,7 @@ InvalidPathError:
 # Breakdown パラメータ処理型定義
 BreakdownParamsResult:
   TwoParamsResult:
-    - demonstrativeType: string # DirectiveType の元値
+    - directiveType: string # DirectiveType の元値
     - layerType: string # LayerType の元値
     - options: Options
   OneParamsResult:

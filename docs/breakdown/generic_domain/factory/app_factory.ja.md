@@ -50,9 +50,9 @@ CLI・テスト・アプリ本体は必ずこのFactory経由でパス解決・�
 ## パス解決ルール（要点のみ）
 
 - **プロンプトファイル**:  
-  プロンプトベースディレクトリ（`app_prompt.base_dir`） + demonstrativeType + layerType + `f_{fromLayerType}.md`
+  プロンプトベースディレクトリ（`app_prompt.base_dir`） + directiveType + layerType + `f_{fromLayerType}.md`
 - **スキーマファイル**:  
-  スキーマベースディレクトリ（`app_schema.base_dir`） + demonstrativeType + layerType + `base.schema.md`
+  スキーマベースディレクトリ（`app_schema.base_dir`） + directiveType + layerType + `base.schema.md`
 - **入力ファイル**:  
   入力ファイルパス解決の詳細仕様準拠
 - **出力ファイル**:  
@@ -146,14 +146,14 @@ breakdown to issue --from=project.md \
 | --input, -i            |                       |                       |                       |                       | 入力レイヤー種別を指定 |                     |                          |
 | --adaptation, -a       |                       |                       | プロンプトファイル名のsuffix |                       |                      | プロンプト種別を指定   |                          |
 | --* (v1.0.1)        |                       |                       |                       |                       |                      |                     | カスタム変数として格納    |
-| demonstrativeType      |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |                          |
+| directiveType          |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |                          |
 | layerType              |                       |                       | パス解決に利用         | パス解決に利用         |                      |                     |                          |
 
 ### 補足
 - inputFilePath, outputFilePath, promptFilePath, schemaFilePath などの予約変数は PromptVariablesFactory で一元的に構築される。
 - fromLayerType は --input で明示指定されない場合、fromFile のパスやファイル名から推定される。
 - adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
-- demonstrativeType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
+- directiveType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
 - カスタム変数（--*）は customVariables オブジェクトに格納され、テンプレート内で `{変数名}` として参照可能。
 ---
 

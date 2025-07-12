@@ -41,8 +41,8 @@
 | Term | Used in | Description | Related Words |
 |------|----------|------|------------|
 | promptmanager | app_prompt.ja.md | Module responsible for prompt generation and management. Performs variable substitution and schema information embedding to generate final prompt. | BreakdownPrompt, prompt generation |
-| demonstrativeType | options.ja.md, path.ja.md | Parameter specifying type of conversion or summary. Takes values like `to`, `summary`, `defect`, `init` and determines processing type. | layerType, command |
-| layerType | options.ja.md, path.ja.md | Parameter specifying target hierarchy. Specifies one of `project`, `issue`, `task` and determines processing granularity. | demonstrativeType, command |
+| directiveType | options.ja.md, path.ja.md | Parameter specifying type of conversion or summary. Takes values like `to`, `summary`, `defect`, `init` and determines processing type. | layerType, command |
+| layerType | options.ja.md, path.ja.md | Parameter specifying target hierarchy. Specifies one of `project`, `issue`, `task` and determines processing granularity. | directiveType, command |
 | adaptationType | options.ja.md, path.ja.md | Parameter specifying prompt type (-a, --adaptation). Takes values like `strict`, `a` and is used as suffix for prompt filename. | -a, --adaptation, prompt type |
 
 ## 6. Module Configuration
@@ -58,9 +58,9 @@
 
 | Term | Used in | Description | Related Words |
 |------|----------|------|------------|
-| PromptCliParams | app_factory.ja.md | Interface defining CLI parameters required for prompt generation. Has properties like demonstrativeType, layerType, options. | demonstrativeType, layerType, options |
+| PromptCliParams | app_factory.ja.md | Interface defining CLI parameters required for prompt generation. Has properties like directiveType, layerType, options. | directiveType, layerType, options |
 | PromptVariablesFactoryOptions | app_factory.ja.md | Interface defining initialization options for prompt variables factory. Requires config and cliParams. | config, cliParams |
-| DoubleParamsResult | options.ja.md | Type representing result of command with two parameters. Requires demonstrativeType and layerType. | demonstrativeType, layerType |
+| DoubleParamsResult | options.ja.md | Type representing result of command with two parameters. Requires directiveType and layerType. | directiveType, layerType |
 | SingleParamResult | options.ja.md | Type representing result of command with one parameter. Used for init command and others. | init, command |
 | NoParamsResult | options.ja.md | Type representing result of command with no parameters. Used for help and version checking. | help, version |
 

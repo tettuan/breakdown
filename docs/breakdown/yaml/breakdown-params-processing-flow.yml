@@ -39,7 +39,7 @@ key_types:
     pattern: "Discriminated Union Error"
     variants:
       - "InvalidParameterCount"
-      - "InvalidDemonstrativeType"
+      - "InvalidDirectiveType"
       - "InvalidLayerType"
       - "StdinReadError"
       - "PromptGenerationError"

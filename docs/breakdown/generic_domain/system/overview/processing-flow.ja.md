@@ -134,7 +134,7 @@ CLI引数 → BreakdownParams → 設定統合 → BreakdownConfig
 
 ## 拡張ポイント
 
-- 新しいDemonstrativeType・LayerTypeの追加
+- 新しいDirectiveType・LayerTypeの追加
 - カスタムパス解決戦略の実装
 - プロンプトテンプレート形式の拡張
 - 新しい出力形式の対応

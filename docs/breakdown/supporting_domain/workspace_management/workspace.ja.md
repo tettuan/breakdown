@@ -108,7 +108,7 @@ await workspace.initialize();
 ### BreakdownParamsとの関係
 - `BreakdownParams`はCLIパラメータの解析と検証を担当
 - パラメータの解析結果は`PromptVariablesFactory`を通じてWorkspaceの設定に反映
-- パス解決やテンプレート選択に使用される変数（`demonstrativeType`、`layerType`など）を提供
+- パス解決やテンプレート選択に使用される変数（`directiveType`、`layerType`など）を提供
 - **v1.0.1新機能**: カスタム変数（--uv-*）の解析と管理
 - **v1.0.1新機能**: 拡張パラメータ（--extended, --custom-validation, --error-format）のサポート
 
