@@ -177,8 +177,8 @@ export class ParamsCustomConfig {
           if (typeof demo.pattern === "string") {
             paramsOverride.demonstrativeType = {
               pattern: demo.pattern,
-              errorMessage: typeof demo.errorMessage === "string" 
-                ? demo.errorMessage 
+              errorMessage: typeof demo.errorMessage === "string"
+                ? demo.errorMessage
                 : `Invalid demonstrative type. Must match pattern: ${demo.pattern}`,
             };
           }
@@ -190,8 +190,8 @@ export class ParamsCustomConfig {
           if (typeof layer.pattern === "string") {
             paramsOverride.layerType = {
               pattern: layer.pattern,
-              errorMessage: typeof layer.errorMessage === "string" 
-                ? layer.errorMessage 
+              errorMessage: typeof layer.errorMessage === "string"
+                ? layer.errorMessage
                 : `Invalid layer type. Must match pattern: ${layer.pattern}`,
             };
           }
