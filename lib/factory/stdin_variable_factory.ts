@@ -10,13 +10,14 @@
 
 import { error, ok, Result } from "../types/result.ts";
 import { StdinVariable } from "../types/prompt_variables.ts";
-import type { VariableError } from "../types/variable_result.ts";
+// Import ErrorInfo from @tettuan/breakdownparams for unified error handling
+import type { ErrorInfo } from "@tettuan/breakdownparams";
 
 /**
  * Factory-specific error types for stdin variable creation
  */
 export type StdinVariableFactoryError =
-  | VariableError
+  | ErrorInfo
   | { kind: "NoStdinData"; context: string }
   | { kind: "InvalidStdinSource"; source: string };
 

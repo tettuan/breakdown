@@ -35,10 +35,21 @@ export { initWorkspace } from "./workspace/workspace.ts";
 // NOTE: DemonstrativeType replaced with DirectiveType during refactor
 // export type { DemonstrativeType } from "./types/mod.ts";
 
-// Export core types and utilities
+// Export core types and utilities from DDD structure
 export {
   DirectiveType,
   LayerType,
+} from "./domain/core/value_objects/mod.ts";
+
+export {
+  TwoParams,
+  type TwoParamsValidationError,
+  type BreakdownCommand,
+  type PromptPath,
+  type SchemaPath,
+} from "./domain/core/aggregates/two_params.ts";
+
+export {
   TwoParamsDirectivePattern,
   TwoParamsLayerTypePattern,
   type TypeCreationResult,

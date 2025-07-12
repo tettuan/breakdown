@@ -16,8 +16,8 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { TwoParams } from "$lib/types/two_params.ts";
-import type { TwoParamsValidationError } from "$lib/types/two_params.ts";
+import { TwoParams } from "$lib/domain/core/aggregates/two_params_integrated.ts";
+import type { TwoParamsValidationError } from "$lib/domain/core/aggregates/two_params_integrated.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams, PromptCliOptions } from "$lib/factory/prompt_variables_factory.ts";

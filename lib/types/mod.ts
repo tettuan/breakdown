@@ -97,15 +97,7 @@ export type { TypeCreationResult, TypePatternProvider } from "./type_factory.ts"
 export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.ts";
 export type { Result } from "./result.ts";
 
-// Variable types
-export {
-  createEmptyValueError,
-  createError,
-  createInvalidNameError,
-  createSuccess,
-  createValidationFailedError,
-} from "./variable_result.ts";
-export type { VariableError, VariableResult } from "./variable_result.ts";
+// Variable types - Using unified Result types from result.ts
 export {
   createPromptParams,
   FilePathVariable,
@@ -134,7 +126,6 @@ export type { PromptVariable, PromptVariables } from "./prompt_variables.ts";
 //   VariableResultFactory,
 // } from "./legacy_factories.ts";
 // export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
-export type { ExtendedTwoParams_Result as ExtendedTwoParams_Result } from "./variable_result.ts";
 
 // Layer type utilities
 export { LayerTypeFactory } from "./layer_type_factory.ts";

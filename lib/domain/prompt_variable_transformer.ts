@@ -16,7 +16,7 @@ import type { PromptParams } from "@tettuan/breakdownprompt";
 import type { Result } from "../types/result.ts";
 import type { PromptVariableSource } from "../types/prompt_variable_source.ts";
 import type { PromptVariables } from "../types/prompt_variables.ts";
-import type { VariableError } from "../types/variable_result.ts";
+import type { ErrorInfo } from "@tettuan/breakdownparams";
 import {
   createPromptParams,
   FilePathVariable,
@@ -256,15 +256,11 @@ export class PromptVariableTransformer {
   }
 
   /**
-   * Format VariableError to string message
+   * Format variable error to string message
    */
-  private formatVariableError(error: VariableError): string {
-    if (error.kind === "InvalidName") {
-      return `Invalid name '${error.name}'. Valid names: ${error.validNames.join(", ")}`;
-    } else if (error.kind === "EmptyValue") {
-      return `${error.reason}`;
-    } else if (error.kind === "ValidationFailed") {
-      return `Validation failed: ${error.constraint}`;
+  private formatVariableError(error: any): string {
+    if (typeof error === 'object' && error.message) {
+      return error.message;
     }
     return "Unknown variable error";
   }

@@ -13,7 +13,7 @@
 import { assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { type CustomConfig as _CustomConfig, loadBreakdownConfig, loadConfig } from "./loader.ts";
+import { type CustomConfig as _CustomConfig, ConfigLoader } from "./loader.ts";
 import { join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
@@ -353,67 +353,6 @@ describe("Unit: loadConfig Error Handling", () => {
   });
 });
 
-describe("Unit: loadBreakdownConfig Integration", () => {
-  it("should handle successful BreakdownConfig creation", async () => {
-    _logger.debug("Testing successful BreakdownConfig creation");
-
-    // Note: This test requires actual BreakdownConfig to be available
-    // In a real test environment, we might mock the import
-
-    try {
-      // Test with no parameters
-      const config1 = await loadBreakdownConfig();
-      assertExists(config1, "Should return config object");
-      assertEquals(typeof config1, "object", "Should return an object");
-
-      // Test with null prefix
-      const config2 = await loadBreakdownConfig(null);
-      assertExists(config2, "Should handle null prefix");
-      assertEquals(typeof config2, "object", "Should return an object");
-
-      _logger.debug("Successful BreakdownConfig creation verified");
-    } catch (error) {
-      // If BreakdownConfig is not available, verify error structure
-      if (error instanceof Error) {
-        _logger.debug("BreakdownConfig not available, verifying error handling");
-        assertExists(error.message, "Error should have a message");
-      }
-    }
-  });
-
-  it("should convert null prefix to undefined", () => {
-    _logger.debug("Testing null to undefined conversion");
-
-    // This is verified through code inspection
-    const functionString = loadBreakdownConfig.toString();
-
-    // Check for nullish coalescing pattern
-    const hasNullishCoalescing = functionString.includes("configPrefix ?? undefined");
-    assertEquals(
-      hasNullishCoalescing,
-      true,
-      "Should use ?? operator to convert null to undefined",
-    );
-
-    _logger.debug("Null to undefined conversion verified");
-  });
-
-  it("should maintain version compatibility", () => {
-    _logger.debug("Testing version compatibility maintenance");
-
-    const functionString = loadBreakdownConfig.toString();
-
-    // Check for version specification
-    const versionPattern = /@\^1\.1\.4/;
-    assertEquals(
-      versionPattern.test(functionString),
-      true,
-      "Should specify version ^1.1.4 for BreakdownConfig",
-    );
-
-    _logger.debug("Version compatibility verified");
-  });
-});
 
 describe("Unit: Edge Cases and Boundaries", () => {
   const testDir = Deno.makeTempDirSync();

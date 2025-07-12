@@ -25,7 +25,8 @@ Deno.test("VariablesBuilder - architecture constraints", async () => {
   const allowedImports = [
     "../types/result.ts",
     "../types/prompt_variables.ts",
-    "../types/variable_result.ts",
+    "../types/unified_error_types.ts",
+    "@tettuan/breakdownparams",
     "jsr:@std/path",
   ];
 

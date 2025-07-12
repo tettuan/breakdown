@@ -17,7 +17,7 @@ import {
 } from "../types/prompt_variables.ts";
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
-import type { VariableError } from "../types/variable_result.ts";
+import type { ErrorInfo } from "@tettuan/breakdownparams";
 
 /**
  * Migration error types
@@ -40,17 +40,8 @@ export type MigrationResult = {
 /**
  * Format variable error for user-friendly display
  */
-function formatVariableError(fieldName: string, error: VariableError): string {
-  switch (error.kind) {
-    case "InvalidName":
-      return `Failed to convert ${fieldName}: Invalid variable name '${error.name}'. Valid names are: ${
-        error.validNames.join(", ")
-      }`;
-    case "EmptyValue":
-      return `Failed to convert ${fieldName}: ${error.reason}`;
-    case "ValidationFailed":
-      return `Failed to convert ${fieldName}: Validation failed for value '${error.value}'. ${error.constraint}`;
-  }
+function formatVariableError(fieldName: string, error: ErrorInfo): string {
+  return `Failed to convert ${fieldName}: ${error.message || 'Unknown error'}`;
 }
 
 /**

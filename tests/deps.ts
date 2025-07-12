@@ -45,7 +45,6 @@ export {
   // Error severity types
   ErrorSeverityClass,
   type ErrorSeverityType,
-  type ExtendedTwoParams_Result,
   extractUnifiedErrorMessage,
   FilePathVariable,
   FilePathVariableName,

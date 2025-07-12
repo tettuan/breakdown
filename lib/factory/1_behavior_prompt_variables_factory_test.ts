@@ -272,6 +272,34 @@ Deno.test("PromptVariablesFactory - Backward compatibility interface", async () 
   }
 });
 
+Deno.test("PromptVariablesFactory - Legacy build method with Result type", async () => {
+  logger.debug("Testing legacy build method with Result type");
+
+  const cliParams = createValidCliParams();
+  const factoryResult = await PromptVariablesFactory.create(cliParams);
+
+  assertEquals(factoryResult.ok, true);
+  if (factoryResult.ok) {
+    assertExists(factoryResult.data);
+
+    const factory = factoryResult.data;
+
+    // Test legacy build method (now returns Result type instead of Promise<void>)
+    const buildResult = factory.build();
+
+    logger.debug("Legacy build method result", {
+      success: buildResult.ok,
+      hasData: buildResult.ok && buildResult.data !== undefined,
+    });
+
+    assertEquals(typeof buildResult.ok, "boolean");
+    if (buildResult.ok) {
+      assertExists(buildResult.data);
+      assertEquals(typeof buildResult.data, "object");
+    }
+  }
+});
+
 Deno.test("PromptVariablesFactory - Error handling with Result types", () => {
   logger.debug("Testing error handling with Result types");
 

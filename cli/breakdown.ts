@@ -11,7 +11,7 @@
  */
 
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
-import { loadBreakdownConfig } from "$lib/config/loader.ts";
+import { ConfigLoader } from "$lib/config/loader.ts";
 import { BreakdownConfig as _BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
 import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.7";
 import { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
@@ -135,29 +135,40 @@ export async function runBreakdown(
 
     // 2. Initialize BreakdownConfig with profile name (with error handling)
     let config: Record<string, unknown> = {};
-    try {
-      // Use the profile name value directly for BreakdownConfig
-      config = await loadBreakdownConfig(configProfileName.value, Deno.cwd());
-    } catch (error) {
+    const breakdownConfigResult = await ConfigLoader.loadBreakdownConfig(configProfileName.value, Deno.cwd());
+    if (!breakdownConfigResult.ok) {
+      const error = breakdownConfigResult.error;
+      let errorMessage: string;
+      
+      if (error.kind === "InvalidPath" && "reason" in error) {
+        errorMessage = error.reason;
+      } else if ("message" in error) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.kind;
+      }
+      
       console.warn(
         "⚠️ Configuration not found, using defaults:",
-        error instanceof Error ? error.message : String(error),
+        errorMessage,
         configProfileName.value ? `profile: ${configProfileName.value}` : "no profile",
       );
       // Use empty configuration - ParamsCustomConfig will handle defaults appropriately
       config = {};
+    } else {
+      config = breakdownConfigResult.data;
     }
 
     // 3. Pass BreakdownConfig settings to BreakdownParams using ParamsCustomConfig
     // Fix the config structure - wrap in 'breakdown' key as expected by ParamsCustomConfig
     const wrappedConfig = { breakdown: config };
-    const configResult = ParamsCustomConfig.create(wrappedConfig);
+    const paramsConfigResult = ParamsCustomConfig.create(wrappedConfig);
 
     let customConfig;
-    if (configResult.status === ResultStatus.SUCCESS) {
-      customConfig = configResult.data; // undefined if no breakdown config, or CustomConfig if present
+    if (paramsConfigResult.status === ResultStatus.SUCCESS) {
+      customConfig = paramsConfigResult.data; // undefined if no breakdown config, or CustomConfig if present
     } else {
-      console.warn("⚠️ Configuration extraction failed:", configResult.error?.message);
+      console.warn("⚠️ Configuration extraction failed:", paramsConfigResult.error?.message);
       customConfig = undefined; // Fall back to BreakdownParams defaults
     }
 

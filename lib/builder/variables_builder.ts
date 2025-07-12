@@ -12,7 +12,8 @@
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import type { PromptVariable, PromptVariables } from "../types/prompt_variables.ts";
-import type { VariableError } from "../types/variable_result.ts";
+// Import ErrorInfo from @tettuan/breakdownparams for unified error handling
+import type { ErrorInfo } from "@tettuan/breakdownparams";
 import { basename } from "jsr:@std/path@1";
 
 // Import concrete variable types
@@ -39,7 +40,7 @@ export interface FactoryResolvedValues {
  * Builder-specific error types for variable creation following Totality Principle
  */
 export type BuilderVariableError =
-  | VariableError // From variable_result.ts
+  | ErrorInfo // From @tettuan/breakdownparams
   | { kind: "DuplicateVariable"; name: string }
   | { kind: "InvalidPrefix"; name: string; expectedPrefix: string }
   | { kind: "FactoryValueMissing"; field: string };

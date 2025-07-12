@@ -29,7 +29,8 @@ import {
   StdinVariable,
   UserVariable,
 } from "../types/prompt_variables.ts";
-import type { VariableError } from "../types/variable_result.ts";
+// Import ErrorInfo from @tettuan/breakdownparams for unified error handling
+import type { ErrorInfo } from "@tettuan/breakdownparams";
 import type {
   PromptCliParams,
   TotalityPromptCliParams,
@@ -151,19 +152,10 @@ export class CompositePromptVariables implements PromptVariablesInterface {
   }
 
   /**
-   * Format VariableError into string message
+   * Format ErrorInfo into string message
    */
-  private formatVariableError(error: VariableError): string {
-    switch (error.kind) {
-      case "InvalidName":
-        return `Invalid variable name "${error.name}". Valid names: ${error.validNames.join(", ")}`;
-      case "EmptyValue":
-        return `Empty value for variable "${error.variableName}": ${error.reason}`;
-      case "ValidationFailed":
-        return `Validation failed for value "${error.value}": ${error.constraint}`;
-      default:
-        return "Unknown variable error";
-    }
+  private formatVariableError(error: ErrorInfo): string {
+    return error.message || "Unknown variable error";
   }
 }
 
