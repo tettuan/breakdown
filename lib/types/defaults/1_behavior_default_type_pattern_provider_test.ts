@@ -24,6 +24,7 @@ Deno.test("DefaultTypePatternProvider - Pattern Creation Behavior", async (t) =>
     assertEquals(pattern.test("to"), true);
     assertEquals(pattern.test("summary"), true);
     assertEquals(pattern.test("defect"), true);
+    assertEquals(pattern.test("find"), true);
 
     // Test pattern rejection behavior
     assertEquals(pattern.test("invalid"), false);
@@ -44,6 +45,7 @@ Deno.test("DefaultTypePatternProvider - Pattern Creation Behavior", async (t) =>
     assertEquals(pattern.test("project"), true);
     assertEquals(pattern.test("issue"), true);
     assertEquals(pattern.test("task"), true);
+    assertEquals(pattern.test("bugs"), true);
 
     // Test pattern rejection behavior
     assertEquals(pattern.test("invalid"), false);
@@ -83,13 +85,14 @@ Deno.test("DefaultTypePatternProvider - Value Extraction Behavior", async (t) =>
     const values = provider.getValidDirectiveValues();
 
     assertEquals(Array.isArray(values), true);
-    assertEquals(values.length, 3);
+    assertEquals(values.length, 4);
     assertEquals(values.includes("to"), true);
     assertEquals(values.includes("summary"), true);
     assertEquals(values.includes("defect"), true);
+    assertEquals(values.includes("find"), true);
 
     // Test order consistency
-    assertEquals(values, ["to", "summary", "defect"]);
+    assertEquals(values, ["to", "summary", "defect", "find"]);
   });
 
   await t.step("should extract valid layer values", () => {
@@ -97,13 +100,14 @@ Deno.test("DefaultTypePatternProvider - Value Extraction Behavior", async (t) =>
     const values = provider.getValidLayerValues();
 
     assertEquals(Array.isArray(values), true);
-    assertEquals(values.length, 3);
+    assertEquals(values.length, 4);
     assertEquals(values.includes("project"), true);
     assertEquals(values.includes("issue"), true);
     assertEquals(values.includes("task"), true);
+    assertEquals(values.includes("bugs"), true);
 
     // Test order consistency
-    assertEquals(values, ["project", "issue", "task"]);
+    assertEquals(values, ["project", "issue", "task", "bugs"]);
   });
 
   await t.step("should maintain value extraction consistency", () => {
@@ -136,11 +140,13 @@ Deno.test("DefaultTypePatternProvider - Value Extraction Behavior", async (t) =>
     assertEquals(isValidDirective("to"), true);
     assertEquals(isValidDirective("summary"), true);
     assertEquals(isValidDirective("defect"), true);
+    assertEquals(isValidDirective("find"), true);
     assertEquals(isValidDirective("invalid"), false);
 
     assertEquals(isValidLayer("project"), true);
     assertEquals(isValidLayer("issue"), true);
     assertEquals(isValidLayer("task"), true);
+    assertEquals(isValidLayer("bugs"), true);
     assertEquals(isValidLayer("invalid"), false);
   });
 });
