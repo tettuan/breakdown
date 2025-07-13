@@ -8,7 +8,8 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { type LayerTypeCreationError, LayerTypeFactory } from "./layer_type_factory.ts";
+import { LayerTypeFactory } from "./layer_type_factory.ts";
+import type { LayerTypeCreationError } from "./layer_type_types.ts";
 import { LayerType } from "./mod.ts";
 
 /**

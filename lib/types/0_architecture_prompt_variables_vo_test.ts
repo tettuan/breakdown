@@ -16,8 +16,8 @@ import {
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "./prompt_variables.ts";
-import type { PromptVariable } from "./prompt_variables.ts";
+} from "./prompt_variables_vo.ts";
+import type { PromptVariable } from "./prompt_variables_vo.ts";
 
 Deno.test("0_architecture: PromptVariablesVO follows domain boundary rules", () => {
   // PromptVariablesVO should only depend on PromptVariable types

@@ -19,8 +19,15 @@ const mockTwoParamsResult: TwoParams_Result = {
   options: {},
 };
 
-const validDirective = DirectiveType.create(mockTwoParamsResult);
-const validLayer = LayerType.create(mockTwoParamsResult);
+const validDirectiveResult = DirectiveType.create(mockTwoParamsResult);
+const validLayerResult = LayerType.create(mockTwoParamsResult);
+
+if (!validDirectiveResult.ok || !validLayerResult.ok) {
+  throw new Error("Test setup failed: unable to create valid directive or layer");
+}
+
+const validDirective = validDirectiveResult.data!;
+const validLayer = validLayerResult.data!;
 
 const validFilename = "schema.json";
 const invalidFilename = "schema.md";

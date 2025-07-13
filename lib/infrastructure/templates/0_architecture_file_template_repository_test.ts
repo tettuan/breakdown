@@ -74,8 +74,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const templatePathResult = TemplatePath.create(directive, layer, "test.md");
 
       if (!templatePathResult.ok) {
@@ -119,8 +127,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
 
       // Query options should be properly typed
       const queryOptions: TemplateQueryOptions = {
@@ -214,8 +230,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["nonexistent", "missing"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const templatePathResult = TemplatePath.create(directive, layer, "missing.md");
 
       if (!templatePathResult.ok) {
@@ -246,8 +270,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const templatePathResult = TemplatePath.create(directive, layer, "test.md");
 
       if (!templatePathResult.ok) {
@@ -287,8 +319,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const templatePathResult = TemplatePath.create(directive, layer, "error.md");
 
       if (!templatePathResult.ok) {
@@ -416,8 +456,16 @@ describe("FileTemplateRepository - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const templatePathResult = TemplatePath.create(directive, layer, "test.md");
 
       if (!templatePathResult.ok) {

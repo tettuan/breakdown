@@ -12,10 +12,10 @@ import { ErrorFactory, ValidationError } from "./mod.ts";
 
 // Example domain type with createOrError pattern
 class ExampleDomainType {
-  private constructor(private readonly value: string) {}
+  private constructor(private readonly _value: string) {}
 
-  getValue(): string {
-    return this.value;
+  get value(): string {
+    return this._value;
   }
 
   /**

@@ -39,15 +39,9 @@ export { initWorkspace } from "./workspace/workspace.ts";
 export {
   DirectiveType,
   LayerType,
-} from "./domain/core/value_objects/mod.ts";
-
-export {
   TwoParams,
   type TwoParamsValidationError,
-  type BreakdownCommand,
-  type PromptPath,
-  type SchemaPath,
-} from "./domain/core/aggregates/two_params_optimized.ts";
+} from "./domain/mod.ts";
 
 export {
   TwoParamsDirectivePattern,

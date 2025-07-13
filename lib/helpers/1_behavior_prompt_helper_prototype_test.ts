@@ -34,13 +34,20 @@ import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
 
 // Helper functions to create test types
 function createTestDirectiveType(value: string): DirectiveType {
-  const result = createTwoParamsResult(value, "project");
-  return DirectiveType.create(result);
+  const result = DirectiveType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create DirectiveType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 function createTestLayerType(demonstrativeType: string, value: string): LayerType {
   const result = createTwoParamsResult(demonstrativeType, value);
-  return LayerType.create(result);
+  const layerResult = LayerType.create(result);
+  if (!layerResult.ok) {
+    throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+  }
+  return layerResult.data;
 }
 
 // Helper function to create test template

@@ -77,7 +77,7 @@ export interface TotalityFactoryBundle {
  *   const typesResult = typeFactory.createBothTypes("to", "project");
  *   if (typesResult.ok) {
  *     const { directive, layer } = typesResult.data;
- *     console.log(`Created: ${directive.getValue()}, ${layer.getValue()}`);
+ *     console.log(`Created: ${directive.value}, ${layer.value}`);
  *   }
  * }
  * ```
@@ -243,8 +243,8 @@ export function createValidatedCliParams(
   return {
     ok: true,
     data: {
-      demonstrativeType: typesResult.data.directive.getValue(),
-      layerType: typesResult.data.layer.getValue(),
+      demonstrativeType: typesResult.data.directive.value,
+      layerType: typesResult.data.layer.value,
       options,
       // Include directive and layer objects for backward compatibility
       directive: typesResult.data.directive,

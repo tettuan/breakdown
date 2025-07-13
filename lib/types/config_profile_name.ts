@@ -93,35 +93,6 @@ export class ConfigProfileName {
     return this._value;
   }
 
-  /**
-   * Smart Constructor完全実装 - getValue()メソッド
-   *
-   * Totality原則に基づく型安全な値アクセスメソッド。
-   * Smart Constructorパターンの完全実装として、
-   * オブジェクトの不変条件を保証しつつ値を返します。
-   *
-   * このメソッドは以下を保証します：
-   * - 常に非null値を返す
-   * - バリデーション済みの値のみを返す
-   * - 不変条件の維持
-   * - 型安全性の確保
-   *
-   * @returns 検証済みの設定プロファイル名（常に有効な値）
-   *
-   * @example
-   * ```typescript
-   * const profileResult = ConfigProfileName.create("production");
-   * if (profileResult.ok) {
-   *   const value = profileResult.data.getValue(); // "production"
-   *   // 常に有効な値が返される（nullチェック不要）
-   * }
-   * ```
-   */
-  getValue(): string {
-    // Smart Constructorパターンにより、この時点で_valueは
-    // 必ず有効な値であることが保証されている
-    return this._value;
-  }
 
   /**
    * 設定プロファイル名を作成する（改善版）
@@ -179,6 +150,33 @@ export class ConfigProfileName {
 
     // Case 4: 成功時
     return ok(new ConfigProfileName(value));
+  }
+
+  /**
+   * createOrError - Totality原則準拠のSmart Constructor
+   *
+   * LayerType.createOrError()パターンに準拠した実装。
+   * 統一されたエラーハンドリングシステムとの整合性を保つ。
+   *
+   * @param value - 設定プロファイル名の候補
+   * @returns Result型 - 成功時はConfigProfileName、失敗時は統一エラー形式
+   *
+   * @example
+   * ```typescript
+   * const result = ConfigProfileName.createOrError("production");
+   * if (result.ok) {
+   *   console.log(result.data.value); // "production"
+   * } else {
+   *   console.error(`${result.error.kind}: ${result.error.message}`);
+   * }
+   * ```
+   */
+  static createOrError(
+    value: string | null | undefined,
+  ): Result<ConfigProfileName, ConfigProfileNameError> {
+    // createOrErrorは内部的にcreateメソッドを呼び出し、
+    // 同じバリデーションロジックを再利用する
+    return ConfigProfileName.create(value);
   }
 
   /**

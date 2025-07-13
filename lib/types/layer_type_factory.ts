@@ -1,222 +1,134 @@
 /**
- * @fileoverview LayerTypeFactory for creating LayerType instances
+ * @fileoverview LayerTypeFactory - Compatibility Layer (DEPRECATED)
  *
- * This module provides a factory for creating LayerType instances following
- * Totality principle with proper error handling and validation.
+ * This module provides backward compatibility for LayerTypeFactory.
+ * All functionality has been moved to LayerType domain object following DDD principles.
  *
+ * @deprecated Use LayerType.fromString() and LayerType.fromTwoParamsResult() instead
  * @module types/layer_type_factory
  */
 
-import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
+import type { LayerTypeResult, LayerTypeCreationError } from "./layer_type_types.ts";
 
 /**
- * Error types for LayerType creation
- */
-export type LayerTypeCreationError =
-  | { kind: "EmptyInput"; input: string }
-  | { kind: "UnknownLayer"; input: string; suggestions: readonly string[] }
-  | { kind: "ValidationFailed"; input: string; pattern: string }
-  | { kind: "NullInput" }
-  | { kind: "InvalidInput"; input: unknown; actualType: string };
-
-/**
- * LayerType creation result following Totality principle
- */
-export type LayerTypeResult<T> = {
-  ok: true;
-  data: T;
-} | {
-  ok: false;
-  error: LayerTypeCreationError;
-};
-
-/**
- * LayerTypeFactory - Factory for creating LayerType instances
+ * LayerTypeFactory - Compatibility wrapper (DEPRECATED)
  *
- * Provides safe LayerType construction with comprehensive error handling
- * following the Totality principle.
+ * @deprecated Use LayerType static methods directly:
+ * - LayerType.fromString() instead of LayerTypeFactory.fromString()
+ * - LayerType.fromTwoParamsResult() instead of LayerTypeFactory.fromTwoParamsResult()
+ * - LayerType.isValidLayer() instead of LayerTypeFactory.isValidLayer()
+ * - LayerType.getKnownLayerTypes() instead of LayerTypeFactory.getKnownLayers()
  */
 export class LayerTypeFactory {
-  private static readonly KNOWN_LAYERS = ["project", "issue", "task", "bugs", "temp"] as const;
-
   /**
-   * Creates LayerType from string input with validation
-   * @param input - String input to convert to LayerType
-   * @param pattern - Optional validation pattern
-   * @returns LayerTypeResult with success or error
+   * @deprecated Use LayerType.fromString() instead
    */
   static fromString(
     input: unknown,
-    pattern?: TwoParamsLayerTypePattern,
+    pattern?: { test: (value: string) => boolean; getPattern: () => string },
   ): LayerTypeResult<LayerType> {
-    // Handle null/undefined
-    if (input === null || input === undefined) {
+    // Convert pattern interface to TwoParamsLayerTypePattern if provided
+    const layerPattern = pattern ? {
+      test: (value: string) => pattern.test(value),
+      getPattern: () => pattern.getPattern(),
+      getLayerTypePattern: () => layerPattern,
+      pattern: new RegExp(pattern.getPattern()),
+    } : undefined;
+    
+    const result = LayerType.fromString(input, layerPattern as any);
+    
+    if (result.ok) {
       return {
-        ok: false,
-        error: { kind: "NullInput" },
+        ok: true,
+        data: result.data,
       };
     }
 
-    // Handle non-string input
-    if (typeof input !== "string") {
-      return {
-        ok: false,
-        error: {
-          kind: "InvalidInput",
-          input,
-          actualType: typeof input,
-        },
-      };
-    }
-
-    // Handle empty string
-    if (input.trim() === "") {
-      return {
-        ok: false,
-        error: {
+    // Convert domain error to factory error format
+    const error: LayerTypeCreationError = (() => {
+      if (result.error.kind === "EmptyInput") {
+        if (input === null || input === undefined) {
+          return { kind: "NullInput" };
+        }
+        if (typeof input !== "string") {
+          return {
+            kind: "InvalidInput",
+            input,
+            actualType: typeof input,
+          };
+        }
+        return {
           kind: "EmptyInput",
-          input,
-        },
-      };
-    }
-
-    const normalized = input.trim().toLowerCase();
-
-    // Pattern validation if provided
-    if (pattern && !pattern.test(normalized)) {
-      return {
-        ok: false,
-        error: {
-          kind: "ValidationFailed",
-          input: normalized,
-          pattern: pattern.getPattern(),
-        },
-      };
-    }
-
-    // Create appropriate LayerType based on input
-    if (
-      LayerTypeFactory.KNOWN_LAYERS.includes(
-        normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number],
-      )
-    ) {
-      // Create TwoParams_Result for LayerType.create()
-      const twoParamsResult: TwoParams_Result = {
-        type: "two",
-        demonstrativeType: "to", // Default directive
-        layerType: normalized,
-        params: ["to", normalized],
-        options: {},
-      };
-
-      const layerTypeResult = LayerType.create(twoParamsResult);
-      if (layerTypeResult.ok) {
-        return {
-          ok: true,
-          data: layerTypeResult.data,
-        };
-      } else {
-        return {
-          ok: false,
-          error: {
-            kind: "ValidationFailed" as const,
-            input: normalized,
-            pattern: layerTypeResult.error.message,
-          },
+          input: input as string,
         };
       }
+
+      if (result.error.kind === "InvalidFormat") {
+        return {
+          kind: "ValidationFailed",
+          input: result.error.value,
+          pattern: result.error.pattern,
+        };
+      }
+
+      // Check if suggestions are available (enhanced error)
+      if ("suggestions" in result.error && result.error.suggestions) {
+        return {
+          kind: "UnknownLayer",
+          input: result.error.value || "",
+          suggestions: result.error.suggestions,
+        };
+      }
+
+      // Default validation failed
+      return {
+        kind: "ValidationFailed",
+        input: result.error.value || "",
+        pattern: result.error.message,
+      };
+    })();
+
+    return {
+      ok: false,
+      error,
+    };
+  }
+
+  /**
+   * @deprecated Use LayerType.fromTwoParamsResult() instead
+   */
+  static fromTwoParamsResult(result: { layerType: string }): LayerTypeResult<LayerType> {
+    const layerResult = LayerType.fromTwoParamsResult(result);
+    
+    if (layerResult.ok) {
+      return {
+        ok: true,
+        data: layerResult.data,
+      };
     }
 
-    // Unknown layer - provide suggestions
-    const suggestions = LayerTypeFactory.calculateSuggestions(normalized);
     return {
       ok: false,
       error: {
-        kind: "UnknownLayer",
-        input: normalized,
-        suggestions,
+        kind: "ValidationFailed",
+        input: result.layerType,
+        pattern: layerResult.error.message,
       },
     };
   }
 
   /**
-   * Creates LayerType from TwoParams_Result
-   * @param result - TwoParams_Result containing layer information
-   * @returns LayerTypeResult with success or error
-   */
-  static fromTwoParamsResult(result: TwoParams_Result): LayerTypeResult<LayerType> {
-    try {
-      const layerTypeResult = LayerType.create(result);
-      if (layerTypeResult.ok) {
-        return {
-          ok: true,
-          data: layerTypeResult.data,
-        };
-      } else {
-        return {
-          ok: false,
-          error: {
-            kind: "ValidationFailed" as const,
-            input: result.layerType,
-            pattern: layerTypeResult.error.message,
-          },
-        };
-      }
-    } catch (error) {
-      return {
-        ok: false,
-        error: {
-          kind: "ValidationFailed",
-          input: result.layerType,
-          pattern: `TwoParams_Result validation: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        },
-      };
-    }
-  }
-
-  /**
-   * Calculate suggestions for unknown layer inputs
-   * @param input - Unknown layer input
-   * @returns Array of suggested layer names
-   */
-  private static calculateSuggestions(input: string): readonly string[] {
-    const suggestions: string[] = [];
-
-    for (const known of LayerTypeFactory.KNOWN_LAYERS) {
-      // Simple similarity: starts with or contains
-      if (known.startsWith(input) || input.startsWith(known) || known.includes(input)) {
-        suggestions.push(known);
-      }
-    }
-
-    // If no close matches, return all options
-    if (suggestions.length === 0) {
-      return [...LayerTypeFactory.KNOWN_LAYERS];
-    }
-
-    return suggestions;
-  }
-
-  /**
-   * Check if a layer value is valid
-   * @param input - Layer value to check
-   * @returns boolean indicating validity
+   * @deprecated Use LayerType.isValidLayer() instead
    */
   static isValidLayer(input: string): boolean {
-    const normalized = input.trim().toLowerCase();
-    return LayerTypeFactory.KNOWN_LAYERS.includes(
-      normalized as typeof LayerTypeFactory.KNOWN_LAYERS[number],
-    );
+    return LayerType.isValidLayer(input);
   }
 
   /**
-   * Get all known layer types
-   * @returns Array of known layer type names
+   * @deprecated Use LayerType.getKnownLayerTypes() instead
    */
   static getKnownLayers(): readonly string[] {
-    return [...LayerTypeFactory.KNOWN_LAYERS];
+    return LayerType.getKnownLayerTypes();
   }
 }

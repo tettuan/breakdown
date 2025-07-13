@@ -318,7 +318,7 @@ export class TemplatePath extends BasePathValueObject {
   ): Result<TemplatePath, TemplatePathError> {
     // This would need DirectiveType.createSummary() method to be implemented
     // For now, we'll simulate it
-    const summaryResult = { getValue: () => "summary" } as DirectiveType;
+    const summaryResult = { value: "summary" } as DirectiveType;
     return TemplatePath.create(summaryResult, layer, filename);
   }
 
@@ -326,7 +326,7 @@ export class TemplatePath extends BasePathValueObject {
     layer: LayerType,
     filename: string,
   ): Result<TemplatePath, TemplatePathError> {
-    const defectResult = { getValue: () => "defect" } as DirectiveType;
+    const defectResult = { value: "defect" } as DirectiveType;
     return TemplatePath.create(defectResult, layer, filename);
   }
 
@@ -395,8 +395,8 @@ export class TemplatePath extends BasePathValueObject {
     extension: string;
   } {
     return {
-      directive: this.directive.getValue(),
-      layer: this.layer.getValue(),
+      directive: this.directive.value,
+      layer: this.layer.value,
       filename: this.filename,
       extension: this.getExtension(),
     };
@@ -464,7 +464,7 @@ export class TemplatePath extends BasePathValueObject {
     _config: TemplatePathConfig,
   ): Result<void, TemplatePathError> {
     try {
-      const directiveValue = directive.getValue();
+      const directiveValue = directive.value;
 
       if (!directiveValue || directiveValue.trim().length === 0) {
         return error({
@@ -496,7 +496,7 @@ export class TemplatePath extends BasePathValueObject {
     _config: TemplatePathConfig,
   ): Result<void, TemplatePathError> {
     try {
-      const layerValue = layer.getValue();
+      const layerValue = layer.value;
 
       if (!layerValue || layerValue.trim().length === 0) {
         return error({
@@ -581,8 +581,8 @@ export class TemplatePath extends BasePathValueObject {
     filename: string,
   ): Result<string, TemplatePathError> {
     try {
-      const directiveValue = directive.getValue();
-      const layerValue = layer.getValue();
+      const directiveValue = directive.value;
+      const layerValue = layer.value;
       const trimmedFilename = filename.trim();
 
       // Construct path with forward slashes for consistency
@@ -596,8 +596,8 @@ export class TemplatePath extends BasePathValueObject {
           constructionError instanceof Error ? constructionError.message : String(constructionError)
         }`,
         components: {
-          directive: directive?.getValue(),
-          layer: layer?.getValue(),
+          directive: directive?.value,
+          layer: layer?.value,
           filename: filename,
         },
       });

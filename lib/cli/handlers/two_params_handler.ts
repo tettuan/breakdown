@@ -70,7 +70,7 @@ class TwoParamsOrchestrator {
     config: Record<string, unknown>,
     options: Record<string, unknown>,
   ): Promise<Result<void, TwoParamsHandlerError>> {
-    // 1. Validate parameters
+    // 1. Validate parameters with type safety
     const validationResult = await this.validator.validate(params);
     if (!validationResult.ok) {
       return error(this.mapValidationError(validationResult.error));
@@ -111,7 +111,7 @@ class TwoParamsOrchestrator {
       });
     }
 
-    // 4. Generate prompt
+    // 4. Generate prompt with validated parameters
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
       {
@@ -300,6 +300,7 @@ let orchestratorInstance: TwoParamsOrchestrator | null = null;
  *
  * This is the main handler function expected by architecture tests.
  * Uses orchestration pattern internally for better maintainability.
+ * Provides strong type safety through Result types and exhaustive error handling.
  *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
@@ -311,12 +312,21 @@ export async function twoParamsHandler(
   config: Record<string, unknown>,
   options: Record<string, unknown> = {},
 ): Promise<Result<void, TwoParamsHandlerError>> {
+  // Validate params array is not null/undefined
+  if (!Array.isArray(params)) {
+    return error({
+      kind: "InvalidParameterCount",
+      received: 0,
+      expected: 2,
+    });
+  }
+
   // Create orchestrator instance if not exists (singleton pattern for efficiency)
   if (!orchestratorInstance) {
     orchestratorInstance = new TwoParamsOrchestrator();
   }
 
-  // Delegate to orchestrator
+  // Delegate to orchestrator with type-safe parameters
   return await orchestratorInstance.execute(params, config, options);
 }
 

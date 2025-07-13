@@ -25,6 +25,7 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
+import { ErrorFactory } from "../types/unified_error_types.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
@@ -490,25 +491,21 @@ export class PromptTemplatePathResolver {
       // Verify base directory exists
       try {
         if (!existsSync(resolvedPath)) {
-          return resultError({
-            kind: "BaseDirectoryNotFound",
-            path: resolvedPath,
-          });
+          return resultError(ErrorFactory.pathError("BaseDirectoryNotFound", resolvedPath));
         }
       } catch (fsError) {
-        return resultError({
-          kind: "ValidationFailed",
-          path: resolvedPath,
-          reason: `File system access failed: ${fsError instanceof Error ? fsError.message : String(fsError)}`,
-        });
+        return resultError(ErrorFactory.pathError("PathValidationFailed", resolvedPath, {
+          rule: "must-exist",
+          context: { error: fsError instanceof Error ? fsError.message : "Unknown filesystem error" }
+        }));
       }
 
       return resultOk(resolvedPath);
     } catch (error) {
-      return resultError({
-        kind: "InvalidConfiguration",
+      return resultError(ErrorFactory.pathError("InvalidConfiguration", "", {
         details: `Base directory resolution failed: ${error instanceof Error ? error.message : String(error)}`,
-      });
+        context: { originalError: error instanceof Error ? error.message : String(error) }
+      }));
     }
   }
 
@@ -829,8 +826,14 @@ export function formatPathResolutionError(error: PathResolutionError): string {
     case "NoValidFallback":
       return `No valid fallback found. Attempts: ${error.attempts.join(", ")}`;
 
-    case "ValidationFailed":
-      return `Validation failed for path: ${error.path}`;
+    case "PathValidationFailed":
+      if ('rule' in error && error.rule !== undefined) {
+        return `Path validation failed for path: ${error.path} (rule: ${error.rule})`;
+      } else if ('reason' in error && error.reason !== undefined) {
+        return `Path validation failed for path: ${error.path} - ${error.reason}`;
+      } else {
+        return `Path validation failed for path: ${error.path}`;
+      }
 
     default:
       return `Unknown error occurred`;

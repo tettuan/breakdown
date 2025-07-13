@@ -29,6 +29,24 @@ class TestPatternProvider implements TypePatternProvider {
   getLayerTypePattern(): TwoParamsLayerTypePattern | null {
     return this.layerPattern;
   }
+
+  validateDirectiveType(value: string): boolean {
+    return this.directivePattern?.test(value) ?? false;
+  }
+
+  validateLayerType(value: string): boolean {
+    return this.layerPattern?.test(value) ?? false;
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    // For testing, return common directive types
+    return ["to", "summary", "defect", "analyze"] as const;
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    // For testing, return common layer types
+    return ["project", "issue", "task", "bugs"] as const;
+  }
 }
 
 Deno.test("TypeFactory Architecture - Factory Pattern implementation", () => {

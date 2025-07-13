@@ -337,8 +337,8 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
         result: {
           config: configResult.data.getValue(),
           workDir: workDirResult.data.getValue(),
-          directive: typesResult.data.directive.getValue(),
-          layer: typesResult.data.layer.getValue(),
+          directive: typesResult.data.directive.value,
+          layer: typesResult.data.layer.value,
         },
       });
     } catch (exception) {

@@ -124,8 +124,8 @@ describe("Simplified Domain Boundary Integration", () => {
 
         if (isOk(configResult) && isOk(workDirResult)) {
           // Values should be retrievable and compatible
-          const directiveValue = typesResult.data.directive.getValue();
-          const layerValue = typesResult.data.layer.getValue();
+          const directiveValue = typesResult.data.directive.value;
+          const layerValue = typesResult.data.layer.value;
           const configValue = configResult.data.getValue();
           const workDirValue = workDirResult.data.getValue();
 
@@ -255,8 +255,8 @@ describe("Simplified Domain Boundary Integration", () => {
           // Step 3: Verify integration maintains all domain invariants
           const integrationSummary = {
             coreTypes: {
-              directive: typesResult.data.directive.getValue(),
-              layer: typesResult.data.layer.getValue(),
+              directive: typesResult.data.directive.value,
+              layer: typesResult.data.layer.value,
             },
             supportingValues: {
               config: configResult.data.getValue(),

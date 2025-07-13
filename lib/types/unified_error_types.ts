@@ -67,14 +67,28 @@ export type SystemError<TKind extends string = SystemErrorKind> = BaseError & {
 };
 
 /**
+ * Path validation rule types for unified error handling
+ */
+export type PathValidationRule =
+  | "must-exist"
+  | "must-be-directory" 
+  | "must-be-file"
+  | "must-be-readable"
+  | "must-be-writable";
+
+/**
  * Path-related error types used across resolvers
+ * Extended to support ValidationFailed with PathValidationRule for compatibility
  */
 export type PathError =
   | { kind: "InvalidPath"; path: string; reason: string; context?: Record<string, unknown> }
   | { kind: "PathNotFound"; path: string; context?: Record<string, unknown> }
   | { kind: "DirectoryNotFound"; path: string; context?: Record<string, unknown> }
   | { kind: "PermissionDenied"; path: string; context?: Record<string, unknown> }
-  | { kind: "PathTooLong"; path: string; maxLength: number; context?: Record<string, unknown> };
+  | { kind: "PathTooLong"; path: string; maxLength: number; context?: Record<string, unknown> }
+  | { kind: "PathValidationFailed"; rule: PathValidationRule; path: string; context?: Record<string, unknown> }
+  | { kind: "BaseDirectoryNotFound"; path: string; context?: Record<string, unknown> }
+  | { kind: "InvalidConfiguration"; details: string; context?: Record<string, unknown> };
 
 /**
  * Validation error types used across validators
@@ -294,6 +308,9 @@ export const ErrorGuards = {
         "DirectoryNotFound",
         "PermissionDenied",
         "PathTooLong",
+        "PathValidationFailed",
+        "BaseDirectoryNotFound",
+        "InvalidConfiguration",
       ].includes((error as Record<string, unknown>).kind as string)
     );
   },
@@ -377,6 +394,8 @@ export const ErrorFactory = {
     path: string,
     additionalData?: K extends "InvalidPath" ? { reason: string; context?: Record<string, unknown> }
       : K extends "PathTooLong" ? { maxLength?: number; context?: Record<string, unknown> }
+      : K extends "PathValidationFailed" ? { rule: PathValidationRule; context?: Record<string, unknown> }
+      : K extends "InvalidConfiguration" ? { details: string; context?: Record<string, unknown> }
       : { context?: Record<string, unknown> },
   ): Extract<PathError, { kind: K }> {
     switch (kind) {
@@ -402,9 +421,31 @@ export const ErrorFactory = {
           context: data?.context,
         } as Extract<PathError, { kind: K }>;
       }
+      case "PathValidationFailed": {
+        const data = additionalData as
+          | { rule: PathValidationRule; context?: Record<string, unknown> }
+          | undefined;
+        return {
+          kind: "PathValidationFailed",
+          rule: data?.rule ?? "must-exist",
+          path,
+          context: data?.context,
+        } as Extract<PathError, { kind: K }>;
+      }
+      case "InvalidConfiguration": {
+        const data = additionalData as
+          | { details: string; context?: Record<string, unknown> }
+          | undefined;
+        return {
+          kind: "InvalidConfiguration",
+          details: data?.details ?? "Configuration error",
+          context: data?.context,
+        } as Extract<PathError, { kind: K }>;
+      }
       case "PathNotFound":
       case "DirectoryNotFound":
-      case "PermissionDenied": {
+      case "PermissionDenied":
+      case "BaseDirectoryNotFound": {
         const data = additionalData as { context?: Record<string, unknown> } | undefined;
         return {
           kind,
@@ -840,6 +881,25 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.path}`;
     case "PathTooLong":
       return `${error.kind}: ${error.path} (max: ${error.maxLength})`;
+    case "PathValidationFailed":
+      // Handle two different variants of PathValidationFailed
+      if ('rule' in error && error.rule !== undefined) {
+        return `${error.kind}: ${error.path} (rule: ${error.rule})`;
+      } else if ('reason' in error && error.reason !== undefined) {
+        return `${error.kind}: ${error.path} - ${error.reason}`;
+      } else {
+        // Fallback for unexpected PathValidationFailed structure
+        return `${error.kind}: ${error.path}`;
+      }
+    case "BaseDirectoryNotFound":
+      return `${error.kind}: ${error.path}`;
+    case "InvalidConfiguration":
+      // Handle two different variants of InvalidConfiguration
+      if ('details' in error) {
+        return `${error.kind}: ${error.details}`;
+      } else {
+        return `${error.kind}: ${error.field} - ${error.reason}`;
+      }
 
     // Validation errors
     case "InvalidInput":
@@ -856,8 +916,6 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
     case "InvalidLayerType":
       return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
-    case "PathValidationFailed":
-      return `${error.kind}: ${error.path} - ${error.reason}`;
     case "CustomVariableInvalid":
       return `${error.kind}: ${error.key} - ${error.reason}`;
     case "ConfigValidationFailed":
@@ -870,8 +928,6 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.message}`;
     case "ProfileNotFound":
       return `${error.kind}: ${error.profile}`;
-    case "InvalidConfiguration":
-      return `${error.kind}: ${error.field} - ${error.reason}`;
     case "ConfigLoadError":
       return `${error.kind}: ${error.message}`;
 

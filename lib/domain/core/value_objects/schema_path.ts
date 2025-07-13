@@ -524,7 +524,7 @@ export class SchemaPath extends BasePathValueObject {
     _config: SchemaPathConfig,
   ): Result<void, SchemaPathError> {
     try {
-      const directiveValue = directive.getValue();
+      const directiveValue = directive.value;
 
       if (!directiveValue || directiveValue.trim().length === 0) {
         return error({
@@ -555,7 +555,7 @@ export class SchemaPath extends BasePathValueObject {
     _config: SchemaPathConfig,
   ): Result<void, SchemaPathError> {
     try {
-      const layerValue = layer.getValue();
+      const layerValue = layer.value;
 
       if (!layerValue || layerValue.trim().length === 0) {
         return error({
@@ -658,8 +658,8 @@ export class SchemaPath extends BasePathValueObject {
     filename: string,
   ): Result<string, SchemaPathError> {
     try {
-      const directiveValue = directive.getValue();
-      const layerValue = layer.getValue();
+      const directiveValue = directive.value;
+      const layerValue = layer.value;
       const trimmedFilename = filename.trim();
 
       // Construct path with forward slashes for consistency
@@ -673,8 +673,8 @@ export class SchemaPath extends BasePathValueObject {
           constructionError instanceof Error ? constructionError.message : String(constructionError)
         }`,
         components: {
-          directive: directive?.getValue(),
-          layer: layer?.getValue(),
+          directive: directive?.value,
+          layer: layer?.value,
           filename: filename,
         },
       });

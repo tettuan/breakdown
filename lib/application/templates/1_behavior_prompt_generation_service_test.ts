@@ -96,7 +96,7 @@ const createMockPolicy = (options?: {
 
   const selectionStrategy = {
     selectTemplate: (directive: DirectiveType, layer: LayerType, _context?: SelectionContext) => {
-      const filename = `${directive.getValue()}-${layer.getValue()}.md`;
+      const filename = `${directive.value}-${layer.value}.md`;
       return TemplatePath.create(directive, layer, filename);
     },
   };
@@ -137,7 +137,11 @@ const createTestRequest = (): PromptGenerationRequest => {
     options: {},
   };
 
-  const directive = DirectiveType.create(directiveResult);
+  const directiveCreateResult = DirectiveType.create(directiveResult);
+  if (!directiveCreateResult.ok) {
+    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error}`);
+  }
+  const directive = directiveCreateResult.data;
 
   // Create valid TwoParams_Result for LayerType
   const layerResult = {
@@ -148,7 +152,11 @@ const createTestRequest = (): PromptGenerationRequest => {
     options: {},
   };
 
-  const layer = LayerType.create(layerResult);
+  const layerTypeResult = LayerType.create(layerResult);
+  if (!layerTypeResult.ok) {
+    throw new Error(`Failed to create LayerType: ${layerTypeResult.error.message}`);
+  }
+  const layer = layerTypeResult.data;
 
   return {
     directive,
@@ -253,8 +261,16 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
     options: {},
   };
 
-  const directive = DirectiveType.create(result);
-  const layer = LayerType.create(result);
+  const directiveCreateResult = DirectiveType.create(result);
+  if (!directiveCreateResult.ok) {
+    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error}`);
+  }
+  const directive = directiveCreateResult.data;
+  const layerCreateResult = LayerType.create(result);
+  if (!layerCreateResult.ok) {
+    throw new Error(`Failed to create LayerType: ${layerCreateResult.error.message}`);
+  }
+  const layer = layerCreateResult.data;
 
   // Template doesn't exist
   const validation1 = await service.validateTemplate(

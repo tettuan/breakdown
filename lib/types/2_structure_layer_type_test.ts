@@ -193,7 +193,7 @@ Deno.test("2_structure: LayerType value property maintains type safety", () => {
     assertEquals(layerType.value, testCase.layerType);
     assertEquals(typeof layerType.value, "string");
 
-    // Test backward compatibility with getValue()
+    // Test value property consistency  
     assertEquals(layerType.value, testCase.layerType);
     assertEquals(layerType.value, layerType.value);
   }

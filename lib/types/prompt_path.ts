@@ -15,9 +15,8 @@
 
 import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
-// Note: Using string types temporarily until DirectiveType and LayerType enhancements are complete
-export type DirectiveType = string;
-export type LayerType = string;
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 
 // ============================================================================
 // Error Types
@@ -203,29 +202,19 @@ export class PromptPath {
   /**
    * Extract DirectiveType value
    *
-   * Note: This method assumes DirectiveType has a way to extract its string value.
-   * The actual implementation depends on DirectiveType's interface.
-   *
    * @returns DirectiveType string value
    */
   private getDirectiveValue(): string {
-    // TODO: Update this method based on DirectiveType enhancement
-    // For now, assume DirectiveType can be converted to string
-    return String(this.directive);
+    return this.directive.value;
   }
 
   /**
    * Extract LayerType value
    *
-   * Note: This method assumes LayerType has a way to extract its string value.
-   * The actual implementation depends on LayerType's interface.
-   *
    * @returns LayerType string value
    */
   private getLayerValue(): string {
-    // TODO: Update this method based on LayerType enhancement
-    // For now, assume LayerType can be converted to string
-    return String(this.layer);
+    return this.layer.value;
   }
 
   // ============================================================================
@@ -241,8 +230,8 @@ export class PromptPath {
   equals(other: PromptPath): boolean {
     return (
       this.baseDir === other.baseDir &&
-      this.directive === other.directive &&
-      this.layer === other.layer &&
+      this.directive.equals(other.directive) &&
+      this.layer.equals(other.layer) &&
       this.fromLayer === other.fromLayer &&
       this.adaptation === other.adaptation
     );

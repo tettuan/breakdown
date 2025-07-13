@@ -221,12 +221,12 @@ export class FileTemplateRepository implements TemplateRepository {
     let filtered = manifest.templates;
 
     if (options.directive) {
-      const directiveValue = options.directive.getValue();
+      const directiveValue = options.directive.value;
       filtered = filtered.filter((t) => t.directive === directiveValue);
     }
 
     if (options.layer) {
-      const layerValue = options.layer.getValue();
+      const layerValue = options.layer.value;
       filtered = filtered.filter((t) => t.layer === layerValue);
     }
 

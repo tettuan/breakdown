@@ -8,9 +8,11 @@
  * @module domain/core/value_objects/directive_type
  */
 
-import type { Result } from "$lib/types/result.ts";
-import { error, ok } from "$lib/types/result.ts";
-import type { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import type { Result } from "../../../types/result.ts";
+import { error, ok } from "../../../types/result.ts";
+import type { ConfigProfileName } from "../../../types/config_profile_name.ts";
+import type { ValidationError } from "../../../types/unified_error_types.ts";
+import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
 /**
  * DirectiveType validation errors following Discriminated Union pattern
@@ -107,25 +109,20 @@ export class DirectiveType {
   }
 
   /**
-   * Smart Constructor for DirectiveType creation (overloaded for compatibility)
+   * Smart Constructor for DirectiveType creation
    * 
    * Validates the input against basic format and ConfigProfileName patterns.
    * Follows Totality principle by handling all possible input cases.
    * 
-   * @param value - Directive type candidate or TwoParams_Result for legacy compatibility
-   * @param profile - Configuration profile for pattern validation (optional for legacy compatibility)
+   * @param value - Directive type candidate string
+   * @param profile - Configuration profile for pattern validation (optional, uses default if not provided)
    * @returns Result with DirectiveType or detailed error
    */
   static create(
-    value: string | null | undefined | { demonstrativeType: string },
+    value: string | null | undefined,
     profile?: ConfigProfileName,
   ): Result<DirectiveType, DirectiveTypeError> {
-    // Legacy compatibility: handle TwoParams_Result-like objects
-    if (typeof value === "object" && value !== null && "demonstrativeType" in value) {
-      return DirectiveType.create(value.demonstrativeType, profile);
-    }
-
-    // Handle missing profile for legacy compatibility
+    // Handle missing profile with default configuration
     const actualProfile = profile || (() => {
       try {
         return (globalThis as any).ConfigProfileName?.createDefault?.() || 
@@ -247,6 +244,7 @@ export class DirectiveType {
     return this._value === other._value && this._profile.equals(other._profile);
   }
 
+
   /**
    * String representation
    */
@@ -275,44 +273,42 @@ export class DirectiveType {
 export class TwoParamsDirectivePattern {
   private constructor(private readonly pattern: RegExp) {}
 
-  /**
-   * 文字列パターンから TwoParamsDirectivePattern を作成
-   * @param pattern 正規表現文字列
-   * @returns 成功時は TwoParamsDirectivePattern、失敗時は null
-   * @deprecated Use createOrError() for Totality-compliant error handling
-   */
-  static create(pattern: string): TwoParamsDirectivePattern | null {
-    // Totality原則準拠版のcreateOrErrorを使用し、nullで結果を返すレガシーメソッド
-    const result = TwoParamsDirectivePattern.createOrError(pattern);
-    return result.ok ? result.data : null;
-  }
 
   /**
    * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
    *
    * Totality原則に準拠し、エラーを明示的に返す。
+   * 統一エラー型システムを使用してValidationErrorを返す。
    *
    * @param pattern 正規表現文字列
-   * @returns 成功時は Result<TwoParamsDirectivePattern>、失敗時はエラー情報
+   * @returns 成功時は Result<TwoParamsDirectivePattern>、失敗時はValidationError
    */
-  static createOrError(pattern: string): Result<TwoParamsDirectivePattern, DirectiveTypeError> {
-    if (!pattern || pattern.length === 0) {
-      return error({
-        kind: "EmptyInput",
-        message: "Pattern cannot be empty",
-      });
+  static createOrError(pattern: string): Result<TwoParamsDirectivePattern, ValidationError> {
+    if (typeof pattern !== "string") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: "Pattern must be a string",
+      }));
+    }
+
+    if (!pattern || pattern.trim().length === 0) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern", 
+        value: pattern,
+        reason: "Pattern cannot be empty",
+      }));
     }
 
     try {
       const regex = new RegExp(pattern);
       return ok(new TwoParamsDirectivePattern(regex));
     } catch (e) {
-      return error({
-        kind: "InvalidFormat",
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
         value: pattern,
-        pattern: "valid regex pattern",
-        message: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
-      });
+        reason: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
+      }));
     }
   }
 

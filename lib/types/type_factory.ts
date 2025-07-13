@@ -83,7 +83,7 @@ export type TypeCreationResult<T> = Result<T, ProcessingError>;
  *
  * const directiveResult = factory.createDirectiveType("to");
  * if (directiveResult.ok) {
- *   console.log(directiveResult.data.getValue()); // "to"
+ *   console.log(directiveResult.data.value); // "to"
  * } else {
  *   console.error(directiveResult.error.message);
  * }

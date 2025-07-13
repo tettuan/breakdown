@@ -39,7 +39,7 @@
  *
  * // Check result status
  * if (isOk(successResult)) {
- *   console.log("Success:", successResult.value);
+ *   console.log("Success:", successResult.data.value);
  * }
  *
  * // Transform results functionally
@@ -65,8 +65,8 @@
  * // Create a profile name (Totality-compliant with validation)
  * const profileResult = ConfigProfileName.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
  *
- * if (profileResult.value) {
- *   console.log("Profile:", profileResult.value);
+ * if (profileResult.ok) {
+ *   console.log("Profile:", profileResult.data.value);
  * }
  * ```
  *
@@ -86,6 +86,14 @@ export {
   type LayerTypeError 
 } from "../domain/core/value_objects/layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
+
+// TwoParams type implementation with Smart Constructor pattern
+export { 
+  TwoParamsType, 
+  createTwoParamsType,
+  type TwoParamsTypeError 
+} from "./two_params.ts";
+export type { TwoParams } from "./two_params.ts";
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
@@ -171,6 +179,12 @@ export { TotalityPromptVariablesFactory } from "../factory/prompt_variables_fact
  * Re-exported from breakdownparams for consistency.
  */
 export type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
+
+// Path Value Objects - Smart Constructors for Schema and Prompt paths
+export { SchemaPath, createSchemaPathUnsafe } from "./schema_path.ts";
+export type { SchemaPathError } from "./schema_path.ts";
+export { PromptPath, createPromptPathUnsafe } from "./prompt_path.ts";
+export type { PromptPathError } from "./prompt_path.ts";
 
 // Unified Error Types - Totality-compliant error handling system
 export type {

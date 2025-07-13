@@ -16,7 +16,7 @@ import {
   StdinVariable,
   toPromptParamsVariables,
   UserVariable,
-} from "./prompt_variables.ts";
+} from "./prompt_variables_vo.ts";
 
 describe("PromptVariables - Unit Tests", () => {
   describe("StandardVariableName", () => {

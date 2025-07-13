@@ -223,17 +223,18 @@ export class PromptFileGeneratorDDD {
       const { DirectiveType } = await import("../types/directive_type.ts");
       const { LayerType } = await import("../types/layer_type.ts");
 
-      // Create TwoParams_Result for constructing types
-      const twoParamsResult = {
-        type: "two" as const,
-        demonstrativeType: directive,
-        layerType: layer,
-        params: [directive, layer],
-        options: {},
-      };
+      // Create DirectiveType and LayerType from strings directly
+      const directiveResult = DirectiveType.create(directive);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error}`);
+      }
+      const directiveType = directiveResult.data;
 
-      const directiveType = DirectiveType.create(twoParamsResult);
-      const layerType = LayerType.create(twoParamsResult);
+      const layerResult = LayerType.create(layer);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error}`);
+      }
+      const layerType = layerResult.data;
 
       // Use DDD service for generation
       const response = await this.service.generatePrompt({

@@ -35,6 +35,7 @@ import {
 
 // OutputFilePathResolver functionality is now consolidated within InputFilePathResolverTotality
 const OutputFilePathResolver = InputFilePathResolver;
+type OutputFilePathResolver = InputFilePathResolver;
 import {
   formatSchemaError as _formatSchemaError,
   SchemaFilePathResolver,
@@ -430,11 +431,14 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * Create DirectiveType from string safely using TwoParams_Result
+   * Create DirectiveType from string safely
    */
   private createDirectiveFromString(value: string): DirectiveType {
-    const twoParamsResult = createTwoParamsResult(value, "project");
-    return DirectiveType.create(twoParamsResult);
+    const directiveResult = DirectiveType.create(value);
+    if (!directiveResult.ok) {
+      throw new Error(`Failed to create DirectiveType: ${directiveResult.error}`);
+    }
+    return directiveResult.data;
   }
 
   /**

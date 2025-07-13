@@ -38,7 +38,11 @@ function createTestDirectiveType(value: string): DirectiveType {
 
 function createTestLayerType(demonstrativeType: string, value: string): LayerType {
   const result = createTwoParamsResult(demonstrativeType, value);
-  return LayerType.create(result);
+  const layerResult = LayerType.create(result);
+  if (!layerResult.ok) {
+    throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+  }
+  return layerResult.data;
 }
 
 /**

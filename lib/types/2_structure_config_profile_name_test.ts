@@ -206,7 +206,7 @@ describe("ConfigProfileName - Unit Tests", () => {
       assertEquals(defaultProfile.ok, true);
       if (defaultProfile.ok) {
         assertEquals(defaultProfile.data.isDefault, true);
-        assertEquals(defaultProfile.data.prefix, null);
+        assertEquals(defaultProfile.data.prefix, "default");
       }
 
       const customProfile = ConfigProfileName.create("staging");
@@ -223,7 +223,7 @@ describe("ConfigProfileName - Unit Tests", () => {
       const defaultProfile = ConfigProfileName.createDefault();
       assertEquals(defaultProfile.value, "default");
       assertEquals(defaultProfile.isDefault, true);
-      assertEquals(defaultProfile.prefix, null);
+      assertEquals(defaultProfile.prefix, "default");
     });
   });
 

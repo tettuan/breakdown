@@ -16,15 +16,16 @@ import type { PromptParams } from "@tettuan/breakdownprompt";
 import type { Result } from "../types/result.ts";
 import type { PromptVariableSource } from "../types/prompt_variable_source.ts";
 // Note: prompt_variables.ts moved to two_params.ts as part of DDD refactoring
-import type { PromptVariables } from "../types/two_params.ts";
+import type { PromptVariable, PromptVariables } from "../types/prompt_variables_vo.ts";
 import type { ErrorInfo } from "@tettuan/breakdownparams";
 import {
   createPromptParams,
   FilePathVariable,
+  PromptVariablesVO,
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "../types/prompt_variables.ts";
+} from "../types/prompt_variables_vo.ts";
 import type { PathResolutionOption } from "../types/path_resolution_option.ts";
 
 /**
@@ -89,7 +90,7 @@ export class PromptVariableTransformer {
   async sourceToVariables(
     source: PromptVariableSource,
   ): Promise<TransformationResult<PromptVariables>> {
-    const variables: PromptVariables = [];
+    const variables: PromptVariable[] = [];
     const errors: TransformationError[] = [];
 
     // Transform directive type
@@ -231,7 +232,17 @@ export class PromptVariableTransformer {
       return { ok: false, error: errors };
     }
 
-    return { ok: true, data: variables };
+    // Create PromptVariablesVO from the array
+    const variablesResult = PromptVariablesVO.createOrError(variables);
+    if (!variablesResult.ok) {
+      errors.push({
+        stage: "variables",
+        message: this.formatVariableError(variablesResult.error),
+      });
+      return { ok: false, error: errors };
+    }
+
+    return { ok: true, data: variablesResult.data };
   }
 
   /**
@@ -242,7 +253,12 @@ export class PromptVariableTransformer {
     templatePath: string,
   ): TransformationResult<PromptParams> {
     try {
-      const params = createPromptParams(templatePath, variables);
+      // variables is already a PromptVariablesVO, so we can use it directly
+      const variablesRecord = variables.toRecord();
+      const params = {
+        template_file: templatePath,
+        variables: variablesRecord,
+      };
       return { ok: true, data: params };
     } catch (error) {
       return {

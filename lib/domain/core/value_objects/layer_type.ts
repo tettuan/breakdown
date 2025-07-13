@@ -8,10 +8,10 @@
  * @module domain/core/value_objects/layer_type
  */
 
-import type { Result } from "$lib/types/result.ts";
-import { error, ok } from "$lib/types/result.ts";
-import type { ValidationError } from "$lib/types/unified_error_types.ts";
-import { ErrorFactory } from "$lib/types/unified_error_types.ts";
+import type { Result } from "../../../types/result.ts";
+import { error, ok } from "../../../types/result.ts";
+import type { ValidationError } from "../../../types/unified_error_types.ts";
+import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
 /**
  * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン
@@ -334,6 +334,16 @@ export class LayerType {
   }
 
   /**
+   * getValue() method for backward compatibility with test expectations
+   * 
+   * @deprecated Use .value property instead
+   * @returns The layer type value as string
+   */
+  getValue(): string {
+    return this._value;
+  }
+
+  /**
    * String representation
    */
   toString(): string {
@@ -349,6 +359,11 @@ export class LayerType {
   }
 
   /**
+   * Known LayerType values including both common and specialized types
+   */
+  private static readonly KNOWN_LAYERS = ["project", "issue", "task", "bugs", "feature", "epic", "temp"] as const;
+
+  /**
    * Get all common layer types for reference
    * 
    * @returns Array of common layer type values
@@ -358,11 +373,143 @@ export class LayerType {
   }
 
   /**
+   * Get all known layer types including specialized ones
+   * 
+   * @returns Array of all known layer type values
+   */
+  static getKnownLayerTypes(): readonly string[] {
+    return [...LayerType.KNOWN_LAYERS];
+  }
+
+  /**
    * Check if the value is a common layer type
    * 
    * @returns true if this is a common layer type
    */
   isCommonLayerType(): boolean {
     return LayerType.getCommonLayerTypes().includes(this._value);
+  }
+
+  /**
+   * Check if the value is a known layer type
+   * 
+   * @returns true if this is a known layer type
+   */
+  isKnownLayerType(): boolean {
+    return LayerType.KNOWN_LAYERS.includes(this._value as typeof LayerType.KNOWN_LAYERS[number]);
+  }
+
+  /**
+   * Factory method: Create LayerType from string input with enhanced validation
+   * 
+   * Integrates LayerTypeFactory functionality with suggestions for unknown layers.
+   * 
+   * @param input - String input to convert to LayerType
+   * @param pattern - Optional validation pattern
+   * @returns Result with LayerType or enhanced error with suggestions
+   */
+  static fromString(
+    input: unknown,
+    pattern?: TwoParamsLayerTypePattern,
+  ): Result<LayerType, LayerTypeError & { suggestions?: readonly string[] }> {
+    // Handle null/undefined
+    if (input === null || input === undefined) {
+      return error({
+        kind: "EmptyInput",
+        message: "LayerType input cannot be null or undefined",
+      });
+    }
+
+    // Handle non-string input
+    if (typeof input !== "string") {
+      return error({
+        kind: "EmptyInput",
+        message: `LayerType input must be a string, got ${typeof input}`,
+      });
+    }
+
+    // Handle empty string
+    if (input.trim() === "") {
+      return error({
+        kind: "EmptyInput",
+        message: "LayerType cannot be empty or whitespace-only",
+      });
+    }
+
+    const normalized = input.trim().toLowerCase();
+
+    // Pattern validation if provided
+    if (pattern && !pattern.test(normalized)) {
+      return error({
+        kind: "InvalidFormat",
+        value: normalized,
+        pattern: pattern.getPattern(),
+        message: `LayerType "${normalized}" does not match required pattern: ${pattern.getPattern()}`,
+      });
+    }
+
+    // Try to create LayerType using standard create method
+    const result = LayerType.create(normalized);
+    
+    if (result.ok) {
+      return result;
+    }
+
+    // If creation failed and input is not a known layer, provide suggestions
+    if (!LayerType.KNOWN_LAYERS.includes(normalized as typeof LayerType.KNOWN_LAYERS[number])) {
+      const suggestions = LayerType.calculateSuggestions(normalized);
+      return error({
+        ...result.error,
+        suggestions,
+        message: `Unknown layer type "${normalized}". Did you mean: ${suggestions.join(", ")}?`,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Factory method: Create LayerType from TwoParams_Result (legacy compatibility)
+   * 
+   * @param result - TwoParams_Result containing layer information
+   * @returns Result with LayerType or error
+   */
+  static fromTwoParamsResult(result: { layerType: string }): Result<LayerType, LayerTypeError> {
+    return LayerType.create(result.layerType);
+  }
+
+  /**
+   * Check if a layer value is valid (known layer type)
+   * 
+   * @param input - Layer value to check
+   * @returns boolean indicating validity
+   */
+  static isValidLayer(input: string): boolean {
+    const normalized = input.trim().toLowerCase();
+    return LayerType.KNOWN_LAYERS.includes(normalized as typeof LayerType.KNOWN_LAYERS[number]);
+  }
+
+  /**
+   * Calculate suggestions for unknown layer inputs
+   * 
+   * @param input - Unknown layer input
+   * @returns Array of suggested layer names
+   */
+  private static calculateSuggestions(input: string): readonly string[] {
+    const suggestions: string[] = [];
+
+    for (const known of LayerType.KNOWN_LAYERS) {
+      // Simple similarity: starts with or contains
+      if (known.startsWith(input) || input.startsWith(known) || known.includes(input)) {
+        suggestions.push(known);
+      }
+    }
+
+    // If no close matches, return all common options
+    if (suggestions.length === 0) {
+      return LayerType.getCommonLayerTypes();
+    }
+
+    return suggestions;
   }
 }

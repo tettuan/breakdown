@@ -37,12 +37,12 @@ Deno.test("DirectiveType and LayerType Integration: Normal Flow - Basic Creation
   // 2. DirectiveType の生成
   const directiveType = DirectiveType.create(twoParamsResult);
   assertEquals(directiveType.value, "to");
-  assertEquals(directiveType.getValue(), "to"); // 後方互換メソッド
+  assertEquals(directiveType.value, "to"); // valueプロパティ
   
   // 3. LayerType の生成
   const layerType = LayerType.create(twoParamsResult);
   assertEquals(layerType.value, "project");
-  assertEquals(layerType.getValue(), "project"); // 後方互換メソッド
+  assertEquals(layerType.value, "project"); // valueプロパティ
   
   // 4. 型の相互作用の確認
   assertEquals(directiveType.equals(DirectiveType.create(twoParamsResult)), true);

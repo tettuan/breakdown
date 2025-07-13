@@ -11,7 +11,7 @@
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import { error, ok, Result } from "../types/result.ts";
 import { ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";
 
@@ -305,6 +305,66 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
     // Default fallback pattern for common layer types
     return "^(project|issue|task|bugs|temp)$";
+  }
+
+  /**
+   * Validates DirectiveType value against configured pattern
+   * @param value - Value to validate
+   * @returns boolean - True if value matches the pattern
+   */
+  validateDirectiveType(value: string): boolean {
+    const pattern = this.getDirectivePattern();
+    return pattern?.test(value) ?? false;
+  }
+
+  /**
+   * Validates LayerType value against configured pattern
+   * @param value - Value to validate
+   * @returns boolean - True if value matches the pattern
+   */
+  validateLayerType(value: string): boolean {
+    const pattern = this.getLayerTypePattern();
+    return pattern?.test(value) ?? false;
+  }
+
+  /**
+   * Gets list of valid DirectiveType values from pattern
+   * @returns readonly string[] - Array of valid directive types
+   */
+  getValidDirectiveTypes(): readonly string[] {
+    const pattern = this.getDirectivePattern();
+    if (!pattern) {
+      return [];
+    }
+    
+    // Extract values from pattern like "^(to|summary|defect|init|find)$"
+    const patternString = pattern.getPattern();
+    const match = patternString.match(/\^\(([^)]+)\)\$/);
+    if (match && match[1]) {
+      return match[1].split('|').filter((v: string) => v.trim().length > 0);
+    }
+    
+    return [];
+  }
+
+  /**
+   * Gets list of valid LayerType values from pattern
+   * @returns readonly string[] - Array of valid layer types
+   */
+  getValidLayerTypes(): readonly string[] {
+    const pattern = this.getLayerTypePattern();
+    if (!pattern) {
+      return [];
+    }
+    
+    // Extract values from pattern like "^(project|issue|task|bugs|temp)$"
+    const patternString = pattern.getPattern();
+    const match = patternString.match(/\^\(([^)]+)\)\$/);
+    if (match && match[1]) {
+      return match[1].split('|').filter((v: string) => v.trim().length > 0);
+    }
+    
+    return [];
   }
 
   /**

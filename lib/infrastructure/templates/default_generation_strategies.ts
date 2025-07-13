@@ -131,7 +131,7 @@ export class StandardTemplateSelectionStrategy implements TemplateSelectionStrat
     }
 
     // Build standard filename
-    const filename = `${this.defaultFilename}${layer.getValue()}.md`;
+    const filename = `${this.defaultFilename}${layer.value}.md`;
     return TemplatePath.create(directive, layer, filename);
   }
 }
@@ -158,7 +158,7 @@ export class FallbackTemplateSelectionStrategy implements TemplateSelectionStrat
     }
 
     // Check for fallback mapping
-    const key = `${directive.getValue()}/${layer.getValue()}`;
+    const key = `${directive.value}/${layer.value}`;
     const fallbackFilename = this.fallbackMappings.get(key);
 
     if (fallbackFilename !== undefined) {

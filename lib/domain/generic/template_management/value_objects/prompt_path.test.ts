@@ -20,8 +20,15 @@ const mockTwoParamsResult: TwoParams_Result = {
   options: {},
 };
 
-const validDirective = DirectiveType.create(mockTwoParamsResult);
-const validLayer = LayerType.create(mockTwoParamsResult);
+const validDirectiveResult = DirectiveType.create(mockTwoParamsResult);
+const validLayerResult = LayerType.create(mockTwoParamsResult);
+
+// Extract actual values from Result types
+if (!validDirectiveResult.ok || !validLayerResult.ok) {
+  throw new Error("Test setup failed: invalid directive or layer");
+}
+const validDirective = validDirectiveResult.data!;
+const validLayer = validLayerResult.data!;
 
 const validFilename = "template.md";
 const invalidFilename = "template.txt";

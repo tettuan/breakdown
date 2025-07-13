@@ -75,16 +75,18 @@ Deno.test("2_structure: BuilderVariableError accumulation pattern", () => {
     assertEquals(Array.isArray(errors), true);
     assertEquals(errors.length >= 2, true); // At least duplicate and prefix errors
 
-    // Check error types
-    const duplicateError = errors.find((e) => e.kind === "DuplicateVariable");
+    // Check error types with proper type guards
+    const duplicateError = errors.find((e) => "kind" in e && e.kind === "DuplicateVariable") as 
+      { kind: "DuplicateVariable"; name: string } | undefined;
     assertExists(duplicateError);
-    if (duplicateError?.kind === "DuplicateVariable") {
+    if (duplicateError) {
       assertEquals(duplicateError.name, "input_text_file");
     }
 
-    const prefixError = errors.find((e) => e.kind === "InvalidPrefix");
+    const prefixError = errors.find((e) => "kind" in e && e.kind === "InvalidPrefix") as 
+      { kind: "InvalidPrefix"; name: string; expectedPrefix: string } | undefined;
     assertExists(prefixError);
-    if (prefixError?.kind === "InvalidPrefix") {
+    if (prefixError) {
       assertEquals(prefixError.name, "no-prefix");
       assertEquals(prefixError.expectedPrefix, "uv-");
     }

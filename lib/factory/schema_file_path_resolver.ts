@@ -541,10 +541,18 @@ export class SchemaFilePathResolver {
           path: error.attempts[0] || "",
         };
 
-      case "ValidationFailed":
+      case "PathValidationFailed":
+        let message: string;
+        if ('rule' in error && error.rule !== undefined) {
+          message = `Path validation failed for path: ${error.path} (rule: ${error.rule})`;
+        } else if ('reason' in error && error.reason !== undefined) {
+          message = `Path validation failed for path: ${error.path} - ${error.reason}`;
+        } else {
+          message = `Path validation failed for path: ${error.path}`;
+        }
         return {
           kind: "SchemaNotFound",
-          message: `Validation failed for path: ${error.path}`,
+          message,
           path: error.path || "",
         };
 
@@ -604,8 +612,14 @@ export function formatSchemaError(error: PathResolutionError): string {
     case "NoValidFallback":
       return `No valid fallback found. Attempts: ${error.attempts.join(", ")}`;
 
-    case "ValidationFailed":
-      return `Validation failed for path: ${error.path}`;
+    case "PathValidationFailed":
+      if ('rule' in error && error.rule !== undefined) {
+        return `Path validation failed for path: ${error.path} (rule: ${error.rule})`;
+      } else if ('reason' in error && error.reason !== undefined) {
+        return `Path validation failed for path: ${error.path} - ${error.reason}`;
+      } else {
+        return `Path validation failed for path: ${error.path}`;
+      }
 
     default:
       return `Unknown schema error occurred`;

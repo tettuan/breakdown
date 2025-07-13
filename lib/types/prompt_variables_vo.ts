@@ -14,7 +14,12 @@
  * @module types/prompt_variables_vo
  */
 
-import type { PromptVariable } from "./prompt_variables.ts";
+/**
+ * PromptVariable interface - represents a prompt variable with key-value pairs
+ */
+export interface PromptVariable {
+  toRecord(): Record<string, string>;
+}
 import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
 import type { ValidationError } from "./unified_error_types.ts";
@@ -323,5 +328,86 @@ export class PromptVariablesVO {
    */
   get originalVariables(): readonly PromptVariable[] {
     return this.variables;
+  }
+}
+
+// Backward compatibility exports
+export type PromptVariables = PromptVariablesVO;
+export const createPromptParams = PromptVariablesVO.create;
+
+// Stub exports for missing variable types - these need to be properly implemented
+export class StandardVariable implements PromptVariable {
+  constructor(private key: string, private value: string) {}
+  
+  static create(key: string, value: string): Result<StandardVariable, ValidationError> {
+    if (!key || !value) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "variable",
+        value: `${key}=${value}`,
+        reason: "Key and value must be non-empty"
+      }));
+    }
+    return ok(new StandardVariable(key, value));
+  }
+  
+  toRecord(): Record<string, string> {
+    return { [this.key]: this.value };
+  }
+}
+
+export class FilePathVariable implements PromptVariable {
+  constructor(private key: string, private value: string) {}
+  
+  static create(key: string, value: string): Result<FilePathVariable, ValidationError> {
+    if (!key || !value) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "variable",
+        value: `${key}=${value}`,
+        reason: "Key and value must be non-empty"
+      }));
+    }
+    return ok(new FilePathVariable(key, value));
+  }
+  
+  toRecord(): Record<string, string> {
+    return { [this.key]: this.value };
+  }
+}
+
+export class StdinVariable implements PromptVariable {
+  constructor(private key: string, private value: string) {}
+  
+  static create(key: string, value: string): Result<StdinVariable, ValidationError> {
+    if (!key || !value) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "variable",
+        value: `${key}=${value}`,
+        reason: "Key and value must be non-empty"
+      }));
+    }
+    return ok(new StdinVariable(key, value));
+  }
+  
+  toRecord(): Record<string, string> {
+    return { [this.key]: this.value };
+  }
+}
+
+export class UserVariable implements PromptVariable {
+  constructor(private key: string, private value: string) {}
+  
+  static create(key: string, value: string): Result<UserVariable, ValidationError> {
+    if (!key || !value) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "variable",
+        value: `${key}=${value}`,
+        reason: "Key and value must be non-empty"
+      }));
+    }
+    return ok(new UserVariable(key, value));
+  }
+  
+  toRecord(): Record<string, string> {
+    return { [this.key]: this.value };
   }
 }

@@ -48,10 +48,18 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           params: ["test", "test"],
           options: {},
         };
+        const directiveResult = DirectiveType.create(mockTwoParamsResult);
+        if (!directiveResult.ok) {
+          throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+        }
+        const layerResult = LayerType.create(mockTwoParamsResult);
+        if (!layerResult.ok) {
+          throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+        }
         const mockContext: ResolutionContext = {
           providedVariables: {},
-          directive: DirectiveType.create(mockTwoParamsResult),
-          layer: LayerType.create(mockTwoParamsResult),
+          directive: directiveResult.data,
+          layer: layerResult.data,
           workingDirectory: "/test",
         };
 
@@ -114,8 +122,16 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           params: ["test", "test"],
           options: {},
         };
-        const directive = DirectiveType.create(mockTwoParamsResult);
-        const layer = LayerType.create(mockTwoParamsResult);
+        const directiveResult = DirectiveType.create(mockTwoParamsResult);
+        if (!directiveResult.ok) {
+          throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+        }
+        const directive = directiveResult.data;
+        const layerResult = LayerType.create(mockTwoParamsResult);
+        if (!layerResult.ok) {
+          throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+        }
+        const layer = layerResult.data;
         const context: SelectionContext = {
           fallbackEnabled: false,
         };
@@ -147,8 +163,16 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
 
       // When fallback is disabled, should delegate to primary strategy
       const contextNoFallback: SelectionContext = { fallbackEnabled: false };
@@ -190,8 +214,16 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         params: ["defect", "project"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const context: SelectionContext = { fallbackEnabled: true };
 
       const result = strategy.selectTemplate(directive, layer, context);
@@ -231,10 +263,18 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
       const context: ResolutionContext = {
         providedVariables: {},
-        directive: DirectiveType.create(mockTwoParamsResult),
-        layer: LayerType.create(mockTwoParamsResult),
+        directive: directiveResult.data,
+        layer: layerResult.data,
         workingDirectory: "/test",
       };
 
@@ -281,10 +321,18 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
+      const directiveResult2 = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult2.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult2.error.message}`);
+      }
+      const layerResult2 = LayerType.create(mockTwoParamsResult);
+      if (!layerResult2.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult2.error.message}`);
+      }
       const invalidContext: ResolutionContext = {
         providedVariables: {} as Record<string, string>,
-        directive: DirectiveType.create(mockTwoParamsResult),
-        layer: LayerType.create(mockTwoParamsResult),
+        directive: directiveResult2.data,
+        layer: layerResult2.data,
         workingDirectory: "/test",
       };
 
@@ -301,8 +349,16 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         params: ["test", "test"],
         options: {},
       };
-      const directive = DirectiveType.create(mockTwoParamsResult);
-      const layer = LayerType.create(mockTwoParamsResult);
+      const directiveResult = DirectiveType.create(mockTwoParamsResult);
+      if (!directiveResult.ok) {
+        throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+      }
+      const directive = directiveResult.data;
+      const layerResult = LayerType.create(mockTwoParamsResult);
+      if (!layerResult.ok) {
+        throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+      }
+      const layer = layerResult.data;
       const context: SelectionContext = { fallbackEnabled: false };
 
       const result = strategy.selectTemplate(directive, layer, context);

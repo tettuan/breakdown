@@ -11,8 +11,8 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { PromptVariablesVO } from "./prompt_variables_vo.ts";
-import { FilePathVariable, StandardVariable, UserVariable } from "./prompt_variables.ts";
-import type { PromptVariable } from "./prompt_variables.ts";
+import { FilePathVariable, StandardVariable, UserVariable } from "./prompt_variables_vo.ts";
+import type { PromptVariable } from "./prompt_variables_vo.ts";
 import { ErrorGuards } from "./mod.ts";
 
 // Test helper to create test variables

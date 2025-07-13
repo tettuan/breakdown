@@ -9,6 +9,8 @@
  */
 
 import { error, ok, Result } from "./result.ts";
+import type { PathError, PathValidationRule } from "./unified_error_types.ts";
+import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
  * Path resolution strategies
@@ -16,28 +18,15 @@ import { error, ok, Result } from "./result.ts";
 export type PathResolutionStrategy = "absolute" | "relative" | "workspace";
 
 /**
- * Path validation rule types
+ * Error types for path resolution - unified with PathError from unified_error_types.ts
+ * Extends PathError to include resolution-specific error types
  */
-export type PathValidationRule =
-  | "must-exist"
-  | "must-be-directory"
-  | "must-be-file"
-  | "must-be-readable"
-  | "must-be-writable";
-
-/**
- * Error types for path resolution
- */
-export type PathResolutionError =
-  | { kind: "InvalidStrategy"; strategy: string }
-  | { kind: "EmptyBaseDir" }
-  | { kind: "InvalidPath"; path: string; reason: string }
-  | { kind: "NoValidFallback"; attempts: string[] }
-  | { kind: "ValidationFailed"; rule: PathValidationRule; path: string }
-  | { kind: "InvalidConfiguration"; details: string }
-  | { kind: "BaseDirectoryNotFound"; path: string }
-  | { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string }
-  | { kind: "TemplateNotFound"; attempted: string[]; fallback?: string };
+export type PathResolutionError = PathError |
+  { kind: "InvalidStrategy"; strategy: string; context?: Record<string, unknown> } |
+  { kind: "EmptyBaseDir"; context?: Record<string, unknown> } |
+  { kind: "NoValidFallback"; attempts: string[]; context?: Record<string, unknown> } |
+  { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string; context?: Record<string, unknown> } |
+  { kind: "TemplateNotFound"; attempted: string[]; fallback?: string; context?: Record<string, unknown> };
 
 /**
  * Path validation rules configuration
@@ -192,7 +181,7 @@ export class PathResolutionOption {
     for (const rule of this.validation.required) {
       const result = this.checkRule(rule, resolvedPath);
       if (!result.ok) {
-        return error({ kind: "ValidationFailed", rule, path: resolvedPath });
+        return error({ kind: "PathValidationFailed", rule, path: resolvedPath });
       }
     }
 

@@ -16,6 +16,8 @@
  */
 
 import { error, ok, Result } from "../../../types/result.ts";
+import type { ValidationError } from "../../../types/unified_error_types.ts";
+import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
 /**
  * Path validation error types using Discriminated Union
@@ -243,6 +245,92 @@ export abstract class BasePathValueObject {
 
     // All validations passed - create instance
     return ok(constructor(normalized));
+  }
+
+  /**
+   * Smart Constructor with createOrError method for unified Result<T, ValidationError> pattern
+   * 
+   * Converts PathValidationError to unified ValidationError using ErrorFactory.
+   * This method provides the standard interface expected across all Value Objects.
+   * 
+   * @template T The concrete path value object type
+   * @param rawPath The raw path string to validate
+   * @param config Validation configuration (optional, uses DEFAULT_PATH_CONFIG if not provided)
+   * @param constructor Factory function to create the concrete instance
+   * @returns Result containing validated path value object or ValidationError
+   */
+  protected static createOrError<T extends BasePathValueObject>(
+    rawPath: string,
+    config: PathValidationConfig = DEFAULT_PATH_CONFIG,
+    constructor: (normalizedPath: string) => T,
+  ): Result<T, ValidationError> {
+    const pathResult = this.createPath(rawPath, config, constructor);
+    
+    if (pathResult.ok) {
+      return pathResult;
+    }
+
+    // Convert PathValidationError to ValidationError using ErrorFactory
+    const pathError = pathResult.error;
+    
+    switch (pathError.kind) {
+      case "EMPTY_PATH":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: pathError.message,
+        }));
+
+      case "PATH_TRAVERSAL":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: pathError.attemptedPath,
+          reason: pathError.message,
+        }));
+
+      case "INVALID_CHARACTERS":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: `${pathError.message}: ${pathError.invalidChars.join(", ")}`,
+        }));
+
+      case "TOO_LONG":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: `${pathError.message} (max: ${pathError.maxLength}, actual: ${pathError.actualLength})`,
+        }));
+
+      case "ABSOLUTE_PATH_REQUIRED":
+      case "RELATIVE_PATH_REQUIRED":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: pathError.message,
+        }));
+
+      case "INVALID_EXTENSION":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: `${pathError.message} (expected: ${pathError.expected.join(", ")}, actual: ${pathError.actual})`,
+        }));
+
+      case "PLATFORM_INCOMPATIBLE":
+        return error(ErrorFactory.validationError("InvalidInput", {
+          field: "path",
+          value: rawPath,
+          reason: `${pathError.message} (platform: ${pathError.platform})`,
+        }));
+
+      default:
+        // Exhaustive check for TypeScript
+        const _exhaustive: never = pathError;
+        return error(ErrorFactory.validationError("ValidationFailed", {
+          errors: ["Unknown path validation error"],
+        }));
+    }
   }
 
   /**

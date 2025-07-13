@@ -43,7 +43,11 @@ function createMockLayerType(value: string): LayerType {
     options: {},
     params: ["to", value],
   };
-  return LayerType.create(mockResult);
+  const layerResult = LayerType.create(mockResult);
+  if (!layerResult.ok) {
+    throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+  }
+  return layerResult.data;
 }
 
 // =============================================================================

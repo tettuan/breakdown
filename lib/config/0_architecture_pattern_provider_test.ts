@@ -47,13 +47,15 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
     "Should only depend on @tettuan/breakdownconfig as external package",
   );
 
-  // 内部依存の検証（types層への依存のみ許可）
+  // 内部依存の検証（types層とdomain層への依存のみ許可）
   const allowedInternalPaths = [
     "../types/type_factory.ts",
     "../types/directive_type.ts",
     "../types/layer_type.ts",
     "../types/result.ts",
     "../types/unified_error_types.ts",
+    "../domain/core/value_objects/directive_type.ts",
+    "../domain/core/value_objects/layer_type.ts",
   ];
 
   for (const dep of internalDeps) {
@@ -66,12 +68,12 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
 
   // config層から他の層への依存方向の検証
   const invalidDeps = internalDeps.filter((dep) =>
-    !dep.startsWith("../types/") && !dep.startsWith("../interfaces/")
+    !dep.startsWith("../types/") && !dep.startsWith("../interfaces/") && !dep.startsWith("../domain/core/value_objects/")
   );
   assertEquals(
     invalidDeps.length,
     0,
-    "ConfigPatternProvider should only depend on types layer",
+    "ConfigPatternProvider should only depend on types and domain/core/value_objects layers",
   );
 });
 
@@ -92,6 +94,10 @@ Deno.test("Architecture: Complete TypePatternProvider interface implementation",
   const requiredMethods: Array<keyof TypePatternProvider> = [
     "getDirectivePattern",
     "getLayerTypePattern",
+    "validateDirectiveType",
+    "validateLayerType",
+    "getValidDirectiveTypes",
+    "getValidLayerTypes",
   ];
 
   for (const method of requiredMethods) {
@@ -102,10 +108,19 @@ Deno.test("Architecture: Complete TypePatternProvider interface implementation",
     );
 
     // メソッドのシグネチャを検証（引数の数）
+    const expectedArgumentCounts: Record<keyof TypePatternProvider, number> = {
+      validateDirectiveType: 1,
+      validateLayerType: 1,
+      getValidDirectiveTypes: 0,
+      getValidLayerTypes: 0,
+      getDirectivePattern: 0,
+      getLayerTypePattern: 0,
+    };
+    
     assertEquals(
       prototype[method].length,
-      0,
-      `${method} should take no arguments as per interface`,
+      expectedArgumentCounts[method],
+      `${method} should take ${expectedArgumentCounts[method]} argument(s) as per interface`,
     );
   }
 });
@@ -447,6 +462,10 @@ Deno.test("Architecture: Single Responsibility Principle", () => {
   const methodResponsibilities: Record<string, string> = {
     getDirectivePattern: "pattern retrieval",
     getLayerTypePattern: "pattern retrieval",
+    validateDirectiveType: "pattern validation",
+    validateLayerType: "pattern validation",
+    getValidDirectiveTypes: "pattern introspection",
+    getValidLayerTypes: "pattern introspection",
     hasValidPatterns: "pattern retrieval",
     clearCache: "pattern caching",
     debug: "debug information",

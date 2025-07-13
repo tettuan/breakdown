@@ -50,13 +50,13 @@ Deno.test("0_architecture - SchemaPath implements Smart Constructor pattern corr
 Deno.test("0_architecture - SchemaPath.create returns Result type with totality", () => {
   // Create mock DirectiveType and LayerType
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Valid case - should return Result.ok
@@ -78,13 +78,13 @@ Deno.test("0_architecture - SchemaPath.create returns Result type with totality"
 Deno.test("0_architecture - SchemaPathError uses Discriminated Union pattern", () => {
   // Test each error type has unique 'kind' discriminator
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Test invalid filename to get InvalidSchemaFilename error
@@ -237,13 +237,13 @@ Deno.test("0_architecture - Schema configuration object is immutable and well-st
 
 Deno.test("0_architecture - SchemaPath is immutable Value Object with schema-specific features", () => {
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   const result = SchemaPath.create(mockDirective, mockLayer, "test.schema.md");
@@ -296,8 +296,8 @@ Deno.test("0_architecture - SchemaPath is immutable Value Object with schema-spe
 
 Deno.test("0_architecture - Schema factory methods support different schema types", () => {
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // JSON schema factory
@@ -325,7 +325,7 @@ Deno.test("0_architecture - Schema factory methods support different schema type
   // Defect schema factory
   const defectResult = SchemaPath.createDefectSchema(mockLayer, "defect.schema.md");
   if (defectResult.ok) {
-    assertEquals(defectResult.data.getDirective().getValue(), "defect");
+    assertEquals(defectResult.data.getDirective().value, "defect");
   } else {
     assertExists(defectResult.error);
   }
@@ -333,13 +333,13 @@ Deno.test("0_architecture - Schema factory methods support different schema type
 
 Deno.test("0_architecture - Schema type detection works correctly", () => {
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // JSON file should be detected as json type
@@ -359,13 +359,13 @@ Deno.test("0_architecture - Schema validation stages are properly sequenced", ()
   // Test that validation follows the documented stages for schema paths
 
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Input validation should catch null/undefined

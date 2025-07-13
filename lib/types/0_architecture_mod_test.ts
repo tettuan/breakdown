@@ -43,12 +43,17 @@ describe("0_architecture_mod_test", () => {
       // Verify DirectiveType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
-      assertEquals(result.value, "to");
+      assertEquals(result.ok, true);
+      
+      if (result.ok) {
+        const directiveType = result.data;
+        assertEquals(directiveType.value, "to");
 
-      // Verify it's a DirectiveType instance
-      assertExists(result.getValue);
-      assertEquals(typeof result.getValue, "function");
-      assertEquals(result.value, "to");
+        // Verify it's a DirectiveType instance
+        assertExists(directiveType.value);
+        assertEquals(typeof directiveType.value, "string");
+        assertEquals(directiveType.value, "to");
+      }
     });
 
     it("should implement Smart Constructor for LayerType", () => {
@@ -63,12 +68,17 @@ describe("0_architecture_mod_test", () => {
       // Verify LayerType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
-      assertEquals(result.value, "project");
+      assertEquals(result.ok, true);
+      
+      if (result.ok) {
+        const layerType = result.data;
+        assertEquals(layerType.value, "project");
 
-      // Verify it's a LayerType instance
-      assertExists(result.getValue);
-      assertEquals(typeof result.getValue, "function");
-      assertEquals(result.value, "project");
+        // Verify it's a LayerType instance
+        assertExists(layerType.value);
+        assertEquals(typeof layerType.value, "string");
+        assertEquals(layerType.value, "project");
+      }
     });
 
     it("should implement Smart Constructor for ConfigProfileName", () => {
