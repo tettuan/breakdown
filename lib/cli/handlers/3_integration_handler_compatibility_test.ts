@@ -217,7 +217,7 @@ Deno.test("TwoParamsHandler - Component dependency analysis", async () => {
           results[component] = true;
           break;
         case "TwoParamsVariableProcessor":
-          await import("../processors/two_params_variable_processor.ts");
+          await import("../../processor/variable_processor_v2.ts");
           results[component] = true;
           break;
         case "TwoParamsPromptGenerator":

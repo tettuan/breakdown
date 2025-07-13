@@ -20,7 +20,7 @@ import { error, ok } from "$lib/types/result.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
 import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
-import type { ProcessedVariables } from "../processors/two_params_variable_processor.ts";
+import type { ProcessedVariables } from "../../processor/variable_processor_v2.ts";
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";

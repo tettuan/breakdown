@@ -45,7 +45,6 @@ export {
 
 export {
   TwoParamsDirectivePattern,
-  TwoParamsLayerTypePattern,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,

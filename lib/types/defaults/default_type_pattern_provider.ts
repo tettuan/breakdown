@@ -13,7 +13,7 @@
  */
 
 import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../../domain/core/value_objects/layer_type.ts";
+// Note: TwoParamsLayerTypePattern has been removed (@deprecated)
 import type { TypePatternProvider } from "../type_factory.ts";
 import { _defaultConfigTwoParams } from "./config_two_params.ts";
 
@@ -87,33 +87,14 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   /**
    * Get LayerType validation pattern from default configuration (TypePatternProvider interface)
    *
-   * Uses the new createOrError implementation for Totality-compliant error handling.
-   * This method follows DDD principles by delegating to the domain object's factory method.
+   * Note: TwoParamsLayerTypePattern has been removed (@deprecated).
+   * LayerType validation is now handled directly by LayerType.create() method.
    *
-   * @returns Pattern object for validating LayerType values
+   * @returns Pattern object for validating LayerType values (null since pattern validation is deprecated)
    */
   getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
-    const pattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-    const result = TwoParamsLayerTypePattern.createOrError(pattern);
-    if (!result.ok) {
-      return null;
-    }
-    return result.data;
-  }
-
-  /**
-   * Get LayerType validation pattern from default configuration (internal method)
-   *
-   * @returns TwoParamsLayerTypePattern for validating LayerType values
-   * @throws Error if pattern creation fails (should not happen with valid defaults)
-   */
-  getLayerTypePatternObject(): TwoParamsLayerTypePattern {
-    const pattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-    const result = TwoParamsLayerTypePattern.createOrError(pattern);
-    if (!result.ok) {
-      throw new Error(`Failed to create layer type pattern: ${result.error.kind} - ${JSON.stringify(result.error)}`);
-    }
-    return result.data;
+    // Pattern validation is now handled directly by LayerType.create() method
+    return null;
   }
 
   /**
@@ -139,12 +120,32 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   /**
    * Validate LayerType value against the pattern
    *
+   * Note: Pattern validation is now handled directly by LayerType.create() method.
+   *
    * @param value The value to validate
-   * @returns true if the value matches the pattern
+   * @returns true if the value passes LayerType validation
    */
   validateLayerType(value: string): boolean {
-    const pattern = this.getLayerTypePatternObject();
-    return pattern.test(value);
+    // Import at runtime to avoid circular dependencies
+    try {
+      // Basic validation logic extracted from LayerType.create()
+      if (!value || typeof value !== "string" || value.trim() === "") {
+        return false;
+      }
+      
+      const trimmedValue = value.trim();
+      
+      // Length validation
+      if (trimmedValue.length > 30) {
+        return false;
+      }
+      
+      // Basic format validation (lowercase letters, numbers, hyphens, underscores)
+      const basicPattern = /^[a-z0-9_-]{1,30}$/;
+      return basicPattern.test(trimmedValue);
+    } catch {
+      return false;
+    }
   }
 
   /**

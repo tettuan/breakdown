@@ -13,106 +13,6 @@ import { error, ok } from "../../../types/result.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
-/**
- * TwoParamsLayerTypePattern - LayerType用のバリデーションパターン
- *
- * 正規表現パターンを安全にラップし、LayerTypeのバリデーションに使用する。
- * Smart Constructorパターンを採用して、無効なパターンの作成を防ぐ。
- * 
- * @deprecated Consider using LayerType.create() with built-in validation instead
- */
-export class TwoParamsLayerTypePattern {
-  private constructor(private readonly pattern: RegExp) {}
-
-  /**
-   * 文字列パターンから TwoParamsLayerTypePattern を作成
-   * @param pattern 正規表現文字列
-   * @returns 成功時は TwoParamsLayerTypePattern、失敗時は null
-   */
-  static create(pattern: string): TwoParamsLayerTypePattern | null {
-    // Validate input type first
-    if (typeof pattern !== "string" || pattern == null || pattern.trim().length === 0) {
-      return null;
-    }
-
-    try {
-      const regex = new RegExp(pattern);
-      return new TwoParamsLayerTypePattern(regex);
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * 文字列パターンから TwoParamsLayerTypePattern を作成（Result型版）
-   *
-   * Totality原則に準拠し、エラーを明示的に返す。
-   *
-   * @param pattern 正規表現文字列
-   * @returns 成功時は Result<TwoParamsLayerTypePattern>、失敗時はエラー情報
-   */
-  static createOrError(pattern: string): Result<TwoParamsLayerTypePattern, ValidationError> {
-    if (typeof pattern !== "string") {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "pattern",
-        value: pattern,
-        reason: "Pattern must be a string",
-      }));
-    }
-    
-    if (!pattern || pattern.trim().length === 0) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "pattern",
-        value: pattern,
-        reason: "Pattern cannot be empty",
-      }));
-    }
-
-    try {
-      const regex = new RegExp(pattern);
-      return ok(new TwoParamsLayerTypePattern(regex));
-    } catch (e) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "pattern",
-        value: pattern,
-        reason: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
-      }));
-    }
-  }
-
-  /**
-   * 値がパターンにマッチするかテスト
-   * @param value テスト対象の値
-   * @returns マッチする場合 true
-   */
-  test(value: string): boolean {
-    return this.pattern.test(value);
-  }
-
-  /**
-   * パターンの文字列表現を取得
-   * @returns 正規表現の文字列
-   */
-  toString(): string {
-    return this.pattern.source;
-  }
-
-  /**
-   * パターンの文字列表現を取得（getPatternメソッド）
-   * @returns 正規表現の文字列
-   */
-  getPattern(): string {
-    return this.pattern.source;
-  }
-
-  /**
-   * TypePatternProvider インターフェース準拠のためのメソッド
-   * @returns 自身を返す（TypePatternProvider.getLayerTypePattern用）
-   */
-  getLayerTypePattern(): TwoParamsLayerTypePattern {
-    return this;
-  }
-}
 
 /**
  * LayerType validation errors following Discriminated Union pattern
@@ -199,20 +99,20 @@ export class LayerType {
   }
 
   /**
-   * Smart Constructor for LayerType creation (overloaded for compatibility)
+   * Smart Constructor for LayerType creation
    * 
    * Validates the input against basic format patterns.
    * Follows Totality principle by handling all possible input cases.
    * 
-   * @param value - Layer type candidate or TwoParams_Result for legacy compatibility
-   * @param profile - Configuration profile (optional for legacy compatibility)
+   * @param value - Layer type candidate or TwoParams_Result for compatibility
+   * @param profile - Configuration profile (optional for compatibility)
    * @returns Result with LayerType or detailed error
    */
   static create(
     value: string | null | undefined | { layerType: string },
     profile?: unknown,
   ): Result<LayerType, LayerTypeError> {
-    // Legacy compatibility: handle TwoParams_Result-like objects
+    // Handle TwoParams_Result-like objects
     if (typeof value === "object" && value !== null && "layerType" in value) {
       return LayerType.create(value.layerType);
     }
@@ -250,25 +150,6 @@ export class LayerType {
     return ok(new LayerType(trimmedValue, true));
   }
 
-  /**
-   * Legacy compatibility method that returns LayerType directly or throws
-   * 
-   * @deprecated Use create() method that returns Result<LayerType, LayerTypeError> instead
-   * @param value - Layer type value or TwoParams_Result
-   * @param pattern - Optional pattern for validation (legacy compatibility)
-   * @returns LayerType instance
-   * @throws Error if validation fails
-   */
-  static createLegacy(
-    value: string | { layerType: string },
-    pattern?: TwoParamsLayerTypePattern,
-  ): LayerType {
-    const result = LayerType.create(value);
-    if (!result.ok) {
-      throw new Error(`LayerType creation failed: ${result.error.message}`);
-    }
-    return result.data;
-  }
 
   /**
    * Check if this LayerType is valid for a specific DirectiveType
@@ -333,15 +214,6 @@ export class LayerType {
     return this._value === other._value;
   }
 
-  /**
-   * getValue() method for backward compatibility with test expectations
-   * 
-   * @deprecated Use .value property instead
-   * @returns The layer type value as string
-   */
-  getValue(): string {
-    return this._value;
-  }
 
   /**
    * String representation
@@ -405,12 +277,10 @@ export class LayerType {
    * Integrates LayerTypeFactory functionality with suggestions for unknown layers.
    * 
    * @param input - String input to convert to LayerType
-   * @param pattern - Optional validation pattern
    * @returns Result with LayerType or enhanced error with suggestions
    */
   static fromString(
     input: unknown,
-    pattern?: TwoParamsLayerTypePattern,
   ): Result<LayerType, LayerTypeError & { suggestions?: readonly string[] }> {
     // Handle null/undefined
     if (input === null || input === undefined) {
@@ -437,16 +307,6 @@ export class LayerType {
     }
 
     const normalized = input.trim().toLowerCase();
-
-    // Pattern validation if provided
-    if (pattern && !pattern.test(normalized)) {
-      return error({
-        kind: "InvalidFormat",
-        value: normalized,
-        pattern: pattern.getPattern(),
-        message: `LayerType "${normalized}" does not match required pattern: ${pattern.getPattern()}`,
-      });
-    }
 
     // Try to create LayerType using standard create method
     const result = LayerType.create(normalized);

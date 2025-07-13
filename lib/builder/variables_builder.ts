@@ -22,7 +22,7 @@ import {
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "../types/prompt_variables.ts";
+} from "../types/prompt_variables_vo.ts";
 
 /**
  * Factory/PathResolver value types for VariablesBuilder integration

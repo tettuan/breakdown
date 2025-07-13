@@ -13,7 +13,7 @@ import { type FactoryResolvedValues, VariablesBuilder } from "../builder/variabl
 import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
 import { CustomVariableExtractor } from "./custom_variable_extractor.ts";
 import { StandardVariableResolver, type StandardVariables } from "./standard_variable_resolver.ts";
-import type { PromptVariable } from "../types/prompt_variables.ts";
+import type { PromptVariable } from "../types/prompt_variables_vo.ts";
 
 /**
  * Error types for Variable Processor
@@ -218,7 +218,7 @@ export interface ProcessedVariables {
 /**
  * Backward compatibility error types for TwoParamsVariableProcessor
  */
-export type VariableProcessorError =
+export type TwoParamsVariableProcessorError =
   | { kind: "InvalidVariablePrefix"; key: string; expectedPrefix: string }
   | { kind: "ReservedVariableName"; key: string }
   | { kind: "EmptyVariableValue"; key: string }
@@ -240,7 +240,7 @@ export class TwoParamsVariableProcessor {
   processVariables(
     options: Record<string, unknown>,
     stdinContent: string,
-  ): Result<ProcessedVariables, VariableProcessorError[]> {
+  ): Result<ProcessedVariables, TwoParamsVariableProcessorError[]> {
     // Validate options first
     if (!options || typeof options !== "object") {
       return error([{
@@ -278,9 +278,9 @@ export class TwoParamsVariableProcessor {
    */
   private extractCustomVariablesCompatible(
     options: Record<string, unknown>,
-  ): Result<Record<string, string>, VariableProcessorError[]> {
+  ): Result<Record<string, string>, TwoParamsVariableProcessorError[]> {
     const customVariables: Record<string, string> = {};
-    const errors: VariableProcessorError[] = [];
+    const errors: TwoParamsVariableProcessorError[] = [];
     const reservedNames = new Set([
       "input_text",
       "input_text_file", 
@@ -355,7 +355,7 @@ export class TwoParamsVariableProcessor {
    */
   processVariablesWithoutStdin(
     options: Record<string, unknown>,
-  ): Result<ProcessedVariables, VariableProcessorError[]> {
+  ): Result<ProcessedVariables, TwoParamsVariableProcessorError[]> {
     return this.processVariables(options, "");
   }
 }

@@ -15,7 +15,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import {
   type ProcessedVariables as _ProcessedVariables,
   TwoParamsVariableProcessor,
-  type VariableProcessorError as _VariableProcessorError,
+  type TwoParamsVariableProcessorError as _VariableProcessorError,
 } from "../../processor/variable_processor_v2.ts";
 import type { Result as _Result } from "$lib/types/result.ts";
 import { isError, isOk } from "$lib/types/result.ts";
@@ -375,7 +375,7 @@ Deno.test("1_behavior: processVariables returns proper Result structure on succe
 
   const result = processor.processVariables(options, stdinContent);
 
-  // Verify Result<ProcessedVariables, VariableProcessorError[]> structure
+  // Verify Result<ProcessedVariables, TwoParamsVariableProcessorError[]> structure
   assertEquals(typeof result, "object");
   assertExists(result);
   assertEquals("ok" in result, true);

@@ -82,7 +82,6 @@ export {
 // Note: layer_type.ts has been moved to domain/core/value_objects/layer_type.ts
 export { 
   LayerType, 
-  TwoParamsLayerTypePattern,
   type LayerTypeError 
 } from "../domain/core/value_objects/layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
@@ -100,7 +99,7 @@ export { TypeFactory } from "./type_factory.ts";
 export type { TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
 
 // Pattern types - LayerType pattern (now unified with domain implementation)
-// Note: TwoParamsLayerTypePattern is now exported from domain/core/value_objects/layer_type.ts above
+// Note: TwoParamsLayerTypePattern has been removed (@deprecated)
 
 // Result type for error handling
 export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.ts";
