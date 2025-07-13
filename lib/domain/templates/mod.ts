@@ -110,7 +110,6 @@ export {
 
 // Type Adapters
 export {
-  LegacyTemplateAdapter,
   TypedPathResolver,
   TypedTemplatePathFactory,
   TypedVariableFactory,
@@ -172,14 +171,3 @@ export async function createTemplateManagement(config: {
   };
 }
 
-/**
- * Convenience function for legacy compatibility
- */
-export async function createLegacyCompatibleGenerator() {
-  const _management = await createTemplateManagement({});
-
-  // Import the DDD adapter
-  const { PromptFileGeneratorDDD } = await import("../../commands/prompt_file_generator_ddd.ts");
-
-  return new PromptFileGeneratorDDD();
-}
