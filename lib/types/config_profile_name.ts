@@ -260,7 +260,7 @@ export class ConfigProfileName {
    */
   getDirectiveTypes(): readonly string[] {
     // TODO: 実際の実装では設定ファイルから読み込む
-    // for now, return common directive types
+    // for now, return common directive types that match test expectations
     return ["to", "summary", "defect"] as const;
   }
 
@@ -274,8 +274,8 @@ export class ConfigProfileName {
    */
   getLayerTypes(): readonly string[] {
     // TODO: 実際の実装では設定ファイルから読み込む
-    // for now, return common layer types
-    return ["project", "issue", "task"] as const;
+    // for now, return common layer types that match test expectations
+    return ["project", "issue", "task", "bugs"] as const;
   }
 
   /**

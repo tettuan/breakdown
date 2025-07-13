@@ -47,7 +47,7 @@ export class SchemaPath {
     readonly value: string,
     readonly metadata: {
       baseDir: string;
-      demonstrativeType: string;
+      directiveType: string;
       layerType: string;
       fileName: string;
       isDefault: boolean;
@@ -85,7 +85,7 @@ export class SchemaPath {
    */
   getDescription(): string {
     const defaultNote = this.metadata.isDefault ? " (using default)" : "";
-    return `Schema: ${this.metadata.demonstrativeType}/${this.metadata.layerType}/${this.metadata.fileName}${defaultNote}`;
+    return `Schema: ${this.metadata.directiveType}/${this.metadata.layerType}/${this.metadata.fileName}${defaultNote}`;
   }
 
   /**
@@ -101,7 +101,7 @@ export class SchemaPath {
   getDirectory(): string {
     return join(
       this.metadata.baseDir,
-      this.metadata.demonstrativeType,
+      this.metadata.directiveType,
       this.metadata.layerType,
     );
   }
@@ -151,22 +151,22 @@ export class SchemaFilePathResolverTotality {
     }
 
     // Validate CLI parameters structure and content
-    const demonstrativeType = SchemaFilePathResolverTotality.extractDemonstrativeType(cliParams);
+    const directiveType = SchemaFilePathResolverTotality.extractDemonstrativeType(cliParams);
     const layerType = SchemaFilePathResolverTotality.extractLayerType(cliParams);
 
-    if (!demonstrativeType || !layerType) {
+    if (!directiveType || !layerType) {
       return resultError({
         kind: "InvalidParameterCombination",
-        demonstrativeType: demonstrativeType || "(missing)",
+        directiveType: directiveType || "(missing)",
         layerType: layerType || "(missing)",
       });
     }
 
     // Validate that extracted values are non-empty strings
-    if (demonstrativeType.trim() === "" || layerType.trim() === "") {
+    if (directiveType.trim() === "" || layerType.trim() === "") {
       return resultError({
         kind: "InvalidParameterCombination",
-        demonstrativeType: demonstrativeType || "(empty)",
+        directiveType: directiveType || "(empty)",
         layerType: layerType || "(empty)",
       });
     }
@@ -206,8 +206,9 @@ export class SchemaFilePathResolverTotality {
       const copy: TwoParams_Result = {
         type: "two",
         params: twoParams.params ? [...twoParams.params] : [],
-        demonstrativeType: twoParams.params?.[0] || "",
+        directiveType: twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
+        demonstrativeType: twoParams.params?.[0] || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -215,7 +216,7 @@ export class SchemaFilePathResolverTotality {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
       const copy: DoubleParams_Result = {
-        demonstrativeType: doubleParams.demonstrativeType || "",
+        directiveType: doubleParams.directiveType || "",
         layerType: doubleParams.layerType || "",
         options: doubleParams.options ? { ...doubleParams.options } : {},
       };
@@ -238,14 +239,14 @@ export class SchemaFilePathResolverTotality {
 
     // Build components
     const fileName = this.buildFileName();
-    const demonstrativeType = this.getDemonstrativeType();
+    const directiveType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
     const schemaPath = this.buildSchemaPath(baseDir, fileName);
 
     // Create SchemaPath value object
     const pathResult = SchemaPath.create(schemaPath, {
       baseDir,
-      demonstrativeType,
+      directiveType,
       layerType,
       fileName,
     });
@@ -333,17 +334,17 @@ export class SchemaFilePathResolverTotality {
    * Ensures consistent path structure across the system
    */
   public buildSchemaPath(baseDir: string, fileName: string): string {
-    const demonstrativeType = this.getDemonstrativeType();
+    const directiveType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
 
     // Validate path components
-    if (!demonstrativeType || !layerType) {
+    if (!directiveType || !layerType) {
       // This should never happen due to constructor validation
       // but provides defense in depth
       return join(baseDir, "unknown", "unknown", fileName);
     }
 
-    return join(baseDir, demonstrativeType, layerType, fileName);
+    return join(baseDir, directiveType, layerType, fileName);
   }
 
   /**
@@ -362,8 +363,8 @@ export class SchemaFilePathResolverTotality {
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): string {
     // Handle both legacy and new parameter structures
-    if ("demonstrativeType" in cliParams && cliParams.demonstrativeType) {
-      return cliParams.demonstrativeType;
+    if ("directiveType" in cliParams && cliParams.directiveType) {
+      return cliParams.directiveType;
     }
     // For TwoParams_Result structure from breakdownparams
     const twoParams = cliParams as TwoParams_Result;
@@ -410,12 +411,12 @@ export class SchemaFilePathResolverTotality {
 
     const baseDir = baseDirResult.data;
     const fileName = this.buildFileName();
-    const demonstrativeType = this.getDemonstrativeType();
+    const directiveType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
 
     const paths = [
-      join(baseDir, demonstrativeType, layerType, fileName),
-      join(baseDir, demonstrativeType, fileName), // Fallback without layer
+      join(baseDir, directiveType, layerType, fileName),
+      join(baseDir, directiveType, fileName), // Fallback without layer
       join(baseDir, fileName), // Root fallback
     ];
 
@@ -462,7 +463,7 @@ export function formatSchemaError(error: PathResolutionError): string {
 
     case "InvalidParameterCombination":
       return `Invalid Schema Parameters:\n` +
-        `  Demonstrative Type: ${error.demonstrativeType}\n` +
+        `  Demonstrative Type: ${error.directiveType}\n` +
         `  Layer Type: ${error.layerType}\n` +
         `Both parameters are required for schema resolution.`;
 
@@ -486,8 +487,8 @@ export function formatSchemaError(error: PathResolutionError): string {
       return `No valid schema fallback found.\n` +
         `Attempted paths: ${error.attempts.join(", ")}`;
 
-    case "ValidationFailed":
-      return `Schema validation failed for path: ${error.path}`;
+    case "PathValidationFailed":
+      return `Schema path validation failed: ${error.path} (rule: ${error.rule})`;
 
     default:
       return `Unknown schema error occurred`;

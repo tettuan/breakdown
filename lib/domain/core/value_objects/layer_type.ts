@@ -10,6 +10,7 @@
 
 import type { Result } from "../../../types/result.ts";
 import { error, ok } from "../../../types/result.ts";
+import { ConfigProfileName } from "../../../types/config_profile_name.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
@@ -20,6 +21,7 @@ import { ErrorFactory } from "../../../types/unified_error_types.ts";
 export type LayerTypeError =
   | { kind: "EmptyInput"; message: string }
   | { kind: "InvalidFormat"; value: string; pattern: string; message: string }
+  | { kind: "PatternMismatch"; value: string; profile: string; validLayers: readonly string[]; message: string }
   | { kind: "TooLong"; value: string; maxLength: number; message: string };
 
 /**
@@ -45,7 +47,7 @@ export type LayerTypeError =
  * const layerResult = LayerType.create("issue");
  * if (layerResult.ok) {
  *   console.log(layerResult.data.value); // "issue"
- *   const fileName = layerResult.data.getPromptFilename("project"); // "f_issue.md"
+ *   const fileName = layerResult.data.getPromptFilename("project"); // "f_project.md"
  * }
  * ```
  * 
@@ -53,9 +55,9 @@ export type LayerTypeError =
  * ```typescript
  * const layer = LayerType.create("task").data;
  * const promptFile = layer.getPromptFilename("issue", "strict");
- * // Result: "f_task_strict.md"
+ * // Result: "f_issue_strict.md"
  * const schemaFile = layer.getSchemaFilename();
- * // Result: "base.schema.json"
+ * // Result: "task.json"
  * ```
  */
 export class LayerType {
@@ -74,10 +76,12 @@ export class LayerType {
    * Private constructor following Smart Constructor pattern
    * 
    * @param value - Validated layer type value
-   * @param validatedByPattern - Indicates if validated against pattern
+   * @param profile - Configuration profile for pattern validation
+   * @param validatedByPattern - Indicates if validated against profile pattern
    */
   private constructor(
     private readonly _value: string,
+    private readonly _profile: ConfigProfileName,
     private readonly _validatedByPattern: boolean,
   ) {
     Object.freeze(this);
@@ -89,6 +93,13 @@ export class LayerType {
    */
   get value(): string {
     return this._value;
+  }
+
+  /**
+   * Configuration profile accessor
+   */
+  get profile(): ConfigProfileName {
+    return this._profile;
   }
 
   /**
@@ -110,7 +121,7 @@ export class LayerType {
    */
   static create(
     value: string | null | undefined | { layerType: string },
-    profile?: unknown,
+    profile?: ConfigProfileName,
   ): Result<LayerType, LayerTypeError> {
     // Handle TwoParams_Result-like objects
     if (typeof value === "object" && value !== null && "layerType" in value) {
@@ -125,6 +136,16 @@ export class LayerType {
     }
 
     const trimmedValue = value.trim();
+
+    // Case 1.5: Whitespace validation (input should not have leading/trailing spaces)
+    if (value !== trimmedValue) {
+      return error({
+        kind: "InvalidFormat",
+        value: value,
+        pattern: "No leading/trailing whitespace allowed",
+        message: `LayerType "${value}" contains leading or trailing whitespace`,
+      });
+    }
 
     // Case 2: Length validation
     if (trimmedValue.length > LayerType.#MAX_LENGTH) {
@@ -146,10 +167,40 @@ export class LayerType {
       });
     }
 
-    // Case 4: Success
-    return ok(new LayerType(trimmedValue, true));
+    // Case 4: Profile validation (only if profile explicitly provided)
+    const actualProfile = profile || ConfigProfileName.createDefault();
+    
+    if (profile) {
+      // Only validate against profile if explicitly provided
+      const validLayers = actualProfile.getLayerTypes();
+      const isValidForProfile = validLayers.includes(trimmedValue);
+
+      if (!isValidForProfile) {
+        return error({
+          kind: "PatternMismatch",
+          value: trimmedValue,
+          profile: actualProfile.value,
+          validLayers,
+          message: `LayerType "${trimmedValue}" is not valid for profile "${actualProfile.value}". Valid layers: [${validLayers.join(", ")}]`,
+        });
+      }
+    }
+
+    // Case 5: Success
+    return ok(new LayerType(trimmedValue, actualProfile, true));
   }
 
+
+  /**
+   * Check if this LayerType is valid for a specific profile
+   * 
+   * @param profile - Configuration profile to check against
+   * @returns true if valid for the profile
+   */
+  isValidForProfile(profile: ConfigProfileName): boolean {
+    const validLayers = profile.getLayerTypes();
+    return validLayers.includes(this._value);
+  }
 
   /**
    * Check if this LayerType is valid for a specific DirectiveType
@@ -177,7 +228,7 @@ export class LayerType {
    * @returns Prompt filename string
    */
   getPromptFilename(fromLayerType: string, adaptation?: string): string {
-    const baseFilename = `f_${this._value}`;
+    const baseFilename = `f_${fromLayerType}`;
     const adaptationSuffix = adaptation ? `_${adaptation}` : "";
     return `${baseFilename}${adaptationSuffix}.md`;
   }
@@ -186,13 +237,13 @@ export class LayerType {
    * Generate schema filename for this layer type
    * 
    * Domain operation for schema file naming convention.
-   * Currently uses standard "base.schema.json" pattern.
+   * Pattern: {layerType}.json
    * 
    * @returns Schema filename string
    */
   getSchemaFilename(): string {
-    // Standard schema filename pattern
-    return "base.schema.json";
+    // Schema filename pattern using layer value
+    return `${this._value}.json`;
   }
 
   /**
@@ -371,5 +422,158 @@ export class LayerType {
     }
 
     return suggestions;
+  }
+}
+
+/**
+ * LayerTypeFactory - Factory for creating LayerType instances
+ * 
+ * 統一されたLayerType作成インターフェースを提供。
+ * バリデーション、エラーハンドリング、ファクトリーパターンを統合。
+ */
+export class LayerTypeFactory {
+  /**
+   * Create LayerType from string with comprehensive validation
+   * 
+   * @param input - String input to convert to LayerType
+   * @param profile - Optional configuration profile
+   * @returns Result with LayerType or detailed error
+   */
+  static create(
+    input: string,
+    profile?: ConfigProfileName,
+  ): Result<LayerType, LayerTypeError> {
+    return LayerType.create(input, profile);
+  }
+
+  /**
+   * Create LayerType with pattern validation
+   * 
+   * @param input - String input
+   * @param pattern - Validation pattern
+   * @returns Result with LayerType or error
+   */
+  static createWithPattern(
+    input: string,
+    pattern: string,
+    profile?: ConfigProfileName,
+  ): Result<LayerType, LayerTypeError> {
+    // First validate input with pattern
+    const patternResult = TwoParamsLayerTypePattern.createOrError(pattern);
+    if (!patternResult.ok) {
+      return error({
+        kind: "InvalidFormat",
+        value: input,
+        pattern: pattern,
+        message: `Invalid pattern: ${
+          'message' in patternResult.error ? patternResult.error.message : 
+          'reason' in patternResult.error ? patternResult.error.reason : 
+          'Invalid pattern'
+        }`,
+      });
+    }
+
+    if (!patternResult.data.test(input)) {
+      return error({
+        kind: "InvalidFormat",
+        value: input,
+        pattern: pattern,
+        message: `Value "${input}" does not match pattern "${pattern}"`,
+      });
+    }
+
+    // Then create LayerType normally
+    return LayerType.create(input, profile);
+  }
+
+  /**
+   * Batch create multiple LayerTypes
+   * 
+   * @param inputs - Array of string inputs
+   * @param profile - Optional configuration profile
+   * @returns Array of Results
+   */
+  static createMany(
+    inputs: string[],
+    profile?: ConfigProfileName,
+  ): Result<LayerType, LayerTypeError>[] {
+    return inputs.map(input => LayerType.create(input, profile));
+  }
+}
+
+/**
+ * TwoParamsLayerTypePattern - LayerType pattern matching utility
+ * 
+ * 従来のpattern-based validationとの互換性を保つためのユーティリティクラス。
+ * 新しいLayerTypeクラスと統合するため、旧実装からのマイグレーション用として提供。
+ * 新しいコードでは LayerType.create() を直接使用することを推奨。
+ */
+export class TwoParamsLayerTypePattern {
+  private constructor(private readonly pattern: RegExp) {}
+
+  /**
+   * 文字列パターンから TwoParamsLayerTypePattern を作成（Result型版）
+   *
+   * Totality原則に準拠し、エラーを明示的に返す。
+   * 統一エラー型システムを使用してValidationErrorを返す。
+   *
+   * @param pattern 正規表現文字列
+   * @returns 成功時は Result<TwoParamsLayerTypePattern>、失敗時はValidationError
+   */
+  static createOrError(pattern: string): Result<TwoParamsLayerTypePattern, ValidationError> {
+    if (typeof pattern !== "string") {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: "Pattern must be a string",
+      }));
+    }
+
+    if (!pattern || pattern.trim().length === 0) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern", 
+        value: pattern,
+        reason: "Pattern cannot be empty",
+      }));
+    }
+
+    try {
+      const regex = new RegExp(pattern);
+      return ok(new TwoParamsLayerTypePattern(regex));
+    } catch (e) {
+      return error(ErrorFactory.validationError("InvalidInput", {
+        field: "pattern",
+        value: pattern,
+        reason: `Invalid regex pattern: ${e instanceof Error ? e.message : "Unknown error"}`,
+      }));
+    }
+  }
+
+  /**
+   * 値がパターンにマッチするかテスト
+   * @param value テスト対象の値
+   * @returns マッチする場合 true
+   */
+  test(value: string): boolean {
+    return this.pattern.test(value);
+  }
+
+  /**
+   * パターン文字列を取得
+   * @returns 正規表現のソース文字列
+   */
+  getPattern(): string {
+    return this.pattern.source;
+  }
+
+  /**
+   * 文字列パターンから TwoParamsLayerTypePattern を作成（従来版）
+   * 
+   * @param pattern 正規表現文字列
+   * @returns TwoParamsLayerTypePattern または null
+   */
+  static create(pattern: string): TwoParamsLayerTypePattern | null {
+    const result = TwoParamsLayerTypePattern.createOrError(pattern);
+    return result.ok ? result.data : null;
   }
 }

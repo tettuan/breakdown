@@ -14,15 +14,15 @@
 import { assert, assertEquals, assertExists, assertObjectMatch } from "../deps.ts";
 import {
   formatSchemaError,
-  formatSchemaFilePathError,
-  isConfigurationError,
-  isFileSystemError,
+  formatSchemaError as formatSchemaFilePathError,
+  // isConfigurationError,
+  // isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
   type SchemaFilePathError,
   SchemaFilePathResolver,
   SchemaPath,
-} from "./schema_file_path_resolver.ts";
+} from "./schema_file_path_resolver_totality.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -42,7 +42,7 @@ Deno.test("SchemaFilePathResolver Structure - Configuration structure preserved"
 
   for (const config of testConfigs) {
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     };
@@ -57,7 +57,7 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
 
   // Legacy PromptCliParams structure
   const legacyParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {
       fromFile: "input.txt",
@@ -72,7 +72,7 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
   const newParams: TwoParams_Result = {
     type: "two",
     params: ["summary", "issue"],
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: {},
   };
@@ -84,7 +84,7 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
   const mixedParams = {
     type: "two" as const,
     params: ["defect", "task"],
-    demonstrativeType: "ignored",
+    directiveType: "ignored",
     layerType: "ignored",
     options: {},
   };
@@ -99,7 +99,7 @@ Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure"
       path: "/absolute/path/to/schema.md",
       metadata: {
         baseDir: "/absolute/path",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "schema.md",
       },
@@ -112,7 +112,7 @@ Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure"
       path: "C:\\Windows\\Path\\schema.md",
       metadata: {
         baseDir: "C:\\Windows\\Path",
-        demonstrativeType: "summary",
+        directiveType: "summary",
         layerType: "issue",
         fileName: "schema.md",
       },
@@ -131,7 +131,7 @@ Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure"
 
       // Verify description format
       const expectedDesc =
-        `Schema: ${testCase.metadata.demonstrativeType}/${testCase.metadata.layerType}/${testCase.metadata.fileName}`;
+        `Schema: ${testCase.metadata.directiveType}/${testCase.metadata.layerType}/${testCase.metadata.fileName}`;
       assertEquals(schemaPath.getDescription(), expectedDesc);
     }
   }
@@ -151,12 +151,12 @@ Deno.test("SchemaFilePathResolver Structure - Error type discrimination structur
   const invalidParams: SchemaFilePathError = {
     kind: "InvalidParameters",
     message: "Invalid parameters",
-    demonstrativeType: "invalid",
+    directiveType: "invalid",
     layerType: "type",
   };
 
   assert(isInvalidParametersError(invalidParams));
-  assertEquals(invalidParams.demonstrativeType, "invalid");
+  assertEquals(invalidParams.directiveType, "invalid");
   assertEquals(invalidParams.layerType, "type");
 
   const configError: SchemaFilePathError = {
@@ -207,11 +207,11 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
       },
     },
     {
-      input: { kind: "InvalidParameterCombination", demonstrativeType: "bad", layerType: "params" },
+      input: { kind: "InvalidParameterCombination", directiveType: "bad", layerType: "params" },
       expectedKind: "InvalidParameters",
       checkProperties: (error) => {
         if (error.kind === "InvalidParameters") {
-          assertEquals(error.demonstrativeType, "bad");
+          assertEquals(error.directiveType, "bad");
           assertEquals(error.layerType, "params");
         }
       },
@@ -265,7 +265,7 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
       },
     },
     {
-      input: { kind: "ValidationFailed", rule: "must-exist", path: "/validate" },
+      input: { kind: "PathValidationFailed", rule: "must-exist", path: "/validate" },
       expectedKind: "SchemaNotFound",
       checkProperties: (error) => {
         if (error.kind === "SchemaNotFound") {
@@ -276,7 +276,7 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
   ];
 
   const config = { app_schema: { base_dir: "/test" } };
-  const params = { demonstrativeType: "to", layerType: "project", options: {} };
+  const params = { directiveType: "to", layerType: "project", options: {} };
 
   const result = SchemaFilePathResolver.create(config, params);
   assert(result.ok);
@@ -300,7 +300,7 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
 
 Deno.test("SchemaFilePathResolver Structure - Result type usage patterns", () => {
   const config = { app_schema: { base_dir: "/test" } };
-  const params = { demonstrativeType: "to", layerType: "project", options: {} };
+  const params = { directiveType: "to", layerType: "project", options: {} };
 
   // Test Result pattern in create method
   const createResult = SchemaFilePathResolver.create(config, params);
@@ -327,7 +327,7 @@ Deno.test("SchemaFilePathResolver Structure - Result type usage patterns", () =>
   // Test Result pattern in SchemaPath.create
   const schemaPathResult = SchemaPath.create("/test/path", {
     baseDir: "/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     fileName: "base.schema.md",
   });
@@ -343,7 +343,7 @@ Deno.test("SchemaFilePathResolver Structure - Result type usage patterns", () =>
 Deno.test("SchemaFilePathResolver Structure - Path construction structure", () => {
   const config = { app_schema: { base_dir: "/base/schema" } };
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -360,12 +360,12 @@ Deno.test("SchemaFilePathResolver Structure - Path construction structure", () =
 
     // Verify path structure
     assert(fullPath.startsWith(baseDir));
-    assert(fullPath.includes(params.demonstrativeType));
+    assert(fullPath.includes(params.directiveType));
     assert(fullPath.includes(params.layerType));
     assert(fullPath.endsWith(fileName));
 
-    // Verify path format: baseDir/demonstrativeType/layerType/fileName
-    const expectedPath = `${baseDir}/${params.demonstrativeType}/${params.layerType}/${fileName}`;
+    // Verify path format: baseDir/directiveType/layerType/fileName
+    const expectedPath = `${baseDir}/${params.directiveType}/${params.layerType}/${fileName}`;
     assertEquals(fullPath, expectedPath);
   }
 });
@@ -386,7 +386,7 @@ Deno.test("SchemaFilePathResolver Structure - Options structure preservation", (
 
   for (const options of optionsVariants) {
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options,
     };
@@ -401,13 +401,13 @@ Deno.test("SchemaFilePathResolver Structure - Error formatting completeness", ()
   const pathErrors: PathResolutionError[] = [
     { kind: "InvalidConfiguration", details: "Bad config" },
     { kind: "BaseDirectoryNotFound", path: "/not/found" },
-    { kind: "InvalidParameterCombination", demonstrativeType: "bad", layerType: "combo" },
+    { kind: "InvalidParameterCombination", directiveType: "bad", layerType: "combo" },
     { kind: "TemplateNotFound", attempted: ["/try1"], fallback: "fallback" },
     { kind: "InvalidStrategy", strategy: "unknown" },
     { kind: "EmptyBaseDir" },
     { kind: "InvalidPath", path: "/bad/path", reason: "invalid" },
     { kind: "NoValidFallback", attempts: ["/a", "/b"] },
-    { kind: "ValidationFailed", rule: "must-exist", path: "/test" },
+    { kind: "PathValidationFailed", rule: "must-exist", path: "/test" },
   ];
 
   for (const error of pathErrors) {
@@ -419,7 +419,7 @@ Deno.test("SchemaFilePathResolver Structure - Error formatting completeness", ()
   // Test all SchemaFilePathError kinds format correctly
   const schemaErrors: SchemaFilePathError[] = [
     { kind: "SchemaNotFound", message: "Not found", path: "/schema" },
-    { kind: "InvalidParameters", message: "Bad params", demonstrativeType: "x", layerType: "y" },
+    { kind: "InvalidParameters", message: "Bad params", directiveType: "x", layerType: "y" },
     { kind: "ConfigurationError", message: "Config issue", setting: "setting" },
     { kind: "FileSystemError", message: "FS issue", operation: "read" },
   ];
@@ -434,7 +434,7 @@ Deno.test("SchemaFilePathResolver Structure - Error formatting completeness", ()
         assert(formatted.includes(error.path));
         break;
       case "InvalidParameters":
-        assert(formatted.includes(error.demonstrativeType));
+        assert(formatted.includes(error.directiveType));
         assert(formatted.includes(error.layerType));
         break;
       case "ConfigurationError":

@@ -39,8 +39,9 @@ export type ProcessorError =
  *
  * const twoParamsResult: TwoParams_Result = {
  *   type: "two",
- *   demonstrativeType: "to",
+ *   directiveType: "to",
  *   layerType: "project",
+ *   demonstrativeType: "to",
  *   params: ["to", "project"],
  *   options: { output: "result.md" }
  * };
@@ -76,7 +77,7 @@ export class TwoParamsProcessor {
     const builder = VariablesBuilder.fromFactoryValues(factoryValuesResult.data);
 
     // Add base variables as standard variables (not user variables)
-    builder.addStandardVariable("demonstrative_type", twoParamsResult.demonstrativeType);
+    builder.addStandardVariable("demonstrative_type", twoParamsResult.directiveType);
     builder.addStandardVariable("layer_type", twoParamsResult.layerType);
 
     // Validate the builder state
@@ -121,11 +122,11 @@ export class TwoParamsProcessor {
       });
     }
 
-    // Validate demonstrativeType property (empty string is treated as missing)
-    if (!twoParamsResult.demonstrativeType || twoParamsResult.demonstrativeType.trim() === "") {
+    // Validate directiveType property (empty string is treated as missing)
+    if (!twoParamsResult.directiveType || twoParamsResult.directiveType.trim() === "") {
       return error({
         kind: "MissingRequiredField",
-        field: "demonstrativeType",
+        field: "directiveType",
       });
     }
 

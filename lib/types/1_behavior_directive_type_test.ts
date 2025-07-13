@@ -15,18 +15,18 @@ import type { TwoParams_Result } from "../deps.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
-  demonstrativeType: string,
+  directiveType: string,
   layerType: string = "project",
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  params: [directiveType, layerType],
   options,
 });
 
-Deno.test("1_behavior: DirectiveType correctly extracts demonstrativeType value", () => {
+Deno.test("1_behavior: DirectiveType correctly extracts directiveType value", () => {
   const testCases = [
     { input: "to", expected: "to" },
     { input: "summary", expected: "summary" },
@@ -116,7 +116,7 @@ Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", 
 
   // Original result preservation
   const original = directiveType.originalResult;
-  assertEquals(original.demonstrativeType, "transform");
+  assertEquals(original.directiveType, "transform");
   assertEquals(original.layerType, "module");
   assertEquals(original.type, "two");
   assertEquals(original.options.debug, true);
@@ -224,7 +224,7 @@ Deno.test("1_behavior: TwoParamsDirectivePattern provides correct string represe
   assertEquals(self, pattern);
 });
 
-Deno.test("1_behavior: DirectiveType handles special characters in demonstrativeType", () => {
+Deno.test("1_behavior: DirectiveType handles special characters in directiveType", () => {
   const specialCases = [
     "directive-with-dash",
     "directive_with_underscore",
@@ -242,20 +242,20 @@ Deno.test("1_behavior: DirectiveType handles special characters in demonstrative
 
     // DirectiveType doesn't validate - it trusts TwoParams_Result
     assertEquals(directiveType.value, specialValue);
-    assertEquals(directiveType.originalResult.demonstrativeType, specialValue);
+    assertEquals(directiveType.originalResult.directiveType, specialValue);
   }
 });
 
 Deno.test("1_behavior: DirectiveType works with different layerType values", () => {
   const layerTypes = ["project", "issue", "task", "epic", "story", "custom"];
-  const demonstrativeType = "analyze";
+  const directiveType = "analyze";
 
   for (const layerType of layerTypes) {
-    const result = createTwoParamsResult(demonstrativeType, layerType);
+    const result = createTwoParamsResult(directiveType, layerType);
     const directiveType = DirectiveType.create(result);
 
-    // DirectiveType focuses on demonstrativeType
-    assertEquals(directiveType.value, demonstrativeType);
+    // DirectiveType focuses on directiveType
+    assertEquals(directiveType.value, directiveType);
 
     // But preserves the full context
     assertEquals(directiveType.originalResult.layerType, layerType);
@@ -281,6 +281,6 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   const original1 = directiveType.originalResult;
   const original2 = directiveType.originalResult;
 
-  assertEquals(original1.demonstrativeType, "consistent");
-  assertEquals(original2.demonstrativeType, "consistent");
+  assertEquals(original1.directiveType, "consistent");
+  assertEquals(original2.directiveType, "consistent");
 });

@@ -28,8 +28,6 @@ export type PathResolutionErrorKind =
  * Thrown when file path resolution fails
  */
 export class PathResolutionError extends BaseBreakdownError {
-  readonly domain = "path-resolution" as const;
-  readonly kind: PathResolutionErrorKind;
 
   constructor(
     kind: PathResolutionErrorKind,
@@ -49,8 +47,10 @@ export class PathResolutionError extends BaseBreakdownError {
       };
     }
   ) {
-    super(message, options);
-    this.kind = kind;
+    super(message, "path-resolution", kind, options?.context);
+    if (options?.cause) {
+      this.cause = options.cause;
+    }
   }
 
   /**
@@ -217,7 +217,7 @@ export class PathResolutionError extends BaseBreakdownError {
    * Get user-friendly error message
    */
   override getUserMessage(): string {
-    const base = super.getUserMessage();
+    const base = this.message;
     
     // Add helpful context for common errors
     switch (this.kind) {
@@ -258,47 +258,47 @@ export class PathResolutionError extends BaseBreakdownError {
   /**
    * Get specific recovery suggestions
    */
-  getRecoverySuggestions(): string[] {
-    const suggestions: string[] = [];
+  getRecoverySuggestions(): { action: string; description: string; command?: string }[] {
+    const suggestions: { action: string; description: string; command?: string }[] = [];
 
     switch (this.kind) {
       case "path-not-found":
-        suggestions.push(`Create the missing file at: ${this.context?.path}`);
-        suggestions.push("Check if the path is correct");
+        suggestions.push({ action: "create-file", description: `Create the missing file at: ${this.context?.path}` });
+        suggestions.push({ action: "check-path", description: "Check if the path is correct" });
         break;
       case "template-not-found":
         if (this.context?.path) {
-          suggestions.push(`Create template at: ${this.context.path}`);
+          suggestions.push({ action: "create-template", description: `Create template at: ${this.context.path}` });
         }
-        suggestions.push("Run 'breakdown init' to create default templates");
-        suggestions.push("Check available templates with 'breakdown list templates'");
+        suggestions.push({ action: "init-templates", description: "Create default templates", command: "breakdown init" });
+        suggestions.push({ action: "list-templates", description: "Check available templates", command: "breakdown list templates" });
         break;
       case "schema-not-found":
         if (this.context?.path) {
-          suggestions.push(`Create schema at: ${this.context.path}`);
+          suggestions.push({ action: "create-schema", description: `Create schema at: ${this.context.path}` });
         }
-        suggestions.push("Use 'breakdown init' to generate default schemas");
+        suggestions.push({ action: "init-schemas", description: "Generate default schemas", command: "breakdown init" });
         break;
       case "path-invalid-format":
-        suggestions.push("Use forward slashes (/) in paths");
-        suggestions.push("Avoid special characters in filenames");
-        suggestions.push("Remove any '..' or absolute paths");
+        suggestions.push({ action: "fix-slashes", description: "Use forward slashes (/) in paths" });
+        suggestions.push({ action: "remove-special", description: "Avoid special characters in filenames" });
+        suggestions.push({ action: "remove-traversal", description: "Remove any '..' or absolute paths" });
         break;
       case "path-traversal-detected":
-        suggestions.push("Use relative paths within the project directory");
-        suggestions.push("Remove '..' from your path");
+        suggestions.push({ action: "use-relative", description: "Use relative paths within the project directory" });
+        suggestions.push({ action: "remove-dotdot", description: "Remove '..' from your path" });
         break;
       case "path-permission-denied":
-        suggestions.push(`Check file permissions for: ${this.context?.path}`);
-        suggestions.push("Ensure you have read/write access to the directory");
+        suggestions.push({ action: "check-permissions", description: `Check file permissions for: ${this.context?.path}` });
+        suggestions.push({ action: "ensure-access", description: "Ensure you have read/write access to the directory" });
         break;
       case "output-path-conflict":
-        suggestions.push("Choose a different output filename");
-        suggestions.push("Use --output flag to specify a different location");
+        suggestions.push({ action: "change-filename", description: "Choose a different output filename" });
+        suggestions.push({ action: "use-output-flag", description: "Use --output flag to specify a different location" });
         break;
       case "base-directory-invalid":
-        suggestions.push("Ensure the base directory exists");
-        suggestions.push("Check your working directory");
+        suggestions.push({ action: "check-directory", description: "Ensure the base directory exists" });
+        suggestions.push({ action: "check-working-dir", description: "Check your working directory" });
         break;
     }
 

@@ -65,7 +65,7 @@ export class PromptTemplatePath {
     readonly status: "Found" | "Fallback",
     readonly metadata: {
       baseDir: string;
-      demonstrativeType: string;
+      directiveType: string;
       layerType: string;
       fromLayerType: string;
       adaptation?: string;
@@ -152,24 +152,24 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // Validate CLI parameters structure and content
-    const demonstrativeType = PromptTemplatePathResolverTotality.extractDemonstrativeType(
+    const directiveType = PromptTemplatePathResolverTotality.extractDemonstrativeType(
       cliParams,
     );
     const layerType = PromptTemplatePathResolverTotality.extractLayerType(cliParams);
 
-    if (!demonstrativeType || !layerType) {
+    if (!directiveType || !layerType) {
       return resultError({
         kind: "InvalidParameterCombination",
-        demonstrativeType: demonstrativeType || "(missing)",
+        directiveType: directiveType || "(missing)",
         layerType: layerType || "(missing)",
       });
     }
 
     // Validate that extracted values are non-empty strings
-    if (demonstrativeType.trim() === "" || layerType.trim() === "") {
+    if (directiveType.trim() === "" || layerType.trim() === "") {
       return resultError({
         kind: "InvalidParameterCombination",
-        demonstrativeType: demonstrativeType || "(empty)",
+        directiveType: directiveType || "(empty)",
         layerType: layerType || "(empty)",
       });
     }
@@ -216,8 +216,9 @@ export class PromptTemplatePathResolverTotality {
       const copy: TwoParams_Result = {
         type: twoParams.type || "two",
         params: twoParams.params ? [...twoParams.params] : [],
+        directiveType: twoParams.params?.[0] || "",
+        layerType: twoParams.params?.[1] || "",
         demonstrativeType: twoParams.demonstrativeType || "",
-        layerType: twoParams.layerType || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -225,7 +226,7 @@ export class PromptTemplatePathResolverTotality {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
       const copy: PromptCliParams = {
-        demonstrativeType: doubleParams.demonstrativeType,
+        directiveType: doubleParams.directiveType,
         layerType: doubleParams.layerType,
         options: doubleParams.options ? { ...doubleParams.options } : {},
       };
@@ -251,7 +252,7 @@ export class PromptTemplatePathResolverTotality {
     const attemptedPaths: string[] = [promptPath];
 
     // Collect metadata
-    const demonstrativeType = this.getDemonstrativeType();
+    const directiveType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
     const fromLayerTypeResult = this.resolveFromLayerTypeSafe();
     if (!fromLayerTypeResult.ok) {
@@ -267,7 +268,7 @@ export class PromptTemplatePathResolverTotality {
     if (existsSync(promptPath)) {
       const pathResult = PromptTemplatePath.create(promptPath, "Found", {
         baseDir,
-        demonstrativeType,
+        directiveType,
         layerType,
         fromLayerType,
         adaptation,
@@ -292,7 +293,7 @@ export class PromptTemplatePathResolverTotality {
       if (existsSync(fallbackPath)) {
         const pathResult = PromptTemplatePath.create(fallbackPath, "Fallback", {
           baseDir,
-          demonstrativeType,
+          directiveType,
           layerType,
           fromLayerType,
           adaptation,
@@ -434,9 +435,9 @@ export class PromptTemplatePathResolverTotality {
    * Builds the full prompt template path
    */
   public buildPromptPath(baseDir: string, fileName: string): string {
-    const demonstrativeType = this.getDemonstrativeType();
+    const directiveType = this.getDemonstrativeType();
     const layerType = this.getLayerType();
-    return join(baseDir, demonstrativeType, layerType, fileName);
+    return join(baseDir, directiveType, layerType, fileName);
   }
 
   /**
@@ -452,12 +453,12 @@ export class PromptTemplatePathResolverTotality {
   private static extractDemonstrativeType(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): string {
-    if ("demonstrativeType" in cliParams) {
-      return cliParams.demonstrativeType || "";
+    if ("directiveType" in cliParams) {
+      return cliParams.directiveType || "";
     }
     const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.demonstrativeType) {
-      return twoParams.demonstrativeType;
+    if (twoParams.directiveType) {
+      return twoParams.directiveType;
     }
     if (twoParams.params && twoParams.params.length > 0) {
       return twoParams.params[0];
@@ -571,7 +572,7 @@ export function formatPathResolutionError(error: PathResolutionError): string {
 
     case "InvalidParameterCombination":
       return `Invalid Parameter Combination:\n` +
-        `  Demonstrative Type: ${error.demonstrativeType}\n` +
+        `  Demonstrative Type: ${error.directiveType}\n` +
         `  Layer Type: ${error.layerType}\n` +
         `Both parameters are required for prompt resolution.`;
 
@@ -606,8 +607,8 @@ export function formatPathResolutionError(error: PathResolutionError): string {
     case "NoValidFallback":
       return `No valid fallback found. Attempts: ${error.attempts.join(", ")}`;
 
-    case "ValidationFailed":
-      return `Validation failed for path: ${error.path}`;
+    case "PathValidationFailed":
+      return `Path validation failed: ${error.path} (rule: ${error.rule})`;
 
     default:
       return `Unknown error occurred`;

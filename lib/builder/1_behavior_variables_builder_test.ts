@@ -26,7 +26,7 @@ Deno.test("1_behavior: VariablesBuilder successfully builds with all variable ty
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 5);
+    assertEquals(result.data.size(), 5);
   }
 });
 
@@ -114,7 +114,7 @@ Deno.test("1_behavior: VariablesBuilder correctly integrates with Factory values
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 6); // 3 standard + 1 file + 1 stdin + 2 custom
+    assertEquals(result.data.size(), 6); // 3 standard + 1 file + 1 stdin + 2 custom
 
     // Verify toRecord() maintains uv- prefix for user variables
     const record = builder.toRecord();
@@ -251,7 +251,7 @@ Deno.test("1_behavior: VariablesBuilder handles partial Factory values increment
   const result = builder.build();
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 5);
+    assertEquals(result.data.size(), 5);
     const record = builder.toRecord();
     assertEquals(record["input_text_file"], "file1.txt");
     assertEquals(record["destination_path"], "/output/result.txt");

@@ -15,14 +15,14 @@ import type { TwoParams_Result } from "../deps.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
-  demonstrativeType: string,
+  directiveType: string,
   layerType: string = "project",
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  params: [directiveType, layerType],
   options,
 });
 
@@ -99,7 +99,7 @@ Deno.test("1_behavior: Type guards correctly narrow types", () => {
   // Success type narrowing
   if (isSuccess(successResult)) {
     // TypeScript should know this is BreakdownParamsResultSuccess
-    assertEquals(successResult.data.demonstrativeType, "analyze");
+    assertEquals(successResult.data.directiveType, "analyze");
     assertEquals(successResult.data.layerType, "module");
     assertEquals(successResult.data.type, "two");
   } else {
@@ -132,14 +132,14 @@ Deno.test("1_behavior: match() handles all variants correctly", () => {
 
   // Match success case
   const successOutput = match(successResult, {
-    success: (data) => `Success: ${data.demonstrativeType}/${data.layerType}`,
+    success: (data) => `Success: ${data.directiveType}/${data.layerType}`,
     failure: (error) => `Error: ${error.message}`,
   });
   assertEquals(successOutput, "Success: transform/service");
 
   // Match failure case
   const failureOutput = match(failureResult, {
-    success: (data) => `Success: ${data.demonstrativeType}/${data.layerType}`,
+    success: (data) => `Success: ${data.directiveType}/${data.layerType}`,
     failure: (error) => `Error: ${error.message}`,
   });
   assertEquals(failureOutput, "Error: Processing failed");
@@ -185,7 +185,7 @@ Deno.test("1_behavior: Results preserve original data integrity", () => {
   // Complex data structure
   const complexData: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "analyze",
+    directiveType: "analyze",
     layerType: "system",
     params: ["analyze", "system"],
     options: {
@@ -214,7 +214,7 @@ Deno.test("1_behavior: Results preserve original data integrity", () => {
 
   // Verify all data is preserved
   assertEquals(result.data.type, "two");
-  assertEquals(result.data.demonstrativeType, "analyze");
+  assertEquals(result.data.directiveType, "analyze");
   assertEquals(result.data.layerType, "system");
   assertEquals(result.data.params.length, 2);
   assertEquals(result.data.options.verbose, true);
@@ -268,7 +268,7 @@ Deno.test("1_behavior: Pattern matching with edge cases", () => {
   // Test with minimal data
   const minimalResult = success(createTwoParamsResult("", ""));
   const minimalOutput = match(minimalResult, {
-    success: (data) => data.demonstrativeType || "empty",
+    success: (data) => data.directiveType || "empty",
     failure: (_) => "error",
   });
   assertEquals(minimalOutput, "empty");
@@ -287,7 +287,7 @@ Deno.test("1_behavior: Pattern matching with edge cases", () => {
   const chainedOutput = match(chainResult, {
     success: (data) =>
       match(success(data), {
-        success: (inner) => `Double success: ${inner.demonstrativeType}`,
+        success: (inner) => `Double success: ${inner.directiveType}`,
         failure: (_) => "Should not happen",
       }),
     failure: (_) => "Outer failure",

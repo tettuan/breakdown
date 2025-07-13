@@ -56,7 +56,7 @@ describe("Architecture: Module Export Design", () => {
     if (result.ok) {
       // ValidatedParams interface should be available
       const params: ValidatedParams = result.data;
-      assertExists(params.demonstrativeType, "ValidatedParams interface should be exported");
+      assertExists(params.directiveType, "ValidatedParams interface should be exported");
       assertExists(params.layerType, "ValidatedParams interface should be exported");
     } else {
       // ValidationError interface should be available
@@ -155,7 +155,7 @@ describe("Architecture: Module Organization", () => {
 
     if (twoParamsResult.ok) {
       assertEquals(
-        typeof twoParamsResult.data.demonstrativeType,
+        typeof twoParamsResult.data.directiveType,
         "string",
         "TwoParamsValidator should handle CLI-specific parameter types",
       );
@@ -353,7 +353,7 @@ describe("Architecture: Import/Export Management", () => {
     // Results should be independent
     if (result1.ok && result2.ok) {
       assertEquals(
-        result1.data.demonstrativeType !== result2.data.demonstrativeType,
+        result1.data.directiveType !== result2.data.directiveType,
         true,
         "Validator instances should not share state",
       );

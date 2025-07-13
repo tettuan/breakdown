@@ -35,7 +35,7 @@ function createTestParams(
   options: Partial<PromptCliOptions> = {},
 ): PromptCliParams {
   return {
-    demonstrativeType: directive,
+    directiveType: directive,
     layerType: layer,
     options: {
       fromFile: "test.md",
@@ -53,7 +53,7 @@ class InputPathResolutionService {
     config: unknown,
     params: PromptCliParams,
   ): Promise<Result<InputFilePathResolver, unknown>> {
-    const resolverId = `${params.demonstrativeType}-${params.layerType}-${Date.now()}`;
+    const resolverId = `${params.directiveType}-${params.layerType}-${Date.now()}`;
 
     try {
       const resolverResult = InputFilePathResolver.create(
@@ -83,7 +83,7 @@ class InputPathResolutionService {
 
     for (const { config, params } of inputs) {
       logger.debug("Processing input path resolution", {
-        directive: params.demonstrativeType,
+        directive: params.directiveType,
         layer: params.layerType,
         fromFile: params.options.fromFile,
       });

@@ -14,7 +14,7 @@ import { assert, assertEquals, assertExists } from "../deps.ts";
 import { ConfigPatternProvider } from "./pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern as _TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern as _TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 
 /**
  * 単体テスト: 基本的なパターン取得機能

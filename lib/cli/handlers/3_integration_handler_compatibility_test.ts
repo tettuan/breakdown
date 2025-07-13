@@ -74,7 +74,7 @@ Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
     },
     {
       params: ["invalid", "project"],
-      description: "invalid demonstrative type",
+      description: "invalid directive type",
     },
     {
       params: ["to", "invalid"],
@@ -98,7 +98,7 @@ Deno.test("TwoParamsHandler - Error structure compatibility", async () => {
         // Verify error kind is one of the expected types
         const validErrorKinds = [
           "InvalidParameterCount",
-          "InvalidDemonstrativeType",
+          "InvalidDirectiveType",
           "InvalidLayerType",
           "StdinReadError",
           "FactoryValidationError",
@@ -150,7 +150,7 @@ Deno.test("TwoParamsHandler - Valid parameters processing", async () => {
       // Should not fail on parameter validation with valid inputs
       assertEquals(
         result.error.kind !== "InvalidParameterCount" &&
-          result.error.kind !== "InvalidDemonstrativeType" &&
+          result.error.kind !== "InvalidDirectiveType" &&
           result.error.kind !== "InvalidLayerType",
         true,
         `Unexpected validation error with valid parameters: ${result.error.kind}`,

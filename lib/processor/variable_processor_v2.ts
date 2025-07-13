@@ -187,7 +187,9 @@ export class VariableProcessorV2 {
 
     // Add STDIN variable if exists and not already handled
     if (stdinVariable && !factoryValues.inputText) {
-      builder.addStdinVariable(stdinVariable.value);
+      const stdinRecord = stdinVariable.toRecord();
+      const stdinValue = Object.values(stdinRecord)[0] || "";
+      builder.addStdinVariable(stdinValue);
     }
 
     // Build final variables

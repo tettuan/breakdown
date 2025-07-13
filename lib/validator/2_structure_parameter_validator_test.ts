@@ -56,14 +56,15 @@ class MockConfigValidator implements ConfigValidator {
 
 // Test data factory
 const createValidTwoParams = (
-  demonstrativeType = "to",
+  directiveType = "to",
   layerType = "project",
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  demonstrativeType: directiveType,
+  params: [directiveType, layerType],
   options,
 });
 
@@ -87,7 +88,7 @@ Deno.test("2_structure: ParameterValidator maintains domain boundaries with valu
     assertEquals(validated.layer.value, "project");
 
     // Verify value objects are immutable (no direct property access)
-    assertEquals("demonstrativeType" in validated.directive, false);
+    assertEquals("directiveType" in validated.directive, false);
     assertEquals("layerType" in validated.layer, false);
   }
 });
@@ -98,8 +99,9 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   // Test missing required field error structure
   const missingFieldResult = validator.validateTwoParams({
     type: "two",
-    demonstrativeType: "",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["", "project"],
     options: {},
   });
@@ -394,7 +396,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
     assertEquals(metadata.validatedAt <= afterValidation, true);
 
     // Test source tracking
-    assertEquals(metadata.source, "TwoParams_Result");
+    assertEquals(metadata.source, "TwoParams");
 
     // Test profile extraction
     assertEquals(metadata.profileName, "staging");
@@ -409,7 +411,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   });
 
   if (isOk(oneParamResult)) {
-    assertEquals(oneParamResult.data.metadata.source, "OneParamsResult");
+    assertEquals(oneParamResult.data.metadata.source, "OneParams");
   }
 
   const zeroParamResult = validator.validateZeroParams({
@@ -419,6 +421,6 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   });
 
   if (isOk(zeroParamResult)) {
-    assertEquals(zeroParamResult.data.metadata.source, "ZeroParamsResult");
+    assertEquals(zeroParamResult.data.metadata.source, "ZeroParams");
   }
 });

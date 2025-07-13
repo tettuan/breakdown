@@ -14,7 +14,7 @@ import { type ParamsResult, ParamsTypeValidator } from "./params_type_validator.
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { isError, isOk } from "../types/result.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 
 // Mock pattern provider
 class MockPatternProvider implements TypePatternProvider {
@@ -49,7 +49,7 @@ Deno.test("2_structure: ParamsTypeValidator enforces ValidatedParamsType structu
   // Test two params validation
   const twoParamsResult = validator.validate({
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: { debug: true },
@@ -60,7 +60,7 @@ Deno.test("2_structure: ParamsTypeValidator enforces ValidatedParamsType structu
 
     // Verify structure integrity
     assertEquals(validated.type, "two");
-    assertEquals(validated.demonstrativeType, "to");
+    assertEquals(validated.directiveType, "to");
     assertEquals(validated.layerType, "project");
     assertEquals(Array.isArray(validated.params), true);
     assertEquals(validated.params.length, 2);
@@ -100,7 +100,7 @@ Deno.test("2_structure: ParamsTypeError discriminated union provides type safety
   if (isError(missingFieldResult)) {
     assertEquals(missingFieldResult.error.kind, "MissingRequiredField");
     if (missingFieldResult.error.kind === "MissingRequiredField") {
-      assertEquals(missingFieldResult.error.field, "demonstrativeType");
+      assertEquals(missingFieldResult.error.field, "directiveType");
       assertEquals(missingFieldResult.error.source, "TwoParams");
     }
   }
@@ -108,7 +108,7 @@ Deno.test("2_structure: ParamsTypeError discriminated union provides type safety
   // Test InvalidFieldValue error
   const invalidValueResult = validator.validate({
     type: "two",
-    demonstrativeType: "invalid",
+    directiveType: "invalid",
     layerType: "project",
     params: ["invalid", "project"],
   });
@@ -116,7 +116,7 @@ Deno.test("2_structure: ParamsTypeError discriminated union provides type safety
   if (isError(invalidValueResult)) {
     assertEquals(invalidValueResult.error.kind, "InvalidFieldValue");
     if (invalidValueResult.error.kind === "InvalidFieldValue") {
-      assertEquals(invalidValueResult.error.field, "demonstrativeType");
+      assertEquals(invalidValueResult.error.field, "directiveType");
       assertEquals(invalidValueResult.error.value, "invalid");
       assertExists(invalidValueResult.error.pattern);
     }
@@ -129,7 +129,7 @@ Deno.test("2_structure: Two params validation enforces structural integrity", ()
   // Test params array validation
   const wrongParamsCountResult = validator.validate({
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to"], // Wrong count
   });
@@ -146,7 +146,7 @@ Deno.test("2_structure: Two params validation enforces structural integrity", ()
   // Test missing params array
   const missingParamsResult = validator.validate({
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
   });
 
@@ -171,7 +171,7 @@ Deno.test("2_structure: One param validation with inference logic", () => {
   if (isOk(layerParamResult)) {
     const validated = layerParamResult.data;
     assertEquals(validated.type, "one");
-    assertEquals(validated.demonstrativeType, "init"); // Default directive
+    assertEquals(validated.directiveType, "init"); // Default directive
     assertEquals(validated.layerType, "project");
     assertEquals(validated.params.length, 1);
   }
@@ -185,7 +185,7 @@ Deno.test("2_structure: One param validation with inference logic", () => {
   if (isOk(directiveParamResult)) {
     const validated = directiveParamResult.data;
     assertEquals(validated.type, "one");
-    assertEquals(validated.demonstrativeType, "summary");
+    assertEquals(validated.directiveType, "summary");
     assertEquals(validated.layerType, "project"); // Default layer
   }
 
@@ -217,7 +217,7 @@ Deno.test("2_structure: Zero params validation applies defaults consistently", (
 
     // Verify defaults are applied
     assertEquals(validated.type, "zero");
-    assertEquals(validated.demonstrativeType, "init");
+    assertEquals(validated.directiveType, "init");
     assertEquals(validated.layerType, "project");
     assertEquals(validated.params.length, 0);
 
@@ -240,14 +240,14 @@ Deno.test("2_structure: Pattern validation maintains consistency", () => {
   for (const { directive, layer } of validPatterns) {
     const result = validator.validate({
       type: "two",
-      demonstrativeType: directive,
+      directiveType: directive,
       layerType: layer,
       params: [directive, layer],
     });
 
     assertEquals(isOk(result), true);
     if (isOk(result)) {
-      assertEquals(result.data.demonstrativeType, directive);
+      assertEquals(result.data.directiveType, directive);
       assertEquals(result.data.layerType, layer);
     }
   }
@@ -262,7 +262,7 @@ Deno.test("2_structure: Pattern validation maintains consistency", () => {
   for (const { directive, layer } of invalidPatterns) {
     const result = validator.validate({
       type: "two",
-      demonstrativeType: directive,
+      directiveType: directive,
       layerType: layer,
       params: [directive, layer],
     });
@@ -286,7 +286,7 @@ Deno.test("2_structure: Options handling preserves original data", () => {
 
   const result = validator.validate({
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: complexOptions,
@@ -319,7 +319,7 @@ Deno.test("2_structure: ParamsResult interface compatibility", () => {
   // Test full ParamsResult
   const fullResult: ParamsResult = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: { key: "value" },
@@ -370,7 +370,7 @@ Deno.test("2_structure: Error pattern consistency across validation methods", ()
 
   const result = validator.validate({
     type: "two",
-    demonstrativeType: "any",
+    directiveType: "any",
     layerType: "any",
     params: ["any", "any"],
   });
@@ -389,7 +389,7 @@ Deno.test("2_structure: ValidatedParamsType guarantees complete data", () => {
   const testCases: ParamsResult[] = [
     { type: "zero" },
     { type: "one", params: ["project"] },
-    { type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"] },
+    { type: "two", directiveType: "to", layerType: "project", params: ["to", "project"] },
   ];
 
   for (const testCase of testCases) {
@@ -400,14 +400,14 @@ Deno.test("2_structure: ValidatedParamsType guarantees complete data", () => {
 
       // All validated results must have these fields
       assertExists(validated.type);
-      assertExists(validated.demonstrativeType);
+      assertExists(validated.directiveType);
       assertExists(validated.layerType);
       assertExists(validated.params);
       assertExists(validated.options);
 
       // Verify types
       assertEquals(typeof validated.type, "string");
-      assertEquals(typeof validated.demonstrativeType, "string");
+      assertEquals(typeof validated.directiveType, "string");
       assertEquals(typeof validated.layerType, "string");
       assertEquals(Array.isArray(validated.params), true);
       assertEquals(typeof validated.options, "object");

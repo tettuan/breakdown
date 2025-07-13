@@ -41,16 +41,17 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
     if (mockValidResult.ok) {
       // Verify ValidatedParams interface structure
       assertExists(
-        mockValidResult.data.demonstrativeType,
-        "ValidatedParams must have demonstrativeType",
+        mockValidResult.data.directiveType,
+        "ValidatedParams must have directiveType",
       );
       assertExists(mockValidResult.data.layerType, "ValidatedParams must have layerType");
+      assertExists(mockValidResult.data.profile, "ValidatedParams must have profile");
       assertEquals(
-        typeof mockValidResult.data.demonstrativeType,
-        "string",
-        "demonstrativeType must be string",
+        typeof mockValidResult.data.directiveType,
+        "object",
+        "directiveType must be DirectiveType object",
       );
-      assertEquals(typeof mockValidResult.data.layerType, "string", "layerType must be string");
+      assertEquals(typeof mockValidResult.data.layerType, "object", "layerType must be LayerType object");
     }
 
     logger.debug("Module exports verification completed");
@@ -126,9 +127,9 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
 
     // Should only handle validation, not generation or processing
     assertEquals(
-      _validateString.includes("demonstrative") && _validateString.includes("layer"),
+      _validateString.includes("directive") && _validateString.includes("layer"),
       true,
-      "Should validate both demonstrative and layer types",
+      "Should validate both directive and layer types",
     );
     assertEquals(
       _validateString.includes("PromptVariables") || _validateString.includes("Factory"),
@@ -220,18 +221,19 @@ describe("Architecture: Result Type Compliance", () => {
       }
     }
 
-    // Test demonstrative type error
-    const demoTypeResult = validator.validate(["invalid", "project"]);
-    if (!demoTypeResult.ok) {
-      const error = demoTypeResult.error;
+    // Test directive type error
+    const directiveTypeResult = validator.validate(["invalid", "project"]);
+    if (!directiveTypeResult.ok) {
+      const error = directiveTypeResult.error;
       assertEquals(
         error.kind,
-        "InvalidDemonstrativeType",
-        "Should categorize demonstrative type errors",
+        "InvalidDirectiveType",
+        "Should categorize directive type errors",
       );
-      if (error.kind === "InvalidDemonstrativeType") {
-        assertExists(error.value, "Should include invalid value");
-        assertExists(error.validTypes, "Should include valid types list");
+      if (error.kind === "InvalidDirectiveType") {
+        const typedError = error as { value: string; validTypes: string[] };
+        assertExists(typedError.value, "Should include invalid value");
+        assertExists(typedError.validTypes, "Should include valid types list");
       }
     }
 
@@ -259,13 +261,13 @@ describe("Architecture: Result Type Compliance", () => {
       const originalData = result.data;
 
       // Attempt to modify returned data
-      (result.data as unknown as { demonstrativeType: string }).demonstrativeType = "modified";
+      (result.data as unknown as { directiveType: string }).directiveType = "modified";
 
       // Second validation should not be affected
       const secondResult = validator.validate(["summary", "issue"]);
       if (secondResult.ok) {
         assertEquals(
-          secondResult.data.demonstrativeType,
+          secondResult.data.directiveType,
           "summary",
           "Validator should not be affected by external modifications",
         );
@@ -273,7 +275,7 @@ describe("Architecture: Result Type Compliance", () => {
 
       // Original result should maintain integrity
       assertEquals(
-        originalData.demonstrativeType,
+        originalData.directiveType,
         "modified", // This confirms the object was modifiable (not immutable)
         "Note: Data object is modifiable - consider immutability for better architecture",
       );
@@ -299,9 +301,9 @@ describe("Architecture: Validation Logic Design", () => {
 
     // Should have separate validation for each parameter type
     assertEquals(
-      methodString.includes("validateDemonstrativeType") || methodString.includes("demonstrative"),
+      methodString.includes("validateDirectiveType") || methodString.includes("directive"),
       true,
-      "Should have demonstrative type validation",
+      "Should have directive type validation",
     );
     assertEquals(
       methodString.includes("validateLayerType") || methodString.includes("layer"),
@@ -361,9 +363,9 @@ describe("Architecture: Validation Logic Design", () => {
 
     if (result.ok) {
       assertEquals(
-        typeof result.data.demonstrativeType,
+        typeof result.data.directiveType,
         "string",
-        "demonstrativeType should be string typed",
+        "directiveType should be string typed",
       );
       assertEquals(typeof result.data.layerType, "string", "layerType should be string typed");
     } else {
@@ -386,8 +388,8 @@ describe("Architecture: Validation Logic Design", () => {
 
     if (result1.ok && result2.ok) {
       assertEquals(
-        result1.data.demonstrativeType,
-        result2.data.demonstrativeType,
+        result1.data.directiveType,
+        result2.data.directiveType,
         "Demonstrative type should be consistent",
       );
       assertEquals(

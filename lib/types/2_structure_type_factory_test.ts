@@ -21,18 +21,37 @@ class StructureTestProvider implements TypePatternProvider {
     private layerPattern: TwoParamsLayerTypePattern | null,
   ) {}
 
-  getDirectivePattern(): TwoParamsDirectivePattern | null {
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.directivePattern;
   }
 
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null {
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.layerPattern;
+  }
+
+  validateDirectiveType(value: string): boolean {
+    return this.directivePattern ? this.directivePattern.test(value) : false;
+  }
+
+  validateLayerType(value: string): boolean {
+    return this.layerPattern ? this.layerPattern.test(value) : false;
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    return ["to", "summary", "defect"];
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    return ["project", "issue", "task"];
   }
 }
 
 Deno.test("TypeFactory Structure - TypeCreationResult type structure", () => {
   const provider = new StructureTestProvider(
-    TwoParamsDirectivePattern.create("to")!,
+    (() => {
+      const result = TwoParamsDirectivePattern.createOrError("to");
+      return result.ok ? result.data : null;
+    })(),
     null,
   );
   const factory = new TypeFactory(provider);
@@ -123,10 +142,9 @@ Deno.test("TypeFactory Structure - Created types internal structure", () => {
     // getValueメソッド（互換性のため）
     assertEquals(directive.value, "to");
 
-    // originalResultプロパティ
-    assertExists(directive.originalResult);
-    assertEquals(directive.originalResult.type, "two");
-    assertEquals(directive.originalResult.demonstrativeType, "to");
+    // DirectiveType now uses value property instead of originalResult
+    // This is part of the DDD totality migration
+    assertEquals(directive.value, "to");
 
     // toStringメソッド
     assertEquals(directive.toString(), "DirectiveType(to)");
@@ -250,7 +268,7 @@ Deno.test("TypeFactory Structure - TwoParams_Result integration", () => {
 
     // TwoParams_Result の必須プロパティ
     assertEquals(originalResult.type, "two");
-    assertEquals(originalResult.demonstrativeType, "to");
+    assertEquals(originalResult.directiveType, "to");
     assertEquals(originalResult.layerType, "project"); // デフォルト値
     assertExists(originalResult.params);
     assertEquals(Array.isArray(originalResult.params), true);
@@ -268,7 +286,7 @@ Deno.test("TypeFactory Structure - TwoParams_Result integration", () => {
 
     // TwoParams_Result の必須プロパティ
     assertEquals(originalResult.type, "two");
-    assertEquals(originalResult.demonstrativeType, "to"); // デフォルト値
+    assertEquals(originalResult.directiveType, "to"); // デフォルト値
     assertEquals(originalResult.layerType, "project");
     assertExists(originalResult.params);
     assertEquals(Array.isArray(originalResult.params), true);

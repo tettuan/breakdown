@@ -11,7 +11,8 @@
 
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-import type { PromptVariable, PromptVariables } from "../types/prompt_variables.ts";
+import type { PromptVariable, PromptVariables } from "../types/prompt_variables_vo.ts";
+import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
 import type { ErrorInfo } from "@tettuan/breakdownparams";
 import { basename } from "jsr:@std/path@1";
@@ -38,12 +39,14 @@ export interface FactoryResolvedValues {
 
 /**
  * Builder-specific error types for variable creation following Totality Principle
+ * Unified error structure to ensure all errors have consistent 'kind' property
  */
 export type BuilderVariableError =
-  | ErrorInfo // From @tettuan/breakdownparams
   | { kind: "DuplicateVariable"; name: string }
   | { kind: "InvalidPrefix"; name: string; expectedPrefix: string }
-  | { kind: "FactoryValueMissing"; field: string };
+  | { kind: "FactoryValueMissing"; field: string }
+  | { kind: "InvalidName"; name: string; reason: string }
+  | { kind: "ValidationError"; source: string; reason: string };
 
 /**
  * Builder for constructing PromptVariables with Result type error handling
@@ -69,6 +72,39 @@ export class VariablesBuilder {
   private _errors: BuilderVariableError[] = [];
 
   /**
+   * Convert ValidationError to BuilderVariableError
+   */
+  private convertValidationError(validationError: any): BuilderVariableError {
+    // Map ValidationError to BuilderVariableError format
+    switch (validationError.kind) {
+      case "InvalidInput":
+        return {
+          kind: "ValidationError",
+          source: validationError.field || "unknown",
+          reason: validationError.reason
+        };
+      case "MissingRequiredField":
+        return {
+          kind: "ValidationError", 
+          source: validationError.source || "unknown",
+          reason: `Missing required field: ${validationError.field}`
+        };
+      case "InvalidFieldType":
+        return {
+          kind: "ValidationError",
+          source: validationError.field || "unknown", 
+          reason: `Expected ${validationError.expected}, got ${validationError.received}`
+        };
+      default:
+        return {
+          kind: "ValidationError",
+          source: validationError.kind || "unknown",
+          reason: validationError.message || validationError.reason || "Validation failed"
+        };
+    }
+  }
+
+  /**
    * Add a standard variable (input_text_file or destination_path)
    */
   addStandardVariable(name: string, value: string): this {
@@ -82,7 +118,7 @@ export class VariablesBuilder {
     if (result.ok) {
       this._variables.push(result.data);
     } else {
-      this._errors.push(result.error);
+      this._errors.push(this.convertValidationError(result.error));
     }
 
     return this;
@@ -102,7 +138,7 @@ export class VariablesBuilder {
     if (result.ok) {
       this._variables.push(result.data);
     } else {
-      this._errors.push(result.error);
+      this._errors.push(this.convertValidationError(result.error));
     }
 
     return this;
@@ -124,7 +160,7 @@ export class VariablesBuilder {
     if (result.ok) {
       this._variables.push(result.data);
     } else {
-      this._errors.push(result.error);
+      this._errors.push(this.convertValidationError(result.error));
     }
 
     return this;
@@ -154,7 +190,7 @@ export class VariablesBuilder {
     if (result.ok) {
       this._variables.push(result.data);
     } else {
-      this._errors.push(result.error);
+      this._errors.push(this.convertValidationError(result.error));
     }
 
     return this;
@@ -192,7 +228,7 @@ export class VariablesBuilder {
       if (result.ok) {
         this._variables.push(result.data);
       } else {
-        this._errors.push(result.error);
+        this._errors.push(this.convertValidationError(result.error));
       }
     }
     return this;
@@ -207,7 +243,7 @@ export class VariablesBuilder {
       return error(this._errors);
     }
 
-    return ok(this._variables);
+    return ok(PromptVariablesVO.create(this._variables));
   }
 
   /**
@@ -227,7 +263,7 @@ export class VariablesBuilder {
       if (variable instanceof UserVariable) {
         // Re-add uv- prefix for VariablesBuilder.toRecord() compatibility
         for (const [key, value] of Object.entries(varRecord)) {
-          record[`uv-${key}`] = value;
+          record[`uv-${key}`] = String(value);
         }
       } else {
         Object.assign(record, varRecord);

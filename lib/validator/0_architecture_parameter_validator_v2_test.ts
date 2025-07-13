@@ -23,8 +23,8 @@ import {
 } from "./parameter_validator_v2.ts";
 import type { Result } from "../types/result.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // =============================================================================
@@ -33,13 +33,21 @@ import type { TwoParams_Result } from "../deps.ts";
 
 function createMockTypePatternProvider(): TypePatternProvider {
   return {
+    validateDirectiveType: (value: string) => /^(to|summary|defect)$/.test(value),
+    validateLayerType: (value: string) => /^(project|issue|task)$/.test(value),
+    getValidDirectiveTypes: () => ["to", "summary", "defect"],
+    getValidLayerTypes: () => ["project", "issue", "task"],
     getDirectivePattern: () => {
-      const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
-      return pattern;
+      return {
+        test: (value: string) => /^(to|summary|defect)$/.test(value),
+        getPattern: () => "^(to|summary|defect)$"
+      };
     },
     getLayerTypePattern: () => {
-      const pattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
-      return pattern;
+      return {
+        test: (value: string) => /^(project|issue|task)$/.test(value),
+        getPattern: () => "^(project|issue|task)$"
+      };
     },
   };
 }
@@ -160,15 +168,22 @@ Deno.test("0_architecture - ValidatedParams type structure constraints", () => {
   // Create proper DirectiveType and LayerType instances
   const mockTwoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     options: {},
     params: ["to", "project"],
   };
 
+  const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+  const layerResult = LayerType.create(mockTwoParamsResult.layerType);
+  
+  if (!directiveResult.ok) throw new Error("Failed to create DirectiveType in test");
+  if (!layerResult.ok) throw new Error("Failed to create LayerType in test");
+  
   const mockValidatedParams: ValidatedParams = {
-    directive: DirectiveType.create(mockTwoParamsResult),
-    layer: LayerType.create(mockTwoParamsResult),
+    directive: directiveResult.data,
+    layer: layerResult.data,
     options: {
       inputPath: "/input",
       outputPath: "/output",
@@ -188,8 +203,8 @@ Deno.test("0_architecture - ValidatedParams type structure constraints", () => {
   assertExists(mockValidatedParams.metadata);
 
   // Type constraints
-  assertEquals(typeof mockValidatedParams.directive.getValue, "function");
-  assertEquals(typeof mockValidatedParams.layer.getValue, "function");
+  assertEquals(typeof mockValidatedParams.directive.value, "string");
+  assertEquals(typeof mockValidatedParams.layer.value, "string");
   assertEquals(typeof mockValidatedParams.options, "object");
   assertEquals(typeof mockValidatedParams.customVariables, "object");
   assertEquals(typeof mockValidatedParams.metadata, "object");
@@ -337,7 +352,7 @@ Deno.test("0_architecture - Type safety in parameter result types", () => {
   // Mock input types should match expected interfaces
   const mockTwoParamsResult = {
     type: "two" as const,
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -359,7 +374,7 @@ Deno.test("0_architecture - Type safety in parameter result types", () => {
   assertEquals(mockOneParamsResult.type, "one");
   assertEquals(mockZeroParamsResult.type, "zero");
 
-  assertExists(mockTwoParamsResult.demonstrativeType);
+  assertExists(mockTwoParamsResult.directiveType);
   assertExists(mockTwoParamsResult.layerType);
   assert(Array.isArray(mockTwoParamsResult.params));
 
@@ -376,8 +391,9 @@ Deno.test("0_architecture - Error handling maintains Result type consistency", (
   // Success case type
   const mockTwoParamsResultForSuccess: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     options: {},
     params: ["to", "project"],
   };
@@ -385,8 +401,16 @@ Deno.test("0_architecture - Error handling maintains Result type consistency", (
   const successResult: Result<ValidatedParams, ValidationError> = {
     ok: true,
     data: {
-      directive: DirectiveType.create(mockTwoParamsResultForSuccess),
-      layer: LayerType.create(mockTwoParamsResultForSuccess),
+      directive: (() => {
+        const result = DirectiveType.create(mockTwoParamsResultForSuccess.directiveType);
+        if (!result.ok) throw new Error("Failed to create DirectiveType in test");
+        return result.data;
+      })(),
+      layer: (() => {
+        const result = LayerType.create(mockTwoParamsResultForSuccess.layerType);
+        if (!result.ok) throw new Error("Failed to create LayerType in test");
+        return result.data;
+      })(),
       options: { inputPath: "/input", outputPath: "/output" },
       customVariables: {},
       metadata: { validatedAt: new Date(), source: "TwoParams" },

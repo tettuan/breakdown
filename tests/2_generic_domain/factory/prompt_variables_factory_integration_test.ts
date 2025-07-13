@@ -37,7 +37,7 @@ function createMockTwoParamsResult(directive: string, layer: string): TwoParams_
   return {
     type: "two",
     params: [directive, layer],
-    demonstrativeType: directive,
+    directiveType: directive,
     layerType: layer,
     options: {},
   };
@@ -50,7 +50,7 @@ function createTestParams(
   options: Partial<PromptCliOptions> = {},
 ): PromptCliParams {
   return {
-    demonstrativeType: directive,
+    directiveType: directive,
     layerType: layer,
     options: {
       fromFile: "test.md",
@@ -178,7 +178,7 @@ Deno.test("PromptVariablesFactory Integration: path resolver coordination", asyn
 
   for (const { name, params, expectedPaths: _expectedPaths } of pathTestCases) {
     logger.debug(`Testing path resolution: ${name}`, {
-      directive: params.demonstrativeType,
+      directive: params.directiveType,
       layer: params.layerType,
       fromFile: params.options.fromFile,
     });
@@ -286,7 +286,7 @@ Deno.test("PromptVariablesFactory Integration: error propagation and handling", 
     {
       name: "Missing options",
       params: {
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         options: {} as PromptCliOptions,
       },
@@ -304,7 +304,7 @@ Deno.test("PromptVariablesFactory Integration: error propagation and handling", 
 
   for (const { name, params, expectedError } of errorTestCases) {
     logger.debug(`Testing error case: ${name}`, {
-      directive: params.demonstrativeType,
+      directive: params.directiveType,
       layer: params.layerType,
       expectedErrorType: expectedError,
     });

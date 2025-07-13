@@ -87,8 +87,7 @@ export type PathError =
   | { kind: "PermissionDenied"; path: string; context?: Record<string, unknown> }
   | { kind: "PathTooLong"; path: string; maxLength: number; context?: Record<string, unknown> }
   | { kind: "PathValidationFailed"; rule: PathValidationRule; path: string; context?: Record<string, unknown> }
-  | { kind: "BaseDirectoryNotFound"; path: string; context?: Record<string, unknown> }
-  | { kind: "InvalidConfiguration"; details: string; context?: Record<string, unknown> };
+  | { kind: "BaseDirectoryNotFound"; path: string; context?: Record<string, unknown> };
 
 /**
  * Validation error types used across validators
@@ -180,8 +179,7 @@ export type ConfigurationError =
   }
   | {
     kind: "InvalidConfiguration";
-    field: string;
-    reason: string;
+    details: string;
     context?: Record<string, unknown>;
   }
   | {
@@ -310,7 +308,6 @@ export const ErrorGuards = {
         "PathTooLong",
         "PathValidationFailed",
         "BaseDirectoryNotFound",
-        "InvalidConfiguration",
       ].includes((error as Record<string, unknown>).kind as string)
     );
   },
@@ -429,16 +426,6 @@ export const ErrorFactory = {
           kind: "PathValidationFailed",
           rule: data?.rule ?? "must-exist",
           path,
-          context: data?.context,
-        } as Extract<PathError, { kind: K }>;
-      }
-      case "InvalidConfiguration": {
-        const data = additionalData as
-          | { details: string; context?: Record<string, unknown> }
-          | undefined;
-        return {
-          kind: "InvalidConfiguration",
-          details: data?.details ?? "Configuration error",
           context: data?.context,
         } as Extract<PathError, { kind: K }>;
       }
@@ -624,7 +611,7 @@ export const ErrorFactory = {
       : K extends "ProfileNotFound"
         ? { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> }
       : K extends "InvalidConfiguration"
-        ? { field: string; reason: string; context?: Record<string, unknown> }
+        ? { details: string; context?: Record<string, unknown> }
       : K extends "ConfigLoadError" ? { message: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ConfigurationError, { kind: K }> {
@@ -656,11 +643,10 @@ export const ErrorFactory = {
         } as Extract<ConfigurationError, { kind: K }>;
       }
       case "InvalidConfiguration": {
-        const d = details as { field: string; reason: string; context?: Record<string, unknown> };
+        const d = details as { details: string; context?: Record<string, unknown> };
         return {
           kind: "InvalidConfiguration",
-          field: d.field,
-          reason: d.reason,
+          details: d.details,
           context: d.context,
         } as Extract<ConfigurationError, { kind: K }>;
       }
@@ -894,12 +880,7 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
     case "BaseDirectoryNotFound":
       return `${error.kind}: ${error.path}`;
     case "InvalidConfiguration":
-      // Handle two different variants of InvalidConfiguration
-      if ('details' in error) {
-        return `${error.kind}: ${error.details}`;
-      } else {
-        return `${error.kind}: ${error.field} - ${error.reason}`;
-      }
+      return `${error.kind}: ${error.details}`;
 
     // Validation errors
     case "InvalidInput":

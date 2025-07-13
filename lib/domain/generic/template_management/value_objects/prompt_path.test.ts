@@ -6,7 +6,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { PromptPath, type PromptPathResult } from "./prompt_path.ts";
-import { DirectiveType } from "../../../../types/directive_type.ts";
+import { DirectiveType } from "../../../../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 
 // Test fixtures
@@ -15,13 +15,14 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
   params: ["to", "project"],
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
+  demonstrativeType: "to",
   options: {},
 };
 
-const validDirectiveResult = DirectiveType.create(mockTwoParamsResult);
-const validLayerResult = LayerType.create(mockTwoParamsResult);
+const validDirectiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+const validLayerResult = LayerType.create(mockTwoParamsResult.layerType);
 
 // Extract actual values from Result types
 if (!validDirectiveResult.ok || !validLayerResult.ok) {

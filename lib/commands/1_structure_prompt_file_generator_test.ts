@@ -129,9 +129,9 @@ describe("Structure: PromptFileGenerator Method Contracts", () => {
       "Options parameter structure allows promptDir even if not used",
     );
     assertEquals(
-      methodString.includes("options?.demonstrativeType"),
+      methodString.includes("options?.directiveType"),
       true,
-      "Options should have optional demonstrativeType",
+      "Options should have optional directiveType",
     );
     assertEquals(
       methodString.includes("options?.input_text"),
@@ -157,9 +157,9 @@ describe("Structure: Data Flow Patterns", () => {
       "Should construct cliParams object",
     );
     assertEquals(
-      methodString.includes("demonstrativeType:"),
+      methodString.includes("directiveType:"),
       true,
-      "Should set demonstrativeType in cliParams",
+      "Should set directiveType in cliParams",
     );
     assertEquals(
       methodString.includes("layerType: format"),

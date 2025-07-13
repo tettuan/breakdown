@@ -98,17 +98,17 @@ Deno.test("LayerType - Domain Operations", async (t) => {
 
   await t.step("should generate prompt filename", () => {
     const filename = layer.getPromptFilename("project");
-    assertEquals(filename, "f_issue.md");
+    assertEquals(filename, "f_project.md");
   });
 
   await t.step("should generate prompt filename with adaptation", () => {
     const filename = layer.getPromptFilename("project", "strict");
-    assertEquals(filename, "f_issue_strict.md");
+    assertEquals(filename, "f_project_strict.md");
   });
 
   await t.step("should generate schema filename", () => {
     const filename = layer.getSchemaFilename();
-    assertEquals(filename, "base.schema.json");
+    assertEquals(filename, "issue.json");
   });
 
   await t.step("should validate for resource path generation", () => {
@@ -366,20 +366,20 @@ Deno.test("LayerType - Domain Operations Comprehensive", async (t) => {
   await t.step("should handle edge cases in filename generation", () => {
     // Test prompt filename with empty from layer type
     const filename1 = layer.getPromptFilename("");
-    assertEquals(filename1, "f_issue.md");
+    assertEquals(filename1, "f_.md");
 
     // Test prompt filename with special characters in adaptation
     const filename2 = layer.getPromptFilename("project", "strict-mode_v2");
-    assertEquals(filename2, "f_issue_strict-mode_v2.md");
+    assertEquals(filename2, "f_project_strict-mode_v2.md");
 
     // Test with very long adaptation
     const longAdaptation = "a".repeat(50);
     const filename3 = layer.getPromptFilename("project", longAdaptation);
-    assertEquals(filename3, `f_issue_${longAdaptation}.md`);
+    assertEquals(filename3, `f_project_${longAdaptation}.md`);
   });
 
   await t.step("should maintain consistent schema filename", () => {
-    // Schema filename should always be the same regardless of layer type
+    // Schema filename should be layer-specific
     const taskLayer = LayerType.create("task");
     const projectLayer = LayerType.create("project");
 
@@ -387,9 +387,9 @@ Deno.test("LayerType - Domain Operations Comprehensive", async (t) => {
       throw new Error("Failed to create test LayerTypes");
     }
 
-    assertEquals(layer.getSchemaFilename(), taskLayer.data.getSchemaFilename());
-    assertEquals(layer.getSchemaFilename(), projectLayer.data.getSchemaFilename());
-    assertEquals(layer.getSchemaFilename(), "base.schema.json");
+    assertEquals(layer.getSchemaFilename(), "issue.json");
+    assertEquals(taskLayer.data.getSchemaFilename(), "task.json");
+    assertEquals(projectLayer.data.getSchemaFilename(), "project.json");
   });
 
   await t.step("should validate directive compatibility comprehensively", () => {
@@ -504,7 +504,7 @@ Deno.test("LayerType - Immutability and Thread Safety", async (t) => {
     return Promise.all(promises).then((results) => {
       // All results should be valid and consistent
       results.forEach((result, i) => {
-        assertEquals(result, `f_task_test${i}.md`);
+        assertEquals(result, `f_concurrent_test${i}.md`);
       });
     });
   });
@@ -605,7 +605,7 @@ Deno.test("LayerType - Performance and Memory", async (t) => {
     );
 
     assertEquals(filenames.length, 1000);
-    assertEquals(filenames[0], "f_task_variant0.md");
-    assertEquals(filenames[999], "f_task_variant999.md");
+    assertEquals(filenames[0], "f_test_variant0.md");
+    assertEquals(filenames[999], "f_test_variant999.md");
   });
 });

@@ -35,7 +35,7 @@ const testFactoryConfig = {
  * Test CLI parameters for structural validation
  */
 const testCliParams: TotalityPromptCliParams = {
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
   options: {
     fromLayerType: "task",
@@ -217,7 +217,7 @@ Deno.test("PromptVariablesFactory - 2_structure - Smart Constructor pattern comp
 
   // Test factory creation with invalid parameters
   const invalidParams: PromptCliParams = {
-    demonstrativeType: "", // Invalid empty string
+    directiveType: "", // Invalid empty string
     layerType: "project",
     options: {
       fromLayerType: "task",
@@ -361,7 +361,7 @@ Deno.test("PromptVariablesFactory - 2_structure - Immutability and invariants pr
       // Cross-method consistency validation
       assertEquals(
         result1.data.variables.demonstrative_type,
-        testCliParams.demonstrativeType,
+        testCliParams.directiveType,
         "demonstrative_type should match original input",
       );
       assertEquals(

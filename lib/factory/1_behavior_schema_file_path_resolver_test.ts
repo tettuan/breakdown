@@ -12,7 +12,7 @@
  */
 
 import { assert, assertEquals, assertStringIncludes } from "../deps.ts";
-import { SchemaFilePathResolver, SchemaPath } from "./schema_file_path_resolver.ts";
+import { SchemaFilePathResolver, SchemaPath } from "./schema_file_path_resolver_totality.ts";
 import { ensureDir } from "../deps.ts";
 import { join, resolve } from "@std/path";
 
@@ -51,7 +51,7 @@ Deno.test("SchemaFilePathResolver Behavior - Resolves schema paths correctly", a
   try {
     const config = { app_schema: { base_dir: SCHEMA_DIR } };
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     };
@@ -67,7 +67,7 @@ Deno.test("SchemaFilePathResolver Behavior - Resolves schema paths correctly", a
       schemaPath.value,
       join(SCHEMA_DIR, "to", "project", "base.schema.md"),
     );
-    assertEquals(schemaPath.metadata.demonstrativeType, "to");
+    assertEquals(schemaPath.metadata.directiveType, "to");
     assertEquals(schemaPath.metadata.layerType, "project");
     assertEquals(schemaPath.metadata.fileName, "base.schema.md");
     assertEquals(
@@ -87,8 +87,8 @@ Deno.test("SchemaFilePathResolver Behavior - Handles different parameter types",
 
     // Test various demonstrative and layer type combinations
     const testCases = [
-      { demonstrativeType: "to", layerType: "project" },
-      { demonstrativeType: "summary", layerType: "issue" },
+      { directiveType: "to", layerType: "project" },
+      { directiveType: "summary", layerType: "issue" },
     ];
 
     for (const testCase of testCases) {
@@ -101,7 +101,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles different parameter types",
 
       const expectedPath = join(
         SCHEMA_DIR,
-        testCase.demonstrativeType,
+        testCase.directiveType,
         testCase.layerType,
         "base.schema.md",
       );
@@ -118,7 +118,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles missing schema files", asyn
   try {
     const config = { app_schema: { base_dir: SCHEMA_DIR } };
     const params = {
-      demonstrativeType: "unknown",
+      directiveType: "unknown",
       layerType: "type",
       options: {},
     };
@@ -141,7 +141,7 @@ Deno.test("SchemaFilePathResolver Behavior - Uses default base directory", () =>
   // Test without explicit base_dir configuration
   const config = {};
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -162,7 +162,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles relative base directory", a
     const relativePath = ".test_schema_resolver/schema";
     const config = { app_schema: { base_dir: relativePath } };
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     };
@@ -190,7 +190,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles TwoParams_Result format", a
     const twoParams = {
       type: "two" as const,
       params: ["to", "project"],
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     };
@@ -213,7 +213,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles TwoParams_Result format", a
 Deno.test("SchemaFilePathResolver Behavior - buildFileName returns consistent value", () => {
   const config = { app_schema: { base_dir: "/test" } };
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -232,7 +232,7 @@ Deno.test("SchemaFilePathResolver Behavior - buildFileName returns consistent va
 Deno.test("SchemaFilePathResolver Behavior - buildSchemaPath constructs correct paths", () => {
   const config = { app_schema: { base_dir: "/test" } };
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -245,7 +245,7 @@ Deno.test("SchemaFilePathResolver Behavior - buildSchemaPath constructs correct 
 
   // Test with different parameters
   const params2 = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: {},
   };
@@ -260,7 +260,7 @@ Deno.test("SchemaFilePathResolver Behavior - buildSchemaPath constructs correct 
 Deno.test("SchemaFilePathResolver Behavior - Handles missing base directory gracefully", () => {
   const config = { app_schema: { base_dir: "/nonexistent/path" } };
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -279,7 +279,7 @@ Deno.test("SchemaFilePathResolver Behavior - Legacy methods work correctly", asy
   try {
     const config = { app_schema: { base_dir: SCHEMA_DIR } };
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     };
@@ -310,7 +310,7 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
       path: "/absolute/path.md",
       metadata: {
         baseDir: "/test",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "base.schema.md",
       },
@@ -323,7 +323,7 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
       path: "C:\\Windows\\path.md",
       metadata: {
         baseDir: "C:\\test",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "base.schema.md",
       },
@@ -341,7 +341,7 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
       path: "",
       metadata: {
         baseDir: "/test",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "base.schema.md",
       },
@@ -350,7 +350,7 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
       path: "   ",
       metadata: {
         baseDir: "/test",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "base.schema.md",
       },
@@ -359,7 +359,7 @@ Deno.test("SchemaFilePathResolver Behavior - SchemaPath validation", () => {
       path: "relative/path.md",
       metadata: {
         baseDir: "/test",
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "project",
         fileName: "base.schema.md",
       },
@@ -390,7 +390,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles complex configurations", as
     };
 
     const params = {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {
         fromFile: "input.txt",
@@ -422,7 +422,7 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
   const edgeCaseParams = {
     type: "two" as const,
     params: ["", ""],
-    demonstrativeType: "",
+    directiveType: "",
     layerType: "",
     options: {},
   };
@@ -435,21 +435,21 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
   const mixedParams = {
     type: "two" as const,
     params: ["to", "project"],
-    demonstrativeType: "",
+    directiveType: "",
     layerType: "",
     options: {},
   };
 
   const mixedResult = SchemaFilePathResolver.create(config, mixedParams);
-  // Should fail because demonstrativeType/layerType exist but are empty
+  // Should fail because directiveType/layerType exist but are empty
   assert(!mixedResult.ok, "Should fail when type properties exist but are empty");
   assertEquals(mixedResult.error.kind, "InvalidParameterCombination");
 
-  // Test with params array where demonstrativeType/layerType are derived from params
+  // Test with params array where directiveType/layerType are derived from params
   const paramsOnlyInput = {
     type: "two" as const,
     params: ["to", "project"],
-    demonstrativeType: "to", // Should match params[0]
+    directiveType: "to", // Should match params[0]
     layerType: "project", // Should match params[1]
     options: {},
   };

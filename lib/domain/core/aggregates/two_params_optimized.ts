@@ -7,7 +7,7 @@
  *
  * Optimizations applied:
  * - Removed duplicate path resolution methods (50+ lines)
- * - Simplified over-engineered interfaces 
+ * - Simplified over-engineered interfaces
  * - Made configuration values external
  * - Eliminated unnecessary abstractions
  *
@@ -19,15 +19,40 @@ import { error, ok } from "$lib/types/result.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 import { DirectiveType, type DirectiveTypeError } from "../value_objects/directive_type.ts";
 import { LayerType, type LayerTypeError } from "../value_objects/layer_type.ts";
+import type { BaseError } from "$lib/types/unified_error_types.ts";
 
 /**
  * TwoParams validation errors following Discriminated Union pattern
+ * Inherits from BaseError for unified error system compliance
+ * Properly includes cause types from DirectiveTypeError and LayerTypeError
  */
 export type TwoParamsValidationError =
-  | { kind: "InvalidDirective"; directive: string; profile: string; pattern: string; cause: DirectiveTypeError }
-  | { kind: "InvalidLayer"; layer: string; pattern: string; cause: LayerTypeError }
-  | { kind: "UnsupportedCombination"; directive: string; layer: string; profile: string; message: string }
-  | { kind: "PatternNotFound"; profile: string; configPath: string; message: string };
+  & BaseError
+  & (
+    | {
+      kind: "InvalidDirective";
+      directive: string;
+      profile: string;
+      pattern: string;
+      cause: DirectiveTypeError;
+      message: string;
+    }
+    | {
+      kind: "InvalidLayer";
+      layer: string;
+      pattern: string;
+      cause: LayerTypeError;
+      message: string;
+    }
+    | {
+      kind: "UnsupportedCombination";
+      directive: string;
+      layer: string;
+      profile: string;
+      message: string;
+    }
+    | { kind: "PatternNotFound"; profile: string; configPath: string; message: string }
+  );
 
 /**
  * Path configuration for TwoParams operations
@@ -40,17 +65,17 @@ export interface PathConfig {
 
 /**
  * TwoParams - DirectiveTypeとLayerTypeの組み合わせを表すAggregate Root
- * 
+ *
  * ドメイン概念:
  * - Breakdownコマンドの中核的な処理単位
  * - 処理方向（DirectiveType）と階層（LayerType）の組み合わせ
  * - プロンプト生成とスキーマ解決のコンテキスト
- * 
+ *
  * 設計理念:
  * - CLI引数からファイルシステムリソースへの橋渡し
  * - パターンバリデーションによる信頼性保証
  * - 型安全なパス解決の実現
- * 
+ *
  * @example Basic usage
  * ```typescript
  * const profile = ConfigProfileName.createDefault();
@@ -61,7 +86,7 @@ export interface PathConfig {
  *   // Result: "prompts/to/issue/f_issue.md"
  * }
  * ```
- * 
+ *
  * @example CLI integration
  * ```typescript
  * const twoParamsResult = TwoParams.createWithCliOption("to", "issue", null);
@@ -76,13 +101,13 @@ export class TwoParams {
    */
   static readonly DEFAULT_CONFIG: PathConfig = {
     promptsDir: "prompts",
-    schemasDir: "schemas", 
+    schemasDir: "schemas",
     outputDir: "output",
   };
 
   /**
    * Private constructor following Smart Constructor pattern
-   * 
+   *
    * @param directive - Validated DirectiveType
    * @param layer - Validated LayerType
    * @param profile - Configuration profile
@@ -118,10 +143,10 @@ export class TwoParams {
 
   /**
    * Smart Constructor for TwoParams creation
-   * 
+   *
    * Creates a validated TwoParams instance by combining DirectiveType and LayerType.
    * Follows Totality principle by handling all possible input cases.
-   * 
+   *
    * @param directive - Directive type string
    * @param layer - Layer type string
    * @param profile - Configuration profile
@@ -141,6 +166,7 @@ export class TwoParams {
         profile: profile.value,
         pattern: "ConfigProfileName pattern validation",
         cause: directiveResult.error,
+        message: `DirectiveType validation failed: ${directiveResult.error.message}`,
       });
     }
 
@@ -152,6 +178,7 @@ export class TwoParams {
         layer,
         pattern: "LayerType pattern validation",
         cause: layerResult.error,
+        message: `LayerType validation failed: ${layerResult.error.message}`,
       });
     }
 
@@ -165,7 +192,8 @@ export class TwoParams {
         directive,
         layer,
         profile: profile.value,
-        message: `Combination of directive "${directive}" and layer "${layer}" is not supported for profile "${profile.value}"`,
+        message:
+          `Combination of directive "${directive}" and layer "${layer}" is not supported for profile "${profile.value}"`,
       });
     }
 
@@ -175,10 +203,10 @@ export class TwoParams {
 
   /**
    * Create TwoParams with CLI option handling
-   * 
+   *
    * Convenience method that handles null/undefined profile options
    * by automatically applying default profile.
-   * 
+   *
    * @param directive - Directive type string
    * @param layer - Layer type string
    * @param profileOption - CLI profile option (null for default)
@@ -195,7 +223,7 @@ export class TwoParams {
 
   /**
    * Validate the current TwoParams state
-   * 
+   *
    * @returns Result indicating validation success or failure
    */
   validate(): Result<void, TwoParamsValidationError> {
@@ -212,7 +240,27 @@ export class TwoParams {
           profile: this._profile.value,
           validDirectives: this._profile.getDirectiveTypes(),
           message: "Directive no longer valid for profile",
-        },
+        } as DirectiveTypeError,
+        message:
+          `Directive "${this._directive.value}" is no longer valid for profile "${this._profile.value}"`,
+      });
+    }
+
+    // Check if layer is still valid for the profile
+    if (!this._layer.isValidForProfile(this._profile)) {
+      return error({
+        kind: "InvalidLayer",
+        layer: this._layer.value,
+        pattern: "Profile validation",
+        cause: {
+          kind: "PatternMismatch",
+          value: this._layer.value,
+          profile: this._profile.value,
+          validLayers: this._profile.getLayerTypes(),
+          message: "Layer no longer valid for profile",
+        } as LayerTypeError,
+        message:
+          `Layer "${this._layer.value}" is no longer valid for profile "${this._profile.value}"`,
       });
     }
 
@@ -232,7 +280,7 @@ export class TwoParams {
 
   /**
    * Resolve prompt file path (Unified method)
-   * 
+   *
    * @param config - Path configuration (uses default if not provided)
    * @param fromLayerType - Source layer type context
    * @param adaptation - Optional adaptation modifier
@@ -250,7 +298,7 @@ export class TwoParams {
 
   /**
    * Resolve schema file path (Unified method)
-   * 
+   *
    * @param config - Path configuration (uses default if not provided)
    * @returns Complete schema file path string
    */
@@ -261,7 +309,7 @@ export class TwoParams {
 
   /**
    * Resolve output directory path
-   * 
+   *
    * @param config - Path configuration (uses default if not provided)
    * @returns Complete output directory path string
    */
@@ -272,7 +320,7 @@ export class TwoParams {
   /**
    * Get basic command info for external system integration
    * Simplified from the over-engineered BreakdownCommand interface
-   * 
+   *
    * @returns Simple object with command information
    */
   getCommandInfo(): {
@@ -289,7 +337,7 @@ export class TwoParams {
 
   /**
    * Generate BreakdownCommand structure for integration compatibility
-   * 
+   *
    * @returns BreakdownCommand compatible object
    */
   toCommand(): {
@@ -310,7 +358,7 @@ export class TwoParams {
 
   /**
    * Resolve prompt file path (Legacy compatibility method)
-   * 
+   *
    * @param promptsDir - Prompts directory base path
    * @param fromLayerType - Source layer type context
    * @param adaptation - Optional adaptation modifier
@@ -321,12 +369,16 @@ export class TwoParams {
     fromLayerType?: string,
     adaptation?: string,
   ): string {
-    return this.resolvePromptPath({ promptsDir, schemasDir: "schemas", outputDir: "output" }, fromLayerType, adaptation);
+    return this.resolvePromptPath(
+      { promptsDir, schemasDir: "schemas", outputDir: "output" },
+      fromLayerType,
+      adaptation,
+    );
   }
 
   /**
    * Resolve schema file path (Legacy compatibility method)
-   * 
+   *
    * @param schemasDir - Schemas directory base path
    * @returns Complete schema file path string
    */
@@ -336,7 +388,7 @@ export class TwoParams {
 
   /**
    * Get PromptPath object for integration compatibility
-   * 
+   *
    * @param fromLayerType - Source layer type context
    * @returns PromptPath-like object
    */
@@ -357,7 +409,7 @@ export class TwoParams {
 
   /**
    * Get SchemaPath object for integration compatibility
-   * 
+   *
    * @returns SchemaPath-like object
    */
   getSchemaPath(): {
@@ -374,7 +426,7 @@ export class TwoParams {
 
   /**
    * Type-safe equality comparison
-   * 
+   *
    * @param other - Another TwoParams to compare
    * @returns true if all components are equal
    */

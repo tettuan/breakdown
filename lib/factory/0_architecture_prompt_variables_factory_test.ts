@@ -50,7 +50,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
       };
 
       const mockCliParams: PromptCliParams = {
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "task",
         options: mockOptions,
       };
@@ -81,7 +81,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
 
     it("should handle immutable inputs", async () => {
       const cliParams: PromptCliParams = {
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "task",
         options: {
           fromFile: undefined,
@@ -131,7 +131,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
 
     it("should enforce proper error propagation across domain boundaries", async () => {
       const mockCliParams: PromptCliParams = {
-        demonstrativeType: "invalid",
+        directiveType: "invalid",
         layerType: "invalid",
         options: {
           fromFile: "nonexistent.txt", // This should trigger a path resolution error
@@ -161,11 +161,11 @@ describe("0_architecture_prompt_variables_factory_test", () => {
     it("should never throw exceptions", async () => {
       // Test with various invalid inputs - should return Result.error, never throw
       const invalidInputs: PromptCliParams[] = [
-        { demonstrativeType: "", layerType: "", options: {} },
-        { demonstrativeType: null as unknown as string, layerType: "project", options: {} },
-        { demonstrativeType: "to", layerType: null as unknown as string, options: {} },
+        { directiveType: "", layerType: "", options: {} },
+        { directiveType: null as unknown as string, layerType: "project", options: {} },
+        { directiveType: "to", layerType: null as unknown as string, options: {} },
         {
-          demonstrativeType: "to",
+          directiveType: "to",
           layerType: "project",
           options: { fromFile: null } as unknown as { fromFile: string },
         },
@@ -185,7 +185,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
 
     it("should provide complete error information", async () => {
       const invalidCliParams: PromptCliParams = {
-        demonstrativeType: "", // Empty string should be invalid
+        directiveType: "", // Empty string should be invalid
         layerType: "",
         options: {
           fromFile: "", // Empty string should be invalid
@@ -212,7 +212,7 @@ describe("0_architecture_prompt_variables_factory_test", () => {
       // This test verifies that the factory's return type prevents impossible states
       // By using Result<T, E>, we eliminate partial functions that could return undefined/null
       const validCliParams: PromptCliParams = {
-        demonstrativeType: "to",
+        directiveType: "to",
         layerType: "task",
         options: {
           fromFile: undefined,

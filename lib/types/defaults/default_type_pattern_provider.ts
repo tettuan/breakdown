@@ -153,7 +153,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    *
    * @returns Readonly array of valid DirectiveType string values
    */
-  getValidDirectiveTypes(): readonly string[] {
+  getValidDirectiveTypes(): string[] {
     return this.getValidDirectiveValues();
   }
 
@@ -162,7 +162,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    *
    * @returns Readonly array of valid LayerType string values
    */
-  getValidLayerTypes(): readonly string[] {
+  getValidLayerTypes(): string[] {
     return this.getValidLayerValues();
   }
 

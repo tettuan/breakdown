@@ -12,8 +12,9 @@ Deno.test("TwoParamsProcessor - Valid input conversion", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       output: "result.md",
@@ -37,7 +38,7 @@ Deno.test("TwoParamsProcessor - Invalid type error", () => {
   // Creating invalid test data with proper type assertion
   const twoParamsResult = {
     type: "invalid" as const,
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -54,14 +55,15 @@ Deno.test("TwoParamsProcessor - Invalid type error", () => {
   }
 });
 
-Deno.test("TwoParamsProcessor - Missing demonstrativeType error", () => {
+Deno.test("TwoParamsProcessor - Missing directiveType error", () => {
   const _processor = new TwoParamsProcessor();
 
-  // Creating test data with empty demonstrativeType
+  // Creating test data with empty directiveType
   const twoParamsResult = {
     type: "two",
-    demonstrativeType: "",
+    directiveType: "",
     layerType: "project",
+    demonstrativeType: "",
     params: ["to", "project"],
     options: {},
   } as unknown as TwoParams_Result;
@@ -72,7 +74,7 @@ Deno.test("TwoParamsProcessor - Missing demonstrativeType error", () => {
   if (!result.ok) {
     assertEquals(result.error.kind, "MissingRequiredField");
     if (result.error.kind === "MissingRequiredField") {
-      assertEquals(result.error.field, "demonstrativeType");
+      assertEquals(result.error.field, "directiveType");
     }
   }
 });
@@ -83,8 +85,9 @@ Deno.test("TwoParamsProcessor - Missing layerType error", () => {
   // Creating test data with empty layerType
   const twoParamsResult = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {},
   } as unknown as TwoParams_Result;
@@ -105,8 +108,9 @@ Deno.test("TwoParamsProcessor - Insufficient params error", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to"], // Only one param
     options: {},
   };
@@ -127,8 +131,9 @@ Deno.test("TwoParamsProcessor - Custom variables extraction", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       "uv-customVar1": "value1",
@@ -157,8 +162,9 @@ Deno.test("TwoParamsProcessor - File path extraction", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       fromFile: "input.txt",
@@ -188,8 +194,9 @@ Deno.test("TwoParamsProcessor - Default values", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {},
   };
@@ -213,8 +220,9 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
 
   const validResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       promptFile: "prompt.md",
@@ -227,7 +235,7 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
 
   const invalidResult = {
     type: "invalid",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -252,8 +260,9 @@ Deno.test("TwoParamsProcessor - Input text extraction", () => {
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       input_text: "This is input text content",

@@ -15,7 +15,22 @@ export * from "./core/mod.ts";
 export * from "./errors/mod.ts";
 
 // Templates Domain - Template and schema management
-export * from "./templates/mod.ts";
+// Note: Explicit exports to avoid naming conflicts
+export {
+  TemplateResolverService,
+  PromptTemplate,
+  Schema,
+  SchemaId,
+  TemplateNotFoundError,
+  TemplateValidationError,
+  SchemaNotFoundError,
+  SchemaValidationError,
+} from "./templates/mod.ts";
+
+export type {
+  TemplateRepository,
+  SchemaRepository,
+} from "./templates/mod.ts";
 
 // Commonly used exports are already available through the module exports above
 
@@ -28,9 +43,14 @@ export class DomainFactory {
    */
   static get core() {
     return {
-      async createTwoParams(params: { directive: string; layer: string }) {
+      async createTwoParams(directive: string, layer: string, profile?: string) {
         const { TwoParams } = await import("./core/mod.ts");
-        return TwoParams.create(params);
+        const { ConfigProfileName } = await import("./core/mod.ts");
+        const profileName = profile ? ConfigProfileName.create(profile) : ConfigProfileName.create("default");
+        if (!profileName.ok) {
+          return profileName;
+        }
+        return TwoParams.create(directive, layer, profileName.data);
       },
       
       async createDirectiveType(value: string) {
@@ -52,12 +72,12 @@ export class DomainFactory {
     return {
       async createCLIParsingError(message: string) {
         const { CLIParsingError } = await import("./errors/mod.ts");
-        return CLIParsingError.invalidArgument("unknown", message);
+        return CLIParsingError.invalidParameter("unknown", message);
       },
       
       async createConfigError(message: string) {
         const { ConfigError } = await import("./errors/mod.ts");
-        return ConfigError.fileNotFound("unknown", message);
+        return ConfigError.profileNotFound("unknown", []);
       },
     };
   }
@@ -67,9 +87,9 @@ export class DomainFactory {
    */
   static get templates() {
     return {
-      async createPromptGenerationAggregate() {
+      async createPromptGenerationAggregate(id: string, template: any) {
         const { PromptGenerationAggregate } = await import("./templates/mod.ts");
-        return PromptGenerationAggregate.create();
+        return PromptGenerationAggregate.create(id, template);
       },
     };
   }

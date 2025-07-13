@@ -113,7 +113,7 @@ Convert the input into a project structure.
       false,
       {
         promptDir,
-        demonstrativeType: "to",
+        directiveType: "to",
       },
     );
 
@@ -165,7 +165,7 @@ Layer: {{layer_type}}
       false,
       {
         promptDir,
-        demonstrativeType: "summary",
+        directiveType: "summary",
         input_text: "Task description from stdin\nWith multiple lines\nAnd details",
       },
     );
@@ -225,7 +225,7 @@ Layer: {{layer_type}}
       false,
       {
         promptDir: "/non/existent/prompt/dir",
-        demonstrativeType: "to",
+        directiveType: "to",
       },
     );
 
@@ -243,10 +243,10 @@ Layer: {{layer_type}}
     logger.debug("Testing complex multi-step workflow");
 
     // Step 1: Create elaborate directory structure
-    const demonstrativeTypes = ["to", "summary", "find"];
+    const directiveTypes = ["to", "summary", "find"];
     const layerTypes = ["project", "task", "issue", "bugs"];
 
-    for (const demo of demonstrativeTypes) {
+    for (const demo of directiveTypes) {
       for (const layer of layerTypes) {
         const dir = join(promptDir, demo, layer);
         ensureDirSync(dir);
@@ -304,7 +304,7 @@ ${demo === "find" ? "Finding: {{finding_type || 'general'}}" : ""}
         false,
         {
           promptDir,
-          demonstrativeType: testCase.demo,
+          directiveType: testCase.demo,
         },
       );
 
@@ -361,7 +361,7 @@ Adaptation: {{adaptation}}
       true, // force overwrite
       {
         promptDir,
-        demonstrativeType: "to",
+        directiveType: "to",
         adaptation: "strict",
       },
     );
@@ -403,7 +403,7 @@ Adaptation: {{adaptation}}
         join(outputDir, `concurrent-output-${index}.md`),
         "test",
         false,
-        { promptDir, demonstrativeType: "to" },
+        { promptDir, directiveType: "to" },
       )
     );
 
@@ -443,7 +443,7 @@ Adaptation: {{adaptation}}
       false,
       {
         promptDir,
-        demonstrativeType: "to",
+        directiveType: "to",
       },
     );
 
@@ -484,7 +484,7 @@ Adaptation: {{adaptation}}
       false,
       {
         promptDir,
-        demonstrativeType: "summary",
+        directiveType: "summary",
       },
     );
 

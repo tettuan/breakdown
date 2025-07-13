@@ -38,7 +38,7 @@ Deno.test("ParamsCustomConfig - Architecture: ConfigError class completeness", (
 
 Deno.test("ParamsCustomConfig - Architecture: ParamsConfig interface completeness", () => {
   const config: ParamsConfig = {
-    demonstrativeType: {
+    directiveType: {
       pattern: "test",
       errorMessage: "test error",
     },
@@ -49,10 +49,10 @@ Deno.test("ParamsCustomConfig - Architecture: ParamsConfig interface completenes
   };
 
   // Verify interface structure
-  assertExists(config.demonstrativeType);
+  assertExists(config.directiveType);
   assertExists(config.layerType);
-  assertEquals(typeof config.demonstrativeType.pattern, "string");
-  assertEquals(typeof config.demonstrativeType.errorMessage, "string");
+  assertEquals(typeof config.directiveType.pattern, "string");
+  assertEquals(typeof config.directiveType.errorMessage, "string");
   assertEquals(typeof config.layerType.pattern, "string");
   assertEquals(typeof config.layerType.errorMessage, "string");
 });
@@ -98,7 +98,7 @@ Deno.test("ParamsCustomConfig - Architecture: Type safety constraints", () => {
     breakdown: {
       params: {
         two: {
-          demonstrativeType: {
+          directiveType: {
             pattern: "^test$",
             errorMessage: "Test error",
           },
@@ -126,7 +126,7 @@ Deno.test("ParamsCustomConfig - Architecture: Error handling architecture", () =
     breakdown: {
       params: {
         two: {
-          demonstrativeType: "invalid", // Should be object
+          directiveType: "invalid", // Should be object
         },
       },
     },
@@ -159,7 +159,7 @@ Deno.test("ParamsCustomConfig - Architecture: Partial override architecture", ()
     breakdown: {
       params: {
         two: {
-          demonstrativeType: {
+          directiveType: {
             pattern: "^custom$",
             errorMessage: "Custom error",
           },
@@ -173,8 +173,8 @@ Deno.test("ParamsCustomConfig - Architecture: Partial override architecture", ()
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Should merge with defaults
-    assertEquals(result.data.params.two.demonstrativeType.pattern, "^custom$");
-    assertEquals(result.data.params.two.demonstrativeType.errorMessage, "Custom error");
+    assertEquals(result.data.params.two.directiveType.pattern, "^custom$");
+    assertEquals(result.data.params.two.directiveType.errorMessage, "Custom error");
 
     // Should preserve defaults for non-overridden fields
     assertEquals(
@@ -193,7 +193,7 @@ Deno.test("ParamsCustomConfig - Architecture: Full configuration section support
     breakdown: {
       params: {
         two: {
-          demonstrativeType: { pattern: "test1", errorMessage: "error1" },
+          directiveType: { pattern: "test1", errorMessage: "error1" },
           layerType: { pattern: "test2", errorMessage: "error2" },
         },
       },
@@ -235,7 +235,7 @@ Deno.test("ParamsCustomConfig - Architecture: Immutability constraints", () => {
     breakdown: {
       params: {
         two: {
-          demonstrativeType: {
+          directiveType: {
             pattern: "original",
             errorMessage: "original error",
           },

@@ -27,8 +27,8 @@ export type PromptGenerationErrorKind =
  * Thrown when prompt generation fails
  */
 export class PromptGenerationError extends BaseBreakdownError {
-  readonly domain = "prompt-generation" as const;
-  readonly kind: PromptGenerationErrorKind;
+  override readonly domain = "prompt-generation" as const;
+  override readonly kind: PromptGenerationErrorKind;
 
   constructor(
     kind: PromptGenerationErrorKind,
@@ -49,8 +49,11 @@ export class PromptGenerationError extends BaseBreakdownError {
       };
     }
   ) {
-    super(message, options);
+    super(message, "prompt-generation", kind, options?.context);
     this.kind = kind;
+    if (options?.cause) {
+      this.cause = options.cause;
+    }
   }
 
   /**
@@ -209,7 +212,7 @@ export class PromptGenerationError extends BaseBreakdownError {
    * Get user-friendly error message
    */
   override getUserMessage(): string {
-    const base = super.getUserMessage();
+    const base = this.message;
     
     // Add helpful context for common errors
     switch (this.kind) {
@@ -254,50 +257,50 @@ export class PromptGenerationError extends BaseBreakdownError {
   /**
    * Get specific recovery suggestions
    */
-  getRecoverySuggestions(): string[] {
-    const suggestions: string[] = [];
+  getRecoverySuggestions(): { action: string; description: string; command?: string }[] {
+    const suggestions: { action: string; description: string; command?: string }[] = [];
 
     switch (this.kind) {
       case "template-processing-failed":
-        suggestions.push("Check template file permissions");
-        suggestions.push("Ensure template file is valid UTF-8");
-        suggestions.push("Verify template exists at the specified path");
+        suggestions.push({ action: "check-permissions", description: "Check template file permissions" });
+        suggestions.push({ action: "check-encoding", description: "Ensure template file is valid UTF-8" });
+        suggestions.push({ action: "verify-path", description: "Verify template exists at the specified path" });
         break;
       case "variable-substitution-failed":
-        suggestions.push(`Define variable '${this.context?.variableName}' in your input`);
-        suggestions.push("Check for typos in variable names");
-        suggestions.push("Use --debug to see available variables");
+        suggestions.push({ action: "define-variable", description: `Define variable '${this.context?.variableName}' in your input` });
+        suggestions.push({ action: "check-typos", description: "Check for typos in variable names" });
+        suggestions.push({ action: "debug-variables", description: "See available variables", command: "--debug" });
         break;
       case "template-syntax-error":
-        suggestions.push("Check for:");
-        suggestions.push("  - Unclosed variable brackets: {{variable}}");
-        suggestions.push("  - Invalid nesting of conditionals");
-        suggestions.push("  - Proper escaping of special characters");
+        suggestions.push({ action: "check-syntax", description: "Check template syntax" });
+        suggestions.push({ action: "check-brackets", description: "Check for unclosed variable brackets: {{variable}}" });
+        suggestions.push({ action: "check-nesting", description: "Check for invalid nesting of conditionals" });
+        suggestions.push({ action: "check-escaping", description: "Check proper escaping of special characters" });
         if (this.context?.lineNumber) {
-          suggestions.push(`  - Error at line ${this.context.lineNumber}`);
+          suggestions.push({ action: "check-line", description: `Error at line ${this.context.lineNumber}` });
         }
         break;
       case "output-generation-failed":
-        suggestions.push("Check output directory permissions");
-        suggestions.push("Ensure output path is writable");
-        suggestions.push("Try a different output location");
+        suggestions.push({ action: "check-output-permissions", description: "Check output directory permissions" });
+        suggestions.push({ action: "check-writable", description: "Ensure output path is writable" });
+        suggestions.push({ action: "try-different-location", description: "Try a different output location" });
         break;
       case "schema-embedding-failed":
-        suggestions.push("Verify schema file exists");
-        suggestions.push("Check schema file format");
-        suggestions.push("Ensure schema path is correct");
+        suggestions.push({ action: "verify-schema", description: "Verify schema file exists" });
+        suggestions.push({ action: "check-schema-format", description: "Check schema file format" });
+        suggestions.push({ action: "check-schema-path", description: "Ensure schema path is correct" });
         break;
       case "circular-reference-detected":
         if (this.context?.circularPath && Array.isArray(this.context.circularPath)) {
-          suggestions.push("Break the circular dependency:");
-          suggestions.push(`  ${this.context.circularPath.join(' → ')}`);
+          suggestions.push({ action: "break-cycle", description: "Break the circular dependency:" });
+          suggestions.push({ action: "show-cycle", description: `${this.context.circularPath.join(' → ')}` });
         }
-        suggestions.push("Restructure your variables to avoid circular references");
+        suggestions.push({ action: "restructure", description: "Restructure your variables to avoid circular references" });
         break;
       case "max-depth-exceeded":
-        suggestions.push("Reduce template nesting depth");
-        suggestions.push("Increase max depth limit in configuration");
-        suggestions.push("Simplify template structure");
+        suggestions.push({ action: "reduce-nesting", description: "Reduce template nesting depth" });
+        suggestions.push({ action: "increase-limit", description: "Increase max depth limit in configuration" });
+        suggestions.push({ action: "simplify-structure", description: "Simplify template structure" });
         break;
     }
 

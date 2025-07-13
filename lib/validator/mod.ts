@@ -19,8 +19,8 @@ export {
 
 // レガシー版は明示的な名前でエクスポート
 export {
-  ParameterValidator as LegacyParameterValidator,
-} from "./parameter_validator.ts";
+  ParameterValidatorV2 as LegacyParameterValidator,
+} from "./parameter_validator_v2.ts";
 
 // 統一エラータイプも継続エクスポート
 export type { ValidationError as UnifiedValidationError } from "../types/unified_error_types.ts";

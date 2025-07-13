@@ -46,7 +46,7 @@ export type ValidatedOptions = {
  */
 export type ValidationMetadata = {
   validatedAt: Date;
-  source: "TwoParams" | "OneParams" | "ZeroParams";
+  source: "TwoParams" | "OneParams" | "ZeroParams" | "TwoParams_Result" | "OneParamsResult" | "ZeroParamsResult";
   profileName?: string;
 };
 
@@ -58,7 +58,13 @@ export type ValidationError =
   | { kind: "PathValidationError"; error: unknown }
   | { kind: "OptionsNormalizationError"; error: unknown }
   | { kind: "CustomVariableError"; error: unknown }
-  | { kind: "TypeCreationError"; type: "directive" | "layer"; value: string };
+  | { kind: "TypeCreationError"; type: "directive" | "layer"; value: string }
+  | { kind: "ConfigValidationFailed"; errors: string[]; context?: Record<string, unknown> }
+  | { kind: "InvalidDirectiveType"; value: string; validPattern: string; context?: Record<string, unknown> }
+  | { kind: "InvalidLayerType"; value: string; validPattern: string; context?: Record<string, unknown> }
+  | { kind: "InvalidParamsType"; expected: string; received: string; context?: Record<string, unknown> }
+  | { kind: "PathValidationFailed"; path: string; reason: string; context?: Record<string, unknown> }
+  | { kind: "CustomVariableInvalid"; key: string; reason: string; context?: Record<string, unknown> };
 
 /**
  * Configuration validator interface
@@ -98,7 +104,7 @@ export class ParameterValidatorV2 {
   validateTwoParams(result: TwoParams_Result): Result<ValidatedParams, ValidationError> {
     return this.validateParams({
       type: result.type,
-      demonstrativeType: result.demonstrativeType,
+      directiveType: result.directiveType,
       layerType: result.layerType,
       params: result.params,
       options: result.options,
@@ -134,7 +140,7 @@ export class ParameterValidatorV2 {
       type: string;
       params?: string[];
       options?: Record<string, unknown>;
-      demonstrativeType?: string;
+      directiveType?: string;
       layerType?: string;
     },
     source: "TwoParams" | "OneParams" | "ZeroParams",
@@ -193,22 +199,23 @@ export class ParameterValidatorV2 {
     // 5. Create validated types with DDD approach
     const twoParamsResult: TwoParams_Result = {
       type: "two",
-      demonstrativeType: typeValidation.data.demonstrativeType,
+      directiveType: typeValidation.data.directiveType,
       layerType: typeValidation.data.layerType,
+      demonstrativeType: typeValidation.data.directiveType,
       params: typeValidation.data.params,
       options: typeValidation.data.options,
     };
 
     // Use DDD DirectiveType with Smart Constructor pattern
     const directiveResult = DirectiveType.create(
-      typeValidation.data.demonstrativeType,
+      typeValidation.data.directiveType,
       this.getConfigProfile(normalizedOptions.data.profile)
     );
     if (!directiveResult.ok) {
       return error({
         kind: "TypeCreationError",
         type: "directive",
-        value: typeValidation.data.demonstrativeType,
+        value: typeValidation.data.directiveType,
       });
     }
 

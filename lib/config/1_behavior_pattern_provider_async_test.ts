@@ -21,7 +21,7 @@ import {
   DefaultPatternProvider,
 } from "./pattern_provider_async.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 
 // =============================================================================
 // Test Utilities

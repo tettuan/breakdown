@@ -13,7 +13,7 @@ import {
   migrateCliParamsToVariables,
   migratePromptCliParams,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams } from "../types/prompt_variables.ts";
+import type { PromptCliParams } from "../types/prompt_variables_vo.ts";
 
 Deno.test("migrateCliParamsToVariables - basic parameters", () => {
   const params: PromptCliParams = {

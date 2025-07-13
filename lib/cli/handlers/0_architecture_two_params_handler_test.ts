@@ -130,7 +130,7 @@ Deno.test("TwoParamsHandler - separation of concerns", async () => {
 
   // Handler should not implement business logic directly
   const businessLogicPatterns = [
-    /validateDemonstrativeType/,
+    /validateDirectiveType/,
     /validateLayerType/,
     /readStdin/,
     /generatePrompt/,
@@ -182,7 +182,7 @@ Deno.test("TwoParamsHandler - error type design", async () => {
     // Should cover all major error cases
     const expectedErrors = [
       "InvalidParameterCount",
-      "InvalidDemonstrativeType",
+      "InvalidDirectiveType",
       "InvalidLayerType",
       "StdinReadError",
       "PromptGenerationError",

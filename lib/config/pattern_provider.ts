@@ -149,7 +149,8 @@ export class ConfigPatternProvider implements TypePatternProvider {
         return null;
       }
 
-      const pattern = TwoParamsDirectivePattern.create(patternString);
+      const result = TwoParamsDirectivePattern.createOrError(patternString);
+      const pattern = result.ok ? result.data : null;
       this._patternCache.directive = pattern;
       return pattern;
     } catch (error) {
@@ -179,7 +180,8 @@ export class ConfigPatternProvider implements TypePatternProvider {
         return null;
       }
 
-      const pattern = TwoParamsLayerTypePattern.create(patternString);
+      const result = TwoParamsLayerTypePattern.createOrError(patternString);
+      const pattern = result.ok ? result.data : null;
       this._patternCache.layer = pattern;
       return pattern;
     } catch (error) {

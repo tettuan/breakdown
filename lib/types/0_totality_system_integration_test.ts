@@ -164,7 +164,7 @@ Deno.test("Totality Integration - Cross-Domain Compatibility", async (t) => {
 
     // Test Types config loading
     const typesConfig = loadConfiguration("types", {
-      demonstrativeType: { pattern: "^(to|summary|defect)$" },
+      directiveType: { pattern: "^(to|summary|defect)$" },
       layerType: { pattern: "^(project|issue|task)$" },
     });
 

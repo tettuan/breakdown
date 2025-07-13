@@ -24,7 +24,7 @@ import {
   type MigrationError,
   type MigrationResult as _MigrationResult,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams } from "../types/prompt_variables.ts";
+import type { PromptCliParams } from "../types/prompt_variables_vo.ts";
 import { PromptPath } from "../types/prompt_types.ts";
 
 Deno.test("Migration utils - module exports follow architectural patterns", () => {

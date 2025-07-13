@@ -22,9 +22,9 @@ import {
   type ValidationMetadata,
 } from "./mod.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "$lib/domain/core/value_objects/layer_type.ts";
 import type { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
-import type { LayerType } from "../types/layer_type.ts";
+import type { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 
 // =============================================================================
 // Test Utilities
@@ -271,7 +271,7 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
   // 2. Prepare validation input
   const _mockTwoParamsResult = {
     type: "two" as const,
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -444,7 +444,7 @@ Deno.test("1_behavior - Validation metadata enables audit trails", () => {
   for (let i = 0; i < 3; i++) {
     validations.push({
       validatedAt: new Date(Date.now() + i * 1000),
-      source: i === 0 ? "TwoParams_Result" : i === 1 ? "OneParamsResult" : "ZeroParamsResult",
+      source: i === 0 ? "TwoParams" : i === 1 ? "OneParams" : "ZeroParams",
       profileName: `profile-${i}`,
     });
   }

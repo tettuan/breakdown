@@ -33,7 +33,7 @@ import { TwoParamsOutputProcessor } from "../processors/two_params_output_proces
  */
 export type TwoParamsHandlerError =
   | { kind: "InvalidParameterCount"; received: number; expected: number }
-  | { kind: "InvalidDemonstrativeType"; value: string; validTypes: string[] }
+  | { kind: "InvalidDirectiveType"; value: string; validTypes: string[] }
   | { kind: "InvalidLayerType"; value: string; validTypes: string[] }
   | { kind: "StdinReadError"; error: string }
   | { kind: "FactoryCreationError"; error: string }
@@ -115,9 +115,11 @@ class TwoParamsOrchestrator {
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
       {
-        demonstrativeType: validationResult.data.demonstrativeType,
+        directive: validationResult.data.directiveType as any,
+        layer: validationResult.data.layerType as any,
+        directiveType: validationResult.data.directiveType,
         layerType: validationResult.data.layerType,
-      },
+      } as any,
       options,
       variablesResult.data,
     );
@@ -153,16 +155,16 @@ class TwoParamsOrchestrator {
   }
 
   /**
-   * Type guard for InvalidDemonstrativeType error
+   * Type guard for InvalidDirectiveType error
    */
-  private isInvalidDemonstrativeTypeError(
+  private isInvalidDirectiveTypeError(
     error: unknown,
-  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidDemonstrativeType" }> {
+  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidDirectiveType" }> {
     return (
       typeof error === "object" &&
       error !== null &&
       "kind" in error &&
-      error.kind === "InvalidDemonstrativeType" &&
+      error.kind === "InvalidDirectiveType" &&
       "value" in error &&
       "validTypes" in error &&
       typeof (error as { value: unknown }).value === "string" &&
@@ -201,9 +203,9 @@ class TwoParamsOrchestrator {
       };
     }
 
-    if (this.isInvalidDemonstrativeTypeError(error)) {
+    if (this.isInvalidDirectiveTypeError(error)) {
       return {
-        kind: "InvalidDemonstrativeType",
+        kind: "InvalidDirectiveType",
         value: error.value,
         validTypes: error.validTypes,
       };

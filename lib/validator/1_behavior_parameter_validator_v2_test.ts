@@ -23,8 +23,8 @@ import {
 } from "./parameter_validator_v2.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 
 // =============================================================================
 // Test Utilities and Mocks
@@ -35,15 +35,23 @@ function createMockTypePatternProvider(
   layerValid = true,
 ): TypePatternProvider {
   return {
+    validateDirectiveType: (value: string) => directiveValid && /^(to|summary|defect)$/.test(value),
+    validateLayerType: (value: string) => layerValid && /^(project|issue|task)$/.test(value),
+    getValidDirectiveTypes: () => directiveValid ? ["to", "summary", "defect"] : [],
+    getValidLayerTypes: () => layerValid ? ["project", "issue", "task"] : [],
     getDirectivePattern: () => {
       if (!directiveValid) return null;
-      const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
-      return pattern;
+      return {
+        test: (value: string) => /^(to|summary|defect)$/.test(value),
+        getPattern: () => "^(to|summary|defect)$"
+      };
     },
     getLayerTypePattern: () => {
       if (!layerValid) return null;
-      const pattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
-      return pattern;
+      return {
+        test: (value: string) => /^(project|issue|task)$/.test(value),
+        getPattern: () => "^(project|issue|task)$"
+      };
     },
   };
 }
@@ -62,8 +70,9 @@ function createMockConfigValidator(shouldPass = true): ConfigValidator {
 function createValidTwoParamsResult(): TwoParams_Result {
   return {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     params: ["to", "project"],
     options: {
       input: "/path/to/input.txt",
@@ -114,7 +123,7 @@ Deno.test("1_behavior - validateTwoParams processes valid parameters successfull
 
   // Validator should accept TwoParams_Result
   assertEquals(twoParamsResult.type, "two");
-  assertEquals(twoParamsResult.demonstrativeType, "to");
+  assertEquals(twoParamsResult.directiveType, "to");
   assertEquals(twoParamsResult.layerType, "project");
   assert(Array.isArray(twoParamsResult.params));
   assertEquals(twoParamsResult.params.length, 2);
@@ -324,14 +333,14 @@ Deno.test("1_behavior - Type creation and validation integration", () => {
   // Test type creation behavior
   const twoParamsData = {
     type: "two" as const,
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
   };
 
   // DirectiveType and LayerType creation simulation
-  const directiveValue = twoParamsData.demonstrativeType;
+  const directiveValue = twoParamsData.directiveType;
   const layerValue = twoParamsData.layerType;
 
   // Should validate directive and layer values
@@ -424,15 +433,24 @@ Deno.test("1_behavior - Validation result structure consistency", () => {
   // Test that validation results have consistent structure
   const mockTwoParamsResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
+    demonstrativeType: "to",
     options: {},
     params: ["to", "project"],
   };
 
   const mockValidatedParams: ValidatedParams = {
-    directive: DirectiveType.create(mockTwoParamsResult),
-    layer: LayerType.create(mockTwoParamsResult),
+    directive: (() => {
+      const result = DirectiveType.create("to");
+      if (!result.ok) throw new Error("Failed to create DirectiveType in test");
+      return result.data;
+    })(),
+    layer: (() => {
+      const result = LayerType.create("project");
+      if (!result.ok) throw new Error("Failed to create LayerType in test");
+      return result.data;
+    })(),
     options: {
       inputPath: "/input/file.txt",
       outputPath: "/output/file.txt",

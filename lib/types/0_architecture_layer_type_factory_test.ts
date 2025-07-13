@@ -1,19 +1,19 @@
 /**
- * @fileoverview Architecture Tests for LayerTypeFactory
+ * @fileoverview Architecture Tests for LayerType
  *
  * Tests the architectural constraints and Smart Constructor pattern
- * implementation of LayerTypeFactory.
+ * implementation of LayerType.
  *
  * @module types/0_architecture_layer_type_factory_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { LayerTypeFactory } from "./layer_type_factory.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { LayerTypeCreationError } from "./layer_type_types.ts";
 import { LayerType } from "./mod.ts";
 
 /**
- * Architecture Test Suite for LayerTypeFactory
+ * Architecture Test Suite for LayerType
  *
  * Verifies:
  * - Smart Constructor pattern implementation
@@ -21,41 +21,41 @@ import { LayerType } from "./mod.ts";
  * - Error type definitions
  * - Result type structure
  */
-Deno.test("LayerTypeFactory Architecture - Smart Constructor Pattern", () => {
+Deno.test("LayerType Architecture - Smart Constructor Pattern", () => {
   // 1. Factory class should exist and be accessible
-  assertExists(LayerTypeFactory, "LayerTypeFactory class should exist");
+  assertExists(LayerType, "LayerType class should exist");
 
   // 2. Smart Constructor methods should exist with proper signatures
-  assertExists(LayerTypeFactory.fromString, "fromString static method should exist");
+  assertExists(LayerType.fromString, "fromString static method should exist");
   assertExists(
-    LayerTypeFactory.fromTwoParamsResult,
+    LayerType.fromTwoParamsResult,
     "fromTwoParamsResult static method should exist",
   );
-  assertExists(LayerTypeFactory.isValidLayer, "isValidLayer static method should exist");
-  assertExists(LayerTypeFactory.getKnownLayers, "getKnownLayers static method should exist");
+  assertExists(LayerType.isValidLayer, "isValidLayer static method should exist");
+  assertExists(LayerType.getKnownLayerTypes, "getKnownLayerTypes static method should exist");
 
   // 3. Factory methods should be static (architectural requirement)
-  assertEquals(typeof LayerTypeFactory.fromString, "function", "fromString should be a function");
+  assertEquals(typeof LayerType.fromString, "function", "fromString should be a function");
   assertEquals(
-    typeof LayerTypeFactory.fromTwoParamsResult,
+    typeof LayerType.fromTwoParamsResult,
     "function",
     "fromTwoParamsResult should be a function",
   );
   assertEquals(
-    typeof LayerTypeFactory.isValidLayer,
+    typeof LayerType.isValidLayer,
     "function",
     "isValidLayer should be a function",
   );
   assertEquals(
-    typeof LayerTypeFactory.getKnownLayers,
+    typeof LayerType.getKnownLayerTypes,
     "function",
-    "getKnownLayers should be a function",
+    "getKnownLayerTypes should be a function",
   );
 });
 
-Deno.test("LayerTypeFactory Architecture - Result Type Structure", () => {
+Deno.test("LayerType Architecture - Result Type Structure", () => {
   // Test that result types follow the totality principle structure
-  const validResult = LayerTypeFactory.fromString("project");
+  const validResult = LayerType.fromString("project");
 
   // Result should have 'ok' property for discrimination
   assertExists(validResult.ok, "Result should have 'ok' property");
@@ -68,7 +68,7 @@ Deno.test("LayerTypeFactory Architecture - Result Type Structure", () => {
   }
 
   // Test error result structure
-  const errorResult = LayerTypeFactory.fromString("");
+  const errorResult = LayerType.fromString("");
   assertEquals(errorResult.ok, false, "Empty input should return error result");
 
   if (!errorResult.ok) {
@@ -79,24 +79,24 @@ Deno.test("LayerTypeFactory Architecture - Result Type Structure", () => {
   }
 });
 
-Deno.test("LayerTypeFactory Architecture - Error Type Coverage", () => {
+Deno.test("LayerType Architecture - Error Type Coverage", () => {
   // Test that all error types can be produced
   const errorKinds = new Set<LayerTypeCreationError["kind"]>();
 
   // NullInput error
-  const nullResult = LayerTypeFactory.fromString(null);
+  const nullResult = LayerType.fromString(null);
   if (!nullResult.ok) errorKinds.add(nullResult.error.kind);
 
   // InvalidInput error
-  const invalidResult = LayerTypeFactory.fromString(123);
+  const invalidResult = LayerType.fromString(123);
   if (!invalidResult.ok) errorKinds.add(invalidResult.error.kind);
 
   // EmptyInput error
-  const emptyResult = LayerTypeFactory.fromString("");
+  const emptyResult = LayerType.fromString("");
   if (!emptyResult.ok) errorKinds.add(emptyResult.error.kind);
 
   // UnknownLayer error
-  const unknownResult = LayerTypeFactory.fromString("invalid_layer");
+  const unknownResult = LayerType.fromString("invalid_layer");
   if (!unknownResult.ok) errorKinds.add(unknownResult.error.kind);
 
   // Verify comprehensive error coverage
@@ -116,27 +116,27 @@ Deno.test("LayerTypeFactory Architecture - Error Type Coverage", () => {
   }
 });
 
-Deno.test("LayerTypeFactory Architecture - Factory Method Contracts", () => {
+Deno.test("LayerType Architecture - Factory Method Contracts", () => {
   // Test that factory methods honor their contracts
 
   // 1. fromString should accept unknown input and optional pattern
-  const result1 = LayerTypeFactory.fromString("project");
+  const result1 = LayerType.fromString("project");
   assertExists(result1, "fromString should return a result");
   assertEquals(typeof result1.ok, "boolean", "Result should have boolean ok property");
 
   // 2. isValidLayer should accept string and return boolean
-  const isValid = LayerTypeFactory.isValidLayer("project");
+  const isValid = LayerType.isValidLayer("project");
   assertEquals(typeof isValid, "boolean", "isValidLayer should return boolean");
 
-  // 3. getKnownLayers should return readonly array
-  const knownLayers = LayerTypeFactory.getKnownLayers();
-  assertEquals(Array.isArray(knownLayers), true, "getKnownLayers should return array");
+  // 3. getKnownLayerTypes should return readonly array
+  const knownLayers = LayerType.getKnownLayerTypes();
+  assertEquals(Array.isArray(knownLayers), true, "getKnownLayerTypes should return array");
   assertEquals(knownLayers.length > 0, true, "Should have at least one known layer");
 });
 
-Deno.test("LayerTypeFactory Architecture - Immutability Constraints", () => {
+Deno.test("LayerType Architecture - Immutability Constraints", () => {
   // Test that known layers cannot be modified
-  const knownLayers = LayerTypeFactory.getKnownLayers();
+  const knownLayers = LayerType.getKnownLayerTypes();
   const originalLength = knownLayers.length;
 
   // Attempt to modify the returned array should not affect internal state
@@ -148,15 +148,15 @@ Deno.test("LayerTypeFactory Architecture - Immutability Constraints", () => {
   }
 
   // Get fresh copy to verify immutability
-  const freshKnownLayers = LayerTypeFactory.getKnownLayers();
+  const freshKnownLayers = LayerType.getKnownLayerTypes();
   assertEquals(freshKnownLayers.length, originalLength, "Known layers should remain unchanged");
 });
 
-Deno.test("LayerTypeFactory Architecture - Factory Encapsulation", () => {
+Deno.test("LayerType Architecture - Factory Encapsulation", () => {
   // Test that factory properly encapsulates LayerType creation
 
   // Factory should not expose internal LayerType constructor directly
-  const result = LayerTypeFactory.fromString("project");
+  const result = LayerType.fromString("project");
 
   if (result.ok) {
     // Created instance should be proper LayerType

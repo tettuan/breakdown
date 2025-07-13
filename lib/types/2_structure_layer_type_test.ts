@@ -17,12 +17,12 @@ import type { TwoParams_Result } from "../deps.ts";
 // Test data setup
 const createValidTwoParamsResult = (
   layerType = "project",
-  demonstrativeType = "to",
+  directiveType = "to",
 ): TwoParams_Result => ({
   type: "two" as const,
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  params: [directiveType, layerType],
   options: {},
 });
 

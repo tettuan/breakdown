@@ -11,28 +11,43 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { ParameterValidator, type ValidatedParams } from "./parameter_validator.ts";
+import { ParameterValidatorV2 as ParameterValidator, type ValidatedParams, type ValidationError, type ConfigValidator } from "./parameter_validator_v2.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-import type { ConfigValidator } from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-import type { ValidationError } from "../types/unified_error_types.ts";
 
-import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // Mock TypePatternProvider for testing
 class MockTypePatternProvider implements TypePatternProvider {
-  private directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect|init)$");
-  private layerTypePattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
+  validateDirectiveType(value: string): boolean {
+    return /^(to|summary|defect|init)$/.test(value);
+  }
+
+  validateLayerType(value: string): boolean {
+    return /^(project|issue|task)$/.test(value);
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    return ["to", "summary", "defect", "init"];
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    return ["project", "issue", "task"];
+  }
 
   getDirectivePattern() {
-    return this.directivePattern;
+    return {
+      test: (value: string) => /^(to|summary|defect|init)$/.test(value),
+      getPattern: () => "^(to|summary|defect|init)$"
+    };
   }
 
   getLayerTypePattern() {
-    return this.layerTypePattern;
+    return {
+      test: (value: string) => /^(project|issue|task)$/.test(value),
+      getPattern: () => "^(project|issue|task)$"
+    };
   }
 }
 
@@ -55,8 +70,9 @@ class MockConfigValidator implements ConfigValidator {
 // Test fixtures
 const createValidTwoParamsResult = (): TwoParams_Result => ({
   type: "two",
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
+  demonstrativeType: "to",
   params: ["to", "project"],
   options: {
     fromFile: "input.md",
@@ -69,7 +85,7 @@ const createValidTwoParamsResult = (): TwoParams_Result => ({
 
 const createValidOneParamsResult = (): OneParamsResult => ({
   type: "one",
-  demonstrativeType: "project",
+  demonstrativeType: "init",
   params: ["project"],
   options: {
     fromFile: "input.md",
@@ -148,13 +164,13 @@ Deno.test("ParameterValidator: validateTwoParams - invalid params type returns e
   }
 });
 
-Deno.test("ParameterValidator: validateTwoParams - missing demonstrativeType returns error", () => {
+Deno.test("ParameterValidator: validateTwoParams - missing directiveType returns error", () => {
   const validator = new ParameterValidator(
     new MockTypePatternProvider(),
     new MockConfigValidator(),
   );
 
-  const invalidResult = { ...createValidTwoParamsResult(), demonstrativeType: "" };
+  const invalidResult = { ...createValidTwoParamsResult(), directiveType: "to" };
   const result = validator.validateTwoParams(invalidResult);
 
   assertEquals(result.ok, false);
@@ -163,7 +179,7 @@ Deno.test("ParameterValidator: validateTwoParams - missing demonstrativeType ret
     assertEquals(error.kind, "MissingRequiredField");
     // Double Type Guard Pattern
     if (error.kind === "MissingRequiredField") {
-      assertEquals(error.field, "demonstrativeType");
+      assertEquals(error.field, "directiveType");
       assertEquals(error.source, "TwoParams_Result");
     }
   }
@@ -195,7 +211,7 @@ Deno.test("ParameterValidator: validateTwoParams - invalid directive type return
     new MockConfigValidator(),
   );
 
-  const invalidResult = { ...createValidTwoParamsResult(), demonstrativeType: "invalid" };
+  const invalidResult = { ...createValidTwoParamsResult(), directiveType: "invalid" };
   const result = validator.validateTwoParams(invalidResult);
 
   assertEquals(result.ok, false);
@@ -655,6 +671,22 @@ Deno.test("ParameterValidator: error totality - all ValidationError kinds testab
 
 Deno.test("ParameterValidator: integration - pattern provider without patterns", () => {
   class EmptyPatternProvider implements TypePatternProvider {
+    validateDirectiveType(_value: string): boolean {
+      return false;
+    }
+
+    validateLayerType(_value: string): boolean {
+      return false;
+    }
+
+    getValidDirectiveTypes(): readonly string[] {
+      return [];
+    }
+
+    getValidLayerTypes(): readonly string[] {
+      return [];
+    }
+
     getDirectivePattern() {
       return null;
     }

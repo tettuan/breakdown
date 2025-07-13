@@ -24,6 +24,8 @@ import type { ProcessedVariables } from "../../processor/variable_processor_v2.t
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";
+import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
+import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 
 // ============================================================================
 // Domain Value Objects - Type-safe prompt generation entities
@@ -103,8 +105,12 @@ export type PromptGeneratorError =
  * Validated parameters from upstream validator
  */
 export interface ValidatedParams {
-  readonly demonstrativeType: string;
-  readonly layerType: string;
+  readonly directive: DirectiveType;
+  readonly layer: LayerType;
+  // Legacy compatibility properties
+  readonly directiveType: string;  // Alias for directive.value
+  readonly layerType: string;          // Alias for layer.value
+  readonly params: string[];           // For legacy array access
 }
 
 // ============================================================================
@@ -305,10 +311,10 @@ export class TwoParamsPromptGenerator {
     options: Record<string, unknown>,
   ): Result<GenerationContext, PromptGeneratorError> {
     // Validate parameters
-    if (!params.demonstrativeType || !params.layerType) {
+    if (!params.directive || !params.layer) {
       return error({
         kind: "InvalidContext",
-        message: "Invalid parameters: demonstrativeType and layerType are required",
+        message: "Invalid parameters: directive and layer are required",
         details: params,
       });
     }
@@ -380,8 +386,8 @@ export class TwoParamsPromptGenerator {
     const { params, configuration, variables, options } = context;
 
     return {
-      demonstrativeType: params.demonstrativeType,
-      layerType: params.layerType,
+      directiveType: params.directive.value,
+      layerType: params.layer.value,
       options: {
         fromFile: (options.from as string) || (options.fromFile as string),
         destinationFile: (options.destination as string) || (options.output as string) ||

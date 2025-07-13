@@ -50,8 +50,8 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
   // 内部依存の検証（types層とdomain層への依存のみ許可）
   const allowedInternalPaths = [
     "../types/type_factory.ts",
-    "../types/directive_type.ts",
-    "../types/layer_type.ts",
+    "../domain/core/value_objects/directive_type.ts",
+    "../domain/core/value_objects/layer_type.ts",
     "../types/result.ts",
     "../types/unified_error_types.ts",
     "../domain/core/value_objects/directive_type.ts",

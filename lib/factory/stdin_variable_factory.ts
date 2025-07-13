@@ -9,7 +9,7 @@
  */
 
 import { error, ok, Result } from "../types/result.ts";
-import { StdinVariable } from "../types/prompt_variables.ts";
+import { StdinVariable } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
 import type { ErrorInfo } from "@tettuan/breakdownparams";
 
@@ -104,7 +104,10 @@ export class StdinVariableFactory {
 
     if (!result.ok) {
       // Convert StdinVariable error to factory error
-      return error(result.error);
+      return error({
+        kind: "NoStdinData",
+        context: `StdinVariable creation failed: ${result.error.kind}`
+      });
     }
 
     return ok(result.data);

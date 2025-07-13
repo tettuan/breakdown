@@ -35,7 +35,7 @@ export class ConfigError extends Error {
  * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
  */
 export interface ParamsConfig {
-  demonstrativeType: {
+  directiveType: {
     pattern: string;
     errorMessage: string;
   };
@@ -56,9 +56,9 @@ export interface ParamsConfig {
  *   breakdown: {
  *     params: {
  *       two: {
- *         demonstrativeType: {
+ *         directiveType: {
  *           pattern: "^(custom|test)$",
- *           errorMessage: "Custom demonstrative error"
+ *           errorMessage: "Custom directive error"
  *         }
  *         // layerType will use DEFAULT_CUSTOM_CONFIG values
  *       }
@@ -171,15 +171,15 @@ export class ParamsCustomConfig {
         const two = params.two as Record<string, unknown>;
         const paramsOverride: Partial<ParamsConfig> = {};
 
-        // Override demonstrativeType if provided
-        if (two.demonstrativeType && typeof two.demonstrativeType === "object") {
-          const demo = two.demonstrativeType as Record<string, unknown>;
+        // Override directiveType if provided
+        if (two.directiveType && typeof two.directiveType === "object") {
+          const demo = two.directiveType as Record<string, unknown>;
           if (typeof demo.pattern === "string") {
-            paramsOverride.demonstrativeType = {
+            paramsOverride.directiveType = {
               pattern: demo.pattern,
               errorMessage: typeof demo.errorMessage === "string"
                 ? demo.errorMessage
-                : `Invalid demonstrative type. Must match pattern: ${demo.pattern}`,
+                : `Invalid directive type. Must match pattern: ${demo.pattern}`,
             };
           }
         }

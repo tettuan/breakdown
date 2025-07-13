@@ -25,7 +25,7 @@ import {
   type MigrationError,
   type MigrationResult,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams, PromptVariables } from "../types/prompt_variables.ts";
+import type { PromptCliParams, PromptVariables } from "../types/prompt_variables_vo.ts";
 import { PromptPath } from "../types/prompt_types.ts";
 
 Deno.test("MigrationError structure - conforms to defined interface contract", () => {

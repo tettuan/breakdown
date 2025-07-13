@@ -7,7 +7,7 @@
 
 import { assert, assertEquals, assertExists } from "../../../tests/deps.ts";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import { TwoParamsDirectivePattern } from "../directive_type.ts";
+import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../../domain/core/value_objects/layer_type.ts";
 
 /**

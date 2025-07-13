@@ -49,7 +49,7 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // Create basic default-app.yml config file using dynamic values from BreakdownParams
   // Extract demonstrative types from default configuration
-  const demonstrativeTypes = defaultConfig.params?.two?.directiveType?.pattern
+  const directiveTypes = defaultConfig.params?.two?.directiveType?.pattern
     ?.match(/\^?\((.*?)\)\$?/)?.[1]
     ?.split("|") || ["to", "summary", "defect"];
   
@@ -62,8 +62,8 @@ app_schema:
   base_dir: ".agent/breakdown/schema"
 params:
   two:
-    demonstrativeType:
-      pattern: "^(${demonstrativeTypes.join("|")})$"
+    directiveType:
+      pattern: "^(${directiveTypes.join("|")})$"
     layerType:
       pattern: "^(${layerTypes.join("|")})$"
 workspace:

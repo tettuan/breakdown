@@ -19,8 +19,9 @@ import type { TwoParams_Result } from "../../deps.ts";
 // Test fixtures
 const createMockTwoParamsResult = (directive: string, layer: string): TwoParams_Result => ({
   type: "two",
-  demonstrativeType: directive,
+  directiveType: directive,
   layerType: layer,
+  demonstrativeType: directive,
   options: {},
   params: [directive, layer],
 });

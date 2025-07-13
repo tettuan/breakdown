@@ -257,6 +257,8 @@ export {
 // Layer Type Value Object
 export {
   LayerType,
+  LayerTypeFactory,
+  TwoParamsLayerTypePattern,
   type LayerTypeError,
 } from "./layer_type.ts";
 

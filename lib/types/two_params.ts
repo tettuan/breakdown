@@ -146,7 +146,7 @@ export class TwoParamsType {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "result",
         value: result,
-        reason: "Invalid TwoParams_Result: must have required fields (type, params, demonstrativeType, layerType)",
+        reason: "Invalid TwoParams_Result: must have required fields (type, params, directiveType, layerType)",
       }));
     }
 
@@ -159,10 +159,10 @@ export class TwoParamsType {
       }));
     }
 
-    // demonstrativeType validation
-    if (!result.demonstrativeType || typeof result.demonstrativeType !== "string") {
+    // directiveType validation
+    if (!result.directiveType || typeof result.directiveType !== "string") {
       return error(ErrorFactory.validationError("MissingRequiredField", {
-        field: "demonstrativeType",
+        field: "directiveType",
         source: "TwoParams_Result",
       }));
     }
@@ -192,15 +192,15 @@ export class TwoParamsType {
     }
 
     // params consistency validation
-    if (result.params[0] !== result.demonstrativeType || result.params[1] !== result.layerType) {
+    if (result.params[0] !== result.directiveType || result.params[1] !== result.layerType) {
       return error(ErrorFactory.validationError("ValidationFailed", {
-        errors: ["params array must match demonstrativeType and layerType"],
+        errors: ["params array must match directiveType and layerType"],
       }));
     }
 
     // Success: create TwoParamsType instance
     return ok(new TwoParamsType(
-      result.demonstrativeType,
+      result.directiveType,
       result.layerType,
       [...result.params], // Create immutable copy
       result.options || {},

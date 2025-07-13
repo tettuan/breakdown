@@ -27,8 +27,8 @@ export type VariableGenerationErrorKind =
  * Thrown when prompt variable generation fails
  */
 export class VariableGenerationError extends BaseBreakdownError {
-  readonly domain = "variable-generation" as const;
-  readonly kind: VariableGenerationErrorKind;
+  override readonly domain = "variable-generation" as const;
+  override readonly kind: VariableGenerationErrorKind;
 
   constructor(
     kind: VariableGenerationErrorKind,
@@ -48,8 +48,11 @@ export class VariableGenerationError extends BaseBreakdownError {
       };
     }
   ) {
-    super(message, options);
+    super(message, "variable-generation", kind, options?.context);
     this.kind = kind;
+    if (options?.cause) {
+      this.cause = options.cause;
+    }
   }
 
   /**
@@ -204,7 +207,7 @@ export class VariableGenerationError extends BaseBreakdownError {
    * Get user-friendly error message
    */
   override getUserMessage(): string {
-    const base = super.getUserMessage();
+    const base = this.message;
     
     // Add helpful context for common errors
     switch (this.kind) {
@@ -245,50 +248,50 @@ export class VariableGenerationError extends BaseBreakdownError {
   /**
    * Get specific recovery suggestions
    */
-  getRecoverySuggestions(): string[] {
-    const suggestions: string[] = [];
+  getRecoverySuggestions(): { action: string; description: string; command?: string }[] {
+    const suggestions: { action: string; description: string; command?: string }[] = [];
 
     switch (this.kind) {
       case "variable-missing-required":
         if (this.context?.missingVariables && Array.isArray(this.context.missingVariables)) {
-          suggestions.push("Provide missing variables using one of:");
-          suggestions.push("  - Command line: --var name=value");
-          suggestions.push("  - Input file: --input data.json");
-          suggestions.push("  - Configuration file");
-          suggestions.push(`Missing: ${this.context.missingVariables.join(', ')}`);
+          suggestions.push({ action: "provide-variables", description: "Provide missing variables using one of:" });
+          suggestions.push({ action: "use-cli", description: "Command line", command: "--var name=value" });
+          suggestions.push({ action: "use-input-file", description: "Input file", command: "--input data.json" });
+          suggestions.push({ action: "use-config", description: "Configuration file" });
+          suggestions.push({ action: "missing-list", description: `Missing: ${this.context.missingVariables.join(', ')}` });
         }
         break;
       case "variable-invalid-type":
-        suggestions.push(`Convert '${this.context?.variableName}' to ${this.context?.expected}`);
+        suggestions.push({ action: "convert-type", description: `Convert '${this.context?.variableName}' to ${this.context?.expected}` });
         if (this.context?.expected === "array") {
-          suggestions.push("Example: [\"item1\", \"item2\", \"item3\"]");
+          suggestions.push({ action: "array-example", description: "Example: [\"item1\", \"item2\", \"item3\"]" });
         } else if (this.context?.expected === "object") {
-          suggestions.push('Example: {"key": "value"}');
+          suggestions.push({ action: "object-example", description: 'Example: {"key": "value"}' });
         }
         break;
       case "variable-validation-failed":
-        suggestions.push(`Check the value of '${this.context?.variableName}'`);
-        suggestions.push("Ensure it meets validation requirements");
+        suggestions.push({ action: "check-value", description: `Check the value of '${this.context?.variableName}'` });
+        suggestions.push({ action: "check-requirements", description: "Ensure it meets validation requirements" });
         break;
       case "variable-transformation-failed":
-        suggestions.push("Check the transformation pipeline");
-        suggestions.push(`Failed at step: ${this.context?.transformationStep}`);
+        suggestions.push({ action: "check-pipeline", description: "Check the transformation pipeline" });
+        suggestions.push({ action: "check-step", description: `Failed at step: ${this.context?.transformationStep}` });
         break;
       case "variable-merge-conflict":
         if (this.context?.conflictingVariables) {
-          suggestions.push("Resolve conflicts by:");
-          suggestions.push("  - Using explicit priority: CLI > stdin > config");
-          suggestions.push("  - Removing duplicate sources");
-          suggestions.push("  - Using different variable names");
+          suggestions.push({ action: "resolve-conflicts", description: "Resolve conflicts by:" });
+          suggestions.push({ action: "use-priority", description: "Using explicit priority: CLI > stdin > config" });
+          suggestions.push({ action: "remove-duplicates", description: "Removing duplicate sources" });
+          suggestions.push({ action: "use-different-names", description: "Using different variable names" });
         }
         break;
       case "variable-schema-mismatch":
-        suggestions.push("Validate your data against the schema");
-        suggestions.push(`Schema location: ${this.context?.schemaPath}`);
+        suggestions.push({ action: "validate-schema", description: "Validate your data against the schema" });
+        suggestions.push({ action: "check-schema-location", description: `Schema location: ${this.context?.schemaPath}` });
         break;
       case "variable-reference-error":
-        suggestions.push(`Define the referenced variable: ${this.context?.variableValue}`);
-        suggestions.push("Check for circular references");
+        suggestions.push({ action: "define-reference", description: `Define the referenced variable: ${this.context?.variableValue}` });
+        suggestions.push({ action: "check-circular", description: "Check for circular references" });
         break;
     }
 

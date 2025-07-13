@@ -13,21 +13,28 @@
 import { isAbsolute, resolve } from "@std/path";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { ConfigProfileName } from "../types/config_profile_name.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParamsResult = PromptCliParams;
 
-// Type interfaces for better type safety
+// Type interfaces unified with Worker1 template pattern
 interface DirectiveValueObject {
-  value: string;
-  [key: string]: unknown;
+  readonly value: string;
+  readonly profile?: ConfigProfileName;
+  readonly validatedByPattern?: boolean;
+  equals?(other: DirectiveValueObject): boolean;
+  toString?(): string;
 }
 
 interface LayerValueObject {
-  value: string;
-  [key: string]: unknown;
+  readonly value: string;
+  readonly profile?: ConfigProfileName;
+  readonly validatedByPattern?: boolean;
+  equals?(other: LayerValueObject): boolean;
+  toString?(): string;
 }
 
 interface TotalityPromptCliParams extends PromptCliParams {
@@ -37,7 +44,7 @@ interface TotalityPromptCliParams extends PromptCliParams {
 }
 
 interface LegacyPromptCliParams {
-  demonstrativeType: string;
+  directiveType: string;
   layerType: string;
   options?: Record<string, unknown>;
 }
@@ -245,8 +252,8 @@ export class InputFilePathResolverTotality {
     const hasLegacyProps = (p: unknown): p is LegacyPromptCliParams => {
       if (!p || typeof p !== "object" || Array.isArray(p)) return false;
       const obj = p as Record<string, unknown>;
-      return "demonstrativeType" in obj && "layerType" in obj &&
-        typeof obj.demonstrativeType === "string" && typeof obj.layerType === "string";
+      return "directiveType" in obj && "layerType" in obj &&
+        typeof obj.directiveType === "string" && typeof obj.layerType === "string";
     };
 
     // Check for TwoParams_Result structure
@@ -293,9 +300,10 @@ export class InputFilePathResolverTotality {
       // TotalityPromptCliParams structure
       const totalityParams = cliParams as unknown as TotalityPromptCliParams;
       const copy: PromptCliParams = {
-        demonstrativeType: totalityParams.demonstrativeType || totalityParams.directive?.value ||
+        directiveType: totalityParams.directiveType || totalityParams.directive?.value ||
           "",
         layerType: totalityParams.layerType || totalityParams.layer?.value || "",
+        demonstrativeType: totalityParams.demonstrativeType || totalityParams.directive?.value || "",
         options: { ...totalityParams.options },
       };
       return copy;
@@ -305,8 +313,9 @@ export class InputFilePathResolverTotality {
       const copy: TwoParams_Result = {
         type: "two",
         params: twoParams.params ? [...twoParams.params] : [],
+        directiveType: twoParams.params?.[0] || "",
+        layerType: twoParams.params?.[1] || "",
         demonstrativeType: twoParams.demonstrativeType || "",
-        layerType: twoParams.layerType || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -314,8 +323,9 @@ export class InputFilePathResolverTotality {
       // DoubleParamsResult (PromptCliParams)
       const doubleParams = cliParams as DoubleParamsResult;
       const copy: PromptCliParams = {
-        demonstrativeType: doubleParams.demonstrativeType,
+        directiveType: doubleParams.directiveType,
         layerType: doubleParams.layerType,
+        demonstrativeType: doubleParams.demonstrativeType || doubleParams.directiveType,
         options: doubleParams.options ? { ...doubleParams.options } : {},
       };
 

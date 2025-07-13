@@ -36,6 +36,10 @@ import type { DirectiveType, LayerType } from "../../types/mod.ts";
 
 // Create a mock TypePatternProvider for tests
 const mockTypePatternProvider = {
+  validateDirectiveType: (value: string) => ["to", "summary", "defect"].includes(value),
+  validateLayerType: (value: string) => ["task", "project", "issue"].includes(value),
+  getValidDirectiveTypes: () => ["to", "summary", "defect"],
+  getValidLayerTypes: () => ["task", "project", "issue"],
   getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary|defect"),
   getLayerTypePattern: () => TwoParamsLayerTypePattern.create("task|project|issue"),
 };
@@ -172,10 +176,19 @@ Deno.test("PromptGenerationService - Structure - Dependencies structure validati
 });
 
 Deno.test("PromptGenerationService - Structure - CommandResult conversion structure", () => {
+  // Create proper DirectiveType and LayerType instances
+  const typeFactory = new TypeFactory(mockTypePatternProvider);
+  const directiveResult = typeFactory.createDirectiveType("to");
+  const layerResult = typeFactory.createLayerType("task");
+
+  if (!directiveResult.ok || !layerResult.ok) {
+    throw new Error("Failed to create test types");
+  }
+
   // Create mock template path for testing
   const mockTemplatePathResult = TemplatePath.create(
-    { getValue: () => "to" } as DirectiveType,
-    { getValue: () => "task" } as LayerType,
+    directiveResult.data,
+    layerResult.data,
     "test.md",
   );
 

@@ -23,7 +23,7 @@ import {
 } from "./parameter_validator_v2.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import { DirectiveType, LayerType } from "../types/mod.ts";
 import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
 
@@ -61,7 +61,7 @@ function createMockConfigValidator(): ConfigValidator {
 
 Deno.test("2_structure - ValidatedParams maintains hierarchical data integrity", () => {
   const result = createTwoParamsResult("to", "project");
-  const directiveResult = DirectiveType.create(result.demonstrativeType);
+  const directiveResult = DirectiveType.create(result.directiveType);
   const layerResult = LayerType.create(result.layerType);
   
   if (!directiveResult.ok || !layerResult.ok) {

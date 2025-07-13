@@ -14,15 +14,15 @@
 import { assert, assertEquals, assertThrows } from "../deps.ts";
 import {
   formatSchemaError,
-  formatSchemaFilePathError,
-  isConfigurationError,
-  isFileSystemError,
+  formatSchemaError as formatSchemaFilePathError,
+  // isConfigurationError,
+  // isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
   type SchemaFilePathError,
   SchemaFilePathResolver,
   SchemaPath,
-} from "./schema_file_path_resolver.ts";
+} from "./schema_file_path_resolver_totality.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 
@@ -30,7 +30,7 @@ Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces vali
   // Valid inputs should create instance
   const validConfig = { app_schema: { base_dir: "/valid/path" } };
   const validParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -63,10 +63,10 @@ Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces vali
     [],
     "string",
     123,
-    { demonstrativeType: "", layerType: "project", options: {} },
-    { demonstrativeType: "to", layerType: "", options: {} },
-    { demonstrativeType: "  ", layerType: "project", options: {} },
-    { demonstrativeType: "to", layerType: "  ", options: {} },
+    { directiveType: "", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "", options: {} },
+    { directiveType: "  ", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "  ", options: {} },
   ];
 
   for (const params of invalidParams) {
@@ -88,7 +88,7 @@ Deno.test("SchemaFilePathResolver Architecture - Private constructor cannot be a
   // TypeScript compiler prevents direct instantiation
   const validConfig = { app_schema: { base_dir: "/valid/path" } };
   const validParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -102,7 +102,7 @@ Deno.test("SchemaFilePathResolver Architecture - Private constructor cannot be a
 Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy", () => {
   const mutableConfig = { app_schema: { base_dir: "/original/path" } };
   const mutableParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "test.txt" },
   };
@@ -116,7 +116,7 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
 
   // Modify original objects
   mutableConfig.app_schema.base_dir = "/modified/path";
-  mutableParams.demonstrativeType = "summary";
+  mutableParams.directiveType = "summary";
   mutableParams.layerType = "issue";
   mutableParams.options.fromFile = "modified.txt";
 
@@ -132,7 +132,7 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
 Deno.test("SchemaFilePathResolver Architecture - Result type totality (no exceptions)", () => {
   const config = { app_schema: { base_dir: "/test/path" } };
   const params = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -163,7 +163,7 @@ Deno.test("SchemaFilePathResolver Architecture - SchemaPath value object immutab
   const path = "/test/schema/path.md";
   const metadata = {
     baseDir: "/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     fileName: "base.schema.md",
   };
@@ -188,7 +188,7 @@ Deno.test("SchemaFilePathResolver Architecture - SchemaPath value object immutab
 Deno.test("SchemaFilePathResolver Architecture - Error discrimination with type guards", () => {
   const errors: SchemaFilePathError[] = [
     { kind: "SchemaNotFound", message: "test", path: "/test" },
-    { kind: "InvalidParameters", message: "test", demonstrativeType: "to", layerType: "project" },
+    { kind: "InvalidParameters", message: "test", directiveType: "to", layerType: "project" },
     { kind: "ConfigurationError", message: "test", setting: "base_dir" },
     { kind: "FileSystemError", message: "test", operation: "read" },
   ];
@@ -217,17 +217,17 @@ Deno.test("SchemaFilePathResolver Architecture - PathResolutionError conversion 
   const pathErrors: PathResolutionError[] = [
     { kind: "InvalidConfiguration", details: "test" },
     { kind: "BaseDirectoryNotFound", path: "/test" },
-    { kind: "InvalidParameterCombination", demonstrativeType: "to", layerType: "project" },
+    { kind: "InvalidParameterCombination", directiveType: "to", layerType: "project" },
     { kind: "TemplateNotFound", attempted: ["/test"], fallback: "none" },
     { kind: "InvalidStrategy", strategy: "test" },
     { kind: "EmptyBaseDir" },
     { kind: "InvalidPath", path: "/test", reason: "invalid" },
     { kind: "NoValidFallback", attempts: ["/test1", "/test2"] },
-    { kind: "ValidationFailed", rule: "must-exist", path: "/test" },
+    { kind: "PathValidationFailed", rule: "must-exist", path: "/test" },
   ];
 
   const config = { app_schema: { base_dir: "/test" } };
-  const params = { demonstrativeType: "to", layerType: "project", options: {} };
+  const params = { directiveType: "to", layerType: "project", options: {} };
 
   const result = SchemaFilePathResolver.create(config, params);
   assert(result.ok);
@@ -244,7 +244,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
 
   // Test with legacy DoubleParams_Result structure
   const legacyParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "test.txt" },
   };
@@ -256,7 +256,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
   const newParams = {
     type: "two" as const,
     params: ["to", "project"],
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -287,7 +287,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
 
 Deno.test("SchemaFilePathResolver Architecture - Domain boundaries respected", () => {
   const config = { app_schema: { base_dir: "/test" } };
-  const params = { demonstrativeType: "to", layerType: "project", options: {} };
+  const params = { directiveType: "to", layerType: "project", options: {} };
 
   const result = SchemaFilePathResolver.create(config, params);
   assert(result.ok);
@@ -316,7 +316,7 @@ Deno.test("SchemaFilePathResolver Architecture - Exhaustive error handling", () 
   }> = [
     {
       config: null,
-      params: { demonstrativeType: "to", layerType: "project", options: {} },
+      params: { directiveType: "to", layerType: "project", options: {} },
       expectedError: "InvalidConfiguration",
     },
     {
@@ -326,12 +326,12 @@ Deno.test("SchemaFilePathResolver Architecture - Exhaustive error handling", () 
     },
     {
       config: { app_schema: { base_dir: "/test" } },
-      params: { demonstrativeType: "", layerType: "project", options: {} },
+      params: { directiveType: "", layerType: "project", options: {} },
       expectedError: "InvalidParameterCombination",
     },
     {
       config: { app_schema: { base_dir: "/test" } },
-      params: { demonstrativeType: "to", layerType: "", options: {} },
+      params: { directiveType: "to", layerType: "", options: {} },
       expectedError: "InvalidParameterCombination",
     },
   ];

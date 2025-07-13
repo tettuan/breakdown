@@ -31,8 +31,9 @@ import type { TwoParams_Result } from "../../deps.ts";
 function createMockDirectiveType(value: string): DirectiveType {
   const mockResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: value,
+    directiveType: value,
     layerType: "project",
+    demonstrativeType: value,
     options: {},
     params: [value, "project"],
   };
@@ -42,8 +43,9 @@ function createMockDirectiveType(value: string): DirectiveType {
 function createMockLayerType(value: string): LayerType {
   const mockResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: value,
+    demonstrativeType: "to",
     options: {},
     params: ["to", value],
   };

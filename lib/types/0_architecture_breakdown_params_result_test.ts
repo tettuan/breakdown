@@ -28,7 +28,7 @@ Deno.test("0_architecture: BreakdownParamsResult follows domain boundary rules",
 
   const mockData: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -61,7 +61,7 @@ Deno.test("0_architecture: BreakdownParamsResult enforces Discriminated Union pa
 
   const mockData: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
     options: {},
@@ -95,21 +95,21 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
   const testData: TwoParams_Result[] = [
     {
       type: "two",
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
     },
     {
       type: "two",
-      demonstrativeType: "",
+      directiveType: "",
       layerType: "",
       params: ["", ""],
       options: {},
     },
     {
       type: "two",
-      demonstrativeType: "custom_with_long_name",
+      directiveType: "custom_with_long_name",
       layerType: "custom_layer",
       params: ["custom_with_long_name", "custom_layer"],
       options: { complex: { nested: { data: true } } },
@@ -145,7 +145,7 @@ Deno.test("0_architecture: Pattern matching ensures exhaustiveness", () => {
 
   const mockData: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "analyze",
+    directiveType: "analyze",
     layerType: "module",
     params: ["analyze", "module"],
     options: {},
@@ -159,7 +159,7 @@ Deno.test("0_architecture: Pattern matching ensures exhaustiveness", () => {
   // All cases must be handled
   for (const result of results) {
     const output = match(result, {
-      success: (data) => `Success: ${data.demonstrativeType}`,
+      success: (data) => `Success: ${data.directiveType}`,
       failure: (error) => `Failure: ${error.message}`,
     });
 
@@ -176,7 +176,7 @@ Deno.test("0_architecture: BreakdownParamsResult maintains immutability", () => 
 
   const mockData: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "transform",
+    directiveType: "transform",
     layerType: "service",
     params: ["transform", "service"],
     options: { verbose: true },

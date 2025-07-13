@@ -132,12 +132,17 @@ export async function runBreakdown(
       const error = breakdownConfigResult.error;
       let errorMessage: string;
       
-      if (error.kind === "InvalidPath" && "reason" in error) {
-        errorMessage = error.reason;
-      } else if ("message" in error) {
-        errorMessage = error.message;
+      if (error && typeof error === "object" && "kind" in error) {
+        const errorObj = error as { kind: string; reason?: string; message?: string };
+        if (errorObj.kind === "InvalidPath" && "reason" in errorObj) {
+          errorMessage = (errorObj as { reason: string }).reason;
+        } else if ("message" in errorObj) {
+          errorMessage = (errorObj as { message: string }).message;
+        } else {
+          errorMessage = errorObj.kind;
+        }
       } else {
-        errorMessage = error.kind;
+        errorMessage = "Unknown configuration error";
       }
       
       console.warn(

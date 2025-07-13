@@ -7,4 +7,8 @@
  * @module domain/core/aggregates/two_params
  */
 
-export { TwoParams, type TwoParamsValidationError, type PathConfig } from "./two_params_optimized.ts";
+export {
+  type PathConfig,
+  TwoParams,
+  type TwoParamsValidationError,
+} from "./two_params_optimized.ts";

@@ -47,7 +47,7 @@ const testConfig: TestConfig = {
  */
 function createValidCliParams(): PromptCliParams {
   return {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {
       fromFile: "input.md",
@@ -62,7 +62,7 @@ function createValidCliParams(): PromptCliParams {
  */
 function createExtendedCliParams(): PromptCliParams {
   return {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "project",
     options: {
       fromFile: "project.md",

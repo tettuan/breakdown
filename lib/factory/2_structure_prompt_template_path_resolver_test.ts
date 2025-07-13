@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -22,7 +22,7 @@ const validConfig = {
 };
 
 const validParams: PromptCliParams = {
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
   options: {},
 };
@@ -115,7 +115,7 @@ Deno.test("2_structure: value object pattern for result", () => {
 
       // Metadata should have expected structure
       assertExists(promptPath.metadata.baseDir);
-      assertExists(promptPath.metadata.demonstrativeType);
+      assertExists(promptPath.metadata.directiveType);
       assertExists(promptPath.metadata.layerType);
       assertExists(promptPath.metadata.fromLayerType);
       assertExists(promptPath.metadata.attemptedPaths);
@@ -257,7 +257,7 @@ Deno.test("2_structure: consistent error handling", () => {
         "EmptyBaseDir",
         "InvalidPath",
         "NoValidFallback",
-        "ValidationFailed",
+        "PathValidationFailed",
         "InvalidConfiguration",
         "BaseDirectoryNotFound",
         "InvalidParameterCombination",

@@ -245,8 +245,7 @@ Deno.test("2_structure: ConfigurationError discriminated union has correct varia
     },
     {
       kind: "InvalidConfiguration",
-      field: "database.port",
-      reason: "Port out of range",
+      details: "database.port: Port out of range",
     },
   ];
 
@@ -268,10 +267,11 @@ Deno.test("2_structure: ConfigurationError discriminated union has correct varia
         assertEquals("reason" in error, false);
         break;
       case "InvalidConfiguration":
-        assertExists(error.field);
-        assertExists(error.reason);
+        assertExists(error.details);
         assertEquals("message" in error, false);
         assertEquals("profile" in error, false);
+        assertEquals("field" in error, false);
+        assertEquals("reason" in error, false);
         break;
     }
   }
@@ -605,6 +605,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "DirectoryNotFound":
       case "PermissionDenied":
       case "PathTooLong":
+      case "BaseDirectoryNotFound":
         return "path";
 
       // ValidationError
@@ -616,6 +617,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "InvalidDirectiveType":
       case "InvalidLayerType":
       case "PathValidationFailed":
+      case "ValidationPathFailed":
       case "CustomVariableInvalid":
       case "ConfigValidationFailed":
       case "UnsupportedParamsType":

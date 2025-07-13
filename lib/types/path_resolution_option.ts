@@ -9,7 +9,7 @@
  */
 
 import { error, ok, Result } from "./result.ts";
-import type { PathError, PathValidationRule } from "./unified_error_types.ts";
+import type { PathError, PathValidationRule, ConfigurationError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
@@ -21,11 +21,11 @@ export type PathResolutionStrategy = "absolute" | "relative" | "workspace";
  * Error types for path resolution - unified with PathError from unified_error_types.ts
  * Extends PathError to include resolution-specific error types
  */
-export type PathResolutionError = PathError |
+export type PathResolutionError = PathError | ConfigurationError |
   { kind: "InvalidStrategy"; strategy: string; context?: Record<string, unknown> } |
   { kind: "EmptyBaseDir"; context?: Record<string, unknown> } |
   { kind: "NoValidFallback"; attempts: string[]; context?: Record<string, unknown> } |
-  { kind: "InvalidParameterCombination"; demonstrativeType: string; layerType: string; context?: Record<string, unknown> } |
+  { kind: "InvalidParameterCombination"; directiveType: string; layerType: string; context?: Record<string, unknown> } |
   { kind: "TemplateNotFound"; attempted: string[]; fallback?: string; context?: Record<string, unknown> };
 
 /**

@@ -23,7 +23,7 @@ import type { Result as _Result } from "../types/result.ts";
 interface ProcessorArchitecture {
   [key: string]: unknown;
 }
-import type { PromptVariable as _PromptVariable } from "../types/prompt_variables.ts";
+import type { PromptVariable as _PromptVariable } from "../types/prompt_variables_vo.ts";
 
 /**
  * Architecture constraints for Variable Processor
@@ -72,13 +72,11 @@ Deno.test("Architecture: Variable Processor should have consistent error types",
   // This test ensures error types are defined correctly
   // by checking they can be used in type annotations
   const testError: VariableProcessorError = {
-    kind: "InvalidOption",
-    key: "test",
-    value: null,
-    reason: "test",
+    kind: "CustomVariableError",
+    error: "test error"
   };
 
-  assertEquals(testError.kind, "InvalidOption");
+  assertEquals(testError.kind, "CustomVariableError");
 });
 
 Deno.test("Architecture: Variable Processor should have consistent interface", () => {
@@ -141,7 +139,7 @@ Deno.test("Architecture: Variable Processor should use dependency injection patt
   const _processor = new TwoParamsVariableProcessor();
 
   // Should be able to process without requiring external configuration
-  const result = _processor.extractCustomVariables({
+  const result = _processor.extractVariables({
     "uv-test": "value",
   });
 
@@ -155,7 +153,7 @@ Deno.test("Architecture: Variable Processor should maintain interface consistenc
   const _processor = new TwoParamsVariableProcessor();
 
   // Process method is synchronous and returns Result<T, E>
-  const processResult = _processor.process({
+  const processResult = _processor.processAllVariables({
     options: {},
     stdinContent: "test",
   });

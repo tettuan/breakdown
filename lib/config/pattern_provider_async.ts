@@ -11,7 +11,7 @@
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 
 /**

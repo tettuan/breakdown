@@ -28,8 +28,8 @@ export type ConfigErrorKind =
  * Thrown when configuration operations fail
  */
 export class ConfigError extends BaseBreakdownError {
-  readonly domain = "config" as const;
-  readonly kind: ConfigErrorKind;
+  override readonly domain = "config" as const;
+  override readonly kind: ConfigErrorKind;
 
   constructor(
     kind: ConfigErrorKind,
@@ -50,8 +50,11 @@ export class ConfigError extends BaseBreakdownError {
       };
     }
   ) {
-    super(message, options);
+    super(message, "config", kind, options?.context);
     this.kind = kind;
+    if (options?.cause) {
+      this.cause = options.cause;
+    }
   }
 
   /**
@@ -210,9 +213,9 @@ export class ConfigError extends BaseBreakdownError {
    * Get user-friendly error message
    */
   override getUserMessage(): string {
-    const base = super.getUserMessage();
+    const base = this.message;
     
-    // Add helpful context for common errors
+    // Add helpful context for all error types (Totality principle)
     switch (this.kind) {
       case "config-not-found":
         return `${base}\n\nRun 'breakdown init' to create a default configuration.`;
@@ -222,8 +225,16 @@ export class ConfigError extends BaseBreakdownError {
         return `${base}\n\nRefer to the documentation for valid configuration options.`;
       case "config-permission-denied":
         return `${base}\n\nCheck file permissions and ensure you have read access.`;
-      default:
-        return base;
+      case "config-missing-required":
+        return `${base}\n\nAdd the required fields to your configuration file.`;
+      case "config-type-mismatch":
+        return `${base}\n\nCheck the type of the configuration field and correct it.`;
+      case "config-io-error":
+        return `${base}\n\nCheck file system access and disk space availability.`;
+      case "profile-not-found":
+        return `${base}\n\nCheck available profiles or create the required profile configuration.`;
+      case "profile-invalid":
+        return `${base}\n\nValidate your profile configuration format and values.`;
     }
   }
 
@@ -242,8 +253,20 @@ export class ConfigError extends BaseBreakdownError {
       case "config-io-error":
         // Depends on the specific IO error
         return false;
-      default:
-        // Most config errors require manual intervention
+      case "config-invalid-format":
+        // Can be recovered by fixing YAML format
+        return true;
+      case "config-validation-failed":
+        // Can be recovered by fixing validation errors
+        return true;
+      case "config-type-mismatch":
+        // Can be recovered by correcting field types
+        return true;
+      case "profile-not-found":
+        // Can be recovered by creating profile or using existing one
+        return true;
+      case "profile-invalid":
+        // Can be recovered by fixing profile configuration
         return true;
     }
   }
@@ -251,44 +274,53 @@ export class ConfigError extends BaseBreakdownError {
   /**
    * Get specific recovery suggestions
    */
-  getRecoverySuggestions(): string[] {
-    const suggestions: string[] = [];
+  getRecoverySuggestions(): { action: string; description: string; command?: string }[] {
+    const suggestions: { action: string; description: string; command?: string }[] = [];
 
     switch (this.kind) {
       case "config-not-found":
-        suggestions.push("Run 'breakdown init' to create default configuration");
-        suggestions.push(`Create config file at: ${this.context?.configPath}`);
+        suggestions.push({ action: "init-config", description: "Create default configuration", command: "breakdown init" });
+        suggestions.push({ action: "create-file", description: `Create config file at: ${this.context?.configPath}` });
         break;
       case "config-invalid-format":
-        suggestions.push("Validate your YAML syntax using a YAML validator");
-        suggestions.push("Check for proper indentation and structure");
+        suggestions.push({ action: "validate-yaml", description: "Validate your YAML syntax using a YAML validator" });
+        suggestions.push({ action: "check-structure", description: "Check for proper indentation and structure" });
         break;
       case "config-validation-failed":
         if (this.context?.validationErrors && Array.isArray(this.context.validationErrors)) {
-          suggestions.push("Fix the following validation errors:");
+          suggestions.push({ action: "fix-validation", description: "Fix the following validation errors:" });
           this.context.validationErrors.forEach(e => {
-            suggestions.push(`  - ${e.field}: ${e.error}`);
+            suggestions.push({ action: "fix-field", description: `${e.field}: ${e.error}` });
           });
         }
         break;
       case "config-missing-required":
         if (this.context?.missingFields && Array.isArray(this.context.missingFields)) {
-          suggestions.push(`Add the missing fields: ${this.context.missingFields.join(', ')}`);
+          suggestions.push({ action: "add-fields", description: `Add the missing fields: ${this.context.missingFields.join(', ')}` });
         }
-        suggestions.push("Refer to example configuration in documentation");
+        suggestions.push({ action: "refer-docs", description: "Refer to example configuration in documentation" });
         break;
       case "config-type-mismatch":
-        suggestions.push(`Change '${this.context?.field}' to type: ${this.context?.expected}`);
+        suggestions.push({ action: "fix-type", description: `Change '${this.context?.field}' to type: ${this.context?.expected}` });
         break;
       case "config-permission-denied":
-        suggestions.push(`Check file permissions: chmod 644 ${this.context?.configPath}`);
-        suggestions.push("Ensure you have read access to the config directory");
+        suggestions.push({ action: "fix-permissions", description: "Check file permissions", command: `chmod 644 ${this.context?.configPath}` });
+        suggestions.push({ action: "check-access", description: "Ensure you have read access to the config directory" });
         break;
       case "profile-not-found":
-        suggestions.push("List available profiles: breakdown config list-profiles");
+        suggestions.push({ action: "list-profiles", description: "List available profiles", command: "breakdown config list-profiles" });
         if (this.context?.availableProfiles && Array.isArray(this.context.availableProfiles) && this.context.availableProfiles.length > 0) {
-          suggestions.push(`Available profiles: ${this.context.availableProfiles.join(', ')}`);
+          suggestions.push({ action: "use-available", description: `Available profiles: ${this.context.availableProfiles.join(', ')}` });
         }
+        break;
+      case "profile-invalid":
+        suggestions.push({ action: "validate-profile", description: "Validate profile configuration syntax" });
+        suggestions.push({ action: "check-profile-structure", description: "Check profile configuration structure against expected format" });
+        break;
+      case "config-io-error":
+        suggestions.push({ action: "check-disk-space", description: "Check available disk space" });
+        suggestions.push({ action: "verify-file-system", description: "Verify file system integrity" });
+        suggestions.push({ action: "retry-operation", description: "Retry the operation after a moment" });
         break;
     }
 
@@ -313,13 +345,58 @@ export class ConfigError extends BaseBreakdownError {
   - issue
   - task`;
         }
-        break;
+        return `# Example basic configuration
+directiveTypes:
+  - to
+  - summary
+layerTypes:
+  - project
+  - task`;
       case "config-type-mismatch":
         if (this.context?.field === "directiveTypes") {
           return `directiveTypes: ["to", "summary", "defect"]  # Must be an array`;
         }
-        break;
+        if (this.context?.field === "layerTypes") {
+          return `layerTypes: ["project", "issue", "task"]  # Must be an array`;
+        }
+        return `# Correct type example for field: ${this.context?.field}
+${this.context?.field}: ${this.context?.expected === "array" ? "[]" : this.context?.expected === "string" ? '""' : "value"}`;
+      case "config-invalid-format":
+        return `# Valid YAML configuration example
+directiveTypes:
+  - to
+  - summary
+layerTypes:
+  - project
+  - task`;
+      case "config-validation-failed":
+        return `# Valid configuration structure
+directiveTypes:
+  - to
+  - summary
+layerTypes:
+  - project
+  - task
+# Ensure proper indentation and no duplicate keys`;
+      case "profile-invalid":
+        return `# Valid profile configuration
+directiveTypes:
+  - to
+  - summary
+layerTypes:
+  - project
+  - task`;
+      case "config-not-found":
+      case "config-permission-denied":
+      case "config-io-error":
+      case "profile-not-found":
+        return `# Basic configuration template
+directiveTypes:
+  - to
+  - summary
+layerTypes:
+  - project
+  - task`;
     }
-    return undefined;
   }
 }

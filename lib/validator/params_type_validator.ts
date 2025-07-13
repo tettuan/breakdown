@@ -28,7 +28,7 @@ export interface ParamsResult {
   type: string;
   params?: string[];
   options?: Record<string, unknown>;
-  demonstrativeType?: string;
+  directiveType?: string;
   layerType?: string;
 }
 
@@ -37,7 +37,7 @@ export interface ParamsResult {
  */
 export interface ValidatedParamsType {
   type: "zero" | "one" | "two";
-  demonstrativeType: string;
+  directiveType: string;
   layerType: string;
   params: string[];
   options: Record<string, unknown>;
@@ -79,10 +79,10 @@ export class ParamsTypeValidator {
    */
   private validateTwoParams(result: ParamsResult): Result<ValidatedParamsType, ParamsTypeError> {
     // Validate required fields
-    if (!result.demonstrativeType) {
+    if (!result.directiveType) {
       return error({
         kind: "MissingRequiredField",
-        field: "demonstrativeType",
+        field: "directiveType",
         source: "TwoParams",
       });
     }
@@ -96,7 +96,7 @@ export class ParamsTypeValidator {
     }
 
     // Validate against patterns
-    const directiveValidation = this.validateDirectiveType(result.demonstrativeType);
+    const directiveValidation = this.validateDirectiveType(result.directiveType);
     if (!directiveValidation.ok) {
       return error(directiveValidation.error);
     }
@@ -118,8 +118,9 @@ export class ParamsTypeValidator {
 
     return ok({
       type: "two",
-      demonstrativeType: result.demonstrativeType,
+      directiveType: result.directiveType,
       layerType: result.layerType,
+      demonstrativeType: result.directiveType,
       params: result.params,
       options: result.options ?? {},
     });
@@ -147,7 +148,7 @@ export class ParamsTypeValidator {
 
     return ok({
       type: "one",
-      demonstrativeType: inferred.data.directive,
+      directiveType: inferred.data.directive,
       layerType: inferred.data.layer,
       params: result.params,
       options: result.options ?? {},
@@ -163,7 +164,7 @@ export class ParamsTypeValidator {
 
     return ok({
       type: "zero",
-      demonstrativeType: defaults.directive,
+      directiveType: defaults.directive,
       layerType: defaults.layer,
       params: [],
       options: result.options ?? {},
@@ -178,7 +179,7 @@ export class ParamsTypeValidator {
     if (!pattern) {
       return error({
         kind: "InvalidFieldValue",
-        field: "demonstrativeType",
+        field: "directiveType",
         value,
         pattern: "no pattern available",
       });
@@ -187,7 +188,7 @@ export class ParamsTypeValidator {
     if (!pattern.test(value)) {
       return error({
         kind: "InvalidFieldValue",
-        field: "demonstrativeType",
+        field: "directiveType",
         value,
         pattern: pattern.getPattern(),
       });

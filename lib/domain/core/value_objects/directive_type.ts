@@ -150,6 +150,16 @@ export class DirectiveType {
 
     const trimmedValue = value.trim();
 
+    // Case 1.5: Whitespace validation (input should not have leading/trailing spaces)
+    if (value !== trimmedValue) {
+      return error({
+        kind: "InvalidFormat",
+        value: value,
+        pattern: "No leading/trailing whitespace allowed",
+        message: `DirectiveType "${value}" contains leading or trailing whitespace`,
+      });
+    }
+
     // Case 2: Length validation
     if (trimmedValue.length > DirectiveType.#MAX_LENGTH) {
       return error({
@@ -343,5 +353,16 @@ export class TwoParamsDirectivePattern {
    */
   getDirectivePattern(): TwoParamsDirectivePattern {
     return this;
+  }
+
+  /**
+   * 文字列パターンから TwoParamsDirectivePattern を作成（従来版）
+   * 
+   * @param pattern 正規表現文字列
+   * @returns TwoParamsDirectivePattern または null
+   */
+  static create(pattern: string): TwoParamsDirectivePattern | null {
+    const result = TwoParamsDirectivePattern.createOrError(pattern);
+    return result.ok ? result.data : null;
   }
 }

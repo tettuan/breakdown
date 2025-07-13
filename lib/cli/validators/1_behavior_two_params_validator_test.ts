@@ -23,30 +23,30 @@ import {
 const logger = new BreakdownLogger("two-params-validator-behavior");
 
 describe("Behavior: Valid Parameter Recognition", () => {
-  it("should accept all valid demonstrative types", () => {
-    logger.debug("Testing valid demonstrative type recognition");
+  it("should accept all valid directive types", () => {
+    logger.debug("Testing valid directive type recognition");
 
     const validator = new TwoParamsValidator();
-    const validDemonstrativeTypes = ["to", "summary", "defect", "init", "find"];
+    const validDirectiveTypes = ["to", "summary", "defect", "init", "find"];
 
-    for (const demoType of validDemonstrativeTypes) {
-      const result = validator.validate([demoType, "project"]);
+    for (const directiveType of validDirectiveTypes) {
+      const result = validator.validate([directiveType, "project"]);
       assertEquals(
         result.ok,
         true,
-        `Should accept valid demonstrative type: ${demoType}`,
+        `Should accept valid directive type: ${directiveType}`,
       );
 
       if (result.ok) {
         assertEquals(
-          result.data.demonstrativeType,
-          demoType,
-          `Should return correct demonstrative type: ${demoType}`,
+          result.data.directiveType,
+          directiveType,
+          `Should return correct directive type: ${directiveType}`,
         );
       }
     }
 
-    logger.debug("Valid demonstrative type recognition completed");
+    logger.debug("Valid directive type recognition completed");
   });
 
   it("should accept all valid layer types", () => {
@@ -75,7 +75,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
     logger.debug("Valid layer type recognition completed");
   });
 
-  it("should accept valid combinations of demonstrative and layer types", () => {
+  it("should accept valid combinations of directive and layer types", () => {
     logger.debug("Testing valid combination recognition");
 
     const validator = new TwoParamsValidator();
@@ -89,24 +89,24 @@ describe("Behavior: Valid Parameter Recognition", () => {
       ["summary", "project"],
     ];
 
-    for (const [demoType, layerType] of validCombinations) {
-      const result = validator.validate([demoType, layerType]);
+    for (const [directiveType, layerType] of validCombinations) {
+      const result = validator.validate([directiveType, layerType]);
       assertEquals(
         result.ok,
         true,
-        `Should accept valid combination: ${demoType} ${layerType}`,
+        `Should accept valid combination: ${directiveType} ${layerType}`,
       );
 
       if (result.ok) {
         assertEquals(
-          result.data.demonstrativeType,
-          demoType,
-          `Should return correct demonstrative type for combination: ${demoType} ${layerType}`,
+          result.data.directiveType,
+          directiveType,
+          `Should return correct directive type for combination: ${directiveType} ${layerType}`,
         );
         assertEquals(
           result.data.layerType,
           layerType,
-          `Should return correct layer type for combination: ${demoType} ${layerType}`,
+          `Should return correct layer type for combination: ${directiveType} ${layerType}`,
         );
       }
     }
@@ -148,11 +148,11 @@ describe("Behavior: Invalid Parameter Rejection", () => {
     logger.debug("Insufficient parameter rejection completed");
   });
 
-  it("should reject invalid demonstrative types", () => {
-    logger.debug("Testing invalid demonstrative type rejection");
+  it("should reject invalid directive types", () => {
+    logger.debug("Testing invalid directive type rejection");
 
     const validator = new TwoParamsValidator();
-    const invalidDemonstrativeTypes = [
+    const invalidDirectiveTypes = [
       "invalid",
       "generate",
       "create",
@@ -166,22 +166,22 @@ describe("Behavior: Invalid Parameter Rejection", () => {
       "to_project",
     ];
 
-    for (const invalidType of invalidDemonstrativeTypes) {
+    for (const invalidType of invalidDirectiveTypes) {
       const result = validator.validate([invalidType, "project"]);
       assertEquals(
         result.ok,
         false,
-        `Should reject invalid demonstrative type: "${invalidType}"`,
+        `Should reject invalid directive type: "${invalidType}"`,
       );
 
       if (!result.ok) {
         const error = result.error;
         assertEquals(
           error.kind,
-          "InvalidDemonstrativeType",
-          `Should identify demonstrative type error for: "${invalidType}"`,
+          "InvalidDirectiveType",
+          `Should identify directive type error for: "${invalidType}"`,
         );
-        if (error.kind === "InvalidDemonstrativeType") {
+        if (error.kind === "InvalidDirectiveType") {
           assertEquals(
             error.value,
             invalidType,
@@ -200,7 +200,7 @@ describe("Behavior: Invalid Parameter Rejection", () => {
       }
     }
 
-    logger.debug("Invalid demonstrative type rejection completed");
+    logger.debug("Invalid directive type rejection completed");
   });
 
   it("should reject invalid layer types", () => {
@@ -268,18 +268,18 @@ describe("Behavior: Invalid Parameter Rejection", () => {
     assertEquals(result.ok, false, "Should reject when both parameters are invalid");
 
     if (!result.ok) {
-      // Should catch the first validation error (demonstrative type)
+      // Should catch the first validation error (directive type)
       const error = result.error;
       assertEquals(
         error.kind,
-        "InvalidDemonstrativeType",
-        "Should catch demonstrative type error first",
+        "InvalidDirectiveType",
+        "Should catch directive type error first",
       );
-      if (error.kind === "InvalidDemonstrativeType") {
+      if (error.kind === "InvalidDirectiveType") {
         assertEquals(
           error.value,
           "invalid_demo",
-          "Should report the invalid demonstrative type",
+          "Should report the invalid directive type",
         );
       }
     }
@@ -304,9 +304,9 @@ describe("Behavior: Edge Case Handling", () => {
 
     if (result.ok) {
       assertEquals(
-        result.data.demonstrativeType,
+        result.data.directiveType,
         "to",
-        "Should use first parameter as demonstrative type",
+        "Should use first parameter as directive type",
       );
       assertEquals(
         result.data.layerType,
@@ -421,24 +421,24 @@ describe("Behavior: Error Message Quality", () => {
 
     const validator = new TwoParamsValidator();
 
-    // Test demonstrative type error message
-    const demoResult = validator.validate(["invalid", "project"]);
-    if (!demoResult.ok && demoResult.error.kind === "InvalidDemonstrativeType") {
-      const error = demoResult.error;
+    // Test directive type error message
+    const directiveResult = validator.validate(["invalid", "project"]);
+    if (!directiveResult.ok && directiveResult.error.kind === "InvalidDirectiveType") {
+      const error = directiveResult.error;
       assertEquals(
         error.validTypes.includes("to"),
         true,
-        "Should include 'to' in valid demonstrative types",
+        "Should include 'to' in valid directive types",
       );
       assertEquals(
         error.validTypes.includes("summary"),
         true,
-        "Should include 'summary' in valid demonstrative types",
+        "Should include 'summary' in valid directive types",
       );
       assertEquals(
         error.validTypes.length >= 3,
         true,
-        "Should provide multiple valid demonstrative type options",
+        "Should provide multiple valid directive type options",
       );
     }
 
@@ -473,7 +473,7 @@ describe("Behavior: Error Message Quality", () => {
     const invalidValue = "user_entered_invalid_value";
 
     const result = validator.validate([invalidValue, "project"]);
-    if (!result.ok && result.error.kind === "InvalidDemonstrativeType") {
+    if (!result.ok && result.error.kind === "InvalidDirectiveType") {
       const error = result.error;
       assertEquals(
         error.value,

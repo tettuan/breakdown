@@ -45,7 +45,7 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", async ()
   const inputFile = cliArgs[2];
   
   assertEquals(twoParamsResult.type, "two");
-  assertEquals(twoParamsResult.demonstrativeType, "to");
+  assertEquals(twoParamsResult.directiveType, "to");
   assertEquals(twoParamsResult.layerType, "project");
   assertEquals(twoParamsResult.params, ["to", "project"]);
 
@@ -57,6 +57,7 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", async ()
   
   assertEquals(directiveType.value, "to");
   assertEquals(layerTypeResult.ok, true);
+  if (!layerTypeResult.ok) throw new Error("LayerType creation failed");
   const layerType = layerTypeResult.data;
   assertEquals(layerType.value, "project");
   
@@ -64,6 +65,7 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", async ()
   assertEquals(directiveType.equals(DirectiveType.create(twoParamsResult)), true);
   const layerTypeResult2 = LayerType.create(twoParamsResult);
   assertEquals(layerTypeResult2.ok, true);
+  if (!layerTypeResult2.ok) throw new Error("LayerType2 creation failed");
   assertEquals(layerType.equals(layerTypeResult2.data), true);
 
   // Phase 3: パス解決

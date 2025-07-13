@@ -56,7 +56,7 @@ function createTestParams(
   options: Partial<PromptCliOptions> = {},
 ): PromptCliParams {
   return {
-    demonstrativeType: directive,
+    directiveType: directive,
     layerType: layer,
     options: {
       fromFile: "test.md",
@@ -467,7 +467,7 @@ Deno.test("Factory Pattern: delegation and orchestration verification", async ()
 
   for (const { name, params, expectedDelegations } of orchestrationTestCases) {
     logger.debug(`Testing orchestration: ${name}`, {
-      directive: params.demonstrativeType,
+      directive: params.directiveType,
       layer: params.layerType,
       expectedDelegations,
     });

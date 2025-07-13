@@ -292,9 +292,9 @@ Deno.test("DirectiveType and LayerType Integration: Error Propagation", () => {
       expectedError: "must have type 'two'"
     },
     {
-      name: "missing_demonstrativeType", 
-      result: Object.assign(createTwoParamsResult("", "project"), { demonstrativeType: undefined }) as any,
-      expectedError: "demonstrativeType"
+      name: "missing_directiveType", 
+      result: Object.assign(createTwoParamsResult("", "project"), { directiveType: undefined }) as any,
+      expectedError: "directiveType"
     },
     {
       name: "missing_layerType",

@@ -35,6 +35,9 @@ describe("Core Domain Integration Tests", () => {
       const layerResult = LayerType.create("issue");
       assertTrue(layerResult.ok, "LayerType creation should succeed");
       
+      if (!directiveResult.ok) throw new Error("DirectiveType creation failed");
+      if (!layerResult.ok) throw new Error("LayerType creation failed");
+      
       const directive = directiveResult.data;
       const layer = layerResult.data;
       
@@ -82,6 +85,9 @@ describe("Core Domain Integration Tests", () => {
       
       assertTrue(directiveResult.ok && layerResult.ok, "Setup should succeed");
       
+      if (!directiveResult.ok) throw new Error("DirectiveType creation failed");
+      if (!layerResult.ok) throw new Error("LayerType creation failed");
+      
       const directive = directiveResult.data;
       const layer = layerResult.data;
       
@@ -117,6 +123,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "issue", profile);
       assertTrue(twoParamsResult.ok, "TwoParams creation should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
       // Assert: Aggregate properties
@@ -169,6 +176,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "task", profile);
       assertTrue(twoParamsResult.ok, "Setup should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
       // Act: Path resolution operations
@@ -206,6 +214,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "issue", profile);
       assertTrue(twoParamsResult.ok, "Setup should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
       // Act: Path resolution with adaptation
@@ -235,6 +244,10 @@ describe("Core Domain Integration Tests", () => {
       const twoParams3Result = TwoParams.create("summary", "project", profile);
       
       assertTrue(twoParams1Result.ok && twoParams2Result.ok && twoParams3Result.ok, "Setup should succeed");
+      
+      if (!twoParams1Result.ok) throw new Error("TwoParams1 creation failed");
+      if (!twoParams2Result.ok) throw new Error("TwoParams2 creation failed");
+      if (!twoParams3Result.ok) throw new Error("TwoParams3 creation failed");
       
       const twoParams1 = twoParams1Result.data;
       const twoParams2 = twoParams2Result.data;
@@ -274,18 +287,21 @@ describe("Core Domain Integration Tests", () => {
       
       // Assert: CLI option handling
       assertTrue(defaultProfileResult.ok, "Default profile should work");
+      if (!defaultProfileResult.ok) throw new Error("Default profile creation failed");
       assertEquals(defaultProfileResult.data.profile.value, "default");
       
       assertTrue(explicitProfileResult.ok, "Explicit profile should work");
+      if (!explicitProfileResult.ok) throw new Error("Explicit profile creation failed");
       assertEquals(explicitProfileResult.data.profile.value, "custom");
       
       assertTrue(undefinedProfileResult.ok, "Undefined profile should default");
+      if (!undefinedProfileResult.ok) throw new Error("Undefined profile creation failed");
       assertEquals(undefinedProfileResult.data.profile.value, "default");
       
       logger.debug("CLI option integration verified", {
-        defaultProfile: defaultProfileResult.data.profile.value,
-        explicitProfile: explicitProfileResult.data.profile.value,
-        undefinedProfile: undefinedProfileResult.data.profile.value
+        defaultProfile: defaultProfileResult.ok ? defaultProfileResult.data.profile.value : "error",
+        explicitProfile: explicitProfileResult.ok ? explicitProfileResult.data.profile.value : "error",
+        undefinedProfile: undefinedProfileResult.ok ? undefinedProfileResult.data.profile.value : "error"
       });
     });
 
@@ -297,6 +313,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "issue", profile);
       assertTrue(twoParamsResult.ok, "Setup should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
       // Act: Debug information extraction
@@ -337,6 +354,7 @@ describe("Core Domain Integration Tests", () => {
       const validTwoParamsResult = TwoParams.create("to", "issue", profile);
       assertTrue(validTwoParamsResult.ok, "Valid combination should succeed");
       
+      if (!validTwoParamsResult.ok) throw new Error("Valid TwoParams creation failed");
       const twoParams = validTwoParamsResult.data;
       const validationResult = twoParams.validate();
       assertTrue(validationResult.ok, "Validation should succeed for valid TwoParams");
@@ -352,6 +370,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "issue", profile);
       assertTrue(twoParamsResult.ok, "Setup should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       const originalDirective = twoParams.directive.value;
       const originalLayer = twoParams.layer.value;
@@ -381,6 +400,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsResult = TwoParams.create("to", "project", profile);
       assertTrue(twoParamsResult.ok, "Setup should succeed");
       
+      if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
       // Act: Simulate concurrent access

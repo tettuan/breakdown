@@ -4,7 +4,7 @@
  * Represents a path to a prompt template file with validation and formatting capabilities.
  */
 
-import type { DirectiveType } from "../../../../types/directive_type.ts";
+import type { DirectiveType } from "../../../../domain/core/value_objects/directive_type.ts";
 import type { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 
 /**

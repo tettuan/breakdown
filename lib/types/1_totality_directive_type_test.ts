@@ -17,14 +17,14 @@ import type { ValidationError } from "./mod.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
-  demonstrativeType: string,
+  directiveType: string,
   layerType: string = "project",
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  params: [directiveType, layerType],
   options,
 });
 
@@ -82,7 +82,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
   // Test invalid result type
   const invalidTypeResult = {
     type: "one" as string,
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -99,7 +99,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
     }
   }
 
-  // Test missing demonstrativeType
+  // Test missing directiveType
   const missingFieldResult = {
     type: "two",
     layerType: "project",
@@ -111,7 +111,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
   if (!missingFieldDirective.ok) {
     assertEquals(missingFieldDirective.error.kind, "MissingRequiredField");
     if (missingFieldDirective.error.kind === "MissingRequiredField") {
-      assertEquals(missingFieldDirective.error.field, "demonstrativeType");
+      assertEquals(missingFieldDirective.error.field, "directiveType");
       assertEquals(missingFieldDirective.error.source, "TwoParams_Result");
     }
   }
@@ -152,7 +152,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", 
       if (!directiveResult.ok) {
         assertEquals(directiveResult.error.kind, "InvalidInput");
         if (directiveResult.error.kind === "InvalidInput") {
-          assertEquals(directiveResult.error.field, "demonstrativeType");
+          assertEquals(directiveResult.error.field, "directiveType");
           assertEquals(directiveResult.error.value, directive);
           assertEquals(
             directiveResult.error.reason,
@@ -281,7 +281,7 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
       } else {
         assertEquals(directiveResult.error.kind, "InvalidInput");
         if (directiveResult.error.kind === "InvalidInput") {
-          assertEquals(directiveResult.error.field, "demonstrativeType");
+          assertEquals(directiveResult.error.field, "directiveType");
           assertEquals(directiveResult.error.value, value);
         }
       }
@@ -308,7 +308,7 @@ Deno.test("1_totality: createOrError provides better error context than create",
 
   const invalidInput = {
     type: "two",
-    demonstrativeType: null,
+    directiveType: null,
     layerType: "project",
   } as unknown as TwoParams_Result;
 
@@ -322,7 +322,7 @@ Deno.test("1_totality: createOrError provides better error context than create",
   if (!resultDirective.ok) {
     assertEquals(resultDirective.error.kind, "MissingRequiredField");
     if (resultDirective.error.kind === "MissingRequiredField") {
-      assertEquals(resultDirective.error.field, "demonstrativeType");
+      assertEquals(resultDirective.error.field, "directiveType");
       assertEquals(resultDirective.error.source, "TwoParams_Result");
     }
   }

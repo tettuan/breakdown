@@ -144,7 +144,7 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Stdin Input", () => {
       false,
       {
         input_text: "This is stdin content",
-        demonstrativeType: "to",
+        directiveType: "to",
       },
     );
 
@@ -265,7 +265,7 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Options Handling", () =
     const options = {
       adaptation: "strict",
       promptDir: "/custom/prompts",
-      demonstrativeType: "summary",
+      directiveType: "summary",
       input_text: "Custom input text",
     };
 
@@ -284,22 +284,22 @@ describe("Unit: PromptFileGenerator.generateWithPrompt - Options Handling", () =
     logger.debug("Complete options handling verified");
   });
 
-  it("should use default demonstrativeType when not provided", async () => {
-    logger.debug("Testing default demonstrativeType");
+  it("should use default directiveType when not provided", async () => {
+    logger.debug("Testing default directiveType");
 
     const result = await generator.generateWithPrompt(
       "input.md",
       "output.md",
       "test",
       false,
-      {}, // No demonstrativeType provided
+      {}, // No directiveType provided
     );
 
     // Method should use "to" as default
     // (Would need to inspect factory call to verify)
-    assertExists(result, "Should handle missing demonstrativeType");
+    assertExists(result, "Should handle missing directiveType");
 
-    logger.debug("Default demonstrativeType handling verified");
+    logger.debug("Default directiveType handling verified");
   });
 });
 

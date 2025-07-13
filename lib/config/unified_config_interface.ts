@@ -21,9 +21,8 @@ import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { AsyncConfigPatternProvider } from "./pattern_provider_async.ts";
 import {
   type CustomConfig as _CustomConfig,
-  loadBreakdownConfig,
-  mergeConfigs as _mergeConfigs,
-} from "./loader_refactored.ts";
+  ConfigLoader,
+} from "./loader.ts";
 import { DEPENDENCY_VERSIONS } from "./versions.ts";
 import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";
@@ -190,7 +189,7 @@ export class UnifiedConfigInterface {
   ): Promise<Result<UnifiedConfigInterface, ConfigurationError>> {
     try {
       // Load base configuration
-      const baseConfigResult = await loadBreakdownConfig(
+      const baseConfigResult = await ConfigLoader.loadBreakdownConfig(
         options.profile || undefined,
         options.workingDirectory || undefined,
       );

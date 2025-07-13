@@ -37,7 +37,7 @@ Deno.test("PromptVariablesFactory - Architecture - returns Result type from all 
     layerType: "project",
     fromLayerType: "task",
     promptDir: "/tmp/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     options: {},
   };
 
@@ -62,7 +62,7 @@ Deno.test("PromptVariablesFactory - Architecture - enforces Totality through exh
         directiveType: directive,
         layerType: layer,
         fromLayerType: "task",
-        demonstrativeType: directive,
+        directiveType: directive,
         options: {},
       };
 

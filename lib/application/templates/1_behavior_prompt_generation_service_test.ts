@@ -128,31 +128,15 @@ const createTestDependencies = (): PromptGenerationDependencies & {
 };
 
 const createTestRequest = (): PromptGenerationRequest => {
-  // Create valid TwoParams_Result for DirectiveType
-  const directiveResult = {
-    type: "two" as const,
-    demonstrativeType: "to",
-    layerType: "task",
-    params: ["test1", "test2"],
-    options: {},
-  };
-
-  const directiveCreateResult = DirectiveType.create(directiveResult);
+  // Create DirectiveType with string value
+  const directiveCreateResult = DirectiveType.create("to");
   if (!directiveCreateResult.ok) {
-    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error}`);
+    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error.message}`);
   }
   const directive = directiveCreateResult.data;
 
-  // Create valid TwoParams_Result for LayerType
-  const layerResult = {
-    type: "two" as const,
-    demonstrativeType: "to",
-    layerType: "task",
-    params: ["test1", "test2"],
-    options: {},
-  };
-
-  const layerTypeResult = LayerType.create(layerResult);
+  // Create LayerType with string value
+  const layerTypeResult = LayerType.create("task");
   if (!layerTypeResult.ok) {
     throw new Error(`Failed to create LayerType: ${layerTypeResult.error.message}`);
   }
@@ -253,20 +237,13 @@ Deno.test("PromptGenerationService - Behavior - Template validation", async () =
   }
 
   const service = serviceResult.data;
-  const result = {
-    type: "two" as const,
-    demonstrativeType: "to",
-    layerType: "task",
-    params: ["test1", "test2"],
-    options: {},
-  };
 
-  const directiveCreateResult = DirectiveType.create(result);
+  const directiveCreateResult = DirectiveType.create("to");
   if (!directiveCreateResult.ok) {
-    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error}`);
+    throw new Error(`Failed to create DirectiveType: ${directiveCreateResult.error.message}`);
   }
   const directive = directiveCreateResult.data;
-  const layerCreateResult = LayerType.create(result);
+  const layerCreateResult = LayerType.create("task");
   if (!layerCreateResult.ok) {
     throw new Error(`Failed to create LayerType: ${layerCreateResult.error.message}`);
   }

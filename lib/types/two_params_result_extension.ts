@@ -18,6 +18,12 @@ import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakd
 export interface TwoParams_Result extends BaseTwoParamsResult {
   /** Array of parameter strings */
   params: string[];
+  /** Directive type string */
+  directiveType: string;
+  /** Layer type string */
+  layerType: string;
+  /** Demonstrative type string */
+  demonstrativeType: string;
 }
 
 /**
@@ -29,8 +35,9 @@ export function isTwoParamsResult(obj: unknown): obj is TwoParams_Result {
     obj !== null &&
     "type" in obj &&
     "params" in obj &&
-    "demonstrativeType" in obj &&
+    "directiveType" in obj &&
     "layerType" in obj &&
+    "demonstrativeType" in obj &&
     Array.isArray((obj as Record<string, unknown>).params)
   );
 }
@@ -38,18 +45,19 @@ export function isTwoParamsResult(obj: unknown): obj is TwoParams_Result {
 /**
  * Creates a TwoParams_Result from base TwoParamsResult
  *
- * Ensures the params array is populated from demonstrativeType and layerType
+ * Ensures the params array is populated from directiveType and layerType
  */
 export function createTwoParamsResult(
-  demonstrativeType: string,
+  directiveType: string,
   layerType: string,
   options?: Record<string, unknown>,
 ): TwoParams_Result {
   return {
     type: "two",
-    params: [demonstrativeType, layerType],
-    demonstrativeType,
+    params: [directiveType, layerType],
+    directiveType,
     layerType,
+    demonstrativeType: directiveType,
     options: options || {},
   };
 }

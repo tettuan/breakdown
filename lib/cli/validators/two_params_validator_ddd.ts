@@ -45,9 +45,12 @@ export type ProfileName = string & { readonly __brand: "ProfileName" };
  * ValidatedParams - Immutable value object for validated parameters
  */
 export interface ValidatedParams {
-  readonly directiveType: DirectiveType;
-  readonly layerType: LayerType;
-  readonly profile: ProfileName;
+  readonly directive: DirectiveType;
+  readonly layer: LayerType;
+  // Legacy compatibility properties
+  readonly directiveType: string;  // Alias for directive.value
+  readonly layerType: string;          // Alias for layer.value
+  readonly params: string[];           // For legacy array access
 }
 
 // ============================================================================
@@ -431,6 +434,10 @@ export class TwoParamsValidator {
     const patternAdapter = {
       getDirectivePattern: () => directivePattern,
       getLayerTypePattern: () => layerPattern,
+      validateDirectiveType: (value: string) => directivePattern.test(value),
+      validateLayerType: (value: string) => layerPattern.test(value),
+      getValidDirectiveTypes: () => patternsResult.data.directivePatterns,
+      getValidLayerTypes: () => patternsResult.data.layerPatterns,
     };
 
     const typeFactory = new TypeFactory(patternAdapter);
@@ -465,9 +472,11 @@ export class TwoParamsValidator {
 
     // 8. Return validated params
     return ok({
-      directiveType: directiveResult.data,
-      layerType: layerResult.data,
-      profile: profileResult.data,
+      directive: directiveResult.data,
+      layer: layerResult.data,
+      directiveType: directiveResult.data.value,
+      layerType: layerResult.data.value,
+      params: [directiveResult.data.value, layerResult.data.value],
     });
   }
 

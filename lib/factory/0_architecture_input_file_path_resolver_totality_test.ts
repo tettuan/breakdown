@@ -29,7 +29,7 @@ Deno.test("InputFilePathResolverTotality - Smart Constructor validates inputs", 
   for (const config of invalidConfigs) {
     const result = InputFilePathResolverTotality.create(
       config as unknown as { working_dir: string; resource_dir: string },
-      { demonstrativeType: "to", layerType: "project", options: {} },
+      { directiveType: "to", layerType: "project", options: {} },
     );
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -51,7 +51,7 @@ Deno.test("InputFilePathResolverTotality - Smart Constructor validates inputs", 
     const result = InputFilePathResolverTotality.create(
       validConfig,
       params as unknown as {
-        demonstrativeType: string;
+        directiveType: string;
         layerType: string;
         options: Record<string, unknown>;
       },
@@ -67,21 +67,21 @@ Deno.test("InputFilePathResolverTotality - normalizes config to discriminated un
   // WithWorkingDir
   const result1 = InputFilePathResolverTotality.create(
     { working_dir: "/custom/working/dir" },
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, true);
 
   // NoWorkingDir
   const result2 = InputFilePathResolverTotality.create(
     {},
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result2.ok, true);
 
   // Invalid working_dir (non-string) - should default to NoWorkingDir
   const result3 = InputFilePathResolverTotality.create(
     { working_dir: 123 },
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result3.ok, true);
 });
@@ -91,7 +91,7 @@ Deno.test("InputFilePathResolverTotality - handles empty path", () => {
 
   const resolverResult = InputFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -116,7 +116,7 @@ Deno.test("InputFilePathResolverTotality - handles stdin input", () => {
   const resolverResult = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "-" },
     },
@@ -146,7 +146,7 @@ Deno.test("InputFilePathResolverTotality - validates paths with invalid characte
   const resolverResult1 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "file\0name.md" },
     },
@@ -174,7 +174,7 @@ Deno.test("InputFilePathResolverTotality - determines path types correctly", () 
   const resolverResult1 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "/absolute/path/file.md" },
     },
@@ -197,7 +197,7 @@ Deno.test("InputFilePathResolverTotality - determines path types correctly", () 
   const resolverResult2 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "relative/path/file.md" },
     },
@@ -222,7 +222,7 @@ Deno.test("InputFilePathResolverTotality - determines path types correctly", () 
   const resolverResult3 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "simple.md" },
     },
@@ -250,7 +250,7 @@ Deno.test("InputFilePathResolverTotality - handles TwoParams_Result structure", 
   const twoParams = {
     type: "two" as const,
     params: ["to", "project"],
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "input.md" },
   };
@@ -278,7 +278,7 @@ Deno.test("InputFilePathResolverTotality - getTargetDirectory returns correct di
   const resolverResult1 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromLayerType: "issue" },
     },
@@ -299,7 +299,7 @@ Deno.test("InputFilePathResolverTotality - getTargetDirectory returns correct di
   const resolverResult2 = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: {},
     },
@@ -323,7 +323,7 @@ Deno.test("InputFilePathResolverTotality - path normalization handles backslashe
   const resolverResult = InputFilePathResolverTotality.create(
     config,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
       layerType: "project",
       options: { fromFile: "windows\\style\\path.md" },
     },

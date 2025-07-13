@@ -21,8 +21,8 @@ import {
   type ValidationError,
   type ValidationMetadata,
 } from "./mod.ts";
-import type { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
-import type { LayerType } from "../types/layer_type.ts";
+import type { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
+import type { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 
 // =============================================================================
 // 2_STRUCTURE: Data Structure and Consistency Tests
@@ -79,16 +79,18 @@ Deno.test("2_structure - ValidatedParams has consistent nested structure", () =>
   const mockDirective = {
     getValue: () => "to",
     toString: () => "to",
+    value: "to",
   };
 
   const mockLayer = {
     getValue: () => "project",
     toString: () => "project",
+    value: "project",
   };
 
   const validatedParams: ValidatedParams = {
-    directive: mockDirective as DirectiveType,
-    layer: mockLayer as LayerType,
+    directive: mockDirective as unknown as DirectiveType,
+    layer: mockLayer as unknown as LayerType,
     options: {
       inputPath: "/input/file.txt",
       outputPath: "/output/file.txt",
@@ -101,7 +103,7 @@ Deno.test("2_structure - ValidatedParams has consistent nested structure", () =>
     },
     metadata: {
       validatedAt: new Date("2024-01-01T00:00:00Z"),
-      source: "TwoParams_Result",
+      source: "TwoParams",
       profileName: "test-profile",
     },
   };
@@ -114,8 +116,8 @@ Deno.test("2_structure - ValidatedParams has consistent nested structure", () =>
   assertExists(validatedParams.metadata);
 
   // Directive/Layer structure
-  assertEquals(typeof validatedParams.directive.getValue, "function");
-  assertEquals(typeof validatedParams.layer.getValue, "function");
+  assertEquals(typeof validatedParams.directive.value, "string");
+  assertEquals(typeof validatedParams.layer.value, "string");
   assertEquals(validatedParams.directive.value, "to");
   assertEquals(validatedParams.layer.value, "project");
 
@@ -150,7 +152,7 @@ Deno.test("2_structure - ValidationMetadata maintains temporal and source consis
   // Test with all fields
   const completeMetadata: ValidationMetadata = {
     validatedAt: currentTime,
-    source: "TwoParams_Result",
+    source: "TwoParams",
     profileName: "production",
   };
 
@@ -165,13 +167,13 @@ Deno.test("2_structure - ValidationMetadata maintains temporal and source consis
 
   // Source constraints
   assert(
-    ["TwoParams_Result", "OneParamsResult", "ZeroParamsResult"].includes(completeMetadata.source),
+    ["TwoParams", "OneParams", "ZeroParams"].includes(completeMetadata.source),
   );
 
   // Test with minimal fields
   const minimalMetadata: ValidationMetadata = {
     validatedAt: currentTime,
-    source: "OneParamsResult",
+    source: "OneParams",
   };
 
   assertExists(minimalMetadata.validatedAt);
@@ -183,9 +185,9 @@ Deno.test("2_structure - ValidationMetadata maintains temporal and source consis
 
   // Test all source variants
   const sourceVariants: ValidationMetadata["source"][] = [
-    "TwoParams_Result",
-    "OneParamsResult",
-    "ZeroParamsResult",
+    "TwoParams",
+    "OneParams",
+    "ZeroParams",
   ];
 
   for (const source of sourceVariants) {
@@ -351,6 +353,10 @@ Deno.test("2_structure - ParameterValidator maintains consistent class structure
   const patternProvider = {
     getDirectivePattern: () => null,
     getLayerTypePattern: () => null,
+    validateDirectiveType: (_value: string) => true,
+    validateLayerType: (_value: string) => true,
+    getValidDirectiveTypes: () => ["to", "summary", "defect"] as readonly string[],
+    getValidLayerTypes: () => ["project", "issue", "task"] as readonly string[],
   };
 
   const configValidator: ConfigValidator = {

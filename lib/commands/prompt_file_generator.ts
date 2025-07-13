@@ -55,7 +55,7 @@ export class PromptFileGenerator {
     options?: {
       adaptation?: string;
       promptDir?: string;
-      demonstrativeType?: string;
+      directiveType?: string;
       input_text?: string;
     },
   ): Promise<CommandResult> {
@@ -74,7 +74,7 @@ export class PromptFileGenerator {
     }
 
     const cliParams = {
-      demonstrativeType: options?.demonstrativeType || "to",
+      directiveType: options?.directiveType || "to",
       layerType: format,
       options: {
         fromFile,

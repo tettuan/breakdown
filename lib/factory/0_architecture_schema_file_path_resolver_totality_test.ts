@@ -26,7 +26,7 @@ Deno.test("SchemaFilePathResolverTotality - Smart Constructor validates inputs",
   for (const config of invalidConfigs) {
     const result = SchemaFilePathResolverTotality.create(
       config as unknown as { working_dir: string; resource_dir: string },
-      { demonstrativeType: "to", layerType: "project", options: {} },
+      { directiveType: "to", layerType: "project", options: {} },
     );
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -48,7 +48,7 @@ Deno.test("SchemaFilePathResolverTotality - Smart Constructor validates inputs",
     const result = SchemaFilePathResolverTotality.create(
       validConfig,
       params as unknown as {
-        demonstrativeType: string;
+        directiveType: string;
         layerType: string;
         options: Record<string, unknown>;
       },
@@ -63,10 +63,10 @@ Deno.test("SchemaFilePathResolverTotality - Smart Constructor validates inputs",
 Deno.test("SchemaFilePathResolverTotality - validates required parameters", () => {
   const config = { app_schema: { base_dir: "schema" } };
 
-  // Missing demonstrativeType
+  // Missing directiveType
   const result1 = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "", layerType: "project", options: {} },
+    { directiveType: "", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, false);
   if (!result1.ok) {
@@ -76,7 +76,7 @@ Deno.test("SchemaFilePathResolverTotality - validates required parameters", () =
   // Missing layerType
   const result2 = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "", options: {} },
+    { directiveType: "to", layerType: "", options: {} },
   );
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -86,7 +86,7 @@ Deno.test("SchemaFilePathResolverTotality - validates required parameters", () =
   // Valid parameters
   const result3 = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result3.ok, true);
 });
@@ -95,21 +95,21 @@ Deno.test("SchemaFilePathResolverTotality - normalizes config to discriminated u
   // WithSchemaConfig
   const result1 = SchemaFilePathResolverTotality.create(
     { app_schema: { base_dir: "custom/schema" } },
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, true);
 
   // NoSchemaConfig (uses default)
   const result2 = SchemaFilePathResolverTotality.create(
     {},
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result2.ok, true);
 
   // Invalid schema config (non-string base_dir) - should use default
   const result3 = SchemaFilePathResolverTotality.create(
     { app_schema: { base_dir: 123 } },
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
   assertEquals(result3.ok, true);
 });
@@ -119,7 +119,7 @@ Deno.test("SchemaFilePathResolverTotality - buildFileName returns standard name"
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -135,7 +135,7 @@ Deno.test("SchemaFilePathResolverTotality - buildSchemaPath constructs correct p
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -152,7 +152,7 @@ Deno.test("SchemaFilePathResolverTotality - handles TwoParams_Result structure",
   const twoParams = {
     type: "two" as const,
     params: ["summary", "issue"],
-    demonstrativeType: "", // Will be extracted from params
+    directiveType: "", // Will be extracted from params
     layerType: "", // Will be extracted from params
     options: {},
   };
@@ -172,7 +172,7 @@ Deno.test("SchemaFilePathResolverTotality - getPossiblePaths returns all fallbac
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -197,7 +197,7 @@ Deno.test("SchemaFilePathResolverTotality - validateSchemaContent checks structu
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -231,7 +231,7 @@ Deno.test("SchemaFilePathResolverTotality - SchemaPath value object validates", 
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);
@@ -254,7 +254,7 @@ Deno.test("SchemaFilePathResolverTotality - handles path with null character", (
 
   const resolverResult = SchemaFilePathResolverTotality.create(
     config,
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
   );
 
   assertEquals(resolverResult.ok, true);

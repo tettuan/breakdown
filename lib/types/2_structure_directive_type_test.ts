@@ -16,13 +16,13 @@ import type { TwoParams_Result } from "../deps.ts";
 
 // Test data setup
 const createValidTwoParamsResult = (
-  demonstrativeType = "to",
+  directiveType = "to",
   layerType = "project",
 ): TwoParams_Result => ({
   type: "two" as const,
-  demonstrativeType,
+  directiveType,
   layerType,
-  params: [demonstrativeType, layerType],
+  params: [directiveType, layerType],
   options: {},
 });
 
@@ -202,15 +202,15 @@ Deno.test("2_structure: DirectiveType toString provides consistent representatio
     "defect",
   ];
 
-  for (const demonstrativeType of validTestCases) {
-    const directiveResult = DirectiveType.create(demonstrativeType, profile);
+  for (const directiveType of validTestCases) {
+    const directiveResult = DirectiveType.create(directiveType, profile);
     
     assertEquals(directiveResult.ok, true);
     if (directiveResult.ok) {
       const directiveType = directiveResult.data;
       const stringRepresentation = directiveType.toString();
       assertEquals(typeof stringRepresentation, "string");
-      assertEquals(stringRepresentation, demonstrativeType);
+      assertEquals(stringRepresentation, directiveType);
       
       // Test that toString is consistent
       assertEquals(directiveType.toString(), directiveType.toString());
@@ -305,10 +305,10 @@ Deno.test("2_structure: DirectiveType equality is value-based, not reference-bas
     const directive2 = directive2Result.data;
     const directive3 = directive3Result.data;
     
-    // Same demonstrativeType and profile should be equal
+    // Same directiveType and profile should be equal
     assertEquals(directive1.equals(directive2), true);
     
-    // Different demonstrativeType should not be equal
+    // Different directiveType should not be equal
     assertEquals(directive1.equals(directive3), false);
     assertEquals(directive2.equals(directive3), false);
     

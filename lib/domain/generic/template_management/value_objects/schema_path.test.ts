@@ -14,13 +14,14 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
   params: ["to", "project"],
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
+  demonstrativeType: "to",
   options: {},
 };
 
-const validDirectiveResult = DirectiveType.create(mockTwoParamsResult);
-const validLayerResult = LayerType.create(mockTwoParamsResult);
+const validDirectiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+const validLayerResult = LayerType.create(mockTwoParamsResult.layerType);
 
 if (!validDirectiveResult.ok || !validLayerResult.ok) {
   throw new Error("Test setup failed: unable to create valid directive or layer");

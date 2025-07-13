@@ -105,14 +105,14 @@ export class PromptFileGeneratorDDD {
     options?: {
       adaptation?: string;
       promptDir?: string;
-      demonstrativeType?: string;
+      directiveType?: string;
       input_text?: string;
     },
   ): Promise<CommandResult> {
     try {
       // Create CLI params for compatibility layer
       const cliParams = {
-        demonstrativeType: options?.demonstrativeType || "to",
+        directiveType: options?.directiveType || "to",
         layerType: format,
         options: {
           fromFile,
@@ -209,7 +209,7 @@ export class PromptFileGeneratorDDD {
       }
 
       // Get directive and layer from CLI params instead of factory
-      const directive = cliParams.demonstrativeType;
+      const directive = cliParams.directiveType;
       const layer = cliParams.layerType;
 
       // Prepare variables
@@ -220,8 +220,8 @@ export class PromptFileGeneratorDDD {
       };
 
       // Create DirectiveType and LayerType from strings
-      const { DirectiveType } = await import("../types/directive_type.ts");
-      const { LayerType } = await import("../types/layer_type.ts");
+      const { DirectiveType } = await import("../domain/core/value_objects/directive_type.ts");
+      const { LayerType } = await import("../domain/core/value_objects/layer_type.ts");
 
       // Create DirectiveType and LayerType from strings directly
       const directiveResult = DirectiveType.create(directive);

@@ -23,8 +23,8 @@
  * const factory = new TypeFactory(patternProvider);
  *
  * // Create validated types
- * const directive = DirectiveType.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
- * const layer = LayerType.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ * const directive = DirectiveType.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
+ * const layer = LayerType.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
  * ```
  *
  * @example Error Handling with Result Types
@@ -63,7 +63,7 @@
  * import { ConfigProfileName } from "./mod.ts";
  *
  * // Create a profile name (Totality-compliant with validation)
- * const profileResult = ConfigProfileName.create({ type: "two", demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ * const profileResult = ConfigProfileName.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
  *
  * if (profileResult.ok) {
  *   console.log("Profile:", profileResult.data.value);
@@ -82,6 +82,7 @@ export {
 // Note: layer_type.ts has been moved to domain/core/value_objects/layer_type.ts
 export { 
   LayerType, 
+  TwoParamsLayerTypePattern,
   type LayerTypeError 
 } from "../domain/core/value_objects/layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
@@ -92,7 +93,6 @@ export {
   createTwoParamsType,
   type TwoParamsTypeError 
 } from "./two_params.ts";
-export type { TwoParams } from "./two_params.ts";
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
@@ -106,18 +106,18 @@ export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.t
 export type { Result } from "./result.ts";
 
 // Variable types - Using unified Result types from result.ts
-// export {
-//   createPromptParams,
-//   FilePathVariable,
-//   FilePathVariableName,
-//   StandardVariable,
-//   StandardVariableName,
-//   StdinVariable,
-//   StdinVariableName,
-//   toPromptParamsVariables,
-//   UserVariable,
-// } from "./prompt_variables_vo.ts";
-// export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
+export {
+  createPromptParams,
+  FilePathVariable,
+  FilePathVariableName,
+  StandardVariable,
+  StandardVariableName,
+  StdinVariable,
+  StdinVariableName,
+  toPromptParamsVariables,
+  UserVariable,
+} from "./prompt_variables_vo.ts";
+export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
 // Deprecated legacy types (for backward compatibility)
 // NOTE: Legacy factories removed during DemonstrativeType -> DirectiveType refactor
@@ -135,8 +135,7 @@ export type { Result } from "./result.ts";
 // } from "./legacy_factories.ts";
 // export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
 
-// Layer type utilities
-export { LayerTypeFactory } from "./layer_type_factory.ts";
+// Layer type utilities - moved to domain/core/value_objects
 
 // Default implementations
 export { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";

@@ -21,7 +21,7 @@ import {
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "../types/prompt_variables.ts";
+} from "../types/prompt_variables_vo.ts";
 
 Deno.test("2_structure: VariablesBuilder maintains value object boundaries", () => {
   const builder = new VariablesBuilder();
@@ -38,11 +38,12 @@ Deno.test("2_structure: VariablesBuilder maintains value object boundaries", () 
     const variables = result.data;
 
     // Verify variables are proper value objects
-    assertEquals(Array.isArray(variables), true);
-    assertEquals(variables.length, 4);
+    assertEquals(variables.size(), 4);
 
-    // Check each variable type
-    const [standard, filepath, stdin, user] = variables;
+    // Check each variable type - access through value property
+    const variableArray = variables.value;
+    assertEquals(Array.isArray(variableArray), true);
+    const [standard, filepath, stdin, user] = variableArray;
 
     assertEquals(standard instanceof StandardVariable, true);
     assertEquals(filepath instanceof FilePathVariable, true);
@@ -136,7 +137,7 @@ Deno.test("2_structure: FactoryResolvedValues integration structure", () => {
 
   if (isOk(result)) {
     const variables = result.data;
-    assertEquals(variables.length, 6); // input, output, schema, stdin, 2 custom
+    assertEquals(variables.size(), 6); // input, output, schema, stdin, 2 custom
 
     // Verify toRecord structure
     const record = builder.toRecord();
@@ -200,7 +201,7 @@ Deno.test("2_structure: Partial factory values handling", () => {
   const result = builder.build();
 
   if (isOk(result)) {
-    assertEquals(result.data.length, 4); // input, output, schema, custom
+    assertEquals(result.data.size(), 4); // input, output, schema, custom
 
     const record = builder.toRecord();
     assertEquals(record["input_text_file"], "file.md");
@@ -286,7 +287,7 @@ Deno.test("2_structure: Custom variables without uv- prefix for templates", () =
 
   if (isOk(result)) {
     const variables = result.data;
-    assertEquals(variables.length, 2); // Only non-empty name/value pairs
+    assertEquals(variables.size(), 2); // Only non-empty name/value pairs
 
     const record = builder.toTemplateRecord();
     assertEquals(record["template_var"], "value1");
@@ -320,6 +321,6 @@ Deno.test("2_structure: Builder state management", () => {
   const result = builder.build();
   assertEquals(isOk(result), true);
   if (isOk(result)) {
-    assertEquals(result.data.length, 0);
+    assertEquals(result.data.size(), 0);
   }
 });

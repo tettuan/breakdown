@@ -47,10 +47,10 @@ export {
   // ImpactScope, // REMOVED - not exported from mod.ts
   isError,
   isOk,
-  // LayerFactory, // REMOVED - use LayerTypeFactory instead
+  // LayerFactory, // REMOVED - use TypeFactory instead
   LayerType,
-  // Layer type utilities
-  LayerTypeFactory,
+  // Layer type utilities - UPDATED to use unified TypeFactory
+  // LayerTypeFactory, // DEPRECATED - use TypeFactory instead
   // type LegacyLayerType, // REMOVED
   // LegacyLayerTypeFactory, // REMOVED
   // LegacyLayerTypeGuards, // REMOVED

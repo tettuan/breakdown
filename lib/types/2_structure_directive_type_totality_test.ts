@@ -15,11 +15,11 @@ import type { TwoParams_Result } from "../deps.ts";
 import { isError, isOk } from "./result.ts";
 
 // Test helper
-const createTwoParamsResult = (demonstrativeType: string): TwoParams_Result => ({
+const createTwoParamsResult = (directiveType: string): TwoParams_Result => ({
   type: "two",
-  demonstrativeType,
+  directiveType,
   layerType: "project",
-  params: [demonstrativeType, "project"],
+  params: [directiveType, "project"],
   options: {},
 });
 
@@ -92,11 +92,11 @@ Deno.test("2_structure: DirectiveType immutability with frozen objects", () => {
 
   // Original result should be readonly
   const original = directiveType.originalResult;
-  assertEquals(original.demonstrativeType, "immutable");
+  assertEquals(original.directiveType, "immutable");
 
   // Attempting to modify should not affect the DirectiveType
   const mutableCopy = { ...result };
-  mutableCopy.demonstrativeType = "modified";
+  mutableCopy.directiveType = "modified";
   assertEquals(directiveType.value, "immutable"); // Should remain unchanged
 });
 
@@ -104,7 +104,7 @@ Deno.test("2_structure: DirectiveType handles null/undefined in TwoParams_Result
   // Even with unusual options, DirectiveType should work
   const resultWithNullOptions: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "test",
+    directiveType: "test",
     layerType: "project",
     params: ["test", "project"],
     options: {
@@ -174,7 +174,7 @@ Deno.test("2_structure: DirectiveType value extraction is consistent", () => {
   const accessMethods = [
     () => directiveType.value,
     () => directiveType.value,
-    () => directiveType.originalResult.demonstrativeType,
+    () => directiveType.originalResult.directiveType,
     () => directiveType.toString().match(/DirectiveType\((.*)\)/)![1],
   ];
 
@@ -187,7 +187,7 @@ Deno.test("2_structure: DirectiveType value extraction is consistent", () => {
 Deno.test("2_structure: DirectiveType preserves complex nested structures", () => {
   const complexResult: TwoParams_Result = {
     type: "two",
-    demonstrativeType: "complex",
+    directiveType: "complex",
     layerType: "system",
     params: ["complex", "system"],
     options: {

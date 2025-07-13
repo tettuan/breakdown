@@ -135,7 +135,7 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
     // If both types are valid, test PromptVariablesFactory composition
     if (isOk(directiveResult) && isOk(layerResult)) {
       const mockParams = {
-        demonstrativeType: directive,
+        directiveType: directive,
         layerType: layer,
         directive: directiveResult.data,
         layer: layerResult.data,

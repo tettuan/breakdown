@@ -37,14 +37,15 @@ export { initWorkspace } from "./workspace/workspace.ts";
 
 // Export core types and utilities from DDD structure
 export {
-  DirectiveType,
-  LayerType,
   TwoParams,
   type TwoParamsValidationError,
 } from "./domain/mod.ts";
 
 export {
+  DirectiveType,
+  LayerType,
   TwoParamsDirectivePattern,
+  TwoParamsLayerTypePattern,
   type TypeCreationResult,
   TypeFactory,
   type TypePatternProvider,

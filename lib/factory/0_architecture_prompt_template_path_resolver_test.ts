@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 
 // Type-safe interfaces for error testing
@@ -24,7 +24,7 @@ const validConfig = {
 };
 
 const validLegacyParams: PromptCliParams = {
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
   options: {
     fromLayerType: "issue",
@@ -35,7 +35,7 @@ const validLegacyParams: PromptCliParams = {
 const validTwoParams: TwoParams_Result = {
   type: "two",
   params: ["to", "project"],
-  demonstrativeType: "to",
+  directiveType: "to",
   layerType: "project",
   options: {
     fromLayerType: "issue",
@@ -89,24 +89,24 @@ Deno.test("0_architecture: Domain boundary constraint - no exceptions across bou
     { desc: "primitive params", config: validConfig, params: "string" },
     { desc: "invalid structure", config: validConfig, params: { invalid: true } },
     {
-      desc: "empty demonstrativeType",
+      desc: "empty directiveType",
       config: validConfig,
-      params: { demonstrativeType: "", layerType: "project" },
+      params: { directiveType: "", layerType: "project" },
     },
     {
       desc: "empty layerType",
       config: validConfig,
-      params: { demonstrativeType: "to", layerType: "" },
+      params: { directiveType: "to", layerType: "" },
     },
     {
-      desc: "whitespace demonstrativeType",
+      desc: "whitespace directiveType",
       config: validConfig,
-      params: { demonstrativeType: "   ", layerType: "project" },
+      params: { directiveType: "   ", layerType: "project" },
     },
     {
       desc: "whitespace layerType",
       config: validConfig,
-      params: { demonstrativeType: "to", layerType: "   " },
+      params: { directiveType: "to", layerType: "   " },
     },
   ];
 
@@ -151,7 +151,7 @@ Deno.test("0_architecture: Result type constraint - error categorization", () =>
   if (!paramErrorResult.ok) {
     assertEquals(paramErrorResult.error.kind, "InvalidParameterCombination");
     if (paramErrorResult.error.kind === "InvalidParameterCombination") {
-      assertExists(paramErrorResult.error.demonstrativeType);
+      assertExists(paramErrorResult.error.directiveType);
       assertExists(paramErrorResult.error.layerType);
     }
   }
@@ -160,7 +160,7 @@ Deno.test("0_architecture: Result type constraint - error categorization", () =>
   const invalidCombinationResult = PromptTemplatePathResolver.create(
     validConfig,
     {
-      demonstrativeType: "",
+      directiveType: "",
       layerType: "project",
     } as unknown as PromptCliParams | TwoParams_Result,
   );
@@ -168,7 +168,7 @@ Deno.test("0_architecture: Result type constraint - error categorization", () =>
   if (!invalidCombinationResult.ok) {
     assertEquals(invalidCombinationResult.error.kind, "InvalidParameterCombination");
     if (invalidCombinationResult.error.kind === "InvalidParameterCombination") {
-      assertExists(invalidCombinationResult.error.demonstrativeType);
+      assertExists(invalidCombinationResult.error.directiveType);
       assertExists(invalidCombinationResult.error.layerType);
     }
   }
@@ -187,7 +187,7 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
 
   // Test invalid legacy structure - avoid non-string types that cause runtime errors
   const invalidLegacy = {
-    demonstrativeType: null, // Wrong type - cannot be trimmed
+    directiveType: null, // Wrong type - cannot be trimmed
     layerType: "project",
   };
   const invalidLegacyResult = PromptTemplatePathResolver.create(
@@ -196,11 +196,11 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
   );
   assertEquals(invalidLegacyResult.ok, false);
 
-  // Test invalid TwoParams structure - missing demonstrativeType in structure
+  // Test invalid TwoParams structure - missing directiveType in structure
   const invalidTwoParams = {
     type: "two",
-    params: [], // Empty params array - no demonstrativeType available
-    // Missing demonstrativeType and layerType fields
+    params: [], // Empty params array - no directiveType available
+    // Missing directiveType and layerType fields
   };
   const invalidTwoParamsResult = PromptTemplatePathResolver.create(
     validConfig,
@@ -220,7 +220,7 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
   const missingLayerResult = PromptTemplatePathResolver.create(
     validConfig,
     {
-      demonstrativeType: "to",
+      directiveType: "to",
     } as unknown as PromptCliParams | TwoParams_Result,
   );
   assertEquals(missingLayerResult.ok, false);
@@ -244,7 +244,7 @@ Deno.test("0_architecture: Immutability constraint - input parameter isolation",
 
   // Mutate original inputs after construction
   originalConfig.app_prompt.base_dir = "MUTATED";
-  originalParams.demonstrativeType = "MUTATED";
+  originalParams.directiveType = "MUTATED";
   originalParams.options!.adaptation = "MUTATED";
 
   if (result.ok) {
@@ -256,7 +256,7 @@ Deno.test("0_architecture: Immutability constraint - input parameter isolation",
     if (pathResult.ok) {
       // Should use original values, not mutated ones
       assertEquals(pathResult.data.value.includes("MUTATED"), false);
-      assertEquals(pathResult.data.metadata.demonstrativeType, "to");
+      assertEquals(pathResult.data.metadata.directiveType, "to");
       assertEquals(pathResult.data.metadata.adaptation, "analysis");
     }
     // Whether path resolution succeeds or fails, the constructor should have isolated the inputs
@@ -465,12 +465,12 @@ Deno.test("0_architecture: Smart Constructor constraint - PromptTemplatePath val
   // ARCHITECTURE CONSTRAINT: Smart constructors must validate all inputs
   // PromptTemplatePath.create must ensure valid state
 
-  const { PromptTemplatePath } = await import("./prompt_template_path_resolver.ts");
+  const { PromptTemplatePath } = await import("./prompt_template_path_resolver_totality.ts");
 
   // Test empty path validation
   const emptyPathResult = PromptTemplatePath.create("", "Found", {
     baseDir: "/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     fromLayerType: "issue",
     attemptedPaths: [],
@@ -483,7 +483,7 @@ Deno.test("0_architecture: Smart Constructor constraint - PromptTemplatePath val
   // Test relative path validation
   const relativePathResult = PromptTemplatePath.create("relative/path", "Found", {
     baseDir: "/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     fromLayerType: "issue",
     attemptedPaths: [],
@@ -496,7 +496,7 @@ Deno.test("0_architecture: Smart Constructor constraint - PromptTemplatePath val
   // Test valid path creation
   const validPathResult = PromptTemplatePath.create("/valid/absolute/path", "Found", {
     baseDir: "/test",
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     fromLayerType: "issue",
     attemptedPaths: [],

@@ -8,13 +8,13 @@
  */
 
 import { PromptPath } from "../types/prompt_types.ts";
-import type { PromptCliParams, PromptVariables } from "../types/prompt_variables.ts";
+import type { PromptCliParams, PromptVariables } from "../types/prompt_variables_vo.ts";
 import {
   FilePathVariable as _FilePathVariable,
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "../types/prompt_variables.ts";
+} from "../types/prompt_variables_vo.ts";
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
 import type { ErrorInfo } from "@tettuan/breakdownparams";

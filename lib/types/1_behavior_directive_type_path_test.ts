@@ -7,17 +7,17 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { DirectiveType } from "./directive_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // テスト用のLayerType模擬オブジェクト
 const createMockLayer = (value: string) => ({ value });
 
 // テスト用のTwoParams_Result
-const createTwoParamsResult = (demonstrativeType: string, layerType: string): TwoParams_Result => ({
+const createTwoParamsResult = (directiveType: string, layerType: string): TwoParams_Result => ({
   type: "two" as const,
-  params: [demonstrativeType, layerType],
-  demonstrativeType,
+  params: [directiveType, layerType],
+  directiveType,
   layerType,
   options: {},
 });

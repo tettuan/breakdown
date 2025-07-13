@@ -191,7 +191,7 @@ describe("Unit: generateWithPrompt Function", () => {
 
     const options: GenerateWithPromptOptions = {
       adaptation: "strict",
-      demonstrativeType: "summary",
+      directiveType: "summary",
       input_text: "Test input text",
       extended: true,
       customVariables: { "key": "value" },

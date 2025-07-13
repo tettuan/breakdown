@@ -84,7 +84,7 @@ async function runPromptProcessing(
   _options?: {
     adaptation?: string;
     promptDir?: string;
-    demonstrativeType?: string;
+    directiveType?: string;
     input_text?: string;
   },
 ): Promise<CommandResult> {
@@ -117,7 +117,7 @@ export interface GenerateWithPromptOptions {
   /** Directory for prompt files. */
   promptDir?: string;
   /** Demonstrative type for prompt generation. */
-  demonstrativeType?: string;
+  directiveType?: string;
   /** Input text from stdin. */
   input_text?: string;
   /** Input text from file. */

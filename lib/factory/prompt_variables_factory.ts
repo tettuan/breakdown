@@ -25,8 +25,12 @@ import {
 } from "../domain/prompt_variable_transformer.ts";
 import {
   formatPathResolutionError as _formatPathResolutionError,
-  PromptTemplatePathResolver,
-} from "./prompt_template_path_resolver.ts";
+  PromptTemplatePath as PromptTemplatePathResolver,
+  PromptTemplatePathResolverTotality,
+} from "./prompt_template_path_resolver_totality.ts";
+import {
+  SchemaFilePathResolverTotality,
+} from "./schema_file_path_resolver_totality.ts";
 // Note: InputFilePathResolver and OutputFilePathResolver have been consolidated 
 // into input_file_path_resolver_totality.ts as part of DDD refactoring
 import { 
@@ -38,8 +42,8 @@ const OutputFilePathResolver = InputFilePathResolver;
 type OutputFilePathResolver = InputFilePathResolver;
 import {
   formatSchemaError as _formatSchemaError,
-  SchemaFilePathResolver,
-} from "./schema_file_path_resolver.ts";
+  SchemaFilePathResolverTotality as SchemaFilePathResolver,
+} from "./schema_file_path_resolver_totality.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { error as resultError, ok, Result } from "../types/result.ts";
 import {
@@ -49,27 +53,29 @@ import {
 
 /**
  * Configuration options for prompt generation and file resolution.
+ * Enhanced with Worker1 template pattern for type safety.
  */
 export interface PromptCliOptions {
-  fromFile?: string;
-  destinationFile?: string;
-  adaptation?: string;
-  promptDir?: string;
-  fromLayerType?: string;
-  input_text?: string;
-  customVariables?: Record<string, string>;
-  extended?: boolean;
-  customValidation?: boolean;
-  errorFormat?: "simple" | "detailed" | "json";
-  config?: string;
+  readonly fromFile?: string;
+  readonly destinationFile?: string;
+  readonly adaptation?: string;
+  readonly promptDir?: string;
+  readonly fromLayerType?: string;
+  readonly input_text?: string;
+  readonly customVariables?: Record<string, string>;
+  readonly extended?: boolean;
+  readonly customValidation?: boolean;
+  readonly errorFormat?: "simple" | "detailed" | "json";
+  readonly config?: string;
 }
 
 /**
  * Parameters for CLI prompt operations.
  */
 export interface PromptCliParams {
-  demonstrativeType: string;
+  directiveType: string;
   layerType: string;
+  demonstrativeType: string;
   options: PromptCliOptions;
 }
 
@@ -78,8 +84,9 @@ export interface PromptCliParams {
  * Provides the same interface as PromptCliParams but with stricter validation.
  */
 export interface TotalityPromptCliParams extends PromptCliParams {
-  demonstrativeType: string;
+  directiveType: string;
   layerType: string;
+  demonstrativeType: string;
   options: PromptCliOptions;
   // Additional properties for backward compatibility with tests
   directive?: DirectiveType;
@@ -169,8 +176,9 @@ function createPathResolutionOptions(
 function createTemplateResolver(
   config: FactoryConfig,
   cliParams: PromptCliParams
-): Result<PromptTemplatePathResolver | undefined, PromptVariablesFactoryErrors> {
-  const templateResolverResult = PromptTemplatePathResolver.create(config, cliParams);
+): Result<PromptTemplatePathResolverTotality | undefined, PromptVariablesFactoryErrors> {
+  // Use PromptTemplatePathResolverTotality instead of PromptTemplatePath for factory creation
+  const templateResolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
   
   if (!templateResolverResult.ok) {
     // Template resolver creation failed - return undefined (acceptable in test environments)
@@ -186,8 +194,8 @@ function createTemplateResolver(
 function createSchemaResolver(
   config: FactoryConfig,
   cliParams: PromptCliParams
-): Result<SchemaFilePathResolver | undefined, PromptVariablesFactoryErrors> {
-  const schemaResolverResult = SchemaFilePathResolver.create(config, cliParams);
+): Result<SchemaFilePathResolverTotality | undefined, PromptVariablesFactoryErrors> {
+  const schemaResolverResult = SchemaFilePathResolverTotality.create(config, cliParams);
   
   if (!schemaResolverResult.ok) {
     // Schema resolver creation failed - return undefined (acceptable in test environments)
@@ -235,15 +243,16 @@ function createOutputResolver(
  * Create TwoParams_Result from CLI parameters
  */
 function createTwoParamsResult(
-  demonstrativeType: string,
+  directiveType: string,
   layerType: string,
   options: Record<string, unknown> = {}
 ): TwoParams_Result {
   return {
     type: "two" as const,
-    params: [demonstrativeType, layerType],
-    demonstrativeType,
+    params: [directiveType, layerType],
+    directiveType,
     layerType,
+    demonstrativeType: directiveType,
     options,
   };
 }
@@ -257,10 +266,10 @@ function createTwoParamsResult(
 export class PromptVariablesFactory {
   private readonly transformer: PromptVariableTransformer;
   private pathResolvers: {
-    template?: PromptTemplatePathResolver;
+    template?: PromptTemplatePathResolverTotality;
     input?: InputFilePathResolver;
     output?: OutputFilePathResolver;
-    schema?: SchemaFilePathResolver;
+    schema?: SchemaFilePathResolverTotality;
   };
 
   // Cached resolved paths
@@ -413,7 +422,7 @@ export class PromptVariablesFactory {
       inputFilePath: this.inputFilePath,
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
-      directive: totalityParams.directive || this.createDirectiveFromString(this.cliParams.demonstrativeType),
+      directive: totalityParams.directive || this.createDirectiveFromString(this.cliParams.directiveType),
       layer: totalityParams.layer || this.createLayerFromString(this.cliParams.layerType),
       customVariables: this.cliParams.options.customVariables,
     };
@@ -486,7 +495,7 @@ export class PromptVariablesFactory {
    */
   public get promptFilePath(): string {
     if (!this._promptFilePath) {
-      const fallback = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+      const fallback = `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return fallback;
     }
     return this._promptFilePath;
@@ -497,7 +506,7 @@ export class PromptVariablesFactory {
    */
   public getPromptFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._promptFilePath) {
-      const fallback = `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+      const fallback = `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return ok(fallback);
     }
     return ok(this._promptFilePath);
@@ -548,7 +557,7 @@ export class PromptVariablesFactory {
    */
   public get schemaFilePath(): string {
     if (!this._schemaFilePath) {
-      return `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      return `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
     return this._schemaFilePath;
   }
@@ -558,7 +567,7 @@ export class PromptVariablesFactory {
    */
   public getSchemaFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._schemaFilePath) {
-      const fallback = `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      const fallback = `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       return ok(fallback);
     }
     return ok(this._schemaFilePath);
@@ -667,7 +676,7 @@ export class PromptVariablesFactory {
    * Legacy API: Get directive type (for backward compatibility)
    */
   public getDirective(): string {
-    return this.cliParams.demonstrativeType;
+    return this.cliParams.directiveType;
   }
 
   /**
@@ -718,7 +727,7 @@ export class PromptVariablesFactory {
     const promptParams: PromptParams = {
       template_file: templatePathResult.data,
       variables: {
-        demonstrative_type: this.cliParams.demonstrativeType,
+        demonstrative_type: this.cliParams.directiveType,
         layer_type: this.cliParams.layerType,
         input_file: this.inputFilePath,
         output_file: this.outputFilePath,
@@ -736,7 +745,7 @@ export class PromptVariablesFactory {
    */
   private createPromptVariableSourceSafe(): Result<PromptVariableSource, PromptVariablesFactoryErrors> {
     const cliSource = PromptVariableSourceFactory.fromCLI({
-      directive: this.cliParams.demonstrativeType,
+      directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,
       fromFile: this.cliParams.options.fromFile,
       destinationFile: this.cliParams.options.destinationFile,
@@ -748,7 +757,7 @@ export class PromptVariablesFactory {
       : undefined;
 
     const configSource = PromptVariableSourceFactory.fromConfig({
-      directive: this.cliParams.demonstrativeType,
+      directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,
       promptDir: this.config.app_prompt?.base_dir,
       profile: this.cliParams.options.config,
@@ -781,12 +790,12 @@ export class PromptVariablesFactory {
       } else {
         // Template path resolution failed - use fallback
         this._promptFilePath =
-          `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+          `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       }
     } else {
       // No template resolver - use fallback path
       this._promptFilePath =
-        `prompts/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
     }
 
     // Resolve input path using new Result-based API (if resolver exists)
@@ -825,12 +834,12 @@ export class PromptVariablesFactory {
       } else {
         // Schema path resolution failed - use fallback
         this._schemaFilePath =
-          `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+          `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       }
     } else {
       // No schema resolver - use fallback path
       this._schemaFilePath =
-        `schemas/${this.cliParams.demonstrativeType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+        `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
 
     return ok(undefined);
