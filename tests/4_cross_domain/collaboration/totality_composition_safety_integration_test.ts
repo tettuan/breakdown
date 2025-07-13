@@ -19,7 +19,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Core Domain imports
 // import { DirectiveType } from "../../../lib/types/directive_type.ts";
-// import { LayerType } from "../../../lib/types/layer_type.ts";
+// import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import { ConfigProfileName } from "../../../lib/types/config_profile_name.ts";
 import { error, isOk, ok, Result } from "../../../lib/types/result.ts";
 

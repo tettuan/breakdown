@@ -29,7 +29,7 @@ import {
   SchemaPathConfig as _SchemaPathConfig,
   SchemaPathError,
 } from "./schema_path.ts";
-import type { DirectiveType } from "../../../types/directive_type.ts";
+import type { DirectiveType } from "../value_objects/directive_type.ts";
 import type { LayerType } from "../../../domain/core/value_objects/layer_type.ts";
 
 // =============================================================================

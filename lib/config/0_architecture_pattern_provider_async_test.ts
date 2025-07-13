@@ -19,7 +19,7 @@ import {
   DefaultPatternProvider,
   type PatternProviderError,
 } from "./pattern_provider_async.ts";
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // =============================================================================

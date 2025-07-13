@@ -6,7 +6,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { SchemaPath, type SchemaPathResult } from "./schema_path.ts";
-import { DirectiveType } from "../../../../types/directive_type.ts";
+import { DirectiveType } from "../../../core/value_objects/directive_type.ts";
 import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../../../../deps.ts";
 
@@ -226,7 +226,7 @@ Deno.test("1_behavior: generates correct path", () => {
   const result = SchemaPath.create(validDirective, validLayer, validFilename);
 
   if (result.ok) {
-    const expectedPath = `${validDirective.getValue()}/${validLayer.getValue()}/${validFilename}`;
+    const expectedPath = `${validDirective.value}/${validLayer.value}/${validFilename}`;
     assertEquals(result.data!.getPath(), expectedPath);
   }
 });
@@ -328,8 +328,8 @@ Deno.test("2_structure: path composition correctness", () => {
     const fullPath = path.getPath();
 
     // Path should contain all components
-    assertEquals(fullPath.includes(validDirective.getValue()), true);
-    assertEquals(fullPath.includes(validLayer.getValue()), true);
+    assertEquals(fullPath.includes(validDirective.value), true);
+    assertEquals(fullPath.includes(validLayer.value), true);
     assertEquals(fullPath.includes(validFilename), true);
 
     // Path should have correct separators
@@ -401,8 +401,8 @@ Deno.test("2_structure: path format consistency", () => {
       const parts = path.split("/");
 
       assertEquals(parts.length, 3);
-      assertEquals(parts[0], validDirective.getValue());
-      assertEquals(parts[1], validLayer.getValue());
+      assertEquals(parts[0], validDirective.value);
+      assertEquals(parts[1], validLayer.value);
       assertEquals(parts[2], filename);
     }
   }

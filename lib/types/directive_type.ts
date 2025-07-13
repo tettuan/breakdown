@@ -28,17 +28,6 @@ import { ConfigProfileName } from "./config_profile_name.ts";
 export class TwoParamsDirectivePattern {
   private constructor(private readonly pattern: RegExp) {}
 
-  /**
-   * 文字列パターンから TwoParamsDirectivePattern を作成
-   * @param pattern 正規表現文字列
-   * @returns 成功時は TwoParamsDirectivePattern、失敗時は null
-   * @deprecated Use createOrError() for Totality-compliant error handling
-   */
-  static create(pattern: string): TwoParamsDirectivePattern | null {
-    // Totality原則準拠版のcreateOrErrorを使用し、nullで結果を返すレガシーメソッド
-    const result = TwoParamsDirectivePattern.createOrError(pattern);
-    return result.ok ? result.data : null;
-  }
 
   /**
    * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
@@ -280,14 +269,6 @@ export class DirectiveType {
    */
   get validatedByPattern(): boolean {
     return this._validatedByPattern;
-  }
-
-  /**
-   * getValue method for compatibility with test files
-   * @deprecated Use .value property instead
-   */
-  getValue(): string {
-    return this.value;
   }
 
   /**

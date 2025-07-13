@@ -14,8 +14,8 @@ import {
 } from "../factory/prompt_variables_factory.ts";
 import { PromptTemplatePathResolver } from "../factory/prompt_template_path_resolver.ts";
 import { SchemaFilePathResolver } from "../factory/schema_file_path_resolver.ts";
-import { InputFilePathResolver } from "../factory/input_file_path_resolver.ts";
-import { OutputFilePathResolver } from "../factory/output_file_path_resolver.ts";
+// import { InputFilePathResolver } from "../factory/input_file_path_resolver.ts"; // REMOVED - file doesn't exist
+// import { OutputFilePathResolver } from "../factory/output_file_path_resolver.ts"; // REMOVED - file doesn't exist
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
 import { extractBaseDir } from "./types.ts";
@@ -124,8 +124,8 @@ export class FactoryConfigAdapter {
     return {
       template: PromptTemplatePathResolver.create(factoryConfig, dummyCliParams),
       schema: SchemaFilePathResolver.create(factoryConfig, dummyCliParams),
-      input: InputFilePathResolver.create(factoryConfig, dummyCliParams),
-      output: OutputFilePathResolver.create(factoryConfig, dummyCliParams),
+      // input: InputFilePathResolver.create(factoryConfig, dummyCliParams), // REMOVED - class doesn't exist
+      // output: OutputFilePathResolver.create(factoryConfig, dummyCliParams), // REMOVED - class doesn't exist
     };
   }
 }

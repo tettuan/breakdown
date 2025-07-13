@@ -21,12 +21,7 @@ export {
   ConfigProfileName,
   type ConfigurationError,
   // Variable types
-  createEmptyValueError,
-  createError,
-  createInvalidNameError,
-  createPromptParams,
-  createSuccess,
-  createValidationFailedError,
+  // createPromptParams, // REMOVED - not exported from mod.ts
   // Default implementations
   DefaultTypePatternProvider,
   // Deprecated legacy types (for backward compatibility) - COMMENTED OUT
@@ -40,16 +35,16 @@ export {
   error,
   ErrorFactory,
   ErrorGuards,
-  type ErrorMetadata,
+  // type ErrorMetadata, // REMOVED - not exported from mod.ts
   ErrorSeverity,
   // Error severity types
-  ErrorSeverityClass,
+  // ErrorSeverityClass, // REMOVED - use ErrorSeverity instead
   type ErrorSeverityType,
   extractUnifiedErrorMessage,
-  FilePathVariable,
-  FilePathVariableName,
+  // FilePathVariable, // REMOVED - not exported from mod.ts
+  // FilePathVariableName, // REMOVED - not exported from mod.ts
   getOrElse,
-  ImpactScope,
+  // ImpactScope, // REMOVED - not exported from mod.ts
   isError,
   isOk,
   // LayerFactory, // REMOVED - use LayerTypeFactory instead
@@ -68,18 +63,18 @@ export {
   // Re-export types defined in factory to avoid circular dependencies
   type PromptCliOptions,
   type PromptCliParams,
-  type PromptVariable,
-  type PromptVariables,
+  // type PromptVariable, // REMOVED - not exported from mod.ts
+  // type PromptVariables, // REMOVED - not exported from mod.ts
   type Result,
   ResultStatus,
-  SeverityLevel,
-  StandardVariable,
-  StandardVariableName,
-  StdinVariable,
-  StdinVariableName,
+  // SeverityLevel, // REMOVED - not exported from mod.ts
+  // StandardVariable, // REMOVED - not exported from mod.ts
+  // StandardVariableName, // REMOVED - not exported from mod.ts
+  // StdinVariable, // REMOVED - not exported from mod.ts
+  // StdinVariableName, // REMOVED - not exported from mod.ts
   type SystemError,
   type SystemErrorKind,
-  toPromptParamsVariables,
+  // toPromptParamsVariables, // REMOVED - not exported from mod.ts
   type TotalityPromptCliParams,
   // Re-export factory classes
   TotalityPromptVariablesFactory,
@@ -95,9 +90,7 @@ export {
   type TypePatternProvider,
   type UnifiedError,
   type UnifiedResult,
-  UserVariable,
-  type VariableError,
-  type VariableResult,
+  // UserVariable, // REMOVED - not exported from mod.ts
   // VariableResultFactory, // REMOVED
   type WorkspaceError,
   type ZeroParamsResult,

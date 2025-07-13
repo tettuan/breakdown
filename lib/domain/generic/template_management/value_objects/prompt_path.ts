@@ -65,7 +65,7 @@ export class PromptPath {
    * Get the full path
    */
   getPath(): string {
-    return `${this.directive.getValue()}/${this.layer.getValue()}/${this.filename}`;
+    return `${this.directive.value}/${this.layer.value}/${this.filename}`;
   }
 
   /**

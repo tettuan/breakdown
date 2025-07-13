@@ -65,326 +65,285 @@
 
 ## 修正対象
 ```
-# Breakdown Application Skeleton Analysis 20250712
-# アプリケーションの重要なTYPE宣言と重要なフローのYAML化
+# Breakdown Application Skeleton Analysis
+# Generated: 2025-07-12
+# Purpose: アプリケーション全体の骨格と重要なTYPE宣言をYAML化
 
-# 骨格判断結果
-skeleton_analysis:
-  central_backbone:
-    description: "最短で最後まで通る経路（骨格の中心）"
-    path: "runBreakdown → handleTwoParams → TwoParamsOrchestrator → PromptManagerAdapter → stdout"
-    
-  frequent_paths:
-    description: "何度も通る経路（骨格）"
-    paths:
-      - "ConfigProfileName.create → BreakdownConfig loading"
-      - "ParamsParser.parse → parameter validation"
-      - "Result type pattern matching"
-      - "Error handling through Result<T, E>"
+application:
+  name: breakdown
+  type: CLI_tool
+  architecture: domain_driven_design
+  principle: totality_principle
 
-# 距離判定
-distance_analysis:
-  horizontal_axis:
-    description: "意味的な違いによる近接距離"
-    core_distance_0:
-      - "runBreakdown"
-      - "handleTwoParams" 
-      - "TwoParamsOrchestrator"
-      - "PromptManagerAdapter"
-    supporting_distance_1:
-      - "ConfigProfileName"
-      - "ParamsParser"
-      - "DirectiveType"
-      - "LayerType"
-    infrastructure_distance_2:
-      - "Result types"
-      - "Error handling"
-      - "File system operations"
-      - "STDIN processing"
+# メインフロー（骨格の中心）
+main_flow:
+  entry_point: mod.ts
+  
+  # 骨格の中心経路（最短距離）
+  core_path:
+    - mod.ts:16 → cli/breakdown.ts:runBreakdown()
+    - ConfigPrefixDetector.detect() → ConfigProfileName.create()
+    - ConfigLoader.loadBreakdownConfig() → ParamsCustomConfig.create()
+    - ParamsParser.parse() → result分岐
+    - handleTwoParams/OneParams/ZeroParams → プロンプト出力
 
-  vertical_axis:
-    description: "実行ステップ数による内部処理の深さ"
-    layer_1_surface: ["Entry points", "Handler delegation"]
-    layer_2_orchestration: ["Parameter processing", "Factory creation"]
-    layer_3_domain: ["Type validation", "Path resolution", "Variable processing"]
+  # 分岐パターン（異常系含む）
+  branches:
+    zero_params:
+      handler: handleZeroParams
+      flow: args → options解析 → help/version/usage表示
+      end_point: showHelp/showVersion/showUsage
+      
+    one_params:
+      handler: handleOneParams
+      flow: params → "init"判定 → initializeBreakdownConfiguration
+      end_point: workspace初期化完了
+      
+    two_params:
+      handler: handleTwoParams
+      flow: params → TwoParamsOrchestrator → プロンプト生成 → 標準出力
+      end_point: プロンプトテンプレート標準出力
+      
+    error:
+      handler: error分岐
+      flow: result.error → error message → エラー終了
+      end_point: エラーメッセージ出力
 
-# 3階層YAML構造
-application_skeleton:
-
-  # 階層1: 表面層（Entry Points & Handler Delegation）
-  layer_1_entry_points:
-    
-    # 距離0: 中心骨格
-    core_entry:
+# 距離判定による階層構造（3階層）
+hierarchy:
+  # 第1階層：骨格の中心（横軸距離：0）
+  layer1_core:
+    components:
       - name: runBreakdown
-        initializer: runBreakdown()
+        type: function
         args: "args: string[]"
-        return: "Result<void, BreakdownError>"
-        description: "メインエントリーポイント - 全体のオーケストレーション"
+        return: "Promise<Result<void, BreakdownError>>"
+        role: メインエントリーポイント
         
-      - name: handleTwoParams  
-        initializer: handleTwoParams()
-        args: "params: string[], config: Record<string, unknown>, options: Record<string, unknown>"
-        return: "Result<void, TwoParamsHandlerError>"
-        description: "2パラメータケースのハンドラー"
-
-    # 距離1: 支援的エントリー
-    supporting_entry:
-      - name: handleOneParams
-        initializer: handleOneParams()
-        args: "params: string[], config: Record<string, unknown>, options: Record<string, unknown>"
-        return: "Promise<void>"
-        description: "1パラメータケース（主にinit）"
-        
-      - name: handleZeroParams
-        initializer: handleZeroParams()
-        args: "args: string[], config: Record<string, unknown>, options: Record<string, unknown>"
-        return: "void"
-        description: "0パラメータケース（help, version）"
-
-  # 階層2: オーケストレーション層（Parameter Processing & Factory Creation）
-  layer_2_orchestration:
-    
-    # 距離0: 中心骨格
-    core_orchestration:
-      - name: TwoParamsOrchestrator
-        initializer: "new TwoParamsOrchestrator()"
-        args: "outputProcessor?: TwoParamsOutputProcessor"
-        return: "TwoParamsOrchestrator"
-        description: "2パラメータ処理の内部オーケストレーター"
-        
-      - name: ParamsParser
-        initializer: "new ParamsParser()"
-        args: "undefined, customConfig: ParamsCustomConfig | undefined"
-        return: "ParamsParser"
-        description: "コマンドライン引数の解析"
-
-      - name: PromptVariablesFactory
-        initializer: "createWithConfig()"
-        args: "config: Record<string, unknown>, cliParams: PromptCliParams"
-        return: "Result<PromptVariablesFactory, PromptVariablesFactoryError>"
-        description: "プロンプト変数の3段階変容を管理するファクトリー"
-
-    # 距離1: 支援的オーケストレーション  
-    supporting_orchestration:
       - name: ConfigPrefixDetector
-        initializer: "ConfigPrefixDetector.detect()"
+        type: class
+        initializer: detect()
         args: "args: string[]"
         return: "string | null"
-        description: "設定プレフィックスの検出"
+        role: 設定プロファイル検出
         
-      - name: ParamsCustomConfig
-        initializer: "ParamsCustomConfig.create()"
-        args: "config: Record<string, unknown>"
-        return: "EnumResult<ParamsCustomConfig>"
-        description: "カスタム設定の作成と検証"
+      - name: ParamsParser
+        type: class
+        initializer: "new ParamsParser()"
+        args: "customConfig: undefined | CustomConfig"
+        return: ParamsParser
+        role: CLI引数解析
+        
+      - name: Result
+        type: "type alias"
+        structure: "Result<T, E> = { ok: true; data: T } | { ok: false; error: E }"
+        role: エラーハンドリング基盤
 
-  # 階層3: ドメイン層（Type Validation & Path Resolution & Variable Processing）
-  layer_3_domain:
-    
-    # 距離0: 中心骨格
-    core_domain:
+  # 第2階層：主要処理（横軸距離：1）
+  layer2_main_processors:
+    components:
+      - name: TwoParamsOrchestrator
+        type: class
+        initializer: execute()
+        args: "params: string[], config: Record<string, unknown>, options: Record<string, unknown>"
+        return: "Promise<Result<void, TwoParamsHandlerError>>"
+        role: 2パラメータ処理オーケストレーション
+        
+      - name: ConfigProfileName
+        type: class
+        initializer: create()
+        args: "value: string | null | undefined"
+        return: "Result<ConfigProfileName, ConfigProfileNameError>"
+        role: 設定プロファイル名管理
+        
+      - name: ConfigLoader
+        type: class
+        initializer: loadBreakdownConfig()
+        args: "profileName: string, workingDir: string"
+        return: "Promise<Result<Record<string, unknown>, Error>>"
+        role: 設定ファイル読み込み
+        
       - name: DirectiveType
-        initializer: "DirectiveType.create()"
+        type: class
+        initializer: create()
         args: "result: TwoParams_Result, profile?: ConfigProfileName"
-        return: "DirectiveType"
-        description: "処理方向型（to, summary, defect等）"
+        return: DirectiveType
+        role: 処理方向型（to/summary/defect）
         
       - name: LayerType
-        initializer: "LayerType.create()" 
+        type: class
+        initializer: create()
         args: "result: TwoParams_Result, pattern?: TwoParamsLayerTypePattern"
-        return: "LayerType"
-        description: "階層型（project, issue, task等）"
+        return: LayerType
+        role: 階層型（project/issue/task）
 
-      - name: PromptManagerAdapter
-        initializer: "generatePrompt()"
-        args: "template: PromptPath, variables: PromptVariables"
-        return: "Result<PromptResult, ProcessingError>"
-        description: "@tettuan/breakdownpromptパッケージへのアダプター"
-
-      - name: VariablesBuilder
-        initializer: "new VariablesBuilder()"
-        args: "なし"
-        return: "VariablesBuilder"
-        description: "プロンプト変数のビルダー"
-
-    # 距離1: 支援的ドメイン
-    supporting_domain:
-      - name: ConfigProfileName
-        initializer: "ConfigProfileName.create()"
-        args: "name: string"
-        return: "Result<ConfigProfileName, ValidationError>"
-        description: "設定プロファイル名の型安全な管理"
-        
+  # 第3階層：詳細処理（横軸距離：2）
+  layer3_detail_processors:
+    components:
       - name: TwoParamsValidator
-        initializer: "validate()"
+        type: class
+        initializer: validate()
         args: "params: string[]"
-        return: "Result<ValidatedParams, unknown>"
-        description: "2パラメータのバリデーション"
-
+        return: "Promise<Result<ValidationResult, unknown>>"
+        role: 2パラメータバリデーション
+        
       - name: TwoParamsStdinProcessor
-        initializer: "process()"
+        type: class
+        initializer: process()
         args: "config: BreakdownConfigCompatible, options: Record<string, unknown>"
-        return: "Result<string, ProcessingError>"
-        description: "STDIN入力の処理"
-
+        return: "Promise<Result<string, StdinError>>"
+        role: STDIN処理
+        
       - name: TwoParamsVariableProcessor
-        initializer: "processVariables()"
-        args: "options: Record<string, unknown>, stdinData: string"
+        type: class
+        initializer: processVariables()
+        args: "options: Record<string, unknown>, stdinContent: string"
         return: "Result<PromptVariables, VariableError[]>"
-        description: "変数の処理と変換"
-
-    # 距離2: インフラストラクチャー
-    infrastructure_domain:
-      - name: Result
-        initializer: "ok() / error()"
-        args: "data: T / error: E"
-        return: "Result<T, E>"
-        description: "Totality原則に基づくエラーハンドリング"
+        role: プロンプト変数処理
+        
+      - name: TwoParamsPromptGenerator
+        type: class
+        initializer: generatePrompt()
+        args: "config: Record<string, unknown>, params: ValidatedParams, options: Record<string, unknown>, variables: PromptVariables"
+        return: "Promise<Result<string, PromptError>>"
+        role: プロンプト生成
         
       - name: TwoParamsOutputProcessor
-        initializer: "writeOutput()"
-        args: "data: unknown"
-        return: "Result<void, OutputWriteError>"
-        description: "標準出力への書き込み処理"
+        type: class
+        initializer: writeOutput()
+        args: "content: string"
+        return: "Promise<Result<void, TwoParamsHandlerError>>"
+        role: 出力処理（標準出力のみ）
 
-# 初期引数別のフロー分析
-parameter_flow_analysis:
-  
-  zero_params:
-    pattern: "breakdown --version"
-    flow:
-      - "runBreakdown(args)"
-      - "ParamsParser.parse(args) → ZeroParamsResult"
-      - "handleZeroParams(args, config, options)"
-      - "showVersion() → stdout"
-    skeleton_components: ["runBreakdown", "ParamsParser", "handleZeroParams"]
-    
-  one_param:
-    pattern: "breakdown init"
-    flow:
-      - "runBreakdown(args)"
-      - "ParamsParser.parse(args) → OneParamsResult"
-      - "handleOneParams(params, config, options)"
-      - "initializeBreakdownConfiguration()"
-    skeleton_components: ["runBreakdown", "ParamsParser", "handleOneParams"]
-    
-  two_params:
-    pattern: "breakdown to project"
-    flow:
-      - "runBreakdown(args)"
-      - "ConfigPrefixDetector.detect(args)"
-      - "ConfigProfileName.create(prefix)"
-      - "loadBreakdownConfig(profile, cwd)"
-      - "ParamsCustomConfig.create(config)"
-      - "ParamsParser.parse(args) → TwoParamsResult"
-      - "handleTwoParams(params, config, options)"
-      - "TwoParamsOrchestrator.execute()"
-      - "  ├─ TwoParamsValidator.validate()"
-      - "  ├─ TwoParamsStdinProcessor.process()"
-      - "  ├─ TwoParamsVariableProcessor.processVariables()"
-      - "  ├─ TwoParamsPromptGenerator.generatePrompt()"
-      - "  │   ├─ PromptVariablesFactory.createWithConfig()"
-      - "  │   ├─ VariablesBuilder.build()"
-      - "  │   └─ PromptManagerAdapter.generatePrompt()"
-      - "  └─ TwoParamsOutputProcessor.writeOutput() → stdout"
-    skeleton_components:
-      core: ["runBreakdown", "handleTwoParams", "TwoParamsOrchestrator", "PromptManagerAdapter"]
-      supporting: ["ConfigProfileName", "ParamsParser", "DirectiveType", "LayerType"]
-
-# 異常系フロー
-error_flow_analysis:
-  
-  config_error:
-    trigger: "Invalid configuration"
-    flow:
-      - "ConfigProfileName.create() → Result.error"
-      - "Return BreakdownError"
-    termination: "Early termination with error message"
-    
-  validation_error:
-    trigger: "Invalid parameters"
-    flow:
-      - "ParamsParser.parse() → ErrorResult"
-      - "Return ParameterParsingError"
-    termination: "Early termination with validation message"
-    
-  prompt_generation_error:
-    trigger: "Template not found or variable error"
-    flow:
-      - "PromptManagerAdapter.generatePrompt() → Result.error"
-      - "Map to PromptGenerationError"
-      - "Return TwoParamsHandlerError"
-    termination: "Error handling with context"
-
-# 簡易な宣言構造まとめ
-simplified_type_structures:
-  
+# 重要な型宣言の簡易構造
+type_declarations:
   result_types:
-    - name: "Result"
-      structure: "Result<T, E>"
-      description: "Generic Result type for error handling"
+    - name: Result
+      structure: "Result<T, E> = { ok: true; data: T } | { ok: false; error: E }"
+      description: "Generic Result type for totality principle"
       
-    - name: "ParamsResult"
-      structure: "ZeroParamsResult | OneParamsResult | TwoParamsResult | ErrorResult"
+    - name: ParamsResult
+      structure: "TwoParamsResult | OneParamsResult | ZeroParamsResult | ErrorResult"
       description: "Discriminated union for parameter parsing results"
       
-    - name: "BreakdownError"
+    - name: BreakdownError
       structure: "ConfigProfileError | ConfigLoadError | ParameterParsingError | TwoParamsHandlerError | OneParamsHandlerError | ZeroParamsHandlerError | UnknownResultType"
-      description: "Complete error types following Totality principle"
+      description: "Main application error types"
 
-  core_value_objects:
-    - name: "DirectiveType"
-      structure: "class DirectiveType { private constructor(result: TwoParams_Result) }"
-      description: "Smart Constructor for processing direction (to, summary, defect)"
+  parameter_types:
+    - name: TwoParams_Result
+      structure: "{ type: 'two'; demonstrativeType: string; layerType: string; options: Record<string, unknown> }"
+      description: "Two parameter parsing result from BreakdownParams"
       
-    - name: "LayerType"
-      structure: "class LayerType { private constructor(result: TwoParams_Result) }"
-      description: "Smart Constructor for hierarchy layer (project, issue, task)"
+    - name: OneParamsResult
+      structure: "{ type: 'one'; params: string[]; options: Record<string, unknown> }"
+      description: "One parameter parsing result"
       
-    - name: "ConfigProfileName"
-      structure: "class ConfigProfileName { private constructor(name: string) }"
-      description: "Smart Constructor for configuration profile name"
+    - name: ZeroParamsResult
+      structure: "{ type: 'zero'; options: Record<string, unknown> }"
+      description: "Zero parameter parsing result"
 
-  factory_types:
-    - name: "PromptVariablesFactory"
-      structure: "PromptVariableSource → PromptVariables → PromptParams"
-      description: "3-stage transformation factory for prompt variables"
+  domain_types:
+    - name: DirectiveType
+      structure: "Smart constructor class with value: string, profile: ConfigProfileName"
+      description: "Processing direction (to/summary/defect)"
       
-    - name: "VariablesBuilder"
-      structure: "Builder pattern for PromptVariables collection construction"
-      description: "Builder for constructing PromptVariables collections"
-
-  adapter_types:
-    - name: "PromptManagerAdapter"
-      structure: "Duck Typing adapter for @tettuan/breakdownprompt package"
-      description: "Adapter for external prompt generation package"
-
-  processing_types:
-    - name: "TwoParamsOrchestrator"
-      structure: "Internal orchestrator with composition pattern"
-      description: "Orchestrates the complete two-params processing flow"
+    - name: LayerType
+      structure: "Smart constructor class with value: string, validatedByPattern: TwoParamsLayerTypePattern"
+      description: "Hierarchical layer (project/issue/task)"
       
-    - name: "TwoParamsVariableProcessor"
-      structure: "Domain service for variable processing"
-      description: "Handles variable processing and transformation"
+    - name: ConfigProfileName
+      structure: "Smart constructor class with value: string, isDefault: boolean"
+      description: "Configuration profile management"
 
-# まとめ
-summary:
-  skeleton_identification:
-    description: "What is repeated frequently and what goes through to the end in the shortest path"
-    core_backbone: "runBreakdown → handleTwoParams → TwoParamsOrchestrator → PromptManagerAdapter → stdout"
-    frequent_components: ["Result type handling", "ConfigProfileName", "ParamsParser", "DirectiveType/LayerType"]
+  variable_types:
+    - name: PromptVariableSource
+      structure: "{ directive?: string; layer?: string; inputFile?: string; destinationPath?: string; schemaFile?: string; stdinContent?: string; userVariables?: Record<string, string>; metadata?: SourceMetadata }"
+      description: "Stage 1: Raw materials for prompt variables"
+      
+    - name: PromptVariablesVO
+      structure: "Smart constructor class with readonly variables: PromptVariable[]"
+      description: "Stage 2: Validated prompt variables"
+      
+    - name: PromptVariables
+      structure: "{ toRecord(): Record<string, string> }"
+      description: "Interface for prompt variables duck typing"
+
+  error_types:
+    - name: ValidationError
+      structure: "Discriminated union with kind-based error types"
+      description: "Validation specific errors"
+      
+    - name: PathError
+      structure: "InvalidPath | PathNotFound | DirectoryNotFound | PermissionDenied | PathTooLong"
+      description: "Path operation errors"
+      
+    - name: TwoParamsHandlerError
+      structure: "InvalidParameterCount | InvalidDemonstrativeType | InvalidLayerType | StdinReadError | FactoryCreationError | FactoryValidationError | VariablesBuilderError | PromptGenerationError | OutputWriteError"
+      description: "Two parameters handler specific errors"
+
+# 初期引数パターンと処理経路
+argument_patterns:
+  zero_args:
+    examples:
+      - "breakdown --version"
+      - "breakdown --help"
+    flow: "args → ParamsParser → ZeroParamsResult → handleZeroParams → showVersion/showHelp"
+    end_goal: "ヘルプ・バージョン情報表示"
     
-  distance_classification:
-    core_distance_0: "Main flow components that are always used"
-    supporting_distance_1: "Supporting components used frequently" 
-    infrastructure_distance_2: "Infrastructure components used as foundation"
+  one_arg:
+    examples:
+      - "breakdown init"
+    flow: "args → ParamsParser → OneParamsResult → handleOneParams → initializeBreakdownConfiguration"
+    end_goal: "ワークスペース初期化"
     
-  totality_principle:
-    description: "All error cases handled explicitly through Result types"
-    implementation: "No exceptions thrown, all failures represented as values"
-    benefit: "Type-safe error handling throughout the application"
+  two_args:
+    examples:
+      - "echo '<messy_something>' | breakdown summary project -o=<project_summary.md>"
+      - "breakdown to project -i=<project_summary.md> -o=<project_dir>"
+      - "breakdown to issue -i=<project_summary.md> -o=<issue_dir>"
+      - "breakdown to task -i=<issue.md> -o=<tasks_dir>"
+      - "tail -100 '<error_log_file>' | breakdown defect project -o=<project_defect.md>"
+    flow: "args → ParamsParser → TwoParamsResult → handleTwoParams → TwoParamsOrchestrator → プロンプト生成"
+    end_goal: "プロンプトテンプレート標準出力"
+
+# JSRパッケージ依存関係
+jsr_packages:
+  - name: "@tettuan/breakdownconfig"
+    version: "^1.1.4"
+    role: "設定管理ドメイン"
+    exports: "BreakdownConfig, ConfigLoader"
+    
+  - name: "@tettuan/breakdownparams"
+    version: "^1.0.7"
+    role: "パラメータ解析ドメイン"
+    exports: "ParamsParser, TwoParams_Result, OneParamsResult, ZeroParamsResult"
+    
+  - name: "@tettuan/breakdownprompt"
+    role: "プロンプト生成ドメイン"
+    exports: "PromptGenerator, PromptParams, PromptVariables"
+    
+  - name: "@tettuan/breakdownlogger"
+    role: "技術基盤ドメイン（デバッグ専用）"
+    exports: "BreakdownLogger"
+    usage_restriction: "テストファイルでのみ使用"
+
+# 設計原則
+design_principles:
+  totality_principle: "全ての関数は全域関数（例外を投げない）"
+  result_pattern: "明示的エラーハンドリングにResult<T, E>を使用"
+  smart_constructors: "型安全性を保証するSmart Constructorパターン"
+  discriminated_unions: "型安全なパターンマッチングのため識別可能合併型を使用"
+  immutability: "構築後の値オブジェクトは不変"
+  domain_driven_design: "コアドメインと支援ドメインの明確な分離"
+  orchestration_pattern: "パッケージ間のオーケストレーションに責務を限定"
+  
+# ゴール地点
+goal:
+  description: "プロンプトテンプレートを標準出力するまで"
+  output_destination: "stdout（標準出力）"
+  output_format: "プロンプトテンプレート（Markdown）"
+  file_write_policy: "禁止（CLI実行者が > でリダイレクト）"
 ```
 
 

@@ -12,10 +12,10 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Core domain imports
-import { TwoParams } from "$lib/domain/core/aggregates/two_params.ts";
-import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
-import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { TwoParams } from "../../../lib/domain/core/aggregates/two_params_optimized.ts";
+import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfileName } from "../../../lib/types/config_profile_name.ts";
 
 const logger = new BreakdownLogger("two-params-comprehensive");
 

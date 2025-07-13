@@ -135,7 +135,7 @@ Deno.test("1_behavior: creates SchemaContent with valid JSON", () => {
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data!.getValue(), validJsonSchema);
+    assertEquals(result.data!.value, validJsonSchema);
     assertEquals(result.data!.isValid(), true);
   }
 });
@@ -270,8 +270,8 @@ Deno.test("2_structure: SchemaContent immutability", () => {
     const content = result.data!;
 
     // getValue should always return the same content
-    assertEquals(content.getValue(), validJsonSchema);
-    assertEquals(content.getValue(), content.getValue());
+    assertEquals(content.value, validJsonSchema);
+    assertEquals(content.value, content.value);
   }
 });
 
@@ -316,7 +316,7 @@ Deno.test("2_structure: method return type consistency", () => {
     const content = result.data!;
 
     // Verify return types
-    assertEquals(typeof content.getValue(), "string");
+    assertEquals(typeof content.value, "string");
     assertEquals(typeof content.isValid(), "boolean");
     assertEquals(typeof content.getFormattedJson(), "string");
     assertEquals(typeof content.getMinifiedJson(), "string");
@@ -348,7 +348,7 @@ Deno.test("2_structure: toString implementation", () => {
 
   if (result.ok) {
     assertEquals(result.data!.toString(), validJsonSchema);
-    assertEquals(result.data!.toString(), result.data!.getValue());
+    assertEquals(result.data!.toString(), result.data!.value);
   }
 });
 
@@ -356,12 +356,12 @@ Deno.test("2_structure: JSON formatting preserves original", () => {
   const result = SchemaContent.create(validJsonSchema);
 
   if (result.ok) {
-    const original = result.data!.getValue();
+    const original = result.data!.value;
     const formatted = result.data!.getFormattedJson();
     const minified = result.data!.getMinifiedJson();
 
     // Original should be unchanged
-    assertEquals(result.data!.getValue(), original);
+    assertEquals(result.data!.value, original);
 
     // Formatted and minified should be different but valid
     // Note: formatted may be same as original if already formatted

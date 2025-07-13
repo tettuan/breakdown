@@ -44,7 +44,7 @@ Deno.test("1_behavior: DirectiveType correctly extracts demonstrativeType value"
     const directiveType = DirectiveType.create(result);
 
     assertEquals(directiveType.value, expected);
-    assertEquals(directiveType.getValue(), expected); // Deprecated method compatibility
+    assertEquals(directiveType.value, expected); // Deprecated method compatibility
   }
 });
 
@@ -269,7 +269,7 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   // Multiple accesses should return the same value
   const value1 = directiveType.value;
   const value2 = directiveType.value;
-  const value3 = directiveType.getValue();
+  const value3 = directiveType.value;
 
   assertEquals(value1, "consistent");
   assertEquals(value2, "consistent");

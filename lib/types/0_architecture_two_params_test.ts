@@ -12,7 +12,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { createTwoParamsUnsafe, TwoParams } from "./two_params.ts";
+import { TwoParams } from "../domain/core/aggregates/two_params_optimized.ts";
 import { ConfigProfileName } from "./config_profile_name.ts";
 
 describe("TwoParams Architecture", () => {
@@ -263,26 +263,27 @@ describe("TwoParams Architecture", () => {
   });
 
   describe("Factory Functions", () => {
-    it("should provide unsafe factory function", () => {
+    it("should use safe factory methods with Result types", () => {
       const profile = ConfigProfileName.createDefault();
 
-      // Should work for valid inputs
-      const twoParams = createTwoParamsUnsafe("to", "project", profile);
-      assertExists(twoParams);
-      assertEquals(TwoParams.is(twoParams), true);
+      // Should work for valid inputs via static create method
+      const result = TwoParams.create("to", "project", profile);
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        assertExists(result.data);
+        assertEquals(TwoParams.is(result.data), true);
+      }
     });
 
-    it("should throw for invalid inputs in unsafe factory", () => {
+    it("should return error for invalid inputs via safe factory", () => {
       const profile = ConfigProfileName.createDefault();
 
-      let didThrow = false;
-      try {
-        createTwoParamsUnsafe("", "project", profile);
-      } catch {
-        didThrow = true;
+      // Should return error result for invalid inputs
+      const result = TwoParams.create("", "project", profile);
+      assertEquals(result.ok, false);
+      if (!result.ok) {
+        assertExists(result.error);
       }
-
-      assertEquals(didThrow, true, "Unsafe factory should throw for invalid inputs");
     });
   });
 });

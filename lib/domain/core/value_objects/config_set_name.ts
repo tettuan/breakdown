@@ -478,21 +478,6 @@ export class ConfigSetName {
  */
 export type ConfigSetNameResult = Result<ConfigSetName, ConfigSetNameError>;
 
-/**
- * Utility function to create ConfigSetName from string with error handling
- *
- * @param name - The name string to convert
- * @returns ConfigSetName instance or throws formatted error
- * @throws {Error} Formatted error message if validation fails
- * @deprecated Use ConfigSetName.create() for Result-based error handling
- */
-export function createConfigSetName(name: string): ConfigSetName {
-  const result = ConfigSetName.create(name);
-  if (!result.ok) {
-    throw new Error(formatConfigSetNameError(result.error));
-  }
-  return result.data;
-}
 
 /**
  * Collection utilities for working with multiple ConfigSetName instances

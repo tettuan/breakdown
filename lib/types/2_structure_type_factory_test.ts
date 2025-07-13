@@ -121,7 +121,7 @@ Deno.test("TypeFactory Structure - Created types internal structure", () => {
     assertEquals(directive.value, "to");
 
     // getValueメソッド（互換性のため）
-    assertEquals(directive.getValue(), "to");
+    assertEquals(directive.value, "to");
 
     // originalResultプロパティ
     assertExists(directive.originalResult);
@@ -142,7 +142,7 @@ Deno.test("TypeFactory Structure - Created types internal structure", () => {
     assertEquals(layer.value, "project");
 
     // getValueメソッド（互換性のため）
-    assertEquals(layer.getValue(), "project");
+    assertEquals(layer.value, "project");
 
     // originalResultプロパティ
     assertExists(layer.originalResult);

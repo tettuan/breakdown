@@ -31,7 +31,7 @@ describe("ConfigProfileName - Unit Tests", () => {
         assertEquals(profile.ok, true);
         if (profile.ok) {
           assertEquals(profile.data.value, name);
-          assertEquals(profile.data.getValue(), name);
+          assertEquals(profile.data.value, name);
         }
       }
     });
@@ -146,7 +146,7 @@ describe("ConfigProfileName - Unit Tests", () => {
         );
         if (profile.ok) {
           assertEquals(profile.data.value, profileName);
-          assertEquals(profile.data.getValue(), profileName);
+          assertEquals(profile.data.value, profileName);
         }
       }
     });
@@ -160,7 +160,7 @@ describe("ConfigProfileName - Unit Tests", () => {
       // Simulate BreakdownConfig usage
       assertEquals(profile.ok, true);
       if (profile.ok) {
-        const configPrefix = profile.data.getValue();
+        const configPrefix = profile.data.value;
         assertEquals(configPrefix, "staging");
       }
     });
@@ -194,7 +194,7 @@ describe("ConfigProfileName - Unit Tests", () => {
           `Profile name '${testCase.name}' should be ${testCase.valid ? "valid" : "invalid"}`,
         );
         if (profile.ok && testCase.valid) {
-          assertEquals(profile.data.getValue(), testCase.name);
+          assertEquals(profile.data.value, testCase.name);
         }
       }
     });

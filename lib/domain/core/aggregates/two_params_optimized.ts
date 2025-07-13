@@ -288,6 +288,91 @@ export class TwoParams {
   }
 
   /**
+   * Generate BreakdownCommand structure for integration compatibility
+   * 
+   * @returns BreakdownCommand compatible object
+   */
+  toCommand(): {
+    command: string;
+    directive: string;
+    layer: string;
+    profile: string;
+    timestamp: Date;
+  } {
+    return {
+      command: "breakdown",
+      directive: this._directive.value,
+      layer: this._layer.value,
+      profile: this._profile.value,
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Resolve prompt file path (Legacy compatibility method)
+   * 
+   * @param promptsDir - Prompts directory base path
+   * @param fromLayerType - Source layer type context
+   * @param adaptation - Optional adaptation modifier
+   * @returns Complete prompt file path string
+   */
+  resolvePromptFilePath(
+    promptsDir: string = "prompts",
+    fromLayerType?: string,
+    adaptation?: string,
+  ): string {
+    return this.resolvePromptPath({ promptsDir, schemasDir: "schemas", outputDir: "output" }, fromLayerType, adaptation);
+  }
+
+  /**
+   * Resolve schema file path (Legacy compatibility method)
+   * 
+   * @param schemasDir - Schemas directory base path
+   * @returns Complete schema file path string
+   */
+  resolveSchemaFilePath(schemasDir: string = "schemas"): string {
+    return this.resolveSchemaPath({ promptsDir: "prompts", schemasDir, outputDir: "output" });
+  }
+
+  /**
+   * Get PromptPath object for integration compatibility
+   * 
+   * @param fromLayerType - Source layer type context
+   * @returns PromptPath-like object
+   */
+  getPromptPath(fromLayerType?: string): {
+    directive: string;
+    layer: string;
+    fromLayer: string;
+    resolve: () => string;
+  } {
+    const fromLayer = fromLayerType || this._layer.value;
+    return {
+      directive: this._directive.value,
+      layer: this._layer.value,
+      fromLayer,
+      resolve: () => this.resolvePromptPath(TwoParams.DEFAULT_CONFIG, fromLayer),
+    };
+  }
+
+  /**
+   * Get SchemaPath object for integration compatibility
+   * 
+   * @returns SchemaPath-like object
+   */
+  getSchemaPath(): {
+    directive: string;
+    layer: string;
+    resolve: () => string;
+  } {
+    return {
+      directive: this._directive.value,
+      layer: this._layer.value,
+      resolve: () => this.resolveSchemaPath(TwoParams.DEFAULT_CONFIG),
+    };
+  }
+
+  /**
    * Type-safe equality comparison
    * 
    * @param other - Another TwoParams to compare

@@ -19,7 +19,7 @@ import {
 } from "../../../lib/factory/prompt_variables_factory.ts";
 import type { Result as _Result } from "../../../lib/types/result.ts";
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
-import { LayerType } from "../../../lib/types/layer_type.ts";
+import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 
 const logger = new BreakdownLogger("prompt-variables-factory-integration");

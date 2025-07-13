@@ -16,7 +16,7 @@ import {
   type ProcessedVariables as _ProcessedVariables,
   TwoParamsVariableProcessor,
   type VariableProcessorError as _VariableProcessorError,
-} from "./two_params_variable_processor.ts";
+} from "../../processor/variable_processor_v2.ts";
 import type { Result as _Result } from "$lib/types/result.ts";
 import { isError, isOk } from "$lib/types/result.ts";
 

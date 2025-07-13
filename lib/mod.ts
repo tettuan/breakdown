@@ -47,7 +47,7 @@ export {
   type BreakdownCommand,
   type PromptPath,
   type SchemaPath,
-} from "./domain/core/aggregates/two_params.ts";
+} from "./domain/core/aggregates/two_params_optimized.ts";
 
 export {
   TwoParamsDirectivePattern,

@@ -215,7 +215,7 @@ export class StandardNamingStrategy implements ResolutionStrategy {
     try {
       // Build standard filename
       const defaultPrefix = this.getDefaultPrefix();
-      const filename = `${defaultPrefix}${request.layer.getValue()}.md`;
+      const filename = `${defaultPrefix}${request.layer.value}.md`;
       const templatePathResult = TemplatePath.create(request.directive, request.layer, filename);
       if (!templatePathResult.ok) {
         return error({
@@ -377,7 +377,7 @@ export class FallbackStrategy implements ResolutionStrategy {
     templateRepo: TemplateRepository,
     schemaRepo: SchemaRepository,
   ): Promise<TemplateResolutionResult> {
-    const key = `${request.directive.getValue()}/${request.layer.getValue()}`;
+    const key = `${request.directive.value}/${request.layer.value}`;
     const fallbackMappings = this.createFallbackMappings();
     const fallbackFilename = fallbackMappings.get(key);
 
@@ -489,8 +489,8 @@ export class TemplateResolverService {
    */
   async resolve(request: TemplateResolutionRequest): Promise<TemplateResolutionResult> {
     this.logger.debug("Starting template resolution", {
-      directive: request.directive.getValue(),
-      layer: request.layer.getValue(),
+      directive: request.directive.value,
+      layer: request.layer.value,
       options: request.options,
     });
 
@@ -557,7 +557,7 @@ export class TemplateResolverService {
         return await this.templateRepo.exists(templatePathResult.data);
       } else {
         const defaultPrefix = this.getDefaultPrefix();
-        const filename = `${defaultPrefix}${layer.getValue()}.md`;
+        const filename = `${defaultPrefix}${layer.value}.md`;
         const templatePathResult = TemplatePath.create(directive, layer, filename);
         if (!templatePathResult.ok) return false;
         return await this.templateRepo.exists(templatePathResult.data);

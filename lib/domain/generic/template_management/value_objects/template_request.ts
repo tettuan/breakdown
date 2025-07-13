@@ -4,7 +4,7 @@
  * Represents a request for template resolution with directive and layer information.
  */
 
-import type { DirectiveType } from "../../../../types/directive_type.ts";
+import type { DirectiveType } from "../../../core/value_objects/directive_type.ts";
 import type { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 
 /**

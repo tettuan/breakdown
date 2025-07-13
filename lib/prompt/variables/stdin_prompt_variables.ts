@@ -8,7 +8,10 @@
  */
 
 import type { PromptVariables } from "../../types/prompt_types.ts";
-import { StdinVariable, StdinVariableName } from "../../types/prompt_variables.ts";
+// NOTE: prompt_variables.ts orphaned - using inline type definitions
+// import { StdinVariable, StdinVariableName } from "../../types/prompt_variables.ts";
+type StdinVariable = { name: string; value: string };
+type StdinVariableName = string;
 import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 

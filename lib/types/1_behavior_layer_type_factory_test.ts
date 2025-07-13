@@ -28,13 +28,13 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from String", () => 
     // Test lowercase input
     const result = LayerTypeFactory.fromString(layer);
     assert(result.ok, `Should create LayerType for known layer: ${layer}`);
-    assertEquals(result.data.getValue(), layer, `Created LayerType should have value: ${layer}`);
+    assertEquals(result.data.value, layer, `Created LayerType should have value: ${layer}`);
 
     // Test uppercase input
     const upperResult = LayerTypeFactory.fromString(layer.toUpperCase());
     assert(upperResult.ok, `Should create LayerType for uppercase layer: ${layer.toUpperCase()}`);
     assertEquals(
-      upperResult.data.getValue(),
+      upperResult.data.value,
       layer,
       `Uppercase input should normalize to: ${layer}`,
     );
@@ -44,7 +44,7 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from String", () => 
     const mixedResult = LayerTypeFactory.fromString(mixedCase);
     assert(mixedResult.ok, `Should create LayerType for mixed case layer: ${mixedCase}`);
     assertEquals(
-      mixedResult.data.getValue(),
+      mixedResult.data.value,
       layer,
       `Mixed case input should normalize to: ${layer}`,
     );
@@ -52,7 +52,7 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from String", () => 
     // Test input with whitespace
     const paddedResult = LayerTypeFactory.fromString(`  ${layer}  `);
     assert(paddedResult.ok, `Should create LayerType for padded layer: "  ${layer}  "`);
-    assertEquals(paddedResult.data.getValue(), layer, `Padded input should normalize to: ${layer}`);
+    assertEquals(paddedResult.data.value, layer, `Padded input should normalize to: ${layer}`);
   }
 });
 
@@ -70,7 +70,7 @@ Deno.test("LayerTypeFactory Behavior - Valid Layer Creation from TwoParams_Resul
 
     const result = LayerTypeFactory.fromTwoParamsResult(twoParamsResult);
     assert(result.ok, `Should create LayerType from TwoParams_Result for layer: ${layer}`);
-    assertEquals(result.data.getValue(), layer, `Created LayerType should have value: ${layer}`);
+    assertEquals(result.data.value, layer, `Created LayerType should have value: ${layer}`);
     assertEquals(result.data instanceof LayerType, true, "Result should be LayerType instance");
   }
 });
@@ -176,7 +176,7 @@ Deno.test("LayerTypeFactory Behavior - Input Normalization", () => {
     const result = LayerTypeFactory.fromString(testCase.input);
     assert(result.ok, `Should handle normalized input: "${testCase.input}"`);
     assertEquals(
-      result.data.getValue(),
+      result.data.value,
       testCase.expected,
       `Input "${testCase.input}" should normalize to "${testCase.expected}"`,
     );
@@ -190,15 +190,15 @@ Deno.test("LayerTypeFactory Behavior - Created LayerType Properties", () => {
   const layerType = result.data;
 
   // Test LayerType properties
-  assertEquals(typeof layerType.getValue(), "string", "getValue should return string");
-  assertEquals(layerType.getValue(), "project", "getValue should return correct value");
+  assertEquals(typeof layerType.value, "string", "getValue should return string");
+  assertEquals(layerType.value, "project", "getValue should return correct value");
 
   // Test LayerType behavior
   assertEquals(layerType instanceof LayerType, true, "Should be LayerType instance");
 
   // LayerType should be immutable
-  const originalValue = layerType.getValue();
-  assertEquals(layerType.getValue(), originalValue, "LayerType value should remain consistent");
+  const originalValue = layerType.value;
+  assertEquals(layerType.value, originalValue, "LayerType value should remain consistent");
 });
 
 Deno.test("LayerTypeFactory Behavior - Error Message Quality", () => {

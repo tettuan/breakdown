@@ -481,8 +481,8 @@ describe("GenerationPolicy_Architecture", () => {
         // Should accept properly typed parameters
         assertEquals(typeof context.directive.getValue, "function");
         assertEquals(typeof context.layer.getValue, "function");
-        assertEquals(context.directive.getValue(), "to");
-        assertEquals(context.layer.getValue(), "project");
+        assertEquals(context.directive.value, "to");
+        assertEquals(context.layer.value, "project");
       }
     });
 

@@ -12,7 +12,7 @@
 
 import type { PromptParams } from "@tettuan/breakdownprompt";
 // import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
-import { DirectiveType } from "../types/directive_type.ts";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import {
@@ -27,8 +27,14 @@ import {
   formatPathResolutionError as _formatPathResolutionError,
   PromptTemplatePathResolver,
 } from "./prompt_template_path_resolver.ts";
-import { InputFilePathResolver } from "./input_file_path_resolver.ts";
-import { OutputFilePathResolver } from "./output_file_path_resolver.ts";
+// Note: InputFilePathResolver and OutputFilePathResolver have been consolidated 
+// into input_file_path_resolver_totality.ts as part of DDD refactoring
+import { 
+  InputFilePathResolverTotality as InputFilePathResolver 
+} from "./input_file_path_resolver_totality.ts";
+
+// OutputFilePathResolver functionality is now consolidated within InputFilePathResolverTotality
+const OutputFilePathResolver = InputFilePathResolver;
 import {
   formatSchemaError as _formatSchemaError,
   SchemaFilePathResolver,

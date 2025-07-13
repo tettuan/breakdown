@@ -16,7 +16,7 @@ import {
   type ProcessorResult,
   TwoParamsVariableProcessor,
   type VariableProcessorError,
-} from "./variable_processor.ts";
+} from "./variable_processor_v2.ts";
 import type { Result as _Result } from "../types/result.ts";
 
 // Type for architecture testing

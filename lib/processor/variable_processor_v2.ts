@@ -202,3 +202,160 @@ export class VariableProcessorV2 {
     return ok(builder);
   }
 }
+
+/**
+ * Backward compatibility interface for ProcessedVariables
+ */
+export interface ProcessedVariables {
+  /** Custom variables with uv- prefix */
+  customVariables: Record<string, string>;
+  /** Standard variables for prompt processing */
+  standardVariables: Record<string, string>;
+  /** All variables combined */
+  allVariables: Record<string, string>;
+}
+
+/**
+ * Backward compatibility error types for TwoParamsVariableProcessor
+ */
+export type VariableProcessorError =
+  | { kind: "InvalidVariablePrefix"; key: string; expectedPrefix: string }
+  | { kind: "ReservedVariableName"; key: string }
+  | { kind: "EmptyVariableValue"; key: string }
+  | { kind: "InvalidOptions"; message: string };
+
+/**
+ * Two Params Variable Processor wrapper for backward compatibility
+ */
+export class TwoParamsVariableProcessor {
+  private readonly processor: VariableProcessorV2;
+
+  constructor() {
+    this.processor = new VariableProcessorV2();
+  }
+
+  /**
+   * Process variables with backward compatible interface
+   */
+  processVariables(
+    options: Record<string, unknown>,
+    stdinContent: string,
+  ): Result<ProcessedVariables, VariableProcessorError[]> {
+    // Validate options first
+    if (!options || typeof options !== "object") {
+      return error([{
+        kind: "InvalidOptions",
+        message: "Options must be a valid object",
+      }]);
+    }
+
+    // Extract and validate custom variables with backward compatible error handling
+    const customVarsResult = this.extractCustomVariablesCompatible(options);
+    if (!customVarsResult.ok) {
+      return error(customVarsResult.error);
+    }
+
+    // Build standard variables
+    const standardVariables = this.buildStandardVariablesCompatible(options, stdinContent);
+
+    // Combine all variables
+    const allVariables = {
+      ...customVarsResult.data,
+      ...standardVariables,
+    };
+
+    const processedVariables: ProcessedVariables = {
+      customVariables: customVarsResult.data,
+      standardVariables,
+      allVariables,
+    };
+
+    return ok(processedVariables);
+  }
+
+  /**
+   * Extract custom variables with backward compatible error handling
+   */
+  private extractCustomVariablesCompatible(
+    options: Record<string, unknown>,
+  ): Result<Record<string, string>, VariableProcessorError[]> {
+    const customVariables: Record<string, string> = {};
+    const errors: VariableProcessorError[] = [];
+    const reservedNames = new Set([
+      "input_text",
+      "input_text_file", 
+      "destination_path",
+      "schema_file",
+    ]);
+
+    for (const [key, value] of Object.entries(options)) {
+      if (key.startsWith("uv-")) {
+        // Validate against reserved names
+        const varName = key.substring(3); // Remove "uv-" prefix
+        if (reservedNames.has(varName)) {
+          errors.push({
+            kind: "ReservedVariableName",
+            key,
+          });
+          continue;
+        }
+
+        // Ensure value is not empty
+        const stringValue = String(value);
+        if (!stringValue || stringValue.trim() === "") {
+          errors.push({
+            kind: "EmptyVariableValue",
+            key,
+          });
+          continue;
+        }
+
+        customVariables[key] = stringValue;
+      }
+    }
+
+    if (errors.length > 0) {
+      return error(errors);
+    }
+
+    return ok(customVariables);
+  }
+
+  /**
+   * Build standard variables with backward compatible interface
+   */
+  private buildStandardVariablesCompatible(
+    options: Record<string, unknown>,
+    stdinContent: string,
+  ): Record<string, string> {
+    const standardVariables: Record<string, string> = {};
+
+    // Add stdin content if available
+    if (stdinContent) {
+      standardVariables.input_text = stdinContent;
+    }
+
+    // Add input file name (from -f/--from option)
+    const inputFile = options.from ?? options.fromFile;
+    standardVariables.input_text_file = inputFile !== undefined ? String(inputFile) : "stdin";
+
+    // Add destination path (from -o/--destination option)
+    const destinationPath = options.destination ??
+      options.destinationFile ??
+      options.output;
+    standardVariables.destination_path = destinationPath !== undefined
+      ? String(destinationPath)
+      : "stdout";
+
+    return standardVariables;
+  }
+
+  /**
+   * Process variables without stdin content
+   */
+  processVariablesWithoutStdin(
+    options: Record<string, unknown>,
+  ): Result<ProcessedVariables, VariableProcessorError[]> {
+    return this.processVariables(options, "");
+  }
+}

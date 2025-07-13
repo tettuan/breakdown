@@ -24,7 +24,7 @@ export class TypedTemplatePathFactory {
     layer: LayerType,
     filename?: string,
   ): TemplatePath {
-    const actualFilename = filename || `f_${layer.getValue()}.md`;
+    const actualFilename = filename || `f_${layer.value}.md`;
     const result = TemplatePath.create(directive, layer, actualFilename);
     if (!result.ok) {
       throw new Error(`Failed to create template path: ${result.error}`);
@@ -40,7 +40,7 @@ export class TypedTemplatePathFactory {
     layer: LayerType,
     filename?: string,
   ): SchemaPath {
-    const actualFilename = filename || `f_${layer.getValue()}.json`;
+    const actualFilename = filename || `f_${layer.value}.json`;
     const result = SchemaPath.create(directive, layer, actualFilename);
     if (!result.ok) {
       throw new Error(`Failed to create schema path: ${result.error}`);
@@ -56,7 +56,7 @@ export class TypedTemplatePathFactory {
     layer: LayerType,
     filename?: string,
   ): TemplateId {
-    const actualFilename = filename || `f_${layer.getValue()}.md`;
+    const actualFilename = filename || `f_${layer.value}.md`;
     return TemplateId.create(directive, layer, actualFilename);
   }
 
@@ -68,7 +68,7 @@ export class TypedTemplatePathFactory {
     layer: LayerType,
     filename?: string,
   ): SchemaId {
-    const actualFilename = filename || `f_${layer.getValue()}.json`;
+    const actualFilename = filename || `f_${layer.value}.json`;
     return SchemaId.create(directive, layer, actualFilename);
   }
 }
@@ -138,13 +138,13 @@ export class TypedVariableFactory {
 
     // Add type-specific defaults
     if (directive && layer) {
-      variables.directive_type = directive.getValue();
-      variables.layer_type = layer.getValue();
+      variables.directive_type = directive.value;
+      variables.layer_type = layer.value;
 
       // Add schema file path if not provided
       if (!variables.schema_file) {
         variables.schema_file =
-          `schema/${directive.getValue()}/${layer.getValue()}/f_${layer.getValue()}.json`;
+          `schema/${directive.value}/${layer.value}/f_${layer.value}.json`;
       }
     }
 
@@ -306,8 +306,8 @@ export class TypeValidator {
     directive: DirectiveType,
     layer: LayerType,
   ): { valid: boolean; reason?: string } {
-    const directiveValue = directive.getValue();
-    const layerValue = layer.getValue();
+    const directiveValue = directive.value;
+    const layerValue = layer.value;
 
     // Define compatibility rules
     const incompatibleCombinations: Array<[string, string]> = [
@@ -405,7 +405,7 @@ export class TypeIntegrationUtils {
     layer: LayerType,
     filename: string,
   ): string {
-    return `${directive.getValue()}/${layer.getValue()}/${filename}`;
+    return `${directive.value}/${layer.value}/${filename}`;
   }
 
   /**

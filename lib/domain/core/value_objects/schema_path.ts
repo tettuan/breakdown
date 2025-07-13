@@ -340,7 +340,7 @@ export class SchemaPath extends BasePathValueObject {
    * Factory for common schema types
    */
   static createJsonSchema(layer: LayerType, filename: string): Result<SchemaPath, SchemaPathError> {
-    const toResult = { getValue: () => "to" } as DirectiveType;
+    const toResult = { value: "to" } as DirectiveType;
     const jsonFilename = filename.endsWith(".json") ? filename : `${filename}.json`;
     return SchemaPath.create(toResult, layer, jsonFilename);
   }
@@ -349,7 +349,7 @@ export class SchemaPath extends BasePathValueObject {
     layer: LayerType,
     filename: string,
   ): Result<SchemaPath, SchemaPathError> {
-    const toResult = { getValue: () => "to" } as DirectiveType;
+    const toResult = { value: "to" } as DirectiveType;
     const mdFilename = filename.endsWith(".schema.md") ? filename : `${filename}.schema.md`;
     return SchemaPath.create(toResult, layer, mdFilename);
   }
@@ -358,7 +358,7 @@ export class SchemaPath extends BasePathValueObject {
     layer: LayerType,
     filename: string,
   ): Result<SchemaPath, SchemaPathError> {
-    const defectResult = { getValue: () => "defect" } as DirectiveType;
+    const defectResult = { value: "defect" } as DirectiveType;
     return SchemaPath.create(defectResult, layer, filename);
   }
 
@@ -428,8 +428,8 @@ export class SchemaPath extends BasePathValueObject {
     schemaType: "json" | "markdown";
   } {
     return {
-      directive: this.directive.getValue(),
-      layer: this.layer.getValue(),
+      directive: this.directive.value,
+      layer: this.layer.value,
       filename: this.filename,
       extension: this.getExtension(),
       schemaType: this.schemaType,

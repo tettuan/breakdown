@@ -12,7 +12,8 @@ export type { PromptVariables } from "../../types/prompt_types.ts";
 
 // Export prompt variables implementations
 export { StandardPromptVariables } from "./standard_prompt_variables.ts";
-export { UserPromptVariables } from "./user_prompt_variables.ts";
+// NOTE: UserPromptVariables is deprecated - use StandardPromptVariables instead
+export { StandardPromptVariables as UserPromptVariables } from "./standard_prompt_variables.ts";
 export { CompositePromptVariables } from "./composite_prompt_variables.ts";
 export { StdinPromptVariables } from "./stdin_prompt_variables.ts";
 export { FilePathPromptVariables } from "./filepath_prompt_variables.ts";

@@ -16,7 +16,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { TwoParams, type TwoParamsValidationError } from "./two_params_integrated.ts";
+import { TwoParams, type TwoParamsValidationError } from "./two_params_optimized.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 
 const logger = new BreakdownLogger("two-params-integrated-test");

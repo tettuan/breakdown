@@ -231,42 +231,8 @@ export class PathValueObjectFactory {
 }
 
 // Validation Rule Value Object
-export {
-  formatValidationRuleError,
-  isEmptyErrorMessageError,
-  isEmptyNameError,
-  isEmptyRuleSetError,
-  isInvalidRangeError,
-  isInvalidTypeError,
-  isInvalidValidatorError,
-  isNegativeLengthError,
-  isNullOrUndefinedError,
-  type ValidationFunction,
-  type ValidationResult,
-  ValidationRule,
-  type ValidationRuleError,
-} from "./validation_rule.ts";
-
-// Error Severity Value Object
-export { ErrorSeverity, type ErrorSeverityError, type SeverityLevel } from "./error_severity.ts";
-
-// Timeout Duration Value Object
-export { TimeoutDuration, type TimeoutDurationError } from "./timeout_duration.ts";
-
-// Workspace Name Value Object
-export {
-  formatWorkspaceNameError,
-  isContainsWhitespaceError,
-  isEmptyNameError as isWorkspaceEmptyNameError,
-  isInvalidCharactersError as isWorkspaceInvalidCharactersError,
-  isInvalidFormatError as isWorkspaceInvalidFormatError,
-  isPathTraversalAttemptError,
-  isReservedNameError as isWorkspaceReservedNameError,
-  isStartsWithDotError,
-  isTooLongError as isWorkspaceTooLongError,
-  WorkspaceName,
-  type WorkspaceNameError,
-} from "./workspace_name.ts";
+// Note: validation_rule.ts, error_severity.ts, timeout_duration.ts, workspace_name.ts 
+// have been removed as part of DDD totality refactoring
 
 // Config Set Name Value Object
 export {

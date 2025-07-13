@@ -14,7 +14,8 @@ import {
   mergePromptVariables,
 } from "./duck_typing_prompt_variables.ts";
 import { StandardPromptVariables } from "./standard_prompt_variables.ts";
-import { UserPromptVariables as _UserPromptVariables } from "./user_prompt_variables.ts";
+// NOTE: UserPromptVariables replaced with StandardPromptVariables
+import { StandardPromptVariables as _UserPromptVariables } from "./standard_prompt_variables.ts";
 
 Deno.test("DuckTypingPromptVariables - fromRecord creates instance from valid record", () => {
   const variables = { key1: "value1", key2: "value2" };

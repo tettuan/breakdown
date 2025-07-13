@@ -175,8 +175,8 @@ Deno.test("2_structure: DirectiveType value property maintains type safety", () 
     assertEquals(typeof directiveType.value, "string");
 
     // Test backward compatibility with getValue()
-    assertEquals(directiveType.getValue(), testCase.demonstrativeType);
-    assertEquals(directiveType.getValue(), directiveType.value);
+    assertEquals(directiveType.value, testCase.demonstrativeType);
+    assertEquals(directiveType.value, directiveType.value);
   }
 });
 
@@ -241,7 +241,7 @@ Deno.test("2_structure: DirectiveType maintains consistency across all access me
 
     // All access methods should return the same value
     assertEquals(directiveType.value, value);
-    assertEquals(directiveType.getValue(), value);
+    assertEquals(directiveType.value, value);
     assertEquals(directiveType.originalResult.demonstrativeType, value);
 
     // toString should include the value

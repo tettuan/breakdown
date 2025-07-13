@@ -10,7 +10,7 @@
 
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 import { error, ok, Result } from "../types/result.ts";
 import { ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";

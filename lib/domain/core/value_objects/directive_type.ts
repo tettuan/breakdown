@@ -261,26 +261,6 @@ export class DirectiveType {
     return `DirectiveType(value="${this._value}", profile="${this._profile.value}", validated=${this._validatedByPattern})`;
   }
 
-  // Compatibility methods for legacy implementation
-  /**
-   * @deprecated Use .value property instead
-   */
-  getValue(): string {
-    return this._value;
-  }
-
-  /**
-   * @deprecated This is a compatibility method for legacy tests
-   * New implementation does not store TwoParams_Result
-   */
-  get originalResult(): { demonstrativeType: string; type: string; layerType?: string; options?: unknown } {
-    return {
-      demonstrativeType: this._value,
-      type: "two",
-      layerType: "",
-      options: {}
-    };
-  }
 }
 
 /**

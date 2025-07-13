@@ -14,16 +14,8 @@ export * from "./value_objects/mod.ts";
 // Domain Aggregates - Using optimized integrated implementation
 export {
   TwoParams,
-  TwoParamsCollection,
-  type TwoParamsError,
   type TwoParamsValidationError,
-  formatTwoParamsError,
-  isDirectiveCreationFailedError,
-  isLayerCreationFailedError,
-  isInvalidCombinationError,
-  isProfileValidationFailedError,
-  isPathResolutionFailedError,
-} from "./aggregates/two_params_integrated.ts";
+} from "./aggregates/two_params_optimized.ts";
 
 // Prompt Variable Generation Domain (future implementation)
 // export * from "./prompt_variable_generation/mod.ts";

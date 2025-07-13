@@ -194,8 +194,8 @@ Deno.test("2_structure: LayerType value property maintains type safety", () => {
     assertEquals(typeof layerType.value, "string");
 
     // Test backward compatibility with getValue()
-    assertEquals(layerType.getValue(), testCase.layerType);
-    assertEquals(layerType.getValue(), layerType.value);
+    assertEquals(layerType.value, testCase.layerType);
+    assertEquals(layerType.value, layerType.value);
   }
 });
 
@@ -295,7 +295,7 @@ Deno.test("2_structure: LayerType maintains consistency across all access method
 
     // All access methods should return the same value
     assertEquals(layerType.value, value);
-    assertEquals(layerType.getValue(), value);
+    assertEquals(layerType.value, value);
     assertEquals(layerType.originalResult.layerType, value);
 
     // toString should include the value

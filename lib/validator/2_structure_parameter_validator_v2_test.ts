@@ -22,7 +22,7 @@ import {
   type ValidationMetadata,
 } from "./parameter_validator_v2.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 import { DirectiveType, LayerType } from "../types/mod.ts";
 import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
@@ -39,6 +39,7 @@ function createMockTypePatternProvider(): TypePatternProvider {
     getValidLayerTypes: () => ["project", "issue", "task"],
     getDirectivePattern: () => {
       const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+      if (!pattern) throw new Error("Failed to create directive pattern");
       return pattern;
     },
     getLayerTypePattern: () => {
@@ -99,13 +100,13 @@ Deno.test("2_structure - ValidatedParams maintains hierarchical data integrity",
 
   // Directive structure
   assertEquals(typeof validatedParams.directive, "object");
-  assertEquals(typeof validatedParams.directive.getValue, "function");
-  assertEquals(validatedParams.directive.getValue(), "to");
+  assertEquals(typeof validatedParams.directive.value, "string");
+  assertEquals(validatedParams.directive.value, "to");
 
   // Layer structure
   assertEquals(typeof validatedParams.layer, "object");
-  assertEquals(typeof validatedParams.layer.getValue, "function");
-  assertEquals(validatedParams.layer.getValue(), "project");
+  assertEquals(typeof validatedParams.layer.value, "string");
+  assertEquals(validatedParams.layer.value, "project");
 
   // Options structure integrity
   const options = validatedParams.options;

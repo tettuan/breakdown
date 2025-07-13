@@ -167,6 +167,6 @@ Deno.test("LayerTypeFactory Architecture - Factory Encapsulation", () => {
 
     // Factory should provide the only safe way to create LayerType
     assertExists(result.data.getValue, "Created LayerType should have getValue method");
-    assertEquals(typeof result.data.getValue(), "string", "getValue should return string");
+    assertEquals(typeof result.data.value, "string", "getValue should return string");
   }
 });

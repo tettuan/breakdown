@@ -23,7 +23,7 @@ import {
 } from "./parameter_validator_v2.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // =============================================================================
@@ -457,8 +457,8 @@ Deno.test("1_behavior - Validation result structure consistency", () => {
   assertExists(mockValidatedParams.metadata);
 
   // Each component should be properly structured
-  assertEquals(mockValidatedParams.directive.getValue(), "to");
-  assertEquals(mockValidatedParams.layer.getValue(), "project");
+  assertEquals(mockValidatedParams.directive.value, "to");
+  assertEquals(mockValidatedParams.layer.value, "project");
   assertEquals(typeof mockValidatedParams.options.inputPath, "string");
   assertEquals(typeof mockValidatedParams.customVariables, "object");
   assert(mockValidatedParams.metadata.validatedAt instanceof Date);

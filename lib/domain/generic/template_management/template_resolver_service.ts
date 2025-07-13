@@ -39,17 +39,17 @@ export class TemplateResolverService {
    */
   async resolveTemplate(request: TemplateRequest): Promise<GenericTemplateResolutionResult> {
     this.logger.debug("Generic template resolution started", {
-      directive: request.directive.getValue(),
-      layer: request.layer.getValue(),
+      directive: request.directive.value,
+      layer: request.layer.value,
     });
 
     try {
       // Create CLI parameters for path resolvers
       const cliParams = {
-        demonstrativeType: request.directive.getValue(),
-        layerType: request.layer.getValue(),
+        demonstrativeType: request.directive.value,
+        layerType: request.layer.value,
         options: {
-          fromLayerType: request.fromLayer?.getValue(),
+          fromLayerType: request.fromLayer?.value,
           adaptation: request.adaptation,
           useSchema: false, // We'll resolve both prompt and schema separately
         },

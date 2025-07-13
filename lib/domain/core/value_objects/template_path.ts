@@ -334,7 +334,7 @@ export class TemplatePath extends BasePathValueObject {
     layer: LayerType,
     filename: string,
   ): Result<TemplatePath, TemplatePathError> {
-    const toResult = { getValue: () => "to" } as DirectiveType;
+    const toResult = { value: "to" } as DirectiveType;
     return TemplatePath.create(toResult, layer, filename);
   }
 

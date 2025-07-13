@@ -18,8 +18,8 @@ import {
   PromptGenerationService,
 } from "./prompt_generation_service.ts";
 import { TypeFactory } from "../../types/mod.ts";
-import { TwoParamsDirectivePattern } from "../../types/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../../types/layer_type.ts";
+import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../../domain/core/value_objects/layer_type.ts";
 import type { TemplateRepository } from "../../domain/templates/template_repository.ts";
 import type {
   GenerationPolicy,

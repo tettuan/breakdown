@@ -21,9 +21,9 @@ import {
   type ValidationError,
   type ValidationMetadata,
 } from "./mod.ts";
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
-import type { DirectiveType } from "../types/directive_type.ts";
+import type { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import type { LayerType } from "../types/layer_type.ts";
 
 // =============================================================================
@@ -152,8 +152,8 @@ Deno.test("1_behavior - ValidatedParams type integrates all validation component
   };
 
   // Should maintain all components
-  assertEquals(validatedParams.directive.getValue(), "to");
-  assertEquals(validatedParams.layer.getValue(), "project");
+  assertEquals(validatedParams.directive.value, "to");
+  assertEquals(validatedParams.layer.value, "project");
   assertEquals(validatedParams.options.inputPath, "/input");
   assertEquals(validatedParams.customVariables.var1, "value1");
   assertEquals(validatedParams.metadata.source, "TwoParams_Result");

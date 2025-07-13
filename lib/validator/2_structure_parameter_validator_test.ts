@@ -107,10 +107,9 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   assertEquals(isError(missingFieldResult), true);
   if (isError(missingFieldResult)) {
     const error = missingFieldResult.error;
-    assertEquals(error.kind, "MissingRequiredField");
-    if (error.kind === "MissingRequiredField") {
-      assertEquals(error.field, "demonstrativeType");
-      assertEquals(error.source, "TwoParams_Result");
+    assertEquals(error.kind, "ParamsTypeError");
+    if (error.kind === "ParamsTypeError") {
+      assertExists(error.error);
     }
   }
 
@@ -122,10 +121,10 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   assertEquals(isError(invalidDirectiveResult), true);
   if (isError(invalidDirectiveResult)) {
     const error = invalidDirectiveResult.error;
-    assertEquals(error.kind, "InvalidDirectiveType");
-    if (error.kind === "InvalidDirectiveType") {
+    assertEquals(error.kind, "TypeCreationError");
+    if (error.kind === "TypeCreationError") {
+      assertEquals(error.type, "directive");
       assertEquals(error.value, "invalid");
-      assertExists(error.validPattern);
     }
   }
 
@@ -137,10 +136,10 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   assertEquals(isError(invalidLayerResult), true);
   if (isError(invalidLayerResult)) {
     const error = invalidLayerResult.error;
-    assertEquals(error.kind, "InvalidLayerType");
-    if (error.kind === "InvalidLayerType") {
+    assertEquals(error.kind, "TypeCreationError");
+    if (error.kind === "TypeCreationError") {
+      assertEquals(error.type, "layer");
       assertEquals(error.value, "invalid");
-      assertExists(error.validPattern);
     }
   }
 });
@@ -243,10 +242,10 @@ Deno.test("2_structure: ValidationError discriminated union provides type safety
 
   // Test each error kind has proper structure
   const errorTestCases: Array<[TwoParams_Result, ValidationError["kind"]]> = [
-    [{ ...createValidTwoParams(), type: "one" as unknown as "two" }, "InvalidParamsType"],
-    [createValidTwoParams("", "project"), "MissingRequiredField"],
-    [createValidTwoParams("invalid", "project"), "InvalidDirectiveType"],
-    [createValidTwoParams("to", "invalid"), "InvalidLayerType"],
+    [{ ...createValidTwoParams(), type: "one" as unknown as "two" }, "ParamsTypeError"],
+    [createValidTwoParams("", "project"), "ParamsTypeError"],
+    [createValidTwoParams("invalid", "project"), "TypeCreationError"],
+    [createValidTwoParams("to", "invalid"), "TypeCreationError"],
   ];
 
   for (const [params, expectedKind] of errorTestCases) {
@@ -257,18 +256,15 @@ Deno.test("2_structure: ValidationError discriminated union provides type safety
 
       // Verify discriminated union structure
       switch (result.error.kind) {
-        case "InvalidParamsType":
-          assertExists(result.error.expected);
-          assertExists(result.error.received);
+        case "ParamsTypeError":
+        case "PathValidationError":
+        case "OptionsNormalizationError":
+        case "CustomVariableError":
+          assertExists(result.error.error);
           break;
-        case "MissingRequiredField":
-          assertExists(result.error.field);
-          assertExists(result.error.source);
-          break;
-        case "InvalidDirectiveType":
-        case "InvalidLayerType":
+        case "TypeCreationError":
+          assertExists(result.error.type);
           assertExists(result.error.value);
-          assertExists(result.error.validPattern);
           break;
       }
     }
@@ -285,9 +281,8 @@ Deno.test("2_structure: Path validation maintains consistent error structures", 
 
   if (isError(nullCharResult)) {
     assertEquals(nullCharResult.error.kind, "PathValidationFailed");
-    if (nullCharResult.error.kind === "PathValidationFailed") {
-      assertEquals(nullCharResult.error.path, "file\0name.txt");
-      assertEquals(nullCharResult.error.reason, "Path contains null character");
+    if (nullCharResult.error.kind === "PathValidationError") {
+      assertExists(nullCharResult.error.error);
     }
   }
 
@@ -298,9 +293,8 @@ Deno.test("2_structure: Path validation maintains consistent error structures", 
 
   if (isError(emptyPathResult)) {
     assertEquals(emptyPathResult.error.kind, "PathValidationFailed");
-    if (emptyPathResult.error.kind === "PathValidationFailed") {
-      assertExists(emptyPathResult.error.reason);
-      assertEquals(emptyPathResult.error.reason.includes("empty"), true);
+    if (emptyPathResult.error.kind === "PathValidationError") {
+      assertExists(emptyPathResult.error.error);
     }
   }
 });

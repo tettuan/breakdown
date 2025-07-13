@@ -19,7 +19,7 @@ import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import type { ValidationError } from "../types/unified_error_types.ts";
 
-import { TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 
 // Mock TypePatternProvider for testing

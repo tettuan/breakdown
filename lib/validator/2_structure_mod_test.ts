@@ -21,7 +21,7 @@ import {
   type ValidationError,
   type ValidationMetadata,
 } from "./mod.ts";
-import type { DirectiveType } from "../types/directive_type.ts";
+import type { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import type { LayerType } from "../types/layer_type.ts";
 
 // =============================================================================
@@ -116,8 +116,8 @@ Deno.test("2_structure - ValidatedParams has consistent nested structure", () =>
   // Directive/Layer structure
   assertEquals(typeof validatedParams.directive.getValue, "function");
   assertEquals(typeof validatedParams.layer.getValue, "function");
-  assertEquals(validatedParams.directive.getValue(), "to");
-  assertEquals(validatedParams.layer.getValue(), "project");
+  assertEquals(validatedParams.directive.value, "to");
+  assertEquals(validatedParams.layer.value, "project");
 
   // Options structure consistency
   assertEquals(typeof validatedParams.options, "object");

@@ -4,7 +4,7 @@
  * Represents a path to a schema file with validation and formatting capabilities.
  */
 
-import type { DirectiveType } from "../../../../types/directive_type.ts";
+import type { DirectiveType } from "../../../core/value_objects/directive_type.ts";
 import type { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
 
 /**
@@ -65,7 +65,7 @@ export class SchemaPath {
    * Get the full path
    */
   getPath(): string {
-    return `${this.directive.getValue()}/${this.layer.getValue()}/${this.filename}`;
+    return `${this.directive.value}/${this.layer.value}/${this.filename}`;
   }
 
   /**

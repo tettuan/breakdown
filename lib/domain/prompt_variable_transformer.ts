@@ -15,7 +15,8 @@
 import type { PromptParams } from "@tettuan/breakdownprompt";
 import type { Result } from "../types/result.ts";
 import type { PromptVariableSource } from "../types/prompt_variable_source.ts";
-import type { PromptVariables } from "../types/prompt_variables.ts";
+// Note: prompt_variables.ts moved to two_params.ts as part of DDD refactoring
+import type { PromptVariables } from "../types/two_params.ts";
 import type { ErrorInfo } from "@tettuan/breakdownparams";
 import {
   createPromptParams,

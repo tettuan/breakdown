@@ -18,7 +18,7 @@ export class TemplateId {
   ) {}
 
   static create(directive: DirectiveType, layer: LayerType, filename: string): TemplateId {
-    const id = `${directive.getValue()}/${layer.getValue()}/${filename}`;
+    const id = `${directive.value}/${layer.value}/${filename}`;
     TemplateId.validate(id);
     return new TemplateId(id);
   }
@@ -79,7 +79,7 @@ export class SchemaId {
   ) {}
 
   static create(directive: DirectiveType, layer: LayerType, filename: string): SchemaId {
-    const id = `${directive.getValue()}/${layer.getValue()}/${filename}`;
+    const id = `${directive.value}/${layer.value}/${filename}`;
     SchemaId.validate(id);
     return new SchemaId(id);
   }

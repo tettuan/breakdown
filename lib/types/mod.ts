@@ -79,6 +79,7 @@ export {
   TwoParamsDirectivePattern,
   type DirectiveTypeError 
 } from "../domain/core/value_objects/directive_type.ts";
+// Note: layer_type.ts has been moved to domain/core/value_objects/layer_type.ts
 export { 
   LayerType, 
   TwoParamsLayerTypePattern,
@@ -98,18 +99,18 @@ export { all, chain, error, getOrElse, isError, isOk, map, ok } from "./result.t
 export type { Result } from "./result.ts";
 
 // Variable types - Using unified Result types from result.ts
-export {
-  createPromptParams,
-  FilePathVariable,
-  FilePathVariableName,
-  StandardVariable,
-  StandardVariableName,
-  StdinVariable,
-  StdinVariableName,
-  toPromptParamsVariables,
-  UserVariable,
-} from "./prompt_variables.ts";
-export type { PromptVariable, PromptVariables } from "./prompt_variables.ts";
+// export {
+//   createPromptParams,
+//   FilePathVariable,
+//   FilePathVariableName,
+//   StandardVariable,
+//   StandardVariableName,
+//   StdinVariable,
+//   StdinVariableName,
+//   toPromptParamsVariables,
+//   UserVariable,
+// } from "./prompt_variables_vo.ts";
+// export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
 // Deprecated legacy types (for backward compatibility)
 // NOTE: Legacy factories removed during DemonstrativeType -> DirectiveType refactor
@@ -140,12 +141,12 @@ export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
 // Error severity types
-export {
-  ErrorSeverity as ErrorSeverityClass,
-  ImpactScope,
-  SeverityLevel,
-} from "../domain/core/value_objects/error_severity.ts";
-export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
+// export {
+//   ErrorSeverity as ErrorSeverityClass,
+//   ImpactScope,
+//   SeverityLevel,
+// } from "../domain/core/value_objects/error_severity.ts";
+// export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
 
 // CLI Error severity enum for backward compatibility
 export const ErrorSeverity = {

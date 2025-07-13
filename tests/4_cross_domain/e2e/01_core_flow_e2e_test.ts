@@ -12,7 +12,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // 各ドメインのコンポーネントをインポート
 import { DirectiveType } from "../../../lib/types/directive_type.ts";
-import { LayerType } from "../../../lib/types/layer_type.ts";
+import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("e2e:core_flow");
@@ -53,14 +53,18 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", async ()
   logger.debug("Phase 2: Type-safe conversion");
   
   const directiveType = DirectiveType.create(twoParamsResult);
-  const layerType = LayerType.create(twoParamsResult);
+  const layerTypeResult = LayerType.create(twoParamsResult);
   
   assertEquals(directiveType.value, "to");
+  assertEquals(layerTypeResult.ok, true);
+  const layerType = layerTypeResult.data;
   assertEquals(layerType.value, "project");
   
   // 型の整合性確認
   assertEquals(directiveType.equals(DirectiveType.create(twoParamsResult)), true);
-  assertEquals(layerType.equals(LayerType.create(twoParamsResult)), true);
+  const layerTypeResult2 = LayerType.create(twoParamsResult);
+  assertEquals(layerTypeResult2.ok, true);
+  assertEquals(layerType.equals(layerTypeResult2.data), true);
 
   // Phase 3: パス解決
   logger.debug("Phase 3: Path resolution");

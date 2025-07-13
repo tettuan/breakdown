@@ -112,7 +112,7 @@ Deno.test("1_behavior: createOrError pattern validates length constraints", () =
   const valid = ExampleDomainType.createOrError("hello", { minLength: 3, maxLength: 10 });
   assertEquals(valid.ok, true);
   if (valid.ok) {
-    assertEquals(valid.data.getValue(), "hello");
+    assertEquals(valid.data.value, "hello");
   }
 });
 
@@ -133,7 +133,7 @@ Deno.test("1_behavior: createOrError pattern validates regex patterns", () => {
   const valid = ExampleDomainType.createOrError("hello123", { pattern: alphanumericPattern });
   assertEquals(valid.ok, true);
   if (valid.ok) {
-    assertEquals(valid.data.getValue(), "hello123");
+    assertEquals(valid.data.value, "hello123");
   }
 });
 
@@ -159,7 +159,7 @@ Deno.test("1_behavior: createOrError pattern combines multiple validations", () 
     if (expectedSuccess) {
       assertEquals(result.ok, true, `Expected success for input: ${input}`);
       if (result.ok) {
-        assertEquals(result.data.getValue(), input);
+        assertEquals(result.data.value, input);
       }
     } else {
       assertEquals(result.ok, false, `Expected error for input: ${input}`);

@@ -46,13 +46,6 @@ type BreakdownError =
   | { kind: "ZeroParamsHandlerError"; cause: unknown }
   | { kind: "UnknownResultType"; type: string };
 
-/**
- * Legacy main function - kept for backward compatibility
- * @deprecated Use EntryPointManager for enhanced entry point management
- */
-async function _main() {
-  await runBreakdown();
-}
 
 /**
  * Main entry point for the Breakdown prompt generation tool.
@@ -113,8 +106,7 @@ async function _main() {
 export async function runBreakdown(
   args: string[] = Deno.args,
 ): Promise<Result<void, BreakdownError>> {
-  try {
-    // 1. Extract and create config profile name with Result pattern matching
+  // 1. Extract and create config profile name with Result pattern matching
     const detectedPrefix = ConfigPrefixDetector.detect(args);
     const configProfileNameResult = ConfigProfileName.create(
       detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
@@ -225,16 +217,6 @@ export async function runBreakdown(
         };
       }
     }
-  } catch (error) {
-    // Catch any unexpected errors and convert to Result type
-    return {
-      ok: false,
-      error: {
-        kind: "UnknownResultType",
-        type: error instanceof Error ? error.message : String(error),
-      },
-    };
-  }
 }
 
 // Enhanced Entry Point Pattern using Entry Point Manager

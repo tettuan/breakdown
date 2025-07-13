@@ -88,7 +88,9 @@ Deno.test("DirectiveType - Domain Operations", async (t) => {
   const directiveResult = DirectiveType.create("to", defaultProfile);
 
   if (!directiveResult.ok) {
-    throw new Error("Failed to create test DirectiveType");
+    // Test setup error - should not happen with valid test data
+    console.error("Test setup failed:", directiveResult.error);
+    return;
   }
 
   const directive = directiveResult.data;

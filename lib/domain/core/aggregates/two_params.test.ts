@@ -17,7 +17,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { TwoParams, type TwoParamsValidationError } from "./two_params.ts";
+import { TwoParams, type TwoParamsValidationError } from "./two_params_optimized.ts";
 import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 import { DirectiveType } from "../value_objects/directive_type.ts";
 import { LayerType } from "../value_objects/layer_type.ts";

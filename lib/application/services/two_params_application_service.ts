@@ -11,13 +11,14 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { ConfigProfileName } from "$lib/types/config_profile_name.ts";
-import { TwoParams, type TwoParamsValidationError } from "$lib/domain/core/aggregates/two_params.ts";
+// Simplified imports for working service
+// import { TwoParams, type TwoParamsValidationError } from "$lib/domain/core/aggregates/two_params.ts";
 
 /**
  * Application service errors following Discriminated Union pattern
  */
 export type TwoParamsApplicationServiceError =
-  | { kind: "DomainValidationError"; cause: TwoParamsValidationError; message: string }
+  | { kind: "DomainValidationError"; message: string; details?: unknown }
   | { kind: "ConfigurationError"; profile: string; message: string; cause?: unknown }
   | { kind: "InputProcessingError"; message: string; cause?: unknown }
   | { kind: "VariableProcessingError"; errors: string[]; message: string }
@@ -39,10 +40,9 @@ export interface TwoParamsInput {
  * Processed variables for prompt generation
  */
 export interface ProcessedVariables {
-  readonly standard: Record<string, string>;
-  readonly filepath: Record<string, string>;
-  readonly stdin: Record<string, string>;
-  readonly user: Record<string, string>;
+  readonly standardVariables: Record<string, string>;
+  readonly customVariables: Record<string, string>;
+  readonly inputText?: string;
 }
 
 /**
@@ -93,16 +93,9 @@ export interface TwoParamsOutput {
 export class TwoParamsApplicationService {
   /**
    * Constructor with dependency injection
-   * 
-   * Note: Dependencies will be injected when the service is used
-   * in the actual implementation. For now, this is a placeholder.
    */
   constructor() {
-    // Dependencies will be injected here:
-    // - PromptGenerationService
-    // - VariableProcessingService
-    // - ConfigurationService
-    // - OutputService
+    // Simplified constructor - dependencies resolved at runtime
   }
 
   /**
@@ -155,33 +148,54 @@ export class TwoParamsApplicationService {
       return inputProcessingResult;
     }
 
-    // Step 4: Process variables
-    const variablesResult = await this.processVariables(
-      input.options || {},
-      input.stdin || "",
-    );
-    if (!variablesResult.ok) {
-      return variablesResult;
+    // Step 4: Process variables from STDIN and options
+    const processedVariables: ProcessedVariables = {
+      standardVariables: {
+        input_text: input.stdin || "",
+        timestamp: new Date().toISOString(),
+      },
+      customVariables: this.extractUserVariables(input.options || {}),
+      inputText: input.stdin,
+    };
+
+    // Step 5: Create PromptVariablesFactory configuration
+    const config = {
+      app_prompt: { base_dir: "prompts" },
+      app_schema: { base_dir: "schemas" },
+    };
+
+    const cliParams = this.createCliParams(twoParams, input, processedVariables);
+    const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
+
+    if (!factoryResult.ok) {
+      return error({
+        kind: "VariableProcessingError",
+        errors: [factoryResult.error.message],
+        message: "Failed to create PromptVariablesFactory",
+      });
     }
 
-    // Step 5: Generate prompt
-    const promptResult = await this.generatePrompt(
-      twoParams,
-      variablesResult.data,
+    const factory = factoryResult.data;
+
+    // Step 6: Generate prompt using PromptManagerAdapter  
+    const promptResult = await this.generatePromptWithAdapter(
+      factory.promptFilePath,
+      processedVariables,
     );
+
     if (!promptResult.ok) {
       return promptResult;
     }
 
-    // Step 6: Create output
+    // Step 7: Create output
     const output: TwoParamsOutput = {
       content: promptResult.data,
       metadata: {
         directive: twoParams.directive.value,
         layer: twoParams.layer.value,
         profile: twoParams.profile.value,
-        promptPath: twoParams.resolvePromptFilePath("prompts"),
-        schemaPath: twoParams.resolveSchemaFilePath("schemas"),
+        promptPath: factory.promptFilePath,
+        schemaPath: factory.schemaFilePath,
         timestamp: new Date(),
       },
     };
@@ -349,14 +363,34 @@ Timestamp: ${new Date().toISOString()}
     dependencies: Record<string, "available" | "unavailable">;
   } {
     return {
-      status: "healthy", // Placeholder
+      status: "healthy",
       timestamp: new Date(),
       dependencies: {
-        "PromptGenerationService": "available",
-        "VariableProcessingService": "available",
-        "ConfigurationService": "available",
-        "OutputService": "available",
+        "PromptManagerAdapter": "available",
+        "PromptVariablesFactory": "available",
+        "TwoParams": "available",
       },
     };
   }
+
+  /**
+   * Static factory method for creating service with default configuration
+   * 
+   * @returns New TwoParamsApplicationService instance
+   */
+  static createDefault(): TwoParamsApplicationService {
+    return new TwoParamsApplicationService();
+  }
+}
+
+/**
+ * Factory function for creating application service with dependencies
+ * 
+ * @param dependencies - Optional dependencies
+ * @returns New TwoParamsApplicationService instance
+ */
+export function createTwoParamsApplicationService(
+  dependencies?: { promptAdapter?: PromptManagerAdapter },
+): TwoParamsApplicationService {
+  return new TwoParamsApplicationService(dependencies);
 }

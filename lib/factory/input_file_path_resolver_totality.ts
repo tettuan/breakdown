@@ -325,102 +325,21 @@ export class InputFilePathResolverTotality {
 
   /**
    * Resolves the input file path with comprehensive validation and error handling
+   * Following Totality principle - no exceptions thrown, all errors as Result values
    */
   public getPath(): Result<ResolvedInputPath, InputFilePathError> {
-    try {
-      const options = this.extractOptions();
-      const fromFile = options.fromFile;
+    const options = this.extractOptions();
+    const fromFile = options.fromFile;
 
-      // No file specified - return empty path
-      if (!fromFile) {
-        const pathResult = ResolvedInputPath.create(
-          "",
-          { kind: "Empty" },
-          false,
-          {
-            resolvedFrom: "default",
-            workingDirectory: this.cwd,
-            validationPerformed: true,
-          },
-        );
-
-        if (!pathResult.ok) {
-          return error({
-            kind: "ConfigurationError",
-            message: pathResult.error.message,
-          });
-        }
-        return pathResult;
-      }
-
-      // Handle stdin input
-      if (fromFile === "-") {
-        const pathResult = ResolvedInputPath.create(
-          "-",
-          { kind: "Stdin" },
-          true,
-          {
-            originalPath: fromFile,
-            resolvedFrom: "cli",
-            workingDirectory: this.cwd,
-            validationPerformed: true,
-          },
-        );
-
-        if (!pathResult.ok) {
-          return error({
-            kind: "ConfigurationError",
-            message: pathResult.error.message,
-          });
-        }
-        return pathResult;
-      }
-
-      // Validate and normalize path
-      const validationResult = this.validatePath(fromFile);
-      if (!validationResult.ok) {
-        return validationResult;
-      }
-
-      const normalizedFromFile = this.normalizePath(fromFile);
-
-      // Determine path type and resolve
-      const pathTypeResult = this.determinePathType(normalizedFromFile);
-      if (!pathTypeResult.ok) {
-        return pathTypeResult;
-      }
-
-      const pathType = pathTypeResult.data;
-      let resolvedPath: string;
-
-      switch (pathType.kind) {
-        case "Absolute":
-          resolvedPath = normalizedFromFile;
-          break;
-        case "Relative":
-        case "Filename":
-          resolvedPath = resolve(this.cwd, normalizedFromFile);
-          break;
-        default:
-          return error({
-            kind: "ConfigurationError",
-            message: "Unexpected path type",
-          });
-      }
-
-      // Check if path exists
-      const exists = this.checkPathExists(resolvedPath);
-
-      // Create resolved path object
+    // No file specified - return empty path
+    if (!fromFile) {
       const pathResult = ResolvedInputPath.create(
-        resolvedPath,
-        pathType,
-        exists,
+        "",
+        { kind: "Empty" },
+        false,
         {
-          originalPath: fromFile,
-          resolvedFrom: "cli",
+          resolvedFrom: "default",
           workingDirectory: this.cwd,
-          normalizedPath: normalizedFromFile,
           validationPerformed: true,
         },
       );
@@ -431,11 +350,79 @@ export class InputFilePathResolverTotality {
           message: pathResult.error.message,
         });
       }
-
       return pathResult;
-    } catch (err) {
-      return this.handleResolutionError(err);
     }
+
+    // Handle stdin input
+    if (fromFile === "-") {
+      const pathResult = ResolvedInputPath.create(
+        "-",
+        { kind: "Stdin" },
+        true,
+        {
+          originalPath: fromFile,
+          resolvedFrom: "cli",
+          workingDirectory: this.cwd,
+          validationPerformed: true,
+        },
+      );
+
+      if (!pathResult.ok) {
+        return error({
+          kind: "ConfigurationError",
+          message: pathResult.error.message,
+        });
+      }
+      return pathResult;
+    }
+
+    // Validate and normalize path
+    const validationResult = this.validatePath(fromFile);
+    if (!validationResult.ok) {
+      return validationResult;
+    }
+
+    const normalizedFromFile = this.normalizePath(fromFile);
+
+    // Determine path type and resolve
+    const pathTypeResult = this.determinePathType(normalizedFromFile);
+    if (!pathTypeResult.ok) {
+      return pathTypeResult;
+    }
+
+    const pathType = pathTypeResult.data;
+    const resolveResult = this.resolvePath(normalizedFromFile, pathType);
+    if (!resolveResult.ok) {
+      return resolveResult;
+    }
+
+    const resolvedPath = resolveResult.data;
+
+    // Check if path exists (safe operation that never throws)
+    const exists = this.checkPathExists(resolvedPath);
+
+    // Create resolved path object
+    const pathResult = ResolvedInputPath.create(
+      resolvedPath,
+      pathType,
+      exists,
+      {
+        originalPath: fromFile,
+        resolvedFrom: "cli",
+        workingDirectory: this.cwd,
+        normalizedPath: normalizedFromFile,
+        validationPerformed: true,
+      },
+    );
+
+    if (!pathResult.ok) {
+      return error({
+        kind: "ConfigurationError",
+        message: pathResult.error.message,
+      });
+    }
+
+    return pathResult;
   }
 
   /**
@@ -503,32 +490,64 @@ export class InputFilePathResolverTotality {
 
   /**
    * Determine the type of path with detailed classification
+   * Following Totality principle - no exceptions thrown
    */
   private determinePathType(path: string): Result<PathType, InputFilePathError> {
-    try {
-      if (isAbsolute(path)) {
-        return ok({ kind: "Absolute", normalized: path });
-      }
+    // Validate path input
+    if (typeof path !== "string") {
+      return error({
+        kind: "PathNormalizationError",
+        originalPath: String(path),
+        reason: "Path must be a string",
+      });
+    }
 
-      const hasHierarchy = this.hasPathHierarchy(path);
-
-      if (hasHierarchy) {
-        return ok({ kind: "Relative", normalized: path, hasHierarchy: true });
-      }
-
-      // Simple filename or relative path without hierarchy
-      if (path.startsWith("./") || path.startsWith("../")) {
-        return ok({ kind: "Relative", normalized: path, hasHierarchy: false });
-      }
-
-      // Just a filename
-      return ok({ kind: "Filename", name: path });
-    } catch (err) {
+    if (path.length === 0) {
       return error({
         kind: "PathNormalizationError",
         originalPath: path,
-        reason: err instanceof Error ? err.message : String(err),
+        reason: "Path cannot be empty",
       });
+    }
+
+    // Safe absolute path check (isAbsolute function is safe and never throws)
+    if (isAbsolute(path)) {
+      return ok({ kind: "Absolute", normalized: path });
+    }
+
+    const hasHierarchy = this.hasPathHierarchy(path);
+
+    if (hasHierarchy) {
+      return ok({ kind: "Relative", normalized: path, hasHierarchy: true });
+    }
+
+    // Simple filename or relative path without hierarchy
+    if (path.startsWith("./") || path.startsWith("../")) {
+      return ok({ kind: "Relative", normalized: path, hasHierarchy: false });
+    }
+
+    // Just a filename
+    return ok({ kind: "Filename", name: path });
+  }
+
+  /**
+   * Resolve path based on path type
+   * Following Totality principle - no exceptions thrown
+   */
+  private resolvePath(normalizedPath: string, pathType: PathType): Result<string, InputFilePathError> {
+    switch (pathType.kind) {
+      case "Absolute":
+        return ok(normalizedPath);
+      case "Relative":
+      case "Filename":
+        // Use safe path resolution - resolve function is safe
+        const resolved = resolve(this.cwd, normalizedPath);
+        return ok(resolved);
+      default:
+        return error({
+          kind: "ConfigurationError",
+          message: "Unexpected path type during resolution",
+        });
     }
   }
 
@@ -545,41 +564,63 @@ export class InputFilePathResolverTotality {
 
   /**
    * Check if a path exists on the filesystem
+   * Following Totality principle - returns explicit Result for all filesystem operations
    */
-  private checkPathExists(path: string): boolean {
-    if (path === "-" || path === "") return true;
+  private checkPathExistsResult(path: string): Result<boolean, InputFilePathError> {
+    // Special cases that are always considered "existing"
+    if (path === "-" || path === "") return ok(true);
+    
+    // Validate input path
+    if (typeof path !== "string" || path.length === 0) {
+      return error({
+        kind: "InvalidPath",
+        path: String(path),
+        reason: "Path must be a non-empty string",
+      });
+    }
+
+    // NOTE: This is the ONE remaining try-catch in the file, required because
+    // Deno's filesystem APIs are inherently exception-based. The Totality principle
+    // is preserved by:
+    // 1. Explicitly handling ALL possible error cases
+    // 2. Converting ALL exceptions to Result<T, E> values
+    // 3. Never letting exceptions bubble up to callers
+    // 4. Treating "file not found" as a normal non-error case (ok(false))
+    
+    // Attempt filesystem stat - convert OS exceptions to explicit Result values
     try {
-      Deno.statSync(path);
-      return true;
-    } catch {
-      return false;
+      const statResult = Deno.statSync(path);
+      // If we reach here, file exists and is accessible
+      return ok(true);
+    } catch (err) {
+      // Convert ALL possible filesystem exceptions to explicit Result values
+      if (err instanceof Deno.errors.NotFound) {
+        return ok(false); // File doesn't exist - normal case, not an error
+      } else if (err instanceof Deno.errors.PermissionDenied) {
+        return error({
+          kind: "PermissionDenied",
+          path,
+          operation: "stat",
+        });
+      } else {
+        // Handle any other filesystem error (BadResource, Busy, etc.)
+        return error({
+          kind: "InvalidPath",
+          path,
+          reason: err instanceof Error ? err.message : "Unknown filesystem error",
+        });
+      }
     }
   }
 
   /**
-   * Handle resolution errors and convert to appropriate error types
+   * Simple boolean wrapper for checkPathExistsResult for cases where errors should be treated as false
+   * This maintains backward compatibility while keeping the Result version available
    */
-  private handleResolutionError(err: unknown): Result<ResolvedInputPath, InputFilePathError> {
-    if (err instanceof Deno.errors.NotFound) {
-      return error({
-        kind: "PathNotFound",
-        path: err.message || "Unknown path",
-        checkedAt: new Date().toISOString(),
-      });
-    }
-
-    if (err instanceof Deno.errors.PermissionDenied) {
-      return error({
-        kind: "PermissionDenied",
-        path: err.message || "Unknown path",
-        operation: "read",
-      });
-    }
-
-    return error({
-      kind: "ConfigurationError",
-      message: err instanceof Error ? err.message : String(err),
-    });
+  private checkPathExists(path: string): boolean {
+    const result = this.checkPathExistsResult(path);
+    // If there's an error (like permission denied), treat as non-existent for this simple boolean check
+    return result.ok ? result.data : false;
   }
 
   /**

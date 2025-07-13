@@ -120,7 +120,7 @@ Deno.test("1_behavior: creates PromptContent with valid content", () => {
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data!.getValue(), validContent);
+    assertEquals(result.data!.value, validContent);
   }
 });
 
@@ -238,8 +238,8 @@ Deno.test("2_structure: PromptContent immutability", () => {
     const content = result.data!;
 
     // getValue should always return the same content
-    assertEquals(content.getValue(), validContent);
-    assertEquals(content.getValue(), content.getValue());
+    assertEquals(content.value, validContent);
+    assertEquals(content.value, content.value);
   }
 });
 
@@ -287,7 +287,7 @@ Deno.test("2_structure: method return type consistency", () => {
     const content = result.data!;
 
     // Verify return types
-    assertEquals(typeof content.getValue(), "string");
+    assertEquals(typeof content.value, "string");
     assertEquals(Array.isArray(content.getVariables()), true);
     assertEquals(typeof content.hasVariables(), "boolean");
     assertEquals(typeof content.getLength(), "number");
@@ -325,7 +325,7 @@ Deno.test("2_structure: toString implementation", () => {
 
   if (result.ok) {
     assertEquals(result.data!.toString(), validContent);
-    assertEquals(result.data!.toString(), result.data!.getValue());
+    assertEquals(result.data!.toString(), result.data!.value);
   }
 });
 
@@ -333,11 +333,11 @@ Deno.test("2_structure: variable replacement preserves original", () => {
   const result = PromptContent.create(validContent);
 
   if (result.ok) {
-    const original = result.data!.getValue();
+    const original = result.data!.value;
     const replaced = result.data!.replaceVariables({ "variable": "test" });
 
     // Original should be unchanged
-    assertEquals(result.data!.getValue(), original);
+    assertEquals(result.data!.value, original);
     // Replaced should be different
     assertEquals(replaced !== original, true);
   }

@@ -48,7 +48,7 @@ describe("0_architecture_mod_test", () => {
       // Verify it's a DirectiveType instance
       assertExists(result.getValue);
       assertEquals(typeof result.getValue, "function");
-      assertEquals(result.getValue(), "to");
+      assertEquals(result.value, "to");
     });
 
     it("should implement Smart Constructor for LayerType", () => {
@@ -68,7 +68,7 @@ describe("0_architecture_mod_test", () => {
       // Verify it's a LayerType instance
       assertExists(result.getValue);
       assertEquals(typeof result.getValue, "function");
-      assertEquals(result.getValue(), "project");
+      assertEquals(result.value, "project");
     });
 
     it("should implement Smart Constructor for ConfigProfileName", () => {

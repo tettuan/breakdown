@@ -340,13 +340,6 @@ export class LayerType {
     return this._value;
   }
 
-  /**
-   * Legacy compatibility method
-   * @deprecated Use .value property instead
-   */
-  getValue(): string {
-    return this._value;
-  }
 
   /**
    * Get detailed information for debugging

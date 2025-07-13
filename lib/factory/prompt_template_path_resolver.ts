@@ -252,33 +252,79 @@ export class PromptTemplatePathResolver {
 
   /**
    * Deep copy CLI parameters manually to avoid JSON.parse
+   * Total function: handles all possible input types exhaustively
    * @param cliParams - The CLI parameters to copy
    * @returns Deep copy of the CLI parameters
    */
   private deepCopyCliParams(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): DoubleParams_Result | TwoParams_Result {
-    if ("type" in cliParams && ("directive" in cliParams && "layer" in cliParams)) {
-      // TwoParams_Result
-      const twoParams = cliParams as TwoParams_Result;
-      const copy: TwoParams_Result = {
-        type: twoParams.type || "two",
-        params: twoParams.params ? [...twoParams.params] : [],
-        demonstrativeType: twoParams.demonstrativeType || "",
-        layerType: twoParams.layerType || "",
-        options: { ...twoParams.options },
-      };
-      return copy;
-    } else {
-      // DoubleParams_Result (PromptCliParams)
-      const doubleParams = cliParams as DoubleParams_Result;
-      const copy: PromptCliParams = {
-        demonstrativeType: doubleParams.demonstrativeType,
-        layerType: doubleParams.layerType,
-        options: doubleParams.options ? { ...doubleParams.options } : {},
-      };
+    // Null/undefined safety check
+    if (!cliParams || typeof cliParams !== "object") {
+      throw new Error("CLI parameters must be a non-null object");
+    }
 
+    try {
+      if ("type" in cliParams && ("directive" in cliParams && "layer" in cliParams)) {
+        // TwoParams_Result
+        const twoParams = cliParams as TwoParams_Result;
+        const copy: TwoParams_Result = {
+          type: twoParams.type || "two",
+          params: Array.isArray(twoParams.params) ? [...twoParams.params] : [],
+          demonstrativeType: this.safeStringExtract(twoParams.demonstrativeType) || "",
+          layerType: this.safeStringExtract(twoParams.layerType) || "",
+          options: this.safeObjectCopy(twoParams.options),
+        };
+        return copy;
+      } else {
+        // DoubleParams_Result (PromptCliParams)
+        const doubleParams = cliParams as DoubleParams_Result;
+        const copy: PromptCliParams = {
+          demonstrativeType: this.safeStringExtract(doubleParams.demonstrativeType) || "",
+          layerType: this.safeStringExtract(doubleParams.layerType) || "",
+          options: this.safeObjectCopy(doubleParams.options),
+        };
+
+        return copy;
+      }
+    } catch (error) {
+      throw new Error(`Failed to copy CLI parameters: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Safely extract string value with null/undefined handling
+   * @param value - The value to extract as string
+   * @returns Safe string value or empty string
+   */
+  private safeStringExtract(value: unknown): string {
+    if (value === null || value === undefined) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    return String(value);
+  }
+
+  /**
+   * Safely copy object with proper type handling
+   * @param obj - The object to copy
+   * @returns Safe object copy
+   */
+  private safeObjectCopy(obj: unknown): Record<string, unknown> {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      return {};
+    }
+    
+    try {
+      const copy: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        copy[key] = value;
+      }
       return copy;
+    } catch {
+      return {};
     }
   }
 
@@ -400,33 +446,70 @@ export class PromptTemplatePathResolver {
 
   /**
    * Safely resolves the base directory with Result type
+   * Total function: handles all edge cases and error scenarios
    *
    * @returns Result containing resolved base directory or error
    */
   private resolveBaseDirSafe(): Result<string, PathResolutionError> {
-    // Check if schema path should be used based on options
-    const useSchema = this.getUseSchemaFlag();
-    let baseDir: string;
+    try {
+      // Check if schema path should be used based on options
+      const useSchema = this.getUseSchemaFlag();
+      let baseDir: string;
 
-    if (useSchema && this.config.app_schema?.base_dir) {
-      baseDir = this.config.app_schema.base_dir;
-    } else {
-      baseDir = this.config.app_prompt?.base_dir || this.getDefaultPromptBaseDir();
-    }
+      if (useSchema && this.config.app_schema?.base_dir) {
+        baseDir = this.safeStringExtract(this.config.app_schema.base_dir);
+      } else if (this.config.app_prompt?.base_dir) {
+        baseDir = this.safeStringExtract(this.config.app_prompt.base_dir);
+      } else {
+        baseDir = this.getDefaultPromptBaseDir();
+      }
 
-    if (!isAbsolute(baseDir)) {
-      baseDir = resolve(Deno.cwd(), baseDir);
-    }
+      // Validate baseDir is not empty
+      if (!baseDir || baseDir.trim() === "") {
+        return resultError({
+          kind: "EmptyBaseDir",
+        });
+      }
 
-    // Verify base directory exists
-    if (!existsSync(baseDir)) {
+      // Resolve to absolute path
+      let resolvedPath: string;
+      try {
+        if (!isAbsolute(baseDir)) {
+          resolvedPath = resolve(Deno.cwd(), baseDir);
+        } else {
+          resolvedPath = baseDir;
+        }
+      } catch (pathError) {
+        return resultError({
+          kind: "InvalidPath",
+          path: baseDir,
+          reason: `Path resolution failed: ${pathError instanceof Error ? pathError.message : String(pathError)}`,
+        });
+      }
+
+      // Verify base directory exists
+      try {
+        if (!existsSync(resolvedPath)) {
+          return resultError({
+            kind: "BaseDirectoryNotFound",
+            path: resolvedPath,
+          });
+        }
+      } catch (fsError) {
+        return resultError({
+          kind: "ValidationFailed",
+          path: resolvedPath,
+          reason: `File system access failed: ${fsError instanceof Error ? fsError.message : String(fsError)}`,
+        });
+      }
+
+      return resultOk(resolvedPath);
+    } catch (error) {
       return resultError({
-        kind: "BaseDirectoryNotFound",
-        path: baseDir,
+        kind: "InvalidConfiguration",
+        details: `Base directory resolution failed: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
-
-    return resultOk(baseDir);
   }
 
   /**
@@ -509,23 +592,45 @@ export class PromptTemplatePathResolver {
 
   /**
    * Static helper to extract demonstrative type from parameters
+   * Total function: handles all possible parameter structures safely
    */
   private static extractDemonstrativeType(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): string {
-    // Handle both legacy and new parameter structures
-    if ("demonstrativeType" in cliParams) {
-      return cliParams.demonstrativeType || "";
+    // Null safety check
+    if (!cliParams || typeof cliParams !== "object") {
+      return "";
     }
-    // For TwoParams_Result structure from breakdownparams
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.demonstrativeType) {
-      return twoParams.demonstrativeType;
+
+    try {
+      // Handle both legacy and new parameter structures
+      if ("demonstrativeType" in cliParams) {
+        const value = cliParams.demonstrativeType;
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+      
+      // For TwoParams_Result structure from breakdownparams
+      const twoParams = cliParams as TwoParams_Result;
+      if (twoParams.demonstrativeType) {
+        const value = twoParams.demonstrativeType;
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+      
+      // Extract from params array if available
+      if (Array.isArray(twoParams.params) && twoParams.params.length > 0) {
+        const value = twoParams.params[0];
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+    } catch {
+      // Swallow any extraction errors and return safe default
     }
-    // Extract from params array if available
-    if (twoParams.params && twoParams.params.length > 0) {
-      return twoParams.params[0];
-    }
+    
     return "";
   }
 
@@ -539,21 +644,43 @@ export class PromptTemplatePathResolver {
 
   /**
    * Static helper to extract layer type from parameters
+   * Total function: handles all possible parameter structures safely
    */
   private static extractLayerType(cliParams: DoubleParams_Result | TwoParams_Result): string {
-    // Handle both legacy and new parameter structures
-    if ("layerType" in cliParams) {
-      return cliParams.layerType || "";
+    // Null safety check
+    if (!cliParams || typeof cliParams !== "object") {
+      return "";
     }
-    // For TwoParams_Result structure from breakdownparams
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.layerType) {
-      return twoParams.layerType;
+
+    try {
+      // Handle both legacy and new parameter structures
+      if ("layerType" in cliParams) {
+        const value = cliParams.layerType;
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+      
+      // For TwoParams_Result structure from breakdownparams
+      const twoParams = cliParams as TwoParams_Result;
+      if (twoParams.layerType) {
+        const value = twoParams.layerType;
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+      
+      // Extract from params array if available
+      if (Array.isArray(twoParams.params) && twoParams.params.length > 1) {
+        const value = twoParams.params[1];
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+      }
+    } catch {
+      // Swallow any extraction errors and return safe default
     }
-    // Extract from params array if available
-    if (twoParams.params && twoParams.params.length > 1) {
-      return twoParams.params[1];
-    }
+    
     return "";
   }
 

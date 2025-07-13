@@ -6,7 +6,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { TemplateResolverService } from "./template_resolver_service.ts";
 import { TemplateRequest } from "./value_objects/template_request.ts";
-import { DirectiveType } from "../../../types/directive_type.ts";
+import { DirectiveType } from "../../core/value_objects/directive_type.ts";
 import { LayerType } from "../../../domain/core/value_objects/layer_type.ts";
 
 // Test fixtures

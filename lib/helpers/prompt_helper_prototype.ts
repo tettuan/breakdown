@@ -266,8 +266,8 @@ export class PromptHelperPrototype {
 
     try {
       // Generate context-aware content
-      const directiveValue = directive.getValue();
-      const layerValue = layer.getValue();
+      const directiveValue = directive.value;
+      const layerValue = layer.value;
 
       // Dynamic instruction generation
       const instruction = this.generateDynamicInstruction(directiveValue, layerValue, context);
@@ -310,7 +310,7 @@ export class PromptHelperPrototype {
           error instanceof Error ? error.message : "Unknown error"
         }`,
         "generateDynamicContent",
-        directive.getValue() + "/" + layer.getValue(),
+        directive.value + "/" + layer.value,
       );
     }
   }
@@ -382,8 +382,8 @@ export class PromptHelperPrototype {
   }
 
   private generateContextHeader(directive: DirectiveType, layer: LayerType): string {
-    const directiveValue = directive.getValue();
-    const layerValue = layer.getValue();
+    const directiveValue = directive.value;
+    const layerValue = layer.value;
 
     if (this.options.language === "ja") {
       return `## Context\nDirective: ${directiveValue}\nLayer: ${layerValue}\nGenerated: ${
@@ -397,7 +397,7 @@ export class PromptHelperPrototype {
   }
 
   private generateOutputFormat(directive: DirectiveType, _layer: LayerType): string {
-    const directiveValue = directive.getValue();
+    const directiveValue = directive.value;
 
     if (this.options.language === "ja") {
       switch (directiveValue) {

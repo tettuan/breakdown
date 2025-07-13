@@ -12,7 +12,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // 各ドメインのコンポーネントをインポート
 import { DirectiveType, TwoParamsDirectivePattern } from "../../../lib/types/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../../../lib/types/layer_type.ts";
+import { LayerType, TwoParamsLayerTypePattern } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("e2e:configuration");

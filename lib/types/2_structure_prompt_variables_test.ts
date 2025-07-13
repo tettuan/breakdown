@@ -24,13 +24,13 @@ describe("PromptVariables - Unit Tests", () => {
       const inputTextFile = StandardVariableName.create("input_text_file");
       assertExists(inputTextFile);
       if (inputTextFile.ok) {
-        assertEquals(inputTextFile.data.getValue(), "input_text_file");
+        assertEquals(inputTextFile.data.value, "input_text_file");
       }
 
       const destinationPath = StandardVariableName.create("destination_path");
       assertExists(destinationPath);
       if (destinationPath.ok) {
-        assertEquals(destinationPath.data.getValue(), "destination_path");
+        assertEquals(destinationPath.data.value, "destination_path");
       }
     });
 

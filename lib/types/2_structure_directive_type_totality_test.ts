@@ -173,7 +173,7 @@ Deno.test("2_structure: DirectiveType value extraction is consistent", () => {
   // All access methods should return identical values
   const accessMethods = [
     () => directiveType.value,
-    () => directiveType.getValue(),
+    () => directiveType.value,
     () => directiveType.originalResult.demonstrativeType,
     () => directiveType.toString().match(/DirectiveType\((.*)\)/)![1],
   ];

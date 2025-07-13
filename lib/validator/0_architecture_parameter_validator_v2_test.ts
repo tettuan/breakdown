@@ -23,7 +23,7 @@ import {
 } from "./parameter_validator_v2.ts";
 import type { Result } from "../types/result.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "../types/directive_type.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../types/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 

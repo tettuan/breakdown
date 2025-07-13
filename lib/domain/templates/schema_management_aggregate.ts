@@ -42,7 +42,7 @@ export class SchemaPath {
   }
 
   getPath(): string {
-    return `${this.directive.getValue()}/${this.layer.getValue()}/${this.filename}`;
+    return `${this.directive.value}/${this.layer.value}/${this.filename}`;
   }
 
   getDirective(): DirectiveType {
@@ -296,13 +296,13 @@ export class SchemaRegistry {
 
     if (filter?.directive) {
       schemas = schemas.filter(
-        (s) => s.getPath().getDirective().getValue() === filter.directive!.getValue(),
+        (s) => s.getPath().getDirective().value === filter.directive!.value,
       );
     }
 
     if (filter?.layer) {
       schemas = schemas.filter(
-        (s) => s.getPath().getLayer().getValue() === filter.layer!.getValue(),
+        (s) => s.getPath().getLayer().value === filter.layer!.value,
       );
     }
 

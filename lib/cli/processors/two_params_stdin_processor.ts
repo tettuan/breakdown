@@ -9,7 +9,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { readStdin } from "$lib/io/stdin.ts";
+import { readStdinEnhanced } from "$lib/io/enhanced_stdin.ts";
 import {
   type BreakdownConfigCompatible,
   createTimeoutManagerFromConfig,
@@ -104,7 +104,7 @@ export class TwoParamsStdinProcessor {
   }
 
   /**
-   * Process input (STDIN or file)
+   * Process input (STDIN or file) using enhanced stdin implementation
    *
    * @param config - Configuration for timeout management
    * @param options - Command line options
@@ -114,11 +114,6 @@ export class TwoParamsStdinProcessor {
     config: BreakdownConfigCompatible,
     options: Record<string, unknown>,
   ): Promise<Result<string, InputProcessorError>> {
-    let timeoutManager: TimeoutManager | null = null;
-    let abortController: AbortController | null = null;
-    let timeoutId: number | null = null;
-    let stdinPromise: Promise<string> | null = null;
-
     try {
       // First, check if a file path is specified
       const filePath = this.getFilePath(options);
@@ -131,51 +126,30 @@ export class TwoParamsStdinProcessor {
         return ok(""); // No input to read
       }
 
-      // Create AbortController for comprehensive resource management
-      abortController = new AbortController();
-      timeoutManager = createTimeoutManagerFromConfig(config);
+      // Create TimeoutManager for enhanced stdin
+      const timeoutManager = createTimeoutManagerFromConfig(config);
 
-      // Create timeout promise with proper cleanup
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          if (abortController && !abortController.signal.aborted) {
-            abortController.abort();
-          }
-          reject(new Error("Stdin read timeout"));
-        }, 5000); // 5 second timeout
-
-        // Handle abort signal
-        abortController?.signal.addEventListener("abort", () => {
-          if (timeoutId !== null) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
-          reject(new Error("Stdin read aborted"));
-        });
-      });
-
-      // Create stdin read promise with abort handling
-      stdinPromise = readStdin({
+      // Use enhanced stdin with comprehensive error handling
+      const inputText = await readStdinEnhanced({
         timeoutManager,
         forceRead: true, // Force read in test environments where stdin is piped
         allowEmpty: true,
       });
 
-      // Race between stdin reading and timeout with proper abort handling
-      const inputText = await Promise.race([
-        stdinPromise,
-        timeoutPromise,
-      ]);
-
       return ok(inputText);
     } catch (err) {
-      // In test environments, if stdin reading fails but we have valid options.from="-",
-      // treat it as empty input rather than error to allow integration tests to proceed
-      if (
-        options && options.from === "-" && err instanceof Error &&
-        err.message.includes("test environment")
-      ) {
-        return ok(""); // Return empty string for test environments
+      // Enhanced error handling for different error types
+      if (err && typeof err === "object" && "name" in err && err.name === "EnhancedStdinError") {
+        const enhancedError = err as any;
+        
+        // In test environments, if stdin reading fails but we have valid options.from="-",
+        // treat it as empty input rather than error to allow integration tests to proceed
+        if (
+          options && options.from === "-" && 
+          enhancedError.context?.reason === "test_environment"
+        ) {
+          return ok(""); // Return empty string for test environments
+        }
       }
 
       return error({
@@ -183,23 +157,6 @@ export class TwoParamsStdinProcessor {
         message: err instanceof Error ? err.message : String(err),
         cause: err,
       });
-    } finally {
-      // 🎖️ COMPREHENSIVE CLEANUP: AbortController + finally + null GC
-      // Clear timeout first
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-
-      // Abort controller if not already aborted
-      if (abortController && !abortController.signal.aborted) {
-        abortController.abort();
-      }
-
-      // Null out all references for GC
-      timeoutManager = null;
-      abortController = null;
-      stdinPromise = null;
     }
   }
 
