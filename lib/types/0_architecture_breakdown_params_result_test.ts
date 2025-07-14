@@ -29,6 +29,7 @@ Deno.test("0_architecture: BreakdownParamsResult follows domain boundary rules",
   const mockData: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -61,6 +62,7 @@ Deno.test("0_architecture: BreakdownParamsResult enforces Discriminated Union pa
 
   const mockData: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
@@ -95,6 +97,7 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
   const testData: TwoParams_Result[] = [
     {
       type: "two",
+    directiveType: "to",
       directiveType: "to",
       layerType: "project",
       params: ["to", "project"],
@@ -102,6 +105,7 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     },
     {
       type: "two",
+    directiveType: "to",
       directiveType: "",
       layerType: "",
       params: ["", ""],
@@ -109,6 +113,7 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     },
     {
       type: "two",
+    directiveType: "to",
       directiveType: "custom_with_long_name",
       layerType: "custom_layer",
       params: ["custom_with_long_name", "custom_layer"],
@@ -145,6 +150,7 @@ Deno.test("0_architecture: Pattern matching ensures exhaustiveness", () => {
 
   const mockData: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "analyze",
     layerType: "module",
     params: ["analyze", "module"],
@@ -176,6 +182,7 @@ Deno.test("0_architecture: BreakdownParamsResult maintains immutability", () => 
 
   const mockData: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "transform",
     layerType: "service",
     params: ["transform", "service"],

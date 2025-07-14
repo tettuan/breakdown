@@ -335,7 +335,26 @@ export class ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.FATAL, impact, metadata);
   }
 
+  /**
+   * カスタム設定によるErrorSeverity生成（レガシー互換）
+   * @deprecated Smart Constructor パターンのcreateメソッドを使用してください
+   */
+  static custom(level: SeverityLevel, impact: ImpactScope, metadata?: ErrorMetadata): ErrorSeverity {
+    return new ErrorSeverity(level, impact, metadata);
+  }
 
+  /**
+   * 文字列からの安全でない変換（レガシー互換）
+   * エラー時に例外を投げる従来の動作を維持
+   * @deprecated fromStringメソッドを使用してください（Result型による安全な処理）
+   */
+  static fromStringUnsafe(levelString: string): ErrorSeverity {
+    const result = ErrorSeverity.fromString(levelString);
+    if (!result.ok) {
+      throw new Error(formatErrorSeverityError(result.error));
+    }
+    return result.data;
+  }
 
   // =============================================================================
   // VALUE OBJECT METHODS

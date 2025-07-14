@@ -91,8 +91,8 @@ describe("Architecture: Module Export Design", () => {
 
     // Internal methods should not be accessible through module
     assertEquals(
-      (moduleExports as unknown as { validateDemonstrativeType?: unknown })
-        .validateDemonstrativeType,
+      (moduleExports as unknown as { validateDirectiveType?: unknown })
+        .validateDirectiveType,
       undefined,
       "Should not expose internal validation methods",
     );

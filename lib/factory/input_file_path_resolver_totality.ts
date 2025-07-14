@@ -303,7 +303,6 @@ export class InputFilePathResolverTotality {
         directiveType: totalityParams.directiveType || totalityParams.directive?.value ||
           "",
         layerType: totalityParams.layerType || totalityParams.layer?.value || "",
-        demonstrativeType: totalityParams.demonstrativeType || totalityParams.directive?.value || "",
         options: { ...totalityParams.options },
       };
       return copy;
@@ -313,9 +312,9 @@ export class InputFilePathResolverTotality {
       const copy: TwoParams_Result = {
         type: "two",
         params: twoParams.params ? [...twoParams.params] : [],
-        directiveType: twoParams.params?.[0] || "",
+        directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
+        demonstrativeType: twoParams.directiveType || twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
-        demonstrativeType: twoParams.demonstrativeType || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -325,7 +324,6 @@ export class InputFilePathResolverTotality {
       const copy: PromptCliParams = {
         directiveType: doubleParams.directiveType,
         layerType: doubleParams.layerType,
-        demonstrativeType: doubleParams.demonstrativeType || doubleParams.directiveType,
         options: doubleParams.options ? { ...doubleParams.options } : {},
       };
 

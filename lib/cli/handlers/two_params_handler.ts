@@ -114,12 +114,7 @@ class TwoParamsOrchestrator {
     // 4. Generate prompt with validated parameters
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
-      {
-        directive: validationResult.data.directiveType as any,
-        layer: validationResult.data.layerType as any,
-        directiveType: validationResult.data.directiveType,
-        layerType: validationResult.data.layerType,
-      } as any,
+      validationResult.data,
       options,
       variablesResult.data,
     );

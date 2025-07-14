@@ -61,9 +61,9 @@ Deno.test("ParamsCustomConfig - Behavior: create handles partial params override
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Should override directiveType
-    assertEquals(result.data.params.two.directiveType.pattern, "^(custom|test)$");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "^(custom|test)$");
     assertEquals(
-      result.data.params.two.directiveType.errorMessage,
+      result.data.params.two.DirectiveType.errorMessage,
       "Custom demonstrative error",
     );
 
@@ -102,8 +102,8 @@ Deno.test("ParamsCustomConfig - Behavior: create handles complete params overrid
   assertEquals(result.status, ResultStatus.SUCCESS);
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
-    assertEquals(result.data.params.two.directiveType.pattern, "^custom_demo$");
-    assertEquals(result.data.params.two.directiveType.errorMessage, "Custom demo error");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "^custom_demo$");
+    assertEquals(result.data.params.two.DirectiveType.errorMessage, "Custom demo error");
     assertEquals(result.data.params.two.layerType.pattern, "^custom_layer$");
     assertEquals(result.data.params.two.layerType.errorMessage, "Custom layer error");
   }
@@ -212,8 +212,8 @@ Deno.test("ParamsCustomConfig - Behavior: create handles mixed section overrides
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Params override should work
-    assertEquals(result.data.params.two.directiveType.pattern, "^mixed$");
-    assertEquals(result.data.params.two.directiveType.errorMessage, "Mixed error");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "^mixed$");
+    assertEquals(result.data.params.two.DirectiveType.errorMessage, "Mixed error");
 
     // ErrorHandling override should work
     assertEquals(result.data.errorHandling.unknownOption, "warn");
@@ -256,8 +256,8 @@ Deno.test("ParamsCustomConfig - Behavior: create ignores invalid field types", (
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid directiveType should be ignored, default should be used
     assertEquals(
-      result.data.params.two.directiveType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.directiveType.pattern,
+      result.data.params.two.DirectiveType.pattern,
+      DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.pattern,
     );
 
     // Valid layerType should be used
@@ -320,8 +320,8 @@ Deno.test("ParamsCustomConfig - Behavior: create handles deeply nested invalid s
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid directiveType should be ignored
     assertEquals(
-      result.data.params.two.directiveType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.directiveType.pattern,
+      result.data.params.two.DirectiveType.pattern,
+      DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.pattern,
     );
 
     // Valid layerType should be used (extra fields ignored)
@@ -350,7 +350,7 @@ Deno.test("ParamsCustomConfig - Behavior: create preserves all defaults for unsp
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Specified override should work
-    assertEquals(result.data.params.two.directiveType.pattern, "^minimal$");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "^minimal$");
 
     // All other sections should match defaults exactly
     assertEquals(

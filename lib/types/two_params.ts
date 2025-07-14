@@ -146,7 +146,7 @@ export class TwoParamsType {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "result",
         value: result,
-        reason: "Invalid TwoParams_Result: must have required fields (type, params, directiveType, layerType)",
+        reason: "Invalid TwoParams_Result: must have required fields (type, params, directiveType/directiveType, layerType)",
       }));
     }
 
@@ -159,8 +159,9 @@ export class TwoParamsType {
       }));
     }
 
-    // directiveType validation
-    if (!result.directiveType || typeof result.directiveType !== "string") {
+    // directiveType validation (primary)
+    const directiveType = result.directiveType || result.demonstrativeType;
+    if (!directiveType || typeof directiveType !== "string") {
       return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "directiveType",
         source: "TwoParams_Result",
@@ -186,21 +187,23 @@ export class TwoParamsType {
 
     // params content validation
     if (result.params.length !== 2) {
-      return error(ErrorFactory.validationError("ValidationFailed", {
-        errors: ["params array must contain exactly 2 elements"],
+      return error(ErrorFactory.validationError("PathValidationFailed", {
+        path: "params",
+        reason: "params array must contain exactly 2 elements",
       }));
     }
 
     // params consistency validation
-    if (result.params[0] !== result.directiveType || result.params[1] !== result.layerType) {
-      return error(ErrorFactory.validationError("ValidationFailed", {
-        errors: ["params array must match directiveType and layerType"],
+    if (result.params[0] !== directiveType || result.params[1] !== result.layerType) {
+      return error(ErrorFactory.validationError("PathValidationFailed", {
+        path: "params",
+        reason: "params array must match directiveType and layerType",
       }));
     }
 
     // Success: create TwoParamsType instance
     return ok(new TwoParamsType(
-      result.directiveType,
+      directiveType,
       result.layerType,
       [...result.params], // Create immutable copy
       result.options || {},

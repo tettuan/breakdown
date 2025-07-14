@@ -57,6 +57,7 @@ Deno.test("TwoParamsType - Smart Constructor Integration", async (t) => {
     // Arrange - inconsistent params
     const inconsistentResult = {
       type: "two",
+    directiveType: "to",
       directiveType: "to",
       layerType: "task", 
       params: ["summary", "issue"], // Different from directiveType/layerType

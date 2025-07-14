@@ -28,9 +28,10 @@ import type { TwoParams_Result } from "../../deps.ts";
 function createMockDirectiveType(value: string): DirectiveType {
   const mockResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: value,
     layerType: "project",
-    demonstrativeType: value,
+    directiveType: value,
     options: {},
     params: [value, "project"],
   };
@@ -41,8 +42,9 @@ function createMockLayerType(value: string): LayerType {
   const mockResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: value,
-    demonstrativeType: "to",
+    directiveType: "to",
     options: {},
     params: ["to", value],
   };
@@ -485,8 +487,8 @@ describe("GenerationPolicy_Architecture", () => {
         };
 
         // Should accept properly typed parameters
-        assertEquals(typeof context.directive.getValue, "function");
-        assertEquals(typeof context.layer.getValue, "function");
+        assertEquals(typeof context.directive.value, "string");
+        assertEquals(typeof context.layer.value, "string");
         assertEquals(context.directive.value, "to");
         assertEquals(context.layer.value, "project");
       }

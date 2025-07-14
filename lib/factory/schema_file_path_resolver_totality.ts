@@ -151,7 +151,7 @@ export class SchemaFilePathResolverTotality {
     }
 
     // Validate CLI parameters structure and content
-    const directiveType = SchemaFilePathResolverTotality.extractDemonstrativeType(cliParams);
+    const directiveType = SchemaFilePathResolverTotality.extractDirectiveType(cliParams);
     const layerType = SchemaFilePathResolverTotality.extractLayerType(cliParams);
 
     if (!directiveType || !layerType) {
@@ -206,20 +206,19 @@ export class SchemaFilePathResolverTotality {
       const copy: TwoParams_Result = {
         type: "two",
         params: twoParams.params ? [...twoParams.params] : [],
-        directiveType: twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
-        demonstrativeType: twoParams.params?.[0] || "",
+        directiveType: twoParams.params?.[0] || "",
         options: { ...twoParams.options },
-      };
+      } as TwoParams_Result;
       return copy;
     } else {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
       const copy: DoubleParams_Result = {
-        directiveType: doubleParams.directiveType || "",
         layerType: doubleParams.layerType || "",
+        directiveType: doubleParams.directiveType || (doubleParams as any).directiveType || "",
         options: doubleParams.options ? { ...doubleParams.options } : {},
-      };
+      } as DoubleParams_Result;
       return copy;
     }
   }
@@ -239,7 +238,7 @@ export class SchemaFilePathResolverTotality {
 
     // Build components
     const fileName = this.buildFileName();
-    const directiveType = this.getDemonstrativeType();
+    const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
     const schemaPath = this.buildSchemaPath(baseDir, fileName);
 
@@ -334,7 +333,7 @@ export class SchemaFilePathResolverTotality {
    * Ensures consistent path structure across the system
    */
   public buildSchemaPath(baseDir: string, fileName: string): string {
-    const directiveType = this.getDemonstrativeType();
+    const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
 
     // Validate path components
@@ -350,8 +349,8 @@ export class SchemaFilePathResolverTotality {
   /**
    * Gets the demonstrative type with validation
    */
-  private getDemonstrativeType(): string {
-    const type = SchemaFilePathResolverTotality.extractDemonstrativeType(this._cliParams);
+  private getDirectiveType(): string {
+    const type = SchemaFilePathResolverTotality.extractDirectiveType(this._cliParams);
     return type || "unknown";
   }
 
@@ -359,12 +358,16 @@ export class SchemaFilePathResolverTotality {
    * Static helper to extract demonstrative type
    * Handles multiple parameter formats safely
    */
-  private static extractDemonstrativeType(
+  private static extractDirectiveType(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): string {
     // Handle both legacy and new parameter structures
     if ("directiveType" in cliParams && cliParams.directiveType) {
       return cliParams.directiveType;
+    }
+    // Fallback for backward compatibility
+    if ("directiveType" in cliParams && (cliParams as any).directiveType) {
+      return (cliParams as any).directiveType;
     }
     // For TwoParams_Result structure from breakdownparams
     const twoParams = cliParams as TwoParams_Result;
@@ -411,7 +414,7 @@ export class SchemaFilePathResolverTotality {
 
     const baseDir = baseDirResult.data;
     const fileName = this.buildFileName();
-    const directiveType = this.getDemonstrativeType();
+    const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
 
     const paths = [

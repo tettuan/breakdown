@@ -61,9 +61,10 @@ const createValidTwoParams = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType,
   layerType,
-  demonstrativeType: directiveType,
+  directiveType: directiveType,
   params: [directiveType, layerType],
   options,
 });
@@ -100,8 +101,9 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   const missingFieldResult = validator.validateTwoParams({
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["", "project"],
     options: {},
   });
@@ -193,7 +195,7 @@ Deno.test("2_structure: ParameterValidator handles OneParams with proper default
 
   const oneParamResult: OneParamsResult = {
     type: "one",
-    demonstrativeType: "init",
+    directiveType: "init",
     params: ["project"],
     options: { debug: true },
   };
@@ -405,7 +407,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   // Test different sources
   const oneParamResult = validator.validateOneParams({
     type: "one",
-    demonstrativeType: "init",
+    directiveType: "init",
     params: ["project"],
     options: {},
   });

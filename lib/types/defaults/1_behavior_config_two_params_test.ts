@@ -19,7 +19,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     const config = _defaultConfigTwoParams.params.two;
 
     // Test directiveType pattern behavior
-    const directiveRegex = new RegExp(config.directiveType.pattern);
+    const directiveRegex = new RegExp(config.DirectiveType.pattern);
     const validDirective = ["to", "summary", "defect", "find"];
     const invalidDirective = ["invalid", "TO", "summary2", ""];
 
@@ -69,7 +69,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     const config = _defaultConfigTwoParams.params.two;
 
     // Test directiveType pattern extraction
-    const directiveMatch = config.directiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
+    const directiveMatch = config.DirectiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(directiveMatch);
     assertEquals(directiveMatch[1], "to|summary|defect|find");
 
@@ -116,7 +116,7 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     const config = _defaultConfigTwoParams;
 
     // Simulate TypePatternProvider behavior
-    const getDirectivePattern = () => config.params.two.directiveType.pattern;
+    const getDirectivePattern = () => config.params.two.DirectiveType.pattern;
     const getLayerTypePattern = () => config.params.two.layerType.pattern;
 
     assertEquals(typeof getDirectivePattern(), "string");
@@ -140,8 +140,8 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
         ...config.params,
         two: {
           ...config.params.two,
-          directiveType: {
-            ...config.params.two.directiveType,
+          DirectiveType: {
+            ...config.params.two.DirectiveType,
             pattern: "^(custom|pattern)$",
           },
         },
@@ -149,10 +149,10 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     };
 
     // Verify original is unchanged
-    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect|find)$");
+    assertEquals(config.params.two.DirectiveType.pattern, "^(to|summary|defect|find)$");
 
     // Verify custom config has new pattern
-    assertEquals(customConfig.params.two.directiveType.pattern, "^(custom|pattern)$");
+    assertEquals(customConfig.params.two.DirectiveType.pattern, "^(custom|pattern)$");
 
     // Verify other properties are preserved
     assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task|bugs)$");
@@ -197,7 +197,7 @@ Deno.test("defaultConfigTwoParams - Error Handling", async (t) => {
     const config = _defaultConfigTwoParams;
 
     // Test pattern format validation
-    const directivePattern = config.params.two.directiveType.pattern;
+    const directivePattern = config.params.two.DirectiveType.pattern;
     const layerPattern = config.params.two.layerType.pattern;
 
     // Verify patterns are properly formatted
@@ -220,7 +220,7 @@ Deno.test("defaultConfigTwoParams - Error Handling", async (t) => {
 Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
   await t.step("should validate directive string values with Result", () => {
     const config = _defaultConfigTwoParams;
-    const pattern = config.params.two.directiveType.pattern;
+    const pattern = config.params.two.DirectiveType.pattern;
 
     // Helper function to simulate directive validation
     const validateDirectiveString = (value: string): Result<string, string> => {
@@ -294,7 +294,7 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
       directive: string,
       layer: string,
     ): Result<{ directive: DirectiveType; layer: LayerType }, string> => {
-      const directiveRegex = new RegExp(config.params.two.directiveType.pattern);
+      const directiveRegex = new RegExp(config.params.two.DirectiveType.pattern);
       const layerRegex = new RegExp(config.params.two.layerType.pattern);
 
       if (!directiveRegex.test(directive)) {
@@ -308,18 +308,28 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
       // Create TwoParams_Result for DirectiveType and LayerType creation
       const twoParamsResult: TwoParams_Result = {
         type: "two",
+    directiveType: "to",
         directiveType: directive,
         layerType: layer,
         params: [directive, layer],
         options: {},
       };
 
-      const directiveType = DirectiveType.create(twoParamsResult);
-      const layerType = LayerType.create(twoParamsResult);
+      const directiveType = DirectiveType.create(twoParamsResult.directiveType);
+      const layerType = LayerType.create(twoParamsResult.layerType);
+
+      // Check if both types were created successfully
+      if (!directiveType.ok) {
+        return error(`Failed to create DirectiveType: ${JSON.stringify(directiveType.error)}`);
+      }
+
+      if (!layerType.ok) {
+        return error(`Failed to create LayerType: ${JSON.stringify(layerType.error)}`);
+      }
 
       return ok({
-        directive: directiveType,
-        layer: layerType,
+        directive: directiveType.data,
+        layer: layerType.data,
       });
     };
 

@@ -31,12 +31,12 @@ assertEquals(result.data.layer, "project");
 // 2. DirectiveType の検証
 const directiveResult = DirectiveType.from(twoParamsResult);
 assertEquals(directiveResult.ok, true);
-assertEquals(directiveResult.data.getValue(), "to");
+assertEquals(directiveResult.data.value, "to");
 
 // 3. LayerType の検証
 const layerResult = LayerType.from(twoParamsResult);
 assertEquals(layerResult.ok, true);
-assertEquals(layerResult.data.getValue(), "project");
+assertEquals(layerResult.data.value, "project");
 
 // 4. プロンプト生成の検証
 assertStringIncludes(generatedPrompt, "${input}");

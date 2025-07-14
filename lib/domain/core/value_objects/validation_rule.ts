@@ -11,529 +11,603 @@ import type { Result } from "../../../types/result.ts";
 import { error as resultError, ok as resultOk } from "../../../types/result.ts";
 
 /**
- * Predefined validation rule types
+ * Validation function type
  */
-export const VALIDATION_RULE_TYPES = {
-  REQUIRED: "required",
-  MIN_LENGTH: "min_length",
-  MAX_LENGTH: "max_length",
-  PATTERN: "pattern",
-  RANGE: "range",
-  EMAIL: "email",
-  URL: "url",
-  NUMERIC: "numeric",
-  ALPHA: "alpha",
-  ALPHANUMERIC: "alphanumeric",
-  CUSTOM: "custom",
-} as const;
-
-export type ValidationRuleType = typeof VALIDATION_RULE_TYPES[keyof typeof VALIDATION_RULE_TYPES];
+export type ValidationFunction<T> = (value: T) => boolean;
 
 /**
  * Error types for ValidationRule validation
  */
 export type ValidationRuleError =
+  | { kind: "NullOrUndefined"; input: unknown }
+  | { kind: "EmptyName"; input: string }
+  | { kind: "InvalidValidator"; input: unknown }
+  | { kind: "EmptyErrorMessage"; input: string }
+  | { kind: "NegativeLength"; input: number }
+  | { kind: "InvalidType"; input: unknown; expectedType: string }
+  | { kind: "InvalidRange"; min: number; max: number }
+  | { kind: "EmptyRuleSet"; input: unknown }
   | { kind: "InvalidRuleType"; input: string; validTypes: string[] }
   | { kind: "InvalidFormat"; input: unknown; reason: string }
   | { kind: "InvalidParameters"; ruleType: string; parameters: unknown; reason: string }
   | { kind: "MissingParameters"; ruleType: string; requiredParameters: string[] };
 
 /**
- * Parameters for different validation rule types
+ * Type guard functions for ValidationRuleError
  */
-export type ValidationRuleParameters =
-  | { type: "required" }
-  | { type: "min_length"; minLength: number }
-  | { type: "max_length"; maxLength: number }
-  | { type: "pattern"; pattern: string; flags?: string }
-  | { type: "range"; min: number; max: number }
-  | { type: "email" }
-  | { type: "url" }
-  | { type: "numeric" }
-  | { type: "alpha" }
-  | { type: "alphanumeric" }
-  | { type: "custom"; validator: (value: unknown) => boolean; errorMessage: string };
+export function isNullOrUndefinedError(error: ValidationRuleError): error is { kind: "NullOrUndefined"; input: unknown } {
+  return error.kind === "NullOrUndefined";
+}
+
+export function isEmptyNameError(error: ValidationRuleError): error is { kind: "EmptyName"; input: string } {
+  return error.kind === "EmptyName";
+}
+
+export function isInvalidValidatorError(error: ValidationRuleError): error is { kind: "InvalidValidator"; input: unknown } {
+  return error.kind === "InvalidValidator";
+}
+
+export function isEmptyErrorMessageError(error: ValidationRuleError): error is { kind: "EmptyErrorMessage"; input: string } {
+  return error.kind === "EmptyErrorMessage";
+}
+
+export function isNegativeLengthError(error: ValidationRuleError): error is { kind: "NegativeLength"; input: number } {
+  return error.kind === "NegativeLength";
+}
+
+export function isInvalidTypeError(error: ValidationRuleError): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
+  return error.kind === "InvalidType";
+}
+
+export function isInvalidRangeError(error: ValidationRuleError): error is { kind: "InvalidRange"; min: number; max: number } {
+  return error.kind === "InvalidRange";
+}
+
+export function isEmptyRuleSetError(error: ValidationRuleError): error is { kind: "EmptyRuleSet"; input: unknown } {
+  return error.kind === "EmptyRuleSet";
+}
 
 /**
  * Immutable value object representing a validation rule
  */
-export class ValidationRule {
-  private readonly _type: ValidationRuleType;
-  private readonly _parameters: ValidationRuleParameters;
+export class ValidationRule<T = unknown> {
+  private readonly _name: string;
+  private readonly _validator: ValidationFunction<T>;
   private readonly _errorMessage: string;
 
-  private constructor(parameters: ValidationRuleParameters, errorMessage?: string) {
-    this._type = parameters.type;
-    this._parameters = parameters;
-    this._errorMessage = errorMessage || this.getDefaultErrorMessage(parameters);
+  private constructor(name: string, validator: ValidationFunction<T>, errorMessage: string) {
+    this._name = name;
+    this._validator = validator;
+    this._errorMessage = errorMessage;
     Object.freeze(this);
   }
 
   /**
    * Smart Constructor: Creates a ValidationRule with validation
    */
-  static create(
-    parameters: ValidationRuleParameters,
-    errorMessage?: string
-  ): Result<ValidationRule, ValidationRuleError> {
-    // Validate parameters based on rule type
-    const validationResult = ValidationRule.validateParameters(parameters);
-    if (!validationResult.ok) {
-      return validationResult;
-    }
-
-    return resultOk(new ValidationRule(parameters, errorMessage));
-  }
-
-  /**
-   * Validate rule parameters based on type
-   */
-  private static validateParameters(
-    parameters: ValidationRuleParameters
-  ): Result<void, ValidationRuleError> {
-    switch (parameters.type) {
-      case VALIDATION_RULE_TYPES.MIN_LENGTH:
-        if (typeof parameters.minLength !== "number" || parameters.minLength < 0) {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "minLength must be a non-negative number",
-          });
-        }
-        break;
-
-      case VALIDATION_RULE_TYPES.MAX_LENGTH:
-        if (typeof parameters.maxLength !== "number" || parameters.maxLength < 0) {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "maxLength must be a non-negative number",
-          });
-        }
-        break;
-
-      case VALIDATION_RULE_TYPES.PATTERN:
-        if (typeof parameters.pattern !== "string" || parameters.pattern === "") {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "pattern must be a non-empty string",
-          });
-        }
-        // Test if pattern is a valid regex
-        try {
-          new RegExp(parameters.pattern, parameters.flags);
-        } catch (error) {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: `Invalid regex pattern: ${error.message}`,
-          });
-        }
-        break;
-
-      case VALIDATION_RULE_TYPES.RANGE:
-        if (typeof parameters.min !== "number" || typeof parameters.max !== "number") {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "min and max must be numbers",
-          });
-        }
-        if (parameters.min > parameters.max) {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "min cannot be greater than max",
-          });
-        }
-        break;
-
-      case VALIDATION_RULE_TYPES.CUSTOM:
-        if (typeof parameters.validator !== "function") {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "validator must be a function",
-          });
-        }
-        if (typeof parameters.errorMessage !== "string" || parameters.errorMessage === "") {
-          return resultError({
-            kind: "InvalidParameters",
-            ruleType: parameters.type,
-            parameters,
-            reason: "errorMessage must be a non-empty string",
-          });
-        }
-        break;
-
-      // Simple types that don't need additional validation
-      case VALIDATION_RULE_TYPES.REQUIRED:
-      case VALIDATION_RULE_TYPES.EMAIL:
-      case VALIDATION_RULE_TYPES.URL:
-      case VALIDATION_RULE_TYPES.NUMERIC:
-      case VALIDATION_RULE_TYPES.ALPHA:
-      case VALIDATION_RULE_TYPES.ALPHANUMERIC:
-        break;
-
-      default:
-        return resultError({
-          kind: "InvalidRuleType",
-          input: (parameters as { type: string }).type,
-          validTypes: Object.values(VALIDATION_RULE_TYPES),
-        });
-    }
-
-    return resultOk(undefined);
-  }
-
-  /**
-   * Get default error message for rule type
-   */
-  private getDefaultErrorMessage(parameters: ValidationRuleParameters): string {
-    switch (parameters.type) {
-      case VALIDATION_RULE_TYPES.REQUIRED:
-        return "This field is required";
-      case VALIDATION_RULE_TYPES.MIN_LENGTH:
-        return `Minimum length is ${parameters.minLength} characters`;
-      case VALIDATION_RULE_TYPES.MAX_LENGTH:
-        return `Maximum length is ${parameters.maxLength} characters`;
-      case VALIDATION_RULE_TYPES.PATTERN:
-        return `Value must match the pattern: ${parameters.pattern}`;
-      case VALIDATION_RULE_TYPES.RANGE:
-        return `Value must be between ${parameters.min} and ${parameters.max}`;
-      case VALIDATION_RULE_TYPES.EMAIL:
-        return "Must be a valid email address";
-      case VALIDATION_RULE_TYPES.URL:
-        return "Must be a valid URL";
-      case VALIDATION_RULE_TYPES.NUMERIC:
-        return "Must be a number";
-      case VALIDATION_RULE_TYPES.ALPHA:
-        return "Must contain only letters";
-      case VALIDATION_RULE_TYPES.ALPHANUMERIC:
-        return "Must contain only letters and numbers";
-      case VALIDATION_RULE_TYPES.CUSTOM:
-        return parameters.errorMessage;
-      default:
-        return "Validation failed";
-    }
-  }
-
-  /**
-   * Factory methods for common validation rules
-   */
-  static required(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.REQUIRED }, errorMessage);
-  }
-
-  static minLength(minLength: number, errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.MIN_LENGTH, minLength }, errorMessage);
-  }
-
-  static maxLength(maxLength: number, errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.MAX_LENGTH, maxLength }, errorMessage);
-  }
-
-  static pattern(pattern: string, flags?: string, errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.PATTERN, pattern, flags }, errorMessage);
-  }
-
-  static range(min: number, max: number, errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.RANGE, min, max }, errorMessage);
-  }
-
-  static email(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.EMAIL }, errorMessage);
-  }
-
-  static url(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.URL }, errorMessage);
-  }
-
-  static numeric(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.NUMERIC }, errorMessage);
-  }
-
-  static alpha(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.ALPHA }, errorMessage);
-  }
-
-  static alphanumeric(errorMessage?: string): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.ALPHANUMERIC }, errorMessage);
-  }
-
-  static custom(
-    validator: (value: unknown) => boolean,
+  static create<T>(
+    name: string,
+    validator: ValidationFunction<T>,
     errorMessage: string
-  ): Result<ValidationRule, ValidationRuleError> {
-    return ValidationRule.create({ type: VALIDATION_RULE_TYPES.CUSTOM, validator, errorMessage });
+  ): Result<ValidationRule<T>, ValidationRuleError> {
+    // Validate name
+    if (name === null || name === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: name,
+      });
+    }
+
+    if (typeof name !== "string") {
+      return resultError({
+        kind: "InvalidType",
+        input: name,
+        expectedType: "string",
+      });
+    }
+
+    if (name.trim() === "") {
+      return resultError({
+        kind: "EmptyName",
+        input: name,
+      });
+    }
+
+    // Validate validator
+    if (validator === null || validator === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: validator,
+      });
+    }
+
+    if (typeof validator !== "function") {
+      return resultError({
+        kind: "InvalidValidator",
+        input: validator,
+      });
+    }
+
+    // Validate error message
+    if (errorMessage === null || errorMessage === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: errorMessage,
+      });
+    }
+
+    if (typeof errorMessage !== "string") {
+      return resultError({
+        kind: "InvalidType",
+        input: errorMessage,
+        expectedType: "string",
+      });
+    }
+
+    if (errorMessage.trim() === "") {
+      return resultError({
+        kind: "EmptyErrorMessage",
+        input: errorMessage,
+      });
+    }
+
+    return resultOk(new ValidationRule(name, validator, errorMessage));
   }
 
   /**
-   * Get rule type
+   * Unsafe factory method for backward compatibility
    */
-  get type(): ValidationRuleType {
-    return this._type;
+  static createUnsafe<T>(
+    name: string,
+    validator: ValidationFunction<T>,
+    errorMessage: string
+  ): ValidationRule<T> {
+    const result = ValidationRule.create(name, validator, errorMessage);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
   }
 
   /**
-   * Get rule parameters
+   * Factory method for minimum length validation
    */
-  get parameters(): ValidationRuleParameters {
-    return this._parameters;
+  static minLength(length: number, fieldName: string): Result<ValidationRule<string>, ValidationRuleError> {
+    // Validate length
+    if (length === null || length === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: length,
+      });
+    }
+
+    if (typeof length !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: length,
+        expectedType: "number",
+      });
+    }
+
+    if (length < 0) {
+      return resultError({
+        kind: "NegativeLength",
+        input: length,
+      });
+    }
+
+    // Validate field name
+    if (fieldName === null || fieldName === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: fieldName,
+      });
+    }
+
+    if (typeof fieldName !== "string") {
+      return resultError({
+        kind: "InvalidType",
+        input: fieldName,
+        expectedType: "string",
+      });
+    }
+
+    if (fieldName.trim() === "") {
+      return resultError({
+        kind: "EmptyName",
+        input: fieldName,
+      });
+    }
+
+    const name = `minLength_${length}_${fieldName}`;
+    const validator = (value: string) => typeof value === "string" && value.length >= length;
+    const errorMessage = `${fieldName} must be at least ${length} characters long`;
+
+    return ValidationRule.create(name, validator, errorMessage);
+  }
+
+  /**
+   * Unsafe factory method for minimum length validation
+   */
+  static minLengthUnsafe(length: number, fieldName: string): ValidationRule<string> {
+    const result = ValidationRule.minLength(length, fieldName);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Factory method for maximum length validation
+   */
+  static maxLength(length: number, fieldName: string): Result<ValidationRule<string>, ValidationRuleError> {
+    // Validate length
+    if (length === null || length === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: length,
+      });
+    }
+
+    if (typeof length !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: length,
+        expectedType: "number",
+      });
+    }
+
+    if (length < 0) {
+      return resultError({
+        kind: "NegativeLength",
+        input: length,
+      });
+    }
+
+    // Validate field name
+    if (fieldName === null || fieldName === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: fieldName,
+      });
+    }
+
+    if (typeof fieldName !== "string") {
+      return resultError({
+        kind: "InvalidType",
+        input: fieldName,
+        expectedType: "string",
+      });
+    }
+
+    if (fieldName.trim() === "") {
+      return resultError({
+        kind: "EmptyName",
+        input: fieldName,
+      });
+    }
+
+    const name = `maxLength_${length}_${fieldName}`;
+    const validator = (value: string) => typeof value === "string" && value.length <= length;
+    const errorMessage = `${fieldName} must be no more than ${length} characters long`;
+
+    return ValidationRule.create(name, validator, errorMessage);
+  }
+
+  /**
+   * Unsafe factory method for maximum length validation
+   */
+  static maxLengthUnsafe(length: number, fieldName: string): ValidationRule<string> {
+    const result = ValidationRule.maxLength(length, fieldName);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Factory method for range validation
+   */
+  static range(min: number, max: number, fieldName: string): Result<ValidationRule<number>, ValidationRuleError> {
+    // Validate min
+    if (min === null || min === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: min,
+      });
+    }
+
+    if (typeof min !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: min,
+        expectedType: "number",
+      });
+    }
+
+    // Validate max
+    if (max === null || max === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: max,
+      });
+    }
+
+    if (typeof max !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: max,
+        expectedType: "number",
+      });
+    }
+
+    // Validate range
+    if (min > max) {
+      return resultError({
+        kind: "InvalidRange",
+        min,
+        max,
+      });
+    }
+
+    // Validate field name
+    if (fieldName === null || fieldName === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: fieldName,
+      });
+    }
+
+    if (typeof fieldName !== "string") {
+      return resultError({
+        kind: "InvalidType",
+        input: fieldName,
+        expectedType: "string",
+      });
+    }
+
+    if (fieldName.trim() === "") {
+      return resultError({
+        kind: "EmptyName",
+        input: fieldName,
+      });
+    }
+
+    const name = `range_${min}_${max}_${fieldName}`;
+    const validator = (value: number) => typeof value === "number" && value >= min && value <= max;
+    const errorMessage = `${fieldName} must be between ${min} and ${max}`;
+
+    return ValidationRule.create(name, validator, errorMessage);
+  }
+
+  /**
+   * Unsafe factory method for range validation
+   */
+  static rangeUnsafe(min: number, max: number, fieldName: string): ValidationRule<number> {
+    const result = ValidationRule.range(min, max, fieldName);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Factory method for combining multiple validation rules
+   */
+  static combine<T>(rules: ValidationRule<T>[]): Result<ValidationRule<T>, ValidationRuleError> {
+    // Validate rules array
+    if (rules === null || rules === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: rules,
+      });
+    }
+
+    if (!Array.isArray(rules)) {
+      return resultError({
+        kind: "InvalidType",
+        input: rules,
+        expectedType: "array",
+      });
+    }
+
+    if (rules.length === 0) {
+      return resultError({
+        kind: "EmptyRuleSet",
+        input: rules,
+      });
+    }
+
+    const name = `combined_${rules.map(r => r.getName()).join("_")}`;
+    const validator = (value: T) => rules.every(rule => rule.isValid(value));
+    const errorMessage = `Value must satisfy all validation rules: ${rules.map(r => r.getErrorMessage()).join(", ")}`;
+
+    return ValidationRule.create(name, validator, errorMessage);
+  }
+
+  /**
+   * Unsafe factory method for combining validation rules
+   */
+  static combineUnsafe<T>(rules: ValidationRule<T>[]): ValidationRule<T> {
+    const result = ValidationRule.combine(rules);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
+  }
+
+  /**
+   * Legacy factory methods for backward compatibility
+   */
+  static required(fieldName?: string): ValidationRule<unknown> {
+    const name = fieldName ? `required_${fieldName}` : "required";
+    const message = fieldName ? `${fieldName} is required` : "This field is required";
+    return ValidationRule.createUnsafe(
+      name,
+      (value: unknown) => value !== null && value !== undefined && value !== "",
+      message
+    );
+  }
+
+  static pattern(pattern: RegExp | string, fieldName?: string): ValidationRule<string> {
+    const name = fieldName ? `pattern_${fieldName}` : "pattern";
+    const message = fieldName ? `${fieldName} must match the pattern` : `Value must match the pattern`;
+    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+    return ValidationRule.createUnsafe(
+      name,
+      (value: string) => typeof value === "string" && regex.test(value),
+      message
+    );
+  }
+
+  static custom<T>(
+    name: string,
+    validator: ValidationFunction<T>,
+    errorMessage: string
+  ): ValidationRule<T> {
+    return ValidationRule.createUnsafe(name, validator, errorMessage);
+  }
+
+  /**
+   * Get rule name
+   */
+  getName(): string {
+    return this._name;
   }
 
   /**
    * Get error message
    */
-  get errorMessage(): string {
+  getErrorMessage(): string {
     return this._errorMessage;
+  }
+
+  /**
+   * Create a new rule with a different error message
+   */
+  withMessage(newMessage: string): Result<ValidationRule<T>, ValidationRuleError> {
+    return ValidationRule.create(this._name, this._validator, newMessage);
+  }
+
+  /**
+   * Unsafe version of withMessage for backward compatibility
+   */
+  withMessageUnsafe(newMessage: string): ValidationRule<T> {
+    const result = this.withMessage(newMessage);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
+    }
+    return result.data;
   }
 
   /**
    * Validate a value against this rule
    */
-  validate(value: unknown): { isValid: boolean; error?: string } {
-    switch (this._parameters.type) {
-      case VALIDATION_RULE_TYPES.REQUIRED:
-        return this.validateRequired(value);
-      case VALIDATION_RULE_TYPES.MIN_LENGTH:
-        return this.validateMinLength(value, this._parameters.minLength);
-      case VALIDATION_RULE_TYPES.MAX_LENGTH:
-        return this.validateMaxLength(value, this._parameters.maxLength);
-      case VALIDATION_RULE_TYPES.PATTERN:
-        return this.validatePattern(value, this._parameters.pattern, this._parameters.flags);
-      case VALIDATION_RULE_TYPES.RANGE:
-        return this.validateRange(value, this._parameters.min, this._parameters.max);
-      case VALIDATION_RULE_TYPES.EMAIL:
-        return this.validateEmail(value);
-      case VALIDATION_RULE_TYPES.URL:
-        return this.validateUrl(value);
-      case VALIDATION_RULE_TYPES.NUMERIC:
-        return this.validateNumeric(value);
-      case VALIDATION_RULE_TYPES.ALPHA:
-        return this.validateAlpha(value);
-      case VALIDATION_RULE_TYPES.ALPHANUMERIC:
-        return this.validateAlphanumeric(value);
-      case VALIDATION_RULE_TYPES.CUSTOM:
-        return this.validateCustom(value, this._parameters.validator);
-      default:
-        return { isValid: false, error: "Unknown validation rule type" };
+  validate(value: T): { isValid: boolean; errorMessage?: string; appliedRules: string[] } {
+    try {
+      const isValid = this._validator(value);
+      return {
+        isValid,
+        errorMessage: isValid ? undefined : this._errorMessage,
+        appliedRules: [this._name],
+      };
+    } catch {
+      return {
+        isValid: false,
+        errorMessage: this._errorMessage,
+        appliedRules: [this._name],
+      };
     }
   }
 
   /**
-   * Individual validation methods
+   * Simple validation that returns only boolean
    */
-  private validateRequired(value: unknown): { isValid: boolean; error?: string } {
-    const isValid = value !== null && value !== undefined && value !== "";
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validateMinLength(value: unknown, minLength: number): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
-    const isValid = value.length >= minLength;
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validateMaxLength(value: unknown, maxLength: number): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
-    const isValid = value.length <= maxLength;
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validatePattern(value: unknown, pattern: string, flags?: string): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
-    const regex = new RegExp(pattern, flags);
-    const isValid = regex.test(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validateRange(value: unknown, min: number, max: number): { isValid: boolean; error?: string } {
-    if (typeof value !== "number") {
-      return { isValid: false, error: "Value must be a number" };
-    }
-    const isValid = value >= min && value <= max;
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validateEmail(value: unknown): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailRegex.test(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
-  }
-
-  private validateUrl(value: unknown): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
+  isValid(value: T): boolean {
     try {
-      new URL(value);
-      return { isValid: true };
+      return this._validator(value);
     } catch {
-      return { isValid: false, error: this._errorMessage };
+      return false;
     }
   }
 
-  private validateNumeric(value: unknown): { isValid: boolean; error?: string } {
-    const isValid = typeof value === "number" && Number.isFinite(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
+  /**
+   * Validate a value and return detailed result
+   */
+  validateWithError(value: T): { isValid: boolean; error?: string } {
+    const isValid = this.isValid(value);
+    return {
+      isValid,
+      error: isValid ? undefined : this._errorMessage,
+    };
   }
 
-  private validateAlpha(value: unknown): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
+  /**
+   * Combine this rule with another using AND logic
+   */
+  and(other: ValidationRule<T>): ValidationRule<T> {
+    const result = ValidationRule.combine([this, other]);
+    if (!result.ok) {
+      throw new Error(formatValidationRuleError(result.error));
     }
-    const alphaRegex = /^[a-zA-Z]+$/;
-    const isValid = alphaRegex.test(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
+    return result.data;
   }
 
-  private validateAlphanumeric(value: unknown): { isValid: boolean; error?: string } {
-    if (typeof value !== "string") {
-      return { isValid: false, error: "Value must be a string" };
-    }
-    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
-    const isValid = alphanumericRegex.test(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
+  /**
+   * Combine this rule with another using OR logic
+   */
+  or(other: ValidationRule<T>): ValidationRule<T> {
+    const name = `${this._name}_or_${other._name}`;
+    const validator = (value: T) => this.isValid(value) || other.isValid(value);
+    const errorMessage = `Value must satisfy either: ${this._errorMessage} OR ${other._errorMessage}`;
+    
+    return ValidationRule.createUnsafe(name, validator, errorMessage);
   }
 
-  private validateCustom(value: unknown, validator: (value: unknown) => boolean): { isValid: boolean; error?: string } {
-    const isValid = validator(value);
-    return { isValid, error: isValid ? undefined : this._errorMessage };
+  /**
+   * Make this rule optional (passes validation for null/undefined)
+   */
+  optional(): ValidationRule<T | null | undefined> {
+    const name = `optional_${this._name}`;
+    const validator = (value: T | null | undefined) => {
+      if (value === null || value === undefined) return true;
+      return this.isValid(value as T);
+    };
+    const errorMessage = `${this._errorMessage} (optional)`;
+    
+    return ValidationRule.createUnsafe(name, validator, errorMessage);
+  }
+
+  /**
+   * Check if this is an optional rule
+   */
+  isOptionalRule(): boolean {
+    return this._name.startsWith('optional_');
   }
 
   /**
    * Value equality comparison
    */
-  equals(other: ValidationRule): boolean {
-    return this._type === other._type &&
-           JSON.stringify(this._parameters) === JSON.stringify(other._parameters) &&
+  equals(other: ValidationRule<T>): boolean {
+    return this._name === other._name &&
            this._errorMessage === other._errorMessage;
-  }
-
-  /**
-   * Check if this is a required rule
-   */
-  isRequired(): boolean {
-    return this._type === VALIDATION_RULE_TYPES.REQUIRED;
-  }
-
-  /**
-   * Check if this is a length-based rule
-   */
-  isLengthBased(): boolean {
-    return this._type === VALIDATION_RULE_TYPES.MIN_LENGTH ||
-           this._type === VALIDATION_RULE_TYPES.MAX_LENGTH;
-  }
-
-  /**
-   * Check if this is a format-based rule
-   */
-  isFormatBased(): boolean {
-    return this._type === VALIDATION_RULE_TYPES.EMAIL ||
-           this._type === VALIDATION_RULE_TYPES.URL ||
-           this._type === VALIDATION_RULE_TYPES.PATTERN;
   }
 
   /**
    * String representation
    */
   toString(): string {
-    return `ValidationRule(${this._type})`;
+    return `ValidationRule(${this._name})`;
   }
 
   /**
    * JSON serialization
    */
-  toJSON(): { type: ValidationRuleType; parameters: ValidationRuleParameters; errorMessage: string } {
+  toJSON(): { name: string; errorMessage: string } {
     return {
-      type: this._type,
-      parameters: this._parameters,
+      name: this._name,
       errorMessage: this._errorMessage,
     };
-  }
-}
-
-/**
- * Collection of validation rules
- */
-export class ValidationRuleSet {
-  private readonly _rules: ValidationRule[];
-
-  private constructor(rules: ValidationRule[]) {
-    this._rules = [...rules];
-    Object.freeze(this);
-  }
-
-  /**
-   * Create a validation rule set
-   */
-  static create(rules: ValidationRule[]): ValidationRuleSet {
-    return new ValidationRuleSet(rules);
-  }
-
-  /**
-   * Get all rules
-   */
-  get rules(): ValidationRule[] {
-    return [...this._rules];
-  }
-
-  /**
-   * Validate a value against all rules
-   */
-  validate(value: unknown): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    for (const rule of this._rules) {
-      const result = rule.validate(value);
-      if (!result.isValid && result.error) {
-        errors.push(result.error);
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * Check if the set contains a required rule
-   */
-  hasRequiredRule(): boolean {
-    return this._rules.some(rule => rule.isRequired());
-  }
-
-  /**
-   * Get the count of rules
-   */
-  getCount(): number {
-    return this._rules.length;
-  }
-
-  /**
-   * Check if the set is empty
-   */
-  isEmpty(): boolean {
-    return this._rules.length === 0;
   }
 }
 
@@ -542,6 +616,30 @@ export class ValidationRuleSet {
  */
 export function formatValidationRuleError(error: ValidationRuleError): string {
   switch (error.kind) {
+    case "NullOrUndefined":
+      return `Validation rule parameter cannot be null or undefined. Received: ${error.input}`;
+
+    case "EmptyName":
+      return `Validation rule name cannot be empty. Received: "${error.input}"`;
+
+    case "InvalidValidator":
+      return `Validator must be a function. Received: ${typeof error.input}`;
+
+    case "EmptyErrorMessage":
+      return `Error message cannot be empty. Received: "${error.input}"`;
+
+    case "NegativeLength":
+      return `Length cannot be negative. Received: ${error.input}`;
+
+    case "InvalidType":
+      return `Invalid type. Expected ${error.expectedType}, received: ${typeof error.input}`;
+
+    case "InvalidRange":
+      return `Invalid range: min (${error.min}) cannot be greater than max (${error.max})`;
+
+    case "EmptyRuleSet":
+      return `Rule set cannot be empty. At least one validation rule is required.`;
+
     case "InvalidRuleType":
       return `Invalid validation rule type: "${error.input}". ` +
         `Valid types are: ${error.validTypes.join(", ")}`;

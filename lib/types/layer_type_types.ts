@@ -30,9 +30,10 @@ export type LayerTypeResult<T> = {
 
 /**
  * Enhanced LayerType error with suggestions
+ * Updated to match DirectiveTypeError structure for type compatibility
  */
 export type LayerTypeErrorWithSuggestions = {
-  kind: "EmptyInput" | "InvalidFormat" | "TooLong";
+  kind: "EmptyInput" | "InvalidFormat" | "PatternMismatch" | "TooLong";
   message: string;
   suggestions?: readonly string[];
   value?: string;

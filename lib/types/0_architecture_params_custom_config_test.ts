@@ -49,10 +49,10 @@ Deno.test("ParamsCustomConfig - Architecture: ParamsConfig interface completenes
   };
 
   // Verify interface structure
-  assertExists(config.directiveType);
+  assertExists(config.DirectiveType);
   assertExists(config.layerType);
-  assertEquals(typeof config.directiveType.pattern, "string");
-  assertEquals(typeof config.directiveType.errorMessage, "string");
+  assertEquals(typeof config.DirectiveType.pattern, "string");
+  assertEquals(typeof config.DirectiveType.errorMessage, "string");
   assertEquals(typeof config.layerType.pattern, "string");
   assertEquals(typeof config.layerType.errorMessage, "string");
 });
@@ -173,8 +173,8 @@ Deno.test("ParamsCustomConfig - Architecture: Partial override architecture", ()
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Should merge with defaults
-    assertEquals(result.data.params.two.directiveType.pattern, "^custom$");
-    assertEquals(result.data.params.two.directiveType.errorMessage, "Custom error");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "^custom$");
+    assertEquals(result.data.params.two.DirectiveType.errorMessage, "Custom error");
 
     // Should preserve defaults for non-overridden fields
     assertEquals(

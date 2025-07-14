@@ -535,8 +535,8 @@ Deno.test("2_structure - Result type structure consistency across validation met
   const successTemplate = {
     ok: true as const,
     data: {
-      directive: { getValue: () => "to" } as Record<string, unknown>,
-      layer: { getValue: () => "project" } as Record<string, unknown>,
+      directive: { value: "to" } as Record<string, unknown>,
+      layer: { value: "project" } as Record<string, unknown>,
       options: { inputPath: "/input", outputPath: "/output" },
       customVariables: {},
       metadata: { validatedAt: new Date(), source: "TwoParams" as const },

@@ -63,11 +63,11 @@ Deno.test("Architecture: DefaultTypePatternProvider - Configuration Encapsulatio
   assertEquals(typeof config, "object");
   assertExists(config.params);
   assertExists(config.params.two);
-  assertExists(config.params.two.directiveType);
+  assertExists(config.params.two.DirectiveType);
   assertExists(config.params.two.layerType);
 
   // Config structure should follow expected pattern
-  assertEquals(typeof config.params.two.directiveType.pattern, "string");
+  assertEquals(typeof config.params.two.DirectiveType.pattern, "string");
   assertEquals(typeof config.params.two.layerType.pattern, "string");
 });
 

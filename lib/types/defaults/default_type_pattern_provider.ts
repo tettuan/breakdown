@@ -61,7 +61,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns Pattern object for validating DirectiveType values
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
     const result = TwoParamsDirectivePattern.createOrError(pattern);
     if (!result.ok) {
       return null;
@@ -76,7 +76,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @throws Error if pattern creation fails (should not happen with valid defaults)
    */
   getDirectivePatternObject(): TwoParamsDirectivePattern {
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
     const result = TwoParamsDirectivePattern.createOrError(pattern);
     if (!result.ok) {
       throw new Error(`Failed to create directive pattern: ${result.error.kind} - ${JSON.stringify(result.error)}`);
@@ -173,7 +173,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    */
   getValidDirectiveValues(): string[] {
     // Extract values from regex pattern: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
     const match = pattern.match(/^\^\(([^)]+)\)\$$/);
     if (match) {
       return match[1].split("|");
@@ -210,7 +210,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   } {
     return {
       providerType: "DefaultTypePatternProvider",
-      directivePattern: _defaultConfigTwoParams.params.two.directiveType.pattern,
+      directivePattern: _defaultConfigTwoParams.params.two.DirectiveType.pattern,
       layerPattern: _defaultConfigTwoParams.params.two.layerType.pattern,
       validDirectives: this.getValidDirectiveValues(),
       validLayers: this.getValidLayerValues(),

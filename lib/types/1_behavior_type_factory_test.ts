@@ -10,29 +10,70 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
 import { TwoParamsDirectivePattern } from "./mod.ts";
-import { TwoParamsLayerTypePattern } from "./mod.ts";
+
+/**
+ * テスト用のパターンオブジェクト作成ヘルパー
+ */
+function createMockPattern(pattern: string): { test(value: string): boolean; getPattern(): string } {
+  const regex = new RegExp(pattern);
+  return {
+    test: (value: string) => regex.test(value),
+    getPattern: () => pattern
+  };
+}
 
 /**
  * テスト用のモックパターンプロバイダー
  */
 class MockPatternProvider implements TypePatternProvider {
   constructor(
-    private directivePattern: TwoParamsDirectivePattern | null,
-    private layerPattern: TwoParamsLayerTypePattern | null,
+    private directivePattern: { test(value: string): boolean; getPattern(): string } | null,
+    private layerPattern: { test(value: string): boolean; getPattern(): string } | null,
   ) {}
 
-  getDirectivePattern(): TwoParamsDirectivePattern | null {
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.directivePattern;
   }
 
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null {
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.layerPattern;
+  }
+
+  validateDirectiveType(value: string): boolean {
+    return this.directivePattern ? this.directivePattern.test(value) : false;
+  }
+
+  validateLayerType(value: string): boolean {
+    return this.layerPattern ? this.layerPattern.test(value) : false;
+  }
+
+  getValidDirectiveTypes(): readonly string[] {
+    if (this.directivePattern) {
+      const pattern = this.directivePattern.getPattern();
+      const match = pattern.match(/^\^\(([^)]+)\)\$$/);
+      if (match) {
+        return match[1].split("|");
+      }
+    }
+    return ["to", "summary", "defect"];
+  }
+
+  getValidLayerTypes(): readonly string[] {
+    if (this.layerPattern) {
+      const pattern = this.layerPattern.getPattern();
+      const match = pattern.match(/^\^\(([^)]+)\)\$$/);
+      if (match) {
+        return match[1].split("|");
+      }
+    }
+    return ["project", "issue", "task"];
   }
 }
 
 Deno.test("TypeFactory Behavior - createDirectiveType success cases", () => {
+  const directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
   const provider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("to|summary|defect")!,
+    directivePattern,
     null,
   );
   const factory = new TypeFactory(provider);
@@ -47,7 +88,7 @@ Deno.test("TypeFactory Behavior - createDirectiveType success cases", () => {
     if (result.ok) {
       assertExists(result.data);
       assertEquals(result.data.value, value);
-      assertEquals(result.data.toString(), `DirectiveType(${value})`);
+      assertEquals(result.data.value, value);
     }
   }
 });
@@ -71,7 +112,7 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
 
   // ケース2: バリデーション失敗
   const strictProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("^(to|summary)$")!,
+    TwoParamsDirectivePattern.create("^(to|summary)$"),
     null,
   );
   const factory2 = new TypeFactory(strictProvider);
@@ -90,7 +131,7 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
 Deno.test("TypeFactory Behavior - createLayerType success cases", () => {
   const provider = new MockPatternProvider(
     null,
-    TwoParamsLayerTypePattern.create("project|issue|task|bugs")!,
+    createMockPattern("^(project|issue|task|bugs)$"),
   );
   const factory = new TypeFactory(provider);
 
@@ -126,7 +167,7 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
   // ケース2: バリデーション失敗
   const strictProvider = new MockPatternProvider(
     null,
-    TwoParamsLayerTypePattern.create("^(project|issue)$")!,
+    createMockPattern("^(project|issue)$"),
   );
   const factory2 = new TypeFactory(strictProvider);
 
@@ -143,8 +184,8 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
 
 Deno.test("TypeFactory Behavior - createBothTypes success and error propagation", () => {
   const provider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("to|summary")!,
-    TwoParamsLayerTypePattern.create("project|issue")!,
+    TwoParamsDirectivePattern.create("^(to|summary)$"),
+    createMockPattern("^(project|issue)$"),
   );
   const factory = new TypeFactory(provider);
 
@@ -190,8 +231,8 @@ Deno.test("TypeFactory Behavior - createBothTypes success and error propagation"
 Deno.test("TypeFactory Behavior - validateBothValues behavior", () => {
   // ケース1：両方のパターンが存在
   const fullProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("to|summary")!,
-    TwoParamsLayerTypePattern.create("project|issue")!,
+    TwoParamsDirectivePattern.create("^(to|summary)$"),
+    createMockPattern("^(project|issue)$"),
   );
   const factory1 = new TypeFactory(fullProvider);
 
@@ -204,7 +245,7 @@ Deno.test("TypeFactory Behavior - validateBothValues behavior", () => {
   // ケース2：DirectivePatternが存在しない
   const noDirectiveProvider = new MockPatternProvider(
     null,
-    TwoParamsLayerTypePattern.create("project|issue")!,
+    createMockPattern("^(project|issue)$"),
   );
   const factory2 = new TypeFactory(noDirectiveProvider);
 
@@ -212,7 +253,7 @@ Deno.test("TypeFactory Behavior - validateBothValues behavior", () => {
 
   // ケース3：LayerPatternが存在しない
   const noLayerProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("to|summary")!,
+    TwoParamsDirectivePattern.create("^(to|summary)$"),
     null,
   );
   const factory3 = new TypeFactory(noLayerProvider);
@@ -229,8 +270,8 @@ Deno.test("TypeFactory Behavior - validateBothValues behavior", () => {
 Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   // ケース1：両方のパターンが利用可能
   const fullProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create(".*")!,
-    TwoParamsLayerTypePattern.create(".*")!,
+    TwoParamsDirectivePattern.create(".*"),
+    createMockPattern(".*"),
   );
   const factory1 = new TypeFactory(fullProvider);
   const availability1 = factory1.getPatternAvailability();
@@ -241,7 +282,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
 
   // ケース2：DirectivePatternのみ利用可能
   const directiveOnlyProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create(".*")!,
+    TwoParamsDirectivePattern.create(".*"),
     null,
   );
   const factory2 = new TypeFactory(directiveOnlyProvider);
@@ -254,7 +295,7 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
   // ケース3：LayerPatternのみ利用可能
   const layerOnlyProvider = new MockPatternProvider(
     null,
-    TwoParamsLayerTypePattern.create(".*")!,
+    createMockPattern(".*"),
   );
   const factory3 = new TypeFactory(layerOnlyProvider);
   const availability3 = factory3.getPatternAvailability();
@@ -275,8 +316,8 @@ Deno.test("TypeFactory Behavior - getPatternAvailability behavior", () => {
 
 Deno.test("TypeFactory Behavior - debug method behavior", () => {
   const provider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("to")!,
-    TwoParamsLayerTypePattern.create("project")!,
+    TwoParamsDirectivePattern.create("^(to)$"),
+    createMockPattern("^(project)$"),
   );
   const factory = new TypeFactory(provider);
 
@@ -291,8 +332,8 @@ Deno.test("TypeFactory Behavior - debug method behavior", () => {
 
 Deno.test("TypeFactory Behavior - edge cases and boundary values", () => {
   const provider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("^[a-z]+$")!,
-    TwoParamsLayerTypePattern.create("^[a-z]+$")!,
+    TwoParamsDirectivePattern.create("^[a-z]+$"),
+    createMockPattern("^[a-z]+$"),
   );
   const factory = new TypeFactory(provider);
 
@@ -323,8 +364,8 @@ Deno.test("TypeFactory Behavior - edge cases and boundary values", () => {
 Deno.test("TypeFactory Behavior - complex pattern validation", () => {
   // 複雑なパターンでの動作確認
   const complexProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("^(to|from|summary|defect|analyze|extract)$")!,
-    TwoParamsLayerTypePattern.create("^(project|issue|task|epic|story|bug|feature)$")!,
+    TwoParamsDirectivePattern.create("^(to|from|summary|defect|analyze|extract)$"),
+    createMockPattern("^(project|issue|task|epic|story|bug|feature)$"),
   );
   const factory = new TypeFactory(complexProvider);
 

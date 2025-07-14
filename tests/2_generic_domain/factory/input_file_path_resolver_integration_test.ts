@@ -171,7 +171,7 @@ Deno.test("InputFilePathResolver Integration: stdin input processing workflow", 
 
   for (const { name, params, expectedType } of stdinTestCases) {
     logger.debug(`Processing stdin case: ${name}`, {
-      directive: params.demonstrativeType,
+      directive: params.directiveType,
       layer: params.layerType,
       hasInputText: !!params.options.input_text,
     });

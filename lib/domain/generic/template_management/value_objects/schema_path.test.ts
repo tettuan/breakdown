@@ -13,10 +13,10 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 // Test fixtures
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
+    directiveType: "to",
   params: ["to", "project"],
-  directiveType: "to",
   layerType: "project",
-  demonstrativeType: "to",
+  directiveType: "to",
   options: {},
 };
 
@@ -24,10 +24,10 @@ const validDirectiveResult = DirectiveType.create(mockTwoParamsResult.directiveT
 const validLayerResult = LayerType.create(mockTwoParamsResult.layerType);
 
 if (!validDirectiveResult.ok || !validLayerResult.ok) {
-  throw new Error("Test setup failed: unable to create valid directive or layer");
+  throw new Error("Test setup failed: unable to create valid demonstrative or layer");
 }
 
-const validDirective = validDirectiveResult.data!;
+const validDemonstrative = validDirectiveResult.data!;
 const validLayer = validLayerResult.data!;
 
 const validFilename = "schema.json";
@@ -41,7 +41,7 @@ const emptyFilename = "";
 Deno.test("0_architecture: Smart Constructor - enforces private constructor", () => {
   // Architecture constraint: constructor must be private
   // @ts-expect-error - Testing that direct instantiation is not allowed
-  const _directInstantiation = () => new SchemaPath(validDirective, validLayer, validFilename);
+  const _directInstantiation = () => new SchemaPath(validDemonstrative, validLayer, validFilename);
 
   // This test verifies the TypeScript error above
   // The constructor is private and enforces factory pattern
@@ -50,7 +50,7 @@ Deno.test("0_architecture: Smart Constructor - enforces private constructor", ()
 
 Deno.test("0_architecture: Smart Constructor - returns Result type", () => {
   // Architecture constraint: must return Result type for error handling
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   assertExists(result);
   assertEquals(typeof result.ok, "boolean");
@@ -69,9 +69,9 @@ Deno.test("0_architecture: Smart Constructor - no exceptions thrown", () => {
   const testCases = [
     { directive: null, layer: null, filename: null },
     { directive: undefined, layer: undefined, filename: undefined },
-    { directive: validDirective, layer: null, filename: validFilename },
+    { directive: validDemonstrative, layer: null, filename: validFilename },
     { directive: null, layer: validLayer, filename: validFilename },
-    { directive: validDirective, layer: validLayer, filename: null },
+    { directive: validDemonstrative, layer: validLayer, filename: null },
     { directive: "invalid", layer: "invalid", filename: "invalid" },
   ];
 
@@ -113,7 +113,7 @@ Deno.test("0_architecture: Totality principle - handles all input types", () => 
 });
 
 Deno.test("0_architecture: Result type follows discriminated union pattern", () => {
-  const successResult = SchemaPath.create(validDirective, validLayer, validFilename);
+  const successResult = SchemaPath.create(validDemonstrative, validLayer, validFilename);
   const errorResult = SchemaPath.create(
     null as unknown as DirectiveType,
     null as unknown as LayerType,
@@ -138,17 +138,17 @@ Deno.test("0_architecture: Result type follows discriminated union pattern", () 
 // =============================================================================
 
 Deno.test("1_behavior: creates SchemaPath with valid parameters", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data!.getDirective(), validDirective);
+    assertEquals(result.data!.getDirective(), validDemonstrative);
     assertEquals(result.data!.getLayer(), validLayer);
     assertEquals(result.data!.getFilename(), validFilename);
   }
 });
 
-Deno.test("1_behavior: validates required directive parameter", () => {
+Deno.test("1_behavior: validates required demonstrative parameter", () => {
   const result = SchemaPath.create(null as unknown as DirectiveType, validLayer, validFilename);
 
   assertEquals(result.ok, false);
@@ -158,7 +158,7 @@ Deno.test("1_behavior: validates required directive parameter", () => {
 });
 
 Deno.test("1_behavior: validates required layer parameter", () => {
-  const result = SchemaPath.create(validDirective, null as unknown as LayerType, validFilename);
+  const result = SchemaPath.create(validDemonstrative, null as unknown as LayerType, validFilename);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -167,7 +167,7 @@ Deno.test("1_behavior: validates required layer parameter", () => {
 });
 
 Deno.test("1_behavior: validates required filename parameter", () => {
-  const result = SchemaPath.create(validDirective, validLayer, null as unknown as string);
+  const result = SchemaPath.create(validDemonstrative, validLayer, null as unknown as string);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -176,7 +176,7 @@ Deno.test("1_behavior: validates required filename parameter", () => {
 });
 
 Deno.test("1_behavior: validates filename extension", () => {
-  const result = SchemaPath.create(validDirective, validLayer, invalidFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, invalidFilename);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -185,7 +185,7 @@ Deno.test("1_behavior: validates filename extension", () => {
 });
 
 Deno.test("1_behavior: rejects empty filename", () => {
-  const result = SchemaPath.create(validDirective, validLayer, emptyFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, emptyFilename);
 
   assertEquals(result.ok, false);
   if (!result.ok) {
@@ -203,7 +203,7 @@ Deno.test("1_behavior: accepts valid .json filename", () => {
   ];
 
   for (const filename of validJsonFilenames) {
-    const result = SchemaPath.create(validDirective, validLayer, filename);
+    const result = SchemaPath.create(validDemonstrative, validLayer, filename);
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data!.getFilename(), filename);
@@ -222,7 +222,7 @@ Deno.test("1_behavior: rejects non-.json extensions", () => {
   ];
 
   for (const filename of invalidExtensions) {
-    const result = SchemaPath.create(validDirective, validLayer, filename);
+    const result = SchemaPath.create(validDemonstrative, validLayer, filename);
     assertEquals(result.ok, false);
     if (!result.ok) {
       assertEquals(result.error, "Schema filename must end with .json");
@@ -231,16 +231,16 @@ Deno.test("1_behavior: rejects non-.json extensions", () => {
 });
 
 Deno.test("1_behavior: generates correct path", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
-    const expectedPath = `${validDirective.value}/${validLayer.value}/${validFilename}`;
+    const expectedPath = `${validDemonstrative.value}/${validLayer.value}/${validFilename}`;
     assertEquals(result.data!.getPath(), expectedPath);
   }
 });
 
 Deno.test("1_behavior: toString returns path", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
     assertEquals(result.data!.toString(), result.data!.getPath());
@@ -252,19 +252,19 @@ Deno.test("1_behavior: toString returns path", () => {
 // =============================================================================
 
 Deno.test("2_structure: SchemaPath immutability", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
     const path = result.data!;
 
     // Properties should remain constant
-    const originalDirective = path.getDirective();
+    const originalDemonstrative = path.getDirective();
     const originalLayer = path.getLayer();
     const originalFilename = path.getFilename();
     const originalPath = path.getPath();
 
     // Multiple calls should return same values
-    assertEquals(path.getDirective(), originalDirective);
+    assertEquals(path.getDirective(), originalDemonstrative);
     assertEquals(path.getLayer(), originalLayer);
     assertEquals(path.getFilename(), originalFilename);
     assertEquals(path.getPath(), originalPath);
@@ -272,9 +272,9 @@ Deno.test("2_structure: SchemaPath immutability", () => {
 });
 
 Deno.test("2_structure: equals method correctness", () => {
-  const result1 = SchemaPath.create(validDirective, validLayer, validFilename);
-  const result2 = SchemaPath.create(validDirective, validLayer, validFilename);
-  const result3 = SchemaPath.create(validDirective, validLayer, "different.json");
+  const result1 = SchemaPath.create(validDemonstrative, validLayer, validFilename);
+  const result2 = SchemaPath.create(validDemonstrative, validLayer, validFilename);
+  const result3 = SchemaPath.create(validDemonstrative, validLayer, "different.json");
 
   if (result1.ok && result2.ok && result3.ok) {
     // Same parameters should be equal
@@ -303,7 +303,7 @@ Deno.test("2_structure: error results have correct structure", () => {
 });
 
 Deno.test("2_structure: success results have correct structure", () => {
-  const validResult = SchemaPath.create(validDirective, validLayer, validFilename);
+  const validResult = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   assertEquals(validResult.ok, true);
   if (validResult.ok) {
@@ -314,7 +314,7 @@ Deno.test("2_structure: success results have correct structure", () => {
 });
 
 Deno.test("2_structure: method return type consistency", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
     const path = result.data!;
@@ -329,14 +329,14 @@ Deno.test("2_structure: method return type consistency", () => {
 });
 
 Deno.test("2_structure: path composition correctness", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
     const path = result.data!;
     const fullPath = path.getPath();
 
     // Path should contain all components
-    assertEquals(fullPath.includes(validDirective.value), true);
+    assertEquals(fullPath.includes(validDemonstrative.value), true);
     assertEquals(fullPath.includes(validLayer.value), true);
     assertEquals(fullPath.includes(validFilename), true);
 
@@ -346,8 +346,8 @@ Deno.test("2_structure: path composition correctness", () => {
 });
 
 Deno.test("2_structure: multiple instance independence", () => {
-  const result1 = SchemaPath.create(validDirective, validLayer, "file1.json");
-  const result2 = SchemaPath.create(validDirective, validLayer, "file2.json");
+  const result1 = SchemaPath.create(validDemonstrative, validLayer, "file1.json");
+  const result2 = SchemaPath.create(validDemonstrative, validLayer, "file2.json");
 
   if (result1.ok && result2.ok) {
     // Different instances should be independent
@@ -365,7 +365,7 @@ Deno.test("2_structure: multiple instance independence", () => {
 
 Deno.test("2_structure: SchemaPathResult interface compliance", () => {
   const validResult: SchemaPathResult = SchemaPath.create(
-    validDirective,
+    validDemonstrative,
     validLayer,
     validFilename,
   );
@@ -391,7 +391,7 @@ Deno.test("2_structure: SchemaPathResult interface compliance", () => {
 });
 
 Deno.test("2_structure: toString equals getPath", () => {
-  const result = SchemaPath.create(validDirective, validLayer, validFilename);
+  const result = SchemaPath.create(validDemonstrative, validLayer, validFilename);
 
   if (result.ok) {
     assertEquals(result.data!.toString(), result.data!.getPath());
@@ -402,14 +402,14 @@ Deno.test("2_structure: path format consistency", () => {
   const testFilenames = ["test.json", "another-file.json", "special_file.json"];
 
   for (const filename of testFilenames) {
-    const result = SchemaPath.create(validDirective, validLayer, filename);
+    const result = SchemaPath.create(validDemonstrative, validLayer, filename);
 
     if (result.ok) {
       const path = result.data!.getPath();
       const parts = path.split("/");
 
       assertEquals(parts.length, 3);
-      assertEquals(parts[0], validDirective.value);
+      assertEquals(parts[0], validDemonstrative.value);
       assertEquals(parts[1], validLayer.value);
       assertEquals(parts[2], filename);
     }
@@ -418,11 +418,11 @@ Deno.test("2_structure: path format consistency", () => {
 
 Deno.test("2_structure: schema vs prompt path distinction", () => {
   // Schema paths should use .json extension
-  const schemaResult = SchemaPath.create(validDirective, validLayer, "test.json");
+  const schemaResult = SchemaPath.create(validDemonstrative, validLayer, "test.json");
   assertEquals(schemaResult.ok, true);
 
   // Should reject .md extension (that's for prompts)
-  const promptLikeResult = SchemaPath.create(validDirective, validLayer, "test.md");
+  const promptLikeResult = SchemaPath.create(validDemonstrative, validLayer, "test.md");
   assertEquals(promptLikeResult.ok, false);
   if (!promptLikeResult.ok) {
     assertEquals(promptLikeResult.error, "Schema filename must end with .json");

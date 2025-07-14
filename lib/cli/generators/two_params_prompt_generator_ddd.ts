@@ -18,6 +18,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
+import type { ValidatedParams } from "../validators/two_params_validator_ddd.ts";
 import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../../processor/variable_processor_v2.ts";
@@ -101,17 +102,6 @@ export type PromptGeneratorError =
   // Context errors
   | { readonly kind: "InvalidContext"; readonly message: string; readonly details?: unknown };
 
-/**
- * Validated parameters from upstream validator
- */
-export interface ValidatedParams {
-  readonly directive: DirectiveType;
-  readonly layer: LayerType;
-  // Legacy compatibility properties
-  readonly directiveType: string;  // Alias for directive.value
-  readonly layerType: string;          // Alias for layer.value
-  readonly params: string[];           // For legacy array access
-}
 
 // ============================================================================
 // Domain Service - Prompt generation with clear boundaries
@@ -386,8 +376,8 @@ export class TwoParamsPromptGenerator {
     const { params, configuration, variables, options } = context;
 
     return {
-      directiveType: params.directive.value,
       layerType: params.layer.value,
+      directiveType: params.directive.value,
       options: {
         fromFile: (options.from as string) || (options.fromFile as string),
         destinationFile: (options.destination as string) || (options.output as string) ||

@@ -22,7 +22,9 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType,
+  // directiveType: directiveType, // For backward compatibility (removed duplicate)
   layerType,
   params: [directiveType, layerType],
   options,
@@ -70,10 +72,10 @@ Deno.test("1_totality: TwoParamsDirectivePattern.createOrError handles all cases
   }
 });
 
-Deno.test("1_totality: DirectiveType.createOrError validates all input conditions", () => {
+Deno.test("1_totality: DirectiveType.create validates all input conditions", () => {
   // Test valid inputs
   const validResult = createTwoParamsResult("to", "project");
-  const directiveResult = DirectiveType.createOrError(validResult);
+  const directiveResult = DirectiveType.create(validResult.directiveType);
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
     assertEquals(directiveResult.data.value, "to");
@@ -87,7 +89,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
     params: ["to", "project"],
     options: {},
   };
-  const invalidTypeDirective = DirectiveType.createOrError(invalidTypeResult as TwoParams_Result);
+  const invalidTypeDirective = DirectiveType.create(invalidTypeResult.directiveType);
   assertEquals(invalidTypeDirective.ok, false);
   if (!invalidTypeDirective.ok) {
     assertEquals(invalidTypeDirective.error.kind, "InvalidInput");
@@ -102,11 +104,12 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
   // Test missing directiveType
   const missingFieldResult = {
     type: "two",
+    directiveType: "to",
     layerType: "project",
     params: ["", "project"],
     options: {},
   } as unknown as TwoParams_Result;
-  const missingFieldDirective = DirectiveType.createOrError(missingFieldResult);
+  const missingFieldDirective = DirectiveType.create(missingFieldResult.directiveType);
   assertEquals(missingFieldDirective.ok, false);
   if (!missingFieldDirective.ok) {
     assertEquals(missingFieldDirective.error.kind, "MissingRequiredField");
@@ -117,14 +120,14 @@ Deno.test("1_totality: DirectiveType.createOrError validates all input condition
   }
 
   // Test null result
-  const nullDirective = DirectiveType.createOrError(null as unknown as TwoParams_Result);
+  const nullDirective = DirectiveType.create(null as unknown as string);
   assertEquals(nullDirective.ok, false);
   if (!nullDirective.ok) {
     assertEquals(nullDirective.error.kind, "InvalidInput");
   }
 });
 
-Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", () => {
+Deno.test("1_totality: DirectiveType.create validates pattern matching", () => {
   // Create a pattern for allowed directives
   const patternResult = TwoParamsDirectivePattern.createOrError("^(to|from|summary|defect)$");
   assertEquals(patternResult.ok, true);
@@ -136,7 +139,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", 
     const validDirectives = ["to", "from", "summary", "defect"];
     for (const directive of validDirectives) {
       const result = createTwoParamsResult(directive);
-      const directiveResult = DirectiveType.createOrError(result, pattern);
+      const directiveResult = DirectiveType.create(result.directiveType);
       assertEquals(directiveResult.ok, true);
       if (directiveResult.ok) {
         assertEquals(directiveResult.data.value, directive);
@@ -147,7 +150,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", 
     const invalidDirectives = ["invalid", "custom", "analyze"];
     for (const directive of invalidDirectives) {
       const result = createTwoParamsResult(directive);
-      const directiveResult = DirectiveType.createOrError(result, pattern);
+      const directiveResult = DirectiveType.create(result.directiveType);
       assertEquals(directiveResult.ok, false);
       if (!directiveResult.ok) {
         assertEquals(directiveResult.error.kind, "InvalidInput");
@@ -164,7 +167,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", 
 
     // Test empty string - should fail with MissingRequiredField
     const emptyResult = createTwoParamsResult("");
-    const emptyDirective = DirectiveType.createOrError(emptyResult, pattern);
+    const emptyDirective = DirectiveType.create(emptyResult.directiveType);
     assertEquals(emptyDirective.ok, false);
     if (!emptyDirective.ok) {
       assertEquals(emptyDirective.error.kind, "MissingRequiredField");
@@ -172,7 +175,7 @@ Deno.test("1_totality: DirectiveType.createOrError validates pattern matching", 
   }
 });
 
-Deno.test("1_totality: DirectiveType.createOrError without pattern allows any valid string", () => {
+Deno.test("1_totality: DirectiveType.create without pattern allows any valid string", () => {
   // Without pattern, any non-empty string should be valid
   const testValues = [
     "custom-directive",
@@ -186,7 +189,7 @@ Deno.test("1_totality: DirectiveType.createOrError without pattern allows any va
 
   for (const value of testValues) {
     const result = createTwoParamsResult(value);
-    const directiveResult = DirectiveType.createOrError(result);
+    const directiveResult = DirectiveType.create(result.directiveType);
     assertEquals(directiveResult.ok, true);
     if (directiveResult.ok) {
       assertEquals(directiveResult.data.value, value);
@@ -195,7 +198,7 @@ Deno.test("1_totality: DirectiveType.createOrError without pattern allows any va
 
   // Empty string should fail
   const emptyResult = createTwoParamsResult("");
-  const emptyDirective = DirectiveType.createOrError(emptyResult);
+  const emptyDirective = DirectiveType.create(emptyResult.directiveType);
   assertEquals(emptyDirective.ok, false);
   if (!emptyDirective.ok) {
     assertEquals(emptyDirective.error.kind, "MissingRequiredField");
@@ -238,9 +241,9 @@ Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
 
   // Test each error type
   const errorCases = [
-    DirectiveType.createOrError(null as unknown as TwoParams_Result),
-    DirectiveType.createOrError({ type: "one" } as unknown as TwoParams_Result),
-    DirectiveType.createOrError({ type: "two", layerType: "project" } as TwoParams_Result),
+    DirectiveType.create(null as unknown as string),
+    DirectiveType.create(("to" as any) as string),
+    DirectiveType.create("" as string),
   ];
 
   for (const result of errorCases) {
@@ -273,7 +276,7 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
 
     for (const { value, shouldPass } of testCases) {
       const result = createTwoParamsResult(value);
-      const directiveResult = DirectiveType.createOrError(result, patternResult.data);
+      const directiveResult = DirectiveType.create(result.directiveType);
 
       assertEquals(directiveResult.ok, shouldPass);
       if (directiveResult.ok) {
@@ -292,14 +295,14 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
 Deno.test("1_totality: Legacy create method maintains backward compatibility", () => {
   // The original create method should still work without Result type
   const result = createTwoParamsResult("legacy");
-  const directive = DirectiveType.create(result);
+  const directive = DirectiveType.create(result.directiveType);
 
   assertExists(directive);
   assertEquals(directive.value, "legacy");
   assertEquals(directive instanceof DirectiveType, true);
 
   // It should accept any valid TwoParams_Result without validation
-  const emptyDirective = DirectiveType.create(createTwoParamsResult(""));
+  const emptyDirective = DirectiveType.create("");
   assertEquals(emptyDirective.value, "");
 });
 
@@ -308,6 +311,7 @@ Deno.test("1_totality: createOrError provides better error context than create",
 
   const invalidInput = {
     type: "two",
+    directiveType: "to",
     directiveType: null,
     layerType: "project",
   } as unknown as TwoParams_Result;
@@ -317,7 +321,7 @@ Deno.test("1_totality: createOrError provides better error context than create",
   assertEquals(legacyDirective.value, null);
 
   // createOrError provides detailed error information
-  const resultDirective = DirectiveType.createOrError(invalidInput);
+  const resultDirective = DirectiveType.create(invalidInput);
   assertEquals(resultDirective.ok, false);
   if (!resultDirective.ok) {
     assertEquals(resultDirective.error.kind, "MissingRequiredField");

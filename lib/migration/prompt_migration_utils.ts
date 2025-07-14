@@ -48,7 +48,7 @@ function formatVariableError(fieldName: string, error: ErrorInfo): string {
  * Convert PromptCliParams to PromptVariables
  *
  * Maps the legacy CLI parameters to the new variable system:
- * - demonstrativeType -> StandardVariable("demonstrative_type")
+ * - directiveType -> StandardVariable("directive_type")
  * - layerType -> StandardVariable("layer_type")
  * - options.fromFile -> StandardVariable("input_text_file")
  * - options.destinationFile -> StandardVariable("destination_path")
@@ -64,13 +64,13 @@ export function migrateCliParamsToVariables(
   const variables: PromptVariables = [];
   const errors: string[] = [];
 
-  // Convert demonstrativeType
-  if (params.demonstrativeType) {
-    const result = StandardVariable.create("demonstrative_type", params.demonstrativeType);
+  // Convert directiveType
+  if (params.directiveType) {
+    const result = StandardVariable.create("directive_type", params.directiveType);
     if (result.ok) {
       variables.push(result.data);
     } else {
-      const errorMessage = formatVariableError("demonstrativeType", result.error);
+      const errorMessage = formatVariableError("directiveType", result.error);
       errors.push(errorMessage);
     }
   }
@@ -151,7 +151,7 @@ export function migrateCliParamsToVariables(
  *
  * Attempts to determine the prompt template path from various options:
  * 1. options.promptDir - if specified, use as base directory
- * 2. Construct path from demonstrativeType and layerType
+ * 2. Construct path from directiveType and layerType
  *
  * @param params - Legacy PromptCliParams
  * @returns Result containing PromptPath or MigrationError
@@ -160,7 +160,7 @@ export function extractPromptPath(
   params: PromptCliParams,
 ): Result<PromptPath | null, MigrationError> {
   // If no prompt-related parameters, return null (no path needed)
-  if (!params.options?.promptDir && (!params.demonstrativeType || !params.layerType)) {
+  if (!params.options?.promptDir && (!params.directiveType || !params.layerType)) {
     return resultOk(null);
   }
 
@@ -170,16 +170,16 @@ export function extractPromptPath(
   if (params.options?.promptDir) {
     pathString = params.options.promptDir;
 
-    // If promptDir is provided with demonstrativeType/layerType, combine them
-    if (params.demonstrativeType && params.layerType) {
+    // If promptDir is provided with directiveType/layerType, combine them
+    if (params.directiveType && params.layerType) {
       if (!pathString.endsWith("/")) {
         pathString += "/";
       }
-      pathString += `${params.demonstrativeType}_${params.layerType}.md`;
+      pathString += `${params.directiveType}_${params.layerType}.md`;
     }
-  } else if (params.demonstrativeType && params.layerType) {
+  } else if (params.directiveType && params.layerType) {
     // Default path construction
-    pathString = `prompts/${params.demonstrativeType}_${params.layerType}.md`;
+    pathString = `prompts/${params.directiveType}_${params.layerType}.md`;
   }
 
   if (!pathString) {
@@ -309,7 +309,7 @@ export function convertPromptCliParamsToPromptPath(
  *
  * Simple wrapper function that converts legacy CLI parameters to the new variable system.
  * This function maps:
- * - demonstrativeType -> StandardVariable("demonstrative_type")
+ * - directiveType -> StandardVariable("directive_type")
  * - layerType -> StandardVariable("layer_type")
  * - options.fromFile -> StandardVariable("input_text_file")
  * - options.destinationFile -> StandardVariable("destination_path")

@@ -47,7 +47,7 @@ Deno.test("Migration utils - module exports follow architectural patterns", () =
 
 Deno.test("Migration functions - maintain referential transparency", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "test.md" },
   };
@@ -71,7 +71,7 @@ Deno.test("Migration functions - maintain referential transparency", () => {
 
 Deno.test("Migration system - maintains immutability of input parameters", () => {
   const originalParams: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "task",
     options: {
       fromFile: "input.md",
@@ -87,7 +87,7 @@ Deno.test("Migration system - maintains immutability of input parameters", () =>
 
   // Verify original parameters unchanged
   assertEquals(originalParams, paramsCopy);
-  assertEquals(originalParams.demonstrativeType, "summary");
+  assertEquals(originalParams.directiveType, "summary");
   assertEquals(originalParams.layerType, "task");
   assertEquals(originalParams.options?.fromFile, "input.md");
   assertEquals(originalParams.options?.customVariables?.version, "1.0");
@@ -95,7 +95,7 @@ Deno.test("Migration system - maintains immutability of input parameters", () =>
 
 Deno.test("Migration architecture - enforces type system boundaries", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -123,7 +123,7 @@ Deno.test("Migration architecture - enforces type system boundaries", () => {
 Deno.test("Migration error handling - follows architectural error patterns", () => {
   // Test with invalid parameters that should trigger errors
   const invalidParams: PromptCliParams = {
-    demonstrativeType: "", // Invalid empty value
+    directiveType: "", // Invalid empty value
     layerType: "project",
     options: {},
   };
@@ -151,7 +151,7 @@ Deno.test("Migration error handling - follows architectural error patterns", () 
 
 Deno.test("Path extraction - maintains architectural isolation", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: { promptDir: "/custom/path" },
   };
@@ -173,7 +173,7 @@ Deno.test("Path extraction - maintains architectural isolation", () => {
 
 Deno.test("Migration completeness - ensures no data loss", () => {
   const comprehensiveParams: PromptCliParams = {
-    demonstrativeType: "defect",
+    directiveType: "defect",
     layerType: "bugs",
     options: {
       fromFile: "/src/input.md",
@@ -201,7 +201,7 @@ Deno.test("Migration completeness - ensures no data loss", () => {
     const flatRecords = Object.assign({}, ...variableRecords);
 
     // Verify key information preserved
-    assertEquals(flatRecords.demonstrative_type, "defect");
+    assertEquals(flatRecords.directive_type, "defect");
     assertEquals(flatRecords.layer_type, "bugs");
     assertEquals(flatRecords.input_text_file, "/src/input.md");
     assertEquals(flatRecords.destination_path, "/dst/output.md");
@@ -214,7 +214,7 @@ Deno.test("Migration completeness - ensures no data loss", () => {
 
 Deno.test("Wrapper functions - maintain architectural consistency", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "test.md" },
   };
@@ -243,7 +243,7 @@ Deno.test("Wrapper functions - maintain architectural consistency", () => {
 
 Deno.test("Migration warnings - architectural concern separation", () => {
   const paramsWithDeprecated: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "project",
     options: {
       adaptation: "deprecated-feature",
@@ -275,7 +275,7 @@ Deno.test("Migration warnings - architectural concern separation", () => {
 
 Deno.test("Migration summary - output format architectural compliance", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {
       fromFile: "input.md",
@@ -297,7 +297,7 @@ Deno.test("Migration summary - output format architectural compliance", () => {
     // Verify summary contains all required sections
     assert(summary.includes("Prompt path:"));
     assert(summary.includes("Variables created:"));
-    assert(summary.includes("demonstrative_type:"));
+    assert(summary.includes("directive_type:"));
     assert(summary.includes("layer_type:"));
     assert(summary.includes("input_text_file:"));
     assert(summary.includes("env:"));
@@ -311,11 +311,11 @@ Deno.test("Migration summary - output format architectural compliance", () => {
 Deno.test("Migration architecture - handles edge cases gracefully", () => {
   const edgeCases: PromptCliParams[] = [
     // Minimal parameters
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
 
     // Empty optional fields
     {
-      demonstrativeType: "summary",
+      directiveType: "summary",
       layerType: "task",
       options: {
         customVariables: {},
@@ -326,7 +326,7 @@ Deno.test("Migration architecture - handles edge cases gracefully", () => {
 
     // Mixed valid/invalid data
     {
-      demonstrativeType: "defect",
+      directiveType: "defect",
       layerType: "issue",
       options: {
         fromFile: "valid.md",
@@ -360,7 +360,7 @@ Deno.test("Migration architecture - handles edge cases gracefully", () => {
 
 Deno.test("Migration system - enforces single responsibility principle", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: { fromFile: "test.md" },
   };
@@ -399,7 +399,7 @@ Deno.test("Migration system - enforces single responsibility principle", () => {
 Deno.test("Migration architecture - maintains legacy compatibility boundaries", () => {
   // Test with legacy-style parameters that may contain deprecated fields
   const legacyParams: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "project",
     options: {
       // Legacy fields that should be handled gracefully
@@ -427,7 +427,7 @@ Deno.test("Migration architecture - maintains legacy compatibility boundaries", 
     const variableRecords = result.data.variables.map((v) => v.toRecord());
     const flatRecords = Object.assign({}, ...variableRecords);
 
-    assertEquals(flatRecords.demonstrative_type, "summary");
+    assertEquals(flatRecords.directive_type, "summary");
     assertEquals(flatRecords.layer_type, "project");
     assertEquals(flatRecords.input_text_file, "input.md");
     assertEquals(flatRecords.legacy, "value");

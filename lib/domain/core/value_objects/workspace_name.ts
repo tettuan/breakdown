@@ -15,25 +15,32 @@ import type { Result } from "../../../types/result.ts";
 import { error as resultError, ok as resultOk } from "../../../types/result.ts";
 
 /**
+ * Result type alias for WorkspaceName creation
+ */
+export type WorkspaceNameResult = Result<WorkspaceName, WorkspaceNameError>;
+
+/**
  * Discriminated union of workspace name validation errors
  */
 export type WorkspaceNameError =
-  | { kind: "EmptyName"; input: string }
-  | { kind: "InvalidFormat"; input: string; reason: string }
+  | { kind: "EmptyName"; input: string; message: string }
+  | { kind: "InvalidFormat"; input: string; reason: string; message: string }
   | {
     kind: "ContainsWhitespace";
     input: string;
     whitespacePositions: number[];
+    message: string;
   }
   | {
     kind: "PathTraversalAttempt";
     input: string;
     suspiciousPatterns: string[];
+    message: string;
   }
-  | { kind: "TooLong"; input: string; maxLength: number; actualLength: number }
-  | { kind: "StartsWithDot"; input: string }
-  | { kind: "InvalidCharacters"; input: string; invalidChars: string[] }
-  | { kind: "ReservedName"; input: string; reserved: string[] };
+  | { kind: "TooLong"; input: string; maxLength: number; actualLength: number; message: string }
+  | { kind: "StartsWithDot"; input: string; message: string }
+  | { kind: "InvalidCharacters"; input: string; invalidChars: string[]; message: string }
+  | { kind: "ReservedName"; input: string; reserved: string[]; message: string };
 
 /**
  * Type guards for workspace name errors
@@ -100,6 +107,7 @@ export class WorkspaceName {
         kind: "InvalidFormat",
         input: String(input),
         reason: "Input must be a string",
+        message: "Input must be a string",
       });
     }
 
@@ -108,9 +116,15 @@ export class WorkspaceName {
 
     // Check for empty names
     if (!trimmed || trimmed.length === 0) {
+      const isNullOrUndefined = input === null || input === undefined;
       return resultError({
         kind: "EmptyName",
         input: input,
+        message: isNullOrUndefined 
+          ? "Workspace name cannot be null or undefined"
+          : input === "" || input.trim() === "" 
+            ? "Workspace name cannot be empty or contain only whitespace"
+            : "Workspace name cannot be empty",
       });
     }
 
@@ -122,6 +136,7 @@ export class WorkspaceName {
         input: trimmed,
         maxLength,
         actualLength: trimmed.length,
+        message: `Workspace name exceeds filesystem path length limit (${trimmed.length} > ${maxLength})`,
       });
     }
 
@@ -135,6 +150,7 @@ export class WorkspaceName {
         kind: "PathTraversalAttempt",
         input: trimmed,
         suspiciousPatterns: foundPatterns,
+        message: `Path traversal patterns detected: ${foundPatterns.join(", ")}`,
       });
     }
 
@@ -143,6 +159,7 @@ export class WorkspaceName {
       return resultError({
         kind: "StartsWithDot",
         input: trimmed,
+        message: "Workspace names starting with dot create hidden directories",
       });
     }
 
@@ -155,6 +172,7 @@ export class WorkspaceName {
         kind: "ContainsWhitespace",
         input: trimmed,
         whitespacePositions: positions,
+        message: `Workspace name contains whitespace at positions: ${positions.join(", ")}`,
       });
     }
 
@@ -166,6 +184,7 @@ export class WorkspaceName {
         kind: "InvalidCharacters",
         input: trimmed,
         invalidChars: foundForbidden,
+        message: `Invalid characters for cross-platform filesystem: ${foundForbidden.join(", ")}`,
       });
     }
 
@@ -190,6 +209,7 @@ export class WorkspaceName {
         kind: "ReservedName",
         input: trimmed,
         reserved: matchedReserved,
+        message: `Reserved name that conflicts with system directories: ${matchedReserved.join(", ")}`,
       });
     }
 
@@ -224,6 +244,7 @@ export class WorkspaceName {
       return resultError({
         kind: "EmptyName",
         input: projectName,
+        message: "Project name is required",
       });
     }
 
@@ -239,6 +260,7 @@ export class WorkspaceName {
         kind: "InvalidFormat",
         input: projectName,
         reason: "Project name contains only invalid characters",
+        message: "Project name must contain at least one valid character",
       });
     }
 
@@ -345,6 +367,7 @@ export class WorkspaceName {
       return resultError({
         kind: "EmptyName",
         input: prefix,
+        message: "Prefix cannot be empty",
       });
     }
     return WorkspaceName.create(`${prefix.trim()}-${this._value}`);
@@ -358,6 +381,7 @@ export class WorkspaceName {
       return resultError({
         kind: "EmptyName",
         input: suffix,
+        message: "Suffix cannot be empty",
       });
     }
     return WorkspaceName.create(`${this._value}-${suffix.trim()}`);

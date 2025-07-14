@@ -70,9 +70,10 @@ class MockConfigValidator implements ConfigValidator {
 // Test fixtures
 const createValidTwoParamsResult = (): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType: "to",
   layerType: "project",
-  demonstrativeType: "to",
+  directiveType: "to",
   params: ["to", "project"],
   options: {
     fromFile: "input.md",
@@ -85,7 +86,7 @@ const createValidTwoParamsResult = (): TwoParams_Result => ({
 
 const createValidOneParamsResult = (): OneParamsResult => ({
   type: "one",
-  demonstrativeType: "init",
+  directiveType: "init",
   params: ["project"],
   options: {
     fromFile: "input.md",

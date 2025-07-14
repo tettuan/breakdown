@@ -56,7 +56,7 @@ Deno.test("StandardPromptVariables - creates with valid parameters", () => {
 Deno.test("StandardPromptVariables - creates with additional _variables", () => {
   const additionalVars = {
     layer_type: "project",
-    demonstrative_type: "to",
+    directive_type: "to",
   };
 
   const variables2Result = StandardPromptVariables.create(
@@ -73,14 +73,14 @@ Deno.test("StandardPromptVariables - creates with additional _variables", () => 
   assertEquals(variables2.getInputTextFile(), "stdin");
   assertEquals(variables2.getDestinationPath(), "stdout");
   assertEquals(variables2.getAdditionalVariable("layer_type"), "project");
-  assertEquals(variables2.getAdditionalVariable("demonstrative_type"), "to");
+  assertEquals(variables2.getAdditionalVariable("directive_type"), "to");
   assertEquals(variables2.getAdditionalVariable("non_existent"), undefined);
 
   const record = variables2.toRecord();
   assertEquals(record.input_text_file, "stdin");
   assertEquals(record.destination_path, "stdout");
   assertEquals(record.layer_type, "project");
-  assertEquals(record.demonstrative_type, "to");
+  assertEquals(record.directive_type, "to");
   assertEquals(Object.keys(record).length, 4);
 });
 

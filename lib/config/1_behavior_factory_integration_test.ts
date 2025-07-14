@@ -294,7 +294,7 @@ Deno.test("Behavior: Smart Constructor Pattern - PromptVariablesFactory Creation
   const builder = new UnifiedFactoryBuilder(mockConfig);
 
   const validCliParams: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {},
   };
@@ -314,7 +314,7 @@ Deno.test("Behavior: Smart Constructor Pattern - PromptVariablesFactory Creation
 Deno.test("Behavior: Error Propagation and Handling", async () => {
   // Test that errors are properly propagated through the system
   const invalidCliParams: PromptCliParams = {
-    demonstrativeType: "", // Invalid empty type
+    directiveType: "", // Invalid empty type
     layerType: "",
     options: {},
   };
@@ -408,7 +408,7 @@ Deno.test("Behavior: Configuration Immutability During Processing", () => {
 Deno.test("Behavior: Convenience Functions - createFactoryWithUnifiedConfig", async () => {
   // Test behavior of convenience function with various inputs
   const validCliParams: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {},
   };

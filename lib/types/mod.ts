@@ -23,8 +23,8 @@
  * const factory = new TypeFactory(patternProvider);
  *
  * // Create validated types
- * const directive = DirectiveType.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
- * const layer = LayerType.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
+ * const directive = DirectiveType.create({ type: "two", directiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
+ * const layer = LayerType.create({ type: "two", directiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
  * ```
  *
  * @example Error Handling with Result Types
@@ -63,7 +63,7 @@
  * import { ConfigProfileName } from "./mod.ts";
  *
  * // Create a profile name (Totality-compliant with validation)
- * const profileResult = ConfigProfileName.create({ type: "two", directiveType: "to", layerType: "project", demonstrativeType: "to", params: ["to", "project"], options: {} });
+ * const profileResult = ConfigProfileName.create({ type: "two", DirectiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
  *
  * if (profileResult.ok) {
  *   console.log("Profile:", profileResult.data.value);
@@ -109,23 +109,19 @@ export type { Result } from "./result.ts";
 export {
   createPromptParams,
   FilePathVariable,
-  FilePathVariableName,
   StandardVariable,
-  StandardVariableName,
   StdinVariable,
-  StdinVariableName,
-  toPromptParamsVariables,
   UserVariable,
 } from "./prompt_variables_vo.ts";
 export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
 // Deprecated legacy types (for backward compatibility)
-// NOTE: Legacy factories removed during DemonstrativeType -> DirectiveType refactor
+// NOTE: Legacy factories removed during DirectiveType -> DirectiveType refactor
 // TODO: Remove legacy test files that depend on these exports
-// export type { DemonstrativeType, LegacyLayerType } from "./legacy_factories.ts";
+// export type { DirectiveType, LegacyLayerType } from "./legacy_factories.ts";
 // export {
-//   DemonstrativeTypeFactory,
-//   DemonstrativeTypeGuards,
+//   DirectiveTypeFactory,
+//   DirectiveTypeGuards,
 //   DirectiveFactory,
 //   LayerFactory,
 //   LegacyLayerTypeFactory,

@@ -19,9 +19,10 @@ import type { TwoParams_Result } from "../../deps.ts";
 // Test fixtures
 const createMockTwoParamsResult = (directive: string, layer: string): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType: directive,
   layerType: layer,
-  demonstrativeType: directive,
+  directiveType: directive,
   options: {},
   params: [directive, layer],
 });
@@ -134,7 +135,7 @@ Deno.test("1_behavior: TemplatePath - generates correct path", () => {
   if (!pathResult.ok) return;
 
   // Mock the getValue methods to return predictable values
-  const expectedPath = `${mockDirective.getValue()}/${mockLayer.getValue()}/template.md`;
+  const expectedPath = `${mockDirective.value}/${mockLayer.value}/template.md`;
   assertEquals(pathResult.data.getPath(), expectedPath);
 });
 

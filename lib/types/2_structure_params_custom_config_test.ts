@@ -52,8 +52,8 @@ Deno.test("ParamsCustomConfig - Structure: ParamsConfig interface consistency", 
   // All fields should be required and typed correctly
   assertEquals(typeof config.directiveType, "object");
   assertEquals(typeof config.layerType, "object");
-  assertEquals(typeof config.directiveType.pattern, "string");
-  assertEquals(typeof config.directiveType.errorMessage, "string");
+  assertEquals(typeof config.DirectiveType.pattern, "string");
+  assertEquals(typeof config.DirectiveType.errorMessage, "string");
   assertEquals(typeof config.layerType.pattern, "string");
   assertEquals(typeof config.layerType.errorMessage, "string");
 });
@@ -145,8 +145,8 @@ Deno.test("ParamsCustomConfig - Structure: DEFAULT_CUSTOM_CONFIG structure consi
 
   // Params structure
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two, "object");
-  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.directiveType.pattern, "string");
-  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.directiveType.errorMessage, "string");
+  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.pattern, "string");
+  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.errorMessage, "string");
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern, "string");
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.layerType.errorMessage, "string");
 
@@ -230,8 +230,8 @@ Deno.test("ParamsCustomConfig - Structure: Nested object validation consistency"
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Deep object access should work
-    assertEquals(result.data.params.two.directiveType.pattern, "nested-test");
-    assertEquals(result.data.params.two.directiveType.errorMessage, "nested-error");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "nested-test");
+    assertEquals(result.data.params.two.DirectiveType.errorMessage, "nested-error");
 
     // Non-overridden nested objects should maintain structure
     assertEquals(typeof result.data.params.two.layerType, "object");
@@ -328,9 +328,9 @@ Deno.test("ParamsCustomConfig - Structure: Object immutability structure", () =>
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Modifying input should not affect result
-    originalConfig.breakdown.params.two.directiveType.pattern = "modified";
+    originalConfig.breakdown.params.two.DirectiveType.pattern = "modified";
 
-    assertEquals(result.data.params.two.directiveType.pattern, "original");
+    assertEquals(result.data.params.two.DirectiveType.pattern, "original");
   }
 });
 

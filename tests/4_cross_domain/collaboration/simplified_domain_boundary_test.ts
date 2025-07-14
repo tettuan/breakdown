@@ -40,11 +40,11 @@ describe("Simplified Domain Boundary Integration", () => {
 
       if (isOk(directiveResult) && isOk(layerResult)) {
         // Verify they maintain separate interfaces
-        assertExists(directiveResult.data.getValue);
-        assertExists(layerResult.data.getValue);
+        assertExists(directiveResult.data.value);
+        assertExists(layerResult.data.value);
 
-        const directiveValue = directiveResult.data.getValue();
-        const layerValue = layerResult.data.getValue();
+        const directiveValue = directiveResult.data.value;
+        const layerValue = layerResult.data.value;
 
         assertEquals(typeof directiveValue, "string");
         assertEquals(typeof layerValue, "string");
@@ -94,11 +94,11 @@ describe("Simplified Domain Boundary Integration", () => {
       // All successful results should have getValue method
       if (isOk(configResult)) {
         assertExists(configResult.data.getValue);
-        assertEquals(typeof configResult.data.getValue(), "string");
+        assertEquals(typeof configResult.data.value, "string");
       }
       if (isOk(workDirResult)) {
         assertExists(workDirResult.data.getValue);
-        assertEquals(typeof workDirResult.data.getValue(), "string");
+        assertEquals(typeof workDirResult.data.value, "string");
       }
 
       logger.debug("Result pattern consistency verified");
@@ -126,8 +126,8 @@ describe("Simplified Domain Boundary Integration", () => {
           // Values should be retrievable and compatible
           const directiveValue = typesResult.data.directive.value;
           const layerValue = typesResult.data.layer.value;
-          const configValue = configResult.data.getValue();
-          const workDirValue = workDirResult.data.getValue();
+          const configValue = configResult.data.value;
+          const workDirValue = workDirResult.data.value;
 
           assertEquals(typeof directiveValue, "string");
           assertEquals(typeof layerValue, "string");
@@ -200,8 +200,8 @@ describe("Simplified Domain Boundary Integration", () => {
         assertExists(workDirValue.getValue);
 
         // But should return comparable types
-        const configString = configValue.getValue();
-        const workDirString = workDirValue.getValue();
+        const configString = configValue.value;
+        const workDirString = workDirValue.value;
 
         assertEquals(typeof configString, "string");
         assertEquals(typeof workDirString, "string");
@@ -259,8 +259,8 @@ describe("Simplified Domain Boundary Integration", () => {
               layer: typesResult.data.layer.value,
             },
             supportingValues: {
-              config: configResult.data.getValue(),
-              workDir: workDirResult.data.getValue(),
+              config: configResult.data.value,
+              workDir: workDirResult.data.value,
             },
           };
 

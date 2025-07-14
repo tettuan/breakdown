@@ -120,7 +120,7 @@ export class ParamsTypeValidator {
       type: "two",
       directiveType: result.directiveType,
       layerType: result.layerType,
-      demonstrativeType: result.directiveType,
+      directiveType: result.directiveType,
       params: result.params,
       options: result.options ?? {},
     });

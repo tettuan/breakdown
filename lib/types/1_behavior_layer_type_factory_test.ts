@@ -9,7 +9,6 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
-import { LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
@@ -62,6 +61,7 @@ Deno.test("LayerType Behavior - Valid Layer Creation from TwoParams_Result", () 
   for (const layer of knownLayers) {
     const twoParamsResult: TwoParams_Result = {
       type: "two",
+    directiveType: "to",
       directiveType: "to",
       layerType: layer,
       params: ["to", layer],

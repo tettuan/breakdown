@@ -180,7 +180,7 @@ Deno.test("PromptVariablesFactory - 3-stage transformation orchestration", async
       assertExists(promptParams.variables);
 
       // Verify that CLI parameters are transformed correctly
-      assertEquals(promptParams.variables.demonstrative_type, "summary");
+      assertEquals(promptParams.variables.directive_type, "summary");
       assertEquals(promptParams.variables.layer_type, "project");
 
       // Verify custom variables are included

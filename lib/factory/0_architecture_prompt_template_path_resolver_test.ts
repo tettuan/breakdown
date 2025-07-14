@@ -34,6 +34,7 @@ const validLegacyParams: PromptCliParams = {
 
 const validTwoParams: TwoParams_Result = {
   type: "two",
+    directiveType: "to",
   params: ["to", "project"],
   directiveType: "to",
   layerType: "project",
@@ -199,6 +200,7 @@ Deno.test("0_architecture: Totality pattern - exhaustive parameter validation", 
   // Test invalid TwoParams structure - missing directiveType in structure
   const invalidTwoParams = {
     type: "two",
+    directiveType: "to",
     params: [], // Empty params array - no directiveType available
     // Missing directiveType and layerType fields
   };
@@ -318,7 +320,7 @@ Deno.test("0_architecture: Factory pattern constraint - single creation pathway"
     "length",
     "name",
     "prototype",
-    "extractDemonstrativeType",
+    "extractDirectiveType",
     "extractLayerType",
   ];
   for (const method of staticMethods) {

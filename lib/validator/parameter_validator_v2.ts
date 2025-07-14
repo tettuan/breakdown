@@ -201,7 +201,7 @@ export class ParameterValidatorV2 {
       type: "two",
       directiveType: typeValidation.data.directiveType,
       layerType: typeValidation.data.layerType,
-      demonstrativeType: typeValidation.data.directiveType,
+      directiveType: typeValidation.data.directiveType,
       params: typeValidation.data.params,
       options: typeValidation.data.options,
     };

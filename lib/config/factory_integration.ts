@@ -116,7 +116,7 @@ export class FactoryConfigAdapter {
 
     // Create dummy CLI params for resolvers that need them
     const dummyCliParams: PromptCliParams = {
-      demonstrativeType: "",
+      directiveType: "",
       layerType: "",
       options: {},
     };

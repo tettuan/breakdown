@@ -20,7 +20,7 @@ class ExampleDomainType {
 
   /**
    * Create instance with validation using Result type
-   * Similar to DirectiveType.createOrError pattern
+   * Similar to DirectiveType.create pattern
    */
   static createOrError(
     value: string,

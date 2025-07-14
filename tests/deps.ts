@@ -25,9 +25,9 @@ export {
   // Default implementations
   DefaultTypePatternProvider,
   // Deprecated legacy types (for backward compatibility) - COMMENTED OUT
-  // type DemonstrativeType,
-  // DemonstrativeTypeFactory,
-  // DemonstrativeTypeGuards,
+  // type DirectiveType,
+  // DirectiveTypeFactory,
+  // DirectiveTypeGuards,
   // DirectiveFactory,
   // Core type definitions
   DirectiveType,

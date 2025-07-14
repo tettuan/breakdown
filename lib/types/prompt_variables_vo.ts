@@ -335,6 +335,11 @@ export class PromptVariablesVO {
 export type PromptVariables = PromptVariablesVO;
 export const createPromptParams = PromptVariablesVO.create;
 
+// Add missing toPromptParamsVariables export for compatibility
+export function toPromptParamsVariables(variables: PromptVariable[]): PromptVariablesVO {
+  return PromptVariablesVO.create(variables);
+}
+
 // Stub exports for missing variable types - these need to be properly implemented
 export class StandardVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}

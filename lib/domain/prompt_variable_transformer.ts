@@ -95,7 +95,7 @@ export class PromptVariableTransformer {
 
     // Transform directive type
     if (source.directive) {
-      const varResult = StandardVariable.create("demonstrative_type", source.directive);
+      const varResult = StandardVariable.create("directive_type", source.directive);
       if (varResult.ok) {
         variables.push(varResult.data);
       } else {

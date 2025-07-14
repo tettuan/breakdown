@@ -18,8 +18,8 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     assertExists(_defaultConfigTwoParams.params.two);
   });
 
-  await t.step("should have directiveType configuration", () => {
-    const directiveType = _defaultConfigTwoParams.params.two.directiveType;
+  await t.step("should have DirectiveType configuration", () => {
+    const directiveType = _defaultConfigTwoParams.params.two.DirectiveType;
     assertExists(directiveType);
     assertExists(directiveType.pattern);
     assertEquals(typeof directiveType.pattern, "string");
@@ -50,7 +50,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
   });
 
   await t.step("should have valid regex patterns", () => {
-    const directivePattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
+    const directivePattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
     const layerPattern = _defaultConfigTwoParams.params.two.layerType.pattern;
 
     // Test patterns are valid regex - should not throw when creating RegExp
@@ -72,7 +72,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     const config = _defaultConfigTwoParams.params.two;
 
     // Test directiveType pattern contains expected values
-    assertEquals(config.directiveType.pattern, "^(to|summary|defect|find)$");
+    assertEquals(config.DirectiveType.pattern, "^(to|summary|defect|find)$");
 
     // Test layerType pattern contains expected values
     assertEquals(config.layerType.pattern, "^(project|issue|task|bugs)$");
@@ -97,7 +97,7 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
     // Try to modify (should not affect the original)
     try {
       // @ts-ignore - intentionally trying to modify
-      _defaultConfigTwoParams.params.two.directiveType.pattern = "modified";
+      _defaultConfigTwoParams.params.two.DirectiveType.pattern = "modified";
     } catch {
       // Expected to fail in strict mode
     }
@@ -122,7 +122,7 @@ Deno.test("defaultConfigTwoParams - Immutability Tests", async (t) => {
  */
 Deno.test("defaultConfigTwoParams - Pattern Validation", async (t) => {
   await t.step("should validate directiveType pattern", () => {
-    const pattern = new RegExp(_defaultConfigTwoParams.params.two.directiveType.pattern);
+    const pattern = new RegExp(_defaultConfigTwoParams.params.two.DirectiveType.pattern);
 
     // Valid values should match
     assertEquals(pattern.test("to"), true);

@@ -17,7 +17,7 @@ import type { PromptCliParams } from "../types/prompt_variables_vo.ts";
 
 Deno.test("migrateCliParamsToVariables - basic parameters", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -29,14 +29,14 @@ Deno.test("migrateCliParamsToVariables - basic parameters", () => {
     assertEquals(result.data.length, 2);
 
     const records = result.data.map((v) => v.toRecord());
-    assertEquals(records[0], { demonstrative_type: "to" });
+    assertEquals(records[0], { directive_type: "to" });
     assertEquals(records[1], { layer_type: "project" });
   }
 });
 
 Deno.test("migrateCliParamsToVariables - with file options", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "task",
     options: {
       fromFile: "/path/to/input.md",
@@ -58,7 +58,7 @@ Deno.test("migrateCliParamsToVariables - with file options", () => {
 
 Deno.test("migrateCliParamsToVariables - with stdin and custom variables", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "defect",
+    directiveType: "defect",
     layerType: "issue",
     options: {
       input_text: "Some input from stdin",
@@ -84,9 +84,9 @@ Deno.test("migrateCliParamsToVariables - with stdin and custom variables", () =>
   }
 });
 
-Deno.test("extractPromptPath - from demonstrativeType and layerType", () => {
+Deno.test("extractPromptPath - from directiveType and layerType", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -104,7 +104,7 @@ Deno.test("extractPromptPath - from demonstrativeType and layerType", () => {
 
 Deno.test("extractPromptPath - with promptDir option", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "task",
     options: {
       promptDir: "/custom/prompts",
@@ -124,7 +124,7 @@ Deno.test("extractPromptPath - with promptDir option", () => {
 
 Deno.test("extractPromptPath - no path parameters", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "",
+    directiveType: "",
     layerType: "",
     options: {},
   };
@@ -139,7 +139,7 @@ Deno.test("extractPromptPath - no path parameters", () => {
 
 Deno.test("migratePromptCliParams - complete migration with warnings", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {
       fromFile: "input.md",
@@ -191,7 +191,7 @@ Deno.test("migratePromptCliParams - complete migration with warnings", () => {
 
 Deno.test("createMigrationSummary - generates readable summary", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: {
       fromFile: "tasks.md",
@@ -211,7 +211,7 @@ Deno.test("createMigrationSummary - generates readable summary", () => {
     assertEquals(summary.includes("Migration Summary:"), true);
     assertEquals(summary.includes("Prompt path: prompts/summary_issue.md"), true);
     assertEquals(summary.includes("Variables created: 4"), true);
-    assertEquals(summary.includes("demonstrative_type: summary"), true);
+    assertEquals(summary.includes("directive_type: summary"), true);
     assertEquals(summary.includes("layer_type: issue"), true);
     assertEquals(summary.includes("input_text_file: tasks.md"), true);
     assertEquals(summary.includes("project: breakdown"), true);
@@ -220,7 +220,7 @@ Deno.test("createMigrationSummary - generates readable summary", () => {
 
 Deno.test("migrateCliParamsToVariables - handles empty custom variable values", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {
       customVariables: {

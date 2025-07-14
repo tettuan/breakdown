@@ -69,7 +69,7 @@ async function example3_factoryIntegration() {
   console.log("\n=== Example 3: Factory Integration ===");
 
   const cliParams: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {
       fromFile: "input.md",
@@ -114,7 +114,7 @@ async function example4_factoryBuilder() {
 
   // Build factory with CLI params
   const cliParams: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: {
       adaptation: "detailed",

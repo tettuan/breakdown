@@ -51,8 +51,8 @@ Deno.test("Composition Safety: Result type operations maintain totality across d
   // we need to handle them separately and then combine
   if (isOk(configResult) && isOk(workDirResult)) {
     const composedResult = ok({
-      config: configResult.data.getValue(),
-      workDir: workDirResult.data.getValue(),
+      config: configResult.data.value,
+      workDir: workDirResult.data.value,
       composed: true,
     });
 
@@ -250,13 +250,13 @@ Deno.test("Composition Safety: Type safety preserved across domain boundaries", 
     };
 
     // Verify type safety is maintained
-    assertEquals(typeof composition.config.getValue(), "string");
-    assertEquals(typeof composition.workDir.getValue(), "string");
+    assertEquals(typeof composition.config.value, "string");
+    assertEquals(typeof composition.workDir.value, "string");
     assertEquals(typeof composition.timestamp, "number");
 
     // Operations on composed types should be type-safe
-    const configName = composition.config.getValue();
-    const workPath = composition.workDir.getValue();
+    const configName = composition.config.value;
+    const workPath = composition.workDir.value;
 
     assertEquals(typeof configName.toUpperCase(), "string");
     assertEquals(typeof workPath.length, "number");
@@ -335,8 +335,8 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
       return ok({
         success: true,
         result: {
-          config: configResult.data.getValue(),
-          workDir: workDirResult.data.getValue(),
+          config: configResult.data.value,
+          workDir: workDirResult.data.value,
           directive: typesResult.data.directive.value,
           layer: typesResult.data.layer.value,
         },

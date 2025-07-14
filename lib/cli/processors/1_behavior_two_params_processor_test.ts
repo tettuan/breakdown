@@ -13,8 +13,9 @@ Deno.test("TwoParamsProcessor - Valid input conversion", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {
       output: "result.md",
@@ -61,9 +62,10 @@ Deno.test("TwoParamsProcessor - Missing directiveType error", () => {
   // Creating test data with empty directiveType
   const twoParamsResult = {
     type: "two",
+    directiveType: "to",
     directiveType: "",
     layerType: "project",
-    demonstrativeType: "",
+    directiveType: "",
     params: ["to", "project"],
     options: {},
   } as unknown as TwoParams_Result;
@@ -86,8 +88,9 @@ Deno.test("TwoParamsProcessor - Missing layerType error", () => {
   const twoParamsResult = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {},
   } as unknown as TwoParams_Result;
@@ -109,8 +112,9 @@ Deno.test("TwoParamsProcessor - Insufficient params error", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to"], // Only one param
     options: {},
   };
@@ -132,8 +136,9 @@ Deno.test("TwoParamsProcessor - Custom variables extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {
       "uv-customVar1": "value1",
@@ -163,8 +168,9 @@ Deno.test("TwoParamsProcessor - File path extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {
       fromFile: "input.txt",
@@ -195,8 +201,9 @@ Deno.test("TwoParamsProcessor - Default values", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {},
   };
@@ -221,8 +228,9 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
   const validResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {
       promptFile: "prompt.md",
@@ -261,8 +269,9 @@ Deno.test("TwoParamsProcessor - Input text extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
-    demonstrativeType: "to",
+    directiveType: "to",
     params: ["to", "project"],
     options: {
       input_text: "This is input text content",

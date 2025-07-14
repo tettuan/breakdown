@@ -152,7 +152,7 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // Validate CLI parameters structure and content
-    const directiveType = PromptTemplatePathResolverTotality.extractDemonstrativeType(
+    const directiveType = PromptTemplatePathResolverTotality.extractDirectiveType(
       cliParams,
     );
     const layerType = PromptTemplatePathResolverTotality.extractLayerType(cliParams);
@@ -216,9 +216,9 @@ export class PromptTemplatePathResolverTotality {
       const copy: TwoParams_Result = {
         type: twoParams.type || "two",
         params: twoParams.params ? [...twoParams.params] : [],
-        directiveType: twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
-        demonstrativeType: twoParams.demonstrativeType || "",
+        directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
+        demonstrativeType: twoParams.directiveType || twoParams.params?.[0] || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -226,8 +226,8 @@ export class PromptTemplatePathResolverTotality {
       // DoubleParams_Result (PromptCliParams)
       const doubleParams = cliParams as DoubleParams_Result;
       const copy: PromptCliParams = {
-        directiveType: doubleParams.directiveType,
         layerType: doubleParams.layerType,
+        directiveType: doubleParams.directiveType || "",
         options: doubleParams.options ? { ...doubleParams.options } : {},
       };
 
@@ -252,7 +252,7 @@ export class PromptTemplatePathResolverTotality {
     const attemptedPaths: string[] = [promptPath];
 
     // Collect metadata
-    const directiveType = this.getDemonstrativeType();
+    const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
     const fromLayerTypeResult = this.resolveFromLayerTypeSafe();
     if (!fromLayerTypeResult.ok) {
@@ -435,7 +435,7 @@ export class PromptTemplatePathResolverTotality {
    * Builds the full prompt template path
    */
   public buildPromptPath(baseDir: string, fileName: string): string {
-    const directiveType = this.getDemonstrativeType();
+    const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
     return join(baseDir, directiveType, layerType, fileName);
   }
@@ -443,14 +443,14 @@ export class PromptTemplatePathResolverTotality {
   /**
    * Gets the demonstrative type value
    */
-  private getDemonstrativeType(): string {
-    return PromptTemplatePathResolverTotality.extractDemonstrativeType(this._cliParams);
+  private getDirectiveType(): string {
+    return PromptTemplatePathResolverTotality.extractDirectiveType(this._cliParams);
   }
 
   /**
    * Static helper to extract demonstrative type
    */
-  private static extractDemonstrativeType(
+  private static extractDirectiveType(
     cliParams: DoubleParams_Result | TwoParams_Result,
   ): string {
     if ("directiveType" in cliParams) {

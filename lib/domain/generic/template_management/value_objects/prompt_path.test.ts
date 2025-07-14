@@ -14,10 +14,10 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
+    directiveType: "to",
   params: ["to", "project"],
-  directiveType: "to",
   layerType: "project",
-  demonstrativeType: "to",
+  directiveType: "to",
   options: {},
 };
 
@@ -148,7 +148,7 @@ Deno.test("1_behavior: creates PromptPath with valid parameters", () => {
   }
 });
 
-Deno.test("1_behavior: validates required directive parameter", () => {
+Deno.test("1_behavior: validates required demonstrative parameter", () => {
   const result = PromptPath.create((null as unknown) as DirectiveType, validLayer, validFilename);
 
   assertEquals(result.ok, false);
@@ -158,7 +158,11 @@ Deno.test("1_behavior: validates required directive parameter", () => {
 });
 
 Deno.test("1_behavior: validates required layer parameter", () => {
-  const result = PromptPath.create(validDirective, (null as unknown) as LayerType, validFilename);
+  const result = PromptPath.create(
+    validDirective,
+    (null as unknown) as LayerType,
+    validFilename,
+  );
 
   assertEquals(result.ok, false);
   if (!result.ok) {

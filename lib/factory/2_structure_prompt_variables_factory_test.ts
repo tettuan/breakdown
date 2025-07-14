@@ -182,7 +182,7 @@ Deno.test("PromptVariablesFactory - 2_structure - 3-stage transformation data in
 
       // PromptParams variables structural integrity
       const variables = promptParams.variables;
-      assertExists(variables.demonstrative_type, "Should have demonstrative_type");
+      assertExists(variables.directive_type, "Should have directive_type");
       assertExists(variables.layer_type, "Should have layer_type");
       assertExists(variables.input_file, "Should have input_file");
       assertExists(variables.output_file, "Should have output_file");
@@ -191,9 +191,9 @@ Deno.test("PromptVariablesFactory - 2_structure - 3-stage transformation data in
 
       // Type consistency validation
       assertEquals(
-        typeof variables.demonstrative_type,
+        typeof variables.directive_type,
         "string",
-        "demonstrative_type should be string",
+        "directive_type should be string",
       );
       assertEquals(typeof variables.layer_type, "string", "layer_type should be string");
       assertEquals(typeof variables.input_file, "string", "input_file should be string");
@@ -343,9 +343,9 @@ Deno.test("PromptVariablesFactory - 2_structure - Immutability and invariants pr
 
       // Structural invariants validation
       assertEquals(
-        result1.data.variables.demonstrative_type,
-        result2.data.variables.demonstrative_type,
-        "demonstrative_type should be immutable",
+        result1.data.variables.directive_type,
+        result2.data.variables.directive_type,
+        "directive_type should be immutable",
       );
       assertEquals(
         result1.data.variables.layer_type,
@@ -360,9 +360,9 @@ Deno.test("PromptVariablesFactory - 2_structure - Immutability and invariants pr
 
       // Cross-method consistency validation
       assertEquals(
-        result1.data.variables.demonstrative_type,
+        result1.data.variables.directive_type,
         testCliParams.directiveType,
-        "demonstrative_type should match original input",
+        "directive_type should match original input",
       );
       assertEquals(
         result1.data.variables.layer_type,

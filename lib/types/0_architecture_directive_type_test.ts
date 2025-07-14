@@ -20,32 +20,34 @@ Deno.test("0_architecture: DirectiveType follows domain boundary rules", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
+    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
   };
 
-  const directiveType = DirectiveType.create(twoParamsResult.directiveType);
+  const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
 
   // Verify that DirectiveType is a pure value object (Result type)
-  assertExists(directiveType);
-  if (directiveType.ok) {
-    assertEquals(typeof directiveType.data.value, "string");
-    assertEquals(typeof directiveType.data.equals, "function");
-    assertEquals(typeof directiveType.data.toString, "function");
+  assertExists(directiveTypeResult);
+  if (directiveTypeResult.ok) {
+    const directiveType = directiveTypeResult.data;
+    assertEquals(typeof directiveType.value, "string");
+    assertEquals(typeof directiveType.equals, "function");
+    assertEquals(typeof directiveType.toString, "function");
+    
+    // No file system operations
+    assertEquals("readFile" in directiveType, false);
+    assertEquals("writeFile" in directiveType, false);
+
+    // No configuration dependencies
+    assertEquals("loadConfig" in directiveType, false);
+    assertEquals("saveConfig" in directiveType, false);
+
+    // No external service calls
+    assertEquals("fetch" in directiveType, false);
+    assertEquals("httpRequest" in directiveType, false);
   }
-
-  // No file system operations
-  assertEquals("readFile" in directiveType, false);
-  assertEquals("writeFile" in directiveType, false);
-
-  // No configuration dependencies
-  assertEquals("loadConfig" in directiveType, false);
-  assertEquals("saveConfig" in directiveType, false);
-
-  // No external service calls
-  assertEquals("fetch" in directiveType, false);
-  assertEquals("httpRequest" in directiveType, false);
 });
 
 Deno.test("0_architecture: DirectiveType enforces Smart Constructor pattern", () => {
@@ -54,6 +56,7 @@ Deno.test("0_architecture: DirectiveType enforces Smart Constructor pattern", ()
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
@@ -85,6 +88,7 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
   const testCases: TwoParams_Result[] = [
     {
       type: "two",
+    directiveType: "to",
       directiveType: "to",
       layerType: "project",
       params: ["to", "project"],
@@ -92,6 +96,7 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     },
     {
       type: "two",
+    directiveType: "to",
       directiveType: "",
       layerType: "",
       params: ["", ""],
@@ -99,6 +104,7 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     },
     {
       type: "two",
+    directiveType: "to",
       directiveType: "custom_directive_with_long_name",
       layerType: "custom_layer",
       params: ["custom_directive_with_long_name", "custom_layer"],
@@ -165,36 +171,36 @@ Deno.test("0_architecture: DirectiveType maintains single responsibility", () =>
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "analyze",
     layerType: "system",
     params: ["analyze", "system"],
     options: {},
   };
 
-  const directiveType = DirectiveType.create(twoParamsResult.directiveType);
+  const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
 
   // Core responsibility: value access (Result type)
-  assertExists(directiveType);
-  if (directiveType.ok) {
-    assertExists(directiveType.data.value);
-    assertExists(directiveType.data.value);
+  assertExists(directiveTypeResult);
+  if (directiveTypeResult.ok) {
+    const directiveType = directiveTypeResult.data;
+    assertExists(directiveType.value);
+    assertExists(directiveType.value);
+    
+    // Value comparison responsibility
+    assertExists(directiveType.equals);
+    assertExists(directiveType.toString);
+    
+    // Should NOT have validation methods
+    assertEquals("validate" in directiveType, false);
+    assertEquals("isValid" in directiveType, false);
+    assertEquals("checkPattern" in directiveType, false);
+
+    // Should NOT have transformation methods
+    assertEquals("transform" in directiveType, false);
+    assertEquals("convert" in directiveType, false);
+    assertEquals("parse" in directiveType, false);
   }
-
-  // Value comparison responsibility (Result type)
-  if (directiveType.ok) {
-    assertExists(directiveType.data.equals);
-    assertExists(directiveType.data.toString);
-  }
-
-  // Should NOT have validation methods
-  assertEquals("validate" in directiveType, false);
-  assertEquals("isValid" in directiveType, false);
-  assertEquals("checkPattern" in directiveType, false);
-
-  // Should NOT have transformation methods
-  assertEquals("transform" in directiveType, false);
-  assertEquals("convert" in directiveType, false);
-  assertEquals("parse" in directiveType, false);
 });
 
 Deno.test("0_architecture: DirectiveType dependency flow is unidirectional", () => {
@@ -203,6 +209,7 @@ Deno.test("0_architecture: DirectiveType dependency flow is unidirectional", () 
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "defect",
     layerType: "task",
     params: ["defect", "task"],
@@ -231,6 +238,7 @@ Deno.test("0_architecture: DirectiveType supports extensibility without modifica
   // Can work with any valid TwoParams_Result
   const customResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "future_directive_type",
     layerType: "future_layer",
     params: ["future_directive_type", "future_layer"],
@@ -291,6 +299,7 @@ Deno.test("0_architecture: DirectiveType and TwoParamsDirectivePattern are loose
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "transform",
     layerType: "module",
     params: ["transform", "module"],

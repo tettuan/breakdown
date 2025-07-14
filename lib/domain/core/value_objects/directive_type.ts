@@ -236,6 +236,63 @@ export class DirectiveType {
   }
 
   /**
+   * Get prompt file path for this directive type
+   * 
+   * Domain operation for complete path resolution in prompt generation context.
+   * 
+   * @param layer - LayerType for path construction
+   * @param baseDir - Base directory for prompts (default: "prompts")
+   * @param fromLayerType - Source layer type for adaptation
+   * @param adaptation - Adaptation type for specialized paths
+   * @returns Complete file path string
+   */
+  getPromptPath(layer: { value: string }, baseDir = "prompts", fromLayerType?: string, adaptation?: string): string {
+    const dir = this.getPromptDirectory(baseDir, layer);
+    let filename = `${this._value}_${layer.value}.md`;
+    
+    if (fromLayerType) {
+      filename = `${fromLayerType}_${layer.value}.md`;
+    }
+    
+    if (adaptation) {
+      filename = `${fromLayerType || this._value}_${layer.value}_${adaptation}.md`;
+    }
+    
+    return `${dir}/${filename}`;
+  }
+
+  /**
+   * Get schema file path for this directive type
+   * 
+   * Domain operation for complete path resolution in schema context.
+   * 
+   * @param layer - LayerType for path construction
+   * @param baseDir - Base directory for schemas (default: "schemas")
+   * @returns Complete file path string
+   */
+  getSchemaPath(layer: { value: string }, baseDir = "schemas"): string {
+    const dir = this.getSchemaDirectory(baseDir, layer);
+    const filename = `${this._value}_${layer.value}.schema.json`;
+    return `${dir}/${filename}`;
+  }
+
+  /**
+   * Resolve output path for this directive type
+   * 
+   * Domain operation for output file path resolution.
+   * 
+   * @param inputPath - Input file path to resolve
+   * @param layer - LayerType for path construction
+   * @param baseDir - Base directory for output (default: "output")
+   * @returns Resolved output file path string
+   */
+  resolveOutputPath(inputPath: string, layer: { value: string }, baseDir = "output"): string {
+    const dir = `${baseDir}/${this._value}/${layer.value}`;
+    const filename = inputPath.split('/').pop() || inputPath;
+    return `${dir}/${filename}`;
+  }
+
+  /**
    * Check if this DirectiveType is valid for resource path generation
    * 
    * @returns true if can be used for path resolution

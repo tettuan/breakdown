@@ -41,7 +41,7 @@ export type ProcessorError =
  *   type: "two",
  *   directiveType: "to",
  *   layerType: "project",
- *   demonstrativeType: "to",
+ *   directiveType: "to",
  *   params: ["to", "project"],
  *   options: { output: "result.md" }
  * };
@@ -77,7 +77,7 @@ export class TwoParamsProcessor {
     const builder = VariablesBuilder.fromFactoryValues(factoryValuesResult.data);
 
     // Add base variables as standard variables (not user variables)
-    builder.addStandardVariable("demonstrative_type", twoParamsResult.directiveType);
+    builder.addStandardVariable("directive_type", twoParamsResult.directiveType);
     builder.addStandardVariable("layer_type", twoParamsResult.layerType);
 
     // Validate the builder state

@@ -1,7 +1,7 @@
 export const _defaultConfigTwoParams = Object.freeze({
   params: Object.freeze({
     two: Object.freeze({
-      directiveType: Object.freeze({
+      DirectiveType: Object.freeze({
         pattern: "^(to|summary|defect|find)$",
       }),
       layerType: Object.freeze({

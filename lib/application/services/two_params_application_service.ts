@@ -370,7 +370,7 @@ Timestamp: ${new Date().toISOString()}
     variables: ProcessedVariables,
   ): PromptCliParams {
     return {
-      demonstrativeType: twoParams.directive.value,
+      directiveType: twoParams.directive.value,
       layerType: twoParams.layer.value,
       options: {
         fromFile: input.options?.fromFile as string | undefined,

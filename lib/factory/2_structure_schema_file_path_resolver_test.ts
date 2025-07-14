@@ -71,6 +71,7 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
   // New TwoParams_Result structure
   const newParams: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     params: ["summary", "issue"],
     directiveType: "summary",
     layerType: "issue",

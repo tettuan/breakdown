@@ -30,12 +30,23 @@ export type TimeoutDurationError =
   | { kind: "InvalidFormat"; input: unknown; reason: string }
   | { kind: "NegativeDuration"; input: number }
   | { kind: "ExceedsMaximum"; input: number; maximum: number }
-  | { kind: "InvalidUnit"; input: string; validUnits: string[] };
+  | { kind: "InvalidUnit"; input: string; validUnits: string[] }
+  | { kind: "NullOrUndefined"; input: unknown }
+  | { kind: "NonIntegerValue"; input: number }
+  | { kind: "BelowMinimum"; input: number; minimum: number }
+  | { kind: "AboveMaximum"; input: number; maximum: number }
+  | { kind: "InvalidType"; input: unknown; expectedType: string }
+  | { kind: "InvalidSeconds"; input: number; reason: string }
+  | { kind: "InvalidMinutes"; input: number; reason: string }
+  | { kind: "InvalidScaleFactor"; input: number; reason: string };
 
 /**
  * Immutable value object representing a timeout duration
  */
 export class TimeoutDuration {
+  static readonly MIN_MILLISECONDS = 100;
+  static readonly MAX_MILLISECONDS = 600000; // 10 minutes
+
   private readonly _milliseconds: number;
   private readonly _originalValue: number;
   private readonly _originalUnit: TimeUnit;
@@ -116,15 +127,120 @@ export class TimeoutDuration {
    * Factory methods for common durations
    */
   static fromMilliseconds(ms: number): Result<TimeoutDuration, TimeoutDurationError> {
-    return TimeoutDuration.create(ms, TIME_UNITS.MILLISECONDS);
+    // Null/undefined check
+    if (ms === null || ms === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: ms,
+      });
+    }
+
+    // Type check
+    if (typeof ms !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: ms,
+        expectedType: "number",
+      });
+    }
+
+    // Non-finite check
+    if (!Number.isFinite(ms)) {
+      return resultError({
+        kind: "InvalidType",
+        input: ms,
+        expectedType: "finite number",
+      });
+    }
+
+    // Integer check
+    if (!Number.isInteger(ms)) {
+      return resultError({
+        kind: "NonIntegerValue",
+        input: ms,
+      });
+    }
+
+    // Range check
+    if (ms < TimeoutDuration.MIN_MILLISECONDS) {
+      return resultError({
+        kind: "BelowMinimum",
+        input: ms,
+        minimum: TimeoutDuration.MIN_MILLISECONDS,
+      });
+    }
+
+    if (ms > TimeoutDuration.MAX_MILLISECONDS) {
+      return resultError({
+        kind: "AboveMaximum",
+        input: ms,
+        maximum: TimeoutDuration.MAX_MILLISECONDS,
+      });
+    }
+
+    return resultOk(new TimeoutDuration(ms, TIME_UNITS.MILLISECONDS));
   }
 
   static fromSeconds(seconds: number): Result<TimeoutDuration, TimeoutDurationError> {
-    return TimeoutDuration.create(seconds, TIME_UNITS.SECONDS);
+    // Null/undefined check
+    if (seconds === null || seconds === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: seconds,
+      });
+    }
+
+    // Type check
+    if (typeof seconds !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: seconds,
+        expectedType: "number",
+      });
+    }
+
+    // Validation
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return resultError({
+        kind: "InvalidSeconds",
+        input: seconds,
+        reason: "Seconds must be a non-negative finite number",
+      });
+    }
+
+    const ms = seconds * 1000;
+    return TimeoutDuration.fromMilliseconds(Math.round(ms));
   }
 
   static fromMinutes(minutes: number): Result<TimeoutDuration, TimeoutDurationError> {
-    return TimeoutDuration.create(minutes, TIME_UNITS.MINUTES);
+    // Null/undefined check
+    if (minutes === null || minutes === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: minutes,
+      });
+    }
+
+    // Type check
+    if (typeof minutes !== "number") {
+      return resultError({
+        kind: "InvalidType",
+        input: minutes,
+        expectedType: "number",
+      });
+    }
+
+    // Validation
+    if (!Number.isFinite(minutes) || minutes < 0) {
+      return resultError({
+        kind: "InvalidMinutes",
+        input: minutes,
+        reason: "Minutes must be a non-negative finite number",
+      });
+    }
+
+    const ms = minutes * 60 * 1000;
+    return TimeoutDuration.fromMilliseconds(Math.round(ms));
   }
 
   static fromHours(hours: number): Result<TimeoutDuration, TimeoutDurationError> {
@@ -135,23 +251,61 @@ export class TimeoutDuration {
    * Factory methods for common timeout values
    */
   static short(): TimeoutDuration {
-    return new TimeoutDuration(5, TIME_UNITS.SECONDS);
+    return new TimeoutDuration(5000, TIME_UNITS.MILLISECONDS);
   }
 
   static medium(): TimeoutDuration {
-    return new TimeoutDuration(30, TIME_UNITS.SECONDS);
+    return new TimeoutDuration(30000, TIME_UNITS.MILLISECONDS);
   }
 
   static long(): TimeoutDuration {
-    return new TimeoutDuration(5, TIME_UNITS.MINUTES);
+    return new TimeoutDuration(300000, TIME_UNITS.MILLISECONDS);
   }
 
   static veryLong(): TimeoutDuration {
-    return new TimeoutDuration(30, TIME_UNITS.MINUTES);
+    return new TimeoutDuration(TimeoutDuration.MAX_MILLISECONDS, TIME_UNITS.MILLISECONDS);
+  }
+
+  static default(): TimeoutDuration {
+    return new TimeoutDuration(30000, TIME_UNITS.MILLISECONDS);
+  }
+
+  /**
+   * Get default timeout duration
+   */
+  static getDefault(): TimeoutDuration {
+    return TimeoutDuration.default();
   }
 
   static infinite(): TimeoutDuration {
-    return new TimeoutDuration(0, TIME_UNITS.MILLISECONDS);
+    return new TimeoutDuration(TimeoutDuration.MAX_MILLISECONDS, TIME_UNITS.MILLISECONDS);
+  }
+
+  /**
+   * Unsafe factory methods for backward compatibility
+   */
+  static fromMillisecondsUnsafe(ms: number): TimeoutDuration {
+    const result = TimeoutDuration.fromMilliseconds(ms);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
+  }
+
+  static fromSecondsUnsafe(seconds: number): TimeoutDuration {
+    const result = TimeoutDuration.fromSeconds(seconds);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
+  }
+
+  static fromMinutesUnsafe(minutes: number): TimeoutDuration {
+    const result = TimeoutDuration.fromMinutes(minutes);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
   }
 
   /**
@@ -180,24 +334,45 @@ export class TimeoutDuration {
   }
 
   /**
+   * Backward compatibility method
+   */
+  toMilliseconds(): number {
+    return this.milliseconds;
+  }
+
+  /**
    * Get duration in seconds
    */
   get seconds(): number {
-    return this._milliseconds / 1000;
+    return Math.floor(this._milliseconds / 1000);
+  }
+
+  /**
+   * Backward compatibility method
+   */
+  toSeconds(): number {
+    return this.seconds;
   }
 
   /**
    * Get duration in minutes
    */
   get minutes(): number {
-    return this._milliseconds / (60 * 1000);
+    return Math.floor(this._milliseconds / (60 * 1000));
+  }
+
+  /**
+   * Backward compatibility method
+   */
+  toMinutes(): number {
+    return this.minutes;
   }
 
   /**
    * Get duration in hours
    */
-  get hours(): number {
-    return this._milliseconds / (60 * 60 * 1000);
+  toHours(): number {
+    return Math.floor(this._milliseconds / (60 * 60 * 1000));
   }
 
   /**
@@ -254,12 +429,30 @@ export class TimeoutDuration {
     return this._milliseconds === other._milliseconds;
   }
 
+  isGreaterThan(other: TimeoutDuration): boolean {
+    return this._milliseconds > other._milliseconds;
+  }
+
+  isLessThan(other: TimeoutDuration): boolean {
+    return this._milliseconds < other._milliseconds;
+  }
+
+  isGreaterThanOrEqualTo(other: TimeoutDuration): boolean {
+    return this._milliseconds >= other._milliseconds;
+  }
+
+  isLessThanOrEqualTo(other: TimeoutDuration): boolean {
+    return this._milliseconds <= other._milliseconds;
+  }
+
   /**
    * Create a new timeout with added duration
    */
   add(other: TimeoutDuration): Result<TimeoutDuration, TimeoutDurationError> {
     const newMs = this._milliseconds + other._milliseconds;
-    return TimeoutDuration.fromMilliseconds(newMs);
+    // Apply max boundary
+    const clampedMs = Math.min(newMs, TimeoutDuration.MAX_MILLISECONDS);
+    return TimeoutDuration.fromMilliseconds(clampedMs);
   }
 
   /**
@@ -267,6 +460,33 @@ export class TimeoutDuration {
    */
   subtract(other: TimeoutDuration): Result<TimeoutDuration, TimeoutDurationError> {
     const newMs = this._milliseconds - other._milliseconds;
+    // Apply min boundary
+    const clampedMs = Math.max(newMs, TimeoutDuration.MIN_MILLISECONDS);
+    return TimeoutDuration.fromMilliseconds(clampedMs);
+  }
+
+  /**
+   * Create a new timeout with scaled duration
+   */
+  scale(factor: number): Result<TimeoutDuration, TimeoutDurationError> {
+    // Null/undefined check
+    if (factor === null || factor === undefined) {
+      return resultError({
+        kind: "NullOrUndefined",
+        input: factor,
+      });
+    }
+
+    // Type and validation check
+    if (typeof factor !== "number" || !Number.isFinite(factor) || factor < 0) {
+      return resultError({
+        kind: "InvalidScaleFactor",
+        input: factor,
+        reason: "Scale factor must be a non-negative finite number",
+      });
+    }
+
+    const newMs = Math.round(this._milliseconds * factor);
     return TimeoutDuration.fromMilliseconds(newMs);
   }
 
@@ -274,16 +494,7 @@ export class TimeoutDuration {
    * Create a new timeout with multiplied duration
    */
   multiply(factor: number): Result<TimeoutDuration, TimeoutDurationError> {
-    if (typeof factor !== "number" || !Number.isFinite(factor) || factor < 0) {
-      return resultError({
-        kind: "InvalidDuration",
-        input: factor,
-        reason: "Multiplication factor must be a non-negative finite number",
-      });
-    }
-
-    const newMs = this._milliseconds * factor;
-    return TimeoutDuration.fromMilliseconds(newMs);
+    return this.scale(factor);
   }
 
   /**
@@ -299,33 +510,61 @@ export class TimeoutDuration {
     }
 
     const newMs = this._milliseconds / divisor;
-    return TimeoutDuration.fromMilliseconds(newMs);
+    return TimeoutDuration.fromMilliseconds(Math.round(newMs));
+  }
+
+  /**
+   * Unsafe arithmetic methods for backward compatibility
+   */
+  addUnsafe(other: TimeoutDuration): TimeoutDuration {
+    const result = this.add(other);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
+  }
+
+  subtractUnsafe(other: TimeoutDuration): TimeoutDuration {
+    const result = this.subtract(other);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
+  }
+
+  scaleUnsafe(factor: number): TimeoutDuration {
+    const result = this.scale(factor);
+    if (!result.ok) {
+      throw new Error(formatTimeoutDurationError(result.error));
+    }
+    return result.data;
   }
 
   /**
    * Format for human-readable display
    */
   toHumanReadable(): string {
-    if (this.isInfinite()) {
-      return "infinite";
+    if (this._milliseconds >= TimeoutDuration.MAX_MILLISECONDS) {
+      return "10m";
     }
 
     if (this._milliseconds < 1000) {
       return `${this._milliseconds}ms`;
     }
 
-    if (this._milliseconds < 60 * 1000) {
-      const seconds = Math.round(this.seconds * 10) / 10;
+    const totalSeconds = Math.floor(this._milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    if (minutes === 0) {
       return `${seconds}s`;
     }
 
-    if (this._milliseconds < 60 * 60 * 1000) {
-      const minutes = Math.round(this.minutes * 10) / 10;
+    if (seconds === 0) {
       return `${minutes}m`;
     }
 
-    const hours = Math.round(this.hours * 10) / 10;
-    return `${hours}h`;
+    return `${minutes}m${seconds}s`;
   }
 
   /**
@@ -343,17 +582,16 @@ export class TimeoutDuration {
    * String representation
    */
   toString(): string {
-    return this.toHumanReadable();
+    return `TimeoutDuration(${this.toHumanReadable()})`;
   }
 
   /**
    * JSON serialization
    */
-  toJSON(): { value: number; unit: TimeUnit; milliseconds: number } {
+  toJSON(): { milliseconds: number; humanReadable: string } {
     return {
-      value: this._originalValue,
-      unit: this._originalUnit,
       milliseconds: this._milliseconds,
+      humanReadable: this.toHumanReadable(),
     };
   }
 
@@ -363,6 +601,41 @@ export class TimeoutDuration {
   valueOf(): number {
     return this._milliseconds;
   }
+}
+
+/**
+ * Type guard functions for TimeoutDurationError
+ */
+export function isNullOrUndefinedError(error: TimeoutDurationError): error is { kind: "NullOrUndefined"; input: unknown } {
+  return error.kind === "NullOrUndefined";
+}
+
+export function isNonIntegerValueError(error: TimeoutDurationError): error is { kind: "NonIntegerValue"; input: number } {
+  return error.kind === "NonIntegerValue";
+}
+
+export function isBelowMinimumError(error: TimeoutDurationError): error is { kind: "BelowMinimum"; input: number; minimum: number } {
+  return error.kind === "BelowMinimum";
+}
+
+export function isAboveMaximumError(error: TimeoutDurationError): error is { kind: "AboveMaximum"; input: number; maximum: number } {
+  return error.kind === "AboveMaximum";
+}
+
+export function isInvalidTypeError(error: TimeoutDurationError): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
+  return error.kind === "InvalidType";
+}
+
+export function isInvalidSecondsError(error: TimeoutDurationError): error is { kind: "InvalidSeconds"; input: number; reason: string } {
+  return error.kind === "InvalidSeconds";
+}
+
+export function isInvalidMinutesError(error: TimeoutDurationError): error is { kind: "InvalidMinutes"; input: number; reason: string } {
+  return error.kind === "InvalidMinutes";
+}
+
+export function isInvalidScaleFactorError(error: TimeoutDurationError): error is { kind: "InvalidScaleFactor"; input: number; reason: string } {
+  return error.kind === "InvalidScaleFactor";
 }
 
 /**
@@ -387,6 +660,30 @@ export function formatTimeoutDurationError(error: TimeoutDurationError): string 
     case "InvalidUnit":
       return `Invalid time unit: "${error.input}". ` +
         `Valid units are: ${error.validUnits.join(", ")}`;
+
+    case "NullOrUndefined":
+      return `Timeout duration cannot be null or undefined. Received: ${error.input}`;
+
+    case "NonIntegerValue":
+      return `Timeout duration must be an integer value. Received: ${error.input}`;
+
+    case "BelowMinimum":
+      return `Timeout duration ${error.input}ms is below minimum allowed duration of ${error.minimum}ms`;
+
+    case "AboveMaximum":
+      return `Timeout duration ${error.input}ms is above maximum allowed duration of ${error.maximum}ms`;
+
+    case "InvalidType":
+      return `Invalid type for timeout duration. Expected ${error.expectedType}, received: ${typeof error.input}`;
+
+    case "InvalidSeconds":
+      return `Invalid seconds value: ${error.input}. ${error.reason}`;
+
+    case "InvalidMinutes":
+      return `Invalid minutes value: ${error.input}. ${error.reason}`;
+
+    case "InvalidScaleFactor":
+      return `Invalid scale factor: ${error.input}. ${error.reason}`;
 
     default:
       return "Unknown timeout duration validation error occurred.";

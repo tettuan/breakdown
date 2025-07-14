@@ -34,6 +34,7 @@ describe("0_architecture_mod_test", () => {
       // Verify static create method exists and returns Result type
       const result = DirectiveType.create({
         type: "two",
+    directiveType: "to",
         directiveType: "to",
         layerType: "project",
         params: ["to", "project"],
@@ -59,6 +60,7 @@ describe("0_architecture_mod_test", () => {
     it("should implement Smart Constructor for LayerType", () => {
       const result = LayerType.create({
         type: "two",
+    directiveType: "to",
         directiveType: "to",
         layerType: "project",
         params: ["to", "project"],

@@ -87,12 +87,12 @@ class TestSchemaRepository implements SchemaRepository {
 
     if (options?.directive) {
       filteredSchemas = filteredSchemas.filter((s) =>
-        s.directive === options.directive!.getValue()
+        s.directive === options.directive!.value
       );
     }
 
     if (options?.layer) {
-      filteredSchemas = filteredSchemas.filter((s) => s.layer === options.layer!.getValue());
+      filteredSchemas = filteredSchemas.filter((s) => s.layer === options.layer!.value);
     }
 
     return Promise.resolve({
@@ -111,8 +111,8 @@ class TestSchemaRepository implements SchemaRepository {
     const existing = this.manifest.schemas.findIndex((s) => s.path === key);
     const manifestEntry = {
       path: key,
-      directive: schema.getPath().getDirective().getValue(),
-      layer: schema.getPath().getLayer().getValue(),
+      directive: schema.getPath().getDirective().value,
+      layer: schema.getPath().getLayer().value,
       filename: schema.getPath().getFilename(),
       title: schema.getMetadata().title,
       description: schema.getMetadata().description,

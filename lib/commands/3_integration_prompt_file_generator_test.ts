@@ -148,7 +148,7 @@ Convert the input into a project structure.
 
     const stdinTemplate = `# Task Summary
 Input: {{input_text}}
-Type: {{demonstrative_type}}
+Type: {{directive_type}}
 Layer: {{layer_type}}
 `;
 
@@ -252,7 +252,7 @@ Layer: {{layer_type}}
         ensureDirSync(dir);
 
         const template = `# ${demo.toUpperCase()} ${layer.toUpperCase()} Template
-Demo: {{demonstrative_type}}
+Demo: {{directive_type}}
 Layer: {{layer_type}}
 Input: {{input_text}}
 ${demo === "find" ? "Finding: {{finding_type || 'general'}}" : ""}

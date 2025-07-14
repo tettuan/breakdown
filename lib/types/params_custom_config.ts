@@ -35,7 +35,7 @@ export class ConfigError extends Error {
  * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
  */
 export interface ParamsConfig {
-  directiveType: {
+  DirectiveType: {
     pattern: string;
     errorMessage: string;
   };
@@ -56,7 +56,7 @@ export interface ParamsConfig {
  *   breakdown: {
  *     params: {
  *       two: {
- *         directiveType: {
+ *         DirectiveType: {
  *           pattern: "^(custom|test)$",
  *           errorMessage: "Custom directive error"
  *         }
@@ -74,7 +74,7 @@ export interface ParamsConfig {
  *
  * // 3. Handle success/failure
  * if (_result.status === ResultStatus.SUCCESS && result.data !== undefined) {
- *   // Uses: custom demonstrativeType + default layerType + custom unknownOption + other defaults
+ *   // Uses: custom directiveType + default layerType + custom unknownOption + other defaults
  *   const parser = new ParamsParser(undefined, result.data);
  * } else if (_result.status === ResultStatus.SUCCESS && result.data === undefined) {
  *   // No breakdown config found, BreakdownParams will use its defaults
@@ -171,11 +171,11 @@ export class ParamsCustomConfig {
         const two = params.two as Record<string, unknown>;
         const paramsOverride: Partial<ParamsConfig> = {};
 
-        // Override directiveType if provided
-        if (two.directiveType && typeof two.directiveType === "object") {
-          const demo = two.directiveType as Record<string, unknown>;
+        // Override DirectiveType if provided
+        if (two.DirectiveType && typeof two.DirectiveType === "object") {
+          const demo = two.DirectiveType as Record<string, unknown>;
           if (typeof demo.pattern === "string") {
-            paramsOverride.directiveType = {
+            paramsOverride.DirectiveType = {
               pattern: demo.pattern,
               errorMessage: typeof demo.errorMessage === "string"
                 ? demo.errorMessage

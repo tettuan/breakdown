@@ -243,7 +243,7 @@ export function createValidatedCliParams(
   return {
     ok: true,
     data: {
-      demonstrativeType: typesResult.data.directive.value,
+      directiveType: typesResult.data.directive.value,
       layerType: typesResult.data.layer.value,
       options,
       // Include directive and layer objects for backward compatibility

@@ -43,7 +43,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         // Check that resolve returns Promise<string | undefined>
         const mockTwoParamsResult: TwoParams_Result = {
           type: "two",
-          demonstrativeType: "test",
+    directiveType: "to",
+          directiveType: "test",
           layerType: "test",
           params: ["test", "test"],
           options: {},
@@ -117,7 +118,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         // Check that selectTemplate returns Result<TemplatePath, string>
         const mockTwoParamsResult: TwoParams_Result = {
           type: "two",
-          demonstrativeType: "test",
+    directiveType: "to",
+          directiveType: "test",
           layerType: "test",
           params: ["test", "test"],
           options: {},
@@ -158,7 +160,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -209,7 +212,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       // Should work with valid inputs
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "defect",
+    directiveType: "to",
+        directiveType: "defect",
         layerType: "project",
         params: ["defect", "project"],
         options: {},
@@ -258,7 +262,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -316,7 +321,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       // Should handle null/undefined context properties without throwing
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -344,7 +350,8 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       const strategy = new StandardTemplateSelectionStrategy();
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},

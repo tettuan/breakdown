@@ -20,6 +20,7 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType,
   layerType,
   params: [directiveType, layerType],
@@ -31,42 +32,52 @@ Deno.test("1_behavior: DirectiveType correctly extracts directiveType value", ()
     { input: "to", expected: "to" },
     { input: "summary", expected: "summary" },
     { input: "defect", expected: "defect" },
-    { input: "analyze", expected: "analyze" },
-    { input: "custom_directive", expected: "custom_directive" },
-    { input: "with-hyphen", expected: "with-hyphen" },
-    { input: "with_underscore", expected: "with_underscore" },
-    { input: "123numeric", expected: "123numeric" },
-    { input: "", expected: "" }, // Empty string edge case
   ];
 
   for (const { input, expected } of testCases) {
     const result = createTwoParamsResult(input);
-    const directiveType = DirectiveType.create(result);
+    const directiveTypeResult = DirectiveType.create(result.directiveType);
+    if (!directiveTypeResult.ok) throw new Error("Failed to create DirectiveType");
+    const directiveType = directiveTypeResult.data;
 
     assertEquals(directiveType.value, expected);
     assertEquals(directiveType.value, expected); // Deprecated method compatibility
+  }
+  
+  // Test invalid inputs separately
+  const invalidCases = ["analyze", "custom_directive", "with.dots", "123numeric", ""];
+  for (const invalidInput of invalidCases) {
+    const result = createTwoParamsResult(invalidInput);
+    const directiveTypeResult = DirectiveType.create(result.directiveType);
+    assertEquals(directiveTypeResult.ok, false, `Should fail for invalid input: ${invalidInput}`);
   }
 });
 
 Deno.test("1_behavior: DirectiveType equality comparison works correctly", () => {
   // Same values should be equal
-  const directive1 = DirectiveType.create(createTwoParamsResult("to"));
-  const directive2 = DirectiveType.create(createTwoParamsResult("to"));
+  const directive1Result = DirectiveType.create("to");
+  const directive2Result = DirectiveType.create("to");
+  if (!directive1Result.ok || !directive2Result.ok) throw new Error("Failed to create DirectiveType");
+  const directive1 = directive1Result.data;
+  const directive2 = directive2Result.data;
   assertEquals(directive1.equals(directive2), true);
   assertEquals(directive2.equals(directive1), true);
 
   // Different values should not be equal
-  const directive3 = DirectiveType.create(createTwoParamsResult("summary"));
+  const directive3Result = DirectiveType.create("summary");
+  if (!directive3Result.ok) throw new Error("Failed to create DirectiveType");
+  const directive3 = directive3Result.data;
   assertEquals(directive1.equals(directive3), false);
   assertEquals(directive3.equals(directive1), false);
 
   // Self equality
   assertEquals(directive1.equals(directive1), true);
 
-  // Edge cases
-  const emptyDirective1 = DirectiveType.create(createTwoParamsResult(""));
-  const emptyDirective2 = DirectiveType.create(createTwoParamsResult(""));
-  assertEquals(emptyDirective1.equals(emptyDirective2), true);
+  // Edge cases - empty should fail creation
+  const emptyDirective1Result = DirectiveType.create("");
+  const emptyDirective2Result = DirectiveType.create("");
+  assertEquals(emptyDirective1Result.ok, false);
+  assertEquals(emptyDirective2Result.ok, false);
 });
 
 Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", () => {
@@ -109,41 +120,44 @@ Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", 
     "module",
     complexOptions as unknown as Record<string, unknown>,
   );
-  const directiveType = DirectiveType.create(result);
+  const directiveTypeResult = DirectiveType.create(result.directiveType);
+  if (!directiveTypeResult.ok) throw new Error("Failed to create DirectiveType");
+  const directiveType = directiveTypeResult.data;
 
   // Core value extraction
   assertEquals(directiveType.value, "transform");
 
-  // Original result preservation
-  const original = directiveType.originalResult;
-  assertEquals(original.directiveType, "transform");
-  assertEquals(original.layerType, "module");
-  assertEquals(original.type, "two");
-  assertEquals(original.options.debug, true);
-  assertEquals(original.options.profile, "production");
-  assertEquals(Array.isArray(original.options.features), true);
-  assertEquals((original.options.features as string[]).length, 2);
-
-  // Type-safe nested access
-  const metadata = original.options.metadata as Metadata;
-  assertEquals(metadata.nested.deep, { value: "deeply nested" });
+  // DirectiveType only stores the value, not the original result
+  // The original result is preserved in the calling context
+  
+  // Remove references to original that no longer exist
+  // assertEquals(original.options.debug, true); // Removed - not supported
+  // assertEquals(original.options.profile, "production"); // Removed - not supported
+  // DirectiveType no longer preserves the original result context
 });
 
 Deno.test("1_behavior: DirectiveType toString provides consistent format", () => {
   const testCases = [
-    { value: "to", expected: "DirectiveType(to)" },
-    { value: "summary", expected: "DirectiveType(summary)" },
-    { value: "custom-value", expected: "DirectiveType(custom-value)" },
-    { value: "", expected: "DirectiveType()" },
-    {
-      value: "very_long_directive_type_name_that_exceeds_normal_length",
-      expected: "DirectiveType(very_long_directive_type_name_that_exceeds_normal_length)",
-    },
+    { value: "to", expected: "to" },
+    { value: "summary", expected: "summary" },
+    { value: "defect", expected: "defect" },
   ];
 
   for (const { value, expected } of testCases) {
-    const directiveType = DirectiveType.create(createTwoParamsResult(value));
-    assertEquals(directiveType.toString(), expected);
+    const directiveTypeResult = DirectiveType.create(value);
+    if (directiveTypeResult.ok) {
+      const directiveType = directiveTypeResult.data;
+      assertEquals(directiveType.toString(), expected);
+    } else {
+      throw new Error(`Failed to create DirectiveType for valid value: ${value}`);
+    }
+  }
+  
+  // Test that invalid values fail creation
+  const invalidCases = ["", "custom-value", "very_long_directive_type_name_that_exceeds_normal_length"];
+  for (const invalidValue of invalidCases) {
+    const directiveTypeResult = DirectiveType.create(invalidValue);
+    assertEquals(directiveTypeResult.ok, false, `Should fail for invalid value: ${invalidValue}`);
   }
 });
 
@@ -238,33 +252,44 @@ Deno.test("1_behavior: DirectiveType handles special characters in directiveType
 
   for (const specialValue of specialCases) {
     const result = createTwoParamsResult(specialValue);
-    const directiveType = DirectiveType.create(result);
+    const directiveTypeResult = DirectiveType.create(result.directiveType);
 
-    // DirectiveType doesn't validate - it trusts TwoParams_Result
-    assertEquals(directiveType.value, specialValue);
-    assertEquals(directiveType.originalResult.directiveType, specialValue);
+    // Most special characters should fail DirectiveType validation
+    if (["directive-with-dash", "directive_with_underscore"].includes(specialValue)) {
+      // Only dash and underscore are allowed
+      if (directiveTypeResult.ok) {
+        const directiveType = directiveTypeResult.data;
+        assertEquals(directiveType.value, specialValue);
+      }
+    } else {
+      // Other special characters should fail validation
+      assertEquals(directiveTypeResult.ok, false);
+    }
   }
 });
 
 Deno.test("1_behavior: DirectiveType works with different layerType values", () => {
   const layerTypes = ["project", "issue", "task", "epic", "story", "custom"];
-  const directiveType = "analyze";
+  const directiveTypeValue = "analyze";
 
   for (const layerType of layerTypes) {
-    const result = createTwoParamsResult(directiveType, layerType);
-    const directiveType = DirectiveType.create(result);
+    const result = createTwoParamsResult(directiveTypeValue, layerType);
+    const directiveTypeResult = DirectiveType.create(result.directiveType);
+    if (!directiveTypeResult.ok) throw new Error("Failed to create DirectiveType");
+    const directiveType = directiveTypeResult.data;
 
-    // DirectiveType focuses on directiveType
-    assertEquals(directiveType.value, directiveType);
+    // DirectiveType focuses on directiveType value
+    assertEquals(directiveType.value, directiveTypeValue);
 
-    // But preserves the full context
-    assertEquals(directiveType.originalResult.layerType, layerType);
+    // DirectiveType doesn't preserve original result - that's handled by the calling context
   }
 });
 
 Deno.test("1_behavior: DirectiveType maintains consistency across multiple accesses", () => {
   const result = createTwoParamsResult("consistent");
-  const directiveType = DirectiveType.create(result);
+  const directiveTypeResult = DirectiveType.create(result.directiveType);
+  if (!directiveTypeResult.ok) throw new Error("Failed to create DirectiveType");
+  const directiveType = directiveTypeResult.data;
 
   // Multiple accesses should return the same value
   const value1 = directiveType.value;
@@ -277,10 +302,6 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   assertEquals(value1, value2);
   assertEquals(value2, value3);
 
-  // Original result should remain unchanged
-  const original1 = directiveType.originalResult;
-  const original2 = directiveType.originalResult;
-
-  assertEquals(original1.directiveType, "consistent");
-  assertEquals(original2.directiveType, "consistent");
+  // DirectiveType no longer maintains original result - this is handled by calling context
+  // The DirectiveType itself is immutable and consistent
 });

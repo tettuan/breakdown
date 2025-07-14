@@ -21,6 +21,7 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType,
   layerType,
   params: [directiveType, layerType],

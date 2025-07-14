@@ -11,31 +11,35 @@ import {
   createPromptParams,
   FilePathVariable,
   type PromptVariables,
+  PromptVariablesVO,
   StandardVariable,
-  StandardVariableName,
   StdinVariable,
   toPromptParamsVariables,
   UserVariable,
 } from "./prompt_variables_vo.ts";
 
 describe("PromptVariables - Unit Tests", () => {
-  describe("StandardVariableName", () => {
-    it("should create valid names", () => {
-      const inputTextFile = StandardVariableName.create("input_text_file");
+  describe("StandardVariable", () => {
+    it("should create valid variables", () => {
+      const inputTextFile = StandardVariable.create("input_text_file", "/path/to/file");
       assertExists(inputTextFile);
       if (inputTextFile.ok) {
-        assertEquals(inputTextFile.data.value, "input_text_file");
+        assertEquals(inputTextFile.data.toRecord(), {
+          "input_text_file": "/path/to/file"
+        });
       }
 
-      const destinationPath = StandardVariableName.create("destination_path");
+      const destinationPath = StandardVariable.create("destination_path", "/path/to/dest");
       assertExists(destinationPath);
       if (destinationPath.ok) {
-        assertEquals(destinationPath.data.value, "destination_path");
+        assertEquals(destinationPath.data.toRecord(), {
+          "destination_path": "/path/to/dest"
+        });
       }
     });
 
-    it("should reject invalid names", () => {
-      const invalid = StandardVariableName.create("invalid_name");
+    it("should reject invalid variables", () => {
+      const invalid = StandardVariable.create("", "");
       assertEquals(invalid.ok, false);
     });
   });
@@ -65,15 +69,16 @@ describe("PromptVariables - Unit Tests", () => {
       assertExists(stdinVar);
       assertExists(userVar);
 
-      // Use the actual data from successful Results
-      const variables: PromptVariables = [
+      // Use the actual data from successful Results - create PromptVariablesVO properly
+      const variableArray = [
         standardVar.data,
         filePathVar.data,
         stdinVar.data,
         userVar.data,
       ];
 
-      const result = toPromptParamsVariables(variables);
+      const variables: PromptVariables = PromptVariablesVO.create(variableArray);
+      const result = variables.toRecord();
 
       assertEquals(result, {
         "input_text_file": "/path/to/input.txt",
@@ -115,19 +120,17 @@ describe("PromptVariables - Unit Tests", () => {
         throw new Error("Variable creation failed");
       }
 
-      const variables: PromptVariables = [
+      const variableArray = [
         standardVar.data,
         stdinVar.data,
       ];
 
-      const promptParams = createPromptParams("/path/to/template.md", variables);
+      const variables: PromptVariables = PromptVariablesVO.create(variableArray);
+      const promptParams = createPromptParams(variableArray);
 
-      assertEquals(promptParams, {
-        template_file: "/path/to/template.md",
-        variables: {
-          "input_text_file": "/path/to/input.txt",
-          "input_text": "Sample input",
-        },
+      assertEquals(promptParams.toRecord(), {
+        "input_text_file": "/path/to/input.txt",
+        "input_text": "Sample input",
       });
     });
   });

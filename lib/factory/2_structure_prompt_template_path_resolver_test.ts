@@ -347,7 +347,7 @@ Deno.test("2_structure: encapsulation of internal logic", () => {
       "buildFallbackFileName",
       "buildPromptPath",
       "shouldFallback",
-      "getDemonstrativeType",
+      "getDirectiveType",
       "getLayerType",
       "resolveFromLayerType",
       "getAdaptation",

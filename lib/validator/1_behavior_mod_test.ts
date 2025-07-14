@@ -285,8 +285,8 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
 
   // 4. Create expected result structure
   const expectedValidatedParams: ValidatedParams = {
-    directive: { getValue: () => "to" } as DirectiveType,
-    layer: { getValue: () => "project" } as LayerType,
+    directive: { value: "to" } as DirectiveType,
+    layer: { value: "project" } as LayerType,
     options: {
       inputPath: "/input/file.txt",
       outputPath: "/output/file.txt",

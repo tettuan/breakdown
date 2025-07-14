@@ -56,7 +56,7 @@ Deno.test("MigrationError structure - conforms to defined interface contract", (
 
 Deno.test("MigrationResult structure - maintains consistent data organization", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {
       fromFile: "test.md",
@@ -128,7 +128,7 @@ Deno.test("Function signature consistency - all functions maintain expected inte
 
 Deno.test("Input parameter structure validation - accepts only valid PromptCliParams", () => {
   const validParams: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "task",
     options: {
       fromFile: "input.md",
@@ -146,7 +146,7 @@ Deno.test("Input parameter structure validation - accepts only valid PromptCliPa
   };
 
   // Verify structure requirements
-  assertEquals(typeof validParams.demonstrativeType, "string");
+  assertEquals(typeof validParams.directiveType, "string");
   assertEquals(typeof validParams.layerType, "string");
   assertEquals(typeof validParams.options, "object");
 
@@ -182,7 +182,7 @@ Deno.test("Input parameter structure validation - accepts only valid PromptCliPa
 
 Deno.test("Result type structure - maintains consistent Result<T, E> pattern", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {},
   };
@@ -234,7 +234,7 @@ Deno.test("Result type structure - maintains consistent Result<T, E> pattern", (
 
 Deno.test("Data transformation consistency - maintains one-to-one mapping relationships", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "defect",
+    directiveType: "defect",
     layerType: "bugs",
     options: {
       fromFile: "input.md",
@@ -263,7 +263,7 @@ Deno.test("Data transformation consistency - maintains one-to-one mapping relati
     const flatRecord = Object.assign({}, ...variableRecords);
 
     // Verify one-to-one mappings
-    assertEquals(flatRecord.demonstrative_type, params.demonstrativeType);
+    assertEquals(flatRecord.directive_type, params.directiveType);
     assertEquals(flatRecord.layer_type, params.layerType);
     assertEquals(flatRecord.input_text_file, params.options?.fromFile);
     assertEquals(flatRecord.destination_path, params.options?.destinationFile);
@@ -278,7 +278,7 @@ Deno.test("Data transformation consistency - maintains one-to-one mapping relati
 
     // Verify no extra keys were added
     const expectedKeys = new Set([
-      "demonstrative_type",
+      "directive_type",
       "layer_type",
       "input_text_file",
       "destination_path",
@@ -296,7 +296,7 @@ Deno.test("Data transformation consistency - maintains one-to-one mapping relati
 
 Deno.test("Wrapper function consistency - maintain identical behavior to core functions", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "issue",
     options: {
       fromFile: "tasks.md",
@@ -349,7 +349,7 @@ Deno.test("Wrapper function consistency - maintain identical behavior to core fu
 
 Deno.test("Migration summary structure - maintains readable format consistency", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "task",
     options: {
       fromFile: "input.md",
@@ -423,7 +423,7 @@ Deno.test("Migration summary structure - maintains readable format consistency",
 
 Deno.test("Warning message structure - maintains consistent format and content", () => {
   const paramsWithDeprecated: PromptCliParams = {
-    demonstrativeType: "summary",
+    directiveType: "summary",
     layerType: "project",
     options: {
       adaptation: "old-value",
@@ -479,14 +479,14 @@ Deno.test("Warning message structure - maintains consistent format and content",
 Deno.test("Edge case structure handling - maintains robustness across input variations", () => {
   const edgeCases: PromptCliParams[] = [
     // Minimal structure
-    { demonstrativeType: "", layerType: "", options: {} },
+    { directiveType: "", layerType: "", options: {} },
 
     // Missing options
-    { demonstrativeType: "to", layerType: "project", options: {} },
+    { directiveType: "to", layerType: "project", options: {} },
 
     // Empty string values
     {
-      demonstrativeType: "summary",
+      directiveType: "summary",
       layerType: "task",
       options: {
         fromFile: "",
@@ -498,7 +498,7 @@ Deno.test("Edge case structure handling - maintains robustness across input vari
 
     // Mixed valid/empty custom variables
     {
-      demonstrativeType: "defect",
+      directiveType: "defect",
       layerType: "issue",
       options: {
         customVariables: {
@@ -570,7 +570,7 @@ Deno.test("Edge case structure handling - maintains robustness across input vari
 
 Deno.test("Type safety structure - enforces strict typing throughout migration chain", () => {
   const params: PromptCliParams = {
-    demonstrativeType: "to",
+    directiveType: "to",
     layerType: "project",
     options: {
       fromFile: "test.md",

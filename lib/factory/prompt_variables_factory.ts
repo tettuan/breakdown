@@ -73,9 +73,8 @@ export interface PromptCliOptions {
  * Parameters for CLI prompt operations.
  */
 export interface PromptCliParams {
-  directiveType: string;
+  directiveType: string; // Primary field (for compatibility)
   layerType: string;
-  demonstrativeType: string;
   options: PromptCliOptions;
 }
 
@@ -86,7 +85,6 @@ export interface PromptCliParams {
 export interface TotalityPromptCliParams extends PromptCliParams {
   directiveType: string;
   layerType: string;
-  demonstrativeType: string;
   options: PromptCliOptions;
   // Additional properties for backward compatibility with tests
   directive?: DirectiveType;
@@ -250,9 +248,9 @@ function createTwoParamsResult(
   return {
     type: "two" as const,
     params: [directiveType, layerType],
-    directiveType,
     layerType,
-    demonstrativeType: directiveType,
+    directiveType,
+    demonstrativeType: directiveType, // For backward compatibility
     options,
   };
 }
@@ -727,7 +725,7 @@ export class PromptVariablesFactory {
     const promptParams: PromptParams = {
       template_file: templatePathResult.data,
       variables: {
-        demonstrative_type: this.cliParams.directiveType,
+        directive_type: this.cliParams.directiveType,
         layer_type: this.cliParams.layerType,
         input_file: this.inputFilePath,
         output_file: this.outputFilePath,

@@ -20,6 +20,7 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
+    directiveType: "to",
   directiveType,
   layerType,
   params: [directiveType, layerType],
@@ -185,6 +186,7 @@ Deno.test("1_behavior: Results preserve original data integrity", () => {
   // Complex data structure
   const complexData: TwoParams_Result = {
     type: "two",
+    directiveType: "to",
     directiveType: "analyze",
     layerType: "system",
     params: ["analyze", "system"],

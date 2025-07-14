@@ -130,7 +130,7 @@ export function failure(
  * @example
  * ```typescript
  * const message = match(result, {
- *   success: (data) => `Success: ${data.directiveType}`,
+ *   success: (data) => `Success: ${data.DirectiveType}`,
  *   failure: (error) => `Error: ${error.message}`
  * });
  * ```

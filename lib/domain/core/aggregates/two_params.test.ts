@@ -797,7 +797,7 @@ describe("TwoParams - Integration Scenarios", () => {
             input_text: "Complex input content",
             input_text_file: "requirements.md",
             destination_path: "project-plan.md",
-            demonstrative_type: twoParams.directive.value,
+            directive_type: twoParams.directive.value,
             layer_type: twoParams.layer.value,
           },
           customVariables: {
@@ -816,15 +816,15 @@ describe("TwoParams - Integration Scenarios", () => {
         };
 
         // Verify variable structure
-        assertExists(processedVariables.allVariables.demonstrative_type);
+        assertExists(processedVariables.allVariables.directive_type);
         assertExists(processedVariables.allVariables.layer_type);
         assertExists(processedVariables.allVariables.project_name);
-        assertEquals(processedVariables.allVariables.demonstrative_type, "to");
+        assertEquals(processedVariables.allVariables.directive_type, "to");
         assertEquals(processedVariables.allVariables.layer_type, "project");
 
         // Test that TwoParams data is consistent with processed variables
         assertEquals(
-          processedVariables.standardVariables.demonstrative_type,
+          processedVariables.standardVariables.directive_type,
           twoParams.directive.value,
         );
         assertEquals(

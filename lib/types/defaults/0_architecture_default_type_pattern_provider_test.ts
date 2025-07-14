@@ -8,7 +8,7 @@
 import { assert, assertEquals, assertExists } from "../../../tests/deps.ts";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
-import { TwoParamsLayerTypePattern } from "../../domain/core/value_objects/layer_type.ts";
+// Note: TwoParamsLayerTypePattern has been deprecated
 
 /**
  * Test suite for DefaultTypePatternProvider architecture validation
@@ -123,8 +123,8 @@ Deno.test("DefaultTypePatternProvider - Error Handling Architecture", async (t) 
     const provider = new DefaultTypePatternProvider();
 
     // Should not throw errors on pattern creation
-    let directivePattern: TwoParamsDirectivePattern | null = null;
-    let layerPattern: TwoParamsLayerTypePattern | null = null;
+    let directivePattern: { test(value: string): boolean; getPattern(): string } | null = null;
+    let layerPattern: { test(value: string): boolean; getPattern(): string } | null = null;
 
     // Test that pattern creation doesn't throw
     let errorThrown = false;

@@ -32,8 +32,8 @@ export { initWorkspace } from "./workspace/workspace.ts";
  *
  * @see {@link ./types/mod.ts}
  */
-// NOTE: DemonstrativeType replaced with DirectiveType during refactor
-// export type { DemonstrativeType } from "./types/mod.ts";
+// NOTE: DirectiveType replaced with DirectiveType during refactor
+// export type { DirectiveType } from "./types/mod.ts";
 
 // Export core types and utilities from DDD structure
 export {

@@ -69,7 +69,8 @@ describe("FileTemplateRepository - Architecture", () => {
       // Create test template path
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -122,7 +123,8 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -225,7 +227,8 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "nonexistent",
+    directiveType: "to",
+        directiveType: "nonexistent",
         layerType: "missing",
         params: ["nonexistent", "missing"],
         options: {},
@@ -265,7 +268,8 @@ describe("FileTemplateRepository - Architecture", () => {
     it("should maintain error type hierarchy", () => {
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -314,7 +318,8 @@ describe("FileTemplateRepository - Architecture", () => {
       // Test that errors are not swallowed or transformed incorrectly
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},
@@ -451,7 +456,8 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParamsResult: TwoParams_Result = {
         type: "two",
-        demonstrativeType: "test",
+    directiveType: "to",
+        directiveType: "test",
         layerType: "test",
         params: ["test", "test"],
         options: {},

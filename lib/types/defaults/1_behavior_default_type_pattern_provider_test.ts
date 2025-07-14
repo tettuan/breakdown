@@ -162,7 +162,7 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     assertExists(config);
     assertExists(config.params);
     assertExists(config.params.two);
-    assertExists(config.params.two.directiveType);
+    assertExists(config.params.two.DirectiveType);
     assertExists(config.params.two.layerType);
     assertExists(config.params.two.validation);
   });
@@ -176,19 +176,19 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     assertEquals(config1 === config2, true);
 
     // Test that modifications don't affect subsequent calls
-    const originalPattern = config1.params.two.directiveType.pattern;
+    const originalPattern = config1.params.two.DirectiveType.pattern;
 
     // Attempt modification (should not affect the provider)
     try {
       // @ts-ignore - intentionally trying to modify
-      config1.params.two.directiveType.pattern = "modified";
+      config1.params.two.DirectiveType.pattern = "modified";
     } catch {
       // Expected to fail in some environments
     }
 
     // Get fresh reference and verify
     const config3 = provider.getDefaultConfig();
-    assertEquals(config3.params.two.directiveType.pattern, originalPattern);
+    assertEquals(config3.params.two.DirectiveType.pattern, originalPattern);
   });
 
   await t.step("should integrate with pattern creation", () => {
@@ -203,7 +203,7 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     assertExists(layerPattern);
 
     // Test that pattern behavior matches config expectations
-    const configDirectivePattern = config.params.two.directiveType.pattern;
+    const configDirectivePattern = config.params.two.DirectiveType.pattern;
     const configLayerPattern = config.params.two.layerType.pattern;
 
     const directiveRegex = new RegExp(configDirectivePattern);

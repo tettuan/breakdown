@@ -53,13 +53,13 @@ Deno.test("0_architecture - TemplatePath implements Smart Constructor pattern co
 Deno.test("0_architecture - TemplatePath.create returns Result type with totality", () => {
   // Create mock DirectiveType and LayerType
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Valid case - should return Result.ok
@@ -81,13 +81,13 @@ Deno.test("0_architecture - TemplatePath.create returns Result type with totalit
 Deno.test("0_architecture - TemplatePathError uses Discriminated Union pattern", () => {
   // Test each error type has unique 'kind' discriminator
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Test invalid filename to get InvalidFilename error
@@ -232,13 +232,13 @@ Deno.test("0_architecture - Configuration object is immutable and well-structure
 
 Deno.test("0_architecture - TemplatePath is immutable Value Object", () => {
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   const result = TemplatePath.create(mockDirective, mockLayer, "test.md");
@@ -273,8 +273,8 @@ Deno.test("0_architecture - TemplatePath is immutable Value Object", () => {
 
 Deno.test("0_architecture - Factory methods follow consistent patterns", () => {
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // All factory methods should return Result type
@@ -289,18 +289,18 @@ Deno.test("0_architecture - Factory methods follow consistent patterns", () => {
 
   // Factory methods should produce different directive types
   if (summaryResult.ok && defectResult.ok && toResult.ok) {
-    const summaryDirective = summaryResult.data.getDirective().getValue();
-    const defectDirective = defectResult.data.getDirective().getValue();
-    const toDirective = toResult.data.getDirective().getValue();
+    const summaryDirective = summaryResult.data.getDirective().value;
+    const defectDirective = defectResult.data.getDirective().value;
+    const toDirective = toResult.data.getDirective().value;
 
     assertEquals(summaryDirective, "summary");
     assertEquals(defectDirective, "defect");
     assertEquals(toDirective, "to");
 
     // All should use same layer and filename
-    assertEquals(summaryResult.data.getLayer().getValue(), "project");
-    assertEquals(defectResult.data.getLayer().getValue(), "project");
-    assertEquals(toResult.data.getLayer().getValue(), "project");
+    assertEquals(summaryResult.data.getLayer().value, "project");
+    assertEquals(defectResult.data.getLayer().value, "project");
+    assertEquals(toResult.data.getLayer().value, "project");
 
     assertEquals(summaryResult.data.getFilename(), "test.md");
     assertEquals(defectResult.data.getFilename(), "test.md");
@@ -314,13 +314,13 @@ Deno.test("0_architecture - Validation stages are properly sequenced", () => {
   // 4. Filename validation, 5. Path construction, 6. Security validation
 
   const mockDirective: DirectiveType = {
-    getValue: () => "to",
-    equals: (other: DirectiveType) => other.getValue() === "to",
+    value: "to",
+    equals: (other: DirectiveType) => other.value === "to",
   } as DirectiveType;
 
   const mockLayer: LayerType = {
-    getValue: () => "project",
-    equals: (other: LayerType) => other.getValue() === "project",
+    value: "project",
+    equals: (other: LayerType) => other.value === "project",
   } as LayerType;
 
   // Stage 1: Input validation should catch null/undefined

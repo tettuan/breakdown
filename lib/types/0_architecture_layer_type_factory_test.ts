@@ -10,7 +10,6 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { LayerTypeCreationError } from "./layer_type_types.ts";
-import { LayerType } from "./mod.ts";
 
 /**
  * Architecture Test Suite for LayerType
@@ -167,7 +166,7 @@ Deno.test("LayerType Architecture - Factory Encapsulation", () => {
     );
 
     // Factory should provide the only safe way to create LayerType
-    assertExists(result.data.getValue, "Created LayerType should have getValue method");
-    assertEquals(typeof result.data.value, "string", "getValue should return string");
+    assertExists(result.data.value, "Created LayerType should have value property");
+    assertEquals(typeof result.data.value, "string", "value should return string");
   }
 });
