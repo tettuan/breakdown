@@ -8,7 +8,7 @@
 import { assertEquals, assertExists } from "../../../tests/deps.ts";
 import { _defaultConfigTwoParams } from "./config_two_params.ts";
 import { error, ok, type Result } from "../result.ts";
-import { directiveType, LayerType } from "../mod.ts";
+import { DirectiveType, LayerType } from "../mod.ts";
 import type { TwoParams_Result } from "../../deps.ts";
 
 /**
@@ -293,7 +293,7 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
     const validateAndCreateTypes = (
       directive: string,
       layer: string,
-    ): Result<{ directive: directiveType; layer: LayerType }, string> => {
+    ): Result<{ directive: DirectiveType; layer: LayerType }, string> => {
       const directiveRegex = new RegExp(config.params.two.directiveType.pattern);
       const layerRegex = new RegExp(config.params.two.layerType.pattern);
 
@@ -315,21 +315,21 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
         options: {},
       };
 
-      const directiveType = directiveType.create(twoParamsResult.directiveType);
-      const layerType = LayerType.create(twoParamsResult.layerType);
+      const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
+      const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 
       // Check if both types were created successfully
-      if (!directiveType.ok) {
-        return error(`Failed to create directiveType: ${JSON.stringify(directiveType.error)}`);
+      if (!directiveTypeResult.ok) {
+        return error(`Failed to create directiveType: ${JSON.stringify(directiveTypeResult.error)}`);
       }
 
-      if (!layerType.ok) {
-        return error(`Failed to create LayerType: ${JSON.stringify(layerType.error)}`);
+      if (!layerTypeResult.ok) {
+        return error(`Failed to create LayerType: ${JSON.stringify(layerTypeResult.error)}`);
       }
 
       return ok({
-        directive: directiveType.data,
-        layer: layerType.data,
+        directive: directiveTypeResult.data,
+        layer: layerTypeResult.data,
       });
     };
 

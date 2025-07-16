@@ -192,9 +192,35 @@ export class UnifiedConfigInterface {
       );
 
       if (!baseConfigResult.ok) {
+        const error = baseConfigResult.error;
+        let message: string;
+        
+        switch (error.kind) {
+          case "CreateError":
+          case "LoadError":
+          case "ConfigError":
+            message = error.message;
+            break;
+          case "InvalidType":
+          case "InvalidFormat":
+          case "InvalidCharacters":
+          case "PrefixTooLong":
+            message = error.message;
+            break;
+          case "InvalidPath":
+            message = `Invalid path: ${error.path} - ${error.reason}`;
+            break;
+          case "EmptyPath":
+            message = error.message;
+            break;
+          default:
+            message = "Unknown configuration error";
+            break;
+        }
+        
         return resultError({
           kind: "ConfigLoadError",
-          message: baseConfigResult.error.message,
+          message,
         });
       }
 
@@ -207,9 +233,23 @@ export class UnifiedConfigInterface {
       );
 
       if (!patternProviderResult.ok) {
-        const errorMessage = "message" in patternProviderResult.error
-          ? patternProviderResult.error.message
-          : `Pattern provider error: ${patternProviderResult.error.kind}`;
+        const error = patternProviderResult.error;
+        let errorMessage: string;
+        
+        switch (error.kind) {
+          case "ConfigLoadFailed":
+            errorMessage = error.message;
+            break;
+          case "PatternCreationFailed":
+            errorMessage = `Pattern creation failed for ${error.patternType}: ${error.pattern}`;
+            break;
+          case "NotInitialized":
+            errorMessage = "Pattern provider not initialized";
+            break;
+          default:
+            errorMessage = `Pattern provider error: ${(error as any).kind || "unknown"}`;
+            break;
+        }
         return resultError({
           kind: "ConfigLoadError",
           message: errorMessage,
@@ -245,9 +285,56 @@ export class UnifiedConfigInterface {
       );
 
       if (!pathOptionsResult.ok) {
-        const errorMessage = "message" in pathOptionsResult.error
-          ? String(pathOptionsResult.error.message)
-          : `Path resolution error: ${pathOptionsResult.error.kind}`;
+        const error = pathOptionsResult.error;
+        let errorMessage: string;
+        
+        switch (error.kind) {
+          case "ConfigurationError":
+            errorMessage = error.message;
+            break;
+          case "ProfileNotFound":
+            errorMessage = `Profile not found: ${error.profile}`;
+            break;
+          case "InvalidConfiguration":
+            errorMessage = error.details;
+            break;
+          case "ConfigLoadError":
+            errorMessage = error.message;
+            break;
+          case "InvalidPath":
+            errorMessage = `Invalid path: ${error.path} - ${error.reason}`;
+            break;
+          case "PathNotFound":
+            errorMessage = `Path not found: ${error.path}`;
+            break;
+          case "DirectoryNotFound":
+            errorMessage = `Directory not found: ${error.path}`;
+            break;
+          case "PermissionDenied":
+            errorMessage = `Permission denied: ${error.path}`;
+            break;
+          case "PathTooLong":
+            errorMessage = `Path too long: ${error.path} (max: ${error.maxLength})`;
+            break;
+          case "InvalidStrategy":
+            errorMessage = `Invalid strategy: ${error.strategy}`;
+            break;
+          case "EmptyBaseDir":
+            errorMessage = "Empty base directory";
+            break;
+          case "NoValidFallback":
+            errorMessage = `No valid fallback found after attempts: ${error.attempts.join(", ")}`;
+            break;
+          case "InvalidParameterCombination":
+            errorMessage = `Invalid parameter combination: ${error.directiveType}/${error.layerType}`;
+            break;
+          case "TemplateNotFound":
+            errorMessage = `Template not found. Attempted: ${error.attempted.join(", ")}`;
+            break;
+          default:
+            errorMessage = `Path resolution error: ${(error as any).kind || "unknown"}`;
+            break;
+        }
         return resultError({
           kind: "PathResolutionError",
           message: errorMessage,

@@ -256,8 +256,8 @@ Deno.test("ParamsCustomConfig - Behavior: create ignores invalid field types", (
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid directiveType should be ignored, default should be used
     assertEquals(
-      result.data.params.two.directiveType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.directiveType.pattern,
+      result.data.params.two.demonstrativeType.pattern,
+      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern,
     );
 
     // Valid layerType should be used
@@ -320,8 +320,8 @@ Deno.test("ParamsCustomConfig - Behavior: create handles deeply nested invalid s
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Invalid directiveType should be ignored
     assertEquals(
-      result.data.params.two.directiveType.pattern,
-      DEFAULT_CUSTOM_CONFIG.params.two.directiveType.pattern,
+      result.data.params.two.demonstrativeType.pattern,
+      DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern,
     );
 
     // Valid layerType should be used (extra fields ignored)
@@ -350,7 +350,7 @@ Deno.test("ParamsCustomConfig - Behavior: create preserves all defaults for unsp
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Specified override should work
-    assertEquals(result.data.params.two.directiveType.pattern, "^minimal$");
+    assertEquals(result.data.params.two.demonstrativeType.pattern, "^minimal$");
 
     // All other sections should match defaults exactly
     assertEquals(

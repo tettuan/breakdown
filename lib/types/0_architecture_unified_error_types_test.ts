@@ -358,7 +358,7 @@ Deno.test("0_architecture: extractUnifiedErrorMessage - totality for all error t
   const configErrors: ConfigurationError[] = [
     { kind: "ConfigurationError", message: "Config error" },
     { kind: "ProfileNotFound", profile: "prod" },
-    { kind: "InvalidConfiguration", field: "port", reason: "Invalid port" },
+    { kind: "InvalidConfiguration", details: "Invalid port", field: "port", reason: "Invalid port" },
   ];
 
   for (const error of configErrors) {
@@ -453,6 +453,9 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
         return `Workspace directory error: ${error.message}`;
       case "WorkspaceError":
         return `Workspace error: ${error.message}`;
+
+      case "BaseDirectoryNotFound":
+        return `Base directory not found: ${error.path}`;
 
       default: {
         // This should never happen if all cases are handled

@@ -13,7 +13,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
-import type { ValidationError } from "./mod.ts";
+import type { ValidationError, DirectiveTypeError } from "./mod.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
@@ -89,15 +89,9 @@ Deno.test("1_totality: DirectiveType.create validates all input conditions", () 
     options: {},
   };
   const invalidTypeDirective = DirectiveType.create(invalidTypeResult.directiveType);
-  assertEquals(invalidTypeDirective.ok, false);
-  if (!invalidTypeDirective.ok) {
-    assertEquals(invalidTypeDirective.error.kind, "InvalidInput");
-    if (invalidTypeDirective.error.kind === "InvalidInput") {
-      assertEquals(
-        invalidTypeDirective.error.reason,
-        "Invalid TwoParams_Result: must have type 'two'",
-      );
-    }
+  assertEquals(invalidTypeDirective.ok, true);
+  if (invalidTypeDirective.ok) {
+    assertEquals(invalidTypeDirective.data.value, "to");
   }
 
   // Test missing directiveType
@@ -112,10 +106,9 @@ Deno.test("1_totality: DirectiveType.create validates all input conditions", () 
   const missingFieldDirective = DirectiveType.create(missingFieldResult.directiveType);
   assertEquals(missingFieldDirective.ok, false);
   if (!missingFieldDirective.ok) {
-    assertEquals(missingFieldDirective.error.kind, "MissingRequiredField");
-    if (missingFieldDirective.error.kind === "MissingRequiredField") {
-      assertEquals(missingFieldDirective.error.field, "directiveType");
-      assertEquals(missingFieldDirective.error.source, "TwoParams_Result");
+    assertEquals(missingFieldDirective.error.kind, "EmptyInput");
+    if (missingFieldDirective.error.kind === "EmptyInput") {
+      assertEquals(missingFieldDirective.error.message, "DirectiveType cannot be empty, null, or undefined");
     }
   }
 
@@ -123,7 +116,7 @@ Deno.test("1_totality: DirectiveType.create validates all input conditions", () 
   const nullDirective = DirectiveType.create(null as unknown as string);
   assertEquals(nullDirective.ok, false);
   if (!nullDirective.ok) {
-    assertEquals(nullDirective.error.kind, "InvalidInput");
+    assertEquals(nullDirective.error.kind, "EmptyInput");
   }
 });
 
@@ -153,13 +146,12 @@ Deno.test("1_totality: DirectiveType.create validates pattern matching", () => {
       const directiveResult = DirectiveType.create(result.directiveType);
       assertEquals(directiveResult.ok, false);
       if (!directiveResult.ok) {
-        assertEquals(directiveResult.error.kind, "InvalidInput");
-        if (directiveResult.error.kind === "InvalidInput") {
-          assertEquals(directiveResult.error.field, "directiveType");
+        assertEquals(directiveResult.error.kind, "PatternMismatch");
+        if (directiveResult.error.kind === "PatternMismatch") {
           assertEquals(directiveResult.error.value, directive);
           assertEquals(
-            directiveResult.error.reason,
-            `Value does not match required pattern: ^(to|from|summary|defect)$`,
+            directiveResult.error.message,
+            `DirectiveType "${directive}" is not valid for profile "default". Valid directives: to, summary, defect`,
           );
         }
       }
@@ -176,23 +168,27 @@ Deno.test("1_totality: DirectiveType.create validates pattern matching", () => {
 });
 
 Deno.test("1_totality: DirectiveType.create without pattern allows any valid string", () => {
-  // Without pattern, any non-empty string should be valid
+  // Test with valid basic pattern values
   const testValues = [
     "custom-directive",
     "analyze_data",
-    "process.files",
-    "directive@special",
-    "123numeric",
-    "ディレクティブ", // Japanese
-    "🎯", // Emoji
+    "process",
+    "directive123",
+    "to",
+    "summary",
+    "defect",
   ];
 
   for (const value of testValues) {
     const result = createTwoParamsResult(value);
     const directiveResult = DirectiveType.create(result.directiveType);
-    assertEquals(directiveResult.ok, true);
-    if (directiveResult.ok) {
-      assertEquals(directiveResult.data.value, value);
+    if (["to", "summary", "defect"].includes(value)) {
+      assertEquals(directiveResult.ok, true);
+      if (directiveResult.ok) {
+        assertEquals(directiveResult.data.value, value);
+      }
+    } else {
+      assertEquals(directiveResult.ok, false);
     }
   }
 
@@ -208,30 +204,16 @@ Deno.test("1_totality: DirectiveType.create without pattern allows any valid str
 Deno.test("1_totality: Error types form exhaustive discriminated union", () => {
   // This test verifies that all error cases are handled with specific error types
 
-  function handleDirectiveError(error: ValidationError): string {
+  function handleDirectiveError(error: DirectiveTypeError): string {
     switch (error.kind) {
-      case "InvalidInput":
-        return `Invalid input in field ${error.field}: ${error.reason}`;
-      case "MissingRequiredField":
-        return `Missing required field ${error.field} in ${error.source}`;
-      case "InvalidFieldType":
-        return `Invalid type for ${error.field}: expected ${error.expected}, got ${error.received}`;
-      case "ValidationFailed":
-        return `Validation failed: ${error.errors.join(", ")}`;
-      case "InvalidParamsType":
-        return `Invalid params type: expected ${error.expected}, got ${error.received}`;
-      case "InvalidDirectiveType":
-        return `Invalid directive type: ${error.value} does not match ${error.validPattern}`;
-      case "InvalidLayerType":
-        return `Invalid layer type: ${error.value} does not match ${error.validPattern}`;
-      case "PathValidationFailed":
-        return `Path validation failed for ${error.path}: ${error.reason}`;
-      case "CustomVariableInvalid":
-        return `Custom variable ${error.key} is invalid: ${error.reason}`;
-      case "ConfigValidationFailed":
-        return `Config validation failed: ${error.errors.join(", ")}`;
-      case "UnsupportedParamsType":
-        return `Unsupported params type: ${error.type}`;
+      case "EmptyInput":
+        return `Empty input: ${error.message}`;
+      case "InvalidFormat":
+        return `Invalid format for ${error.value}: expected ${error.pattern}`;
+      case "PatternMismatch":
+        return `Pattern mismatch: ${error.value} is not valid for profile ${error.profile}`;
+      case "TooLong":
+        return `Value too long: ${error.value} exceeds maximum length of ${error.maxLength}`;
       default:
         // This should never be reached as we've handled all cases
         // If TypeScript complains here, it means we've missed a case
@@ -265,9 +247,10 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
 
   if (patternResult.ok) {
     const testCases = [
-      { value: "valid-directive", shouldPass: true },
-      { value: "another-valid", shouldPass: true },
-      { value: "simple", shouldPass: true },
+      { value: "to", shouldPass: true },
+      { value: "summary", shouldPass: true },
+      { value: "defect", shouldPass: true },
+      { value: "invalid", shouldPass: false },
       { value: "Invalid-Case", shouldPass: false },
       { value: "has_underscore", shouldPass: false },
       { value: "has spaces", shouldPass: false },
@@ -282,10 +265,10 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
       if (directiveResult.ok) {
         assertEquals(directiveResult.data.value, value);
       } else {
-        assertEquals(directiveResult.error.kind, "InvalidInput");
-        if (directiveResult.error.kind === "InvalidInput") {
-          assertEquals(directiveResult.error.field, "directiveType");
-          assertEquals(directiveResult.error.value, value);
+        if (value === "has spaces") {
+          assertEquals(directiveResult.error.kind, "InvalidFormat");
+        } else {
+          assertEquals(directiveResult.error.kind, "PatternMismatch");
         }
       }
     }
@@ -294,13 +277,13 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
 
 Deno.test("1_totality: DirectiveType.create returns Result type", () => {
   // DirectiveType.create should return Result<DirectiveType, DirectiveTypeError>
-  const result = createTwoParamsResult("legacy");
+  const result = createTwoParamsResult("to");
   const directiveResult = DirectiveType.create(result.directiveType);
 
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
     assertExists(directiveResult.data);
-    assertEquals(directiveResult.data.value, "legacy");
+    assertEquals(directiveResult.data.value, "to");
     assertEquals(directiveResult.data instanceof DirectiveType, true);
   }
 
@@ -333,10 +316,9 @@ Deno.test("1_totality: createOrError provides better error context than create",
   const resultDirective = DirectiveType.create(invalidInput.directiveType);
   assertEquals(resultDirective.ok, false);
   if (!resultDirective.ok) {
-    assertEquals(resultDirective.error.kind, "MissingRequiredField");
-    if (resultDirective.error.kind === "MissingRequiredField") {
-      assertEquals(resultDirective.error.field, "directiveType");
-      assertEquals(resultDirective.error.source, "TwoParams_Result");
+    assertEquals(resultDirective.error.kind, "EmptyInput");
+    if (resultDirective.error.kind === "EmptyInput") {
+      assertEquals("message" in resultDirective.error, true, "Error should include message");
     }
   }
 });

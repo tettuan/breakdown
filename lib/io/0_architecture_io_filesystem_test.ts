@@ -18,11 +18,13 @@
 import { assertEquals, assertExists } from "@std/assert";
 import {
   StdinAvailability,
-  StdinErrorType,
   StdinReadingConfiguration,
+} from "./stdin_configuration.ts";
+import { StdinErrorType } from "./stdin_error_types.ts";
+import {
   StdoutWriteConfiguration,
   writeStdoutSafe,
-} from "./stdin.ts";
+} from "./stdout.ts";
 
 /**
  * Test group: Filesystem operation architecture constraints
@@ -107,9 +109,9 @@ Deno.test("IO Architecture: StdinAvailability follows detection pattern", () => 
     const availability = availabilityResult.data;
 
     // Architecture constraint: immutable properties
-    assertExists(availability.isAvailable);
     assertExists(availability.isTerminal);
-    assertExists(availability.reason);
+    assertExists(availability.isCI);
+    assertExists(availability.isTest);
 
     // Architecture constraint: logical consistency
     assertEquals(typeof availability.shouldAttemptRead(), "boolean");

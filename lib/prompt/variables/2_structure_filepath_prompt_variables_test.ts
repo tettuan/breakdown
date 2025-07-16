@@ -177,7 +177,7 @@ Deno.test("FilePathPromptVariables - path getter methods", () => {
 
 Deno.test("FilePathPromptVariables.fromFilePathVariable", async () => {
   // Import FilePathVariable for testing
-  const { FilePathVariable } = await import("../../types/prompt_variables.ts");
+  const { FilePathVariable } = await import("../../types/prompt_variables_vo.ts");
 
   const varResult = FilePathVariable.create("schema_file", SCHEMA_FILE);
   assertEquals(varResult.ok, true);

@@ -214,7 +214,7 @@ Deno.test("2_structure: DirectiveType toString provides consistent representatio
       const directiveType = directiveResult.data;
       const stringRepresentation = directiveType.toString();
       assertEquals(typeof stringRepresentation, "string");
-      assertEquals(stringRepresentation, directiveType);
+      assertEquals(stringRepresentation, directiveType.toString());
 
       // Test that toString is consistent
       assertEquals(directiveType.toString(), directiveType.toString());

@@ -9,7 +9,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
-import type { LayerTypeCreationError } from "./layer_type_types.ts";
+import type { LayerTypeError } from "../domain/core/value_objects/layer_type.ts";
 
 /**
  * Architecture Test Suite for LayerType
@@ -80,30 +80,25 @@ Deno.test("LayerType Architecture - Result Type Structure", () => {
 
 Deno.test("LayerType Architecture - Error Type Coverage", () => {
   // Test that all error types can be produced
-  const errorKinds = new Set<LayerTypeCreationError["kind"]>();
-
-  // NullInput error
-  const nullResult = LayerType.fromString(null);
-  if (!nullResult.ok) errorKinds.add(nullResult.error.kind);
-
-  // InvalidInput error
-  const invalidResult = LayerType.fromString(123);
-  if (!invalidResult.ok) errorKinds.add(invalidResult.error.kind);
+  const errorKinds = new Set<LayerTypeError["kind"]>();
 
   // EmptyInput error
   const emptyResult = LayerType.fromString("");
   if (!emptyResult.ok) errorKinds.add(emptyResult.error.kind);
 
-  // UnknownLayer error
-  const unknownResult = LayerType.fromString("invalid_layer");
-  if (!unknownResult.ok) errorKinds.add(unknownResult.error.kind);
+  // InvalidFormat error
+  const invalidResult = LayerType.fromString("@#$%");
+  if (!invalidResult.ok) errorKinds.add(invalidResult.error.kind);
+
+  // TooLong error
+  const longResult = LayerType.fromString("a".repeat(200));
+  if (!longResult.ok) errorKinds.add(longResult.error.kind);
 
   // Verify comprehensive error coverage
-  const expectedErrorKinds: LayerTypeCreationError["kind"][] = [
-    "NullInput",
-    "InvalidInput",
+  const expectedErrorKinds: LayerTypeError["kind"][] = [
     "EmptyInput",
-    "UnknownLayer",
+    "InvalidFormat", 
+    "TooLong",
   ];
 
   for (const expectedKind of expectedErrorKinds) {

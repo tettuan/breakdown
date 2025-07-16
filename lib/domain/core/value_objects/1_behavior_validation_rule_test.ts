@@ -368,7 +368,7 @@ Deno.test("Totality - formatValidationRuleError provides comprehensive error mes
 
 Deno.test("Totality - Legacy methods maintain backward compatibility", () => {
   // Legacy factory methods should still work
-  const requiredRule = ValidationRule.required<string>("username");
+  const requiredRule = ValidationRule.required("username");
   assertEquals(requiredRule.getName(), "required_username");
 
   // Legacy unsafe methods should work but are deprecated
@@ -534,7 +534,7 @@ Deno.test("Architecture - ValidationRule supports functional composition pattern
   assertEquals(invalidEmail2.isValid, false);
 
   // Test required field separately (different type)
-  const requiredRule = ValidationRule.required<string>("email");
+  const requiredRule = ValidationRule.required("email");
   assertExists(requiredRule);
 
   const nullResult = requiredRule.validate(null);

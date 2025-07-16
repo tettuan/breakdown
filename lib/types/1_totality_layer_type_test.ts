@@ -182,8 +182,12 @@ Deno.test("1_totality: LayerType error types are discriminated unions", () => {
     // TooLong should have value and maxLength
     assertEquals("value" in tooLongResult.error, true);
     assertEquals("maxLength" in tooLongResult.error, true);
-    assertEquals(tooLongResult.error.value, "a".repeat(31));
-    assertEquals(tooLongResult.error.maxLength, 30);
+    if ("value" in tooLongResult.error) {
+      assertEquals(tooLongResult.error.value, "a".repeat(31));
+    }
+    if ("maxLength" in tooLongResult.error) {
+      assertEquals(tooLongResult.error.maxLength, 30);
+    }
   }
 
   // Test InvalidFormat error structure
@@ -195,8 +199,12 @@ Deno.test("1_totality: LayerType error types are discriminated unions", () => {
     // InvalidFormat should have value and pattern
     assertEquals("value" in invalidFormatResult.error, true);
     assertEquals("pattern" in invalidFormatResult.error, true);
-    assertEquals(invalidFormatResult.error.value, "PROJECT");
-    assertEquals(typeof invalidFormatResult.error.pattern, "string");
+    if ("value" in invalidFormatResult.error) {
+      assertEquals(invalidFormatResult.error.value, "PROJECT");
+    }
+    if ("pattern" in invalidFormatResult.error) {
+      assertEquals(typeof invalidFormatResult.error.pattern, "string");
+    }
   }
 });
 

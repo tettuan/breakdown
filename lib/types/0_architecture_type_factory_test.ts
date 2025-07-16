@@ -75,6 +75,10 @@ Deno.test("TypeFactory Architecture - TypePatternProvider interface compliance",
   const provider: TypePatternProvider = {
     getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary")!,
     getLayerTypePattern: () => TwoParamsLayerTypePattern.create("project|issue")!,
+    validateDirectiveType: (value: string) => /^(to|summary)$/.test(value),
+    validateLayerType: (value: string) => /^(project|issue)$/.test(value),
+    getValidDirectiveTypes: () => ["to", "summary"],
+    getValidLayerTypes: () => ["project", "issue"],
   };
 
   const factory = new TypeFactory(provider);

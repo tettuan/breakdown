@@ -66,7 +66,7 @@ Deno.test("StdinIntegrationWrapper - readStdin returns Result", async () => {
   if (result.ok) {
     assertEquals(typeof result.data, "string");
   } else {
-    assertEquals(typeof result.error, "string");
+    assertEquals(typeof result.error, "object");
   }
 });
 

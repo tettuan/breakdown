@@ -11,7 +11,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { InputFilePathResolver } from "../../../lib/factory/input_file_path_resolver.ts";
+import { InputFilePathResolverTotality as InputFilePathResolver } from "../../../lib/factory/input_file_path_resolver_totality.ts";
 import type {
   PromptCliOptions,
   PromptCliParams,

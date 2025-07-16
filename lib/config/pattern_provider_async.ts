@@ -291,6 +291,111 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
+   * DirectiveType用バリデーション結果を取得
+   */
+  validateDirectiveType(value: string): boolean {
+    const pattern = this.getDirectivePattern();
+    return pattern ? pattern.test(value) : false;
+  }
+
+  /**
+   * LayerType用バリデーション結果を取得
+   */
+  validateLayerType(value: string): boolean {
+    const pattern = this.getLayerTypePattern();
+    return pattern ? pattern.test(value) : false;
+  }
+
+  /**
+   * 利用可能なDirectiveType値を取得
+   */
+  getValidDirectiveTypes(): readonly string[] {
+    const pattern = this.getDirectivePattern();
+    if (!pattern) return [];
+    
+    // パターンから取りうる値を推定（基本的なもの）
+    const patternStr = pattern.getPattern();
+    if (patternStr.includes("to|summary|defect|init|find")) {
+      return ["to", "summary", "defect", "init", "find"];
+    }
+    
+    // 設定から直接取得する場合の処理
+    if (this.configData) {
+      const validValues = this.extractValidValues(this.configData, "directive");
+      if (validValues && validValues.length > 0) {
+        return validValues;
+      }
+    }
+    
+    return ["to", "summary", "defect", "init", "find"]; // デフォルト値
+  }
+
+  /**
+   * 利用可能なLayerType値を取得
+   */
+  getValidLayerTypes(): readonly string[] {
+    const pattern = this.getLayerTypePattern();
+    if (!pattern) return [];
+    
+    // パターンから取りうる値を推定（基本的なもの）
+    const patternStr = pattern.getPattern();
+    if (patternStr.includes("project|issue|task|bugs|temp")) {
+      return ["project", "issue", "task", "bugs", "temp"];
+    }
+    
+    // 設定から直接取得する場合の処理
+    if (this.configData) {
+      const validValues = this.extractValidValues(this.configData, "layer");
+      if (validValues && validValues.length > 0) {
+        return validValues;
+      }
+    }
+    
+    return ["project", "issue", "task", "bugs", "temp"]; // デフォルト値
+  }
+
+  /**
+   * 設定から有効な値を抽出
+   */
+  private extractValidValues(configData: Record<string, unknown>, type: "directive" | "layer"): string[] | null {
+    // 直接的な values 配列を探す
+    const valuesKey = type === "directive" ? "directiveValues" : "layerTypeValues";
+    if (Array.isArray(configData[valuesKey])) {
+      return configData[valuesKey].filter((v): v is string => typeof v === "string");
+    }
+
+    // ネストした構造から探す
+    const twoParamsRules = configData.twoParamsRules as { 
+      directive?: { values?: string[] }; 
+      layer?: { values?: string[] };
+    };
+    if (twoParamsRules) {
+      const ruleValues = type === "directive" 
+        ? twoParamsRules.directive?.values 
+        : twoParamsRules.layer?.values;
+      if (Array.isArray(ruleValues)) {
+        return ruleValues.filter((v): v is string => typeof v === "string");
+      }
+    }
+
+    // validation構造から探す
+    const validation = configData.validation as {
+      directive?: { values?: string[] };
+      layer?: { values?: string[] };
+    };
+    if (validation) {
+      const validationValues = type === "directive" 
+        ? validation.directive?.values 
+        : validation.layer?.values;
+      if (Array.isArray(validationValues)) {
+        return validationValues.filter((v): v is string => typeof v === "string");
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Gets debug information about the pattern provider state
    */
   debug(): {
@@ -342,6 +447,34 @@ export class DefaultPatternProvider implements TypePatternProvider {
 
   getLayerTypePattern(): TwoParamsLayerTypePattern | null {
     return this.layerPattern;
+  }
+
+  /**
+   * DirectiveType用バリデーション結果を取得
+   */
+  validateDirectiveType(value: string): boolean {
+    return this.directivePattern ? this.directivePattern.test(value) : false;
+  }
+
+  /**
+   * LayerType用バリデーション結果を取得
+   */
+  validateLayerType(value: string): boolean {
+    return this.layerPattern ? this.layerPattern.test(value) : false;
+  }
+
+  /**
+   * 利用可能なDirectiveType値を取得
+   */
+  getValidDirectiveTypes(): readonly string[] {
+    return ["to", "summary", "defect", "init", "find"];
+  }
+
+  /**
+   * 利用可能なLayerType値を取得
+   */
+  getValidLayerTypes(): readonly string[] {
+    return ["project", "issue", "task", "bugs", "temp"];
   }
 }
 

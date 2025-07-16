@@ -14,11 +14,11 @@
 import { assert, assertEquals, assertThrows } from "../deps.ts";
 import {
   formatSchemaError,
-  formatSchemaError as formatSchemaFilePathError,
   isConfigurationError,
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
+  schemaFilePathErrorToPathResolutionError,
   type SchemaFilePathError,
   SchemaFilePathResolver,
   SchemaPath,
@@ -176,7 +176,7 @@ Deno.test("SchemaFilePathResolver Architecture - Result type totality (no except
 });
 
 Deno.test("SchemaFilePathResolver Architecture - SchemaPath value object immutability", () => {
-  const path = "/test/schema/path.md";
+  const path = "/test/schema/path.schema.md";
   const metadata = {
     baseDir: "/test",
     directiveType: "to",
@@ -190,7 +190,7 @@ Deno.test("SchemaFilePathResolver Architecture - SchemaPath value object immutab
   // Value and metadata should be readonly
   const schemaPath = result.data;
   assertEquals(schemaPath.value, path);
-  assertEquals(schemaPath.metadata, metadata);
+  assertEquals(schemaPath.metadata, { ...metadata, isDefault: false });
 
   // Verify properties are truly readonly via runtime behavior
   const description = schemaPath.getDescription();
@@ -224,7 +224,8 @@ Deno.test("SchemaFilePathResolver Architecture - Error discrimination with type 
 
   // All errors should have proper formatting
   for (const error of errors) {
-    const formatted = formatSchemaFilePathError(error);
+    const pathResolutionError = schemaFilePathErrorToPathResolutionError(error);
+    const formatted = formatSchemaError(pathResolutionError);
     assert(formatted.length > 0, "Error should format to non-empty string");
   }
 });
@@ -300,7 +301,7 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
           // Unsafe methods have been removed, simulate error
           const pathResult = errorResult.data.getPath();
           if (!pathResult.ok) {
-            throw new Error("Path resolution failed");
+            throw new Error("Schema path resolution failed");
           }
         },
         Error,

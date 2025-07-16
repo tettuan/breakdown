@@ -361,7 +361,7 @@ export class StandardVariable implements PromptVariable {
 }
 
 export class FilePathVariable implements PromptVariable {
-  constructor(private key: string, private value: string) {}
+  constructor(private key: string, private readonly _value: string) {}
 
   static create(key: string, value: string): Result<FilePathVariable, ValidationError> {
     if (!key || !value) {
@@ -374,8 +374,12 @@ export class FilePathVariable implements PromptVariable {
     return ok(new FilePathVariable(key, value));
   }
 
+  get value(): string {
+    return this._value;
+  }
+
   toRecord(): Record<string, string> {
-    return { [this.key]: this.value };
+    return { [this.key]: this._value };
   }
 }
 

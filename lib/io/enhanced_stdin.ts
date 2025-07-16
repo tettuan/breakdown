@@ -70,7 +70,7 @@ export class EnhancedStdinError extends Error {
     public readonly context?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = "EnhancedStdinError";
+    this.name = "StdinError";
   }
 }
 

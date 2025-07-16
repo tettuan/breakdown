@@ -284,7 +284,7 @@ Deno.test("FilePathPromptVariables - normalizes paths correctly", () => {
 });
 
 Deno.test("FilePathPromptVariables - fromFilePathVariable integration", async () => {
-  const { FilePathVariable } = await import("../../types/prompt_variables.ts");
+  const { FilePathVariable } = await import("../../types/prompt_variables_vo.ts");
 
   const varResult = FilePathVariable.create("schema_file", VALID_SCHEMA);
   assertEquals(varResult.ok, true);

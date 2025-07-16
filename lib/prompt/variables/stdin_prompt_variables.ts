@@ -8,10 +8,53 @@
  */
 
 import type { PromptVariables } from "../../types/prompt_types.ts";
-// NOTE: prompt_variables.ts orphaned - using inline type definitions
-// import { StdinVariable, StdinVariableName } from "../../types/prompt_variables.ts";
-type StdinVariable = { name: string; value: string };
-type StdinVariableName = string;
+// NOTE: prompt_variables.ts orphaned - using inline implementations
+
+/**
+ * StdinVariableName value object
+ */
+class StdinVariableName {
+  private constructor(private readonly value: string) {}
+
+  static create(name: string): Result<StdinVariableName, Error> {
+    if (!name || name.trim().length === 0) {
+      return error(new Error("Variable name cannot be empty"));
+    }
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+      return error(new Error("Variable name must be a valid identifier"));
+    }
+    return ok(new StdinVariableName(name));
+  }
+
+  getValue(): string {
+    return this.value;
+  }
+}
+
+/**
+ * StdinVariable value object
+ */
+class StdinVariable {
+  readonly name: StdinVariableName;
+  readonly value: string;
+
+  private constructor(name: StdinVariableName, value: string) {
+    this.name = name;
+    this.value = value;
+  }
+
+  static create(name: string, value: string): Result<StdinVariable, { kind: string }> {
+    const nameResult = StdinVariableName.create(name);
+    if (!nameResult.ok) {
+      return error({ kind: "InvalidVariableName" });
+    }
+    return ok(new StdinVariable(nameResult.data, value));
+  }
+
+  toRecord(): Record<string, string> {
+    return { [this.name.getValue()]: this.value };
+  }
+}
 import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 

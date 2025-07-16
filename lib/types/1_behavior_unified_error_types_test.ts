@@ -182,14 +182,12 @@ Deno.test("1_behavior: ErrorFactory.configError creates correct error variants",
   const invalidConfig = ErrorFactory.configError(
     "InvalidConfiguration",
     {
-      field: "database.port",
-      reason: "Port must be between 1 and 65535",
+      details: "Port must be between 1 and 65535",
     },
   );
   assertEquals(invalidConfig.kind, "InvalidConfiguration");
   if (invalidConfig.kind === "InvalidConfiguration") {
-    assertEquals(invalidConfig.field, "database.port");
-    assertEquals(invalidConfig.reason, "Port must be between 1 and 65535");
+    assertEquals(invalidConfig.details, "Port must be between 1 and 65535");
   }
 
   // Test with context
@@ -327,7 +325,7 @@ Deno.test("1_behavior: extractUnifiedErrorMessage produces correct messages", ()
       "ProfileNotFound: production",
     ],
     [
-      { kind: "InvalidConfiguration", field: "port", reason: "Must be a number" },
+      { kind: "InvalidConfiguration", details: "Must be a number", field: "port", reason: "Must be a number" },
       "InvalidConfiguration: port - Must be a number",
     ],
   ];

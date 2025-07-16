@@ -70,7 +70,7 @@ Deno.test("TwoParamsType - Smart Constructor Integration", async (t) => {
     // Assert
     assertEquals(twoParamsType.ok, false);
     if (!twoParamsType.ok) {
-      assertEquals(twoParamsType.error.kind, "ValidationFailed");
+      assertEquals(twoParamsType.error.kind, "PathValidationFailed");
     }
   });
 });

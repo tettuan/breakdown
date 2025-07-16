@@ -18,7 +18,6 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { error as _error, ok as _ok } from "../types/result.ts";
 import {
-  checkStdinAvailability as _checkStdinAvailability,
   formatStdinError,
   isConfigurationError,
   isEmptyInputError,
@@ -26,11 +25,13 @@ import {
   isReadError,
   isTimeoutError,
   isValidationError,
+  type StdinErrorType,
+} from "./stdin_error_types.ts";
+import {
   readStdinSafe,
   StdinAvailability,
-  type StdinErrorType,
   StdinReadingConfiguration,
-} from "./stdin.ts";
+} from "./stdin_configuration.ts";
 import { safeReadStdin } from "./enhanced_stdin.ts";
 
 /**
@@ -44,11 +45,17 @@ Deno.test("IO Behavior: readStdinSafe returns Result with timeout error", async 
     // This should timeout in CI/terminal environment
     const result = await readStdinSafe(config.data);
 
-    // Behavior: should return error Result, not throw
+    // In test environment, stdin is not available
+    assertEquals(result.ok, false);
+    
     if (!result.ok) {
-      // Should be timeout or not available error
+      // Should be timeout, not available, or empty input error
+      const isTimeout = isTimeoutError(result.error);
+      const isNotAvailable = isNotAvailableError(result.error);
+      const isEmpty = isEmptyInputError(result.error);
+      
       assertEquals(
-        isTimeoutError(result.error) || isNotAvailableError(result.error),
+        isTimeout || isNotAvailable || isEmpty,
         true,
       );
     }

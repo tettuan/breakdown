@@ -174,7 +174,7 @@ Deno.test("Behavior: DefaultTypePatternProvider - Debug Information", () => {
 
   // Pattern strings in debug should match config
   const config = provider.getDefaultConfig();
-  assertEquals(debugInfo.directivePattern, config.params.two.demonstrativeType.pattern);
+  assertEquals(debugInfo.directivePattern, config.params.two.directiveType.pattern);
   assertEquals(debugInfo.layerPattern, config.params.two.layerType.pattern);
 });
 
@@ -184,7 +184,7 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Format Validation", ()
   const provider = new DefaultTypePatternProvider();
   const config = provider.getDefaultConfig();
 
-  const directivePattern = config.params.two.demonstrativeType.pattern;
+  const directivePattern = config.params.two.directiveType.pattern;
   const layerPattern = config.params.two.layerType.pattern;
 
   // Patterns should follow the format: "^(value1|value2|value3)$"

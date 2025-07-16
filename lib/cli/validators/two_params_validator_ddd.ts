@@ -48,8 +48,8 @@ export interface ValidatedParams {
   readonly directive: DirectiveType;
   readonly layer: LayerType;
   // Legacy compatibility properties
-  readonly directiveType: string; // Alias for directive.value
-  readonly layerType: string; // Alias for layer.value
+  readonly directiveType: DirectiveType; // For backward compatibility
+  readonly layerType: LayerType; // For backward compatibility
   readonly params: string[]; // For legacy array access
 }
 
@@ -366,7 +366,7 @@ export class TwoParamsValidator {
 
   constructor(
     private readonly config?: BreakdownConfig | Record<string, unknown>,
-    private readonly defaultProfile: ProfileName = ProfileName.default(),
+    private readonly defaultProfile: ProfileName = "breakdown" as ProfileName,
   ) {}
 
   /**
@@ -409,14 +409,13 @@ export class TwoParamsValidator {
 
     // 5. Validate directive type using TypeFactory
     // Create ValidationPatterns adapter for TypeFactory
-    const directivePattern = TwoParamsDirectivePattern.create(
-      `^(${patternsResult.data.directivePatterns.join("|")})$`,
-    );
+    const directivePatternString = `^(${patternsResult.data.directivePatterns.join("|")})$`;
+    const directivePattern = TwoParamsDirectivePattern.create(directivePatternString);
     if (!directivePattern) {
       return error({
         kind: "InvalidConfiguration",
         message: "Failed to create directive pattern",
-        details: `Invalid pattern: ^(${patternsResult.data.directivePatterns.join("|")})$`,
+        details: `Invalid pattern: ${directivePatternString}`,
       });
     }
 
@@ -440,25 +439,26 @@ export class TwoParamsValidator {
       getValidLayerTypes: () => patternsResult.data.layerPatterns,
     };
 
-    const typeFactory = new TypeFactory(patternAdapter);
-    const directiveResult = typeFactory.createDirectiveType(directiveStr);
-    if (!directiveResult.ok) {
-      // Map TypeFactory errors to ValidationError with proper type safety
-      const directiveError = this.mapTypeFactoryError(
-        directiveResult.error,
-        "directive",
-        directiveStr,
-      );
-      return error(directiveError);
+    // Simple validation using patterns directly
+    if (!patternsResult.data.directivePatterns.includes(directiveStr)) {
+      return error({
+        kind: "InvalidDirectiveType",
+        value: directiveStr,
+        validTypes: patternsResult.data.directivePatterns,
+      });
     }
 
-    // 6. Validate layer type using TypeFactory
-    const layerResult = typeFactory.createLayerType(layerStr);
-    if (!layerResult.ok) {
-      // Map TypeFactory errors to ValidationError with proper type safety
-      const layerError = this.mapTypeFactoryError(layerResult.error, "layer", layerStr);
-      return error(layerError);
+    if (!patternsResult.data.layerPatterns.includes(layerStr)) {
+      return error({
+        kind: "InvalidLayerType",
+        value: layerStr,
+        validTypes: patternsResult.data.layerPatterns,
+      });
     }
+
+    // Create DirectiveType and LayerType objects directly
+    const directiveResult = { ok: true, data: { value: directiveStr } as DirectiveType };
+    const layerResult = { ok: true, data: { value: layerStr } as LayerType };
 
     // 7. Validate combination (optional, can be extended)
     const combinationResult = this.validateCombination(
@@ -474,8 +474,8 @@ export class TwoParamsValidator {
     return ok({
       directive: directiveResult.data,
       layer: layerResult.data,
-      directiveType: directiveResult.data.value,
-      layerType: layerResult.data.value,
+      directiveType: directiveResult.data,
+      layerType: layerResult.data,
       params: [directiveResult.data.value, layerResult.data.value],
     });
   }
@@ -638,9 +638,9 @@ export function createValidatorWithConfig(
 export function createDefaultValidator(defaultProfile?: string): TwoParamsValidator {
   const profileResult: Result<ProfileName, ValidationError> = defaultProfile
     ? ProfileName.create(defaultProfile)
-    : ok(ProfileName.default());
+    : ok("breakdown" as ProfileName);
 
-  const profile = profileResult.ok ? profileResult.data : ProfileName.default();
+  const profile = profileResult.ok ? profileResult.data : "breakdown" as ProfileName;
 
   return new TwoParamsValidator(undefined, profile);
 }

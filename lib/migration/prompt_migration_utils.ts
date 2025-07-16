@@ -8,16 +8,18 @@
  */
 
 import { PromptPath } from "../types/prompt_types.ts";
-import type { PromptCliParams, PromptVariables } from "../types/prompt_variables_vo.ts";
 import {
   FilePathVariable as _FilePathVariable,
+  type PromptCliParams,
+  type PromptVariables,
   StandardVariable,
   StdinVariable,
   UserVariable,
-} from "../types/prompt_variables_vo.ts";
+} from "../types/mod.ts";
+import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
-import type { ErrorInfo } from "@tettuan/breakdownparams";
+import type { ValidationError } from "../types/unified_error_types.ts";
 
 /**
  * Migration error types
@@ -40,8 +42,26 @@ export type MigrationResult = {
 /**
  * Format variable error for user-friendly display
  */
-function formatVariableError(fieldName: string, error: ErrorInfo): string {
-  return `Failed to convert ${fieldName}: ${error.message || "Unknown error"}`;
+function formatVariableError(fieldName: string, error: ValidationError): string {
+  // Extract appropriate error message based on error kind
+  let message = "Unknown error";
+  switch (error.kind) {
+    case "InvalidInput":
+      message = error.reason || "Invalid input";
+      break;
+    case "MissingRequiredField":
+      message = `Missing required field: ${error.field}`;
+      break;
+    case "InvalidFieldType":
+      message = `Invalid field type: expected ${error.expected}, got ${error.received}`;
+      break;
+    case "ValidationFailed":
+      message = error.errors ? error.errors.join(", ") : "Validation failed";
+      break;
+    default:
+      message = "Unknown validation error";
+  }
+  return `Failed to convert ${fieldName}: ${message}`;
 }
 
 /**
@@ -61,7 +81,7 @@ function formatVariableError(fieldName: string, error: ErrorInfo): string {
 export function migrateCliParamsToVariables(
   params: PromptCliParams,
 ): Result<PromptVariables, MigrationError> {
-  const variables: PromptVariables = [];
+  const variables: import("../types/mod.ts").PromptVariable[] = [];
   const errors: string[] = [];
 
   // Convert directiveType
@@ -124,7 +144,7 @@ export function migrateCliParamsToVariables(
     // Convert customVariables
     if (params.options.customVariables) {
       for (const [key, value] of Object.entries(params.options.customVariables)) {
-        const result = UserVariable.create(key, value);
+        const result = UserVariable.create(key, value as string);
         if (result.ok) {
           variables.push(result.data);
         } else {
@@ -143,7 +163,8 @@ export function migrateCliParamsToVariables(
     });
   }
 
-  return resultOk(variables);
+  const result = PromptVariablesVO.create(variables);
+  return resultOk(result);
 }
 
 /**
@@ -270,9 +291,9 @@ export function createMigrationSummary(
     lines.push(`- Prompt path: ${result.path.toString()}`);
   }
 
-  lines.push(`- Variables created: ${result.variables.length}`);
+  lines.push(`- Variables created: ${result.variables.size()}`);
 
-  for (const variable of result.variables) {
+  for (const variable of result.variables.value) {
     const record = variable.toRecord();
     for (const [key, value] of Object.entries(record)) {
       lines.push(`  - ${key}: ${value}`);

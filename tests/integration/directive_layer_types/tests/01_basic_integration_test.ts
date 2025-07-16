@@ -11,7 +11,8 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // DirectiveType と LayerType の実装をインポート
-import { DirectiveType, TwoParamsDirectivePattern } from "../../../../lib/types/directive_type.ts";
+import { DirectiveType } from "../../../../lib/domain/core/value_objects/directive_type.ts";
+import { TwoParamsDirectivePattern } from "../../../../lib/types/mod.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../../lib/domain/core/value_objects/layer_type.ts";
 import { createTwoParamsResult } from "../../../../lib/types/two_params_result_extension.ts";
 import type { TwoParams_Result } from "../../../../lib/types/two_params_result_extension.ts";

@@ -24,7 +24,7 @@ import {
   type MigrationError,
   type MigrationResult as _MigrationResult,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams } from "../types/prompt_variables_vo.ts";
+import type { PromptCliParams } from "../types/mod.ts";
 import { PromptPath } from "../types/prompt_types.ts";
 
 Deno.test("Migration utils - module exports follow architectural patterns", () => {
@@ -58,11 +58,11 @@ Deno.test("Migration functions - maintain referential transparency", () => {
 
   assertEquals(result1.ok, result2.ok);
   if (result1.ok && result2.ok) {
-    assertEquals(result1.data.length, result2.data.length);
+    assertEquals(result1.data.size(), result2.data.size());
 
     // Compare variable records
-    const records1 = result1.data.map((v) => v.toRecord());
-    const records2 = result2.data.map((v) => v.toRecord());
+    const records1 = result1.data.originalVariables.map((v: any) => v.toRecord());
+    const records2 = result2.data.originalVariables.map((v: any) => v.toRecord());
     for (let i = 0; i < records1.length; i++) {
       assertEquals(records1[i], records2[i]);
     }
@@ -112,7 +112,7 @@ Deno.test("Migration architecture - enforces type system boundaries", () => {
   if (variablesResult.ok) {
     assert(hasData);
     assert(!hasError);
-    assert(Array.isArray(variablesResult.data));
+    assert(variablesResult.data.size() >= 0);
   } else {
     assert(!hasData);
     assert(hasError);
@@ -195,9 +195,9 @@ Deno.test("Migration completeness - ensures no data loss", () => {
     const migrationResult = result.data;
 
     // Verify all input data is preserved in migration
-    assertEquals(migrationResult.variables.length, 8); // 2 standard + 1 stdin + 2 file + 3 custom
+    assertEquals(migrationResult.variables.size(), 8); // 2 standard + 1 stdin + 2 file + 3 custom
 
-    const variableRecords = migrationResult.variables.map((v) => v.toRecord());
+    const variableRecords = migrationResult.variables.originalVariables.map((v: any) => v.toRecord());
     const flatRecords = Object.assign({}, ...variableRecords);
 
     // Verify key information preserved
@@ -237,7 +237,7 @@ Deno.test("Wrapper functions - maintain architectural consistency", () => {
 
   assertEquals(variablesResult1.ok, variablesResult2.ok);
   if (variablesResult1.ok && variablesResult2.ok) {
-    assertEquals(variablesResult1.data.length, variablesResult2.data.length);
+    assertEquals(variablesResult1.data.size(), variablesResult2.data.size());
   }
 });
 
@@ -263,7 +263,7 @@ Deno.test("Migration warnings - architectural concern separation", () => {
     assertEquals(result.data.warnings.length, 6);
 
     // Verify core migration still succeeds despite deprecated options
-    assertEquals(result.data.variables.length, 2); // Only standard variables
+    assertEquals(result.data.variables.size(), 2); // Only standard variables
     assertExists(result.data.path);
 
     // Verify warning messages provide clear guidance
@@ -347,7 +347,7 @@ Deno.test("Migration architecture - handles edge cases gracefully", () => {
     if (result.ok) {
       // Successful migrations should have valid structure
       assertExists(result.data.variables);
-      assert(Array.isArray(result.data.variables));
+      assert(result.data.variables.size() >= 0);
       assert(Array.isArray(result.data.warnings));
     } else {
       // Failed migrations should provide clear error information
@@ -372,7 +372,7 @@ Deno.test("Migration system - enforces single responsibility principle", () => {
   assertEquals(variablesResult.ok, true);
   if (variablesResult.ok) {
     // Should only return variables, no path or warnings
-    assert(Array.isArray(variablesResult.data));
+    assert(variablesResult.data.size() >= 0);
   }
 
   // extractPromptPath: Only extracts path information
@@ -424,7 +424,7 @@ Deno.test("Migration architecture - maintains legacy compatibility boundaries", 
     assertEquals(result.data.warnings.length, 4);
 
     // Valid current fields should be migrated normally
-    const variableRecords = result.data.variables.map((v) => v.toRecord());
+    const variableRecords = result.data.variables.originalVariables.map((v: any) => v.toRecord());
     const flatRecords = Object.assign({}, ...variableRecords);
 
     assertEquals(flatRecords.directive_type, "summary");

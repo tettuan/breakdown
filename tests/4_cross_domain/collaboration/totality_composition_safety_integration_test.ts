@@ -96,8 +96,8 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
   }
 
   // Pre-load the patterns for synchronous access
-  const { TwoParamsDirectivePattern } = await import("../../../lib/types/directive_type.ts");
-  const { TwoParamsLayerTypePattern } = await import("../../../lib/types/layer_type.ts");
+  const { TwoParamsDirectivePattern } = await import("../../../lib/types/mod.ts");
+  const { TwoParamsLayerTypePattern } = await import("../../../lib/types/mod.ts");
   // deno-lint-ignore no-explicit-any
   (globalThis as any).__twoParamsDirectivePattern = TwoParamsDirectivePattern.create(
     "^(to|summary)$",

@@ -52,7 +52,7 @@ Deno.test("1_totality: All error kinds are exhaustively handled in extractUnifie
     // Configuration errors
     ErrorFactory.configError("ConfigurationError", { message: "test" }),
     ErrorFactory.configError("ProfileNotFound", { profile: "test" }),
-    ErrorFactory.configError("InvalidConfiguration", { field: "test", reason: "test" }),
+    ErrorFactory.configError("InvalidConfiguration", { details: "test" }),
 
     // Processing errors
     ErrorFactory.processingError("ProcessingFailed", { operation: "test", reason: "test" }),
@@ -259,6 +259,9 @@ Deno.test("1_totality: UnifiedError union type is closed and complete", () => {
       case "WorkspacePathError":
       case "WorkspaceDirectoryError":
       case "WorkspaceError":
+        return `Workspace error: ${error.kind}`;
+
+      case "BaseDirectoryNotFound":
         return `Workspace error: ${error.kind}`;
 
       default: {

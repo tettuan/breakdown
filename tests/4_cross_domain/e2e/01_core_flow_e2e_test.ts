@@ -11,7 +11,7 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // 各ドメインのコンポーネントをインポート
-import { DirectiveType } from "../../../lib/types/directive_type.ts";
+import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 

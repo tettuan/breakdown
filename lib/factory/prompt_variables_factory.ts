@@ -256,6 +256,17 @@ function createTwoParamsResult(
 }
 
 /**
+ * Create complete TwoParams_Result with all required fields
+ */
+export function createWholeTwoParamsResult(
+  directiveType: string,
+  layerType: string,
+  options: Record<string, unknown> = {},
+): TwoParams_Result {
+  return createTwoParamsResult(directiveType, layerType, options);
+}
+
+/**
  * Factory for creating prompt variables through 3-stage transformation.
  *
  * This factory orchestrates the transformation process from raw input

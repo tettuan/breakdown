@@ -13,7 +13,24 @@ import {
   migrateCliParamsToVariables,
   migratePromptCliParams,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams } from "../types/prompt_variables_vo.ts";
+// Legacy PromptCliParams type for migration testing
+type PromptCliParams = {
+  directiveType: string;
+  layerType: string;
+  options: {
+    fromFile?: string;
+    destinationFile?: string;
+    input_text?: string;
+    customVariables?: Record<string, string>;
+    promptDir?: string;
+    adaptation?: string;
+    extended?: boolean;
+    customValidation?: boolean;
+    errorFormat?: "simple" | "detailed" | "json";
+    config?: string;
+    fromLayerType?: string;
+  };
+};
 
 Deno.test("migrateCliParamsToVariables - basic parameters", () => {
   const params: PromptCliParams = {
@@ -26,9 +43,9 @@ Deno.test("migrateCliParamsToVariables - basic parameters", () => {
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 2);
+    assertEquals(result.data.size(), 2);
 
-    const records = result.data.map((v) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
     assertEquals(records[0], { directive_type: "to" });
     assertEquals(records[1], { layer_type: "project" });
   }
@@ -48,9 +65,9 @@ Deno.test("migrateCliParamsToVariables - with file options", () => {
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 4);
+    assertEquals(result.data.size(), 4);
 
-    const records = result.data.map((v) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
     assertEquals(records[2], { input_text_file: "/path/to/input.md" });
     assertEquals(records[3], { destination_path: "/path/to/output.md" });
   }
@@ -73,9 +90,9 @@ Deno.test("migrateCliParamsToVariables - with stdin and custom variables", () =>
 
   assertEquals(result.ok, true);
   if (result.ok) {
-    assertEquals(result.data.length, 5); // 2 standard + 1 stdin + 2 custom
+    assertEquals(result.data.size(), 5); // 2 standard + 1 stdin + 2 custom
 
-    const records = result.data.map((v) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
     // Check stdin variable
     assertEquals(records[2], { input_text: "Some input from stdin" });
     // Check custom variables
@@ -162,7 +179,7 @@ Deno.test("migratePromptCliParams - complete migration with warnings", () => {
     }
 
     // Check variables
-    assertEquals(result.data.variables.length, 3);
+    assertEquals(result.data.variables.size(), 3);
 
     // Check warnings
     assertEquals(result.data.warnings.length, 5);
@@ -224,7 +241,7 @@ Deno.test("migrateCliParamsToVariables - handles empty custom variable values", 
     layerType: "task",
     options: {
       customVariables: {
-        emptyVar: "", // Empty string should be allowed
+        emptyVar: "", // Empty string should cause validation error
         normalVar: "value",
       },
     },
@@ -232,12 +249,12 @@ Deno.test("migrateCliParamsToVariables - handles empty custom variable values", 
 
   const result = migrateCliParamsToVariables(params);
 
-  assertEquals(result.ok, true);
-  if (result.ok) {
-    assertEquals(result.data.length, 4); // 2 standard + 2 custom
-
-    const records = result.data.map((v) => v.toRecord());
-    assertEquals(records[2], { emptyVar: "" });
-    assertEquals(records[3], { normalVar: "value" });
+  // Should fail because empty string is not allowed
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.error.kind, "MigrationError");
+    assertEquals(result.error.source, "PromptCliParams");
+    assertEquals(result.error.details.length > 0, true);
+    assertEquals(result.error.details[0].includes("emptyVar"), true);
   }
 });

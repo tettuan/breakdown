@@ -27,8 +27,9 @@ export interface StdinMigrationConfig {
   debug?: boolean;
   forceFallback?: boolean;
   environmentOverrides?: {
-    isTerminal?: boolean;
-    isCi?: boolean;
+    terminal?: boolean;
+    ci?: boolean;
+    test?: boolean;
   };
 }
 
@@ -100,23 +101,28 @@ export class StdinIntegrationWrapper {
   async readStdinSafe(options: {
     timeout?: number;
     allowEmpty?: boolean;
-    skipChecks?: boolean;
+    forceRead?: boolean;
   } = {}): Promise<
     Result<{
-      success: boolean;
       content: string;
       skipped: boolean;
       reason?: string;
-      envInfo: EnvironmentInfo;
+      environmentInfo?: EnvironmentInfo;
     }, Error>
   > {
     try {
       const result = await safeReadStdin({
         timeout: options.timeout,
         allowEmpty: options.allowEmpty ?? true,
+        forceRead: options.forceRead ?? false,
         debug: this.config.debug,
       });
-      return ok(result);
+      return ok({
+        content: result.content,
+        skipped: result.skipped,
+        reason: result.reason,
+        environmentInfo: result.envInfo,
+      });
     } catch (err) {
       return error(err instanceof Error ? err : new Error(String(err)));
     }
@@ -137,17 +143,13 @@ export class StdinIntegrationWrapper {
   /**
    * Check if stdin should be skipped
    */
-  shouldSkipStdin(options?: { forceRead?: boolean }): Result<{
-    skip: boolean;
-    reason?: string;
-    envInfo: EnvironmentInfo;
-  }, Error> {
+  shouldSkipStdin(options?: { forceRead?: boolean }): Result<boolean, Error> {
     try {
       const shouldSkip = shouldSkipStdinProcessing({
         forceRead: options?.forceRead ?? false,
         debug: this.config.debug,
       });
-      return ok(shouldSkip);
+      return ok(shouldSkip.skip);
     } catch (err) {
       return error(err instanceof Error ? err : new Error(String(err)));
     }
@@ -186,9 +188,19 @@ export async function readStdinSafe(options?: {
   envInfo: EnvironmentInfo;
 }> {
   const wrapper = new StdinIntegrationWrapper();
-  const result = await wrapper.readStdinSafe(options ?? {});
+  const result = await wrapper.readStdinSafe({
+    timeout: options?.timeout,
+    allowEmpty: options?.allowEmpty,
+    forceRead: false,
+  });
   if (result.ok) {
-    return result.data;
+    return {
+      success: !result.data.skipped,
+      content: result.data.content,
+      skipped: result.data.skipped,
+      reason: result.data.reason,
+      envInfo: result.data.environmentInfo || detectEnvironment(),
+    };
   }
   throw result.error;
 }
@@ -196,7 +208,7 @@ export async function readStdinSafe(options?: {
 export function shouldSkipStdin(options?: { forceRead?: boolean }): boolean {
   const wrapper = new StdinIntegrationWrapper();
   const result = wrapper.shouldSkipStdin(options);
-  return result.ok ? result.data.skip : true;
+  return result.ok ? result.data : true;
 }
 
 export function getEnvironmentInfo(): EnvironmentInfo {
@@ -209,8 +221,56 @@ export function getEnvironmentInfo(): EnvironmentInfo {
 }
 
 export async function handleStdinForCLI(options?: {
+  from?: string;
+  fromFile?: string;
   timeout?: number;
   allowEmpty?: boolean;
-}): Promise<string> {
-  return await readStdin(options);
+  debug?: boolean;
+}): Promise<Result<{
+  inputText: string;
+  skipped: boolean;
+  warnings: string[];
+}, Error>> {
+  const wrapper = new StdinIntegrationWrapper({ debug: options?.debug });
+  
+  // Check if stdin is explicitly requested
+  const isExplicitStdin = options?.from === "-" || options?.fromFile === "-";
+  
+  if (isExplicitStdin) {
+    const result = await wrapper.readStdin({
+      timeout: options?.timeout,
+      allowEmpty: options?.allowEmpty ?? true,
+      forceRead: true,
+    });
+    
+    if (result.ok) {
+      return ok({
+        inputText: result.data,
+        skipped: false,
+        warnings: [],
+      });
+    }
+    return error(result.error);
+  }
+  
+  // Auto-detection mode
+  const safeResult = await wrapper.readStdinSafe({
+    timeout: options?.timeout,
+    allowEmpty: options?.allowEmpty ?? true,
+  });
+  
+  if (safeResult.ok) {
+    const warnings: string[] = [];
+    if (safeResult.data.skipped) {
+      warnings.push(safeResult.data.reason || "Stdin was skipped");
+    }
+    
+    return ok({
+      inputText: safeResult.data.content,
+      skipped: safeResult.data.skipped,
+      warnings,
+    });
+  }
+  
+  return error(safeResult.error);
 }

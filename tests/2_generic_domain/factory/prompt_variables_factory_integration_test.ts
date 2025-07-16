@@ -18,7 +18,7 @@ import {
   type TotalityPromptCliParams,
 } from "../../../lib/factory/prompt_variables_factory.ts";
 import type { Result as _Result } from "../../../lib/types/result.ts";
-import { DirectiveType } from "../../../lib/types/directive_type.ts";
+import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 
@@ -39,6 +39,7 @@ function createMockTwoParamsResult(directive: string, layer: string): TwoParams_
     params: [directive, layer],
     directiveType: directive,
     layerType: layer,
+    demonstrativeType: directive,
     options: {},
   };
 }
@@ -68,11 +69,16 @@ function createTotalityParams(
   options: Partial<PromptCliOptions> = {},
 ): TotalityPromptCliParams {
   const baseParams = createTestParams(directive, layer, options);
-  const mockResult = createMockTwoParamsResult(directive, layer);
+  const directiveResult = DirectiveType.create(directive);
+  const layerResult = LayerType.create(layer);
+  
+  if (!directiveResult.ok) throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+  if (!layerResult.ok) throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+  
   return {
     ...baseParams,
-    directive: DirectiveType.create(mockResult),
-    layer: LayerType.create(mockResult),
+    directive: directiveResult.data,
+    layer: layerResult.data,
   };
 }
 

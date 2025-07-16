@@ -13,7 +13,6 @@ import {
   ConfigSetName,
   ConfigSetNameCollection,
   type ConfigSetNameError as _ConfigSetNameError,
-  createConfigSetName,
   formatConfigSetNameError,
   isEmptyNameError,
   isInvalidCharactersError,
@@ -610,22 +609,22 @@ Deno.test("error_formatting: formatConfigSetNameError produces readable messages
   });
 });
 
-Deno.test("deprecated_utility: createConfigSetName throws on error", () => {
-  // Valid name should work
-  const validConfig = createConfigSetName("valid-name");
-  assertEquals(validConfig.value, "valid-name");
-
-  // Invalid name should throw
-  let threwError = false;
-  try {
-    createConfigSetName("");
-  } catch (caughtError) {
-    threwError = true;
-    assertEquals(caughtError instanceof Error, true);
-    assertEquals((caughtError as Error).message.includes("empty"), true);
-  }
-  assertEquals(threwError, true, "Should throw for invalid names");
-});
+// Deno.test("deprecated_utility: createConfigSetName throws on error", () => {
+//   // Valid name should work
+//   const validConfig = createConfigSetName("valid-name");
+//   assertEquals(validConfig.value, "valid-name");
+//
+//   // Invalid name should throw
+//   let threwError = false;
+//   try {
+//     createConfigSetName("");
+//   } catch (caughtError) {
+//     threwError = true;
+//     assertEquals(caughtError instanceof Error, true);
+//     assertEquals((caughtError as Error).message.includes("empty"), true);
+//   }
+//   assertEquals(threwError, true, "Should throw for invalid names");
+// });
 
 // ============================================================================
 // Collection Utilities Tests

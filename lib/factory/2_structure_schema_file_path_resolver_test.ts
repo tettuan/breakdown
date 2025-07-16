@@ -14,11 +14,11 @@
 import { assert, assertEquals, assertExists, assertObjectMatch } from "../deps.ts";
 import {
   formatSchemaError,
-  formatSchemaError as formatSchemaFilePathError,
   isConfigurationError,
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
+  schemaFilePathErrorToPathResolutionError,
   type SchemaFilePathError,
   SchemaFilePathResolver,
   SchemaPath,
@@ -98,12 +98,12 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
 Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure", () => {
   const testCases = [
     {
-      path: "/absolute/path/to/schema.md",
+      path: "/absolute/path/to/schema.schema.md",
       metadata: {
         baseDir: "/absolute/path",
         directiveType: "to",
         layerType: "project",
-        fileName: "schema.md",
+        fileName: "schema.schema.md",
       },
     },
   ];
@@ -111,12 +111,12 @@ Deno.test("SchemaFilePathResolver Structure - SchemaPath value object structure"
   // Add Windows path test only on Windows
   if (Deno.build.os === "windows") {
     testCases.push({
-      path: "C:\\Windows\\Path\\schema.md",
+      path: "C:\\Windows\\Path\\schema.schema.md",
       metadata: {
         baseDir: "C:\\Windows\\Path",
         directiveType: "summary",
         layerType: "issue",
-        fileName: "schema.md",
+        fileName: "schema.schema.md",
       },
     });
   }
@@ -286,10 +286,8 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
     const resolver = result.data;
 
     for (const mapping of mappings) {
-      // Access private method through type casting (for testing only)
-      const converted = (resolver as unknown as {
-        convertToSchemaFilePathError: (input: unknown) => { kind: string };
-      }).convertToSchemaFilePathError(mapping.input);
+      // Use the exported conversion function instead of private method
+      const converted = schemaFilePathErrorToPathResolutionError(mapping.input as SchemaFilePathError);
       assertEquals(converted.kind, mapping.expectedKind);
 
       if (mapping.checkProperties) {
@@ -430,7 +428,8 @@ Deno.test("SchemaFilePathResolver Structure - Error formatting completeness", ()
   ];
 
   for (const error of schemaErrors) {
-    const formatted = formatSchemaFilePathError(error);
+    const pathResolutionError = schemaFilePathErrorToPathResolutionError(error);
+    const formatted = formatSchemaError(pathResolutionError);
     assert(formatted.length > 0, `Should format ${error.kind}`);
 
     // Verify format includes key information

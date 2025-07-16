@@ -152,8 +152,8 @@ Deno.test("StdinVariableFactory - 1_behavior - handles empty string input", () =
     // StdinVariable may reject empty strings
     assertExists(result.error, "Should have error for empty string");
     const isValidationError = "kind" in result.error && (
-      result.error.kind === "EmptyValue" ||
-      result.error.kind === "ValidationFailed"
+      result.error.kind === "NoStdinData" ||
+      result.error.kind === "InvalidStdinSource"
     );
     assertEquals(isValidationError, true, "Should be validation error");
   } else {

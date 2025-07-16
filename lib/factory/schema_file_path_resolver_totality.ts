@@ -112,8 +112,8 @@ export class SchemaPath {
     }
 
     // Validate schema file naming convention
-    if (!path.endsWith("/base.schema.md")) {
-      return resultError(new Error("Schema file must be named 'base.schema.md'"));
+    if (!path.endsWith(".schema.md")) {
+      return resultError(new Error("Schema file must end with '.schema.md'"));
     }
 
     // Check if using default base directory
@@ -498,6 +498,37 @@ export class SchemaFilePathResolverTotality {
  */
 export const SchemaFilePathResolver = SchemaFilePathResolverTotality;
 export type SchemaFilePathResolver = SchemaFilePathResolverTotality;
+
+/**
+ * Convert SchemaFilePathError to PathResolutionError for unified error handling
+ */
+export function schemaFilePathErrorToPathResolutionError(error: SchemaFilePathError): PathResolutionError {
+  switch (error.kind) {
+    case "SchemaNotFound":
+      return {
+        kind: "TemplateNotFound",
+        attempted: [error.path],
+        fallback: error.message,
+      };
+    case "InvalidParameters":
+      return {
+        kind: "InvalidParameterCombination",
+        directiveType: error.directiveType,
+        layerType: error.layerType,
+      };
+    case "ConfigurationError":
+      return {
+        kind: "InvalidConfiguration",
+        details: error.message,
+      };
+    case "FileSystemError":
+      return {
+        kind: "InvalidPath",
+        path: "schema",
+        reason: error.message,
+      };
+  }
+}
 
 /**
  * Format schema resolution error for user-friendly display

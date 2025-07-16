@@ -25,7 +25,7 @@ import {
   type MigrationError,
   type MigrationResult,
 } from "./prompt_migration_utils.ts";
-import type { PromptCliParams, PromptVariables } from "../types/prompt_variables_vo.ts";
+import type { PromptCliParams, PromptVariables } from "../types/mod.ts";
 import { PromptPath } from "../types/prompt_types.ts";
 
 Deno.test("MigrationError structure - conforms to defined interface contract", () => {
@@ -256,11 +256,10 @@ Deno.test("Data transformation consistency - maintains one-to-one mapping relati
 
     // Verify total variable count matches expected transformations
     // 2 standard + 2 file + 1 stdin + 3 custom = 8 variables
-    assertEquals(variables.length, 8);
+    assertEquals(variables.size(), 8);
 
     // Convert to flat record for verification
-    const variableRecords = variables.map((v) => v.toRecord());
-    const flatRecord = Object.assign({}, ...variableRecords);
+    const flatRecord = variables.toRecord();
 
     // Verify one-to-one mappings
     assertEquals(flatRecord.directive_type, params.directiveType);
@@ -330,15 +329,13 @@ Deno.test("Wrapper function consistency - maintain identical behavior to core fu
   assertEquals(variablesResult1.ok, variablesResult2.ok);
 
   if (variablesResult1.ok && variablesResult2.ok) {
-    assertEquals(variablesResult1.data.length, variablesResult2.data.length);
+    assertEquals(variablesResult1.data.size(), variablesResult2.data.size());
 
     // Verify variable content is identical
-    const records1 = variablesResult1.data.map((v) => v.toRecord());
-    const records2 = variablesResult2.data.map((v) => v.toRecord());
-
-    for (let i = 0; i < records1.length; i++) {
-      assertEquals(records1[i], records2[i]);
-    }
+    const flatRecord1 = variablesResult1.data.toRecord();
+    const flatRecord2 = variablesResult2.data.toRecord();
+    
+    assertEquals(flatRecord1, flatRecord2);
   }
 
   if (!variablesResult1.ok && !variablesResult2.ok) {
@@ -586,7 +583,7 @@ Deno.test("Type safety structure - enforces strict typing throughout migration c
     const variables: PromptVariables = variablesResult.data;
 
     // Verify each variable maintains type contract
-    variables.forEach((variable, index) => {
+    variables.value.forEach((variable, index) => {
       // Verify duck typing contract
       assertEquals(
         typeof variable.toRecord,

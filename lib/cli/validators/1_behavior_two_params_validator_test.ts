@@ -39,7 +39,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
 
       if (result.ok) {
         assertEquals(
-          result.data.directiveType,
+          result.data.directiveType.value,
           directiveType,
           `Should return correct directive type: ${directiveType}`,
         );
@@ -65,7 +65,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
 
       if (result.ok) {
         assertEquals(
-          result.data.layerType,
+          result.data.layerType.value,
           layerType,
           `Should return correct layer type: ${layerType}`,
         );
@@ -99,12 +99,12 @@ describe("Behavior: Valid Parameter Recognition", () => {
 
       if (result.ok) {
         assertEquals(
-          result.data.directiveType,
+          result.data.directiveType.value,
           directiveType,
           `Should return correct directive type for combination: ${directiveType} ${layerType}`,
         );
         assertEquals(
-          result.data.layerType,
+          result.data.layerType.value,
           layerType,
           `Should return correct layer type for combination: ${directiveType} ${layerType}`,
         );
@@ -304,12 +304,12 @@ describe("Behavior: Edge Case Handling", () => {
 
     if (result.ok) {
       assertEquals(
-        result.data.directiveType,
+        result.data.directiveType.value,
         "to",
         "Should use first parameter as directive type",
       );
       assertEquals(
-        result.data.layerType,
+        result.data.layerType.value,
         "project",
         "Should use second parameter as layer type",
       );

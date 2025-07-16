@@ -42,19 +42,19 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         assertEquals(typeof strategy.getPriority, "function");
 
         // Check that resolve returns Promise<string | undefined>
-        const mockTwoParamsResult: TwoParams_Result = {
+        const mockTwoParams_Result: TwoParams_Result = {
           type: "two",
-          directiveType: "test",
-          demonstrativeType: "test",
-          layerType: "test",
-          params: ["test", "test"],
+          directiveType: "to",
+          layerType: "project",
+          demonstrativeType: "to",
+          params: ["to", "project"],
           options: {},
         };
-        const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+        const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
         if (!directiveResult.ok) {
           throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
         }
-        const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+        const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
         if (!layerResult.ok) {
           throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
         }
@@ -117,20 +117,20 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         assertEquals(typeof strategy.selectTemplate, "function");
 
         // Check that selectTemplate returns Result<TemplatePath, string>
-        const mockTwoParamsResult: TwoParams_Result = {
+        const mockTwoParams_Result: TwoParams_Result = {
           type: "two",
-          directiveType: "test",
-          demonstrativeType: "test",
-          layerType: "test",
-          params: ["test", "test"],
+          directiveType: "to",
+          layerType: "project",
+          demonstrativeType: "to",
+          params: ["to", "project"],
           options: {},
         };
-        const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+        const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
         if (!directiveResult.ok) {
           throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
         }
         const directive = directiveResult.data;
-        const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+        const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
         if (!layerResult.ok) {
           throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
         }
@@ -159,20 +159,20 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         fallbackMappings,
       );
 
-      const mockTwoParamsResult: TwoParams_Result = {
+      const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        demonstrativeType: "test",
-        layerType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
-      const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+      const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
       if (!directiveResult.ok) {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -211,20 +211,20 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       assertEquals(strategy instanceof FallbackTemplateSelectionStrategy, true);
 
       // Should work with valid inputs
-      const mockTwoParamsResult: TwoParams_Result = {
+      const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
         directiveType: "defect",
-        demonstrativeType: "defect",
         layerType: "project",
+        demonstrativeType: "defect",
         params: ["defect", "project"],
         options: {},
       };
-      const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+      const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
       if (!directiveResult.ok) {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -261,19 +261,19 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         new DefaultValueStrategy(),
       ];
 
-      const mockTwoParamsResult: TwoParams_Result = {
+      const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        demonstrativeType: "test",
-        layerType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
-      const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+      const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
       if (!directiveResult.ok) {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
-      const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -320,19 +320,19 @@ describe("DefaultGenerationStrategies - Architecture", () => {
       const strategy = new FilePathResolutionStrategy();
 
       // Should handle null/undefined context properties without throwing
-      const mockTwoParamsResult: TwoParams_Result = {
+      const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        demonstrativeType: "test",
-        layerType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
-      const directiveResult2 = DirectiveType.create(mockTwoParamsResult.directiveType);
+      const directiveResult2 = DirectiveType.create(mockTwoParams_Result.directiveType);
       if (!directiveResult2.ok) {
         throw new Error(`Failed to create DirectiveType: ${directiveResult2.error.message}`);
       }
-      const layerResult2 = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+      const layerResult2 = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
       if (!layerResult2.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult2.error.message}`);
       }
@@ -349,20 +349,20 @@ describe("DefaultGenerationStrategies - Architecture", () => {
 
     it("should validate template selection results", () => {
       const strategy = new StandardTemplateSelectionStrategy();
-      const mockTwoParamsResult: TwoParams_Result = {
+      const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        demonstrativeType: "test",
-        layerType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
-      const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
+      const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
       if (!directiveResult.ok) {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }

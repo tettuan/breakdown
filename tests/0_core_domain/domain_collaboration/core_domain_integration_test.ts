@@ -7,7 +7,7 @@
  * @module tests/0_core_domain/domain_collaboration/core_domain_integration_test
  */
 
-import { assertEquals, assertExists, assertFalse, assertTrue } from "jsr:@std/assert@1.0.0";
+import { assert, assertEquals, assertExists, assertFalse } from "jsr:@std/assert@1.0.0";
 import { describe, it } from "jsr:@std/testing@1.0.0/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -29,11 +29,11 @@ describe("Core Domain Integration Tests", () => {
       
       // Act: Create DirectiveType
       const directiveResult = DirectiveType.create("to", profile);
-      assertTrue(directiveResult.ok, "DirectiveType creation should succeed");
+      assert(directiveResult.ok, "DirectiveType creation should succeed");
       
       // Act: Create LayerType  
       const layerResult = LayerType.create("issue");
-      assertTrue(layerResult.ok, "LayerType creation should succeed");
+      assert(layerResult.ok, "LayerType creation should succeed");
       
       if (!directiveResult.ok) throw new Error("DirectiveType creation failed");
       if (!layerResult.ok) throw new Error("LayerType creation failed");
@@ -46,8 +46,8 @@ describe("Core Domain Integration Tests", () => {
       assertEquals(layer.value, "issue");
       
       // Assert: Compatibility check
-      assertTrue(layer.isValidForDirective(directive), "Layer should be compatible with directive");
-      assertTrue(directive.isValidForProfile(profile), "Directive should be valid for profile");
+      assert(layer.isValidForDirective(directive), "Layer should be compatible with directive");
+      assert(directive.isValidForProfile(profile), "Directive should be valid for profile");
       
       logger.debug("DirectiveType-LayerType collaboration verified", {
         directive: directive.value,
@@ -83,7 +83,7 @@ describe("Core Domain Integration Tests", () => {
       const directiveResult = DirectiveType.create("to", profile);
       const layerResult = LayerType.create("project");
       
-      assertTrue(directiveResult.ok && layerResult.ok, "Setup should succeed");
+      assert(directiveResult.ok && layerResult.ok, "Setup should succeed");
       
       if (!directiveResult.ok) throw new Error("DirectiveType creation failed");
       if (!layerResult.ok) throw new Error("LayerType creation failed");
@@ -121,7 +121,7 @@ describe("Core Domain Integration Tests", () => {
       
       // Act: Create TwoParams aggregate
       const twoParamsResult = TwoParams.create("to", "issue", profile);
-      assertTrue(twoParamsResult.ok, "TwoParams creation should succeed");
+      assert(twoParamsResult.ok, "TwoParams creation should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
@@ -133,7 +133,7 @@ describe("Core Domain Integration Tests", () => {
       
       // Assert: Aggregate operations
       const validateResult = twoParams.validate();
-      assertTrue(validateResult.ok, "TwoParams validation should succeed");
+      assert(validateResult.ok, "TwoParams validation should succeed");
       
       const command = twoParams.toCommand();
       assertEquals(command.command, "breakdown");
@@ -174,7 +174,7 @@ describe("Core Domain Integration Tests", () => {
       // Arrange
       const profile = ConfigProfileName.createDefault();
       const twoParamsResult = TwoParams.create("to", "task", profile);
-      assertTrue(twoParamsResult.ok, "Setup should succeed");
+      assert(twoParamsResult.ok, "Setup should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
@@ -212,7 +212,7 @@ describe("Core Domain Integration Tests", () => {
       // Arrange
       const profile = ConfigProfileName.createDefault();
       const twoParamsResult = TwoParams.create("to", "issue", profile);
-      assertTrue(twoParamsResult.ok, "Setup should succeed");
+      assert(twoParamsResult.ok, "Setup should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
@@ -243,7 +243,7 @@ describe("Core Domain Integration Tests", () => {
       const twoParams2Result = TwoParams.create("to", "issue", profile);
       const twoParams3Result = TwoParams.create("summary", "project", profile);
       
-      assertTrue(twoParams1Result.ok && twoParams2Result.ok && twoParams3Result.ok, "Setup should succeed");
+      assert(twoParams1Result.ok && twoParams2Result.ok && twoParams3Result.ok, "Setup should succeed");
       
       if (!twoParams1Result.ok) throw new Error("TwoParams1 creation failed");
       if (!twoParams2Result.ok) throw new Error("TwoParams2 creation failed");
@@ -260,10 +260,10 @@ describe("Core Domain Integration Tests", () => {
       const sameLayer = twoParams1.layer.equals(twoParams3.layer);
       
       // Assert: Consistency checks
-      assertTrue(sameDirective, "Same directive types should be equal");
-      assertTrue(sameProfile, "Same profiles should be equal");
-      assertTrue(differentDirective, "Different directive types should not be equal");
-      assertTrue(sameLayer, "Same layer types should be equal");
+      assert(sameDirective, "Same directive types should be equal");
+      assert(sameProfile, "Same profiles should be equal");
+      assert(differentDirective, "Different directive types should not be equal");
+      assert(sameLayer, "Same layer types should be equal");
       
       // Assert: TwoParams equality
       assertFalse(twoParams1.equals(twoParams2), "Different TwoParams should not be equal");
@@ -286,15 +286,15 @@ describe("Core Domain Integration Tests", () => {
       const undefinedProfileResult = TwoParams.createWithCliOption("to", "issue", undefined);
       
       // Assert: CLI option handling
-      assertTrue(defaultProfileResult.ok, "Default profile should work");
+      assert(defaultProfileResult.ok, "Default profile should work");
       if (!defaultProfileResult.ok) throw new Error("Default profile creation failed");
       assertEquals(defaultProfileResult.data.profile.value, "default");
       
-      assertTrue(explicitProfileResult.ok, "Explicit profile should work");
+      assert(explicitProfileResult.ok, "Explicit profile should work");
       if (!explicitProfileResult.ok) throw new Error("Explicit profile creation failed");
       assertEquals(explicitProfileResult.data.profile.value, "custom");
       
-      assertTrue(undefinedProfileResult.ok, "Undefined profile should default");
+      assert(undefinedProfileResult.ok, "Undefined profile should default");
       if (!undefinedProfileResult.ok) throw new Error("Undefined profile creation failed");
       assertEquals(undefinedProfileResult.data.profile.value, "default");
       
@@ -311,7 +311,7 @@ describe("Core Domain Integration Tests", () => {
       // Arrange
       const profile = ConfigProfileName.createDefault();
       const twoParamsResult = TwoParams.create("to", "issue", profile);
-      assertTrue(twoParamsResult.ok, "Setup should succeed");
+      assert(twoParamsResult.ok, "Setup should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
@@ -323,13 +323,13 @@ describe("Core Domain Integration Tests", () => {
       const twoParamsString = twoParams.toString();
       
       // Assert: Debug information quality
-      assertTrue(twoParamsDebug.includes("TwoParams"), "TwoParams debug should include class name");
-      assertTrue(twoParamsDebug.includes("directive=\"to\""), "Should include directive info");
-      assertTrue(twoParamsDebug.includes("layer=\"issue\""), "Should include layer info");
-      assertTrue(twoParamsDebug.includes("profile=\"default\""), "Should include profile info");
+      assert(twoParamsDebug.includes("TwoParams"), "TwoParams debug should include class name");
+      assert(twoParamsDebug.includes("directive=\"to\""), "Should include directive info");
+      assert(twoParamsDebug.includes("layer=\"issue\""), "Should include layer info");
+      assert(twoParamsDebug.includes("profile=\"default\""), "Should include profile info");
       
-      assertTrue(directiveDebug.includes("DirectiveType"), "DirectiveType debug should include class name");
-      assertTrue(layerDebug.includes("LayerType"), "LayerType debug should include class name");
+      assert(directiveDebug.includes("DirectiveType"), "DirectiveType debug should include class name");
+      assert(layerDebug.includes("LayerType"), "LayerType debug should include class name");
       
       assertEquals(twoParamsString, "to issue", "String representation should be concise");
       
@@ -352,12 +352,12 @@ describe("Core Domain Integration Tests", () => {
       // Mock scenario:假設某個指令對特定profile無效（需要實際的配置來測試）
       // 這裡我們測試基本的錯誤處理一致性
       const validTwoParamsResult = TwoParams.create("to", "issue", profile);
-      assertTrue(validTwoParamsResult.ok, "Valid combination should succeed");
+      assert(validTwoParamsResult.ok, "Valid combination should succeed");
       
       if (!validTwoParamsResult.ok) throw new Error("Valid TwoParams creation failed");
       const twoParams = validTwoParamsResult.data;
       const validationResult = twoParams.validate();
-      assertTrue(validationResult.ok, "Validation should succeed for valid TwoParams");
+      assert(validationResult.ok, "Validation should succeed for valid TwoParams");
       
       logger.debug("Profile validation consistency verified");
     });
@@ -368,7 +368,7 @@ describe("Core Domain Integration Tests", () => {
       // Arrange
       const profile = ConfigProfileName.createDefault();
       const twoParamsResult = TwoParams.create("to", "issue", profile);
-      assertTrue(twoParamsResult.ok, "Setup should succeed");
+      assert(twoParamsResult.ok, "Setup should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
@@ -398,7 +398,7 @@ describe("Core Domain Integration Tests", () => {
       // Arrange
       const profile = ConfigProfileName.createDefault();
       const twoParamsResult = TwoParams.create("to", "project", profile);
-      assertTrue(twoParamsResult.ok, "Setup should succeed");
+      assert(twoParamsResult.ok, "Setup should succeed");
       
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;

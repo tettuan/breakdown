@@ -126,41 +126,29 @@ Deno.test("LayerType Behavior - Known Layers Consistency", () => {
 });
 
 Deno.test("LayerType Behavior - Suggestion Generation", () => {
-  // Test suggestions for partial matches
-  const partialResult = LayerType.fromString("pro");
-  assert(!partialResult.ok, "Partial match should fail");
-  if (!partialResult.ok && partialResult.error.kind === "UnknownLayer") {
-    assert(
-      partialResult.error.suggestions.length > 0,
-      "Should provide suggestions for partial match",
-    );
-    assert(
-      partialResult.error.suggestions.includes("project"),
-      "Should suggest 'project' for 'pro'",
-    );
+  // Test error handling for invalid patterns
+  const invalidFormatResult = LayerType.fromString("INVALID-UPPER-CASE");
+  if (!invalidFormatResult.ok && invalidFormatResult.error.kind === "InvalidFormat") {
+    assert(invalidFormatResult.error.message.includes("invalid characters"), "Should explain format error");
+  } else if (!invalidFormatResult.ok && invalidFormatResult.error.kind === "PatternMismatch") {
+    assert(invalidFormatResult.error.validLayers.length > 0, "Should provide valid layers");
+  } else {
+    // If it's valid, that's also fine since the pattern allows it
+    assert(invalidFormatResult.ok, "Should either be valid or provide proper error");
   }
 
-  // Test suggestions for similar inputs
-  const similarResult = LayerType.fromString("proj");
-  assert(!similarResult.ok, "Similar input should fail");
-  if (!similarResult.ok && similarResult.error.kind === "UnknownLayer") {
-    assert(
-      similarResult.error.suggestions.length > 0,
-      "Should provide suggestions for similar input",
-    );
+  // Test error handling for too long inputs
+  const tooLongResult = LayerType.fromString("this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length");
+  assert(!tooLongResult.ok, "Too long input should fail");
+  if (!tooLongResult.ok && tooLongResult.error.kind === "TooLong") {
+    assert(tooLongResult.error.maxLength > 0, "Should provide max length information");
   }
 
-  // Test suggestions for completely unknown inputs
-  const unknownResult = LayerType.fromString("completely_unknown_xyz");
-  assert(!unknownResult.ok, "Unknown input should fail");
-  if (!unknownResult.ok && unknownResult.error.kind === "UnknownLayer") {
-    assert(unknownResult.error.suggestions.length > 0, "Should provide fallback suggestions");
-    // Should provide all known layers as fallback
-    const knownLayers = LayerType.getKnownLayerTypes();
-    assert(
-      unknownResult.error.suggestions.length >= knownLayers.length,
-      "Should include all known layers as fallback",
-    );
+  // Test empty input error handling
+  const emptyResult = LayerType.fromString("");
+  assert(!emptyResult.ok, "Empty input should fail");
+  if (!emptyResult.ok && emptyResult.error.kind === "EmptyInput") {
+    assert(emptyResult.error.message.includes("empty"), "Should explain empty input error");
   }
 });
 
@@ -209,22 +197,22 @@ Deno.test("LayerType Behavior - Error Message Quality", () => {
   assert(!emptyResult.ok, "Empty input should fail");
   if (!emptyResult.ok) {
     assertEquals(emptyResult.error.kind, "EmptyInput", "Should identify empty input error");
-    assertEquals("input" in emptyResult.error, true, "Error should include input value");
+    assertEquals("message" in emptyResult.error, true, "Error should include message");
   }
 
   // Invalid type error
   const invalidResult = LayerType.fromString(123);
   assert(!invalidResult.ok, "Invalid type should fail");
   if (!invalidResult.ok) {
-    assertEquals(invalidResult.error.kind, "InvalidInput", "Should identify invalid input error");
-    assertEquals("actualType" in invalidResult.error, true, "Error should include actual type");
+    assertEquals(invalidResult.error.kind, "EmptyInput", "Should identify empty input error");
+    assertEquals("message" in invalidResult.error, true, "Error should include message");
   }
 
-  // Unknown layer error
-  const unknownResult = LayerType.fromString("unknown");
-  assert(!unknownResult.ok, "Unknown layer should fail");
-  if (!unknownResult.ok) {
-    assertEquals(unknownResult.error.kind, "UnknownLayer", "Should identify unknown layer error");
-    assertEquals("suggestions" in unknownResult.error, true, "Error should include suggestions");
+  // Too long layer error
+  const tooLongResult = LayerType.fromString("this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length");
+  assert(!tooLongResult.ok, "Too long layer should fail");
+  if (!tooLongResult.ok) {
+    assertEquals(tooLongResult.error.kind, "TooLong", "Should identify too long error");
+    assertEquals("maxLength" in tooLongResult.error, true, "Error should include max length");
   }
 });

@@ -19,7 +19,7 @@ import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
 
 // Generic domain imports (factory collaborations)
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { PromptTemplatePathResolver } from "$lib/factory/prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "$lib/factory/prompt_template_path_resolver_totality.ts";
 
 const logger = new BreakdownLogger("cross-domain-collaboration");
 
