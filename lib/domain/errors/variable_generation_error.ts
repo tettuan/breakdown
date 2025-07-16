@@ -1,9 +1,9 @@
 /**
  * @fileoverview Variable Generation Domain Errors
- * 
+ *
  * Errors related to prompt variable generation and transformation.
  * Covers input validation, variable merging, and data transformation issues.
- * 
+ *
  * @module domain/errors/variable_generation_error
  */
 
@@ -46,7 +46,7 @@ export class VariableGenerationError extends BaseBreakdownError {
         schemaPath?: string;
         transformationStep?: string;
       };
-    }
+    },
   ) {
     super(message, "variable-generation", kind, options?.context);
     this.kind = kind;
@@ -60,17 +60,17 @@ export class VariableGenerationError extends BaseBreakdownError {
    */
   static missingRequired(
     missingVariables: string[],
-    sourceType?: string
+    sourceType?: string,
   ): VariableGenerationError {
-    const source = sourceType ? ` from ${sourceType}` : '';
-    const vars = missingVariables.join(', ');
-    
+    const source = sourceType ? ` from ${sourceType}` : "";
+    const vars = missingVariables.join(", ");
+
     return new VariableGenerationError(
       "variable-missing-required",
       `Missing required variables${source}: ${vars}`,
       {
-        context: { missingVariables, sourceType: sourceType as any }
-      }
+        context: { missingVariables, sourceType: sourceType as any },
+      },
     );
   }
 
@@ -81,14 +81,14 @@ export class VariableGenerationError extends BaseBreakdownError {
     variableName: string,
     expected: string,
     actual: string,
-    value?: unknown
+    value?: unknown,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-invalid-type",
       `Variable '${variableName}' has invalid type: expected ${expected}, got ${actual}`,
       {
-        context: { variableName, expected, actual, variableValue: value }
-      }
+        context: { variableName, expected, actual, variableValue: value },
+      },
     );
   }
 
@@ -98,14 +98,14 @@ export class VariableGenerationError extends BaseBreakdownError {
   static validationFailed(
     variableName: string,
     reason: string,
-    value?: unknown
+    value?: unknown,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-validation-failed",
       `Variable '${variableName}' validation failed: ${reason}`,
       {
-        context: { variableName, variableValue: value, expected: reason }
-      }
+        context: { variableName, variableValue: value, expected: reason },
+      },
     );
   }
 
@@ -116,15 +116,15 @@ export class VariableGenerationError extends BaseBreakdownError {
     variableName: string,
     transformationStep: string,
     reason: string,
-    cause?: Error
+    cause?: Error,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-transformation-failed",
       `Failed to transform variable '${variableName}' during ${transformationStep}: ${reason}`,
       {
         cause,
-        context: { variableName, transformationStep, expected: reason }
-      }
+        context: { variableName, transformationStep, expected: reason },
+      },
     );
   }
 
@@ -132,18 +132,18 @@ export class VariableGenerationError extends BaseBreakdownError {
    * Create error for merge conflicts
    */
   static mergeConflict(
-    conflictingVariables: Array<{ name: string; sources: string[] }>
+    conflictingVariables: Array<{ name: string; sources: string[] }>,
   ): VariableGenerationError {
     const conflicts = conflictingVariables
-      .map(c => `${c.name} (from: ${c.sources.join(', ')})`)
-      .join(', ');
+      .map((c) => `${c.name} (from: ${c.sources.join(", ")})`)
+      .join(", ");
 
     return new VariableGenerationError(
       "variable-merge-conflict",
       `Variable merge conflict detected: ${conflicts}`,
       {
-        context: { conflictingVariables }
-      }
+        context: { conflictingVariables },
+      },
     );
   }
 
@@ -153,15 +153,15 @@ export class VariableGenerationError extends BaseBreakdownError {
   static sourceInvalid(
     sourceType: string,
     reason: string,
-    cause?: Error
+    cause?: Error,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-source-invalid",
       `Invalid variable source '${sourceType}': ${reason}`,
       {
         cause,
-        context: { sourceType: sourceType as any, expected: reason }
-      }
+        context: { sourceType: sourceType as any, expected: reason },
+      },
     );
   }
 
@@ -171,14 +171,14 @@ export class VariableGenerationError extends BaseBreakdownError {
   static schemaMismatch(
     variableName: string,
     schemaPath: string,
-    mismatchDetails: string
+    mismatchDetails: string,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-schema-mismatch",
       `Variable '${variableName}' does not match schema: ${mismatchDetails}`,
       {
-        context: { variableName, schemaPath, expected: mismatchDetails }
-      }
+        context: { variableName, schemaPath, expected: mismatchDetails },
+      },
     );
   }
 
@@ -188,18 +188,18 @@ export class VariableGenerationError extends BaseBreakdownError {
   static referenceError(
     variableName: string,
     referencedVariable: string,
-    reason: string
+    reason: string,
   ): VariableGenerationError {
     return new VariableGenerationError(
       "variable-reference-error",
       `Variable reference error in '${variableName}': cannot resolve '${referencedVariable}' - ${reason}`,
       {
-        context: { 
-          variableName, 
+        context: {
+          variableName,
           variableValue: `{{${referencedVariable}}}`,
-          expected: reason 
-        }
-      }
+          expected: reason,
+        },
+      },
     );
   }
 
@@ -208,7 +208,7 @@ export class VariableGenerationError extends BaseBreakdownError {
    */
   override getUserMessage(): string {
     const base = this.message;
-    
+
     // Add helpful context for common errors
     switch (this.kind) {
       case "variable-missing-required":
@@ -254,44 +254,97 @@ export class VariableGenerationError extends BaseBreakdownError {
     switch (this.kind) {
       case "variable-missing-required":
         if (this.context?.missingVariables && Array.isArray(this.context.missingVariables)) {
-          suggestions.push({ action: "provide-variables", description: "Provide missing variables using one of:" });
-          suggestions.push({ action: "use-cli", description: "Command line", command: "--var name=value" });
-          suggestions.push({ action: "use-input-file", description: "Input file", command: "--input data.json" });
+          suggestions.push({
+            action: "provide-variables",
+            description: "Provide missing variables using one of:",
+          });
+          suggestions.push({
+            action: "use-cli",
+            description: "Command line",
+            command: "--var name=value",
+          });
+          suggestions.push({
+            action: "use-input-file",
+            description: "Input file",
+            command: "--input data.json",
+          });
           suggestions.push({ action: "use-config", description: "Configuration file" });
-          suggestions.push({ action: "missing-list", description: `Missing: ${this.context.missingVariables.join(', ')}` });
+          suggestions.push({
+            action: "missing-list",
+            description: `Missing: ${this.context.missingVariables.join(", ")}`,
+          });
         }
         break;
       case "variable-invalid-type":
-        suggestions.push({ action: "convert-type", description: `Convert '${this.context?.variableName}' to ${this.context?.expected}` });
+        suggestions.push({
+          action: "convert-type",
+          description: `Convert '${this.context?.variableName}' to ${this.context?.expected}`,
+        });
         if (this.context?.expected === "array") {
-          suggestions.push({ action: "array-example", description: "Example: [\"item1\", \"item2\", \"item3\"]" });
+          suggestions.push({
+            action: "array-example",
+            description: 'Example: ["item1", "item2", "item3"]',
+          });
         } else if (this.context?.expected === "object") {
           suggestions.push({ action: "object-example", description: 'Example: {"key": "value"}' });
         }
         break;
       case "variable-validation-failed":
-        suggestions.push({ action: "check-value", description: `Check the value of '${this.context?.variableName}'` });
-        suggestions.push({ action: "check-requirements", description: "Ensure it meets validation requirements" });
+        suggestions.push({
+          action: "check-value",
+          description: `Check the value of '${this.context?.variableName}'`,
+        });
+        suggestions.push({
+          action: "check-requirements",
+          description: "Ensure it meets validation requirements",
+        });
         break;
       case "variable-transformation-failed":
-        suggestions.push({ action: "check-pipeline", description: "Check the transformation pipeline" });
-        suggestions.push({ action: "check-step", description: `Failed at step: ${this.context?.transformationStep}` });
+        suggestions.push({
+          action: "check-pipeline",
+          description: "Check the transformation pipeline",
+        });
+        suggestions.push({
+          action: "check-step",
+          description: `Failed at step: ${this.context?.transformationStep}`,
+        });
         break;
       case "variable-merge-conflict":
         if (this.context?.conflictingVariables) {
           suggestions.push({ action: "resolve-conflicts", description: "Resolve conflicts by:" });
-          suggestions.push({ action: "use-priority", description: "Using explicit priority: CLI > stdin > config" });
-          suggestions.push({ action: "remove-duplicates", description: "Removing duplicate sources" });
-          suggestions.push({ action: "use-different-names", description: "Using different variable names" });
+          suggestions.push({
+            action: "use-priority",
+            description: "Using explicit priority: CLI > stdin > config",
+          });
+          suggestions.push({
+            action: "remove-duplicates",
+            description: "Removing duplicate sources",
+          });
+          suggestions.push({
+            action: "use-different-names",
+            description: "Using different variable names",
+          });
         }
         break;
       case "variable-schema-mismatch":
-        suggestions.push({ action: "validate-schema", description: "Validate your data against the schema" });
-        suggestions.push({ action: "check-schema-location", description: `Schema location: ${this.context?.schemaPath}` });
+        suggestions.push({
+          action: "validate-schema",
+          description: "Validate your data against the schema",
+        });
+        suggestions.push({
+          action: "check-schema-location",
+          description: `Schema location: ${this.context?.schemaPath}`,
+        });
         break;
       case "variable-reference-error":
-        suggestions.push({ action: "define-reference", description: `Define the referenced variable: ${this.context?.variableValue}` });
-        suggestions.push({ action: "check-circular", description: "Check for circular references" });
+        suggestions.push({
+          action: "define-reference",
+          description: `Define the referenced variable: ${this.context?.variableValue}`,
+        });
+        suggestions.push({
+          action: "check-circular",
+          description: "Check for circular references",
+        });
         break;
     }
 
@@ -304,7 +357,10 @@ export class VariableGenerationError extends BaseBreakdownError {
   getExample(): string | undefined {
     switch (this.kind) {
       case "variable-missing-required":
-        if (this.context?.missingVariables && Array.isArray(this.context.missingVariables) && this.context.missingVariables.includes("projectName")) {
+        if (
+          this.context?.missingVariables && Array.isArray(this.context.missingVariables) &&
+          this.context.missingVariables.includes("projectName")
+        ) {
           return `breakdown to project --var projectName="MyProject"`;
         }
         break;

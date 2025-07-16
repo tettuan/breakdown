@@ -1,0 +1,39 @@
+{
+  "config_name": "minimal_config",
+  "expected_behavior": {
+    "prompts": {
+      "template_dir": "prompts",
+      "schema_dir": "schema",
+      "custom_variables_count": 0,
+      "variable_substitution": "basic"
+    },
+    "output": {
+      "format": "markdown",
+      "includes_timestamp": true,
+      "includes_metadata": false,
+      "custom_headers": []
+    },
+    "processing": {
+      "timeout_default": true,
+      "max_file_size_default": true,
+      "concurrent_processing": false
+    },
+    "logging": {
+      "level": "info",
+      "output_method": "console",
+      "file_logging": false
+    },
+    "workflows": {
+      "available_workflows": ["basic"],
+      "custom_workflows": 0
+    }
+  },
+  "validation_criteria": {
+    "required_fields": ["app_name", "version", "prompts", "output", "logging"],
+    "optional_fields": ["processing", "error_handling", "workflows"],
+    "performance": {
+      "load_time_ms": "<100",
+      "memory_usage": "minimal"
+    }
+  }
+}

@@ -231,7 +231,7 @@ export class PathValueObjectFactory {
 }
 
 // Validation Rule Value Object
-// Note: validation_rule.ts, error_severity.ts, timeout_duration.ts, workspace_name.ts 
+// Note: validation_rule.ts, error_severity.ts, timeout_duration.ts, workspace_name.ts
 // have been removed as part of DDD totality refactoring
 
 // Config Set Name Value Object
@@ -247,19 +247,19 @@ export {
   isTooLongError as isConfigSetTooLongError,
 } from "./config_set_name.ts";
 
-// Directive Type Value Object  
+// Directive Type Value Object
 export {
   DirectiveType,
-  TwoParamsDirectivePattern,
   type DirectiveTypeError,
+  TwoParamsDirectivePattern,
 } from "./directive_type.ts";
 
 // Layer Type Value Object
 export {
   LayerType,
+  type LayerTypeError,
   LayerTypeFactory,
   TwoParamsLayerTypePattern,
-  type LayerTypeError,
 } from "./layer_type.ts";
 
 /**

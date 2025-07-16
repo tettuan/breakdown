@@ -20,37 +20,22 @@ import type {
 } from "./schema_repository.ts";
 import { Schema, SchemaContent, SchemaPath } from "./schema_management_aggregate.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import type { TwoParams_Result } from "../../deps.ts";
 
 // Helper functions for creating test instances
 function createMockDirectiveType(value: string): DirectiveType {
-  const mockResult: TwoParams_Result = {
-    type: "two",
-    directiveType: "to",
-    directiveType: value,
-    layerType: "project",
-    directiveType: value,
-    options: {},
-    params: [value, "project"],
-  };
-  return DirectiveType.create(mockResult);
+  const result = DirectiveType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create DirectiveType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 function createMockLayerType(value: string): LayerType {
-  const mockResult: TwoParams_Result = {
-    type: "two",
-    directiveType: "to",
-    directiveType: "to",
-    layerType: value,
-    directiveType: "to",
-    options: {},
-    params: ["to", value],
-  };
-  const layerResult = LayerType.create(mockResult);
-  if (!layerResult.ok) {
-    throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
+  const result = LayerType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create LayerType: ${result.error.message}`);
   }
-  return layerResult.data;
+  return result.data;
 }
 
 // Mock SchemaRepository for testing
@@ -533,9 +518,9 @@ Deno.test("TemplateSchemaReader - Error handling for invalid schema path", async
   const mockRepo = new MockSchemaRepository();
   const reader = new TemplateSchemaReader(mockRepo);
 
-  const mockDirective = createMockDirectiveType("invalid");
-  const mockLayer = createMockLayerType("invalid");
-  const pathResult = SchemaPath.create(mockDirective, mockLayer, "invalid.json");
+  const mockDirective = createMockDirectiveType("to");
+  const mockLayer = createMockLayerType("task");
+  const pathResult = SchemaPath.create(mockDirective, mockLayer, "nonexistent.json");
 
   assert(pathResult.ok);
 

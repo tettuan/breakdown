@@ -13,10 +13,10 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 // Test fixtures
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
-    directiveType: "to",
-  params: ["to", "project"],
-  layerType: "project",
   directiveType: "to",
+  demonstrativeType: "to",
+  layerType: "project",
+  params: ["to", "project"],
   options: {},
 };
 

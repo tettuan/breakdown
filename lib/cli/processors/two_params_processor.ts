@@ -40,6 +40,7 @@ export type ProcessorError =
  * const twoParamsResult: TwoParams_Result = {
  *   type: "two",
  *   directiveType: "to",
+    demonstrativeType: "to",
  *   layerType: "project",
  *   directiveType: "to",
  *   params: ["to", "project"],

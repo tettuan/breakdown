@@ -46,7 +46,13 @@ export type ValidatedOptions = {
  */
 export type ValidationMetadata = {
   validatedAt: Date;
-  source: "TwoParams" | "OneParams" | "ZeroParams" | "TwoParams_Result" | "OneParamsResult" | "ZeroParamsResult";
+  source:
+    | "TwoParams"
+    | "OneParams"
+    | "ZeroParams"
+    | "TwoParams_Result"
+    | "OneParamsResult"
+    | "ZeroParamsResult";
   profileName?: string;
 };
 
@@ -60,11 +66,36 @@ export type ValidationError =
   | { kind: "CustomVariableError"; error: unknown }
   | { kind: "TypeCreationError"; type: "directive" | "layer"; value: string }
   | { kind: "ConfigValidationFailed"; errors: string[]; context?: Record<string, unknown> }
-  | { kind: "InvalidDirectiveType"; value: string; validPattern: string; context?: Record<string, unknown> }
-  | { kind: "InvalidLayerType"; value: string; validPattern: string; context?: Record<string, unknown> }
-  | { kind: "InvalidParamsType"; expected: string; received: string; context?: Record<string, unknown> }
-  | { kind: "PathValidationFailed"; path: string; reason: string; context?: Record<string, unknown> }
-  | { kind: "CustomVariableInvalid"; key: string; reason: string; context?: Record<string, unknown> };
+  | {
+    kind: "InvalidDirectiveType";
+    value: string;
+    validPattern: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidLayerType";
+    value: string;
+    validPattern: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidParamsType";
+    expected: string;
+    received: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "PathValidationFailed";
+    path: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "CustomVariableInvalid";
+    key: string;
+    reason: string;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Configuration validator interface
@@ -200,8 +231,8 @@ export class ParameterValidatorV2 {
     const twoParamsResult: TwoParams_Result = {
       type: "two",
       directiveType: typeValidation.data.directiveType,
+      demonstrativeType: typeValidation.data.directiveType, // For JSR package compatibility
       layerType: typeValidation.data.layerType,
-      directiveType: typeValidation.data.directiveType,
       params: typeValidation.data.params,
       options: typeValidation.data.options,
     };
@@ -209,7 +240,7 @@ export class ParameterValidatorV2 {
     // Use DDD DirectiveType with Smart Constructor pattern
     const directiveResult = DirectiveType.create(
       typeValidation.data.directiveType,
-      this.getConfigProfile(normalizedOptions.data.profile)
+      this.getConfigProfile(normalizedOptions.data.profile),
     );
     if (!directiveResult.ok) {
       return error({
@@ -219,9 +250,9 @@ export class ParameterValidatorV2 {
       });
     }
 
-    // Use DDD LayerType with Smart Constructor pattern  
+    // Use DDD LayerType with Smart Constructor pattern
     const layerResult = LayerType.create(
-      typeValidation.data.layerType
+      typeValidation.data.layerType,
     );
     if (!layerResult.ok) {
       return error({
@@ -266,7 +297,7 @@ export class ParameterValidatorV2 {
     if (!profileName) {
       return ConfigProfileName.createDefault();
     }
-    
+
     const result = ConfigProfileName.create(profileName);
     return result.ok ? result.data : ConfigProfileName.createDefault();
   }

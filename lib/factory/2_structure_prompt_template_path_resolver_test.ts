@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

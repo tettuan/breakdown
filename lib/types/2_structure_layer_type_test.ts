@@ -22,6 +22,7 @@ const createValidTwoParamsResult = (
   type: "two" as const,
   directiveType,
   layerType,
+  demonstrativeType: directiveType,
   params: [directiveType, layerType],
   options: {},
 });
@@ -29,10 +30,10 @@ const createValidTwoParamsResult = (
 Deno.test("2_structure: LayerType follows Smart Constructor pattern", () => {
   // Test that LayerType follows Smart Constructor pattern with Result type
   const validResult = LayerType.create("project");
-  
+
   // Result should be ok for valid input
   assertEquals(validResult.ok, true);
-  
+
   if (validResult.ok) {
     // LayerType should be properly encapsulated
     assertEquals(typeof validResult.data.value, "string");
@@ -44,7 +45,7 @@ Deno.test("2_structure: LayerType follows Smart Constructor pattern", () => {
   // Test invalid input
   const invalidResult = LayerType.create("");
   assertEquals(invalidResult.ok, false);
-  
+
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "EmptyInput");
   }
@@ -57,7 +58,7 @@ Deno.test("2_structure: LayerType maintains consistent interface", () => {
 
   if (result.ok) {
     const layerType = result.data;
-    
+
     // Test method signatures and return types
     assertEquals(typeof layerType.value, "string");
     assertEquals(typeof layerType.toString(), "string");
@@ -90,7 +91,7 @@ Deno.test("2_structure: LayerType ensures input validation safety", () => {
   // Test valid inputs
   const validInputs = [
     "project",
-    "issue", 
+    "issue",
     "task",
     "bugs",
     "feature",
@@ -109,12 +110,12 @@ Deno.test("2_structure: LayerType with TwoParams_Result compatibility", () => {
   // Test compatibility with TwoParams_Result
   const twoParamsResult = createValidTwoParamsResult("issue", "to");
   const result = LayerType.create(twoParamsResult);
-  
+
   assertEquals(result.ok, true);
-  
+
   if (result.ok) {
     const layerType = result.data;
-    
+
     // Should extract the layerType from TwoParams_Result
     assertEquals(layerType.value, "issue");
     assertEquals(typeof layerType.value, "string");
@@ -137,7 +138,7 @@ Deno.test("2_structure: LayerType hierarchical validation", () => {
   for (const testCase of testCases) {
     const layerTypeResult = LayerType.create(testCase.type);
     assertEquals(layerTypeResult.ok, testCase.isValid);
-    
+
     if (layerTypeResult.ok) {
       const layerType = layerTypeResult.data;
       assertEquals(layerType.value, testCase.type);
@@ -154,10 +155,10 @@ Deno.test("2_structure: LayerType immutability", () => {
   if (result.ok) {
     const layerType = result.data;
     const originalValue = layerType.value;
-    
+
     // Value should be immutable
     assertEquals(layerType.value, originalValue);
-    
+
     // Object should be frozen
     assertEquals(Object.isFrozen(layerType), true);
   }
@@ -174,7 +175,7 @@ Deno.test("2_structure: LayerType creation with TwoParams_Result edge cases", ()
   for (const validResult of validResults) {
     const layerResult = LayerType.create(validResult);
     assertEquals(layerResult.ok, true);
-    
+
     if (layerResult.ok) {
       assertEquals(layerResult.data.value, validResult.layerType);
     }
@@ -189,7 +190,7 @@ Deno.test("2_structure: LayerType creation with TwoParams_Result edge cases", ()
 Deno.test("2_structure: LayerType error message quality", () => {
   const invalidResult = LayerType.create("");
   assertEquals(invalidResult.ok, false);
-  
+
   if (!invalidResult.ok) {
     assertEquals(invalidResult.error.kind, "EmptyInput");
     assertEquals(typeof invalidResult.error.message, "string");
@@ -198,7 +199,7 @@ Deno.test("2_structure: LayerType error message quality", () => {
 
   const tooLongResult = LayerType.create("a".repeat(50));
   assertEquals(tooLongResult.ok, false);
-  
+
   if (!tooLongResult.ok) {
     assertEquals(tooLongResult.error.kind, "TooLong");
     assertEquals(typeof tooLongResult.error.message, "string");

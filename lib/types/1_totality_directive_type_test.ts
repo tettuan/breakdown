@@ -22,10 +22,9 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-    directiveType: "to",
   directiveType,
-  // directiveType: directiveType, // For backward compatibility (removed duplicate)
   layerType,
+  demonstrativeType: directiveType,
   params: [directiveType, layerType],
   options,
 });
@@ -105,6 +104,7 @@ Deno.test("1_totality: DirectiveType.create validates all input conditions", () 
   const missingFieldResult = {
     type: "two",
     directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
     params: ["", "project"],
     options: {},
@@ -292,18 +292,24 @@ Deno.test("1_totality: Pattern and DirectiveType composition maintains totality"
   }
 });
 
-Deno.test("1_totality: Legacy create method maintains backward compatibility", () => {
-  // The original create method should still work without Result type
+Deno.test("1_totality: DirectiveType.create returns Result type", () => {
+  // DirectiveType.create should return Result<DirectiveType, DirectiveTypeError>
   const result = createTwoParamsResult("legacy");
-  const directive = DirectiveType.create(result.directiveType);
+  const directiveResult = DirectiveType.create(result.directiveType);
 
-  assertExists(directive);
-  assertEquals(directive.value, "legacy");
-  assertEquals(directive instanceof DirectiveType, true);
+  assertEquals(directiveResult.ok, true);
+  if (directiveResult.ok) {
+    assertExists(directiveResult.data);
+    assertEquals(directiveResult.data.value, "legacy");
+    assertEquals(directiveResult.data instanceof DirectiveType, true);
+  }
 
-  // It should accept any valid TwoParams_Result without validation
-  const emptyDirective = DirectiveType.create("");
-  assertEquals(emptyDirective.value, "");
+  // Empty string should fail with Result error
+  const emptyDirectiveResult = DirectiveType.create("");
+  assertEquals(emptyDirectiveResult.ok, false);
+  if (!emptyDirectiveResult.ok) {
+    assertEquals(emptyDirectiveResult.error.kind, "EmptyInput");
+  }
 });
 
 Deno.test("1_totality: createOrError provides better error context than create", () => {
@@ -311,17 +317,20 @@ Deno.test("1_totality: createOrError provides better error context than create",
 
   const invalidInput = {
     type: "two",
-    directiveType: "to",
     directiveType: null,
+    demonstrativeType: null,
     layerType: "project",
   } as unknown as TwoParams_Result;
 
-  // Legacy create would just return an object with null value
-  const legacyDirective = DirectiveType.create(invalidInput);
-  assertEquals(legacyDirective.value, null);
+  // DirectiveType.create with null input
+  const nullDirectiveResult = DirectiveType.create(invalidInput.directiveType);
+  assertEquals(nullDirectiveResult.ok, false);
+  if (!nullDirectiveResult.ok) {
+    assertEquals(nullDirectiveResult.error.kind, "EmptyInput");
+  }
 
-  // createOrError provides detailed error information
-  const resultDirective = DirectiveType.create(invalidInput);
+  // Same method provides detailed error information
+  const resultDirective = DirectiveType.create(invalidInput.directiveType);
   assertEquals(resultDirective.ok, false);
   if (!resultDirective.ok) {
     assertEquals(resultDirective.error.kind, "MissingRequiredField");

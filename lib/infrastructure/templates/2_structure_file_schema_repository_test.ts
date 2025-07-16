@@ -38,19 +38,19 @@ interface FileSchemaRepositoryInternal {
 // =============================================================================
 
 function createTestDirectiveType(value: string): DirectiveType {
-  const mockDirective = {
-    getValue: () => value,
-    toString: () => value,
-  } as DirectiveType;
-  return mockDirective;
+  const result = DirectiveType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create DirectiveType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 function createTestLayerType(value: string): LayerType {
-  const mockLayer = {
-    getValue: () => value,
-    toString: () => value,
-  } as LayerType;
-  return mockLayer;
+  const result = LayerType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create LayerType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 async function createTestRepository(): Promise<FileSchemaRepository> {

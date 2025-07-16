@@ -36,10 +36,7 @@ export { initWorkspace } from "./workspace/workspace.ts";
 // export type { DirectiveType } from "./types/mod.ts";
 
 // Export core types and utilities from DDD structure
-export {
-  TwoParams,
-  type TwoParamsValidationError,
-} from "./domain/mod.ts";
+export { TwoParams, type TwoParamsValidationError } from "./domain/mod.ts";
 
 export {
   DirectiveType,

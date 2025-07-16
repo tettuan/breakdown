@@ -542,7 +542,10 @@ export class InputFilePathResolverTotality {
    * Resolve path based on path type
    * Following Totality principle - no exceptions thrown
    */
-  private resolvePath(normalizedPath: string, pathType: PathType): Result<string, InputFilePathError> {
+  private resolvePath(
+    normalizedPath: string,
+    pathType: PathType,
+  ): Result<string, InputFilePathError> {
     switch (pathType.kind) {
       case "Absolute":
         return ok(normalizedPath);
@@ -577,7 +580,7 @@ export class InputFilePathResolverTotality {
   private checkPathExistsResult(path: string): Result<boolean, InputFilePathError> {
     // Special cases that are always considered "existing"
     if (path === "-" || path === "") return ok(true);
-    
+
     // Validate input path
     if (typeof path !== "string" || path.length === 0) {
       return error({
@@ -594,7 +597,7 @@ export class InputFilePathResolverTotality {
     // 2. Converting ALL exceptions to Result<T, E> values
     // 3. Never letting exceptions bubble up to callers
     // 4. Treating "file not found" as a normal non-error case (ok(false))
-    
+
     // Attempt filesystem stat - convert OS exceptions to explicit Result values
     try {
       const statResult = Deno.statSync(path);

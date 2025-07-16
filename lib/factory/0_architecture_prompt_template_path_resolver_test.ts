@@ -10,7 +10,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 
 // Type-safe interfaces for error testing
@@ -34,10 +34,10 @@ const validLegacyParams: PromptCliParams = {
 
 const validTwoParams: TwoParams_Result = {
   type: "two",
-    directiveType: "to",
-  params: ["to", "project"],
   directiveType: "to",
+  demonstrativeType: "to",
   layerType: "project",
+  params: ["to", "project"],
   options: {
     fromLayerType: "issue",
     adaptation: "analysis",
@@ -276,11 +276,10 @@ Deno.test("0_architecture: Type safety constraint - compile-time guarantees", ()
   if (result.ok) {
     // Verify method availability on successful construction
     assertEquals(typeof result.data.getPath, "function");
-    assertEquals(typeof result.data.resolveBaseDir, "function");
     assertEquals(typeof result.data.buildFileName, "function");
     assertEquals(typeof result.data.buildPromptPath, "function");
     assertEquals(typeof result.data.shouldFallback, "function");
-    assertEquals(typeof result.data.resolveFromLayerType, "function");
+    assertEquals(typeof result.data.resolveFromLayerTypeSafe, "function");
     assertEquals(typeof result.data.buildFallbackFileName, "function");
 
     // Verify methods return appropriate types
@@ -288,14 +287,16 @@ Deno.test("0_architecture: Type safety constraint - compile-time guarantees", ()
     assertExists(pathResult);
     assertEquals(typeof pathResult.ok, "boolean");
 
-    // Verify type-safe method calls
-    const baseDir = result.data.resolveBaseDir();
-    assertEquals(typeof baseDir, "string");
+    // Base directory is now accessed through path result
+    if (pathResult.ok) {
+      const baseDir = pathResult.data.metadata.baseDir;
+      assertEquals(typeof baseDir, "string");
+    }
 
     const fileName = result.data.buildFileName();
     assertEquals(typeof fileName, "string");
 
-    const fromLayerType = result.data.resolveFromLayerType();
+    const fromLayerType = result.data.resolveFromLayerTypeSafe();
     assertEquals(typeof fromLayerType, "string");
   }
 });

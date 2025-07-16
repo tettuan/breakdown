@@ -128,11 +128,11 @@ Deno.test("Behavior: DefaultTypePatternProvider - Configuration Access", () => {
   // Config should have expected structure
   assertExists(config.params);
   assertExists(config.params.two);
-  assertExists(config.params.two.DirectiveType);
+  assertExists(config.params.two.directiveType);
   assertExists(config.params.two.layerType);
 
   // Pattern strings should be valid regex
-  const directivePatternStr = config.params.two.DirectiveType.pattern;
+  const directivePatternStr = config.params.two.directiveType.pattern;
   const layerPatternStr = config.params.two.layerType.pattern;
 
   assertEquals(typeof directivePatternStr, "string");
@@ -174,7 +174,7 @@ Deno.test("Behavior: DefaultTypePatternProvider - Debug Information", () => {
 
   // Pattern strings in debug should match config
   const config = provider.getDefaultConfig();
-  assertEquals(debugInfo.directivePattern, config.params.two.DirectiveType.pattern);
+  assertEquals(debugInfo.directivePattern, config.params.two.demonstrativeType.pattern);
   assertEquals(debugInfo.layerPattern, config.params.two.layerType.pattern);
 });
 
@@ -184,7 +184,7 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Format Validation", ()
   const provider = new DefaultTypePatternProvider();
   const config = provider.getDefaultConfig();
 
-  const directivePattern = config.params.two.DirectiveType.pattern;
+  const directivePattern = config.params.two.demonstrativeType.pattern;
   const layerPattern = config.params.two.layerType.pattern;
 
   // Patterns should follow the format: "^(value1|value2|value3)$"

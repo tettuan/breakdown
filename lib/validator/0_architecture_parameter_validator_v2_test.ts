@@ -40,13 +40,13 @@ function createMockTypePatternProvider(): TypePatternProvider {
     getDirectivePattern: () => {
       return {
         test: (value: string) => /^(to|summary|defect)$/.test(value),
-        getPattern: () => "^(to|summary|defect)$"
+        getPattern: () => "^(to|summary|defect)$",
       };
     },
     getLayerTypePattern: () => {
       return {
         test: (value: string) => /^(project|issue|task)$/.test(value),
-        getPattern: () => "^(project|issue|task)$"
+        getPattern: () => "^(project|issue|task)$",
       };
     },
   };
@@ -169,19 +169,18 @@ Deno.test("0_architecture - ValidatedParams type structure constraints", () => {
   const mockTwoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    directiveType: "to",
     options: {},
     params: ["to", "project"],
   };
 
   const directiveResult = DirectiveType.create(mockTwoParamsResult.directiveType);
   const layerResult = LayerType.create(mockTwoParamsResult.layerType);
-  
+
   if (!directiveResult.ok) throw new Error("Failed to create DirectiveType in test");
   if (!layerResult.ok) throw new Error("Failed to create LayerType in test");
-  
+
   const mockValidatedParams: ValidatedParams = {
     directive: directiveResult.data,
     layer: layerResult.data,
@@ -354,6 +353,7 @@ Deno.test("0_architecture - Type safety in parameter result types", () => {
   const mockTwoParamsResult = {
     type: "two" as const,
     directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -393,9 +393,8 @@ Deno.test("0_architecture - Error handling maintains Result type consistency", (
   const mockTwoParamsResultForSuccess: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    directiveType: "to",
     options: {},
     params: ["to", "project"],
   };

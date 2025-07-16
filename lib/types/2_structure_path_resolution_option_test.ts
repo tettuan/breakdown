@@ -96,13 +96,13 @@ Deno.test("PathResolutionOption Structure - PathResolutionError types", () => {
   assertEquals(noValidFallbackError.kind, "NoValidFallback");
   assertEquals(Array.isArray(noValidFallbackError.attempts), true);
 
-  // Test ValidationFailed error structure
+  // Test PathValidationFailed error structure
   const validationFailedError: PathResolutionError = {
-    kind: "ValidationFailed",
+    kind: "PathValidationFailed",
     rule: "must-exist",
     path: "/nonexistent",
   };
-  assertEquals(validationFailedError.kind, "ValidationFailed");
+  assertEquals(validationFailedError.kind, "PathValidationFailed");
   assertEquals(typeof validationFailedError.rule, "string");
   assertEquals(typeof validationFailedError.path, "string");
 });

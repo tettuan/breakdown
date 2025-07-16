@@ -25,33 +25,22 @@ import {
 } from "./schema_management_aggregate.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
 import { error as _error, isError, isOk, ok as _ok } from "../../types/result.ts";
-import type { TwoParams_Result } from "../../deps.ts";
 
 // Helper functions for creating test instances
 function createMockDirectiveType(value: string): DirectiveType {
-  const mockResult: TwoParams_Result = {
-    type: "two",
-    directiveType: "to",
-    directiveType: value,
-    layerType: "project",
-    directiveType: value,
-    options: {},
-    params: [value, "project"],
-  };
-  return DirectiveType.create(mockResult);
+  const result = DirectiveType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create DirectiveType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 function createMockLayerType(value: string): LayerType {
-  const mockResult: TwoParams_Result = {
-    type: "two",
-    directiveType: "to",
-    directiveType: "to",
-    layerType: value,
-    directiveType: "to",
-    options: {},
-    params: ["to", value],
-  };
-  return LayerType.create(mockResult);
+  const result = LayerType.create(value);
+  if (!result.ok) {
+    throw new Error(`Failed to create LayerType: ${result.error.message}`);
+  }
+  return result.data;
 }
 
 // Test fixtures

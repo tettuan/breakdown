@@ -14,11 +14,13 @@ import { TwoParamsDirectivePattern } from "./mod.ts";
 /**
  * テスト用のパターンオブジェクト作成ヘルパー
  */
-function createMockPattern(pattern: string): { test(value: string): boolean; getPattern(): string } {
+function createMockPattern(
+  pattern: string,
+): { test(value: string): boolean; getPattern(): string } {
   const regex = new RegExp(pattern);
   return {
     test: (value: string) => regex.test(value),
-    getPattern: () => pattern
+    getPattern: () => pattern,
   };
 }
 

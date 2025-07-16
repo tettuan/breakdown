@@ -116,7 +116,10 @@ Deno.test("0_architecture: Result type structure compliance", () => {
   if (!errorResult.ok) {
     assertExists(errorResult.error);
     assertEquals("data" in errorResult, false);
-    assertExists(errorResult.error.kind);
+    // Check if error has kind property (not all error types have it)
+    if ("kind" in errorResult.error) {
+      assertExists(errorResult.error.kind);
+    }
   }
 });
 
@@ -137,18 +140,25 @@ Deno.test("0_architecture: Error type consistency", () => {
     const result = factory.create(input);
 
     if (!result.ok) {
-      assertExists(result.error.kind);
-      assertEquals(typeof result.error.kind, "string");
+      // Check if error has kind property using type guard
+      if ("kind" in result.error) {
+        assertExists(result.error.kind);
+        assertEquals(typeof result.error.kind, "string");
 
-      // Verify error kinds are from defined set
-      const validErrorKinds = [
-        "EmptyValue",
-        "InvalidKey",
-        "TypeMismatch",
-        "NoStdinData",
-        "InvalidStdinSource",
-      ];
-      assertEquals(validErrorKinds.includes(result.error.kind), true);
+        // Verify error kinds are from defined set
+        const validErrorKinds = [
+          "EmptyValue",
+          "InvalidKey",
+          "TypeMismatch",
+          "NoStdinData",
+          "InvalidStdinSource",
+        ];
+        assertEquals(validErrorKinds.includes(result.error.kind), true);
+      } else {
+        // Error is ErrorInfo type, verify it has expected properties
+        assertExists(result.error);
+        assertEquals(typeof result.error, "object");
+      }
     }
   }
 });

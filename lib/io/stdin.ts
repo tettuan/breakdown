@@ -9,15 +9,15 @@
 
 // Re-export the enhanced stdin functionality as the main interface
 export {
-  type EnhancedStdinOptions as StdinOptions,
-  type EnvironmentInfo,
-  type EnvironmentDetectionConfig,
-  EnhancedStdinError as StdinError,
+  createStdinReaderForEnvironment,
   detectEnvironment,
+  EnhancedStdinError as StdinError,
+  type EnhancedStdinOptions as StdinOptions,
+  type EnvironmentDetectionConfig,
+  type EnvironmentInfo,
   isStdinAvailableEnhanced as isStdinAvailable,
   safeReadStdin,
   shouldSkipStdinProcessing,
-  createStdinReaderForEnvironment,
 } from "./enhanced_stdin.ts";
 
 /**
@@ -30,7 +30,7 @@ export async function readStdin(options?: {
   allowEmpty?: boolean;
 }): Promise<string> {
   const { readStdinEnhanced } = await import("./enhanced_stdin.ts");
-  
+
   return await readStdinEnhanced({
     timeoutManager: options?.timeoutManager,
     forceRead: options?.forceRead ?? false,

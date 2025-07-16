@@ -33,9 +33,16 @@ export class ConfigError extends Error {
 
 /**
  * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
+ * 
+ * Phase 1: Both DirectiveType and demonstrativeType supported for compatibility
+ * Actual BreakdownParams uses 'demonstrativeType' - matching real structure
  */
 export interface ParamsConfig {
-  DirectiveType: {
+  directiveType: {
+    pattern: string;
+    errorMessage: string;
+  };
+  demonstrativeType: {
     pattern: string;
     errorMessage: string;
   };
@@ -171,15 +178,17 @@ export class ParamsCustomConfig {
         const two = params.two as Record<string, unknown>;
         const paramsOverride: Partial<ParamsConfig> = {};
 
-        // Override DirectiveType if provided
-        if (two.DirectiveType && typeof two.DirectiveType === "object") {
-          const demo = two.DirectiveType as Record<string, unknown>;
-          if (typeof demo.pattern === "string") {
-            paramsOverride.DirectiveType = {
-              pattern: demo.pattern,
-              errorMessage: typeof demo.errorMessage === "string"
-                ? demo.errorMessage
-                : `Invalid directive type. Must match pattern: ${demo.pattern}`,
+        // Override demonstrativeType if provided (handle both directiveType, DirectiveType, and demonstrativeType)
+        const directiveConfig = (two.demonstrativeType || two.directiveType || two.DirectiveType) as
+          | Record<string, unknown>
+          | undefined;
+        if (directiveConfig && typeof directiveConfig === "object") {
+          if (typeof directiveConfig.pattern === "string") {
+            paramsOverride.demonstrativeType = {
+              pattern: directiveConfig.pattern,
+              errorMessage: typeof directiveConfig.errorMessage === "string"
+                ? directiveConfig.errorMessage
+                : `Invalid directive type. Must match pattern: ${directiveConfig.pattern}`,
             };
           }
         }

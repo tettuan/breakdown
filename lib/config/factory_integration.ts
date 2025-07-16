@@ -12,8 +12,8 @@ import {
   type PromptCliParams,
   PromptVariablesFactory,
 } from "../factory/prompt_variables_factory.ts";
-import { PromptTemplatePathResolver } from "../factory/prompt_template_path_resolver_totality.ts";
-import { SchemaFilePathResolver } from "../factory/schema_file_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "../factory/prompt_template_path_resolver_totality.ts";
+import { SchemaFilePathResolverTotality as SchemaFilePathResolver } from "../factory/schema_file_path_resolver_totality.ts";
 // import { InputFilePathResolver } from "../factory/input_file_path_resolver.ts"; // REMOVED - file doesn't exist
 // import { OutputFilePathResolver } from "../factory/output_file_path_resolver.ts"; // REMOVED - file doesn't exist
 import type { Result } from "../types/result.ts";

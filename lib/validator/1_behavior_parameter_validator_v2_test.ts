@@ -43,14 +43,14 @@ function createMockTypePatternProvider(
       if (!directiveValid) return null;
       return {
         test: (value: string) => /^(to|summary|defect)$/.test(value),
-        getPattern: () => "^(to|summary|defect)$"
+        getPattern: () => "^(to|summary|defect)$",
       };
     },
     getLayerTypePattern: () => {
       if (!layerValid) return null;
       return {
         test: (value: string) => /^(project|issue|task)$/.test(value),
-        getPattern: () => "^(project|issue|task)$"
+        getPattern: () => "^(project|issue|task)$",
       };
     },
   };
@@ -71,9 +71,8 @@ function createValidTwoParamsResult(): TwoParams_Result {
   return {
     type: "two",
     directiveType: "to",
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    directiveType: "to",
     params: ["to", "project"],
     options: {
       input: "/path/to/input.txt",
@@ -85,7 +84,7 @@ function createValidTwoParamsResult(): TwoParams_Result {
 function createValidOneParamsResult(): OneParamsResult {
   return {
     type: "one",
-    directiveType: "init",
+    demonstrativeType: "init",
     params: ["init"],
     options: {
       input: "/path/to/input.txt",
@@ -335,6 +334,7 @@ Deno.test("1_behavior - Type creation and validation integration", () => {
   const twoParamsData = {
     type: "two" as const,
     directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -435,9 +435,8 @@ Deno.test("1_behavior - Validation result structure consistency", () => {
   const mockTwoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
-    directiveType: "to",
     options: {},
     params: ["to", "project"],
   };

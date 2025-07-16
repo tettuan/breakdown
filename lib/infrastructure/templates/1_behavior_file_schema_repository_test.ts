@@ -16,6 +16,7 @@ import { assert, assertEquals, assertRejects } from "@std/assert";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
+import { ConfigProfileName } from "../../types/config_profile_name.ts";
 import { FileSchemaRepository, type FileSchemaRepositoryConfig } from "./file_schema_repository.ts";
 import {
   Schema,
@@ -34,7 +35,7 @@ import { createTwoParamsResult } from "../../types/two_params_result_extension.t
 // Helper function to create test DirectiveType and LayerType
 function createTestDirectiveType(value: string): DirectiveType {
   const result = createTwoParamsResult(value, "project");
-  const directiveResult = DirectiveType.create(result);
+  const directiveResult = DirectiveType.create(result.directiveType);
   if (!directiveResult.ok) {
     throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
   }
@@ -43,7 +44,8 @@ function createTestDirectiveType(value: string): DirectiveType {
 
 function createTestLayerType(directiveType: string, value: string): LayerType {
   const result = createTwoParamsResult(directiveType, value);
-  const layerResult = LayerType.create(result);
+  const profileName = ConfigProfileName.createDefault();
+  const layerResult = LayerType.create(result.layerType, profileName);
   if (!layerResult.ok) {
     throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
   }

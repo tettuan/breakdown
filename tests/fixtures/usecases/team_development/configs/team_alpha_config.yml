@@ -1,0 +1,103 @@
+# Team Alpha Configuration
+app_name: "breakdown"
+version: "1.0.0"
+profile: "team_alpha"
+
+# Team-specific settings
+team:
+  name: "Alpha Development Team"
+  lead: "Sarah Johnson"
+  members:
+    - "Alex Rodriguez (Frontend Lead)"
+    - "Emily Davis (Backend Lead)"
+    - "Mike Chen (UI/UX Designer)"
+    - "David Kim (QA Engineer)"
+  
+  methodology: "Agile Scrum"
+  sprint_duration: "2 weeks"
+  timezone: "PST"
+
+# Custom variables for team workflows
+prompts:
+  default_template_dir: "prompts"
+  default_schema_dir: "schema"
+  
+  custom_variables:
+    - name: "team_name"
+      default: "Alpha Development Team"
+    - name: "team_lead"
+      default: "Sarah Johnson"
+    - name: "project_name"
+      default: "Dashboard Enhancement"
+    - name: "sprint_number"
+      default: "Sprint 15"
+    - name: "environment"
+      default: "development"
+    - name: "deadline"
+      default: "2024-06-30"
+
+# Team-specific output formatting
+output:
+  default_format: "markdown"
+  timestamp: true
+  include_metadata: true
+  
+  custom_headers:
+    - "# ${team_name} - ${project_name}"
+    - "**Sprint**: ${sprint_number}"
+    - "**Team Lead**: ${team_lead}"
+    - "**Environment**: ${environment}"
+  
+  footer_template: |
+    ---
+    **Next Steps**: Review with ${team_lead}
+    **Deadline**: ${deadline}
+    **Team**: ${team_name}
+
+# Workflow configurations
+workflows:
+  feature_development:
+    enabled: true
+    config:
+      include_acceptance_criteria: true
+      include_team_assignments: true
+      include_timeline: true
+      require_stakeholder_approval: true
+  
+  code_review:
+    enabled: true
+    config:
+      reviewers_required: 2
+      automated_checks: true
+      documentation_required: true
+
+# Notification settings
+notifications:
+  slack:
+    enabled: true
+    channel: "#team-alpha-dev"
+    webhook: "https://hooks.slack.com/services/team-alpha"
+  
+  email:
+    enabled: true
+    recipients:
+      - "sarah.johnson@company.com"
+      - "alex.rodriguez@company.com"
+      - "emily.davis@company.com"
+
+# Integration with team tools
+integrations:
+  jira:
+    enabled: true
+    project_key: "ALPHA"
+    server_url: "https://company.atlassian.net"
+  
+  github:
+    enabled: true
+    repository: "company/dashboard-enhancement"
+    branch_prefix: "feature/alpha-"
+  
+  confluence:
+    enabled: true
+    space_key: "ALPHA"
+    parent_page: "Team Alpha Development"

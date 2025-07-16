@@ -35,35 +35,51 @@ export type ValidationRuleError =
 /**
  * Type guard functions for ValidationRuleError
  */
-export function isNullOrUndefinedError(error: ValidationRuleError): error is { kind: "NullOrUndefined"; input: unknown } {
+export function isNullOrUndefinedError(
+  error: ValidationRuleError,
+): error is { kind: "NullOrUndefined"; input: unknown } {
   return error.kind === "NullOrUndefined";
 }
 
-export function isEmptyNameError(error: ValidationRuleError): error is { kind: "EmptyName"; input: string } {
+export function isEmptyNameError(
+  error: ValidationRuleError,
+): error is { kind: "EmptyName"; input: string } {
   return error.kind === "EmptyName";
 }
 
-export function isInvalidValidatorError(error: ValidationRuleError): error is { kind: "InvalidValidator"; input: unknown } {
+export function isInvalidValidatorError(
+  error: ValidationRuleError,
+): error is { kind: "InvalidValidator"; input: unknown } {
   return error.kind === "InvalidValidator";
 }
 
-export function isEmptyErrorMessageError(error: ValidationRuleError): error is { kind: "EmptyErrorMessage"; input: string } {
+export function isEmptyErrorMessageError(
+  error: ValidationRuleError,
+): error is { kind: "EmptyErrorMessage"; input: string } {
   return error.kind === "EmptyErrorMessage";
 }
 
-export function isNegativeLengthError(error: ValidationRuleError): error is { kind: "NegativeLength"; input: number } {
+export function isNegativeLengthError(
+  error: ValidationRuleError,
+): error is { kind: "NegativeLength"; input: number } {
   return error.kind === "NegativeLength";
 }
 
-export function isInvalidTypeError(error: ValidationRuleError): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
+export function isInvalidTypeError(
+  error: ValidationRuleError,
+): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
   return error.kind === "InvalidType";
 }
 
-export function isInvalidRangeError(error: ValidationRuleError): error is { kind: "InvalidRange"; min: number; max: number } {
+export function isInvalidRangeError(
+  error: ValidationRuleError,
+): error is { kind: "InvalidRange"; min: number; max: number } {
   return error.kind === "InvalidRange";
 }
 
-export function isEmptyRuleSetError(error: ValidationRuleError): error is { kind: "EmptyRuleSet"; input: unknown } {
+export function isEmptyRuleSetError(
+  error: ValidationRuleError,
+): error is { kind: "EmptyRuleSet"; input: unknown } {
   return error.kind === "EmptyRuleSet";
 }
 
@@ -88,7 +104,7 @@ export class ValidationRule<T = unknown> {
   static create<T>(
     name: string,
     validator: ValidationFunction<T>,
-    errorMessage: string
+    errorMessage: string,
   ): Result<ValidationRule<T>, ValidationRuleError> {
     // Validate name
     if (name === null || name === undefined) {
@@ -160,7 +176,7 @@ export class ValidationRule<T = unknown> {
   static createUnsafe<T>(
     name: string,
     validator: ValidationFunction<T>,
-    errorMessage: string
+    errorMessage: string,
   ): ValidationRule<T> {
     const result = ValidationRule.create(name, validator, errorMessage);
     if (!result.ok) {
@@ -172,7 +188,10 @@ export class ValidationRule<T = unknown> {
   /**
    * Factory method for minimum length validation
    */
-  static minLength(length: number, fieldName: string): Result<ValidationRule<string>, ValidationRuleError> {
+  static minLength(
+    length: number,
+    fieldName: string,
+  ): Result<ValidationRule<string>, ValidationRuleError> {
     // Validate length
     if (length === null || length === undefined) {
       return resultError({
@@ -240,7 +259,10 @@ export class ValidationRule<T = unknown> {
   /**
    * Factory method for maximum length validation
    */
-  static maxLength(length: number, fieldName: string): Result<ValidationRule<string>, ValidationRuleError> {
+  static maxLength(
+    length: number,
+    fieldName: string,
+  ): Result<ValidationRule<string>, ValidationRuleError> {
     // Validate length
     if (length === null || length === undefined) {
       return resultError({
@@ -308,7 +330,11 @@ export class ValidationRule<T = unknown> {
   /**
    * Factory method for range validation
    */
-  static range(min: number, max: number, fieldName: string): Result<ValidationRule<number>, ValidationRuleError> {
+  static range(
+    min: number,
+    max: number,
+    fieldName: string,
+  ): Result<ValidationRule<number>, ValidationRuleError> {
     // Validate min
     if (min === null || min === undefined) {
       return resultError({
@@ -418,9 +444,11 @@ export class ValidationRule<T = unknown> {
       });
     }
 
-    const name = `combined_${rules.map(r => r.getName()).join("_")}`;
-    const validator = (value: T) => rules.every(rule => rule.isValid(value));
-    const errorMessage = `Value must satisfy all validation rules: ${rules.map(r => r.getErrorMessage()).join(", ")}`;
+    const name = `combined_${rules.map((r) => r.getName()).join("_")}`;
+    const validator = (value: T) => rules.every((rule) => rule.isValid(value));
+    const errorMessage = `Value must satisfy all validation rules: ${
+      rules.map((r) => r.getErrorMessage()).join(", ")
+    }`;
 
     return ValidationRule.create(name, validator, errorMessage);
   }
@@ -445,25 +473,27 @@ export class ValidationRule<T = unknown> {
     return ValidationRule.createUnsafe(
       name,
       (value: unknown) => value !== null && value !== undefined && value !== "",
-      message
+      message,
     );
   }
 
   static pattern(pattern: RegExp | string, fieldName?: string): ValidationRule<string> {
     const name = fieldName ? `pattern_${fieldName}` : "pattern";
-    const message = fieldName ? `${fieldName} must match the pattern` : `Value must match the pattern`;
+    const message = fieldName
+      ? `${fieldName} must match the pattern`
+      : `Value must match the pattern`;
     const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
     return ValidationRule.createUnsafe(
       name,
       (value: string) => typeof value === "string" && regex.test(value),
-      message
+      message,
     );
   }
 
   static custom<T>(
     name: string,
     validator: ValidationFunction<T>,
-    errorMessage: string
+    errorMessage: string,
   ): ValidationRule<T> {
     return ValidationRule.createUnsafe(name, validator, errorMessage);
   }
@@ -559,8 +589,9 @@ export class ValidationRule<T = unknown> {
   or(other: ValidationRule<T>): ValidationRule<T> {
     const name = `${this._name}_or_${other._name}`;
     const validator = (value: T) => this.isValid(value) || other.isValid(value);
-    const errorMessage = `Value must satisfy either: ${this._errorMessage} OR ${other._errorMessage}`;
-    
+    const errorMessage =
+      `Value must satisfy either: ${this._errorMessage} OR ${other._errorMessage}`;
+
     return ValidationRule.createUnsafe(name, validator, errorMessage);
   }
 
@@ -574,7 +605,7 @@ export class ValidationRule<T = unknown> {
       return this.isValid(value as T);
     };
     const errorMessage = `${this._errorMessage} (optional)`;
-    
+
     return ValidationRule.createUnsafe(name, validator, errorMessage);
   }
 
@@ -582,7 +613,7 @@ export class ValidationRule<T = unknown> {
    * Check if this is an optional rule
    */
   isOptionalRule(): boolean {
-    return this._name.startsWith('optional_');
+    return this._name.startsWith("optional_");
   }
 
   /**
@@ -590,7 +621,7 @@ export class ValidationRule<T = unknown> {
    */
   equals(other: ValidationRule<T>): boolean {
     return this._name === other._name &&
-           this._errorMessage === other._errorMessage;
+      this._errorMessage === other._errorMessage;
   }
 
   /**
@@ -651,7 +682,9 @@ export function formatValidationRuleError(error: ValidationRuleError): string {
       return `Invalid parameters for ${error.ruleType} rule: ${error.reason}`;
 
     case "MissingParameters":
-      return `Missing required parameters for ${error.ruleType} rule: ${error.requiredParameters.join(", ")}`;
+      return `Missing required parameters for ${error.ruleType} rule: ${
+        error.requiredParameters.join(", ")
+      }`;
 
     default:
       return "Unknown validation rule error occurred.";

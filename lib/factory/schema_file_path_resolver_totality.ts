@@ -32,6 +32,48 @@ export type SchemaPathError =
   | { kind: "InvalidSchemaPath"; path: string; reason: string }
   | { kind: "SchemaValidationFailed"; details: string };
 
+export type SchemaFilePathError =
+  | { kind: "SchemaNotFound"; message: string; path: string }
+  | { kind: "InvalidParameters"; message: string; directiveType: string; layerType: string }
+  | { kind: "ConfigurationError"; message: string; setting: string }
+  | { kind: "FileSystemError"; message: string; operation: string; originalError?: Error };
+
+/**
+ * Type guard for SchemaNotFound errors
+ */
+export function isSchemaNotFoundError(
+  error: SchemaFilePathError,
+): error is SchemaFilePathError & { kind: "SchemaNotFound" } {
+  return error.kind === "SchemaNotFound";
+}
+
+/**
+ * Type guard for InvalidParameters errors
+ */
+export function isInvalidParametersError(
+  error: SchemaFilePathError,
+): error is SchemaFilePathError & { kind: "InvalidParameters" } {
+  return error.kind === "InvalidParameters";
+}
+
+/**
+ * Type guard for ConfigurationError errors
+ */
+export function isConfigurationError(
+  error: SchemaFilePathError,
+): error is SchemaFilePathError & { kind: "ConfigurationError" } {
+  return error.kind === "ConfigurationError";
+}
+
+/**
+ * Type guard for FileSystemError errors
+ */
+export function isFileSystemError(
+  error: SchemaFilePathError,
+): error is SchemaFilePathError & { kind: "FileSystemError" } {
+  return error.kind === "FileSystemError";
+}
+
 /**
  * Configuration with explicit union types instead of optionals
  */
@@ -208,6 +250,7 @@ export class SchemaFilePathResolverTotality {
         params: twoParams.params ? [...twoParams.params] : [],
         layerType: twoParams.params?.[1] || "",
         directiveType: twoParams.params?.[0] || "",
+        demonstrativeType: twoParams.params?.[0] || "",
         options: { ...twoParams.options },
       } as TwoParams_Result;
       return copy;
@@ -449,6 +492,12 @@ export class SchemaFilePathResolverTotality {
     return resultOk(undefined);
   }
 }
+
+/**
+ * Alias for backward compatibility
+ */
+export const SchemaFilePathResolver = SchemaFilePathResolverTotality;
+export type SchemaFilePathResolver = SchemaFilePathResolverTotality;
 
 /**
  * Format schema resolution error for user-friendly display

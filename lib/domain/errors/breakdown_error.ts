@@ -1,9 +1,9 @@
 /**
  * @fileoverview Base Breakdown Error
- * 
+ *
  * Base class for all domain-specific errors in the Breakdown application.
  * Provides a consistent error structure following DDD principles.
- * 
+ *
  * @module domain/errors
  */
 
@@ -35,7 +35,7 @@ export interface BreakdownErrorBase {
 
 /**
  * Base class for all Breakdown domain errors
- * 
+ *
  * Implements the Error interface while providing domain-specific
  * functionality for error handling and recovery.
  */
@@ -49,7 +49,7 @@ export abstract class BaseBreakdownError extends Error implements BreakdownError
     message: string,
     domain: string,
     kind: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -74,7 +74,7 @@ export abstract class BaseBreakdownError extends Error implements BreakdownError
    */
   getDeveloperMessage(): string {
     return `[${this.domain}:${this.kind}] ${this.message}${
-      this.context ? ` | Context: ${JSON.stringify(this.context)}` : ''
+      this.context ? ` | Context: ${JSON.stringify(this.context)}` : ""
     }`;
   }
 

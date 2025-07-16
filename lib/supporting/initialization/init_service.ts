@@ -32,7 +32,7 @@ export interface InitializationResult {
 export class InitService {
   private static readonly DEFAULT_PROFILE = "default";
   private static readonly BACKUP_SUFFIX = ".backup";
-  
+
   private readonly config: BreakdownConfig | null;
 
   constructor(config?: BreakdownConfig | null) {
@@ -45,7 +45,7 @@ export class InitService {
   public async initialize(options: InitServiceOptions): Promise<InitializationResult> {
     const workspaceDir = resolve(options.workspaceDirectory);
     const profileName = options.configProfileName || InitService.DEFAULT_PROFILE;
-    
+
     const result: InitializationResult = {
       success: false,
       workspaceDirectory: workspaceDir,
@@ -53,12 +53,12 @@ export class InitService {
       createdFiles: [],
       createdDirectories: [],
       backedUpFiles: [],
-      message: ""
+      message: "",
     };
 
     try {
       // プロファイル名の簡易検証
-      if (!profileName || profileName.includes('/') || profileName.includes('\\')) {
+      if (!profileName || profileName.includes("/") || profileName.includes("\\")) {
         throw new Error(`Invalid config profile name: ${profileName}`);
       }
 
@@ -76,10 +76,11 @@ export class InitService {
 
       result.success = true;
       result.message = this.generateSuccessMessage(result);
-
     } catch (error) {
       result.success = false;
-      result.message = `Initialization failed: ${error instanceof Error ? error.message : String(error)}`;
+      result.message = `Initialization failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`;
     }
 
     return result;
@@ -90,7 +91,7 @@ export class InitService {
    */
   private async createWorkspaceDirectory(
     workspaceDir: string,
-    result: InitializationResult
+    result: InitializationResult,
   ): Promise<void> {
     if (!await exists(workspaceDir)) {
       await ensureDir(workspaceDir);
@@ -103,7 +104,7 @@ export class InitService {
    */
   private async createDirectoryStructure(
     workspaceDir: string,
-    result: InitializationResult
+    result: InitializationResult,
   ): Promise<void> {
     const workspaceDirectories = this.getWorkspaceDirectories();
     for (const dir of workspaceDirectories) {
@@ -124,10 +125,10 @@ export class InitService {
     const layerTypes = ["project", "issue", "task", "bugs"];
 
     const directories: string[] = [];
-    
+
     // 基本ディレクトリ
     directories.push("config", "output", "input", "tmp");
-    
+
     // プロンプトディレクトリ
     directories.push("prompts");
     for (const directive of directiveTypes) {
@@ -140,7 +141,7 @@ export class InitService {
         }
       }
     }
-    
+
     // スキーマディレクトリ
     directories.push("schemas");
     for (const directive of directiveTypes) {
@@ -164,17 +165,17 @@ export class InitService {
     workspaceDir: string,
     profileName: string,
     options: InitServiceOptions,
-    result: InitializationResult
+    result: InitializationResult,
   ): Promise<void> {
     const configDir = join(workspaceDir, "config");
-    
+
     // アプリケーション設定ファイル
     const appConfigPath = join(configDir, `${profileName}-app.yml`);
     await this.createConfigFile(
       appConfigPath,
       this.generateAppConfig(profileName),
       options,
-      result
+      result,
     );
 
     // ユーザー設定ファイル
@@ -183,7 +184,7 @@ export class InitService {
       userConfigPath,
       this.generateUserConfig(profileName),
       options,
-      result
+      result,
     );
   }
 
@@ -194,17 +195,17 @@ export class InitService {
     filePath: string,
     content: string,
     options: InitServiceOptions,
-    result: InitializationResult
+    result: InitializationResult,
   ): Promise<void> {
     const fileExists = await exists(filePath);
-    
+
     if (fileExists) {
       if (options.backup && options.force) {
         // バックアップを作成してから上書き
         const backupPath = `${filePath}${InitService.BACKUP_SUFFIX}`;
         await Deno.copyFile(filePath, backupPath);
         result.backedUpFiles?.push(backupPath);
-        
+
         await Deno.writeTextFile(filePath, content);
         result.createdFiles.push(filePath);
       } else if (!options.force) {
@@ -295,7 +296,7 @@ custom:
    */
   private async createSampleFiles(
     workspaceDir: string,
-    result: InitializationResult
+    result: InitializationResult,
   ): Promise<void> {
     // サンプルプロンプトファイル
     const samplePromptPath = join(workspaceDir, "prompts/to/project/example.md");
@@ -312,7 +313,7 @@ Break down the above content into manageable project tasks.
 ## Output Format
 Please structure your response according to the project schema.
 `;
-    
+
     if (!await exists(samplePromptPath)) {
       await Deno.writeTextFile(samplePromptPath, samplePromptContent);
       result.createdFiles.push(samplePromptPath);
@@ -320,30 +321,34 @@ Please structure your response according to the project schema.
 
     // サンプルスキーマファイル
     const sampleSchemaPath = join(workspaceDir, "schemas/to/project/example.json");
-    const sampleSchemaContent = JSON.stringify({
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "properties": {
-        "project": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "description": { "type": "string" },
-            "tasks": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "title": { "type": "string" },
-                  "description": { "type": "string" }
-                }
-              }
-            }
-          }
-        }
-      }
-    }, null, 2);
+    const sampleSchemaContent = JSON.stringify(
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      null,
+      2,
+    );
 
     if (!await exists(sampleSchemaPath)) {
       await Deno.writeTextFile(sampleSchemaPath, sampleSchemaContent);
@@ -360,7 +365,7 @@ Please structure your response according to the project schema.
       "",
       `📁 Workspace: ${result.workspaceDirectory}`,
       `🔧 Profile: ${result.configProfileName}`,
-      ""
+      "",
     ];
 
     if (result.createdDirectories.length > 0) {
@@ -379,12 +384,12 @@ Please structure your response according to the project schema.
       "",
       "🚀 Next steps:",
       "1. Review the generated configuration files in the 'config' directory",
-      "2. Customize the directiveTypes and layerTypes in the user config", 
+      "2. Customize the directiveTypes and layerTypes in the user config",
       "3. Add your prompt templates to the 'prompts' directory",
       "4. Add your JSON schemas to the 'schemas' directory",
       "5. Run 'breakdown --help' to see available commands",
       "",
-      "📚 For more information, visit the documentation."
+      "📚 For more information, visit the documentation.",
     );
 
     return lines.join("\n");

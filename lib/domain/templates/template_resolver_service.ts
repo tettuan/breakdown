@@ -342,7 +342,7 @@ export class FallbackStrategy implements ResolutionStrategy {
     const defaultPrefix = this.getDefaultPrefix();
 
     const mappings = new Map<string, string>();
-    
+
     for (const directive of directiveTypes) {
       for (const layer of layerTypes) {
         if (directive === "find" && layer === "bugs") {

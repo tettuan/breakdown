@@ -1,9 +1,9 @@
 /**
  * @fileoverview Path Resolution Domain Errors
- * 
+ *
  * Errors related to file path resolution, including prompt templates,
  * schemas, and output file paths.
- * 
+ *
  * @module domain/errors/path_resolution_error
  */
 
@@ -28,7 +28,6 @@ export type PathResolutionErrorKind =
  * Thrown when file path resolution fails
  */
 export class PathResolutionError extends BaseBreakdownError {
-
   constructor(
     kind: PathResolutionErrorKind,
     message: string,
@@ -45,7 +44,7 @@ export class PathResolutionError extends BaseBreakdownError {
         availablePaths?: string[];
         reason?: string;
       };
-    }
+    },
   ) {
     super(message, "path-resolution", kind, options?.context);
     if (options?.cause) {
@@ -61,8 +60,8 @@ export class PathResolutionError extends BaseBreakdownError {
       "path-not-found",
       `${resourceType} not found at path: ${path}`,
       {
-        context: { path, reason: `${resourceType} file does not exist` }
-      }
+        context: { path, reason: `${resourceType} file does not exist` },
+      },
     );
   }
 
@@ -74,8 +73,8 @@ export class PathResolutionError extends BaseBreakdownError {
       "path-invalid-format",
       `Invalid path format: '${path}' - ${reason}`,
       {
-        context: { path, reason }
-      }
+        context: { path, reason },
+      },
     );
   }
 
@@ -87,8 +86,8 @@ export class PathResolutionError extends BaseBreakdownError {
       "path-traversal-detected",
       `Path traversal detected: '${path}' attempts to access outside of '${basePath}'`,
       {
-        context: { path, basePath, reason: "Security violation: path traversal" }
-      }
+        context: { path, basePath, reason: "Security violation: path traversal" },
+      },
     );
   }
 
@@ -100,8 +99,8 @@ export class PathResolutionError extends BaseBreakdownError {
       "path-permission-denied",
       `Permission denied for ${operation} on path: ${path}`,
       {
-        context: { path, reason: `No ${operation} permission` }
-      }
+        context: { path, reason: `No ${operation} permission` },
+      },
     );
   }
 
@@ -112,27 +111,29 @@ export class PathResolutionError extends BaseBreakdownError {
     directiveType: string,
     layerType: string,
     fromLayerType?: string,
-    adaptation?: string
+    adaptation?: string,
   ): PathResolutionError {
     const parts = [directiveType, layerType];
     if (fromLayerType) parts.push(`from ${fromLayerType}`);
     if (adaptation) parts.push(`(${adaptation})`);
-    
-    const expectedPath = `prompts/${directiveType}/${layerType}/f_${fromLayerType || layerType}${adaptation ? `_${adaptation}` : ''}.md`;
+
+    const expectedPath = `prompts/${directiveType}/${layerType}/f_${fromLayerType || layerType}${
+      adaptation ? `_${adaptation}` : ""
+    }.md`;
 
     return new PathResolutionError(
       "template-not-found",
-      `Prompt template not found for: ${parts.join(' ')}`,
+      `Prompt template not found for: ${parts.join(" ")}`,
       {
-        context: { 
-          directiveType, 
-          layerType, 
-          fromLayerType, 
+        context: {
+          directiveType,
+          layerType,
+          fromLayerType,
           adaptation,
           path: expectedPath,
-          reason: "Template file does not exist"
-        }
-      }
+          reason: "Template file does not exist",
+        },
+      },
     );
   }
 
@@ -142,7 +143,7 @@ export class PathResolutionError extends BaseBreakdownError {
   static schemaNotFound(
     directiveType: string,
     layerType: string,
-    schemaType: string = "base"
+    schemaType: string = "base",
   ): PathResolutionError {
     const expectedPath = `schema/${directiveType}/${layerType}/${schemaType}.schema.md`;
 
@@ -150,13 +151,13 @@ export class PathResolutionError extends BaseBreakdownError {
       "schema-not-found",
       `Schema not found for ${directiveType}/${layerType} (${schemaType})`,
       {
-        context: { 
-          directiveType, 
+        context: {
+          directiveType,
           layerType,
           path: expectedPath,
-          reason: "Schema file does not exist"
-        }
-      }
+          reason: "Schema file does not exist",
+        },
+      },
     );
   }
 
@@ -165,14 +166,14 @@ export class PathResolutionError extends BaseBreakdownError {
    */
   static outputPathConflict(
     path: string,
-    reason: string
+    reason: string,
   ): PathResolutionError {
     return new PathResolutionError(
       "output-path-conflict",
       `Output path conflict: ${path} - ${reason}`,
       {
-        context: { path, reason }
-      }
+        context: { path, reason },
+      },
     );
   }
 
@@ -181,14 +182,14 @@ export class PathResolutionError extends BaseBreakdownError {
    */
   static baseDirectoryInvalid(
     basePath: string,
-    reason: string
+    reason: string,
   ): PathResolutionError {
     return new PathResolutionError(
       "base-directory-invalid",
       `Invalid base directory: '${basePath}' - ${reason}`,
       {
-        context: { basePath, reason }
-      }
+        context: { basePath, reason },
+      },
     );
   }
 
@@ -198,18 +199,20 @@ export class PathResolutionError extends BaseBreakdownError {
   static resourcePathInvalid(
     path: string,
     resourceType: string,
-    availablePaths?: string[]
+    availablePaths?: string[],
   ): PathResolutionError {
     const message = availablePaths?.length
-      ? `Invalid ${resourceType} path: '${path}'. Available: ${availablePaths.slice(0, 3).join(', ')}`
+      ? `Invalid ${resourceType} path: '${path}'. Available: ${
+        availablePaths.slice(0, 3).join(", ")
+      }`
       : `Invalid ${resourceType} path: '${path}'`;
 
     return new PathResolutionError(
       "resource-path-invalid",
       message,
       {
-        context: { path, availablePaths, reason: `Invalid ${resourceType} path` }
-      }
+        context: { path, availablePaths, reason: `Invalid ${resourceType} path` },
+      },
     );
   }
 
@@ -218,7 +221,7 @@ export class PathResolutionError extends BaseBreakdownError {
    */
   override getUserMessage(): string {
     const base = this.message;
-    
+
     // Add helpful context for common errors
     switch (this.kind) {
       case "template-not-found":
@@ -263,42 +266,93 @@ export class PathResolutionError extends BaseBreakdownError {
 
     switch (this.kind) {
       case "path-not-found":
-        suggestions.push({ action: "create-file", description: `Create the missing file at: ${this.context?.path}` });
+        suggestions.push({
+          action: "create-file",
+          description: `Create the missing file at: ${this.context?.path}`,
+        });
         suggestions.push({ action: "check-path", description: "Check if the path is correct" });
         break;
       case "template-not-found":
         if (this.context?.path) {
-          suggestions.push({ action: "create-template", description: `Create template at: ${this.context.path}` });
+          suggestions.push({
+            action: "create-template",
+            description: `Create template at: ${this.context.path}`,
+          });
         }
-        suggestions.push({ action: "init-templates", description: "Create default templates", command: "breakdown init" });
-        suggestions.push({ action: "list-templates", description: "Check available templates", command: "breakdown list templates" });
+        suggestions.push({
+          action: "init-templates",
+          description: "Create default templates",
+          command: "breakdown init",
+        });
+        suggestions.push({
+          action: "list-templates",
+          description: "Check available templates",
+          command: "breakdown list templates",
+        });
         break;
       case "schema-not-found":
         if (this.context?.path) {
-          suggestions.push({ action: "create-schema", description: `Create schema at: ${this.context.path}` });
+          suggestions.push({
+            action: "create-schema",
+            description: `Create schema at: ${this.context.path}`,
+          });
         }
-        suggestions.push({ action: "init-schemas", description: "Generate default schemas", command: "breakdown init" });
+        suggestions.push({
+          action: "init-schemas",
+          description: "Generate default schemas",
+          command: "breakdown init",
+        });
         break;
       case "path-invalid-format":
-        suggestions.push({ action: "fix-slashes", description: "Use forward slashes (/) in paths" });
-        suggestions.push({ action: "remove-special", description: "Avoid special characters in filenames" });
-        suggestions.push({ action: "remove-traversal", description: "Remove any '..' or absolute paths" });
+        suggestions.push({
+          action: "fix-slashes",
+          description: "Use forward slashes (/) in paths",
+        });
+        suggestions.push({
+          action: "remove-special",
+          description: "Avoid special characters in filenames",
+        });
+        suggestions.push({
+          action: "remove-traversal",
+          description: "Remove any '..' or absolute paths",
+        });
         break;
       case "path-traversal-detected":
-        suggestions.push({ action: "use-relative", description: "Use relative paths within the project directory" });
+        suggestions.push({
+          action: "use-relative",
+          description: "Use relative paths within the project directory",
+        });
         suggestions.push({ action: "remove-dotdot", description: "Remove '..' from your path" });
         break;
       case "path-permission-denied":
-        suggestions.push({ action: "check-permissions", description: `Check file permissions for: ${this.context?.path}` });
-        suggestions.push({ action: "ensure-access", description: "Ensure you have read/write access to the directory" });
+        suggestions.push({
+          action: "check-permissions",
+          description: `Check file permissions for: ${this.context?.path}`,
+        });
+        suggestions.push({
+          action: "ensure-access",
+          description: "Ensure you have read/write access to the directory",
+        });
         break;
       case "output-path-conflict":
-        suggestions.push({ action: "change-filename", description: "Choose a different output filename" });
-        suggestions.push({ action: "use-output-flag", description: "Use --output flag to specify a different location" });
+        suggestions.push({
+          action: "change-filename",
+          description: "Choose a different output filename",
+        });
+        suggestions.push({
+          action: "use-output-flag",
+          description: "Use --output flag to specify a different location",
+        });
         break;
       case "base-directory-invalid":
-        suggestions.push({ action: "check-directory", description: "Ensure the base directory exists" });
-        suggestions.push({ action: "check-working-dir", description: "Check your working directory" });
+        suggestions.push({
+          action: "check-directory",
+          description: "Ensure the base directory exists",
+        });
+        suggestions.push({
+          action: "check-working-dir",
+          description: "Check your working directory",
+        });
         break;
     }
 
@@ -313,7 +367,7 @@ export class PathResolutionError extends BaseBreakdownError {
       case "template-not-found":
         if (this.context?.directiveType && this.context?.layerType) {
           const from = this.context.fromLayerType || this.context.layerType;
-          const adapt = this.context.adaptation ? `_${this.context.adaptation}` : '';
+          const adapt = this.context.adaptation ? `_${this.context.adaptation}` : "";
           return `prompts/${this.context.directiveType}/${this.context.layerType}/f_${from}${adapt}.md`;
         }
         break;

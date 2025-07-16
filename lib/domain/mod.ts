@@ -11,26 +11,29 @@
 // Core Domain - The most important business logic
 export * from "./core/mod.ts";
 
+// Supporting Domain - Domain services that support core domain
+export * from "./supporting/mod.ts";
+
+// Generic Domain - Technical foundation and infrastructure
+export * from "./generic/mod.ts";
+
 // Error Domain - Unified error handling across the domain
 export * from "./errors/mod.ts";
 
 // Templates Domain - Template and schema management
 // Note: Explicit exports to avoid naming conflicts
 export {
-  TemplateResolverService,
   PromptTemplate,
   Schema,
   SchemaId,
-  TemplateNotFoundError,
-  TemplateValidationError,
   SchemaNotFoundError,
   SchemaValidationError,
+  TemplateNotFoundError,
+  TemplateResolverService,
+  TemplateValidationError,
 } from "./templates/mod.ts";
 
-export type {
-  TemplateRepository,
-  SchemaRepository,
-} from "./templates/mod.ts";
+export type { SchemaRepository, TemplateRepository } from "./templates/mod.ts";
 
 // Commonly used exports are already available through the module exports above
 
@@ -46,25 +49,27 @@ export class DomainFactory {
       async createTwoParams(directive: string, layer: string, profile?: string) {
         const { TwoParams } = await import("./core/mod.ts");
         const { ConfigProfileName } = await import("./core/mod.ts");
-        const profileName = profile ? ConfigProfileName.create(profile) : ConfigProfileName.create("default");
+        const profileName = profile
+          ? ConfigProfileName.create(profile)
+          : ConfigProfileName.create("default");
         if (!profileName.ok) {
           return profileName;
         }
         return TwoParams.create(directive, layer, profileName.data);
       },
-      
+
       async createDirectiveType(value: string) {
         const { DirectiveType } = await import("./core/mod.ts");
         return DirectiveType.create(value);
       },
-      
+
       async createLayerType(value: string) {
         const { LayerType } = await import("./core/mod.ts");
         return LayerType.create(value);
       },
     };
   }
-  
+
   /**
    * Create error domain objects
    */
@@ -74,14 +79,14 @@ export class DomainFactory {
         const { CLIParsingError } = await import("./errors/mod.ts");
         return CLIParsingError.invalidParameter("unknown", message);
       },
-      
+
       async createConfigError(message: string) {
         const { ConfigError } = await import("./errors/mod.ts");
         return ConfigError.profileNotFound("unknown", []);
       },
     };
   }
-  
+
   /**
    * Create templates domain objects
    */
@@ -110,7 +115,7 @@ export class DomainGuards {
       },
     };
   }
-  
+
   /**
    * Type guards for error domain
    */

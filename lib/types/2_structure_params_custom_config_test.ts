@@ -43,6 +43,10 @@ Deno.test("ParamsCustomConfig - Structure: ParamsConfig interface consistency", 
       pattern: "test-pattern",
       errorMessage: "test-error",
     },
+    demonstrativeType: {
+      pattern: "test-pattern",
+      errorMessage: "test-error",
+    },
     layerType: {
       pattern: "layer-pattern",
       errorMessage: "layer-error",
@@ -51,9 +55,12 @@ Deno.test("ParamsCustomConfig - Structure: ParamsConfig interface consistency", 
 
   // All fields should be required and typed correctly
   assertEquals(typeof config.directiveType, "object");
+  assertEquals(typeof config.demonstrativeType, "object");
   assertEquals(typeof config.layerType, "object");
-  assertEquals(typeof config.DirectiveType.pattern, "string");
-  assertEquals(typeof config.DirectiveType.errorMessage, "string");
+  assertEquals(typeof config.directiveType.pattern, "string");
+  assertEquals(typeof config.directiveType.errorMessage, "string");
+  assertEquals(typeof config.demonstrativeType.pattern, "string");
+  assertEquals(typeof config.demonstrativeType.errorMessage, "string");
   assertEquals(typeof config.layerType.pattern, "string");
   assertEquals(typeof config.layerType.errorMessage, "string");
 });
@@ -61,7 +68,7 @@ Deno.test("ParamsCustomConfig - Structure: ParamsConfig interface consistency", 
 Deno.test("ParamsCustomConfig - Structure: Result type structure consistency", () => {
   const successResult = ParamsCustomConfig.create({
     breakdown: {
-      params: { two: { directiveType: { pattern: "test", errorMessage: "test" } } },
+      params: { two: { demonstrativeType: { pattern: "test", errorMessage: "test" } } },
     },
   });
 
@@ -95,7 +102,7 @@ Deno.test("ParamsCustomConfig - Structure: CustomConfig compatibility", () => {
     breakdown: {
       params: {
         two: {
-          directiveType: { pattern: "test", errorMessage: "test" },
+          demonstrativeType: { pattern: "test", errorMessage: "test" },
         },
       },
     },
@@ -112,7 +119,7 @@ Deno.test("ParamsCustomConfig - Structure: CustomConfig compatibility", () => {
 
     // Params structure should match
     assertEquals(typeof customConfig.params.two, "object");
-    assertEquals(typeof customConfig.params.two.directiveType, "object");
+    assertEquals(typeof customConfig.params.two.demonstrativeType, "object");
     assertEquals(typeof customConfig.params.two.layerType, "object");
 
     // Options structure should match
@@ -145,8 +152,8 @@ Deno.test("ParamsCustomConfig - Structure: DEFAULT_CUSTOM_CONFIG structure consi
 
   // Params structure
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two, "object");
-  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.pattern, "string");
-  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.DirectiveType.errorMessage, "string");
+  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.pattern, "string");
+  assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.demonstrativeType.errorMessage, "string");
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.layerType.pattern, "string");
   assertEquals(typeof DEFAULT_CUSTOM_CONFIG.params.two.layerType.errorMessage, "string");
 
@@ -172,7 +179,7 @@ Deno.test("ParamsCustomConfig - Structure: Input configuration structure validat
     breakdown: {
       params: {
         two: {
-          directiveType: {
+          demonstrativeType: {
             pattern: "string",
             errorMessage: "string",
           },
@@ -217,7 +224,7 @@ Deno.test("ParamsCustomConfig - Structure: Nested object validation consistency"
     breakdown: {
       params: {
         two: {
-          directiveType: {
+          demonstrativeType: {
             pattern: "nested-test",
             errorMessage: "nested-error",
           },
@@ -230,8 +237,8 @@ Deno.test("ParamsCustomConfig - Structure: Nested object validation consistency"
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Deep object access should work
-    assertEquals(result.data.params.two.DirectiveType.pattern, "nested-test");
-    assertEquals(result.data.params.two.DirectiveType.errorMessage, "nested-error");
+    assertEquals(result.data.params.two.demonstrativeType.pattern, "nested-test");
+    assertEquals(result.data.params.two.demonstrativeType.errorMessage, "nested-error");
 
     // Non-overridden nested objects should maintain structure
     assertEquals(typeof result.data.params.two.layerType, "object");
@@ -315,7 +322,7 @@ Deno.test("ParamsCustomConfig - Structure: Object immutability structure", () =>
     breakdown: {
       params: {
         two: {
-          directiveType: {
+          demonstrativeType: {
             pattern: "original",
             errorMessage: "original error",
           },
@@ -328,9 +335,9 @@ Deno.test("ParamsCustomConfig - Structure: Object immutability structure", () =>
 
   if (result.status === ResultStatus.SUCCESS && result.data !== undefined) {
     // Modifying input should not affect result
-    originalConfig.breakdown.params.two.DirectiveType.pattern = "modified";
+    originalConfig.breakdown.params.two.demonstrativeType.pattern = "modified";
 
-    assertEquals(result.data.params.two.DirectiveType.pattern, "original");
+    assertEquals(result.data.params.two.demonstrativeType.pattern, "original");
   }
 });
 
@@ -338,7 +345,7 @@ Deno.test("ParamsCustomConfig - Structure: Return type union consistency", () =>
   // Success case should have data property
   const successResult = ParamsCustomConfig.create({
     breakdown: {
-      params: { two: { directiveType: { pattern: "test", errorMessage: "test" } } },
+      params: { two: { demonstrativeType: { pattern: "test", errorMessage: "test" } } },
     },
   });
 

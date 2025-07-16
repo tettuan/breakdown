@@ -18,7 +18,10 @@ import {
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import { isError, isOk } from "../types/result.ts";
-import { DirectiveType, TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
+import {
+  DirectiveType,
+  TwoParamsDirectivePattern,
+} from "../domain/core/value_objects/directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 
 // Mock implementations
@@ -61,10 +64,9 @@ const createValidTwoParams = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-    directiveType: "to",
   directiveType,
+  demonstrativeType: directiveType,
   layerType,
-  directiveType: directiveType,
   params: [directiveType, layerType],
   options,
 });
@@ -100,10 +102,9 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   // Test missing required field error structure
   const missingFieldResult = validator.validateTwoParams({
     type: "two",
-    directiveType: "to",
-    directiveType: "to",
+    directiveType: "",
+    demonstrativeType: "",
     layerType: "project",
-    directiveType: "to",
     params: ["", "project"],
     options: {},
   });
@@ -195,7 +196,7 @@ Deno.test("2_structure: ParameterValidator handles OneParams with proper default
 
   const oneParamResult: OneParamsResult = {
     type: "one",
-    directiveType: "init",
+    demonstrativeType: "project",
     params: ["project"],
     options: { debug: true },
   };
@@ -407,7 +408,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   // Test different sources
   const oneParamResult = validator.validateOneParams({
     type: "one",
-    directiveType: "init",
+    demonstrativeType: "project",
     params: ["project"],
     options: {},
   });

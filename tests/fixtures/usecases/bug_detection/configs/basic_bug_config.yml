@@ -1,0 +1,33 @@
+# Basic bug detection configuration
+bug_detection:
+  enabled: true
+  severity_levels:
+    - critical
+    - high
+    - medium
+    - low
+  
+  rules:
+    javascript:
+      - no_var_declarations
+      - no_undeclared_variables
+      - no_unused_variables
+      - prefer_strict_equality
+      - require_error_handling
+    
+    typescript:
+      - no_any_type
+      - require_type_annotations
+      - no_unsafe_assignments
+      - prefer_immutability
+    
+    general:
+      - no_hardcoded_values
+      - require_input_validation
+      - performance_considerations
+
+output_format:
+  type: "markdown"
+  include_line_numbers: true
+  include_severity: true
+  include_suggestions: true

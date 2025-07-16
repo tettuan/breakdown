@@ -1,0 +1,18 @@
+# Minimal configuration for basic functionality
+app_name: "breakdown"
+version: "1.0.0"
+
+# Basic prompt settings
+prompts:
+  default_template_dir: "prompts"
+  default_schema_dir: "schema"
+  
+# Output settings
+output:
+  default_format: "markdown"
+  timestamp: true
+
+# Logging
+logging:
+  level: "info"
+  output: "console"

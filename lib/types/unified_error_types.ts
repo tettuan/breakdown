@@ -71,7 +71,7 @@ export type SystemError<TKind extends string = SystemErrorKind> = BaseError & {
  */
 export type PathValidationRule =
   | "must-exist"
-  | "must-be-directory" 
+  | "must-be-directory"
   | "must-be-file"
   | "must-be-readable"
   | "must-be-writable";
@@ -86,7 +86,12 @@ export type PathError =
   | { kind: "DirectoryNotFound"; path: string; context?: Record<string, unknown> }
   | { kind: "PermissionDenied"; path: string; context?: Record<string, unknown> }
   | { kind: "PathTooLong"; path: string; maxLength: number; context?: Record<string, unknown> }
-  | { kind: "PathValidationFailed"; rule: PathValidationRule; path: string; context?: Record<string, unknown> }
+  | {
+    kind: "PathValidationFailed";
+    rule: PathValidationRule;
+    path: string;
+    context?: Record<string, unknown>;
+  }
   | { kind: "BaseDirectoryNotFound"; path: string; context?: Record<string, unknown> };
 
 /**
@@ -180,6 +185,8 @@ export type ConfigurationError =
   | {
     kind: "InvalidConfiguration";
     details: string;
+    field?: string;     // Backward compatibility
+    reason?: string;    // Backward compatibility
     context?: Record<string, unknown>;
   }
   | {
@@ -391,7 +398,8 @@ export const ErrorFactory = {
     path: string,
     additionalData?: K extends "InvalidPath" ? { reason: string; context?: Record<string, unknown> }
       : K extends "PathTooLong" ? { maxLength?: number; context?: Record<string, unknown> }
-      : K extends "PathValidationFailed" ? { rule: PathValidationRule; context?: Record<string, unknown> }
+      : K extends "PathValidationFailed"
+        ? { rule: PathValidationRule; context?: Record<string, unknown> }
       : K extends "InvalidConfiguration" ? { details: string; context?: Record<string, unknown> }
       : { context?: Record<string, unknown> },
   ): Extract<PathError, { kind: K }> {
@@ -610,8 +618,7 @@ export const ErrorFactory = {
       ? { message: string; source?: string; context?: Record<string, unknown> }
       : K extends "ProfileNotFound"
         ? { profile: string; availableProfiles?: string[]; context?: Record<string, unknown> }
-      : K extends "InvalidConfiguration"
-        ? { details: string; context?: Record<string, unknown> }
+      : K extends "InvalidConfiguration" ? { details: string; context?: Record<string, unknown> }
       : K extends "ConfigLoadError" ? { message: string; context?: Record<string, unknown> }
       : never,
   ): Extract<ConfigurationError, { kind: K }> {
@@ -869,9 +876,9 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.path} (max: ${error.maxLength})`;
     case "PathValidationFailed":
       // Handle two different variants of PathValidationFailed
-      if ('rule' in error && error.rule !== undefined) {
+      if ("rule" in error && error.rule !== undefined) {
         return `${error.kind}: ${error.path} (rule: ${error.rule})`;
-      } else if ('reason' in error && error.reason !== undefined) {
+      } else if ("reason" in error && error.reason !== undefined) {
         return `${error.kind}: ${error.path} - ${error.reason}`;
       } else {
         // Fallback for unexpected PathValidationFailed structure

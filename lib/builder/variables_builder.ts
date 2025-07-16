@@ -81,25 +81,25 @@ export class VariablesBuilder {
         return {
           kind: "ValidationError",
           source: validationError.field || "unknown",
-          reason: validationError.reason
+          reason: validationError.reason,
         };
       case "MissingRequiredField":
         return {
-          kind: "ValidationError", 
+          kind: "ValidationError",
           source: validationError.source || "unknown",
-          reason: `Missing required field: ${validationError.field}`
+          reason: `Missing required field: ${validationError.field}`,
         };
       case "InvalidFieldType":
         return {
           kind: "ValidationError",
-          source: validationError.field || "unknown", 
-          reason: `Expected ${validationError.expected}, got ${validationError.received}`
+          source: validationError.field || "unknown",
+          reason: `Expected ${validationError.expected}, got ${validationError.received}`,
         };
       default:
         return {
           kind: "ValidationError",
           source: validationError.kind || "unknown",
-          reason: validationError.message || validationError.reason || "Validation failed"
+          reason: validationError.message || validationError.reason || "Validation failed",
         };
     }
   }

@@ -45,41 +45,57 @@ export type WorkspaceNameError =
 /**
  * Type guards for workspace name errors
  */
-export function isEmptyNameError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "EmptyName" }> {
+export function isEmptyNameError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "EmptyName" }> {
   return error.kind === "EmptyName";
 }
 
-export function isInvalidFormatError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "InvalidFormat" }> {
+export function isInvalidFormatError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "InvalidFormat" }> {
   return error.kind === "InvalidFormat";
 }
 
-export function isContainsWhitespaceError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "ContainsWhitespace" }> {
+export function isContainsWhitespaceError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "ContainsWhitespace" }> {
   return error.kind === "ContainsWhitespace";
 }
 
-export function isPathTraversalAttemptError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "PathTraversalAttempt" }> {
+export function isPathTraversalAttemptError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "PathTraversalAttempt" }> {
   return error.kind === "PathTraversalAttempt";
 }
 
-export function isTooLongError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "TooLong" }> {
+export function isTooLongError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "TooLong" }> {
   return error.kind === "TooLong";
 }
 
-export function isStartsWithDotError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "StartsWithDot" }> {
+export function isStartsWithDotError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "StartsWithDot" }> {
   return error.kind === "StartsWithDot";
 }
 
-export function isInvalidCharactersError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "InvalidCharacters" }> {
+export function isInvalidCharactersError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "InvalidCharacters" }> {
   return error.kind === "InvalidCharacters";
 }
 
-export function isReservedNameError(error: WorkspaceNameError): error is Extract<WorkspaceNameError, { kind: "ReservedName" }> {
+export function isReservedNameError(
+  error: WorkspaceNameError,
+): error is Extract<WorkspaceNameError, { kind: "ReservedName" }> {
   return error.kind === "ReservedName";
 }
 
 /**
  * Immutable value object representing a workspace name
- * 
+ *
  * Workspace names must be:
  * - Non-empty and valid strings
  * - Free of whitespace characters
@@ -120,11 +136,11 @@ export class WorkspaceName {
       return resultError({
         kind: "EmptyName",
         input: input,
-        message: isNullOrUndefined 
+        message: isNullOrUndefined
           ? "Workspace name cannot be null or undefined"
-          : input === "" || input.trim() === "" 
-            ? "Workspace name cannot be empty or contain only whitespace"
-            : "Workspace name cannot be empty",
+          : input === "" || input.trim() === ""
+          ? "Workspace name cannot be empty or contain only whitespace"
+          : "Workspace name cannot be empty",
       });
     }
 
@@ -136,15 +152,14 @@ export class WorkspaceName {
         input: trimmed,
         maxLength,
         actualLength: trimmed.length,
-        message: `Workspace name exceeds filesystem path length limit (${trimmed.length} > ${maxLength})`,
+        message:
+          `Workspace name exceeds filesystem path length limit (${trimmed.length} > ${maxLength})`,
       });
     }
 
     // Check for path traversal attempts (highest priority)
     const pathTraversalPatterns = ["../", "..\\", "/", "\\"];
-    const foundPatterns = pathTraversalPatterns.filter(pattern => 
-      trimmed.includes(pattern)
-    );
+    const foundPatterns = pathTraversalPatterns.filter((pattern) => trimmed.includes(pattern));
     if (foundPatterns.length > 0) {
       return resultError({
         kind: "PathTraversalAttempt",
@@ -167,7 +182,7 @@ export class WorkspaceName {
     const whitespaceRegex = /\s/g;
     const whitespaceMatches = [...trimmed.matchAll(whitespaceRegex)];
     if (whitespaceMatches.length > 0) {
-      const positions = whitespaceMatches.map(match => match.index!);
+      const positions = whitespaceMatches.map((match) => match.index!);
       return resultError({
         kind: "ContainsWhitespace",
         input: trimmed,
@@ -178,7 +193,7 @@ export class WorkspaceName {
 
     // Check for forbidden characters
     const forbiddenChars = ["<", ">", ":", '"', "|", "?", "*", "\0"];
-    const foundForbidden = forbiddenChars.filter(char => trimmed.includes(char));
+    const foundForbidden = forbiddenChars.filter((char) => trimmed.includes(char));
     if (foundForbidden.length > 0) {
       return resultError({
         kind: "InvalidCharacters",
@@ -191,17 +206,55 @@ export class WorkspaceName {
     // Check for reserved names
     const reservedNames = [
       // Windows reserved names
-      "CON", "PRN", "AUX", "NUL",
-      "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-      "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+      "CON",
+      "PRN",
+      "AUX",
+      "NUL",
+      "COM1",
+      "COM2",
+      "COM3",
+      "COM4",
+      "COM5",
+      "COM6",
+      "COM7",
+      "COM8",
+      "COM9",
+      "LPT1",
+      "LPT2",
+      "LPT3",
+      "LPT4",
+      "LPT5",
+      "LPT6",
+      "LPT7",
+      "LPT8",
+      "LPT9",
       // Unix/Linux system directories
-      "bin", "boot", "dev", "etc", "home", "lib", "lib64", "mnt", "opt",
-      "proc", "root", "run", "sbin", "srv", "sys", "tmp", "usr", "var",
+      "bin",
+      "boot",
+      "dev",
+      "etc",
+      "home",
+      "lib",
+      "lib64",
+      "mnt",
+      "opt",
+      "proc",
+      "root",
+      "run",
+      "sbin",
+      "srv",
+      "sys",
+      "tmp",
+      "usr",
+      "var",
       // Common application directories
-      "node_modules", "target", "build", "dist",
+      "node_modules",
+      "target",
+      "build",
+      "dist",
     ];
 
-    const matchedReserved = reservedNames.filter(reserved => 
+    const matchedReserved = reservedNames.filter((reserved) =>
       trimmed.toLowerCase() === reserved.toLowerCase()
     );
     if (matchedReserved.length > 0) {
@@ -209,7 +262,9 @@ export class WorkspaceName {
         kind: "ReservedName",
         input: trimmed,
         reserved: matchedReserved,
-        message: `Reserved name that conflicts with system directories: ${matchedReserved.join(", ")}`,
+        message: `Reserved name that conflicts with system directories: ${
+          matchedReserved.join(", ")
+        }`,
       });
     }
 
@@ -232,14 +287,17 @@ export class WorkspaceName {
       .slice(0, 19)
       .replace(/[T:]/g, "-")
       .replace(/:/g, "-");
-    
+
     return WorkspaceName.create(`${prefix}-${timestamp}`);
   }
 
   /**
    * Factory method: Create a workspace name for a project
    */
-  static forProject(projectName: string, suffix?: string): Result<WorkspaceName, WorkspaceNameError> {
+  static forProject(
+    projectName: string,
+    suffix?: string,
+  ): Result<WorkspaceName, WorkspaceNameError> {
     if (typeof projectName !== "string" || !projectName.trim()) {
       return resultError({
         kind: "EmptyName",
@@ -250,10 +308,10 @@ export class WorkspaceName {
 
     // Sanitize project name for workspace usage
     let sanitized = projectName.trim()
-      .replace(/\s+/g, "-")  // Replace whitespace with hyphens
-      .replace(/[^a-zA-Z0-9\-_]/g, "-")  // Replace invalid chars with hyphens
-      .replace(/-+/g, "-")  // Collapse multiple hyphens
-      .replace(/^-|-$/g, "");  // Remove leading/trailing hyphens
+      .replace(/\s+/g, "-") // Replace whitespace with hyphens
+      .replace(/[^a-zA-Z0-9\-_]/g, "-") // Replace invalid chars with hyphens
+      .replace(/-+/g, "-") // Collapse multiple hyphens
+      .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
 
     if (!sanitized) {
       return resultError({
@@ -345,7 +403,7 @@ export class WorkspaceName {
       return false;
     }
 
-    return !nonProdPatterns.some(pattern => pattern.test(this._value));
+    return !nonProdPatterns.some((pattern) => pattern.test(this._value));
   }
 
   /**
@@ -472,7 +530,7 @@ export class WorkspaceNameCollection {
    * Get all names as strings
    */
   getNames(): string[] {
-    return this._workspaceNames.map(ws => ws.value);
+    return this._workspaceNames.map((ws) => ws.value);
   }
 
   /**
@@ -486,16 +544,14 @@ export class WorkspaceNameCollection {
    * Check if the collection contains a workspace name
    */
   contains(workspaceName: WorkspaceName): boolean {
-    return this._workspaceNames.some(ws => ws.equals(workspaceName));
+    return this._workspaceNames.some((ws) => ws.equals(workspaceName));
   }
 
   /**
    * Filter to only production-suitable workspace names
    */
   filterProductionSuitable(): WorkspaceNameCollection {
-    const productionSuitable = this._workspaceNames.filter(ws => 
-      ws.isSuitableForProduction()
-    );
+    const productionSuitable = this._workspaceNames.filter((ws) => ws.isSuitableForProduction());
     return new WorkspaceNameCollection(productionSuitable);
   }
 }
@@ -512,11 +568,15 @@ export function formatWorkspaceNameError(error: WorkspaceNameError): string {
       return `Invalid format: ${error.reason}. Input: "${error.input}"`;
 
     case "ContainsWhitespace":
-      return `Workspace name contains whitespace characters at positions: ${error.whitespacePositions.join(", ")}. ` +
+      return `Workspace name contains whitespace characters at positions: ${
+        error.whitespacePositions.join(", ")
+      }. ` +
         `Please use hyphens or underscores instead of spaces.`;
 
     case "PathTraversalAttempt":
-      return `Workspace name contains suspicious path patterns: ${error.suspiciousPatterns.join(", ")}. ` +
+      return `Workspace name contains suspicious path patterns: ${
+        error.suspiciousPatterns.join(", ")
+      }. ` +
         `This could be a security risk. Please use a simple name without path separators.`;
 
     case "TooLong":

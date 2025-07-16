@@ -13,14 +13,12 @@ export {
   ParameterValidatorV2 as ParameterValidator,
   type ValidatedOptions,
   type ValidatedParams,
-  type ValidationMetadata,
   type ValidationError,
+  type ValidationMetadata,
 } from "./parameter_validator_v2.ts";
 
 // レガシー版は明示的な名前でエクスポート
-export {
-  ParameterValidatorV2 as LegacyParameterValidator,
-} from "./parameter_validator_v2.ts";
+export { ParameterValidatorV2 as LegacyParameterValidator } from "./parameter_validator_v2.ts";
 
 // 統一エラータイプも継続エクスポート
 export type { ValidationError as UnifiedValidationError } from "../types/unified_error_types.ts";

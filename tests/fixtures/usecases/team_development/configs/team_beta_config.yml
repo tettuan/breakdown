@@ -1,0 +1,123 @@
+# Team Beta Configuration  
+app_name: "breakdown"
+version: "1.0.0"
+profile: "team_beta"
+
+# Team-specific settings
+team:
+  name: "Beta Infrastructure Team"
+  lead: "Michael Thompson"
+  members:
+    - "Lisa Wang (DevOps Lead)"
+    - "Carlos Martinez (Security Engineer)"
+    - "Jennifer Lee (Platform Engineer)"
+    - "Robert Chen (Site Reliability Engineer)"
+  
+  methodology: "Kanban"
+  focus: "Infrastructure & Platform"
+  timezone: "EST"
+
+# Custom variables for infrastructure team
+prompts:
+  default_template_dir: "prompts"
+  default_schema_dir: "schema"
+  
+  custom_variables:
+    - name: "team_name"
+      default: "Beta Infrastructure Team"
+    - name: "team_lead"
+      default: "Michael Thompson"
+    - name: "project_name"
+      default: "Platform Scalability"
+    - name: "environment"
+      default: "production"
+    - name: "sla_target"
+      default: "99.9%"
+    - name: "incident_severity"
+      default: "P2"
+
+# Infrastructure-focused output formatting
+output:
+  default_format: "markdown"
+  timestamp: true
+  include_metadata: true
+  
+  custom_headers:
+    - "# ${team_name} - ${project_name}"
+    - "**Team Lead**: ${team_lead}"
+    - "**Environment**: ${environment}"
+    - "**SLA Target**: ${sla_target}"
+  
+  footer_template: |
+    ---
+    **Escalation**: Contact ${team_lead} for P1/P0 incidents
+    **SLA**: ${sla_target} uptime target
+    **Team**: ${team_name}
+    **On-call**: Check PagerDuty schedule
+
+# Infrastructure-specific workflows
+workflows:
+  incident_response:
+    enabled: true
+    config:
+      severity_levels: ["P0", "P1", "P2", "P3"]
+      auto_escalation: true
+      post_mortem_required: true
+      sla_tracking: true
+  
+  capacity_planning:
+    enabled: true
+    config:
+      monitoring_required: true
+      scaling_thresholds: true
+      cost_analysis: true
+  
+  security_review:
+    enabled: true
+    config:
+      compliance_check: true
+      vulnerability_scan: true
+      penetration_test: false
+
+# Monitoring and alerting
+monitoring:
+  prometheus:
+    enabled: true
+    scrape_interval: "30s"
+  
+  grafana:
+    enabled: true
+    dashboard_url: "https://grafana.company.com/team-beta"
+  
+  pagerduty:
+    enabled: true
+    service_key: "beta-infrastructure"
+    escalation_policy: "beta-team-escalation"
+
+# Infrastructure integrations
+integrations:
+  aws:
+    enabled: true
+    region: "us-west-2"
+    account_id: "123456789"
+  
+  kubernetes:
+    enabled: true
+    cluster: "prod-cluster"
+    namespace: "beta-services"
+  
+  terraform:
+    enabled: true
+    workspace: "production"
+    state_backend: "s3"
+
+# Compliance and security
+compliance:
+  standards: ["SOC2", "PCI-DSS", "GDPR"]
+  audit_logging: true
+  access_review: "quarterly"
+  
+security:
+  vulnerability_scanning: true
+  secret_scanning: true
+  compliance_monitoring: true

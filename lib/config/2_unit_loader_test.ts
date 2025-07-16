@@ -13,7 +13,7 @@
 import { assertEquals, assertExists, assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { type CustomConfig as _CustomConfig, ConfigLoader } from "./loader.ts";
+import { ConfigLoader, loadConfig, type CustomConfig as _CustomConfig } from "./loader.ts";
 import { join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
@@ -64,12 +64,16 @@ breakdownParams:
     const config = await loadConfig(testFile);
 
     assertExists(config, "Config should be loaded");
-    assertEquals(config.customConfig?.findBugs?.enabled, true);
-    assertEquals(config.customConfig?.findBugs?.sensitivity, "high");
-    assertEquals(config.customConfig?.findBugs?.patterns?.length, 2);
-    assertEquals(config.customConfig?.findBugs?.maxResults, 100);
-    assertEquals(config.breakdownParams?.version, "1.0.0");
-    assertEquals(config.breakdownParams?.customParams?.feature, "enabled");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertEquals(config.data.customConfig?.findBugs?.enabled, true);
+    assertEquals(config.data.customConfig?.findBugs?.sensitivity, "high");
+    assertEquals(config.data.customConfig?.findBugs?.patterns?.length, 2);
+    assertEquals(config.data.customConfig?.findBugs?.maxResults, 100);
+    assertEquals(config.data.breakdownParams?.version, "1.0.0");
+    assertEquals(config.data.breakdownParams?.customParams?.feature, "enabled");
 
     _logger.debug("Valid YAML loading verified");
   });
@@ -189,17 +193,22 @@ additionalTopLevel:
 
     const config = await loadConfig(testFile);
 
-    // Verify deep nesting
-    assertEquals(config.customConfig?.findBugs?.includeExtensions?.length, 4);
-    assertEquals(config.customConfig?.findBugs?.excludeDirectories?.[0], "node_modules");
-    assertEquals(config.breakdownParams?.customConfig?.validation?.strict, true);
-    assertEquals(config.breakdownParams?.customConfig?.params?.maxDepth, 10);
+    // Verify deep nesting with Result type handling
+    assertExists(config, "Config should be loaded");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertEquals(config.data.customConfig?.findBugs?.includeExtensions?.length, 4);
+    assertEquals(config.data.customConfig?.findBugs?.excludeDirectories?.[0], "node_modules");
+    assertEquals(config.data.breakdownParams?.customConfig?.validation?.strict, true);
+    assertEquals(config.data.breakdownParams?.customConfig?.params?.maxDepth, 10);
     assertEquals(
-      (config.breakdownParams?.customParams?.features as Record<string, unknown>[])?.length,
+      (config.data.breakdownParams?.customParams?.features as Record<string, unknown>[])?.length,
       3,
     );
     assertEquals(
-      (config.additionalTopLevel as Record<
+      (config.data.additionalTopLevel as Record<
         string,
         Record<string, Record<string, Record<string, Record<string, unknown>>>>
       >)?.deeplyNested?.level1?.level2?.level3?.value,
@@ -238,24 +247,30 @@ objectValue:
     const config = await loadConfig(testFile);
 
     // Verify type preservation
-    assertEquals(typeof config.stringValue, "string");
-    assertEquals(config.stringValue, "hello world");
-    assertEquals(typeof config.numberValue, "number");
-    assertEquals(config.numberValue, 42);
-    assertEquals(typeof config.floatValue, "number");
-    assertEquals(config.floatValue, 3.14);
-    assertEquals(typeof config.booleanTrue, "boolean");
-    assertEquals(config.booleanTrue, true);
-    assertEquals(typeof config.booleanFalse, "boolean");
-    assertEquals(config.booleanFalse, false);
-    assertEquals(config.nullValue, null);
-    assertEquals(config.emptyString, "");
-    assertEquals(config.zeroNumber, 0);
-    assertEquals(Array.isArray(config.arrayValue), true);
-    assertEquals((config.arrayValue as Record<string, unknown>[])?.length, 3);
-    assertEquals(typeof config.objectValue, "object");
+    // Check Result type first
+    assertExists(config, "Config should be loaded");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertEquals(typeof config.data.stringValue, "string");
+    assertEquals(config.data.stringValue, "hello world");
+    assertEquals(typeof config.data.numberValue, "number");
+    assertEquals(config.data.numberValue, 42);
+    assertEquals(typeof config.data.floatValue, "number");
+    assertEquals(config.data.floatValue, 3.14);
+    assertEquals(typeof config.data.booleanTrue, "boolean");
+    assertEquals(config.data.booleanTrue, true);
+    assertEquals(typeof config.data.booleanFalse, "boolean");
+    assertEquals(config.data.booleanFalse, false);
+    assertEquals(config.data.nullValue, null);
+    assertEquals(config.data.emptyString, "");
+    assertEquals(config.data.zeroNumber, 0);
+    assertEquals(Array.isArray(config.data.arrayValue), true);
+    assertEquals((config.data.arrayValue as Record<string, unknown>[])?.length, 3);
+    assertEquals(typeof config.data.objectValue, "object");
     assertEquals(
-      (config.objectValue as Record<string, Record<string, unknown>>)?.nested?.deep,
+      (config.data.objectValue as Record<string, Record<string, unknown>>)?.nested?.deep,
       true,
     );
 
@@ -353,7 +368,6 @@ describe("Unit: loadConfig Error Handling", () => {
   });
 });
 
-
 describe("Unit: Edge Cases and Boundaries", () => {
   const testDir = Deno.makeTempDirSync();
 
@@ -376,9 +390,14 @@ describe("Unit: Edge Cases and Boundaries", () => {
 
     const config = await loadConfig(testFile);
 
-    assertExists(config.largeConfig, "Should load large configuration");
+    assertExists(config, "Config should be loaded");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertExists(config.data.largeConfig, "Should load large configuration");
     assertEquals(
-      Object.keys(config.largeConfig as Record<string, unknown>).length,
+      Object.keys(config.data.largeConfig as Record<string, unknown>).length,
       1000,
       "Should have all 1000 items",
     );
@@ -408,26 +427,31 @@ specialChars:
 
     const config = await loadConfig(testFile);
 
-    assertEquals((config.specialChars as Record<string, unknown>)?.unicode, "Hello 世界 🌍");
+    assertExists(config, "Config should be loaded");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertEquals((config.data.specialChars as Record<string, unknown>)?.unicode, "Hello 世界 🌍");
     assertEquals(
-      (config.specialChars as Record<string, unknown>)?.escaped,
+      (config.data.specialChars as Record<string, unknown>)?.escaped,
       "Line 1\nLine 2\tTabbed",
     );
     assertEquals(
-      (config.specialChars as Record<string, unknown>)?.quotes,
+      (config.data.specialChars as Record<string, unknown>)?.quotes,
       'Single quotes with "double quotes" inside',
     );
     assertEquals(
-      (config.specialChars as Record<string, unknown>)?.symbols,
+      (config.data.specialChars as Record<string, unknown>)?.symbols,
       "!@#$%^&*()_+-=[]{}|;:,.<>?",
     );
     assertEquals(
-      (config.specialChars as Record<string, unknown>)?.backslash,
+      (config.data.specialChars as Record<string, unknown>)?.backslash,
       "C:\\Windows\\System32",
     );
-    assertEquals((config.specialChars as Record<string, unknown>)?.empty, "");
+    assertEquals((config.data.specialChars as Record<string, unknown>)?.empty, "");
     assertEquals(
-      (config.specialChars as Record<string, unknown>)?.spaces,
+      (config.data.specialChars as Record<string, unknown>)?.spaces,
       "   spaces at start and end   ",
     );
 
@@ -460,16 +484,21 @@ production:
 
     const config = await loadConfig(testFile);
 
-    // Verify anchor expansion
-    assertEquals((config.development as Record<string, unknown>)?.timeout, 5000);
-    assertEquals((config.development as Record<string, unknown>)?.retries, 3);
-    assertEquals((config.development as Record<string, unknown>)?.verbose, true);
-    assertEquals((config.development as Record<string, unknown>)?.debug, true);
+    // Verify anchor expansion with Result type handling
+    assertExists(config, "Config should be loaded");
+    assertEquals(config.ok, true, "Config should be successfully loaded");
+    if (!config.ok) {
+      throw new Error(`Config load failed: ${config.error.message}`);
+    }
+    assertEquals((config.data.development as Record<string, unknown>)?.timeout, 5000);
+    assertEquals((config.data.development as Record<string, unknown>)?.retries, 3);
+    assertEquals((config.data.development as Record<string, unknown>)?.verbose, true);
+    assertEquals((config.data.development as Record<string, unknown>)?.debug, true);
 
-    assertEquals((config.production as Record<string, unknown>)?.timeout, 10000); // Overridden
-    assertEquals((config.production as Record<string, unknown>)?.retries, 3);
-    assertEquals((config.production as Record<string, unknown>)?.verbose, true);
-    assertEquals((config.production as Record<string, unknown>)?.debug, false);
+    assertEquals((config.data.production as Record<string, unknown>)?.timeout, 10000); // Overridden
+    assertEquals((config.data.production as Record<string, unknown>)?.retries, 3);
+    assertEquals((config.data.production as Record<string, unknown>)?.verbose, true);
+    assertEquals((config.data.production as Record<string, unknown>)?.debug, false);
 
     Deno.removeSync(testFile);
     _logger.debug("YAML anchors and aliases handling verified");

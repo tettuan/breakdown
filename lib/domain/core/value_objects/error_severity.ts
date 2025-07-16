@@ -75,23 +75,33 @@ export type ErrorSeverityError =
 // TYPE GUARDS
 // =============================================================================
 
-export function isInvalidLevelError(error: ErrorSeverityError): error is { kind: "InvalidLevel"; level: unknown; message: string } {
+export function isInvalidLevelError(
+  error: ErrorSeverityError,
+): error is { kind: "InvalidLevel"; level: unknown; message: string } {
   return error.kind === "InvalidLevel";
 }
 
-export function isInvalidImpactError(error: ErrorSeverityError): error is { kind: "InvalidImpact"; impact: unknown; message: string } {
+export function isInvalidImpactError(
+  error: ErrorSeverityError,
+): error is { kind: "InvalidImpact"; impact: unknown; message: string } {
   return error.kind === "InvalidImpact";
 }
 
-export function isInvalidMetadataError(error: ErrorSeverityError): error is { kind: "InvalidMetadata"; metadata: unknown; message: string } {
+export function isInvalidMetadataError(
+  error: ErrorSeverityError,
+): error is { kind: "InvalidMetadata"; metadata: unknown; message: string } {
   return error.kind === "InvalidMetadata";
 }
 
-export function isInvalidTypeError(error: ErrorSeverityError): error is { kind: "InvalidType"; type: unknown; message: string } {
+export function isInvalidTypeError(
+  error: ErrorSeverityError,
+): error is { kind: "InvalidType"; type: unknown; message: string } {
   return error.kind === "InvalidType";
 }
 
-export function isNullOrUndefinedError(error: ErrorSeverityError): error is { kind: "NullOrUndefined"; message: string } {
+export function isNullOrUndefinedError(
+  error: ErrorSeverityError,
+): error is { kind: "NullOrUndefined"; message: string } {
   return error.kind === "NullOrUndefined";
 }
 
@@ -140,32 +150,46 @@ function isValidImpactScope(impact: unknown): impact is ImpactScope {
 }
 
 function isValidMetadata(metadata: unknown): metadata is ErrorMetadata {
-  return metadata === null || metadata === undefined || 
+  return metadata === null || metadata === undefined ||
     (typeof metadata === "object" && metadata !== null && !Array.isArray(metadata));
 }
 
 function severityLevelFromString(level: string): SeverityLevel | null {
   const normalized = level.toLowerCase();
   switch (normalized) {
-    case "debug": return SeverityLevel.DEBUG;
-    case "info": return SeverityLevel.INFO;
-    case "warning": return SeverityLevel.WARNING;
-    case "error": return SeverityLevel.ERROR;
-    case "critical": return SeverityLevel.CRITICAL;
-    case "fatal": return SeverityLevel.FATAL;
-    default: return null;
+    case "debug":
+      return SeverityLevel.DEBUG;
+    case "info":
+      return SeverityLevel.INFO;
+    case "warning":
+      return SeverityLevel.WARNING;
+    case "error":
+      return SeverityLevel.ERROR;
+    case "critical":
+      return SeverityLevel.CRITICAL;
+    case "fatal":
+      return SeverityLevel.FATAL;
+    default:
+      return null;
   }
 }
 
 function severityLevelToString(level: SeverityLevel): string {
   switch (level) {
-    case SeverityLevel.DEBUG: return "DEBUG";
-    case SeverityLevel.INFO: return "INFO";
-    case SeverityLevel.WARNING: return "WARNING";
-    case SeverityLevel.ERROR: return "ERROR";
-    case SeverityLevel.CRITICAL: return "CRITICAL";
-    case SeverityLevel.FATAL: return "FATAL";
-    default: return "UNKNOWN";
+    case SeverityLevel.DEBUG:
+      return "DEBUG";
+    case SeverityLevel.INFO:
+      return "INFO";
+    case SeverityLevel.WARNING:
+      return "WARNING";
+    case SeverityLevel.ERROR:
+      return "ERROR";
+    case SeverityLevel.CRITICAL:
+      return "CRITICAL";
+    case SeverityLevel.FATAL:
+      return "FATAL";
+    default:
+      return "UNKNOWN";
   }
 }
 
@@ -175,10 +199,10 @@ function severityLevelToString(level: SeverityLevel): string {
 
 /**
  * ErrorSeverity Value Object
- * 
+ *
  * Smart Constructor パターンによる安全な生成と
  * Result型による明示的エラーハンドリングを実装。
- * 
+ *
  * 特徴:
  * - プライベートコンストラクタ（直接インスタンス化不可）
  * - パブリック静的ファクトリーメソッド
@@ -319,7 +343,10 @@ export class ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.INFO, impact, metadata);
   }
 
-  static warning(impact: ImpactScope = ImpactScope.MODULE, metadata?: ErrorMetadata): ErrorSeverity {
+  static warning(
+    impact: ImpactScope = ImpactScope.MODULE,
+    metadata?: ErrorMetadata,
+  ): ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.WARNING, impact, metadata);
   }
 
@@ -327,7 +354,10 @@ export class ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.ERROR, impact, metadata);
   }
 
-  static critical(impact: ImpactScope = ImpactScope.SYSTEM, metadata?: ErrorMetadata): ErrorSeverity {
+  static critical(
+    impact: ImpactScope = ImpactScope.SYSTEM,
+    metadata?: ErrorMetadata,
+  ): ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.CRITICAL, impact, metadata);
   }
 
@@ -339,7 +369,11 @@ export class ErrorSeverity {
    * カスタム設定によるErrorSeverity生成（レガシー互換）
    * @deprecated Smart Constructor パターンのcreateメソッドを使用してください
    */
-  static custom(level: SeverityLevel, impact: ImpactScope, metadata?: ErrorMetadata): ErrorSeverity {
+  static custom(
+    level: SeverityLevel,
+    impact: ImpactScope,
+    metadata?: ErrorMetadata,
+  ): ErrorSeverity {
     return new ErrorSeverity(level, impact, metadata);
   }
 
@@ -417,7 +451,13 @@ export class ErrorSeverity {
       return other;
     } else {
       // 同レベルの場合、影響範囲で判定
-      const impactOrder = [ImpactScope.NONE, ImpactScope.LOCAL, ImpactScope.MODULE, ImpactScope.SYSTEM, ImpactScope.GLOBAL];
+      const impactOrder = [
+        ImpactScope.NONE,
+        ImpactScope.LOCAL,
+        ImpactScope.MODULE,
+        ImpactScope.SYSTEM,
+        ImpactScope.GLOBAL,
+      ];
       const thisImpactIndex = impactOrder.indexOf(this._impact);
       const otherImpactIndex = impactOrder.indexOf(other._impact);
       return otherImpactIndex > thisImpactIndex ? other : this;
@@ -458,12 +498,14 @@ export class ErrorSeverity {
 
   equals(other: ErrorSeverity): boolean {
     return this._level === other._level &&
-           this._impact === other._impact &&
-           JSON.stringify(this._metadata) === JSON.stringify(other._metadata);
+      this._impact === other._impact &&
+      JSON.stringify(this._metadata) === JSON.stringify(other._metadata);
   }
 
   toString(): string {
-    return `ErrorSeverity(level=${this.getLevelName()}, impact=${this._impact}, metadata=${JSON.stringify(this._metadata)})`;
+    return `ErrorSeverity(level=${this.getLevelName()}, impact=${this._impact}, metadata=${
+      JSON.stringify(this._metadata)
+    })`;
   }
 
   toJSON(): {
@@ -510,12 +552,19 @@ export class ErrorSeverity {
  */
 function getDefaultImpactForLevel(level: SeverityLevel): ImpactScope {
   switch (level) {
-    case SeverityLevel.DEBUG: return ImpactScope.NONE;
-    case SeverityLevel.INFO: return ImpactScope.LOCAL;
-    case SeverityLevel.WARNING: return ImpactScope.MODULE;
-    case SeverityLevel.ERROR: return ImpactScope.MODULE;
-    case SeverityLevel.CRITICAL: return ImpactScope.SYSTEM;
-    case SeverityLevel.FATAL: return ImpactScope.GLOBAL;
-    default: return ImpactScope.LOCAL;
+    case SeverityLevel.DEBUG:
+      return ImpactScope.NONE;
+    case SeverityLevel.INFO:
+      return ImpactScope.LOCAL;
+    case SeverityLevel.WARNING:
+      return ImpactScope.MODULE;
+    case SeverityLevel.ERROR:
+      return ImpactScope.MODULE;
+    case SeverityLevel.CRITICAL:
+      return ImpactScope.SYSTEM;
+    case SeverityLevel.FATAL:
+      return ImpactScope.GLOBAL;
+    default:
+      return ImpactScope.LOCAL;
   }
 }

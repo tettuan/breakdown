@@ -26,16 +26,16 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   // Get default configuration from DefaultTypePatternProvider
   const patternProvider = new DefaultTypePatternProvider();
   const defaultConfig = patternProvider.getDefaultConfig();
-  
+
   // Extract layer types from default configuration
   const layerTypes = defaultConfig.params?.two?.layerType?.pattern
     ?.match(/\^?\((.*?)\)\$?/)?.[1]
     ?.split("|") || ["project", "issue", "task"];
-  
+
   // Create directories dynamically based on layer types
   const directories = [
     "config",
-    ...layerTypes.map(type => `${type}s`), // pluralize layer types
+    ...layerTypes.map((type) => `${type}s`), // pluralize layer types
     "temp",
     "prompts",
     "schema",
@@ -48,11 +48,11 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   }
 
   // Create basic default-app.yml config file using dynamic values from BreakdownParams
-  // Extract demonstrative types from default configuration
+  // Extract directive types from default configuration
   const directiveTypes = defaultConfig.params?.two?.directiveType?.pattern
     ?.match(/\^?\((.*?)\)\$?/)?.[1]
     ?.split("|") || ["to", "summary", "defect"];
-  
+
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
 working_dir: ".agent/breakdown"
@@ -73,7 +73,7 @@ workspace:
 
   // Use BreakdownConfig for configuration management
   const configPath = `${baseDir}/config/default-app.yml`;
-  
+
   // Write configuration file
   await Deno.writeTextFile(configPath, configContent);
   console.log(`✅ Created config file: ${configPath}`);

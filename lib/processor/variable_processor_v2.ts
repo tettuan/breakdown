@@ -237,6 +237,14 @@ export class TwoParamsVariableProcessor {
   }
 
   /**
+   * Process method that delegates to internal processor
+   * Required by architecture test
+   */
+  process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
+    return this.processor.process(params);
+  }
+
+  /**
    * Process variables with backward compatible interface
    */
   processVariables(
@@ -285,7 +293,7 @@ export class TwoParamsVariableProcessor {
     const errors: TwoParamsVariableProcessorError[] = [];
     const reservedNames = new Set([
       "input_text",
-      "input_text_file", 
+      "input_text_file",
       "destination_path",
       "schema_file",
     ]);
@@ -359,5 +367,65 @@ export class TwoParamsVariableProcessor {
     options: Record<string, unknown>,
   ): Result<ProcessedVariables, TwoParamsVariableProcessorError[]> {
     return this.processVariables(options, "");
+  }
+
+  /**
+   * Extract custom variables (public method for architecture test)
+   * Returns Result type as expected by tests
+   */
+  extractCustomVariables(
+    options: Record<string, unknown>,
+  ): Result<Record<string, string>, VariableProcessorError> {
+    const result = this.extractCustomVariablesCompatible(options);
+    if (!result.ok) {
+      // Convert array of errors to single error for architecture test
+      return error({
+        kind: "CustomVariableError",
+        error: result.error,
+      });
+    }
+    return ok(result.data);
+  }
+
+  /**
+   * Extract variables (alias for extractCustomVariables)
+   * Returns simplified format for architecture test
+   */
+  extractVariables(
+    options: Record<string, unknown>,
+  ): Result<Record<string, string>, TwoParamsVariableProcessorError[]> {
+    const result = this.extractCustomVariablesCompatible(options);
+    if (!result.ok) {
+      return result;
+    }
+    // Return the custom variables directly
+    return ok(result.data);
+  }
+
+  /**
+   * Process all variables (alias for processVariables)
+   * Matches the expected interface for architecture test
+   */
+  processAllVariables(params: {
+    options: Record<string, unknown>;
+    stdinContent: string;
+  }): Result<ProcessedVariables, TwoParamsVariableProcessorError[]> {
+    return this.processVariables(params.options, params.stdinContent);
+  }
+
+  /**
+   * Static method to extract custom variables
+   * Returns simple object format as expected by tests
+   */
+  static extractCustomVariables(
+    options: Record<string, unknown>,
+  ): Record<string, string> {
+    const customVariables: Record<string, string> = {};
+    for (const [key, value] of Object.entries(options)) {
+      if (key.startsWith("uv-")) {
+        customVariables[key] = String(value);
+      }
+    }
+    return customVariables;
   }
 }

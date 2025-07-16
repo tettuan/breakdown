@@ -478,7 +478,6 @@ export class ConfigSetName {
  */
 export type ConfigSetNameResult = Result<ConfigSetName, ConfigSetNameError>;
 
-
 /**
  * Collection utilities for working with multiple ConfigSetName instances
  */

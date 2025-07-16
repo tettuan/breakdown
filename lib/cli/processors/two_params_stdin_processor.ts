@@ -141,11 +141,11 @@ export class TwoParamsStdinProcessor {
       // Enhanced error handling for different error types
       if (err && typeof err === "object" && "name" in err && err.name === "EnhancedStdinError") {
         const enhancedError = err as any;
-        
+
         // In test environments, if stdin reading fails but we have valid options.from="-",
         // treat it as empty input rather than error to allow integration tests to proceed
         if (
-          options && options.from === "-" && 
+          options && options.from === "-" &&
           enhancedError.context?.reason === "test_environment"
         ) {
           return ok(""); // Return empty string for test environments

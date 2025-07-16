@@ -20,9 +20,9 @@ const createTwoParamsResult = (
   options: Record<string, unknown> = {},
 ): TwoParams_Result => ({
   type: "two",
-    directiveType: "to",
   directiveType,
   layerType,
+  demonstrativeType: directiveType,
   params: [directiveType, layerType],
   options,
 });
@@ -43,7 +43,7 @@ Deno.test("1_behavior: DirectiveType correctly extracts directiveType value", ()
     assertEquals(directiveType.value, expected);
     assertEquals(directiveType.value, expected); // Deprecated method compatibility
   }
-  
+
   // Test invalid inputs separately
   const invalidCases = ["analyze", "custom_directive", "with.dots", "123numeric", ""];
   for (const invalidInput of invalidCases) {
@@ -57,7 +57,9 @@ Deno.test("1_behavior: DirectiveType equality comparison works correctly", () =>
   // Same values should be equal
   const directive1Result = DirectiveType.create("to");
   const directive2Result = DirectiveType.create("to");
-  if (!directive1Result.ok || !directive2Result.ok) throw new Error("Failed to create DirectiveType");
+  if (!directive1Result.ok || !directive2Result.ok) {
+    throw new Error("Failed to create DirectiveType");
+  }
   const directive1 = directive1Result.data;
   const directive2 = directive2Result.data;
   assertEquals(directive1.equals(directive2), true);
@@ -129,7 +131,7 @@ Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", 
 
   // DirectiveType only stores the value, not the original result
   // The original result is preserved in the calling context
-  
+
   // Remove references to original that no longer exist
   // assertEquals(original.options.debug, true); // Removed - not supported
   // assertEquals(original.options.profile, "production"); // Removed - not supported
@@ -152,9 +154,13 @@ Deno.test("1_behavior: DirectiveType toString provides consistent format", () =>
       throw new Error(`Failed to create DirectiveType for valid value: ${value}`);
     }
   }
-  
+
   // Test that invalid values fail creation
-  const invalidCases = ["", "custom-value", "very_long_directive_type_name_that_exceeds_normal_length"];
+  const invalidCases = [
+    "",
+    "custom-value",
+    "very_long_directive_type_name_that_exceeds_normal_length",
+  ];
   for (const invalidValue of invalidCases) {
     const directiveTypeResult = DirectiveType.create(invalidValue);
     assertEquals(directiveTypeResult.ok, false, `Should fail for invalid value: ${invalidValue}`);

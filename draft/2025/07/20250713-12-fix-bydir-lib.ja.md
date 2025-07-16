@@ -48,7 +48,9 @@
 
 ### 3. 作業レビュー → 差し戻し | 完了
 
-7. `deno task ci:dirty` を実行し、passするまでテストを完成させる
+7. `deno check lib/ > tmp/type_errors.log 2>&1` の末尾でエラーが生じている → 「2. 作業開始」を最初から実施
+7-1. 開始時点で "Found 360 errors." あり、多い。
+8. `deno task ci:dirty` を実行しエラー  → 「2. 作業開始」を最初から実施
 
 #### 完了条件
 

@@ -102,7 +102,6 @@ export type PromptGeneratorError =
   // Context errors
   | { readonly kind: "InvalidContext"; readonly message: string; readonly details?: unknown };
 
-
 // ============================================================================
 // Domain Service - Prompt generation with clear boundaries
 // ============================================================================

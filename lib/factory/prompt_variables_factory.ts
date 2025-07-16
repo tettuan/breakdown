@@ -28,13 +28,11 @@ import {
   PromptTemplatePath as PromptTemplatePathResolver,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
-import {
-  SchemaFilePathResolverTotality,
-} from "./schema_file_path_resolver_totality.ts";
-// Note: InputFilePathResolver and OutputFilePathResolver have been consolidated 
+import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
+// Note: InputFilePathResolver and OutputFilePathResolver have been consolidated
 // into input_file_path_resolver_totality.ts as part of DDD refactoring
-import { 
-  InputFilePathResolverTotality as InputFilePathResolver 
+import {
+  InputFilePathResolverTotality as InputFilePathResolver,
 } from "./input_file_path_resolver_totality.ts";
 
 // OutputFilePathResolver functionality is now consolidated within InputFilePathResolverTotality
@@ -122,25 +120,27 @@ function isValidFactoryConfig(config: unknown): config is FactoryConfig {
 /**
  * Validate prompt directory configuration
  */
-function validatePromptDirConfig(config: FactoryConfig): Result<string, PromptVariablesFactoryErrors> {
+function validatePromptDirConfig(
+  config: FactoryConfig,
+): Result<string, PromptVariablesFactoryErrors> {
   const baseDir = config.app_prompt?.base_dir;
-  
+
   if (!baseDir || typeof baseDir !== "string") {
     return resultError(
       PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
-        "prompt directory configuration is required and must be a non-empty string"
-      )
+        "prompt directory configuration is required and must be a non-empty string",
+      ),
     );
   }
-  
+
   if (baseDir.trim() === "") {
     return resultError(
       PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
-        "prompt directory cannot be empty"
-      )
+        "prompt directory cannot be empty",
+      ),
     );
   }
-  
+
   return ok(baseDir);
 }
 
@@ -149,7 +149,7 @@ function validatePromptDirConfig(config: FactoryConfig): Result<string, PromptVa
  */
 function createPathResolutionOptions(
   baseDir: string,
-  schemaDir?: string
+  schemaDir?: string,
 ): Result<PathResolutionOption, PromptVariablesFactoryErrors> {
   const pathOptionsResult = PathResolutionOption.create(
     "relative",
@@ -160,8 +160,8 @@ function createPathResolutionOptions(
   if (!pathOptionsResult.ok) {
     return resultError(
       PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
-        `Failed to create path options: ${pathOptionsResult.error.kind}`
-      )
+        `Failed to create path options: ${pathOptionsResult.error.kind}`,
+      ),
     );
   }
 
@@ -173,16 +173,16 @@ function createPathResolutionOptions(
  */
 function createTemplateResolver(
   config: FactoryConfig,
-  cliParams: PromptCliParams
+  cliParams: PromptCliParams,
 ): Result<PromptTemplatePathResolverTotality | undefined, PromptVariablesFactoryErrors> {
   // Use PromptTemplatePathResolverTotality instead of PromptTemplatePath for factory creation
   const templateResolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
-  
+
   if (!templateResolverResult.ok) {
     // Template resolver creation failed - return undefined (acceptable in test environments)
     return ok(undefined);
   }
-  
+
   return ok(templateResolverResult.data);
 }
 
@@ -191,15 +191,15 @@ function createTemplateResolver(
  */
 function createSchemaResolver(
   config: FactoryConfig,
-  cliParams: PromptCliParams
+  cliParams: PromptCliParams,
 ): Result<SchemaFilePathResolverTotality | undefined, PromptVariablesFactoryErrors> {
   const schemaResolverResult = SchemaFilePathResolverTotality.create(config, cliParams);
-  
+
   if (!schemaResolverResult.ok) {
     // Schema resolver creation failed - return undefined (acceptable in test environments)
     return ok(undefined);
   }
-  
+
   return ok(schemaResolverResult.data);
 }
 
@@ -208,15 +208,15 @@ function createSchemaResolver(
  */
 function createInputResolver(
   config: FactoryConfig,
-  cliParams: PromptCliParams
+  cliParams: PromptCliParams,
 ): Result<InputFilePathResolver | undefined, PromptVariablesFactoryErrors> {
   const inputResolverResult = InputFilePathResolver.create(config, cliParams);
-  
+
   if (!inputResolverResult.ok) {
     // Input resolver creation failed - return undefined (acceptable in test environments)
     return ok(undefined);
   }
-  
+
   return ok(inputResolverResult.data);
 }
 
@@ -225,15 +225,15 @@ function createInputResolver(
  */
 function createOutputResolver(
   config: FactoryConfig,
-  cliParams: PromptCliParams
+  cliParams: PromptCliParams,
 ): Result<OutputFilePathResolver | undefined, PromptVariablesFactoryErrors> {
   const outputResolverResult = OutputFilePathResolver.create(config, cliParams);
-  
+
   if (!outputResolverResult.ok) {
     // Output resolver creation failed - return undefined (acceptable in test environments)
     return ok(undefined);
   }
-  
+
   return ok(outputResolverResult.data);
 }
 
@@ -243,14 +243,14 @@ function createOutputResolver(
 function createTwoParamsResult(
   directiveType: string,
   layerType: string,
-  options: Record<string, unknown> = {}
+  options: Record<string, unknown> = {},
 ): TwoParams_Result {
   return {
     type: "two" as const,
     params: [directiveType, layerType],
     layerType,
     directiveType,
-    demonstrativeType: directiveType, // For backward compatibility
+    demonstrativeType: directiveType, // For JSR package compatibility
     options,
   };
 }
@@ -285,10 +285,11 @@ export class PromptVariablesFactory {
     // Create default path resolution option safely
     const defaultPathResult = PathResolutionOption.create("relative", "prompts", ["schemas"]);
     const defaultPath = defaultPathResult.ok ? defaultPathResult.data : undefined;
-    
-    this.transformer = transformer || (defaultPath 
-      ? TransformerFactory.createWithPathValidation(defaultPath)
-      : TransformerFactory.createDefault());
+
+    this.transformer = transformer ||
+      (defaultPath
+        ? TransformerFactory.createWithPathValidation(defaultPath)
+        : TransformerFactory.createDefault());
   }
 
   /**
@@ -308,7 +309,7 @@ export class PromptVariablesFactory {
     // Create path resolution options
     const pathOptionsResult = createPathResolutionOptions(
       baseDirResult.data,
-      config.app_schema?.base_dir
+      config.app_schema?.base_dir,
     );
     if (!pathOptionsResult.ok) {
       return pathOptionsResult;
@@ -392,8 +393,8 @@ export class PromptVariablesFactory {
     if (!isValidFactoryConfig(config)) {
       return resultError(
         PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
-          "Invalid configuration: must be a valid FactoryConfig object"
-        )
+          "Invalid configuration: must be a valid FactoryConfig object",
+        ),
       );
     }
 
@@ -414,13 +415,14 @@ export class PromptVariablesFactory {
   } {
     // Safe type conversion instead of type assertion
     const totalityParams = this.convertToTotalityParams(this.cliParams);
-    
+
     return {
       promptFilePath: this.promptFilePath,
       inputFilePath: this.inputFilePath,
       outputFilePath: this.outputFilePath,
       schemaFilePath: this.schemaFilePath,
-      directive: totalityParams.directive || this.createDirectiveFromString(this.cliParams.directiveType),
+      directive: totalityParams.directive ||
+        this.createDirectiveFromString(this.cliParams.directiveType),
       layer: totalityParams.layer || this.createLayerFromString(this.cliParams.layerType),
       customVariables: this.cliParams.options.customVariables,
     };
@@ -493,7 +495,8 @@ export class PromptVariablesFactory {
    */
   public get promptFilePath(): string {
     if (!this._promptFilePath) {
-      const fallback = `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+      const fallback =
+        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return fallback;
     }
     return this._promptFilePath;
@@ -504,7 +507,8 @@ export class PromptVariablesFactory {
    */
   public getPromptFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._promptFilePath) {
-      const fallback = `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+      const fallback =
+        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return ok(fallback);
     }
     return ok(this._promptFilePath);
@@ -565,7 +569,8 @@ export class PromptVariablesFactory {
    */
   public getSchemaFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._schemaFilePath) {
-      const fallback = `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      const fallback =
+        `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       return ok(fallback);
     }
     return ok(this._schemaFilePath);
@@ -741,7 +746,10 @@ export class PromptVariablesFactory {
   /**
    * Create PromptVariableSource from CLI parameters and options safely
    */
-  private createPromptVariableSourceSafe(): Result<PromptVariableSource, PromptVariablesFactoryErrors> {
+  private createPromptVariableSourceSafe(): Result<
+    PromptVariableSource,
+    PromptVariablesFactoryErrors
+  > {
     const cliSource = PromptVariableSourceFactory.fromCLI({
       directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,

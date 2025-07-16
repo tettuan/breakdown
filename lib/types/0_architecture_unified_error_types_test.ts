@@ -187,13 +187,13 @@ Deno.test("0_architecture: ConfigurationError discriminated union - enforces cor
 
   const invalidConfigError: ConfigurationError = {
     kind: "InvalidConfiguration",
-    field: "port",
-    reason: "Must be a valid port number",
+    details: "Port field must be a valid port number",
+    context: { field: "port", reason: "Must be a valid port number" },
   };
 
   assertEquals(invalidConfigError.kind, "InvalidConfiguration");
-  assertExists(invalidConfigError.field);
-  assertExists(invalidConfigError.reason);
+  assertExists(invalidConfigError.details);
+  assertExists(invalidConfigError.context);
 });
 
 Deno.test("0_architecture: ProcessingError discriminated union - enforces correct structure", () => {

@@ -19,10 +19,7 @@
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { AsyncConfigPatternProvider } from "./pattern_provider_async.ts";
-import {
-  type CustomConfig as _CustomConfig,
-  ConfigLoader,
-} from "./loader.ts";
+import { ConfigLoader, type CustomConfig as _CustomConfig } from "./loader.ts";
 import { DEPENDENCY_VERSIONS } from "./versions.ts";
 import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";

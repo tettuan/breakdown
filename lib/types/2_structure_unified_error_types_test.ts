@@ -617,7 +617,6 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
       case "InvalidDirectiveType":
       case "InvalidLayerType":
       case "PathValidationFailed":
-      case "ValidationPathFailed":
       case "CustomVariableInvalid":
       case "ConfigValidationFailed":
       case "UnsupportedParamsType":

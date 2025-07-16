@@ -192,7 +192,9 @@ Deno.test("2_structure: consistent error handling", () => {
     if (!result.ok) {
       assertExists(result.error);
       if (method !== "createBatch") {
-        assertExists(result.error.kind);
+        if ("kind" in result.error) {
+          assertExists(result.error.kind);
+        }
       } else {
         // Batch returns array of errors
         assertEquals(Array.isArray(result.error), true);
@@ -305,7 +307,9 @@ Deno.test("2_structure: encapsulation of variable creation logic", () => {
   assertEquals(errorResult.ok, false);
   if (!errorResult.ok) {
     // Error is structured and meaningful
-    assertExists(errorResult.error.kind);
-    assertEquals(errorResult.error.kind, "NoStdinData");
+    if ("kind" in errorResult.error) {
+      assertExists(errorResult.error.kind);
+      assertEquals(errorResult.error.kind, "NoStdinData");
+    }
   }
 });

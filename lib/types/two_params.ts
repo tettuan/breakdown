@@ -1,10 +1,10 @@
 /**
  * @fileoverview TwoParams type implementation with Smart Constructor pattern
- * 
+ *
  * This module provides TwoParams type implementation in lib/types/ directory
  * that integrates with the aggregate root in lib/domain/core/aggregates/.
  * It follows Smart Constructor pattern and provides createOrError method.
- * 
+ *
  * @module types/two_params
  */
 
@@ -18,7 +18,7 @@ import { ErrorFactory } from "./unified_error_types.ts";
 
 // Re-export aggregate root for compatibility
 export { TwoParams as TwoParamsAggregate } from "../domain/core/aggregates/two_params.ts";
-export type { TwoParamsValidationError, PathConfig } from "../domain/core/aggregates/two_params.ts";
+export type { PathConfig, TwoParamsValidationError } from "../domain/core/aggregates/two_params.ts";
 
 /**
  * TwoParams type errors following Discriminated Union pattern
@@ -31,27 +31,27 @@ export type TwoParamsTypeError =
 
 /**
  * TwoParams type representation for lib/types integration
- * 
+ *
  * This class provides a Smart Constructor pattern implementation
  * that validates TwoParams_Result objects and creates type-safe instances.
- * 
+ *
  * Design principles:
  * - Smart Constructor with createOrError method
  * - Totality principle compliance
  * - Integration with domain aggregate
  * - Type safety validation
- * 
+ *
  * @example Basic usage with createOrError
  * ```typescript
  * const result = createTwoParamsResult("to", "task");
  * const twoParamsType = TwoParamsType.createOrError(result);
- * 
+ *
  * if (twoParamsType.ok) {
  *   console.log(twoParamsType.data.directive); // "to"
  *   console.log(twoParamsType.data.layer); // "task"
  * }
  * ```
- * 
+ *
  * @example Integration with aggregate
  * ```typescript
  * const typeResult = TwoParamsType.createOrError(paramsResult);
@@ -64,7 +64,7 @@ export type TwoParamsTypeError =
 export class TwoParamsType {
   /**
    * Private constructor following Smart Constructor pattern
-   * 
+   *
    * @param directive - Validated directive type value
    * @param layer - Validated layer type value
    * @param params - Original params array
@@ -87,7 +87,7 @@ export class TwoParamsType {
   }
 
   /**
-   * Layer type accessor  
+   * Layer type accessor
    */
   get layer(): string {
     return this._layer;
@@ -109,20 +109,20 @@ export class TwoParamsType {
 
   /**
    * Smart Constructor with Result type for Totality principle
-   * 
+   *
    * Creates a TwoParamsType instance from TwoParams_Result with comprehensive validation.
    * Follows Totality principle by handling all possible error cases explicitly.
-   * 
+   *
    * @param result - TwoParams_Result to validate and convert
    * @returns Result containing TwoParamsType or validation error
-   * 
+   *
    * @example Success case
    * ```typescript
    * const result = createTwoParamsResult("to", "task");
    * const twoParamsType = TwoParamsType.createOrError(result);
    * // twoParamsType.ok === true
    * ```
-   * 
+   *
    * @example Error case
    * ```typescript
    * const invalidResult = { type: "invalid" };
@@ -146,7 +146,8 @@ export class TwoParamsType {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "result",
         value: result,
-        reason: "Invalid TwoParams_Result: must have required fields (type, params, directiveType/directiveType, layerType)",
+        reason:
+          "Invalid TwoParams_Result: must have required fields (type, params, directiveType, layerType)",
       }));
     }
 
@@ -171,7 +172,7 @@ export class TwoParamsType {
     // layerType validation
     if (!result.layerType || typeof result.layerType !== "string") {
       return error(ErrorFactory.validationError("MissingRequiredField", {
-        field: "layerType", 
+        field: "layerType",
         source: "TwoParams_Result",
       }));
     }
@@ -202,45 +203,53 @@ export class TwoParamsType {
     }
 
     // Success: create TwoParamsType instance
-    return ok(new TwoParamsType(
-      directiveType,
-      result.layerType,
-      [...result.params], // Create immutable copy
-      result.options || {},
-    ));
+    return ok(
+      new TwoParamsType(
+        directiveType,
+        result.layerType,
+        [...result.params], // Create immutable copy
+        result.options || {},
+      ),
+    );
   }
 
   /**
    * Convert to domain aggregate root
-   * 
+   *
    * Creates a TwoParams aggregate root instance from this type.
    * Enables integration between types layer and domain layer.
-   * 
+   *
    * @param profile - Configuration profile for domain validation
    * @returns Result containing TwoParams aggregate or domain error
    */
-  async toAggregate(profile: ConfigProfileName): Promise<Result<import("../domain/core/aggregates/two_params.ts").TwoParams, import("../domain/core/aggregates/two_params.ts").TwoParamsValidationError>> {
+  async toAggregate(
+    profile: ConfigProfileName,
+  ): Promise<
+    Result<
+      import("../domain/core/aggregates/two_params.ts").TwoParams,
+      import("../domain/core/aggregates/two_params.ts").TwoParamsValidationError
+    >
+  > {
     const { TwoParams } = await import("../domain/core/aggregates/two_params.ts");
     return TwoParams.create(this._directive, this._layer, profile);
   }
 
   /**
    * Equality comparison
-   * 
+   *
    * @param other - Other TwoParamsType to compare
    * @returns true if equal, false otherwise
    */
   equals(other: TwoParamsType): boolean {
     return this._directive === other._directive &&
-           this._layer === other._layer &&
-           this._params.length === other._params.length &&
-           this._params.every((param, index) => param === other._params[index]);
+      this._layer === other._layer &&
+      this._params.length === other._params.length &&
+      this._params.every((param, index) => param === other._params[index]);
   }
-
 
   /**
    * String representation
-   * 
+   *
    * @returns String representation in "directive layer" format
    */
   toString(): string {
@@ -249,16 +258,18 @@ export class TwoParamsType {
 
   /**
    * Debug string with detailed information
-   * 
+   *
    * @returns Detailed debug string
    */
   toDebugString(): string {
-    return `TwoParamsType(directive="${this._directive}", layer="${this._layer}", params=[${this._params.join(", ")}])`;
+    return `TwoParamsType(directive="${this._directive}", layer="${this._layer}", params=[${
+      this._params.join(", ")
+    }])`;
   }
 
   /**
    * JSON serialization
-   * 
+   *
    * @returns Serializable object representation
    */
   toJSON(): Record<string, unknown> {
@@ -272,7 +283,7 @@ export class TwoParamsType {
 
   /**
    * Validate directive and layer combination
-   * 
+   *
    * @returns Result indicating if combination is valid
    */
   validate(): Result<true, TwoParamsTypeError> {
@@ -297,11 +308,21 @@ export class TwoParamsType {
 
     return ok(true);
   }
+
+  /**
+   * Type guard to check if a value is a TwoParamsType instance
+   *
+   * @param value - Value to check
+   * @returns true if value is TwoParamsType, false otherwise
+   */
+  static is(value: unknown): value is TwoParamsType {
+    return value instanceof TwoParamsType;
+  }
 }
 
 /**
  * Helper function to create TwoParamsType from directive and layer strings
- * 
+ *
  * @param directive - Directive type string
  * @param layer - Layer type string
  * @param options - Additional options
@@ -321,6 +342,12 @@ export async function createTwoParamsType(
  * Type alias for backward compatibility
  */
 export type TwoParams = TwoParamsType;
+
+/**
+ * Export class as TwoParams for backward compatibility
+ * This allows TwoParams.is() and other static methods to work
+ */
+export const TwoParams = TwoParamsType;
 
 /**
  * Default export for common usage

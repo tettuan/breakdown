@@ -45,13 +45,17 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
         "ValidatedParams must have directiveType",
       );
       assertExists(mockValidResult.data.layerType, "ValidatedParams must have layerType");
-      assertExists(mockValidResult.data.profile, "ValidatedParams must have profile");
+      // Profile is not part of ValidatedParams interface anymore
       assertEquals(
         typeof mockValidResult.data.directiveType,
         "object",
         "directiveType must be DirectiveType object",
       );
-      assertEquals(typeof mockValidResult.data.layerType, "object", "layerType must be LayerType object");
+      assertEquals(
+        typeof mockValidResult.data.layerType,
+        "object",
+        "layerType must be LayerType object",
+      );
     }
 
     logger.debug("Module exports verification completed");

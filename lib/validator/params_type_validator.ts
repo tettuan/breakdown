@@ -119,8 +119,8 @@ export class ParamsTypeValidator {
     return ok({
       type: "two",
       directiveType: result.directiveType,
+      demonstrativeType: result.directiveType,
       layerType: result.layerType,
-      directiveType: result.directiveType,
       params: result.params,
       options: result.options ?? {},
     });

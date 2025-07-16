@@ -97,7 +97,10 @@ Deno.test("TypeFactory Structure - ProcessingError variants", () => {
   if (!patternNotFoundResult.ok) {
     const error = patternNotFoundResult.error;
     // 実装によってはPatternValidationFailedになる場合がある
-    assertEquals(error.kind === "PatternNotFound" || error.kind === "PatternValidationFailed", true);
+    assertEquals(
+      error.kind === "PatternNotFound" || error.kind === "PatternValidationFailed",
+      true,
+    );
     if (error.kind === "PatternNotFound") {
       assertExists(error.reason);
       assertEquals(typeof error.reason, "string");
@@ -118,7 +121,10 @@ Deno.test("TypeFactory Structure - ProcessingError variants", () => {
   if (!validationFailedResult.ok) {
     const error = validationFailedResult.error;
     // 実装では PatternNotFound が返される可能性がある
-    assertEquals(error.kind === "PatternValidationFailed" || error.kind === "PatternNotFound", true);
+    assertEquals(
+      error.kind === "PatternValidationFailed" || error.kind === "PatternNotFound",
+      true,
+    );
     if (error.kind === "PatternValidationFailed") {
       assertExists(error.value);
       assertExists(error.pattern);

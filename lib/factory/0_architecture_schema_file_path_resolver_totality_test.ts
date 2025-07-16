@@ -26,7 +26,7 @@ Deno.test("SchemaFilePathResolverTotality - Smart Constructor validates inputs",
   for (const config of invalidConfigs) {
     const result = SchemaFilePathResolverTotality.create(
       config as unknown as { working_dir: string; resource_dir: string },
-      { directiveType: "to", layerType: "project", options: {} },
+      { directiveType: "to", demonstrativeType: "to", layerType: "project", options: {} },
     );
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -66,7 +66,7 @@ Deno.test("SchemaFilePathResolverTotality - validates required parameters", () =
   // Missing directiveType
   const result1 = SchemaFilePathResolverTotality.create(
     config,
-    { directiveType: "", layerType: "project", options: {} },
+    { directiveType: "", demonstrativeType: "", layerType: "project", options: {} },
   );
   assertEquals(result1.ok, false);
   if (!result1.ok) {
@@ -76,7 +76,7 @@ Deno.test("SchemaFilePathResolverTotality - validates required parameters", () =
   // Missing layerType
   const result2 = SchemaFilePathResolverTotality.create(
     config,
-    { directiveType: "to", layerType: "", options: {} },
+    { directiveType: "to", demonstrativeType: "to", layerType: "", options: {} },
   );
   assertEquals(result2.ok, false);
   if (!result2.ok) {
@@ -152,8 +152,9 @@ Deno.test("SchemaFilePathResolverTotality - handles TwoParams_Result structure",
   const twoParams = {
     type: "two" as const,
     params: ["summary", "issue"],
-    directiveType: "", // Will be extracted from params
-    layerType: "", // Will be extracted from params
+    directiveType: "summary",
+    demonstrativeType: "summary", // Same as directiveType
+    layerType: "issue", // Extracted from params[1]
     options: {},
   };
 

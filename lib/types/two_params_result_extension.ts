@@ -22,8 +22,6 @@ export interface TwoParams_Result extends BaseTwoParamsResult {
   layerType: string;
   /** Directive type string (unified naming) */
   directiveType: string;
-  /** Demonstrative type string (deprecated, use directiveType) */
-  demonstrativeType?: string;
 }
 
 /**
@@ -56,7 +54,7 @@ export function createTwoParamsResult(
     params: [directiveType, layerType],
     layerType,
     directiveType,
-    demonstrativeType: directiveType, // For backward compatibility
+    demonstrativeType: directiveType, // For JSR package compatibility
     options: options || {},
   };
 }

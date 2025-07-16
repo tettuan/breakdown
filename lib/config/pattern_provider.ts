@@ -338,14 +338,14 @@ export class ConfigPatternProvider implements TypePatternProvider {
     if (!pattern) {
       return [];
     }
-    
+
     // Extract values from pattern like "^(to|summary|defect|init|find)$"
     const patternString = pattern.getPattern();
     const match = patternString.match(/\^\(([^)]+)\)\$/);
     if (match && match[1]) {
-      return match[1].split('|').filter((v: string) => v.trim().length > 0);
+      return match[1].split("|").filter((v: string) => v.trim().length > 0);
     }
-    
+
     return [];
   }
 
@@ -358,14 +358,14 @@ export class ConfigPatternProvider implements TypePatternProvider {
     if (!pattern) {
       return [];
     }
-    
+
     // Extract values from pattern like "^(project|issue|task|bugs|temp)$"
     const patternString = pattern.getPattern();
     const match = patternString.match(/\^\(([^)]+)\)\$/);
     if (match && match[1]) {
-      return match[1].split('|').filter((v: string) => v.trim().length > 0);
+      return match[1].split("|").filter((v: string) => v.trim().length > 0);
     }
-    
+
     return [];
   }
 

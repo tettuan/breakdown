@@ -451,4 +451,14 @@ export class TwoParams {
   toDebugString(): string {
     return `TwoParams(directive="${this._directive.value}", layer="${this._layer.value}", profile="${this._profile.value}")`;
   }
+
+  /**
+   * Type guard to check if a value is a TwoParams instance
+   *
+   * @param value - Value to check
+   * @returns true if value is TwoParams, false otherwise
+   */
+  static is(value: unknown): value is TwoParams {
+    return value instanceof TwoParams;
+  }
 }

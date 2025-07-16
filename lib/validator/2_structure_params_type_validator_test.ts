@@ -50,7 +50,6 @@ Deno.test("2_structure: ParamsTypeValidator enforces ValidatedParamsType structu
   const twoParamsResult = validator.validate({
     type: "two",
     directiveType: "to",
-    directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: { debug: true },
@@ -110,7 +109,6 @@ Deno.test("2_structure: ParamsTypeError discriminated union provides type safety
   // Test InvalidFieldValue error
   const invalidValueResult = validator.validate({
     type: "two",
-    directiveType: "to",
     directiveType: "invalid",
     layerType: "project",
     params: ["invalid", "project"],
@@ -133,7 +131,6 @@ Deno.test("2_structure: Two params validation enforces structural integrity", ()
   const wrongParamsCountResult = validator.validate({
     type: "two",
     directiveType: "to",
-    directiveType: "to",
     layerType: "project",
     params: ["to"], // Wrong count
   });
@@ -150,7 +147,6 @@ Deno.test("2_structure: Two params validation enforces structural integrity", ()
   // Test missing params array
   const missingParamsResult = validator.validate({
     type: "two",
-    directiveType: "to",
     directiveType: "to",
     layerType: "project",
   });
@@ -245,7 +241,6 @@ Deno.test("2_structure: Pattern validation maintains consistency", () => {
   for (const { directive, layer } of validPatterns) {
     const result = validator.validate({
       type: "two",
-    directiveType: "to",
       directiveType: directive,
       layerType: layer,
       params: [directive, layer],
@@ -268,7 +263,6 @@ Deno.test("2_structure: Pattern validation maintains consistency", () => {
   for (const { directive, layer } of invalidPatterns) {
     const result = validator.validate({
       type: "two",
-    directiveType: "to",
       directiveType: directive,
       layerType: layer,
       params: [directive, layer],
@@ -293,7 +287,6 @@ Deno.test("2_structure: Options handling preserves original data", () => {
 
   const result = validator.validate({
     type: "two",
-    directiveType: "to",
     directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
@@ -327,7 +320,6 @@ Deno.test("2_structure: ParamsResult interface compatibility", () => {
   // Test full ParamsResult
   const fullResult: ParamsResult = {
     type: "two",
-    directiveType: "to",
     directiveType: "to",
     layerType: "project",
     params: ["to", "project"],
@@ -379,7 +371,6 @@ Deno.test("2_structure: Error pattern consistency across validation methods", ()
 
   const result = validator.validate({
     type: "two",
-    directiveType: "to",
     directiveType: "any",
     layerType: "any",
     params: ["any", "any"],
@@ -399,7 +390,12 @@ Deno.test("2_structure: ValidatedParamsType guarantees complete data", () => {
   const testCases: ParamsResult[] = [
     { type: "zero" },
     { type: "one", params: ["project"] },
-    { type: "two", directiveType: "to", layerType: "project", params: ["to", "project"] },
+    {
+      type: "two",
+      directiveType: "to",
+      layerType: "project",
+      params: ["to", "project"],
+    },
   ];
 
   for (const testCase of testCases) {

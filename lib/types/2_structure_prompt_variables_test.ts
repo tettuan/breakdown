@@ -25,7 +25,7 @@ describe("PromptVariables - Unit Tests", () => {
       assertExists(inputTextFile);
       if (inputTextFile.ok) {
         assertEquals(inputTextFile.data.toRecord(), {
-          "input_text_file": "/path/to/file"
+          "input_text_file": "/path/to/file",
         });
       }
 
@@ -33,7 +33,7 @@ describe("PromptVariables - Unit Tests", () => {
       assertExists(destinationPath);
       if (destinationPath.ok) {
         assertEquals(destinationPath.data.toRecord(), {
-          "destination_path": "/path/to/dest"
+          "destination_path": "/path/to/dest",
         });
       }
     });

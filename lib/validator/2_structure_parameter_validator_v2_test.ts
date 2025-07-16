@@ -63,11 +63,11 @@ Deno.test("2_structure - ValidatedParams maintains hierarchical data integrity",
   const result = createTwoParamsResult("to", "project");
   const directiveResult = DirectiveType.create(result.directiveType);
   const layerResult = LayerType.create(result.layerType);
-  
+
   if (!directiveResult.ok || !layerResult.ok) {
     throw new Error("Failed to create domain objects for test");
   }
-  
+
   const validatedParams: ValidatedParams = {
     directive: directiveResult.data,
     layer: layerResult.data,

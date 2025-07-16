@@ -48,9 +48,9 @@ export interface ValidatedParams {
   readonly directive: DirectiveType;
   readonly layer: LayerType;
   // Legacy compatibility properties
-  readonly directiveType: string;  // Alias for directive.value
-  readonly layerType: string;          // Alias for layer.value
-  readonly params: string[];           // For legacy array access
+  readonly directiveType: string; // Alias for directive.value
+  readonly layerType: string; // Alias for layer.value
+  readonly params: string[]; // For legacy array access
 }
 
 // ============================================================================

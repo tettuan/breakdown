@@ -20,27 +20,33 @@ import { ErrorFactory } from "../../../types/unified_error_types.ts";
 export type DirectiveTypeError =
   | { kind: "EmptyInput"; message: string }
   | { kind: "InvalidFormat"; value: string; pattern: string; message: string }
-  | { kind: "PatternMismatch"; value: string; profile: string; validDirectives: readonly string[]; message: string }
+  | {
+    kind: "PatternMismatch";
+    value: string;
+    profile: string;
+    validDirectives: readonly string[];
+    message: string;
+  }
   | { kind: "TooLong"; value: string; maxLength: number; message: string };
 
 /**
  * DirectiveType - 処理方向を表すValue Object
- * 
+ *
  * 役割: 「何をするか」を決定する核心ドメイン概念
  * 例: "to"(変換), "summary"(要約), "defect"(欠陥検出)
- * 
+ *
  * Design Principles:
  * - Smart Constructor pattern with Result<T, E>
  * - Pattern-based validation with ConfigProfileName
  * - Immutable Value Object with type safety
  * - Path resolution domain operations
- * 
+ *
  * Domain Context:
  * - Used in TwoParams aggregate root
  * - Validates against ConfigProfileName patterns
  * - Provides path resolution for prompt and schema files
  * - Ensures type-safe comparison and operations
- * 
+ *
  * @example Basic usage
  * ```typescript
  * const profile = ConfigProfileName.createDefault();
@@ -50,7 +56,7 @@ export type DirectiveTypeError =
  *   console.log(directiveResult.data.isValidForProfile(profile)); // true
  * }
  * ```
- * 
+ *
  * @example Path resolution
  * ```typescript
  * const directive = DirectiveType.create("to", profile).data;
@@ -73,7 +79,7 @@ export class DirectiveType {
 
   /**
    * Private constructor following Smart Constructor pattern
-   * 
+   *
    * @param value - Validated directive type value
    * @param profile - Configuration profile for pattern validation
    * @param validatedByPattern - Indicates if validated against profile pattern
@@ -110,10 +116,10 @@ export class DirectiveType {
 
   /**
    * Smart Constructor for DirectiveType creation
-   * 
+   *
    * Validates the input against basic format and ConfigProfileName patterns.
    * Follows Totality principle by handling all possible input cases.
-   * 
+   *
    * @param value - Directive type candidate string
    * @param profile - Configuration profile for pattern validation (optional, uses default if not provided)
    * @returns Result with DirectiveType or detailed error
@@ -125,8 +131,8 @@ export class DirectiveType {
     // Handle missing profile with default configuration
     const actualProfile = profile || (() => {
       try {
-        return (globalThis as any).ConfigProfileName?.createDefault?.() || 
-               { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
+        return (globalThis as any).ConfigProfileName?.createDefault?.() ||
+          { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
       } catch {
         return { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
       }
@@ -166,7 +172,8 @@ export class DirectiveType {
         kind: "TooLong",
         value: trimmedValue,
         maxLength: DirectiveType.#MAX_LENGTH,
-        message: `DirectiveType "${trimmedValue}" exceeds maximum length of ${DirectiveType.#MAX_LENGTH} characters`,
+        message:
+          `DirectiveType "${trimmedValue}" exceeds maximum length of ${DirectiveType.#MAX_LENGTH} characters`,
       });
     }
 
@@ -176,12 +183,15 @@ export class DirectiveType {
         kind: "InvalidFormat",
         value: trimmedValue,
         pattern: DirectiveType.#BASIC_PATTERN.source,
-        message: `DirectiveType "${trimmedValue}" contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed.`,
+        message:
+          `DirectiveType "${trimmedValue}" contains invalid characters. Only lowercase letters, numbers, hyphens, and underscores are allowed.`,
       });
     }
 
     // Case 4: Pattern-based validation against ConfigProfileName
-    const validDirectives = actualProfile.getDirectiveTypes ? actualProfile.getDirectiveTypes() : ["to", "summary", "defect"];
+    const validDirectives = actualProfile.getDirectiveTypes
+      ? actualProfile.getDirectiveTypes()
+      : ["to", "summary", "defect"];
     const isValidForProfile = validDirectives.includes(trimmedValue);
 
     if (!isValidForProfile) {
@@ -190,7 +200,9 @@ export class DirectiveType {
         value: trimmedValue,
         profile: actualProfile.value || "default",
         validDirectives: [...validDirectives],
-        message: `DirectiveType "${trimmedValue}" is not valid for profile "${actualProfile.value || "default"}". Valid options: ${validDirectives.join(", ")}`,
+        message: `DirectiveType "${trimmedValue}" is not valid for profile "${
+          actualProfile.value || "default"
+        }". Valid options: ${validDirectives.join(", ")}`,
       });
     }
 
@@ -200,7 +212,7 @@ export class DirectiveType {
 
   /**
    * Check if this DirectiveType is valid for a specific profile
-   * 
+   *
    * @param profile - Configuration profile to check against
    * @returns true if valid for the profile
    */
@@ -211,9 +223,9 @@ export class DirectiveType {
 
   /**
    * Get prompt directory path for this directive type
-   * 
+   *
    * Domain operation for path resolution in prompt generation context.
-   * 
+   *
    * @param baseDir - Base directory for prompts
    * @param layer - LayerType for complete path construction
    * @returns Directory path string
@@ -224,9 +236,9 @@ export class DirectiveType {
 
   /**
    * Get schema directory path for this directive type
-   * 
+   *
    * Domain operation for path resolution in schema file context.
-   * 
+   *
    * @param baseDir - Base directory for schemas
    * @param layer - LayerType for complete path construction
    * @returns Directory path string
@@ -237,35 +249,40 @@ export class DirectiveType {
 
   /**
    * Get prompt file path for this directive type
-   * 
+   *
    * Domain operation for complete path resolution in prompt generation context.
-   * 
+   *
    * @param layer - LayerType for path construction
    * @param baseDir - Base directory for prompts (default: "prompts")
    * @param fromLayerType - Source layer type for adaptation
    * @param adaptation - Adaptation type for specialized paths
    * @returns Complete file path string
    */
-  getPromptPath(layer: { value: string }, baseDir = "prompts", fromLayerType?: string, adaptation?: string): string {
+  getPromptPath(
+    layer: { value: string },
+    baseDir = "prompts",
+    fromLayerType?: string,
+    adaptation?: string,
+  ): string {
     const dir = this.getPromptDirectory(baseDir, layer);
     let filename = `${this._value}_${layer.value}.md`;
-    
+
     if (fromLayerType) {
       filename = `${fromLayerType}_${layer.value}.md`;
     }
-    
+
     if (adaptation) {
       filename = `${fromLayerType || this._value}_${layer.value}_${adaptation}.md`;
     }
-    
+
     return `${dir}/${filename}`;
   }
 
   /**
    * Get schema file path for this directive type
-   * 
+   *
    * Domain operation for complete path resolution in schema context.
-   * 
+   *
    * @param layer - LayerType for path construction
    * @param baseDir - Base directory for schemas (default: "schemas")
    * @returns Complete file path string
@@ -278,9 +295,9 @@ export class DirectiveType {
 
   /**
    * Resolve output path for this directive type
-   * 
+   *
    * Domain operation for output file path resolution.
-   * 
+   *
    * @param inputPath - Input file path to resolve
    * @param layer - LayerType for path construction
    * @param baseDir - Base directory for output (default: "output")
@@ -288,13 +305,13 @@ export class DirectiveType {
    */
   resolveOutputPath(inputPath: string, layer: { value: string }, baseDir = "output"): string {
     const dir = `${baseDir}/${this._value}/${layer.value}`;
-    const filename = inputPath.split('/').pop() || inputPath;
+    const filename = inputPath.split("/").pop() || inputPath;
     return `${dir}/${filename}`;
   }
 
   /**
    * Check if this DirectiveType is valid for resource path generation
-   * 
+   *
    * @returns true if can be used for path resolution
    */
   isValidForResourcePath(): boolean {
@@ -303,14 +320,13 @@ export class DirectiveType {
 
   /**
    * Type-safe equality comparison
-   * 
+   *
    * @param other - Another DirectiveType to compare
    * @returns true if values are equal
    */
   equals(other: DirectiveType): boolean {
     return this._value === other._value && this._profile.equals(other._profile);
   }
-
 
   /**
    * String representation
@@ -325,7 +341,6 @@ export class DirectiveType {
   toDebugString(): string {
     return `DirectiveType(value="${this._value}", profile="${this._profile.value}", validated=${this._validatedByPattern})`;
   }
-
 }
 
 /**
@@ -333,13 +348,12 @@ export class DirectiveType {
  *
  * 正規表現パターンを安全にラップし、DirectiveTypeのバリデーションに使用する。
  * Smart Constructorパターンを採用して、無効なパターンの作成を防ぐ。
- * 
+ *
  * 新しいDirectiveTypeクラスと統合するため、旧実装からのマイグレーション用として提供。
  * 新しいコードでは DirectiveType.create() を直接使用することを推奨。
  */
 export class TwoParamsDirectivePattern {
   private constructor(private readonly pattern: RegExp) {}
-
 
   /**
    * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
@@ -361,7 +375,7 @@ export class TwoParamsDirectivePattern {
 
     if (!pattern || pattern.trim().length === 0) {
       return error(ErrorFactory.validationError("InvalidInput", {
-        field: "pattern", 
+        field: "pattern",
         value: pattern,
         reason: "Pattern cannot be empty",
       }));
@@ -414,7 +428,7 @@ export class TwoParamsDirectivePattern {
 
   /**
    * 文字列パターンから TwoParamsDirectivePattern を作成（従来版）
-   * 
+   *
    * @param pattern 正規表現文字列
    * @returns TwoParamsDirectivePattern または null
    */

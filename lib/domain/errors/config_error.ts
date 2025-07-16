@@ -1,9 +1,9 @@
 /**
  * @fileoverview Configuration Domain Errors
- * 
+ *
  * Errors related to configuration loading, validation, and management.
  * Covers both application and user configuration issues.
- * 
+ *
  * @module domain/errors/config_error
  */
 
@@ -48,7 +48,7 @@ export class ConfigError extends BaseBreakdownError {
         operation?: string;
         availableProfiles?: readonly string[];
       };
-    }
+    },
   ) {
     super(message, "config", kind, options?.context);
     this.kind = kind;
@@ -69,8 +69,8 @@ export class ConfigError extends BaseBreakdownError {
       "config-not-found",
       message,
       {
-        context: { configPath, profileName }
-      }
+        context: { configPath, profileName },
+      },
     );
   }
 
@@ -80,15 +80,15 @@ export class ConfigError extends BaseBreakdownError {
   static invalidFormat(
     configPath: string,
     reason: string,
-    cause?: Error
+    cause?: Error,
   ): ConfigError {
     return new ConfigError(
       "config-invalid-format",
       `Invalid configuration format in '${configPath}': ${reason}`,
       {
         cause,
-        context: { configPath, expected: "valid YAML format" }
-      }
+        context: { configPath, expected: "valid YAML format" },
+      },
     );
   }
 
@@ -97,18 +97,18 @@ export class ConfigError extends BaseBreakdownError {
    */
   static validationFailed(
     configPath: string,
-    validationErrors: Array<{ field: string; error: string }>
+    validationErrors: Array<{ field: string; error: string }>,
   ): ConfigError {
     const errorMessages = validationErrors
-      .map(e => `  - ${e.field}: ${e.error}`)
-      .join('\n');
+      .map((e) => `  - ${e.field}: ${e.error}`)
+      .join("\n");
 
     return new ConfigError(
       "config-validation-failed",
       `Configuration validation failed in '${configPath}':\n${errorMessages}`,
       {
-        context: { configPath, validationErrors }
-      }
+        context: { configPath, validationErrors },
+      },
     );
   }
 
@@ -117,15 +117,15 @@ export class ConfigError extends BaseBreakdownError {
    */
   static missingRequired(
     configPath: string,
-    missingFields: string[]
+    missingFields: string[],
   ): ConfigError {
-    const fields = missingFields.join(', ');
+    const fields = missingFields.join(", ");
     return new ConfigError(
       "config-missing-required",
       `Missing required configuration fields in '${configPath}': ${fields}`,
       {
-        context: { configPath, missingFields }
-      }
+        context: { configPath, missingFields },
+      },
     );
   }
 
@@ -136,14 +136,14 @@ export class ConfigError extends BaseBreakdownError {
     field: string,
     expected: string,
     actual: string,
-    value?: unknown
+    value?: unknown,
   ): ConfigError {
     return new ConfigError(
       "config-type-mismatch",
       `Configuration field '${field}' has wrong type: expected ${expected}, got ${actual}`,
       {
-        context: { field, expected, actual, value }
-      }
+        context: { field, expected, actual, value },
+      },
     );
   }
 
@@ -156,8 +156,8 @@ export class ConfigError extends BaseBreakdownError {
       `Permission denied when accessing configuration file: ${configPath}`,
       {
         cause,
-        context: { configPath }
-      }
+        context: { configPath },
+      },
     );
   }
 
@@ -170,8 +170,8 @@ export class ConfigError extends BaseBreakdownError {
       `IO error during ${operation} of configuration file: ${configPath}`,
       {
         cause,
-        context: { configPath, operation }
-      }
+        context: { configPath, operation },
+      },
     );
   }
 
@@ -180,19 +180,19 @@ export class ConfigError extends BaseBreakdownError {
    */
   static profileNotFound(profileName: string, availableProfiles: string[]): ConfigError {
     const suggestions = availableProfiles
-      .filter(p => p.includes(profileName) || profileName.includes(p))
+      .filter((p) => p.includes(profileName) || profileName.includes(p))
       .slice(0, 3);
 
     const message = suggestions.length > 0
-      ? `Configuration profile '${profileName}' not found. Did you mean: ${suggestions.join(', ')}?`
+      ? `Configuration profile '${profileName}' not found. Did you mean: ${suggestions.join(", ")}?`
       : `Configuration profile '${profileName}' not found`;
 
     return new ConfigError(
       "profile-not-found",
       message,
       {
-        context: { profileName, availableProfiles }
-      }
+        context: { profileName, availableProfiles },
+      },
     );
   }
 
@@ -204,8 +204,8 @@ export class ConfigError extends BaseBreakdownError {
       "profile-invalid",
       `Invalid configuration profile '${profileName}': ${reason}`,
       {
-        context: { profileName }
-      }
+        context: { profileName },
+      },
     );
   }
 
@@ -214,7 +214,7 @@ export class ConfigError extends BaseBreakdownError {
    */
   override getUserMessage(): string {
     const base = this.message;
-    
+
     // Add helpful context for all error types (Totality principle)
     switch (this.kind) {
       case "config-not-found":
@@ -279,48 +279,102 @@ export class ConfigError extends BaseBreakdownError {
 
     switch (this.kind) {
       case "config-not-found":
-        suggestions.push({ action: "init-config", description: "Create default configuration", command: "breakdown init" });
-        suggestions.push({ action: "create-file", description: `Create config file at: ${this.context?.configPath}` });
+        suggestions.push({
+          action: "init-config",
+          description: "Create default configuration",
+          command: "breakdown init",
+        });
+        suggestions.push({
+          action: "create-file",
+          description: `Create config file at: ${this.context?.configPath}`,
+        });
         break;
       case "config-invalid-format":
-        suggestions.push({ action: "validate-yaml", description: "Validate your YAML syntax using a YAML validator" });
-        suggestions.push({ action: "check-structure", description: "Check for proper indentation and structure" });
+        suggestions.push({
+          action: "validate-yaml",
+          description: "Validate your YAML syntax using a YAML validator",
+        });
+        suggestions.push({
+          action: "check-structure",
+          description: "Check for proper indentation and structure",
+        });
         break;
       case "config-validation-failed":
         if (this.context?.validationErrors && Array.isArray(this.context.validationErrors)) {
-          suggestions.push({ action: "fix-validation", description: "Fix the following validation errors:" });
-          this.context.validationErrors.forEach(e => {
+          suggestions.push({
+            action: "fix-validation",
+            description: "Fix the following validation errors:",
+          });
+          this.context.validationErrors.forEach((e) => {
             suggestions.push({ action: "fix-field", description: `${e.field}: ${e.error}` });
           });
         }
         break;
       case "config-missing-required":
         if (this.context?.missingFields && Array.isArray(this.context.missingFields)) {
-          suggestions.push({ action: "add-fields", description: `Add the missing fields: ${this.context.missingFields.join(', ')}` });
+          suggestions.push({
+            action: "add-fields",
+            description: `Add the missing fields: ${this.context.missingFields.join(", ")}`,
+          });
         }
-        suggestions.push({ action: "refer-docs", description: "Refer to example configuration in documentation" });
+        suggestions.push({
+          action: "refer-docs",
+          description: "Refer to example configuration in documentation",
+        });
         break;
       case "config-type-mismatch":
-        suggestions.push({ action: "fix-type", description: `Change '${this.context?.field}' to type: ${this.context?.expected}` });
+        suggestions.push({
+          action: "fix-type",
+          description: `Change '${this.context?.field}' to type: ${this.context?.expected}`,
+        });
         break;
       case "config-permission-denied":
-        suggestions.push({ action: "fix-permissions", description: "Check file permissions", command: `chmod 644 ${this.context?.configPath}` });
-        suggestions.push({ action: "check-access", description: "Ensure you have read access to the config directory" });
+        suggestions.push({
+          action: "fix-permissions",
+          description: "Check file permissions",
+          command: `chmod 644 ${this.context?.configPath}`,
+        });
+        suggestions.push({
+          action: "check-access",
+          description: "Ensure you have read access to the config directory",
+        });
         break;
       case "profile-not-found":
-        suggestions.push({ action: "list-profiles", description: "List available profiles", command: "breakdown config list-profiles" });
-        if (this.context?.availableProfiles && Array.isArray(this.context.availableProfiles) && this.context.availableProfiles.length > 0) {
-          suggestions.push({ action: "use-available", description: `Available profiles: ${this.context.availableProfiles.join(', ')}` });
+        suggestions.push({
+          action: "list-profiles",
+          description: "List available profiles",
+          command: "breakdown config list-profiles",
+        });
+        if (
+          this.context?.availableProfiles && Array.isArray(this.context.availableProfiles) &&
+          this.context.availableProfiles.length > 0
+        ) {
+          suggestions.push({
+            action: "use-available",
+            description: `Available profiles: ${this.context.availableProfiles.join(", ")}`,
+          });
         }
         break;
       case "profile-invalid":
-        suggestions.push({ action: "validate-profile", description: "Validate profile configuration syntax" });
-        suggestions.push({ action: "check-profile-structure", description: "Check profile configuration structure against expected format" });
+        suggestions.push({
+          action: "validate-profile",
+          description: "Validate profile configuration syntax",
+        });
+        suggestions.push({
+          action: "check-profile-structure",
+          description: "Check profile configuration structure against expected format",
+        });
         break;
       case "config-io-error":
         suggestions.push({ action: "check-disk-space", description: "Check available disk space" });
-        suggestions.push({ action: "verify-file-system", description: "Verify file system integrity" });
-        suggestions.push({ action: "retry-operation", description: "Retry the operation after a moment" });
+        suggestions.push({
+          action: "verify-file-system",
+          description: "Verify file system integrity",
+        });
+        suggestions.push({
+          action: "retry-operation",
+          description: "Retry the operation after a moment",
+        });
         break;
     }
 
@@ -333,13 +387,19 @@ export class ConfigError extends BaseBreakdownError {
   getConfigExample(): string | undefined {
     switch (this.kind) {
       case "config-missing-required":
-        if (this.context?.missingFields && Array.isArray(this.context.missingFields) && this.context.missingFields.includes("directiveTypes")) {
+        if (
+          this.context?.missingFields && Array.isArray(this.context.missingFields) &&
+          this.context.missingFields.includes("directiveTypes")
+        ) {
           return `directiveTypes:
   - to
   - summary
   - defect`;
         }
-        if (this.context?.missingFields && Array.isArray(this.context.missingFields) && this.context.missingFields.includes("layerTypes")) {
+        if (
+          this.context?.missingFields && Array.isArray(this.context.missingFields) &&
+          this.context.missingFields.includes("layerTypes")
+        ) {
           return `layerTypes:
   - project
   - issue
@@ -360,7 +420,13 @@ layerTypes:
           return `layerTypes: ["project", "issue", "task"]  # Must be an array`;
         }
         return `# Correct type example for field: ${this.context?.field}
-${this.context?.field}: ${this.context?.expected === "array" ? "[]" : this.context?.expected === "string" ? '""' : "value"}`;
+${this.context?.field}: ${
+          this.context?.expected === "array"
+            ? "[]"
+            : this.context?.expected === "string"
+            ? '""'
+            : "value"
+        }`;
       case "config-invalid-format":
         return `# Valid YAML configuration example
 directiveTypes:

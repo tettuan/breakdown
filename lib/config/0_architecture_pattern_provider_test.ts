@@ -68,7 +68,8 @@ Deno.test("Architecture: Import statement analysis and dependency graph", async 
 
   // config層から他の層への依存方向の検証
   const invalidDeps = internalDeps.filter((dep) =>
-    !dep.startsWith("../types/") && !dep.startsWith("../interfaces/") && !dep.startsWith("../domain/core/value_objects/")
+    !dep.startsWith("../types/") && !dep.startsWith("../interfaces/") &&
+    !dep.startsWith("../domain/core/value_objects/")
   );
   assertEquals(
     invalidDeps.length,
@@ -116,7 +117,7 @@ Deno.test("Architecture: Complete TypePatternProvider interface implementation",
       getDirectivePattern: 0,
       getLayerTypePattern: 0,
     };
-    
+
     assertEquals(
       prototype[method].length,
       expectedArgumentCounts[method],

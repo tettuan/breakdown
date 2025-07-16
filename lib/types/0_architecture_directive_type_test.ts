@@ -20,7 +20,7 @@ Deno.test("0_architecture: DirectiveType follows domain boundary rules", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -35,7 +35,7 @@ Deno.test("0_architecture: DirectiveType follows domain boundary rules", () => {
     assertEquals(typeof directiveType.value, "string");
     assertEquals(typeof directiveType.equals, "function");
     assertEquals(typeof directiveType.toString, "function");
-    
+
     // No file system operations
     assertEquals("readFile" in directiveType, false);
     assertEquals("writeFile" in directiveType, false);
@@ -56,8 +56,8 @@ Deno.test("0_architecture: DirectiveType enforces Smart Constructor pattern", ()
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    directiveType: "to",
     directiveType: "summary",
+    demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
     options: {},
@@ -88,24 +88,24 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
   const testCases: TwoParams_Result[] = [
     {
       type: "two",
-    directiveType: "to",
       directiveType: "to",
+      demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
     },
     {
       type: "two",
-    directiveType: "to",
       directiveType: "",
+      demonstrativeType: "", // Same as directiveType (empty)
       layerType: "",
       params: ["", ""],
       options: {},
     },
     {
       type: "two",
-    directiveType: "to",
       directiveType: "custom_directive_with_long_name",
+      demonstrativeType: "custom_directive_with_long_name",
       layerType: "custom_layer",
       params: ["custom_directive_with_long_name", "custom_layer"],
       options: { complex: { nested: { data: true } } },
@@ -116,19 +116,18 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     // Should never throw or return null - Totality principle
     const directiveTypeResult = DirectiveType.create(testCase.directiveType);
     assertExists(directiveTypeResult);
-    
+
     // Result should always be defined, either ok or error
     assertEquals(typeof directiveTypeResult, "object");
     assertEquals("ok" in directiveTypeResult, true);
-    
+
     // For valid inputs, should return success
     if (testCase.directiveType === "to") {
       assertEquals(directiveTypeResult.ok, true);
       if (directiveTypeResult.ok) {
         assertEquals(directiveTypeResult.data instanceof DirectiveType, true);
       }
-    }
-    // For invalid inputs, should return error (not throw)
+    } // For invalid inputs, should return error (not throw)
     else {
       assertEquals(directiveTypeResult.ok, false);
     }
@@ -171,8 +170,8 @@ Deno.test("0_architecture: DirectiveType maintains single responsibility", () =>
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    directiveType: "to",
     directiveType: "analyze",
+    demonstrativeType: "analyze",
     layerType: "system",
     params: ["analyze", "system"],
     options: {},
@@ -186,11 +185,11 @@ Deno.test("0_architecture: DirectiveType maintains single responsibility", () =>
     const directiveType = directiveTypeResult.data;
     assertExists(directiveType.value);
     assertExists(directiveType.value);
-    
+
     // Value comparison responsibility
     assertExists(directiveType.equals);
     assertExists(directiveType.toString);
-    
+
     // Should NOT have validation methods
     assertEquals("validate" in directiveType, false);
     assertEquals("isValid" in directiveType, false);
@@ -209,8 +208,8 @@ Deno.test("0_architecture: DirectiveType dependency flow is unidirectional", () 
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    directiveType: "to",
     directiveType: "defect",
+    demonstrativeType: "defect",
     layerType: "task",
     params: ["defect", "task"],
     options: {},
@@ -219,13 +218,13 @@ Deno.test("0_architecture: DirectiveType dependency flow is unidirectional", () 
   const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
   assertExists(directiveTypeResult);
   assertEquals(directiveTypeResult.ok, true);
-  
+
   if (directiveTypeResult.ok) {
     const directiveType = directiveTypeResult.data;
 
     // DirectiveType is a pure value object containing only the directive value
     assertEquals(directiveType.value, "defect");
-    
+
     // Immutable value object ensures architectural constraint
     assertEquals(typeof directiveType.value, "string");
     assertEquals(directiveType.toString(), "defect");
@@ -238,8 +237,8 @@ Deno.test("0_architecture: DirectiveType supports extensibility without modifica
   // Can work with any valid TwoParams_Result
   const customResult: TwoParams_Result = {
     type: "two",
-    directiveType: "to",
     directiveType: "future_directive_type",
+    demonstrativeType: "future_directive_type",
     layerType: "future_layer",
     params: ["future_directive_type", "future_layer"],
     options: {
@@ -251,11 +250,11 @@ Deno.test("0_architecture: DirectiveType supports extensibility without modifica
 
   const directiveTypeResult = DirectiveType.create(customResult.directiveType);
   assertExists(directiveTypeResult);
-  
+
   // future_directive_type is not in the default valid directive types
   // This demonstrates extensibility without modifying DirectiveType class
   assertEquals(directiveTypeResult.ok, false);
-  
+
   // DirectiveType properly handles invalid directive types
   if (!directiveTypeResult.ok) {
     assertEquals(typeof directiveTypeResult.error, "object");
@@ -273,7 +272,7 @@ Deno.test("0_architecture: TwoParamsDirectivePattern provides pattern abstractio
 
   if (patternResult.ok) {
     const pattern = patternResult.data;
-    
+
     // Public interface should be minimal and safe
     assertEquals(typeof pattern.test, "function");
     assertEquals(typeof pattern.toString, "function");
@@ -299,8 +298,8 @@ Deno.test("0_architecture: DirectiveType and TwoParamsDirectivePattern are loose
 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
-    directiveType: "to",
     directiveType: "transform",
+    demonstrativeType: "transform",
     layerType: "module",
     params: ["transform", "module"],
     options: {},
@@ -308,7 +307,7 @@ Deno.test("0_architecture: DirectiveType and TwoParamsDirectivePattern are loose
 
   const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
   assertExists(directiveTypeResult);
-  
+
   // "transform" is not in the default valid directive types (to, summary, defect)
   assertEquals(directiveTypeResult.ok, false);
 
@@ -319,7 +318,7 @@ Deno.test("0_architecture: DirectiveType and TwoParamsDirectivePattern are loose
       const pattern = patternResult.data;
       // Pattern can validate the same value DirectiveType rejected
       assertEquals(pattern.test("transform"), true);
-      
+
       // No cross-dependencies between the two classes
       assertEquals("test" in directiveTypeResult, false);
       assertEquals("getPattern" in directiveTypeResult, false);

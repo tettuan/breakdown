@@ -485,7 +485,7 @@ Deno.test("E2E Configuration: S2.3 - Workspace Configuration", async () => {
         
       // 型作成（ワークスペース制約を満たす場合のみ）
       const twoParamsResult = createTwoParamsResult(testCase.directive, testCase.layer);
-      const directiveType = DirectiveType.create(twoParamsResult);
+      const directiveType = DirectiveType.create(twoParamsResult.directiveType);
       const layerType = LayerType.create(twoParamsResult);
       
       assertEquals(directiveType.value, testCase.directive);

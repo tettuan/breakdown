@@ -226,16 +226,19 @@ Deno.test("E2E Error Handling: S3.2 - Filesystem Errors", async () => {
     
     // Phase 1: 正常なDirectiveType/LayerType生成
     const twoParamsResult = createTwoParamsResult("to", "project");
-    const directiveType = DirectiveType.create(twoParamsResult);
-    const layerType = LayerType.create(twoParamsResult);
+    const directiveType = DirectiveType.create(twoParamsResult.directiveType);
+    const layerType = LayerType.create(twoParamsResult.layerType);
     
-    assertEquals(directiveType.value, "to");
-    assertEquals(layerType.value, "project");
+    if (!directiveType.ok || !layerType.ok) {
+      throw new Error("Failed to create types");
+    }
+    assertEquals(directiveType.data.value, "to");
+    assertEquals(layerType.data.value, "project");
     
     // Phase 2: パス解決（問題なし）
-    const promptPath = directiveType.getPromptPath(layerType);
-    const schemaPath = directiveType.getSchemaPath(layerType);
-    const outputPath = directiveType.resolveOutputPath(testCase.inputFile, layerType);
+    const promptPath = directiveType.data.getPromptPath(layerType.data);
+    const schemaPath = directiveType.data.getSchemaPath(layerType.data);
+    const outputPath = directiveType.data.resolveOutputPath(testCase.inputFile, layerType.data);
     
     assertStringIncludes(promptPath, "prompts/to/project");
     assertStringIncludes(schemaPath, "schema/to/project");

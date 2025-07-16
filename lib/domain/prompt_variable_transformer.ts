@@ -276,7 +276,7 @@ export class PromptVariableTransformer {
    * Format variable error to string message
    */
   private formatVariableError(error: any): string {
-    if (typeof error === 'object' && error.message) {
+    if (typeof error === "object" && error.message) {
       return error.message;
     }
     return "Unknown variable error";

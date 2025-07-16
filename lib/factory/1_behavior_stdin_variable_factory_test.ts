@@ -75,8 +75,9 @@ Deno.test("StdinVariableFactory - 1_behavior - handles missing inputText gracefu
 
   if (!result.ok) {
     assertExists(result.error, "Should have error");
-    assertEquals(result.error.kind, "NoStdinData", "Should be NoStdinData error");
-    if (result.error.kind === "NoStdinData") {
+    // Check if error has kind property (type guard)
+    if ("kind" in result.error && result.error.kind === "NoStdinData") {
+      assertEquals(result.error.kind, "NoStdinData", "Should be NoStdinData error");
       assertEquals(typeof result.error.context, "string", "Should have context");
     }
   }
@@ -123,7 +124,7 @@ Deno.test("StdinVariableFactory - 1_behavior - validates source parameter", () =
   assertEquals(invalidResult.ok, false, "Should fail for invalid source");
   if (!invalidResult.ok) {
     assertEquals(
-      invalidResult.error.kind,
+      "kind" in invalidResult.error ? invalidResult.error.kind : "unknown",
       "InvalidStdinSource",
       "Should be InvalidStdinSource error",
     );
@@ -150,8 +151,10 @@ Deno.test("StdinVariableFactory - 1_behavior - handles empty string input", () =
   if (!result.ok) {
     // StdinVariable may reject empty strings
     assertExists(result.error, "Should have error for empty string");
-    const isValidationError = result.error.kind === "EmptyValue" ||
-      result.error.kind === "ValidationFailed";
+    const isValidationError = "kind" in result.error && (
+      result.error.kind === "EmptyValue" ||
+      result.error.kind === "ValidationFailed"
+    );
     assertEquals(isValidationError, true, "Should be validation error");
   } else {
     // If StdinVariable accepts empty strings, verify the result

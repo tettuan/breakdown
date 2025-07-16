@@ -32,20 +32,21 @@ describe("0_architecture_mod_test", () => {
   describe("Smart Constructor Pattern Compliance", () => {
     it("should implement Smart Constructor for DirectiveType", () => {
       // Verify static create method exists and returns Result type
-      const result = DirectiveType.create({
+      const mockTwoParamsResult = {
         type: "two",
-    directiveType: "to",
         directiveType: "to",
+        demonstrativeType: "to",
         layerType: "project",
         params: ["to", "project"],
         options: {},
-      });
+      };
+      const result = DirectiveType.create(mockTwoParamsResult.directiveType);
 
       // Verify DirectiveType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
       assertEquals(result.ok, true);
-      
+
       if (result.ok) {
         const directiveType = result.data;
         assertEquals(directiveType.value, "to");
@@ -58,20 +59,21 @@ describe("0_architecture_mod_test", () => {
     });
 
     it("should implement Smart Constructor for LayerType", () => {
-      const result = LayerType.create({
+      const mockTwoParamsResult = {
         type: "two",
-    directiveType: "to",
         directiveType: "to",
+        demonstrativeType: "to",
         layerType: "project",
         params: ["to", "project"],
         options: {},
-      });
+      };
+      const result = LayerType.create(mockTwoParamsResult.layerType);
 
       // Verify LayerType instance creation
       assertExists(result);
       assertEquals(typeof result, "object");
       assertEquals(result.ok, true);
-      
+
       if (result.ok) {
         const layerType = result.data;
         assertEquals(layerType.value, "project");
@@ -183,7 +185,7 @@ describe("0_architecture_mod_test", () => {
 
       if (isOk(profileResult)) {
         assertExists(profileResult.data);
-        assertEquals(typeof profileResult.data.getValue, "function");
+        assertEquals(typeof profileResult.data.value, "string");
       }
     });
   });

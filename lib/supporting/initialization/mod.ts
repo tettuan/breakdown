@@ -4,4 +4,4 @@
  */
 
 export { InitService } from "./init_service.ts";
-export type { InitServiceOptions, InitializationResult } from "./init_service.ts";
+export type { InitializationResult, InitServiceOptions } from "./init_service.ts";

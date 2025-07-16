@@ -24,8 +24,8 @@ import { _defaultConfigTwoParams } from "./config_two_params.ts";
  * for DirectiveType and LayerType validation. This enables TypeFactory
  * to work out-of-the-box without requiring external configuration.
  *
- * **DDD Compliance**: This implementation uses createOrError methods for 
- * Totality-compliant error handling, ensuring compatibility with 
+ * **DDD Compliance**: This implementation uses createOrError methods for
+ * Totality-compliant error handling, ensuring compatibility with
  * parameter_validator_v2.ts and the DDD version priority policy.
  *
  * @example Basic usage
@@ -61,7 +61,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns Pattern object for validating DirectiveType values
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
-    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
     const result = TwoParamsDirectivePattern.createOrError(pattern);
     if (!result.ok) {
       return null;
@@ -76,10 +76,14 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @throws Error if pattern creation fails (should not happen with valid defaults)
    */
   getDirectivePatternObject(): TwoParamsDirectivePattern {
-    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
     const result = TwoParamsDirectivePattern.createOrError(pattern);
     if (!result.ok) {
-      throw new Error(`Failed to create directive pattern: ${result.error.kind} - ${JSON.stringify(result.error)}`);
+      throw new Error(
+        `Failed to create directive pattern: ${result.error.kind} - ${
+          JSON.stringify(result.error)
+        }`,
+      );
     }
     return result.data;
   }
@@ -132,14 +136,14 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
       if (!value || typeof value !== "string" || value.trim() === "") {
         return false;
       }
-      
+
       const trimmedValue = value.trim();
-      
+
       // Length validation
       if (trimmedValue.length > 30) {
         return false;
       }
-      
+
       // Basic format validation (lowercase letters, numbers, hyphens, underscores)
       const basicPattern = /^[a-z0-9_-]{1,30}$/;
       return basicPattern.test(trimmedValue);
@@ -173,7 +177,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    */
   getValidDirectiveValues(): string[] {
     // Extract values from regex pattern: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
-    const pattern = _defaultConfigTwoParams.params.two.DirectiveType.pattern;
+    const pattern = _defaultConfigTwoParams.params.two.demonstrativeType.pattern;
     const match = pattern.match(/^\^\(([^)]+)\)\$$/);
     if (match) {
       return match[1].split("|");
@@ -210,7 +214,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
   } {
     return {
       providerType: "DefaultTypePatternProvider",
-      directivePattern: _defaultConfigTwoParams.params.two.DirectiveType.pattern,
+      directivePattern: _defaultConfigTwoParams.params.two.demonstrativeType.pattern,
       layerPattern: _defaultConfigTwoParams.params.two.layerType.pattern,
       validDirectives: this.getValidDirectiveValues(),
       validLayers: this.getValidLayerValues(),

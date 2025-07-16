@@ -41,7 +41,7 @@ export type MigrationResult = {
  * Format variable error for user-friendly display
  */
 function formatVariableError(fieldName: string, error: ErrorInfo): string {
-  return `Failed to convert ${fieldName}: ${error.message || 'Unknown error'}`;
+  return `Failed to convert ${fieldName}: ${error.message || "Unknown error"}`;
 }
 
 /**

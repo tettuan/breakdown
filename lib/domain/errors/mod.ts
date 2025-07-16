@@ -1,9 +1,9 @@
 /**
  * @fileoverview Domain Errors Module Export
- * 
+ *
  * Central export point for all domain-specific error types.
  * Provides a unified error handling system for Breakdown.
- * 
+ *
  * @module domain/errors
  */
 
@@ -15,22 +15,13 @@ export {
 } from "./breakdown_error.ts";
 
 // CLI parsing errors
-export {
-  CLIParsingError,
-  type CLIParsingErrorKind,
-} from "./cli_parsing_error.ts";
+export { CLIParsingError, type CLIParsingErrorKind } from "./cli_parsing_error.ts";
 
 // Configuration errors
-export {
-  ConfigError,
-  type ConfigErrorKind,
-} from "./config_error.ts";
+export { ConfigError, type ConfigErrorKind } from "./config_error.ts";
 
 // Path resolution errors
-export {
-  PathResolutionError,
-  type PathResolutionErrorKind,
-} from "./path_resolution_error.ts";
+export { PathResolutionError, type PathResolutionErrorKind } from "./path_resolution_error.ts";
 
 // Variable generation errors
 export {
@@ -68,27 +59,37 @@ export class BreakdownErrorFactory {
   /**
    * Create CLI parsing error
    */
-  static get cliParsing() { return CLIParsingError; }
+  static get cliParsing() {
+    return CLIParsingError;
+  }
 
   /**
    * Create configuration error
    */
-  static get config() { return ConfigError; }
+  static get config() {
+    return ConfigError;
+  }
 
   /**
    * Create path resolution error
    */
-  static get pathResolution() { return PathResolutionError; }
+  static get pathResolution() {
+    return PathResolutionError;
+  }
 
   /**
    * Create variable generation error
    */
-  static get variableGeneration() { return VariableGenerationError; }
+  static get variableGeneration() {
+    return VariableGenerationError;
+  }
 
   /**
    * Create prompt generation error
    */
-  static get promptGeneration() { return PromptGenerationError; }
+  static get promptGeneration() {
+    return PromptGenerationError;
+  }
 }
 
 /**
@@ -103,7 +104,7 @@ export function isBreakdownError(error: unknown): error is BreakdownError {
  */
 export function isDomainError<T extends BreakdownError>(
   error: unknown,
-  domain: string
+  domain: string,
 ): error is T {
   return isBreakdownError(error) && error.domain === domain;
 }
@@ -184,7 +185,7 @@ export function formatErrorForTerminal(error: BreakdownError): string {
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -193,14 +194,14 @@ export function formatErrorForTerminal(error: BreakdownError): string {
 export function handleBreakdownError(error: unknown): void {
   if (isBreakdownError(error)) {
     console.error(formatErrorForTerminal(error));
-    
+
     // Log developer details in debug mode
     const debugEnv = Deno.env.get("DEBUG") || Deno.env.get("LOG_LEVEL");
-    if (debugEnv === 'debug' || debugEnv === 'true') {
-      console.error('\nDeveloper Details:');
+    if (debugEnv === "debug" || debugEnv === "true") {
+      console.error("\nDeveloper Details:");
       console.error(error.getDeveloperMessage());
       if (error.stack) {
-        console.error('\nStack Trace:');
+        console.error("\nStack Trace:");
         console.error(error.stack);
       }
     }
@@ -208,12 +209,12 @@ export function handleBreakdownError(error: unknown): void {
     // Handle non-Breakdown errors
     console.error(`❌ Unexpected error: ${error.message}`);
     const debugEnv = Deno.env.get("DEBUG") || Deno.env.get("LOG_LEVEL");
-    if (debugEnv === 'debug' || debugEnv === 'true') {
+    if (debugEnv === "debug" || debugEnv === "true") {
       console.error(error.stack);
     }
   } else {
     // Handle unknown errors
-    console.error('❌ An unknown error occurred');
+    console.error("❌ An unknown error occurred");
     console.error(error);
   }
 }
@@ -223,8 +224,8 @@ export function handleBreakdownError(error: unknown): void {
  */
 export function toBreakdownError(
   error: unknown,
-  domain: string = 'unknown',
-  kind: string = 'unknown-error'
+  domain: string = "unknown",
+  kind: string = "unknown-error",
 ): BreakdownError {
   if (isBreakdownError(error)) {
     return error;
@@ -232,38 +233,38 @@ export function toBreakdownError(
 
   if (error instanceof Error) {
     // Try to determine appropriate error type based on error properties
-    if (error.message.includes('ENOENT') || error.message.includes('not found')) {
+    if (error.message.includes("ENOENT") || error.message.includes("not found")) {
       return PathResolutionError.notFound(
-        error.message.match(/['"]([^'"]+)['"]/)?.[1] || 'unknown',
-        'File'
+        error.message.match(/['"]([^'"]+)['"]/)?.[1] || "unknown",
+        "File",
       );
     }
-    if (error.message.includes('EACCES') || error.message.includes('permission')) {
+    if (error.message.includes("EACCES") || error.message.includes("permission")) {
       return PathResolutionError.permissionDenied(
-        error.message.match(/['"]([^'"]+)['"]/)?.[1] || 'unknown',
-        'access'
+        error.message.match(/['"]([^'"]+)['"]/)?.[1] || "unknown",
+        "access",
       );
     }
-    if (error.message.includes('JSON') || error.message.includes('parse')) {
+    if (error.message.includes("JSON") || error.message.includes("parse")) {
       return ConfigError.invalidFormat(
-        'unknown',
+        "unknown",
         error.message,
-        error
+        error,
       );
     }
 
     // Generic conversion
     return PromptGenerationError.processingFailed(
-      'unknown',
+      "unknown",
       error.message,
-      error
+      error,
     );
   }
 
   // Convert non-Error objects
   return PromptGenerationError.processingFailed(
-    'unknown',
-    String(error)
+    "unknown",
+    String(error),
   );
 }
 
@@ -271,18 +272,17 @@ export function toBreakdownError(
  * Type guards for specific error domains
  */
 export const ErrorGuards = {
-  isCLIParsingError: (error: unknown): error is CLIParsingError => 
-    isDomainError(error, 'cli-parsing'),
-  
-  isConfigError: (error: unknown): error is ConfigError => 
-    isDomainError(error, 'config'),
-  
-  isPathResolutionError: (error: unknown): error is PathResolutionError => 
-    isDomainError(error, 'path-resolution'),
-  
-  isVariableGenerationError: (error: unknown): error is VariableGenerationError => 
-    isDomainError(error, 'variable-generation'),
-  
-  isPromptGenerationError: (error: unknown): error is PromptGenerationError => 
-    isDomainError(error, 'prompt-generation'),
+  isCLIParsingError: (error: unknown): error is CLIParsingError =>
+    isDomainError(error, "cli-parsing"),
+
+  isConfigError: (error: unknown): error is ConfigError => isDomainError(error, "config"),
+
+  isPathResolutionError: (error: unknown): error is PathResolutionError =>
+    isDomainError(error, "path-resolution"),
+
+  isVariableGenerationError: (error: unknown): error is VariableGenerationError =>
+    isDomainError(error, "variable-generation"),
+
+  isPromptGenerationError: (error: unknown): error is PromptGenerationError =>
+    isDomainError(error, "prompt-generation"),
 } as const;

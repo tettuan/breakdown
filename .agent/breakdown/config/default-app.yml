@@ -6,10 +6,10 @@ app_schema:
   base_dir: ".agent/breakdown/schema"
 params:
   two:
-    demonstrativeType:
-      pattern: "^(to|summary|defect)$"
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
     layerType:
-      pattern: "^(project|issue|task)$"
+      pattern: "^(project|issue|task|bugs)$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"

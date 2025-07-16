@@ -93,7 +93,6 @@ export class ConfigProfileName {
     return this._value;
   }
 
-
   /**
    * 設定プロファイル名を作成する（改善版）
    *

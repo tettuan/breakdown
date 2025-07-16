@@ -246,18 +246,23 @@ describe("TwoParams Architecture", () => {
       if (result.ok) {
         const twoParams = result.data;
 
-        // Path resolution methods should return Result types
+        // Path resolution methods should return structured objects
         const promptPath = twoParams.getPromptPath();
-        assertEquals(typeof promptPath.ok, "boolean");
+        assertExists(promptPath.directive);
+        assertExists(promptPath.layer);
+        assertEquals(typeof promptPath.resolve, "function");
 
         const schemaPath = twoParams.getSchemaPath();
-        assertEquals(typeof schemaPath.ok, "boolean");
+        assertExists(schemaPath.directive);
+        assertExists(schemaPath.layer);
+        assertEquals(typeof schemaPath.resolve, "function");
 
+        // File path resolution methods return strings
         const promptFilePath = twoParams.resolvePromptFilePath("prompts", "task");
-        assertEquals(typeof promptFilePath.ok, "boolean");
+        assertEquals(typeof promptFilePath, "string");
 
         const schemaFilePath = twoParams.resolveSchemaFilePath("schemas");
-        assertEquals(typeof schemaFilePath.ok, "boolean");
+        assertEquals(typeof schemaFilePath, "string");
       }
     });
   });

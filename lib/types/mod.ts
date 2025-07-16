@@ -23,8 +23,10 @@
  * const factory = new TypeFactory(patternProvider);
  *
  * // Create validated types
- * const directive = DirectiveType.create({ type: "two", directiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
- * const layer = LayerType.create({ type: "two", directiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
+ * const directive = DirectiveType.create({ type: "two", directiveType: "to",
+    demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+ * const layer = LayerType.create({ type: "two", directiveType: "to",
+    demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
  * ```
  *
  * @example Error Handling with Result Types
@@ -63,7 +65,8 @@
  * import { ConfigProfileName } from "./mod.ts";
  *
  * // Create a profile name (Totality-compliant with validation)
- * const profileResult = ConfigProfileName.create({ type: "two", DirectiveType: "to", layerType: "project", directiveType: "to", params: ["to", "project"], options: {} });
+ * const profileResult = ConfigProfileName.create({ type: "two", DirectiveType: "to", layerType: "project", directiveType: "to",
+    demonstrativeType: "to", params: ["to", "project"], options: {} });
  *
  * if (profileResult.ok) {
  *   console.log("Profile:", profileResult.data.value);
@@ -74,25 +77,21 @@
  */
 
 // Core type definitions - Unified implementation
-export { 
-  DirectiveType, 
+export {
+  DirectiveType,
+  type DirectiveTypeError,
   TwoParamsDirectivePattern,
-  type DirectiveTypeError 
 } from "../domain/core/value_objects/directive_type.ts";
 // Note: layer_type.ts has been moved to domain/core/value_objects/layer_type.ts
-export { 
-  LayerType, 
+export {
+  LayerType,
+  type LayerTypeError,
   TwoParamsLayerTypePattern,
-  type LayerTypeError 
 } from "../domain/core/value_objects/layer_type.ts";
 export { ConfigProfileName } from "./config_profile_name.ts";
 
 // TwoParams type implementation with Smart Constructor pattern
-export { 
-  TwoParamsType, 
-  createTwoParamsType,
-  type TwoParamsTypeError 
-} from "./two_params.ts";
+export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./two_params.ts";
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
@@ -175,9 +174,9 @@ export { TotalityPromptVariablesFactory } from "../factory/prompt_variables_fact
 export type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 
 // Path Value Objects - Smart Constructors for Schema and Prompt paths
-export { SchemaPath, createSchemaPathUnsafe } from "./schema_path.ts";
+export { createSchemaPathUnsafe, SchemaPath } from "./schema_path.ts";
 export type { SchemaPathError } from "./schema_path.ts";
-export { PromptPath, createPromptPathUnsafe } from "./prompt_path.ts";
+export { createPromptPathUnsafe, PromptPath } from "./prompt_path.ts";
 export type { PromptPathError } from "./prompt_path.ts";
 
 // Unified Error Types - Totality-compliant error handling system

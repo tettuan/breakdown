@@ -25,10 +25,10 @@ class MockPromptVariables implements PromptVariables {
 Deno.test("CompositePromptVariables - basic functionality", () => {
   const vars1 = new MockPromptVariables({ key1: "value1" });
   const vars2 = new MockPromptVariables({ key2: "value2" });
-  
+
   const composite = new CompositePromptVariables([vars1, vars2]);
   const result = composite.toRecord();
-  
+
   assertEquals(result.key1, "value1");
   assertEquals(result.key2, "value2");
 });

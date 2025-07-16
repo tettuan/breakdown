@@ -8,13 +8,13 @@
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 import {
+  detectEnvironment,
   type EnhancedStdinOptions,
   type EnvironmentInfo,
-  detectEnvironment,
-  readStdinEnhanced,
   isStdinAvailableEnhanced,
+  readStdinEnhanced,
   safeReadStdin,
   shouldSkipStdinProcessing,
 } from "./enhanced_stdin.ts";
@@ -101,13 +101,15 @@ export class StdinIntegrationWrapper {
     timeout?: number;
     allowEmpty?: boolean;
     skipChecks?: boolean;
-  } = {}): Promise<Result<{
-    success: boolean;
-    content: string;
-    skipped: boolean;
-    reason?: string;
-    envInfo: EnvironmentInfo;
-  }, Error>> {
+  } = {}): Promise<
+    Result<{
+      success: boolean;
+      content: string;
+      skipped: boolean;
+      reason?: string;
+      envInfo: EnvironmentInfo;
+    }, Error>
+  > {
     try {
       const result = await safeReadStdin({
         timeout: options.timeout,

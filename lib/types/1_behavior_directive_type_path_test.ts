@@ -19,6 +19,7 @@ const createTwoParamsResult = (directiveType: string, layerType: string): TwoPar
   params: [directiveType, layerType],
   directiveType,
   layerType,
+  demonstrativeType: directiveType,
   options: {},
 });
 
@@ -134,7 +135,11 @@ Deno.test("1_behavior: getSchemaPath maintains consistency with factory patterns
   // lib/factory/schema_file_path_resolver.ts のパターンと一致することを確認
   const testCases = [
     { directive: "to", layer: "project", expected: "schemas/to/project/to_project.schema.json" },
-    { directive: "summary", layer: "issue", expected: "schemas/summary/issue/summary_issue.schema.json" },
+    {
+      directive: "summary",
+      layer: "issue",
+      expected: "schemas/summary/issue/summary_issue.schema.json",
+    },
     { directive: "defect", layer: "task", expected: "schemas/defect/task/defect_task.schema.json" },
   ];
 
@@ -274,7 +279,10 @@ Deno.test("1_behavior: Path methods handle edge cases gracefully", () => {
   const shortLayer = createMockLayer("project");
 
   assertEquals(shortDirective.getPromptPath(shortLayer), "prompts/to/project/to_project.md");
-  assertEquals(shortDirective.getSchemaPath(shortLayer), "schemas/to/project/to_project.schema.json");
+  assertEquals(
+    shortDirective.getSchemaPath(shortLayer),
+    "schemas/to/project/to_project.schema.json",
+  );
 
   // 有効なDirectiveType/LayerTypeでテスト
   const specialResult = createTwoParamsResult("summary", "issue");

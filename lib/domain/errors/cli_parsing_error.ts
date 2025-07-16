@@ -1,9 +1,9 @@
 /**
  * @fileoverview CLI Parsing Domain Errors
- * 
+ *
  * Errors related to command-line argument parsing and validation.
  * Provides detailed context about what went wrong during CLI parsing.
- * 
+ *
  * @module domain/errors/cli_parsing_error
  */
 
@@ -45,7 +45,7 @@ export class CLIParsingError extends BaseBreakdownError {
         providedArgs?: string[];
         command?: string;
       };
-    }
+    },
   ) {
     super(message, "cli-parsing", kind, options?.context);
     this.kind = kind;
@@ -62,8 +62,8 @@ export class CLIParsingError extends BaseBreakdownError {
       "missing-required-argument",
       `Missing required argument: ${argument}`,
       {
-        context: { argument, position }
-      }
+        context: { argument, position },
+      },
     );
   }
 
@@ -73,14 +73,14 @@ export class CLIParsingError extends BaseBreakdownError {
   static invalidFormat(
     argument: string,
     value: string,
-    expected: string
+    expected: string,
   ): CLIParsingError {
     return new CLIParsingError(
       "invalid-argument-format",
       `Invalid format for argument '${argument}': expected ${expected}, got '${value}'`,
       {
-        context: { argument, value, expected }
-      }
+        context: { argument, value, expected },
+      },
     );
   }
 
@@ -89,14 +89,14 @@ export class CLIParsingError extends BaseBreakdownError {
    */
   static invalidParameter(
     parameter: string,
-    message: string
+    message: string,
   ): CLIParsingError {
     return new CLIParsingError(
       "invalid-argument-format",
       `Invalid parameter '${parameter}': ${message}`,
       {
-        context: { argument: parameter }
-      }
+        context: { argument: parameter },
+      },
     );
   }
 
@@ -105,29 +105,29 @@ export class CLIParsingError extends BaseBreakdownError {
    */
   static unknownOption(
     option: string,
-    availableOptions: string[]
+    availableOptions: string[],
   ): CLIParsingError {
     // Totality: Ensure safe array operations
-    const cleanOption = option.replace(/-/g, '');
+    const cleanOption = option.replace(/-/g, "");
     const suggestions = availableOptions
-      .filter(opt => {
-        if (typeof opt !== 'string' || opt.length === 0) return false;
-        const cleanOpt = opt.replace(/-/g, '');
+      .filter((opt) => {
+        if (typeof opt !== "string" || opt.length === 0) return false;
+        const cleanOpt = opt.replace(/-/g, "");
         return cleanOpt.includes(cleanOption) || cleanOption.includes(cleanOpt);
       })
       .slice(0, 3);
 
     // Totality: Safe message construction
     const message = suggestions.length > 0
-      ? `Unknown option '${option}'. Did you mean: ${suggestions.join(', ')}?`
+      ? `Unknown option '${option}'. Did you mean: ${suggestions.join(", ")}?`
       : `Unknown option '${option}'`;
 
     return new CLIParsingError(
       "unknown-option",
       message,
       {
-        context: { argument: option, availableOptions }
-      }
+        context: { argument: option, availableOptions },
+      },
     );
   }
 
@@ -137,14 +137,14 @@ export class CLIParsingError extends BaseBreakdownError {
   static invalidOptionValue(
     option: string,
     value: string,
-    expected: string
+    expected: string,
   ): CLIParsingError {
     return new CLIParsingError(
       "invalid-option-value",
       `Invalid value '${value}' for option '${option}': ${expected}`,
       {
-        context: { argument: option, value, expected }
-      }
+        context: { argument: option, value, expected },
+      },
     );
   }
 
@@ -153,14 +153,14 @@ export class CLIParsingError extends BaseBreakdownError {
    */
   static conflictingOptions(
     option1: string,
-    option2: string
+    option2: string,
   ): CLIParsingError {
     return new CLIParsingError(
       "conflicting-options",
       `Options '${option1}' and '${option2}' cannot be used together`,
       {
-        context: { argument: `${option1}, ${option2}` }
-      }
+        context: { argument: `${option1}, ${option2}` },
+      },
     );
   }
 
@@ -170,18 +170,18 @@ export class CLIParsingError extends BaseBreakdownError {
   static tooManyArguments(
     expected: number,
     actual: number,
-    providedArgs: string[]
+    providedArgs: string[],
   ): CLIParsingError {
     return new CLIParsingError(
       "too-many-arguments",
       `Too many arguments: expected ${expected}, got ${actual}`,
       {
-        context: { 
-          expected: expected.toString(), 
+        context: {
+          expected: expected.toString(),
           actual: actual.toString(),
-          providedArgs 
-        }
-      }
+          providedArgs,
+        },
+      },
     );
   }
 
@@ -190,28 +190,28 @@ export class CLIParsingError extends BaseBreakdownError {
    */
   static invalidCommand(
     command: string,
-    availableCommands: string[]
+    availableCommands: string[],
   ): CLIParsingError {
     // Totality: Safe command filtering with proper bounds checking
-    const firstChar = command.length > 0 ? command[0] : '';
+    const firstChar = command.length > 0 ? command[0] : "";
     const suggestions = availableCommands
-      .filter(cmd => {
-        if (typeof cmd !== 'string' || cmd.length === 0) return false;
+      .filter((cmd) => {
+        if (typeof cmd !== "string" || cmd.length === 0) return false;
         return (firstChar && cmd.startsWith(firstChar)) || cmd.includes(command);
       })
       .slice(0, 3);
 
     // Totality: Safe message construction
     const message = suggestions.length > 0
-      ? `Invalid command '${command}'. Did you mean: ${suggestions.join(', ')}?`
+      ? `Invalid command '${command}'. Did you mean: ${suggestions.join(", ")}?`
       : `Invalid command '${command}'`;
 
     return new CLIParsingError(
       "invalid-command",
       message,
       {
-        context: { command, availableOptions: availableCommands }
-      }
+        context: { command, availableOptions: availableCommands },
+      },
     );
   }
 
@@ -221,12 +221,12 @@ export class CLIParsingError extends BaseBreakdownError {
   static parsingFailed(
     message: string,
     cause?: Error,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): CLIParsingError {
     return new CLIParsingError(
       "parsing-failed",
       message,
-      { cause, context }
+      { cause, context },
     );
   }
 
@@ -235,7 +235,7 @@ export class CLIParsingError extends BaseBreakdownError {
    */
   override getUserMessage(): string {
     const base = this.message;
-    
+
     // Add examples for common errors
     switch (this.kind) {
       case "missing-required-argument":
@@ -245,9 +245,11 @@ export class CLIParsingError extends BaseBreakdownError {
       case "unknown-option": {
         // Totality: Safe context access with comprehensive type checking
         const options = this.context?.availableOptions;
-        if (Array.isArray(options) && options.length > 0 && 
-            options.every(opt => typeof opt === 'string')) {
-          return `${base}\n\nAvailable options: ${options.join(', ')}`;
+        if (
+          Array.isArray(options) && options.length > 0 &&
+          options.every((opt) => typeof opt === "string")
+        ) {
+          return `${base}\n\nAvailable options: ${options.join(", ")}`;
         }
         return base;
       }
@@ -275,47 +277,76 @@ export class CLIParsingError extends BaseBreakdownError {
 
     switch (this.kind) {
       case "missing-required-argument":
-        suggestions.push({ action: "add-argument", description: `Add the required argument: ${this.context?.argument}` });
-        suggestions.push({ action: "show-help", description: "See all required arguments", command: "breakdown --help" });
+        suggestions.push({
+          action: "add-argument",
+          description: `Add the required argument: ${this.context?.argument}`,
+        });
+        suggestions.push({
+          action: "show-help",
+          description: "See all required arguments",
+          command: "breakdown --help",
+        });
         break;
       case "invalid-argument-format":
-        suggestions.push({ action: "fix-format", description: `Use correct format: ${this.context?.expected}` });
+        suggestions.push({
+          action: "fix-format",
+          description: `Use correct format: ${this.context?.expected}`,
+        });
         break;
       case "unknown-option": {
-        suggestions.push({ action: "show-help", description: "Check available options", command: "breakdown --help" });
+        suggestions.push({
+          action: "show-help",
+          description: "Check available options",
+          command: "breakdown --help",
+        });
         // Totality: Safe array operations with type guards
         const options = this.context?.availableOptions;
-        if (Array.isArray(options) && options.length > 0 && 
-            options.every(opt => typeof opt === 'string')) {
-          const validOptions = options.slice(0, 5).join(', ');
-          suggestions.push({ action: "use-valid-option", description: `Valid options include: ${validOptions}` });
+        if (
+          Array.isArray(options) && options.length > 0 &&
+          options.every((opt) => typeof opt === "string")
+        ) {
+          const validOptions = options.slice(0, 5).join(", ");
+          suggestions.push({
+            action: "use-valid-option",
+            description: `Valid options include: ${validOptions}`,
+          });
         }
         break;
       }
       case "conflicting-options":
-        suggestions.push({ action: "remove-conflict", description: "Use only one of the conflicting options" });
+        suggestions.push({
+          action: "remove-conflict",
+          description: "Use only one of the conflicting options",
+        });
         break;
       case "too-many-arguments":
-        suggestions.push({ action: "remove-arguments", description: `Remove extra arguments (expected ${this.context?.expected})` });
+        suggestions.push({
+          action: "remove-arguments",
+          description: `Remove extra arguments (expected ${this.context?.expected})`,
+        });
         break;
       case "invalid-command":
-        suggestions.push({ action: "show-help", description: "See available commands", command: "breakdown help" });
+        suggestions.push({
+          action: "show-help",
+          description: "See available commands",
+          command: "breakdown help",
+        });
         break;
       default:
         // Totality: Ensure all error kinds have recovery suggestions
-        suggestions.push({ 
-          action: "check-help", 
+        suggestions.push({
+          action: "check-help",
           description: "Check command documentation for proper usage",
-          command: "breakdown --help" 
+          command: "breakdown --help",
         });
         break;
     }
 
     // Totality: Guarantee at least one suggestion is always returned
     if (suggestions.length === 0) {
-      suggestions.push({ 
-        action: "retry-command", 
-        description: "Review and retry the command with correct syntax" 
+      suggestions.push({
+        action: "retry-command",
+        description: "Review and retry the command with correct syntax",
       });
     }
 

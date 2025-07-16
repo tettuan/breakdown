@@ -15,6 +15,7 @@ import { assert, assertEquals, assertRejects } from "@std/assert";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
+import { ConfigProfileName } from "../../types/config_profile_name.ts";
 import {
   FileTemplateRepository,
   type FileTemplateRepositoryConfig,
@@ -33,12 +34,17 @@ import { createTwoParamsResult } from "../../types/two_params_result_extension.t
 // Helper function to create test DirectiveType and LayerType
 function createTestDirectiveType(value: string): DirectiveType {
   const result = createTwoParamsResult(value, "project");
-  return DirectiveType.create(result);
+  const directiveResult = DirectiveType.create(result.directiveType);
+  if (!directiveResult.ok) {
+    throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+  }
+  return directiveResult.data;
 }
 
 function createTestLayerType(directiveType: string, value: string): LayerType {
   const result = createTwoParamsResult(directiveType, value);
-  const layerResult = LayerType.create(result);
+  const profileName = ConfigProfileName.createDefault();
+  const layerResult = LayerType.create(result.layerType, profileName);
   if (!layerResult.ok) {
     throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
   }
@@ -116,8 +122,8 @@ Deno.test("FileTemplateRepository loadTemplate - throws TemplateNotFoundError fo
   const { repository, cleanup } = await createTestRepository();
 
   try {
-    const directive = createTestDirectiveType("nonexistent");
-    const layer = createTestLayerType("nonexistent", "missing");
+    const directive = createTestDirectiveType("to");
+    const layer = createTestLayerType("to", "project");
     const pathResult = TemplatePath.create(directive, layer, "missing.md");
     assert(pathResult.ok);
     const templatePath = pathResult.data;
@@ -269,8 +275,8 @@ Deno.test("FileTemplateRepository delete - throws TemplateNotFoundError for non-
   const { repository, cleanup } = await createTestRepository();
 
   try {
-    const directive = createTestDirectiveType("missing");
-    const layer = createTestLayerType("missing", "gone");
+    const directive = createTestDirectiveType("to");
+    const layer = createTestLayerType("to", "project");
     const pathResult = TemplatePath.create(directive, layer, "missing.md");
     assert(pathResult.ok);
     const templatePath = pathResult.data;

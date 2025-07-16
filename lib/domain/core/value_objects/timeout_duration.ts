@@ -63,7 +63,7 @@ export class TimeoutDuration {
    */
   static create(
     value: number,
-    unit: TimeUnit = TIME_UNITS.MILLISECONDS
+    unit: TimeUnit = TIME_UNITS.MILLISECONDS,
   ): Result<TimeoutDuration, TimeoutDurationError> {
     // Validate input types
     if (typeof value !== "number") {
@@ -111,7 +111,7 @@ export class TimeoutDuration {
     // Check maximum duration (24 hours in milliseconds)
     const maxDurationMs = 24 * 60 * 60 * 1000;
     const valueInMs = new TimeoutDuration(value, unit).convertToMilliseconds(value, unit);
-    
+
     if (valueInMs > maxDurationMs) {
       return resultError({
         kind: "ExceedsMaximum",
@@ -606,35 +606,51 @@ export class TimeoutDuration {
 /**
  * Type guard functions for TimeoutDurationError
  */
-export function isNullOrUndefinedError(error: TimeoutDurationError): error is { kind: "NullOrUndefined"; input: unknown } {
+export function isNullOrUndefinedError(
+  error: TimeoutDurationError,
+): error is { kind: "NullOrUndefined"; input: unknown } {
   return error.kind === "NullOrUndefined";
 }
 
-export function isNonIntegerValueError(error: TimeoutDurationError): error is { kind: "NonIntegerValue"; input: number } {
+export function isNonIntegerValueError(
+  error: TimeoutDurationError,
+): error is { kind: "NonIntegerValue"; input: number } {
   return error.kind === "NonIntegerValue";
 }
 
-export function isBelowMinimumError(error: TimeoutDurationError): error is { kind: "BelowMinimum"; input: number; minimum: number } {
+export function isBelowMinimumError(
+  error: TimeoutDurationError,
+): error is { kind: "BelowMinimum"; input: number; minimum: number } {
   return error.kind === "BelowMinimum";
 }
 
-export function isAboveMaximumError(error: TimeoutDurationError): error is { kind: "AboveMaximum"; input: number; maximum: number } {
+export function isAboveMaximumError(
+  error: TimeoutDurationError,
+): error is { kind: "AboveMaximum"; input: number; maximum: number } {
   return error.kind === "AboveMaximum";
 }
 
-export function isInvalidTypeError(error: TimeoutDurationError): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
+export function isInvalidTypeError(
+  error: TimeoutDurationError,
+): error is { kind: "InvalidType"; input: unknown; expectedType: string } {
   return error.kind === "InvalidType";
 }
 
-export function isInvalidSecondsError(error: TimeoutDurationError): error is { kind: "InvalidSeconds"; input: number; reason: string } {
+export function isInvalidSecondsError(
+  error: TimeoutDurationError,
+): error is { kind: "InvalidSeconds"; input: number; reason: string } {
   return error.kind === "InvalidSeconds";
 }
 
-export function isInvalidMinutesError(error: TimeoutDurationError): error is { kind: "InvalidMinutes"; input: number; reason: string } {
+export function isInvalidMinutesError(
+  error: TimeoutDurationError,
+): error is { kind: "InvalidMinutes"; input: number; reason: string } {
   return error.kind === "InvalidMinutes";
 }
 
-export function isInvalidScaleFactorError(error: TimeoutDurationError): error is { kind: "InvalidScaleFactor"; input: number; reason: string } {
+export function isInvalidScaleFactorError(
+  error: TimeoutDurationError,
+): error is { kind: "InvalidScaleFactor"; input: number; reason: string } {
   return error.kind === "InvalidScaleFactor";
 }
 
@@ -674,7 +690,8 @@ export function formatTimeoutDurationError(error: TimeoutDurationError): string 
       return `Timeout duration ${error.input}ms is above maximum allowed duration of ${error.maximum}ms`;
 
     case "InvalidType":
-      return `Invalid type for timeout duration. Expected ${error.expectedType}, received: ${typeof error.input}`;
+      return `Invalid type for timeout duration. Expected ${error.expectedType}, received: ${typeof error
+        .input}`;
 
     case "InvalidSeconds":
       return `Invalid seconds value: ${error.input}. ${error.reason}`;

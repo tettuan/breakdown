@@ -61,6 +61,10 @@ function createMockTypePatternProvider() {
   return {
     getDirectivePattern: () => directivePattern as unknown as TwoParamsDirectivePattern,
     getLayerTypePattern: () => layerPattern as unknown as TwoParamsLayerTypePattern,
+    validateDirectiveType: (value: string) => /^(to|summary|defect)$/.test(value),
+    validateLayerType: (value: string) => /^(project|issue|task)$/.test(value),
+    getValidDirectiveTypes: () => ["to", "summary", "defect"] as readonly string[],
+    getValidLayerTypes: () => ["project", "issue", "task"] as readonly string[],
   };
 }
 
@@ -129,12 +133,12 @@ Deno.test("1_behavior - ValidatedOptions type supports all validation scenarios"
 });
 
 Deno.test("1_behavior - ValidatedParams type integrates all validation components", () => {
-  const mockDirective = { getValue: () => "to" };
-  const mockLayer = { getValue: () => "project" };
+  const mockDirective = { value: "to", getValue: () => "to" };
+  const mockLayer = { value: "project", getValue: () => "project" };
 
   const validatedParams: ValidatedParams = {
-    directive: mockDirective as DirectiveType,
-    layer: mockLayer as LayerType,
+    directive: mockDirective as unknown as DirectiveType,
+    layer: mockLayer as unknown as LayerType,
     options: {
       inputPath: "/input",
       outputPath: "/output",
@@ -272,6 +276,7 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
   const _mockTwoParamsResult = {
     type: "two" as const,
     directiveType: "to",
+    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -285,8 +290,8 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
 
   // 4. Create expected result structure
   const expectedValidatedParams: ValidatedParams = {
-    directive: { value: "to" } as DirectiveType,
-    layer: { value: "project" } as LayerType,
+    directive: { value: "to" } as unknown as DirectiveType,
+    layer: { value: "project" } as unknown as LayerType,
     options: {
       inputPath: "/input/file.txt",
       outputPath: "/output/file.txt",
@@ -444,7 +449,7 @@ Deno.test("1_behavior - Validation metadata enables audit trails", () => {
   for (let i = 0; i < 3; i++) {
     validations.push({
       validatedAt: new Date(Date.now() + i * 1000),
-      source: i === 0 ? "TwoParams" : i === 1 ? "OneParams" : "ZeroParams",
+      source: i === 0 ? "TwoParams_Result" : i === 1 ? "OneParamsResult" : "ZeroParamsResult",
       profileName: `profile-${i}`,
     });
   }

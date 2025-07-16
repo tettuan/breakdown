@@ -343,18 +343,18 @@ export function toPromptParamsVariables(variables: PromptVariable[]): PromptVari
 // Stub exports for missing variable types - these need to be properly implemented
 export class StandardVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
-  
+
   static create(key: string, value: string): Result<StandardVariable, ValidationError> {
     if (!key || !value) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variable",
         value: `${key}=${value}`,
-        reason: "Key and value must be non-empty"
+        reason: "Key and value must be non-empty",
       }));
     }
     return ok(new StandardVariable(key, value));
   }
-  
+
   toRecord(): Record<string, string> {
     return { [this.key]: this.value };
   }
@@ -362,18 +362,18 @@ export class StandardVariable implements PromptVariable {
 
 export class FilePathVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
-  
+
   static create(key: string, value: string): Result<FilePathVariable, ValidationError> {
     if (!key || !value) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variable",
         value: `${key}=${value}`,
-        reason: "Key and value must be non-empty"
+        reason: "Key and value must be non-empty",
       }));
     }
     return ok(new FilePathVariable(key, value));
   }
-  
+
   toRecord(): Record<string, string> {
     return { [this.key]: this.value };
   }
@@ -381,18 +381,18 @@ export class FilePathVariable implements PromptVariable {
 
 export class StdinVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
-  
+
   static create(key: string, value: string): Result<StdinVariable, ValidationError> {
     if (!key || !value) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variable",
         value: `${key}=${value}`,
-        reason: "Key and value must be non-empty"
+        reason: "Key and value must be non-empty",
       }));
     }
     return ok(new StdinVariable(key, value));
   }
-  
+
   toRecord(): Record<string, string> {
     return { [this.key]: this.value };
   }
@@ -400,18 +400,18 @@ export class StdinVariable implements PromptVariable {
 
 export class UserVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
-  
+
   static create(key: string, value: string): Result<UserVariable, ValidationError> {
     if (!key || !value) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variable",
         value: `${key}=${value}`,
-        reason: "Key and value must be non-empty"
+        reason: "Key and value must be non-empty",
       }));
     }
     return ok(new UserVariable(key, value));
   }
-  
+
   toRecord(): Record<string, string> {
     return { [this.key]: this.value };
   }

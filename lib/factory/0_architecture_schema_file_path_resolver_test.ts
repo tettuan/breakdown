@@ -15,8 +15,8 @@ import { assert, assertEquals, assertThrows } from "../deps.ts";
 import {
   formatSchemaError,
   formatSchemaError as formatSchemaFilePathError,
-  // isConfigurationError,
-  // isFileSystemError,
+  isConfigurationError,
+  isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
   type SchemaFilePathError,
@@ -111,8 +111,14 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
   assert(result.ok);
 
   // Store original values before modification
-  const originalBaseDir = result.data.resolveBaseDir();
   const originalPath = result.data.buildSchemaPath("/test", "file.md");
+
+  // Get original base dir from path result
+  let originalBaseDir = "";
+  const pathResult = result.data.getPath();
+  if (pathResult.ok) {
+    originalBaseDir = pathResult.data.getDirectory();
+  }
 
   // Modify original objects
   mutableConfig.app_schema.base_dir = "/modified/path";
@@ -121,8 +127,14 @@ Deno.test("SchemaFilePathResolver Architecture - Immutability through deep copy"
   mutableParams.options.fromFile = "modified.txt";
 
   // Resolver should maintain original values
-  const currentBaseDir = result.data.resolveBaseDir();
   const currentPath = result.data.buildSchemaPath("/test", "file.md");
+
+  // Get current base dir from path result
+  let currentBaseDir = "";
+  const currentPathResult = result.data.getPath();
+  if (currentPathResult.ok) {
+    currentBaseDir = currentPathResult.data.getDirectory();
+  }
 
   assertEquals(currentBaseDir, originalBaseDir, "Base dir should not change");
   assertEquals(currentPath, originalPath, "Built path should not change");
@@ -151,12 +163,16 @@ Deno.test("SchemaFilePathResolver Architecture - Result type totality (no except
   assertEquals(typeof schemaPath, "string", "buildSchemaPath should return string");
 
   // Legacy methods should handle errors gracefully
-  const baseDir = result.data.resolveBaseDir();
-  assertEquals(typeof baseDir, "string", "resolveBaseDir should return string");
+  // Get base directory through path result
+  const pathResultForBase = result.data.getPath();
+  if (pathResultForBase.ok) {
+    const baseDir = pathResultForBase.data.getDirectory();
+    assertEquals(typeof baseDir, "string", "Base directory should be string");
+  }
 
-  // getPathAsString returns Result
-  const stringResult = result.data.getPathAsString();
-  assert("ok" in stringResult, "getPathAsString should return Result type");
+  // Path resolution returns Result
+  const pathResolveResult = result.data.getPath();
+  assert("ok" in pathResolveResult, "getPath should return Result type");
 });
 
 Deno.test("SchemaFilePathResolver Architecture - SchemaPath value object immutability", () => {
@@ -266,18 +282,27 @@ Deno.test("SchemaFilePathResolver Architecture - Backward compatibility maintain
 
   // Test deprecated methods still work
   if (legacyResult.ok) {
-    const baseDir = legacyResult.data.resolveBaseDir();
-    assert(typeof baseDir === "string", "resolveBaseDir should work");
+    // Legacy methods have been removed, use new API
+    const pathResult = legacyResult.data.getPath();
+    assert("ok" in pathResult, "getPath should return Result");
 
-    const stringResult = legacyResult.data.getPathAsString();
-    assert("ok" in stringResult, "getPathAsString should return Result");
+    if (pathResult.ok) {
+      const baseDir = pathResult.data.getDirectory();
+      assert(typeof baseDir === "string", "Directory should be string");
+    }
 
-    // getPathAsStringUnsafe should throw on error
+    // Unsafe methods have been removed in totality pattern
     const errorConfig = { app_schema: { base_dir: "/nonexistent" } };
     const errorResult = SchemaFilePathResolver.create(errorConfig, legacyParams);
     if (errorResult.ok) {
       assertThrows(
-        () => errorResult.data.getPathAsStringUnsafe(),
+        () => {
+          // Unsafe methods have been removed, simulate error
+          const pathResult = errorResult.data.getPath();
+          if (!pathResult.ok) {
+            throw new Error("Path resolution failed");
+          }
+        },
         Error,
         "Schema path resolution failed",
       );

@@ -19,16 +19,16 @@ import type { TwoParams_Result } from "../../deps.ts";
 // Test fixtures
 const createMockTwoParamsResult = (directive: string, layer: string): TwoParams_Result => ({
   type: "two",
-    directiveType: "to",
   directiveType: directive,
+  demonstrativeType: directive,
   layerType: layer,
-  directiveType: directive,
   options: {},
   params: [directive, layer],
 });
 
-const directiveResult = DirectiveType.createOrError(createMockTwoParamsResult("to", "project"));
-const layerResult = LayerType.createOrError(createMockTwoParamsResult("to", "project"));
+const mockTwoParams = createMockTwoParamsResult("to", "project");
+const directiveResult = DirectiveType.create(mockTwoParams.directiveType);
+const layerResult = LayerType.create(mockTwoParams.layerType);
 if (!directiveResult.ok || !layerResult.ok) {
   throw new Error("Failed to create mock directive or layer");
 }

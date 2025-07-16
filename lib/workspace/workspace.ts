@@ -253,19 +253,19 @@ export class WorkspaceImpl implements Workspace {
     try {
       // Create BreakdownConfig instance with default profile using static factory method
       const breakdownConfigResult = await BreakdownConfig.create("default", this.config.workingDir);
-      
+
       if (!breakdownConfigResult.success || !breakdownConfigResult.data) {
         throw createWorkspaceConfigError(`Failed to create BreakdownConfig`);
       }
-      
+
       const breakdownConfig = breakdownConfigResult.data;
-      
+
       // Load configuration
       await breakdownConfig.loadConfig();
-      
+
       // Get merged configuration
       const mergedConfig = await breakdownConfig.getConfig();
-      
+
       // Extract the necessary configuration values
       this.config = {
         workingDir: this.config.workingDir,

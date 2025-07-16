@@ -143,8 +143,7 @@ export class TypedVariableFactory {
 
       // Add schema file path if not provided
       if (!variables.schema_file) {
-        variables.schema_file =
-          `schema/${directive.value}/${layer.value}/f_${layer.value}.json`;
+        variables.schema_file = `schema/${directive.value}/${layer.value}/f_${layer.value}.json`;
       }
     }
 

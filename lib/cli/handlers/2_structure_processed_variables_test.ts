@@ -13,7 +13,10 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import type { ProcessedVariables } from "../../processor/variable_processor_v2.ts";
-import { TwoParamsVariableProcessor, type TwoParamsVariableProcessorError } from "../../processor/variable_processor_v2.ts";
+import {
+  TwoParamsVariableProcessor,
+  type TwoParamsVariableProcessorError,
+} from "../../processor/variable_processor_v2.ts";
 import type { Result } from "$lib/types/result.ts";
 import { isError, isOk } from "$lib/types/result.ts";
 
