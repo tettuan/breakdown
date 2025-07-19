@@ -27,25 +27,16 @@ ORIGINAL_CWD="$(pwd)"
 # Set up trap for cleanup on exit
 trap cleanup EXIT INT TERM
 
-# Define test directory
-TEST_DIR="/tmp/breakdown_test"
+# Move to the examples directory (script location)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR" || error_exit "Failed to change to script directory"
 
 # Script is run from examples directory
 echo "=== Creating User Configuration (deno run) ==="
-echo "Working in test directory: ${TEST_DIR}"
+echo "Working in examples directory: ${SCRIPT_DIR}"
 
-# Create and move to test directory
-mkdir -p "${TEST_DIR}" || error_exit "Failed to create test directory: ${TEST_DIR}"
-cd "${TEST_DIR}" || error_exit "Failed to change to test directory: ${TEST_DIR}"
-
-# Validate we're in the correct directory
-if [ "$(pwd)" != "${TEST_DIR}" ]; then
-    error_exit "Failed to change to test directory. Current: $(pwd), Expected: ${TEST_DIR}"
-fi
-
-# Define the config directory path
-CONFIG_DIR="${TEST_DIR}/.agent/breakdown/config"
+# Define the config directory path (in examples)
+CONFIG_DIR="./.agent/breakdown/config"
 
 # Create config directory structure
 echo "Creating config directory structure..."
@@ -108,8 +99,8 @@ EOF
     echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
     
     # Create user directories following UnifiedConfig structure
-    USER_PROMPTS_DIR="${TEST_DIR}/.agent/breakdown/prompts"
-    USER_SCHEMA_DIR="${TEST_DIR}/.agent/breakdown/schema"
+    USER_PROMPTS_DIR="./.agent/breakdown/prompts"
+    USER_SCHEMA_DIR="./.agent/breakdown/schema"
     
     # Create prompt directory structure for DirectiveType x LayerType combinations
     mkdir -p "${USER_PROMPTS_DIR}/to/project" || error_exit "Failed to create to/project prompts directory"
@@ -138,4 +129,4 @@ EOF
 fi
 
 echo "=== User Configuration Created Successfully ==="
-echo "Test directory structure created at: ${TEST_DIR}"
+echo "Configuration created in examples directory: ${SCRIPT_DIR}"
