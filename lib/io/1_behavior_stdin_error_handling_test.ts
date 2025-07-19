@@ -27,10 +27,7 @@ import {
   isValidationError,
   type StdinErrorType,
 } from "./stdin_error_types.ts";
-import {
-  StdinAvailability,
-  StdinReadingConfiguration,
-} from "./stdin_configuration.ts";
+import { StdinAvailability, StdinReadingConfiguration } from "./stdin_configuration.ts";
 import { safeReadStdin } from "./enhanced_stdin.ts";
 
 /**
@@ -47,7 +44,7 @@ Deno.test({
       // テスト環境では実際のstdinは使わず、設定の妥当性のみテスト
       assertEquals(config.data.allowEmpty, false);
       assertEquals(config.data.timeout, 100);
-      
+
       // タイムアウトが短すぎることを検証（実際のstdin読み取りはスキップ）
       assertEquals(config.data.timeout < 1000, true, "Short timeout should be properly configured");
     }

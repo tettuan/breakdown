@@ -32,9 +32,9 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     const command = new Deno.Command("deno", {
       args: ["check", "./lib/workspace/interfaces.ts"],
       stdout: "piped",
-      stderr: "piped"
+      stderr: "piped",
     });
-    
+
     const result = await command.output();
 
     assertEquals(result.code, 0, "Interfaces should compile without errors");
@@ -44,7 +44,7 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     _logger.debug("Testing interface-only module structure");
 
     const interfaces = await import("./interfaces.ts");
-    
+
     // The module should only export type definitions, no implementations
     assertExists(interfaces, "Interface module exists");
 
@@ -127,17 +127,17 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     assertEquals(
       fileContent.includes("resolve(path: string): Promise<string>"),
       true,
-      "PathResolutionStrategy has resolve method"
+      "PathResolutionStrategy has resolve method",
     );
     assertEquals(
       fileContent.includes("normalize(path: string): Promise<string>"),
       true,
-      "PathResolutionStrategy has normalize method"
+      "PathResolutionStrategy has normalize method",
     );
     assertEquals(
       fileContent.includes("validate(path: string): Promise<boolean>"),
       true,
-      "PathResolutionStrategy has validate method"
+      "PathResolutionStrategy has validate method",
     );
 
     // Workspace methods suggest it uses other interfaces internally:
@@ -177,13 +177,13 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     assertEquals(
       fileContent.includes("handleError(error: Error, type: string): void"),
       true,
-      "Handles errors with type classification"
+      "Handles errors with type classification",
     );
 
     assertEquals(
       fileContent.includes("logError(error: Error, context: Record<string, unknown>): void"),
       true,
-      "Logs errors with context"
+      "Logs errors with context",
     );
 
     // Other interfaces throw errors, ErrorHandler catches them
@@ -200,12 +200,12 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     assertEquals(
       fileContent.includes("on(event: string, listener: (data: unknown) => void): void"),
       true,
-      "Supports event subscription"
+      "Supports event subscription",
     );
     assertEquals(
       fileContent.includes("emit(event: string, data: unknown): void"),
       true,
-      "Supports event emission"
+      "Supports event emission",
     );
 
     // Events use string identifiers and unknown data for flexibility
@@ -222,14 +222,14 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     const pathStrategyMethods = [
       "resolve(path: string): Promise<string>",
       "normalize(path: string): Promise<string>",
-      "validate(path: string): Promise<boolean>"
+      "validate(path: string): Promise<boolean>",
     ];
 
     for (const method of pathStrategyMethods) {
       assertEquals(
         fileContent.includes(method),
         true,
-        `PathResolutionStrategy has method: ${method}`
+        `PathResolutionStrategy has method: ${method}`,
       );
     }
 
@@ -249,7 +249,7 @@ Deno.test("Workspace Interfaces Architecture", async (t) => {
     assertEquals(
       fileContent.includes("updateStrategy(strategy: PathResolutionStrategy): void"),
       true,
-      "Supports strategy pattern for path resolution"
+      "Supports strategy pattern for path resolution",
     );
 
     // Strategy can be changed at runtime
