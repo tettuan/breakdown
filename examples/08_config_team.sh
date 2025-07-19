@@ -29,21 +29,27 @@ fi
 echo "Setting up local team template directories..."
 mkdir -p prompts/team/to/task
 
-# Copy required team template files
-echo "Copying team template files..."
-cp ../lib/breakdown/prompts/team/to/task/f_task.md prompts/team/to/task/ 2>/dev/null || echo "Warning: Could not copy team task template"
-
-# Create team configuration
-cat > "${CONFIG_DIR}/team-app.yml" << 'EOF'
+# Create team configuration (only if it doesn't exist or if different)
+if [ ! -f "${CONFIG_DIR}/team-app.yml" ]; then
+  cat > "${CONFIG_DIR}/team-app.yml" << 'EOF'
 # Team development configuration
-working_dir: "."
+working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: "prompts/team"
+  base_dir: ".agent/breakdown/prompts"
   template_prefix: "team_"
 app_schema:
-  base_dir: "schema/team"
+  base_dir: ".agent/breakdown/schema"
   validation_enabled: true
   strict_mode: false
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
 logger:
   level: "debug"
   format: "text"
@@ -66,8 +72,10 @@ features:
   teamFeatures: true
   debugMode: true
 EOF
-
-echo "Created team configuration: ${CONFIG_DIR}/team-app.yml"
+  echo "Created team configuration: ${CONFIG_DIR}/team-app.yml"
+else
+  echo "Using existing team configuration: ${CONFIG_DIR}/team-app.yml"
+fi
 
 # Create team collaboration scenario
 cat > team_planning.md << 'EOF'

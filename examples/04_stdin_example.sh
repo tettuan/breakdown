@@ -63,14 +63,6 @@ if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summar
     exit 1
 fi
 
-# Copy required template files if they don't exist
-if [ ! -f "prompts/summary/project/f_project.md" ]; then
-    if ! cp ../lib/breakdown/prompts/summary/project/f_project.md prompts/summary/project/ 2>/dev/null; then
-        echo "Warning: Could not copy summary project template"
-        echo "Continuing without template - breakdown may use default"
-    fi
-fi
-
 # Check if stdin configuration files exist, if not create them
 if [ ! -f "${CONFIG_DIR}/stdin-app.yml" ] || [ ! -f "${CONFIG_DIR}/stdin-user.yml" ]; then
     echo "Error: STDIN configuration files not found."

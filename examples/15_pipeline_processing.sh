@@ -59,7 +59,7 @@ done
 
 echo "複数のモジュールドキュメントを集約:"
 cat "$OUTPUT_DIR/module_"*.md | $BREAKDOWN summary project --config=default \
-    --uv-project_name="統合モジュール" \
+    --uv-projectName="統合モジュール" \
     -o="$OUTPUT_DIR/modules_summary.md"
 echo "✅ モジュール統合サマリー生成完了"
 
@@ -106,8 +106,8 @@ echo "2つの異なる入力を同時に処理:"
 
 # 仮想的なシステム状態レポート
 echo "システム状態の差分分析:"
-$BREAKDOWN summary task --config=default <(echo "CPU: 80%, Memory: 4GB, Disk: 50%") \
-    --uv-report_type="システム状態" \
+echo "CPU: 80%, Memory: 4GB, Disk: 50%" | $BREAKDOWN summary task --config=default \
+    --uv-reportType="システム状態" \
     -o="$OUTPUT_DIR/system_status.md"
 
 echo "✅ プロセス置換処理完了"

@@ -145,41 +145,30 @@ copy_template "../.agent/breakdown/lib/breakdown/prompts/defect/issue/f_issue.md
               "prompts/defect/issue/f_issue.md" \
               "defect issue"
 
-# Create a basic configuration file following UnifiedConfig interface
-if ! cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
-# Basic application configuration following unified config interface
+# Create a basic configuration file (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/basic-app.yml" ]; then
+  cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
+# Breakdown Configuration for Basic Profile
+working_dir: ".agent/breakdown"
 app_prompt:
   base_dir: ".agent/breakdown/prompts"
-
 app_schema:
   base_dir: ".agent/breakdown/schema"
-
-output:
-  base_dir: "output"
-
-features:
-  extendedThinking: false
-  debugMode: true
-  strictValidation: true
-  autoSchema: true
-
-limits:
-  maxFileSize: 10485760 # 10MB
-  maxPromptLength: 50000
-  maxVariables: 100
-
-environment:
-  logLevel: "info"
-  colorOutput: true
-  timezone: "UTC"
-  locale: "en-US"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+basic_mode: true
 EOF
-then
-    echo "Error: Failed to create configuration file"
-    exit 1
+  echo "Created basic configuration: ${CONFIG_DIR}/basic-app.yml"
+else
+  echo "Using existing basic configuration: ${CONFIG_DIR}/basic-app.yml"
 fi
-
-echo "Created basic configuration: ${CONFIG_DIR}/basic-app.yml"
 
 # Create sample input
 INPUT_FILE="input.md"

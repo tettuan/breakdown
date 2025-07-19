@@ -1,0 +1,140 @@
+diff --git a/examples/test_stdin_output.md b/examples/test_stdin_output.md
+deleted file mode 100644
+index e2eb185..0000000
+--- a/examples/test_stdin_output.md
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# input.md
+-
+-{input_text} 
+diff --git a/examples/test_team_output.md b/examples/test_team_output.md
+deleted file mode 100644
+index 06a87d0..0000000
+--- a/examples/test_team_output.md
++++ /dev/null
+@@ -1,36 +0,0 @@
+-# Task Breakdown Template
+-
+-## Input
+-
+-{input_text}
+-
+-> Note: {input_text} will be replaced with actual input when using STDIN (e.g., `echo "content" | breakdown to task`).
+-> When running without STDIN, this placeholder will remain as-is for manual replacement.
+-
+-## Output
+-
+-- output.md
+-
+----
+-
+-## Breakdown Perspectives
+-
+-- Task decomposition and subtasks
+-- Implementation approach and methodology
+-- Resource requirements and allocation
+-- Timeline and milestone planning
+-- Dependencies and prerequisites
+-- Risk assessment and contingency
+-- Quality assurance and testing
+-
+-## Instructions
+-
+-1. Break down the input information according to the above perspectives.
+-2. Create actionable subtasks with clear ownership.
+-3. Define measurable success criteria.
+-4. Identify critical path and dependencies.
+-5. Structure as implementable work units.
+-
+-## Output Format
+-
+-- Output as structured Markdown according to the task schema.
+diff --git a/examples/test_to_issue_output.md b/examples/test_to_issue_output.md
+deleted file mode 100644
+index e7d03a2..0000000
+--- a/examples/test_to_issue_output.md
++++ /dev/null
+@@ -1,32 +0,0 @@
+-# Issue Breakdown Detailed Template
+-
+-## Input
+-
+-{input_text}
+-
+-> Note: {input_text} will be replaced with actual input when using STDIN (e.g., `echo "content" | breakdown to issue`).
+-> When running without STDIN, this placeholder will remain as-is for manual replacement.
+-
+-## Output
+-
+-- output.md
+-
+----
+-
+-## Breakdown Perspectives
+-
+-- Requirements/specification classification
+-- Issue purpose, problems, background, and history
+-- MoSCoW analysis, DDD, design patterns
+-- Taskification and relationships between tasks (blocked, related, sub, parent)
+-
+-## Instructions
+-
+-1. Break down the input information according to the above perspectives.
+-2. Create a section for each perspective and organize the information.
+-3. Clearly indicate any missing information as "Missing Information".
+-4. Always use template variables.
+-
+-## Output Format
+-
+-- Output as structured Markdown according to the issue schema.
+diff --git a/examples/test_to_project_output.md b/examples/test_to_project_output.md
+deleted file mode 100644
+index e2eb185..0000000
+--- a/examples/test_to_project_output.md
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# input.md
+-
+-{input_text} 
+diff --git a/examples/test_to_task_output.md b/examples/test_to_task_output.md
+deleted file mode 100644
+index 06a87d0..0000000
+--- a/examples/test_to_task_output.md
++++ /dev/null
+@@ -1,36 +0,0 @@
+-# Task Breakdown Template
+-
+-## Input
+-
+-{input_text}
+-
+-> Note: {input_text} will be replaced with actual input when using STDIN (e.g., `echo "content" | breakdown to task`).
+-> When running without STDIN, this placeholder will remain as-is for manual replacement.
+-
+-## Output
+-
+-- output.md
+-
+----
+-
+-## Breakdown Perspectives
+-
+-- Task decomposition and subtasks
+-- Implementation approach and methodology
+-- Resource requirements and allocation
+-- Timeline and milestone planning
+-- Dependencies and prerequisites
+-- Risk assessment and contingency
+-- Quality assurance and testing
+-
+-## Instructions
+-
+-1. Break down the input information according to the above perspectives.
+-2. Create actionable subtasks with clear ownership.
+-3. Define measurable success criteria.
+-4. Identify critical path and dependencies.
+-5. Structure as implementable work units.
+-
+-## Output Format
+-
+-- Output as structured Markdown according to the task schema.

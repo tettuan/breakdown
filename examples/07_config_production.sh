@@ -29,12 +29,9 @@ fi
 echo "Setting up local production template directories..."
 mkdir -p prompts/production/defect/issue
 
-# Copy required production template files
-echo "Copying production template files..."
-cp ../lib/breakdown/prompts/production/defect/issue/f_issue.md prompts/production/defect/issue/ 2>/dev/null || echo "Warning: Could not copy production defect template"
-
-# Create production configuration
-cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
+# Create production configuration (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/production-app.yml" ]; then
+  cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
 # Breakdown Configuration for Production Profile
 working_dir: ".agent/breakdown"
 app_prompt:
@@ -74,8 +71,10 @@ features:
   cliValidation: true
   experimentalFeatures: false
 EOF
-
-echo "Created production configuration: ${CONFIG_DIR}/production-app.yml"
+  echo "Created production configuration: ${CONFIG_DIR}/production-app.yml"
+else
+  echo "Using existing production configuration: ${CONFIG_DIR}/production-app.yml"
+fi
 
 # Create sample production data
 cat > production_report.md << 'EOF'

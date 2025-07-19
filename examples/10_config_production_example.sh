@@ -29,61 +29,32 @@ fi
 echo "Setting up local production template directories..."
 mkdir -p prompts/production/defect/issue
 
-# Copy required production template files
-echo "Copying production template files..."
-cp ../lib/breakdown/prompts/production/defect/issue/f_issue.md prompts/production/defect/issue/ 2>/dev/null || echo "Warning: Could not copy production defect template"
-
 # Create production configuration with find bugs settings
-cat > "${CONFIG_DIR}/production-bugs-app.yml" << 'EOF'
-# Production configuration with bug detection
-working_dir: "."
+# Create production configuration with find bugs settings (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/production-bugs-app.yml" ]; then
+  cat > "${CONFIG_DIR}/production-bugs-app.yml" << 'EOF'
+# Breakdown Configuration for Production Bugs Profile
+working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: "prompts/production"
+  base_dir: ".agent/breakdown/prompts"
 app_schema:
-  base_dir: "../lib/breakdown/schema/production"
-  validation_enabled: true
-
-# カスタムパラメータ設定
+  base_dir: ".agent/breakdown/schema"
 params:
   two:
-    demonstrativeType:
+    directiveType:
       pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-
-logger:
-  level: "info"
-  format: "json"
-features:
-  customConfig: true
-  findBugs: true
-customConfig:
-  enabled: true
-  findBugs:
-    enabled: true
-    sensitivity: "medium"
-    patterns:
-      - "TODO"
-      - "FIXME"
-      - "HACK"
-      - "BUG"
-      - "XXX"
-      - "DEPRECATED"
-    includeExtensions:
-      - ".ts"
-      - ".js"
-      - ".py"
-      - ".go"
-    excludeDirectories:
-      - "node_modules"
-      - ".git"
-      - "dist"
-      - "build"
-    maxResults: 100
-    detailedReports: true
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+production_mode: true
+bug_detection: true
 EOF
-
-echo "Created production configuration with find bugs: ${CONFIG_DIR}/production-bugs-app.yml"
+  echo "Created production bugs configuration: ${CONFIG_DIR}/production-bugs-app.yml"
+else
+  echo "Using existing production bugs configuration: ${CONFIG_DIR}/production-bugs-app.yml"
+fi
 
 # Create sample code with various bug indicators
 mkdir -p sample_code

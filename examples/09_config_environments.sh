@@ -31,14 +31,9 @@ mkdir -p prompts/dev/defect/issue
 mkdir -p prompts/staging/defect/issue  
 mkdir -p prompts/prod/defect/issue
 
-# Copy required environment template files
-echo "Copying environment template files..."
-cp ../lib/breakdown/prompts/dev/defect/issue/f_issue.md prompts/dev/defect/issue/ 2>/dev/null || echo "Warning: Could not copy dev template"
-cp ../lib/breakdown/prompts/staging/defect/issue/f_issue.md prompts/staging/defect/issue/ 2>/dev/null || echo "Warning: Could not copy staging template"
-cp ../lib/breakdown/prompts/prod/defect/issue/f_issue.md prompts/prod/defect/issue/ 2>/dev/null || echo "Warning: Could not copy prod template"
-
-# Create development configuration
-cat > "${CONFIG_DIR}/dev-app.yml" << 'EOF'
+# Create development configuration (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/dev-app.yml" ]; then
+  cat > "${CONFIG_DIR}/dev-app.yml" << 'EOF'
 # Development environment configuration
 working_dir: "."
 app_prompt:
@@ -55,9 +50,14 @@ features:
   experimentalFeatures: true
   debugMode: true
 EOF
+  echo "Created dev configuration: ${CONFIG_DIR}/dev-app.yml"
+else
+  echo "Using existing dev configuration: ${CONFIG_DIR}/dev-app.yml"
+fi
 
-# Create staging configuration
-cat > "${CONFIG_DIR}/staging-app.yml" << 'EOF'
+# Create staging configuration (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/staging-app.yml" ]; then
+  cat > "${CONFIG_DIR}/staging-app.yml" << 'EOF'
 # Staging environment configuration
 working_dir: "."
 app_prompt:
@@ -76,9 +76,14 @@ features:
   experimentalFeatures: false
   debugMode: false
 EOF
+  echo "Created staging configuration: ${CONFIG_DIR}/staging-app.yml"
+else
+  echo "Using existing staging configuration: ${CONFIG_DIR}/staging-app.yml"
+fi
 
-# Create production configuration (already exists as production-app.yml)
-cat > "${CONFIG_DIR}/prod-app.yml" << 'EOF'
+# Create production configuration (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/prod-app.yml" ]; then
+  cat > "${CONFIG_DIR}/prod-app.yml" << 'EOF'
 # Production environment configuration
 working_dir: "."
 app_prompt:
@@ -103,6 +108,10 @@ features:
   experimentalFeatures: false
   debugMode: false
 EOF
+  echo "Created prod configuration: ${CONFIG_DIR}/prod-app.yml"
+else
+  echo "Using existing prod configuration: ${CONFIG_DIR}/prod-app.yml"
+fi
 
 echo "Created environment configurations:"
 echo "- ${CONFIG_DIR}/dev-app.yml"

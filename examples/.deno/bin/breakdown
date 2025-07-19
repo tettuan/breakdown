@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Breakdown CLI executable script
+# This script runs 'deno task breakdown' from the examples directory
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Calculate the examples directory path
+# .deno/bin/breakdown -> ../../
+EXAMPLES_DIR="$SCRIPT_DIR/../.."
+
+# Change to examples directory and run deno task breakdown
+cd "$EXAMPLES_DIR"
+exec deno task breakdown "$@"

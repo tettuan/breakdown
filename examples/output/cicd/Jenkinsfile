@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+    
+    environment {
+        BREAKDOWN_PATH = "${WORKSPACE}/breakdown"
+    }
+    
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    // Install Deno and Breakdown
+                    sh '''
+                        curl -fsSL https://deno.land/x/install/install.sh | sh
+                        export PATH="$HOME/.deno/bin:$PATH"
+                        deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+                        cp $HOME/.deno/bin/breakdown ${BREAKDOWN_PATH}
+                    '''
+                }
+            }
+        }
+        
+        stage('Analyze PR') {
+            when {
+                changeRequest()
+            }
+            steps {
+                script {
+                    sh '''
+                        git diff origin/${CHANGE_TARGET}...HEAD > pr_changes.diff
+                        ${BREAKDOWN_PATH} defect project --from=pr_changes.diff -o=pr_analysis.md
+                        ${BREAKDOWN_PATH} summary project --from=pr_changes.diff -o=pr_summary.md
+                    '''
+                    
+                    // Post comment to PR
+                    def analysis = readFile('pr_analysis.md')
+                    pullRequest.comment("### Breakdown Analysis\\n${analysis}")
+                }
+            }
+        }
+        
+        stage('Generate Documentation') {
+            steps {
+                sh '''
+                    # Collect all markdown files
+                    find . -name "*.md" -not -path "./node_modules/*" > md_files.txt
+                    
+                    # Generate comprehensive documentation
+                    cat md_files.txt | xargs cat > all_content.md
+                    ${BREAKDOWN_PATH} summary project \
+                        --from=all_content.md \
+                        --uv-build_number="${BUILD_NUMBER}" \
+                        --uv-job_name="${JOB_NAME}" \
+                        -o=docs/build_${BUILD_NUMBER}_summary.md
+                '''
+            }
+        }
+        
+        stage('Issue Tracking') {
+            steps {
+                sh '''
+                    # Extract issues from codebase
+                    grep -r "TODO\\|FIXME\\|HACK\\|BUG" src/ > issues_raw.txt || true
+                    
+                    ${BREAKDOWN_PATH} to issue \
+                        --from=issues_raw.txt \
+                        --uv-build="${BUILD_NUMBER}" \
+                        -o=issues/
+                    
+                    # Count issues by type
+                    TODO_COUNT=$(grep -c "TODO" issues_raw.txt || echo 0)
+                    FIXME_COUNT=$(grep -c "FIXME" issues_raw.txt || echo 0)
+                    
+                    echo "TODO Count: ${TODO_COUNT}" > issue_metrics.txt
+                    echo "FIXME Count: ${FIXME_COUNT}" >> issue_metrics.txt
+                '''
+            }
+        }
+        
+        stage('Quality Gates') {
+            steps {
+                script {
+                    def todoCount = sh(
+                        script: 'grep -c "TODO" issues_raw.txt || echo 0',
+                        returnStdout: true
+                    ).trim().toInteger()
+                    
+                    if (todoCount > 50) {
+                        unstable("Too many TODOs: ${todoCount}")
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'docs/**, issues/**, *.md', 
+                             allowEmptyArchive: true
+            
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'docs',
+                reportFiles: '*.md',
+                reportName: 'Breakdown Reports'
+            ])
+        }
+    }
+}

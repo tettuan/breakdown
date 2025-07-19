@@ -540,12 +540,15 @@ fi
 # Create team profile configuration
 if [ ! -f ".agent/breakdown/config/team-app.yml" ]; then
   cat > .agent/breakdown/config/team-app.yml << 'EOF'
-# Breakdown Configuration for Team Profile
+# Team development configuration
 working_dir: ".agent/breakdown"
 app_prompt:
   base_dir: ".agent/breakdown/prompts"
+  template_prefix: "team_"
 app_schema:
   base_dir: ".agent/breakdown/schema"
+  validation_enabled: true
+  strict_mode: false
 params:
   two:
     directiveType:
@@ -555,8 +558,27 @@ params:
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
-team_mode: true
-collaboration_enabled: true
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  includeTimestamp: true
+  includeContext: true
+collaboration:
+  enableSharing: true
+  defaultVisibility: "team"
+  reviewRequired: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: true
+  includeMetadata: true
+  authorInfo: true
+features:
+  cliValidation: true
+  experimentalFeatures: true
+  teamFeatures: true
+  debugMode: true
 EOF
   echo "✅ Created team-app.yml"
 fi
@@ -699,6 +721,133 @@ EOF
   echo "✅ Created production-user.yml"
 fi
 
+# Create environment-specific profile configurations (dev, staging, prod)
+if [ ! -f ".agent/breakdown/config/dev-app.yml" ]; then
+  cat > .agent/breakdown/config/dev-app.yml << 'EOF'
+# Development environment configuration
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+logger:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+  colorize: true
+features:
+  experimentalFeatures: true
+  debugMode: true
+EOF
+  echo "✅ Created dev-app.yml"
+fi
+
+if [ ! -f ".agent/breakdown/config/dev-user.yml" ]; then
+  cat > .agent/breakdown/config/dev-user.yml << 'EOF'
+working_dir: ".agent/breakdown/examples"
+username: "dev-user"
+project_name: "dev-project"
+environment: "development"
+EOF
+  echo "✅ Created dev-user.yml"
+fi
+
+if [ ! -f ".agent/breakdown/config/staging-app.yml" ]; then
+  cat > .agent/breakdown/config/staging-app.yml << 'EOF'
+# Staging environment configuration
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+logger:
+  level: "info"
+  format: "json"
+  output: "stderr"
+performance:
+  maxFileSize: "5MB"
+  timeout: 20000
+features:
+  experimentalFeatures: false
+  debugMode: false
+EOF
+  echo "✅ Created staging-app.yml"
+fi
+
+if [ ! -f ".agent/breakdown/config/staging-user.yml" ]; then
+  cat > .agent/breakdown/config/staging-user.yml << 'EOF'
+working_dir: ".agent/breakdown/examples"
+username: "staging-user"
+project_name: "staging-project"
+environment: "staging"
+EOF
+  echo "✅ Created staging-user.yml"
+fi
+
+if [ ! -f ".agent/breakdown/config/prod-app.yml" ]; then
+  cat > .agent/breakdown/config/prod-app.yml << 'EOF'
+# Production environment configuration
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+logger:
+  level: "error"
+  format: "json"
+  output: "stderr"
+  includeStackTrace: false
+performance:
+  maxFileSize: "10MB"
+  timeout: 30000
+  concurrency: 8
+security:
+  sanitizeInput: true
+  auditLog: true
+features:
+  experimentalFeatures: false
+  debugMode: false
+EOF
+  echo "✅ Created prod-app.yml"
+fi
+
+if [ ! -f ".agent/breakdown/config/prod-user.yml" ]; then
+  cat > .agent/breakdown/config/prod-user.yml << 'EOF'
+working_dir: ".agent/breakdown/examples"
+username: "prod-user"
+project_name: "prod-project"
+environment: "production"
+EOF
+  echo "✅ Created prod-user.yml"
+fi
+
 echo "=== Post-initialization Template Validation ==="
 # Validate that all required templates exist
 MISSING_TEMPLATES=()
@@ -745,6 +894,9 @@ REQUIRED_CONFIGS=(
   ".agent/breakdown/config/team-app.yml"
   ".agent/breakdown/config/production-bugs-app.yml"
   ".agent/breakdown/config/production-custom-app.yml"
+  ".agent/breakdown/config/dev-app.yml"
+  ".agent/breakdown/config/staging-app.yml"
+  ".agent/breakdown/config/prod-app.yml"
 )
 
 for config in "${REQUIRED_CONFIGS[@]}"; do

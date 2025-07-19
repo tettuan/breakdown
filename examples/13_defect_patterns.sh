@@ -62,7 +62,7 @@ cat > "$OUTPUT_DIR/bug_report.md" << 'EOF'
 EOF
 
 echo "実行: breakdown defect issue < bug_report.md"
-$BREAKDOWN defect issue --config=default --from="$OUTPUT_DIR/bug_report.md" --input=task -o="$OUTPUT_DIR/defect_issue_analysis.md"
+$BREAKDOWN defect issue --config=default --from="$OUTPUT_DIR/bug_report.md" --input=issue -o="$OUTPUT_DIR/defect_issue_analysis.md"
 
 echo
 echo "=== Example 2: Defect Task Analysis ==="
