@@ -643,6 +643,51 @@ EOF
   echo "✅ Created production-custom-user.yml"
 fi
 
+# Create production profile configuration
+if [ ! -f ".agent/breakdown/config/production-app.yml" ]; then
+  cat > .agent/breakdown/config/production-app.yml << 'EOF'
+# Breakdown Configuration for Production Profile
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+production_mode: true
+logger:
+  level: "warn"
+  format: "json"
+  output: "stderr"
+  includeTimestamp: true
+performance:
+  maxFileSize: "10MB"
+  timeout: 30000
+  concurrency: 4
+  cacheEnabled: true
+output:
+  format: "markdown"
+  includeHeaders: true
+  includeFooters: false
+  maxLineLength: 120
+security:
+  sanitizeInput: true
+  allowedProtocols: ["https", "file"]
+  blockedPatterns: [".env", "secrets", "password"]
+features:
+  cliValidation: true
+  experimentalFeatures: false
+EOF
+  echo "✅ Created production-app.yml"
+fi
+
 # Create missing production-user.yml (to complete production profile)
 if [ ! -f ".agent/breakdown/config/production-user.yml" ]; then
   cat > .agent/breakdown/config/production-user.yml << 'EOF'
@@ -690,24 +735,16 @@ echo "=== Configuration Files Validation ==="
 # Validate that all required configuration files exist
 MISSING_CONFIGS=()
 
-# Check required configuration files based on script matrix
+# Check required configuration files based on script matrix (app files only - user files created by 03)
 REQUIRED_CONFIGS=(
   ".agent/breakdown/config/default-app.yml"
-  ".agent/breakdown/config/default-user.yml"
   ".agent/breakdown/config/stdin-app.yml"
-  ".agent/breakdown/config/stdin-user.yml"
   ".agent/breakdown/config/timeout-app.yml"
-  ".agent/breakdown/config/timeout-user.yml"
   ".agent/breakdown/config/basic-app.yml"
-  ".agent/breakdown/config/basic-user.yml"
   ".agent/breakdown/config/production-app.yml"
-  ".agent/breakdown/config/production-user.yml"
   ".agent/breakdown/config/team-app.yml"
-  ".agent/breakdown/config/team-user.yml"
   ".agent/breakdown/config/production-bugs-app.yml"
-  ".agent/breakdown/config/production-bugs-user.yml"
   ".agent/breakdown/config/production-custom-app.yml"
-  ".agent/breakdown/config/production-custom-user.yml"
 )
 
 for config in "${REQUIRED_CONFIGS[@]}"; do
@@ -717,9 +754,9 @@ for config in "${REQUIRED_CONFIGS[@]}"; do
 done
 
 if [ ${#MISSING_CONFIGS[@]} -eq 0 ]; then
-  echo "✅ All required configuration files are present"
+  echo "✅ All required app configuration files are present"
 else
-  echo "⚠️ Missing configuration files detected:"
+  echo "⚠️ Missing app configuration files detected:"
   for missing in "${MISSING_CONFIGS[@]}"; do
     echo "  - $missing"
   done

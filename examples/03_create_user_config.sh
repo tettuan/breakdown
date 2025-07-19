@@ -47,19 +47,11 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     error_exit "Config directory was not created successfully at ${CONFIG_DIR}"
 fi
 
-# Check if default-user.yml already exists
-if [ -f "${CONFIG_DIR}/default-user.yml" ]; then
-    echo "Warning: default-user.yml already exists at ${CONFIG_DIR}/default-user.yml"
-    echo "Current content:"
-    cat "${CONFIG_DIR}/default-user.yml"
-    echo
-    echo "Skipping creation to avoid overwriting"
-else
-    # Create user configuration
-    echo "Creating user configuration..."
-    
-    # Create default-user.yml with proper unified configuration structure
-    cat > "${CONFIG_DIR}/default-user.yml" << EOF
+# Create user configuration
+echo "Creating user configuration..."
+
+# Create default-user.yml with proper unified configuration structure
+cat > "${CONFIG_DIR}/default-user.yml" << EOF
 # User configuration for breakdown - following unified config interface
 directive_patterns: "to|summary|defect|find|analyze|extract"
 layer_patterns: "project|issue|task|component|module"
@@ -86,46 +78,76 @@ user:
     confirmActions: false
 EOF
 
-    # Validate file creation
-    if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
-        error_exit "Failed to create default-user.yml"
-    fi
-    
-    # Validate file content
-    if [ ! -s "${CONFIG_DIR}/default-user.yml" ]; then
-        error_exit "default-user.yml was created but is empty"
-    fi
+# Validate file creation
+if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
+    error_exit "Failed to create default-user.yml"
+fi
 
-    echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
+# Validate file content
+if [ ! -s "${CONFIG_DIR}/default-user.yml" ]; then
+    error_exit "default-user.yml was created but is empty"
+fi
+
+echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
+
+# Create user directories following UnifiedConfig structure
+USER_PROMPTS_DIR="./.agent/breakdown/prompts"
+USER_SCHEMA_DIR="./.agent/breakdown/schema"
+
+# Create prompt directory structure for DirectiveType x LayerType combinations
+mkdir -p "${USER_PROMPTS_DIR}/to/project" || error_exit "Failed to create to/project prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/to/issue" || error_exit "Failed to create to/issue prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/to/task" || error_exit "Failed to create to/task prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/summary/project" || error_exit "Failed to create summary/project prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/summary/issue" || error_exit "Failed to create summary/issue prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/defect/project" || error_exit "Failed to create defect/project prompts directory"
+mkdir -p "${USER_PROMPTS_DIR}/defect/issue" || error_exit "Failed to create defect/issue prompts directory"
+
+mkdir -p "${USER_SCHEMA_DIR}" || error_exit "Failed to create schema directory"
+
+# Validate directory creation
+if [ ! -d "${USER_PROMPTS_DIR}" ]; then
+    error_exit "Prompts directory was not created successfully"
+fi
+
+if [ ! -d "${USER_SCHEMA_DIR}" ]; then
+    error_exit "Schema directory was not created successfully"
+fi
     
-    # Create user directories following UnifiedConfig structure
-    USER_PROMPTS_DIR="./.agent/breakdown/prompts"
-    USER_SCHEMA_DIR="./.agent/breakdown/schema"
-    
-    # Create prompt directory structure for DirectiveType x LayerType combinations
-    mkdir -p "${USER_PROMPTS_DIR}/to/project" || error_exit "Failed to create to/project prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/to/issue" || error_exit "Failed to create to/issue prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/to/task" || error_exit "Failed to create to/task prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/summary/project" || error_exit "Failed to create summary/project prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/summary/issue" || error_exit "Failed to create summary/issue prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/defect/project" || error_exit "Failed to create defect/project prompts directory"
-    mkdir -p "${USER_PROMPTS_DIR}/defect/issue" || error_exit "Failed to create defect/issue prompts directory"
-    
-    mkdir -p "${USER_SCHEMA_DIR}" || error_exit "Failed to create schema directory"
-    
-    # Validate directory creation
-    if [ ! -d "${USER_PROMPTS_DIR}" ]; then
-        error_exit "Prompts directory was not created successfully"
-    fi
-    
-    if [ ! -d "${USER_SCHEMA_DIR}" ]; then
-        error_exit "Schema directory was not created successfully"
-    fi
-    
-    echo "✅ Created user directories following UnifiedConfig structure:"
-    echo "   - Prompts base: ${USER_PROMPTS_DIR}"
-    echo "   - Schemas: ${USER_SCHEMA_DIR}"
-    echo "   - Prompt templates organized by DirectiveType/LayerType combinations"
+echo "✅ Created user directories following UnifiedConfig structure:"
+echo "   - Prompts base: ${USER_PROMPTS_DIR}"
+echo "   - Schemas: ${USER_SCHEMA_DIR}"
+echo "   - Prompt templates organized by DirectiveType/LayerType combinations"
+
+echo "=== User Configuration Files Validation ==="
+# Validate that all required user configuration files exist
+MISSING_USER_CONFIGS=()
+
+# Check required user configuration files based on script matrix
+REQUIRED_USER_CONFIGS=(
+  ".agent/breakdown/config/default-user.yml"
+  ".agent/breakdown/config/stdin-user.yml"
+  ".agent/breakdown/config/timeout-user.yml"
+  ".agent/breakdown/config/basic-user.yml"
+  ".agent/breakdown/config/production-user.yml"
+  ".agent/breakdown/config/team-user.yml"
+  ".agent/breakdown/config/production-bugs-user.yml"
+  ".agent/breakdown/config/production-custom-user.yml"
+)
+
+for config in "${REQUIRED_USER_CONFIGS[@]}"; do
+  if [ ! -f "$config" ]; then
+    MISSING_USER_CONFIGS+=("$config")
+  fi
+done
+
+if [ ${#MISSING_USER_CONFIGS[@]} -eq 0 ]; then
+  echo "✅ All required user configuration files are present"
+else
+  echo "⚠️ Missing user configuration files detected:"
+  for missing in "${MISSING_USER_CONFIGS[@]}"; do
+    echo "  - $missing"
+  done
 fi
 
 echo "=== User Configuration Created Successfully ==="

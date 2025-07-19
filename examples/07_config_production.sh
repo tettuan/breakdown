@@ -35,13 +35,22 @@ cp ../lib/breakdown/prompts/production/defect/issue/f_issue.md prompts/productio
 
 # Create production configuration
 cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
-# Production application configuration
-working_dir: "."
+# Breakdown Configuration for Production Profile
+working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: "prompts/production"
+  base_dir: ".agent/breakdown/prompts"
 app_schema:
-  base_dir: "schema/production"
-  validation_enabled: true
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+production_mode: true
 logger:
   level: "warn"
   format: "json"
