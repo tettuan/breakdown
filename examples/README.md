@@ -296,3 +296,51 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 出力時にファイル名を指定しない場合：
 - `<yyyymmdd>_<random_hash>.md` 形式でファイル名が生成されます
 - 例：`20250211_e81d0bd.md` 
+
+## スクリプト実行マトリックス
+
+以下の表は、各exampleスクリプトで使用されるコマンド、設定ファイル、プロンプトテンプレートの詳細を示します。
+
+| スクリプト | コマンド | 設定ファイルPATH | 設定内容 | 想定のプロンプトPATH | プロンプトの存在 |
+|------------|----------|------------------|----------|---------------------|------------------|
+| 00_instructions.sh | - | - | - | - | - |
+| 00_template_check.sh | - | - | - | - | - |
+| 01_install.sh | - | - | - | - | - |
+| 02_init_deno_run.sh | init | `.agent/breakdown/config/default-app.yml` | 初期設定作成 | 全テンプレート | ✅ |
+| 03_create_user_config.sh | - | `.agent/breakdown/config/default-user.yml` | ユーザー設定作成 | - | - |
+| 04_stdin_example.sh | summary project | `.agent/breakdown/config/stdin.yml` | STDIN用設定 | `.agent/breakdown/prompts/summary/project/f_project.md` | ✅ |
+| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/breakdown/config/timeout.yml`<br/>`.agent/breakdown/config/default.yml` | タイムアウト設定<br/>デフォルト設定 | `.agent/breakdown/prompts/to/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 06_config_basic.sh | - | `.agent/breakdown/config/basic.yml` | 基本設定例 | - | - |
+| 07_config_production.sh | summary issue | `.agent/breakdown/config/production.yml` | 本番環境設定 | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
+| 08_config_team.sh | to task | `.agent/breakdown/config/team.yml` | チーム設定 | `.agent/breakdown/prompts/to/task/f_task.md` | ✅ |
+| 09_config_environments.sh | defect issue | `.agent/breakdown/config/{env}.yml` | 環境別設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
+| 10_config_production_example.sh | defect issue | `.agent/breakdown/config/production-bugs.yml` | 本番バグ検出設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
+| 11_config_production_custom.sh | - | `.agent/breakdown/config/production-custom.yml` | カスタム本番設定 | - | - |
+| 12_summary_issue.sh | summary issue | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
+| 13_defect_patterns.sh | defect issue<br/>defect task | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md` | ✅<br/>✅ |
+| 14_custom_variables.sh | to project<br/>summary task | デフォルト | カスタム変数使用 | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 15_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md`<br/>`.agent/breakdown/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
+| 16_batch_processing.sh | to project<br/>defect issue<br/>summary project | デフォルト | バッチ処理設定 | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 17_error_handling.sh | to project<br/>summary task | デフォルト | エラーハンドリング | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 18_cicd_integration.sh | summary project<br/>defect project | `.agent/breakdown/config/default.yml` | CI/CD統合設定 | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅ |
+| 19_clean.sh | - | - | クリーンアップ | - | - |
+
+### テンプレート依存関係
+
+現在、以下のプロンプトテンプレートが`02_init_deno_run.sh`により自動生成されます：
+
+**必須テンプレート（TwoParams対応）:**
+- `to/project/f_project.md` ✅
+- `to/issue/f_issue.md` ✅  
+- `to/task/f_task.md` ✅
+- `summary/project/f_project.md` ✅
+- `summary/issue/f_issue.md` ✅
+- `summary/task/f_task.md` ✅
+- `defect/project/f_project.md` ✅
+- `defect/issue/f_issue.md` ✅
+- `defect/task/f_task.md` ✅
+
+**設定ファイル（必要に応じて自動生成）:**
+- `default-app.yml` - アプリケーション基本設定
+- `default-user.yml` - ユーザー固有設定
+- 各example用カスタム設定ファイル 
