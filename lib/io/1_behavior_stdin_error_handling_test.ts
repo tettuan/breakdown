@@ -39,7 +39,7 @@ import { safeReadStdin } from "./enhanced_stdin.ts";
  */
 Deno.test({
   name: "IO Behavior: readStdinSafe returns Result with timeout error",
-  ignore: true, // TODO: Fix resource leak issue with stdin
+  ignore: true, // FIXME: Requires MockStdinProvider implementation to avoid resource leaks
   fn: async () => {
     const config = StdinReadingConfiguration.create(false, 100); // Very short timeout
     assertEquals(config.ok, true);
