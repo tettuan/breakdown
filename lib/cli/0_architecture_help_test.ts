@@ -15,7 +15,7 @@ import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
-  _VERSION,
+  VERSION,
   APP_NAME,
   HELP_TEXT,
   type HelpTextConfig,
@@ -31,11 +31,11 @@ describe("Architecture: Help Module Structure", () => {
     logger.debug("Testing module exports");
 
     // Required constant exports
-    assertExists(_VERSION, "_VERSION constant must be exported");
+    assertExists(VERSION, "VERSION constant must be exported");
     assertExists(APP_NAME, "APP_NAME constant must be exported");
     assertExists(HELP_TEXT, "HELP_TEXT constant must be exported");
 
-    assertEquals(typeof _VERSION, "string", "_VERSION must be a string");
+    assertEquals(typeof VERSION, "string", "VERSION must be a string");
     assertEquals(typeof APP_NAME, "string", "APP_NAME must be a string");
     assertEquals(typeof HELP_TEXT, "string", "HELP_TEXT must be a string");
 
@@ -121,12 +121,12 @@ describe("Architecture: Help Module Structure", () => {
 
     // Should depend on version module
     assertEquals(
-      typeof _VERSION,
+      typeof VERSION,
       "string",
       "Should import version from version module",
     );
     assertEquals(
-      _VERSION.length > 0,
+      VERSION.length > 0,
       true,
       "Version should be non-empty string",
     );
@@ -321,7 +321,7 @@ describe("Architecture: Output Strategy", () => {
 
       // Version output should include version and app name
       assertEquals(
-        versionOutput.some((line) => line.includes(_VERSION)),
+        versionOutput.some((line) => line.includes(VERSION)),
         true,
         "Version output should include version number",
       );

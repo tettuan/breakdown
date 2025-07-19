@@ -7,7 +7,7 @@
  * @module
  */
 
-import { _VERSION } from "../version.ts";
+import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
 import { Workspace } from "../workspace/workspace.ts";
 // CustomConfig type is now handled by BreakdownConfig package
@@ -199,7 +199,7 @@ Examples:
 export function displayVersion(): CommandResult {
   return {
     success: true,
-    output: `Breakdown v${_VERSION}`,
+    output: `Breakdown v${VERSION}`,
     error: "",
   };
 }

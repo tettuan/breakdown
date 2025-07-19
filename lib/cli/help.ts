@@ -2,9 +2,9 @@
  * Help text constants for Breakdown CLI
  */
 
-import { _VERSION } from "../version.ts";
+import { VERSION } from "../version.ts";
 
-export { _VERSION };
+export { VERSION };
 export const APP_NAME = "Breakdown - AI Development Instruction Tool";
 
 /**
@@ -75,7 +75,7 @@ export const HELP_TEXT = generateHelpText();
  * Display version information
  */
 export function showVersion(): void {
-  console.log(`Breakdown v${_VERSION}`);
+  console.log(`Breakdown v${VERSION}`);
   console.log(APP_NAME);
 }
 
