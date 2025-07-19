@@ -308,21 +308,21 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 | 01_install.sh | - | - | - | - | - |
 | 02_init_deno_run.sh | init | `.agent/breakdown/config/default-app.yml` | 初期設定作成 | 全テンプレート | ✅ |
 | 03_create_user_config.sh | - | `.agent/breakdown/config/default-user.yml` | ユーザー設定作成 | - | - |
-| 04_stdin_example.sh | summary project | `.agent/breakdown/config/stdin.yml` | STDIN用設定 | `.agent/breakdown/prompts/summary/project/f_project.md` | ✅ |
-| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/breakdown/config/timeout.yml`<br/>`.agent/breakdown/config/default.yml` | タイムアウト設定<br/>デフォルト設定 | `.agent/breakdown/prompts/to/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 06_config_basic.sh | - | `.agent/breakdown/config/basic.yml` | 基本設定例 | - | - |
-| 07_config_production.sh | summary issue | `.agent/breakdown/config/production.yml` | 本番環境設定 | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
-| 08_config_team.sh | to task | `.agent/breakdown/config/team.yml` | チーム設定 | `.agent/breakdown/prompts/to/task/f_task.md` | ✅ |
-| 09_config_environments.sh | defect issue | `.agent/breakdown/config/{env}.yml` | 環境別設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
-| 10_config_production_example.sh | defect issue | `.agent/breakdown/config/production-bugs.yml` | 本番バグ検出設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
-| 11_config_production_custom.sh | - | `.agent/breakdown/config/production-custom.yml` | カスタム本番設定 | - | - |
-| 12_summary_issue.sh | summary issue | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
-| 13_defect_patterns.sh | defect issue<br/>defect task | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md` | ✅<br/>✅ |
-| 14_custom_variables.sh | to project<br/>summary task | デフォルト | カスタム変数使用 | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 15_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/breakdown/config/default.yml` | デフォルト設定 | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md`<br/>`.agent/breakdown/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
-| 16_batch_processing.sh | to project<br/>defect issue<br/>summary project | デフォルト | バッチ処理設定 | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 17_error_handling.sh | to project<br/>summary task | デフォルト | エラーハンドリング | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 18_cicd_integration.sh | summary project<br/>defect project | `.agent/breakdown/config/default.yml` | CI/CD統合設定 | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅ |
+| 04_stdin_example.sh | summary project | `.agent/breakdown/config/stdin-app.yml`<br/>`.agent/breakdown/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/breakdown/prompts/summary/project/f_project.md` | ✅ |
+| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/breakdown/config/timeout-app.yml`<br/>`.agent/breakdown/config/timeout-user.yml`<br/>`.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | タイムアウト設定<br/>（プロファイル: timeout）<br/>デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 06_config_basic.sh | - | `.agent/breakdown/config/basic-app.yml`<br/>`.agent/breakdown/config/basic-user.yml` | 基本設定例<br/>（プロファイル: basic） | - | - |
+| 07_config_production.sh | summary issue | `.agent/breakdown/config/production-app.yml`<br/>`.agent/breakdown/config/production-user.yml` | 本番環境設定<br/>（プロファイル: production） | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
+| 08_config_team.sh | to task | `.agent/breakdown/config/team-app.yml`<br/>`.agent/breakdown/config/team-user.yml` | チーム設定<br/>（プロファイル: team） | `.agent/breakdown/prompts/to/task/f_task.md` | ✅ |
+| 09_config_environments.sh | defect issue | `.agent/breakdown/config/{env}-app.yml`<br/>`.agent/breakdown/config/{env}-user.yml` | 環境別設定<br/>（プロファイル: {env}） | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
+| 10_config_production_example.sh | defect issue | `.agent/breakdown/config/production-bugs-app.yml`<br/>`.agent/breakdown/config/production-bugs-user.yml` | 本番バグ検出設定<br/>（プロファイル: production-bugs） | `.agent/breakdown/prompts/defect/issue/f_issue.md` | ✅ |
+| 11_config_production_custom.sh | - | `.agent/breakdown/config/production-custom-app.yml`<br/>`.agent/breakdown/config/production-custom-user.yml` | カスタム本番設定<br/>（プロファイル: production-custom） | - | - |
+| 12_summary_issue.sh | summary issue | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/summary/issue/f_issue.md` | ✅ |
+| 13_defect_patterns.sh | defect issue<br/>defect task | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md` | ✅<br/>✅ |
+| 14_custom_variables.sh | to project<br/>summary task | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 15_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md`<br/>`.agent/breakdown/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
+| 16_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 17_error_handling.sh | to project<br/>summary task | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 18_cicd_integration.sh | summary project<br/>defect project | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅ |
 | 19_clean.sh | - | - | クリーンアップ | - | - |
 
 ### テンプレート依存関係
@@ -340,7 +340,28 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `defect/issue/f_issue.md` ✅
 - `defect/task/f_task.md` ✅
 
-**設定ファイル（必要に応じて自動生成）:**
-- `default-app.yml` - アプリケーション基本設定
-- `default-user.yml` - ユーザー固有設定
-- 各example用カスタム設定ファイル 
+**設定ファイル（プロファイルベース設定システム）:**
+
+Breakdownは**プロファイルベース**の設定システムを採用しており、各プロファイルには以下の2つのファイルが必要です：
+
+- `{profile}-app.yml` - アプリケーション設定（プロンプトディレクトリ、出力設定等）
+- `{profile}-user.yml` - ユーザー設定（作業ディレクトリ、ユーザー固有設定等）
+
+**現在必要なプロファイル:**
+- `default` - ✅ 存在（default-app.yml, default-user.yml）
+- `stdin` - ❌ 不足（stdin-app.yml, stdin-user.yml）
+- `timeout` - ❌ 不足（timeout-app.yml, timeout-user.yml）
+- `basic` - ❌ 不足（basic-app.yml, basic-user.yml）
+- `production` - ⚠️ 部分的（production-app.yml ✅, production-user.yml ❌）
+- `team` - ❌ 不足（team-app.yml, team-user.yml）
+- `production-bugs` - ❌ 不足（production-bugs-app.yml, production-bugs-user.yml）
+- `production-custom` - ❌ 不足（production-custom-app.yml, production-custom-user.yml）
+
+**プロファイル使用例:**
+```bash
+# defaultプロファイルを使用（ファイル: default-app.yml + default-user.yml）
+breakdown summary issue --config=default
+
+# stdinプロファイルを使用（ファイル: stdin-app.yml + stdin-user.yml）
+breakdown summary project --config=stdin
+``` 

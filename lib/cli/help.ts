@@ -24,11 +24,11 @@ const DEFAULT_HELP_CONFIG: HelpTextConfig = {
     { name: "init", description: "Initialize breakdown configuration" },
     {
       name: "to <layer> [from_layer] [adaptation]",
-      description: "Process directive with layer parameters",
+      description: "Process directive with layer parameters using config files",
     },
   ],
   options: [
-    { flags: "--config/-c <prefix>", description: "Use custom config prefix" },
+    { flags: "--config/-c <prefix>", description: "Use custom config prefix (loads <prefix>-app.yml, <prefix>-user.yml)" },
     { flags: "--help/-h", description: "Show this help message" },
     { flags: "--version/-v", description: "Show version information" },
   ],

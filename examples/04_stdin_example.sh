@@ -71,51 +71,23 @@ if [ ! -f "prompts/summary/project/f_project.md" ]; then
     fi
 fi
 
-# Create a basic configuration file for STDIN example following UnifiedConfig
-if ! cat > "${CONFIG_DIR}/stdin-app.yml" << 'EOF'
-# Application configuration for STDIN example - following unified config interface
-app_prompt:
-  base_dir: ".agent/breakdown/prompts"
-
-app_schema:
-  base_dir: ".agent/breakdown/schema"
-
-output:
-  base_dir: "output"
-
-features:
-  extendedThinking: false
-  debugMode: false
-  strictValidation: false
-  autoSchema: false
-
-environment:
-  logLevel: "error"
-  colorOutput: false
-  timezone: "UTC"
-  locale: "en-US"
-EOF
-then
-    echo "Error: Failed to create configuration file"
+# Check if stdin configuration files exist, if not create them
+if [ ! -f "${CONFIG_DIR}/stdin-app.yml" ] || [ ! -f "${CONFIG_DIR}/stdin-user.yml" ]; then
+    echo "Error: STDIN configuration files not found."
+    echo "Please run './02_init_deno_run.sh' first to create all required configuration files."
     exit 1
 fi
 
-echo "Created configuration: ${CONFIG_DIR}/stdin-app.yml"
+echo "Using existing configuration: ${CONFIG_DIR}/stdin-app.yml"
 
 # Ensure we have a way to run breakdown
-# Force using source code directly due to compiled version issues
-# Run from project root to find config files
+# Use absolute path to avoid config file resolution issues
 run_breakdown() {
     local exit_code
-    if cd ..; then
-        deno run -A cli/breakdown.ts "$@"
-        exit_code=$?
-        cd - > /dev/null || true
-        return $exit_code
-    else
-        echo "Error: Failed to change to parent directory"
-        return 1
-    fi
+    # Run breakdown from current directory to preserve config file paths
+    deno run -A ../cli/breakdown.ts "$@"
+    exit_code=$?
+    return $exit_code
 }
 
 # Create a sample input for demonstration
