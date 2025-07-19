@@ -1,4 +1,4 @@
-# Team Beta Configuration  
+# Team Beta Configuration
 app_name: "breakdown"
 version: "1.0.0"
 profile: "team_beta"
@@ -12,7 +12,7 @@ team:
     - "Carlos Martinez (Security Engineer)"
     - "Jennifer Lee (Platform Engineer)"
     - "Robert Chen (Site Reliability Engineer)"
-  
+
   methodology: "Kanban"
   focus: "Infrastructure & Platform"
   timezone: "EST"
@@ -21,7 +21,7 @@ team:
 prompts:
   default_template_dir: "prompts"
   default_schema_dir: "schema"
-  
+
   custom_variables:
     - name: "team_name"
       default: "Beta Infrastructure Team"
@@ -41,13 +41,13 @@ output:
   default_format: "markdown"
   timestamp: true
   include_metadata: true
-  
+
   custom_headers:
     - "# ${team_name} - ${project_name}"
     - "**Team Lead**: ${team_lead}"
     - "**Environment**: ${environment}"
     - "**SLA Target**: ${sla_target}"
-  
+
   footer_template: |
     ---
     **Escalation**: Contact ${team_lead} for P1/P0 incidents
@@ -64,14 +64,14 @@ workflows:
       auto_escalation: true
       post_mortem_required: true
       sla_tracking: true
-  
+
   capacity_planning:
     enabled: true
     config:
       monitoring_required: true
       scaling_thresholds: true
       cost_analysis: true
-  
+
   security_review:
     enabled: true
     config:
@@ -84,11 +84,11 @@ monitoring:
   prometheus:
     enabled: true
     scrape_interval: "30s"
-  
+
   grafana:
     enabled: true
     dashboard_url: "https://grafana.company.com/team-beta"
-  
+
   pagerduty:
     enabled: true
     service_key: "beta-infrastructure"
@@ -100,12 +100,12 @@ integrations:
     enabled: true
     region: "us-west-2"
     account_id: "123456789"
-  
+
   kubernetes:
     enabled: true
     cluster: "prod-cluster"
     namespace: "beta-services"
-  
+
   terraform:
     enabled: true
     workspace: "production"
@@ -116,7 +116,7 @@ compliance:
   standards: ["SOC2", "PCI-DSS", "GDPR"]
   audit_logging: true
   access_review: "quarterly"
-  
+
 security:
   vulnerability_scanning: true
   secret_scanning: true

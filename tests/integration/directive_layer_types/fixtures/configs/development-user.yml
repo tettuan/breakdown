@@ -7,7 +7,7 @@ custom_variables:
   version: "dev-${timestamp}"
   organization: "Breakdown Development"
   environment: "development"
-  
+
 aliases:
   proj: "project"
   iss: "issue"
@@ -16,12 +16,12 @@ aliases:
   mod: "module"
   fn: "function"
   dbg: "debug"
-  
+
 templates:
   dev_prompt: "DEV MODE: Process the following content:\n\n${input}\n\nOutput to: ${output}\n\nDebug info: ${debug_info}"
   error_template: "DEV ERROR: ${error}\nStack: ${stack}\nSuggestion: ${suggestion}"
   debug_template: "DEBUG: ${message}\nContext: ${context}"
-  
+
 user:
   name: "Dev User"
   email: "dev@example.com"

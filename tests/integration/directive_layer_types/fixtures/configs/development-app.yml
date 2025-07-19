@@ -1,30 +1,30 @@
 # Development configuration for integration tests
 app_prompt:
   base_dir: ".agent/breakdown/prompts"
-  
+
 app_schema:
   base_dir: ".agent/breakdown/schema"
-  
+
 output:
   base_dir: "dev_output"
-  
+
 features:
   extendedThinking: true
   debugMode: true
   strictValidation: false
   autoSchema: true
-  
+
 limits:
-  maxFileSize: 52428800  # 50MB (larger for dev)
+  maxFileSize: 52428800 # 50MB (larger for dev)
   maxPromptLength: 100000
   maxVariables: 200
-  
+
 environment:
   logLevel: "debug"
   colorOutput: true
   timezone: "UTC"
   locale: "en-US"
-  
+
 dev:
   enableExperimentalFeatures: true
   mockExternalServices: true

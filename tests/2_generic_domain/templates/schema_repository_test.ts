@@ -88,9 +88,7 @@ class TestSchemaRepository implements SchemaRepository {
     let filteredSchemas = this.manifest.schemas;
 
     if (options?.directive) {
-      filteredSchemas = filteredSchemas.filter((s) =>
-        s.directive === options.directive!.value
-      );
+      filteredSchemas = filteredSchemas.filter((s) => s.directive === options.directive!.value);
     }
 
     if (options?.layer) {

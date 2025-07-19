@@ -71,10 +71,12 @@ function createTotalityParams(
   const baseParams = createTestParams(directive, layer, options);
   const directiveResult = DirectiveType.create(directive);
   const layerResult = LayerType.create(layer);
-  
-  if (!directiveResult.ok) throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+
+  if (!directiveResult.ok) {
+    throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
+  }
   if (!layerResult.ok) throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
-  
+
   return {
     ...baseParams,
     directive: directiveResult.data,

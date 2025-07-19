@@ -1,25 +1,25 @@
 /**
- * PromptAdapter (Adapter Pattern)
+ * PromptAdapter (Adapter Pattern) - Refactored for DDD
+ *
+ * This module now provides both the original implementation (for backward compatibility)
+ * and a new domain-driven implementation with clear boundaries.
  *
  * Responsibilities:
- * - Receives resolved values (paths, parameters) from PromptTemplatePathResolver or similar resolvers
- * - Delegates validation of these values to PromptAdapterValidator
- * - Handles error processing if validation fails (returns error result as value)
- * - On successful validation, passes values to PromptManager for prompt generation
- * - Acts as an Adapter to bridge path/parameter resolution and prompt processing logic
- *
- * This design ensures clear separation of concerns:
- * - Path/parameter resolution is handled by resolvers (e.g., PromptTemplatePathResolver)
- * - Validation logic is centralized in PromptAdapterValidator
- * - PromptManager is only responsible for template processing
- * - Adapter coordinates the flow and error handling between these components
+ * - Bridge between legacy PromptVariablesProvider and new domain services
+ * - Maintain backward compatibility while enabling migration to DDD patterns
+ * - Delegate actual prompt generation to domain services
  */
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
 import { basename } from "@std/path/basename";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
 import { Result } from "../types/result.ts";
+import {
+  convertLegacyProvider,
+  DomainPromptAdapter,
+  type LegacyPromptVariablesProvider,
+} from "./domain_prompt_adapter.ts";
+import type { PromptError } from "../types/prompt_types.ts";
 
 /**
  * Interface for providing prompt variables and configuration.
@@ -54,10 +54,11 @@ export interface PromptVariablesProvider {
 
 /**
  * Implementation of the PromptAdapter pattern for Breakdown.
- * Receives a PromptVariablesProvider and provides prompt validation and generation APIs.
+ * Now delegates to DomainPromptAdapter for improved separation of concerns.
  */
 export class PromptAdapterImpl {
   private readonly factory: PromptVariablesProvider;
+  private readonly domainAdapter: DomainPromptAdapter;
 
   /**
    * Creates a new PromptAdapterImpl instance.
@@ -65,6 +66,7 @@ export class PromptAdapterImpl {
    */
   constructor(factory: PromptVariablesProvider) {
     this.factory = factory;
+    this.domainAdapter = new DomainPromptAdapter();
   }
 
   /**
@@ -72,22 +74,36 @@ export class PromptAdapterImpl {
    * @returns { success, errors }
    */
   async validatePaths(): Promise<{ success: boolean; errors: string[] }> {
-    const { promptFilePath, inputFilePath } = this.factory.getAllParams();
-    const _validator = new PromptAdapterValidator();
-    const errors: string[] = [];
-    // Validate prompt file
-    const promptResult = await _validator.validateFile(promptFilePath, "Prompt file");
-    if (!promptResult.ok) {
-      errors.push(`[${promptResult.error}] ${promptResult.message}`);
+    const { context, validationContext } = convertLegacyProvider(
+      this.factory as LegacyPromptVariablesProvider,
+    );
+
+    const result = await this.domainAdapter.validatePaths(context, validationContext);
+    if (result.ok) {
+      return { success: true, errors: [] };
     }
-    // Validate input file (if set and not stdin)
-    if (inputFilePath && inputFilePath !== "-") {
-      const inputResult = await _validator.validateFile(inputFilePath, "Input file");
-      if (!inputResult.ok) {
-        errors.push(`[${inputResult.error}] ${inputResult.message}`);
-      }
+
+    // Convert PromptError to legacy error format
+    const errorMessage = this.formatPromptError(result.error);
+    return { success: false, errors: [errorMessage] };
+  }
+
+  /**
+   * Format PromptError to legacy error message format
+   */
+  private formatPromptError(error: PromptError): string {
+    switch (error.kind) {
+      case "TemplateNotFound":
+        return `[TemplateNotFound] Template not found: ${error.path}`;
+      case "InvalidPath":
+        return `[InvalidPath] ${error.message}`;
+      case "ConfigurationError":
+        return `[ConfigurationError] ${error.message}`;
+      case "InvalidVariables":
+        return `[InvalidVariables] ${error.details.join(", ")}`;
+      default:
+        return `[${error.kind}] ${JSON.stringify(error)}`;
     }
-    return { success: errors.length === 0, errors };
   }
 
   /**
@@ -132,50 +148,21 @@ export class PromptAdapterImpl {
   }
 
   /**
-   * Reads files and generates the prompt using PromptManager.
+   * Reads files and generates the prompt using domain service.
    * Assumes validation has already passed.
    * @returns { success, content }
    */
   async generatePrompt(): Promise<{ success: boolean; content: string }> {
-    const { promptFilePath, inputFilePath } = this.factory.getAllParams();
-    // Read the template file content
-    let template = "";
-    try {
-      template = await Deno.readTextFile(promptFilePath);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      return { success: false, content: `[ReadError] Failed to read template: ${msg}` };
-    }
-    // Get input text from stdin or file
-    let inputText = "";
-    if (template.includes("{input_text}")) {
-      // First try to get input_text from options (stdin)
-      const options = this.factory.getOptions();
-      if (options?.input_text) {
-        inputText = options.input_text;
-      } else if (inputFilePath) {
-        // Fall back to reading from file
-        try {
-          inputText = await Deno.readTextFile(inputFilePath);
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          return { success: false, content: `[ReadError] Failed to read input file: ${msg}` };
-        }
-      }
-    }
-    // Build variables using separated method
-    const variables = this.buildVariables(inputText);
+    const { context } = convertLegacyProvider(this.factory as LegacyPromptVariablesProvider);
 
-    const prompt = new PromptManager();
-    const genResult = await prompt.generatePrompt(template, variables);
-    if (genResult && typeof genResult === "object" && "success" in genResult) {
-      if (genResult.success) {
-        return { success: true, content: genResult.prompt ?? "" };
-      } else {
-        return { success: false, content: genResult.error ?? "" };
-      }
+    const result = await this.domainAdapter.generatePrompt(context);
+    if (result.ok) {
+      return { success: true, content: result.data.content };
     }
-    return { success: true, content: String(genResult) };
+
+    // Convert PromptError to legacy error format
+    const errorMessage = this.formatPromptError(result.error);
+    return { success: false, content: errorMessage };
   }
 
   /**
@@ -183,21 +170,18 @@ export class PromptAdapterImpl {
    * @returns { success, content }
    */
   async validateAndGenerate(): Promise<{ success: boolean; content: string }> {
-    if (!this.factory.hasValidBaseDir()) {
-      const baseDirResult = this.factory.getBaseDirError();
-      return {
-        success: false,
-        content: baseDirResult.ok ? "Prompt base_dir must be set" : baseDirResult.error,
-      };
+    const { context, validationContext } = convertLegacyProvider(
+      this.factory as LegacyPromptVariablesProvider,
+    );
+
+    const result = await this.domainAdapter.validateAndGenerate(context, validationContext);
+    if (result.ok) {
+      return { success: true, content: result.data.content };
     }
-    const validation = await this.validatePaths();
-    if (!validation.success) {
-      return {
-        success: false,
-        content: validation.errors.reduce((acc, err, i) => acc + (i > 0 ? "\n" : "") + err, ""),
-      };
-    }
-    return await this.generatePrompt();
+
+    // Convert PromptError to legacy error format
+    const errorMessage = this.formatPromptError(result.error);
+    return { success: false, content: errorMessage };
   }
 
   /**

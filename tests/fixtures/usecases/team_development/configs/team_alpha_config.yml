@@ -12,7 +12,7 @@ team:
     - "Emily Davis (Backend Lead)"
     - "Mike Chen (UI/UX Designer)"
     - "David Kim (QA Engineer)"
-  
+
   methodology: "Agile Scrum"
   sprint_duration: "2 weeks"
   timezone: "PST"
@@ -21,7 +21,7 @@ team:
 prompts:
   default_template_dir: "prompts"
   default_schema_dir: "schema"
-  
+
   custom_variables:
     - name: "team_name"
       default: "Alpha Development Team"
@@ -41,13 +41,13 @@ output:
   default_format: "markdown"
   timestamp: true
   include_metadata: true
-  
+
   custom_headers:
     - "# ${team_name} - ${project_name}"
     - "**Sprint**: ${sprint_number}"
     - "**Team Lead**: ${team_lead}"
     - "**Environment**: ${environment}"
-  
+
   footer_template: |
     ---
     **Next Steps**: Review with ${team_lead}
@@ -63,7 +63,7 @@ workflows:
       include_team_assignments: true
       include_timeline: true
       require_stakeholder_approval: true
-  
+
   code_review:
     enabled: true
     config:
@@ -77,7 +77,7 @@ notifications:
     enabled: true
     channel: "#team-alpha-dev"
     webhook: "https://hooks.slack.com/services/team-alpha"
-  
+
   email:
     enabled: true
     recipients:
@@ -91,12 +91,12 @@ integrations:
     enabled: true
     project_key: "ALPHA"
     server_url: "https://company.atlassian.net"
-  
+
   github:
     enabled: true
     repository: "company/dashboard-enhancement"
     branch_prefix: "feature/alpha-"
-  
+
   confluence:
     enabled: true
     space_key: "ALPHA"

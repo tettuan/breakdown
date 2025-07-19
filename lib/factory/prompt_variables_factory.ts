@@ -462,11 +462,10 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * Create LayerType from string safely using TwoParams_Result
+   * Create LayerType from string safely
    */
   private createLayerFromString(value: string): LayerType {
-    const twoParamsResult = createTwoParamsResult("to", value);
-    const result = LayerType.create(twoParamsResult);
+    const result = LayerType.create(value);
     if (result.ok) {
       return result.data;
     }

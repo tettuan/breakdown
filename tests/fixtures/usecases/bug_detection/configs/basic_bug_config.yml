@@ -6,7 +6,7 @@ bug_detection:
     - high
     - medium
     - low
-  
+
   rules:
     javascript:
       - no_var_declarations
@@ -14,13 +14,13 @@ bug_detection:
       - no_unused_variables
       - prefer_strict_equality
       - require_error_handling
-    
+
     typescript:
       - no_any_type
       - require_type_annotations
       - no_unsafe_assignments
       - prefer_immutability
-    
+
     general:
       - no_hardcoded_values
       - require_input_validation

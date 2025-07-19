@@ -7,23 +7,23 @@ interface User {
 
 class UserManager {
   private users: User[] = [];
-  
+
   // Bug: method doesn't handle null/undefined properly
   addUser(user: User): void {
-    this.users.push(user);  // Bug: no validation for duplicate IDs
+    this.users.push(user); // Bug: no validation for duplicate IDs
   }
-  
+
   // Bug: potential memory leak with async operations
   async fetchUserData(id: number): Promise<User | null> {
     const response = await fetch(`/api/users/${id}`);
     // Bug: no error handling for failed requests
     const userData = await response.json();
-    return userData;  // Bug: no type validation
+    return userData; // Bug: no type validation
   }
-  
+
   // Bug: race condition potential
   updateUser(id: number, updates: Partial<User>): User | undefined {
-    const userIndex = this.users.findIndex(u => u.id === id);
+    const userIndex = this.users.findIndex((u) => u.id === id);
     if (userIndex >= 0) {
       // Bug: direct mutation without immutability
       Object.assign(this.users[userIndex], updates);
@@ -31,10 +31,10 @@ class UserManager {
     }
     return undefined;
   }
-  
+
   // Bug: O(n) complexity when it could be O(1)
   getUserById(id: number): User | undefined {
-    return this.users.find(user => user.id === id);
+    return this.users.find((user) => user.id === id);
   }
 }
 
@@ -50,15 +50,15 @@ class CustomError extends Error {
 async function processUsers(userIds: number[]) {
   const results = [];
   for (const id of userIds) {
-    const user = await new UserManager().fetchUserData(id);  // Bug: creating new instance in loop
+    const user = await new UserManager().fetchUserData(id); // Bug: creating new instance in loop
     results.push(user);
   }
-  return results;  // Bug: no type annotation
+  return results; // Bug: no type annotation
 }
 
 // Bug: any type usage
-function processData(data: any): any {
+function processData(data: { someProperty?: { value: string } }): string {
   return data.someProperty?.value || "default";
 }
 
-export { UserManager, CustomError, processUsers, processData };
+export { CustomError, processData, processUsers, UserManager };

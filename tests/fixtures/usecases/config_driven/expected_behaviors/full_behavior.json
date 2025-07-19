@@ -3,7 +3,7 @@
   "expected_behavior": {
     "prompts": {
       "template_dir": "prompts",
-      "schema_dir": "schema", 
+      "schema_dir": "schema",
       "custom_variables_count": 3,
       "variable_substitution": "advanced",
       "custom_delimiters": ["${", "}"],
@@ -60,8 +60,14 @@
   },
   "validation_criteria": {
     "required_fields": [
-      "app_name", "version", "prompts", "output", "processing",
-      "error_handling", "logging", "workflows"
+      "app_name",
+      "version",
+      "prompts",
+      "output",
+      "processing",
+      "error_handling",
+      "logging",
+      "workflows"
     ],
     "optional_fields": ["profile"],
     "performance": {

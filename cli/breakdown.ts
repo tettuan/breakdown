@@ -46,7 +46,6 @@ type BreakdownError =
   | { kind: "ZeroParamsHandlerError"; cause: unknown }
   | { kind: "UnknownResultType"; type: string };
 
-
 /**
  * Main entry point for the Breakdown prompt generation tool.
  *
@@ -107,129 +106,132 @@ export async function runBreakdown(
   args: string[] = Deno.args,
 ): Promise<Result<void, BreakdownError>> {
   // 1. Extract and create config profile name with Result pattern matching
-    const detectedPrefix = ConfigPrefixDetector.detect(args);
-    const configProfileNameResult = ConfigProfileName.createOrError(
-      detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
-    );
+  const detectedPrefix = ConfigPrefixDetector.detect(args);
+  const configProfileNameResult = ConfigProfileName.createOrError(
+    detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
+  );
 
-    if (!configProfileNameResult.ok) {
-      const validationError = configProfileNameResult.error;
-      let errorMessage = "Invalid config profile name";
-      
-      if (validationError.kind === "InvalidInput") {
-        errorMessage = validationError.reason;
-      } else if (validationError.kind === "EmptyValue") {
-        errorMessage = `Empty value for field: ${validationError.field}`;
+  if (!configProfileNameResult.ok) {
+    const validationError = configProfileNameResult.error;
+    let errorMessage = "Invalid config profile name";
+
+    if (validationError.kind === "InvalidInput") {
+      errorMessage = validationError.reason;
+    } else if (validationError.kind === "EmptyValue") {
+      errorMessage = `Empty value for field: ${validationError.field}`;
+    }
+
+    return {
+      ok: false,
+      error: {
+        kind: "ConfigProfileError",
+        message: errorMessage,
+        cause: validationError,
+      },
+    };
+  }
+
+  const configProfileName = configProfileNameResult.data;
+
+  // 2. Initialize BreakdownConfig with profile name (with error handling)
+  let config: Record<string, unknown> = {};
+  const breakdownConfigResult = await ConfigLoader.loadBreakdownConfig(
+    configProfileName.value,
+    Deno.cwd(),
+  );
+  if (!breakdownConfigResult.ok) {
+    const error = breakdownConfigResult.error;
+    let errorMessage: string;
+
+    if (error && typeof error === "object" && "kind" in error) {
+      const errorObj = error as { kind: string; reason?: string; message?: string };
+      if (errorObj.kind === "InvalidPath" && "reason" in errorObj) {
+        errorMessage = (errorObj as { reason: string }).reason;
+      } else if ("message" in errorObj) {
+        errorMessage = (errorObj as { message: string }).message;
+      } else {
+        errorMessage = errorObj.kind;
       }
-      
+    } else {
+      errorMessage = "Unknown configuration error";
+    }
+
+    console.warn(
+      "⚠️ Configuration not found, using defaults:",
+      errorMessage,
+      configProfileName.value ? `profile: ${configProfileName.value}` : "no profile",
+    );
+    // Use empty configuration - ParamsCustomConfig will handle defaults appropriately
+    config = {};
+  } else {
+    config = breakdownConfigResult.data;
+  }
+
+  // 3. Pass BreakdownConfig settings to BreakdownParams using ParamsCustomConfig
+  // Fix the config structure - wrap in 'breakdown' key as expected by ParamsCustomConfig
+  const wrappedConfig = { breakdown: config };
+  const paramsConfigResult = ParamsCustomConfig.create(wrappedConfig);
+
+  let customConfig;
+  if (paramsConfigResult.status === ResultStatus.SUCCESS) {
+    customConfig = paramsConfigResult.data; // undefined if no breakdown config, or CustomConfig if present
+  } else {
+    console.warn("⚠️ Configuration extraction failed:", paramsConfigResult.error?.message);
+    customConfig = undefined; // Fall back to BreakdownParams defaults
+  }
+
+  const paramsParser = new ParamsParser(undefined, customConfig);
+
+  const result = paramsParser.parse(args);
+
+  // 4. Determine zero/one/two params and branch
+  switch (result.type) {
+    case "two": {
+      const handlerResult = await handleTwoParams(result.params, config, result.options);
+      if (!handlerResult.ok) {
+        // Use centralized error handler
+        if (!handleTwoParamsError(handlerResult.error, config)) {
+          return {
+            ok: false,
+            error: {
+              kind: "TwoParamsHandlerError",
+              cause: handlerResult.error,
+            },
+          };
+        }
+        // Error was handled gracefully as warning
+      }
+      return { ok: true, data: undefined };
+    }
+    case "one": {
+      await handleOneParams(result.params, config, result.options);
+      return { ok: true, data: undefined };
+    }
+    case "zero": {
+      // Pass original args for backward compatibility
+      await handleZeroParams(args, config, result.options);
+      return { ok: true, data: undefined };
+    }
+    case "error": {
       return {
         ok: false,
         error: {
-          kind: "ConfigProfileError",
-          message: errorMessage,
-          cause: validationError,
+          kind: "ParameterParsingError",
+          message: result.error?.message || "Unknown error",
         },
       };
     }
-
-    const configProfileName = configProfileNameResult.data;
-
-    // 2. Initialize BreakdownConfig with profile name (with error handling)
-    let config: Record<string, unknown> = {};
-    const breakdownConfigResult = await ConfigLoader.loadBreakdownConfig(configProfileName.value, Deno.cwd());
-    if (!breakdownConfigResult.ok) {
-      const error = breakdownConfigResult.error;
-      let errorMessage: string;
-      
-      if (error && typeof error === "object" && "kind" in error) {
-        const errorObj = error as { kind: string; reason?: string; message?: string };
-        if (errorObj.kind === "InvalidPath" && "reason" in errorObj) {
-          errorMessage = (errorObj as { reason: string }).reason;
-        } else if ("message" in errorObj) {
-          errorMessage = (errorObj as { message: string }).message;
-        } else {
-          errorMessage = errorObj.kind;
-        }
-      } else {
-        errorMessage = "Unknown configuration error";
-      }
-      
-      console.warn(
-        "⚠️ Configuration not found, using defaults:",
-        errorMessage,
-        configProfileName.value ? `profile: ${configProfileName.value}` : "no profile",
-      );
-      // Use empty configuration - ParamsCustomConfig will handle defaults appropriately
-      config = {};
-    } else {
-      config = breakdownConfigResult.data;
+    default: {
+      // TypeScript exhaustive check - this should never be reached
+      return {
+        ok: false,
+        error: {
+          kind: "UnknownResultType",
+          type: "type" in result ? String(result.type) : "unknown",
+        },
+      };
     }
-
-    // 3. Pass BreakdownConfig settings to BreakdownParams using ParamsCustomConfig
-    // Fix the config structure - wrap in 'breakdown' key as expected by ParamsCustomConfig
-    const wrappedConfig = { breakdown: config };
-    const paramsConfigResult = ParamsCustomConfig.create(wrappedConfig);
-
-    let customConfig;
-    if (paramsConfigResult.status === ResultStatus.SUCCESS) {
-      customConfig = paramsConfigResult.data; // undefined if no breakdown config, or CustomConfig if present
-    } else {
-      console.warn("⚠️ Configuration extraction failed:", paramsConfigResult.error?.message);
-      customConfig = undefined; // Fall back to BreakdownParams defaults
-    }
-
-    const paramsParser = new ParamsParser(undefined, customConfig);
-
-    const result = paramsParser.parse(args);
-
-    // 4. Determine zero/one/two params and branch
-    switch (result.type) {
-      case "two": {
-        const handlerResult = await handleTwoParams(result.params, config, result.options);
-        if (!handlerResult.ok) {
-          // Use centralized error handler
-          if (!handleTwoParamsError(handlerResult.error, config)) {
-            return {
-              ok: false,
-              error: {
-                kind: "TwoParamsHandlerError",
-                cause: handlerResult.error,
-              },
-            };
-          }
-          // Error was handled gracefully as warning
-        }
-        return { ok: true, data: undefined };
-      }
-      case "one": {
-        await handleOneParams(result.params, config, result.options);
-        return { ok: true, data: undefined };
-      }
-      case "zero": {
-        // Pass original args for backward compatibility
-        await handleZeroParams(args, config, result.options);
-        return { ok: true, data: undefined };
-      }
-      case "error": {
-        return {
-          ok: false,
-          error: {
-            kind: "ParameterParsingError",
-            message: result.error?.message || "Unknown error",
-          },
-        };
-      }
-      default: {
-        // TypeScript exhaustive check - this should never be reached
-        return {
-          ok: false,
-          error: {
-            kind: "UnknownResultType",
-            type: "type" in result ? String(result.type) : "unknown",
-          },
-        };
-      }
-    }
+  }
 }
 
 // Enhanced Entry Point Pattern using Entry Point Manager

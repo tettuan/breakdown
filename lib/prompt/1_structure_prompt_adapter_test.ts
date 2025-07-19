@@ -224,11 +224,11 @@ describe("PromptAdapter Structure - Error Handling Structure", () => {
     const hasErrorStructure = fileContent.includes("success:") && fileContent.includes("errors:");
     assertEquals(hasErrorStructure, true, "Should have structured error returns");
 
-    // Should handle errors at appropriate levels
+    // Should handle errors at appropriate levels (updated for domain-driven implementation)
     const errorHandlingPatterns = [
-      "if (!", // Validation checks
-      "errors.push", // Error collection
-      "errors.length === 0", // Success determination
+      "result.ok", // Result pattern checks
+      "result.error", // Error extraction from Result
+      "formatPromptError", // Error formatting
     ];
 
     errorHandlingPatterns.forEach((pattern) => {

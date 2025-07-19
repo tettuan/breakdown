@@ -40,11 +40,11 @@ interface TestState extends GenerationState {
 // Mock DirectiveType and LayerType for testing
 const createMockDirective = (value: string): DirectiveType => ({
   getValue: () => value,
-} as DirectiveType);
+} as unknown as DirectiveType);
 
 const createMockLayer = (value: string): LayerType => ({
   getValue: () => value,
-} as LayerType);
+} as unknown as LayerType);
 
 // Helper function to create test template
 function createTestTemplate(

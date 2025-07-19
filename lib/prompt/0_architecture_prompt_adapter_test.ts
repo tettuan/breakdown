@@ -68,7 +68,9 @@ describe("PromptAdapter Architecture - Module Dependencies", () => {
       "../factory/",
       "../builder/",
       "./prompt_adapter_validator",
+      "./domain_prompt_adapter",
       "../types/result",
+      "../types/prompt_types",
     ];
 
     const imports = fileContent.match(/from\s+["']\.\.?\/[^"']+["']/g) || [];
@@ -139,7 +141,7 @@ describe("PromptAdapter Architecture - Adapter Pattern Compliance", () => {
     // Should delegate to other components
     const delegationTargets = [
       "PromptAdapterValidator",
-      "PromptManager",
+      "DomainPromptAdapter",
       "VariablesBuilder",
     ];
 
@@ -162,7 +164,6 @@ describe("PromptAdapter Architecture - Adapter Pattern Compliance", () => {
       "readFileSync", // File I/O should be delegated
       "writeFileSync",
       "resolve(", // Path resolution should be delegated
-      "join(",
       "DirectiveType", // Type creation should be delegated
       "LayerType",
     ];

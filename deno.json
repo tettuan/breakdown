@@ -40,7 +40,8 @@
   "tasks": {
     "ci": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci",
     "ci:dirty": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci --allow-dirty",
-    "paneclear": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/tmux-monitor --onetime --clear"
+    "paneclear": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/tmux-monitor --onetime --clear",
+    "test": "deno test --allow-env --allow-write --allow-read --allow-run"
   },
   "fmt": {
     "indentWidth": 2,

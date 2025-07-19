@@ -70,14 +70,14 @@ Deno.test("Composition Safety: Result type operations maintain totality across d
     assertExists(workDirResult.error.kind);
     assertExists(workDirResult.error.message);
   }
-  
+
   // Test error case explicitly
   const errorConfig = ConfigProfileName.create(""); // Returns "default", not error
   const errorWorkDirResult = WorkingDirectoryPath.create("");
-  
+
   // ConfigProfileName.create("") returns default instance, not error
   assertEquals(errorConfig.value, "default");
-  
+
   if (!errorWorkDirResult.ok) {
     assertExists(errorWorkDirResult.error);
     assertExists(errorWorkDirResult.error.kind);
@@ -91,7 +91,6 @@ Deno.test("Composition Safety: Result type operations maintain totality across d
  */
 Deno.test("Composition Safety: Factory composition maintains totality", async () => {
   logger.debug("Testing factory composition totality");
-
 
   // Create pattern provider with test patterns
   const testPatternProvider: TypePatternProvider = {
@@ -110,15 +109,15 @@ Deno.test("Composition Safety: Factory composition maintains totality", async ()
     getDirectivePattern() {
       return {
         test: (value: string) => /^(to|summary)$/.test(value),
-        getPattern: () => "^(to|summary)$"
+        getPattern: () => "^(to|summary)$",
       };
     },
     getLayerTypePattern() {
       return {
         test: (value: string) => /^(project|issue)$/.test(value),
-        getPattern: () => "^(project|issue)$"
+        getPattern: () => "^(project|issue)$",
       };
-    }
+    },
   };
 
   const typeFactory = new TypeFactory(testPatternProvider);
@@ -181,7 +180,7 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
   // Create errors from different domains
   const _config = ConfigProfileName.create(""); // Returns "default", not error
   const workDirError = WorkingDirectoryPath.create("/nonexistent/path");
-  
+
   // Use createOrError for getting Result type from ConfigProfileName
   const configError = ConfigProfileName.createOrError("");
 
@@ -325,7 +324,9 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
       if (!isOk(configResult)) {
         return error({
           kind: "ConfigurationError",
-          message: `Configuration failed: ${"reason" in configResult.error ? configResult.error.reason : configResult.error.kind}`,
+          message: `Configuration failed: ${
+            "reason" in configResult.error ? configResult.error.reason : configResult.error.kind
+          }`,
         });
       }
 
@@ -355,15 +356,15 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
         getDirectivePattern() {
           return {
             test: (value: string) => /^(to|summary)$/.test(value),
-            getPattern: () => "^(to|summary)$"
+            getPattern: () => "^(to|summary)$",
           };
         },
         getLayerTypePattern() {
           return {
             test: (value: string) => /^(project|issue)$/.test(value),
-            getPattern: () => "^(project|issue)$"
+            getPattern: () => "^(project|issue)$",
           };
-        }
+        },
       };
 
       const typeFactory = new TypeFactory(provider);
@@ -461,15 +462,15 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
           getDirectivePattern() {
             return {
               test: (value: string) => /^(to|summary)$/.test(value),
-              getPattern: () => "^(to|summary)$"
+              getPattern: () => "^(to|summary)$",
             };
           },
           getLayerTypePattern() {
             return {
               test: (value: string) => /^(project|issue)$/.test(value),
-              getPattern: () => "^(project|issue)$"
+              getPattern: () => "^(project|issue)$",
             };
-          }
+          },
         };
 
         const factory = new TypeFactory(provider);
@@ -555,15 +556,15 @@ Deno.test("Composition Safety: Domain boundary invariants preserved", () => {
         getDirectivePattern() {
           return {
             test: (value: string) => /^(to|summary)$/.test(value),
-            getPattern: () => "^(to|summary)$"
+            getPattern: () => "^(to|summary)$",
           };
         },
         getLayerTypePattern() {
           return {
             test: (value: string) => /^(project|issue)$/.test(value),
-            getPattern: () => "^(project|issue)$"
+            getPattern: () => "^(project|issue)$",
           };
-        }
+        },
       };
 
       const factory = new TypeFactory(provider);
