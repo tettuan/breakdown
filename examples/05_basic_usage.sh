@@ -137,41 +137,75 @@ else
 fi
 echo
 
-# Example 4: Custom command - Find bugs (requires custom configuration)
-echo "4. Finding bugs in code (custom command demonstration)"
-echo "⚠️  Note: 'find bugs' is a custom feature that requires default-user.yml configuration."
-echo "   This example uses 'defect task' as an alternative for bug-related analysis."
-cat > "$OUTPUT_DIR/buggy_code.md" << EOF
-\`\`\`javascript
+# Example 4: Find bugs command - Now working with updated configuration
+echo "4. Finding bugs in code (find bugs command)"
+echo "✅ 'find bugs' is now enabled in the default configuration"
+cat > "$OUTPUT_DIR/buggy_code.js" << EOF
 function calculateTotal(items) {
     let total = 0;
     // TODO: Fix this calculation
     for (i = 0; i <= items.length; i++) {  // BUG: should be i < items.length
         total += items[i].price * items[i].quantity;  // FIXME: No null check
     }
-    return total;  // XXX: Should apply tax here
+    return total;
 }
 
-// HACK: Temporary fix for authentication
-function authenticate(user, pass) {
-    // DEPRECATED: This method will be removed in v2.0
-    if (user == "admin" && pass == "admin") {  // BUG: Hardcoded credentials
-        return true;
+function processUser(user) {
+    if (user == null) {  // BUG: should use === for strict comparison
+        return;
     }
-    // TODO: Implement proper authentication
+    // BUG: No validation for user.email
+    const emailDomain = user.email.split('@')[1];
+    document.innerHTML = \`Welcome \${user.name}!\`;  // BUG: XSS vulnerability
+}
+EOF
+
+echo "Running find bugs analysis..."
+if $BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
+    if [ -f "$OUTPUT_DIR/bugs_analysis.md" ] && [ -s "$OUTPUT_DIR/bugs_analysis.md" ]; then
+        echo "✅ Created bug analysis at $OUTPUT_DIR/bugs_analysis.md"
+        echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_analysis.md" | tr -d ' ') bytes"
+        echo "   Preview:"
+        head -5 "$OUTPUT_DIR/bugs_analysis.md" | sed 's/^/     /'
+    else
+        echo "⚠️  Command succeeded but output file is empty or missing"
+    fi
+else
+    echo "⚠️  'find bugs' command failed - using fallback 'defect task' instead"
+    
+    # Fallback to defect task for bug analysis
+    cat > "$OUTPUT_DIR/bug_report.md" << EOF
+# Bug Report
+
+## Issues Found
+- Loop condition error: using <= instead of <
+- Type comparison: using == instead of ===
+- Missing null/undefined checks
+- XSS vulnerability in DOM manipulation
+
+## Code Sample
+\`\`\`javascript
+function calculateTotal(items) {
+    let total = 0;
+    for (i = 0; i <= items.length; i++) {  // BUG: should be i < items.length
+        total += items[i].price * items[i].quantity;  // FIXME: No null check
+    }
+    return total;
 }
 \`\`\`
 EOF
-
-# Using defect task for bug-related analysis (always available)
-echo "Running defect analysis on code..."
-if cat "$OUTPUT_DIR/buggy_code.md" | $BREAKDOWN defect task --config=default --destination="$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
-    # Validate output file was created and has content
-    if [ -f "$OUTPUT_DIR/bugs_report.md" ] && [ -s "$OUTPUT_DIR/bugs_report.md" ]; then
-        echo "✅ Created defect analysis at $OUTPUT_DIR/bugs_report.md"
-        echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_report.md" | tr -d ' ') bytes"
+    
+    if $BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
+        if [ -f "$OUTPUT_DIR/bugs_report.md" ] && [ -s "$OUTPUT_DIR/bugs_report.md" ]; then
+            echo "✅ Created fallback defect analysis at $OUTPUT_DIR/bugs_report.md"
+            echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_report.md" | tr -d ' ') bytes"
+        else
+            echo "⚠️  Fallback command succeeded but output file is empty"
+        fi
     else
-        echo "⚠️  Command succeeded but output file is empty or missing"
+        echo "⚠️  Both 'find bugs' and fallback 'defect task' failed"
+    fi
+fi
     fi
 else
     echo "⚠️  'defect task' command failed or is not supported"

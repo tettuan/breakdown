@@ -130,7 +130,7 @@ echo
 echo "=== 全ファイルのサマリー生成 ==="
 for file in "$BATCH_INPUT_DIR"/*.md; do
     basename=$(basename "$file" .md)
-    $BREAKDOWN summary task --from="$file" -o="$BATCH_OUTPUT_DIR/summary_${basename}.md" </dev/null 2>/dev/null
+    $BREAKDOWN summary task --from="$file" -o="$BATCH_OUTPUT_DIR/summary_${basename}.md" > "$BATCH_OUTPUT_DIR/summary_${basename}.md" </dev/null 2>/dev/null
 done
 echo "✅ サマリー生成完了"
 

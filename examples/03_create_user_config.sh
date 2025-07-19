@@ -50,32 +50,11 @@ fi
 # Create user configuration
 echo "Creating user configuration..."
 
-# Create default-user.yml with proper unified configuration structure
+# Create default-user.yml with simple configuration structure
 cat > "${CONFIG_DIR}/default-user.yml" << EOF
-# User configuration for breakdown - following unified config interface
-directive_patterns: "to|summary|defect|find|analyze|extract"
-layer_patterns: "project|issue|task|component|module"
-
-custom_variables:
-  author: "Example User"
-  version: "1.0.0"
-  organization: "Breakdown Examples"
-
-aliases:
-  proj: "project"
-  iss: "issue"
-  t: "task"
-
-templates:
-  default_prompt: "Please process the following content:\n\n\${inputContent}\n\nOutput to: \${outputFilePath}"
-  error_template: "Error occurred: \${error}\nSuggestion: \${suggestion}"
-
-user:
-  name: "Example User"
-  email: "example@example.com"
-  preferences:
-    verboseOutput: true
-    confirmActions: false
+# Default user configuration for breakdown CLI
+working_dir: ".agent/breakdown"
+username: "default-user"
 EOF
 
 # Validate file creation
@@ -89,6 +68,20 @@ if [ ! -s "${CONFIG_DIR}/default-user.yml" ]; then
 fi
 
 echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
+
+# Create findbugs-user.yml for find bugs functionality
+cat > "${CONFIG_DIR}/findbugs-user.yml" << EOF
+# User configuration for find bugs functionality
+working_dir: ".agent/breakdown"
+username: "findbugs-user"
+EOF
+
+# Validate findbugs-user.yml creation
+if [ ! -f "${CONFIG_DIR}/findbugs-user.yml" ]; then
+    error_exit "Failed to create findbugs-user.yml"
+fi
+
+echo "✅ Created findbugs user configuration at: ${CONFIG_DIR}/findbugs-user.yml"
 
 # Create user directories following UnifiedConfig structure
 USER_PROMPTS_DIR="./.agent/breakdown/prompts"

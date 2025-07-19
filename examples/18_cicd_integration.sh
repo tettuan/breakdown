@@ -432,7 +432,7 @@ if [ -d ../.git ]; then
         --uv-ci="true" \
         --uv-build_id="$(date +%s)" \
         --uv-branch="$(git branch --show-current 2>/dev/null || echo 'main')" \
-        -o="$OUTPUT_DIR/ci_change_summary.md"
+        -o="$OUTPUT_DIR/ci_change_summary.md" > "$OUTPUT_DIR/ci_change_summary.md"
     
     echo "✅ 変更分析完了"
 fi

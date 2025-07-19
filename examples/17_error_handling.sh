@@ -102,7 +102,7 @@ NON_EXISTENT_FILE="$OUTPUT_DIR/does_not_exist.md"
 
 echo "処理: 存在しないファイルの読み込み"
 # Create a dummy stdin to prevent hanging
-echo "" | $BREAKDOWN to project --from="$NON_EXISTENT_FILE" -o="$OUTPUT_DIR/test1.md" 2>/dev/null
+echo "" | $BREAKDOWN to project --from="$NON_EXISTENT_FILE" -o="$OUTPUT_DIR/test1.md" > "$OUTPUT_DIR/test1.md" 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "✅ Unexpected success"
 else
@@ -129,7 +129,7 @@ cat > "$OUTPUT_DIR/invalid_input.md" << 'EOF'
 EOF
 
 echo "処理: 不正な形式のファイル処理"
-echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/invalid_input.md" -o="$OUTPUT_DIR/test2.md" 2>/dev/null
+echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/invalid_input.md" -o="$OUTPUT_DIR/test2.md" > "$OUTPUT_DIR/test2.md" 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "✅ Processing completed (may have handled internally)"
 else
@@ -141,7 +141,7 @@ else
     
     # サニタイズ後のリトライ
     echo "→ サニタイズ後のリトライ"
-    echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/sanitized_input.md" -o="$OUTPUT_DIR/test2_sanitized.md" 2>/dev/null && \
+    echo "" | $BREAKDOWN summary project --from="$OUTPUT_DIR/sanitized_input.md" -o="$OUTPUT_DIR/test2_sanitized.md" > "$OUTPUT_DIR/test2_sanitized.md" 2>/dev/null && \
         echo "✅ Sanitized input processed successfully"
 fi
 

@@ -442,6 +442,50 @@ fi
 
 echo "=== Creating Missing Profile Configuration Files ==="
 
+# Create default profile configuration with find directive enabled
+# Override the default configuration created by init command
+echo "Updating default configuration to include find directive..."
+cat > .agent/breakdown/config/default-app.yml << 'EOF'
+# Breakdown Default Configuration (with find bugs support)
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+EOF
+echo "✅ Created default-app.yml with find bugs support"
+
+# Create findbugs profile configuration
+if [ ! -f ".agent/breakdown/config/findbugs-app.yml" ]; then
+  cat > .agent/breakdown/config/findbugs-app.yml << 'EOF'
+# Breakdown Configuration with Find Bugs Support
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+EOF
+  echo "✅ Created findbugs-app.yml"
+fi
+
 # Create stdin profile configuration
 if [ ! -f ".agent/breakdown/config/stdin-app.yml" ]; then
   cat > .agent/breakdown/config/stdin-app.yml << 'EOF'
@@ -454,7 +498,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -485,7 +529,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -517,7 +561,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:

@@ -58,10 +58,10 @@ echo
 
 # Run summary issue command
 echo "実行コマンド:"
-echo "breakdown summary issue --config=default --from=$OUTPUT_DIR/messy_tasks.md --input=task -o=$OUTPUT_DIR/issue_summary.md"
+echo "breakdown summary issue --config=default --from=$OUTPUT_DIR/messy_tasks.md --input=task -o=$OUTPUT_DIR/issue_summary.md > $OUTPUT_DIR/issue_summary.md"
 echo
 
-if $BREAKDOWN summary issue --config=default --from="$OUTPUT_DIR/messy_tasks.md" --input=task -o="$OUTPUT_DIR/issue_summary.md"; then
+if $BREAKDOWN summary issue --config=default --from="$OUTPUT_DIR/messy_tasks.md" --input=task -o="$OUTPUT_DIR/issue_summary.md" > "$OUTPUT_DIR/issue_summary.md"; then
     echo "✅ Issue summary created successfully!"
     echo
     echo "生成されたファイル:"

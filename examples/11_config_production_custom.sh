@@ -24,9 +24,7 @@ cd "$SCRIPT_DIR" || handle_error "Failed to change to script directory"
 
 echo "=== Example 15: Production Custom Configuration Find Bugs ==="
 echo "This example shows how to use production configuration for bug detection"
-echo
-echo "⚠️  NOTE: The 'find bugs' functionality exists in prompts/schema but is not yet"
-echo "   fully enabled in the CLI configuration. This example demonstrates the setup."
+echo "✅ 'find bugs' functionality is now enabled with updated configuration"
 echo
 
 # Set configuration paths
@@ -415,7 +413,41 @@ echo "=== Current Status ==="
 echo "✅ Production configuration created at: $CONFIG_FILE"
 echo "✅ Test project with bug patterns created"
 echo "✅ JSR package usage demonstrated"
-echo "⚠️  'find bugs' functionality exists but needs app.yml update to enable"
+echo "✅ 'find bugs' functionality is now enabled with updated configuration"
+echo
+
+echo "=== Testing Find Bugs Functionality ==="
+echo "Running find bugs command with findbugs configuration..."
+
+# Test the find bugs command with a simple bug pattern
+cat > "$OUTPUT_DIR/test_bug.js" << 'EOF'
+function buggyFunction(arr) {
+    for (let i = 0; i <= arr.length; i++) {  // Bug: should be < not <=
+        console.log(arr[i]);  // This will cause undefined access
+    }
+}
+
+if (user == null) {  // Bug: should use === 
+    return false;
+}
+EOF
+
+if deno run -A ../cli/breakdown.ts find bugs --config=findbugs --from="$OUTPUT_DIR/test_bug.js" -o="$OUTPUT_DIR/bug_analysis.md" > "$OUTPUT_DIR/bug_analysis.md" 2>&1; then
+    if [ -f "$OUTPUT_DIR/bug_analysis.md" ] && [ -s "$OUTPUT_DIR/bug_analysis.md" ]; then
+        echo "✅ Find bugs command executed successfully!"
+        echo "   Output file: $OUTPUT_DIR/bug_analysis.md"
+        echo "   File size: $(wc -c < "$OUTPUT_DIR/bug_analysis.md" | tr -d ' ') bytes"
+        echo "   Preview:"
+        head -5 "$OUTPUT_DIR/bug_analysis.md" | sed 's/^/     /'
+    else
+        echo "⚠️  Command succeeded but output file is empty"
+    fi
+else
+    echo "⚠️  Find bugs command failed - checking error details"
+    echo "Error output:"
+    cat "$OUTPUT_DIR/bug_analysis.md" 2>/dev/null | head -10 | sed 's/^/     /'
+    fi
+fi
 echo
 
 echo "=== Configuration Locations ==="

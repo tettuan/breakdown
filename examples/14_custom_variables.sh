@@ -47,7 +47,7 @@ echo 'breakdown to project \
   --uv-team_size="5名" \
   --uv-deadline="2024年3月末" \
   --uv-budget="500万円" \
-  -o=custom_project.md'
+  -o=custom_project.md > custom_project.md'
 echo
 
 $BREAKDOWN to project \
@@ -58,7 +58,7 @@ $BREAKDOWN to project \
   --uv-team_size="5名" \
   --uv-deadline="2024年3月末" \
   --uv-budget="500万円" \
-  -o="$OUTPUT_DIR/custom_project.md"
+  -o="$OUTPUT_DIR/custom_project.md" > "$OUTPUT_DIR/custom_project.md"
 
 echo "✅ カスタム変数を使用したプロジェクトドキュメント生成完了"
 
@@ -85,7 +85,7 @@ echo 'breakdown summary task \
   --adaptation="agile" \
   --uv-sprint_length="2週間" \
   --uv-story_point_scale="フィボナッチ数列" \
-  -o=agile_tasks.md'
+  -o=agile_tasks.md > agile_tasks.md'
 echo
 
 $BREAKDOWN summary task \
@@ -93,7 +93,7 @@ $BREAKDOWN summary task \
   --adaptation="agile" \
   --uv-sprint_length="2週間" \
   --uv-story_point_scale="フィボナッチ数列" \
-  -o="$OUTPUT_DIR/agile_tasks.md"
+  -o="$OUTPUT_DIR/agile_tasks.md" > "$OUTPUT_DIR/agile_tasks.md"
 
 echo "✅ Adaptationオプションでアジャイル形式のタスク生成完了"
 
@@ -109,7 +109,7 @@ echo "システム要件:
   --uv-deployment="Kubernetes" \
   --uv-monitoring="Prometheus + Grafana" \
   --uv-security_level="PCI-DSS準拠" \
-  -o="$OUTPUT_DIR/system_issue.md"
+  -o="$OUTPUT_DIR/system_issue.md" > "$OUTPUT_DIR/system_issue.md"
 
 echo "✅ STDINとカスタム変数の組み合わせ完了"
 

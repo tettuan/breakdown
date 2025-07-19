@@ -38,7 +38,7 @@ echo "=== Example 1: Git差分からの変更サマリー ==="
 if [ -d ../.git ]; then
     echo "最近のコミットメッセージから変更サマリーを生成:"
     git log --oneline -10 | grep -E "(feat|fix|refactor):" | head -5 > "$OUTPUT_DIR/recent_commits.txt"
-    cat "$OUTPUT_DIR/recent_commits.txt" | $BREAKDOWN summary project --config=default -o="$OUTPUT_DIR/git_summary.md"
+    cat "$OUTPUT_DIR/recent_commits.txt" | $BREAKDOWN summary project --config=default -o="$OUTPUT_DIR/git_summary.md" > "$OUTPUT_DIR/git_summary.md"
     echo "✅ Git変更サマリー生成完了: $OUTPUT_DIR/git_summary.md"
 else
     echo "⚠️  Gitリポジトリではないためスキップ"
@@ -60,7 +60,7 @@ done
 echo "複数のモジュールドキュメントを集約:"
 cat "$OUTPUT_DIR/module_"*.md | $BREAKDOWN summary project --config=default \
     --uv-projectName="統合モジュール" \
-    -o="$OUTPUT_DIR/modules_summary.md"
+    -o="$OUTPUT_DIR/modules_summary.md" > "$OUTPUT_DIR/modules_summary.md"
 echo "✅ モジュール統合サマリー生成完了"
 
 # Example 3: エラーログの段階的分析
@@ -75,10 +75,10 @@ cat > "$OUTPUT_DIR/error.log" << 'EOF'
 EOF
 
 echo "Step 1: エラーログから欠陥分析"
-cat "$OUTPUT_DIR/error.log" | $BREAKDOWN defect task --config=default -o="$OUTPUT_DIR/defect_analysis.md"
+cat "$OUTPUT_DIR/error.log" | $BREAKDOWN defect task --config=default -o="$OUTPUT_DIR/defect_analysis.md" > "$OUTPUT_DIR/defect_analysis.md"
 
 echo "Step 2: 欠陥分析からイシュー生成"
-$BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/defect_analysis.md" -o="$OUTPUT_DIR/error_issues.md"
+$BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/defect_analysis.md" -o="$OUTPUT_DIR/error_issues.md" > "$OUTPUT_DIR/error_issues.md"
 
 echo "✅ エラーログ分析パイプライン完了"
 
@@ -95,7 +95,7 @@ done
 
 if [ -f "$OUTPUT_DIR/all_readmes.md" ]; then
     $BREAKDOWN summary project --config=default --from="$OUTPUT_DIR/all_readmes.md" \
-        -o="$OUTPUT_DIR/readme_summary.md"
+        -o="$OUTPUT_DIR/readme_summary.md" > "$OUTPUT_DIR/readme_summary.md"
     echo "✅ README統合サマリー生成完了"
 fi
 
@@ -108,7 +108,7 @@ echo "2つの異なる入力を同時に処理:"
 echo "システム状態の差分分析:"
 echo "CPU: 80%, Memory: 4GB, Disk: 50%" | $BREAKDOWN summary task --config=default \
     --uv-reportType="システム状態" \
-    -o="$OUTPUT_DIR/system_status.md"
+    -o="$OUTPUT_DIR/system_status.md" > "$OUTPUT_DIR/system_status.md"
 
 echo "✅ プロセス置換処理完了"
 
