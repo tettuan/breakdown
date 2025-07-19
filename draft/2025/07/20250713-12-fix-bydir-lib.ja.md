@@ -49,13 +49,13 @@
 ### 3. 作業レビュー → 差し戻し | 完了
 
 7. `deno check lib/ > tmp/type_errors.log 2>&1` の末尾でエラーが生じている → 「2. 作業開始」を最初から実施
-7-1. 開始時点で "Found 360 errors." あり、多い。
-8. `deno task ci:dirty` を実行しエラー  → 「2. 作業開始」を最初から実施
+7-1. 開始時点で "Found 268 errors." あり、多い。不要なテストは、テストごと削除する。
+8. `deno task ci:dirty lib` を実行しエラー  → 「2. 作業開始」を最初から実施
 
 #### 完了条件
 
 1. **残エラーの完全修正**: 「ディレクトリ一覧」全てで 実施内容.4 が成功した
-2. `deno task ci:dirty` が完全に通過した: エラー0件達成
+2. `deno task ci:dirty lib` が完全に通過した: エラー0件達成
 
 
 # タスクの進め方
@@ -75,66 +75,25 @@
 ## ディレクトリ一覧
 
 ```
-lib/domain/generic/template_management/value_objects
-lib/breakdown/schema/to/task
-lib/breakdown/schema/to/project
-lib/breakdown/schema/to/issue
-lib/breakdown/schema/find/bugs
-lib/domain/supporting/workspace_management
-lib/domain/supporting/template_management
-lib/domain/supporting/initialization
-lib/domain/generic/template_management
-lib/domain/generic/system
-lib/domain/generic/factory
-lib/domain/core/value_objects
-lib/domain/core/prompt_variable_generation
-lib/domain/core/aggregates
-lib/breakdown/schema/to
-lib/breakdown/schema/find
-lib/workspace/path
-lib/types/defaults
-lib/supporting/initialization
-lib/prompt/variables
-lib/infrastructure/templates
-lib/factory/0_architecture
-lib/domain/templates
-lib/domain/supporting
-lib/domain/generic
-lib/domain/errors
-lib/domain/core
-lib/domain/application
-lib/cli/validators
-lib/cli/processors
-lib/cli/orchestrators
-lib/cli/initialization
-lib/cli/handlers
-lib/cli/generators
-lib/cli/config
-lib/breakdown/schema
-lib/breakdown/prompts
-lib/breakdown/.obsidian
-lib/application/templates
-lib/application/services
-lib/application/initialization
-lib/workspace
-lib/validator
-lib/types
-lib/templates
-lib/supporting
-lib/prompt
-lib/processor
-lib/migration
-lib/io
-lib/infrastructure
-lib/helpers
-lib/factory
-lib/domain
-lib/config
-lib/commands
-lib/cli
-lib/builder
-lib/breakdown
 lib/application
+lib/breakdown
+lib/builder
+lib/cli
+lib/commands
+lib/config
+lib/domain
+lib/factory
+lib/helpers
+lib/infrastructure
+lib/io
+lib/migration
+lib/processor
+lib/prompt
+lib/supporting
+lib/templates
+lib/types
+lib/validator
+lib/workspace
 ```
 
 # 作業開始指示
