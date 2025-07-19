@@ -1,10 +1,10 @@
 /**
- * @fileoverview Parameter Validator V2 - Refactored with SRP
+ * @fileoverview Parameter Validator - Orchestrates parameter validation with SRP
  *
  * This module orchestrates parameter validation using specialized validators,
- * following the Single Responsibility Principle.
+ * following the Single Responsibility Principle and Domain-Driven Design.
  *
- * @module lib/validator/parameter_validator_v2
+ * @module lib/validator/parameter_validator
  */
 
 import type { Result } from "../types/result.ts";
@@ -105,7 +105,7 @@ export interface ConfigValidator {
 }
 
 /**
- * Parameter Validator V2 - Orchestrates parameter validation
+ * Parameter Validator - Orchestrates parameter validation
  *
  * Uses specialized validators for different aspects:
  * - ParamsTypeValidator: Validates parameter type and structure
@@ -113,7 +113,7 @@ export interface ConfigValidator {
  * - OptionsNormalizer: Normalizes option formats
  * - CustomVariableExtractor: Extracts custom variables
  */
-export class ParameterValidatorV2 {
+export class ParameterValidator {
   private readonly paramsValidator: ParamsTypeValidator;
   private readonly pathValidator: PathValidator;
   private readonly optionsNormalizer: OptionsNormalizer;

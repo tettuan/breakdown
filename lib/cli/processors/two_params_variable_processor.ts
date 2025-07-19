@@ -17,4 +17,4 @@ export {
   TwoParamsVariableProcessor,
   type TwoParamsVariableProcessorError,
   type VariableProcessorError,
-} from "../../processor/variable_processor_v2.ts";
+} from "../../processor/variable_processor.ts";

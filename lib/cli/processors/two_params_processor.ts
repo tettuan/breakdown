@@ -366,7 +366,16 @@ export class TwoParamsProcessor {
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
         // Keep the "uv-" prefix as required by VariablesBuilder
-        customVariables[key] = String(value);
+        // Convert values to string more intelligently
+        if (typeof value === "object" && value !== null) {
+          try {
+            customVariables[key] = JSON.stringify(value);
+          } catch {
+            customVariables[key] = String(value);
+          }
+        } else {
+          customVariables[key] = String(value);
+        }
       }
     }
 

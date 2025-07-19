@@ -255,6 +255,49 @@ class TwoParamsOrchestrator {
   }
 
   /**
+   * Type guard for errors with error property
+   */
+  private hasErrorProperty(
+    error: unknown,
+  ): error is { error: string } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "error" in error &&
+      typeof (error as { error: unknown }).error === "string"
+    );
+  }
+
+  /**
+   * Type guard for errors with details property
+   */
+  private hasDetailsProperty(
+    error: unknown,
+  ): error is { details: unknown } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "details" in error
+    );
+  }
+
+  /**
+   * Type guard for errors with kind and message properties
+   */
+  private hasKindAndMessage(
+    error: unknown,
+  ): error is { kind: string; message: string } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      "message" in error &&
+      typeof (error as { kind: unknown; message: unknown }).kind === "string" &&
+      typeof (error as { kind: unknown; message: unknown }).message === "string"
+    );
+  }
+
+  /**
    * Map prompt generation errors to handler errors using type guards
    */
   private mapPromptError(error: unknown): TwoParamsHandlerError {
@@ -277,12 +320,29 @@ class TwoParamsOrchestrator {
       };
     }
 
-    // Extract error message safely
+    // Extract error message safely with better object handling
     let errorMessage: string;
     if (this.hasMessageProperty(error)) {
       errorMessage = error.message;
     } else if (error instanceof Error) {
       errorMessage = error.message;
+    } else if (typeof error === "object" && error !== null) {
+      // Handle object errors more gracefully
+      // Try to extract meaningful information from the object
+      if (this.hasErrorProperty(error)) {
+        errorMessage = error.error;
+      } else if (this.hasDetailsProperty(error)) {
+        errorMessage = `Error details: ${JSON.stringify(error.details)}`;
+      } else if (this.hasKindAndMessage(error)) {
+        errorMessage = `${error.kind}: ${error.message}`;
+      } else {
+        // Last resort: stringify the object for debugging
+        try {
+          errorMessage = JSON.stringify(error);
+        } catch {
+          errorMessage = "Complex error object (failed to stringify)";
+        }
+      }
     } else {
       errorMessage = String(error);
     }

@@ -21,7 +21,7 @@ import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts
 import type { ValidatedParams } from "../validators/two_params_validator_ddd.ts";
 import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
-import type { ProcessedVariables } from "../../processor/variable_processor_v2.ts";
+import type { ProcessedVariables } from "../../processor/variable_processor.ts";
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";

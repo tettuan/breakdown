@@ -1,7 +1,7 @@
 /**
- * @fileoverview ParameterValidatorV2 1_behavior Tests - Validation Logic and Business Behavior
+ * @fileoverview ParameterValidator 1_behavior Tests - Validation Logic and Business Behavior
  *
- * ParameterValidatorV2 の動作とビジネスロジックの検証。
+ * ParameterValidator の動作とビジネスロジックの検証。
  * バリデーション処理、エラーハンドリング、オーケストレーション動作の検証。
  *
  * テスト構成:
@@ -15,12 +15,12 @@
 import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
 import {
   type ConfigValidator,
-  ParameterValidatorV2,
+  ParameterValidator,
   type ValidatedOptions,
   type ValidatedParams,
   type ValidationError,
   type ValidationMetadata,
-} from "./parameter_validator_v2.ts";
+} from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
@@ -111,7 +111,7 @@ function createValidZeroParamsResult(): ZeroParamsResult {
 Deno.test("1_behavior - validateTwoParams processes valid parameters successfully", () => {
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  const validator = new ParameterValidatorV2(patternProvider, configValidator);
+  const validator = new ParameterValidator(patternProvider, configValidator);
 
   const twoParamsResult = createValidTwoParamsResult();
 
@@ -132,7 +132,7 @@ Deno.test("1_behavior - validateTwoParams processes valid parameters successfull
 Deno.test("1_behavior - validateOneParams handles single parameter validation", () => {
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  const validator = new ParameterValidatorV2(patternProvider, configValidator);
+  const validator = new ParameterValidator(patternProvider, configValidator);
 
   const oneParamsResult = createValidOneParamsResult();
 
@@ -149,7 +149,7 @@ Deno.test("1_behavior - validateOneParams handles single parameter validation", 
 Deno.test("1_behavior - validateZeroParams processes parameterless validation", () => {
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  const validator = new ParameterValidatorV2(patternProvider, configValidator);
+  const validator = new ParameterValidator(patternProvider, configValidator);
 
   const zeroParamsResult = createValidZeroParamsResult();
 
@@ -361,7 +361,7 @@ Deno.test("1_behavior - Type creation and validation integration", () => {
 Deno.test("1_behavior - Orchestration workflow for different parameter types", () => {
   const patternProvider = createMockTypePatternProvider();
   const configValidator = createMockConfigValidator();
-  const validator = new ParameterValidatorV2(patternProvider, configValidator);
+  const validator = new ParameterValidator(patternProvider, configValidator);
 
   // Should handle workflow for each parameter type
   const workflows = [

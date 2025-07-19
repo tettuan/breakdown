@@ -476,7 +476,7 @@ Deno.test("1_behavior: processVariables converts non-string values to strings", 
     const data = result.data;
     assertEquals(data.customVariables["uv-numberVar"], "123");
     assertEquals(data.customVariables["uv-booleanVar"], "true");
-    assertEquals(data.customVariables["uv-objectVar"], "[object Object]");
+    assertEquals(data.customVariables["uv-objectVar"], '{"nested":"value"}');
     assertEquals(data.standardVariables.input_text_file, "false");
     assertEquals(data.standardVariables.destination_path, "456");
   }

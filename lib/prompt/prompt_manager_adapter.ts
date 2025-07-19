@@ -284,7 +284,13 @@ export class PromptManagerAdapter {
    */
   private isValidVariableName(name: string): boolean {
     // Variable names must start with letter or underscore
-    // and contain only letters, numbers, and underscores
+    // and contain only letters, numbers, underscores, and hyphens
+    // Special case: allow "uv-" prefix for user variables
+    if (name.startsWith("uv-")) {
+      // After "uv-", allow letters, numbers, underscores, and hyphens
+      return /^uv-[a-zA-Z0-9_-]+$/.test(name);
+    }
+    // Standard variables: start with letter or underscore, contain letters, numbers, and underscores
     return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
   }
 

@@ -1,5 +1,0 @@
-{
-  "tasks": {
-    "breakdown": "deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
-  }
-}

@@ -1,13 +1,13 @@
 /**
- * @fileoverview Behavior tests for VariableProcessorV2
+ * @fileoverview Behavior tests for TwoParamsVariableProcessor
  * Tests the orchestrated variable processing behavior, error handling, and Result type validation
  */
 
 import { assertEquals } from "../deps.ts";
-import { type ProcessorOptions, VariableProcessorV2 } from "./variable_processor_v2.ts";
+import { type ProcessorOptions, TwoParamsVariableProcessor } from "./variable_processor.ts";
 
-Deno.test("VariableProcessorV2 - Basic variable processing", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Basic variable processing", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -30,8 +30,8 @@ Deno.test("VariableProcessorV2 - Basic variable processing", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Processing with STDIN content", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Processing with STDIN content", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -53,8 +53,8 @@ Deno.test("VariableProcessorV2 - Processing with STDIN content", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Processing with schema and prompt files", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Processing with schema and prompt files", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -74,8 +74,8 @@ Deno.test("VariableProcessorV2 - Processing with schema and prompt files", () =>
   }
 });
 
-Deno.test("VariableProcessorV2 - Error handling for custom variables", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Error handling for custom variables", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -94,8 +94,8 @@ Deno.test("VariableProcessorV2 - Error handling for custom variables", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Error handling for invalid custom variable values", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Error handling for invalid custom variable values", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -114,8 +114,8 @@ Deno.test("VariableProcessorV2 - Error handling for invalid custom variable valu
   }
 });
 
-Deno.test("VariableProcessorV2 - Empty options processing", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Empty options processing", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {},
@@ -133,8 +133,8 @@ Deno.test("VariableProcessorV2 - Empty options processing", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Multiple custom variables", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Multiple custom variables", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -155,8 +155,8 @@ Deno.test("VariableProcessorV2 - Multiple custom variables", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Valid multiple custom variables", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Valid multiple custom variables", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -180,8 +180,8 @@ Deno.test("VariableProcessorV2 - Valid multiple custom variables", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Complex processing with all components", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Complex processing with all components", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -216,8 +216,8 @@ Deno.test("VariableProcessorV2 - Complex processing with all components", () => 
   }
 });
 
-Deno.test("VariableProcessorV2 - STDIN-only processing", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - STDIN-only processing", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {},
@@ -234,8 +234,8 @@ Deno.test("VariableProcessorV2 - STDIN-only processing", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Numeric and boolean custom variables", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Numeric and boolean custom variables", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -259,8 +259,8 @@ Deno.test("VariableProcessorV2 - Numeric and boolean custom variables", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Standard variable resolution", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Standard variable resolution", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {
@@ -280,8 +280,8 @@ Deno.test("VariableProcessorV2 - Standard variable resolution", () => {
   }
 });
 
-Deno.test("VariableProcessorV2 - Builder integration check", () => {
-  const processor = new VariableProcessorV2();
+Deno.test("TwoParamsVariableProcessor - Builder integration check", () => {
+  const processor = new TwoParamsVariableProcessor();
 
   const options: ProcessorOptions = {
     options: {

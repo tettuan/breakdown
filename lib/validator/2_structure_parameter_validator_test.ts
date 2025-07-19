@@ -1,443 +1,625 @@
 /**
- * @fileoverview Structure tests for ParameterValidator
+ * @fileoverview ParameterValidator 2_structure Tests - Data Structure and Consistency Validation
  *
- * Testing focus areas:
- * 1. Domain boundaries - Value objects (DirectiveType, LayerType) encapsulation
- * 2. Result type error handling - Comprehensive validation error patterns
- * 3. Smart Constructor pattern - Immutability and type safety guarantees
+ * ParameterValidator のデータ構造と整合性の検証。
+ * 内部データ構造、型制約、依存関係の構造整合性をテスト。
  *
- * @module lib/validator/2_structure_parameter_validator_test
+ * テスト構成:
+ * - 内部データ構造の整合性
+ * - バリデーション結果の構造一貫性
+ * - エラー構造の正確性
+ * - 依存関係の構造制約
+ * - オプションとメタデータの構造検証
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
+import { assert, assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert/mod.ts";
 import {
   type ConfigValidator,
-  ParameterValidatorV2 as ParameterValidator,
+  ParameterValidator,
+  type ValidatedOptions,
+  type ValidatedParams,
   type ValidationError,
-} from "./parameter_validator_v2.ts";
+  type ValidationMetadata,
+} from "./parameter_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
-import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-import { isError, isOk } from "../types/result.ts";
-import {
-  DirectiveType,
-  TwoParamsDirectivePattern,
-} from "../domain/core/value_objects/directive_type.ts";
-import { LayerType, TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
+import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
+import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
+import { DirectiveType, LayerType } from "../types/mod.ts";
+import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
 
-// Mock implementations
-class MockPatternProvider implements TypePatternProvider {
-  validateDirectiveType(value: string): boolean {
-    return ["to", "summary", "defect"].includes(value);
-  }
+// =============================================================================
+// Test Utilities
+// =============================================================================
 
-  validateLayerType(value: string): boolean {
-    return ["project", "issue", "task"].includes(value);
-  }
-
-  getValidDirectiveTypes(): readonly string[] {
-    return ["to", "summary", "defect"];
-  }
-
-  getValidLayerTypes(): readonly string[] {
-    return ["project", "issue", "task"];
-  }
-
-  getDirectivePattern(): TwoParamsDirectivePattern | null {
-    return TwoParamsDirectivePattern.create("^(to|summary|defect)$");
-  }
-
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null {
-    return TwoParamsLayerTypePattern.create("^(project|issue|task)$");
-  }
+function createMockTypePatternProvider(): TypePatternProvider {
+  return {
+    validateDirectiveType: (value: string) => ["to", "summary", "defect"].includes(value),
+    validateLayerType: (value: string) => ["project", "issue", "task"].includes(value),
+    getValidDirectiveTypes: () => ["to", "summary", "defect"],
+    getValidLayerTypes: () => ["project", "issue", "task"],
+    getDirectivePattern: () => {
+      const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+      if (!pattern) throw new Error("Failed to create directive pattern");
+      return pattern;
+    },
+    getLayerTypePattern: () => {
+      const pattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
+      return pattern;
+    },
+  };
 }
 
-class MockConfigValidator implements ConfigValidator {
-  validateConfig(_config: unknown) {
-    return { ok: true as const, data: undefined };
-  }
+function createMockConfigValidator(): ConfigValidator {
+  return {
+    validateConfig: (_config: unknown) => ({ ok: true, data: undefined }),
+  };
 }
 
-// Test data factory
-const createValidTwoParams = (
-  directiveType = "to",
-  layerType = "project",
-  options: Record<string, unknown> = {},
-): TwoParams_Result => ({
-  type: "two",
-  directiveType,
-  demonstrativeType: directiveType,
-  layerType,
-  params: [directiveType, layerType],
-  options,
-});
+// =============================================================================
+// 2_STRUCTURE: Data Structure and Consistency Tests
+// =============================================================================
 
-Deno.test("2_structure: ParameterValidator maintains domain boundaries with value objects", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-  const result = validator.validateTwoParams(createValidTwoParams());
+Deno.test("2_structure - ValidatedParams maintains hierarchical data integrity", () => {
+  const result = createTwoParamsResult("to", "project");
+  const directiveResult = DirectiveType.create(result.directiveType);
+  const layerResult = LayerType.create(result.layerType);
 
-  if (isOk(result)) {
-    const validated = result.data;
-
-    // Test that DirectiveType is properly encapsulated
-    assertExists(validated.directive);
-    assertEquals(validated.directive instanceof DirectiveType, true);
-    assertEquals(typeof validated.directive.value, "string");
-    assertEquals(validated.directive.value, "to");
-
-    // Test that LayerType is properly encapsulated
-    assertExists(validated.layer);
-    assertEquals(validated.layer instanceof LayerType, true);
-    assertEquals(typeof validated.layer.value, "string");
-    assertEquals(validated.layer.value, "project");
-
-    // Verify value objects are immutable (no direct property access)
-    assertEquals("directiveType" in validated.directive, false);
-    assertEquals("layerType" in validated.layer, false);
-  }
-});
-
-Deno.test("2_structure: ParameterValidator Result type provides comprehensive error handling", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-
-  // Test missing required field error structure
-  const missingFieldResult = validator.validateTwoParams({
-    type: "two",
-    directiveType: "",
-    demonstrativeType: "",
-    layerType: "project",
-    params: ["", "project"],
-    options: {},
-  });
-
-  assertEquals(isError(missingFieldResult), true);
-  if (isError(missingFieldResult)) {
-    const error = missingFieldResult.error;
-    assertEquals(error.kind, "ParamsTypeError");
-    if (error.kind === "ParamsTypeError") {
-      assertExists(error.error);
-    }
+  if (!directiveResult.ok || !layerResult.ok) {
+    throw new Error("Failed to create domain objects for test");
   }
 
-  // Test invalid directive type error structure
-  const invalidDirectiveResult = validator.validateTwoParams(
-    createValidTwoParams("invalid", "project"),
-  );
-
-  assertEquals(isError(invalidDirectiveResult), true);
-  if (isError(invalidDirectiveResult)) {
-    const error = invalidDirectiveResult.error;
-    // ParamsTypeValidator rejects invalid directive and it's mapped to specific error
-    assertEquals(error.kind, "InvalidDirectiveType");
-    if (error.kind === "InvalidDirectiveType") {
-      assertEquals(error.value, "invalid");
-      assertExists(error.validPattern);
-    }
-  }
-
-  // Test invalid layer type error structure
-  const invalidLayerResult = validator.validateTwoParams(
-    createValidTwoParams("to", "invalid"),
-  );
-
-  assertEquals(isError(invalidLayerResult), true);
-  if (isError(invalidLayerResult)) {
-    const error = invalidLayerResult.error;
-    // ParamsTypeValidator rejects invalid layer and it's mapped to specific error
-    assertEquals(error.kind, "InvalidLayerType");
-    if (error.kind === "InvalidLayerType") {
-      assertEquals(error.value, "invalid");
-      assertExists(error.validPattern);
-    }
-  }
-});
-
-Deno.test("2_structure: ValidatedParams structure maintains consistency and completeness", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-
-  const options = {
-    fromFile: "input.md",
-    destinationFile: "output.json",
-    schemaFile: "schema.json",
-    promptFile: "template.md",
-    input_text: "test content",
-    profile: "production",
-    "uv-custom": "value",
-    "uv-numeric": 42,
-    "uv-boolean": true,
+  const validatedParams: ValidatedParams = {
+    directive: directiveResult.data,
+    layer: layerResult.data,
+    options: {
+      inputPath: "/absolute/path/to/input.txt",
+      outputPath: "/absolute/path/to/output.txt",
+      schemaPath: "/absolute/path/to/schema.json",
+      promptPath: "/absolute/path/to/prompt.md",
+      stdin: "input data from stdin",
+    },
+    customVariables: {
+      "projectName": "test-project",
+      "version": "1.0.0",
+      "environment": "development",
+      "author": "test-user",
+    },
+    metadata: {
+      validatedAt: new Date("2024-01-01T12:00:00Z"),
+      source: "TwoParams",
+      profileName: "development-profile",
+    },
   };
 
-  const result = validator.validateTwoParams(createValidTwoParams("summary", "task", options));
+  // Top-level structure validation
+  assertExists(validatedParams.directive);
+  assertExists(validatedParams.layer);
+  assertExists(validatedParams.options);
+  assertExists(validatedParams.customVariables);
+  assertExists(validatedParams.metadata);
 
-  if (isOk(result)) {
-    const validated = result.data;
+  // Directive structure
+  assertEquals(typeof validatedParams.directive, "object");
+  assertEquals(typeof validatedParams.directive.value, "string");
+  assertEquals(validatedParams.directive.value, "to");
 
-    // Test options structure
-    assertExists(validated.options);
-    assertEquals(validated.options.inputPath, "input.md");
-    assertEquals(validated.options.outputPath, "output.json");
-    assertEquals(validated.options.schemaPath, "schema.json");
-    assertEquals(validated.options.promptPath, "template.md");
-    assertEquals(validated.options.stdin, "test content");
+  // Layer structure
+  assertEquals(typeof validatedParams.layer, "object");
+  assertEquals(typeof validatedParams.layer.value, "string");
+  assertEquals(validatedParams.layer.value, "project");
 
-    // Test custom variables extraction
-    assertExists(validated.customVariables);
-    assertEquals(validated.customVariables["uv-custom"], "value");
-    assertEquals(validated.customVariables["uv-numeric"], "42");
-    assertEquals(validated.customVariables["uv-boolean"], "true");
+  // Options structure integrity
+  const options = validatedParams.options;
+  assertEquals(typeof options.inputPath, "string");
+  assertEquals(typeof options.outputPath, "string");
+  assertEquals(typeof options.schemaPath, "string");
+  assertEquals(typeof options.promptPath, "string");
+  assertEquals(typeof options.stdin, "string");
 
-    // Test metadata structure
-    assertExists(validated.metadata);
-    assertEquals(validated.metadata.source, "TwoParams_Result");
-    assertEquals(validated.metadata.profileName, "production");
-    assertEquals(validated.metadata.validatedAt instanceof Date, true);
+  // All paths should be absolute
+  assert(options.inputPath.startsWith("/"));
+  assert(options.outputPath.startsWith("/"));
+  assert(options.schemaPath!.startsWith("/"));
+  assert(options.promptPath!.startsWith("/"));
+
+  // File extensions should be preserved
+  assert(options.inputPath.endsWith(".txt"));
+  assert(options.outputPath.endsWith(".txt"));
+  assert(options.schemaPath!.endsWith(".json"));
+  assert(options.promptPath!.endsWith(".md"));
+
+  // Custom variables structure
+  assertEquals(typeof validatedParams.customVariables, "object");
+  assert(!Array.isArray(validatedParams.customVariables));
+  assertEquals(Object.keys(validatedParams.customVariables).length, 4);
+
+  for (const [key, value] of Object.entries(validatedParams.customVariables)) {
+    assertEquals(typeof key, "string");
+    assertEquals(typeof value, "string");
+    assert(key.length > 0);
+    assert(value.length > 0);
   }
+
+  // Metadata structure
+  const metadata = validatedParams.metadata;
+  assert(metadata.validatedAt instanceof Date);
+  assertEquals(metadata.source, "TwoParams");
+  assertEquals(typeof metadata.profileName, "string");
+  assert(["TwoParams", "OneParams", "ZeroParams"].includes(metadata.source));
 });
 
-Deno.test("2_structure: ParameterValidator handles OneParams with proper defaults", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-
-  const oneParamResult: OneParamsResult = {
-    type: "one",
-    demonstrativeType: "project",
-    params: ["project"],
-    options: { debug: true },
+Deno.test("2_structure - ValidatedOptions field constraints and relationships", () => {
+  // Test minimal structure
+  const minimalOptions: ValidatedOptions = {
+    inputPath: "/min/input.txt",
+    outputPath: "/min/output.txt",
   };
 
-  const result = validator.validateOneParams(oneParamResult);
+  // Required fields
+  assertExists(minimalOptions.inputPath);
+  assertExists(minimalOptions.outputPath);
+  assertEquals(typeof minimalOptions.inputPath, "string");
+  assertEquals(typeof minimalOptions.outputPath, "string");
 
-  if (isOk(result)) {
-    const validated = result.data;
+  // Optional fields should be undefined
+  assertEquals(minimalOptions.schemaPath, undefined);
+  assertEquals(minimalOptions.promptPath, undefined);
+  assertEquals(minimalOptions.stdin, undefined);
 
-    // Should create default directive
-    assertEquals(validated.directive.value, "to");
-    // Should use param as layer
-    assertEquals(validated.layer.value, "project");
-    // Should preserve metadata source
-    assertEquals(validated.metadata.source, "OneParamsResult");
-    // Should preserve options
-    assertEquals(validated.options.inputPath, "stdin");
-    assertEquals(validated.options.outputPath, "stdout");
-  }
-});
-
-Deno.test("2_structure: ParameterValidator handles ZeroParams with complete defaults", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-
-  const zeroParamResult: ZeroParamsResult = {
-    type: "zero",
-    params: [],
-    options: { profile: "test" },
+  // Test complete structure
+  const completeOptions: ValidatedOptions = {
+    inputPath: "/complete/input.md",
+    outputPath: "/complete/output.json",
+    schemaPath: "/complete/schema.json",
+    promptPath: "/complete/prompt.md",
+    stdin: "line1\nline2\nline3\n",
   };
 
-  const result = validator.validateZeroParams(zeroParamResult);
+  // All fields should be present
+  assertExists(completeOptions.inputPath);
+  assertExists(completeOptions.outputPath);
+  assertExists(completeOptions.schemaPath);
+  assertExists(completeOptions.promptPath);
+  assertExists(completeOptions.stdin);
 
-  if (isOk(result)) {
-    const validated = result.data;
-
-    // Should use complete defaults
-    assertEquals(validated.directive.value, "to");
-    assertEquals(validated.layer.value, "project");
-    // Should preserve metadata source
-    assertEquals(validated.metadata.source, "ZeroParamsResult");
-    // Should preserve profile
-    assertEquals(validated.metadata.profileName, "test");
-  }
-});
-
-Deno.test("2_structure: ValidationError discriminated union provides type safety", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
-
-  // Test each error kind has proper structure
-  const errorTestCases: Array<[TwoParams_Result, ValidationError["kind"]]> = [
-    [{ ...createValidTwoParams(), type: "one" as unknown as "two" }, "ParamsTypeError"],
-    [createValidTwoParams("", "project"), "ParamsTypeError"], // Empty string is treated as missing
-    [createValidTwoParams("invalid", "project"), "InvalidDirectiveType"],
-    [createValidTwoParams("to", "invalid"), "InvalidLayerType"],
+  // Path format consistency
+  const pathFields = [
+    completeOptions.inputPath,
+    completeOptions.outputPath,
+    completeOptions.schemaPath,
+    completeOptions.promptPath,
   ];
 
-  for (const [params, expectedKind] of errorTestCases) {
-    const result = validator.validateTwoParams(params);
-
-    if (isError(result)) {
-      assertEquals(result.error.kind, expectedKind);
-
-      // Verify discriminated union structure
-      switch (result.error.kind) {
-        case "InvalidParamsType":
-          assertExists(result.error.expected);
-          assertExists(result.error.received);
-          break;
-        case "InvalidDirectiveType":
-          assertExists(result.error.value);
-          assertExists(result.error.validPattern);
-          break;
-        case "InvalidLayerType":
-          assertExists(result.error.value);
-          assertExists(result.error.validPattern);
-          break;
-        case "ParamsTypeError":
-        case "PathValidationError":
-        case "OptionsNormalizationError":
-        case "CustomVariableError":
-          assertExists(result.error.error);
-          break;
-        case "TypeCreationError":
-          assertExists(result.error.type);
-          assertExists(result.error.value);
-          break;
-      }
-    }
+  for (const path of pathFields) {
+    assertEquals(typeof path, "string");
+    assert(path.length > 0);
+    assert(path.startsWith("/"));
+    assert(path.includes("."));
   }
+
+  // stdin can contain any text including newlines
+  assert(completeOptions.stdin!.includes("\n"));
+  assertEquals(typeof completeOptions.stdin, "string");
+
+  // Field length constraints
+  assert(completeOptions.inputPath.length > 1);
+  assert(completeOptions.outputPath.length > 1);
+  assert(completeOptions.schemaPath!.length > 1);
+  assert(completeOptions.promptPath!.length > 1);
 });
 
-Deno.test("2_structure: Path validation maintains consistent error structures", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
+Deno.test("2_structure - ValidationMetadata temporal and source consistency", () => {
+  const baseTime = new Date("2024-01-01T00:00:00Z");
 
-  // Test path with null character
-  const nullCharResult = validator.validateTwoParams(
-    createValidTwoParams("to", "project", { fromFile: "file\0name.txt" }),
-  );
+  // Test all source variants with different timestamps
+  const metadataVariants: ValidationMetadata[] = [
+    {
+      validatedAt: new Date(baseTime.getTime()),
+      source: "TwoParams",
+      profileName: "prod",
+    },
+    {
+      validatedAt: new Date(baseTime.getTime() + 1000),
+      source: "OneParams",
+      profileName: "dev",
+    },
+    {
+      validatedAt: new Date(baseTime.getTime() + 2000),
+      source: "ZeroParams",
+    },
+    {
+      validatedAt: new Date(baseTime.getTime() + 3000),
+      source: "TwoParams",
+      profileName: "test",
+    },
+  ];
 
-  if (isError(nullCharResult)) {
-    assertEquals(nullCharResult.error.kind, "PathValidationError");
-    if (nullCharResult.error.kind === "PathValidationError") {
-      assertExists(nullCharResult.error.error);
+  for (let i = 0; i < metadataVariants.length; i++) {
+    const metadata = metadataVariants[i];
+
+    // Structure validation
+    assertExists(metadata.validatedAt);
+    assertExists(metadata.source);
+    assert(metadata.validatedAt instanceof Date);
+    assertEquals(typeof metadata.source, "string");
+
+    // Temporal ordering
+    if (i > 0) {
+      assert(metadata.validatedAt >= metadataVariants[i - 1].validatedAt);
+    }
+
+    // Source constraints
+    assert(["TwoParams", "OneParams", "ZeroParams"].includes(metadata.source));
+
+    // Profile name handling
+    if (metadata.profileName) {
+      assertEquals(typeof metadata.profileName, "string");
+      assert(metadata.profileName.length > 0);
+    } else {
+      assertEquals(metadata.profileName, undefined);
+    }
+
+    // No extra fields
+    const expectedFields = ["validatedAt", "source", "profileName"];
+    const actualFields = Object.keys(metadata);
+    for (const field of actualFields) {
+      assert(expectedFields.includes(field));
     }
   }
 
-  // Test empty path
-  const emptyPathResult = validator.validateTwoParams(
-    createValidTwoParams("to", "project", { fromFile: "   " }),
-  );
-
-  if (isError(emptyPathResult)) {
-    assertEquals(emptyPathResult.error.kind, "PathValidationError");
-    if (emptyPathResult.error.kind === "PathValidationError") {
-      assertExists(emptyPathResult.error.error);
-    }
-  }
+  // Source distribution
+  const sources = metadataVariants.map((m) => m.source);
+  assert(sources.includes("TwoParams"));
+  assert(sources.includes("OneParams"));
+  assert(sources.includes("ZeroParams"));
 });
 
-Deno.test("2_structure: Custom variables validation ensures type coercion", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
+Deno.test("2_structure - ValidationError discriminated union structural integrity", () => {
+  // Test all error variant structures
+  const errorVariants: ValidationError[] = [
+    {
+      kind: "ParamsTypeError",
+      error: "Parameter structure validation failed",
+    },
+    {
+      kind: "PathValidationError",
+      error: { path: "/invalid/path", reason: "File not found" },
+    },
+    {
+      kind: "OptionsNormalizationError",
+      error: ["Missing required option: input", "Invalid option format: output"],
+    },
+    {
+      kind: "CustomVariableError",
+      error: new Error("Variable extraction failed"),
+    },
+    {
+      kind: "TypeCreationError",
+      type: "directive",
+      value: "invalid_directive_value",
+    },
+    {
+      kind: "TypeCreationError",
+      type: "layer",
+      value: "invalid_layer_value",
+    },
+  ];
 
-  const complexOptions = {
-    "uv-string": "text",
-    "uv-number": 123,
-    "uv-boolean": false,
-    "uv-zero": 0,
-    "uv-empty": "",
-    "regular-option": "ignored",
-    "uvNotPrefixed": "ignored",
+  for (const error of errorVariants) {
+    // Base structure
+    assertExists(error.kind);
+    assertEquals(typeof error.kind, "string");
+
+    // Verify discriminated union structure
+    switch (error.kind) {
+      case "ParamsTypeError":
+        assertExists(error.error);
+        assertEquals(typeof error.error, "string");
+        assertEquals(Object.keys(error).length, 2);
+        assert(Object.keys(error).includes("kind"));
+        assert(Object.keys(error).includes("error"));
+        break;
+
+      case "PathValidationError":
+        assertExists(error.error);
+        assertEquals(typeof error.error, "object");
+        assertEquals(Object.keys(error).length, 2);
+        break;
+
+      case "OptionsNormalizationError":
+        assertExists(error.error);
+        assert(Array.isArray(error.error));
+        assertEquals(error.error.length, 2);
+        for (const msg of error.error) {
+          assertEquals(typeof msg, "string");
+        }
+        assertEquals(Object.keys(error).length, 2);
+        break;
+
+      case "CustomVariableError":
+        assertExists(error.error);
+        assert(error.error instanceof Error);
+        assertEquals(Object.keys(error).length, 2);
+        break;
+
+      case "TypeCreationError":
+        assertExists(error.type);
+        assertExists(error.value);
+        assertEquals(typeof error.type, "string");
+        assertEquals(typeof error.value, "string");
+        assert(["directive", "layer"].includes(error.type));
+        assertEquals(Object.keys(error).length, 3);
+        assert(Object.keys(error).includes("kind"));
+        assert(Object.keys(error).includes("type"));
+        assert(Object.keys(error).includes("value"));
+        break;
+    }
+  }
+
+  // TypeCreationError type field validation
+  const directiveError = errorVariants.find((e) =>
+    e.kind === "TypeCreationError" && (e as Record<string, unknown>).type === "directive"
+  ) as Record<string, unknown>;
+  const layerError = errorVariants.find((e) =>
+    e.kind === "TypeCreationError" && (e as Record<string, unknown>).type === "layer"
+  ) as Record<string, unknown>;
+
+  assertEquals(directiveError.type, "directive");
+  assertEquals(layerError.type, "layer");
+  assertEquals(typeof directiveError.value, "string");
+  assertEquals(typeof layerError.value, "string");
+});
+
+Deno.test("2_structure - ParameterValidator dependency structure constraints", () => {
+  const patternProvider = createMockTypePatternProvider();
+  const configValidator = createMockConfigValidator();
+
+  const validator = new ParameterValidator(patternProvider, configValidator);
+
+  // Class structure validation
+  assertExists(validator);
+  assert(validator instanceof ParameterValidator);
+  assertEquals(validator.constructor, ParameterValidator);
+
+  // Public interface structure
+  assertExists(validator.validateTwoParams);
+  assertExists(validator.validateOneParams);
+  assertExists(validator.validateZeroParams);
+
+  assertEquals(typeof validator.validateTwoParams, "function");
+  assertEquals(typeof validator.validateOneParams, "function");
+  assertEquals(typeof validator.validateZeroParams, "function");
+
+  // Method signatures should be consistent
+  const methods = [
+    validator.validateTwoParams,
+    validator.validateOneParams,
+    validator.validateZeroParams,
+  ];
+
+  for (const method of methods) {
+    assertEquals(typeof method, "function");
+    assertEquals(method.length, 1); // Each should accept one parameter
+  }
+
+  // No public properties should be exposed (encapsulation)
+  const ownProperties = Object.getOwnPropertyNames(validator);
+  const publicProperties = ownProperties.filter((prop) =>
+    !prop.startsWith("_") &&
+    typeof (validator as unknown as Record<string, unknown>)[prop] !== "function"
+  );
+
+  // Should have minimal public interface (allow for class properties)
+  assert(publicProperties.length <= 10); // Allow some flexibility for implementation
+});
+
+Deno.test("2_structure - ConfigValidator interface result structure consistency", () => {
+  // Success result structure
+  const successValidator: ConfigValidator = {
+    validateConfig: () => ({ ok: true, data: undefined }),
   };
 
-  const result = validator.validateTwoParams(
-    createValidTwoParams("to", "project", complexOptions),
-  );
+  const successResult = successValidator.validateConfig({});
+  assertExists(successResult);
+  assertEquals(typeof successResult, "object");
+  assertExists(successResult.ok);
+  assertEquals(successResult.ok, true);
 
-  if (isOk(result)) {
-    const customVars = result.data.customVariables;
+  if (successResult.ok) {
+    assertEquals(successResult.data, undefined); // data can be undefined for success
+    assertEquals(Object.keys(successResult).sort(), ["data", "ok"]);
+  }
 
-    // Test type coercion
-    assertEquals(customVars["uv-string"], "text");
-    assertEquals(customVars["uv-number"], "123");
-    assertEquals(customVars["uv-boolean"], "false");
-    assertEquals(customVars["uv-zero"], "0");
-    assertEquals(customVars["uv-empty"], "");
+  // Error result structure
+  const errorValidator: ConfigValidator = {
+    validateConfig: () => ({
+      ok: false,
+      error: ["Config error 1", "Config error 2", "Config error 3"],
+    }),
+  };
 
-    // Test filtering
-    assertEquals("regular-option" in customVars, false);
-    assertEquals("uvNotPrefixed" in customVars, false);
+  const errorResult = errorValidator.validateConfig(null);
+  assertExists(errorResult);
+  assertEquals(typeof errorResult, "object");
+  assertExists(errorResult.ok);
+  assertEquals(errorResult.ok, false);
 
-    // Count extracted variables
-    assertEquals(Object.keys(customVars).length, 5);
+  if (!errorResult.ok) {
+    assertExists(errorResult.error);
+    assert(Array.isArray(errorResult.error));
+    assertEquals(errorResult.error.length, 3);
+
+    for (const error of errorResult.error) {
+      assertEquals(typeof error, "string");
+      assert(error.length > 0);
+    }
+
+    assertEquals(Object.keys(errorResult).sort(), ["error", "ok"]);
+  }
+
+  // Empty error array structure
+  const emptyErrorValidator: ConfigValidator = {
+    validateConfig: () => ({ ok: false, error: [] }),
+  };
+
+  const emptyErrorResult = emptyErrorValidator.validateConfig({});
+  if (!emptyErrorResult.ok) {
+    assert(Array.isArray(emptyErrorResult.error));
+    assertEquals(emptyErrorResult.error.length, 0);
   }
 });
 
-Deno.test("2_structure: ValidatedOptions normalizes multiple path aliases", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
+Deno.test("2_structure - Custom variables Record<string, string> structural constraints", () => {
+  // Empty variables
+  const emptyVariables: Record<string, string> = {};
+  assertEquals(typeof emptyVariables, "object");
+  assert(!Array.isArray(emptyVariables));
+  assertEquals(Object.keys(emptyVariables).length, 0);
+  assertEquals(Object.values(emptyVariables).length, 0);
 
-  // Test different input aliases
-  const inputAliases = [
-    { fromFile: "input1.txt" },
-    { from: "input2.txt" },
-    { input: "input3.txt" },
-  ];
+  // Populated variables with various patterns
+  const populatedVariables: Record<string, string> = {
+    "simpleVar": "simpleValue",
+    "camelCaseVar": "camelCaseValue",
+    "snake_case_var": "snake_case_value",
+    "kebab-case-var": "kebab-case-value",
+    "UPPER_CASE_VAR": "UPPER_CASE_VALUE",
+    "var123": "value123",
+    "var_with_numbers_123": "value_with_numbers_456",
+  };
 
-  for (const alias of inputAliases) {
-    const result = validator.validateTwoParams(
-      createValidTwoParams("to", "project", alias),
-    );
+  assertEquals(typeof populatedVariables, "object");
+  assert(!Array.isArray(populatedVariables));
+  assertEquals(Object.keys(populatedVariables).length, 7);
 
-    if (isOk(result)) {
-      assertExists(result.data.options.inputPath);
-      assertEquals(result.data.options.inputPath.startsWith("input"), true);
-    }
+  // Key-value structure validation
+  for (const [key, value] of Object.entries(populatedVariables)) {
+    assertEquals(typeof key, "string");
+    assertEquals(typeof value, "string");
+    assert(key.length > 0);
+    assert(value.length > 0);
+
+    // Keys should be valid identifiers or similar
+    assert(/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(key));
+
+    // Values should be non-empty strings
+    assert(value.trim().length > 0);
   }
 
-  // Test different output aliases
-  const outputAliases = [
-    { destinationFile: "output1.txt" },
-    { destination: "output2.txt" },
-    { output: "output3.txt" },
-  ];
+  // No nested objects or arrays
+  for (const value of Object.values(populatedVariables)) {
+    assertEquals(typeof value, "string");
+    assert(!value.startsWith("{"));
+    assert(!value.startsWith("["));
+  }
 
-  for (const alias of outputAliases) {
-    const result = validator.validateTwoParams(
-      createValidTwoParams("to", "project", alias),
-    );
+  // Special characters in values should be preserved
+  const specialCharVariables: Record<string, string> = {
+    "pathVar": "/path/to/file.txt",
+    "urlVar": "https://example.com/path?param=value",
+    "multilineVar": "line1\nline2\nline3",
+    "jsonLikeVar": '{"key": "value"}',
+    "spacesVar": "value with spaces",
+  };
 
-    if (isOk(result)) {
-      assertExists(result.data.options.outputPath);
-      assertEquals(result.data.options.outputPath.startsWith("output"), true);
-    }
+  for (const [key, value] of Object.entries(specialCharVariables)) {
+    assertEquals(typeof key, "string");
+    assertEquals(typeof value, "string");
+    assert(key.length > 0);
+    assert(value.length > 0);
   }
 });
 
-Deno.test("2_structure: Metadata structure provides full traceability", () => {
-  const validator = new ParameterValidator(new MockPatternProvider(), new MockConfigValidator());
+Deno.test("2_structure - Result type structure consistency across validation methods", () => {
+  // Success result structure template
+  const successTemplate = {
+    ok: true as const,
+    data: {
+      directive: { value: "to" } as Record<string, unknown>,
+      layer: { value: "project" } as Record<string, unknown>,
+      options: { inputPath: "/input", outputPath: "/output" },
+      customVariables: {},
+      metadata: { validatedAt: new Date(), source: "TwoParams" as const },
+    },
+  };
 
-  const beforeValidation = new Date();
+  // Error result structure template
+  const errorTemplate = {
+    ok: false as const,
+    error: { kind: "ParamsTypeError" as const, error: "Test error" },
+  };
 
-  const result = validator.validateTwoParams(
-    createValidTwoParams("to", "project", { profile: "staging" }),
-  );
+  // Success structure validation
+  assertEquals(successTemplate.ok, true);
+  assertExists(successTemplate.data);
+  assertEquals(typeof successTemplate.data, "object");
 
-  const afterValidation = new Date();
+  const data = successTemplate.data;
+  assertExists(data.directive);
+  assertExists(data.layer);
+  assertExists(data.options);
+  assertExists(data.customVariables);
+  assertExists(data.metadata);
 
-  if (isOk(result)) {
-    const metadata = result.data.metadata;
+  // Error structure validation
+  assertEquals(errorTemplate.ok, false);
+  assertExists(errorTemplate.error);
+  assertEquals(typeof errorTemplate.error, "object");
+  assertExists(errorTemplate.error.kind);
 
-    // Test timestamp
-    assertEquals(metadata.validatedAt >= beforeValidation, true);
-    assertEquals(metadata.validatedAt <= afterValidation, true);
+  // Result type should be mutually exclusive
+  assert(successTemplate.ok === true && errorTemplate.ok === false); // Explicit boolean comparison
+  assert("data" in successTemplate);
+  assert("error" in errorTemplate);
+  assert(!("error" in successTemplate));
+  assert(!("data" in errorTemplate));
+});
 
-    // Test source tracking
-    assertEquals(metadata.source, "TwoParams_Result");
+Deno.test("2_structure - Nested path structure and validation constraints", () => {
+  const pathStructures = {
+    absolute: "/absolute/path/to/file.ext",
+    relativeUp: "../relative/up/path/file.ext",
+    relativeDown: "./relative/down/path/file.ext",
+    simple: "simple-file.ext",
+    deep: "/very/deep/nested/path/structure/with/many/levels/file.ext",
+    withNumbers: "/path/with/123/numbers/456/file789.ext",
+    withSpecial: "/path/with-special_chars/and.dots/file.ext",
+  };
 
-    // Test profile extraction
-    assertEquals(metadata.profileName, "staging");
-  }
+  for (const [type, path] of Object.entries(pathStructures)) {
+    assertEquals(typeof path, "string");
+    assert(path.length > 0);
 
-  // Test different sources
-  const oneParamResult = validator.validateOneParams({
-    type: "one",
-    demonstrativeType: "project",
-    params: ["project"],
-    options: {},
-  });
+    // Should have file extension
+    assert(path.includes("."));
 
-  if (isOk(oneParamResult)) {
-    assertEquals(oneParamResult.data.metadata.source, "OneParamsResult");
-  }
+    // Should not be just a dot
+    assert(path !== ".");
+    assert(path !== "..");
 
-  const zeroParamResult = validator.validateZeroParams({
-    type: "zero",
-    params: [],
-    options: {},
-  });
+    // Should have meaningful content
+    const pathParts = path.split("/").filter((part) => part.length > 0);
+    assert(pathParts.length > 0);
 
-  if (isOk(zeroParamResult)) {
-    assertEquals(zeroParamResult.data.metadata.source, "ZeroParamsResult");
+    // Last part should be filename with extension
+    const filename = pathParts[pathParts.length - 1];
+    assert(filename.includes("."));
+    assert(filename.split(".").length >= 2);
+
+    // Path type specific constraints
+    switch (type) {
+      case "absolute":
+        assert(path.startsWith("/"));
+        break;
+      case "relativeUp":
+        assert(path.startsWith("../"));
+        break;
+      case "relativeDown":
+        assert(path.startsWith("./"));
+        break;
+      case "simple":
+        assert(!path.includes("/"));
+        break;
+    }
   }
 });

@@ -1,10 +1,10 @@
 /**
- * @fileoverview Variable Processor V2 - Refactored with SRP
+ * @fileoverview Variable Processor - Orchestrates variable processing with SRP
  *
  * This module orchestrates variable processing using separate specialized
- * components, following the Single Responsibility Principle.
+ * components, following the Single Responsibility Principle and Domain-Driven Design.
  *
- * @module lib/processor/variable_processor_v2
+ * @module lib/processor/variable_processor
  */
 
 import type { Result } from "../types/result.ts";
@@ -78,15 +78,55 @@ export interface ProcessorResult {
 }
 
 /**
- * Variable Processor V2 class
- *
- * Orchestrates variable processing by delegating to specialized components:
- * - CustomVariableExtractor: Handles uv- prefixed variables
- * - StandardVariableResolver: Resolves input/output paths
- * - StdinVariableFactory: Creates STDIN variables
- * - VariablesBuilder: Builds final variable set
+ * Backward compatibility interface for ProcessedVariables
  */
-export class VariableProcessorV2 {
+export interface ProcessedVariables {
+  /** Custom variables with uv- prefix */
+  customVariables: Record<string, string>;
+  /** Standard variables for prompt processing */
+  standardVariables: Record<string, string>;
+  /** All variables combined */
+  allVariables: Record<string, string>;
+}
+
+/**
+ * Backward compatibility error types for TwoParamsVariableProcessor
+ * Following Worker7's Discriminated Union pattern for consistency
+ */
+export type TwoParamsVariableProcessorError =
+  | {
+    kind: "InvalidVariablePrefix";
+    message: string;
+    key: string;
+    expectedPrefix: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ReservedVariableName";
+    message: string;
+    key: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "EmptyVariableValue";
+    message: string;
+    key: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidOptions";
+    message: string;
+    options?: unknown;
+    context?: Record<string, unknown>;
+  };
+
+/**
+ * Two Params Variable Processor - Main implementation for variable processing
+ *
+ * This processor orchestrates variable processing using separate specialized
+ * components following Domain-Driven Design principles.
+ */
+export class TwoParamsVariableProcessor {
   private readonly customExtractor: CustomVariableExtractor;
   private readonly standardResolver: StandardVariableResolver;
   private readonly stdinFactory: StdinVariableFactory;
@@ -99,6 +139,7 @@ export class VariableProcessorV2 {
 
   /**
    * Process variables from options and content
+   * Main entry point for variable processing
    */
   process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
     // 1. Extract custom variables
@@ -152,144 +193,6 @@ export class VariableProcessorV2 {
     };
 
     return ok(result);
-  }
-
-  /**
-   * Process STDIN variable if content exists
-   */
-  private processStdinVariable(
-    stdinContent?: string,
-  ): Result<PromptVariable | undefined, VariableProcessorError> {
-    if (!stdinContent) {
-      return ok(undefined);
-    }
-
-    const stdinResult = this.stdinFactory.createFromText(stdinContent);
-    if (!stdinResult.ok) {
-      return error({
-        kind: "StdinVariableError",
-        message: "Failed to create stdin variable",
-        error: JSON.stringify(stdinResult.error),
-      });
-    }
-
-    return ok(stdinResult.data);
-  }
-
-  /**
-   * Build variables using VariablesBuilder
-   */
-  private buildVariables(
-    params: ProcessorOptions,
-    customVariables: Record<string, string>,
-    standardVariables: StandardVariables,
-    stdinVariable?: PromptVariable,
-  ): Result<VariablesBuilder, VariableProcessorError> {
-    const builder = new VariablesBuilder();
-
-    // Create factory values
-    const factoryValues: FactoryResolvedValues = {
-      promptFilePath: params.promptFile || "default.md",
-      inputFilePath: standardVariables.input_text_file,
-      outputFilePath: standardVariables.destination_path,
-      schemaFilePath: params.schemaFile || "",
-      customVariables: customVariables,
-      inputText: params.stdinContent,
-    };
-
-    // Validate factory values
-    const validationResult = builder.validateFactoryValues(factoryValues);
-    if (!validationResult.ok) {
-      return error({
-        kind: "BuilderError",
-        message: "Failed to validate factory values",
-        errors: validationResult.error,
-      });
-    }
-
-    // Add factory values
-    builder.addFromFactoryValues(factoryValues);
-
-    // Add STDIN variable if exists and not already handled
-    if (stdinVariable && !factoryValues.inputText) {
-      const stdinRecord = stdinVariable.toRecord();
-      const stdinValue = Object.values(stdinRecord)[0] || "";
-      builder.addStdinVariable(stdinValue);
-    }
-
-    // Build final variables
-    const buildResult = builder.build();
-    if (!buildResult.ok) {
-      return error({
-        kind: "BuilderError",
-        message: "Failed to build final variables",
-        errors: buildResult.error,
-      });
-    }
-
-    return ok(builder);
-  }
-}
-
-/**
- * Backward compatibility interface for ProcessedVariables
- */
-export interface ProcessedVariables {
-  /** Custom variables with uv- prefix */
-  customVariables: Record<string, string>;
-  /** Standard variables for prompt processing */
-  standardVariables: Record<string, string>;
-  /** All variables combined */
-  allVariables: Record<string, string>;
-}
-
-/**
- * Backward compatibility error types for TwoParamsVariableProcessor
- * Following Worker7's Discriminated Union pattern for consistency
- */
-export type TwoParamsVariableProcessorError =
-  | {
-    kind: "InvalidVariablePrefix";
-    message: string;
-    key: string;
-    expectedPrefix: string;
-    context?: Record<string, unknown>;
-  }
-  | {
-    kind: "ReservedVariableName";
-    message: string;
-    key: string;
-    context?: Record<string, unknown>;
-  }
-  | {
-    kind: "EmptyVariableValue";
-    message: string;
-    key: string;
-    context?: Record<string, unknown>;
-  }
-  | {
-    kind: "InvalidOptions";
-    message: string;
-    options?: unknown;
-    context?: Record<string, unknown>;
-  };
-
-/**
- * Two Params Variable Processor wrapper for backward compatibility
- */
-export class TwoParamsVariableProcessor {
-  private readonly processor: VariableProcessorV2;
-
-  constructor() {
-    this.processor = new VariableProcessorV2();
-  }
-
-  /**
-   * Process method that delegates to internal processor
-   * Required by architecture test
-   */
-  process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
-    return this.processor.process(params);
   }
 
   /**
@@ -360,7 +263,17 @@ export class TwoParamsVariableProcessor {
         }
 
         // Ensure value is not empty
-        const stringValue = String(value);
+        let stringValue: string;
+        if (typeof value === "object" && value !== null) {
+          try {
+            stringValue = JSON.stringify(value);
+          } catch {
+            stringValue = String(value);
+          }
+        } else {
+          stringValue = String(value);
+        }
+
         if (!stringValue || stringValue.trim() === "") {
           errors.push({
             kind: "EmptyVariableValue",
@@ -474,9 +387,94 @@ export class TwoParamsVariableProcessor {
     const customVariables: Record<string, string> = {};
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
-        customVariables[key] = String(value);
+        // Convert values to string more intelligently
+        if (typeof value === "object" && value !== null) {
+          try {
+            customVariables[key] = JSON.stringify(value);
+          } catch {
+            customVariables[key] = String(value);
+          }
+        } else {
+          customVariables[key] = String(value);
+        }
       }
     }
     return customVariables;
+  }
+
+  /**
+   * Process STDIN variable if content exists
+   */
+  private processStdinVariable(
+    stdinContent?: string,
+  ): Result<PromptVariable | undefined, VariableProcessorError> {
+    if (!stdinContent) {
+      return ok(undefined);
+    }
+
+    const stdinResult = this.stdinFactory.createFromText(stdinContent);
+    if (!stdinResult.ok) {
+      return error({
+        kind: "StdinVariableError",
+        message: "Failed to create stdin variable",
+        error: JSON.stringify(stdinResult.error),
+      });
+    }
+
+    return ok(stdinResult.data);
+  }
+
+  /**
+   * Build variables using VariablesBuilder
+   */
+  private buildVariables(
+    params: ProcessorOptions,
+    customVariables: Record<string, string>,
+    standardVariables: StandardVariables,
+    stdinVariable?: PromptVariable,
+  ): Result<VariablesBuilder, VariableProcessorError> {
+    const builder = new VariablesBuilder();
+
+    // Create factory values
+    const factoryValues: FactoryResolvedValues = {
+      promptFilePath: params.promptFile || "default.md",
+      inputFilePath: standardVariables.input_text_file,
+      outputFilePath: standardVariables.destination_path,
+      schemaFilePath: params.schemaFile || "",
+      customVariables: customVariables,
+      inputText: params.stdinContent,
+    };
+
+    // Validate factory values
+    const validationResult = builder.validateFactoryValues(factoryValues);
+    if (!validationResult.ok) {
+      return error({
+        kind: "BuilderError",
+        message: "Failed to validate factory values",
+        errors: validationResult.error,
+      });
+    }
+
+    // Add factory values
+    builder.addFromFactoryValues(factoryValues);
+
+    // Add STDIN variable if exists and not already handled
+    if (stdinVariable && !factoryValues.inputText) {
+      const stdinRecord = stdinVariable.toRecord();
+      const stdinValue = Object.values(stdinRecord)[0] || "";
+      builder.addStdinVariable(stdinValue);
+    }
+
+    // Build final variables
+    const buildResult = builder.build();
+    if (!buildResult.ok) {
+      return error({
+        kind: "BuilderError",
+        message: "Failed to build final variables",
+        errors: buildResult.error,
+      });
+    }
+
+    return ok(builder);
   }
 }

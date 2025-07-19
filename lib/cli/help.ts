@@ -28,7 +28,10 @@ const DEFAULT_HELP_CONFIG: HelpTextConfig = {
     },
   ],
   options: [
-    { flags: "--config/-c <prefix>", description: "Use custom config prefix (loads <prefix>-app.yml, <prefix>-user.yml)" },
+    {
+      flags: "--config/-c <prefix>",
+      description: "Use custom config prefix (loads <prefix>-app.yml, <prefix>-user.yml)",
+    },
     { flags: "--help/-h", description: "Show this help message" },
     { flags: "--version/-v", description: "Show version information" },
   ],

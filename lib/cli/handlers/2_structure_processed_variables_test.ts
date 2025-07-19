@@ -12,8 +12,8 @@
  */
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
-import type { ProcessedVariables } from "../../processor/variable_processor_v2.ts";
-import { TwoParamsVariableProcessor } from "../../processor/variable_processor_v2.ts";
+import type { ProcessedVariables } from "../../processor/variable_processor.ts";
+import { TwoParamsVariableProcessor } from "../../processor/variable_processor.ts";
 import type { Result } from "$lib/types/result.ts";
 import { isError, isOk } from "$lib/types/result.ts";
 

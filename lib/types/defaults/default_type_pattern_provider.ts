@@ -6,7 +6,7 @@
  * with sensible defaults without requiring external configuration.
  *
  * **DDD Version Priority Policy**: This implementation follows Domain Driven Design
- * principles and integrates with parameter_validator_v2.ts, using the new createOrError
+ * principles and integrates with parameter_validator.ts, using the new createOrError
  * methods for Totality-compliant error handling instead of deprecated create methods.
  *
  * @module types/defaults/default_type_pattern_provider
@@ -26,7 +26,7 @@ import { _defaultConfigTwoParams } from "./config_two_params.ts";
  *
  * **DDD Compliance**: This implementation uses createOrError methods for
  * Totality-compliant error handling, ensuring compatibility with
- * parameter_validator_v2.ts and the DDD version priority policy.
+ * parameter_validator.ts and the DDD version priority policy.
  *
  * @example Basic usage
  * ```typescript
