@@ -66,9 +66,9 @@ if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
     fi
 fi
 
-# Ensure local template directories exist
+# Ensure local template directories exist following DirectiveType x LayerType structure
 echo "Setting up local template directories..."
-if ! mkdir -p prompts/summary/issue prompts/summary/project prompts/defect/issue; then
+if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summary/project prompts/summary/issue prompts/defect/project prompts/defect/issue; then
     echo "Error: Failed to create template directories"
     exit 1
 fi
@@ -145,20 +145,34 @@ copy_template "../.agent/breakdown/lib/breakdown/prompts/defect/issue/f_issue.md
               "prompts/defect/issue/f_issue.md" \
               "defect issue"
 
-# Create a basic configuration file
+# Create a basic configuration file following UnifiedConfig interface
 if ! cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
-# Basic application configuration
-working_dir: "examples"
+# Basic application configuration following unified config interface
 app_prompt:
-  base_dir: "examples/prompts"
+  base_dir: ".agent/breakdown/prompts"
+
 app_schema:
-  base_dir: "examples/schema"
-logger:
-  level: "info"
-  format: "text"
+  base_dir: ".agent/breakdown/schema"
+
 output:
-  format: "markdown"
-  includeHeaders: true
+  base_dir: "output"
+
+features:
+  extendedThinking: false
+  debugMode: true
+  strictValidation: true
+  autoSchema: true
+
+limits:
+  maxFileSize: 10485760 # 10MB
+  maxPromptLength: 50000
+  maxVariables: 100
+
+environment:
+  logLevel: "info"
+  colorOutput: true
+  timezone: "UTC"
+  locale: "en-US"
 EOF
 then
     echo "Error: Failed to create configuration file"

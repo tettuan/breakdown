@@ -67,14 +67,32 @@ else
     # Create user configuration
     echo "Creating user configuration..."
     
-    # Create default-user.yml with basic settings
+    # Create default-user.yml with proper unified configuration structure
     cat > "${CONFIG_DIR}/default-user.yml" << EOF
-# User configuration for breakdown
-working_dir: "."
-app_prompt:
-  base_dir: "prompts/user"
-app_schema:
-  base_dir: "schema/user"
+# User configuration for breakdown - following unified config interface
+directive_patterns: "to|summary|defect|find|analyze|extract"
+layer_patterns: "project|issue|task|component|module"
+
+custom_variables:
+  author: "Example User"
+  version: "1.0.0"
+  organization: "Breakdown Examples"
+
+aliases:
+  proj: "project"
+  iss: "issue"
+  t: "task"
+
+templates:
+  default_prompt: "Please process the following content:\n\n\${inputContent}\n\nOutput to: \${outputFilePath}"
+  error_template: "Error occurred: \${error}\nSuggestion: \${suggestion}"
+
+user:
+  name: "Example User"
+  email: "example@example.com"
+  preferences:
+    verboseOutput: true
+    confirmActions: false
 EOF
 
     # Validate file creation
@@ -89,11 +107,19 @@ EOF
 
     echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
     
-    # Create user directories
-    USER_PROMPTS_DIR="${TEST_DIR}/.agent/breakdown/prompts/user"
-    USER_SCHEMA_DIR="${TEST_DIR}/.agent/breakdown/schema/user"
+    # Create user directories following UnifiedConfig structure
+    USER_PROMPTS_DIR="${TEST_DIR}/.agent/breakdown/prompts"
+    USER_SCHEMA_DIR="${TEST_DIR}/.agent/breakdown/schema"
     
-    mkdir -p "${USER_PROMPTS_DIR}" || error_exit "Failed to create prompts directory"
+    # Create prompt directory structure for DirectiveType x LayerType combinations
+    mkdir -p "${USER_PROMPTS_DIR}/to/project" || error_exit "Failed to create to/project prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/to/issue" || error_exit "Failed to create to/issue prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/to/task" || error_exit "Failed to create to/task prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/summary/project" || error_exit "Failed to create summary/project prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/summary/issue" || error_exit "Failed to create summary/issue prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/defect/project" || error_exit "Failed to create defect/project prompts directory"
+    mkdir -p "${USER_PROMPTS_DIR}/defect/issue" || error_exit "Failed to create defect/issue prompts directory"
+    
     mkdir -p "${USER_SCHEMA_DIR}" || error_exit "Failed to create schema directory"
     
     # Validate directory creation
@@ -105,9 +131,10 @@ EOF
         error_exit "Schema directory was not created successfully"
     fi
     
-    echo "✅ Created user directories:"
-    echo "   - Prompts: ${USER_PROMPTS_DIR}"
+    echo "✅ Created user directories following UnifiedConfig structure:"
+    echo "   - Prompts base: ${USER_PROMPTS_DIR}"
     echo "   - Schemas: ${USER_SCHEMA_DIR}"
+    echo "   - Prompt templates organized by DirectiveType/LayerType combinations"
 fi
 
 echo "=== User Configuration Created Successfully ==="

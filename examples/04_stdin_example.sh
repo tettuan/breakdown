@@ -56,9 +56,9 @@ if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
     fi
 fi
 
-# Ensure local template directories exist
+# Ensure local template directories exist following DirectiveType x LayerType structure
 echo "Setting up local template directories..."
-if ! mkdir -p prompts/summary/issue prompts/summary/project prompts/defect/issue; then
+if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summary/project prompts/summary/issue prompts/defect/project prompts/defect/issue; then
     echo "Error: Failed to create template directories"
     exit 1
 fi
@@ -71,20 +71,29 @@ if [ ! -f "prompts/summary/project/f_project.md" ]; then
     fi
 fi
 
-# Create a basic configuration file for STDIN example
+# Create a basic configuration file for STDIN example following UnifiedConfig
 if ! cat > "${CONFIG_DIR}/stdin-app.yml" << 'EOF'
-# Application configuration for STDIN example
-working_dir: "examples"
+# Application configuration for STDIN example - following unified config interface
 app_prompt:
-  base_dir: "examples/prompts"
+  base_dir: ".agent/breakdown/prompts"
+
 app_schema:
-  base_dir: "examples/schema"
-logger:
-  level: "error"
-  format: "text"
+  base_dir: ".agent/breakdown/schema"
+
 output:
-  format: "markdown"
-  includeHeaders: true
+  base_dir: "output"
+
+features:
+  extendedThinking: false
+  debugMode: false
+  strictValidation: false
+  autoSchema: false
+
+environment:
+  logLevel: "error"
+  colorOutput: false
+  timezone: "UTC"
+  locale: "en-US"
 EOF
 then
     echo "Error: Failed to create configuration file"
