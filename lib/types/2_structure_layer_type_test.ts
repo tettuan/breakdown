@@ -10,7 +10,7 @@
  * - LayerType creation with TwoParams_Result compatibility
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -84,7 +84,7 @@ Deno.test("2_structure: LayerType ensures input validation safety", () => {
   ];
 
   for (const invalidInput of invalidInputs) {
-    const result = LayerType.create(invalidInput as any);
+    const result = LayerType.create(invalidInput);
     assertEquals(result.ok, false, `Input "${invalidInput}" should be rejected`);
   }
 

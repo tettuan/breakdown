@@ -9,6 +9,8 @@
  * @module domain/generic
  */
 
+import type { DirectiveType, LayerType } from "../../types/mod.ts";
+
 // Template Management (Generic/Technical aspects)
 // Note: This is the technical implementation of template management
 // The domain-specific aspects should eventually be moved to domain/supporting
@@ -28,28 +30,44 @@ export class GenericDomainFactory {
   static get templateManagement() {
     return {
       async createPromptContent(content: string) {
-        const { PromptContent } = await import("./template_management/value_objects/prompt_content.ts");
+        const { PromptContent } = await import(
+          "./template_management/value_objects/prompt_content.ts"
+        );
         return PromptContent.create(content);
       },
 
-      async createPromptPath(directive: any, layer: any, filename: string) {
+      async createPromptPath(directive: unknown, layer: unknown, filename: string) {
         const { PromptPath } = await import("./template_management/value_objects/prompt_path.ts");
-        return PromptPath.create(directive, layer, filename);
+        return PromptPath.create(directive as DirectiveType, layer as LayerType, filename);
       },
 
       async createSchemaContent(content: string) {
-        const { SchemaContent } = await import("./template_management/value_objects/schema_content.ts");
+        const { SchemaContent } = await import(
+          "./template_management/value_objects/schema_content.ts"
+        );
         return SchemaContent.create(content);
       },
 
-      async createSchemaPath(directive: any, layer: any, filename: string) {
+      async createSchemaPath(directive: unknown, layer: unknown, filename: string) {
         const { SchemaPath } = await import("./template_management/value_objects/schema_path.ts");
-        return SchemaPath.create(directive, layer, filename);
+        return SchemaPath.create(directive as DirectiveType, layer as LayerType, filename);
       },
 
-      async createTemplateRequest(directive: any, layer: any, adaptation?: string, fromLayer?: any) {
-        const { TemplateRequest } = await import("./template_management/value_objects/template_request.ts");
-        return TemplateRequest.create({ directive, layer, adaptation, fromLayer });
+      async createTemplateRequest(
+        directive: unknown,
+        layer: unknown,
+        adaptation?: string,
+        fromLayer?: unknown,
+      ) {
+        const { TemplateRequest } = await import(
+          "./template_management/value_objects/template_request.ts"
+        );
+        return TemplateRequest.create({
+          directive: directive as DirectiveType,
+          layer: layer as LayerType,
+          adaptation,
+          fromLayer: fromLayer as LayerType,
+        });
       },
     };
   }
@@ -65,7 +83,9 @@ export class GenericDomainGuards {
   static get templateManagement() {
     return {
       async isPromptContent(value: unknown) {
-        const { PromptContent } = await import("./template_management/value_objects/prompt_content.ts");
+        const { PromptContent } = await import(
+          "./template_management/value_objects/prompt_content.ts"
+        );
         return value instanceof PromptContent;
       },
 
@@ -75,7 +95,9 @@ export class GenericDomainGuards {
       },
 
       async isSchemaContent(value: unknown) {
-        const { SchemaContent } = await import("./template_management/value_objects/schema_content.ts");
+        const { SchemaContent } = await import(
+          "./template_management/value_objects/schema_content.ts"
+        );
         return value instanceof SchemaContent;
       },
 
@@ -85,7 +107,9 @@ export class GenericDomainGuards {
       },
 
       async isTemplateRequest(value: unknown) {
-        const { TemplateRequest } = await import("./template_management/value_objects/template_request.ts");
+        const { TemplateRequest } = await import(
+          "./template_management/value_objects/template_request.ts"
+        );
         return value instanceof TemplateRequest;
       },
     };
@@ -95,21 +119,13 @@ export class GenericDomainGuards {
 /**
  * Re-export commonly used types and interfaces
  */
-export type {
-  PromptContentResult,
-} from "./template_management/value_objects/prompt_content.ts";
+export type { PromptContentResult } from "./template_management/value_objects/prompt_content.ts";
 
-export type {
-  PromptPathResult,
-} from "./template_management/value_objects/prompt_path.ts";
+export type { PromptPathResult } from "./template_management/value_objects/prompt_path.ts";
 
-export type {
-  SchemaContentResult,
-} from "./template_management/value_objects/schema_content.ts";
+export type { SchemaContentResult } from "./template_management/value_objects/schema_content.ts";
 
-export type {
-  SchemaPathResult,
-} from "./template_management/value_objects/schema_path.ts";
+export type { SchemaPathResult } from "./template_management/value_objects/schema_path.ts";
 
 export type {
   TemplateRequestResult,

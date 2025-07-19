@@ -9,7 +9,7 @@
  * @module workspace/workspace_test
  */
 
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "jsr:@std/assert@0.224.0";
 import { ensureDir, exists } from "@std/fs";
 import { join } from "@std/path";
 import { initWorkspace, WorkspaceImpl } from "./workspace.ts";

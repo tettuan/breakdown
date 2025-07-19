@@ -88,7 +88,7 @@ export {
   type LayerTypeError,
   TwoParamsLayerTypePattern,
 } from "../domain/core/value_objects/layer_type.ts";
-export { ConfigProfileName } from "./config_profile_name.ts";
+export { ConfigProfileName } from "../config/config_profile_name.ts";
 
 // TwoParams type implementation with Smart Constructor pattern
 export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./two_params.ts";

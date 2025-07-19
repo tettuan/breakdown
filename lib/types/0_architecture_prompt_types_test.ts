@@ -9,7 +9,7 @@
  * - Totality pattern enforcement
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   formatPromptError,
   InvalidPathError,

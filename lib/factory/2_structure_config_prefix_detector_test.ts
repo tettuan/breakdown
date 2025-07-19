@@ -9,7 +9,7 @@
  * - Proper abstraction levels
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

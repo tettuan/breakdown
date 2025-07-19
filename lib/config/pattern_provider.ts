@@ -272,7 +272,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
     }
 
     // Default fallback pattern for common directive types
-    return "^(to|summary|defect|init|find)$";
+    return "^(to|summary|defect)$";
   }
 
   /**

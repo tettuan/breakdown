@@ -9,7 +9,7 @@
  * - Proper abstraction levels
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -335,7 +335,7 @@ Deno.test("2_structure: encapsulation of internal logic", () => {
     assertEquals(methods.includes("getPath"), true, "Should have getPath method");
 
     // Check for expected public methods (based on implementation)
-    const expectedPublicMethods = ["getPath", "resolveBaseDir"]; // resolveBaseDir is deprecated but still public
+    const expectedPublicMethods = ["getPath"]; // resolveBaseDir has been removed (was deprecated)
     for (const method of expectedPublicMethods) {
       assertEquals(methods.includes(method), true, `Missing expected public method: ${method}`);
     }
@@ -357,6 +357,9 @@ Deno.test("2_structure: encapsulation of internal logic", () => {
       "getFromLayerType",
       "getFromFile",
       "inferLayerTypeFromFileName",
+      "inferLayerTypeFromFileNameSafe",
+      "getOptions",
+      "resolveFromLayerTypeSafe",
     ];
 
     // Verify all methods are either public API or known private implementation

@@ -15,7 +15,7 @@
  * @module factory/1_behavior_prompt_variables_factory_test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   PromptCliParams,
   PromptVariablesFactory,

@@ -30,7 +30,7 @@ export class SupportingDomainFactory {
   static get workspace() {
     return {
       // TODO: Add factory methods when workspace management is implemented
-      async createWorkspace(name: string) {
+      createWorkspace(_name: string) {
         // Placeholder for future implementation
         throw new Error("Workspace management not yet implemented");
       },
@@ -43,7 +43,7 @@ export class SupportingDomainFactory {
   static get templates() {
     return {
       // TODO: Add factory methods when template management is moved here
-      async createTemplateManager() {
+      createTemplateManager() {
         // Placeholder for future implementation
         throw new Error("Template management not yet implemented in supporting domain");
       },
@@ -56,7 +56,7 @@ export class SupportingDomainFactory {
   static get initialization() {
     return {
       // TODO: Add factory methods when initialization is moved here
-      async createInitService() {
+      createInitService() {
         // Placeholder for future implementation
         throw new Error("Initialization service not yet implemented in supporting domain");
       },
@@ -74,7 +74,7 @@ export class SupportingDomainGuards {
   static get workspace() {
     return {
       // TODO: Add type guards when workspace management is implemented
-      async isWorkspace(value: unknown): Promise<boolean> {
+      isWorkspace(_value: unknown): boolean {
         // Placeholder for future implementation
         return false;
       },
@@ -87,7 +87,7 @@ export class SupportingDomainGuards {
   static get templates() {
     return {
       // TODO: Add type guards when template management is moved here
-      async isTemplateManager(value: unknown): Promise<boolean> {
+      isTemplateManager(_value: unknown): boolean {
         // Placeholder for future implementation
         return false;
       },
@@ -100,7 +100,7 @@ export class SupportingDomainGuards {
   static get initialization() {
     return {
       // TODO: Add type guards when initialization is moved here
-      async isInitService(value: unknown): Promise<boolean> {
+      isInitService(_value: unknown): boolean {
         // Placeholder for future implementation
         return false;
       },

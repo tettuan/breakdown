@@ -7,8 +7,8 @@
  * @module factory/2_structure_factory_error_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
-import { describe, it } from "@std/testing/bdd";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
+import { describe, it } from "jsr:@std/testing/bdd";
 import {
   FactoryError,
   FactoryInitError,

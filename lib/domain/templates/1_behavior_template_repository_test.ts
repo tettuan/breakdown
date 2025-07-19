@@ -9,7 +9,7 @@
  * @module domain/templates/template_repository_test
  */
 
-import { assert } from "@std/assert";
+import { assert } from "jsr:@std/assert@0.224.0";
 
 // =============================================================================
 // 0_architecture: Interface Contracts Tests

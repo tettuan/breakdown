@@ -1,8 +1,7 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { exists } from "@std/fs";
 import { join } from "@std/path";
 import { InitService, type InitServiceOptions } from "./init_service.ts";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 Deno.test("InitService - 基本的な初期化", async () => {
   const tempDir = await Deno.makeTempDir();
@@ -91,7 +90,7 @@ Deno.test("InitService - 既存ファイルの保護", async () => {
     await Deno.writeTextFile(configPath, "# Modified content\ntest: value");
 
     // 再初期化（force無し）
-    const result2 = await service.initialize({
+    const _result2 = await service.initialize({
       workspaceDirectory: tempDir,
     });
 

@@ -9,9 +9,13 @@
  * - Options behavior
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptVariablesVO } from "./prompt_variables_vo.ts";
-import { FilePathVariable, StandardVariable, UserVariable } from "./prompt_variables_vo.ts";
+import {
+  FilePathVariable,
+  StandardVariable,
+  UserVariable as _UserVariable,
+} from "./prompt_variables_vo.ts";
 import type { PromptVariable } from "./prompt_variables_vo.ts";
 import { ErrorGuards } from "./mod.ts";
 
@@ -200,16 +204,16 @@ Deno.test("1_behavior: createOrError combines multiple validation options", () =
 });
 
 Deno.test("1_behavior: createOrError detects duplicates across different variable types", () => {
-  // UserVariable with "uv-input_text_file" will create "input_text_file" in the record
+  // UserVariable keeps the "uv-" prefix in its record, so this tests actual duplicate keys
   const standardVar = StandardVariable.create("input_text_file", "/standard");
-  const userVar = UserVariable.create("uv-input_text_file", "/user");
+  const duplicateStandardVar = StandardVariable.create("input_text_file", "/duplicate");
 
-  if (!standardVar.ok || !userVar.ok) {
+  if (!standardVar.ok || !duplicateStandardVar.ok) {
     throw new Error("Failed to create test variables");
   }
 
   const result = PromptVariablesVO.createOrError(
-    [standardVar.data, userVar.data],
+    [standardVar.data, duplicateStandardVar.data],
     { allowDuplicates: false },
   );
 

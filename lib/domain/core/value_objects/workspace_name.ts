@@ -393,6 +393,7 @@ export class WorkspaceName {
   isSuitableForProduction(): boolean {
     const nonProdPatterns = [
       /^temp-/i,
+      /^tmp-/i,
       /^test-/i,
       /^debug-/i,
       /^dev-/i,

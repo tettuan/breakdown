@@ -13,11 +13,11 @@
  * @module domain/core/aggregates/two_params_integrated.test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "./two_params_optimized.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("two-params-integrated-test");
 

@@ -10,7 +10,7 @@
 
 import type { Result } from "../../../types/result.ts";
 import { error, ok } from "../../../types/result.ts";
-import { ConfigProfileName } from "../../../types/config_profile_name.ts";
+import { ConfigProfileName } from "../../../config/config_profile_name.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 

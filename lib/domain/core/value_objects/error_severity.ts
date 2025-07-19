@@ -130,10 +130,11 @@ export function formatErrorSeverityError(error: ErrorSeverityError): string {
     case "NullOrUndefined":
       return "Parameter cannot be null or undefined";
 
-    default:
+    default: {
       // TypeScript exhaustiveness check
       const _exhaustive: never = error;
       return `Unknown error: ${JSON.stringify(_exhaustive)}`;
+    }
   }
 }
 

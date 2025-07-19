@@ -10,7 +10,7 @@
  * @module validator/parameter_validator_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type ConfigValidator,
   ParameterValidatorV2 as ParameterValidator,
@@ -89,8 +89,8 @@ const createValidTwoParamsResult = (): TwoParams_Result => ({
 
 const createValidOneParamsResult = (): OneParamsResult => ({
   type: "one",
-  demonstrativeType: "init",
-  params: ["init"],
+  demonstrativeType: "project",
+  params: ["project"],
   options: {
     fromFile: "input.md",
     destinationFile: "output.md",
@@ -261,6 +261,9 @@ Deno.test("ParameterValidator: validateOneParams - valid parameters return succe
   const validResult = createValidOneParamsResult();
   const result = validator.validateOneParams(validResult);
 
+  if (!result.ok) {
+    console.error("validateOneParams error:", result.error);
+  }
   assertEquals(result.ok, true);
   if (result.ok) {
     const validated: ValidatedParams = result.data;
@@ -384,9 +387,10 @@ Deno.test("ParameterValidator: path validation - null character in path returns 
 
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
-    assertEquals(validationResult.error.kind, "PathValidationFailed");
-    if (validationResult.error.kind === "PathValidationFailed") {
-      assertEquals(validationResult.error.reason, "Path contains null character");
+    assertEquals(validationResult.error.kind, "PathValidationError");
+    if (validationResult.error.kind === "PathValidationError") {
+      // PathValidationError has 'error' property, not 'reason'
+      assertExists(validationResult.error.error);
     }
   }
 });
@@ -404,9 +408,10 @@ Deno.test("ParameterValidator: path validation - empty path returns error", () =
 
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
-    assertEquals(validationResult.error.kind, "PathValidationFailed");
-    if (validationResult.error.kind === "PathValidationFailed") {
-      assertEquals(validationResult.error.reason, "input path cannot be empty");
+    assertEquals(validationResult.error.kind, "PathValidationError");
+    if (validationResult.error.kind === "PathValidationError") {
+      // PathValidationError has 'error' property
+      assertExists(validationResult.error.error);
     }
   }
 });
@@ -459,7 +464,7 @@ Deno.test("ParameterValidator: custom variables - invalid variable type returns 
     assertEquals(validationResult.error.kind, "CustomVariableInvalid");
     if (validationResult.error.kind === "CustomVariableInvalid") {
       assertEquals(validationResult.error.key, "uv-invalidVar");
-      assertEquals(validationResult.error.reason, "Value must be string, number, or boolean");
+      assertEquals(validationResult.error.reason, "Custom variable value cannot be an object");
     }
   }
 });

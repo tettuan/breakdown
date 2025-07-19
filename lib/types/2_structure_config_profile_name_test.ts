@@ -8,7 +8,7 @@
 
 import { assertEquals } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 describe("ConfigProfileName - Unit Tests", () => {
   describe("Valid profile name creation", () => {
@@ -28,54 +28,41 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const name of validNames) {
         const profile = ConfigProfileName.create(name);
-        assertEquals(profile.ok, true);
-        if (profile.ok) {
-          assertEquals(profile.data.value, name);
-          assertEquals(profile.data.value, name);
-        }
+        assertEquals(profile.value, name);
+        assertEquals(profile.value, name);
       }
     });
   });
 
-  describe("Invalid profile name rejection", () => {
-    it("should reject invalid profile names", () => {
-      const invalidNames = [
-        "", // empty string
-        "Production", // uppercase
-        "STAGING", // all uppercase
-        "test@env", // special character @
-        "env#1", // special character #
-        "test env", // space
-        "test.env", // dot
-        "test/env", // slash
-        "test\\env", // backslash
-        "test(env)", // parentheses
-        "test[env]", // brackets
-        "test{env}", // braces
-        "test+env", // plus
-        "test=env", // equals
-        "test&env", // ampersand
-        "test|env", // pipe
-        "test;env", // semicolon
-        "test:env", // colon
-        "test,env", // comma
-        "test<env>", // angle brackets
-        "test%env", // percent
-        "test!env", // exclamation
-        "test?env", // question mark
-        "test'env", // single quote
-        'test"env', // double quote
-        "test`env", // backtick
-        "test~env", // tilde
-        "a".repeat(51), // too long
+  describe("Default value for empty or invalid input", () => {
+    it("should return default value for empty string", () => {
+      const profile = ConfigProfileName.create("");
+      assertEquals(profile.value, "default");
+      assertEquals(profile.isDefault(), true);
+    });
+
+    it("should return default value for null and undefined", () => {
+      const profileNull = ConfigProfileName.create(null);
+      assertEquals(profileNull.value, "default");
+      assertEquals(profileNull.isDefault(), true);
+
+      const profileUndefined = ConfigProfileName.create(undefined);
+      assertEquals(profileUndefined.value, "default");
+      assertEquals(profileUndefined.isDefault(), true);
+    });
+
+    it("should return default value for whitespace-only strings", () => {
+      const whitespaceInputs = [
+        "   ",
+        "\t",
+        "\n",
+        "  \t\n  ",
       ];
 
-      for (const name of invalidNames) {
-        const profile = ConfigProfileName.create(name);
-        assertEquals(profile.ok, false);
-        if (!profile.ok) {
-          assertEquals(typeof profile.error, "object");
-        }
+      for (const input of whitespaceInputs) {
+        const profile = ConfigProfileName.create(input);
+        assertEquals(profile.value, "default");
+        assertEquals(profile.isDefault(), true);
       }
     });
   });
@@ -93,28 +80,24 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const input of invalidInputs) {
         const profile = ConfigProfileName.create(input);
-        assertEquals(profile.ok, false, `Invalid input '${input}' should be rejected`);
-        if (!profile.ok) {
-          assertEquals(typeof profile.error, "object");
-        }
+        assertEquals(profile.value, "default", `Invalid input '${input}' should result in default`);
+        assertEquals(profile.isDefault(), true);
       }
     });
   });
 
-  describe("Null handling for invalid inputs", () => {
-    it("should return null for invalid inputs", () => {
-      // Test that empty string is rejected
-      const empty = ConfigProfileName.create("");
-      assertEquals(empty.ok, false);
-      if (!empty.ok) {
-        assertEquals(empty.error.kind, "EmptyInput");
-      }
+  describe("Trimming behavior", () => {
+    it("should trim whitespace from valid inputs", () => {
+      const testCases = [
+        { input: "  staging  ", expected: "staging" },
+        { input: "\tproduction\n", expected: "production" },
+        { input: "   dev-env   ", expected: "dev-env" },
+      ];
 
-      // Test that whitespace-only string is rejected
-      const whitespace = ConfigProfileName.create("   ");
-      assertEquals(whitespace.ok, false);
-      if (!whitespace.ok) {
-        assertEquals(whitespace.error.kind, "EmptyInput");
+      for (const { input, expected } of testCases) {
+        const profile = ConfigProfileName.create(input);
+        assertEquals(profile.value, expected);
+        assertEquals(profile.isDefault(), false);
       }
     });
   });
@@ -139,15 +122,8 @@ describe("ConfigProfileName - Unit Tests", () => {
 
       for (const profileName of commonProfiles) {
         const profile = ConfigProfileName.create(profileName);
-        assertEquals(
-          profile.ok,
-          true,
-          `Common profile '${profileName}' should be valid`,
-        );
-        if (profile.ok) {
-          assertEquals(profile.data.value, profileName);
-          assertEquals(profile.data.value, profileName);
-        }
+        assertEquals(profile.value, profileName);
+        assertEquals(profile.isDefault(), false);
       }
     });
   });
@@ -158,63 +134,50 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profile = ConfigProfileName.create("staging");
 
       // Simulate BreakdownConfig usage
-      assertEquals(profile.ok, true);
-      if (profile.ok) {
-        const configPrefix = profile.data.value;
-        assertEquals(configPrefix, "staging");
-      }
+      const configPrefix = profile.value;
+      assertEquals(configPrefix, "staging");
     });
   });
 
   describe("Edge cases for pattern matching", () => {
     it("should handle edge cases correctly", () => {
-      // Test edge cases around the regex pattern
+      // Test edge cases - ConfigProfileName accepts any non-empty string
       const edgeCases = [
-        { name: "123", valid: true }, // numbers only
-        { name: "abc", valid: true }, // letters only
-        { name: "a-b", valid: true }, // with hyphen
-        { name: "a_b", valid: true }, // with underscore
-        { name: "a-b_c", valid: true }, // mixed separators
-        { name: "-abc", valid: true }, // starting with hyphen
-        { name: "_abc", valid: true }, // starting with underscore
-        { name: "abc-", valid: true }, // ending with hyphen
-        { name: "abc_", valid: true }, // ending with underscore
-        { name: "a--b", valid: true }, // double hyphen
-        { name: "a__b", valid: true }, // double underscore
-        { name: "0", valid: true }, // single digit
-        { name: "9", valid: true }, // single digit
+        "123", // numbers only
+        "abc", // letters only
+        "a-b", // with hyphen
+        "a_b", // with underscore
+        "a-b_c", // mixed separators
+        "-abc", // starting with hyphen
+        "_abc", // starting with underscore
+        "abc-", // ending with hyphen
+        "abc_", // ending with underscore
+        "a--b", // double hyphen
+        "a__b", // double underscore
+        "0", // single digit
+        "9", // single digit
+        "Test.Profile", // with dot
+        "test@env", // with @
+        "test env", // with space
       ];
 
       for (const testCase of edgeCases) {
-        const profile = ConfigProfileName.create(testCase.name);
-        const isValid = profile.ok;
-        assertEquals(
-          isValid,
-          testCase.valid,
-          `Profile name '${testCase.name}' should be ${testCase.valid ? "valid" : "invalid"}`,
-        );
-        if (profile.ok && testCase.valid) {
-          assertEquals(profile.data.value, testCase.name);
-        }
+        const profile = ConfigProfileName.create(testCase);
+        assertEquals(profile.value, testCase);
+        assertEquals(profile.isDefault(), false);
       }
     });
   });
 
-  describe("Domain methods - isDefault and prefix", () => {
+  describe("Domain methods - isDefault and value", () => {
     it("should correctly identify default profile", () => {
       const defaultProfile = ConfigProfileName.create("default");
-      assertEquals(defaultProfile.ok, true);
-      if (defaultProfile.ok) {
-        assertEquals(defaultProfile.data.isDefault, true);
-        assertEquals(defaultProfile.data.prefix, "default");
-      }
+      assertEquals(defaultProfile.isDefault(), true);
+      assertEquals(defaultProfile.value, "default");
 
       const customProfile = ConfigProfileName.create("staging");
-      assertEquals(customProfile.ok, true);
-      if (customProfile.ok) {
-        assertEquals(customProfile.data.isDefault, false);
-        assertEquals(customProfile.data.prefix, "staging");
-      }
+      assertEquals(customProfile.isDefault(), false);
+      assertEquals(customProfile.value, "staging");
     });
   });
 
@@ -222,8 +185,7 @@ describe("ConfigProfileName - Unit Tests", () => {
     it("should create default profile correctly", () => {
       const defaultProfile = ConfigProfileName.createDefault();
       assertEquals(defaultProfile.value, "default");
-      assertEquals(defaultProfile.isDefault, true);
-      assertEquals(defaultProfile.prefix, "default");
+      assertEquals(defaultProfile.isDefault(), true);
     });
   });
 
@@ -232,33 +194,26 @@ describe("ConfigProfileName - Unit Tests", () => {
       // Valid CLI option
       const staging = ConfigProfileName.fromCliOption("staging");
       assertEquals(staging.value, "staging");
-      assertEquals(staging.isDefault, false);
+      assertEquals(staging.isDefault(), false);
 
       // Null/undefined should return default
       const fromNull = ConfigProfileName.fromCliOption(null);
       assertEquals(fromNull.value, "default");
-      assertEquals(fromNull.isDefault, true);
+      assertEquals(fromNull.isDefault(), true);
 
       const fromUndefined = ConfigProfileName.fromCliOption(undefined);
       assertEquals(fromUndefined.value, "default");
-      assertEquals(fromUndefined.isDefault, true);
+      assertEquals(fromUndefined.isDefault(), true);
 
       // Empty string should return default
       const fromEmpty = ConfigProfileName.fromCliOption("");
       assertEquals(fromEmpty.value, "default");
-      assertEquals(fromEmpty.isDefault, true);
+      assertEquals(fromEmpty.isDefault(), true);
 
       // Whitespace should return default
       const fromWhitespace = ConfigProfileName.fromCliOption("   ");
       assertEquals(fromWhitespace.value, "default");
-      assertEquals(fromWhitespace.isDefault, true);
-    });
-
-    it("should fallback to default for invalid CLI options", () => {
-      // Invalid format should fallback to default (with warning)
-      const invalid = ConfigProfileName.fromCliOption("INVALID");
-      assertEquals(invalid.value, "default");
-      assertEquals(invalid.isDefault, true);
+      assertEquals(fromWhitespace.isDefault(), true);
     });
   });
 
@@ -296,24 +251,96 @@ describe("ConfigProfileName - Unit Tests", () => {
       const profile2 = ConfigProfileName.create("staging");
       const profile3 = ConfigProfileName.create("production");
 
-      assertEquals(profile1.ok, true);
-      assertEquals(profile2.ok, true);
-      assertEquals(profile3.ok, true);
-
-      if (profile1.ok && profile2.ok && profile3.ok) {
-        assertEquals(profile1.data.equals(profile2.data), true);
-        assertEquals(profile1.data.equals(profile3.data), false);
-      }
+      assertEquals(profile1.equals(profile2), true);
+      assertEquals(profile1.equals(profile3), false);
     });
   });
 
   describe("toString method", () => {
     it("should return string representation", () => {
       const profile = ConfigProfileName.create("staging");
-      assertEquals(profile.ok, true);
-      if (profile.ok) {
-        assertEquals(profile.data.toString(), "staging");
+      assertEquals(profile.toString(), "ConfigProfileName(staging)");
+    });
+  });
+
+  describe("getFilePrefix method", () => {
+    it("should return correct file prefix", () => {
+      const defaultProfile = ConfigProfileName.create();
+      assertEquals(defaultProfile.getFilePrefix(), "default-");
+
+      const staging = ConfigProfileName.create("staging");
+      assertEquals(staging.getFilePrefix(), "staging-");
+    });
+  });
+
+  describe("getConfigFileName method", () => {
+    it("should return correct config filename", () => {
+      const profile = ConfigProfileName.create("production");
+      assertEquals(profile.getConfigFileName("app.yml"), "production-app.yml");
+      assertEquals(profile.getConfigFileName("user.yml"), "production-user.yml");
+
+      const defaultProfile = ConfigProfileName.create();
+      assertEquals(defaultProfile.getConfigFileName("app.yml"), "default-app.yml");
+    });
+  });
+
+  describe("createFromConfig method", () => {
+    it("should create profile from config object", () => {
+      // Test with config object
+      const config = { profilePrefix: "production" };
+      const profile = ConfigProfileName.createFromConfig(config);
+      assertEquals(profile.value, "production");
+      assertEquals(profile.isDefault(), false);
+
+      // Test with empty config
+      const emptyConfig = {};
+      const defaultProfile = ConfigProfileName.createFromConfig(emptyConfig);
+      assertEquals(defaultProfile.value, "default");
+      assertEquals(defaultProfile.isDefault(), true);
+
+      // Test with null config
+      const nullProfile = ConfigProfileName.createFromConfig(null);
+      assertEquals(nullProfile.value, "default");
+      assertEquals(nullProfile.isDefault(), true);
+    });
+  });
+
+  describe("createOrError method", () => {
+    it("should return Result type with validation feedback", () => {
+      // Valid profile name
+      const validResult = ConfigProfileName.createOrError("production");
+      assertEquals(validResult.ok, true);
+      if (validResult.ok) {
+        assertEquals(validResult.data.value, "production");
+        assertEquals(validResult.data.isDefault(), false);
       }
+
+      // Empty input returns error
+      const emptyResult = ConfigProfileName.createOrError("");
+      assertEquals(emptyResult.ok, false);
+      if (!emptyResult.ok) {
+        assertEquals(emptyResult.error.kind, "InvalidInput");
+        if (emptyResult.error.kind === "InvalidInput") {
+          assertEquals(emptyResult.error.field, "profileName");
+        }
+      }
+
+      // Null input returns error
+      const nullResult = ConfigProfileName.createOrError(null);
+      assertEquals(nullResult.ok, false);
+      if (!nullResult.ok) {
+        assertEquals(nullResult.error.kind, "InvalidInput");
+      }
+    });
+  });
+
+  describe("prefix property", () => {
+    it("should return correct prefix", () => {
+      const profile = ConfigProfileName.create("staging");
+      assertEquals(profile.prefix, "staging");
+
+      const defaultProfile = ConfigProfileName.create();
+      assertEquals(defaultProfile.prefix, "default");
     });
   });
 });

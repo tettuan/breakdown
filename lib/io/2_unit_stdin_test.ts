@@ -119,13 +119,13 @@ describe("Unit: Core I/O functions", () => {
     assertEquals(typeof isAvailable, "boolean", "Should return boolean");
 
     // Test with override options
-    const forcedAvailable = isStdinAvailable({ 
-      environmentInfo: { isTerminal: false, isCI: false, isTest: true, envVars: {} } 
+    const forcedAvailable = isStdinAvailable({
+      environmentInfo: { isTerminal: false, isCI: false, isTest: true, envVars: {} },
     });
     assertEquals(forcedAvailable, true, "Should return true when isTerminal is false");
 
-    const forcedUnavailable = isStdinAvailable({ 
-      environmentInfo: { isTerminal: true, isCI: false, isTest: true, envVars: {} } 
+    const forcedUnavailable = isStdinAvailable({
+      environmentInfo: { isTerminal: true, isCI: false, isTest: true, envVars: {} },
     });
     assertEquals(forcedUnavailable, false, "Should return false when isTerminal is true");
 
@@ -457,13 +457,13 @@ describe("Unit: Integration behavior", () => {
     logger.debug("Testing testability features");
 
     // Test isStdinAvailable with injected environmentInfo
-    const availableResult = isStdinAvailable({ 
-      environmentInfo: { isTerminal: false, isCI: false, isTest: true, envVars: {} } 
+    const availableResult = isStdinAvailable({
+      environmentInfo: { isTerminal: false, isCI: false, isTest: true, envVars: {} },
     });
     assertEquals(availableResult, true, "Should support environment injection");
 
-    const unavailableResult = isStdinAvailable({ 
-      environmentInfo: { isTerminal: true, isCI: false, isTest: true, envVars: {} } 
+    const unavailableResult = isStdinAvailable({
+      environmentInfo: { isTerminal: true, isCI: false, isTest: true, envVars: {} },
     });
     assertEquals(unavailableResult, false, "Should support environment injection");
 

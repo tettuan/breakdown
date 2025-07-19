@@ -19,7 +19,6 @@
 
 import { dirname, join } from "@std/path";
 import { ensureDir, exists } from "@std/fs";
-import { parse } from "@std/yaml";
 import {
   createWorkspaceConfigError,
   createWorkspaceInitError,

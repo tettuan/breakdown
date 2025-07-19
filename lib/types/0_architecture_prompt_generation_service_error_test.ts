@@ -7,7 +7,7 @@
  * @module types/0_architecture_prompt_generation_service_error_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import type {
   PromptGenerationError,
   PromptGenerationServiceError,

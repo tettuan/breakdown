@@ -1,12 +1,12 @@
 /**
  * @fileoverview Stdin Configuration Types
- * 
+ *
  * This module provides configuration types for stdin operations
  * with Result-based validation.
  */
 
 import type { Result } from "../types/result.ts";
-import { ok, error } from "../types/result.ts";
+import { error, ok } from "../types/result.ts";
 import type { StdinErrorType } from "./stdin_error_types.ts";
 import type { EnhancedStdinOptions } from "./enhanced_stdin.ts";
 
@@ -22,7 +22,10 @@ export class StdinReadingConfiguration {
   /**
    * Create a new configuration with validation
    */
-  static create(allowEmpty: boolean, timeout: number): Result<StdinReadingConfiguration, StdinErrorType> {
+  static create(
+    allowEmpty: boolean,
+    timeout: number,
+  ): Result<StdinReadingConfiguration, StdinErrorType> {
     // Validate timeout
     if (timeout <= 0) {
       return error({
@@ -31,7 +34,7 @@ export class StdinReadingConfiguration {
         message: "Timeout must be positive",
       });
     }
-    
+
     if (timeout > 300000) { // 5 minutes max
       return error({
         kind: "ValidationError",
@@ -112,12 +115,12 @@ export class StdinAvailability {
     if (this.isTerminal) {
       return false;
     }
-    
+
     // In test environments, stdin is usually not available
     if (this.isTest) {
       return false;
     }
-    
+
     // In CI, only read if not a terminal
     if (this.isCI) {
       return !this.isTerminal;
@@ -134,7 +137,7 @@ export async function readStdinSafe(
   config: StdinReadingConfiguration,
 ): Promise<Result<string, StdinErrorType>> {
   const availability = StdinAvailability.detect();
-  
+
   if (!availability.ok) {
     return error(availability.error);
   }
@@ -150,7 +153,7 @@ export async function readStdinSafe(
     const decoder = new TextDecoder();
     const chunks: Uint8Array[] = [];
     let timeoutId: number | undefined;
-    
+
     // Set up timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => reject(new Error("Timeout")), config.timeout);
@@ -163,7 +166,7 @@ export async function readStdinSafe(
         if (!Deno.stdin.readable) {
           throw new Error("Stdin not readable");
         }
-        
+
         const reader = Deno.stdin.readable.getReader();
         try {
           while (true) {
@@ -185,14 +188,14 @@ export async function readStdinSafe(
 
     // Race between reading and timeout
     await Promise.race([readPromise, timeoutPromise]);
-    
+
     // Clear timeout if read completed
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
     }
-    
+
     const content = decoder.decode(concatenateUint8Arrays(chunks));
-    
+
     if (!config.allowEmpty && !content.trim()) {
       return error({
         kind: "EmptyInputError",
@@ -208,7 +211,7 @@ export async function readStdinSafe(
         timeout: config.timeout,
       });
     }
-    
+
     return error({
       kind: "ReadError",
       message: e instanceof Error ? e.message : String(e),
@@ -223,11 +226,11 @@ function concatenateUint8Arrays(arrays: Uint8Array[]): Uint8Array {
   const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
-  
+
   for (const arr of arrays) {
     result.set(arr, offset);
     offset += arr.length;
   }
-  
+
   return result;
 }

@@ -17,7 +17,7 @@ function getUserData(userId) {
 }
 
 // Bug: unused variable
-const unusedVariable = "this is never used";
+const _unusedVariable = "this is never used";
 
 // Bug: comparison with == instead of ===
 function isEqual(a, b) {

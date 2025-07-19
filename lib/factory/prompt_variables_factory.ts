@@ -25,7 +25,7 @@ import {
 } from "../domain/prompt_variable_transformer.ts";
 import {
   formatPathResolutionError as _formatPathResolutionError,
-  PromptTemplatePath as PromptTemplatePathResolver,
+  PromptTemplatePath as _PromptTemplatePathResolver,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
@@ -40,7 +40,7 @@ const OutputFilePathResolver = InputFilePathResolver;
 type OutputFilePathResolver = InputFilePathResolver;
 import {
   formatSchemaError as _formatSchemaError,
-  SchemaFilePathResolverTotality as SchemaFilePathResolver,
+  SchemaFilePathResolverTotality as _SchemaFilePathResolver,
 } from "./schema_file_path_resolver_totality.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { error as resultError, ok, Result } from "../types/result.ts";
@@ -118,9 +118,9 @@ function isValidFactoryConfig(config: unknown): config is FactoryConfig {
 }
 
 /**
- * Validate prompt directory configuration
+ * Extract prompt directory from configuration
  */
-function validatePromptDirConfig(
+function extractPromptDirFromConfig(
   config: FactoryConfig,
 ): Result<string, PromptVariablesFactoryErrors> {
   const baseDir = config.app_prompt?.base_dir;
@@ -311,8 +311,8 @@ export class PromptVariablesFactory {
     cliParams: PromptCliParams,
     transformer?: PromptVariableTransformer,
   ): Result<PromptVariablesFactory, PromptVariablesFactoryErrors> {
-    // Validate prompt directory configuration
-    const baseDirResult = validatePromptDirConfig(config);
+    // Extract prompt directory configuration
+    const baseDirResult = extractPromptDirFromConfig(config);
     if (!baseDirResult.ok) {
       return baseDirResult;
     }
@@ -652,9 +652,9 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * Validate all parameters and paths - Totality compliant version
+   * Check all parameters and paths - Totality compliant version
    */
-  public validateAll(): Result<void, Error> {
+  public checkAllParams(): Result<void, Error> {
     if (!this.cliParams) {
       return resultError(new Error("cliParams is required"));
     }
@@ -684,6 +684,17 @@ export class PromptVariablesFactory {
     }
 
     return ok(undefined);
+  }
+
+  /**
+   * Validate all parameters and paths - public API for validation
+   * @throws {Error} if validation fails
+   */
+  public validateAll(): void {
+    const result = this.checkAllParams();
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
   }
 
   /**

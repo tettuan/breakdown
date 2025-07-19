@@ -12,11 +12,11 @@
  * @module infrastructure/templates/file_schema_repository
  */
 
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "jsr:@std/assert@0.224.0";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { ConfigProfileName } from "../../types/config_profile_name.ts";
+import { ConfigProfileName } from "../../config/config_profile_name.ts";
 import { FileSchemaRepository, type FileSchemaRepositoryConfig } from "./file_schema_repository.ts";
 import {
   Schema,
@@ -153,16 +153,16 @@ Deno.test("FileSchemaRepository loadSchema - throws SchemaNotFoundError for non-
   const { repository, cleanup } = await createTestSchemaRepository();
 
   try {
-    const directive = createTestDirectiveType("nonexistent");
-    const layer = createTestLayerType("nonexistent", "missing");
-    const pathResult = SchemaPath.create(directive, layer, "missing.json");
+    const directive = createTestDirectiveType("to");
+    const layer = createTestLayerType("to", "task"); // Use valid LayerType
+    const pathResult = SchemaPath.create(directive, layer, "nonexistent.json");
     assert(pathResult.ok);
     const schemaPath = pathResult.data;
 
     await assertRejects(
       () => repository.loadSchema(schemaPath),
       SchemaNotFoundError,
-      "Schema not found: nonexistent/missing/missing.json",
+      "Schema not found: to/task/nonexistent.json",
     );
   } finally {
     await cleanup();
@@ -217,8 +217,8 @@ Deno.test("FileSchemaRepository loadSchemas - parallel loading with mixed result
     const path2Result = SchemaPath.create(directive2, layer2, "schema2.json");
     assert(path2Result.ok);
 
-    const directive3 = createTestDirectiveType("missing");
-    const layer3 = createTestLayerType("missing", "gone");
+    const directive3 = createTestDirectiveType("defect");
+    const layer3 = createTestLayerType("defect", "bugs");
     const path3Result = SchemaPath.create(directive3, layer3, "nonexistent.json");
     assert(path3Result.ok);
 
@@ -230,7 +230,7 @@ Deno.test("FileSchemaRepository loadSchemas - parallel loading with mixed result
     assertEquals(resultMap.size, 2);
     assert(resultMap.has("to/project/schema1.json"));
     assert(resultMap.has("summary/task/schema2.json"));
-    assert(!resultMap.has("missing/gone/nonexistent.json"));
+    assert(!resultMap.has("defect/bugs/nonexistent.json"));
   } finally {
     await cleanup();
   }
@@ -319,8 +319,8 @@ Deno.test("FileSchemaRepository save - throws SchemaValidationError for invalid 
   const { repository: _repository, cleanup } = await createTestSchemaRepository();
 
   try {
-    const directive = createTestDirectiveType("invalid");
-    const layer = createTestLayerType("invalid", "test");
+    const directive = createTestDirectiveType("to");
+    const layer = createTestLayerType("to", "project");
     const pathResult = SchemaPath.create(directive, layer, "invalid.json");
     assert(pathResult.ok);
     const schemaPath = pathResult.data;
@@ -341,13 +341,13 @@ Deno.test("FileSchemaRepository saveAll - batch save with mixed results", async 
 
   try {
     // Create valid schemas
-    const directive1 = createTestDirectiveType("batch1");
-    const layer1 = createTestLayerType("batch1", "test");
+    const directive1 = createTestDirectiveType("to");
+    const layer1 = createTestLayerType("to", "project");
     const path1Result = SchemaPath.create(directive1, layer1, "schema1.json");
     assert(path1Result.ok);
 
-    const directive2 = createTestDirectiveType("batch2");
-    const layer2 = createTestLayerType("batch2", "test");
+    const directive2 = createTestDirectiveType("summary");
+    const layer2 = createTestLayerType("summary", "task");
     const path2Result = SchemaPath.create(directive2, layer2, "schema2.json");
     assert(path2Result.ok);
 
@@ -367,8 +367,8 @@ Deno.test("FileSchemaRepository saveAll - batch save with mixed results", async 
 
     assertEquals(result.successful.length, 2);
     assertEquals(result.failed.length, 0);
-    assert(result.successful.includes("batch1/test/schema1.json"));
-    assert(result.successful.includes("batch2/test/schema2.json"));
+    assert(result.successful.includes("to/project/schema1.json"));
+    assert(result.successful.includes("summary/task/schema2.json"));
   } finally {
     await cleanup();
   }
@@ -399,8 +399,8 @@ Deno.test("FileSchemaRepository getDependencies - throws SchemaDependencyError f
   const { repository, cleanup } = await createTestSchemaRepository();
 
   try {
-    const directive = createTestDirectiveType("missing");
-    const layer = createTestLayerType("missing", "gone");
+    const directive = createTestDirectiveType("defect");
+    const layer = createTestLayerType("defect", "bugs");
     const pathResult = SchemaPath.create(directive, layer, "nonexistent.json");
     assert(pathResult.ok);
     const schemaPath = pathResult.data;

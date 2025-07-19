@@ -5,7 +5,7 @@
  * Tests cover Smart Constructor validation, Result type handling, and domain operations.
  */
 
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./layer_type.ts";
 
 Deno.test("LayerType - Smart Constructor Tests", async (t) => {
@@ -178,12 +178,13 @@ Deno.test("LayerType - Equality and Comparison", async (t) => {
 });
 
 Deno.test("LayerType - Edge Cases", async (t) => {
-  await t.step("should trim whitespace from input", () => {
+  await t.step("should reject input with leading/trailing whitespace", () => {
     const result = LayerType.create("  task  ");
 
-    assertEquals(result.ok, true);
-    if (result.ok) {
-      assertEquals(result.data.value, "task");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      assertEquals(result.error.message.includes("whitespace"), true);
     }
   });
 
@@ -224,35 +225,33 @@ Deno.test("LayerType - Edge Cases", async (t) => {
     }
   });
 
-  await t.step("should handle tabs and newlines", () => {
+  await t.step("should reject input with tabs and newlines", () => {
     const result = LayerType.create("\t\ntask\t\n");
 
-    assertEquals(result.ok, true);
-    if (result.ok) {
-      assertEquals(result.data.value, "task");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      assertEquals(result.error.message.includes("whitespace"), true);
     }
   });
 
   await t.step("should reject non-string types", () => {
     // Test with number
-    // deno-lint-ignore no-explicit-any
-    const numberResult = LayerType.create(123 as any);
+    const numberResult = LayerType.create(123 as unknown as string);
     assertEquals(numberResult.ok, false);
     if (!numberResult.ok) {
       assertEquals(numberResult.error.kind, "EmptyInput");
     }
 
     // Test with object
-    // deno-lint-ignore no-explicit-any
-    const objectResult = LayerType.create({ value: "task" } as any);
+    const objectResult = LayerType.create({ value: "task" } as unknown as string);
     assertEquals(objectResult.ok, false);
     if (!objectResult.ok) {
       assertEquals(objectResult.error.kind, "EmptyInput");
     }
 
     // Test with array
-    // deno-lint-ignore no-explicit-any
-    const arrayResult = LayerType.create(["task"] as any);
+    const arrayResult = LayerType.create(["task"] as unknown as string);
     assertEquals(arrayResult.ok, false);
     if (!arrayResult.ok) {
       assertEquals(arrayResult.error.kind, "EmptyInput");
@@ -481,10 +480,9 @@ Deno.test("LayerType - Immutability and Thread Safety", async (t) => {
 
     // Attempt to modify (should fail silently due to Object.freeze)
     try {
-      // deno-lint-ignore no-explicit-any
-      (layer as any)._value = "modified";
-      // deno-lint-ignore no-explicit-any
-      (layer as any)._validatedByPattern = false;
+      // Access using bracket notation to test immutability
+      (layer as unknown as Record<string, unknown>)["_value"] = "modified";
+      (layer as unknown as Record<string, unknown>)["_validatedByPattern"] = false;
     } catch {
       // Expected to throw in strict mode
     }

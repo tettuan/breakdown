@@ -9,16 +9,16 @@
  * - Value object characteristics
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   DirectiveType,
   TwoParamsDirectivePattern,
 } from "../domain/core/value_objects/directive_type.ts";
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../config/config_profile_name.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // Test data setup
-const createValidTwoParamsResult = (
+const _createValidTwoParamsResult = (
   directiveType = "to",
   layerType = "project",
 ): TwoParams_Result => ({
@@ -233,7 +233,7 @@ Deno.test("2_structure: DirectiveType profile provides safe read-only access", (
 
     // Test that profile data is accessible
     assertEquals(profileAccess.value, "default");
-    assertEquals(profileAccess.isDefault, true);
+    assertEquals(profileAccess.isDefault(), true);
 
     // Test that it's readonly (TypeScript level - structural verification)
     assertEquals(typeof profileAccess, "object");
@@ -242,7 +242,7 @@ Deno.test("2_structure: DirectiveType profile provides safe read-only access", (
     // Test that the returned object is consistent
     const profileAccess2 = directiveType.profile;
     assertEquals(profileAccess.value, profileAccess2.value);
-    assertEquals(profileAccess.isDefault, profileAccess2.isDefault);
+    assertEquals(profileAccess.isDefault(), profileAccess2.isDefault());
   }
 });
 
@@ -269,27 +269,22 @@ Deno.test("2_structure: DirectiveType maintains consistency across all access me
 
 Deno.test("2_structure: DirectiveType supports complex profile configurations", () => {
   // Test with custom profile
-  const customProfileResult = ConfigProfileName.create("production");
-  assertEquals(customProfileResult.ok, true);
+  const customProfile = ConfigProfileName.create("production");
+  const directiveResult = DirectiveType.create("to", customProfile);
 
-  if (customProfileResult.ok) {
-    const customProfile = customProfileResult.data;
-    const directiveResult = DirectiveType.create("to", customProfile);
+  // Since "to" is valid for production profile too
+  assertEquals(directiveResult.ok, true);
+  if (directiveResult.ok) {
+    const directiveType = directiveResult.data;
 
-    // Since "to" is valid for production profile too
-    assertEquals(directiveResult.ok, true);
-    if (directiveResult.ok) {
-      const directiveType = directiveResult.data;
+    // Core functionality should work with custom profile
+    assertEquals(directiveType.value, "to");
+    assertEquals(directiveType.profile.value, "production");
+    assertEquals(directiveType.profile.isDefault(), false);
 
-      // Core functionality should work with custom profile
-      assertEquals(directiveType.value, "to");
-      assertEquals(directiveType.profile.value, "production");
-      assertEquals(directiveType.profile.isDefault, false);
-
-      // Profile configuration should be preserved
-      assertEquals(directiveType.validatedByPattern, true);
-      assertEquals(directiveType.isValidForProfile(customProfile), true);
-    }
+    // Profile configuration should be preserved
+    assertEquals(directiveType.validatedByPattern, true);
+    assertEquals(directiveType.isValidForProfile(customProfile), true);
   }
 });
 

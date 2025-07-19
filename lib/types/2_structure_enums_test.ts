@@ -9,7 +9,7 @@
  * - Type compatibility and exhaustiveness
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { type Result, ResultStatus } from "./enums.ts";
 
 Deno.test("2_structure: ResultStatus enum has correct string literal values", () => {

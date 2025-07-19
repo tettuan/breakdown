@@ -24,7 +24,7 @@ Deno.test("DefaultTypePatternProvider - Pattern Creation Behavior", async (t) =>
     assertEquals(pattern.test("to"), true);
     assertEquals(pattern.test("summary"), true);
     assertEquals(pattern.test("defect"), true);
-    assertEquals(pattern.test("find"), true);
+    assertEquals(pattern.test("find"), false);
 
     // Test pattern rejection behavior
     assertEquals(pattern.test("invalid"), false);
@@ -37,21 +37,20 @@ Deno.test("DefaultTypePatternProvider - Pattern Creation Behavior", async (t) =>
     const provider = new DefaultTypePatternProvider();
     const pattern = provider.getLayerTypePattern();
 
-    assertExists(pattern);
-    // TwoParamsLayerTypePattern uses private constructor, so check using duck typing
-    assert(typeof pattern === "object" && "test" in pattern && "getPattern" in pattern);
+    // LayerType pattern validation is now handled directly by LayerType.create() method
+    assertEquals(pattern, null);
 
-    // Test pattern validation behavior
-    assertEquals(pattern.test("project"), true);
-    assertEquals(pattern.test("issue"), true);
-    assertEquals(pattern.test("task"), true);
-    assertEquals(pattern.test("bugs"), true);
+    // Test alternative validation method
+    assertEquals(provider.validateLayerType("project"), true);
+    assertEquals(provider.validateLayerType("issue"), true);
+    assertEquals(provider.validateLayerType("task"), true);
+    assertEquals(provider.validateLayerType("bugs"), true);
 
-    // Test pattern rejection behavior
-    assertEquals(pattern.test("invalid"), false);
-    assertEquals(pattern.test("PROJECT"), false);
-    assertEquals(pattern.test(""), false);
-    assertEquals(pattern.test("project|issue"), false);
+    // Test pattern rejection behavior using alternative validation method
+    assertEquals(provider.validateLayerType("invalid"), false);
+    assertEquals(provider.validateLayerType("PROJECT"), false);
+    assertEquals(provider.validateLayerType(""), false);
+    assertEquals(provider.validateLayerType("project|issue"), false);
   });
 
   await t.step("should maintain pattern consistency across calls", () => {
@@ -65,14 +64,14 @@ Deno.test("DefaultTypePatternProvider - Pattern Creation Behavior", async (t) =>
 
     assertExists(directive1);
     assertExists(directive2);
-    assertExists(layer1);
-    assertExists(layer2);
+    assertEquals(layer1, null);
+    assertEquals(layer2, null);
 
     // Test equivalent behavior
     assertEquals(directive1.test("to"), directive2.test("to"));
     assertEquals(directive1.test("invalid"), directive2.test("invalid"));
-    assertEquals(layer1.test("project"), layer2.test("project"));
-    assertEquals(layer1.test("invalid"), layer2.test("invalid"));
+    assertEquals(provider.validateLayerType("project"), provider.validateLayerType("project"));
+    assertEquals(provider.validateLayerType("invalid"), provider.validateLayerType("invalid"));
   });
 });
 
@@ -85,14 +84,14 @@ Deno.test("DefaultTypePatternProvider - Value Extraction Behavior", async (t) =>
     const values = provider.getValidDirectiveValues();
 
     assertEquals(Array.isArray(values), true);
-    assertEquals(values.length, 4);
+    assertEquals(values.length, 3);
     assertEquals(values.includes("to"), true);
     assertEquals(values.includes("summary"), true);
     assertEquals(values.includes("defect"), true);
-    assertEquals(values.includes("find"), true);
+    assertEquals(values.includes("find"), false);
 
     // Test order consistency
-    assertEquals(values, ["to", "summary", "defect", "find"]);
+    assertEquals(values, ["to", "summary", "defect"]);
   });
 
   await t.step("should extract valid layer values", () => {
@@ -140,7 +139,7 @@ Deno.test("DefaultTypePatternProvider - Value Extraction Behavior", async (t) =>
     assertEquals(isValidDirective("to"), true);
     assertEquals(isValidDirective("summary"), true);
     assertEquals(isValidDirective("defect"), true);
-    assertEquals(isValidDirective("find"), true);
+    assertEquals(isValidDirective("find"), false);
     assertEquals(isValidDirective("invalid"), false);
 
     assertEquals(isValidLayer("project"), true);
@@ -200,7 +199,7 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     const layerPattern = provider.getLayerTypePattern();
 
     assertExists(directivePattern);
-    assertExists(layerPattern);
+    assertEquals(layerPattern, null);
 
     // Test that pattern behavior matches config expectations
     const configDirectivePattern = config.params.two.directiveType.pattern;
@@ -212,8 +211,8 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     // Test consistency between provider patterns and config patterns
     assertEquals(directivePattern.test("to"), directiveRegex.test("to"));
     assertEquals(directivePattern.test("invalid"), directiveRegex.test("invalid"));
-    assertEquals(layerPattern.test("project"), layerRegex.test("project"));
-    assertEquals(layerPattern.test("invalid"), layerRegex.test("invalid"));
+    assertEquals(provider.validateLayerType("project"), layerRegex.test("project"));
+    assertEquals(provider.validateLayerType("invalid"), layerRegex.test("invalid"));
   });
 });
 
@@ -227,9 +226,9 @@ Deno.test("DefaultTypePatternProvider - Debug Behavior", async (t) => {
 
     // Test debug info structure
     assertEquals(debugInfo.providerType, "DefaultTypePatternProvider");
-    assertEquals(debugInfo.directivePattern, "^(to|summary|defect|find)$");
+    assertEquals(debugInfo.directivePattern, "^(to|summary|defect)$");
     assertEquals(debugInfo.layerPattern, "^(project|issue|task|bugs)$");
-    assertEquals(debugInfo.validDirectives, ["to", "summary", "defect", "find"]);
+    assertEquals(debugInfo.validDirectives, ["to", "summary", "defect"]);
     assertEquals(debugInfo.validLayers, ["project", "issue", "task", "bugs"]);
   });
 
@@ -282,7 +281,7 @@ Deno.test("DefaultTypePatternProvider - Integration Behavior", async (t) => {
     const layerPattern = provider.getLayerTypePattern();
 
     assertExists(directivePattern);
-    assertExists(layerPattern);
+    assertEquals(layerPattern, null);
 
     // Test factory-like behavior
     const createDirectiveType = (value: string) => {
@@ -290,7 +289,7 @@ Deno.test("DefaultTypePatternProvider - Integration Behavior", async (t) => {
     };
 
     const createLayerType = (value: string) => {
-      return layerPattern.test(value) ? value : null;
+      return provider.validateLayerType(value) ? value : null;
     };
 
     // Test successful creation

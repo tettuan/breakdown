@@ -10,7 +10,7 @@
  * @module types/params_custom_config_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { ParamsCustomConfig } from "./params_custom_config.ts";
 import { ResultStatus } from "./enums.ts";
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";

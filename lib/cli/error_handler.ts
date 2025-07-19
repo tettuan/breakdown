@@ -9,9 +9,12 @@
  */
 
 import type { Result } from "../types/result.ts";
+import { error as resultError, ok } from "../types/result.ts";
 import type { TwoParamsHandlerError } from "./handlers/two_params_handler.ts";
 import type { UnifiedError } from "../types/unified_error_types.ts";
 import { extractUnifiedErrorMessage } from "../types/unified_error_types.ts";
+import type { CliError } from "./errors.ts";
+import { extractCliErrorMessage, isCliError } from "./errors.ts";
 
 /**
  * Error severity levels for determining handling strategy
@@ -31,6 +34,14 @@ export type ErrorSeverityResult =
   | { kind: "warning" };
 
 /**
+ * Error types for safe error message extraction
+ */
+export type ErrorMessageExtractionError =
+  | { kind: "UnifiedErrorExtractionFailed"; cause: string }
+  | { kind: "UnknownErrorType"; cause: string }
+  | { kind: "PropertyAccessFailed"; cause: string };
+
+/**
  * Configuration validation result
  */
 export type ConfigValidationResult =
@@ -45,11 +56,30 @@ export type ConfigValidationResult =
  * @returns The severity level of the error
  */
 export function analyzeErrorSeverity(
-  error: UnifiedError | TwoParamsHandlerError,
+  error: UnifiedError | TwoParamsHandlerError | CliError,
 ): ErrorSeverityResult {
   // Type check for defensive programming
   if (typeof error !== "object" || error === null) {
     return { kind: "critical" };
+  }
+
+  // CliError specific logic
+  if (isCliError(error)) {
+    switch (error.kind) {
+      case "InvalidOption":
+      case "DuplicateOption":
+      case "ConflictingOptions":
+        return { kind: "warning" };
+      case "MissingRequired":
+      case "InvalidInputType":
+      case "InvalidParameters":
+        return { kind: "critical" };
+      default: {
+        // Exhaustive check
+        const _exhaustive: never = error;
+        return { kind: "critical" };
+      }
+    }
   }
 
   // TwoParamsHandlerError specific logic
@@ -85,29 +115,79 @@ export function analyzeErrorSeverity(
 }
 
 /**
+ * Safely extracts unified error message without throwing exceptions
+ *
+ * @param error - The error to extract message from
+ * @returns Result containing message or extraction error
+ */
+function safeExtractUnifiedErrorMessage(
+  error: UnifiedError,
+): Result<string, ErrorMessageExtractionError> {
+  // Type guard to ensure error has the required structure
+  if (typeof error !== "object" || error === null || !("kind" in error)) {
+    return resultError({
+      kind: "UnifiedErrorExtractionFailed",
+      cause: "Invalid error structure",
+    });
+  }
+
+  // Use a more defensive approach instead of try-catch
+  // Check if extractUnifiedErrorMessage is available and callable
+  if (typeof extractUnifiedErrorMessage !== "function") {
+    return resultError({
+      kind: "UnifiedErrorExtractionFailed",
+      cause: "extractUnifiedErrorMessage is not available",
+    });
+  }
+
+  // Since we can't completely avoid the potential exception from the external function,
+  // we'll wrap it in a way that converts any thrown error to Result
+  let result: string;
+  try {
+    result = extractUnifiedErrorMessage(error);
+  } catch (caught) {
+    return resultError({
+      kind: "UnifiedErrorExtractionFailed",
+      cause: `Exception thrown: ${String(caught)}`,
+    });
+  }
+
+  // Check if the result indicates a fallback behavior
+  if (result.startsWith("Unknown error:")) {
+    return resultError({
+      kind: "UnifiedErrorExtractionFailed",
+      cause: "Fell back to JSON.stringify",
+    });
+  }
+
+  return ok(result);
+}
+
+/**
  * Extracts a readable error message from various error formats
  * Now returns a Result type following Totality principle
  *
  * @param error - The error object to extract message from
  * @returns Result containing formatted error message string
  */
-export function extractErrorMessage(error: unknown): Result<string, { kind: "UnknownErrorType" }> {
+export function extractErrorMessage(error: unknown): Result<string, ErrorMessageExtractionError> {
   if (typeof error === "string") {
-    return { ok: true, data: error };
+    return ok(error);
   }
 
   if (typeof error === "object" && error !== null) {
-    // Try unified error handling first for objects with kind property
+    // Try CLI error handling first
+    if (isCliError(error)) {
+      return ok(extractCliErrorMessage(error));
+    }
+
+    // Try unified error handling for objects with kind property
     if ("kind" in error) {
-      try {
-        const unifiedMessage = extractUnifiedErrorMessage(error as UnifiedError);
-        // Only use unified message if it doesn't fall back to JSON.stringify
-        if (!unifiedMessage.startsWith("Unknown error:")) {
-          return { ok: true, data: unifiedMessage };
-        }
-      } catch {
-        // Fall through to standard property extraction
+      const unifiedResult = safeExtractUnifiedErrorMessage(error as UnifiedError);
+      if (unifiedResult.ok) {
+        return ok(unifiedResult.data);
       }
+      // Continue to fallback options if unified extraction fails
     }
 
     // Type-safe property access
@@ -115,17 +195,27 @@ export function extractErrorMessage(error: unknown): Result<string, { kind: "Unk
 
     // Try standard message/error properties
     if (typeof errorObj.message === "string") {
-      return { ok: true, data: errorObj.message };
+      return ok(errorObj.message);
     }
     if (typeof errorObj.error === "string") {
-      return { ok: true, data: errorObj.error };
+      return ok(errorObj.error);
     }
 
     // JSON fallback for objects without standard properties
-    return { ok: true, data: JSON.stringify(error) };
+    let jsonString: string;
+    try {
+      jsonString = JSON.stringify(error);
+    } catch (stringifyError) {
+      return resultError({
+        kind: "PropertyAccessFailed",
+        cause: `JSON.stringify failed: ${String(stringifyError)}`,
+      });
+    }
+    return ok(jsonString);
   }
 
-  return { ok: true, data: String(error) };
+  // Final fallback: convert to string
+  return ok(String(error));
 }
 
 /**
@@ -138,15 +228,27 @@ export function extractErrorMessage(error: unknown): Result<string, { kind: "Unk
 export function formatError(
   error: unknown,
   kind?: string,
-): Result<string, { kind: "FormatError" }> {
+): Result<string, ErrorMessageExtractionError> {
   if (typeof error === "object" && error !== null && "kind" in error) {
     const errorWithKind = error as { kind: string };
-    const baseMessage = `${errorWithKind.kind}: ${JSON.stringify(error).substring(0, 200)}`;
-    return { ok: true, data: kind ? `${kind}: ${baseMessage}` : baseMessage };
+
+    // Safe JSON.stringify with error handling
+    let jsonString: string;
+    try {
+      jsonString = JSON.stringify(error).substring(0, 200);
+    } catch (stringifyError) {
+      return resultError({
+        kind: "PropertyAccessFailed",
+        cause: `JSON.stringify failed during formatting: ${String(stringifyError)}`,
+      });
+    }
+
+    const baseMessage = `${errorWithKind.kind}: ${jsonString}`;
+    return ok(kind ? `${kind}: ${baseMessage}` : baseMessage);
   }
 
   const baseMessage = String(error);
-  return { ok: true, data: kind ? `${kind}: ${baseMessage}` : baseMessage };
+  return ok(kind ? `${kind}: ${baseMessage}` : baseMessage);
 }
 
 /**
@@ -206,6 +308,26 @@ export type ErrorHandlingResult =
   | { ok: true; handled: false; reason: "critical_error" | "test_scenario" | "invalid_error_type" };
 
 /**
+ * Handles CLI errors with appropriate severity
+ * Returns Result type following Totality principle
+ *
+ * @param cliError - The CLI error to handle
+ * @returns Result indicating if the error was handled gracefully
+ */
+export function handleCliError(cliError: CliError): ErrorHandlingResult {
+  const severity = analyzeErrorSeverity(cliError);
+  const message = extractCliErrorMessage(cliError);
+
+  if (severity.kind === "warning") {
+    console.warn(`⚠️ CLI warning: ${message}`);
+    return { ok: true, handled: true, action: "logged_warning" };
+  }
+
+  console.error(`❌ CLI error: ${message}`);
+  return { ok: true, handled: false, reason: "critical_error" };
+}
+
+/**
  * Handles errors from two params handler with appropriate severity
  * Returns Result type following Totality principle
  *
@@ -243,6 +365,8 @@ export function handleTwoParamsError(
     >;
     const errorMsgResult = extractErrorMessage(promptError.error);
     if (!errorMsgResult.ok) {
+      // Log the extraction error for debugging
+      console.warn(`⚠️ Error message extraction failed: ${errorMsgResult.error.cause}`);
       return { ok: true, handled: false, reason: "invalid_error_type" };
     }
 

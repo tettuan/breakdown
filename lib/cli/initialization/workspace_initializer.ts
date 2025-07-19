@@ -8,7 +8,6 @@
  */
 
 import { ensureDir } from "@std/fs";
-import { BreakdownConfig } from "../../deps.ts";
 import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pattern_provider.ts";
 
 /**

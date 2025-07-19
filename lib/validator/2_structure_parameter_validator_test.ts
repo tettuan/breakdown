@@ -9,7 +9,7 @@
  * @module lib/validator/2_structure_parameter_validator_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type ConfigValidator,
   ParameterValidatorV2 as ParameterValidator,
@@ -126,10 +126,11 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   assertEquals(isError(invalidDirectiveResult), true);
   if (isError(invalidDirectiveResult)) {
     const error = invalidDirectiveResult.error;
-    assertEquals(error.kind, "TypeCreationError");
-    if (error.kind === "TypeCreationError") {
-      assertEquals(error.type, "directive");
+    // ParamsTypeValidator rejects invalid directive and it's mapped to specific error
+    assertEquals(error.kind, "InvalidDirectiveType");
+    if (error.kind === "InvalidDirectiveType") {
       assertEquals(error.value, "invalid");
+      assertExists(error.validPattern);
     }
   }
 
@@ -141,10 +142,11 @@ Deno.test("2_structure: ParameterValidator Result type provides comprehensive er
   assertEquals(isError(invalidLayerResult), true);
   if (isError(invalidLayerResult)) {
     const error = invalidLayerResult.error;
-    assertEquals(error.kind, "TypeCreationError");
-    if (error.kind === "TypeCreationError") {
-      assertEquals(error.type, "layer");
+    // ParamsTypeValidator rejects invalid layer and it's mapped to specific error
+    assertEquals(error.kind, "InvalidLayerType");
+    if (error.kind === "InvalidLayerType") {
       assertEquals(error.value, "invalid");
+      assertExists(error.validPattern);
     }
   }
 });
@@ -207,7 +209,7 @@ Deno.test("2_structure: ParameterValidator handles OneParams with proper default
     const validated = result.data;
 
     // Should create default directive
-    assertEquals(validated.directive.value, "init");
+    assertEquals(validated.directive.value, "to");
     // Should use param as layer
     assertEquals(validated.layer.value, "project");
     // Should preserve metadata source
@@ -233,7 +235,7 @@ Deno.test("2_structure: ParameterValidator handles ZeroParams with complete defa
     const validated = result.data;
 
     // Should use complete defaults
-    assertEquals(validated.directive.value, "init");
+    assertEquals(validated.directive.value, "to");
     assertEquals(validated.layer.value, "project");
     // Should preserve metadata source
     assertEquals(validated.metadata.source, "ZeroParamsResult");
@@ -248,9 +250,9 @@ Deno.test("2_structure: ValidationError discriminated union provides type safety
   // Test each error kind has proper structure
   const errorTestCases: Array<[TwoParams_Result, ValidationError["kind"]]> = [
     [{ ...createValidTwoParams(), type: "one" as unknown as "two" }, "ParamsTypeError"],
-    [createValidTwoParams("", "project"), "ParamsTypeError"],
-    [createValidTwoParams("invalid", "project"), "TypeCreationError"],
-    [createValidTwoParams("to", "invalid"), "TypeCreationError"],
+    [createValidTwoParams("", "project"), "ParamsTypeError"], // Empty string is treated as missing
+    [createValidTwoParams("invalid", "project"), "InvalidDirectiveType"],
+    [createValidTwoParams("to", "invalid"), "InvalidLayerType"],
   ];
 
   for (const [params, expectedKind] of errorTestCases) {
@@ -261,6 +263,18 @@ Deno.test("2_structure: ValidationError discriminated union provides type safety
 
       // Verify discriminated union structure
       switch (result.error.kind) {
+        case "InvalidParamsType":
+          assertExists(result.error.expected);
+          assertExists(result.error.received);
+          break;
+        case "InvalidDirectiveType":
+          assertExists(result.error.value);
+          assertExists(result.error.validPattern);
+          break;
+        case "InvalidLayerType":
+          assertExists(result.error.value);
+          assertExists(result.error.validPattern);
+          break;
         case "ParamsTypeError":
         case "PathValidationError":
         case "OptionsNormalizationError":
@@ -285,7 +299,7 @@ Deno.test("2_structure: Path validation maintains consistent error structures", 
   );
 
   if (isError(nullCharResult)) {
-    assertEquals(nullCharResult.error.kind, "PathValidationFailed");
+    assertEquals(nullCharResult.error.kind, "PathValidationError");
     if (nullCharResult.error.kind === "PathValidationError") {
       assertExists(nullCharResult.error.error);
     }
@@ -297,7 +311,7 @@ Deno.test("2_structure: Path validation maintains consistent error structures", 
   );
 
   if (isError(emptyPathResult)) {
-    assertEquals(emptyPathResult.error.kind, "PathValidationFailed");
+    assertEquals(emptyPathResult.error.kind, "PathValidationError");
     if (emptyPathResult.error.kind === "PathValidationError") {
       assertExists(emptyPathResult.error.error);
     }
@@ -399,7 +413,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
     assertEquals(metadata.validatedAt <= afterValidation, true);
 
     // Test source tracking
-    assertEquals(metadata.source, "TwoParams");
+    assertEquals(metadata.source, "TwoParams_Result");
 
     // Test profile extraction
     assertEquals(metadata.profileName, "staging");
@@ -414,7 +428,7 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   });
 
   if (isOk(oneParamResult)) {
-    assertEquals(oneParamResult.data.metadata.source, "OneParams");
+    assertEquals(oneParamResult.data.metadata.source, "OneParamsResult");
   }
 
   const zeroParamResult = validator.validateZeroParams({
@@ -424,6 +438,6 @@ Deno.test("2_structure: Metadata structure provides full traceability", () => {
   });
 
   if (isOk(zeroParamResult)) {
-    assertEquals(zeroParamResult.data.metadata.source, "ZeroParams");
+    assertEquals(zeroParamResult.data.metadata.source, "ZeroParamsResult");
   }
 });

@@ -9,7 +9,7 @@
  * - Error factory pattern implementation
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   BaseError,
   ConfigurationError,
@@ -358,7 +358,12 @@ Deno.test("0_architecture: extractUnifiedErrorMessage - totality for all error t
   const configErrors: ConfigurationError[] = [
     { kind: "ConfigurationError", message: "Config error" },
     { kind: "ProfileNotFound", profile: "prod" },
-    { kind: "InvalidConfiguration", details: "Invalid port", field: "port", reason: "Invalid port" },
+    {
+      kind: "InvalidConfiguration",
+      details: "Invalid port",
+      field: "port",
+      reason: "Invalid port",
+    },
   ];
 
   for (const error of configErrors) {
@@ -397,6 +402,8 @@ Deno.test("0_architecture: Type discriminators enable exhaustive pattern matchin
       // ValidationError variants
       case "InvalidInput":
         return `Validation error: ${error.field}`;
+      case "EmptyValue":
+        return `Empty value: ${error.field}`;
       case "MissingRequiredField":
         return `Missing field: ${error.field}`;
       case "InvalidFieldType":

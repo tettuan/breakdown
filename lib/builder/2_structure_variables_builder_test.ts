@@ -9,7 +9,7 @@
  * @module lib/builder/2_structure_variables_builder_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type BuilderVariableError as _BuilderVariableError,
   type FactoryResolvedValues,
@@ -77,8 +77,8 @@ Deno.test("2_structure: BuilderVariableError accumulation pattern", () => {
     assertEquals(errors.length >= 2, true); // At least duplicate and prefix errors
 
     // Check error types with proper type guards
-    const duplicateError = errors.find((e) => "kind" in e && e.kind === "DuplicateVariable") as {
-      kind: "DuplicateVariable";
+    const duplicateError = errors.find((e) => "kind" in e && e.kind === "duplicate") as {
+      kind: "duplicate";
       name: string;
     } | undefined;
     assertExists(duplicateError);
@@ -86,8 +86,8 @@ Deno.test("2_structure: BuilderVariableError accumulation pattern", () => {
       assertEquals(duplicateError.name, "input_text_file");
     }
 
-    const prefixError = errors.find((e) => "kind" in e && e.kind === "InvalidPrefix") as {
-      kind: "InvalidPrefix";
+    const prefixError = errors.find((e) => "kind" in e && e.kind === "prefix") as {
+      kind: "prefix";
       name: string;
       expectedPrefix: string;
     } | undefined;
@@ -112,9 +112,9 @@ Deno.test("2_structure: Variable name uniqueness enforcement", () => {
   const result = builder.build();
 
   if (isError(result)) {
-    const duplicateError = result.error.find((e) => e.kind === "DuplicateVariable");
+    const duplicateError = result.error.find((e) => e.kind === "duplicate");
     assertExists(duplicateError);
-    if (duplicateError?.kind === "DuplicateVariable") {
+    if (duplicateError?.kind === "duplicate") {
       assertEquals(duplicateError.name, "destination_path");
     }
   }
@@ -237,20 +237,16 @@ Deno.test("2_structure: Factory values validation", () => {
     const errors = validationResult.error;
 
     // Check for missing field errors
-    const missingPrompt = errors.find((e) =>
-      e.kind === "FactoryValueMissing" && e.field === "promptFilePath"
-    );
+    const missingPrompt = errors.find((e) => e.kind === "missing" && e.field === "promptFilePath");
     assertExists(missingPrompt);
 
-    const missingOutput = errors.find((e) =>
-      e.kind === "FactoryValueMissing" && e.field === "outputFilePath"
-    );
+    const missingOutput = errors.find((e) => e.kind === "missing" && e.field === "outputFilePath");
     assertExists(missingOutput);
 
     // Check for prefix error
-    const prefixError = errors.find((e) => e.kind === "InvalidPrefix");
+    const prefixError = errors.find((e) => e.kind === "prefix");
     assertExists(prefixError);
-    if (prefixError?.kind === "InvalidPrefix") {
+    if (prefixError?.kind === "prefix") {
       assertEquals(prefixError.name, "invalid-var");
     }
   }
@@ -269,9 +265,9 @@ Deno.test("2_structure: Stdin variable special handling", () => {
   const result = builder.build();
 
   if (isError(result)) {
-    const duplicateError = result.error.find((e) => e.kind === "DuplicateVariable");
+    const duplicateError = result.error.find((e) => e.kind === "duplicate");
     assertExists(duplicateError);
-    if (duplicateError?.kind === "DuplicateVariable") {
+    if (duplicateError?.kind === "duplicate") {
       assertEquals(duplicateError.name, "input_text");
     }
   }

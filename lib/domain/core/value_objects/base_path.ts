@@ -327,12 +327,13 @@ export abstract class BasePathValueObject {
           reason: `${pathError.message} (platform: ${pathError.platform})`,
         }));
 
-      default:
+      default: {
         // Exhaustive check for TypeScript
         const _exhaustive: never = pathError;
         return error(ErrorFactory.validationError("ValidationFailed", {
           errors: ["Unknown path validation error"],
         }));
+      }
     }
   }
 

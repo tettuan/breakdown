@@ -72,7 +72,7 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     const config = _defaultConfigTwoParams.params.two;
 
     // Test directiveType pattern contains expected values
-    assertEquals(config.directiveType.pattern, "^(to|summary|defect|find)$");
+    assertEquals(config.directiveType.pattern, "^(to|summary|defect)$");
 
     // Test layerType pattern contains expected values
     assertEquals(config.layerType.pattern, "^(project|issue|task|bugs)$");

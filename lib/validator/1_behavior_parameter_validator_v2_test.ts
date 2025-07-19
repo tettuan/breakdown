@@ -432,7 +432,7 @@ Deno.test("1_behavior - Error propagation through validation pipeline", () => {
 
 Deno.test("1_behavior - Validation result structure consistency", () => {
   // Test that validation results have consistent structure
-  const mockTwoParamsResult: TwoParams_Result = {
+  const _mockTwoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
     demonstrativeType: "to",

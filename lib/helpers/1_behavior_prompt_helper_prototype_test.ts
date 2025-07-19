@@ -12,7 +12,7 @@
  * @module helpers/prompt_helper_prototype
  */
 
-import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "jsr:@std/assert@0.224.0";
 import { DirectiveType, LayerType } from "../types/mod.ts";
 import {
   PromptTemplate,
@@ -410,7 +410,7 @@ Deno.test("PromptHelperPrototype enhancement - applies directive-specific output
   const testCases = [
     { directive: "summary", expected: "Summary (max 100 chars)" },
     { directive: "to", expected: "Converted content" },
-    { directive: "custom", expected: "Provide output in the specified format" },
+    { directive: "defect", expected: "Defect analysis" },
   ];
 
   for (const testCase of testCases) {
@@ -426,8 +426,8 @@ Deno.test("PromptHelperPrototype enhancement - applies directive-specific output
 
 Deno.test("PromptHelperPrototype error handling - provides detailed error information", async () => {
   const helper = new PromptHelperPrototype({ enableDynamicContent: false });
-  const directive = createTestDirectiveType("test");
-  const layer = createTestLayerType("test", "project");
+  const directive = createTestDirectiveType("to");
+  const layer = createTestLayerType("to", "project");
 
   try {
     await helper.generateDynamicContent(directive, layer);

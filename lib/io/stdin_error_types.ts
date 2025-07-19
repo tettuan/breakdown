@@ -1,6 +1,6 @@
 /**
  * @fileoverview Stdin Error Types and Guards
- * 
+ *
  * This module provides the error types and type guards needed for
  * stdin error handling tests.
  */
@@ -8,7 +8,7 @@
 /**
  * Union type for all possible stdin errors
  */
-export type StdinErrorType = 
+export type StdinErrorType =
   | { kind: "ReadError"; message: string }
   | { kind: "TimeoutError"; timeout: number }
   | { kind: "EmptyInputError"; message: string }
@@ -19,27 +19,39 @@ export type StdinErrorType =
 /**
  * Type guards for stdin errors
  */
-export function isReadError(error: StdinErrorType): error is { kind: "ReadError"; message: string } {
+export function isReadError(
+  error: StdinErrorType,
+): error is { kind: "ReadError"; message: string } {
   return error.kind === "ReadError";
 }
 
-export function isTimeoutError(error: StdinErrorType): error is { kind: "TimeoutError"; timeout: number } {
+export function isTimeoutError(
+  error: StdinErrorType,
+): error is { kind: "TimeoutError"; timeout: number } {
   return error.kind === "TimeoutError";
 }
 
-export function isEmptyInputError(error: StdinErrorType): error is { kind: "EmptyInputError"; message: string } {
+export function isEmptyInputError(
+  error: StdinErrorType,
+): error is { kind: "EmptyInputError"; message: string } {
   return error.kind === "EmptyInputError";
 }
 
-export function isNotAvailableError(error: StdinErrorType): error is { kind: "NotAvailableError"; environment: string } {
+export function isNotAvailableError(
+  error: StdinErrorType,
+): error is { kind: "NotAvailableError"; environment: string } {
   return error.kind === "NotAvailableError";
 }
 
-export function isValidationError(error: StdinErrorType): error is { kind: "ValidationError"; field: string; message: string } {
+export function isValidationError(
+  error: StdinErrorType,
+): error is { kind: "ValidationError"; field: string; message: string } {
   return error.kind === "ValidationError";
 }
 
-export function isConfigurationError(error: StdinErrorType): error is { kind: "ConfigurationError"; setting: string; value?: unknown } {
+export function isConfigurationError(
+  error: StdinErrorType,
+): error is { kind: "ConfigurationError"; setting: string; value?: unknown } {
   return error.kind === "ConfigurationError";
 }
 
@@ -59,7 +71,7 @@ export function formatStdinError(error: StdinErrorType): string {
     case "ValidationError":
       return `Validation error for ${error.field}: ${error.message}`;
     case "ConfigurationError":
-      return error.value !== undefined 
+      return error.value !== undefined
         ? `Configuration error for ${error.setting}: ${error.value}`
         : `Configuration error for ${error.setting}`;
   }

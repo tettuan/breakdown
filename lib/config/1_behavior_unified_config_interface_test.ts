@@ -6,7 +6,7 @@
  * profile switching behavior, and configuration merging logic.
  */
 
-import { assert, assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertExists, assertStringIncludes } from "jsr:@std/assert@0.224.0";
 import {
   CONFIG_PRESETS,
   type ConfigurationError,

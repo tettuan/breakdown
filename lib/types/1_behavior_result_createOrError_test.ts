@@ -6,7 +6,7 @@
  * createOrError pattern similar to DirectiveType implementation
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { error, ok, Result } from "./result.ts";
 import { ErrorFactory, ValidationError } from "./mod.ts";
 

@@ -494,7 +494,7 @@ export class ConfigLoader {
 /**
  * Convenience export for backward compatibility and easier usage
  * Allows direct import of loadConfig function without accessing ConfigLoader
- * 
+ *
  * @example
  * ```typescript
  * import { loadConfig } from "./loader.ts";
@@ -506,7 +506,7 @@ export const loadConfig = ConfigLoader.loadConfig.bind(ConfigLoader);
 /**
  * Convenience export for loading BreakdownConfig
  * Provides direct access to loadBreakdownConfig function
- * 
+ *
  * @example
  * ```typescript
  * import { loadBreakdownConfig } from "./loader.ts";

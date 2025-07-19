@@ -8,7 +8,7 @@
  * - Totality principles
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptVariablesFactory } from "../prompt_variables_factory.ts";
 
 Deno.test("PromptVariablesFactory - Architecture - exports static factory methods only", () => {
@@ -16,18 +16,32 @@ Deno.test("PromptVariablesFactory - Architecture - exports static factory method
   assertExists(PromptVariablesFactory.create);
   assertExists(PromptVariablesFactory.createWithConfig);
 
-  // インスタンス化できないことを確認（プライベートコンストラクタ）
-  const isConstructible = () => {
-    try {
-      // @ts-expect-error: Testing private constructor
-      new PromptVariablesFactory({}, {});
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  // Verify the factory has static methods only
+  assertEquals(
+    typeof PromptVariablesFactory.create,
+    "function",
+    "Should have static create method",
+  );
+  assertEquals(
+    typeof PromptVariablesFactory.createWithConfig,
+    "function",
+    "Should have static createWithConfig method",
+  );
 
-  assertEquals(isConstructible(), false, "Constructor should be private");
+  // Verify that we're not exposing instance methods as static
+  const staticMethods = Object.getOwnPropertyNames(PromptVariablesFactory).filter(
+    (name) =>
+      typeof (PromptVariablesFactory as unknown as Record<string, () => unknown>)[name] ===
+        "function",
+  );
+
+  // Should only have create and createWithConfig as static methods
+  assertEquals(staticMethods.includes("create"), true, "Should have create method");
+  assertEquals(
+    staticMethods.includes("createWithConfig"),
+    true,
+    "Should have createWithConfig method",
+  );
 });
 
 Deno.test("PromptVariablesFactory - Architecture - returns Result type from all factory methods", async () => {

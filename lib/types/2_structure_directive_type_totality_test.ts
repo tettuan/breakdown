@@ -9,13 +9,13 @@
  * - Type safety with ValidationError
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { isError, isOk } from "./result.ts";
 
 // Test helper
-const createTwoParamsResult = (directiveType: string): TwoParams_Result => ({
+const _createTwoParamsResult = (directiveType: string): TwoParams_Result => ({
   type: "two",
   directiveType,
   layerType: "project",

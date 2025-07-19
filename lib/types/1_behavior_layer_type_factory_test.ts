@@ -7,7 +7,7 @@
  * @module types/1_behavior_layer_type_factory_test
  */
 
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -129,7 +129,10 @@ Deno.test("LayerType Behavior - Suggestion Generation", () => {
   // Test error handling for invalid patterns
   const invalidFormatResult = LayerType.fromString("INVALID-UPPER-CASE");
   if (!invalidFormatResult.ok && invalidFormatResult.error.kind === "InvalidFormat") {
-    assert(invalidFormatResult.error.message.includes("invalid characters"), "Should explain format error");
+    assert(
+      invalidFormatResult.error.message.includes("invalid characters"),
+      "Should explain format error",
+    );
   } else if (!invalidFormatResult.ok && invalidFormatResult.error.kind === "PatternMismatch") {
     assert(invalidFormatResult.error.validLayers.length > 0, "Should provide valid layers");
   } else {
@@ -138,7 +141,9 @@ Deno.test("LayerType Behavior - Suggestion Generation", () => {
   }
 
   // Test error handling for too long inputs
-  const tooLongResult = LayerType.fromString("this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length");
+  const tooLongResult = LayerType.fromString(
+    "this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length",
+  );
   assert(!tooLongResult.ok, "Too long input should fail");
   if (!tooLongResult.ok && tooLongResult.error.kind === "TooLong") {
     assert(tooLongResult.error.maxLength > 0, "Should provide max length information");
@@ -209,7 +214,9 @@ Deno.test("LayerType Behavior - Error Message Quality", () => {
   }
 
   // Too long layer error
-  const tooLongResult = LayerType.fromString("this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length");
+  const tooLongResult = LayerType.fromString(
+    "this_is_a_very_long_layer_name_that_exceeds_the_maximum_allowed_length",
+  );
   assert(!tooLongResult.ok, "Too long layer should fail");
   if (!tooLongResult.ok) {
     assertEquals(tooLongResult.error.kind, "TooLong", "Should identify too long error");

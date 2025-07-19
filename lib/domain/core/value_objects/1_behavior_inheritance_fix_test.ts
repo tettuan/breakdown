@@ -6,7 +6,7 @@
  * and its subclasses.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { BasePathValueObject, DEFAULT_PATH_CONFIG } from "./base_path.ts";
 import { WorkingDirectoryPath } from "./working_directory_path.ts";
 

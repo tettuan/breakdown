@@ -12,7 +12,7 @@
  */
 
 import { assertEquals, assertExists, assertStringIncludes } from "../deps.ts";
-import { CliError, CliErrorCode } from "./errors.ts";
+import { CliError, CliErrorFactory, isCliError } from "./errors.ts";
 import { BreakdownLogger as _BreakdownLogger } from "@tettuan/breakdownlogger";
 
 const _logger = new _BreakdownLogger("cli-errors-integration-test");
@@ -26,8 +26,8 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
 
     for (const arg of args) {
       if (arg.startsWith("--") && !validOptions.includes(arg)) {
-        return new CliError(
-          CliErrorCode.INVALID_OPTION,
+        return CliErrorFactory.invalidOption(
+          arg,
           `Unknown option '${arg}'. Use --help to see available options.`,
         );
       }
@@ -37,7 +37,7 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
 
   const invalidOptionError = parseArgs(["--invalid-flag", "--output", "file.txt"]);
   assertExists(invalidOptionError, "Should detect invalid option");
-  assertEquals(invalidOptionError.code, CliErrorCode.INVALID_OPTION);
+  assertEquals(invalidOptionError.kind, "InvalidOption");
   assertStringIncludes(invalidOptionError.message, "--invalid-flag");
 
   // Scenario 2: Duplicate option detection
@@ -47,8 +47,9 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
     for (const arg of args) {
       if (arg.startsWith("--")) {
         if (seen.has(arg)) {
-          return new CliError(
-            CliErrorCode.DUPLICATE_OPTION,
+          return CliErrorFactory.duplicateOption(
+            arg,
+            2,
             `Option '${arg}' specified multiple times. Each option should be used only once.`,
           );
         }
@@ -60,7 +61,7 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
 
   const duplicateError = detectDuplicates(["--verbose", "--output", "file1.txt", "--verbose"]);
   assertExists(duplicateError, "Should detect duplicate option");
-  assertEquals(duplicateError.code, CliErrorCode.DUPLICATE_OPTION);
+  assertEquals(duplicateError.kind, "DuplicateOption");
   assertStringIncludes(duplicateError.message, "--verbose");
 
   // Scenario 3: Conflicting options detection
@@ -69,8 +70,8 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
     const hasVerbose = args.includes("--verbose");
 
     if (hasQuiet && hasVerbose) {
-      return new CliError(
-        CliErrorCode.CONFLICTING_OPTIONS,
+      return CliErrorFactory.conflictingOptions(
+        ["--quiet", "--verbose"],
         "Cannot use --quiet and --verbose together. Choose one output verbosity level.",
       );
     }
@@ -79,7 +80,7 @@ Deno.test("Integration: CliError with command line argument simulation", () => {
 
   const conflictError = detectConflicts(["--quiet", "--output", "file.txt", "--verbose"]);
   assertExists(conflictError, "Should detect conflicting options");
-  assertEquals(conflictError.code, CliErrorCode.CONFLICTING_OPTIONS);
+  assertEquals(conflictError.kind, "ConflictingOptions");
   assertStringIncludes(conflictError.message, "--quiet and --verbose");
 });
 
@@ -100,8 +101,9 @@ Deno.test("Integration: CliError with parameter validation", () => {
     if (args.timeout !== undefined) {
       const timeoutValue = parseInt(args.timeout);
       if (isNaN(timeoutValue) || timeoutValue < 0) {
-        return new CliError(
-          CliErrorCode.INVALID_PARAMETERS,
+        return CliErrorFactory.invalidParameters(
+          args.timeout,
+          "Invalid timeout value",
           `Invalid timeout value '${args.timeout}'. Expected positive number in milliseconds.`,
         );
       }
@@ -112,8 +114,9 @@ Deno.test("Integration: CliError with parameter validation", () => {
     if (args.port !== undefined) {
       const portValue = parseInt(args.port);
       if (isNaN(portValue) || portValue < 1 || portValue > 65535) {
-        return new CliError(
-          CliErrorCode.INVALID_PARAMETERS,
+        return CliErrorFactory.invalidParameters(
+          args.port,
+          "Invalid port value",
           `Invalid port value '${args.port}'. Expected number between 1 and 65535.`,
         );
       }
@@ -123,8 +126,10 @@ Deno.test("Integration: CliError with parameter validation", () => {
     // Validate boolean parameter
     if (args.force !== undefined) {
       if (!["true", "false", "1", "0"].includes(args.force.toLowerCase())) {
-        return new CliError(
-          CliErrorCode.INVALID_INPUT_TYPE,
+        return CliErrorFactory.invalidInputType(
+          "boolean",
+          args.force,
+          "--force argument",
           `Invalid boolean value '${args.force}' for --force. Expected 'true' or 'false'.`,
         );
       }
@@ -135,8 +140,9 @@ Deno.test("Integration: CliError with parameter validation", () => {
     if (args.outputFormat !== undefined) {
       const validFormats = ["json", "yaml", "text"];
       if (!validFormats.includes(args.outputFormat)) {
-        return new CliError(
-          CliErrorCode.INVALID_PARAMETERS,
+        return CliErrorFactory.invalidParameters(
+          args.outputFormat,
+          "Invalid output format",
           `Invalid output format '${args.outputFormat}'. Expected one of: ${
             validFormats.join(", ")
           }.`,
@@ -150,32 +156,32 @@ Deno.test("Integration: CliError with parameter validation", () => {
 
   // Test invalid timeout
   const timeoutError = validateConfig({ timeout: "invalid" });
-  assertEquals(timeoutError instanceof CliError, true);
-  if (timeoutError instanceof CliError) {
-    assertEquals(timeoutError.code, CliErrorCode.INVALID_PARAMETERS);
+  assertEquals(isCliError(timeoutError), true);
+  if (isCliError(timeoutError)) {
+    assertEquals(timeoutError.kind, "InvalidParameters");
     assertStringIncludes(timeoutError.message, "timeout");
   }
 
   // Test invalid port
   const portError = validateConfig({ port: "99999" });
-  assertEquals(portError instanceof CliError, true);
-  if (portError instanceof CliError) {
-    assertEquals(portError.code, CliErrorCode.INVALID_PARAMETERS);
+  assertEquals(isCliError(portError), true);
+  if (isCliError(portError)) {
+    assertEquals(portError.kind, "InvalidParameters");
     assertStringIncludes(portError.message, "port");
   }
 
   // Test invalid boolean
   const boolError = validateConfig({ force: "maybe" });
-  assertEquals(boolError instanceof CliError, true);
-  if (boolError instanceof CliError) {
-    assertEquals(boolError.code, CliErrorCode.INVALID_INPUT_TYPE);
+  assertEquals(isCliError(boolError), true);
+  if (isCliError(boolError)) {
+    assertEquals(boolError.kind, "InvalidInputType");
     assertStringIncludes(boolError.message, "boolean");
   }
 
   // Test valid configuration
   const validConfig = validateConfig({ timeout: "5000", port: "3000", force: "true" });
-  assertEquals(validConfig instanceof CliError, false);
-  if (!(validConfig instanceof CliError)) {
+  assertEquals(isCliError(validConfig), false);
+  if (!isCliError(validConfig)) {
     assertEquals(validConfig.timeout, 5000);
     assertEquals(validConfig.port, 3000);
     assertEquals(validConfig.force, true);
@@ -212,8 +218,9 @@ Deno.test("Integration: CliError with required argument validation", () => {
   const validateCommand = (commandName: string, args: string[]): CliError | null => {
     const spec = commands[commandName];
     if (!spec) {
-      return new CliError(
-        CliErrorCode.INVALID_PARAMETERS,
+      return CliErrorFactory.invalidParameters(
+        commandName,
+        "Unknown command",
         `Unknown command '${commandName}'. Available commands: ${
           Object.keys(commands).join(", ")
         }.`,
@@ -222,8 +229,8 @@ Deno.test("Integration: CliError with required argument validation", () => {
 
     if (args.length < spec.requiredArgs.length) {
       const missing = spec.requiredArgs.slice(args.length);
-      return new CliError(
-        CliErrorCode.MISSING_REQUIRED,
+      return CliErrorFactory.missingRequired(
+        missing,
         `Missing required arguments for '${commandName}': ${
           missing.join(", ")
         }. Usage: ${commandName} ${spec.requiredArgs.join(" ")} [${spec.optionalArgs.join("] [")}]`,
@@ -236,13 +243,13 @@ Deno.test("Integration: CliError with required argument validation", () => {
   // Test missing required arguments
   const missingArgsError = validateCommand("to", ["project"]);
   assertExists(missingArgsError, "Should detect missing required arguments");
-  assertEquals(missingArgsError.code, CliErrorCode.MISSING_REQUIRED);
+  assertEquals(missingArgsError.kind, "MissingRequired");
   assertStringIncludes(missingArgsError.message, "input-file");
 
   // Test unknown command
   const unknownCommandError = validateCommand("unknown", []);
   assertExists(unknownCommandError, "Should detect unknown command");
-  assertEquals(unknownCommandError.code, CliErrorCode.INVALID_PARAMETERS);
+  assertEquals(unknownCommandError.kind, "InvalidParameters");
   assertStringIncludes(unknownCommandError.message, "Unknown command");
 
   // Test valid command
@@ -256,7 +263,7 @@ Deno.test("Integration: CliError with logging and error reporting", () => {
   const reportError = (error: CliError): { logged: boolean; userMessage: string } => {
     // Log detailed error for debugging
     _logger.error("CLI validation error occurred", {
-      errorCode: error.code,
+      errorCode: error.kind,
       message: error.message,
       timestamp: new Date().toISOString(),
       errorType: "CliError",
@@ -264,14 +271,14 @@ Deno.test("Integration: CliError with logging and error reporting", () => {
 
     // Generate user-friendly message
     const userMessage = (() => {
-      switch (error.code) {
-        case CliErrorCode.INVALID_OPTION:
+      switch (error.kind) {
+        case "InvalidOption":
           return `❌ ${error.message}\n💡 Use --help to see available options.`;
-        case CliErrorCode.MISSING_REQUIRED:
+        case "MissingRequired":
           return `❌ ${error.message}\n💡 Check the command usage with --help.`;
-        case CliErrorCode.CONFLICTING_OPTIONS:
+        case "ConflictingOptions":
           return `❌ ${error.message}\n💡 Review your command line arguments.`;
-        case CliErrorCode.INVALID_PARAMETERS:
+        case "InvalidParameters":
           return `❌ ${error.message}\n💡 Check parameter values and types.`;
         default:
           return `❌ ${error.message}`;
@@ -282,8 +289,8 @@ Deno.test("Integration: CliError with logging and error reporting", () => {
   };
 
   // Test error reporting for different error types
-  const invalidOptionError = new CliError(
-    CliErrorCode.INVALID_OPTION,
+  const invalidOptionError = CliErrorFactory.invalidOption(
+    "--invalid",
     "Unknown option '--invalid'",
   );
 
@@ -293,8 +300,8 @@ Deno.test("Integration: CliError with logging and error reporting", () => {
   assertStringIncludes(report1.userMessage, "💡");
   assertStringIncludes(report1.userMessage, "--help");
 
-  const missingRequiredError = new CliError(
-    CliErrorCode.MISSING_REQUIRED,
+  const missingRequiredError = CliErrorFactory.missingRequired(
+    "input-file",
     "Missing required argument: input-file",
   );
 
@@ -325,8 +332,9 @@ Deno.test("Integration: CliError in command execution workflow", () => {
       if (!validCommands.includes(command)) {
         return {
           success: false,
-          error: new CliError(
-            CliErrorCode.INVALID_PARAMETERS,
+          error: CliErrorFactory.invalidParameters(
+            command,
+            "Unknown command",
             `Unknown command '${command}'. Available: ${validCommands.join(", ")}`,
           ),
           exitCode: 1,
@@ -340,8 +348,8 @@ Deno.test("Integration: CliError in command execution workflow", () => {
         if (!validOptions.includes(optionKey)) {
           return {
             success: false,
-            error: new CliError(
-              CliErrorCode.INVALID_OPTION,
+            error: CliErrorFactory.invalidOption(
+              optionKey,
               `Unknown option '${optionKey}'. Use --help for available options.`,
             ),
             exitCode: 1,
@@ -361,8 +369,8 @@ Deno.test("Integration: CliError in command execution workflow", () => {
       if (args.length < requiredCount) {
         return {
           success: false,
-          error: new CliError(
-            CliErrorCode.MISSING_REQUIRED,
+          error: CliErrorFactory.missingRequired(
+            "arguments",
             `Command '${command}' requires ${requiredCount} arguments, got ${args.length}`,
           ),
           exitCode: 1,
@@ -373,8 +381,8 @@ Deno.test("Integration: CliError in command execution workflow", () => {
       if (options.verbose && options.quiet) {
         return {
           success: false,
-          error: new CliError(
-            CliErrorCode.INVALID_OPTION,
+          error: CliErrorFactory.conflictingOptions(
+            ["--verbose", "--quiet"],
             "Cannot use --verbose and --quiet together",
           ),
           exitCode: 1,
@@ -390,8 +398,9 @@ Deno.test("Integration: CliError in command execution workflow", () => {
     } catch (error) {
       return {
         success: false,
-        error: new CliError(
-          CliErrorCode.INVALID_PARAMETERS,
+        error: CliErrorFactory.invalidParameters(
+          error,
+          "Execution failed",
           `Execution failed: ${error instanceof Error ? error.message : String(error)}`,
         ),
         exitCode: 2,
@@ -410,17 +419,17 @@ Deno.test("Integration: CliError in command execution workflow", () => {
   assertEquals(invalidCommandResult.success, false);
   assertEquals(invalidCommandResult.exitCode, 1);
   assertExists(invalidCommandResult.error);
-  assertEquals(invalidCommandResult.error?.code, CliErrorCode.INVALID_PARAMETERS);
+  assertEquals(invalidCommandResult.error?.kind, "InvalidParameters");
 
   // Test missing arguments
   const missingArgsResult = executeCommand("to", ["project"]);
   assertEquals(missingArgsResult.success, false);
-  assertEquals(missingArgsResult.error?.code, CliErrorCode.MISSING_REQUIRED);
+  assertEquals(missingArgsResult.error?.kind, "MissingRequired");
 
   // Test invalid option
   const invalidOptionResult = executeCommand("init", [], { "invalid": "value" });
   assertEquals(invalidOptionResult.success, false);
-  assertEquals(invalidOptionResult.error?.code, CliErrorCode.INVALID_OPTION);
+  assertEquals(invalidOptionResult.error?.kind, "InvalidOption");
 
   // Test conflicting options
   const conflictResult = executeCommand("summary", ["task"], {
@@ -428,7 +437,7 @@ Deno.test("Integration: CliError in command execution workflow", () => {
     "quiet": "true",
   });
   assertEquals(conflictResult.success, false);
-  assertEquals(conflictResult.error?.code, CliErrorCode.INVALID_OPTION);
+  assertEquals(conflictResult.error?.kind, "ConflictingOptions");
 });
 
 Deno.test("Integration: CliError error recovery and suggestions", () => {
@@ -437,35 +446,35 @@ Deno.test("Integration: CliError error recovery and suggestions", () => {
   const generateErrorHelp = (error: CliError): string[] => {
     const suggestions: string[] = [];
 
-    switch (error.code) {
-      case CliErrorCode.INVALID_OPTION:
+    switch (error.kind) {
+      case "InvalidOption":
         suggestions.push("Use --help to see all available options");
         suggestions.push("Check for typos in option names");
         suggestions.push("Ensure options start with -- for long form or - for short form");
         break;
 
-      case CliErrorCode.DUPLICATE_OPTION:
+      case "DuplicateOption":
         suggestions.push("Remove duplicate options from your command");
         suggestions.push("Use each option only once");
         break;
 
-      case CliErrorCode.CONFLICTING_OPTIONS:
+      case "ConflictingOptions":
         suggestions.push("Choose only one of the conflicting options");
         suggestions.push("Review the command documentation for option compatibility");
         break;
 
-      case CliErrorCode.MISSING_REQUIRED:
+      case "MissingRequired":
         suggestions.push("Provide all required arguments");
         suggestions.push("Use --help to see command usage");
         suggestions.push("Check the command syntax in documentation");
         break;
 
-      case CliErrorCode.INVALID_INPUT_TYPE:
+      case "InvalidInputType":
         suggestions.push("Check the expected data type for the parameter");
         suggestions.push("Ensure values match the expected format");
         break;
 
-      case CliErrorCode.INVALID_PARAMETERS:
+      case "InvalidParameters":
         suggestions.push("Verify parameter values are within valid ranges");
         suggestions.push("Check parameter format and syntax");
         suggestions.push("Use --help for parameter documentation");
@@ -476,10 +485,46 @@ Deno.test("Integration: CliError error recovery and suggestions", () => {
   };
 
   // Test suggestions for each error type
-  const errorTypes = Object.values(CliErrorCode);
+  const errorTypes: Array<{ kind: CliError["kind"]; factory: () => CliError }> = [
+    {
+      kind: "InvalidOption",
+      factory: () => CliErrorFactory.invalidOption("--test", "Test error for InvalidOption"),
+    },
+    {
+      kind: "DuplicateOption",
+      factory: () => CliErrorFactory.duplicateOption("--test", 2, "Test error for DuplicateOption"),
+    },
+    {
+      kind: "ConflictingOptions",
+      factory: () =>
+        CliErrorFactory.conflictingOptions(
+          ["--test1", "--test2"],
+          "Test error for ConflictingOptions",
+        ),
+    },
+    {
+      kind: "InvalidInputType",
+      factory: () =>
+        CliErrorFactory.invalidInputType(
+          "string",
+          "number",
+          "test",
+          "Test error for InvalidInputType",
+        ),
+    },
+    {
+      kind: "MissingRequired",
+      factory: () => CliErrorFactory.missingRequired("test", "Test error for MissingRequired"),
+    },
+    {
+      kind: "InvalidParameters",
+      factory: () =>
+        CliErrorFactory.invalidParameters("test", "invalid", "Test error for InvalidParameters"),
+    },
+  ];
 
-  for (const errorType of errorTypes) {
-    const error = new CliError(errorType, `Test error for ${errorType}`);
+  for (const { kind: errorType, factory } of errorTypes) {
+    const error = factory();
     const suggestions = generateErrorHelp(error);
 
     assertEquals(suggestions.length > 0, true, `Should have suggestions for ${errorType}`);
@@ -493,21 +538,21 @@ Deno.test("Integration: CliError error recovery and suggestions", () => {
     const suggestionText = suggestions.join(" ").toLowerCase();
 
     switch (errorType) {
-      case CliErrorCode.INVALID_OPTION:
+      case "InvalidOption":
         assertEquals(
           suggestionText.includes("help") || suggestionText.includes("option"),
           true,
           "Invalid option suggestions should mention help or options",
         );
         break;
-      case CliErrorCode.MISSING_REQUIRED:
+      case "MissingRequired":
         assertEquals(
           suggestionText.includes("required") || suggestionText.includes("usage"),
           true,
           "Missing required suggestions should mention requirements or usage",
         );
         break;
-      case CliErrorCode.CONFLICTING_OPTIONS:
+      case "ConflictingOptions":
         assertEquals(
           suggestionText.includes("conflict") || suggestionText.includes("choose"),
           true,

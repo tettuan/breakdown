@@ -10,7 +10,7 @@
  * - Clean architecture principles
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "jsr:@std/assert@1.0.0";
 
 /**
  * Architecture constraint tests for PromptVariablesFactory
@@ -132,10 +132,10 @@ Deno.test("0_architecture: PromptVariablesFactory maintains separation of concer
 
   // Factory should delegate to specific resolvers
   const resolverUsage = [
-    "PromptTemplatePathResolver",
+    "PromptTemplatePathResolverTotality",
     "InputFilePathResolver",
     "OutputFilePathResolver",
-    "SchemaFilePathResolver",
+    "SchemaFilePathResolverTotality",
   ];
 
   for (const resolver of resolverUsage) {

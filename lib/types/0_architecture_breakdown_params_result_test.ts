@@ -9,16 +9,24 @@
  * - Totality principle adherence
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type BreakdownParamsResult,
-  type BreakdownParamsResultFailure as _BreakdownParamsResultFailure,
-  type BreakdownParamsResultSuccess as _BreakdownParamsResultSuccess,
-  failure,
-  isFailure,
-  isSuccess,
+  type BreakdownParamsResultOne as _BreakdownParamsResultOne,
+  type BreakdownParamsResultTwo as _BreakdownParamsResultTwo,
+  type BreakdownParamsResultZero as _BreakdownParamsResultZero,
+  // Legacy compatibility
+  failure as _failure,
+  isFailure as _isFailure,
+  isOne,
+  isSuccess as _isSuccess,
+  isTwo,
+  isZero,
   match,
-  success,
+  one,
+  success as _success,
+  two,
+  zero,
 } from "./breakdown_params_result.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -35,26 +43,32 @@ Deno.test("0_architecture: BreakdownParamsResult follows domain boundary rules",
     options: {},
   };
 
-  const successResult = success(mockData);
-  const failureResult = failure(new Error("Test error"));
+  const zeroResult = zero();
+  const oneResult = one("single-param");
+  const twoResult = two(mockData);
 
   // Verify that results are pure data objects
-  assertExists(successResult);
-  assertExists(failureResult);
-  assertEquals(typeof successResult.type, "string");
-  assertEquals(typeof failureResult.type, "string");
+  assertExists(zeroResult);
+  assertExists(oneResult);
+  assertExists(twoResult);
+  assertEquals(typeof zeroResult.type, "string");
+  assertEquals(typeof oneResult.type, "string");
+  assertEquals(typeof twoResult.type, "string");
 
   // No file system operations
-  assertEquals("readFile" in successResult, false);
-  assertEquals("writeFile" in failureResult, false);
+  assertEquals("readFile" in zeroResult, false);
+  assertEquals("writeFile" in oneResult, false);
+  assertEquals("readFile" in twoResult, false);
 
   // No configuration dependencies
-  assertEquals("loadConfig" in successResult, false);
-  assertEquals("saveConfig" in failureResult, false);
+  assertEquals("loadConfig" in zeroResult, false);
+  assertEquals("saveConfig" in oneResult, false);
+  assertEquals("loadConfig" in twoResult, false);
 
   // No external service calls
-  assertEquals("fetch" in successResult, false);
-  assertEquals("httpRequest" in failureResult, false);
+  assertEquals("fetch" in zeroResult, false);
+  assertEquals("httpRequest" in oneResult, false);
+  assertEquals("fetch" in twoResult, false);
 });
 
 Deno.test("0_architecture: BreakdownParamsResult enforces Discriminated Union pattern", () => {
@@ -69,26 +83,34 @@ Deno.test("0_architecture: BreakdownParamsResult enforces Discriminated Union pa
     options: {},
   };
 
-  const successResult = success(mockData);
-  const failureResult = failure(new Error("Test"));
+  const zeroResult = zero();
+  const oneResult = one("test-param");
+  const twoResult = two(mockData);
 
   // Type discriminator must exist and be readonly
-  assertEquals(successResult.type, "success");
-  assertEquals(failureResult.type, "failure");
+  assertEquals(zeroResult.type, "zero");
+  assertEquals(oneResult.type, "one");
+  assertEquals(twoResult.type, "two");
 
-  // Verify structure of success variant
-  assertEquals("data" in successResult, true);
-  assertEquals("error" in successResult, false);
+  // Verify structure of zero variant
+  assertEquals("data" in zeroResult, true);
+  assertEquals(zeroResult.data, null);
 
-  // Verify structure of failure variant
-  assertEquals("data" in failureResult, false);
-  assertEquals("error" in failureResult, true);
+  // Verify structure of one variant
+  assertEquals("data" in oneResult, true);
+  assertEquals(oneResult.data.parameter, "test-param");
+
+  // Verify structure of two variant
+  assertEquals("data" in twoResult, true);
+  assertEquals(twoResult.data, mockData);
 
   // Type guards should work correctly
-  assertEquals(isSuccess(successResult), true);
-  assertEquals(isSuccess(failureResult), false);
-  assertEquals(isFailure(successResult), false);
-  assertEquals(isFailure(failureResult), true);
+  assertEquals(isZero(zeroResult), true);
+  assertEquals(isZero(oneResult), false);
+  assertEquals(isOne(oneResult), true);
+  assertEquals(isOne(twoResult), false);
+  assertEquals(isTwo(twoResult), true);
+  assertEquals(isTwo(zeroResult), false);
 });
 
 Deno.test("0_architecture: BreakdownParamsResult implements Totality principle", () => {
@@ -121,11 +143,11 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     },
   ];
 
-  // Success creation should always work for valid data
+  // Two parameters creation should always work for valid data
   for (const data of testData) {
-    const result = success(data);
+    const result = two(data);
     assertExists(result);
-    assertEquals(result.type, "success");
+    assertEquals(result.type, "two");
     assertEquals(result.data, data);
   }
 
@@ -137,11 +159,11 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     new RangeError("Range error"),
   ];
 
-  for (const error of errors) {
-    const result = failure(error);
+  for (const _error of errors) {
+    const result = zero(); // zero() for backward compatibility
     assertExists(result);
-    assertEquals(result.type, "failure");
-    assertEquals(result.error, error);
+    assertEquals(result.type, "zero");
+    assertEquals(result.data, null);
   }
 });
 
@@ -158,15 +180,17 @@ Deno.test("0_architecture: Pattern matching ensures exhaustiveness", () => {
   };
 
   const results: BreakdownParamsResult[] = [
-    success(mockData),
-    failure(new Error("Test error")),
+    zero(),
+    one("test-param"),
+    two(mockData),
   ];
 
   // All cases must be handled
   for (const result of results) {
     const output = match(result, {
-      success: (data) => `Success: ${data.directiveType}`,
-      failure: (error) => `Failure: ${error.message}`,
+      zero: () => "Zero parameters",
+      one: (data) => `One parameter: ${data.parameter}`,
+      two: (data) => `Two parameters: ${data.directiveType}`,
     });
 
     assertExists(output);
@@ -189,8 +213,8 @@ Deno.test("0_architecture: BreakdownParamsResult maintains immutability", () => 
     options: { verbose: true },
   };
 
-  const successResult = success(mockData);
-  const failureResult = failure(new Error("Immutable test"));
+  const successResult = _success(mockData);
+  const failureResult = _failure(new Error("Immutable test"));
 
   // Properties should be readonly (enforced by TypeScript)
   // Runtime check for property descriptors

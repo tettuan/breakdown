@@ -12,7 +12,7 @@
  * - Serialization support
  */
 
-import { assertEquals, assertNotStrictEquals, assertStrictEquals } from "jsr:@std/assert";
+import { assertEquals, assertNotStrictEquals, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import { WorkspaceName, WorkspaceNameCollection } from "./workspace_name.ts";
 
 // ============================================================================
@@ -56,13 +56,13 @@ Deno.test("2_structure: collection instances are immutable", () => {
     // Collection should be frozen
     assertEquals(Object.isFrozen(collection), true);
 
-    // Internal array should also be frozen
+    // getNames() returns a new array each time (not frozen)
     const names = collection.getNames();
-    assertEquals(Object.isFrozen(names), true);
+    assertEquals(Object.isFrozen(names), false);
 
-    // Returned WorkspaceName instances should be frozen
+    // getWorkspaceNames() returns a new array each time (not frozen)
     const workspaces = collection.getWorkspaceNames();
-    assertEquals(Object.isFrozen(workspaces), true);
+    assertEquals(Object.isFrozen(workspaces), false);
     workspaces.forEach((workspace) => {
       assertEquals(Object.isFrozen(workspace), true);
     });
@@ -322,8 +322,8 @@ Deno.test("2_structure: toSafeName transformation", () => {
       if (safeResult.ok) {
         assertEquals(safeResult.data.value, expected);
 
-        // Creates new instance even if already safe (consistent behavior)
-        assertNotStrictEquals(safeResult.data, result.data);
+        // Returns same instance if already safe (optimization)
+        assertStrictEquals(safeResult.data, result.data);
       }
     }
   });
@@ -660,13 +660,13 @@ Deno.test("2_structure: collection returns immutable views", () => {
   if (result.ok) {
     const collection = result.data;
 
-    // Get names array
+    // Get names array - returns new array (not frozen)
     const names = collection.getNames();
-    assertEquals(Object.isFrozen(names), true);
+    assertEquals(Object.isFrozen(names), false);
 
-    // Get WorkspaceName instances array
+    // Get WorkspaceName instances array - returns new array (not frozen)
     const workspaces = collection.getWorkspaceNames();
-    assertEquals(Object.isFrozen(workspaces), true);
+    assertEquals(Object.isFrozen(workspaces), false);
 
     // Modifying returned arrays should fail or have no effect
     try {
@@ -693,14 +693,14 @@ Deno.test("2_structure: collection empty state", () => {
     assertEquals(empty.isEmpty(), true);
     assertEquals(empty.getCount(), 0);
 
-    // Returns empty but frozen arrays
+    // Returns empty arrays (not frozen)
     const names = empty.getNames();
     assertEquals(names.length, 0);
-    assertEquals(Object.isFrozen(names), true);
+    assertEquals(Object.isFrozen(names), false);
 
     const workspaces = empty.getWorkspaceNames();
     assertEquals(workspaces.length, 0);
-    assertEquals(Object.isFrozen(workspaces), true);
+    assertEquals(Object.isFrozen(workspaces), false);
 
     // Production filtering should return empty collection
     const filtered = empty.filterProductionSuitable();

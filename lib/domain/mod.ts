@@ -52,10 +52,7 @@ export class DomainFactory {
         const profileName = profile
           ? ConfigProfileName.create(profile)
           : ConfigProfileName.create("default");
-        if (!profileName.ok) {
-          return profileName;
-        }
-        return TwoParams.create(directive, layer, profileName.data);
+        return TwoParams.create(directive, layer, profileName);
       },
 
       async createDirectiveType(value: string) {
@@ -80,7 +77,7 @@ export class DomainFactory {
         return CLIParsingError.invalidParameter("unknown", message);
       },
 
-      async createConfigError(message: string) {
+      async createConfigError(_message: string) {
         const { ConfigError } = await import("./errors/mod.ts");
         return ConfigError.profileNotFound("unknown", []);
       },
@@ -92,8 +89,12 @@ export class DomainFactory {
    */
   static get templates() {
     return {
-      async createPromptGenerationAggregate(id: string, template: any) {
-        const { PromptGenerationAggregate } = await import("./templates/mod.ts");
+      async createPromptGenerationAggregate(id: string, template: unknown) {
+        const { PromptGenerationAggregate, PromptTemplate } = await import("./templates/mod.ts");
+        // Runtime type checking
+        if (!(template instanceof PromptTemplate)) {
+          throw new Error("Template must be a PromptTemplate instance");
+        }
         return PromptGenerationAggregate.create(id, template);
       },
     };

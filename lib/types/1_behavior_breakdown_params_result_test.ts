@@ -9,8 +9,21 @@
  * - State transitions and transformations
  */
 
-import { assertEquals, assertStrictEquals } from "@std/assert";
-import { failure, isFailure, isSuccess, match, success } from "./breakdown_params_result.ts";
+import { assertEquals, assertStrictEquals as _assertStrictEquals } from "jsr:@std/assert@0.224.0";
+import {
+  failure,
+  // Legacy compatibility
+  isFailure,
+  isOne,
+  isSuccess,
+  isTwo,
+  isZero,
+  match,
+  one,
+  success,
+  two,
+  zero,
+} from "./breakdown_params_result.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // Test helper to create valid TwoParams_Result
@@ -27,272 +40,159 @@ const createTwoParamsResult = (
   options,
 });
 
-Deno.test("1_behavior: success() creates correct success variant", () => {
+Deno.test("1_behavior: zero() creates correct zero variant", () => {
+  const result = zero();
+
+  assertEquals(result.type, "zero");
+  assertEquals(result.data, null);
+  assertEquals(isZero(result), true);
+  assertEquals(isOne(result), false);
+  assertEquals(isTwo(result), false);
+});
+
+Deno.test("1_behavior: one() creates correct one variant", () => {
+  const testParams = [
+    "single-param",
+    "directive-only",
+    "test-value",
+    "",
+    "complex-param-with-dashes",
+  ];
+
+  for (const param of testParams) {
+    const result = one(param);
+
+    assertEquals(result.type, "one");
+    assertEquals(result.data.parameter, param);
+    assertEquals(isOne(result), true);
+    assertEquals(isZero(result), false);
+    assertEquals(isTwo(result), false);
+  }
+});
+
+Deno.test("1_behavior: two() creates correct two variant", () => {
   const testCases = [
     {
       input: createTwoParamsResult("to", "project"),
-      description: "basic success case",
+      description: "basic two case",
     },
     {
       input: createTwoParamsResult("summary", "issue", { verbose: true }),
-      description: "success with options",
+      description: "two with options",
     },
     {
       input: createTwoParamsResult("", "", {}),
-      description: "success with empty values",
+      description: "two with empty values",
     },
     {
       input: createTwoParamsResult("custom-directive", "custom-layer", {
         nested: { deep: { value: "test" } },
       }),
-      description: "success with complex data",
+      description: "two with complex data",
     },
   ];
 
   for (const { input, description } of testCases) {
-    const result = success(input);
+    const result = two(input);
 
-    assertEquals(result.type, "success", `Failed for ${description}`);
+    assertEquals(result.type, "two", `Failed for ${description}`);
     assertEquals(result.data, input, `Data mismatch for ${description}`);
-    assertEquals(isSuccess(result), true, `Type guard failed for ${description}`);
-    assertEquals(isFailure(result), false, `Wrong type guard for ${description}`);
+    assertEquals(isTwo(result), true, `Type guard failed for ${description}`);
+    assertEquals(isZero(result), false, `Wrong type guard for ${description}`);
   }
 });
 
-Deno.test("1_behavior: failure() creates correct failure variant", () => {
-  const testCases = [
-    {
-      error: new Error("Simple error"),
-      description: "basic error",
-    },
-    {
-      error: new TypeError("Type mismatch"),
-      description: "type error",
-    },
-    {
-      error: new RangeError("Out of range"),
-      description: "range error",
-    },
-    {
-      error: new Error(""),
-      description: "empty error message",
-    },
-    {
-      error: new Error("Very long error message ".repeat(100)),
-      description: "long error message",
-    },
-  ];
+Deno.test("1_behavior: match() pattern matching works correctly", () => {
+  const mockData = createTwoParamsResult("analyze", "module");
 
-  for (const { error, description } of testCases) {
-    const result = failure(error);
+  const zeroResult = zero();
+  const oneResult = one("test-param");
+  const twoResult = two(mockData);
 
-    assertEquals(result.type, "failure", `Failed for ${description}`);
-    assertStrictEquals(result.error, error, `Error mismatch for ${description}`);
-    assertEquals(isFailure(result), true, `Type guard failed for ${description}`);
-    assertEquals(isSuccess(result), false, `Wrong type guard for ${description}`);
-  }
+  // Test zero case
+  const zeroOutput = match(zeroResult, {
+    zero: () => "No parameters",
+    one: (data) => `One: ${data.parameter}`,
+    two: (data) => `Two: ${data.directiveType}`,
+  });
+  assertEquals(zeroOutput, "No parameters");
+
+  // Test one case
+  const oneOutput = match(oneResult, {
+    zero: () => "No parameters",
+    one: (data) => `One: ${data.parameter}`,
+    two: (data) => `Two: ${data.directiveType}`,
+  });
+  assertEquals(oneOutput, "One: test-param");
+
+  // Test two case
+  const twoOutput = match(twoResult, {
+    zero: () => "No parameters",
+    one: (data) => `One: ${data.parameter}`,
+    two: (data) => `Two: ${data.directiveType}`,
+  });
+  assertEquals(twoOutput, "Two: analyze");
 });
 
-Deno.test("1_behavior: Type guards correctly narrow types", () => {
-  const successResult = success(createTwoParamsResult("analyze", "module"));
+Deno.test("1_behavior: legacy compatibility functions work", () => {
+  const mockData = createTwoParamsResult("legacy", "test");
+
+  // Test legacy success/failure functions
+  const successResult = success(mockData);
   const failureResult = failure(new Error("Test error"));
 
-  // Success type narrowing
-  if (isSuccess(successResult)) {
-    // TypeScript should know this is BreakdownParamsResultSuccess
-    assertEquals(successResult.data.directiveType, "analyze");
-    assertEquals(successResult.data.layerType, "module");
-    assertEquals(successResult.data.type, "two");
-  } else {
-    throw new Error("Success result should be identified as success");
-  }
+  assertEquals(successResult.type, "two");
+  assertEquals(successResult.data, mockData);
+  assertEquals(failureResult.type, "zero");
+  assertEquals(failureResult.data, null);
 
-  // Failure type narrowing
-  if (isFailure(failureResult)) {
-    // TypeScript should know this is BreakdownParamsResultFailure
-    assertEquals(failureResult.error.message, "Test error");
-    assertEquals(failureResult.error instanceof Error, true);
-  } else {
-    throw new Error("Failure result should be identified as failure");
-  }
-
-  // Negative cases
+  // Test legacy type guards
+  assertEquals(isSuccess(successResult), true);
   assertEquals(isSuccess(failureResult), false);
+  assertEquals(isFailure(failureResult), true);
   assertEquals(isFailure(successResult), false);
 });
 
-Deno.test("1_behavior: match() handles all variants correctly", () => {
-  const successData = createTwoParamsResult("transform", "service", {
-    debug: true,
-    profile: "test",
-  });
-  const errorObj = new Error("Processing failed");
+Deno.test("1_behavior: type guards work correctly", () => {
+  const zeroResult = zero();
+  const oneResult = one("test");
+  const twoResult = two(createTwoParamsResult("test", "project"));
 
-  const successResult = success(successData);
-  const failureResult = failure(errorObj);
+  // Test isZero
+  assertEquals(isZero(zeroResult), true);
+  assertEquals(isZero(oneResult), false);
+  assertEquals(isZero(twoResult), false);
 
-  // Match success case
-  const successOutput = match(successResult, {
-    success: (data) => `Success: ${data.directiveType}/${data.layerType}`,
-    failure: (error) => `Error: ${error.message}`,
-  });
-  assertEquals(successOutput, "Success: transform/service");
+  // Test isOne
+  assertEquals(isOne(zeroResult), false);
+  assertEquals(isOne(oneResult), true);
+  assertEquals(isOne(twoResult), false);
 
-  // Match failure case
-  const failureOutput = match(failureResult, {
-    success: (data) => `Success: ${data.directiveType}/${data.layerType}`,
-    failure: (error) => `Error: ${error.message}`,
-  });
-  assertEquals(failureOutput, "Error: Processing failed");
-
-  // Match with different return types
-  const numericMatch = match(successResult, {
-    success: (data) => data.params.length,
-    failure: (_) => -1,
-  });
-  assertEquals(numericMatch, 2);
-
-  // Match with complex transformations
-  type ComplexResult = {
-    type: "processed";
-    original: TwoParams_Result;
-    processed: true;
-  } | {
-    type: "error";
-    message: string;
-    processed: false;
-  };
-
-  const complexMatch: ComplexResult = match(successResult, {
-    success: (data): ComplexResult => ({
-      type: "processed",
-      original: data,
-      processed: true,
-    }),
-    failure: (error): ComplexResult => ({
-      type: "error",
-      message: error.message,
-      processed: false,
-    }),
-  });
-  assertEquals(complexMatch.type, "processed");
-  assertEquals(complexMatch.processed, true);
-  if (complexMatch.type === "processed") {
-    assertEquals(complexMatch.original, successData);
-  }
+  // Test isTwo
+  assertEquals(isTwo(zeroResult), false);
+  assertEquals(isTwo(oneResult), false);
+  assertEquals(isTwo(twoResult), true);
 });
 
-Deno.test("1_behavior: Results preserve original data integrity", () => {
-  // Complex data structure
-  const complexData: TwoParams_Result = {
-    type: "two",
-    directiveType: "analyze",
-    demonstrativeType: "analyze",
-    layerType: "system",
-    params: ["analyze", "system"],
-    options: {
-      verbose: true,
-      config: {
-        timeout: 5000,
-        retries: 3,
-        features: ["feature1", "feature2", "feature3"],
-        metadata: {
-          version: "1.0.0",
-          author: "test",
-          tags: ["tag1", "tag2"],
-          settings: {
-            deep: {
-              nested: {
-                value: "preserved",
-              },
-            },
-          },
-        },
-      },
-    },
-  };
+Deno.test("1_behavior: immutability is maintained", () => {
+  const mockData = createTwoParamsResult("immutable", "test");
+  const twoResult = two(mockData);
 
-  const result = success(complexData);
+  // Verify that result properties are readonly
+  assertEquals(twoResult.type, "two");
+  assertEquals(twoResult.data, mockData);
 
-  // Verify all data is preserved
-  assertEquals(result.data.type, "two");
-  assertEquals(result.data.directiveType, "analyze");
-  assertEquals(result.data.layerType, "system");
-  assertEquals(result.data.params.length, 2);
-  assertEquals(result.data.options.verbose, true);
-  const config = result.data.options.config as Record<string, unknown>;
-  assertEquals(config.timeout, 5000);
-  assertEquals((config.features as unknown[]).length, 3);
-  assertEquals(
-    ((config.metadata as Record<string, unknown>).settings as Record<string, unknown>)
-      .deep as Record<string, unknown>,
-    { nested: { value: "preserved" } },
-  );
+  // Test that the original data is not modified
+  const originalData = twoResult.data;
+  assertEquals(originalData, mockData);
 
-  // Original object reference check
-  assertStrictEquals(result.data, complexData);
-});
+  // Test one result immutability
+  const oneResult = one("immutable-test");
+  assertEquals(oneResult.type, "one");
+  assertEquals(oneResult.data.parameter, "immutable-test");
 
-Deno.test("1_behavior: Error information is fully preserved", () => {
-  // Custom error with additional properties
-  class CustomError extends Error {
-    constructor(
-      message: string,
-      public code: string,
-      public details: Record<string, unknown>,
-    ) {
-      super(message);
-      this.name = "CustomError";
-    }
-  }
-
-  const customError = new CustomError(
-    "Custom error occurred",
-    "ERR_CUSTOM",
-    {
-      timestamp: new Date().toISOString(),
-      context: "test",
-      data: { foo: "bar" },
-    },
-  );
-
-  const result = failure(customError);
-
-  // Verify error is preserved with all properties
-  assertStrictEquals(result.error, customError);
-  assertEquals(result.error.message, "Custom error occurred");
-  assertEquals(result.error.name, "CustomError");
-  assertEquals((result.error as CustomError).code, "ERR_CUSTOM");
-  assertEquals((result.error as CustomError).details.context, "test");
-});
-
-Deno.test("1_behavior: Pattern matching with edge cases", () => {
-  // Test with minimal data
-  const minimalResult = success(createTwoParamsResult("", ""));
-  const minimalOutput = match(minimalResult, {
-    success: (data) => data.directiveType || "empty",
-    failure: (_) => "error",
-  });
-  assertEquals(minimalOutput, "empty");
-
-  // Test with error without message
-  const emptyError = new Error();
-  const emptyErrorResult = failure(emptyError);
-  const emptyErrorOutput = match(emptyErrorResult, {
-    success: (_) => "success",
-    failure: (error) => error.message || "no message",
-  });
-  assertEquals(emptyErrorOutput, "no message");
-
-  // Test with chained matching
-  const chainResult = success(createTwoParamsResult("chain", "test"));
-  const chainedOutput = match(chainResult, {
-    success: (data) =>
-      match(success(data), {
-        success: (inner) => `Double success: ${inner.directiveType}`,
-        failure: (_) => "Should not happen",
-      }),
-    failure: (_) => "Outer failure",
-  });
-  assertEquals(chainedOutput, "Double success: chain");
+  // Test zero result immutability
+  const zeroResult = zero();
+  assertEquals(zeroResult.type, "zero");
+  assertEquals(zeroResult.data, null);
 });

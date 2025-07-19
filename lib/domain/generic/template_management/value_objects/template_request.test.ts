@@ -4,7 +4,7 @@
  * Following Totality principle with Result type for explicit error handling
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   TemplateRequest,
   type TemplateRequestData,

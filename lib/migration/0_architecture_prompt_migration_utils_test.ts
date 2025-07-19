@@ -61,8 +61,8 @@ Deno.test("Migration functions - maintain referential transparency", () => {
     assertEquals(result1.data.size(), result2.data.size());
 
     // Compare variable records
-    const records1 = result1.data.originalVariables.map((v: any) => v.toRecord());
-    const records2 = result2.data.originalVariables.map((v: any) => v.toRecord());
+    const records1 = result1.data.originalVariables.map((v) => v.toRecord());
+    const records2 = result2.data.originalVariables.map((v) => v.toRecord());
     for (let i = 0; i < records1.length; i++) {
       assertEquals(records1[i], records2[i]);
     }
@@ -197,7 +197,7 @@ Deno.test("Migration completeness - ensures no data loss", () => {
     // Verify all input data is preserved in migration
     assertEquals(migrationResult.variables.size(), 8); // 2 standard + 1 stdin + 2 file + 3 custom
 
-    const variableRecords = migrationResult.variables.originalVariables.map((v: any) => v.toRecord());
+    const variableRecords = migrationResult.variables.originalVariables.map((v) => v.toRecord());
     const flatRecords = Object.assign({}, ...variableRecords);
 
     // Verify key information preserved
@@ -424,7 +424,7 @@ Deno.test("Migration architecture - maintains legacy compatibility boundaries", 
     assertEquals(result.data.warnings.length, 4);
 
     // Valid current fields should be migrated normally
-    const variableRecords = result.data.variables.originalVariables.map((v: any) => v.toRecord());
+    const variableRecords = result.data.variables.originalVariables.map((v) => v.toRecord());
     const flatRecords = Object.assign({}, ...variableRecords);
 
     assertEquals(flatRecords.directive_type, "summary");

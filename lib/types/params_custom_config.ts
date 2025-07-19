@@ -33,7 +33,7 @@ export class ConfigError extends Error {
 
 /**
  * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
- * 
+ *
  * Phase 1: Both DirectiveType and demonstrativeType supported for compatibility
  * Actual BreakdownParams uses 'demonstrativeType' - matching real structure
  */

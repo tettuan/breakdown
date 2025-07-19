@@ -17,12 +17,33 @@ import type { PromptVariable } from "../types/prompt_variables_vo.ts";
 
 /**
  * Error types for Variable Processor
+ * Following Worker7's Discriminated Union pattern for consistency
  */
 export type VariableProcessorError =
-  | { kind: "CustomVariableError"; error: unknown }
-  | { kind: "StandardVariableError"; error: unknown }
-  | { kind: "StdinVariableError"; error: string }
-  | { kind: "BuilderError"; errors: Array<{ kind: string; [key: string]: unknown }> };
+  | {
+    kind: "CustomVariableError";
+    message: string;
+    error: unknown;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "StandardVariableError";
+    message: string;
+    error: unknown;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "StdinVariableError";
+    message: string;
+    error: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "BuilderError";
+    message: string;
+    errors: Array<{ kind: string; [key: string]: unknown }>;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Options structure for variable processing
@@ -85,6 +106,7 @@ export class VariableProcessorV2 {
     if (!customVarsResult.ok) {
       return error({
         kind: "CustomVariableError",
+        message: "Failed to extract custom variables",
         error: customVarsResult.error,
       });
     }
@@ -99,6 +121,7 @@ export class VariableProcessorV2 {
     if (!standardVarsResult.ok) {
       return error({
         kind: "StandardVariableError",
+        message: "Failed to resolve standard variables",
         error: standardVarsResult.error,
       });
     }
@@ -145,6 +168,7 @@ export class VariableProcessorV2 {
     if (!stdinResult.ok) {
       return error({
         kind: "StdinVariableError",
+        message: "Failed to create stdin variable",
         error: JSON.stringify(stdinResult.error),
       });
     }
@@ -178,6 +202,7 @@ export class VariableProcessorV2 {
     if (!validationResult.ok) {
       return error({
         kind: "BuilderError",
+        message: "Failed to validate factory values",
         errors: validationResult.error,
       });
     }
@@ -197,6 +222,7 @@ export class VariableProcessorV2 {
     if (!buildResult.ok) {
       return error({
         kind: "BuilderError",
+        message: "Failed to build final variables",
         errors: buildResult.error,
       });
     }
@@ -219,12 +245,34 @@ export interface ProcessedVariables {
 
 /**
  * Backward compatibility error types for TwoParamsVariableProcessor
+ * Following Worker7's Discriminated Union pattern for consistency
  */
 export type TwoParamsVariableProcessorError =
-  | { kind: "InvalidVariablePrefix"; key: string; expectedPrefix: string }
-  | { kind: "ReservedVariableName"; key: string }
-  | { kind: "EmptyVariableValue"; key: string }
-  | { kind: "InvalidOptions"; message: string };
+  | {
+    kind: "InvalidVariablePrefix";
+    message: string;
+    key: string;
+    expectedPrefix: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ReservedVariableName";
+    message: string;
+    key: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "EmptyVariableValue";
+    message: string;
+    key: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "InvalidOptions";
+    message: string;
+    options?: unknown;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Two Params Variable Processor wrapper for backward compatibility
@@ -305,6 +353,7 @@ export class TwoParamsVariableProcessor {
         if (reservedNames.has(varName)) {
           errors.push({
             kind: "ReservedVariableName",
+            message: `Reserved variable name: ${key}`,
             key,
           });
           continue;
@@ -315,6 +364,7 @@ export class TwoParamsVariableProcessor {
         if (!stringValue || stringValue.trim() === "") {
           errors.push({
             kind: "EmptyVariableValue",
+            message: `Empty variable value: ${key}`,
             key,
           });
           continue;
@@ -381,6 +431,7 @@ export class TwoParamsVariableProcessor {
       // Convert array of errors to single error for architecture test
       return error({
         kind: "CustomVariableError",
+        message: "Failed to extract custom variables",
         error: result.error,
       });
     }

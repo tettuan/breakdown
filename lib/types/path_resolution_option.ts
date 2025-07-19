@@ -10,7 +10,7 @@
 
 import { error, ok, Result } from "./result.ts";
 import type { ConfigurationError, PathError, PathValidationRule } from "./unified_error_types.ts";
-import { ErrorFactory } from "./unified_error_types.ts";
+import { ErrorFactory as _ErrorFactory } from "./unified_error_types.ts";
 
 // Re-export PathValidationRule for test compatibility
 export type { PathValidationRule } from "./unified_error_types.ts";

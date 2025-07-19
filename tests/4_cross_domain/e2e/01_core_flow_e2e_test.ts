@@ -52,8 +52,8 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", async ()
   // Phase 2: 型安全変換
   logger.debug("Phase 2: Type-safe conversion");
   
-  const directiveType = DirectiveType.create(twoParamsResult);
-  const layerTypeResult = LayerType.create(twoParamsResult);
+  const directiveType = DirectiveType.create(twoParamsResult.directiveType);
+  const layerTypeResult = LayerType.create(twoParamsResult.layerType);
   
   assertEquals(directiveType.value, "to");
   assertEquals(layerTypeResult.ok, true);
@@ -367,7 +367,7 @@ Deno.test("E2E Core Flow: S1.4 - Basic Performance Measurement", async () => {
     const directiveType = DirectiveType.create(twoParamsResult);
     const layerType = LayerType.create(twoParamsResult);
     
-    const promptPath = directiveType.getPromptPath(layerType);
+    const _promptPath = directiveType.getPromptPath(layerType);
     const schemaPath = directiveType.getSchemaPath(layerType);
     const outputPath = directiveType.resolveOutputPath(`test-${i}.md`, layerType);
     

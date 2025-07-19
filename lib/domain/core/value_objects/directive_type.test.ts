@@ -5,9 +5,9 @@
  * Tests cover Smart Constructor validation, Result type handling, and domain operations.
  */
 
-import { assertEquals, assertStrictEquals } from "jsr:@std/assert";
+import { assertEquals, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import { DirectiveType } from "./directive_type.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
   const defaultProfile = ConfigProfileName.createDefault();
@@ -162,12 +162,13 @@ Deno.test("DirectiveType - Equality and Comparison", async (t) => {
 Deno.test("DirectiveType - Edge Cases", async (t) => {
   const defaultProfile = ConfigProfileName.createDefault();
 
-  await t.step("should trim whitespace from input", () => {
+  await t.step("should reject input with leading/trailing whitespace", () => {
     const result = DirectiveType.create("  to  ", defaultProfile);
 
-    assertEquals(result.ok, true);
-    if (result.ok) {
-      assertEquals(result.data.value, "to");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      assertEquals(result.error.message.includes("whitespace"), true);
     }
   });
 
@@ -191,27 +192,26 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
     }
   });
 
-  await t.step("should handle tabs and newlines", () => {
+  await t.step("should reject input with tabs and newlines", () => {
     const result = DirectiveType.create("\t\nto\t\n", defaultProfile);
 
-    assertEquals(result.ok, true);
-    if (result.ok) {
-      assertEquals(result.data.value, "to");
+    assertEquals(result.ok, false);
+    if (!result.ok) {
+      assertEquals(result.error.kind, "InvalidFormat");
+      assertEquals(result.error.message.includes("whitespace"), true);
     }
   });
 
   await t.step("should reject non-string types", () => {
     // Test with number
-    // deno-lint-ignore no-explicit-any
-    const numberResult = DirectiveType.create(123 as any, defaultProfile);
+    const numberResult = DirectiveType.create(123 as unknown as string, defaultProfile);
     assertEquals(numberResult.ok, false);
     if (!numberResult.ok) {
       assertEquals(numberResult.error.kind, "EmptyInput");
     }
 
     // Test with object
-    // deno-lint-ignore no-explicit-any
-    const objectResult = DirectiveType.create({ value: "to" } as any, defaultProfile);
+    const objectResult = DirectiveType.create({ value: "to" } as unknown as string, defaultProfile);
     assertEquals(objectResult.ok, false);
     if (!objectResult.ok) {
       assertEquals(objectResult.error.kind, "EmptyInput");
@@ -300,12 +300,7 @@ Deno.test("DirectiveType - Profile Validation Comprehensive", async (t) => {
 
   await t.step("should validate against different profiles", () => {
     // Test with custom profile
-    const customProfileResult = ConfigProfileName.create("custom");
-    if (!customProfileResult.ok) {
-      throw new Error("Failed to create custom profile");
-    }
-
-    const customProfile = customProfileResult.data;
+    const customProfile = ConfigProfileName.create("custom");
     const result = DirectiveType.create("to", customProfile);
 
     // Result depends on what directives are available for custom profile
@@ -380,12 +375,10 @@ Deno.test("DirectiveType - Immutability and Thread Safety", async (t) => {
 
     // Attempt to modify (should fail silently due to Object.freeze)
     try {
-      // deno-lint-ignore no-explicit-any
-      (directive as any)._value = "modified";
-      // deno-lint-ignore no-explicit-any
-      (directive as any)._profile = null;
-      // deno-lint-ignore no-explicit-any
-      (directive as any)._validatedByPattern = false;
+      // Access using bracket notation to test immutability
+      (directive as unknown as Record<string, unknown>)["_value"] = "modified";
+      (directive as unknown as Record<string, unknown>)["_profile"] = null;
+      (directive as unknown as Record<string, unknown>)["_validatedByPattern"] = false;
     } catch {
       // Expected to throw in strict mode
     }

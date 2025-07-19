@@ -18,8 +18,8 @@ import {
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
-  schemaFilePathErrorToPathResolutionError,
   type SchemaFilePathError,
+  schemaFilePathErrorToPathResolutionError,
   SchemaFilePathResolver,
   SchemaPath,
 } from "./schema_file_path_resolver_totality.ts";

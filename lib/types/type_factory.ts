@@ -10,10 +10,11 @@
 
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
-import type { TwoParams_Result } from "../deps.ts";
+import type { TwoParams_Result as _TwoParams_Result } from "../deps.ts";
 import type { Result } from "./result.ts";
 import type { ProcessingError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
+import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 /**
  * 設定ファイルからバリデーションパターンを提供するインターフェース
@@ -107,7 +108,10 @@ export class TypeFactory {
    * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は DirectiveType、失敗した場合は Error
    */
-  createDirectiveType(value: string, profile?: any): TypeCreationResult<DirectiveType> {
+  createDirectiveType(
+    value: string,
+    profile?: ConfigProfileName,
+  ): TypeCreationResult<DirectiveType> {
     // TypePatternProviderによるバリデーション
     if (!this.patternProvider.validateDirectiveType(value)) {
       return {
@@ -128,7 +132,7 @@ export class TypeFactory {
         ok: false,
         error: ErrorFactory.processingError("ProcessingFailed", {
           operation: "type_creation",
-          reason: directiveResult.error.message,
+          reason: directiveResult.error.message ?? "Unknown error",
         }),
       };
     }
@@ -145,7 +149,7 @@ export class TypeFactory {
    * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は LayerType、失敗した場合は Error
    */
-  createLayerType(value: string, profile?: any): TypeCreationResult<LayerType> {
+  createLayerType(value: string, profile?: ConfigProfileName): TypeCreationResult<LayerType> {
     // TypePatternProviderによるバリデーション
     if (!this.patternProvider.validateLayerType(value)) {
       return {
@@ -166,7 +170,7 @@ export class TypeFactory {
         ok: false,
         error: ErrorFactory.processingError("ProcessingFailed", {
           operation: "type_creation",
-          reason: layerResult.error.message,
+          reason: layerResult.error.message ?? "Unknown error",
         }),
       };
     }
@@ -190,7 +194,7 @@ export class TypeFactory {
   createBothTypes(
     directiveValue: string,
     layerValue: string,
-    profile?: any,
+    profile?: ConfigProfileName,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
     const directiveResult = this.createDirectiveType(directiveValue, profile);
     if (!directiveResult.ok) {

@@ -34,7 +34,7 @@ const mockConfig = {
 // Helper to ensure paths are resolved in factory
 function ensurePathsResolved(factory: PromptVariablesFactory): void {
   // Access private properties through any cast to trigger resolution
-  const f = factory as any;
+  const f = factory as unknown as Record<string, unknown>;
   if (!f._promptFilePath) {
     f._promptFilePath = ".agent/prompts/to/project/f_project.md";
   }
@@ -187,7 +187,7 @@ Deno.test("Factory Pattern: PromptVariablesFactory responsibility separation", a
 
   // Verify factory interface is minimal and focused
   const factoryMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(factory))
-    .filter((name) => name !== "constructor" && typeof (factory as any)[name] === "function");
+    .filter((name) => name !== "constructor" && typeof (factory as unknown as Record<string, unknown>)[name] === "function");
 
   // Factory should have creation/orchestration methods only
   const creationMethods = factoryMethods.filter((method) =>
@@ -258,7 +258,7 @@ Deno.test("Factory Pattern: PathResolver responsibility separation", () => {
     // Verify resolver interface separation
     const inputMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(inputResolver))
       .filter((name) =>
-        name !== "constructor" && typeof (inputResolver as any)[name] === "function"
+        name !== "constructor" && typeof (inputResolver as unknown as Record<string, unknown>)[name] === "function"
       );
 
     assertEquals(
@@ -368,7 +368,7 @@ Deno.test("Factory Pattern: abstraction and encapsulation verification", async (
   // Verify encapsulation - internal state should not be exposed
   const factoryProperties = Object.getOwnPropertyNames(factory);
   const publicProperties = factoryProperties.filter((prop) =>
-    !prop.startsWith("_") && !prop.startsWith("#") && typeof (factory as any)[prop] !== "function"
+    !prop.startsWith("_") && !prop.startsWith("#") && typeof (factory as unknown as Record<string, unknown>)[prop] !== "function"
   );
 
   // Factory currently has 4 public properties: config, cliParams, transformer, pathResolvers
@@ -383,7 +383,7 @@ Deno.test("Factory Pattern: abstraction and encapsulation verification", async (
 
   // Verify factory provides clean abstraction
   const interfaceComplexity = Object.getOwnPropertyNames(Object.getPrototypeOf(factory))
-    .filter((name) => name !== "constructor" && typeof (factory as any)[name] === "function")
+    .filter((name) => name !== "constructor" && typeof (factory as unknown as Record<string, unknown>)[name] === "function")
     .length;
 
   // Interface should be reasonably sized (not exposing too much complexity)
@@ -610,9 +610,9 @@ Deno.test("Factory Pattern: cross-factory responsibility consistency", async () 
     try {
       let _result;
       if (factory) {
-        _result = await (createMethod as any)(factory);
+        _result = await createMethod(factory);
       } else {
-        _result = await (createMethod as any)(null);
+        _result = await createMethod(null);
       }
       analyzer.recordBusinessLogic(factoryType, "create_operation");
 
@@ -626,7 +626,7 @@ Deno.test("Factory Pattern: cross-factory responsibility consistency", async () 
       if (factory) {
         // Instance-based factory
         const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(factory))
-          .filter((name) => name !== "constructor" && typeof (factory as any)[name] === "function");
+          .filter((name) => name !== "constructor" && typeof (factory as unknown as Record<string, unknown>)[name] === "function");
         methodCount = methods.length;
 
         // Categorize responsibilities

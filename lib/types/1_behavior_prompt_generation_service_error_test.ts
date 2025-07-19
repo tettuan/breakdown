@@ -7,7 +7,7 @@
  * @module types/1_behavior_prompt_generation_service_error_test
  */
 
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "jsr:@std/assert@0.224.0";
 import { PromptGenerationServiceErrorFactory } from "./prompt_generation_service_error.ts";
 
 Deno.test("Behavior: VariableValidationError message generation", () => {

@@ -113,7 +113,7 @@ export class FileTemplateRepository implements TemplateRepository {
   async exists(path: TemplatePath): Promise<boolean> {
     const promptsSubDir = this.getPromptsSubDirectory();
     const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
-    return exists(fullPath);
+    return await exists(fullPath);
   }
 
   async listAvailable(options?: TemplateQueryOptions): Promise<TemplateManifest> {

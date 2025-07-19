@@ -20,11 +20,103 @@ export type ProcessorResult<T> = Result<T, ProcessorError>;
 
 /**
  * Processor-specific error types
+ * Following Worker7's Discriminated Union pattern
  */
 export type ProcessorError =
-  | { kind: "InvalidParams"; message: string }
-  | { kind: "ConversionFailed"; cause: BuilderVariableError[] }
-  | { kind: "MissingRequiredField"; field: string };
+  | {
+    kind: "InvalidParams";
+    message: string;
+    params?: unknown;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ConversionFailed";
+    message: string;
+    cause: BuilderVariableError[];
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "MissingRequiredField";
+    message: string;
+    field: string;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "ValidationFailed";
+    message: string;
+    validationErrors: string[];
+    context?: Record<string, unknown>;
+  };
+
+/**
+ * Factory for creating ProcessorError instances with proper type safety
+ * Following Worker5's successful pattern
+ */
+export const ProcessorErrorFactory = {
+  /**
+   * Creates an InvalidParams error
+   */
+  invalidParams(
+    message: string,
+    params?: unknown,
+    context?: Record<string, unknown>,
+  ): Extract<ProcessorError, { kind: "InvalidParams" }> {
+    return {
+      kind: "InvalidParams",
+      message,
+      params,
+      context,
+    };
+  },
+
+  /**
+   * Creates a ConversionFailed error
+   */
+  conversionFailed(
+    message: string,
+    cause: BuilderVariableError[],
+    context?: Record<string, unknown>,
+  ): Extract<ProcessorError, { kind: "ConversionFailed" }> {
+    return {
+      kind: "ConversionFailed",
+      message,
+      cause,
+      context,
+    };
+  },
+
+  /**
+   * Creates a MissingRequiredField error
+   */
+  missingRequiredField(
+    message: string,
+    field: string,
+    context?: Record<string, unknown>,
+  ): Extract<ProcessorError, { kind: "MissingRequiredField" }> {
+    return {
+      kind: "MissingRequiredField",
+      message,
+      field,
+      context,
+    };
+  },
+
+  /**
+   * Creates a ValidationFailed error
+   */
+  validationFailed(
+    message: string,
+    validationErrors: string[],
+    context?: Record<string, unknown>,
+  ): Extract<ProcessorError, { kind: "ValidationFailed" }> {
+    return {
+      kind: "ValidationFailed",
+      message,
+      validationErrors,
+      context,
+    };
+  },
+};
 
 /**
  * TwoParamsProcessor - Converts TwoParams_Result to VariablesBuilder
@@ -77,17 +169,18 @@ export class TwoParamsProcessor {
     // Create VariablesBuilder from factory values
     const builder = VariablesBuilder.fromFactoryValues(factoryValuesResult.data);
 
-    // Add base variables as standard variables (not user variables)
-    builder.addStandardVariable("directive_type", twoParamsResult.directiveType);
-    builder.addStandardVariable("layer_type", twoParamsResult.layerType);
+    // Add base variables as user variables with required prefix
+    builder.addUserVariable("uv-directive_type", twoParamsResult.directiveType);
+    builder.addUserVariable("uv-layer_type", twoParamsResult.layerType);
 
     // Validate the builder state
     const buildResult = builder.build();
     if (!buildResult.ok) {
-      return error({
-        kind: "ConversionFailed",
-        cause: buildResult.error,
-      });
+      return error(ProcessorErrorFactory.conversionFailed(
+        "Failed to build variables from TwoParams_Result",
+        buildResult.error,
+        { operation: "build", paramsType: twoParamsResult.type },
+      ));
     }
 
     return ok(builder);
@@ -102,65 +195,61 @@ export class TwoParamsProcessor {
   private validateTwoParamsResult(twoParamsResult: TwoParams_Result): ProcessorResult<void> {
     // Check if the entire result object is null or undefined
     if (twoParamsResult === null || twoParamsResult === undefined) {
-      return error({
-        kind: "InvalidParams",
-        message: "TwoParams_Result cannot be null or undefined",
-      });
+      return error(ProcessorErrorFactory.invalidParams(
+        "TwoParams_Result cannot be null or undefined",
+      ));
     }
 
     // Validate type field
     if (!twoParamsResult.type) {
-      return error({
-        kind: "MissingRequiredField",
-        field: "type",
-      });
+      return error(ProcessorErrorFactory.missingRequiredField(
+        "Missing required field: type",
+        "type",
+      ));
     }
 
     if (twoParamsResult.type !== "two") {
-      return error({
-        kind: "InvalidParams",
-        message: `Expected type "two", got "${twoParamsResult.type}"`,
-      });
+      return error(ProcessorErrorFactory.invalidParams(
+        `Expected type "two", got "${twoParamsResult.type}"`,
+      ));
     }
 
     // Validate directiveType property (empty string is treated as missing)
     if (!twoParamsResult.directiveType || twoParamsResult.directiveType.trim() === "") {
-      return error({
-        kind: "MissingRequiredField",
-        field: "directiveType",
-      });
+      return error(ProcessorErrorFactory.missingRequiredField(
+        "DirectiveType is required and cannot be empty",
+        "directiveType",
+      ));
     }
 
     // Validate layerType property (empty string is treated as missing)
     if (!twoParamsResult.layerType || twoParamsResult.layerType.trim() === "") {
-      return error({
-        kind: "MissingRequiredField",
-        field: "layerType",
-      });
+      return error(ProcessorErrorFactory.missingRequiredField(
+        "LayerType is required and cannot be empty",
+        "layerType",
+      ));
     }
 
     // Validate params array
     if (!twoParamsResult.params || !Array.isArray(twoParamsResult.params)) {
-      return error({
-        kind: "InvalidParams",
-        message: "TwoParams_Result must have a params array",
-      });
+      return error(ProcessorErrorFactory.invalidParams(
+        "TwoParams_Result must have a params array",
+      ));
     }
 
     // Validate params array length
     if (twoParamsResult.params.length < 2) {
-      return error({
-        kind: "InvalidParams",
-        message: "TwoParams_Result must have at least 2 parameters",
-      });
+      return error(ProcessorErrorFactory.invalidParams(
+        "TwoParams_Result must have at least 2 parameters",
+      ));
     }
 
     // Validate options property
     if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
-      return error({
-        kind: "MissingRequiredField",
-        field: "options",
-      });
+      return error(ProcessorErrorFactory.missingRequiredField(
+        "Options property is required and cannot be null or undefined",
+        "options",
+      ));
     }
 
     return ok(undefined);
@@ -177,10 +266,10 @@ export class TwoParamsProcessor {
   ): ProcessorResult<FactoryResolvedValues> {
     // Additional null check for options
     if (twoParamsResult.options === null || twoParamsResult.options === undefined) {
-      return error({
-        kind: "MissingRequiredField",
-        field: "options",
-      });
+      return error(ProcessorErrorFactory.missingRequiredField(
+        "Options property is required for factory value conversion",
+        "options",
+      ));
     }
 
     const options = twoParamsResult.options;
@@ -323,6 +412,8 @@ export class TwoParamsProcessor {
     if (!validateResult.ok) {
       return error({
         kind: "ConversionFailed",
+        message:
+          `Factory values validation failed: ${validateResult.error.length} errors encountered`,
         cause: validateResult.error,
       });
     }

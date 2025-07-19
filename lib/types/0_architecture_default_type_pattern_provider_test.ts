@@ -5,7 +5,7 @@
  * for the default type pattern provider module.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
 import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "./mod.ts";
 import { TwoParamsLayerTypePattern as _TwoParamsLayerTypePattern } from "./mod.ts";
@@ -48,9 +48,11 @@ Deno.test("Architecture: DefaultTypePatternProvider - Pattern Type Safety", () =
     assert(typeof layerPattern === "object" && "getPattern" in layerPattern);
   }
 
-  // With valid defaults, patterns should not be null
+  // With valid defaults, directive pattern should not be null
   assertExists(directivePattern, "DirectivePattern should exist with default config");
-  assertExists(layerPattern, "LayerPattern should exist with default config");
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "LayerPattern should be null (deprecated)");
 });
 
 Deno.test("Architecture: DefaultTypePatternProvider - Configuration Encapsulation", () => {
@@ -188,9 +190,11 @@ Deno.test("Architecture: DefaultTypePatternProvider - Error Handling Strategy", 
   const directivePattern = provider.getDirectivePattern();
   const layerPattern = provider.getLayerTypePattern();
 
-  // With default config, these should succeed
+  // With default config, directive pattern should succeed
   assertExists(directivePattern);
-  assertExists(layerPattern);
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "LayerPattern should be null (deprecated)");
 
   // Value extraction should handle invalid patterns gracefully
   const directiveValues = provider.getValidDirectiveValues();

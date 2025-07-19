@@ -13,9 +13,9 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // Core domain imports
 import { TwoParams } from "../../../lib/domain/core/aggregates/two_params_optimized.ts";
-import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
-import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "../../../lib/types/config_profile_name.ts";
+import { DirectiveType as _DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
+import { LayerType as _LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("two-params-comprehensive");
 
@@ -77,11 +77,11 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       ];
       
       for (const edgeCase of edgeCases) {
-        const result = TwoParams.create(edgeCase.directive as any, edgeCase.layer as any, profile);
+        const result = TwoParams.create(edgeCase.directive as string, edgeCase.layer as string, profile);
         assertFalse(result.ok, `Edge case ${edgeCase.directive}/${edgeCase.layer} should fail`);
         
         if (!result.ok) {
-          assertEquals(result.error.kind, edgeCase.expectError as any);
+          assertEquals(result.error.kind, edgeCase.expectError);
         }
       }
       
@@ -280,7 +280,7 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       }
       
       // Assert: Consistency across multiple generations
-      const firstCommand = commands[0];
+      const _firstCommand = commands[0];
       for (const command of commands) {
         assertEquals(command.command, "breakdown", "Command should always be 'breakdown'");
         assertEquals(command.directive, "to", "Directive should be consistent");

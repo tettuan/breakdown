@@ -6,7 +6,7 @@
  * of the Breakdown application, ensuring type safety and consistency.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { ResultStatus, type ResultStatusType } from "./enums.ts";
 import * as enumsModule from "./enums.ts";
 

@@ -14,7 +14,7 @@ import {
   PromptVariablesVO,
   StandardVariable,
   StdinVariable,
-  toPromptParamsVariables,
+  toPromptParamsVariables as _toPromptParamsVariables,
   UserVariable,
 } from "./prompt_variables_vo.ts";
 
@@ -125,7 +125,7 @@ describe("PromptVariables - Unit Tests", () => {
         stdinVar.data,
       ];
 
-      const variables: PromptVariables = PromptVariablesVO.create(variableArray);
+      const _variables: PromptVariables = PromptVariablesVO.create(variableArray);
       const promptParams = createPromptParams(variableArray);
 
       assertEquals(promptParams.toRecord(), {

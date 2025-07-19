@@ -11,7 +11,7 @@
  * @module lib/cli/processors/1_behavior_two_params_output_processor_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type TwoParamsOutputError as _TwoParamsOutputError,
   TwoParamsOutputProcessor,
@@ -233,10 +233,13 @@ Deno.test("1_behavior: writeOutput handles circular reference objects gracefully
   // Should handle circular reference error
   assertEquals(result.ok, false);
   if (!result.ok) {
-    assertEquals(result.error.kind, "OutputWriteError");
-    assertExists(result.error.error);
-    assertEquals(typeof result.error.error, "string");
-    assertExists(result.error.cause);
+    assertEquals(result.error.kind, "StringificationError");
+    assertExists(result.error.message);
+    assertEquals(typeof result.error.message, "string");
+    if (result.error.kind === "StringificationError") {
+      assertExists(result.error.cause);
+      assertExists(result.error.originalData);
+    }
   }
 });
 
@@ -281,9 +284,12 @@ Deno.test("1_behavior: writeOutput returns proper error structure on failure", a
     assertEquals("error" in result, true);
     assertEquals("data" in result, false);
     assertEquals(typeof result.error, "object");
-    assertEquals(result.error.kind, "OutputWriteError");
-    assertEquals(typeof result.error.error, "string");
-    assertExists(result.error.cause);
+    assertEquals(result.error.kind, "StringificationError");
+    assertEquals(typeof result.error.message, "string");
+    if (result.error.kind === "StringificationError") {
+      assertExists(result.error.cause);
+      assertExists(result.error.originalData);
+    }
   }
 });
 
@@ -305,13 +311,16 @@ Deno.test("1_behavior: TwoParamsOutputError maintains proper error structure", a
     // Verify error type structure
     assertEquals(typeof error, "object");
     assertEquals("kind" in error, true);
-    assertEquals("error" in error, true);
+    assertEquals("message" in error, true);
     assertEquals("cause" in error, true);
 
-    assertEquals(error.kind, "OutputWriteError");
-    assertEquals(typeof error.error, "string");
-    assertEquals(error.error.includes("Custom JSON error"), true);
-    assertExists(error.cause);
+    assertEquals(error.kind, "StringificationError");
+    assertEquals(typeof error.message, "string");
+    assertEquals(error.message.includes("Custom JSON error"), true);
+    if (error.kind === "StringificationError") {
+      assertExists(error.cause);
+      assertExists(error.originalData);
+    }
   }
 });
 
@@ -502,6 +511,6 @@ Deno.test("1_behavior: Result type guards work correctly for error", async () =>
   assertEquals(isOk(result), false);
 
   if (isError(result)) {
-    assertEquals(result.error.kind, "OutputWriteError");
+    assertEquals(result.error.kind, "StringificationError");
   }
 });

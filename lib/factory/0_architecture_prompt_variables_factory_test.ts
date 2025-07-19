@@ -8,8 +8,8 @@
  * - Totality principle adherence
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
-import { describe, it } from "@std/testing/bdd";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
+import { describe, it } from "jsr:@std/testing/bdd";
 import {
   type PromptCliOptions,
   type PromptCliParams,

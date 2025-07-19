@@ -27,7 +27,7 @@ describe("Behavior: Valid Parameter Recognition", () => {
     logger.debug("Testing valid directive type recognition");
 
     const validator = new TwoParamsValidator();
-    const validDirectiveTypes = ["to", "summary", "defect", "init", "find"];
+    const validDirectiveTypes = ["to", "summary", "defect"];
 
     for (const directiveType of validDirectiveTypes) {
       const result = validator.validate([directiveType, "project"]);
@@ -83,10 +83,10 @@ describe("Behavior: Valid Parameter Recognition", () => {
       ["to", "project"],
       ["summary", "issue"],
       ["defect", "task"],
-      ["init", "bugs"],
-      ["find", "temp"],
       ["to", "bugs"],
-      ["summary", "project"],
+      ["summary", "temp"],
+      ["defect", "bugs"],
+      ["to", "issue"],
     ];
 
     for (const [directiveType, layerType] of validCombinations) {

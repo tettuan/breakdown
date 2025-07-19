@@ -8,7 +8,7 @@
  * - 2_structure tests for immutability and value object semantics
  */
 
-import { assertEquals, assertStrictEquals as _assertStrictEquals } from "jsr:@std/assert";
+import { assertEquals, assertStrictEquals as _assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import {
   ConfigSetName,
   ConfigSetNameCollection,

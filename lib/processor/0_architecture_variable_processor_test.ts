@@ -73,6 +73,7 @@ Deno.test("Architecture: Variable Processor should have consistent error types",
   // by checking they can be used in type annotations
   const testError: VariableProcessorError = {
     kind: "CustomVariableError",
+    message: "Test error for architecture validation",
     error: "test error",
   };
 

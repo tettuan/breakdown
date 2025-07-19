@@ -9,7 +9,7 @@
  * - Proper abstraction levels
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { StdinVariableFactory } from "./stdin_variable_factory.ts";
 import type { StdinFactoryInput } from "./stdin_variable_factory.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
@@ -169,13 +169,13 @@ Deno.test("2_structure: consistent error handling", () => {
   ];
 
   for (const { method, input } of errorCases) {
-    // deno-lint-ignore no-explicit-any
-    let result: any;
+    let result: { ok: boolean; data?: unknown; error?: unknown };
     switch (method) {
       case "create":
+        result = factory.create(input as StdinFactoryInput);
+        break;
       case "validate":
-        // deno-lint-ignore no-explicit-any
-        result = (factory as any)[method](input);
+        result = factory.validate(input as StdinFactoryInput);
         break;
       case "createFromText":
         result = factory.createFromText(input as string);
@@ -192,8 +192,8 @@ Deno.test("2_structure: consistent error handling", () => {
     if (!result.ok) {
       assertExists(result.error);
       if (method !== "createBatch") {
-        if ("kind" in result.error) {
-          assertExists(result.error.kind);
+        if (result.error && typeof result.error === "object" && "kind" in result.error) {
+          assertExists((result.error as { kind: string }).kind);
         }
       } else {
         // Batch returns array of errors

@@ -7,7 +7,7 @@
  * @module types/0_architecture_layer_type_factory_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { LayerTypeError } from "../domain/core/value_objects/layer_type.ts";
 
@@ -97,7 +97,7 @@ Deno.test("LayerType Architecture - Error Type Coverage", () => {
   // Verify comprehensive error coverage
   const expectedErrorKinds: LayerTypeError["kind"][] = [
     "EmptyInput",
-    "InvalidFormat", 
+    "InvalidFormat",
     "TooLong",
   ];
 

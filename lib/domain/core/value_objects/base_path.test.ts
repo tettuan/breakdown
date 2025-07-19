@@ -8,7 +8,7 @@
  * - 2_structure tests for immutability and data integrity
  */
 
-import { assertEquals, assertStrictEquals } from "jsr:@std/assert";
+import { assertEquals, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import {
   BasePathValueObject,
   DEFAULT_PATH_CONFIG,

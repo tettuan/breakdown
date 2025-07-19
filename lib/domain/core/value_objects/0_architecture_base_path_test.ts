@@ -10,7 +10,7 @@
  * - Immutability guarantees
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { BasePathValueObject } from "./base_path.ts";
 import type { PathValidationConfig, PathValidationError } from "./base_path.ts";
 import { error as _error, ok as _ok } from "../../../types/result.ts";

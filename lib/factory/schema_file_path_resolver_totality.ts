@@ -11,8 +11,8 @@
  * @module factory/schema_file_path_resolver_totality
  */
 
-import { isAbsolute, join, resolve } from "@std/path";
-import { existsSync } from "@std/fs";
+import { isAbsolute, join, resolve } from "jsr:@std/path@^1.0.9";
+import { existsSync } from "jsr:@std/fs@0.224.0";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
@@ -259,7 +259,7 @@ export class SchemaFilePathResolverTotality {
       const doubleParams = cliParams as DoubleParams_Result;
       const copy: DoubleParams_Result = {
         layerType: doubleParams.layerType || "",
-        directiveType: doubleParams.directiveType || (doubleParams as any).directiveType || "",
+        directiveType: doubleParams.directiveType || "",
         options: doubleParams.options ? { ...doubleParams.options } : {},
       } as DoubleParams_Result;
       return copy;
@@ -408,10 +408,6 @@ export class SchemaFilePathResolverTotality {
     if ("directiveType" in cliParams && cliParams.directiveType) {
       return cliParams.directiveType;
     }
-    // Fallback for backward compatibility
-    if ("directiveType" in cliParams && (cliParams as any).directiveType) {
-      return (cliParams as any).directiveType;
-    }
     // For TwoParams_Result structure from breakdownparams
     const twoParams = cliParams as TwoParams_Result;
     if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 0) {
@@ -500,9 +496,125 @@ export const SchemaFilePathResolver = SchemaFilePathResolverTotality;
 export type SchemaFilePathResolver = SchemaFilePathResolverTotality;
 
 /**
+ * Convert PathResolutionError to SchemaFilePathError for schema-specific error handling
+ */
+export function pathResolutionErrorToSchemaFilePathError(
+  error: PathResolutionError,
+): SchemaFilePathError {
+  switch (error.kind) {
+    case "InvalidConfiguration":
+      return {
+        kind: "ConfigurationError",
+        message: error.details,
+        setting: "schema_config",
+      };
+    case "BaseDirectoryNotFound":
+      return {
+        kind: "SchemaNotFound",
+        message: `Base directory not found: ${error.path}`,
+        path: error.path,
+      };
+    case "InvalidParameterCombination":
+      return {
+        kind: "InvalidParameters",
+        message: `Invalid parameter combination: ${error.directiveType}/${error.layerType}`,
+        directiveType: error.directiveType,
+        layerType: error.layerType,
+      };
+    case "TemplateNotFound":
+      return {
+        kind: "SchemaNotFound",
+        message: `Template not found at ${error.attempted[0]}`,
+        path: error.attempted[0],
+      };
+    case "InvalidStrategy":
+      return {
+        kind: "ConfigurationError",
+        message: `Invalid strategy: ${error.strategy}`,
+        setting: "path_strategy",
+      };
+    case "EmptyBaseDir":
+      return {
+        kind: "ConfigurationError",
+        message: "Base directory is empty",
+        setting: "base_directory",
+      };
+    case "InvalidPath":
+      return {
+        kind: "SchemaNotFound",
+        message: `Invalid path: ${error.path} - ${error.reason}`,
+        path: error.path,
+      };
+    case "NoValidFallback":
+      return {
+        kind: "SchemaNotFound",
+        message: `No valid fallback found. Attempted: ${error.attempts.join(", ")}`,
+        path: error.attempts[0],
+      };
+    case "PathValidationFailed":
+      return {
+        kind: "SchemaNotFound",
+        message: `Path validation failed: ${error.path}`,
+        path: error.path,
+      };
+    // Handle PathError types
+    case "PathNotFound":
+      return {
+        kind: "SchemaNotFound",
+        message: `Path not found: ${error.path}`,
+        path: error.path,
+      };
+    case "DirectoryNotFound":
+      return {
+        kind: "SchemaNotFound",
+        message: `Directory not found: ${error.path}`,
+        path: error.path,
+      };
+    case "PermissionDenied":
+      return {
+        kind: "FileSystemError",
+        message: `Permission denied: ${error.path}`,
+        operation: "access",
+      };
+    case "PathTooLong":
+      return {
+        kind: "SchemaNotFound",
+        message: `Path too long: ${error.path} (max: ${error.maxLength})`,
+        path: error.path,
+      };
+    // Handle ConfigurationError types
+    case "ConfigurationError":
+      return {
+        kind: "ConfigurationError",
+        message: error.message,
+        setting: error.source || "unknown",
+      };
+    case "ProfileNotFound":
+      return {
+        kind: "ConfigurationError",
+        message: `Profile not found: ${error.profile}`,
+        setting: "profile",
+      };
+    case "ConfigLoadError":
+      return {
+        kind: "ConfigurationError",
+        message: error.message,
+        setting: "config_load",
+      };
+    default: {
+      // Exhaustive check - TypeScript ensures all cases are handled
+      const _exhaustive: never = error;
+      return _exhaustive;
+    }
+  }
+}
+
+/**
  * Convert SchemaFilePathError to PathResolutionError for unified error handling
  */
-export function schemaFilePathErrorToPathResolutionError(error: SchemaFilePathError): PathResolutionError {
+export function schemaFilePathErrorToPathResolutionError(
+  error: SchemaFilePathError,
+): PathResolutionError {
   switch (error.kind) {
     case "SchemaNotFound":
       return {
@@ -519,13 +631,13 @@ export function schemaFilePathErrorToPathResolutionError(error: SchemaFilePathEr
     case "ConfigurationError":
       return {
         kind: "InvalidConfiguration",
-        details: error.message,
+        details: `${error.message} (setting: ${error.setting})`,
       };
     case "FileSystemError":
       return {
         kind: "InvalidPath",
         path: "schema",
-        reason: error.message,
+        reason: `${error.message} (operation: ${error.operation})`,
       };
   }
 }

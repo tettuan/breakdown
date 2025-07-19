@@ -16,7 +16,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 import { DirectiveType, type DirectiveTypeError } from "../value_objects/directive_type.ts";
 import { LayerType, type LayerTypeError } from "../value_objects/layer_type.ts";
 import type { BaseError } from "$lib/types/unified_error_types.ts";

@@ -5,10 +5,10 @@
  * This ensures both Value Objects follow the same design patterns and validation approaches.
  */
 
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { DirectiveType } from "./directive_type.ts";
 import { LayerType } from "./layer_type.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (t) => {
   const defaultProfile = ConfigProfileName.createDefault();
@@ -238,10 +238,9 @@ Deno.test("DirectiveType and LayerType - Immutability Consistency", async (t) =>
 
     // Attempt to modify (should fail silently)
     try {
-      // deno-lint-ignore no-explicit-any
-      (directive as any)._value = "modified";
-      // deno-lint-ignore no-explicit-any
-      (layer as any)._value = "modified";
+      // Access using bracket notation to test immutability
+      (directive as unknown as Record<string, unknown>)["_value"] = "modified";
+      (layer as unknown as Record<string, unknown>)["_value"] = "modified";
     } catch {
       // Expected to throw in strict mode
     }

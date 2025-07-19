@@ -14,7 +14,7 @@ import { error, ok } from "../types/result.ts";
 import type { PromptVariable, PromptVariables } from "../types/prompt_variables_vo.ts";
 import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
-import type { ErrorInfo } from "@tettuan/breakdownparams";
+import type { ErrorInfo as _ErrorInfo } from "@tettuan/breakdownparams";
 import { basename } from "jsr:@std/path@1";
 
 // Import concrete variable types
@@ -42,11 +42,12 @@ export interface FactoryResolvedValues {
  * Unified error structure to ensure all errors have consistent 'kind' property
  */
 export type BuilderVariableError =
-  | { kind: "DuplicateVariable"; name: string }
-  | { kind: "InvalidPrefix"; name: string; expectedPrefix: string }
-  | { kind: "FactoryValueMissing"; field: string }
-  | { kind: "InvalidName"; name: string; reason: string }
-  | { kind: "ValidationError"; source: string; reason: string };
+  | { kind: "missing"; field: string }
+  | { kind: "invalid"; name: string; reason: string }
+  | { kind: "factory"; field: string; message: string }
+  | { kind: "duplicate"; name: string }
+  | { kind: "prefix"; name: string; expectedPrefix: string }
+  | { kind: "validation"; source: string; reason: string };
 
 /**
  * Builder for constructing PromptVariables with Result type error handling
@@ -74,32 +75,44 @@ export class VariablesBuilder {
   /**
    * Convert ValidationError to BuilderVariableError
    */
-  private convertValidationError(validationError: any): BuilderVariableError {
+  private convertValidationError(
+    validationError: {
+      kind?: string;
+      field?: string;
+      source?: string;
+      reason?: string;
+      message?: string;
+      expected?: string;
+      received?: string;
+    },
+  ): BuilderVariableError {
     // Map ValidationError to BuilderVariableError format
     switch (validationError.kind) {
       case "InvalidInput":
         return {
-          kind: "ValidationError",
-          source: validationError.field || "unknown",
-          reason: validationError.reason,
+          kind: "validation",
+          source: validationError.field ?? "unknown",
+          reason: validationError.reason ?? "Invalid input",
         };
       case "MissingRequiredField":
         return {
-          kind: "ValidationError",
-          source: validationError.source || "unknown",
-          reason: `Missing required field: ${validationError.field}`,
+          kind: "validation",
+          source: validationError.source ?? "unknown",
+          reason: `Missing required field: ${validationError.field ?? "unknown"}`,
         };
       case "InvalidFieldType":
         return {
-          kind: "ValidationError",
-          source: validationError.field || "unknown",
-          reason: `Expected ${validationError.expected}, got ${validationError.received}`,
+          kind: "validation",
+          source: validationError.field ?? "unknown",
+          reason: `Expected ${validationError.expected ?? "unknown"}, got ${
+            validationError.received ?? "unknown"
+          }`,
         };
       default:
         return {
-          kind: "ValidationError",
-          source: validationError.kind || "unknown",
-          reason: validationError.message || validationError.reason || "Validation failed",
+          kind: "validation",
+          source: validationError.kind ?? "unknown",
+          reason: validationError.message ?? validationError.reason ?? "Validation failed",
         };
     }
   }
@@ -108,9 +121,20 @@ export class VariablesBuilder {
    * Add a standard variable (input_text_file or destination_path)
    */
   addStandardVariable(name: string, value: string): this {
+    // Validate that name is one of the allowed standard variables
+    const allowedNames = ["input_text_file", "destination_path"];
+    if (!allowedNames.includes(name)) {
+      this._errors.push({
+        kind: "invalid",
+        name,
+        reason: `Standard variable name must be one of: ${allowedNames.join(", ")}`,
+      });
+      return this;
+    }
+
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this._errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "duplicate", name });
       return this;
     }
 
@@ -128,9 +152,19 @@ export class VariablesBuilder {
    * Add a file path variable (schema_file)
    */
   addFilePathVariable(name: string, path: string): this {
+    // Validate that name is schema_file
+    if (name !== "schema_file") {
+      this._errors.push({
+        kind: "invalid",
+        name,
+        reason: "FilePathVariable name must be 'schema_file'",
+      });
+      return this;
+    }
+
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this._errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "duplicate", name });
       return this;
     }
 
@@ -152,7 +186,7 @@ export class VariablesBuilder {
 
     // Check for duplicates first
     if (this.hasVariable(name)) {
-      this._errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "duplicate", name });
       return this;
     }
 
@@ -173,7 +207,7 @@ export class VariablesBuilder {
     // Check for uv- prefix
     if (!name.startsWith("uv-")) {
       this._errors.push({
-        kind: "InvalidPrefix",
+        kind: "prefix",
         name,
         expectedPrefix: "uv-",
       });
@@ -182,7 +216,7 @@ export class VariablesBuilder {
 
     // Check for duplicates
     if (this.hasVariable(name)) {
-      this._errors.push({ kind: "DuplicateVariable", name });
+      this._errors.push({ kind: "duplicate", name });
       return this;
     }
 
@@ -215,7 +249,11 @@ export class VariablesBuilder {
     for (const [name, value] of Object.entries(customVariables)) {
       // Skip empty values for custom variables - they are optional in templates
       if (!name || name.trim().length === 0) {
-        this._errors.push({ kind: "DuplicateVariable", name: "EmptyName" });
+        this._errors.push({
+          kind: "invalid",
+          name: "EmptyName",
+          reason: "Variable name cannot be empty",
+        });
         continue;
       }
       if (!value || value.trim().length === 0) {
@@ -250,24 +288,14 @@ export class VariablesBuilder {
    * Convert all variables to Record<string, string> format
    * This method should only be called after successful build()
    *
-   * For UserVariables, the format returned depends on context:
-   * - VariablesBuilder context: keeps uv- prefix for test compatibility
-   * - PromptParams context: UserVariable.toRecord() removes prefix
+   * UserVariable already includes the full key with uv- prefix,
+   * so we don't need to add it again.
    */
   toRecord(): Record<string, string> {
     const record: Record<string, string> = {};
 
     for (const variable of this._variables) {
-      const varRecord = variable.toRecord();
-      // Special handling for UserVariables in VariablesBuilder context
-      if (variable instanceof UserVariable) {
-        // Re-add uv- prefix for VariablesBuilder.toRecord() compatibility
-        for (const [key, value] of Object.entries(varRecord)) {
-          record[`uv-${key}`] = String(value);
-        }
-      } else {
-        Object.assign(record, varRecord);
-      }
+      Object.assign(record, variable.toRecord());
     }
 
     return record;
@@ -281,7 +309,17 @@ export class VariablesBuilder {
     const record: Record<string, string> = {};
 
     for (const variable of this._variables) {
-      Object.assign(record, variable.toRecord());
+      const varRecord = variable.toRecord();
+
+      // For UserVariable, remove the uv- prefix for template usage
+      if (variable instanceof UserVariable) {
+        for (const [key, value] of Object.entries(varRecord)) {
+          const templateKey = key.startsWith("uv-") ? key.substring(3) : key;
+          record[templateKey] = String(value);
+        }
+      } else {
+        Object.assign(record, varRecord);
+      }
     }
 
     return record;
@@ -293,6 +331,7 @@ export class VariablesBuilder {
   hasVariable(name: string): boolean {
     return this._variables.some((v) => {
       const record = v.toRecord();
+      // UserVariable stores and returns the key exactly as provided (including uv- prefix)
       return Object.prototype.hasOwnProperty.call(record, name);
     });
   }
@@ -397,12 +436,12 @@ export class VariablesBuilder {
 
     // Check required fields
     if (!factoryValues.promptFilePath) {
-      errors.push({ kind: "FactoryValueMissing", field: "promptFilePath" });
+      errors.push({ kind: "missing", field: "promptFilePath" });
     }
 
     // outputFilePath is typically required
     if (!factoryValues.outputFilePath) {
-      errors.push({ kind: "FactoryValueMissing", field: "outputFilePath" });
+      errors.push({ kind: "missing", field: "outputFilePath" });
     }
 
     // Validate custom variables have uv- prefix
@@ -410,7 +449,7 @@ export class VariablesBuilder {
       for (const [name] of Object.entries(factoryValues.customVariables)) {
         if (!name.startsWith("uv-")) {
           errors.push({
-            kind: "InvalidPrefix",
+            kind: "prefix",
             name,
             expectedPrefix: "uv-",
           });
@@ -432,5 +471,56 @@ export class VariablesBuilder {
     this._variables = [];
     this._errors = [];
     return this;
+  }
+
+  /**
+   * Accumulate operations and return Result<T,E> type
+   * This method implements the Result chain pattern for error aggregation
+   */
+  accumulate<T>(
+    operations: Array<() => Result<T, BuilderVariableError>>,
+  ): Result<T[], BuilderVariableError[]> {
+    const results: T[] = [];
+    const errors: BuilderVariableError[] = [];
+
+    for (const operation of operations) {
+      const result = operation();
+      if (result.ok) {
+        results.push(result.data);
+      } else {
+        errors.push(result.error);
+      }
+    }
+
+    if (errors.length > 0) {
+      return error(errors);
+    }
+
+    return ok(results);
+  }
+
+  /**
+   * Chain multiple Result operations following Result chain pattern
+   */
+  static chainOperations<T, E>(
+    operations: Array<() => Result<T, E>>,
+  ): Result<T[], E[]> {
+    const results: T[] = [];
+    const errors: E[] = [];
+
+    for (const operation of operations) {
+      const result = operation();
+      if (result.ok) {
+        results.push(result.data);
+      } else {
+        errors.push(result.error);
+      }
+    }
+
+    if (errors.length > 0) {
+      return error(errors);
+    }
+
+    return ok(results);
   }
 }

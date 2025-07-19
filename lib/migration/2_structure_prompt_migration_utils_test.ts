@@ -27,6 +27,7 @@ import {
 } from "./prompt_migration_utils.ts";
 import type { PromptCliParams, PromptVariables } from "../types/mod.ts";
 import { PromptPath } from "../types/prompt_types.ts";
+import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 
 Deno.test("MigrationError structure - conforms to defined interface contract", () => {
   const sampleError: MigrationError = {
@@ -73,7 +74,7 @@ Deno.test("MigrationResult structure - maintains consistent data organization", 
     // Verify required properties structure
     assertExists(migrationResult.variables);
     assertExists(migrationResult.warnings);
-    assert(Array.isArray(migrationResult.variables));
+    assertEquals(typeof migrationResult.variables, "object");
     assert(Array.isArray(migrationResult.warnings));
 
     // Verify optional path property type
@@ -81,21 +82,25 @@ Deno.test("MigrationResult structure - maintains consistent data organization", 
       assert(migrationResult.path instanceof PromptPath);
     }
 
-    // Verify variables array contains only valid PromptVariable objects
-    migrationResult.variables.forEach((variable) => {
-      assertEquals(typeof variable.toRecord, "function");
-      const record = variable.toRecord();
-      assertEquals(typeof record, "object");
+    // Verify variables is a valid PromptVariables object
+    assertEquals(typeof migrationResult.variables.size, "function");
+    assertEquals(typeof migrationResult.variables.value, "object");
+    if (Array.isArray(migrationResult.variables.value)) {
+      migrationResult.variables.value.forEach((variable) => {
+        assertEquals(typeof variable.toRecord, "function");
+        const record = variable.toRecord();
+        assertEquals(typeof record, "object");
 
-      // Each record should have exactly one key-value pair
-      const entries = Object.entries(record);
-      assertEquals(entries.length, 1);
+        // Each record should have exactly one key-value pair
+        const entries = Object.entries(record);
+        assertEquals(entries.length, 1);
 
-      const [key, value] = entries[0];
-      assertEquals(typeof key, "string");
-      assertEquals(typeof value, "string");
-      assert(key.length > 0);
-    });
+        const [key, value] = entries[0];
+        assertEquals(typeof key, "string");
+        assertEquals(typeof value, "string");
+        assert(key.length > 0);
+      });
+    }
 
     // Verify warnings array contains only strings
     migrationResult.warnings.forEach((warning) => {
@@ -193,7 +198,7 @@ Deno.test("Result type structure - maintains consistent Result<T, E> pattern", (
 
   if (variablesResult.ok) {
     assertExists(variablesResult.data);
-    assert(Array.isArray(variablesResult.data));
+    assert(variablesResult.data instanceof PromptVariablesVO);
     assert(!("error" in variablesResult));
   } else {
     assertExists(variablesResult.error);
@@ -334,7 +339,7 @@ Deno.test("Wrapper function consistency - maintain identical behavior to core fu
     // Verify variable content is identical
     const flatRecord1 = variablesResult1.data.toRecord();
     const flatRecord2 = variablesResult2.data.toRecord();
-    
+
     assertEquals(flatRecord1, flatRecord2);
   }
 
@@ -520,8 +525,11 @@ Deno.test("Edge case structure handling - maintains robustness across input vari
       assertExists(data.variables, `Case ${index}: Missing variables property`);
       assertExists(data.warnings, `Case ${index}: Missing warnings property`);
 
-      // Verify array types
-      assert(Array.isArray(data.variables), `Case ${index}: variables not array`);
+      // Verify types - variables should be PromptVariablesVO, warnings should be array
+      assert(
+        data.variables instanceof PromptVariablesVO,
+        `Case ${index}: variables not PromptVariablesVO`,
+      );
       assert(Array.isArray(data.warnings), `Case ${index}: warnings not array`);
 
       // Verify path property type when present
@@ -530,7 +538,7 @@ Deno.test("Edge case structure handling - maintains robustness across input vari
       }
 
       // Verify all variables maintain structure
-      data.variables.forEach((variable, varIndex) => {
+      data.variables.value.forEach((variable, varIndex) => {
         assertEquals(
           typeof variable.toRecord,
           "function",
@@ -645,8 +653,11 @@ Deno.test("Type safety structure - enforces strict typing throughout migration c
       );
     }
 
-    // Verify array types and content
-    assert(Array.isArray(migrationResult.variables), "variables must be array");
+    // Verify types and content
+    assert(
+      migrationResult.variables instanceof PromptVariablesVO,
+      "variables must be PromptVariablesVO",
+    );
     assert(Array.isArray(migrationResult.warnings), "warnings must be array");
 
     migrationResult.warnings.forEach((warning, index) => {

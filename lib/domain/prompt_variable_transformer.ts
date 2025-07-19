@@ -17,9 +17,7 @@ import type { Result } from "../types/result.ts";
 import type { PromptVariableSource } from "../types/prompt_variable_source.ts";
 // Note: prompt_variables.ts moved to two_params.ts as part of DDD refactoring
 import type { PromptVariable, PromptVariables } from "../types/prompt_variables_vo.ts";
-import type { ErrorInfo } from "@tettuan/breakdownparams";
 import {
-  createPromptParams,
   FilePathVariable,
   PromptVariablesVO,
   StandardVariable,
@@ -275,9 +273,9 @@ export class PromptVariableTransformer {
   /**
    * Format variable error to string message
    */
-  private formatVariableError(error: any): string {
-    if (typeof error === "object" && error.message) {
-      return error.message;
+  private formatVariableError(error: unknown): string {
+    if (typeof error === "object" && error !== null && "message" in error) {
+      return String(error.message);
     }
     return "Unknown variable error";
   }

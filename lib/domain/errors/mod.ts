@@ -224,8 +224,8 @@ export function handleBreakdownError(error: unknown): void {
  */
 export function toBreakdownError(
   error: unknown,
-  domain: string = "unknown",
-  kind: string = "unknown-error",
+  _domain: string = "unknown",
+  _kind: string = "unknown-error",
 ): BreakdownError {
   if (isBreakdownError(error)) {
     return error;

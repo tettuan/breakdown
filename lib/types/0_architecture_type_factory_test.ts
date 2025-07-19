@@ -7,10 +7,10 @@
  * @module types/0_architecture_type_factory_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
 import { TwoParamsDirectivePattern } from "./mod.ts";
-import { TwoParamsLayerTypePattern } from "./mod.ts";
+// Note: TwoParamsLayerTypePattern has been removed (@deprecated)
 
 /**
  * テスト用のTypePatternProvider実装
@@ -19,14 +19,14 @@ import { TwoParamsLayerTypePattern } from "./mod.ts";
 class TestPatternProvider implements TypePatternProvider {
   constructor(
     private directivePattern: TwoParamsDirectivePattern | null,
-    private layerPattern: TwoParamsLayerTypePattern | null,
+    private layerPattern: { test(value: string): boolean; getPattern(): string } | null,
   ) {}
 
-  getDirectivePattern(): TwoParamsDirectivePattern | null {
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.directivePattern;
   }
 
-  getLayerTypePattern(): TwoParamsLayerTypePattern | null {
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this.layerPattern;
   }
 
@@ -39,11 +39,15 @@ class TestPatternProvider implements TypePatternProvider {
   }
 
   getValidDirectiveTypes(): readonly string[] {
+    // Return empty array if no pattern provider
+    if (!this.directivePattern) return [];
     // For testing, return common directive types
     return ["to", "summary", "defect", "analyze"] as const;
   }
 
   getValidLayerTypes(): readonly string[] {
+    // Return empty array if no pattern provider
+    if (!this.layerPattern) return [];
     // For testing, return common layer types
     return ["project", "issue", "task", "bugs"] as const;
   }
@@ -53,7 +57,7 @@ Deno.test("TypeFactory Architecture - Factory Pattern implementation", () => {
   // ファクトリーパターンの実装確認
   const provider = new TestPatternProvider(
     TwoParamsDirectivePattern.create("to|summary|defect")!,
-    TwoParamsLayerTypePattern.create("project|issue|task")!,
+    { test: (v) => /^(project|issue|task)$/.test(v), getPattern: () => "^(project|issue|task)$" },
   );
 
   const factory = new TypeFactory(provider);
@@ -74,7 +78,10 @@ Deno.test("TypeFactory Architecture - TypePatternProvider interface compliance",
   // インターフェース準拠の確認
   const provider: TypePatternProvider = {
     getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary")!,
-    getLayerTypePattern: () => TwoParamsLayerTypePattern.create("project|issue")!,
+    getLayerTypePattern: () => ({
+      test: (v) => /^(project|issue)$/.test(v),
+      getPattern: () => "^(project|issue)$",
+    }),
     validateDirectiveType: (value: string) => /^(to|summary)$/.test(value),
     validateLayerType: (value: string) => /^(project|issue)$/.test(value),
     getValidDirectiveTypes: () => ["to", "summary"],
@@ -99,13 +106,17 @@ Deno.test("TypeFactory Architecture - Dependency injection pattern", () => {
 
   const fullProvider = new TestPatternProvider(
     TwoParamsDirectivePattern.create(".*")!,
-    TwoParamsLayerTypePattern.create(".*")!,
+    { test: () => true, getPattern: () => ".*" },
   );
   const factory2 = new TypeFactory(fullProvider);
 
   // 異なるプロバイダーで異なる動作をすることを確認
   const availability1 = factory1.getPatternAvailability();
   const availability2 = factory2.getPatternAvailability();
+
+  // Debug: Check actual values
+  // console.log("availability1:", availability1);
+  // console.log("availability2:", availability2);
 
   assertEquals(availability1.directive, false);
   assertEquals(availability1.layer, false);
@@ -131,12 +142,12 @@ Deno.test("TypeFactory Architecture - Result type pattern for error handling", (
   // エラーケースではerrorプロパティが存在
   if (!directiveResult.ok) {
     assertExists(directiveResult.error);
-    assertEquals(directiveResult.error.kind, "PatternNotFound");
+    assertEquals(directiveResult.error.kind, "PatternValidationFailed");
   }
 
   if (!layerResult.ok) {
     assertExists(layerResult.error);
-    assertEquals(layerResult.error.kind, "PatternNotFound");
+    assertEquals(layerResult.error.kind, "PatternValidationFailed");
   }
 });
 
@@ -144,7 +155,7 @@ Deno.test("TypeFactory Architecture - Smart Constructor pattern integration", ()
   // Smart Constructorパターンとの統合確認
   const provider = new TestPatternProvider(
     TwoParamsDirectivePattern.create("to")!,
-    TwoParamsLayerTypePattern.create("project")!,
+    { test: (v) => v === "project", getPattern: () => "^(project)$" },
   );
   const factory = new TypeFactory(provider);
 
@@ -167,7 +178,7 @@ Deno.test("TypeFactory Architecture - Separation of concerns", () => {
   // 責務分離の確認
   const provider = new TestPatternProvider(
     TwoParamsDirectivePattern.create("to|summary")!,
-    TwoParamsLayerTypePattern.create("project|issue")!,
+    { test: (v) => /^(project|issue)$/.test(v), getPattern: () => "^(project|issue)$" },
   );
   const factory = new TypeFactory(provider);
 
@@ -188,7 +199,7 @@ Deno.test("TypeFactory Architecture - Totality principle compliance", () => {
   // Totality原則の準拠確認
   const provider = new TestPatternProvider(
     TwoParamsDirectivePattern.create("to")!,
-    TwoParamsLayerTypePattern.create("project")!,
+    { test: (v) => v === "project", getPattern: () => "^(project)$" },
   );
   const factory = new TypeFactory(provider);
 
@@ -211,7 +222,7 @@ Deno.test("TypeFactory Architecture - Method composition pattern", () => {
   // メソッド合成パターンの確認
   const provider = new TestPatternProvider(
     TwoParamsDirectivePattern.create("to|summary")!,
-    TwoParamsLayerTypePattern.create("project|issue")!,
+    { test: (v) => /^(project|issue)$/.test(v), getPattern: () => "^(project|issue)$" },
   );
   const factory = new TypeFactory(provider);
 

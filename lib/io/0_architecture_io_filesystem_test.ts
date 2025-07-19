@@ -15,16 +15,10 @@
  * @module
  */
 
-import { assertEquals, assertExists } from "@std/assert";
-import {
-  StdinAvailability,
-  StdinReadingConfiguration,
-} from "./stdin_configuration.ts";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
+import { StdinAvailability, StdinReadingConfiguration } from "./stdin_configuration.ts";
 import { StdinErrorType } from "./stdin_error_types.ts";
-import {
-  StdoutWriteConfiguration,
-  writeStdoutSafe,
-} from "./stdout.ts";
+import { StdoutWriteConfiguration, writeStdoutSafe } from "./stdout.ts";
 
 /**
  * Test group: Filesystem operation architecture constraints

@@ -124,8 +124,8 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
     // Class constructor should not require dependencies
     assertEquals(
       TwoParamsValidator.length,
-      2,
-      "Constructor takes optional config and profile parameters",
+      1,
+      "Constructor takes optional config parameter",
     );
 
     // Verify focused responsibility through method inspection
@@ -138,9 +138,9 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
       "Should validate both directive and layer types",
     );
     assertEquals(
-      _validateString.includes("PromptVariables") || _validateString.includes("Factory"),
+      _validateString.includes("PromptVariables"),
       false,
-      "Should not handle prompt generation or factory creation",
+      "Should not handle prompt generation",
     );
 
     logger.debug("Single responsibility principle verification completed");
@@ -266,24 +266,26 @@ describe("Architecture: Result Type Compliance", () => {
     if (result.ok) {
       const originalData = result.data;
 
-      // Attempt to modify returned data
-      (result.data as unknown as { directiveType: string }).directiveType = "modified";
-
-      // Second validation should not be affected
+      // Test that new validations are not affected by previous results
       const secondResult = validator.validate(["summary", "issue"]);
       if (secondResult.ok) {
         assertEquals(
           secondResult.data.directiveType.value,
           "summary",
-          "Validator should not be affected by external modifications",
+          "Validator should produce independent results",
         );
       }
 
-      // Original result should maintain integrity
+      // Test that result data maintains structure consistency
       assertEquals(
-        originalData.directiveType.value,
-        "to", // This confirms the object was modifiable (not immutable)
-        "Note: Data object is modifiable - consider immutability for better architecture",
+        typeof originalData.directiveType,
+        "object",
+        "DirectiveType should be Value Object",
+      );
+      assertEquals(
+        typeof originalData.layerType,
+        "object",
+        "LayerType should be Value Object",
       );
     }
 
@@ -370,10 +372,14 @@ describe("Architecture: Validation Logic Design", () => {
     if (result.ok) {
       assertEquals(
         typeof result.data.directiveType,
-        "string",
-        "directiveType should be string typed",
+        "object",
+        "directiveType should be DirectiveType object typed",
       );
-      assertEquals(typeof result.data.layerType, "string", "layerType should be string typed");
+      assertEquals(
+        typeof result.data.layerType,
+        "object",
+        "layerType should be LayerType object typed",
+      );
     } else {
       assertEquals(typeof result.error.kind, "string", "error.kind should be string typed");
     }

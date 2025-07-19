@@ -10,7 +10,7 @@
 
 import type { Result } from "../../../types/result.ts";
 import { error, ok } from "../../../types/result.ts";
-import type { ConfigProfileName } from "../../../types/config_profile_name.ts";
+import type { ConfigProfileName } from "../../../config/config_profile_name.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
@@ -131,7 +131,9 @@ export class DirectiveType {
     // Handle missing profile with default configuration
     const actualProfile = profile || (() => {
       try {
-        return (globalThis as any).ConfigProfileName?.createDefault?.() ||
+        return (globalThis as unknown as {
+          ConfigProfileName?: { createDefault?: () => ConfigProfileName };
+        }).ConfigProfileName?.createDefault?.() ||
           { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
       } catch {
         return { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
@@ -325,7 +327,8 @@ export class DirectiveType {
    * @returns true if values are equal
    */
   equals(other: DirectiveType): boolean {
-    return this._value === other._value && this._profile.equals(other._profile);
+    return this._value === other._value &&
+      this._profile.value === other._profile.value;
   }
 
   /**

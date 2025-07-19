@@ -259,7 +259,7 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
     }
 
     // Default fallback pattern for common directive types
-    return "^(to|summary|defect|init|find)$";
+    return "^(to|summary|defect)$";
   }
 
   /**
@@ -312,13 +312,13 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   getValidDirectiveTypes(): readonly string[] {
     const pattern = this.getDirectivePattern();
     if (!pattern) return [];
-    
+
     // パターンから取りうる値を推定（基本的なもの）
     const patternStr = pattern.getPattern();
-    if (patternStr.includes("to|summary|defect|init|find")) {
-      return ["to", "summary", "defect", "init", "find"];
+    if (patternStr.includes("to|summary|defect")) {
+      return ["to", "summary", "defect"];
     }
-    
+
     // 設定から直接取得する場合の処理
     if (this.configData) {
       const validValues = this.extractValidValues(this.configData, "directive");
@@ -326,8 +326,8 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
         return validValues;
       }
     }
-    
-    return ["to", "summary", "defect", "init", "find"]; // デフォルト値
+
+    return ["to", "summary", "defect"]; // デフォルト値
   }
 
   /**
@@ -336,13 +336,13 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   getValidLayerTypes(): readonly string[] {
     const pattern = this.getLayerTypePattern();
     if (!pattern) return [];
-    
+
     // パターンから取りうる値を推定（基本的なもの）
     const patternStr = pattern.getPattern();
     if (patternStr.includes("project|issue|task|bugs|temp")) {
       return ["project", "issue", "task", "bugs", "temp"];
     }
-    
+
     // 設定から直接取得する場合の処理
     if (this.configData) {
       const validValues = this.extractValidValues(this.configData, "layer");
@@ -350,14 +350,17 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
         return validValues;
       }
     }
-    
+
     return ["project", "issue", "task", "bugs", "temp"]; // デフォルト値
   }
 
   /**
    * 設定から有効な値を抽出
    */
-  private extractValidValues(configData: Record<string, unknown>, type: "directive" | "layer"): string[] | null {
+  private extractValidValues(
+    configData: Record<string, unknown>,
+    type: "directive" | "layer",
+  ): string[] | null {
     // 直接的な values 配列を探す
     const valuesKey = type === "directive" ? "directiveValues" : "layerTypeValues";
     if (Array.isArray(configData[valuesKey])) {
@@ -365,13 +368,13 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
     }
 
     // ネストした構造から探す
-    const twoParamsRules = configData.twoParamsRules as { 
-      directive?: { values?: string[] }; 
+    const twoParamsRules = configData.twoParamsRules as {
+      directive?: { values?: string[] };
       layer?: { values?: string[] };
     };
     if (twoParamsRules) {
-      const ruleValues = type === "directive" 
-        ? twoParamsRules.directive?.values 
+      const ruleValues = type === "directive"
+        ? twoParamsRules.directive?.values
         : twoParamsRules.layer?.values;
       if (Array.isArray(ruleValues)) {
         return ruleValues.filter((v): v is string => typeof v === "string");
@@ -384,8 +387,8 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       layer?: { values?: string[] };
     };
     if (validation) {
-      const validationValues = type === "directive" 
-        ? validation.directive?.values 
+      const validationValues = type === "directive"
+        ? validation.directive?.values
         : validation.layer?.values;
       if (Array.isArray(validationValues)) {
         return validationValues.filter((v): v is string => typeof v === "string");
@@ -437,7 +440,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   private layerPattern: TwoParamsLayerTypePattern | null;
 
   constructor() {
-    this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect|init|find)$");
+    this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
     this.layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task|bugs|temp)$");
   }
 
@@ -467,7 +470,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
    * 利用可能なDirectiveType値を取得
    */
   getValidDirectiveTypes(): readonly string[] {
-    return ["to", "summary", "defect", "init", "find"];
+    return ["to", "summary", "defect"];
   }
 
   /**

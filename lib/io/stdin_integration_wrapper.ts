@@ -11,7 +11,7 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import {
   detectEnvironment,
-  type EnhancedStdinOptions,
+  type EnhancedStdinOptions as _EnhancedStdinOptions,
   type EnvironmentInfo,
   isStdinAvailableEnhanced,
   readStdinEnhanced,
@@ -226,23 +226,25 @@ export async function handleStdinForCLI(options?: {
   timeout?: number;
   allowEmpty?: boolean;
   debug?: boolean;
-}): Promise<Result<{
-  inputText: string;
-  skipped: boolean;
-  warnings: string[];
-}, Error>> {
+}): Promise<
+  Result<{
+    inputText: string;
+    skipped: boolean;
+    warnings: string[];
+  }, Error>
+> {
   const wrapper = new StdinIntegrationWrapper({ debug: options?.debug });
-  
+
   // Check if stdin is explicitly requested
   const isExplicitStdin = options?.from === "-" || options?.fromFile === "-";
-  
+
   if (isExplicitStdin) {
     const result = await wrapper.readStdin({
       timeout: options?.timeout,
       allowEmpty: options?.allowEmpty ?? true,
       forceRead: true,
     });
-    
+
     if (result.ok) {
       return ok({
         inputText: result.data,
@@ -252,25 +254,25 @@ export async function handleStdinForCLI(options?: {
     }
     return error(result.error);
   }
-  
+
   // Auto-detection mode
   const safeResult = await wrapper.readStdinSafe({
     timeout: options?.timeout,
     allowEmpty: options?.allowEmpty ?? true,
   });
-  
+
   if (safeResult.ok) {
     const warnings: string[] = [];
     if (safeResult.data.skipped) {
       warnings.push(safeResult.data.reason || "Stdin was skipped");
     }
-    
+
     return ok({
       inputText: safeResult.data.content,
       skipped: safeResult.data.skipped,
       warnings,
     });
   }
-  
+
   return error(safeResult.error);
 }

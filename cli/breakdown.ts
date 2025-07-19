@@ -20,7 +20,7 @@ import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
 import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 import { formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
 import type {
@@ -108,17 +108,26 @@ export async function runBreakdown(
 ): Promise<Result<void, BreakdownError>> {
   // 1. Extract and create config profile name with Result pattern matching
     const detectedPrefix = ConfigPrefixDetector.detect(args);
-    const configProfileNameResult = ConfigProfileName.create(
+    const configProfileNameResult = ConfigProfileName.createOrError(
       detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
     );
 
     if (!configProfileNameResult.ok) {
+      const validationError = configProfileNameResult.error;
+      let errorMessage = "Invalid config profile name";
+      
+      if (validationError.kind === "InvalidInput") {
+        errorMessage = validationError.reason;
+      } else if (validationError.kind === "EmptyValue") {
+        errorMessage = `Empty value for field: ${validationError.field}`;
+      }
+      
       return {
         ok: false,
         error: {
           kind: "ConfigProfileError",
-          message: configProfileNameResult.error.message,
-          cause: configProfileNameResult.error,
+          message: errorMessage,
+          cause: validationError,
         },
       };
     }
@@ -216,8 +225,7 @@ export async function runBreakdown(
           ok: false,
           error: {
             kind: "UnknownResultType",
-            // deno-lint-ignore no-explicit-any
-            type: (result as any).type || "unknown",
+            type: "type" in result ? String(result.type) : "unknown",
           },
         };
       }

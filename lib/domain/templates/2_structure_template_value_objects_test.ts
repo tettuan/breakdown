@@ -7,7 +7,7 @@
  * @module domain/templates/2_structure_template_value_objects_test
  */
 
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import {
   type ChecksumAlgorithm,

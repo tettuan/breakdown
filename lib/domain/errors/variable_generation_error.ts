@@ -69,7 +69,10 @@ export class VariableGenerationError extends BaseBreakdownError {
       "variable-missing-required",
       `Missing required variables${source}: ${vars}`,
       {
-        context: { missingVariables, sourceType: sourceType as any },
+        context: {
+          missingVariables,
+          sourceType: sourceType as "cli" | "config" | "stdin" | "default",
+        },
       },
     );
   }
@@ -160,7 +163,10 @@ export class VariableGenerationError extends BaseBreakdownError {
       `Invalid variable source '${sourceType}': ${reason}`,
       {
         cause,
-        context: { sourceType: sourceType as any, expected: reason },
+        context: {
+          sourceType: sourceType as "cli" | "config" | "stdin" | "default",
+          expected: reason,
+        },
       },
     );
   }

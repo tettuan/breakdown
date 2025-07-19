@@ -9,7 +9,7 @@
  * - Totality pattern compliance
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { defaultStdinVariableFactory, StdinVariableFactory } from "./stdin_variable_factory.ts";
 import type { StdinFactoryInput } from "./stdin_variable_factory.ts";
 

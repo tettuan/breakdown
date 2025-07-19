@@ -7,7 +7,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect|find)$"
+      pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:

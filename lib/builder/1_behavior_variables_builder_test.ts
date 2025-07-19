@@ -9,7 +9,7 @@
  * - Domain boundary integration (Factory/Builder pattern)
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { VariablesBuilder } from "./variables_builder.ts";
 import type { FactoryResolvedValues } from "./variables_builder.ts";
 
@@ -41,9 +41,9 @@ Deno.test("1_behavior: VariablesBuilder handles duplicate variable names correct
   assertEquals(result.ok, false);
   if (!result.ok) {
     assertEquals(result.error.length, 1);
-    assertEquals(result.error[0].kind, "DuplicateVariable");
+    assertEquals(result.error[0].kind, "duplicate");
     const dupError = result.error[0];
-    if (dupError.kind === "DuplicateVariable") {
+    if (dupError.kind === "duplicate") {
       assertEquals(dupError.name, "input_text_file");
     }
   }
@@ -59,9 +59,9 @@ Deno.test("1_behavior: VariablesBuilder enforces uv- prefix for user variables",
 
   assertEquals(result1.ok, false);
   if (!result1.ok) {
-    assertEquals(result1.error[0].kind, "InvalidPrefix");
+    assertEquals(result1.error[0].kind, "prefix");
     const prefixError = result1.error[0];
-    if (prefixError.kind === "InvalidPrefix") {
+    if (prefixError.kind === "prefix") {
       assertEquals(prefixError.expectedPrefix, "uv-");
     }
   }
@@ -88,9 +88,9 @@ Deno.test("1_behavior: VariablesBuilder accumulates multiple errors", () => {
   assertEquals(result.ok, false);
   if (!result.ok) {
     assertEquals(result.error.length, 3);
-    // Two InvalidPrefix errors and one DuplicateVariable error
-    const invalidPrefixErrors = result.error.filter((e) => e.kind === "InvalidPrefix");
-    const duplicateErrors = result.error.filter((e) => e.kind === "DuplicateVariable");
+    // Two prefix errors and one DuplicateVariable error
+    const invalidPrefixErrors = result.error.filter((e) => e.kind === "prefix");
+    const duplicateErrors = result.error.filter((e) => e.kind === "duplicate");
     assertEquals(invalidPrefixErrors.length, 2);
     assertEquals(duplicateErrors.length, 1);
   }
@@ -161,7 +161,7 @@ Deno.test("1_behavior: VariablesBuilder validates Factory values before processi
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
     assertEquals(validationResult.error.length, 2);
-    const missingFields = validationResult.error.filter((e) => e.kind === "FactoryValueMissing");
+    const missingFields = validationResult.error.filter((e) => e.kind === "missing");
     assertEquals(missingFields.length, 2);
   }
 });
@@ -183,7 +183,7 @@ Deno.test("1_behavior: VariablesBuilder handles custom variables without uv- pre
   assertEquals(result.ok, false); // Due to empty name
   if (!result.ok) {
     assertEquals(result.error.length, 1);
-    assertEquals(result.error[0].kind, "DuplicateVariable");
+    assertEquals(result.error[0].kind, "invalid");
   }
 });
 
@@ -300,7 +300,7 @@ Deno.test("1_behavior: VariablesBuilder validates custom variables in Factory va
 
   assertEquals(validationResult.ok, false);
   if (!validationResult.ok) {
-    const invalidPrefixErrors = validationResult.error.filter((e) => e.kind === "InvalidPrefix");
+    const invalidPrefixErrors = validationResult.error.filter((e) => e.kind === "prefix");
     assertEquals(invalidPrefixErrors.length, 1);
     assertEquals(invalidPrefixErrors[0].name, "invalid-var");
   }
@@ -335,7 +335,7 @@ Deno.test("1_behavior: VariablesBuilder respects domain boundaries", () => {
   assertEquals(result1.ok, false);
   if (!result1.ok) {
     // The error comes from StandardVariable's validation
-    assertExists(result1.error.find((e) => e.kind === "InvalidName"));
+    assertExists(result1.error.find((e) => e.kind === "invalid"));
   }
 
   // File path variable validation is delegated to FilePathVariable
@@ -346,6 +346,6 @@ Deno.test("1_behavior: VariablesBuilder respects domain boundaries", () => {
 
   assertEquals(result2.ok, false);
   if (!result2.ok) {
-    assertExists(result2.error.find((e) => e.kind === "InvalidName"));
+    assertExists(result2.error.find((e) => e.kind === "invalid"));
   }
 });

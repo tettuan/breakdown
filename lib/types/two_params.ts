@@ -10,8 +10,8 @@
 
 import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
-import type { ConfigProfileName } from "./config_profile_name.ts";
-import type { TwoParams_Result } from "./two_params_result_extension.ts";
+import type { ConfigProfileName } from "../config/config_profile_name.ts";
+import type { TwoParams_Result as _TwoParams_Result } from "./two_params_result_extension.ts";
 import { isTwoParamsResult } from "./two_params_result_extension.ts";
 import type { ValidationError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";

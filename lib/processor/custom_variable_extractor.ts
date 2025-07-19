@@ -14,9 +14,9 @@ import { error, ok } from "../types/result.ts";
  * Error types for custom variable extraction
  */
 export type CustomVariableError =
-  | { kind: "InvalidVariablePrefix"; key: string }
-  | { kind: "InvalidVariableValue"; key: string; value: unknown; reason: string }
-  | { kind: "ReservedVariableName"; key: string };
+  | { kind: "InvalidVariablePrefix"; key: string; message: string }
+  | { kind: "InvalidVariableValue"; key: string; value: unknown; reason: string; message: string }
+  | { kind: "ReservedVariableName"; key: string; message: string };
 
 /**
  * Custom Variable Extractor class
@@ -77,6 +77,7 @@ export class CustomVariableExtractor {
       return error({
         kind: "ReservedVariableName",
         key,
+        message: `Custom variable name '${key}' is reserved and cannot be used`,
       });
     }
 
@@ -87,6 +88,7 @@ export class CustomVariableExtractor {
         key,
         value,
         reason: "Custom variable value cannot be null or undefined",
+        message: `Custom variable '${key}' has invalid value: cannot be null or undefined`,
       });
     }
 
@@ -96,6 +98,7 @@ export class CustomVariableExtractor {
         key,
         value,
         reason: "Custom variable value cannot be an object",
+        message: `Custom variable '${key}' has invalid value: cannot be an object`,
       });
     }
 

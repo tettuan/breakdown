@@ -17,7 +17,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { TypeFactory } from "$lib/types/type_factory.ts";
+import { TypeFactory as _TypeFactory } from "$lib/types/type_factory.ts";
 import {
   DirectiveType as ImportedDirectiveType,
   TwoParamsDirectivePattern,
@@ -430,7 +430,7 @@ export class TwoParamsValidator {
       });
     }
 
-    const patternAdapter = {
+    const _patternAdapter = {
       getDirectivePattern: () => directivePattern,
       getLayerTypePattern: () => layerPattern,
       validateDirectiveType: (value: string) => directivePattern.test(value),

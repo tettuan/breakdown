@@ -10,10 +10,10 @@
  * @module types/two_params_architecture_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { TwoParams } from "../domain/core/aggregates/two_params_optimized.ts";
-import { ConfigProfileName } from "./config_profile_name.ts";
+import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 describe("TwoParams Architecture", () => {
   describe("Smart Constructor Pattern", () => {
@@ -52,7 +52,7 @@ describe("TwoParams Architecture", () => {
       assertEquals(result.ok, true);
       if (result.ok) {
         assertExists(result.data);
-        assertEquals(result.data.profile.isDefault, true);
+        assertEquals(result.data.profile.isDefault(), true);
       }
     });
 
@@ -64,8 +64,8 @@ describe("TwoParams Architecture", () => {
       assertEquals(resultUndefined.ok, true);
 
       if (resultNull.ok && resultUndefined.ok) {
-        assertEquals(resultNull.data.profile.isDefault, true);
-        assertEquals(resultUndefined.data.profile.isDefault, true);
+        assertEquals(resultNull.data.profile.isDefault(), true);
+        assertEquals(resultUndefined.data.profile.isDefault(), true);
       }
     });
   });

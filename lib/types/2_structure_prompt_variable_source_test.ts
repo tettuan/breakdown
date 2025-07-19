@@ -11,7 +11,7 @@
  * @module types/prompt_variable_source_test
  */
 
-import { assertEquals, assertThrows as _assertThrows } from "@std/assert";
+import { assertEquals, assertThrows as _assertThrows } from "jsr:@std/assert@0.224.0";
 import {
   DataSource,
   PromptVariableSource,

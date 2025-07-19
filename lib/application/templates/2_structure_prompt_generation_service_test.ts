@@ -10,7 +10,7 @@
  * @module application/templates/2_structure_prompt_generation_service_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type PromptGenerationDependencies,
   type PromptGenerationRequest,

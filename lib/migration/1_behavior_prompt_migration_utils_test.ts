@@ -45,7 +45,9 @@ Deno.test("migrateCliParamsToVariables - basic parameters", () => {
   if (result.ok) {
     assertEquals(result.data.size(), 2);
 
-    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) =>
+      v.toRecord()
+    );
     assertEquals(records[0], { directive_type: "to" });
     assertEquals(records[1], { layer_type: "project" });
   }
@@ -67,7 +69,9 @@ Deno.test("migrateCliParamsToVariables - with file options", () => {
   if (result.ok) {
     assertEquals(result.data.size(), 4);
 
-    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) =>
+      v.toRecord()
+    );
     assertEquals(records[2], { input_text_file: "/path/to/input.md" });
     assertEquals(records[3], { destination_path: "/path/to/output.md" });
   }
@@ -92,7 +96,9 @@ Deno.test("migrateCliParamsToVariables - with stdin and custom variables", () =>
   if (result.ok) {
     assertEquals(result.data.size(), 5); // 2 standard + 1 stdin + 2 custom
 
-    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) => v.toRecord());
+    const records = result.data.value.map((v: import("../types/mod.ts").PromptVariable) =>
+      v.toRecord()
+    );
     // Check stdin variable
     assertEquals(records[2], { input_text: "Some input from stdin" });
     // Check custom variables

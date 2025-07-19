@@ -345,11 +345,10 @@ export class StandardVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<StandardVariable, ValidationError> {
-    if (!key || !value) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "variable",
-        value: `${key}=${value}`,
-        reason: "Key and value must be non-empty",
+    if (!key || !key.trim() || !value || !value.trim()) {
+      return error(ErrorFactory.validationError("EmptyValue", {
+        field: (!key || !key.trim()) ? "key" : "value",
+        context: { key, value },
       }));
     }
     return ok(new StandardVariable(key, value));
@@ -364,11 +363,10 @@ export class FilePathVariable implements PromptVariable {
   constructor(private key: string, private readonly _value: string) {}
 
   static create(key: string, value: string): Result<FilePathVariable, ValidationError> {
-    if (!key || !value) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "variable",
-        value: `${key}=${value}`,
-        reason: "Key and value must be non-empty",
+    if (!key || !key.trim() || !value || !value.trim()) {
+      return error(ErrorFactory.validationError("EmptyValue", {
+        field: (!key || !key.trim()) ? "key" : "value",
+        context: { key, value },
       }));
     }
     return ok(new FilePathVariable(key, value));
@@ -387,11 +385,10 @@ export class StdinVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<StdinVariable, ValidationError> {
-    if (!key || !value) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "variable",
-        value: `${key}=${value}`,
-        reason: "Key and value must be non-empty",
+    if (!key || !key.trim() || !value || !value.trim()) {
+      return error(ErrorFactory.validationError("EmptyValue", {
+        field: (!key || !key.trim()) ? "key" : "value",
+        context: { key, value },
       }));
     }
     return ok(new StdinVariable(key, value));
@@ -406,17 +403,17 @@ export class UserVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<UserVariable, ValidationError> {
-    if (!key || !value) {
-      return error(ErrorFactory.validationError("InvalidInput", {
-        field: "variable",
-        value: `${key}=${value}`,
-        reason: "Key and value must be non-empty",
+    if (!key || !key.trim() || !value || !value.trim()) {
+      return error(ErrorFactory.validationError("EmptyValue", {
+        field: (!key || !key.trim()) ? "key" : "value",
+        context: { key, value },
       }));
     }
     return ok(new UserVariable(key, value));
   }
 
   toRecord(): Record<string, string> {
+    // Keep the original key with uv- prefix for UserVariable
     return { [this.key]: this.value };
   }
 }

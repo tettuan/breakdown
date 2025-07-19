@@ -25,8 +25,6 @@ import type { ProcessedVariables } from "../../processor/variable_processor_v2.t
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";
-import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
-import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 
 // ============================================================================
 // Domain Value Objects - Type-safe prompt generation entities

@@ -7,7 +7,7 @@
  * @module config/config_profile_name.test
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { ConfigProfileName } from "./config_profile_name.ts";
 
 // =============================================================================

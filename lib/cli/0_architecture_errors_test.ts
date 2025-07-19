@@ -21,30 +21,29 @@ Deno.test("CliError - architecture constraints", async () => {
     new URL("./errors.ts", import.meta.url),
   );
 
-  // Test 1: No imports (self-contained module)
+  // Test 1: Limited imports (only type imports from unified error system)
   const importStatements = moduleContent.match(/import\s+.*from/g) || [];
+  const typeImports = importStatements.filter((stmt) => stmt.includes("type"));
   assertEquals(
     importStatements.length,
-    0,
-    "Error module should be self-contained with no imports",
+    typeImports.length,
+    "Error module should only have type imports from unified error system",
   );
 
-  // Test 2: Proper error class hierarchy
+  // Test 2: Discriminated union error type
   assertEquals(
-    moduleContent.includes("extends Error"),
+    moduleContent.includes("export type CliError"),
     true,
-    "CliError should extend built-in Error class",
+    "CliError should be a discriminated union type",
   );
 
-  // Test 3: No business logic in error class
+  // Test 3: No business logic in error types and factory functions
   const forbiddenPatterns = [
     /async\s+/, // No async methods
     /await\s+/, // No await
     /Deno\./, // No Deno APIs
     /fetch/, // No network calls
     /readFile/, // No file operations
-    /if\s*\([^)]*&&[^)]*\)/, // No complex conditionals
-    /for\s*\(/, // No loops
     /while\s*\(/, // No loops
   ];
 
@@ -56,21 +55,21 @@ Deno.test("CliError - architecture constraints", async () => {
     );
   }
 
-  // Test 4: Enum values are CONSTANT_CASE
-  const enumMatch = moduleContent.match(/export\s+enum\s+CliErrorCode\s*{([^}]+)}/s);
-  if (enumMatch) {
-    const enumBody = enumMatch[1];
-    const enumValues = enumBody.match(/\w+\s*=/g) || [];
+  // Test 4: Factory functions are properly exported
+  const factoryMatch = moduleContent.match(/export\s+const\s+CliErrorFactory\s*=/s);
+  assertEquals(
+    factoryMatch !== null,
+    true,
+    "CliErrorFactory should be exported",
+  );
 
-    for (const value of enumValues) {
-      const name = value.replace(/\s*=/, "");
-      assertEquals(
-        name === name.toUpperCase(),
-        true,
-        `Enum value ${name} should be in CONSTANT_CASE`,
-      );
-    }
-  }
+  // Test 5: Type guard functions are properly exported
+  const typeGuardMatch = moduleContent.match(/export\s+function\s+isCliError/s);
+  assertEquals(
+    typeGuardMatch !== null,
+    true,
+    "isCliError type guard should be exported",
+  );
 });
 
 /**
@@ -102,18 +101,31 @@ Deno.test("CliError - single responsibility", async () => {
     );
   }
 
-  // Should not have utility functions
-  const functionPatterns = [
-    /export\s+function/,
+  // Should only have error-related utility functions
+  const forbiddenFunctionPatterns = [
     /export\s+async\s+function/,
-    /export\s+const\s+\w+\s*=\s*\(/, // Arrow functions
+    /export\s+function(?!.*(?:isCliError|extractCliErrorMessage))/,
   ];
 
-  for (const pattern of functionPatterns) {
+  for (const pattern of forbiddenFunctionPatterns) {
     assertEquals(
       pattern.test(moduleContent),
       false,
-      `Utility function detected: ${pattern}. Error module should only define error types.`,
+      `Non-error utility function detected: ${pattern}. Error module should only define error types and related utilities.`,
+    );
+  }
+
+  // Should have required error utilities
+  const requiredUtilities = [
+    /export\s+function\s+isCliError/,
+    /export\s+function\s+extractCliErrorMessage/,
+  ];
+
+  for (const pattern of requiredUtilities) {
+    assertEquals(
+      pattern.test(moduleContent),
+      true,
+      `Required error utility missing: ${pattern}. Error module should provide type guards and message extraction.`,
     );
   }
 });

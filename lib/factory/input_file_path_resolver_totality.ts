@@ -10,10 +10,10 @@
  * @module factory/input_file_path_resolver_totality
  */
 
-import { isAbsolute, resolve } from "@std/path";
+import { isAbsolute, resolve } from "jsr:@std/path@^1.0.9";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "./prompt_variables_factory.ts";
-import type { ConfigProfileName } from "../types/config_profile_name.ts";
+import type { ConfigProfileName } from "../config/config_profile_name.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 
@@ -550,10 +550,11 @@ export class InputFilePathResolverTotality {
       case "Absolute":
         return ok(normalizedPath);
       case "Relative":
-      case "Filename":
+      case "Filename": {
         // Use safe path resolution - resolve function is safe
         const resolved = resolve(this.cwd, normalizedPath);
         return ok(resolved);
+      }
       default:
         return error({
           kind: "ConfigurationError",
@@ -600,7 +601,7 @@ export class InputFilePathResolverTotality {
 
     // Attempt filesystem stat - convert OS exceptions to explicit Result values
     try {
-      const statResult = Deno.statSync(path);
+      const _statResult = Deno.statSync(path);
       // If we reach here, file exists and is accessible
       return ok(true);
     } catch (err) {

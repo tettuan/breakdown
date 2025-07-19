@@ -3,7 +3,7 @@
  * Testing Smart Constructor patterns, Result types, and Totality principle compliance
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   GeneratedPrompt,
   PromptGenerationAggregate,

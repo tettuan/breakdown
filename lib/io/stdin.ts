@@ -7,6 +7,8 @@
  * @module io/stdin
  */
 
+import type { TimeoutManager } from "../config/timeout_manager.ts";
+
 // Re-export the enhanced stdin functionality as the main interface
 export {
   createStdinReaderForEnvironment,
@@ -25,14 +27,14 @@ export {
  * This function is used by legacy code that expects the old readStdin interface
  */
 export async function readStdin(options?: {
-  timeoutManager?: any;
+  timeoutManager?: unknown;
   forceRead?: boolean;
   allowEmpty?: boolean;
 }): Promise<string> {
   const { readStdinEnhanced } = await import("./enhanced_stdin.ts");
 
   return await readStdinEnhanced({
-    timeoutManager: options?.timeoutManager,
+    timeoutManager: options?.timeoutManager as TimeoutManager | undefined,
     forceRead: options?.forceRead ?? false,
     allowEmpty: options?.allowEmpty ?? true,
   });

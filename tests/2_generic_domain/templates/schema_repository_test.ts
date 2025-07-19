@@ -32,7 +32,9 @@ import {
   SchemaPath,
   type ValidationResult as _ValidationResult,
 } from "../../../lib/domain/templates/schema_management_aggregate.ts";
-import type { DirectiveType, LayerType } from "../../../lib/types/mod.ts";
+import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("schema-repository-integration");
 
@@ -270,13 +272,19 @@ function createMockSchema(
 }
 
 // Mock DirectiveType and LayerType
-const createMockDirective = (value: string): DirectiveType => ({
-  getValue: () => value,
-} as DirectiveType);
+const createMockDirective = (value: string): DirectiveType => {
+  const profile = ConfigProfileName.create("test");
+  const result = DirectiveType.create(value, profile);
+  if (!result.ok) throw new Error(`Failed to create DirectiveType: ${value}`);
+  return result.data;
+};
 
-const createMockLayer = (value: string): LayerType => ({
-  getValue: () => value,
-} as LayerType);
+const createMockLayer = (value: string): LayerType => {
+  const profile = ConfigProfileName.create("test");
+  const result = LayerType.create(value, profile);
+  if (!result.ok) throw new Error(`Failed to create LayerType: ${value}`);
+  return result.data;
+};
 
 Deno.test("Schema Repository Integration: basic schema lifecycle", async () => {
   logger.debug("Testing basic schema lifecycle");
@@ -460,8 +468,8 @@ Deno.test("Schema Repository Integration: error handling", async () => {
 
   const repository = new TestSchemaRepository();
   const nonExistentPath = createMockSchemaPath(
-    createMockDirective("nonexistent"),
-    createMockLayer("layer"),
+    createMockDirective("to"),
+    createMockLayer("project"),
     "missing.md",
   );
 
@@ -486,7 +494,7 @@ Deno.test("Schema Repository Integration: error handling", async () => {
   // Test batch operations with mixed success/failure
   const schemas = [
     createMockSchema(
-      createMockSchemaPath(createMockDirective("valid"), createMockLayer("schema"), "valid.md"),
+      createMockSchemaPath(createMockDirective("to"), createMockLayer("project"), "valid.md"),
       { type: "object" },
       createMockMetadata({ version: "1.0.0" }),
     ),

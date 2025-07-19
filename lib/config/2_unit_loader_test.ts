@@ -10,10 +10,10 @@
  * @module config/loader_unit_test
  */
 
-import { assertEquals, assertExists, assertRejects } from "../deps.ts";
+import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigLoader, loadConfig, type CustomConfig as _CustomConfig } from "./loader.ts";
+import { type CustomConfig as _CustomConfig, loadConfig } from "./loader.ts";
 import { join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
@@ -127,12 +127,31 @@ customConfig:
     Deno.writeTextFileSync(testFile, invalidContent);
     testFiles.push(testFile);
 
-    await assertRejects(
-      async () => await loadConfig(testFile),
-      Error,
-      "Failed to load config from",
-      "Should throw error for invalid YAML syntax",
-    );
+    const result = await loadConfig(testFile);
+
+    // Should return Result with error, not throw
+    assertEquals(result.ok, false, "Should return failure Result for invalid YAML");
+    if (!result.ok) {
+      assertEquals(result.error.kind, "ParseError", "Should have ParseError kind");
+      assertEquals(
+        result.error.message,
+        "Failed to parse YAML configuration",
+        "Should have correct error message",
+      );
+
+      // Type-safe access to ParseError properties
+      if (result.error.kind === "ParseError") {
+        assertEquals(result.error.path, testFile, "Should include file path in error");
+        assertExists(result.error.cause, "Should include cause in error");
+        // Verify the cause contains YAML parsing error details
+        assertEquals(
+          result.error.cause.includes("indentation") ||
+            result.error.cause.includes("bad indentation"),
+          true,
+          "Should include indentation error in cause",
+        );
+      }
+    }
 
     _logger.debug("Invalid YAML syntax rejection verified");
   });
@@ -284,27 +303,25 @@ describe("Unit: loadConfig Error Handling", () => {
 
     const nonExistentFile = "/definitely/does/not/exist/config.yml";
 
-    await assertRejects(
-      async () => await loadConfig(nonExistentFile),
-      Error,
-      "Failed to load config from",
-      "Should throw error for non-existent file",
-    );
+    const result = await loadConfig(nonExistentFile);
 
-    try {
-      await loadConfig(nonExistentFile);
-    } catch (error) {
-      if (error instanceof Error) {
+    // Should return Result with error, not throw
+    assertEquals(result.ok, false, "Should return failure Result for non-existent file");
+    if (!result.ok) {
+      assertEquals(result.error.kind, "FileNotFound", "Should have FileNotFound kind");
+      assertEquals(
+        result.error.message,
+        "Configuration file not found",
+        "Should have correct error message",
+      );
+
+      // Type-safe access to FileNotFound properties
+      if (result.error.kind === "FileNotFound") {
+        assertEquals(result.error.path, nonExistentFile, "Should include file path in error");
         assertEquals(
-          error.message.includes(nonExistentFile),
+          result.error.path.includes(nonExistentFile),
           true,
-          "Error message should contain file path",
-        );
-        assertEquals(
-          error.message.includes("No such file or directory") ||
-            error.message.includes("The system cannot find"),
-          true,
-          "Error message should contain OS-specific file not found message",
+          "Error path should contain file path",
         );
       }
     }
@@ -324,12 +341,24 @@ describe("Unit: loadConfig Error Handling", () => {
     try {
       Deno.chmodSync(restrictedFile, 0o000);
 
-      await assertRejects(
-        async () => await loadConfig(restrictedFile),
-        Error,
-        "Failed to load config from",
-        "Should throw error for permission denied",
-      );
+      const result = await loadConfig(restrictedFile);
+
+      // Should return Result with error, not throw
+      assertEquals(result.ok, false, "Should return failure Result for permission denied");
+      if (!result.ok) {
+        assertEquals(result.error.kind, "FileReadError", "Should have FileReadError kind");
+        assertEquals(
+          result.error.message,
+          "Failed to read configuration file",
+          "Should have correct error message",
+        );
+
+        // Type-safe access to FileReadError properties
+        if (result.error.kind === "FileReadError") {
+          assertEquals(result.error.path, restrictedFile, "Should include file path in error");
+          assertExists(result.error.cause, "Should include cause in error");
+        }
+      }
     } catch {
       // Skip test if chmod is not supported
       _logger.debug("Skipping permission test - chmod not supported");
@@ -351,12 +380,23 @@ describe("Unit: loadConfig Error Handling", () => {
 
     const tempDir = Deno.makeTempDirSync();
 
-    await assertRejects(
-      async () => await loadConfig(tempDir),
-      Error,
-      "Failed to load config from",
-      "Should throw error when path is a directory",
-    );
+    const result = await loadConfig(tempDir);
+
+    // Should return Result with error, not throw
+    assertEquals(result.ok, false, "Should return failure Result when path is a directory");
+    if (!result.ok) {
+      assertEquals(result.error.kind, "FileNotFound", "Should have FileNotFound kind");
+      assertEquals(
+        result.error.message,
+        "Path exists but is not a file",
+        "Should have correct error message",
+      );
+
+      // Type-safe access to FileNotFound properties
+      if (result.error.kind === "FileNotFound") {
+        assertEquals(result.error.path, tempDir, "Should include directory path in error");
+      }
+    }
 
     try {
       Deno.removeSync(tempDir);

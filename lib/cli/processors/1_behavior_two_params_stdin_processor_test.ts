@@ -11,7 +11,7 @@
  * @module lib/cli/processors/1_behavior_two_params_stdin_processor_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type InputProcessorError as _InputProcessorError,
   TwoParamsStdinProcessor,

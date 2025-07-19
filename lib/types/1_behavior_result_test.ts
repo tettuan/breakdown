@@ -9,7 +9,7 @@
  * - Functional operations (map, flatMap/chain, getOrElse)
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { chain, error, getOrElse, isError, isOk, map, ok, Result } from "./result.ts";
 
 Deno.test("1_behavior: ok() creates successful Result with correct structure", () => {

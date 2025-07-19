@@ -14,11 +14,11 @@
  * @module domain/core/aggregates/two_params_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "./two_params_optimized.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 import { DirectiveType } from "../value_objects/directive_type.ts";
 import { LayerType } from "../value_objects/layer_type.ts";
 

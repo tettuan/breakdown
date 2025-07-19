@@ -15,11 +15,11 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "$lib/domain/core/aggregates/two_params.ts";
 import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 // Generic domain imports (factory collaborations)
-import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "$lib/factory/prompt_template_path_resolver_totality.ts";
+import { PromptVariablesFactory as _PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
+import { PromptTemplatePathResolverTotality as _PromptTemplatePathResolver } from "$lib/factory/prompt_template_path_resolver_totality.ts";
 
 const logger = new BreakdownLogger("cross-domain-collaboration");
 
@@ -195,10 +195,10 @@ describe("Cross Domain Collaboration Tests", () => {
           
           // Check that error contains enough information for other domains
           if (error.kind === "InvalidDirective") {
-            assertExists((error as any).directive, "DirectiveType error should include directive");
-            assertExists((error as any).profile, "DirectiveType error should include profile");
+            assertExists(error.directive, "DirectiveType error should include directive");
+            assertExists(error.profile, "DirectiveType error should include profile");
           } else if (error.kind === "InvalidLayer") {
-            assertExists((error as any).layer, "LayerType error should include layer");
+            assertExists(error.layer, "LayerType error should include layer");
           }
         }
       }
@@ -240,7 +240,9 @@ describe("Cross Domain Collaboration Tests", () => {
       if (!twoParamsError.ok) {
         const error = twoParamsError.error;
         assertEquals(error.kind, "InvalidDirective");
-        assertExists((error as any).cause, "TwoParams error should include cause");
+        if (error.kind === "InvalidDirective" || error.kind === "InvalidLayer") {
+          assertExists(error.cause, "TwoParams error should include cause");
+        }
       }
       
       logger.debug("Error context maintenance verified");

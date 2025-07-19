@@ -6,7 +6,7 @@
  * and maintain their intended semantics throughout the application lifecycle.
  */
 
-import { assertEquals, assertNotEquals } from "@std/assert";
+import { assertEquals, assertNotEquals } from "jsr:@std/assert@0.224.0";
 import { Result, ResultStatus } from "./enums.ts";
 
 Deno.test({

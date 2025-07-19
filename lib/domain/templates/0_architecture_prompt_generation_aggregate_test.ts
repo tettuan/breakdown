@@ -9,7 +9,11 @@
  * @module domain/templates/prompt_generation_aggregate_test
  */
 
-import { assertEquals, assertInstanceOf, assertThrows as _assertThrows } from "@std/assert";
+import {
+  assertEquals,
+  assertInstanceOf,
+  assertThrows as _assertThrows,
+} from "jsr:@std/assert@0.224.0";
 import {
   GeneratedPrompt as _GeneratedPrompt,
   PromptGenerationAggregate,

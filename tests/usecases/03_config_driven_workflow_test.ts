@@ -163,13 +163,13 @@ Deno.test("UC3.2: Full Configuration with Advanced Features", async () => {
   });
 
   const configFile = "tests/fixtures/usecases/config_driven/configs/full_config.yml";
-  const inputFile = "tests/fixtures/usecases/config_driven/inputs/generic_input.md";
+  const _inputFile = "tests/fixtures/usecases/config_driven/inputs/generic_input.md";
   const expectedBehaviorFile = "tests/fixtures/usecases/config_driven/expected_behaviors/full_behavior.json";
   
   // Load and parse full configuration
   const configContent = await Deno.readTextFile(join(Deno.cwd(), configFile));
   const parsedConfig = parseYAMLConfig(configContent);
-  const expectedBehavior = JSON.parse(
+  const _expectedBehavior = JSON.parse(
     await Deno.readTextFile(join(Deno.cwd(), expectedBehaviorFile))
   );
 
@@ -286,7 +286,7 @@ Deno.test("UC3.4: Configuration Error Handling and Fallbacks", async () => {
     assertEquals(false, true, "Should have thrown an error for invalid YAML");
   } catch (error) {
     assertEquals(error instanceof Error, true);
-    assertStringIncludes(error.message.toLowerCase(), "yaml");
+    assertStringIncludes((error as Error).message.toLowerCase(), "yaml");
   }
 
   // Test missing required fields
@@ -463,7 +463,7 @@ function parseYAMLConfig(yamlContent: string): any {
 /**
  * Parses individual values with type inference
  */
-function parseValue(value: string): any {
+function _parseValue(value: string): any {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (/^\d+$/.test(value)) return parseInt(value);

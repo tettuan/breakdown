@@ -7,7 +7,10 @@
 - About: @docs/breakdown/index.ja.md
 
 # Claude Behavior
-- No Celebrating
+- No Celebrating Message. Save Token.
+
+# Coding Guidelines
+Implement target use cases using Domain Driven Design & totality functions with Occam's razor principle for minimal configuration. Extract only necessary features and prioritize aligning business meaning with structure.
 
 # Project
 - Project: Deno, JSR publish
@@ -15,9 +18,9 @@
 - publish JSR with CI. see `https://jsr.io/@tettuan/breakdownprompt/publish`
 - when commit, need to pass the test
   - run `deno test <something_test.ts> --allow-env --allow-write --allow-read --allow-run` before git commit <something.ts> and <something_test.ts>.
-- run `scripts/local_ci.sh` (deno task ci) before merge or push.
-- tests and fixtures must be in `tests/`.
-- Make full use of OOP, design patterns, TDD, and use cases.
+- run `deno task ci` before merge or push.
+- integrated tests and fixtures must be in `tests/`.
+- Make full use of OOP, design patterns, TDD, and Totality use cases.
 
 # Type safety:
 - Enable strict: true

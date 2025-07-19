@@ -19,7 +19,8 @@ import type { ErrorInfo } from "@tettuan/breakdownparams";
 export type StdinVariableFactoryError =
   | ErrorInfo
   | { kind: "NoStdinData"; context: string }
-  | { kind: "InvalidStdinSource"; source: string };
+  | { kind: "InvalidStdinSource"; source: string }
+  | { kind: "EmptyValue"; field: string; context?: Record<string, unknown> };
 
 /**
  * Input data structure from Factory/PathResolver
@@ -103,7 +104,14 @@ export class StdinVariableFactory {
     const result = StdinVariable.create("input_text", input.inputText);
 
     if (!result.ok) {
-      // Convert StdinVariable error to factory error
+      // Convert StdinVariable error to appropriate factory error
+      if (result.error.kind === "EmptyValue") {
+        return error({
+          kind: "EmptyValue",
+          field: result.error.field,
+          context: result.error.context,
+        });
+      }
       return error({
         kind: "NoStdinData",
         context: `StdinVariable creation failed: ${result.error.kind}`,

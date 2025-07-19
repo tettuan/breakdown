@@ -118,10 +118,10 @@ Deno.test("UC2.1: Team Alpha Feature Development Workflow", async () => {
   );
 
   // Validate team-specific variables
-  assertEquals(teamContextualVariables.team_name, "Alpha Development Team");
-  assertEquals(teamContextualVariables.team_lead, "Sarah Johnson");
-  assertEquals(teamContextualVariables.project_name, "Dashboard Enhancement");
-  assertEquals(teamContextualVariables.sprint_number, "Sprint 15");
+  assertEquals((teamContextualVariables as any).team_name, "Alpha Development Team");
+  assertEquals((teamContextualVariables as any).team_lead, "Sarah Johnson");
+  assertEquals((teamContextualVariables as any).project_name, "Dashboard Enhancement");
+  assertEquals((teamContextualVariables as any).sprint_number, "Sprint 15");
   assertEquals(typeof teamContextualVariables.team_members, "string");
   assertEquals(typeof teamContextualVariables.workflow_config, "string");
 
@@ -463,7 +463,7 @@ function parseTeamConfig(configContent: string): any {
 /**
  * Sets nested value in object
  */
-function setNestedValue(obj: any, path: string[], value: any): void {
+function _setNestedValue(obj: any, path: string[], value: any): void {
   let current = obj;
   for (let i = 0; i < path.length - 1; i++) {
     if (!(path[i] in current)) {
@@ -477,7 +477,7 @@ function setNestedValue(obj: any, path: string[], value: any): void {
 /**
  * Gets nested value from object
  */
-function getNestedValue(obj: any, path: string[]): any {
+function _getNestedValue(obj: any, path: string[]): any {
   let current = obj;
   for (const key of path) {
     if (current && typeof current === 'object' && key in current) {
@@ -492,7 +492,7 @@ function getNestedValue(obj: any, path: string[]): any {
 /**
  * Parses configuration values with type inference
  */
-function parseConfigValue(value: string): any {
+function _parseConfigValue(value: string): any {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (/^\d+$/.test(value)) return parseInt(value);
@@ -570,12 +570,12 @@ function formatTeamMembers(members: string[]): string {
 /**
  * Formats workflow configuration for output
  */
-function formatWorkflowConfig(workflows: any): string {
+function formatWorkflowConfig(workflows: unknown): string {
   if (!workflows || typeof workflows !== 'object') return "";
   
   const configs = [];
   for (const [name, config] of Object.entries(workflows)) {
-    if (config && typeof config === 'object' && (config as any).enabled) {
+    if (config && typeof config === 'object' && 'enabled' in config && config.enabled) {
       configs.push(`- **${name}**: Enabled`);
     }
   }

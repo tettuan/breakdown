@@ -7,7 +7,7 @@
  * @module types/2_structure_path_resolution_option_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type PathResolutionError,
   PathResolutionOption,

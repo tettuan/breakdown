@@ -286,8 +286,8 @@ Deno.test("UC1.3: Bug Detection with Custom Configuration", async () => {
     throw new Error("Failed to create LayerType");
   }
   
-  const directiveType = directiveTypeResult.data;
-  const layerType = layerTypeResult.data;
+  const _directiveType = directiveTypeResult.data;
+  const _layerType = layerTypeResult.data;
   const inputContent = await Deno.readTextFile(join(Deno.cwd(), inputFile));
   
   // Apply custom configuration to bug detection
@@ -375,7 +375,7 @@ function analyzeBugsSimulation(content: string, language = "javascript") {
 /**
  * Simulates configuration parsing for testing purposes
  */
-function parseConfigSimulation(configContent: string) {
+function parseConfigSimulation(_configContent: string) {
   // Simplified YAML-like parsing for testing
   return {
     bug_detection: {

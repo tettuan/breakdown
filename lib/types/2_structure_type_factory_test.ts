@@ -7,7 +7,7 @@
  * @module types/2_structure_type_factory_test
  */
 
-import { assertEquals, assertExists, assertStrictEquals } from "@std/assert";
+import { assertEquals, assertExists, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import { TypeFactory, TypePatternProvider } from "./type_factory.ts";
 import { TwoParamsDirectivePattern } from "./mod.ts";
 import { TwoParamsLayerTypePattern } from "./mod.ts";

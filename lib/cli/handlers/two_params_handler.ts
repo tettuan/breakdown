@@ -17,10 +17,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
-import {
-  TwoParamsVariableProcessor,
-  type TwoParamsVariableProcessorError,
-} from "../../processor/variable_processor_v2.ts";
+import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator_ddd.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsValidator } from "../validators/two_params_validator_ddd.ts";
@@ -43,7 +40,12 @@ export type TwoParamsHandlerError =
   | { kind: "FactoryValidationError"; errors: string[] }
   | { kind: "VariablesBuilderError"; errors: string[] }
   | { kind: "PromptGenerationError"; error: string }
-  | { kind: "OutputWriteError"; error: string; cause?: unknown };
+  | {
+    kind: "OutputWriteError";
+    message: string;
+    cause?: unknown;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * Internal orchestrator for two params processing
@@ -128,7 +130,7 @@ class TwoParamsOrchestrator {
     // 5. Write output using processor
     const writeResult = await this.outputProcessor.writeOutput(promptResult.data);
     if (!writeResult.ok) {
-      return error(writeResult.error);
+      return error(this.mapOutputError(writeResult.error));
     }
 
     return ok(undefined);
@@ -288,6 +290,20 @@ class TwoParamsOrchestrator {
     return {
       kind: "PromptGenerationError",
       error: errorMessage,
+    };
+  }
+
+  /**
+   * Map output processor errors to handler errors
+   */
+  private mapOutputError(
+    error: import("../processors/two_params_output_processor.ts").TwoParamsOutputError,
+  ): TwoParamsHandlerError {
+    return {
+      kind: "OutputWriteError",
+      message: error.message,
+      cause: ("cause" in error) ? error.cause : undefined,
+      context: error.context,
     };
   }
 }

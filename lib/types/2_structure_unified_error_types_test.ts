@@ -9,7 +9,7 @@
  * - Type compatibility
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import type {
   BaseError,
   ConfigurationError,
@@ -610,6 +610,7 @@ Deno.test("2_structure: Discriminated union exhaustiveness is maintained", () =>
 
       // ValidationError
       case "InvalidInput":
+      case "EmptyValue":
       case "MissingRequiredField":
       case "InvalidFieldType":
       case "ValidationFailed":

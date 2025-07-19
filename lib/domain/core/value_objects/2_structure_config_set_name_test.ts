@@ -11,7 +11,7 @@
  * - Serialization support
  */
 
-import { assertEquals, assertNotStrictEquals, assertStrictEquals } from "jsr:@std/assert";
+import { assertEquals, assertNotStrictEquals, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import { ConfigSetName, ConfigSetNameCollection } from "./config_set_name.ts";
 
 // ============================================================================

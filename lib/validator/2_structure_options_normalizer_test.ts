@@ -9,7 +9,7 @@
  * @module lib/validator/2_structure_options_normalizer_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type NormalizationConfig,
   type NormalizedOptions,

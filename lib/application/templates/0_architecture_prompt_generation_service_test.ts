@@ -10,7 +10,7 @@
  * @module application/templates/0_architecture_prompt_generation_service_test
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import type { Result } from "../../types/result.ts";
 import {
   type PromptGenerationDependencies,

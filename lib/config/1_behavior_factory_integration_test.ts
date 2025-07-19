@@ -5,7 +5,7 @@
  * including Smart Constructor patterns, validation behaviors, and runtime dynamics.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   ConfigCompatibilityLayer,
   ConfigurationMigrator,

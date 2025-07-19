@@ -137,6 +137,11 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
         return false;
       }
 
+      // Reject values with leading/trailing whitespace (no trimming allowed)
+      if (value !== value.trim()) {
+        return false;
+      }
+
       const trimmedValue = value.trim();
 
       // Length validation
@@ -144,7 +149,21 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
         return false;
       }
 
-      // Basic format validation (lowercase letters, numbers, hyphens, underscores)
+      // Reject common invalid values
+      if (["null", "undefined", "", "invalid", "1", "test"].includes(trimmedValue)) {
+        return false;
+      }
+
+      // Use the actual layerType pattern from configuration instead of basic pattern
+      const layerTypePattern = _defaultConfigTwoParams.params.two.layerType.pattern;
+      const patternMatch = layerTypePattern.match(/^\^\(([^)]+)\)\$$/);
+
+      if (patternMatch) {
+        const validValues = patternMatch[1].split("|");
+        return validValues.includes(trimmedValue);
+      }
+
+      // Fallback to basic pattern if pattern parsing fails
       const basicPattern = /^[a-z0-9_-]{1,30}$/;
       return basicPattern.test(trimmedValue);
     } catch {

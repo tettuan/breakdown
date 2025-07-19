@@ -9,7 +9,7 @@
  * - Error composition patterns
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   ConfigurationError,
   ErrorFactory,
@@ -325,7 +325,12 @@ Deno.test("1_behavior: extractUnifiedErrorMessage produces correct messages", ()
       "ProfileNotFound: production",
     ],
     [
-      { kind: "InvalidConfiguration", details: "Must be a number", field: "port", reason: "Must be a number" },
+      {
+        kind: "InvalidConfiguration",
+        details: "Must be a number",
+        field: "port",
+        reason: "Must be a number",
+      },
       "InvalidConfiguration: port - Must be a number",
     ],
   ];

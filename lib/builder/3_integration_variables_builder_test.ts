@@ -221,7 +221,7 @@ Deno.test("VariablesBuilder Integration: Error handling with TwoParamsProcessor 
     if (!validationResult.ok) {
       const errors = validationResult.error;
       assertEquals(
-        errors.some((e) => e.kind === "FactoryValueMissing"),
+        errors.some((e) => e.kind === "missing"),
         true,
         "Should identify missing factory values",
       );

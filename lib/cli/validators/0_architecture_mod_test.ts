@@ -156,7 +156,7 @@ describe("Architecture: Module Organization", () => {
     if (twoParamsResult.ok) {
       assertEquals(
         typeof twoParamsResult.data.directiveType,
-        "string",
+        "object",
         "TwoParamsValidator should handle CLI-specific parameter types",
       );
     }
@@ -386,7 +386,7 @@ describe("Architecture: Module Stability", () => {
     const validator = new TwoParamsValidator();
     assertEquals(
       validator.validate.length,
-      1,
+      2,
       "Core validator interfaces should remain stable",
     );
 

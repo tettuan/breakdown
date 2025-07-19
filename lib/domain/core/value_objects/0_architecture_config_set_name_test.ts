@@ -11,7 +11,7 @@
  * - Totality principle adherence
  */
 
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import type { Result as _Result } from "../../../types/result.ts";
 import {
   ConfigSetName,

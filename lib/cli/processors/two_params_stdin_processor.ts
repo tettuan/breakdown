@@ -13,18 +13,34 @@ import { readStdinEnhanced } from "$lib/io/enhanced_stdin.ts";
 import {
   type BreakdownConfigCompatible,
   createTimeoutManagerFromConfig,
-  type TimeoutManager,
+  type TimeoutManager as _TimeoutManager,
 } from "$lib/config/timeout_manager.ts";
 import { resolve } from "@std/path";
 
 /**
  * Input processing error types
+ * Following Worker7's Discriminated Union pattern
  */
-export type InputProcessorError = {
-  kind: "StdinReadError" | "FileReadError";
-  message: string;
-  cause?: unknown;
-};
+export type InputProcessorError =
+  | {
+    kind: "StdinReadError";
+    message: string;
+    cause?: unknown;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "FileReadError";
+    message: string;
+    filePath: string;
+    cause?: unknown;
+    context?: Record<string, unknown>;
+  }
+  | {
+    kind: "PathResolutionError";
+    message: string;
+    originalPath: string;
+    context?: Record<string, unknown>;
+  };
 
 /**
  * TwoParamsStdinProcessor - Processes STDIN and file input
@@ -98,6 +114,7 @@ export class TwoParamsStdinProcessor {
         message: `Failed to read file '${filePath}': ${
           err instanceof Error ? err.message : String(err)
         }`,
+        filePath,
         cause: err,
       });
     }
@@ -140,7 +157,11 @@ export class TwoParamsStdinProcessor {
     } catch (err) {
       // Enhanced error handling for different error types
       if (err && typeof err === "object" && "name" in err && err.name === "EnhancedStdinError") {
-        const enhancedError = err as any;
+        const enhancedError = err as unknown as {
+          errorType?: string;
+          errorCode?: string;
+          context?: { reason?: string };
+        };
 
         // In test environments, if stdin reading fails but we have valid options.from="-",
         // treat it as empty input rather than error to allow integration tests to proceed

@@ -11,12 +11,12 @@
  * @module lib/cli/processors/1_behavior_two_params_variable_processor_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   type ProcessedVariables as _ProcessedVariables,
   TwoParamsVariableProcessor,
   type TwoParamsVariableProcessorError as _VariableProcessorError,
-} from "../../processor/variable_processor_v2.ts";
+} from "./two_params_variable_processor.ts";
 import type { Result as _Result } from "$lib/types/result.ts";
 import { isError, isOk } from "$lib/types/result.ts";
 

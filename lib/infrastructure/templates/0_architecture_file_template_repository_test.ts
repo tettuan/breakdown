@@ -16,7 +16,7 @@ import {
 import { describe, it } from "@std/testing/bdd";
 import type { TwoParams_Result } from "../../deps.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { ConfigProfileName } from "../../types/config_profile_name.ts";
+import { ConfigProfileName } from "../../config/config_profile_name.ts";
 import {
   PromptTemplate as _PromptTemplate,
   TemplateContent as _TemplateContent,
@@ -70,10 +70,10 @@ describe("FileTemplateRepository - Architecture", () => {
       // Create test template path
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        layerType: "test",
-        demonstrativeType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -81,12 +81,15 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
       const layer = layerResult.data;
-      const templatePathResult = TemplatePath.create(directive, layer, "test.md");
+      const templatePathResult = TemplatePath.create(directive, layer, "prompt.md");
 
       if (!templatePathResult.ok) {
         throw new Error("Failed to create template path");
@@ -124,10 +127,10 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        layerType: "test",
-        demonstrativeType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -135,7 +138,10 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -228,10 +234,10 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "nonexistent",
-        layerType: "missing",
-        demonstrativeType: "nonexistent",
-        params: ["nonexistent", "missing"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -239,7 +245,10 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -269,10 +278,10 @@ describe("FileTemplateRepository - Architecture", () => {
     it("should maintain error type hierarchy", () => {
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        layerType: "test",
-        demonstrativeType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -280,12 +289,15 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
       const layer = layerResult.data;
-      const templatePathResult = TemplatePath.create(directive, layer, "test.md");
+      const templatePathResult = TemplatePath.create(directive, layer, "prompt.md");
 
       if (!templatePathResult.ok) {
         throw new Error("Failed to create template path");
@@ -319,10 +331,10 @@ describe("FileTemplateRepository - Architecture", () => {
       // Test that errors are not swallowed or transformed incorrectly
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        layerType: "test",
-        demonstrativeType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -330,7 +342,10 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
@@ -457,10 +472,10 @@ describe("FileTemplateRepository - Architecture", () => {
 
       const mockTwoParams_Result: TwoParams_Result = {
         type: "two",
-        directiveType: "test",
-        layerType: "test",
-        demonstrativeType: "test",
-        params: ["test", "test"],
+        directiveType: "to",
+        layerType: "project",
+        demonstrativeType: "to",
+        params: ["to", "project"],
         options: {},
       };
       const directiveResult = DirectiveType.create(mockTwoParams_Result.directiveType);
@@ -468,12 +483,15 @@ describe("FileTemplateRepository - Architecture", () => {
         throw new Error(`Failed to create DirectiveType: ${directiveResult.error.message}`);
       }
       const directive = directiveResult.data;
-      const layerResult = LayerType.create(mockTwoParams_Result.layerType, ConfigProfileName.createDefault());
+      const layerResult = LayerType.create(
+        mockTwoParams_Result.layerType,
+        ConfigProfileName.createDefault(),
+      );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
       }
       const layer = layerResult.data;
-      const templatePathResult = TemplatePath.create(directive, layer, "test.md");
+      const templatePathResult = TemplatePath.create(directive, layer, "prompt.md");
 
       if (!templatePathResult.ok) {
         throw new Error("Failed to create template path");

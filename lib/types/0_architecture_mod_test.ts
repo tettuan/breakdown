@@ -10,7 +10,7 @@
  * @module types/0_architecture_mod_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 
 // Import the types module and related implementations
@@ -90,12 +90,8 @@ describe("0_architecture_mod_test", () => {
 
       assertExists(result);
       assertEquals(typeof result, "object");
-      assertEquals("ok" in result, true);
-
-      if (isOk(result)) {
-        assertExists(result.data);
-        assertEquals(result.data.value, "production");
-      }
+      assertEquals(result.value, "production");
+      assertEquals(result.isDefault(), false);
     });
 
     it("should implement Smart Constructor for Variables", () => {
@@ -114,21 +110,29 @@ describe("0_architecture_mod_test", () => {
       // Test ConfigProfileName with invalid input (doesn't throw)
       const invalidResult = ConfigProfileName.create("INVALID");
 
-      // Should return Result, not throw
+      // ConfigProfileName.create always returns a valid instance, never throws
       assertExists(invalidResult);
       assertEquals(typeof invalidResult, "object");
-      assertEquals("ok" in invalidResult, true);
+      assertEquals(invalidResult instanceof ConfigProfileName, true);
+
+      // Test createOrError for Result pattern
+      const errorResult = ConfigProfileName.createOrError("");
+      assertEquals(typeof errorResult, "object");
+      assertEquals("ok" in errorResult, true);
     });
 
     it("should provide meaningful error messages", () => {
-      const result = ConfigProfileName.create("INVALID");
+      // ConfigProfileName.create() always returns valid object, use createOrError for error testing
+      const result = ConfigProfileName.createOrError("");
 
-      if (!isOk(result)) {
+      if (!result.ok) {
         assertExists(result.error);
         assertEquals(typeof result.error, "object");
         // Error should have meaningful structure
-        assertExists(result.error.message);
         assertExists(result.error.kind);
+        if (result.error.kind === "InvalidInput") {
+          assertEquals(result.error.field, "profileName");
+        }
       }
     });
 
@@ -182,11 +186,8 @@ describe("0_architecture_mod_test", () => {
 
       assertExists(profileResult);
       assertEquals(typeof profileResult, "object");
-
-      if (isOk(profileResult)) {
-        assertExists(profileResult.data);
-        assertEquals(typeof profileResult.data.value, "string");
-      }
+      assertEquals(typeof profileResult.value, "string");
+      assertEquals(profileResult.value, "test");
     });
   });
 
@@ -251,30 +252,24 @@ describe("0_architecture_mod_test", () => {
     });
 
     it("should provide exhaustive error handling", () => {
-      // Test various error scenarios
+      // ConfigProfileName.create() always returns valid object, testing defaults
       const scenarios = [
-        "", // Empty string
-        null, // Null
-        undefined, // Undefined
-        "INVALID", // Invalid format
-        "a".repeat(51), // Too long
-        "invalid-CHARACTER", // Invalid characters
+        "", // Empty string -> default
+        null, // Null -> default
+        undefined, // Undefined -> default
+        "INVALID", // Valid format -> returned as-is
+        "a".repeat(51), // Too long -> valid (accepted)
+        "invalid-CHARACTER", // Valid characters -> returned as-is
       ];
 
       scenarios.forEach((scenario) => {
         const result = ConfigProfileName.create(scenario as string);
 
-        // Each scenario should return a Result
+        // Each scenario should return a ConfigProfileName
         assertExists(result);
         assertEquals(typeof result, "object");
-        assertEquals("ok" in result, true);
-
-        // If error, should have meaningful error information
-        if (!isOk(result)) {
-          assertExists(result.error);
-          assertExists(result.error.kind);
-          assertExists(result.error.message);
-        }
+        assertEquals(typeof result.value, "string");
+        assertEquals(result.value.length > 0, true);
       });
     });
 

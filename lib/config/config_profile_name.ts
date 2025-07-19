@@ -104,8 +104,8 @@ export class ConfigProfileName {
    * ```
    */
   static create(profileName?: string | null | undefined): ConfigProfileName {
-    // Normalize input: handle null, undefined, and trim whitespace
-    const normalizedName = profileName?.trim() || "";
+    // Normalize input: handle null, undefined, non-string, and trim whitespace
+    const normalizedName = (typeof profileName === "string" ? profileName.trim() : "") || "";
 
     // Apply default if empty after normalization
     const finalName = normalizedName === "" ? ConfigProfileName.DEFAULT : normalizedName;
@@ -144,8 +144,8 @@ export class ConfigProfileName {
   static createOrError(
     profileName?: string | null | undefined,
   ): Result<ConfigProfileName, ValidationError> {
-    // Normalize input: handle null, undefined, and trim whitespace
-    const normalizedName = profileName?.trim() || "";
+    // Normalize input: handle null, undefined, non-string, and trim whitespace
+    const normalizedName = (typeof profileName === "string" ? profileName.trim() : "") || "";
 
     // Check if using default value
     if (normalizedName === "") {
@@ -181,8 +181,34 @@ export class ConfigProfileName {
    * console.log(defaultProfile.value); // "default"
    * ```
    */
-  static createFromConfig(config?: { profilePrefix?: string | null }): ConfigProfileName {
+  static createFromConfig(config?: { profilePrefix?: string | null } | null): ConfigProfileName {
     return ConfigProfileName.create(config?.profilePrefix);
+  }
+
+  /**
+   * Creates a default ConfigProfileName instance
+   *
+   * This is a convenience method that creates a ConfigProfileName with
+   * the default value "default". It's equivalent to calling create() with
+   * no arguments or with an empty string.
+   *
+   * @returns ConfigProfileName instance with default value
+   */
+  static createDefault(): ConfigProfileName {
+    return new ConfigProfileName(ConfigProfileName.DEFAULT);
+  }
+
+  /**
+   * Creates a ConfigProfileName from CLI option with automatic default fallback
+   *
+   * This method is designed for CLI integration where invalid or empty
+   * values should fall back to default rather than causing errors.
+   *
+   * @param option - CLI option value (can be null, undefined, or empty)
+   * @returns ConfigProfileName instance (default for invalid inputs)
+   */
+  static fromCliOption(option?: string | null | undefined): ConfigProfileName {
+    return ConfigProfileName.create(option);
   }
 
   /**
@@ -205,6 +231,42 @@ export class ConfigProfileName {
    */
   isDefault(): boolean {
     return this.profileName === ConfigProfileName.DEFAULT;
+  }
+
+  /**
+   * Gets the profile name as a prefix
+   *
+   * @returns The profile name (same as value)
+   */
+  get prefix(): string {
+    return this.profileName;
+  }
+
+  /**
+   * Gets the configuration path for this profile
+   *
+   * @returns The profile name (same as value)
+   */
+  getConfigPath(): string {
+    return this.profileName;
+  }
+
+  /**
+   * Gets the directive types for this profile
+   *
+   * @returns Array of directive types
+   */
+  getDirectiveTypes(): string[] {
+    return ["to", "summary", "defect"];
+  }
+
+  /**
+   * Gets the layer types for this profile
+   *
+   * @returns Array of layer types
+   */
+  getLayerTypes(): string[] {
+    return ["project", "issue", "task", "bugs"];
   }
 
   /**

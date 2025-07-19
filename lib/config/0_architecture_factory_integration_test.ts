@@ -5,7 +5,7 @@
  * for the factory integration module.
  */
 
-import { assert, assertEquals, assertExists, assertInstanceOf } from "@std/assert";
+import { assert, assertEquals, assertExists, assertInstanceOf } from "jsr:@std/assert@0.224.0";
 import {
   ConfigCompatibilityLayer,
   ConfigurationMigrator,

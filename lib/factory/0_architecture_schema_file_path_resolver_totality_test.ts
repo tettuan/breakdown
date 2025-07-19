@@ -10,7 +10,7 @@
  * - Schema-specific validations
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
 
 Deno.test("SchemaFilePathResolverTotality - Smart Constructor validates inputs", () => {

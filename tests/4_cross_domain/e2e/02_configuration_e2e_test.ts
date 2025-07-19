@@ -111,13 +111,11 @@ Deno.test("E2E Configuration: S2.1 - Profile Switching", async () => {
     if (!directivePatternResult.ok || !layerPatternResult.ok) continue;
     
     // Phase 3: 型作成（パターン適用）
-    const directiveResult = DirectiveType.createOrError(
-      twoParamsResult, 
-      directivePatternResult.data
+    const directiveResult = DirectiveType.create(
+      twoParamsResult.directiveType
     );
-    const layerResult = LayerType.createOrError(
-      twoParamsResult,
-      layerPatternResult.data
+    const layerResult = LayerType.create(
+      twoParamsResult.layerType
     );
     
     // Phase 4: プロファイル制約の検証
@@ -294,14 +292,14 @@ Deno.test("E2E Configuration: S2.2 - Custom Configuration Files", async () => {
     // Phase 2: エイリアス解決（該当する場合）
     let resolvedDirective = testCase.directive;
     const aliases = config.directiveTypes.aliases;
-    if (aliases[testCase.directive]) {
-      resolvedDirective = aliases[testCase.directive];
+    if (aliases && typeof aliases === 'object' && testCase.directive in aliases) {
+      resolvedDirective = (aliases as Record<string, string>)[testCase.directive];
     }
     
     // Phase 3: 型作成と検証
     const twoParamsResult = createTwoParamsResult(resolvedDirective, testCase.layer);
-    const directiveResult = DirectiveType.createOrError(twoParamsResult, directivePattern.data);
-    const layerResult = LayerType.createOrError(twoParamsResult, layerPattern.data);
+    const directiveResult = DirectiveType.create(twoParamsResult.directiveType);
+    const layerResult = LayerType.create(twoParamsResult.layerType);
     
     // Phase 4: カスタム設定制約の確認
     if (testCase.expected.valid) {
@@ -475,7 +473,8 @@ Deno.test("E2E Configuration: S2.3 - Workspace Configuration", async () => {
     
     // Phase 4: テンプレートオーバーライド確認
     const overrideKey = `${testCase.directive}-${testCase.layer}`;
-    const templateOverride = config.templateOverrides[overrideKey];
+    const templateOverride = config.templateOverrides && typeof config.templateOverrides === 'object' && overrideKey in config.templateOverrides ? 
+      (config.templateOverrides as Record<string, string>)[overrideKey] : undefined;
     
     // Phase 5: ワークスペース制約の検証
     if (testCase.expected.valid) {
@@ -487,10 +486,10 @@ Deno.test("E2E Configuration: S2.3 - Workspace Configuration", async () => {
       // 型作成（ワークスペース制約を満たす場合のみ）
       const twoParamsResult = createTwoParamsResult(testCase.directive, testCase.layer);
       const directiveType = DirectiveType.create(twoParamsResult.directiveType);
-      const layerType = LayerType.create(twoParamsResult);
+      const layerType = LayerType.create(twoParamsResult.layerType);
       
-      assertEquals(directiveType.value, testCase.directive);
-      assertEquals(layerType.value, testCase.layer);
+      assertEquals(directiveType.ok ? directiveType.data.value : '', testCase.directive);
+      assertEquals(layerType.ok ? layerType.data.value : '', testCase.layer);
       
       // パス構造の確認
       if (config.relativePaths) {

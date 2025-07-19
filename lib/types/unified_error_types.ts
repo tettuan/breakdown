@@ -107,6 +107,11 @@ export type ValidationError =
     context?: Record<string, unknown>;
   }
   | {
+    kind: "EmptyValue";
+    field: string;
+    context?: Record<string, unknown>;
+  }
+  | {
     kind: "MissingRequiredField";
     field: string;
     source: string;
@@ -185,8 +190,8 @@ export type ConfigurationError =
   | {
     kind: "InvalidConfiguration";
     details: string;
-    field?: string;     // Backward compatibility
-    reason?: string;    // Backward compatibility
+    field?: string; // Backward compatibility
+    reason?: string; // Backward compatibility
     context?: Record<string, unknown>;
   }
   | {
@@ -326,6 +331,7 @@ export const ErrorGuards = {
       "kind" in error &&
       [
         "InvalidInput",
+        "EmptyValue",
         "MissingRequiredField",
         "InvalidFieldType",
         "ValidationFailed",
@@ -462,6 +468,7 @@ export const ErrorFactory = {
     kind: K,
     details: K extends "InvalidInput"
       ? { field: string; value: unknown; reason: string; context?: Record<string, unknown> }
+      : K extends "EmptyValue" ? { field: string; context?: Record<string, unknown> }
       : K extends "MissingRequiredField"
         ? { field: string; source: string; context?: Record<string, unknown> }
       : K extends "InvalidFieldType"
@@ -494,6 +501,14 @@ export const ErrorFactory = {
           field: d.field,
           value: d.value,
           reason: d.reason,
+          context: d.context,
+        } as Extract<ValidationError, { kind: K }>;
+      }
+      case "EmptyValue": {
+        const d = details as { field: string; context?: Record<string, unknown> };
+        return {
+          kind: "EmptyValue",
+          field: d.field,
           context: d.context,
         } as Extract<ValidationError, { kind: K }>;
       }
@@ -887,11 +902,16 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
     case "BaseDirectoryNotFound":
       return `${error.kind}: ${error.path}`;
     case "InvalidConfiguration":
+      if (error.field) {
+        return `${error.kind}: ${error.field} - ${error.details}`;
+      }
       return `${error.kind}: ${error.details}`;
 
     // Validation errors
     case "InvalidInput":
       return `${error.kind}: ${error.field} - ${error.reason}`;
+    case "EmptyValue":
+      return `${error.kind}: ${error.field} cannot be empty`;
     case "MissingRequiredField":
       return `${error.kind}: ${error.field} in ${error.source}`;
     case "InvalidFieldType":

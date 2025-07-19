@@ -33,7 +33,7 @@ const mockConfig = {
 };
 
 // Mock TwoParams_Result for creating DirectiveType and LayerType
-function createMockTwoParamsResult(directive: string, layer: string): TwoParams_Result {
+function _createMockTwoParamsResult(directive: string, layer: string): TwoParams_Result {
   return {
     type: "two",
     params: [directive, layer],

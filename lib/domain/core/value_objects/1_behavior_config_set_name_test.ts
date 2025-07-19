@@ -11,7 +11,7 @@
  * - Business rule enforcement
  */
 
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import {
   ConfigSetName,
   ConfigSetNameCollection,

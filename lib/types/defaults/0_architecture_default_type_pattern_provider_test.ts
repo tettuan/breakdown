@@ -7,7 +7,7 @@
 
 import { assert, assertEquals, assertExists } from "../../../tests/deps.ts";
 import { DefaultTypePatternProvider } from "./default_type_pattern_provider.ts";
-import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
+import { TwoParamsDirectivePattern as _TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
 // Note: TwoParamsLayerTypePattern has been deprecated
 
 /**
@@ -137,9 +137,10 @@ Deno.test("DefaultTypePatternProvider - Error Handling Architecture", async (t) 
 
     assertEquals(errorThrown, false, "Pattern creation should not throw errors");
 
-    // With valid defaults, patterns should be created successfully
+    // With valid defaults, directive pattern should be created successfully
+    // LayerType pattern returns null (deprecated)
     assertExists(directivePattern);
-    assertExists(layerPattern);
+    assertEquals(layerPattern, null);
   });
 
   await t.step("should provide fallback mechanisms", () => {

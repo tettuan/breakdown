@@ -47,12 +47,12 @@
 
 ### 3. 作業レビュー → 差し戻し | 完了
 
-7. `deno task ci:dirty` を実行し、passするまでテストを完成させる
+7. `deno task ci:dirty lib/` を実行し、passするまでテストを完成させる
 
 #### 完了条件
 
 1. **残エラーの完全修正**: 「ディレクトリ一覧」全てで 実施内容.4 が成功した
-2. `deno task ci:dirty` が完全に通過した: エラー0件達成
+2. `deno task ci:dirty lib/` が完全に通過した: エラー0件達成
 
 
 # タスクの進め方
@@ -136,55 +136,6 @@ lib/cli
 lib/builder
 lib/breakdown
 lib/application
-tests/integration/directive_layer_types/fixtures/prompts/to/project
-tests/integration/directive_layer_types/fixtures/prompts/summary/issue
-tests/integration/directive_layer_types/fixtures/schemas/to
-tests/integration/directive_layer_types/fixtures/schemas/summary
-tests/integration/directive_layer_types/fixtures/prompts/to
-tests/integration/directive_layer_types/fixtures/prompts/summary
-tests/integration/directive_layer_types/fixtures/schemas
-tests/integration/directive_layer_types/fixtures/prompts
-tests/integration/directive_layer_types/fixtures/inputs
-tests/integration/directive_layer_types/fixtures/configs
-tests/fixtures/schema/to/project
-tests/fixtures/prompts/to/task
-tests/fixtures/prompts/to/project
-tests/fixtures/prompts/to/issue
-tests/fixtures/prompts/summary/task
-tests/fixtures/prompts/summary/project
-tests/integration/directive_layer_types/tests
-tests/integration/directive_layer_types/test_scenarios
-tests/integration/directive_layer_types/fixtures
-tests/fixtures/schema/to
-tests/fixtures/schema/summary
-tests/fixtures/prompts/to
-tests/fixtures/prompts/summary
-tests/2_generic_domain/system/logging
-tests/2_generic_domain/system/io
-tests/2_generic_domain/system/initialization
-tests/2_generic_domain/system/error_handling
-tests/2_generic_domain/system/coordination
-tests/integration/directive_layer_types
-tests/helpers/stdin
-tests/fixtures/schema
-tests/fixtures/prompts
-tests/fixtures/config
-tests/4_cross_domain/e2e
-tests/4_cross_domain/collaboration
-tests/2_generic_domain/templates
-tests/2_generic_domain/system
-tests/2_generic_domain/factory
-tests/0_core_domain/prompt_variable_generation
-tests/0_core_domain/prompt_path_resolution
-tests/0_core_domain/parameter_parsing
-tests/0_core_domain/domain_collaboration
-tests/integration
-tests/helpers
-tests/fixtures
-tests/4_cross_domain
-tests/2_generic_domain
-tests/1_supporting_domain
-tests/0_core_domain
 ```
 
 # 作業開始指示

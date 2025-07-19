@@ -17,7 +17,7 @@ import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
 import { CustomVariableExtractor } from "../processor/custom_variable_extractor.ts";
-import { ConfigProfileName } from "../types/config_profile_name.ts";
+import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 /**
  * Validated parameters after comprehensive validation
@@ -139,7 +139,7 @@ export class ParameterValidatorV2 {
       layerType: result.layerType,
       params: result.params,
       options: result.options,
-    }, "TwoParams");
+    }, "TwoParams_Result");
   }
 
   /**
@@ -150,7 +150,7 @@ export class ParameterValidatorV2 {
       type: result.type,
       params: result.params,
       options: result.options,
-    }, "OneParams");
+    }, "OneParamsResult");
   }
 
   /**
@@ -160,7 +160,7 @@ export class ParameterValidatorV2 {
     return this.validateParams({
       type: result.type,
       options: result.options,
-    }, "ZeroParams");
+    }, "ZeroParamsResult");
   }
 
   /**
@@ -174,11 +174,62 @@ export class ParameterValidatorV2 {
       directiveType?: string;
       layerType?: string;
     },
-    source: "TwoParams" | "OneParams" | "ZeroParams",
+    source: "TwoParams_Result" | "OneParamsResult" | "ZeroParamsResult",
   ): Result<ValidatedParams, ValidationError> {
     // 1. Validate params type and structure
     const typeValidation = this.paramsValidator.validate(result);
     if (!typeValidation.ok) {
+      // Map specific ParamsTypeError to ValidationError
+      const paramsError = typeValidation.error;
+
+      if (paramsError.kind === "InvalidParamsType") {
+        // Map expected type based on source
+        let expected: string;
+        switch (source) {
+          case "TwoParams_Result":
+            expected = "two";
+            break;
+          case "OneParamsResult":
+            expected = "one";
+            break;
+          case "ZeroParamsResult":
+            expected = "zero";
+            break;
+          default:
+            expected = paramsError.expected;
+        }
+
+        return error({
+          kind: "InvalidParamsType",
+          expected,
+          received: paramsError.received,
+          context: undefined,
+        });
+      }
+
+      if (paramsError.kind === "InvalidFieldValue") {
+        if (paramsError.field === "directiveType") {
+          return error({
+            kind: "InvalidDirectiveType",
+            value: String(paramsError.value),
+            validPattern: paramsError.pattern === "no pattern available"
+              ? "undefined"
+              : paramsError.pattern,
+            context: undefined,
+          });
+        }
+        if (paramsError.field === "layerType") {
+          return error({
+            kind: "InvalidLayerType",
+            value: String(paramsError.value),
+            validPattern: paramsError.pattern === "no pattern available"
+              ? "undefined"
+              : paramsError.pattern,
+            context: undefined,
+          });
+        }
+      }
+
       return error({
         kind: "ParamsTypeError",
         error: typeValidation.error,
@@ -221,6 +272,18 @@ export class ParameterValidatorV2 {
     // 4. Extract custom variables
     const customVarsResult = this.customVariableExtractor.extract(options);
     if (!customVarsResult.ok) {
+      // Map specific CustomVariableError to ValidationError
+      const customError = customVarsResult.error;
+
+      if (customError.kind === "InvalidVariableValue") {
+        return error({
+          kind: "CustomVariableInvalid",
+          key: customError.key,
+          reason: customError.reason,
+          context: undefined,
+        });
+      }
+
       return error({
         kind: "CustomVariableError",
         error: customVarsResult.error,
@@ -228,14 +291,7 @@ export class ParameterValidatorV2 {
     }
 
     // 5. Create validated types with DDD approach
-    const twoParamsResult: TwoParams_Result = {
-      type: "two",
-      directiveType: typeValidation.data.directiveType,
-      demonstrativeType: typeValidation.data.directiveType, // For JSR package compatibility
-      layerType: typeValidation.data.layerType,
-      params: typeValidation.data.params,
-      options: typeValidation.data.options,
-    };
+    // Note: This section is only used for type validation, not for creating the actual result
 
     // Use DDD DirectiveType with Smart Constructor pattern
     const directiveResult = DirectiveType.create(
@@ -298,7 +354,6 @@ export class ParameterValidatorV2 {
       return ConfigProfileName.createDefault();
     }
 
-    const result = ConfigProfileName.create(profileName);
-    return result.ok ? result.data : ConfigProfileName.createDefault();
+    return ConfigProfileName.create(profileName);
   }
 }

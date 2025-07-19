@@ -189,7 +189,7 @@ Deno.test("InputFilePathResolver Integration: stdin input processing workflow", 
 
       if (pathResult.ok) {
         assertEquals(
-          pathResult.data.type,
+          pathResult.data.pathType.kind.toLowerCase(),
           expectedType,
           `Expected type ${expectedType} for ${name}`,
         );
@@ -211,25 +211,25 @@ Deno.test("InputFilePathResolver Integration: file path type coordination", asyn
       config: mockConfig,
       params: createTestParams("to", "project", { fromFile: "/absolute/path/input.md" }),
       expectedType: "absolute",
-      expectedExists: true, // File doesn't exist in test environment
+      expectedExists: false, // File doesn't exist in test environment
     },
     {
       config: mockConfig,
       params: createTestParams("summary", "issue", { fromFile: "./relative/input.md" }),
-      expectedType: "filename",
-      expectedExists: true,
+      expectedType: "relative",
+      expectedExists: false,
     },
     {
       config: mockConfig,
       params: createTestParams("defect", "task", { fromFile: "filename_only.md" }),
       expectedType: "filename",
-      expectedExists: true,
+      expectedExists: false,
     },
     {
       config: { ...mockConfig, working_dir: "custom/work" },
       params: createTestParams("to", "issue", { fromFile: "custom_input.md" }),
       expectedType: "filename",
-      expectedExists: true,
+      expectedExists: false,
     },
   ];
 
@@ -245,13 +245,16 @@ Deno.test("InputFilePathResolver Integration: file path type coordination", asyn
     assertEquals(result.success, true, `Path resolution should succeed for case ${i}`);
 
     if (result.success && result.path) {
+      const pathData = result.path as Record<string, unknown>;
+      const pathType = pathData.pathType as Record<string, unknown> | undefined;
+      const kind = pathType?.kind as string | undefined;
       assertEquals(
-        (result.path as unknown as { type: string }).type,
+        kind?.toLowerCase() || "unknown",
         testCase.expectedType,
         `Expected type ${testCase.expectedType} for case ${i}`,
       );
       assertEquals(
-        (result.path as unknown as { exists: boolean }).exists,
+        pathData.exists,
         testCase.expectedExists,
         `Expected exists ${testCase.expectedExists} for case ${i}`,
       );
@@ -493,8 +496,10 @@ Deno.test("InputFilePathResolver Integration: concurrent processing", async () =
         (result.path as unknown as { value?: string }).value || result.path,
         `Input ${i} should have resolved path`,
       );
+      const pathData = result.path as Record<string, unknown>;
+      const pathType = pathData.pathType as Record<string, unknown> | undefined;
       assertEquals(
-        typeof (result.path as unknown as { type: string }).type,
+        typeof pathType?.kind,
         "string",
         `Input ${i} should have path type`,
       );
@@ -583,7 +588,7 @@ Deno.test("InputFilePathResolver Integration: complex input scenarios", async ()
           complexity: "high",
         },
       }),
-      expectedType: "filename",
+      expectedType: "relative",
     },
     {
       name: "Path with spaces and special characters",
@@ -592,7 +597,7 @@ Deno.test("InputFilePathResolver Integration: complex input scenarios", async ()
         fromFile: "./documents/My Project Files/issue-#123.md",
         adaptation: "detailed",
       }),
-      expectedType: "filename",
+      expectedType: "relative",
     },
     {
       name: "Network-style absolute path",
@@ -640,7 +645,7 @@ Deno.test("InputFilePathResolver Integration: complex input scenarios", async ()
 
       if (pathResult.ok) {
         assertEquals(
-          pathResult.data.type,
+          pathResult.data.pathType.kind.toLowerCase(),
           expectedType,
           `Expected type ${expectedType} for ${name}`,
         );

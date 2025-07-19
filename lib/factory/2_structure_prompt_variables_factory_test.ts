@@ -15,7 +15,7 @@
  * - Smart Constructor pattern compliance
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptVariablesFactory } from "./prompt_variables_factory.ts";
 import type { PromptCliParams, TotalityPromptCliParams } from "./prompt_variables_factory.ts";
 import type { PromptParams } from "@tettuan/breakdownprompt";
@@ -266,7 +266,11 @@ Deno.test("PromptVariablesFactory - 2_structure - Smart Constructor pattern comp
     }
 
     // This pattern allows Smart Constructor to create but fail on usage
-    assertEquals(typeof factory.validateAll, "function", "Factory should have validation method");
+    assertEquals(
+      typeof factory.checkAllParams,
+      "function",
+      "Factory should have validation method",
+    );
   }
 });
 
@@ -472,7 +476,7 @@ Deno.test("PromptVariablesFactory - 2_structure - Interface contract compliance"
     assertEquals(typeof factory.getOptions, "function", "getOptions should be function");
     assertEquals(typeof factory.hasValidBaseDir, "function", "hasValidBaseDir should be function");
     assertEquals(typeof factory.getBaseDirError, "function", "getBaseDirError should be function");
-    assertEquals(typeof factory.validateAll, "function", "validateAll should be function");
+    assertEquals(typeof factory.checkAllParams, "function", "checkAllParams should be function");
     assertEquals(typeof factory.toPromptParams, "function", "toPromptParams should be function");
 
     // Test property accessors using safe Result methods

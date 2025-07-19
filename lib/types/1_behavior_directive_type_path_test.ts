@@ -6,7 +6,10 @@
  * パス解決実装と整合性を保つことを確認します。
  */
 
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import {
+  assertEquals,
+  assertStringIncludes as _assertStringIncludes,
+} from "jsr:@std/assert@0.224.0";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import type { TwoParams_Result } from "../deps.ts";
 

@@ -18,8 +18,9 @@ import {
   isFileSystemError,
   isInvalidParametersError,
   isSchemaNotFoundError,
-  schemaFilePathErrorToPathResolutionError,
+  pathResolutionErrorToSchemaFilePathError,
   type SchemaFilePathError,
+  schemaFilePathErrorToPathResolutionError,
   SchemaFilePathResolver,
   SchemaPath,
 } from "./schema_file_path_resolver_totality.ts";
@@ -283,16 +284,15 @@ Deno.test("SchemaFilePathResolver Structure - PathResolutionError to SchemaFileP
   const result = SchemaFilePathResolver.create(config, params);
   assert(result.ok);
   if (result.ok) {
-    const resolver = result.data;
+    const _resolver = result.data;
 
     for (const mapping of mappings) {
-      // Use the exported conversion function instead of private method
-      const converted = schemaFilePathErrorToPathResolutionError(mapping.input as SchemaFilePathError);
+      // Use the correct conversion function from PathResolutionError to SchemaFilePathError
+      const converted = pathResolutionErrorToSchemaFilePathError(mapping.input);
       assertEquals(converted.kind, mapping.expectedKind);
 
       if (mapping.checkProperties) {
-        // deno-lint-ignore no-explicit-any
-        mapping.checkProperties(converted as any);
+        mapping.checkProperties(converted);
       }
     }
   }

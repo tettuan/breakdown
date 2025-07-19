@@ -11,7 +11,7 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // 各ドメインのコンポーネントをインポート
-import { DirectiveType, TwoParamsDirectivePattern } from "../../../lib/types/directive_type.ts";
+import { DirectiveType, TwoParamsDirectivePattern } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType, TwoParamsLayerTypePattern } from "../../../lib/domain/core/value_objects/layer_type.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
@@ -84,21 +84,19 @@ Deno.test("E2E Error Handling: S3.1 - Invalid Arguments", async () => {
     logger.debug("Testing invalid argument case", testCase);
     
     // Phase 1: CLI引数シミュレーション（BreakdownParams相当）
-    const [directive, layer, inputFile] = testCase.args;
+    const [directive, layer, _inputFile] = testCase.args;
     
     // Phase 2: TwoParams_Result生成試行
     const twoParamsResult = createTwoParamsResult(directive, layer);
     
     // Phase 3: DirectiveType生成とエラー検出
-    const directiveResult = DirectiveType.createOrError(
-      twoParamsResult, 
-      standardDirectivePattern.data
+    const directiveResult = DirectiveType.create(
+      twoParamsResult.directiveType
     );
     
     // Phase 4: LayerType生成とエラー検出
-    const layerResult = LayerType.createOrError(
-      twoParamsResult,
-      standardLayerPattern.data
+    const layerResult = LayerType.create(
+      twoParamsResult.layerType
     );
     
     // Phase 5: エラー段階の検証
@@ -110,16 +108,16 @@ Deno.test("E2E Error Handling: S3.1 - Invalid Arguments", async () => {
       actualErrorStage = testCase.expectedErrorStage.includes("directive") ? 
         testCase.expectedErrorStage : "directive_validation";
       actualErrorType = directiveResult.error.kind;
-      actualErrorMessage = directiveResult.error.kind === "InvalidInput" ? 
-        directiveResult.error.reason : "unknown";
+      actualErrorMessage = directiveResult.error.kind === "InvalidFormat" ? 
+        directiveResult.error.message : "unknown";
     }
     
     if (!layerResult.ok) {
       actualErrorStage = testCase.expectedErrorStage.includes("layer") ? 
         testCase.expectedErrorStage : "layer_validation";
       actualErrorType = layerResult.error.kind;
-      actualErrorMessage = layerResult.error.kind === "InvalidInput" ? 
-        layerResult.error.reason : "unknown";
+      actualErrorMessage = layerResult.error.kind === "InvalidFormat" ? 
+        layerResult.error.message : "unknown";
     }
     
     if (!directiveResult.ok && !layerResult.ok) {
@@ -363,7 +361,7 @@ Deno.test("E2E Error Handling: S3.3 - Configuration Errors", async () => {
     
     assertEquals(configLoadResult.success, false,
       `Config load should fail for ${testCase.name}`);
-    assertEquals(configLoadResult.error.kind, testCase.expectedError,
+    assertEquals(configLoadResult.error?.kind, testCase.expectedError,
       `Error kind should be ${testCase.expectedError} for ${testCase.name}`);
     
     // Phase 2: フォールバック設定の適用
@@ -392,13 +390,11 @@ Deno.test("E2E Error Handling: S3.3 - Configuration Errors", async () => {
       if (directivePatternResult.ok && layerPatternResult.ok) {
         // フォールバック設定での正常処理確認
         const twoParamsResult = createTwoParamsResult("to", "project");
-        const directiveResult = DirectiveType.createOrError(
-          twoParamsResult,
-          directivePatternResult.data
+        const directiveResult = DirectiveType.create(
+          twoParamsResult.directiveType
         );
-        const layerResult = LayerType.createOrError(
-          twoParamsResult,
-          layerPatternResult.data
+        const layerResult = LayerType.create(
+          twoParamsResult.layerType
         );
         
         assertEquals(directiveResult.ok, true,
@@ -411,7 +407,7 @@ Deno.test("E2E Error Handling: S3.3 - Configuration Errors", async () => {
     // Phase 4: エラー詳細とリカバリー情報の記録
     const configErrorLog = {
       testCase: testCase.name,
-      originalError: configLoadResult.error.kind,
+      originalError: configLoadResult.error?.kind,
       recoveryStrategy: fallbackConfig.strategy,
       recoverySuccess: fallbackConfig.success,
       canContinueProcessing: fallbackConfig.success,

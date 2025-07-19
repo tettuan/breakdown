@@ -9,7 +9,7 @@
  * - Totality principle adherence
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptVariablesVO } from "./prompt_variables_vo.ts";
 import {
   FilePathVariable,
@@ -192,7 +192,7 @@ Deno.test("0_architecture: PromptVariablesVO supports extensibility without modi
 
   // Can access all variable data without modification
   const record = vo.toRecord();
-  assertEquals(record["future-feature"], "future-value");
+  assertEquals(record["uv-future-feature"], "future-value");
 });
 
 Deno.test("0_architecture: PromptVariablesVO provides collection abstraction", () => {

@@ -10,7 +10,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import type { ConfigProfileName as _ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import type { ConfigProfileName as _ConfigProfileName } from "$lib/config/config_profile_name.ts";
 import {
   TwoParams,
   type TwoParamsValidationError,

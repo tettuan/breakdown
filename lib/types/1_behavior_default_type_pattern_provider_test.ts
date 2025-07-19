@@ -6,7 +6,7 @@
  * value extraction logic, and provider functionality.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
 
 Deno.test("Behavior: DefaultTypePatternProvider - Pattern Creation and Validation", () => {
@@ -18,7 +18,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Creation and Validatio
   const layerPattern = provider.getLayerTypePattern();
 
   assertExists(directivePattern, "Directive pattern should be created");
-  assertExists(layerPattern, "Layer pattern should be created");
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
   // Test pattern validation with expected values
   const expectedDirectives = ["to", "summary", "defect"];
@@ -28,8 +30,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Creation and Validatio
     assert(directivePattern.test(directive), `"${directive}" should be valid directive`);
   });
 
+  // Test layer validation using validateLayerType method instead of deprecated pattern
   expectedLayers.forEach((layer) => {
-    assert(layerPattern.test(layer), `"${layer}" should be valid layer`);
+    assert(provider.validateLayerType(layer), `"${layer}" should be valid layer`);
   });
 
   // Test pattern rejection of invalid values
@@ -40,8 +43,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Creation and Validatio
     assert(!directivePattern.test(directive), `"${directive}" should be invalid directive`);
   });
 
+  // Test layer validation rejection using validateLayerType method instead of deprecated pattern
   invalidLayers.forEach((layer) => {
-    assert(!layerPattern.test(layer), `"${layer}" should be invalid layer`);
+    assert(!provider.validateLayerType(layer), `"${layer}" should be invalid layer`);
   });
 });
 
@@ -89,7 +93,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Consistency", () => {
   const layerValues = provider.getValidLayerValues();
 
   assertExists(directivePattern);
-  assertExists(layerPattern);
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
   // Every extracted value should be valid according to its pattern
   directiveValues.forEach((value) => {
@@ -99,8 +105,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Consistency", () => {
     );
   });
 
+  // Test layer values using validateLayerType method instead of deprecated pattern
   layerValues.forEach((value) => {
-    assert(layerPattern.test(value), `Extracted layer "${value}" should pass pattern validation`);
+    assert(provider.validateLayerType(value), `Extracted layer "${value}" should pass validation`);
   });
 
   // Pattern should reject other common values
@@ -114,7 +121,10 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Consistency", () => {
       );
     }
     if (!layerValues.includes(value)) {
-      assert(!layerPattern.test(value), `Pattern should reject common invalid value "${value}"`);
+      assert(
+        !provider.validateLayerType(value),
+        `LayerType validation should reject common invalid value "${value}"`,
+      );
     }
   });
 });
@@ -294,20 +304,23 @@ Deno.test("Behavior: DefaultTypePatternProvider - Case Sensitivity", () => {
   const layerPattern = provider.getLayerTypePattern();
 
   assertExists(directivePattern);
-  assertExists(layerPattern);
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
   // Test exact case matching
   assert(directivePattern.test("to"), "Should accept lowercase 'to'");
   assert(!directivePattern.test("TO"), "Should reject uppercase 'TO'");
   assert(!directivePattern.test("To"), "Should reject titlecase 'To'");
 
-  assert(layerPattern.test("project"), "Should accept lowercase 'project'");
-  assert(!layerPattern.test("PROJECT"), "Should reject uppercase 'PROJECT'");
-  assert(!layerPattern.test("Project"), "Should reject titlecase 'Project'");
+  // Test layer case sensitivity using validateLayerType method
+  assert(provider.validateLayerType("project"), "Should accept lowercase 'project'");
+  assert(!provider.validateLayerType("PROJECT"), "Should reject uppercase 'PROJECT'");
+  assert(!provider.validateLayerType("Project"), "Should reject titlecase 'Project'");
 
   // Test mixed case
   assert(!directivePattern.test("Summary"), "Should reject mixed case 'Summary'");
-  assert(!layerPattern.test("Issue"), "Should reject mixed case 'Issue'");
+  assert(!provider.validateLayerType("Issue"), "Should reject mixed case 'Issue'");
 });
 
 Deno.test("Behavior: DefaultTypePatternProvider - Whitespace Handling", () => {
@@ -318,20 +331,23 @@ Deno.test("Behavior: DefaultTypePatternProvider - Whitespace Handling", () => {
   const layerPattern = provider.getLayerTypePattern();
 
   assertExists(directivePattern);
-  assertExists(layerPattern);
+
+  // LayerPattern is deprecated and should be null
+  assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
   // Should reject values with leading/trailing whitespace
   assert(!directivePattern.test(" to"), "Should reject leading space");
   assert(!directivePattern.test("to "), "Should reject trailing space");
   assert(!directivePattern.test(" to "), "Should reject surrounding spaces");
 
-  assert(!layerPattern.test(" project"), "Should reject leading space");
-  assert(!layerPattern.test("project "), "Should reject trailing space");
-  assert(!layerPattern.test(" project "), "Should reject surrounding spaces");
+  // Test layer whitespace handling using validateLayerType method
+  assert(!provider.validateLayerType(" project"), "Should reject leading space");
+  assert(!provider.validateLayerType("project "), "Should reject trailing space");
+  assert(!provider.validateLayerType(" project "), "Should reject surrounding spaces");
 
   // Should reject values with internal whitespace
   assert(!directivePattern.test("to summary"), "Should reject internal space");
-  assert(!layerPattern.test("project issue"), "Should reject internal space");
+  assert(!provider.validateLayerType("project issue"), "Should reject internal space");
 });
 
 Deno.test("Behavior: DefaultTypePatternProvider - Provider State Independence", () => {

@@ -7,7 +7,7 @@
  * @module templates/2_structure_prompts_test
  */
 
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { prompts } from "./prompts.ts";
 

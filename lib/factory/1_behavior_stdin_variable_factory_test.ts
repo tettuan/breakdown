@@ -9,7 +9,7 @@
  * - Edge cases and boundary conditions
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   defaultStdinVariableFactory,
   type StdinFactoryInput,
@@ -153,7 +153,8 @@ Deno.test("StdinVariableFactory - 1_behavior - handles empty string input", () =
     assertExists(result.error, "Should have error for empty string");
     const isValidationError = "kind" in result.error && (
       result.error.kind === "NoStdinData" ||
-      result.error.kind === "InvalidStdinSource"
+      result.error.kind === "InvalidStdinSource" ||
+      result.error.kind === "EmptyValue"
     );
     assertEquals(isValidationError, true, "Should be validation error");
   } else {

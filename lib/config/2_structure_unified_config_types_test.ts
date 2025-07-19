@@ -8,7 +8,7 @@
  * @module config/2_structure_unified_config_types_test
  */
 
-import { assert, assertEquals, assertExists, assertStrictEquals } from "@std/assert";
+import { assert, assertEquals, assertExists, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import {
   CONFIG_PRESETS,
   type ConfigBuilderOptions,

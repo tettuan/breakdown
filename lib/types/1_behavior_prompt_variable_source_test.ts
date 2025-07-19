@@ -10,7 +10,7 @@
  * @module types/prompt_variable_source_test
  */
 
-import { assertEquals, assertNotEquals } from "@std/assert";
+import { assertEquals, assertNotEquals } from "jsr:@std/assert@0.224.0";
 import {
   DataSource,
   PromptVariableSource,

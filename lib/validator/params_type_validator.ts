@@ -59,18 +59,22 @@ export class ParamsTypeValidator {
    */
   validate(result: ParamsResult): Result<ValidatedParamsType, ParamsTypeError> {
     switch (result.type) {
-      case "two":
+      case "two": {
         return this.validateTwoParams(result);
-      case "one":
+      }
+      case "one": {
         return this.validateOneParams(result);
-      case "zero":
+      }
+      case "zero": {
         return this.validateZeroParams(result);
-      default:
+      }
+      default: {
         return error({
           kind: "InvalidParamsType",
           expected: "zero, one, or two",
           received: result.type,
         });
+      }
     }
   }
 
@@ -233,7 +237,7 @@ export class ParamsTypeValidator {
     const layerPattern = this.patternProvider.getLayerTypePattern();
     if (layerPattern && layerPattern.test(param)) {
       return ok({
-        directive: "init", // Default directive for single layer param
+        directive: "to", // Default directive for single layer param
         layer: param,
       });
     }
@@ -258,7 +262,7 @@ export class ParamsTypeValidator {
    */
   private getDefaultDirectiveAndLayer(): { directive: string; layer: string } {
     return {
-      directive: "init",
+      directive: "to",
       layer: "project",
     };
   }

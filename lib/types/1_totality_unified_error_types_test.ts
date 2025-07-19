@@ -10,7 +10,7 @@
  * @module lib/types/1_totality_unified_error_types_test
  */
 
-import { assertEquals, assertExists, assertThrows as _assertThrows } from "@std/assert";
+import { assertEquals, assertExists, assertThrows as _assertThrows } from "jsr:@std/assert@0.224.0";
 import {
   ConfigurationError,
   ErrorFactory,
@@ -225,6 +225,7 @@ Deno.test("1_totality: UnifiedError union type is closed and complete", () => {
 
       // Validation errors
       case "InvalidInput":
+      case "EmptyValue":
       case "MissingRequiredField":
       case "InvalidFieldType":
       case "ValidationFailed":

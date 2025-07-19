@@ -9,7 +9,7 @@
  * @module lib/validator/2_structure_params_type_validator_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { type ParamsResult, ParamsTypeValidator } from "./params_type_validator.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
 import { isError, isOk } from "../types/result.ts";
@@ -172,7 +172,7 @@ Deno.test("2_structure: One param validation with inference logic", () => {
   if (isOk(layerParamResult)) {
     const validated = layerParamResult.data;
     assertEquals(validated.type, "one");
-    assertEquals(validated.directiveType, "init"); // Default directive
+    assertEquals(validated.directiveType, "to"); // Default directive
     assertEquals(validated.layerType, "project");
     assertEquals(validated.params.length, 1);
   }
@@ -218,7 +218,7 @@ Deno.test("2_structure: Zero params validation applies defaults consistently", (
 
     // Verify defaults are applied
     assertEquals(validated.type, "zero");
-    assertEquals(validated.directiveType, "init");
+    assertEquals(validated.directiveType, "to");
     assertEquals(validated.layerType, "project");
     assertEquals(validated.params.length, 0);
 
@@ -342,11 +342,11 @@ Deno.test("2_structure: ParamsResult interface compatibility", () => {
 Deno.test("2_structure: Error pattern consistency across validation methods", () => {
   // Test with null pattern provider
   class NullPatternProvider implements TypePatternProvider {
-    validateDirectiveType(value: string): boolean {
+    validateDirectiveType(_value: string): boolean {
       return false;
     }
 
-    validateLayerType(value: string): boolean {
+    validateLayerType(_value: string): boolean {
       return false;
     }
 

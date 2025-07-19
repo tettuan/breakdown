@@ -194,7 +194,7 @@ export class UnifiedConfigInterface {
       if (!baseConfigResult.ok) {
         const error = baseConfigResult.error;
         let message: string;
-        
+
         switch (error.kind) {
           case "CreateError":
           case "LoadError":
@@ -217,7 +217,7 @@ export class UnifiedConfigInterface {
             message = "Unknown configuration error";
             break;
         }
-        
+
         return resultError({
           kind: "ConfigLoadError",
           message,
@@ -235,7 +235,7 @@ export class UnifiedConfigInterface {
       if (!patternProviderResult.ok) {
         const error = patternProviderResult.error;
         let errorMessage: string;
-        
+
         switch (error.kind) {
           case "ConfigLoadFailed":
             errorMessage = error.message;
@@ -247,7 +247,9 @@ export class UnifiedConfigInterface {
             errorMessage = "Pattern provider not initialized";
             break;
           default:
-            errorMessage = `Pattern provider error: ${(error as any).kind || "unknown"}`;
+            errorMessage = `Pattern provider error: ${
+              (error as { kind?: string }).kind || "unknown"
+            }`;
             break;
         }
         return resultError({
@@ -287,7 +289,7 @@ export class UnifiedConfigInterface {
       if (!pathOptionsResult.ok) {
         const error = pathOptionsResult.error;
         let errorMessage: string;
-        
+
         switch (error.kind) {
           case "ConfigurationError":
             errorMessage = error.message;
@@ -326,13 +328,16 @@ export class UnifiedConfigInterface {
             errorMessage = `No valid fallback found after attempts: ${error.attempts.join(", ")}`;
             break;
           case "InvalidParameterCombination":
-            errorMessage = `Invalid parameter combination: ${error.directiveType}/${error.layerType}`;
+            errorMessage =
+              `Invalid parameter combination: ${error.directiveType}/${error.layerType}`;
             break;
           case "TemplateNotFound":
             errorMessage = `Template not found. Attempted: ${error.attempted.join(", ")}`;
             break;
           default:
-            errorMessage = `Path resolution error: ${(error as any).kind || "unknown"}`;
+            errorMessage = `Path resolution error: ${
+              (error as { kind?: string }).kind || "unknown"
+            }`;
             break;
         }
         return resultError({

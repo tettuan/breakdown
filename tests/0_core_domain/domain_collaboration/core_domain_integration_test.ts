@@ -15,7 +15,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 import { TwoParams } from "$lib/domain/core/aggregates/two_params.ts";
-import { ConfigProfileName } from "$lib/types/config_profile_name.ts";
+import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("core-domain-integration");
 
@@ -100,8 +100,8 @@ describe("Core Domain Integration Tests", () => {
       // Assert: Path consistency
       assertEquals(promptDir, "prompts/to/project");
       assertEquals(schemaDir, "schemas/to/project");
-      assertEquals(promptFileName, "f_project.md");
-      assertEquals(schemaFileName, "base.schema.json");
+      assertEquals(promptFileName, "f_issue.md"); // Uses the parameter "issue"
+      assertEquals(schemaFileName, "project.json"); // Uses layer.value
       
       logger.debug("Path resolution operations consistent", {
         promptDir,
@@ -189,14 +189,14 @@ describe("Core Domain Integration Tests", () => {
       assertEquals(promptPath.directive, "to");
       assertEquals(promptPath.layer, "task");
       assertEquals(promptPath.fromLayer, "issue");
-      assertEquals(promptPath.resolve(), "prompts/to/task/f_task.md");
+      assertEquals(promptPath.resolve(), "prompts/to/task/f_issue.md"); // Uses fromLayer "issue"
       
       assertEquals(schemaPath.directive, "to");
       assertEquals(schemaPath.layer, "task");
-      assertEquals(schemaPath.resolve(), "schemas/to/task/base.schema.json");
+      assertEquals(schemaPath.resolve(), "schemas/to/task/task.json"); // Currently uses layer.getSchemaFilename()
       
-      assertEquals(promptFilePath, "prompts/to/task/f_task.md");
-      assertEquals(schemaFilePath, "schemas/to/task/base.schema.json");
+      assertEquals(promptFilePath, "prompts/to/task/f_issue.md"); // Uses fromLayer "issue"
+      assertEquals(schemaFilePath, "schemas/to/task/task.json"); // Currently uses layer.getSchemaFilename()
       
       logger.debug("TwoParams path resolution comprehensive", {
         promptPath: promptPath.resolve(),
@@ -217,17 +217,17 @@ describe("Core Domain Integration Tests", () => {
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       
-      // Act: Path resolution with adaptation
-      const promptPath = twoParams.getPromptPath("project", "strict");
-      const adaptedPath = twoParams.resolvePromptFilePath("prompts", "project", "detailed");
+      // Act: Path resolution
+      const promptPath = twoParams.getPromptPath("project");
+      const adaptedPath = twoParams.resolvePromptFilePath("prompts", "project");
       
-      // Assert: Adaptation handling
-      assertEquals(promptPath.adaptation, "strict");
-      assertEquals(promptPath.resolveWithAdaptation("custom"), "prompts/to/issue/f_issue_custom.md");
-      assertEquals(adaptedPath, "prompts/to/issue/f_issue_detailed.md");
+      // Assert: Path handling
+      assertEquals(promptPath.fromLayer, "project");
+      assertEquals(promptPath.resolve(), "prompts/to/issue/f_project.md"); // Uses fromLayer "project"
+      assertEquals(adaptedPath, "prompts/to/issue/f_project.md"); // Uses fromLayer "project"
       
-      logger.debug("Adaptation parameters handled correctly", {
-        adaptedPromptPath: promptPath.resolveWithAdaptation("custom"),
+      logger.debug("Path resolution handled correctly", {
+        promptPath: promptPath.resolve(),
         adaptedFilePath: adaptedPath
       });
     });

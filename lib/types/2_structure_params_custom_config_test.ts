@@ -11,7 +11,7 @@
  * @module types/params_custom_config_test
  */
 
-import { assertEquals, assertInstanceOf } from "@std/assert";
+import { assertEquals, assertInstanceOf } from "jsr:@std/assert@0.224.0";
 import { ConfigError, ParamsConfig, ParamsCustomConfig } from "./params_custom_config.ts";
 import { ResultStatus } from "./enums.ts";
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";

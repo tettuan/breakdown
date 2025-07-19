@@ -8,8 +8,8 @@
  */
 
 // Export the main loader functionality
-export { loadConfig, ConfigLoader } from "./loader.ts";
-export type { CustomConfig, ConfigLoadError } from "./loader.ts";
+export { ConfigLoader, loadConfig } from "./loader.ts";
+export type { ConfigLoadError, CustomConfig } from "./loader.ts";
 
 // Export other configuration utilities if they exist
 // Add more exports as needed

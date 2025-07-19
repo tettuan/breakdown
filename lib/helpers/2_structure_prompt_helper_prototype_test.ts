@@ -13,7 +13,7 @@
  * @module helpers/prompt_helper_prototype
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DirectiveType, LayerType } from "../types/mod.ts";
 import {
   PromptTemplate,

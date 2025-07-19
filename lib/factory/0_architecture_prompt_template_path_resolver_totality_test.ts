@@ -9,7 +9,7 @@
  * - Exhaustive error cases
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { PromptTemplatePathResolverTotality } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams } from "../types/mod.ts";
 import type { TwoParams_Result } from "../deps.ts";

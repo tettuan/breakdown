@@ -9,7 +9,7 @@
  * - Totality pattern compliance
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
 import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
 
@@ -70,7 +70,7 @@ Deno.test("0_architecture: Smart Constructor pattern - factory method returns Re
   if (result.ok) {
     assertExists(result.data);
     assertEquals("error" in result, false);
-    assertEquals(result.data.constructor.name, "PromptTemplatePathResolver");
+    assertEquals(result.data.constructor.name, "PromptTemplatePathResolverTotality");
   } else {
     assertExists(result.error);
     assertEquals("data" in result, false);
@@ -296,8 +296,9 @@ Deno.test("0_architecture: Type safety constraint - compile-time guarantees", ()
     const fileName = result.data.buildFileName();
     assertEquals(typeof fileName, "string");
 
-    const fromLayerType = result.data.resolveFromLayerTypeSafe();
-    assertEquals(typeof fromLayerType, "string");
+    const fromLayerTypeResult = result.data.resolveFromLayerTypeSafe();
+    assertEquals(typeof fromLayerTypeResult, "object");
+    assertEquals("ok" in fromLayerTypeResult, true);
   }
 });
 
@@ -323,6 +324,7 @@ Deno.test("0_architecture: Factory pattern constraint - single creation pathway"
     "prototype",
     "extractDirectiveType",
     "extractLayerType",
+    "normalizeConfig",
   ];
   for (const method of staticMethods) {
     assertEquals(

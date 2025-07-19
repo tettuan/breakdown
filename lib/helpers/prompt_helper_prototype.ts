@@ -405,6 +405,8 @@ export class PromptHelperPrototype {
           return "## Output Format\n- Summary (max 100 chars)\n- Key points (3-5 items)\n- Recommended actions";
         case "to":
           return "## Output Format\n- Converted content\n- Conversion rationale\n- Verification items";
+        case "defect":
+          return "## Output Format\n- Defect analysis\n- Root cause analysis\n- Suggested fixes";
         default:
           return "## Output Format\nProvide output in the specified format.";
       }
@@ -414,6 +416,8 @@ export class PromptHelperPrototype {
           return "## Output Format\n- Summary (max 100 chars)\n- Key points (3-5 items)\n- Recommended actions";
         case "to":
           return "## Output Format\n- Converted content\n- Conversion rationale\n- Verification items";
+        case "defect":
+          return "## Output Format\n- Defect analysis\n- Root cause analysis\n- Suggested fixes";
         default:
           return "## Output Format\nProvide output in the specified format.";
       }

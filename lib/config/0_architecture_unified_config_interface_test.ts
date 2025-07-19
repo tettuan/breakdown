@@ -5,7 +5,7 @@
  * for the unified configuration interface module.
  */
 
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import {
   CONFIG_PRESETS,
   type ConfigBuilderOptions,

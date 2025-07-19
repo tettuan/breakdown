@@ -9,7 +9,7 @@
  * - State transitions and transformations
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -118,8 +118,8 @@ Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", 
   };
 
   const result = createTwoParamsResult(
-    "transform",
-    "module",
+    "to",
+    "project",
     complexOptions as unknown as Record<string, unknown>,
   );
   const directiveTypeResult = DirectiveType.create(result.directiveType);
@@ -127,7 +127,7 @@ Deno.test("1_behavior: DirectiveType preserves original TwoParams_Result data", 
   const directiveType = directiveTypeResult.data;
 
   // Core value extraction
-  assertEquals(directiveType.value, "transform");
+  assertEquals(directiveType.value, "to");
 
   // DirectiveType only stores the value, not the original result
   // The original result is preserved in the calling context
@@ -276,7 +276,7 @@ Deno.test("1_behavior: DirectiveType handles special characters in directiveType
 
 Deno.test("1_behavior: DirectiveType works with different layerType values", () => {
   const layerTypes = ["project", "issue", "task", "epic", "story", "custom"];
-  const directiveTypeValue = "analyze";
+  const directiveTypeValue = "to";
 
   for (const layerType of layerTypes) {
     const result = createTwoParamsResult(directiveTypeValue, layerType);
@@ -292,7 +292,7 @@ Deno.test("1_behavior: DirectiveType works with different layerType values", () 
 });
 
 Deno.test("1_behavior: DirectiveType maintains consistency across multiple accesses", () => {
-  const result = createTwoParamsResult("consistent");
+  const result = createTwoParamsResult("summary");
   const directiveTypeResult = DirectiveType.create(result.directiveType);
   if (!directiveTypeResult.ok) throw new Error("Failed to create DirectiveType");
   const directiveType = directiveTypeResult.data;
@@ -302,9 +302,9 @@ Deno.test("1_behavior: DirectiveType maintains consistency across multiple acces
   const value2 = directiveType.value;
   const value3 = directiveType.value;
 
-  assertEquals(value1, "consistent");
-  assertEquals(value2, "consistent");
-  assertEquals(value3, "consistent");
+  assertEquals(value1, "summary");
+  assertEquals(value2, "summary");
+  assertEquals(value3, "summary");
   assertEquals(value1, value2);
   assertEquals(value2, value3);
 

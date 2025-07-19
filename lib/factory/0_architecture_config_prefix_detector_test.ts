@@ -9,7 +9,7 @@
  * - Totality pattern compliance
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { ConfigPrefixDetector } from "./config_prefix_detector.ts";
 
 Deno.test("0_architecture: Utility class pattern - prevents instantiation", () => {

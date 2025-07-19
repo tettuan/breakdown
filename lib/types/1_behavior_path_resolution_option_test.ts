@@ -7,7 +7,7 @@
  * @module types/1_behavior_path_resolution_option_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PathResolutionOption, PathResolutionPresets } from "./path_resolution_option.ts";
 
 /**
@@ -126,7 +126,7 @@ Deno.test("PathResolutionOption Behavior - Path validation rules", () => {
       const invalidResult = option.validatePath("/nonexistent/path");
       assertEquals(invalidResult.ok, false);
       if (!invalidResult.ok) {
-        assertEquals(invalidResult.error.kind, "ValidationFailed");
+        assertEquals(invalidResult.error.kind, "PathValidationFailed");
       }
     }
 

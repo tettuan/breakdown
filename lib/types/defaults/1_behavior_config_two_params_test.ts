@@ -20,7 +20,7 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
 
     // Test directiveType pattern behavior
     const directiveRegex = new RegExp(config.directiveType.pattern);
-    const validDirective = ["to", "summary", "defect", "find"];
+    const validDirective = ["to", "summary", "defect"];
     const invalidDirective = ["invalid", "TO", "summary2", ""];
 
     validDirective.forEach((value) => {
@@ -71,11 +71,11 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     // Test directiveType pattern extraction
     const directiveMatch = config.directiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(directiveMatch);
-    assertEquals(directiveMatch[1], "to|summary|defect|find");
+    assertEquals(directiveMatch[1], "to|summary|defect");
 
     const directiveValues = directiveMatch[1].split("|");
-    assertEquals(directiveValues.length, 4);
-    assertEquals(directiveValues, ["to", "summary", "defect", "find"]);
+    assertEquals(directiveValues.length, 3);
+    assertEquals(directiveValues, ["to", "summary", "defect"]);
 
     // Test layerType pattern extraction
     const layerMatch = config.layerType.pattern.match(/^\^\(([^)]+)\)\$$/);
@@ -149,7 +149,7 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     };
 
     // Verify original is unchanged
-    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect|find)$");
+    assertEquals(config.params.two.directiveType.pattern, "^(to|summary|defect)$");
 
     // Verify custom config has new pattern
     assertEquals(customConfig.params.two.directiveType.pattern, "^(custom|pattern)$");
@@ -320,7 +320,9 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
 
       // Check if both types were created successfully
       if (!directiveTypeResult.ok) {
-        return error(`Failed to create directiveType: ${JSON.stringify(directiveTypeResult.error)}`);
+        return error(
+          `Failed to create directiveType: ${JSON.stringify(directiveTypeResult.error)}`,
+        );
       }
 
       if (!layerTypeResult.ok) {

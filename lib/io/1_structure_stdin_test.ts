@@ -63,7 +63,7 @@ describe("Structure: Function categorization", () => {
 
     const exports = Object.keys(StdinModule);
     const functionExports = exports.filter(
-      (key) => typeof (StdinModule as any)[key] === "function",
+      (key) => typeof (StdinModule as unknown as Record<string, unknown>)[key] === "function",
     );
 
     // Core functions we expect

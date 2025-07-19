@@ -6,7 +6,7 @@
  * error details propagation, and factory function behavior.
  */
 
-import { assert, assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertExists, assertStringIncludes } from "jsr:@std/assert@0.224.0";
 import {
   ConfigCreationError,
   createWorkspaceInitError,

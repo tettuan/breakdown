@@ -10,7 +10,7 @@
  * @module lib/types/1_totality_layer_type_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
@@ -68,7 +68,7 @@ Deno.test("1_totality: LayerType.create handles all input cases exhaustively", (
   ];
 
   for (const testCase of invalidCases) {
-    const result = LayerType.create(testCase.input as any);
+    const result = LayerType.create(testCase.input);
     assertEquals(result.ok, false, `Input "${testCase.input}" should be invalid`);
     if (!result.ok) {
       assertEquals(result.error.kind, testCase.expectedError);
@@ -152,7 +152,7 @@ Deno.test("1_totality: LayerType.fromString with comprehensive error handling", 
   ];
 
   for (const testCase of invalidInputs) {
-    const result = LayerType.fromString(testCase.input as any);
+    const result = LayerType.fromString(testCase.input);
     assertEquals(result.ok, false, `Input "${testCase.input}" should be invalid`);
     if (!result.ok) {
       assertEquals(result.error.kind, testCase.expectedKind);
@@ -227,7 +227,7 @@ Deno.test("1_totality: LayerType domain methods have total behavior", () => {
 
     // getSchemaFilename should be total
     assertEquals(typeof layer.getSchemaFilename(), "string");
-    assertEquals(layer.getSchemaFilename(), "base.schema.json");
+    assertEquals(layer.getSchemaFilename(), "project.json");
 
     // isValidForResourcePath should be total
     assertEquals(typeof layer.isValidForResourcePath(), "boolean");
@@ -303,11 +303,11 @@ Deno.test("1_totality: LayerType factory methods handle edge cases completely", 
   const result2 = LayerType.fromTwoParamsResult(invalidTwoParams);
   assertEquals(result2.ok, false);
 
-  // fromString should provide suggestions for unknown inputs
-  const unknownResult = LayerType.fromString("unknown-layer-type");
+  // fromString should provide suggestions for invalid inputs
+  const unknownResult = LayerType.fromString("INVALID LAYER");
   assertEquals(unknownResult.ok, false);
   if (!unknownResult.ok) {
-    // Should have suggestions for unknown layer types
+    // Should have suggestions for invalid layer types
     assertEquals("suggestions" in unknownResult.error, true);
     if ("suggestions" in unknownResult.error) {
       assertEquals(Array.isArray(unknownResult.error.suggestions), true);

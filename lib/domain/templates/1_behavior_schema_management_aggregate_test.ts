@@ -11,7 +11,11 @@
  * @module domain/templates/schema_management_aggregate_behavior_test
  */
 
-import { assert, assertEquals, assertInstanceOf as _assertInstanceOf } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertInstanceOf as _assertInstanceOf,
+} from "jsr:@std/assert@0.224.0";
 import {
   type DependencyValidationResult,
   type ImportResult,

@@ -11,11 +11,11 @@
  * @module infrastructure/templates/file_template_repository
  */
 
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "jsr:@std/assert@0.224.0";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { ConfigProfileName } from "../../types/config_profile_name.ts";
+import { ConfigProfileName } from "../../config/config_profile_name.ts";
 import {
   FileTemplateRepository,
   type FileTemplateRepositoryConfig,
@@ -131,7 +131,7 @@ Deno.test("FileTemplateRepository loadTemplate - throws TemplateNotFoundError fo
     await assertRejects(
       () => repository.loadTemplate(templatePath),
       TemplateNotFoundError,
-      "Template not found: nonexistent/missing/missing.md",
+      "Template not found: to/project/missing.md",
     );
   } finally {
     await cleanup();
@@ -284,7 +284,7 @@ Deno.test("FileTemplateRepository delete - throws TemplateNotFoundError for non-
     await assertRejects(
       () => repository.delete(templatePath),
       TemplateNotFoundError,
-      "Template not found: missing/gone/missing.md",
+      "Template not found: to/project/missing.md",
     );
   } finally {
     await cleanup();

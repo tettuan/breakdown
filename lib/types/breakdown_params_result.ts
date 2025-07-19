@@ -6,113 +6,159 @@
  * the Totality principle, all operations are total functions that
  * always return a defined result.
  *
+ * Now supports zero, one, and two parameter scenarios as per domain specification.
+ *
  * @module types/breakdown_params_result
  */
 
 import type { TwoParams_Result } from "../deps.ts";
 
 /**
- * Success variant of BreakdownParamsResult
+ * Zero parameters variant of BreakdownParamsResult
  *
- * Represents a successful operation with the resulting data.
- * Uses 'success' as the discriminator tag for type narrowing.
+ * Represents a scenario where no parameters are provided.
+ * Uses 'zero' as the discriminator tag for type narrowing.
  */
-export interface BreakdownParamsResultSuccess {
-  readonly type: "success";
+export interface BreakdownParamsResultZero {
+  readonly type: "zero";
+  readonly data: null;
+}
+
+/**
+ * One parameter variant of BreakdownParamsResult
+ *
+ * Represents a scenario where one parameter is provided.
+ * Uses 'one' as the discriminator tag for type narrowing.
+ */
+export interface BreakdownParamsResultOne {
+  readonly type: "one";
+  readonly data: {
+    readonly parameter: string;
+  };
+}
+
+/**
+ * Two parameters variant of BreakdownParamsResult
+ *
+ * Represents a scenario where two parameters are provided.
+ * Uses 'two' as the discriminator tag for type narrowing.
+ */
+export interface BreakdownParamsResultTwo {
+  readonly type: "two";
   readonly data: TwoParams_Result;
 }
 
 /**
- * Failure variant of BreakdownParamsResult
+ * BreakdownParamsResult - Discriminated Union for parameter scenarios
  *
- * Represents a failed operation with error information.
- * Uses 'failure' as the discriminator tag for type narrowing.
- */
-export interface BreakdownParamsResultFailure {
-  readonly type: "failure";
-  readonly error: Error;
-}
-
-/**
- * BreakdownParamsResult - Discriminated Union for operation results
- *
- * Ensures exhaustive handling of success and failure cases through
+ * Ensures exhaustive handling of zero, one, and two parameter cases through
  * TypeScript's discriminated union feature. The 'type' field acts
  * as the discriminator for type narrowing.
  *
  * @example Basic usage
  * ```typescript
  * const result = parseBreakdownParams(args);
- * if (isSuccess(result)) {
- *   console.log(result.data);
- * } else {
- *   console.error(result.error);
+ * switch (result.type) {
+ *   case "zero":
+ *     console.log("No parameters provided");
+ *     break;
+ *   case "one":
+ *     console.log(`One parameter: ${result.data.parameter}`);
+ *     break;
+ *   case "two":
+ *     console.log(`Two parameters: ${result.data.DirectiveType}, ${result.data.LayerType}`);
+ *     break;
  * }
  * ```
  */
 export type BreakdownParamsResult =
-  | BreakdownParamsResultSuccess
-  | BreakdownParamsResultFailure;
+  | BreakdownParamsResultZero
+  | BreakdownParamsResultOne
+  | BreakdownParamsResultTwo;
 
 /**
- * Type guard for checking if result is success
+ * Type guard for checking if result is zero parameters
  *
- * Narrows the type to BreakdownParamsResultSuccess when true.
+ * Narrows the type to BreakdownParamsResultZero when true.
  *
  * @param result The result to check
- * @returns true if result is success variant
+ * @returns true if result is zero variant
  */
-export function isSuccess(
+export function isZero(
   result: BreakdownParamsResult,
-): result is BreakdownParamsResultSuccess {
-  return result.type === "success";
+): result is BreakdownParamsResultZero {
+  return result.type === "zero";
 }
 
 /**
- * Type guard for checking if result is failure
+ * Type guard for checking if result is one parameter
  *
- * Narrows the type to BreakdownParamsResultFailure when true.
+ * Narrows the type to BreakdownParamsResultOne when true.
  *
  * @param result The result to check
- * @returns true if result is failure variant
+ * @returns true if result is one variant
  */
-export function isFailure(
+export function isOne(
   result: BreakdownParamsResult,
-): result is BreakdownParamsResultFailure {
-  return result.type === "failure";
+): result is BreakdownParamsResultOne {
+  return result.type === "one";
 }
 
 /**
- * Creates a success result
+ * Type guard for checking if result is two parameters
+ *
+ * Narrows the type to BreakdownParamsResultTwo when true.
+ *
+ * @param result The result to check
+ * @returns true if result is two variant
+ */
+export function isTwo(
+  result: BreakdownParamsResult,
+): result is BreakdownParamsResultTwo {
+  return result.type === "two";
+}
+
+/**
+ * Creates a zero parameters result
  *
  * Factory function following the Smart Constructor pattern.
  *
- * @param data The successful operation data
- * @returns Success variant of BreakdownParamsResult
+ * @returns Zero variant of BreakdownParamsResult
  */
-export function success(
-  data: TwoParams_Result,
-): BreakdownParamsResultSuccess {
+export function zero(): BreakdownParamsResultZero {
   return {
-    type: "success",
-    data,
+    type: "zero",
+    data: null,
   };
 }
 
 /**
- * Creates a failure result
+ * Creates a one parameter result
  *
  * Factory function following the Smart Constructor pattern.
  *
- * @param error The error that occurred
- * @returns Failure variant of BreakdownParamsResult
+ * @param parameter The single parameter provided
+ * @returns One variant of BreakdownParamsResult
  */
-export function failure(
-  error: Error,
-): BreakdownParamsResultFailure {
+export function one(parameter: string): BreakdownParamsResultOne {
   return {
-    type: "failure",
-    error,
+    type: "one",
+    data: { parameter },
+  };
+}
+
+/**
+ * Creates a two parameters result
+ *
+ * Factory function following the Smart Constructor pattern.
+ *
+ * @param data The two parameters data
+ * @returns Two variant of BreakdownParamsResult
+ */
+export function two(data: TwoParams_Result): BreakdownParamsResultTwo {
+  return {
+    type: "two",
+    data,
   };
 }
 
@@ -121,7 +167,7 @@ export function failure(
  *
  * Ensures exhaustive handling of all variants through TypeScript's
  * exhaustiveness checking. Provides a functional approach to
- * handling different result states.
+ * handling different parameter scenarios.
  *
  * @param result The result to match
  * @param handlers Object with handlers for each variant
@@ -130,27 +176,68 @@ export function failure(
  * @example
  * ```typescript
  * const message = match(result, {
- *   success: (data) => `Success: ${data.DirectiveType}`,
- *   failure: (error) => `Error: ${error.message}`
+ *   zero: () => "No parameters provided",
+ *   one: (data) => `One parameter: ${data.parameter}`,
+ *   two: (data) => `Two parameters: ${data.DirectiveType}, ${data.LayerType}`
  * });
  * ```
  */
 export function match<T>(
   result: BreakdownParamsResult,
   handlers: {
-    success: (data: TwoParams_Result) => T;
-    failure: (error: Error) => T;
+    zero: () => T;
+    one: (data: { readonly parameter: string }) => T;
+    two: (data: TwoParams_Result) => T;
   },
 ): T {
   switch (result.type) {
-    case "success":
-      return handlers.success(result.data);
-    case "failure":
-      return handlers.failure(result.error);
+    case "zero":
+      return handlers.zero();
+    case "one":
+      return handlers.one(result.data);
+    case "two":
+      return handlers.two(result.data);
     default: {
       // Exhaustiveness check - ensures all cases are handled
       const _exhaustive: never = result;
       throw new Error(`Unhandled case: ${JSON.stringify(_exhaustive)}`);
     }
   }
+}
+
+// Legacy compatibility functions for backward compatibility
+/**
+ * @deprecated Use isTwo() instead
+ */
+export function isSuccess(
+  result: BreakdownParamsResult,
+): result is BreakdownParamsResultTwo {
+  return result.type === "two";
+}
+
+/**
+ * @deprecated Use isZero() or isOne() instead
+ */
+export function isFailure(
+  result: BreakdownParamsResult,
+): result is BreakdownParamsResultZero | BreakdownParamsResultOne {
+  return result.type === "zero" || result.type === "one";
+}
+
+/**
+ * @deprecated Use two() instead
+ */
+export function success(
+  data: TwoParams_Result,
+): BreakdownParamsResultTwo {
+  return two(data);
+}
+
+/**
+ * @deprecated Use zero() instead
+ */
+export function failure(
+  _error: Error,
+): BreakdownParamsResultZero {
+  return zero();
 }
