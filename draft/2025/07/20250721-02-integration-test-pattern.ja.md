@@ -63,12 +63,12 @@
 - ランダム文字列生成: 
   - DirectiveType: 3-8文字のランダム英数字
   - LayerType: 3-8文字のランダム英数字
-  - fromLayerType: 3-8文字のランダム英数字（-i オプションで指定）
+  - fromLayerType: 3-8文字のランダム英数字（-i= オプションで指定）
 - テストケース数: 最低10パターン以上
 - テスト用ファイル管理:
   - テスト実行前: 対応するプロンプトテンプレートファイルを動的作成
     * パス: `prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md`
-    * CLI: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
+    * CLI: `breakdown {DirectiveType} {LayerType} -i={fromLayerType}`
   - テスト実行中: 完全な処理フローを検証
   - テスト完了後: 作成したテンプレートファイルを削除
 - 成功判定基準:
@@ -84,7 +84,7 @@
    - ランダムなDirectiveType/LayerType/fromLayerTypeトリプレットの生成
    - テスト用プロンプトテンプレートファイルの動的作成・削除
      * パス: `prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md`
-     * CLI: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
+     * CLI: `breakdown {DirectiveType} {LayerType} -i={fromLayerType}`
      * 内容: テスト用プロンプトテンプレート
    - runBreakdownを通したCLI経由での完全な処理フローの動作確認
    - 設定ファイルの正しい読み込み確認
@@ -114,7 +114,7 @@ prompts/
 #### ファイル名パターン
 - **基本パターン**: `f_{fromLayerType}.md`
 - **適応パターン**: `f_{fromLayerType}_{adaptation}.md`
-- **例**: `f_abc123.md` (fromLayerType="abc123", -i オプションで指定)
+- **例**: `f_abc123.md` (fromLayerType="abc123", -i= オプションで指定)
 - **適応例**: `f_abc123_strict.md` (fromLayerType="abc123", adaptation="strict")
 
 #### パス解決ルール
@@ -124,8 +124,10 @@ prompts/
 - **適応例**: `prompts/def456/xyz789/f_abc123_strict.md`
 
 #### CLI実行パターン
-- **基本**: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
-- **例**: `breakdown def456 xyz789 -i abc123`
+- **基本**: `breakdown {DirectiveType} {LayerType} -i={fromLayerType}`
+- **ファイル入力**: `breakdown {DirectiveType} {LayerType} -i={fromLayerType} -f={inputFile}`
+- **例**: `breakdown def456 xyz789 -i=abc123`
+- **ファイル例**: `breakdown def456 xyz789 -i=abc123 -f=test.md`
 - **結果**: `prompts/def456/xyz789/f_abc123.md` が読み込まれる
 
 #### 動的作成内容
@@ -137,7 +139,7 @@ This is a dynamically generated test template for:
 - LayerType: {LayerType}
 - fromLayerType: {fromLayerType}
 
-CLI Command: breakdown {DirectiveType} {LayerType} -i {fromLayerType}
+CLI Command: breakdown {DirectiveType} {LayerType} -i={fromLayerType}
 Template Path: prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md
 
 Generated at: {timestamp}
