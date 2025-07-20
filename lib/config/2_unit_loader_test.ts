@@ -12,12 +12,19 @@
 
 import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { type CustomConfig as _CustomConfig, loadConfig } from "./loader.ts";
 import { join } from "@std/path";
 import { ensureDirSync } from "@std/fs";
 
-const _logger = new BreakdownLogger("loader-unit");
+// Conditional logger initialization with fallback
+let _logger: { debug: (msg: string) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  _logger = new BreakdownLogger("loader-unit");
+} catch {
+  // Fallback when --allow-env is not available
+  _logger = { debug: () => {} };
+}
 
 describe("Unit: loadConfig YAML File Loading", () => {
   const testDir = Deno.makeTempDirSync();

@@ -12,10 +12,17 @@
 
 import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import * as mod from "./mod.ts";
 
-const logger = new BreakdownLogger("mod-architecture");
+// Conditional logger initialization with fallback
+let logger: { debug: (_msg: string, _obj?: unknown) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("mod-architecture");
+} catch {
+  // Fallback when --allow-env is not available
+  logger = { debug: (_msg: string, _obj?: unknown) => {} };
+}
 
 describe("Architecture: Commands Module Structure", () => {
   it("should export required public interfaces", () => {

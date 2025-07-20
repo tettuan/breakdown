@@ -12,14 +12,21 @@
 
 import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   PromptFileErrorType as _PromptFileErrorType,
   PromptFileGenerator,
 } from "./prompt_file_generator.ts";
 import type { CommandResult as _CommandResult } from "./mod.ts";
 
-const logger = new BreakdownLogger("prompt-generator-structure");
+// Conditional logger initialization with fallback
+let logger: { debug: (_msg: string, _obj?: unknown) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("prompt-generator-structure");
+} catch {
+  // Fallback when --allow-env is not available
+  logger = { debug: (_msg: string, _obj?: unknown) => {} };
+}
 
 describe("Structure: PromptFileGenerator Method Contracts", () => {
   it("should maintain validateInputFile contract", () => {

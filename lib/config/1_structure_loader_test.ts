@@ -12,14 +12,21 @@
 
 import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigLoader, type CustomConfig } from "./loader.ts";
 
 // Create function aliases for backward compatibility with tests
 const loadConfig = ConfigLoader.loadConfig.bind(ConfigLoader);
 const loadBreakdownConfig = ConfigLoader.loadBreakdownConfig.bind(ConfigLoader);
 
-const _logger = new BreakdownLogger("loader-structure");
+// Conditional logger initialization with fallback
+let _logger: { debug: (msg: string) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  _logger = new BreakdownLogger("loader-structure");
+} catch {
+  // Fallback when --allow-env is not available
+  _logger = { debug: () => {} };
+}
 
 describe("Structure: loadConfig Function Contract", () => {
   it("should accept string file path and return CustomConfig", async () => {

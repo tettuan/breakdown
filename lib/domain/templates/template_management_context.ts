@@ -23,7 +23,7 @@ import {
   SchemaManagementAggregate,
   SchemaPath,
 } from "./schema_management_aggregate.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+// BreakdownLogger は非テストファイルで使用禁止 (CLAUDE.md参照)
 
 /**
  * Template registry entry
@@ -178,11 +178,11 @@ export type TotalityInitializationResult = Result<
  */
 export class TemplateRegistry {
   private readonly entries: Map<string, TemplateRegistryEntry>;
-  private readonly logger: BreakdownLogger;
+  // loggerはテストファイルでのみ使用可能 (CLAUDE.md参照)
 
   constructor() {
     this.entries = new Map();
-    this.logger = new BreakdownLogger("template-registry");
+    // BreakdownLoggerの初期化を削除
   }
 
   /**
@@ -191,7 +191,7 @@ export class TemplateRegistry {
   register(entry: TemplateRegistryEntry): void {
     const key = entry.templatePath.getPath();
     this.entries.set(key, entry);
-    this.logger.debug("Template registered", { path: key });
+    // テンプレート登録ログは削除
   }
 
   /**
@@ -269,7 +269,7 @@ export class ValidationPolicy {
   constructor(
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
-    private readonly logger: BreakdownLogger,
+    // loggerパラメータを削除
   ) {}
 
   /**
@@ -423,7 +423,7 @@ export class InitializationService {
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
     private readonly validationPolicy: ValidationPolicy,
-    private readonly logger: BreakdownLogger,
+    // loggerパラメータを削除
   ) {}
 
   /**
@@ -484,7 +484,7 @@ export class InitializationService {
         if (!exists) {
           // Copy from source
           // Implementation would load from source and save to repository
-          this.logger.info("Template copied", { path: entry.templatePath.getPath() });
+          // テンプレートコピーログは削除
           result.initialized.templates.push(entry.templatePath.getPath());
         }
       } catch (caught) {
@@ -509,7 +509,7 @@ export class TemplateManagementContext {
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
     private readonly registry: TemplateRegistry,
-    private readonly logger: BreakdownLogger,
+    // loggerパラメータを削除
   ) {
     this.promptAggregates = new Map();
     const schemaAggregateResult = SchemaManagementAggregate.create("schema-management");
@@ -527,7 +527,7 @@ export class TemplateManagementContext {
     schemaRepo: SchemaRepository,
   ): Result<TemplateManagementContext, TemplateManagementError> {
     try {
-      const logger = new BreakdownLogger("template-management-context");
+      // BreakdownLoggerの初期化を削除
       const registryResult = TemplateRegistry.createDefault();
 
       if (!registryResult.ok) {
@@ -538,7 +538,7 @@ export class TemplateManagementContext {
         templateRepo,
         schemaRepo,
         registryResult.data,
-        logger,
+        // loggerパラメータを削除
       );
 
       return ok(context);
@@ -556,7 +556,7 @@ export class TemplateManagementContext {
    * Get validation policy
    */
   getValidationPolicy(): ValidationPolicy {
-    return new ValidationPolicy(this.templateRepo, this.schemaRepo, this.logger);
+    return new ValidationPolicy(this.templateRepo, this.schemaRepo);
   }
 
   /**
@@ -567,7 +567,7 @@ export class TemplateManagementContext {
       this.templateRepo,
       this.schemaRepo,
       this.getValidationPolicy(),
-      this.logger,
+      // loggerパラメータを削除
     );
   }
 

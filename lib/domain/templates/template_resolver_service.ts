@@ -19,7 +19,7 @@ import {
   TemplateId as _TemplateId,
   TemplateVersion,
 } from "./template_value_objects.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+// BreakdownLogger は非テストファイルで使用禁止 (CLAUDE.md参照)
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
@@ -461,7 +461,7 @@ export class FallbackStrategy implements ResolutionStrategy {
  */
 export class TemplateResolverService {
   private readonly strategies: ResolutionStrategy[];
-  private readonly logger: BreakdownLogger;
+  // loggerはテストファイルでのみ使用可能 (CLAUDE.md参照)
 
   constructor(
     private readonly templateRepo: TemplateRepository,
@@ -469,7 +469,7 @@ export class TemplateResolverService {
     private readonly config?: BreakdownConfig,
     strategies?: ResolutionStrategy[],
   ) {
-    this.logger = new BreakdownLogger("template-resolver-service");
+    // BreakdownLoggerの初期化を削除
     this.strategies = strategies || this.createDefaultStrategies();
 
     // Sort strategies by priority (highest first)
@@ -488,11 +488,7 @@ export class TemplateResolverService {
    * Resolve template and schema for given request
    */
   async resolve(request: TemplateResolutionRequest): Promise<TemplateResolutionResult> {
-    this.logger.debug("Starting template resolution", {
-      directive: request.directive.value,
-      layer: request.layer.value,
-      options: request.options,
-    });
+    // デバッグログは削除 (BreakdownLoggerはテストファイルでのみ使用可能)
 
     const errors: string[] = [];
 
@@ -503,20 +499,12 @@ export class TemplateResolverService {
       }
 
       try {
-        this.logger.debug("Trying resolution strategy", {
-          strategy: strategy.constructor.name,
-          priority: strategy.getPriority(),
-        });
+        // 戦略実行ログは削除
 
         const result = await strategy.resolve(request, this.templateRepo, this.schemaRepo);
 
         if (result.ok) {
-          this.logger.info("Template resolved successfully", {
-            strategy: strategy.constructor.name,
-            templatePath: result.data.resolvedPath.getPath(),
-            schemaPath: result.data.schemaPath?.getPath(),
-            fallbackUsed: result.data.fallbackUsed,
-          });
+          // 成功ログは削除
           return result;
         } else {
           errors.push(`${strategy.constructor.name}: ${result.error.message}`);
@@ -524,15 +512,12 @@ export class TemplateResolverService {
       } catch (catchError) {
         const errorMessage = catchError instanceof Error ? catchError.message : String(catchError);
         errors.push(`${strategy.constructor.name}: ${errorMessage}`);
-        this.logger.error("Strategy failed", {
-          strategy: strategy.constructor.name,
-          error: errorMessage,
-        });
+        // エラーログは削除
       }
     }
 
     // All strategies failed
-    this.logger.error("All resolution strategies failed", { errors });
+    // 全戦略失敗ログは削除
     return error({
       type: "template_not_found",
       message: `Failed to resolve template: ${errors.join("; ")}`,

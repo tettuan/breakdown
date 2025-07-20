@@ -16,13 +16,30 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "./two_params_optimized.ts";
 import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 import { DirectiveType } from "../value_objects/directive_type.ts";
 import { LayerType } from "../value_objects/layer_type.ts";
 
-const logger = new BreakdownLogger("two-params-aggregate");
+// BreakdownLogger usage - conditional to support test runs without --allow-env
+let logger: {
+  debug: (_msg: string, _obj?: unknown) => void;
+  info: (_msg: string, _obj?: unknown) => void;
+  warn: (_msg: string, _obj?: unknown) => void;
+  error: (_msg: string, _obj?: unknown) => void;
+} | null = null;
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("two-params-aggregate");
+} catch {
+  // Fallback for tests without --allow-env
+  logger = {
+    debug: (_msg: string, _obj?: unknown) => {},
+    info: (_msg: string, _obj?: unknown) => {},
+    warn: (_msg: string, _obj?: unknown) => {},
+    error: (_msg: string, _obj?: unknown) => {},
+  };
+}
 
 // ============================================================================
 // Core DDD Tests
@@ -33,7 +50,7 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
 
   describe("Smart Constructor Pattern", () => {
     it("should create valid TwoParams with standard values", () => {
-      logger.debug("Testing Smart Constructor with standard values");
+      logger?.debug("Testing Smart Constructor with standard values");
 
       const result = TwoParams.create("to", "task", profile);
 
@@ -44,11 +61,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(result.data.profile.value, "default");
       }
 
-      logger.debug("Smart Constructor test completed");
+      logger?.debug("Smart Constructor test completed");
     });
 
     it("should validate directive and layer combination", () => {
-      logger.debug("Testing directive and layer combination validation");
+      logger?.debug("Testing directive and layer combination validation");
 
       const validCombinations = [
         { directive: "to", layer: "task" },
@@ -61,11 +78,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(result.ok, true, `Should accept ${combo.directive} + ${combo.layer}`);
       }
 
-      logger.debug("Combination validation test completed");
+      logger?.debug("Combination validation test completed");
     });
 
     it("should handle invalid directive", () => {
-      logger.debug("Testing invalid directive handling");
+      logger?.debug("Testing invalid directive handling");
 
       const result = TwoParams.create("invalid_directive", "task", profile);
 
@@ -77,11 +94,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         }
       }
 
-      logger.debug("Invalid directive test completed");
+      logger?.debug("Invalid directive test completed");
     });
 
     it("should handle invalid layer", () => {
-      logger.debug("Testing invalid layer handling");
+      logger?.debug("Testing invalid layer handling");
 
       const result = TwoParams.create("to", "INVALID_LAYER", profile);
 
@@ -93,13 +110,13 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         }
       }
 
-      logger.debug("Invalid layer test completed");
+      logger?.debug("Invalid layer test completed");
     });
   });
 
   describe("CLI Integration", () => {
     it("should create TwoParams with CLI option", () => {
-      logger.debug("Testing CLI option integration");
+      logger?.debug("Testing CLI option integration");
 
       const result = TwoParams.createWithCliOption("to", "task", null);
 
@@ -108,11 +125,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(result.data.profile.value, "default");
       }
 
-      logger.debug("CLI option test completed");
+      logger?.debug("CLI option test completed");
     });
 
     it("should create TwoParams with custom profile", () => {
-      logger.debug("Testing custom profile");
+      logger?.debug("Testing custom profile");
 
       const result = TwoParams.createWithCliOption("to", "task", "custom");
 
@@ -121,13 +138,13 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(result.data.profile.value, "custom");
       }
 
-      logger.debug("Custom profile test completed");
+      logger?.debug("Custom profile test completed");
     });
   });
 
   describe("Domain Behavior", () => {
     it("should generate BreakdownCommand", () => {
-      logger.debug("Testing BreakdownCommand generation");
+      logger?.debug("Testing BreakdownCommand generation");
 
       const result = TwoParams.create("to", "task", profile);
       assertEquals(result.ok, true);
@@ -141,11 +158,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertExists(command.timestamp);
       }
 
-      logger.debug("BreakdownCommand generation test completed");
+      logger?.debug("BreakdownCommand generation test completed");
     });
 
     it("should resolve prompt file paths", () => {
-      logger.debug("Testing prompt file path resolution");
+      logger?.debug("Testing prompt file path resolution");
 
       const result = TwoParams.create("to", "task", profile);
       assertEquals(result.ok, true);
@@ -155,11 +172,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(path, "prompts/to/task/f_issue.md");
       }
 
-      logger.debug("Prompt path resolution test completed");
+      logger?.debug("Prompt path resolution test completed");
     });
 
     it("should resolve schema file paths", () => {
-      logger.debug("Testing schema file path resolution");
+      logger?.debug("Testing schema file path resolution");
 
       const result = TwoParams.create("to", "task", profile);
       assertEquals(result.ok, true);
@@ -169,11 +186,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(path, "schemas/to/task/task.json");
       }
 
-      logger.debug("Schema path resolution test completed");
+      logger?.debug("Schema path resolution test completed");
     });
 
     it("should provide PromptPath and SchemaPath objects", () => {
-      logger.debug("Testing path object generation");
+      logger?.debug("Testing path object generation");
 
       const result = TwoParams.create("to", "task", profile);
       assertEquals(result.ok, true);
@@ -190,13 +207,13 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(schemaPath.layer, "task");
       }
 
-      logger.debug("Path object generation test completed");
+      logger?.debug("Path object generation test completed");
     });
   });
 
   describe("Equality and Comparison", () => {
     it("should compare TwoParams instances correctly", () => {
-      logger.debug("Testing TwoParams equality");
+      logger?.debug("Testing TwoParams equality");
 
       const result1 = TwoParams.create("to", "task", profile);
       const result2 = TwoParams.create("to", "task", profile);
@@ -211,11 +228,11 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         assertEquals(result1.data.equals(result3.data), false);
       }
 
-      logger.debug("Equality test completed");
+      logger?.debug("Equality test completed");
     });
 
     it("should provide string representations", () => {
-      logger.debug("Testing string representations");
+      logger?.debug("Testing string representations");
 
       const result = TwoParams.create("to", "task", profile);
       assertEquals(result.ok, true);
@@ -228,7 +245,7 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
         );
       }
 
-      logger.debug("String representation test completed");
+      logger?.debug("String representation test completed");
     });
   });
 });
@@ -279,7 +296,7 @@ describe("TwoParams - Flexible Pattern Support", () => {
 
   describe("Hash-like character support", () => {
     it("should support predefined hash-like combinations", () => {
-      logger.debug("Testing predefined hash-like combinations with DDD TwoParams");
+      logger?.debug("Testing predefined hash-like combinations with DDD TwoParams");
 
       // Test with actual DDD TwoParams for combinations that would work
       const basicCombinations = [
@@ -297,11 +314,11 @@ describe("TwoParams - Flexible Pattern Support", () => {
         );
       }
 
-      logger.debug("Hash-like combinations test completed");
+      logger?.debug("Hash-like combinations test completed");
     });
 
     it("should validate flexible patterns in theory", () => {
-      logger.debug("Testing flexible pattern validation logic");
+      logger?.debug("Testing flexible pattern validation logic");
 
       // Test the flexible pattern matching function
       for (const directive of VALID_HASH_DIRECTIVES) {
@@ -320,11 +337,11 @@ describe("TwoParams - Flexible Pattern Support", () => {
         );
       }
 
-      logger.debug("Flexible pattern validation test completed");
+      logger?.debug("Flexible pattern validation test completed");
     });
 
     it("should handle pattern boundary cases", () => {
-      logger.debug("Testing pattern boundary cases");
+      logger?.debug("Testing pattern boundary cases");
 
       const boundaryTestCases = [
         { value: "a1", shouldMatch: true, description: "minimum length (2 chars)" },
@@ -347,13 +364,13 @@ describe("TwoParams - Flexible Pattern Support", () => {
         );
       }
 
-      logger.debug("Boundary cases test completed");
+      logger?.debug("Boundary cases test completed");
     });
   });
 
   describe("Performance and stress testing", () => {
     it("should handle multiple TwoParams creations efficiently", () => {
-      logger.debug("Testing TwoParams creation performance");
+      logger?.debug("Testing TwoParams creation performance");
 
       const startTime = Date.now();
       const iterations = 1000;
@@ -367,7 +384,7 @@ describe("TwoParams - Flexible Pattern Support", () => {
       }
 
       const duration = Date.now() - startTime;
-      logger.debug(`Completed ${iterations} TwoParams creations in ${duration}ms`);
+      logger?.debug(`Completed ${iterations} TwoParams creations in ${duration}ms`);
 
       assertEquals(successCount, iterations, "All creations should succeed");
       assertEquals(
@@ -376,11 +393,11 @@ describe("TwoParams - Flexible Pattern Support", () => {
         `Performance test should complete within 5 seconds, took ${duration}ms`,
       );
 
-      logger.debug("Performance test completed");
+      logger?.debug("Performance test completed");
     });
 
     it("should handle random validation scenarios efficiently", () => {
-      logger.debug("Testing random validation performance");
+      logger?.debug("Testing random validation performance");
 
       const validDirectives = ["to", "summary", "defect"];
       const validLayers = ["project", "issue", "task"];
@@ -407,8 +424,8 @@ describe("TwoParams - Flexible Pattern Support", () => {
       }
 
       const duration = Date.now() - startTime;
-      logger.debug(`Completed ${iterations} random validations in ${duration}ms`);
-      logger.debug(`Results - Valid: ${validCount}, Invalid: ${invalidCount}`);
+      logger?.debug(`Completed ${iterations} random validations in ${duration}ms`);
+      logger?.debug(`Results - Valid: ${validCount}, Invalid: ${invalidCount}`);
 
       assertEquals(validCount + invalidCount, iterations, "Should process all iterations");
       // Allow for some realistic validation failures - not all combinations may be valid
@@ -423,11 +440,11 @@ describe("TwoParams - Flexible Pattern Support", () => {
         `Random validation should complete within 3 seconds, took ${duration}ms`,
       );
 
-      logger.debug("Random validation performance test completed");
+      logger?.debug("Random validation performance test completed");
     });
 
     it("should handle edge case validation scenarios", () => {
-      logger.debug("Testing edge case validation scenarios");
+      logger?.debug("Testing edge case validation scenarios");
 
       const edgeCases = [
         // Valid cases
@@ -472,12 +489,14 @@ describe("TwoParams - Flexible Pattern Support", () => {
         }
       }
 
-      logger.debug(`Edge cases - Expected valid: ${validCount}, Expected invalid: ${invalidCount}`);
-      logger.debug("Edge case validation test completed");
+      logger?.debug(
+        `Edge cases - Expected valid: ${validCount}, Expected invalid: ${invalidCount}`,
+      );
+      logger?.debug("Edge case validation test completed");
     });
 
     it("should handle stress testing with validation", () => {
-      logger.debug("Starting stress testing with validation");
+      logger?.debug("Starting stress testing with validation");
 
       let validCount = 0;
       let invalidCount = 0;
@@ -502,13 +521,13 @@ describe("TwoParams - Flexible Pattern Support", () => {
         }
       }
 
-      logger.debug(`Stress test results - Valid: ${validCount}, Invalid: ${invalidCount}`);
+      logger?.debug(`Stress test results - Valid: ${validCount}, Invalid: ${invalidCount}`);
 
       assertEquals(validCount > 0, true, "Should have some valid cases");
       assertEquals(invalidCount > 0, true, "Should have some invalid cases");
       assertEquals(validCount + invalidCount, 500, "Should process all cases");
 
-      logger.debug("Stress testing completed");
+      logger?.debug("Stress testing completed");
     });
   });
 });
@@ -520,7 +539,7 @@ describe("TwoParams - Flexible Pattern Support", () => {
 describe("TwoParams - Configuration Structure Validation", () => {
   describe("DirectiveType and LayerType consistency", () => {
     it("should validate DirectiveType values consistency", () => {
-      logger.debug("Testing DirectiveType values consistency");
+      logger?.debug("Testing DirectiveType values consistency");
 
       const expectedDirectives = ["to", "summary", "defect"];
 
@@ -533,11 +552,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
         );
       }
 
-      logger.debug("DirectiveType consistency test completed");
+      logger?.debug("DirectiveType consistency test completed");
     });
 
     it("should validate LayerType values consistency", () => {
-      logger.debug("Testing LayerType values consistency");
+      logger?.debug("Testing LayerType values consistency");
 
       const expectedLayers = ["project", "issue", "task", "bugs"];
 
@@ -550,11 +569,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
         );
       }
 
-      logger.debug("LayerType consistency test completed");
+      logger?.debug("LayerType consistency test completed");
     });
 
     it("should validate symmetric behavior between DirectiveType and LayerType", () => {
-      logger.debug("Testing symmetric behavior");
+      logger?.debug("Testing symmetric behavior");
 
       const profile = ConfigProfileName.createDefault();
 
@@ -569,13 +588,13 @@ describe("TwoParams - Configuration Structure Validation", () => {
         assertEquals(layerResult.ok, false, `LayerType should reject: ${invalidValue}`);
       }
 
-      logger.debug("Symmetric behavior test completed");
+      logger?.debug("Symmetric behavior test completed");
     });
   });
 
   describe("TwoParams validation consistency", () => {
     it("should maintain validation consistency across multiple creations", () => {
-      logger.debug("Testing validation consistency");
+      logger?.debug("Testing validation consistency");
 
       const profile = ConfigProfileName.createDefault();
       const testCases = [
@@ -612,11 +631,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
         );
       }
 
-      logger.debug("Validation consistency test completed");
+      logger?.debug("Validation consistency test completed");
     });
 
     it("should validate profile option handling", () => {
-      logger.debug("Testing profile option handling");
+      logger?.debug("Testing profile option handling");
 
       // Test with different profile scenarios
       const profileScenarios = [
@@ -638,13 +657,13 @@ describe("TwoParams - Configuration Structure Validation", () => {
         }
       }
 
-      logger.debug("Profile option handling test completed");
+      logger?.debug("Profile option handling test completed");
     });
   });
 
   describe("Cross-domain validation", () => {
     it("should validate directive-layer combination compatibility", () => {
-      logger.debug("Testing directive-layer compatibility");
+      logger?.debug("Testing directive-layer compatibility");
 
       const profile = ConfigProfileName.createDefault();
       const allDirectives = ["to", "summary", "defect"];
@@ -662,11 +681,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
         }
       }
 
-      logger.debug("Directive-layer compatibility test completed");
+      logger?.debug("Directive-layer compatibility test completed");
     });
 
     it("should maintain object immutability", () => {
-      logger.debug("Testing object immutability");
+      logger?.debug("Testing object immutability");
 
       const result = TwoParams.create("to", "task", ConfigProfileName.createDefault());
       assertEquals(result.ok, true);
@@ -688,7 +707,7 @@ describe("TwoParams - Configuration Structure Validation", () => {
         assertEquals(twoParams.profile.value, originalProfile);
       }
 
-      logger.debug("Object immutability test completed");
+      logger?.debug("Object immutability test completed");
     });
   });
 });
@@ -702,7 +721,7 @@ describe("TwoParams - Integration Scenarios", () => {
 
   describe("End-to-end workflow", () => {
     it("should support complete workflow from creation to path resolution", () => {
-      logger.debug("Testing complete workflow");
+      logger?.debug("Testing complete workflow");
 
       // Step 1: Create TwoParams
       const result = TwoParams.create("to", "task", profile);
@@ -739,13 +758,13 @@ describe("TwoParams - Integration Scenarios", () => {
         assertEquals(typeof schemaPathObj.resolve, "function");
       }
 
-      logger.debug("Complete workflow test completed");
+      logger?.debug("Complete workflow test completed");
     });
   });
 
   describe("Generator integration with TwoParams", () => {
     it("should support prompt generation workflow", () => {
-      logger.debug("Testing prompt generation workflow");
+      logger?.debug("Testing prompt generation workflow");
 
       // Step 1: Create TwoParams with expected generator parameters
       const result = TwoParams.create("to", "project", profile);
@@ -779,11 +798,11 @@ describe("TwoParams - Integration Scenarios", () => {
         assertEquals(command.layer, "project");
       }
 
-      logger.debug("Prompt generation workflow test completed");
+      logger?.debug("Prompt generation workflow test completed");
     });
 
     it("should support complex variable processing", () => {
-      logger.debug("Testing complex variable processing");
+      logger?.debug("Testing complex variable processing");
 
       const result = TwoParams.create("to", "project", profile);
       assertEquals(result.ok, true);
@@ -833,11 +852,11 @@ describe("TwoParams - Integration Scenarios", () => {
         );
       }
 
-      logger.debug("Complex variable processing test completed");
+      logger?.debug("Complex variable processing test completed");
     });
 
     it("should handle factory integration scenarios", () => {
-      logger.debug("Testing factory integration scenarios");
+      logger?.debug("Testing factory integration scenarios");
 
       // Test multiple TwoParams creation for factory-like scenarios
       const testCases = [
@@ -884,13 +903,13 @@ describe("TwoParams - Integration Scenarios", () => {
         }
       }
 
-      logger.debug("Factory integration scenarios test completed");
+      logger?.debug("Factory integration scenarios test completed");
     });
   });
 
   describe("Error propagation integration", () => {
     it("should propagate validation errors correctly", () => {
-      logger.debug("Testing error propagation");
+      logger?.debug("Testing error propagation");
 
       const errorScenarios = [
         { directive: "invalid", layer: "task", expectedError: "InvalidDirective" },
@@ -920,11 +939,11 @@ describe("TwoParams - Integration Scenarios", () => {
         }
       }
 
-      logger.debug("Error propagation test completed");
+      logger?.debug("Error propagation test completed");
     });
 
     it("should handle profile-related errors", () => {
-      logger.debug("Testing profile error handling");
+      logger?.debug("Testing profile error handling");
 
       // Test CLI integration error scenarios
       const profileScenarios = [
@@ -949,7 +968,7 @@ describe("TwoParams - Integration Scenarios", () => {
         }
       }
 
-      logger.debug("Profile error handling test completed");
+      logger?.debug("Profile error handling test completed");
     });
   });
 });

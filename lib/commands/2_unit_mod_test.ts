@@ -12,7 +12,6 @@
 
 import { assertEquals, assertExists, assertRejects as _assertRejects } from "../deps.ts";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   type CommandResult as _CommandResult,
   displayHelp,
@@ -22,7 +21,15 @@ import {
   initWorkspace,
 } from "./mod.ts";
 
-const logger = new BreakdownLogger("mod-unit");
+// Conditional logger initialization with fallback
+let logger: { debug: (_msg: string, _obj?: unknown) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("mod-unit");
+} catch {
+  // Fallback when --allow-env is not available
+  logger = { debug: (_msg: string, _obj?: unknown) => {} };
+}
 
 describe("Unit: initWorkspace Function", () => {
   let tempDir: string;

@@ -12,14 +12,21 @@
 
 import { assertEquals, assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { PromptFileErrorType, PromptFileGenerator } from "./prompt_file_generator.ts";
 
-const logger = new BreakdownLogger("prompt-generator-architecture");
+// Conditional logger initialization with fallback
+let logger: { debug: (_msg: string, _obj?: unknown) => void };
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("prompt-generator-architecture");
+} catch {
+  // Fallback when --allow-env is not available
+  logger = { debug: (_msg: string, _obj?: unknown) => {} };
+}
 
 describe("Architecture: PromptFileGenerator Class Structure", () => {
   it("should export required public interfaces", () => {
-    logger.debug("Testing module exports");
+    // logger.debug("Testing module exports");
 
     // Required class export
     assertExists(PromptFileGenerator, "PromptFileGenerator class must be exported");
@@ -39,11 +46,11 @@ describe("Architecture: PromptFileGenerator Class Structure", () => {
     );
     assertExists(PromptFileErrorType.Unknown, "Unknown error type must exist");
 
-    logger.debug("Module exports verification completed");
+    // logger.debug("Module exports verification completed");
   });
 
   it("should maintain proper class method boundaries", () => {
-    logger.debug("Testing class method boundaries");
+    // logger.debug("Testing class method boundaries");
 
     const generator = new PromptFileGenerator();
 

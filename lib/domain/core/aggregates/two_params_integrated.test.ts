@@ -15,11 +15,28 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "./two_params_optimized.ts";
 import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
-const logger = new BreakdownLogger("two-params-integrated-test");
+// BreakdownLogger usage - conditional to support test runs without --allow-env
+let logger: {
+  debug: (_msg: string, _obj?: unknown) => void;
+  info: (_msg: string, _obj?: unknown) => void;
+  warn: (_msg: string, _obj?: unknown) => void;
+  error: (_msg: string, _obj?: unknown) => void;
+} | null = null;
+try {
+  const { BreakdownLogger } = await import("@tettuan/breakdownlogger");
+  logger = new BreakdownLogger("two-params-integrated-test");
+} catch {
+  // Fallback for tests without --allow-env
+  logger = {
+    debug: (_msg: string, _obj?: unknown) => {},
+    info: (_msg: string, _obj?: unknown) => {},
+    warn: (_msg: string, _obj?: unknown) => {},
+    error: (_msg: string, _obj?: unknown) => {},
+  };
+}
 
 // ============================================================================
 // Rule-based Test Data (migrated from 1_behavior_two_params_test.ts)
@@ -51,7 +68,7 @@ const VALID_COMBINATIONS = [
 
 describe("TwoParams Integrated - Basic Functionality", () => {
   it("should create valid TwoParams with standard combinations", () => {
-    logger.debug("Testing standard valid combinations");
+    logger?.debug("Testing standard valid combinations");
 
     for (const combo of VALID_COMBINATIONS) {
       const profile = ConfigProfileName.createDefault();
@@ -72,7 +89,7 @@ describe("TwoParams Integrated - Basic Functionality", () => {
   });
 
   it("should reject invalid directive values", () => {
-    logger.debug("Testing invalid directive rejection");
+    logger?.debug("Testing invalid directive rejection");
 
     const invalidDirectives = ["INVALID", "", "   ", "toolong".repeat(10)];
 
@@ -89,7 +106,7 @@ describe("TwoParams Integrated - Basic Functionality", () => {
   });
 
   it("should reject invalid layer values", () => {
-    logger.debug("Testing invalid layer rejection");
+    logger?.debug("Testing invalid layer rejection");
 
     const invalidLayers = ["INVALID", "", "   ", "toolong".repeat(10)];
 
@@ -112,7 +129,7 @@ describe("TwoParams Integrated - Basic Functionality", () => {
 
 describe("TwoParams Integrated - Edge Cases", () => {
   it("should handle boundary length values correctly", () => {
-    logger.debug("Testing boundary length validation");
+    logger?.debug("Testing boundary length validation");
 
     const profile = ConfigProfileName.createDefault();
 
@@ -128,7 +145,7 @@ describe("TwoParams Integrated - Edge Cases", () => {
   });
 
   it("should handle whitespace validation consistently", () => {
-    logger.debug("Testing whitespace validation");
+    logger?.debug("Testing whitespace validation");
 
     const profile = ConfigProfileName.createDefault();
 
@@ -154,7 +171,7 @@ describe("TwoParams Integrated - Edge Cases", () => {
   });
 
   it("should handle null and undefined inputs gracefully", () => {
-    logger.debug("Testing null/undefined input handling");
+    logger?.debug("Testing null/undefined input handling");
 
     const profile = ConfigProfileName.createDefault();
 
@@ -173,7 +190,7 @@ describe("TwoParams Integrated - Edge Cases", () => {
 
 describe("TwoParams Integrated - Path Resolution", () => {
   it("should resolve prompt paths correctly", () => {
-    logger.debug("Testing prompt path resolution");
+    logger?.debug("Testing prompt path resolution");
 
     const profile = ConfigProfileName.createDefault();
     const result = TwoParams.create("to", "project", profile);
@@ -191,7 +208,7 @@ describe("TwoParams Integrated - Path Resolution", () => {
   });
 
   it("should resolve schema paths correctly", () => {
-    logger.debug("Testing schema path resolution");
+    logger?.debug("Testing schema path resolution");
 
     const profile = ConfigProfileName.createDefault();
     const result = TwoParams.create("summary", "issue", profile);
@@ -209,7 +226,7 @@ describe("TwoParams Integrated - Path Resolution", () => {
   });
 
   it("should generate command structures correctly", () => {
-    logger.debug("Testing command structure generation");
+    logger?.debug("Testing command structure generation");
 
     const profile = ConfigProfileName.createDefault();
     const result = TwoParams.create("defect", "bugs", profile);
@@ -234,7 +251,7 @@ describe("TwoParams Integrated - Path Resolution", () => {
 
 describe("TwoParams Integrated - Error Handling", () => {
   it("should provide discriminated union error types", () => {
-    logger.debug("Testing error type discrimination");
+    logger?.debug("Testing error type discrimination");
 
     const profile = ConfigProfileName.createDefault();
 
@@ -271,7 +288,7 @@ describe("TwoParams Integrated - Error Handling", () => {
   });
 
   it("should handle unsupported combinations gracefully", () => {
-    logger.debug("Testing unsupported combination handling");
+    logger?.debug("Testing unsupported combination handling");
 
     const profile = ConfigProfileName.createDefault();
 
@@ -293,7 +310,7 @@ describe("TwoParams Integrated - Error Handling", () => {
 
 describe("TwoParams Integrated - Performance", () => {
   it("should handle repeated creation efficiently", () => {
-    logger.debug("Testing repeated creation performance");
+    logger?.debug("Testing repeated creation performance");
 
     const profile = ConfigProfileName.createDefault();
     const startTime = Date.now();
@@ -319,7 +336,7 @@ describe("TwoParams Integrated - Performance", () => {
   });
 
   it("should maintain immutability across operations", () => {
-    logger.debug("Testing immutability properties");
+    logger?.debug("Testing immutability properties");
 
     const profile = ConfigProfileName.createDefault();
     const result = TwoParams.create("to", "project", profile);
