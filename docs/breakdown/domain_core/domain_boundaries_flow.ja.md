@@ -77,294 +77,127 @@ graph TB
 
 ## 第2章：バリューオブジェクト設計
 
-### コアバリューオブジェクト
+### 共通型定義
 
 ```typescript
 // =============================================================================
-// Domain Value Objects - ドメイン固有の値オブジェクト
+// 共通型システム（全域性原則に基づく）
 // =============================================================================
 
-/**
- * DirectiveType - 処理方向を表すバリューオブジェクト
- */
-type DirectiveType = {
-  readonly value: string;
-  readonly validatedByPattern: boolean;
+// 共通エラー型（ValidationError）
+type ValidationError = 
+  | { kind: "PatternMismatch"; value: string; pattern: string }
+  | { kind: "EmptyInput" }
+  | { kind: "InvalidPath"; path: string }
+  | { kind: "FileNotFound"; path: string };
+
+// Result型によるエラー値化
+type Result<T, E> = { ok: true; data: T } | { ok: false; error: E & { message: string } };
+
+// Smart Constructor基底クラス
+abstract class ValidatedValue<T> {
+  protected constructor(readonly value: T) {}
+  static create<T>(input: T, validator: (input: T) => ValidationError | null): Result<ValidatedValue<T>, ValidationError & { message: string }> {
+    const error = validator(input);
+    return error 
+      ? { ok: false, error: { ...error, message: this.getErrorMessage(error) } }
+      : { ok: true, data: new this(input) };
+  }
   
-  // ドメイン操作
-  equals(other: DirectiveType): boolean;
-  toString(): string;
+  private static getErrorMessage(error: ValidationError): string {
+    switch (error.kind) {
+      case "PatternMismatch": return `"${error.value}" does not match pattern ${error.pattern}`;
+      case "EmptyInput": return "Input cannot be empty";
+      case "InvalidPath": return `Invalid path: ${error.path}`;
+      case "FileNotFound": return `File not found: ${error.path}`;
+    }
+  }
+}
+```
+
+### ドメインバリューオブジェクト
+
+```typescript
+// JSR @tettuan/breakdownparams から受け取る検証済み値（検証ロジック不要）
+class DirectiveType {
+  readonly source = "JSR_VALIDATED" as const;
+  
+  private constructor(readonly value: string) {}
+  
+  // JSR TwoParamsResult.directiveType から直接生成（検証済み）
+  static fromJSR(value: string): DirectiveType {
+    return new DirectiveType(value);
+  }
 }
 
-/**
- * LayerType - 階層を表すバリューオブジェクト
- */
-type LayerType = {
-  readonly value: string;
-  readonly validatedByPattern: boolean;
+class LayerType {
+  readonly source = "JSR_VALIDATED" as const;
   
-  // ドメイン操作
-  equals(other: LayerType): boolean;
-  toString(): string;
-}
-  // ドメイン操作
-  equals(other: LayerType): boolean;
-  toString(): string;
+  private constructor(readonly value: string) {}
+  
+  // JSR TwoParamsResult.layerType から直接生成（検証済み）
+  static fromJSR(value: string): LayerType {
+    return new LayerType(value);
+  }
 }
 
-/**
- * ConfigProfileName - 設定プロファイル名を表すバリューオブジェクト
- * 
- * 責務: 設定プロファイル名の管理のみ
- * ConfigProfileNameはBreakdownConfigへの「名前」としてのみ機能し、
- * DirectiveTypeやLayerTypeなどの設定値を直接返す責務は持たない
- */
-type ConfigProfileName = {
-  readonly value: string;
+// 設定プロファイル名（短寿命）
+class ConfigProfileName extends ValidatedValue<string> {
   readonly isDefault: boolean;
   
-  // 単一責務: 設定ファイルのパス解決のみ
-  getConfigPath(): string;
+  static createDefault(): ConfigProfileName { return new ConfigProfileName("default", true); }
+  static fromCliOption(option?: string): ConfigProfileName {
+    return option ? new ConfigProfileName(option, false) : this.createDefault();
+  }
   
-  // デフォルト値関連の操作
-  static createDefault(): ConfigProfileName;
-  static fromCliOption(option: string | null | undefined): ConfigProfileName;
-  
-  // 型安全な比較
-  equals(other: ConfigProfileName): boolean;
-  toString(): string;
+  private constructor(value: string, isDefault: boolean) {
+    super(value);
+    this.isDefault = isDefault;
+  }
 }
 
-/**
- * BreakdownConfig - アプリケーション設定を表すバリューオブジェクト
- * 
- * JSRパッケージから読み込まれた設定データと独自設定の統合型
- * ParamsCustomConfigとPathResolutionConfigの2つの役割に分離される
- */
+// 設定分離型（JSR検証により簡素化）
 type BreakdownConfig = {
   readonly profileName: ConfigProfileName;
+  // JSR検証済みのため、directivePatterns/layerPatternsは不要
+  readonly app_prompt: { base_dir: string; working_dir?: string };  // PATH用
+  readonly app_schema: { base_dir: string };                        // PATH用
   
-  // パラメータバリデーション用の設定値
-  readonly directivePatterns: string;      // PARAMS ドメインで使用
-  readonly layerPatterns: string;          // PARAMS ドメインで使用
-  
-  // パス解決用の設定値
-  readonly app_prompt: {                   // PATH ドメインで使用
-    readonly base_dir: string;             // プロンプトテンプレートのベースディレクトリ
-    readonly working_dir?: string;         // 作業ディレクトリ（相対パス解決用）
-  };
-  readonly app_schema: {                   // PATH ドメインで使用
-    readonly base_dir: string;             // スキーマファイルのベースディレクトリ
-  };
-  
-  // 寿命管理: BreakdownConfigは以下2つの変換後に寿命を終える
-  toParamsCustomConfig(): ParamsCustomConfig;
-  toPathResolutionConfig(): PathResolutionConfig;
+  // JSR検証済み値は追加検証不要
+  toPathConfig(): { resolvePromptPath: (d: DirectiveType, l: LayerType) => string; resolveSchemaPath: (d: DirectiveType, l: LayerType) => string };
 }
 
-/**
- * ParamsCustomConfig - パラメータバリデーション用設定
- * 
- * 役割1: CLI argsからDirectiveType/LayerType解析、オプション解析
- * 寿命: BreakdownParamsによる解析処理でのみ使用
- */
-type ParamsCustomConfig = {
-  readonly breakdown: {
-    readonly params: {
-      readonly two: {
-        readonly demonstrativeType: PatternConfig;
-        readonly layerType: PatternConfig;
-      };
-    };
-  };
-  
-  // ドメイン操作
-  validateDirective(value: string): Result<DirectiveType, ValidationError>;
-  validateLayer(value: string): Result<LayerType, ValidationError>;
-}
-
-/**
- * PathResolutionConfig - パス解決用設定
- * 
- * 役割2: workingdirやpromptパスの構成要素としてbase_dirを持つ
- * 寿命: プロンプトパス決定ドメインで継続的に使用
- */
-type PathResolutionConfig = {
-  readonly promptBaseDir: string;          // プロンプトテンプレートの基準ディレクトリ
-  readonly schemaBaseDir: string;          // スキーマファイルの基準ディレクトリ
-  readonly workingDir?: string;            // 相対パス解決時の作業ディレクトリ
-  
-  // ドメイン操作
-  resolvePromptPath(directive: DirectiveType, layer: LayerType): string;
-  resolveSchemaPath(directive: DirectiveType, layer: LayerType): string;
-  resolveWorkingPath(relativePath: string): string; // working_dir基準の相対パス解決
-}
-
-/**
- * PromptTemplatePath - プロンプトテンプレートパスを表すバリューオブジェクト
- */
-type PromptTemplatePath = {
-  readonly fullPath: string;
-  readonly status: PathResolutionStatus;
-  readonly metadata: PathResolutionMetadata;
-  
-  // ドメイン操作
-  exists(): boolean;
-  getDirectory(): string;
-  getFilename(): string;
-  toString(): string;
-}
-
-/**
- * PromptVariables - プロンプト変数を表すバリューオブジェクト
- */
-type PromptVariables = {
-  readonly inputContent: string;
-  readonly inputFilePath?: string;
-  readonly outputFilePath?: string;
-  readonly schemaContent: string;
-  readonly promptFilePath: string;
-  readonly inputSource: InputSource;
-  readonly uv: Record<string, string>;
-  
-  // ドメイン操作
-  hasInputFile(): boolean;
-  hasCustomVariables(): boolean;
-  getVariableKeys(): string[];
-  toPromptParams(): PromptParams;
-}
+// その他の型（詳細省略）
+type PromptTemplatePath = { fullPath: string; status: PathResolutionStatus };
+type PromptVariables = { inputContent: string; uv: Record<string, string>; /* 他省略 */ };
 ```
 
 ### 支援バリューオブジェクト
 
 ```typescript
-/**
- * TwoParams - 2パラメータ処理のバリューオブジェクト
- * 
- * DirectiveType/LayerTypeの検証済みの状態を保持
- * 寿命が長く、アプリケーション全体を通してプロンプト変数生成まで使用される
- */
-type TwoParams = {
-  readonly directive: DirectiveType;
-  readonly layer: LayerType;
-  
-  // ドメイン操作
-  equals(other: TwoParams): boolean;
-  toString(): string;
+// JSR TwoParamsResultから変換するヘルパー関数
+function fromTwoParamsResult(jsrResult: TwoParamsResult): TwoParams {
+  return {
+    directive: DirectiveType.fromJSR(jsrResult.directiveType),
+    layer: LayerType.fromJSR(jsrResult.layerType)
+  };
 }
-```
 
-## 第3章：ユニオン型設計
+// 2パラメータ処理（長寿命、JSR検証済み）
+type TwoParams = { directive: DirectiveType; layer: LayerType };
 
-### コマンド解析結果のユニオン型
-
-```typescript
-// =============================================================================
-// Union Types - ドメインの選択肢を表現
-// =============================================================================
-
-/**
- * BreakdownParamsResult - CLI解析結果のユニオン型
- */
+// ユニオン型（Discriminated Union）
 type BreakdownParamsResult = 
-  | { type: "zero"; data: ZeroParamsResult }
-  | { type: "one"; data: OneParamsResult }
-  | { type: "two"; data: TwoParamsResult };
+  | { type: "zero"; data: { kind: "help" | "version"; options: SystemOptions } }
+  | { type: "one"; data: { kind: "init" | "copy" | "delete"; options: ManagementOptions } }
+  | { type: "two"; data: { kind: "prompt-generation"; params: TwoParams; options: PromptVariableSource } };
 
-/**
- * ZeroParamsResult - システム情報表示のユニオン型
- */
-type ZeroParamsResult = 
-  | { kind: "help"; options: SystemOptions }
-  | { kind: "version"; options: SystemOptions };
-
-/**
- * OneParamsResult - 管理操作のユニオン型
- */
-type OneParamsResult = 
-  | { kind: "init"; options: ManagementOptions }
-  | { kind: "copy"; options: ManagementOptions }
-  | { kind: "delete"; options: ManagementOptions };
-
-/**
- * TwoParamsResult - プロンプト生成のユニオン型
- * 
- * BreakdownParamsの解析結果として生成され、
- * プロンプト変数生成ドメインまで継続的に使用される
- */
-type TwoParamsResult = {
-  kind: "prompt-generation";
-  params: TwoParams;                    // 検証済みDirectiveType/LayerType
-  options: PromptVariableSource;        // Variable Generation Layerで使用される入力ソース情報
-};
-```
-
-### パス解決結果のユニオン型
-
-```typescript
-/**
- * PathResolutionResult - パス解決結果のユニオン型
- */
-type PathResolutionResult = 
-  | { status: "found"; path: PromptTemplatePath }
-  | { status: "fallback"; path: PromptTemplatePath; reason: string }
-  | { status: "error"; error: PathResolutionError };
-
-/**
- * PathResolutionStatus - パス解決状態のユニオン型
- */
-type PathResolutionStatus = 
-  | "Found"
-  | "Fallback"
-  | "Error";
-
-/**
- * InputSource - 入力源のユニオン型
- */
-type InputSource = 
-  | "file"
-  | "stdin"
-  | "both";
-```
-
-### エラーのユニオン型
-
-```typescript
-/**
- * BreakdownError - システム全体のエラーのユニオン型
- */
+// エラー型（全域性）
 type BreakdownError = 
-  | { domain: "cli-parsing"; error: CLIParsingError }
-  | { domain: "config-management"; error: ConfigError }
-  | { domain: "prompt-path-resolution"; error: PathResolutionError }
-  | { domain: "prompt-variable-generation"; error: VariableGenerationError }
-  | { domain: "prompt-generation"; error: PromptGenerationError }
-  | { domain: "stdout-output"; error: OutputError };
-
-// 注意：以下のエラー型はアプリケーションの対象外
-// | { domain: "prompt-execution"; error: PromptExecutionError }
-// | { domain: "ai-response-processing"; error: ResponseProcessingError }
-
-/**
- * PathResolutionError - パス解決エラーのユニオン型
- */
-type PathResolutionError = 
-  | { kind: "InvalidParameterCombination"; directive: string; layer: string }
-  | { kind: "BaseDirectoryNotFound"; baseDir: string }
-  | { kind: "TemplateFileNotFound"; templatePath: string }
-  | { kind: "FallbackExhausted"; attemptedPaths: string[] };
-
-/**
- * VariableGenerationError - 変数生成エラーのユニオン型
- */
-type VariableGenerationError = 
-  | { kind: "FileNotFound"; filePath: string }
-  | { kind: "FileReadError"; filePath: string; reason: string }
-  | { kind: "STDINTimeout"; timeoutMs: number }
-  | { kind: "InvalidCustomVariable"; key: string; value: string };
+  | { domain: "cli-parsing" | "config-management" | "prompt-path-resolution" | "prompt-variable-generation" | "prompt-generation" | "stdout-output"; error: ValidationError };
 ```
 
-## 第4章：ドメイン間データフロー
+## 第3章：ドメイン間データフロー
 
 ### 完全なデータフロー図
 
@@ -778,194 +611,58 @@ flowchart TD
 
 ```typescript
 // 境界での型安全な生成（デフォルト値自動適用）
-namespace DirectiveType {
-  export function create(
-    value: string,
-    config: ParamsCustomConfig
-  ): Result<DirectiveType, InvalidDirectiveError> {
-    // バリデーション
-    if (!isValidDirective(value, config)) {
-      return Result.error({
-        kind: "InvalidDirective",
-        value,
-        validDirectives: getValidDirectives(config)
-      });
-    }
-    
-    // 成功時の生成
-    return Result.ok({
-      value,
-      validatedByPattern: true,
-      equals: (other) => other.value === value,
-      toString: () => value
-    });
-  }
-}
+## 第5章：境界の価値と設計原則
 
-namespace ConfigProfileName {
-  export function createDefault(): ConfigProfileName {
-    return {
-      value: "default",
-      isDefault: true,
-      getConfigPath: () => "./config/default-app.yml",
-      equals: (other) => other.value === "default" && other.isDefault,
-      toString: () => "default"
-    };
-  }
-  
-  export function create(value: string): ConfigProfileName {
-    return {
-      value,
-      isDefault: value === "default",
-      getConfigPath: () => value === "default" 
-        ? "./config/default-app.yml" 
-        : `./config/${value}-app.yml`,
-      equals: (other) => other.value === value,
-      toString: () => value
-    };
-  }
-  
-  export function fromCliOption(option: string | null | undefined): ConfigProfileName {
-    if (option === null || option === undefined || option === "") {
-      return ConfigProfileName.createDefault();
-    }
-    return ConfigProfileName.create(option);
-  }
-}
-```
+### JSR統合による検証済み値の活用効果
+1. **明確なアプリケーションスコープ**: JSR検証済み入力→プロンプト生成→標準出力まで（AI実行は対象外）
+2. **責務の明確化と寿命管理**: ConfigProfileName（短寿命）→BreakdownConfig（分離後終了）→TwoParams（JSR検証済み、長寿命）
+3. **型安全性の確保**: JSR検証済み + Result型 + Discriminated Union
+4. **検証ロジック削減**: DirectiveType/LayerTypeの追加検証が不要
+5. **拡張性と保守性**: ドメイン境界の明確化、変更容易性、テスト可能性
 
-### 2. Factory パターン
-
-```typescript
-// 境界での複雑な生成処理
-class PromptVariablesFactory {
-  create(
-    templatePath: PromptTemplatePath,
-    source: PromptVariableSource,
-    config: BreakdownConfig
-  ): Result<PromptVariables, VariableGenerationError> {
-    try {
-      // 段階的な変換
-      const inputProcessing = this.processInput(source);
-      const pathResolution = this.resolvePaths(source, config);
-      const schemaProcessing = this.processSchema(templatePath, source);
-      const variableIntegration = this.integrateVariables(
-        inputProcessing,
-        pathResolution,
-        schemaProcessing,
-        source
-      );
-      
-      return Result.ok(variableIntegration);
-    } catch (error) {
-      return Result.error(this.convertError(error));
-    }
-  }
-}
-```
-
-### 3. Strategy パターン
-
-```typescript
-// 境界での処理戦略の選択
-interface PathResolutionStrategy {
-  resolve(
-    option: PathResolutionOption,
-    config: BreakdownConfig
-  ): Result<PromptTemplatePath, PathResolutionError>;
-}
-
-class StandardPathResolutionStrategy implements PathResolutionStrategy {
-  resolve(
-    option: PathResolutionOption,
-    config: BreakdownConfig
-  ): Result<PromptTemplatePath, PathResolutionError> {
-    // 標準的なパス解決ロジック
-    const basePath = config.app_prompt.base_dir;
-    const directoryPath = `${basePath}/${option.directive.value}/${option.layer.value}`;
-    const fileName = this.buildFileName(option);
-    const fullPath = `${directoryPath}/${fileName}`;
-    
-    return this.validatePath(fullPath);
-  }
-}
-```
-
-## エピローグ：境界の価値
-
-このドメイン境界設計により、Breakdown CLIは以下の価値を実現します：
-
-### 1. 明確なアプリケーションスコープ
-- **範囲の明確化**: プロンプト生成から標準出力まで
-- **責務の限定**: AI実行・応答処理は対象外
-- **境界の明示**: 何を行い、何を行わないかの明確化
-
-### 2. 責務の明確化と寿命管理
-- **ConfigProfileName**: 設定ファイル名の管理のみ（短寿命）
-- **BreakdownConfig**: 2つの役割に分離後に寿命終了
-- **TwoParamsResult**: 検証済み状態での長寿命オブジェクト
-- **各ドメインの単一責任**: 明確な境界と変換
-
-### 3. 型安全性の確保
-- バリューオブジェクトによる不変性
-- ユニオン型による状態の明確化
-- Smart Constructorによる生成時バリデーション
-- デフォルト値の自動適用による型安全性の維持
-
-### 4. 拡張性の実現
-- 新しいドメインの追加容易性
-- 既存境界への影響最小化
-- 設定による動的な挙動変更
-
-### 5. 保守性の向上
-- ドメイン固有の用語による理解促進
-- 境界での変換ロジックの集約
-- テスト可能な設計
-
-### 6. 利便性の向上
-- **デフォルト値の自動適用**: 設定省略時の自動的な標準動作
-- **型安全性の維持**: null/undefinedを排除した型システム
-- **シンプルなAPI**: 複雑な設定なしに即座に利用可能
-- **段階的な設定**: 標準動作から始めて必要に応じてカスタマイズ
-
-### 7. 統合の容易性
-- 標準出力による他ツールとの連携
-- パイプライン処理への組み込み
-- 外部システムとの疎結合
+### 実装チェックリスト
+- [x] JSR検証済み値の直接利用（DirectiveType.fromJSR/LayerType.fromJSR）
+- [ ] Result型による例外の排除  
+- [ ] Discriminated Unionによる状態表現
+- [ ] `switch`文による網羅的分岐（`default`不要）
+- [ ] 型アサーション使用量最小化
+- [x] 冗長な検証ロジックの削除
 
 ## 関連ドキュメント
-
-- [option_types.ja.md](./option_types.ja.md): オプション型の詳細
-- [prompt_template_path.ja.md](./prompt_template_path.ja.md): プロンプトパス決定ドメイン
-- [prompt_variables.ja.md](./prompt_variables.ja.md): プロンプト変数生成ドメイン
-- [two_params_types.ja.md](./two_params_types.ja.md): 2パラメータ型の詳細
+- [totality.ja.md](../../generic_domain/system/overview/totality.ja.md): 全域性原則
+- [JSR @tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams): 検証済みパラメータ
+- [option_types.ja.md](./option_types.ja.md): オプション型
+- [two_params_types.ja.md](./two_params_types.ja.md): 2パラメータ型
 
 ---
 
-**設計原則**: Domain-Driven Design, Value Objects, Union Types  
-**実装パターン**: Smart Constructor, Factory, Strategy  
-**文書作成**: 2025年7月20日
+**設計原則**: Domain-Driven Design, Totality Principle, JSR Integration  
+**品質指標**: 型安全性、網羅性、可読性、保守性、検証効率性  
+**更新**: 2025年7月20日 - JSR検証済み値統合による意味的圧縮完了
 
 ---
 
 ## CHANGELOG
 
-### 設定値フローの明確化（2025年7月20日）
+### JSR検証済み値統合による意味的圧縮（2025年7月20日）
+- **DirectiveType/LayerType**: JSR TwoParamsResultから検証済み値として直接生成、追加検証ロジック削除
+- **fromTwoParamsResult()**: JSR結果から直接変換するヘルパー関数追加
+- **BreakdownConfig**: directivePatterns/layerPatterns設定を削除（JSR検証により不要）
+- **toParamsConfig()**: JSR検証済みのため検証メソッド削除
+- **検証効率性向上**: 重複検証を排除、処理性能向上
+
+### 全域性原則による意味的圧縮（維持）
+- **Smart Constructorパターンの統一**: ValidationErrorを共通化、冗長なバリューオブジェクト定義を統合
+- **Discriminated Unionの活用**: オプショナルプロパティを排除、状態を明確化
+- **Result型によるエラー値化**: 例外処理を型安全な戻り値に変換
+- **実装パターンの統合**: 境界インターフェースの統一、重複コード削除
+
+### 設定値フローの明確化（維持）
 - **ドメイン境界図の改善**: Configuration LayerからCore Processing Layerへの設定値の流れを明示
-- **図の簡素化**: 重複する線を削除し、ドメイン間の基本的な依存関係のみを表示
-- **TwoParamsResult.optionsの明確化**: Variable Generation Layerで使用されるPromptVariableSourceの流れを段階的データ変換フローに追加
+- **TwoParamsResult.optionsの明確化**: Variable Generation Layerで使用されるPromptVariableSourceの流れを追加
 - **base_dir/working_dirの用途明確化**: どのドメインで使用されるかをコメントで明記
-- **PathResolutionConfig**: working_dir対応とresolveWorkingPath()メソッド追加
-- **BreakdownConfig**: 設定値の用途をコメントで明示（PARAMS/PATHドメイン別）
 
-### 責務変更の記録
-- **ConfigProfileName**: DirectiveType/LayerType提供責務を削除
-- **BreakdownConfig**: 2つの役割（パラメータバリデーション・パス解決）に分離
-- **TwoParams**: profile参照を削除、純粋なDirective/Layer保持のみ
-- **DirectiveType/LayerType**: プロファイル依存プロパティを削除
-
-### ドメイン境界の変更
-- パラメータバリデーションドメインを独立化
-- 設定管理からパラメータバリデーションへの明確な分離
-- ConfigProfileNameの寿命を設定読み込みまでに限定
-- Configuration LayerからCore Processing Layerへの設定値の流れを明確化
+### 責務変更の記録（維持）
+- **ConfigProfileName**: 設定ファイル名の管理のみ（DirectiveType/LayerType提供責務削除）
+- **BreakdownConfig**: パス解決用設定のみに集約（パラメータバリデーション設定削除）
+- **全域性適用**: 部分関数を全域関数に変換、型システムで不正状態を排除
