@@ -19,9 +19,10 @@
   1. 統合テストを1つ追加する |
   2. 設定ファイルのDirectiveType/LayerTypeのパターンマッチングを広くする（a-z0-9） |
   3. 設定のpatternの中でランダムな文字列を生成してbreakdown <random1> <random2>としてテストする |
-  4. DirectiveTypeとLayerTypeがPatternマッチングで検証されたことを確認する |
-  5. TwoParamsResultの検証までで終了し、パス解決は実装しない |
-- ゴール: パターンマッチング機能が正常に動作し、ランダムなDirectiveType/LayerTypeでも適切に処理される。テストは設定読み込み→パターンマッチング→TwoParamsResult生成→結果検証までを実行し、パス解決は実装しない。
+  4. runBreakdownを通してCLI経由でDirectiveType/LayerTypeのパターンマッチングを検証する |
+  5. テスト実行時に必要なプロンプトテンプレートファイルを動的に作成し、完了後に削除する |
+  6. TwoParamsResultからプロンプトファイル読み込みまでの完全な処理フローを検証する |
+- ゴール: CLI経由でのパターンマッチング機能が正常に動作し、ランダムなDirectiveType/LayerTypeでも適切に処理される。テストはrunBreakdown実行→設定読み込み→パターンマッチング→TwoParamsResult生成→プロンプトファイル読み込みまでの完全フローを検証する。テスト用ファイルは動的作成・削除で管理する。
 ```
 
 **注意書き**
@@ -41,12 +42,19 @@
 4. 現在のDirectiveType/LayerTypeパターンマッチング実装を調査する
 5. パターンマッチング設定ファイルのテスト用設定を作成する
 6. ランダム文字列生成機能をテスト内に実装する
-7. 統合テストを `tests/integration/` 配下に追加する：
+7. テスト用プロンプトテンプレートファイルの動的作成・削除機能を実装する
+8. 統合テストを `tests/integration/` 配下に追加する：
    - ランダムなDirectiveType/LayerTypeの組み合わせでテストケースを生成
-   - 設定ファイルのパターンマッチングが正しく動作することを検証
-   - TwoParamsResultの生成と検証までを実行し、パス解決は実装しない
-8. テストを実行して動作確認する
-9. 必要に応じてテスト設定の修正を行う
+   - テスト実行前に対応するプロンプトテンプレートファイルを動的作成
+     * ディレクトリ: `prompts/{DirectiveType}/{LayerType}/`
+     * ファイル名: `f_{LayerType}.md` (基本) または `f_{LayerType}_{adaptation}.md` (適応あり)
+     * 完全パス: `prompts/{DirectiveType}/{LayerType}/f_{LayerType}.md`
+   - runBreakdownを通してCLI経由で実行し、完全な処理フローを検証
+   - 設定ファイルの正しい読み込み確認
+   - TwoParamsResultからプロンプトファイル読み込みまでの処理を検証
+   - テスト完了後にテンプレートファイルを削除
+9. テストを実行して動作確認する
+10. 必要に応じてテスト設定の修正を行う
 
 ### パターンマッチングテスト仕様
 
@@ -55,23 +63,85 @@
 - ランダム文字列生成: 
   - DirectiveType: 3-8文字のランダム英数字
   - LayerType: 3-8文字のランダム英数字
+  - fromLayerType: 3-8文字のランダム英数字（-i オプションで指定）
 - テストケース数: 最低10パターン以上
+- テスト用ファイル管理:
+  - テスト実行前: 対応するプロンプトテンプレートファイルを動的作成
+    * パス: `prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md`
+    * CLI: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
+  - テスト実行中: 完全な処理フローを検証
+  - テスト完了後: 作成したテンプレートファイルを削除
+- 成功判定基準:
+  - パターンマッチング成功 → テスト成功
+  - プロンプトファイル読み込み成功 → テスト成功
+  - パターンマッチングエラー → テスト失敗
 
 ### 統合テスト実装要件
 
 1. テストファイル名: `tests/integration/pattern_matching_integration_test.ts`
-2. テスト内容:
-   - ランダムなDirectiveType/LayerTypeペアの生成
-   - 設定ファイルのパターンマッチング機能の動作確認
+2. テスト実行方法: runBreakdownを使用したCLI統合テスト
+3. テスト内容:
+   - ランダムなDirectiveType/LayerType/fromLayerTypeトリプレットの生成
+   - テスト用プロンプトテンプレートファイルの動的作成・削除
+     * パス: `prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md`
+     * CLI: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
+     * 内容: テスト用プロンプトテンプレート
+   - runBreakdownを通したCLI経由での完全な処理フローの動作確認
    - 設定ファイルの正しい読み込み確認
-   - TwoParamsResultの生成と結果検証
-3. テストデータ:
-   - 有効なDirectiveType/LayerTypeパターン（a-z0-9組み合わせ）
+   - CLI実行結果からTwoParamsResultの生成と結果検証
+   - プロンプトファイル読み込みまでの完全フロー検証
+4. テストデータ:
+   - 有効なDirectiveType/LayerType/fromLayerTypeパターン（a-z0-9組み合わせ）
    - 無効なパターン（エラーケース）
    - 境界値テストケース
-4. テスト用設定ファイル:
+   - 動的作成するプロンプトテンプレートファイル（f_{fromLayerType}.md形式）
+5. テスト用設定ファイル:
    - `tests/fixtures/config/pattern-test-user.yml`
    - a-z0-9パターンマッチングを許可する設定
+
+### プロンプトテンプレートファイル構成
+
+テスト実行時に動的作成するプロンプトテンプレートファイルの構成：
+
+#### ディレクトリ構造
+```
+prompts/
+├── {DirectiveType}/
+│   └── {LayerType}/
+│       └── f_{fromLayerType}.md
+```
+
+#### ファイル名パターン
+- **基本パターン**: `f_{fromLayerType}.md`
+- **適応パターン**: `f_{fromLayerType}_{adaptation}.md`
+- **例**: `f_abc123.md` (fromLayerType="abc123", -i オプションで指定)
+- **適応例**: `f_abc123_strict.md` (fromLayerType="abc123", adaptation="strict")
+
+#### パス解決ルール
+- **ベースディレクトリ**: `prompts` (デフォルト)
+- **完全パス**: `prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md`
+- **例**: `prompts/def456/xyz789/f_abc123.md` (DirectiveType="def456", LayerType="xyz789", fromLayerType="abc123")
+- **適応例**: `prompts/def456/xyz789/f_abc123_strict.md`
+
+#### CLI実行パターン
+- **基本**: `breakdown {DirectiveType} {LayerType} -i {fromLayerType}`
+- **例**: `breakdown def456 xyz789 -i abc123`
+- **結果**: `prompts/def456/xyz789/f_abc123.md` が読み込まれる
+
+#### 動的作成内容
+```markdown
+# Test Prompt Template for {DirectiveType} {LayerType} from {fromLayerType}
+
+This is a dynamically generated test template for:
+- DirectiveType: {DirectiveType}
+- LayerType: {LayerType}
+- fromLayerType: {fromLayerType}
+
+CLI Command: breakdown {DirectiveType} {LayerType} -i {fromLayerType}
+Template Path: prompts/{DirectiveType}/{LayerType}/f_{fromLayerType}.md
+
+Generated at: {timestamp}
+```
 
 ### 必読資料
 
@@ -89,7 +159,9 @@
 - ランダム文字列生成機能がテスト内に実装されている
 - 統合テストが全てpassする
 - `deno task test` が1つのエラーもなく成功する
-- TwoParamsResultの生成と検証が正しく実行されている
+- runBreakdownを通したCLI経由での完全な処理フローが正しく実行されている
+- テスト用ファイルの動的作成・削除が正しく動作している
+- プロンプトファイル読み込みまでの処理が成功している
 
 **禁止事項**
 - lib/ 配下のコア実装ファイルの変更は最小限にとどめること
